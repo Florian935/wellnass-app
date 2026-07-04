@@ -74,14 +74,18 @@ ordre.** Toute nouvelle fonctionnalité / user story suit ce parcours :
    par incréments bornés, PR relue par les deux devs.
 
 ### Branches
-Chaque US = **une nouvelle branche** créée depuis `main`, préfixée par type :
+Chaque US = **une nouvelle branche** créée depuis `dev`, préfixée par type :
 `feature/xxx`, `fix/xxx`, `chore/xxx`, `docs/xxx`, `refactor/xxx`. **Jamais de travail
-directement sur `main`.**
+directement sur `main` ni sur `dev`.**
+
+Modèle de branches : `main` = branche protégée (release) · **`dev` = branche d'intégration**
+(cible de tout le travail courant) · `feature/*` etc. = branches de travail.
 
 ### Commits
 Utiliser la commande **`/commit`** (voir [.claude/commands/commit.md](.claude/commands/commit.md)) :
-elle analyse les changements, applique le garde-fou confidentialité, coche `TODO.md` et crée
-un commit conventionnel en français.
+elle analyse les changements, applique le garde-fou confidentialité, coche `TODO.md`, crée
+un commit conventionnel en français **et pousse en fin de commande le travail de la branche
+sur `dev`** (fast-forward/merge puis `git push origin dev`).
 
 ### Suivi — TODO.md
 [TODO.md](TODO.md) à la racine est le **suivi vivant** de tout ce qui reste à faire. On y

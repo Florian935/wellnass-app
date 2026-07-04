@@ -23,8 +23,9 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    d'être committé et n'est pas ignoré, **stoppe** et préviens l'utilisateur.
 
 3. **Branche** : vérifie la branche courante (`git rev-parse --abbrev-ref HEAD`). Si tu es
-   sur `main`, **stoppe** et propose de créer une branche dédiée (`feature/…`, `fix/…`,
-   `chore/…`, `docs/…`, `refactor/…`) avant de committer — on ne commit pas sur `main`.
+   sur `main` **ou `dev`**, **stoppe** et propose de créer une branche dédiée depuis `dev`
+   (`feature/…`, `fix/…`, `chore/…`, `docs/…`, `refactor/…`) avant de committer — on ne
+   commit jamais directement sur `main` ni `dev`.
 
 4. **Qualité** (si le scaffolding existe, c.-à-d. un `package.json` est présent) : lance
    lint + typecheck + tests selon les scripts définis (ex. `npm run lint`, `npm run typecheck`,
@@ -44,6 +45,12 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
 
 7. **Commit** : `git add` uniquement les fichiers pertinents (jamais les sensibles), puis
    `git commit`. Affiche ensuite le hash du commit et un `git status` final propre.
+
+8. **Push sur `dev`** : intègre le travail de la branche courante dans `dev` puis pousse.
+   `git fetch origin`, puis mets `dev` à jour depuis `origin/dev` et fais avancer `dev` avec
+   les commits de la branche (fast-forward si possible, sinon merge), enfin
+   `git push origin dev`. Reviens ensuite sur la branche de travail. En cas de conflit ou de
+   divergence de `dev`, **stoppe** et préviens l'utilisateur plutôt que de forcer.
 
 Si le périmètre à committer est ambigu (mélange de sujets sans rapport), propose de scinder
 en plusieurs commits **avant** d'agir.
