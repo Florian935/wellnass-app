@@ -82,10 +82,15 @@ Modèle de branches : `main` = branche protégée (release) · **`dev` = branche
 (cible de tout le travail courant) · `feature/*` etc. = branches de travail.
 
 ### Commits
-Utiliser la commande **`/commit`** (voir [.claude/commands/commit.md](.claude/commands/commit.md)) :
-elle analyse les changements, applique le garde-fou confidentialité, coche `TODO.md`, crée
-un commit conventionnel en français **et pousse en fin de commande le travail de la branche
-sur `dev`** (fast-forward/merge puis `git push origin dev`).
+Utiliser la commande **`/commit`** (voir [.claude/commands/commit.md](.claude/commands/commit.md)).
+En une passe, elle :
+- analyse et **relit le `git diff`** (revue de code : bugs, secrets, specs, offline-first, i18n) ;
+- applique le **garde-fou confidentialité** (jamais de secrets) ;
+- tient le **[CHANGELOG.md](CHANGELOG.md)** — une entrée par commit, construite à partir du diff,
+  pour garder la **trace complète** des modifications (traçabilité devs / débogage) ;
+- coche le **[TODO.md](TODO.md)** ;
+- crée un **commit conventionnel** en français ;
+- **pousse la branche sur `dev` distant** (fast-forward/merge puis `git push origin dev`).
 
 ### Suivi — TODO.md
 [TODO.md](TODO.md) à la racine est le **suivi vivant** de tout ce qui reste à faire. On y
@@ -105,6 +110,7 @@ vient d'être livré.
 
 ```
 /TODO.md                    → suivi vivant des tâches (coché par /commit)
+/CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
 /design                     → maquettes par fonctionnalité (exportées de Claude Design)
 /docs
