@@ -1,19 +1,22 @@
-# Wellness App — Cadrage à deux
+# Wellness App
 
-Ce repo sert d'**espace de mise en commun** des deux cadrages réalisés séparément
-par Florian et Damien avec Claude Code, avant de converger vers une base unique.
+Écosystème bien-être mobile où **3 piliers se parlent** — Musculation, Running, Nutrition —
+pour remplacer le trio Strava + MyFitnessPal + Strong/Hevy. Différenciateur : **l'intégration**.
 
-## Structure
+> **État** : phase de cadrage terminée, base documentaire fusionnée. Le code applicatif n'est
+> pas encore initialisé.
 
-- `flo/` — cadrage réalisé par Florian.
-- `dams/` — cadrage réalisé par Damien (à cloner/copier ici).
+## Documentation
 
-## Objectif
+- [CLAUDE.md](CLAUDE.md) — point d'entrée : stack, décisions, structure, méthode de travail.
+- [SYNTHESE-CADRAGE.md](SYNTHESE-CADRAGE.md) — les 8 arbitrages tranchés (décisions A→H).
+- [docs/product/](docs/product/) — vision, PRD, personas, métriques de succès.
+- [docs/specs/functional/](docs/specs/functional/) — specs par pilier + socle transverse.
+- [docs/specs/technical/](docs/specs/technical/) — architecture, offline-sync, modèle de données, i18n, bonnes pratiques.
+- [docs/adr/](docs/adr/) — décisions d'architecture (1 fichier par décision).
+- [docs/roadmap/roadmap.md](docs/roadmap/roadmap.md) — plan de versions (V0.1 → V1.1).
 
-1. Chaque développeur pousse son cadrage de son côté.
-2. Claude analyse les deux dossiers : ce qui converge vs ce qui diverge.
-3. Compte rendu final listant les points **à valider** et les points **à discuter**
-   pour aligner la vision produit et l'architecture.
+## Stack
 
-Une fois l'alignement fait, le repo évoluera vers la structure réelle du projet
-(monorepo, app mobile, backend) et cette organisation `flo/` + `dams/` disparaîtra.
+React Native + Expo + TypeScript · Supabase (Postgres/Auth/Storage/RLS) · PowerSync (offline-first) ·
+RevenueCat (câblé, inactif en V1) · Android d'abord.

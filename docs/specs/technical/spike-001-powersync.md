@@ -2,7 +2,7 @@
 
 > **Spike = expérience jetable et bornée**, destinée à **valider ou invalider** un choix technique
 > **avant** de s'engager. Le code produit ici n'est **pas** destiné à la production : on le jette ensuite.
-> Lié à : [ADR-001](../../adr/ADR-001-moteur-sync-offline.md).
+> Lié à : [ADR-001](../../adr/ADR-001-moteur-sync-offline.md). Voir aussi [offline-sync.md](./offline-sync.md).
 
 ---
 
@@ -29,7 +29,7 @@ Vérifier que **PowerSync + Supabase + Expo (dev build)** tient nos exigences of
 
 ## Pré-requis à provisionner (côté porteur du projet) 🔑
 
-> Ces étapes nécessitent des comptes/clés que **je ne peux pas créer à ta place**. Je te guiderai pas à pas.
+> Ces étapes nécessitent des comptes/clés que **je ne peux pas créer à ta place**. Je te guiderai pas à pas. Voir le [runbook de provisioning](./runbook-provisioning-spike.md).
 
 1. **Projet Supabase** (offre gratuite) → récupérer : `Project URL`, `anon key`, et les **identifiants de connexion Postgres** (host, mot de passe DB).
 2. **Compte + instance PowerSync** (offre gratuite) → connectée au projet Supabase (réplication logique Postgres à activer).
@@ -40,7 +40,7 @@ Vérifier que **PowerSync + Supabase + Expo (dev build)** tient nos exigences of
 
 ## Déroulé prévu
 
-1. Provisionner Supabase + PowerSync (toi, avec mon guidage).
+1. Provisionner Supabase + PowerSync (toi, avec mon guidage) — voir [runbook-provisioning-spike.md](./runbook-provisioning-spike.md).
 2. Je scaffolde une **mini-app Expo jetable** (hors du futur vrai repo) avec PowerSync.
 3. On configure les **sync rules** PowerSync + le **connecteur** d'upload vers Supabase.
 4. On déroule les **6 critères de réussite** ci-dessus.
@@ -48,6 +48,6 @@ Vérifier que **PowerSync + Supabase + Expo (dev build)** tient nos exigences of
 
 ## Livrable
 
-- Un verdict **clair** (✅/↩️) reporté dans l'ADR-001.
-- Quelques notes d'apprentissage (pièges, contraintes, effort réel) pour le vrai build.
+- Un verdict **clair** (✅/↩️) reporté dans l'[ADR-001](../../adr/ADR-001-moteur-sync-offline.md).
+- Quelques notes d'apprentissage (pièges, contraintes, effort réel) pour le vrai build — notamment le comportement sur les **données volumineuses** (traces GPS running).
 - Le code du spike est **jeté** (ou archivé hors du repo principal).
