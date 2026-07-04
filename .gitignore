@@ -1,0 +1,92 @@
+# ==============================================================
+#  Wellness App — .gitignore
+#  Monorepo React Native + Expo + TypeScript / Supabase / PowerSync
+# ==============================================================
+
+# --- Dépendances ---
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# --- Secrets & environnement (JAMAIS committés) ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p8
+*.p12
+*.mobileprovision
+# Config natives contenant des identifiants
+google-services.json
+GoogleService-Info.plist
+# Keystores / signatures Android
+*.keystore
+*.jks
+!debug.keystore
+
+# --- Expo ---
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+
+# --- Metro ---
+.metro-health-check*
+.metro-cache/
+
+# --- Android ---
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+
+# --- iOS (portage ultérieur) ---
+ios/build/
+ios/Pods/
+ios/.xcode.env.local
+
+# --- Supabase (dev local) ---
+supabase/.branches/
+supabase/.temp/
+**/supabase/.env
+
+# --- TypeScript / build ---
+*.tsbuildinfo
+
+# --- Tests / couverture ---
+coverage/
+
+# --- Logs ---
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# --- Caches divers ---
+.cache/
+.turbo/
+.eslintcache
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---
+.idea/
+*.iml
+# VS Code : on ignore le dossier sauf les réglages partagés utiles à l'équipe
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# NB : le dossier .claude/ est suivi volontairement (commandes, config projet).

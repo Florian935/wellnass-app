@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Ajout de `.gitignore` et `.gitattributes`
+
+_Branche : `chore/gitignore-gitattributes` · commit précédent : `d81b11e`_
+
+### Ajouté
+- **`.gitignore`** : dépendances, secrets/env (`.env*`, clés, `google-services.json`, keystores),
+  artefacts Expo/Metro/Android/iOS, Supabase local, caches, fichiers OS/IDE. Le dossier `.claude/`
+  reste suivi volontairement.
+- **`.gitattributes`** : normalisation des fins de ligne (LF dans le dépôt), scripts Windows en
+  CRLF, fichiers binaires marqués — **supprime les avertissements « LF will be replaced by CRLF »**.
+
+### Fichiers touchés
+- `.gitignore`, `.gitattributes`
+
 ## 05/07/2026 — `/commit` : robustesse du hash CHANGELOG (pas de self-amend)
 
 _Branche : `chore/mise-en-place-process`_
