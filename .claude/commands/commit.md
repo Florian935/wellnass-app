@@ -47,7 +47,9 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    Construis-la **à partir du `git diff`** pour une trace complète : date (JJ/MM/AAAA), sujet,
    branche, catégories (Ajouté / Modifié / Corrigé / Supprimé / Technique-Notes), fichiers
    touchés, et toute note utile au débogage (décision, contournement, point d'attention issu de
-   la revue). Le hash court est ajouté une fois le commit créé (étape 9).
+   la revue). **N'écris pas le hash de ce commit ici** : un commit ne peut pas contenir son propre
+   hash. L'entrée est identifiée par date + branche + sujet ; le hash court du **commit précédent**
+   peut être renseigné au passage. **Ne fais jamais de `--amend` juste pour insérer un hash.**
 
 7. **TODO** : mets à jour [`TODO.md`](../../TODO.md) — coche `[x]` ce qui est désormais fait,
    passe en `[~]` ce qui est en cours, ajoute les nouvelles tâches apparues, et actualise la
@@ -61,8 +63,7 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
 
 9. **Commit** : `git add` uniquement les fichiers pertinents (jamais les sensibles), puis
-   `git commit`. Reporte le hash court dans l'entrée CHANGELOG (étape 6) si tu l'y avais laissé
-   en attente, puis affiche le hash du commit et un `git status` final propre.
+   `git commit`. Affiche ensuite le hash du commit et un `git status` final propre.
 
 10. **Push sur `dev`** : intègre le travail de la branche courante dans `dev` puis pousse.
     `git fetch origin`, puis mets `dev` à jour depuis `origin/dev` et fais avancer `dev` avec

@@ -10,7 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
-## 05/07/2026 — `/commit` : revue de code, CHANGELOG et traces de diff (`8f55b5b`)
+## 05/07/2026 — `/commit` : robustesse du hash CHANGELOG (pas de self-amend)
+
+_Branche : `chore/mise-en-place-process`_
+
+### Corrigé
+- Règle CHANGELOG de `/commit` : ne plus embarquer le hash du commit courant (circulaire) ni
+  faire de `--amend` pour l'insérer. Une entrée est identifiée par date + branche + sujet ; le
+  hash court du **commit précédent** est renseigné au passage.
+- Hash de l'entrée précédente corrigé (`e174d89`).
+
+### Fichiers touchés
+- `.claude/commands/commit.md`, `CHANGELOG.md`
+
+## 05/07/2026 — `/commit` : revue de code, CHANGELOG et traces de diff (`e174d89`)
 
 _Branche : `chore/mise-en-place-process`_
 
