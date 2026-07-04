@@ -1,0 +1,330 @@
+# Validation des Fonctionnalités — Roadmap par versions
+
+Fichier de revue exhaustive de toutes les fonctionnalités de l'app, **ordonnées par version de développement**.
+Remplir la colonne **Statut** avec : ✅ Validé · ❌ Refusé · 🔄 À modifier · ⏳ Reporté
+
+**Autonomie Claude** : 🟢 Full auto (Claude seul) · 🟡 Semi (validation humaine requise) · 🔴 Humain requis (décision, data externe, clé API…)
+
+> Les numéros (1.x compte, 2.x navigation/UX, 3.x muscu, 4.x alim, 5.x running, 6.x visualisation, 7.x dashboard, 8.x admin, 9.x technique) sont **thématiques** et stables — ils ne changent pas quand une fonctionnalité change de version.
+> Chaque développement suit les standards de [[Bonnes Pratiques Techniques]] (dont la Definition of Done, qui conditionne le passage d'une fonctionnalité à ✅).
+
+---
+
+## Plan de versions
+
+| Version | Contenu | Livrable testable | Nb | Estimation |
+|---|---|---|:---:|:---:|
+| **V0.1** | Socle technique & compte | App qui démarre : compte, connexion, navigation, base locale | 15 | ~43h |
+| **V0.2** | Muscu — exercices & séance libre | Première vraie valeur : faire et enregistrer une séance complète | 32 | ~69h |
+| **V0.3** | Muscu — programmes, historique & records | Pilier muscu complet, utilisable au quotidien | 21 | ~60h |
+| **V0.4** | Alimentation | Journal alimentaire complet + TDEE + recettes | 33 | ~68h |
+| **V0.5** | Running | Suivi GPS complet + programmes de course | 33 | ~85h |
+| **V0.6** | Dashboard, streak & sync cloud | Accueil personnalisable, régularité, multi-appareils | 19 | ~55h |
+| **V0.7** | Admin & contenu | Back-office + création du contenu éditorial | 10 | ~41h |
+| **V0.8** | Bêta — conformité & intégrations | TestFlight / Play interne : OAuth, RGPD, Health, analytics | 10 | ~29h |
+| **V1.0** | Lancement stores | Publication App Store + Play Store | 2 | — |
+| **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
+| | | **Total** | **179** | **~470h** |
+
+**Logique d'ordonnancement** :
+- **Muscu d'abord** : cœur de valeur, zéro dépendance externe (pas de GPS, pas de clé API) — on valide vite le produit.
+- **Running en dernier des piliers** : c'est le plus gros risque technique (GPS arrière-plan, batterie, écran verrouillé) — on l'aborde avec une base stable.
+- **Offline-first dès V0.1** (SQLite local) : impossible à rétrofitter. La sync cloud arrive en V0.6, mais l'architecture est prête dès le départ.
+- **Admin après les piliers** : pendant le dev, le contenu (exercices, programmes) est injecté par scripts de seed ; l'admin V0.7 industrialise avant la bêta.
+- **Conformité et intégrations juste avant la bêta** : OAuth, export/suppression RGPD et analytics doivent exister avant d'ouvrir à de vrais testeurs.
+
+---
+
+## V0.1 — Socle technique & compte
+
+*Objectif : une app qui démarre, avec compte, navigation et stockage local. Rien de sexy, tout est fondation.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 9.3 | Stockage local SQLite | Toutes les données écrites localement en priorité. L'app fonctionne sans connexion. | Difficile | 8h | 🟢 | | Fondation offline-first — à poser en premier |
+| 2.11 | Fonctionnement hors-ligne | Toutes les fonctions (saisie, suivi, consultation) marchent sans connexion. | Difficile | 8h | 🟢 | | Principe transverse appliqué à chaque feature dès V0.1 |
+| 1.1 | Inscription email + mot de passe | Création de compte avec identifiants classiques. Email vérifié avant accès complet. | Facile | 2h | 🟢 | | |
+| 1.4 | Vérification email obligatoire | Lien envoyé par email, compte bloqué tant que non vérifié. | Facile | 1h | 🟢 | | Géré par Supabase Auth |
+| 1.5 | Session persistante | Pas de reconnexion à chaque ouverture. Token rafraîchi silencieusement. | Facile | 2h | 🟢 | | |
+| 1.6 | Récupération mot de passe | Envoi d'un lien de réinitialisation par email. | Facile | 1h | 🟢 | | Géré par Supabase Auth |
+| 9.5 | Authentification JWT | Token court (accès) + token long (refresh). Renouvellement silencieux. | Moyen | 4h | 🟢 | | Géré par Supabase Auth |
+| 9.6 | Isolation données utilisateur | Row Level Security — chaque utilisateur n'accède qu'à ses données. | Moyen | 3h | 🟢 | | |
+| 9.8 | Chiffrement tokens | iOS Keychain / Android Keystore. Jamais en clair. | Moyen | 2h | 🟢 | | |
+| 1.21 | Écrans légaux & consentement | CGU + politique de confidentialité acceptées à l'inscription. Âge minimum 16 ans (RGPD). | Facile | 2h | 🟡 | | Textes juridiques à fournir / faire relire |
+| 2.1 | Bottom tab bar 4 onglets | Navigation principale : Accueil / Muscu / Running / Alim. | Facile | 2h | 🟢 | | Onglets vides au début, remplis version après version |
+| 2.2 | Masquage onglets non activés | Si running non activé, son onglet disparaît. Réactivable depuis les paramètres. | Facile | 1h | 🟢 | | |
+| 1.15 | Unités métrique / impérial | Bascule kg/km ↔ lbs/miles. S'applique à toute l'app. | Facile | 2h | 🟢 | | À poser tôt : impacte tous les affichages suivants |
+| 1.16 | Thème clair / sombre / système | Apparence de l'app. "Système" suit le réglage OS. | Facile | 2h | 🟢 | | |
+| 2.10 | États vides soignés | Chaque écran sans données affiche explication + CTA. Jamais de graphique vide. | Facile | 3h | 🟢 | | Principe continu — appliqué à chaque nouvelle feature |
+
+---
+
+## V0.2 — Muscu : exercices & séance libre
+
+*Objectif : la première vraie valeur utilisateur — faire une séance de muscu complète et l'enregistrer. La séance libre d'abord (aucune dépendance aux programmes).*
+
+| #    | Fonctionnalité                   | Description                                                               | Difficulté | Temps | Autonomie Claude | Statut | Remarques                                                                            |
+| ---- | -------------------------------- | ------------------------------------------------------------------------- | :--------: | :---: | :--------------: | ------ | ------------------------------------------------------------------------------------ |
+| 1.7  | Onboarding — Infos de base       | Prénom, âge, poids, taille au premier lancement.                          |   Facile   |  3h   |        🟢        |        |                                                                                      |
+| 1.8  | Onboarding — Piliers actifs      | Choix des modules à activer.                                              |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 1.9  | Onboarding — Objectif principal  | Masse / sèche / performance / santé.                                      |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 1.11 | Onboarding — Récapitulatif       | Résumé des choix + suggestion d'une première action.                      |   Facile   |  1h   |        🟢        |        | S'enrichit en V0.4 (TDEE)                                                            |
+| 1.12 | Modification du profil           | Mise à jour des données utilisateur depuis les paramètres.                |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.13 | Bibliothèque d'exercices         | Base fournie par l'app avec fiche complète par exercice.                  |   Moyen    |  4h   |        🟡        |        | Import par script de seed en attendant l'admin (V0.7)                                |
+| 6.1  | GIF animé par exercice           | Animation en boucle du mouvement correct.                                 |   Moyen    |  4h   |        🔴        |        | **Décision bloquante V0.2** : exercises-dataset ou ExerciseDB — voir [[Musculation]] |
+| 3.18 | Démonstration GIF animé          | GIF affiché sur la fiche exercice.                                        |   Moyen    |  4h   |        🟡        |        | Dépend de 6.1                                                                        |
+| 6.2  | Muscles ciblés sur schéma        | Corps humain SVG avec muscles travaillés en évidence.                     |   Moyen    |  4h   |        🟢        |        |                                                                                      |
+| 3.14 | Recherche d'exercices            | Par nom, groupe musculaire ou matériel.                                   |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.15 | Exercices favoris                | Épingler les exercices préférés.                                          |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.16 | Exercice personnalisé            | Créer un exercice custom si absent de la base.                            |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.17 | Note par exercice                | Champ persistant (réglage de siège, position machine), affiché en séance. |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.19 | Muscles ciblés                   | Muscle principal + secondaires sur la fiche.                              |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.20 | Variantes / alternatives         | Exercices similaires pour remplacer si besoin.                            |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.23 | Séance libre                     | Séance vide sans programme, exercices ajoutés au fil de l'eau.            |   Moyen    |  3h   |        🟢        |        | Le parcours cœur de cette version                                                    |
+| 3.25 | Validation de série              | Reps + charge réels, valeurs pré-remplies.                                |   Moyen    |  4h   |        🟢        |        |                                                                                      |
+| 3.26 | Dernière performance affichée    | "La dernière fois : 80 kg × 8 / 8 / 7" au-dessus de la saisie.            |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.27 | Types de séries avancés          | Échauffement, superset, durée (gainage), poids de corps ± lest.           |   Moyen    |  4h   |        🟢        |        | Modèle de données à prévoir dès maintenant                                           |
+| 3.28 | Chrono de repos automatique      | Déclenché après chaque série validée. Configurable par exercice.          |   Facile   |  2h   |        🟢        |        |                                                                                      |
+| 3.29 | Alerte vibration fin de repos    | Vibration + signal visuel.                                                |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.30 | Ajouter / supprimer une série    | En cours de séance.                                                       |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.31 | Modifier charge / reps en direct | Sans quitter l'écran.                                                     |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.32 | Remplacer un exercice en direct  | Choisir une variante en séance.                                           |   Moyen    |  3h   |        🟢        |        |                                                                                      |
+| 3.33 | Note de séance                   | Champ texte libre.                                                        |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.34 | Ressenti global                  | RPE 1-10 ou 5 étoiles en fin de séance.                                   |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.35 | Résumé fin de séance             | Durée, volume, séries validées, records battus.                           |   Moyen    |  3h   |        🟢        |        |                                                                                      |
+| 3.36 | Mise en pause de séance          | Suspendre et reprendre dans les 4 heures.                                 |   Moyen    |  3h   |        🟢        |        |                                                                                      |
+| 3.37 | Clôture automatique après 3h     | Fermeture et sauvegarde automatiques.                                     |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 3.22 | Record personnel (1RM estimé)    | Formule d'Epley : charge × (1 + reps/30).                                 |   Facile   |  1h   |        🟢        |        |                                                                                      |
+| 2.3  | Écran actif pendant séance       | Pas de mise en veille pendant un suivi actif.                             |   Facile   |  1h   |        🟢        |        | `keepAwake` Expo                                                                     |
+| 6.3  | Accès démo pendant la séance     | Modal depuis l'écran de suivi, sans couper le chrono.                     |   Facile   |  1h   |        🟢        |        |                                                                                      |
+
+---
+
+## V0.3 — Muscu : programmes, historique & records
+
+*Objectif : le pilier muscu complet — programmes structurés, planning, courbes de progression, notifications.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 3.4 | Création programme custom | Composer son propre programme de A à Z. | Moyen | 5h | 🟢 | | Avant la bibliothèque : le custom valide le modèle de données |
+| 3.5 | Semaine type | Groupes musculaires par jour, base du planning. | Moyen | 3h | 🟢 | | |
+| 3.6 | Composition de séance | Exercices + séries / reps / charge / repos. | Moyen | 4h | 🟢 | | |
+| 3.1 | Bibliothèque de programmes | Catalogue pré-conçu (PPL, Full Body, 5×5…). | Moyen | 4h | 🟡 | | Contenu par script de seed, industrialisé en V0.7 |
+| 3.2 | Filtres bibliothèque | Objectif, niveau, durée, équipement. | Facile | 2h | 🟢 | | |
+| 3.3 | Dupliquer un programme | Copier pour personnaliser sans toucher l'original. | Facile | 1h | 🟢 | | |
+| 3.12 | Un programme actif à la fois | Activer un programme désactive le précédent (historique conservé). | Facile | 1h | 🟢 | | |
+| 3.9 | Planning calendrier auto | Séances placées automatiquement après activation. | Moyen | 4h | 🟢 | | |
+| 3.10 | Décalage de séance | Glisser-déposer vers un autre jour. | Moyen | 3h | 🟢 | | |
+| 3.11 | Gestion séance manquée | Reporter ou sauter. | Facile | 2h | 🟢 | | |
+| 3.24 | Plan de séance avant démarrage | Récap des exercices prévus avec cibles. | Facile | 2h | 🟢 | | |
+| 3.7 | Progression automatique | Charge cible +X d'une semaine à l'autre (si ≥ 80 % complété). | Moyen | 3h | 🟢 | | |
+| 3.8 | Deload / gestion de stagnation | Échec 2 semaines de suite → proposition −10 %. Jamais imposé. | Moyen | 3h | 🟢 | | |
+| 3.38 | Historique des séances | Liste chronologique filtrable. | Moyen | 3h | 🟢 | | |
+| 3.39 | Courbes charge / volume | Évolution par exercice sur différentes périodes. | Moyen | 4h | 🟢 | | |
+| 3.21 | Courbe de progression par exercice | Charge max / volume sur 30 / 90 j / 1 an. | Moyen | 4h | 🟢 | | |
+| 3.40 | Volume par groupe musculaire | Séries par groupe sur la semaine — détecte les déséquilibres. | Moyen | 3h | 🟢 | | Hors séries d'échauffement |
+| 3.41 | Alerte déséquilibre musculaire | Si un groupe très sous-sollicité sur 2 semaines. | Moyen | 3h | 🟢 | | |
+| 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | | |
+| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | | |
+| 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | | |
+
+---
+
+## V0.4 — Alimentation
+
+*Objectif : journal alimentaire complet, sans friction de saisie, avec TDEE et lien vers l'entraînement.*
+
+| #    | Fonctionnalité                     | Description                                               | Difficulté | Temps | Autonomie Claude | Statut | Remarques                                                                     |
+| ---- | ---------------------------------- | --------------------------------------------------------- | :--------: | :---: | :--------------: | ------ | ----------------------------------------------------------------------------- |
+| 1.10 | Onboarding — Suivi alimentaire     | Activer ou non le module nutrition.                       |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.8  | Base d'aliments fournie            | Catalogue avec valeurs pour 100 g.                        |   Moyen    |  4h   |        🔴        |        | **Décision bloquante V0.4** : CIQUAL (bruts FR) + OpenFoodFacts (industriels) |
+| 4.1  | Calcul TDEE automatique            | Mifflin-St Jeor + facteur d'activité.                     |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.2  | Facteur d'activité paramétrable    | 5 niveaux, s'adapte au planning.                          |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.3  | Ajustement manuel de l'objectif    | Objectif calorique libre.                                 |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.4  | Répartition macros par défaut      | Ratios P/G/L selon l'objectif.                            |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.5  | Modification manuelle des macros   | En grammes ou %, vues synchronisées.                      |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.6  | Restrictions / allergènes          | Végétarien, vegan, sans gluten, halal, allergènes.        |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.7  | Calories adaptées à l'entraînement | Objectif plus élevé les jours de séance.                  |   Moyen    |  3h   |        🟢        |        | Utilise le planning muscu (V0.3)                                              |
+| 4.9  | Recherche par nom                  | Suggestions en temps réel.                                |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.10 | Scan code-barres                   | EAN via caméra.                                           |   Moyen    |  3h   |        🟢        |        | Expo Camera / BarCodeScanner                                                  |
+| 4.11 | Import OpenFoodFacts               | Recherche auto si code-barres absent en local.            |   Moyen    |  4h   |        🟢        |        | API publique, pas de clé                                                      |
+| 4.12 | Aliments favoris / récents         | Accès rapide aux aliments fréquents.                      |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.13 | Aliment personnalisé               | Valeurs libres si non trouvé en base.                     |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.14 | Journal quotidien — 4 repas        | Petit-déj / Déjeuner / Dîner / Collation. Renommables.    |   Moyen    |  4h   |        🟢        |        |                                                                               |
+| 4.15 | Ajout / suppression de repas       | 5e repas ou suppression.                                  |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.16 | Ajout aliment + quantité           | Rechercher, saisir la quantité, valider.                  |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.17 | Portions usuelles                  | "1 œuf = 60 g" — portion par défaut, grammes disponibles. |   Moyen    |  3h   |        🟢        |        | Anti-friction n°1                                                             |
+| 4.18 | Copier un repas / une journée      | Dupliquer un repas ou une journée en 2 taps.              |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.19 | Quick add calories                 | Calories directes sans recherche d'aliment.               |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.20 | Total calories + macros temps réel | Compteur instantané à chaque ajout.                       |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.21 | Barres de progression macros       | Jauges P / G / L vers l'objectif du jour.                 |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 4.22 | Navigation entre les jours         | ◀ / ▶ entre les journaux.                                 |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.23 | Saisie rétroactive                 | Journal passé modifiable sans limite.                     |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.24 | Création de recette                | Plusieurs ingrédients + nombre de portions.               |   Moyen    |  3h   |        🟢        |        |                                                                               |
+| 4.25 | Valeurs nutritionnelles calculées  | Macros totales et par portion automatiques.               |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.26 | Repas types (templates)            | Réutiliser un repas entier en 1 tap.                      |   Facile   |  2h   |        🟢        |        |                                                                               |
+| 1.13 | Historique poids corporel          | Pesées enregistrées et affichées en courbe.               |   Facile   |  3h   |        🟢        |        |                                                                               |
+| 1.14 | Rappel de pesée                    | Notification optionnelle à heure fixe.                    |   Facile   |  1h   |        🟢        |        |                                                                               |
+| 4.30 | Courbe poids corporel              | Évolution sur 4 sem / 3 mois / 1 an.                      |   Moyen    |  3h   |        🟢        |        |                                                                               |
+| 4.31 | Évolution apports moyens           | Calories et macros moyennes 7 / 30 jours.                 |   Moyen    |  3h   |        🟢        |        |                                                                               |
+| 4.32 | Alerte déficit + fort volume       | Déficit important + semaine à fort volume muscu.          |   Moyen    |  2h   |        🟢        |        | Première stat croisée entre piliers                                           |
+| 2.5  | Notif — Rappel repas               | Push à heure définie.                                     |   Facile   |  1h   |        🟢        |        |                                                                               |
+
+---
+
+## V0.5 — Running
+
+*Objectif : le pilier au plus gros risque technique (GPS arrière-plan, batterie, écran verrouillé) — abordé une fois la base stable. Commencer par 5.12-5.16 : le tracker GPS nu, à valider sur le terrain avant le reste.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 5.13 | Démarrage GPS + chrono | GPS + chronomètre d'un tap. Compte à rebours optionnel. | Moyen | 3h | 🟢 | | Expo Location — valider le tracking arrière-plan en premier |
+| 5.12 | Course libre | Sans séance planifiée ni structure de blocs. | Facile | 1h | 🟢 | | |
+| 5.14 | Distance parcourue en temps réel | Kilomètres en grand, mis à jour en continu. | Moyen | 3h | 🟢 | | |
+| 5.15 | Allure instantanée et moyenne | Dernière minute glissante + moyenne depuis le départ. | Moyen | 3h | 🟢 | | |
+| 5.16 | Auto-pause | Pause auto à l'arrêt, reprise auto. Désactivable. | Moyen | 2h | 🟢 | | |
+| 5.22 | Mise en pause / reprise | Pause manuelle (GPS + chrono). | Moyen | 2h | 🟢 | | |
+| 5.20 | Écran verrouillé | Live Activity (iOS) / notification persistante (Android). | Difficile | 6h | 🟢 | | Indispensable en course réelle |
+| 5.17 | Carte du parcours en direct | Tracé GPS pendant et après la course. | Difficile | 6h | 🟡 | | Clé Mapbox ou MapLibre + tuiles |
+| 5.21 | Mode sans GPS | Suivi à la durée seule (streak + historique, exclu des records). | Facile | 2h | 🟢 | | Couvre aussi le tapis |
+| 5.19 | Annonces audio périodiques | À chaque km (paramétrable) : distance, temps, allure. | Facile | 2h | 🟢 | | |
+| 5.23 | Prolonger ou raccourcir | Terminer avant la cible ou continuer en libre. | Facile | 1h | 🟢 | | |
+| 5.24 | Note + ressenti post-séance | RPE, météo, terrain. | Facile | 2h | 🟢 | | |
+| 5.25 | Résumé post-séance | Distance, durée, allure, carte, dénivelé, comparaison objectif. | Moyen | 4h | 🟢 | | |
+| 5.26 | Tableau pace par km | Allure de chaque kilomètre. | Moyen | 3h | 🟢 | | |
+| 5.1 | Profil coureur | Objectif, niveau, allure de référence, fréquence. | Facile | 2h | 🟢 | | FC optionnelle — cibles en allure en V1 |
+| 5.8 | Endurance fondamentale | Allure de réf. + 60-90 s/km. Base aérobie. | Facile | 1h | 🟢 | | |
+| 5.9 | Fractionné / intervalles | Blocs rapides / récupération (ex. 6×400 m à 95 % VMA). | Moyen | 4h | 🟢 | | |
+| 5.10 | Sortie longue | Allure de réf. + 30-60 s/km. +10 % max par semaine. | Facile | 1h | 🟢 | | |
+| 5.11 | Récupération active | Allure de réf. + 90 s/km ou plus, 20-30 min. | Facile | 1h | 🟢 | | |
+| 5.18 | Guidage fractionné vocal | Annonce vocale + vibration à chaque changement de bloc. | Moyen | 4h | 🟢 | | Expo Speech |
+| 5.4 | Création programme custom | Plan de course semaine par semaine. | Moyen | 4h | 🟢 | | |
+| 5.2 | Bibliothèque programmes de course | "5 km en 8 semaines", "Prépa semi"… | Moyen | 4h | 🟡 | | Contenu par script de seed, industrialisé en V0.7 |
+| 5.3 | Filtres bibliothèque | Objectif distance, niveau, durée. | Facile | 1h | 🟢 | | |
+| 5.5 | Planning calendrier running | Séances placées automatiquement. | Moyen | 3h | 🟢 | | |
+| 5.6 | Coordination muscu + running | Alerte si deux séances le même jour. | Facile | 2h | 🟢 | | |
+| 5.7 | Gestion séance manquée | Reporter ou sauter. | Facile | 1h | 🟢 | | |
+| 5.27 | Historique séances avec carte | Liste + détail complet + carte. | Moyen | 4h | 🟢 | | |
+| 5.28 | Statistiques distance | Semaine / mois / depuis le début. | Facile | 2h | 🟢 | | |
+| 5.29 | Courbe d'allure moyenne | Sur 30 / 90 jours par type de séance. | Moyen | 3h | 🟢 | | |
+| 5.30 | Records personnels | 1 / 5 / 10 km / semi / marathon — meilleur segment glissant. | Moyen | 3h | 🟢 | | |
+| 5.31 | Mise à jour allure de référence | Auto si record 5 km battu. | Facile | 1h | 🟢 | | |
+| 5.32 | Dénivelé cumulé | Dénivelé positif par semaine / mois. | Moyen | 2h | 🟢 | | |
+| 5.33 | Export GPX | Export d'une sortie (partage / Strava). | Facile | 2h | 🟢 | | |
+
+---
+
+## V0.6 — Dashboard, streak & sync cloud
+
+*Objectif : l'app devient un tout — accueil personnalisable, régularité transverse, et synchronisation multi-appareils.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 2.9 | Calcul du streak | Jour actif = séance ou journée nutrition complétée. Repos = neutre. Minuit local. | Facile | 2h | 🟢 | | Règles dans [[Navigation & UX Globale]] — a besoin des 3 piliers |
+| 2.6 | Notif — Streak en danger | Push fin de journée si aucune activité. | Moyen | 2h | 🟢 | | |
+| 2.8 | Mode Ne pas déranger | Aucune notif 22h-7h (modifiable). Max 3 push/jour. | Facile | 1h | 🟢 | | |
+| 7.1 | Mode édition du dashboard | Bouton "Personnaliser" (widgets qui tremblent). | Moyen | 3h | 🟢 | | |
+| 7.2 | Réorganisation par drag & drop | Changer l'ordre des blocs. | Moyen | 4h | 🟢 | | |
+| 7.3 | Masquer / afficher un widget | Masquable sans suppression. | Facile | 2h | 🟢 | | |
+| 7.4 | Widget — Séance du jour | Prochaine séance + CTA "Démarrer". | Moyen | 3h | 🟢 | | + accès séance libre |
+| 7.5 | Widget — Résumé nutrition | Calories restantes + macros compactes. | Facile | 2h | 🟢 | | |
+| 7.6 | Widget — Streak & calendrier semaine | Jours consécutifs + 7 pastilles colorées. | Facile | 2h | 🟢 | | |
+| 7.7 | Widget — Poids corporel | Dernière pesée + tendance 7 jours. | Facile | 2h | 🟢 | | |
+| 7.8 | Widget — Record récent | Dernier record battu avec date. | Facile | 1h | 🟢 | | |
+| 7.9 | Widget — Volume muscu semaine | Barres par groupe musculaire. | Moyen | 3h | 🟢 | | |
+| 7.10 | Widget — Résumé running semaine | Distance + séances vs objectif hebdo. | Facile | 2h | 🟢 | | |
+| 7.11 | Taille de widget configurable | Version compacte (ligne) ou normale (carte). | Moyen | 4h | 🟢 | | |
+| 7.12 | Persistance de la configuration | Disposition sauvegardée localement + cloud. | Facile | 1h | 🟢 | | |
+| 9.4 | Synchronisation cloud | PostgreSQL en arrière-plan dès connexion. | Difficile | 8h | 🟢 | | L'architecture locale est prête depuis V0.1 |
+| 9.7 | Gestion conflits de sync | Last-write-wins sur 2 appareils. | Difficile | 6h | 🟢 | | |
+| 2.12 | Sync cloud en arrière-plan | Automatique dès connexion disponible. | Difficile | 6h | 🟢 | | |
+| 2.13 | Indicateur mode hors-ligne | Bandeau discret quand offline. | Facile | 1h | 🟢 | | |
+
+---
+
+## V0.7 — Admin & contenu
+
+*Objectif : industrialiser la gestion du contenu (jusqu'ici injecté par scripts) et créer le catalogue éditorial avant la bêta.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 8.1 | Interface web admin séparée | Back-office, sous-domaine dédié, comptes admin. | Moyen | 6h | 🟢 | | |
+| 8.9 | Système de rôles | super_admin / content_editor / moderator. | Moyen | 3h | 🟢 | | |
+| 8.2 | Gestion exercices (CRUD) | Créer, modifier, archiver. Brouillon / publié. | Moyen | 5h | 🟢 | | |
+| 8.3 | Upload média exercice | Image ou GIF + import en masse depuis la base choisie. | Moyen | 3h | 🟢 | | Stockage S3 ou Supabase Storage |
+| 8.4 | Constructeur de programmes | Drag & drop pour composer des programmes. | Difficile | 8h | 🟢 | | Sert à créer le contenu de 3.1 et 5.2 |
+| 8.5 | Gestion base d'aliments | Créer, modifier, archiver. Validation des signalements. | Moyen | 4h | 🟢 | | |
+| 8.6 | Import aliments CSV | Import en masse via CSV formaté. | Moyen | 3h | 🟢 | | Import initial CIQUAL |
+| 8.7 | Modération aliments signalés | File de revue des aliments utilisateurs signalés. | Moyen | 3h | 🟢 | | |
+| 8.8 | Gestion utilisateurs | Profils en lecture seule, bannir / débannir. | Moyen | 3h | 🟢 | | |
+| 8.10 | Log d'audit | Toute action admin tracée. Non supprimable. | Moyen | 3h | 🟢 | | |
+
+---
+
+## V0.8 — Bêta : conformité & intégrations
+
+*Objectif : tout ce qui doit exister avant d'ouvrir à de vrais testeurs (TestFlight / Play interne) — OAuth, RGPD, Health, analytics, accessibilité.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 1.2 | Connexion via Google | OAuth Google. | Moyen | 3h | 🟡 | | Clé OAuth Google à fournir |
+| 1.3 | Connexion via Apple | OAuth Apple — obligatoire si autre OAuth proposé. | Moyen | 3h | 🟡 | | Compte Apple Developer requis |
+| 1.17 | Gestion des notifications | Activation / désactivation par type. | Facile | 2h | 🟢 | | |
+| 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | | |
+| 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | | Exigé par les stores |
+| 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | | |
+| 9.9 | Apple Health / Health Connect | Écriture des séances, lecture du poids. | Moyen | 6h | 🟢 | | react-native-health / Health Connect API |
+| 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | | **Avant la bêta** — sinon aucune mesure des testeurs |
+| 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | | |
+| 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | | Revue visuelle humaine |
+
+---
+
+## V1.0 — Lancement stores
+
+*Objectif : publication publique. Le gros du travail est de la validation (review Apple/Google), pas du code.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 9.1 | App iOS | Publication App Store via Expo EAS Build. | Difficile | — | 🟡 | | Compte Apple Developer + review App Store |
+| 9.2 | App Android | Publication Play Store, même codebase. | Difficile | — | 🟡 | | Compte Google Play + review |
+
+---
+
+## V1.1 — Post-lancement
+
+*Objectif : les features d'adoption et de confort qui n'empêchent pas de lancer — priorisées selon les retours de la bêta et les analytics.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|---|---|
+| 1.20 | Import de données | GPX (Strava), CSV (Hevy, Strong, MyFitnessPal). | Difficile | 8h | 🟢 | | Clé d'adoption pour la cible "multi-apps" — à remonter en V0.8 si la bêta le réclame |
+| 4.27 | Planning repas à la semaine | Vue calendrier des repas planifiés. | Difficile | 6h | 🟢 | | |
+| 4.28 | Liste de courses générée | Tous les ingrédients depuis le planning. | Moyen | 3h | 🟢 | | Dépend de 4.27 |
+| 4.29 | Export / partage liste de courses | Message, email ou texte brut. | Facile | 1h | 🟢 | | |
+
+**Et au-delà (rappel du périmètre)** : V2 = wearables + zones FC, social / défis entre amis, hydratation, web app · V3/V4 = gamification (si les analytics de rétention le justifient).
+
+---
+
+## Récapitulatif
+
+| Statut | Nombre |
+|---|---|
+| ✅ Validé | 0 |
+| ❌ Refusé | 0 |
+| 🔄 À modifier | 0 |
+| ⏳ Reporté | 0 |
+| Non évalué | 179 |
+
+**Estimation totale** : ~470h de code brut (hors intégration, tests et itérations UX — prévoir une marge significative sur l'offline-first, le GPS et l'import de données)
+🟢 Full auto Claude : 166 · 🟡 Semi-auto : 11 · 🔴 Humain requis : 2
+
+**Décisions bloquantes à prendre en amont de leur version** :
+- avant **V0.2** → source des GIF d'exercices (6.1) : exercises-dataset vs ExerciseDB
+- avant **V0.4** → source de la base d'aliments (4.8) : CIQUAL + OpenFoodFacts
+- avant **V0.5** → fournisseur de cartes (5.17) : Mapbox vs MapLibre
+- avant **V0.8** → clés OAuth Google/Apple, textes CGU / confidentialité (rédaction dès que possible, relecture juridique)
+
+---
+
+*Dernière mise à jour : 2026-07-03 — découpage en versions V0.1 → V1.1*
