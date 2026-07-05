@@ -16,8 +16,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore + branchement Supabase. PR ouverte ; **rebuild `build:dev` requis** pour tester.
-- [ ] **PowerSync** (9.13/9.3) — SQLite local + connecteur Supabase (US dédiée ; vérifier compat RN 0.86 new-arch).
+- [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
+- [~] **PowerSync** (9.13/9.3) — SDK op-sqlite + schéma + connecteur Supabase + provider câblés. PR ouverte. **Reste** : config cloud (publication Supabase + sync rules) + `build:dev` + test sync.
 
 ---
 

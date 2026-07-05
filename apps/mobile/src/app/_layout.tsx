@@ -1,3 +1,5 @@
+// Polyfill requis par PowerSync (async iterators) — doit précéder tout usage de PowerSync.
+import '@azure/core-asynciterator-polyfill';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -6,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
 import '@/i18n';
+import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
@@ -68,23 +71,25 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={theme}>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="settings"
-          options={{
-            presentation: 'modal',
-            headerShown: true,
-            title: t('settings.title'),
-            headerStyle: { backgroundColor: colors.surface },
-            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
-            headerTintColor: colors.accent,
-          }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <PowerSyncProvider>
+      <ThemeProvider value={theme}>
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="settings"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: t('settings.title'),
+              headerStyle: { backgroundColor: colors.surface },
+              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+              headerTintColor: colors.accent,
+            }}
+          />
+        </Stack>
+      </ThemeProvider>
+    </PowerSyncProvider>
   );
 }
