@@ -34,9 +34,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Poser l'infra **i18n** (i18next + expo-localization, FR + EN, aucune chaîne en dur) (05/07/2026)
 - [x] Renseigner la section **Commandes** de [CLAUDE.md](CLAUDE.md) (05/07/2026)
 - [x] Câbler un **runner de tests** — Vitest sur `packages/shared` (couverture 100 %) + `npm run test` (05/07/2026)
-- [~] Mettre en place le **dev build Expo** (EAS) — profils `eas.json` + `eas init` faits (projectId, updates, expo-dev-client/expo-updates) ; reste à **lancer le 1er build** `build:dev`
+- [x] **Dev build Expo** (EAS) — profils `eas.json`, `eas init`, **1er build `build:dev` réussi** (APK dev client) (05/07/2026)
+- [~] **Socle Supabase local** — `supabase/` (config, migration conventions, seed), client typé mobile + `.env.example`, scripts `db:*`. Reste : `db:start` (Docker) + provisioning cloud + schéma métier (avec les US)
 - [ ] Câbler les **tests mobile** (jest-expo) — avec la 1ʳᵉ feature
-- [ ] Provisionner **Supabase** (Postgres + Auth + Storage + RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
+- [ ] Provisionner **Supabase cloud** (projet, RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
 - [ ] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository)
 
 ---

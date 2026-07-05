@@ -1,0 +1,3 @@
+-- Seed de développement (données de test bilingues FR+EN : exercices, programmes, aliments).
+-- Exécuté par `supabase db reset`. Vide tant qu'aucune table de contenu n'existe.
+-- À enrichir avec les US de contenu (voir /seed dans bonnes-pratiques §13).

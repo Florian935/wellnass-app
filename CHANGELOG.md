@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Socle Supabase local
+
+_Branche : `chore/supabase-socle`_
+
+### Ajouté
+- **`supabase/`** (`supabase init`) : `config.toml`, `.gitignore` ; **migration de conventions**
+  `20260705150000_init_conventions.sql` (extension `pgcrypto` + trigger réutilisable
+  `set_updated_at()` pour l'offline-first) ; `seed.sql` (placeholder). Aucune table métier
+  (viendront avec leurs US).
+- **Client Supabase typé** mobile ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts)) :
+  `createClient<Database>` (Auth), session persistée (AsyncStorage), auto-refresh piloté par
+  `AppState`, polyfill URL. Lit `EXPO_PUBLIC_SUPABASE_URL` / `..._ANON_KEY`.
+- **`apps/mobile/.env.example`** (valeurs client uniquement — jamais de secret).
+- **`packages/shared`** : `database.types.ts` (stub des types générés) exporté (`Database`, `Json`).
+- **Scripts racine** : `db:start` / `db:stop` / `db:reset` / `db:status` / `db:types`.
+- Dépendances mobile : `@supabase/supabase-js`, `@react-native-async-storage/async-storage`,
+  `react-native-url-polyfill`.
+
+### Modifié
+- **CLAUDE.md** / **TODO.md** : commandes `db:*`, structure `/supabase`, état du socle Supabase.
+
+### Technique / Notes
+- **Non provisionné / non appliqué** : pas de Docker sur ce poste → `supabase start` et la
+  génération réelle des types (`db:types`) restent à faire ; pas de projet cloud.
+- Stockage des tokens en clair (AsyncStorage) pour l'instant — à passer en chiffré
+  (SecureStore/Keystore) avec l'US d'authentification (architecture §7).
+- Vérifié : `npm run typecheck` OK, `npm run lint` (0 problème), `npm run test` (15/15).
+
 ## 05/07/2026 — CI GitHub Actions + ESLint mobile
 
 _Branche : `chore/scaffolding-monorepo`_
