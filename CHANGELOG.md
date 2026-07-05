@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — Spec : schéma de données socle & muscu (PowerSync / Supabase)
+
+_Branche : `docs/schema-donnees-muscu` · commit précédent : `727c7f6`_
+
+### Ajouté
+- **Spec technique** [`docs/specs/technical/schema-donnees-muscu.md`](docs/specs/technical/schema-donnees-muscu.md) :
+  fige le **schéma physique** du socle transverse + pilier musculation complet (V0.2 **et** V0.3)
+  et la couche d'accès aux données PowerSync.
+  - **13 tables** : `profiles`, `user_settings` ; contenu partagé `exercises` /
+    `exercise_translations` / `programs` / `program_translations` ; muscu utilisateur
+    `exercise_favorites`, `sessions`, `exercise_plans`, `workouts`, `workout_sets`,
+    `personal_records`.
+  - **Conventions transverses** : colonnes de synchro (`id` UUID client, `created_at`/`updated_at`
+    UTC, `deleted_at` soft delete), buckets `user_data` / `shared_content` (via `owner_id`
+    nullable), sync rules YAML, RLS Supabase (item 9.6).
+  - **Approche d'accès** actée : lectures réactives PowerSync (`useQuery`) + **repository** pour
+    les écritures ; Zustand réduit à l'UI éphémère ; **séance en cours = ligne `workouts` active**
+    (fin de la persistance Zustand).
+  - **Bascule propre** (cutover sans migration) des stores `profile`/`settings`/`exercise`/`workout`
+    et du fichier statique `data/exercises.ts` (→ seed Supabase).
+  - **Découpage en 3 US** : socle data → programmes → historique/records.
+
+### Technique / Notes
+- Décisions de cadrage tranchées (05-06/07/2026) : périmètre muscu complet · infra déjà
+  provisionnée (Supabase + PowerSync) · réglages synchronisés · nom d'exercice toujours en table de
+  traduction · `active_pillars` porté par `user_settings`.
+- Revue de spec (agent `spec-document-reviewer`) : **approuvée**. Écarts corrigés — enums réalignés
+  sur `packages/shared` (`SEXES`, `GOALS`), propriété de `active_pillars` clarifiée, garantie
+  soft-delete du connecteur ancrée.
+- Point laissé à valider : traduction du `name` des `sessions` (non traduit en V0.3).
+- Commit **docs uniquement** (aucun code applicatif) → gates lint/typecheck/tests non rejouées.
+
 ## 06/07/2026 — V0.2 : séance libre (muscu) — 10 items
 
 _Branche : `feat/3.23-seance-libre`_

@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 05/07/2026*
+*Dernière mise à jour : 06/07/2026*
 
 ---
 
@@ -22,7 +22,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **🏷️ Tag v0.1.0** — fin de version V0.1 (05/07/2026)
 - [x] **V0.2 — Onboarding skippable** (1.7-1.11) — parcours 5 étapes + store profil — mergé, testé device (05/07/2026)
 - [x] **V0.2 — Profil persistant & éditable** (1.12) — persistance SecureStore + profil éditable + accueil perso + relance onboarding — mergé, testé device (05/07/2026)
-- [~] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35). PR ouverte, stores persistés local. (Synchro cloud + GIF + records = US ultérieures.)
+- [x] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35) — mergé (PR #13), testé device (06/07/2026). ⚠️ stores persistés **local Zustand** (dette data adressée par le cadrage ci-dessous).
+- [~] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec technique [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) rédigée + revue **approuvée**. 13 tables (socle + muscu complet), repository + lectures réactives, bascule des stores Zustand. **Validée** — découpée en 3 US ci-dessous. (06/07/2026)
 
 ---
 
@@ -42,9 +43,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Câbler un **runner de tests** — Vitest sur `packages/shared` (couverture 100 %) + `npm run test` (05/07/2026)
 - [x] **Dev build Expo** (EAS) — profils `eas.json`, `eas init`, **1er build `build:dev` réussi** (APK dev client) (05/07/2026)
 - [~] **Socle Supabase local** — `supabase/` (config, migration conventions, seed), client typé mobile + `.env.example`, scripts `db:*`. Reste : `db:start` (Docker) + provisioning cloud + schéma métier (avec les US)
-- [ ] Câbler les **tests mobile** (jest-expo) — avec la 1ʳᵉ feature
-- [ ] Provisionner **Supabase cloud** (projet, RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
-- [ ] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository)
+- [ ] Câbler les **tests mobile** (jest-expo) — avec l'US1 socle data ci-dessous
+- [x] Provisionner **Supabase cloud** (projet) + instance **PowerSync** — provisionné (confirmé 06/07/2026). Reste : pousser tables + RLS + sync rules (US1)
+- [~] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository) — plomberie posée (schéma jouet `todos`, connecteur générique) ; vrai schéma métier = US1
+
+### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
+- [ ] **US1 — Socle data** (`feature/data-socle-muscu`) : conventions + `profiles` + `user_settings` + `exercises`/`_translations`/`_favorites` + `workouts`/`workout_sets` + seed Supabase + **bascule** séance libre / profil / réglages (fin de la dette Zustand). Tables + RLS + sync rules. jest-expo câblé ici. *(le gros morceau)*
+- [ ] **US2 — Programmes muscu** (`feature/programmes-muscu`) : `programs`/`program_translations`/`sessions`/`exercise_plans` (V0.3)
+- [ ] **US3 — Historique & records** (`feature/historique-records-muscu`) : `personal_records` + courbes/historique (V0.3)
 
 ---
 
