@@ -35,6 +35,49 @@
       "empty": "No meals logged yet. The food journal is coming soon."
     }
   },
+  "onboarding": {
+    "step": "Step {{current}}/{{total}}",
+    "skip": "Skip",
+    "skipAll": "Skip all",
+    "continue": "Continue",
+    "intro": {
+      "title": "Welcome to Wellness 🎉",
+      "subtitle": "Three pillars, one routine. Set up your profile in a minute — or skip and do it later.",
+      "start": "Get started"
+    },
+    "infos": {
+      "title": "Your info",
+      "subtitle": "Used for calculations (calories, progress). Everything is editable later.",
+      "firstName": "First name",
+      "sex": "Sex",
+      "sexes": { "female": "Female", "male": "Male", "unspecified": "Prefer not to say" },
+      "birthDate": "Date of birth",
+      "weight": "Weight (kg)",
+      "height": "Height (cm)"
+    },
+    "pillars": {
+      "title": "Your activities",
+      "subtitle": "Enable the pillars you want to track. Other tabs stay hidden."
+    },
+    "goal": {
+      "title": "Your goal",
+      "subtitle": "Shapes recommendations. You can change it anytime.",
+      "options": {
+        "muscle": "Build muscle",
+        "weightloss": "Lose weight",
+        "performance": "Performance",
+        "health": "General health"
+      }
+    },
+    "summary": {
+      "title": "All set!",
+      "subtitle": "Here's your setup. You can adjust everything in settings.",
+      "pillars": "Active pillars",
+      "none": "Not set",
+      "note": "Your profile isn't synced yet (coming soon). You can start using the app.",
+      "cta": "Let's go"
+    }
+  },
   "auth": {
     "email": "Email",
     "password": "Password",

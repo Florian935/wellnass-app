@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.2 : onboarding skippable (items 1.7-1.11)
+
+_Branche : `feat/1.7-onboarding`_
+
+### Ajouté
+- **Parcours d'onboarding** (groupe `(onboarding)`) après inscription, **non bloquant** :
+  intro → infos (prénom, sexe, date de naissance, poids, taille) → piliers → objectif → récap.
+  **« Passer »** (saute l'étape) et **« Passer tout »** disponibles partout (décision F).
+- **Store profil** (`stores/profile-store.ts`) : prénom, sexe, date de naissance, poids/taille
+  (SI), objectif, `onboardingCompleted`.
+- **Gating** dans le layout racine : session sans onboarding → parcours ; sinon → app.
+- **`packages/shared/profile.ts`** : enums `Sex` / `Goal` (+ Zod), 4 tests (100 %).
+- Composants réutilisables : `Segment` (extrait des Réglages), `OnboardingScaffold`.
+
+### Technique / Notes
+- Frontend pur (hot-reload). Vérifié : `typecheck` OK, `lint` (0 problème), `test` **43/43**.
+- **Profil en mémoire** pour l'instant → l'onboarding se rejoue après un redémarrage complet.
+  La persistance/synchro via la table `profiles` (PowerSync) est l'US suivante.
+- Étape « alimentation » (1.10) simplifiée / différée ; unités d'entrée en métrique.
+
 ## 05/07/2026 — V0.1 : écrans légaux & consentement + âge 16+ (item 1.21)
 
 _Branche : `feat/1.21-legal-consent`_
