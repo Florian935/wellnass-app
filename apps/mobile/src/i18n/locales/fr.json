@@ -1,10 +1,59 @@
 {
   "common": {
-    "appName": "Wellness"
+    "appName": "Wellness",
+    "cancel": "Annuler"
   },
   "sync": {
     "connected": "Synchronisé",
     "offline": "Hors ligne"
+  },
+  "muscle": {
+    "chest": "Pectoraux",
+    "back": "Dos",
+    "legs": "Jambes",
+    "shoulders": "Épaules",
+    "arms": "Bras",
+    "core": "Abdos"
+  },
+  "exercises": {
+    "title": "Exercices",
+    "search": "Rechercher",
+    "searchPlaceholder": "Nom d'exercice…",
+    "createCustom": "+ Créer un exercice perso",
+    "customName": "Nom de l'exercice",
+    "add": "Ajouter",
+    "customBadge": "perso"
+  },
+  "workout": {
+    "freeTitle": "Séance libre",
+    "freeSubtitle": "Ajoute tes exercices au fil de l'eau, sans programme.",
+    "startFree": "Démarrer une séance libre",
+    "resumeTitle": "Séance en cours",
+    "resume": "Reprendre la séance",
+    "exerciseCount_one": "{{count}} exercice",
+    "exerciseCount_other": "{{count}} exercices",
+    "historyCount_one": "{{count}} séance enregistrée",
+    "historyCount_other": "{{count}} séances enregistrées",
+    "none": "Aucune séance en cours.",
+    "backHome": "Retour à l'accueil",
+    "empty": "Ajoute un premier exercice pour commencer.",
+    "set": "Série",
+    "reps": "Reps",
+    "weight": "Kg",
+    "addSet": "+ Série",
+    "addExercise": "+ Ajouter un exercice",
+    "finish": "Terminer",
+    "rest": "Repos {{seconds}} s",
+    "skipRest": "Passer",
+    "summary": {
+      "title": "Séance terminée 💪",
+      "subtitle": "Beau travail. Voici ton récap.",
+      "duration": "Durée",
+      "minutes": "{{count}} min",
+      "exercises": "Exercices",
+      "sets": "Séries validées",
+      "volume": "Volume total"
+    }
   },
   "tabs": {
     "home": "Accueil",

@@ -21,7 +21,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **Légal + consentement + âge 16+** (1.21) — CGU/confidentialité (brouillon) + contrôle d'âge — mergé, testé device (05/07/2026)
 - [x] **🏷️ Tag v0.1.0** — fin de version V0.1 (05/07/2026)
 - [x] **V0.2 — Onboarding skippable** (1.7-1.11) — parcours 5 étapes + store profil — mergé, testé device (05/07/2026)
-- [~] **V0.2 — Profil persistant & éditable** (1.12) — persistance SecureStore (profil+réglages), écran profil éditable, accueil personnalisé, relance onboarding. PR ouverte. (Synchro cloud via table `profiles` PowerSync = US ultérieure.)
+- [x] **V0.2 — Profil persistant & éditable** (1.12) — persistance SecureStore + profil éditable + accueil perso + relance onboarding — mergé, testé device (05/07/2026)
+- [~] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35). PR ouverte, stores persistés local. (Synchro cloud + GIF + records = US ultérieures.)
 
 ---
 

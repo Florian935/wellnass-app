@@ -118,6 +118,19 @@ export default function RootLayout() {
               headerTintColor: colors.accent,
             }}
           />
+          <Stack.Screen
+            name="exercises"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: t('exercises.title'),
+              headerStyle: { backgroundColor: colors.surface },
+              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+              headerTintColor: colors.accent,
+            }}
+          />
+          <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
+          <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
         </Stack>
       </ThemeProvider>
     </PowerSyncProvider>
