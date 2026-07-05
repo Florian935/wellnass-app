@@ -15,9 +15,12 @@ export type ProfileData = {
 type ProfileState = ProfileData & {
   /** Onboarding terminé (ou passé). Voir compte-profil-onboarding §3. */
   onboardingCompleted: boolean;
+  /** Réhydratation depuis le stockage terminée (à attendre avant de router). */
+  hasHydrated: boolean;
   update: (patch: Partial<ProfileData>) => void;
   completeOnboarding: () => void;
   restartOnboarding: () => void;
+  setHasHydrated: (value: boolean) => void;
 };
 
 // Persisté (chiffré) via SecureStore. TODO(profile-sync) : à terme, source de vérité dans la
@@ -32,13 +35,25 @@ export const useProfileStore = create<ProfileState>()(
       heightCm: null,
       goal: null,
       onboardingCompleted: false,
+      hasHydrated: false,
       update: (patch) => set(patch),
       completeOnboarding: () => set({ onboardingCompleted: true }),
       restartOnboarding: () => set({ onboardingCompleted: false }),
+      setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
       name: 'wellness.profile',
       storage: createJSONStorage(() => secureStateStorage),
+      partialize: ({ firstName, sex, birthDate, weightKg, heightCm, goal, onboardingCompleted }) => ({
+        firstName,
+        sex,
+        birthDate,
+        weightKg,
+        heightCm,
+        goal,
+        onboardingCompleted,
+      }),
+      onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     },
   ),
 );

@@ -16,10 +16,13 @@ type SettingsState = {
   units: UnitSystem;
   /** Piliers activés — l'intégration inter-piliers est opt-in (décision H). */
   activePillars: Pillar[];
+  /** Réhydratation depuis le stockage terminée (à attendre avant de router). */
+  hasHydrated: boolean;
   setLocale: (locale: Locale) => void;
   setTheme: (theme: ThemePreference) => void;
   setUnits: (units: UnitSystem) => void;
   togglePillar: (pillar: Pillar) => void;
+  setHasHydrated: (value: boolean) => void;
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -29,6 +32,7 @@ export const useSettingsStore = create<SettingsState>()(
       theme: 'system',
       units: 'metric',
       activePillars: [...PILLARS],
+      hasHydrated: false,
       setLocale: (locale) => {
         void i18n.changeLanguage(locale);
         set({ locale });
@@ -41,6 +45,7 @@ export const useSettingsStore = create<SettingsState>()(
             ? state.activePillars.filter((p) => p !== pillar)
             : [...state.activePillars, pillar],
         })),
+      setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
       name: 'wellness.settings',
@@ -52,11 +57,12 @@ export const useSettingsStore = create<SettingsState>()(
         units: state.units,
         activePillars: state.activePillars,
       }),
-      // Réapplique la langue persistée à i18next après réhydratation.
+      // Réapplique la langue persistée + marque la fin de réhydratation.
       onRehydrateStorage: () => (state) => {
         if (state?.locale) {
           void i18n.changeLanguage(state.locale);
         }
+        state?.setHasHydrated(true);
       },
     },
   ),
