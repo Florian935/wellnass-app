@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root { color-scheme: light; --txt:#33291f; --panel:#33291f; --acc:#c0562f; --acc-rgb:192,86,47; --grn-t:#7c8a5b; --grn-s:#7c8a5b; --scrim:#2a2118; --fsh:rgba(60,40,20,.55); --desk1:#ece0cd; --desk2:#ddd0ba; --desk3:#d3c5ac; --c_fffaf2:#fffaf2; --c_ece0cd:#ece0cd; --c_96856f:#96856f; --c_a8967d:#a8967d; --c_8a7458:#8a7458; --c_e0d0b6:#e0d0b6; --c_c9b79a:#c9b79a; --c_7a6850:#7a6850; --c_f0e4d0:#f0e4d0; --c_e8dcc9:#e8dcc9; --c_3a2e22:#3a2e22; --c_5c4a35:#5c4a35; --c_d9a888:#d9a888; --c_a34e2c:#a34e2c; --c_eadcc6:#eadcc6; --c_d8c7ab:#d8c7ab; --c_f3ddd0:#f3ddd0; --c_eaddc8:#eaddc8; --c_e3d4bc:#e3d4bc; --c_9c8b74:#9c8b74; --c_e8a483:#e8a483; --c_efe4d1:#efe4d1; --c_e6d7bf:#e6d7bf; --c_cc9544:#cc9544; --c_d3c5ac:#d3c5ac; --c_241c15:#241c15; --c_e2d3ba:#e2d3ba; --c_e5e8d5:#e5e8d5; --c_5f6b3e:#5f6b3e; --c_e6c3ae:#e6c3ae; --c_f1e7d6:#f1e7d6; --c_faf5ec:#faf5ec; --c_b39c78:#b39c78; --c_faf3e6:#faf3e6; --c_dcc9ab:#dcc9ab; --c_ecd9c2:#ecd9c2; --c_fbf6ee:#fbf6ee; --c_ddd0ba:#ddd0ba; --c_e6d6bd:#e6d6bd; --c_f0eede:#f0eede; --c_c8cfae:#c8cfae; --c_b06a4a:#b06a4a; --c_dccbb0:#dccbb0; --c_9c8256:#9c8256; --c_cd7a52:#cd7a52; --c_dda882:#dda882; --c_e6dcc8:#e6dcc8; --c_9db06e:#9db06e; --c_fbf1e2:#fbf1e2; --c_e0c9bd:#e0c9bd; }
+  :root[data-theme="dark"] { color-scheme: dark; --txt:#f4ecdd; --panel:#30271e; --acc:#dd6e40; --acc-rgb:221,110,64; --grn-t:#a9ba7e; --grn-s:#8ca063; --scrim:#16100b; --fsh:rgba(0,0,0,.62); --desk1:#1a140f; --desk2:#140f0b; --desk3:#100c08; --c_fffaf2:#241e18; --c_ece0cd:#342c24; --c_96856f:#a4937c; --c_a8967d:#8b7c66; --c_8a7458:#a2917a; --c_e0d0b6:#352d24; --c_c9b79a:#c9b79a; --c_7a6850:#9a8a71; --c_f0e4d0:#f0e4d0; --c_e8dcc9:#342c24; --c_3a2e22:#ede2cf; --c_5c4a35:#c4b298; --c_d9a888:#d9a888; --c_a34e2c:#e58a5f; --c_eadcc6:#362c22; --c_d8c7ab:#3a3026; --c_f3ddd0:#3a281d; --c_eaddc8:#2a221b; --c_e3d4bc:#241d16; --c_9c8b74:#97876f; --c_e8a483:#e8a483; --c_efe4d1:#1a140f; --c_e6d7bf:#2d251d; --c_cc9544:#e0b155; --c_d3c5ac:#2e2820; --c_241c15:#14100b; --c_e2d3ba:#362c22; --c_e5e8d5:#2d3123; --c_5f6b3e:#b0bd80; --c_e6c3ae:#4a3124; --c_f1e7d6:#241e18; --c_faf5ec:#241e18; --c_b39c78:#6f5f44; --c_faf3e6:#241e18; --c_dcc9ab:#3a3026; --c_ecd9c2:#372b20; --c_fbf6ee:#1b1611; --c_ddd0ba:#140f0b; --c_e6d6bd:#221a12; --c_f0eede:#2b2c22; --c_c8cfae:#3c3f2a; --c_b06a4a:#dd8a63; --c_dccbb0:#3a3026; --c_9c8256:#b9a279; --c_cd7a52:#c76b41; --c_dda882:#a5673f; --c_e6dcc8:#1d1710; --c_9db06e:#b0bd80; --c_fbf1e2:#241e18; --c_e0c9bd:#4a3124; }
+  :root[data-theme] { transition: none; }
+  body { margin: 0; background: radial-gradient(circle at 50% 22%, var(--desk1) 0%, var(--desk2) 60%, var(--desk3) 100%); min-height: 100vh; font-family: 'Hanken Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased; display: flex; align-items: center; justify-content: center; padding: 40px 0; }
+  .hgs { scrollbar-width: none; }
+  .hgs::-webkit-scrollbar { display: none; }
+  @keyframes prpop { 0% { transform: translate(-50%, 24px) scale(.9); opacity: 0; } 18% { transform: translate(-50%, 0) scale(1.03); opacity: 1; } 30% { transform: translate(-50%, 0) scale(1); } 88% { opacity: 1; } 100% { transform: translate(-50%, -8px) scale(1); opacity: 0; } }
+  @keyframes sheetup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes pulsedot { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(2.6); opacity: 0; } 100% { opacity: 0; } }
+  @keyframes dashmove { to { stroke-dashoffset: -40; } }
+  @keyframes fadeslide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</helmet>
+
+<div style="width:392px; height:812px; border-radius:46px; border:9px solid var(--c_241c15); background:var(--c_efe4d1); overflow:hidden; box-shadow:0 40px 90px -20px var(--fsh), inset 0 0 0 2px rgba(255,255,255,.06); display:flex; flex-direction:column; position:relative;">
+
+  <!-- Status bar -->
+  <div style="height:42px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px; position:relative; z-index:5;">
+    <span style="font:700 15px 'Space Mono',monospace; color:var(--c_3a2e22); letter-spacing:.5px;">9:41</span>
+    <div style="position:absolute; left:50%; top:11px; transform:translateX(-50%); width:11px; height:11px; border-radius:50%; background:var(--c_241c15);"></div>
+    <div style="display:flex; align-items:center; gap:5px; color:var(--c_3a2e22);">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <svg width="15" height="12" viewBox="0 0 15 12"><path d="M7.5 2.2c2.3 0 4.4.9 6 2.4l-1.4 1.5A6.6 6.6 0 007.5 4.2 6.6 6.6 0 002.9 6.1L1.5 4.6A9 9 0 017.5 2.2z" fill="currentColor"/><circle cx="7.5" cy="9.5" r="1.8" fill="currentColor"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+    </div>
+  </div>
+
+  <!-- Screen area -->
+  <div class="hgs" style="flex:1; overflow-y:auto; position:relative;">
+
+    <!-- ══════════ SPLASH ══════════ -->
+    <sc-if value="{{ scr_splash }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; display:flex; flex-direction:column; padding:0 30px 40px; background:linear-gradient(170deg,var(--c_efe4d1) 0%,var(--c_e6d6bd) 100%);">
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:26px;">
+        <div style="width:74px; height:74px; border-radius:24px; background:var(--acc); display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px -8px rgba(var(--acc-rgb),.6);">
+          <svg width="38" height="38" viewBox="0 0 38 38" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M8 19h4M26 19h4"/><rect x="12" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><rect x="22" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><path d="M16 19h6"/></svg>
+        </div>
+        <div>
+          <h1 style="margin:0; font:800 46px/.98 'Bricolage Grotesque',sans-serif; color:var(--txt); letter-spacing:-1.5px;">Trois piliers.<br>Une routine.</h1>
+          <p style="margin:16px 0 0; font-size:16px; line-height:1.5; color:var(--c_8a7458); max-width:280px;">Muscu, running et alimentation qui se parlent enfin. Ton corps, une seule appli.</p>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button onClick="{{ toAuth }}" style="height:56px; border:none; border-radius:18px; background:var(--acc); color:#fff; font:700 17px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.55);">Créer mon compte</button>
+        <button onClick="{{ toAuth }}" style="height:52px; border:1.5px solid var(--c_d8c7ab); border-radius:18px; background:transparent; color:var(--c_5c4a35); font:600 16px 'Hanken Grotesk'; cursor:pointer;">J'ai déjà un compte</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ AUTH / INSCRIPTION ══════════ -->
+    <sc-if value="{{ scr_auth }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; display:flex; flex-direction:column; padding:14px 26px 34px;">
+      <button onClick="{{ toSplash }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--c_e6d7bf); color:var(--c_5c4a35); font-size:20px; cursor:pointer; flex:none;">‹</button>
+      <h2 style="margin:22px 0 4px; font:700 30px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.8px;">Inscription</h2>
+      <p style="margin:0 0 24px; color:var(--c_96856f); font-size:15px;">30 secondes. On personnalise ensuite.</p>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button style="height:52px; border:1.5px solid var(--c_e0d0b6); border-radius:16px; background:var(--c_fffaf2); color:var(--c_3a2e22); font:600 15px 'Hanken Grotesk'; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;"><span style="font:700 16px 'Space Mono'; color:var(--acc);">G</span> Continuer avec Google</button>
+        <button style="height:52px; border:1.5px solid var(--c_e0d0b6); border-radius:16px; background:var(--c_fffaf2); color:var(--c_3a2e22); font:600 15px 'Hanken Grotesk'; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;"><span style="font-size:17px;">􀣺</span> Continuer avec Apple</button>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:14px; margin:22px 2px;">
+        <div style="flex:1; height:1px; background:var(--c_e0d0b6);"></div><span style="font-size:13px; color:var(--c_a8967d);">ou par e-mail</span><div style="flex:1; height:1px; background:var(--c_e0d0b6);"></div>
+      </div>
+
+      <label style="font:600 13px 'Hanken Grotesk'; color:var(--c_7a6850); margin-bottom:7px;">Adresse e-mail</label>
+      <div style="height:52px; border:1.5px solid var(--c_e0d0b6); border-radius:16px; background:var(--c_fffaf2); display:flex; align-items:center; padding:0 16px; color:var(--txt); margin-bottom:16px;">alex@exemple.com</div>
+      <label style="font:600 13px 'Hanken Grotesk'; color:var(--c_7a6850); margin-bottom:7px;">Mot de passe</label>
+      <div style="height:52px; border:1.5px solid var(--c_e0d0b6); border-radius:16px; background:var(--c_fffaf2); display:flex; align-items:center; justify-content:space-between; padding:0 16px; color:var(--txt); letter-spacing:3px;">••••••••<span style="letter-spacing:0; font-size:13px; color:var(--acc); font-weight:600;">Afficher</span></div>
+
+      <div style="display:flex; gap:10px; align-items:flex-start; margin:22px 2px 0;">
+        <div style="width:22px; height:22px; border-radius:7px; background:var(--acc); flex:none; display:flex; align-items:center; justify-content:center;"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div>
+        <span style="font-size:12.5px; line-height:1.45; color:var(--c_8a7458);">J'accepte les CGU et la politique de confidentialité. J'ai 16 ans ou plus.</span>
+      </div>
+
+      <div style="flex:1;"></div>
+      <button onClick="{{ toOnb }}" style="height:56px; border:none; border-radius:18px; background:var(--acc); color:#fff; font:700 17px 'Hanken Grotesk'; cursor:pointer; margin-top:24px; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.55);">Créer le compte</button>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ ONBOARDING ══════════ -->
+    <sc-if value="{{ scr_onb }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; display:flex; flex-direction:column; padding:16px 26px 30px;">
+      <!-- progress -->
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+        <button onClick="{{ onbPrev }}" style="width:36px; height:36px; border:none; border-radius:11px; background:var(--c_e6d7bf); color:var(--c_5c4a35); font-size:18px; cursor:pointer; flex:none;">‹</button>
+        <div style="flex:1; height:7px; border-radius:4px; background:var(--c_e2d3ba); overflow:hidden;"><div style="height:100%; border-radius:4px; background:var(--acc); width:{{ onbPct }}; transition:width .4s cubic-bezier(.4,0,.2,1);"></div></div>
+        <span style="font:700 13px 'Space Mono'; color:var(--c_96856f);">{{ onbStepLabel }}</span>
+      </div>
+
+      <div style="flex:1; display:flex; flex-direction:column; padding-top:20px;">
+        <!-- step 0 : infos -->
+        <sc-if value="{{ onb0 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeslide .35s ease;">
+          <h2 style="margin:0 0 6px; font:700 28px/1.1 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Faisons connaissance</h2>
+          <p style="margin:0 0 26px; color:var(--c_96856f); font-size:15px;">Pour calibrer tes calculs (TDEE, charges).</p>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:16px; padding:14px 16px;"><div style="font-size:12px; color:var(--c_a8967d); margin-bottom:2px;">Prénom</div><div style="font-size:16px; color:var(--txt); font-weight:600;">Alex</div></div>
+            <div style="display:flex; gap:12px;">
+              <div style="flex:1; background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:16px; padding:14px 16px;"><div style="font-size:12px; color:var(--c_a8967d); margin-bottom:2px;">Poids</div><div style="font-size:16px; color:var(--txt); font-weight:600;">74 kg</div></div>
+              <div style="flex:1; background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:16px; padding:14px 16px;"><div style="font-size:12px; color:var(--c_a8967d); margin-bottom:2px;">Taille</div><div style="font-size:16px; color:var(--txt); font-weight:600;">178 cm</div></div>
+            </div>
+            <div style="background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:16px; padding:14px 16px;"><div style="font-size:12px; color:var(--c_a8967d); margin-bottom:2px;">Date de naissance</div><div style="font-size:16px; color:var(--txt); font-weight:600;">14 mars 1996</div></div>
+          </div>
+        </div>
+        </sc-if>
+        <!-- step 1 : activités -->
+        <sc-if value="{{ onb1 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeslide .35s ease;">
+          <h2 style="margin:0 0 6px; font:700 28px/1.1 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Tu pratiques quoi ?</h2>
+          <p style="margin:0 0 26px; color:var(--c_96856f); font-size:15px;">Ça détermine tes onglets. Modifiable après.</p>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <button onClick="{{ toggleMuscu }}" style="{{ actMuscuStyle }}"><span style="font-size:26px;">🏋️</span><div style="flex:1; text-align:left;"><div style="font:700 16px 'Hanken Grotesk';">Musculation</div><div style="font-size:13px; opacity:.7;">Programmes, séances, records</div></div><span style="{{ actMuscuDot }}"></span></button>
+            <button onClick="{{ toggleRun }}" style="{{ actRunStyle }}"><span style="font-size:26px;">🏃</span><div style="flex:1; text-align:left;"><div style="font:700 16px 'Hanken Grotesk';">Running</div><div style="font-size:13px; opacity:.7;">GPS, allures, fractionné</div></div><span style="{{ actRunDot }}"></span></button>
+            <button onClick="{{ toggleAlim }}" style="{{ actAlimStyle }}"><span style="font-size:26px;">🍽️</span><div style="flex:1; text-align:left;"><div style="font:700 16px 'Hanken Grotesk';">Alimentation</div><div style="font-size:13px; opacity:.7;">Journal, macros, TDEE</div></div><span style="{{ actAlimDot }}"></span></button>
+          </div>
+        </div>
+        </sc-if>
+        <!-- step 2 : objectif -->
+        <sc-if value="{{ onb2 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeslide .35s ease;">
+          <h2 style="margin:0 0 6px; font:700 28px/1.1 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Ton objectif principal</h2>
+          <p style="margin:0 0 26px; color:var(--c_96856f); font-size:15px;">On adapte programmes et calories.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <button onClick="{{ setMasse }}" style="{{ gMasseStyle }}"><span style="font-size:24px;">💪</span>Prise de masse</button>
+            <button onClick="{{ setPerte }}" style="{{ gPerteStyle }}"><span style="font-size:24px;">🔥</span>Perte de poids</button>
+            <button onClick="{{ setPerf }}" style="{{ gPerfStyle }}"><span style="font-size:24px;">⚡</span>Perf. running</button>
+            <button onClick="{{ setSante }}" style="{{ gSanteStyle }}"><span style="font-size:24px;">🌱</span>Santé générale</button>
+          </div>
+        </div>
+        </sc-if>
+        <!-- step 3 : alim -->
+        <sc-if value="{{ onb3 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeslide .35s ease;">
+          <h2 style="margin:0 0 6px; font:700 28px/1.1 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Suivre ton alimentation ?</h2>
+          <p style="margin:0 0 26px; color:var(--c_96856f); font-size:15px;">Optionnel — activable plus tard.</p>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="background:var(--c_fffaf2); border:2px solid var(--acc); border-radius:18px; padding:18px; display:flex; align-items:center; gap:14px;"><div style="width:26px; height:26px; border-radius:8px; background:var(--acc); display:flex; align-items:center; justify-content:center;"><svg width="14" height="14" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div><div><div style="font:700 16px 'Hanken Grotesk'; color:var(--txt);">Oui, activer le suivi</div><div style="font-size:13px; color:var(--c_96856f);">Journal + calcul TDEE adaptatif</div></div></div>
+            <div style="background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:18px; padding:18px; color:var(--c_7a6850); font-weight:600;">Plus tard</div>
+            <div style="margin-top:6px;"><div style="font:600 13px 'Hanken Grotesk'; color:var(--c_7a6850); margin-bottom:10px;">Restrictions</div><div style="display:flex; flex-wrap:wrap; gap:8px;"><span style="padding:8px 14px; border-radius:999px; background:var(--c_e5e8d5); color:var(--c_5f6b3e); font-size:13px; font-weight:600;">Végétarien ✓</span><span style="padding:8px 14px; border-radius:999px; background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); color:var(--c_8a7458); font-size:13px;">Sans gluten</span><span style="padding:8px 14px; border-radius:999px; background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); color:var(--c_8a7458); font-size:13px;">Sans lactose</span><span style="padding:8px 14px; border-radius:999px; background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); color:var(--c_8a7458); font-size:13px;">Halal</span></div></div>
+          </div>
+        </div>
+        </sc-if>
+        <!-- step 4 : récap -->
+        <sc-if value="{{ onb4 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:fadeslide .35s ease;">
+          <h2 style="margin:0 0 6px; font:700 28px/1.1 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Tout est prêt, Alex 🎉</h2>
+          <p style="margin:0 0 22px; color:var(--c_96856f); font-size:15px;">Voici ton profil de départ.</p>
+          <div style="background:var(--panel); border-radius:22px; padding:22px; color:var(--c_f0e4d0); margin-bottom:14px;">
+            <div style="font-size:13px; color:var(--c_c9b79a); margin-bottom:4px;">Ton besoin calorique estimé</div>
+            <div style="font:800 44px 'Bricolage Grotesque'; letter-spacing:-1px; color:#fff;">2 640 <span style="font-size:20px; color:var(--c_d9a888);">kcal</span></div>
+            <div style="font-size:13px; color:var(--c_c9b79a); margin-top:2px;">Mifflin-St Jeor × activité, +240 les jours d'entraînement</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:14px; padding:13px 16px; display:flex; justify-content:space-between;"><span style="color:var(--c_8a7458);">Piliers actifs</span><span style="font-weight:700; color:var(--txt);">Muscu · Running · Alim</span></div>
+            <div style="background:var(--c_fffaf2); border:1.5px solid var(--c_e0d0b6); border-radius:14px; padding:13px 16px; display:flex; justify-content:space-between;"><span style="color:var(--c_8a7458);">Objectif</span><span style="font-weight:700; color:var(--txt);">Prise de masse</span></div>
+            <div style="background:var(--c_f3ddd0); border:1.5px solid var(--c_e6c3ae); border-radius:14px; padding:13px 16px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_a34e2c); font-weight:600;">Programme suggéré</span><span style="font-weight:700; color:var(--c_a34e2c);">Push/Pull/Legs 4j →</span></div>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+
+      <button onClick="{{ onbNext }}" style="height:56px; border:none; border-radius:18px; background:var(--acc); color:#fff; font:700 17px 'Hanken Grotesk'; cursor:pointer; margin-top:16px; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.55);">{{ onbCta }}</button>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <sc-if value="{{ scr_home }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px;">
+        <div><div style="font-size:14px; color:var(--c_96856f);">Jeudi 4 juillet</div><h2 style="margin:2px 0 0; font:700 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Salut, Alex</h2></div>
+        <div style="display:flex; align-items:center; gap:10px;"><button onClick="{{ toggleTheme }}" style="width:46px; height:46px; border:none; border-radius:15px; background:var(--c_e6d7bf); color:var(--c_5c4a35); cursor:pointer; font-size:20px; line-height:1;">{{ themeIcon }}</button><button onClick="{{ toProfil }}" style="width:46px; height:46px; border:none; border-radius:15px; background:var(--panel); color:var(--c_f0e4d0); font:700 17px 'Space Mono'; cursor:pointer;">A</button></div>
+      </div>
+
+      <!-- séance du jour -->
+      <div style="background:var(--panel); border-radius:24px; padding:22px; color:var(--c_f0e4d0); margin-bottom:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-30px; top:-30px; width:130px; height:130px; border-radius:50%; background:rgba(var(--acc-rgb),.28);"></div>
+        <div style="font-size:13px; color:var(--c_d9a888); font-weight:600; letter-spacing:.4px;">SÉANCE DU JOUR · 18:30</div>
+        <div style="font:700 24px 'Bricolage Grotesque'; margin:6px 0 3px; color:#fff;">Push — Pecs / Épaules</div>
+        <div style="font-size:14px; color:var(--c_c9b79a); margin-bottom:18px;">6 exercices · ~55 min · PPL Semaine 3</div>
+        <button onClick="{{ toMuscuLive }}" style="height:48px; padding:0 26px; border:none; border-radius:14px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; display:inline-flex; align-items:center; gap:8px;"><svg width="14" height="15" viewBox="0 0 14 15" fill="#fff"><path d="M2 1.5l11 6-11 6z"/></svg> Démarrer</button>
+      </div>
+
+      <div style="display:flex; gap:14px; margin-bottom:14px;">
+        <!-- nutrition -->
+        <div onClick="{{ toAlim }}" style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:22px; padding:18px; cursor:pointer;">
+          <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin-bottom:12px;">NUTRITION</div>
+          <svg width="72" height="72" viewBox="0 0 72 72" style="display:block; margin:0 auto;"><circle cx="36" cy="36" r="30" fill="none" stroke="var(--c_eadcc6)" stroke-width="9"/><circle cx="36" cy="36" r="30" fill="none" stroke="var(--acc)" stroke-width="9" stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="66" transform="rotate(-90 36 36)"/><text x="36" y="34" text-anchor="middle" font-family="Bricolage Grotesque" font-size="17" font-weight="800" fill="var(--txt)">1830</text><text x="36" y="47" text-anchor="middle" font-family="Hanken Grotesk" font-size="10" fill="var(--c_96856f)">/ 2640</text></svg>
+          <div style="text-align:center; font-size:12px; color:var(--grn-t); font-weight:600; margin-top:8px;">+ Ajouter un repas</div>
+        </div>
+        <!-- poids -->
+        <div onClick="{{ toProfil }}" style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:22px; padding:18px; cursor:pointer; display:flex; flex-direction:column;">
+          <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin-bottom:10px;">POIDS</div>
+          <div style="font:800 30px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-1px;">74,2<span style="font-size:15px; color:var(--c_96856f);"> kg</span></div>
+          <div style="font-size:12.5px; color:var(--grn-t); font-weight:600; margin:2px 0 12px;">↓ 0,8 kg sur 7 j</div>
+          <svg width="100%" height="42" viewBox="0 0 120 42" preserveAspectRatio="none"><polyline points="0,10 20,14 40,12 60,20 80,18 100,28 120,26" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- streak -->
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:22px; padding:18px;">
+        <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;"><div style="font-size:12.5px; color:var(--c_96856f); font-weight:600;">RÉGULARITÉ</div><div><span style="font:800 24px 'Bricolage Grotesque'; color:var(--acc);">12</span><span style="font-size:13px; color:var(--c_8a7458); font-weight:600;"> jours 🔥</span></div></div>
+        <div style="display:flex; justify-content:space-between;">
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--acc); display:flex; align-items:center; justify-content:center; color:#fff;"><svg width="14" height="14" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div><div style="font-size:11px; color:var(--c_a8967d); margin-top:5px;">L</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--acc); display:flex; align-items:center; justify-content:center; color:#fff;"><svg width="14" height="14" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div><div style="font-size:11px; color:var(--c_a8967d); margin-top:5px;">M</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--c_e5e8d5); display:flex; align-items:center; justify-content:center; color:var(--grn-t); font-size:12px; font-weight:700;">R</div><div style="font-size:11px; color:var(--c_a8967d); margin-top:5px;">Repos</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--acc); display:flex; align-items:center; justify-content:center; color:#fff;"><svg width="14" height="14" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div><div style="font-size:11px; color:var(--c_a8967d); margin-top:5px;">J</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:#fff; border:2px dashed var(--c_d8c7ab); display:flex; align-items:center; justify-content:center; color:var(--acc); font-size:15px;">·</div><div style="font-size:11px; color:var(--acc); margin-top:5px; font-weight:700;">Auj.</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--c_f1e7d6);"></div><div style="font-size:11px; color:var(--c_c9b79a); margin-top:5px;">S</div></div>
+          <div style="text-align:center;"><div style="width:32px; height:32px; border-radius:11px; background:var(--c_f1e7d6);"></div><div style="font-size:11px; color:var(--c_c9b79a); margin-top:5px;">D</div></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ MUSCU HOME ══════════ -->
+    <sc-if value="{{ scr_muscu }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <h2 style="margin:6px 0 4px; font:700 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Musculation</h2>
+      <p style="margin:0 0 20px; color:var(--c_96856f); font-size:15px;">Push/Pull/Legs · Semaine 3 / 8</p>
+
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:24px; padding:20px; margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"><div style="font-size:12.5px; color:var(--c_96856f); font-weight:600;">PROGRAMME ACTIF</div><span style="font-size:12px; color:var(--grn-t); font-weight:700;">72% ✓</span></div>
+        <div style="font:700 20px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:4px;">Push / Pull / Legs</div>
+        <div style="font-size:13.5px; color:var(--c_8a7458); margin-bottom:16px;">Hypertrophie · 4 séances / sem · progression +2,5 kg</div>
+        <div style="height:8px; border-radius:5px; background:var(--c_eadcc6); overflow:hidden;"><div style="height:100%; width:37%; background:var(--acc); border-radius:5px;"></div></div>
+      </div>
+
+      <div style="background:var(--panel); border-radius:24px; padding:20px; color:var(--c_f0e4d0); margin-bottom:14px;">
+        <div style="font-size:13px; color:var(--c_d9a888); font-weight:600;">PROCHAINE · AUJOURD'HUI 18:30</div>
+        <div style="font:700 20px 'Bricolage Grotesque'; margin:5px 0 14px; color:#fff;">Push — Pecs / Épaules / Triceps</div>
+        <button onClick="{{ toMuscuLive }}" style="height:48px; width:100%; border:none; border-radius:14px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><svg width="14" height="15" viewBox="0 0 14 15" fill="#fff"><path d="M2 1.5l11 6-11 6z"/></svg> Démarrer la séance</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+        <button onClick="{{ toMuscuLive }}" style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px; text-align:left; cursor:pointer;"><div style="font-size:22px;">⚡</div><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt); margin-top:8px;">Séance libre</div><div style="font-size:12px; color:var(--c_96856f);">Sans programme</div></button>
+        <button onClick="{{ toExoBiblio }}" style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px; text-align:left; cursor:pointer;"><div style="font-size:22px;">📚</div><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt); margin-top:8px;">Exercices</div><div style="font-size:12px; color:var(--c_96856f);">Fiches, GIF, PR</div></button>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px;"><div style="font-size:22px;">📅</div><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt); margin-top:8px;">Calendrier</div><div style="font-size:12px; color:var(--c_96856f);">Glisser pour décaler</div></div>
+        <button onClick="{{ toMuscuHist }}" style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px; text-align:left; cursor:pointer;"><div style="font-size:22px;">📈</div><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt); margin-top:8px;">Historique</div><div style="font-size:12px; color:var(--c_96856f);">Courbes & records</div></button>
+      </div>
+
+      <button onClick="{{ toMuscuHist }}" style="width:100%; text-align:left; background:transparent; border:none; padding:0; cursor:pointer; font-size:12.5px; color:var(--c_96856f); font-weight:600; margin:6px 2px 10px; display:flex; justify-content:space-between;"><span>VOLUME PAR GROUPE · 2 SEM</span><span style="color:var(--acc);">Tout voir ›</span></button>
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:18px; display:flex; flex-direction:column; gap:11px;">
+        <div style="display:flex; align-items:center; gap:12px;"><span style="width:52px; font-size:13px; color:var(--c_7a6850); font-weight:600;">Pecs</span><div style="flex:1; height:12px; border-radius:6px; background:var(--c_eadcc6); overflow:hidden;"><div style="height:100%; width:92%; background:var(--acc); border-radius:6px;"></div></div><span style="font:700 12px 'Space Mono'; color:var(--c_8a7458); width:34px; text-align:right;">14</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><span style="width:52px; font-size:13px; color:var(--c_7a6850); font-weight:600;">Jambes</span><div style="flex:1; height:12px; border-radius:6px; background:var(--c_eadcc6); overflow:hidden;"><div style="height:100%; width:70%; background:var(--acc); border-radius:6px;"></div></div><span style="font:700 12px 'Space Mono'; color:var(--c_8a7458); width:34px; text-align:right;">11</span></div>
+        <div style="display:flex; align-items:center; gap:12px;"><span style="width:52px; font-size:13px; color:var(--c_7a6850); font-weight:600;">Dos</span><div style="flex:1; height:12px; border-radius:6px; background:var(--c_eadcc6); overflow:hidden;"><div style="height:100%; width:26%; background:var(--c_cc9544); border-radius:6px;"></div></div><span style="font:700 12px 'Space Mono'; color:var(--c_cc9544); width:34px; text-align:right;">4 ⚠</span></div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ MUSCU LIVE (star) ══════════ -->
+    <sc-if value="{{ scr_muscuLive }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; background:var(--scrim); display:flex; flex-direction:column; color:var(--c_f0e4d0);">
+      <div style="padding:16px 22px 10px; display:flex; align-items:center; justify-content:space-between;">
+        <button onClick="{{ toMuscu }}" style="width:38px; height:38px; border:none; border-radius:12px; background:rgba(255,255,255,.1); color:var(--c_f0e4d0); font-size:18px; cursor:pointer;">‹</button>
+        <div style="text-align:center;"><div style="font:700 20px 'Space Mono'; color:#fff;">00:24:18</div><div style="font-size:11px; color:var(--c_c9b79a);">Push · exercice 2/6</div></div>
+        <div style="width:38px; height:38px; border-radius:12px; background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--c_f0e4d0);">⋯</div>
+      </div>
+
+      <div style="padding:14px 22px 8px;">
+        <div style="font-size:13px; color:var(--c_d9a888); font-weight:600; letter-spacing:.4px;">EXERCICE EN COURS</div>
+        <button onClick="{{ toExoFiche }}" style="background:none; border:none; padding:0; text-align:left; cursor:pointer; display:flex; align-items:center; gap:8px;"><span style="font:700 27px 'Bricolage Grotesque'; color:#fff; letter-spacing:-.5px;">Développé couché</span><span style="width:22px; height:22px; border-radius:50%; border:1.5px solid rgba(255,255,255,.4); color:var(--c_c9b79a); font:700 12px 'Space Mono'; display:flex; align-items:center; justify-content:center;">i</span></button>
+        <div style="font-size:13px; color:var(--c_c9b79a); margin-top:3px;">Barre · Dernière fois : 80 kg × 8 / 8 / 7</div>
+      </div>
+
+      <div style="flex:1; padding:8px 18px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; padding:0 14px 2px; font-size:11px; color:var(--c_9c8b74); font-weight:700; letter-spacing:.5px;"><span style="width:34px;">SÉRIE</span><span style="flex:1; text-align:center;">OBJECTIF</span><span style="width:66px; text-align:center;">KG</span><span style="width:56px; text-align:center;">REPS</span><span style="width:52px;"></span></div>
+        <sc-for list="{{ sets }}" as="s" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; padding:12px 14px; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08);">
+          <span style="width:34px; font:700 15px 'Space Mono'; color:var(--c_d9a888);">{{ s.n }}</span>
+          <span style="flex:1; text-align:center; font-size:13px; color:var(--c_9c8b74);">{{ s.target }}</span>
+          <span style="width:66px; text-align:center; font:700 17px 'Space Mono'; color:#fff;">{{ s.kg }}</span>
+          <span style="width:56px; text-align:center; font:700 17px 'Space Mono'; color:#fff;">{{ s.reps }}</span>
+          <span style="width:52px; display:flex; justify-content:flex-end;">
+            <sc-if value="{{ s.notDone }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ s.validate }}" style="width:40px; height:40px; border:none; border-radius:12px; background:var(--acc); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="17" height="17" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></button>
+            </sc-if>
+            <sc-if value="{{ s.done }}">
+              <div style="width:40px; height:40px; border-radius:12px; background:var(--grn-s); display:flex; align-items:center; justify-content:center;"><svg width="17" height="17" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div>
+            </sc-if>
+          </span>
+        </div>
+        </sc-for>
+        <button style="margin-top:2px; height:44px; border:1.5px dashed rgba(255,255,255,.2); border-radius:14px; background:transparent; color:var(--c_c9b79a); font:600 14px 'Hanken Grotesk'; cursor:pointer;">+ Ajouter une série</button>
+      </div>
+
+      <div style="padding:14px 22px 22px; display:flex; gap:12px;">
+        <button style="flex:1; height:52px; border:1.5px solid rgba(255,255,255,.18); border-radius:16px; background:transparent; color:var(--c_f0e4d0); font:600 15px 'Hanken Grotesk'; cursor:pointer;">Exercice suivant ›</button>
+        <button onClick="{{ toResume }}" style="width:52px; height:52px; border:none; border-radius:16px; background:rgba(var(--acc-rgb),.25); color:var(--c_e8a483); font-size:20px; cursor:pointer;">■</button>
+      </div>
+    </div>
+
+    <!-- rest timer sheet -->
+    <sc-if value="{{ timerActive }}">
+    <div style="position:absolute; inset:0; background:rgba(20,15,10,.55); z-index:20; display:flex; align-items:flex-end;">
+      <div style="width:100%; background:var(--c_efe4d1); border-radius:30px 30px 0 0; padding:26px 26px 30px; animation:sheetup .35s cubic-bezier(.16,1,.3,1);">
+        <div style="text-align:center; font-size:13px; color:var(--c_96856f); font-weight:600; letter-spacing:.5px;">REPOS</div>
+        <div style="position:relative; width:150px; height:150px; margin:16px auto 20px;">
+          <svg width="150" height="150" viewBox="0 0 150 150"><circle cx="75" cy="75" r="52" fill="none" stroke="var(--c_e2d3ba)" stroke-width="12"/><circle cx="75" cy="75" r="52" fill="none" stroke="var(--acc)" stroke-width="12" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="{{ timerOffset }}" transform="rotate(-90 75 75)" style="transition:stroke-dashoffset 1s linear;"/></svg>
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:800 40px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-1px;">{{ timerDisplay }}</div>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <button onClick="{{ addTime }}" style="flex:1; height:52px; border:1.5px solid var(--c_d8c7ab); border-radius:16px; background:var(--c_fffaf2); color:var(--c_5c4a35); font:700 15px 'Hanken Grotesk'; cursor:pointer;">+15 s</button>
+          <button onClick="{{ skipTimer }}" style="flex:1; height:52px; border:none; border-radius:16px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer;">Passer</button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- PR celebration toast -->
+    <sc-if value="{{ showPR }}">
+    <div style="position:absolute; top:70px; left:50%; z-index:30; animation:prpop 3.2s cubic-bezier(.16,1,.3,1) forwards; background:var(--grn-s); color:#fff; padding:14px 22px; border-radius:18px; box-shadow:0 16px 40px -10px rgba(0,0,0,.5); display:flex; align-items:center; gap:12px; white-space:nowrap;">
+      <span style="font-size:26px;">🏆</span><div><div style="font:800 16px 'Bricolage Grotesque';">Nouveau record !</div><div style="font-size:13px; opacity:.9;">Développé couché · 85 kg × 8</div></div>
+    </div>
+    </sc-if>
+    </sc-if>
+
+    <!-- ══════════ RÉSUMÉ POST-SÉANCE ══════════ -->
+    <sc-if value="{{ scr_muscuResume }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; padding:20px 24px 28px; display:flex; flex-direction:column;">
+      <div style="width:60px; height:60px; border-radius:20px; background:var(--grn-s); display:flex; align-items:center; justify-content:center; margin-bottom:16px;"><svg width="28" height="28" viewBox="0 0 13 13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M2 7l3 3 6-7"/></svg></div>
+      <h2 style="margin:0 0 3px; font:700 28px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Séance terminée 💪</h2>
+      <p style="margin:0 0 20px; color:var(--c_96856f); font-size:15px;">Push — Pecs / Épaules / Triceps · PPL Sem. 3</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">52<span style="font-size:14px; color:var(--c_96856f);"> min</span></div><div style="font-size:12.5px; color:var(--c_96856f);">Durée</div></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">4 820<span style="font-size:14px; color:var(--c_96856f);"> kg</span></div><div style="font-size:12.5px; color:var(--c_96856f);">Volume total</div></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">22</div><div style="font-size:12.5px; color:var(--c_96856f);">Séries validées</div></div>
+        <div style="background:var(--c_f0eede); border:1.5px solid var(--c_c8cfae); border-radius:18px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--c_5f6b3e);">1 🏆</div><div style="font-size:12.5px; color:var(--grn-t); font-weight:600;">Nouveau record</div></div>
+      </div>
+
+      <div style="background:var(--c_f3ddd0); border:1.5px solid var(--c_e6c3ae); border-radius:16px; padding:14px 16px; margin-bottom:20px; display:flex; align-items:center; gap:12px;"><span style="font-size:22px;">🏆</span><div><div style="font:700 14px 'Hanken Grotesk'; color:var(--c_a34e2c);">Développé couché · 85 kg × 8</div><div style="font-size:12px; color:var(--c_b06a4a);">1RM estimé 108 kg (+3 kg)</div></div></div>
+
+      <div style="font-size:13px; color:var(--c_7a6850); font-weight:600; margin-bottom:10px;">Ressenti de la séance</div>
+      <div style="display:flex; gap:8px; margin-bottom:22px;">
+        <button style="flex:1; height:46px; border:1.5px solid var(--c_e0d0b6); border-radius:14px; background:var(--c_fffaf2); font-size:20px; cursor:pointer;">😮‍💨</button>
+        <button style="flex:1; height:46px; border:1.5px solid var(--c_e0d0b6); border-radius:14px; background:var(--c_fffaf2); font-size:20px; cursor:pointer;">😐</button>
+        <button style="flex:1; height:46px; border:2px solid var(--acc); border-radius:14px; background:var(--c_f3ddd0); font-size:20px; cursor:pointer;">🙂</button>
+        <button style="flex:1; height:46px; border:1.5px solid var(--c_e0d0b6); border-radius:14px; background:var(--c_fffaf2); font-size:20px; cursor:pointer;">😄</button>
+        <button style="flex:1; height:46px; border:1.5px solid var(--c_e0d0b6); border-radius:14px; background:var(--c_fffaf2); font-size:20px; cursor:pointer;">🔥</button>
+      </div>
+
+      <div style="flex:1;"></div>
+      <button onClick="{{ toHome }}" style="height:56px; border:none; border-radius:18px; background:var(--acc); color:#fff; font:700 17px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.55);">Enregistrer la séance</button>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ FICHE EXERCICE ══════════ -->
+    <sc-if value="{{ scr_exoFiche }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:14px 22px 26px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <button onClick="{{ toExoBiblio }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--c_e6d7bf); color:var(--c_5c4a35); font-size:20px; cursor:pointer;">‹</button>
+        <span style="font-size:24px;">⭐</span>
+      </div>
+      <h2 style="margin:0 0 4px; font:700 27px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Développé couché</h2>
+      <div style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px;">
+        <span style="padding:6px 12px; border-radius:999px; background:var(--c_f3ddd0); color:var(--c_a34e2c); font-size:12px; font-weight:700;">Pectoraux</span>
+        <span style="padding:6px 12px; border-radius:999px; background:var(--c_faf5ec); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:12px;">Triceps</span>
+        <span style="padding:6px 12px; border-radius:999px; background:var(--c_faf5ec); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:12px;">Deltoïde ant.</span>
+      </div>
+
+      <!-- GIF placeholder -->
+      <div style="height:170px; border-radius:20px; background:repeating-linear-gradient(135deg,var(--c_eaddc8) 0 10px,var(--c_e3d4bc) 10px 20px); border:1px solid var(--c_dccbb0); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; margin-bottom:18px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--c_b39c78)" stroke-width="1.6"><path d="M2 1.5l11 6-11 6z" fill="var(--c_b39c78)" stroke="none" transform="translate(6 5)"/></svg>
+        <span style="font:700 11px 'Space Mono'; color:var(--c_9c8256); letter-spacing:.5px;">GIF DÉMONSTRATION</span>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-bottom:18px;">
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:14px; padding:12px 14px;"><div style="font-size:11px; color:var(--c_a8967d);">Matériel</div><div style="font-weight:700; color:var(--txt); font-size:14px;">Barre</div></div>
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:14px; padding:12px 14px;"><div style="font-size:11px; color:var(--c_a8967d);">Difficulté</div><div style="font-weight:700; color:var(--txt); font-size:14px;">Intermédiaire</div></div>
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:14px; padding:12px 14px;"><div style="font-size:11px; color:var(--c_a8967d);">Type</div><div style="font-weight:700; color:var(--txt); font-size:14px;">Poly-artic.</div></div>
+      </div>
+
+      <div style="font-size:13px; color:var(--c_7a6850); font-weight:700; margin-bottom:8px;">Progression — charge max</div>
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:18px; margin-bottom:14px;">
+        <svg width="100%" height="90" viewBox="0 0 260 90" preserveAspectRatio="none"><polyline points="0,72 43,66 86,60 129,50 172,44 215,32 260,20" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="260" cy="20" r="4.5" fill="var(--acc)"/></svg>
+        <div style="display:flex; justify-content:space-between; margin-top:12px;">
+          <div><div style="font:800 22px 'Bricolage Grotesque'; color:var(--txt);">85 kg</div><div style="font-size:11.5px; color:var(--c_96856f);">Record charge</div></div>
+          <div style="text-align:right;"><div style="font:800 22px 'Bricolage Grotesque'; color:var(--acc);">108 kg</div><div style="font-size:11.5px; color:var(--c_96856f);">1RM estimé · Epley</div></div>
+        </div>
+      </div>
+
+      <div style="font-size:13px; color:var(--c_7a6850); font-weight:700; margin-bottom:8px;">Consignes</div>
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px; font-size:13.5px; line-height:1.6; color:var(--c_5c4a35);">Omoplates serrées, pieds ancrés au sol. Descends la barre au niveau des mamelons, coudes à ~45°. Pousse en gardant les poignets alignés.</div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ BIBLIOTHÈQUE EXERCICES ══════════ -->
+    <sc-if value="{{ scr_exoBiblio }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <h2 style="margin:6px 0 14px; font:700 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Exercices</h2>
+      <div style="height:48px; border-radius:15px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); display:flex; align-items:center; gap:10px; padding:0 16px; margin-bottom:14px; color:var(--c_a8967d);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--c_a8967d)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span style="font-size:15px;">Rechercher un exercice…</span></div>
+      <div style="display:flex; gap:8px; margin-bottom:16px; overflow:hidden;">
+        <span style="padding:8px 15px; border-radius:999px; background:var(--acc); color:#fff; font-size:13px; font-weight:700; white-space:nowrap;">Tous</span>
+        <span style="padding:8px 15px; border-radius:999px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:13px; white-space:nowrap;">Pecs</span>
+        <span style="padding:8px 15px; border-radius:999px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:13px; white-space:nowrap;">Dos</span>
+        <span style="padding:8px 15px; border-radius:999px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:13px; white-space:nowrap;">⭐ Favoris</span>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button onClick="{{ toExoFiche }}" style="width:100%; text-align:left; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:44px; height:44px; border-radius:12px; background:repeating-linear-gradient(135deg,var(--c_eaddc8) 0 6px,var(--c_e3d4bc) 6px 12px); flex:none;"></div><div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Développé couché</div><div style="font-size:12.5px; color:var(--c_96856f);">Pectoraux · Barre</div></div><span style="color:var(--acc);">⭐</span></button>
+        <button onClick="{{ toExoFiche }}" style="width:100%; text-align:left; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:44px; height:44px; border-radius:12px; background:repeating-linear-gradient(135deg,var(--c_eaddc8) 0 6px,var(--c_e3d4bc) 6px 12px); flex:none;"></div><div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Développé incliné haltères</div><div style="font-size:12.5px; color:var(--c_96856f);">Pectoraux haut · Haltères</div></div><span style="color:var(--c_d8c7ab);">☆</span></button>
+        <button onClick="{{ toExoFiche }}" style="width:100%; text-align:left; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:44px; height:44px; border-radius:12px; background:repeating-linear-gradient(135deg,var(--c_eaddc8) 0 6px,var(--c_e3d4bc) 6px 12px); flex:none;"></div><div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Élévations latérales</div><div style="font-size:12.5px; color:var(--c_96856f);">Deltoïdes · Haltères</div></div><span style="color:var(--c_d8c7ab);">☆</span></button>
+        <button onClick="{{ toExoFiche }}" style="width:100%; text-align:left; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; gap:14px;"><div style="width:44px; height:44px; border-radius:12px; background:repeating-linear-gradient(135deg,var(--c_eaddc8) 0 6px,var(--c_e3d4bc) 6px 12px); flex:none;"></div><div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Dips</div><div style="font-size:12.5px; color:var(--c_96856f);">Triceps · Poids du corps</div></div><span style="color:var(--c_d8c7ab);">☆</span></button>
+        <button style="width:100%; text-align:left; background:var(--c_faf3e6); border:1.5px dashed var(--c_dcc9ab); border-radius:16px; padding:14px 16px; cursor:pointer; color:var(--acc); font:700 14px 'Hanken Grotesk';">+ Créer un exercice perso</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ HISTORIQUE & PROGRESSION ══════════ -->
+    <sc-if value="{{ scr_muscuHist }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <h2 style="margin:6px 0 14px; font:700 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Progression</h2>
+      <div style="display:flex; background:var(--c_e8dcc9); border-radius:14px; padding:4px; margin-bottom:18px;">
+        <div style="flex:1; text-align:center; padding:9px; border-radius:11px; background:var(--c_fffaf2); font:700 14px 'Hanken Grotesk'; color:var(--txt); box-shadow:0 1px 3px rgba(0,0,0,.06);">Progression</div>
+        <div style="flex:1; text-align:center; padding:9px; color:var(--c_8a7458); font:600 14px 'Hanken Grotesk';">Historique</div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <span style="padding:6px 13px; border-radius:999px; background:var(--panel); color:#fff; font-size:12px; font-weight:700; white-space:nowrap;">3 mois</span>
+        <span style="padding:6px 13px; border-radius:999px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:12px; white-space:nowrap;">4 sem</span>
+        <span style="padding:6px 13px; border-radius:999px; background:var(--c_fffaf2); border:1px solid var(--c_e8dcc9); color:var(--c_8a7458); font-size:12px; white-space:nowrap;">1 an</span>
+      </div>
+
+      <div style="background:var(--panel); border-radius:22px; padding:20px; color:var(--c_f0e4d0); margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px;"><div style="font-size:13px; color:var(--c_d9a888); font-weight:600;">1RM ESTIMÉ · DÉVELOPPÉ COUCHÉ</div><div style="font:800 22px 'Bricolage Grotesque'; color:#fff;">108 kg</div></div>
+        <svg width="100%" height="80" viewBox="0 0 280 80" preserveAspectRatio="none"><polyline points="0,64 40,60 80,52 120,50 160,40 200,34 240,26 280,16" fill="none" stroke="var(--c_e8a483)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="280" cy="16" r="4.5" fill="var(--c_e8a483)"/></svg>
+      </div>
+
+      <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin:4px 2px 10px;">RECORDS RÉCENTS</div>
+      <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:20px;">
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:14px; padding:13px 16px; display:flex; justify-content:space-between; align-items:center;"><div><div style="font-weight:700; color:var(--txt); font-size:14px;">Développé couché</div><div style="font-size:12px; color:var(--c_96856f);">Aujourd'hui · +3 kg</div></div><span style="font:700 15px 'Space Mono'; color:var(--acc);">85 kg</span></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:14px; padding:13px 16px; display:flex; justify-content:space-between; align-items:center;"><div><div style="font-weight:700; color:var(--txt); font-size:14px;">Squat</div><div style="font-size:12px; color:var(--c_96856f);">il y a 4 j</div></div><span style="font:700 15px 'Space Mono'; color:var(--txt);">120 kg</span></div>
+      </div>
+
+      <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin:4px 2px 10px;">VOLUME PAR GROUPE · HEATMAP 2 SEM</div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+        <div style="aspect-ratio:1; border-radius:14px; background:var(--acc); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff;"><span style="font:800 18px 'Bricolage Grotesque';">14</span><span style="font-size:10px; opacity:.85;">Pecs</span></div>
+        <div style="aspect-ratio:1; border-radius:14px; background:var(--c_cd7a52); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff;"><span style="font:800 18px 'Bricolage Grotesque';">11</span><span style="font-size:10px; opacity:.85;">Jambes</span></div>
+        <div style="aspect-ratio:1; border-radius:14px; background:var(--c_dda882); display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff;"><span style="font:800 18px 'Bricolage Grotesque';">8</span><span style="font-size:10px; opacity:.85;">Épaules</span></div>
+        <div style="aspect-ratio:1; border-radius:14px; background:var(--c_ecd9c2); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--c_a34e2c);"><span style="font:800 18px 'Bricolage Grotesque';">4</span><span style="font-size:10px;">Dos ⚠</span></div>
+      </div>
+      <div style="background:var(--c_faf3e6); border:1px solid var(--c_ecd9c2); border-radius:14px; padding:12px 15px; margin-top:12px; font-size:12.5px; color:var(--c_a34e2c); line-height:1.4;">⚠️ Déséquilibre détecté : peu de volume dos ces 2 semaines. Pense à ajouter du tirage.</div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ RUNNING HOME ══════════ -->
+    <sc-if value="{{ scr_run }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <h2 style="margin:6px 0 4px; font:700 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Running</h2>
+      <p style="margin:0 0 20px; color:var(--c_96856f); font-size:15px;">Plan 10 km · allure réf. 5:20 /km</p>
+
+      <div style="background:var(--panel); border-radius:24px; padding:20px; color:var(--c_f0e4d0); margin-bottom:14px;">
+        <div style="font-size:13px; color:var(--c_d9a888); font-weight:600;">PROCHAINE SORTIE · DEMAIN 7:00</div>
+        <div style="font:700 20px 'Bricolage Grotesque'; margin:5px 0 2px; color:#fff;">Fractionné VMA</div>
+        <div style="font-size:13.5px; color:var(--c_c9b79a); margin-bottom:16px;">6 × 400 m à 95% · récup 1'30 · ~42 min</div>
+        <button onClick="{{ toRunLive }}" style="height:48px; width:100%; border:none; border-radius:14px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><svg width="14" height="15" viewBox="0 0 14 15" fill="#fff"><path d="M2 1.5l11 6-11 6z"/></svg> Lancer le suivi GPS</button>
+      </div>
+
+      <button onClick="{{ toRunLive }}" style="width:100%; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:18px; padding:16px 18px; text-align:left; cursor:pointer; display:flex; align-items:center; gap:14px; margin-bottom:14px;"><span style="font-size:24px;">⚡</span><div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Course libre</div><div style="font-size:12.5px; color:var(--c_96856f);">GPS + chrono, sans structure</div></div><span style="color:var(--acc); font-size:20px;">›</span></button>
+
+      <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin:6px 2px 10px;">CETTE SEMAINE</div>
+      <div style="display:flex; gap:12px; margin-bottom:14px;">
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">18,4<span style="font-size:14px; color:var(--c_96856f);"> km</span></div><div style="font-size:12px; color:var(--c_96856f);">Distance</div></div>
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">3</div><div style="font-size:12px; color:var(--c_96856f);">Sorties</div></div>
+        <div style="flex:1; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:16px;"><div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt);">5:12</div><div style="font-size:12px; color:var(--c_96856f);">Allure moy.</div></div>
+      </div>
+
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:18px;">
+        <div style="font-size:12.5px; color:var(--c_96856f); font-weight:600; margin-bottom:12px;">ÉVOLUTION ALLURE · ENDURANCE</div>
+        <svg width="100%" height="70" viewBox="0 0 260 70" preserveAspectRatio="none"><polyline points="0,50 43,46 86,48 129,38 172,34 215,30 260,22" fill="none" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="260" cy="22" r="4" fill="var(--acc)"/></svg>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--c_a8967d); margin-top:6px;"><span>il y a 6 sem</span><span style="color:var(--grn-t); font-weight:700;">5:38 → 5:12 /km</span></div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ RUNNING LIVE (GPS) ══════════ -->
+    <sc-if value="{{ scr_runLive }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; background:var(--scrim); display:flex; flex-direction:column; color:var(--c_f0e4d0);">
+      <!-- map -->
+      <div style="position:relative; height:250px; flex:none; background:var(--c_e6dcc8); overflow:hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 392 250" preserveAspectRatio="xMidYMid slice">
+          <defs><pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="var(--c_d3c5ac)" stroke-width="1"/></pattern></defs>
+          <rect width="392" height="250" fill="url(#grid)"/>
+          <path d="M40 210 C 90 150, 60 90, 130 80 S 250 120, 250 60 S 340 40, 350 100" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linecap="round" stroke-dasharray="10 8" style="animation:dashmove 1.2s linear infinite;"/>
+          <circle cx="40" cy="210" r="7" fill="var(--txt)"/>
+          <circle cx="350" cy="100" r="9" fill="var(--acc)"/>
+          <circle cx="350" cy="100" r="9" fill="var(--acc)" style="animation:pulsedot 1.6s ease-out infinite;"/>
+        </svg>
+        <button onClick="{{ toRun }}" style="position:absolute; top:14px; left:16px; width:38px; height:38px; border:none; border-radius:12px; background:rgba(42,33,24,.85); color:var(--c_f0e4d0); font-size:18px; cursor:pointer;">‹</button>
+        <div style="position:absolute; top:14px; right:16px; background:rgba(42,33,24,.85); color:var(--c_e8a483); font:700 11px 'Hanken Grotesk'; padding:8px 12px; border-radius:12px; white-space:nowrap;">● Auto-pause</div>
+      </div>
+
+      <div style="flex:1; padding:22px 24px; display:flex; flex-direction:column;">
+        <div style="text-align:center; margin-bottom:6px;">
+          <div style="font-size:13px; color:var(--c_d9a888); font-weight:600; letter-spacing:.5px;">BLOC 3/6 · 400 M À 95%</div>
+        </div>
+        <div style="text-align:center; margin:auto 0;">
+          <div style="font:800 84px/.9 'Bricolage Grotesque'; color:#fff; letter-spacing:-3px;">{{ runDist }}</div>
+          <div style="font-size:15px; color:var(--c_c9b79a); letter-spacing:1px; margin-top:2px;">KILOMÈTRES</div>
+        </div>
+        <div style="display:flex; gap:14px; margin-top:auto;">
+          <div style="flex:1; background:rgba(255,255,255,.07); border-radius:18px; padding:16px; text-align:center;"><div style="font:700 26px 'Space Mono'; color:#fff;">{{ runTime }}</div><div style="font-size:12px; color:var(--c_9c8b74); margin-top:2px;">Temps</div></div>
+          <div style="flex:1; background:rgba(255,255,255,.07); border-radius:18px; padding:16px; text-align:center;"><div style="font:700 26px 'Space Mono'; color:#fff;">{{ runPace }}</div><div style="font-size:12px; color:var(--c_9c8b74); margin-top:2px;">Allure /km</div></div>
+        </div>
+      </div>
+
+      <div style="padding:6px 24px 24px; display:flex; gap:14px; align-items:center; justify-content:center;">
+        <button onClick="{{ toRun }}" style="width:62px; height:62px; border:none; border-radius:20px; background:rgba(255,255,255,.1); color:var(--c_f0e4d0); font-size:20px; cursor:pointer;">■</button>
+        <button onClick="{{ toggleRun }}" style="width:96px; height:96px; border:none; border-radius:50%; background:var(--acc); color:#fff; font:700 16px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 12px 30px -6px rgba(var(--acc-rgb),.6);">{{ runLabel }}</button>
+        <button style="width:62px; height:62px; border:none; border-radius:20px; background:rgba(255,255,255,.1); color:var(--c_f0e4d0); font-size:22px; cursor:pointer;">🔒</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ ALIM JOURNAL ══════════ -->
+    <sc-if value="{{ scr_alim }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+        <span style="color:var(--acc); font-size:22px; cursor:pointer;">‹</span>
+        <div style="text-align:center;"><div style="font:700 18px 'Bricolage Grotesque'; color:var(--txt);">Aujourd'hui</div><div style="font-size:12px; color:var(--c_96856f);">Jeudi 4 juillet</div></div>
+        <span style="color:var(--c_c9b79a); font-size:22px;">›</span>
+      </div>
+
+      <!-- calorie summary -->
+      <div style="background:var(--panel); border-radius:24px; padding:22px; color:var(--c_f0e4d0); margin-bottom:14px; display:flex; align-items:center; gap:20px;">
+        <svg width="96" height="96" viewBox="0 0 96 96" style="flex:none;"><circle cx="48" cy="48" r="38" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="10"/><circle cx="48" cy="48" r="38" fill="none" stroke="var(--acc)" stroke-width="10" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="72" transform="rotate(-90 48 48)"/><text x="48" y="45" text-anchor="middle" font-family="Bricolage Grotesque" font-size="21" font-weight="800" fill="#fff">810</text><text x="48" y="60" text-anchor="middle" font-family="Hanken Grotesk" font-size="10" fill="var(--c_c9b79a)">restantes</text></svg>
+        <div style="flex:1;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px;"><span style="color:var(--c_c9b79a);">Consommé</span><span style="font-weight:700; color:#fff;">1 830</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:3px;"><span style="color:var(--c_c9b79a);">Objectif</span><span style="font-weight:700; color:#fff;">2 640 kcal</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:var(--c_c9b79a);">Sport</span><span style="font-weight:700; color:var(--c_9db06e);">+240</span></div>
+        </div>
+      </div>
+
+      <!-- macros -->
+      <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:22px; padding:18px; margin-bottom:16px; display:flex; gap:16px;">
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span style="color:var(--c_7a6850); font-weight:600;">Protéines</span><span style="font:700 11px 'Space Mono'; color:var(--c_96856f);">124/165g</span></div><div style="height:8px; border-radius:5px; background:var(--c_eadcc6);"><div style="height:100%; width:75%; background:var(--acc); border-radius:5px;"></div></div></div>
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span style="color:var(--c_7a6850); font-weight:600;">Glucides</span><span style="font:700 11px 'Space Mono'; color:var(--c_96856f);">180/290g</span></div><div style="height:8px; border-radius:5px; background:var(--c_eadcc6);"><div style="height:100%; width:62%; background:var(--c_cc9544); border-radius:5px;"></div></div></div>
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;"><span style="color:var(--c_7a6850); font-weight:600;">Lipides</span><span style="font:700 11px 'Space Mono'; color:var(--c_96856f);">52/78g</span></div><div style="height:8px; border-radius:5px; background:var(--c_eadcc6);"><div style="height:100%; width:66%; background:var(--grn-s); border-radius:5px;"></div></div></div>
+      </div>
+
+      <!-- meals -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">🍳 Petit-déjeuner</div><div style="font:700 13px 'Space Mono'; color:var(--c_8a7458);">520 kcal</div></div>
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--c_7a6850); padding:5px 0;"><span>Flocons d'avoine · 80 g</span><span style="color:var(--c_a8967d);">312</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--c_7a6850); padding:5px 0;"><span>Œufs · 2</span><span style="color:var(--c_a8967d);">156</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--c_7a6850); padding:5px 0;"><span>Banane · 1</span><span style="color:var(--c_a8967d);">89</span></div>
+        </div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:20px; padding:16px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">🥗 Déjeuner</div><div style="font:700 13px 'Space Mono'; color:var(--c_8a7458);">740 kcal</div></div>
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--c_7a6850); padding:5px 0;"><span>Poulet grillé · 150 g</span><span style="color:var(--c_a8967d);">248</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13.5px; color:var(--c_7a6850); padding:5px 0;"><span>Riz basmati cuit · 200 g</span><span style="color:var(--c_a8967d);">260</span></div>
+        </div>
+        <div style="background:var(--c_fbf1e2); border:1.5px dashed var(--c_dcc9ab); border-radius:20px; padding:16px 18px; display:flex; justify-content:space-between; align-items:center;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--c_a8967d);">🍽️ Dîner</div><span style="color:var(--acc); font-weight:700; font-size:14px;">+ Ajouter</span></div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══════════ PROFIL ══════════ -->
+    <sc-if value="{{ scr_profil }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 22px 24px;">
+      <div style="display:flex; align-items:center; gap:16px; margin:8px 0 22px;">
+        <div style="width:62px; height:62px; border-radius:20px; background:var(--panel); color:var(--c_f0e4d0); display:flex; align-items:center; justify-content:center; font:800 24px 'Bricolage Grotesque';">A</div>
+        <div><div style="font:700 22px 'Bricolage Grotesque'; color:var(--txt);">Alex Martin</div><div style="font-size:14px; color:var(--c_96856f);">Prise de masse · 74,2 kg</div></div>
+      </div>
+      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:12px 14px 12px 18px; margin-bottom:12px;">
+        <span style="color:var(--txt); font-weight:600;">Apparence</span>
+        <div style="display:flex; background:var(--c_e8dcc9); border-radius:11px; padding:3px;">
+          <button onClick="{{ setLight }}" style="{{ segLightStyle }}">Clair</button>
+          <button onClick="{{ setDark }}" style="{{ segDarkStyle }}">Sombre</button>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_3a2e22); font-weight:600;">⚖️ Poids corporel</span><span style="color:var(--c_c9b79a);">›</span></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_3a2e22); font-weight:600;">🎯 Données fitness & TDEE</span><span style="color:var(--c_c9b79a);">›</span></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_3a2e22); font-weight:600;">🔔 Notifications</span><span style="color:var(--c_96856f); font-size:13px;">Max 3/j ›</span></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_3a2e22); font-weight:600;">↕️ Import / Export</span><span style="color:var(--c_96856f); font-size:13px;">GPX · CSV · JSON ›</span></div>
+        <div style="background:var(--c_fffaf2); border:1px solid var(--c_ece0cd); border-radius:16px; padding:15px 18px; display:flex; justify-content:space-between; align-items:center;"><span style="color:var(--c_3a2e22); font-weight:600;">⚙️ Paramètres</span><span style="color:var(--c_c9b79a);">›</span></div>
+        <button onClick="{{ toSplash }}" style="margin-top:8px; background:transparent; border:1.5px solid var(--c_e0c9bd); border-radius:16px; padding:15px 18px; color:var(--acc); font:600 15px 'Hanken Grotesk'; cursor:pointer;">Déconnexion</button>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <sc-if value="{{ showTabs }}">
+  <div style="flex:none; background:var(--c_fbf6ee); border-top:1px solid var(--c_e8dcc9); padding:10px 12px 6px; display:flex;">
+    <button onClick="{{ toHome }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ navHome }};"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span style="font-size:10.5px; font-weight:600;">Accueil</span></button>
+    <button onClick="{{ toMuscu }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ navMuscu }};"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M4 10v4M20 10v4M6 12h12"/></svg><span style="font-size:10.5px; font-weight:600;">Muscu</span></button>
+    <button onClick="{{ toRun }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ navRun }};"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-4 3 8 2-5 2 3h5"/></svg><span style="font-size:10.5px; font-weight:600;">Running</span></button>
+    <button onClick="{{ toAlim }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:{{ navAlim }};"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6a4 4 0 008 0V4M8 4v16M17 4c-1.5 0-2 2-2 5s.5 4 2 4 2-1 2-4-.5-5-2-5zM17 13v7"/></svg><span style="font-size:10.5px; font-weight:600;">Alim</span></button>
+  </div>
+  </sc-if>
+
+  <!-- gesture pill -->
+  <div style="flex:none; height:22px; display:flex; align-items:center; justify-content:center; background:{{ pillBg }};"><div style="width:120px; height:5px; border-radius:3px; background:{{ pillColor }};"></div></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screen: 'splash', onbStep: 0,
+    act: { muscu: true, running: true, alim: false },
+    goal: 'masse',
+    done: [false, false, false, false],
+    timerActive: false, timerLeft: 90,
+    showPR: false,
+    runActive: false, runSec: 0, runMeters: 0,
+  };
+
+  go(s) { clearInterval(this._t); this.setState({ screen: s, timerActive: false }); }
+
+  applyTheme(t) { try { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('fittrio-theme', t); } catch (e) {} this.setState({ theme: t }); }
+  toggleTheme() { this.applyTheme(this.state.theme === 'dark' ? 'light' : 'dark'); }
+  componentDidMount() { let t = 'light'; try { t = localStorage.getItem('fittrio-theme') || 'light'; } catch (e) {} this.applyTheme(t); }
+  seg(on) { return 'padding:8px 16px;border:none;border-radius:9px;cursor:pointer;font:600 13px Hanken Grotesk;' + (on ? 'background:var(--panel);color:var(--c_f0e4d0);' : 'background:transparent;color:var(--c_7a6850);'); }
+
+  onbNext() { this.setState(st => st.onbStep >= 4 ? { screen: 'home' } : { onbStep: st.onbStep + 1 }); }
+  onbPrev() { this.setState(st => st.onbStep <= 0 ? { screen: 'auth' } : { onbStep: st.onbStep - 1 }); }
+  toggleAct(k) { this.setState(st => ({ act: { ...st.act, [k]: !st.act[k] } })); }
+
+  validateSet(i) {
+    this.setState(st => { const d = [...st.done]; d[i] = true; return { done: d }; });
+    this.startRest();
+    if (i === 1) { this.setState({ showPR: true }); setTimeout(() => this.setState({ showPR: false }), 3200); }
+  }
+  startRest() {
+    clearInterval(this._t);
+    this.setState({ timerActive: true, timerLeft: 90 });
+    this._t = setInterval(() => this.setState(st => {
+      if (st.timerLeft <= 1) { clearInterval(this._t); return { timerLeft: 0, timerActive: false }; }
+      return { timerLeft: st.timerLeft - 1 };
+    }), 1000);
+  }
+  addTime() { this.setState(st => ({ timerLeft: st.timerLeft + 15 })); }
+  skipTimer() { clearInterval(this._t); this.setState({ timerActive: false }); }
+
+  startRunTick() {
+    clearInterval(this._r);
+    this._r = setInterval(() => this.setState(st => ({ runSec: st.runSec + 1, runMeters: st.runMeters + 2.9 + Math.random() * 0.5 })), 1000);
+  }
+  goRunLive() {
+    clearInterval(this._t);
+    this.setState({ screen: 'runLive', timerActive: false, runActive: true, runSec: 742, runMeters: 2380 });
+    this.startRunTick();
+  }
+  toggleRun() {
+    if (this.state.runActive) { clearInterval(this._r); this.setState({ runActive: false }); return; }
+    this.setState({ runActive: true });
+    this.startRunTick();
+  }
+  componentWillUnmount() { clearInterval(this._t); clearInterval(this._r); }
+
+  fmt(s) { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); }
+
+  pill(on) {
+    return 'display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:18px;cursor:pointer;font-family:Hanken Grotesk;text-align:left;'
+      + (on ? 'background:var(--c_f3ddd0);border:2px solid var(--acc);color:var(--c_a34e2c);' : 'background:var(--c_fffaf2);border:2px solid var(--c_e8dcc9);color:var(--c_5c4a35);');
+  }
+  dot(on) {
+    return 'width:24px;height:24px;border-radius:50%;flex:none;'
+      + (on ? 'background:var(--acc);box-shadow:inset 0 0 0 3px #fff, inset 0 0 0 4px var(--acc);' : 'background:transparent;box-shadow:inset 0 0 0 2px var(--c_d8c7ab);');
+  }
+  goalChip(on) {
+    return 'display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:18px;border-radius:18px;cursor:pointer;font:700 15px Hanken Grotesk;'
+      + (on ? 'background:var(--c_f3ddd0);border:2px solid var(--acc);color:var(--c_a34e2c);' : 'background:var(--c_fffaf2);border:2px solid var(--c_e8dcc9);color:var(--c_5c4a35);');
+  }
+
+  renderVals() {
+    const st = this.state;
+    const circ = 2 * Math.PI * 52;
+    const frac = Math.min(st.timerLeft / 90, 1);
+    const sets = [
+      { n: 1, target: '80 kg × 8' }, { n: 2, target: '80 kg × 8' },
+      { n: 3, target: '80 kg × 7' }, { n: 4, target: '75 kg × 8' },
+    ].map((s, i) => ({
+      ...s,
+      kg: [82, 85, 82, 80][i], reps: [8, 8, 7, 6][i],
+      done: st.done[i], notDone: !st.done[i],
+      validate: () => this.validateSet(i),
+    }));
+    const doneCount = st.done.filter(Boolean).length;
+    const runKm = st.runMeters / 1000;
+    const pace = st.runMeters > 60 ? (st.runSec / 60) / runKm : 0;
+    const activeNav = 'var(--acc)', muteNav = 'var(--c_a8967d)';
+    const muscuFam = ['muscu', 'exoBiblio', 'exoFiche', 'muscuHist'];
+    const showTabs = ['home', 'muscu', 'run', 'alim', 'profil', 'exoBiblio', 'muscuHist'].includes(st.screen);
+    const liveScreen = st.screen === 'muscuLive' || st.screen === 'runLive';
+
+    return {
+      screen: st.screen,
+      scr_splash: st.screen === 'splash', scr_auth: st.screen === 'auth', scr_onb: st.screen === 'onb',
+      scr_home: st.screen === 'home', scr_muscu: st.screen === 'muscu', scr_muscuLive: st.screen === 'muscuLive',
+      scr_run: st.screen === 'run', scr_runLive: st.screen === 'runLive', scr_alim: st.screen === 'alim', scr_profil: st.screen === 'profil',
+      scr_muscuResume: st.screen === 'muscuResume', scr_exoFiche: st.screen === 'exoFiche', scr_exoBiblio: st.screen === 'exoBiblio', scr_muscuHist: st.screen === 'muscuHist',
+      toResume: () => this.go('muscuResume'), toExoFiche: () => this.go('exoFiche'), toExoBiblio: () => this.go('exoBiblio'), toMuscuHist: () => this.go('muscuHist'),
+      themeIcon: (st.theme === 'dark') ? '☀️' : '🌙',
+      isDark: st.theme === 'dark', isLight: st.theme !== 'dark',
+      toggleTheme: () => this.toggleTheme(), setLight: () => this.applyTheme('light'), setDark: () => this.applyTheme('dark'),
+      segLightStyle: this.seg(st.theme !== 'dark'), segDarkStyle: this.seg(st.theme === 'dark'),
+      showTabs,
+      pillBg: liveScreen ? 'var(--scrim)' : 'var(--c_fbf6ee)',
+      pillColor: liveScreen ? 'rgba(255,255,255,.35)' : 'var(--c_c9b79a)',
+      navHome: st.screen === 'home' ? activeNav : muteNav,
+      navMuscu: muscuFam.includes(st.screen) ? activeNav : muteNav,
+      navRun: st.screen === 'run' ? activeNav : muteNav,
+      navAlim: st.screen === 'alim' ? activeNav : muteNav,
+
+      toSplash: () => this.go('splash'), toAuth: () => this.go('auth'), toOnb: () => this.go('onb'),
+      toHome: () => this.go('home'), toMuscu: () => this.go('muscu'), toMuscuLive: () => this.go('muscuLive'),
+      toRun: () => this.go('run'), toRunLive: () => this.goRunLive(), toAlim: () => this.go('alim'), toProfil: () => this.go('profil'),
+
+      onbStep: st.onbStep, onbStepLabel: (st.onbStep + 1) + '/5', onbPct: ((st.onbStep + 1) / 5 * 100) + '%',
+      onbNext: () => this.onbNext(), onbPrev: () => this.onbPrev(),
+      onbCta: st.onbStep >= 4 ? "C'est parti →" : 'Continuer',
+      onb0: st.onbStep === 0, onb1: st.onbStep === 1, onb2: st.onbStep === 2, onb3: st.onbStep === 3, onb4: st.onbStep === 4,
+
+      toggleMuscu: () => this.toggleAct('muscu'), toggleRun: () => this.toggleAct('running'), toggleAlim: () => this.toggleAct('alim'),
+      actMuscuStyle: this.pill(st.act.muscu), actRunStyle: this.pill(st.act.running), actAlimStyle: this.pill(st.act.alim),
+      actMuscuDot: this.dot(st.act.muscu), actRunDot: this.dot(st.act.running), actAlimDot: this.dot(st.act.alim),
+
+      setMasse: () => this.setState({ goal: 'masse' }), setPerte: () => this.setState({ goal: 'perte' }),
+      setPerf: () => this.setState({ goal: 'perf' }), setSante: () => this.setState({ goal: 'sante' }),
+      gMasseStyle: this.goalChip(st.goal === 'masse'), gPerteStyle: this.goalChip(st.goal === 'perte'),
+      gPerfStyle: this.goalChip(st.goal === 'perf'), gSanteStyle: this.goalChip(st.goal === 'sante'),
+
+      sets, doneCount,
+      timerActive: st.timerActive, timerDisplay: this.fmt(st.timerLeft),
+      timerOffset: (circ * (1 - frac)).toFixed(1),
+      addTime: () => this.addTime(), skipTimer: () => this.skipTimer(), showPR: st.showPR,
+
+      runActive: st.runActive, toggleRun: () => this.toggleRun(),
+      runTime: this.fmt(st.runSec), runDist: runKm.toFixed(2),
+      runPace: pace > 0 ? this.fmt(pace * 60) : '--:--',
+      runLabel: st.runActive ? 'Pause' : 'Go',
+    };
+  }
+}
+</script>
+</body>
+</html>
