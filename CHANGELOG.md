@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Polices custom (identité de la maquette)
+
+_Branche : `feat/design-fonts`_
+
+### Ajouté
+- **Polices Google** (via `@expo-google-fonts`) fidèles à la maquette : **Bricolage Grotesque**
+  (display/titres), **Hanken Grotesk** (corps/UI), **Space Mono** (chiffres).
+- **`src/theme/fonts.ts`** : hook `useAppFonts` (chargement des graisses via `expo-font`) +
+  constantes `fontFamily`. **`src/theme/typography.ts`** : presets sémantiques (display, title,
+  body, mono…).
+- **Splash gate** : le layout racine maintient le splash (`expo-splash-screen`) tant que les
+  polices ne sont pas prêtes, puis le masque.
+
+### Modifié
+- Application des polices : accueil, écrans piliers (`EmptyState`), Réglages, libellés d'onglets,
+  titre de la modale — `fontWeight` remplacé par les familles custom (livrées par graisse).
+
+### Technique / Notes
+- Chargées à l'exécution → **aucun rebuild natif** (testé sur le dev client existant).
+- Vérifié : `typecheck` OK, `lint` (0 problème), `test` (15/15), bundle Android OK (1547 modules).
+- Rappel outillage : **relancer Metro avec `-c`** après tout `expo install` (le cache ignore les
+  nouveaux assets, cf. `.ttf`).
+
 ## 05/07/2026 — V0.1 : shell de navigation (onglets, thème, états vides)
 
 _Branche : `feat/2.1-navigation-onglets`_

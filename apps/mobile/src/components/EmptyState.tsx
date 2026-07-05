@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 type EmptyStateProps = {
@@ -49,8 +50,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 4,
   },
-  title: { fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  message: { fontSize: 15, lineHeight: 21, textAlign: 'center', maxWidth: 300 },
+  title: { fontFamily: fontFamily.displayBold, fontSize: 20, letterSpacing: -0.4, textAlign: 'center' },
+  message: { fontFamily: fontFamily.body, fontSize: 15, lineHeight: 21, textAlign: 'center', maxWidth: 300 },
   cta: {
     marginTop: 12,
     minHeight: 48,
@@ -59,5 +60,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ctaLabel: { fontSize: 16, fontWeight: '700' },
+  ctaLabel: { fontFamily: fontFamily.bodyBold, fontSize: 16 },
 });

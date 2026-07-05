@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { useTranslation } from 'react-i18next';
 import { PILLARS, type Pillar } from '@wellness/shared';
 import { useSettingsStore } from '@/stores/settings-store';
+import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const THEME_OPTIONS = ['system', 'light', 'dark'] as const;
@@ -76,8 +77,8 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   content: { padding: 20 },
   sectionTitle: {
+    fontFamily: fontFamily.bodySemi,
     fontSize: 13,
-    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 10,
@@ -90,8 +91,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  rowLabel: { fontSize: 16, fontWeight: '600' },
-  hint: { fontSize: 13, marginTop: 8, lineHeight: 18 },
+  rowLabel: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
+  hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
   segment: {
     flexDirection: 'row',
     borderRadius: 16,
@@ -105,5 +106,5 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
   },
-  segmentLabel: { fontSize: 15, fontWeight: '700' },
+  segmentLabel: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
 });

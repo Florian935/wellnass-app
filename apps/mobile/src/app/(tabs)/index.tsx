@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { EmptyState } from '@/components/EmptyState';
+import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function HomeScreen() {
@@ -47,8 +48,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  hello: { fontSize: 14 },
-  title: { fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+  hello: { fontFamily: fontFamily.bodyMedium, fontSize: 14 },
+  title: { fontFamily: fontFamily.displayXBold, fontSize: 28, letterSpacing: -0.8 },
   iconBtn: {
     width: 44,
     height: 44,

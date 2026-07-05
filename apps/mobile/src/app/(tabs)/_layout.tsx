@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import type { Pillar } from '@wellness/shared';
 import { useSettingsStore } from '@/stores/settings-store';
+import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 type TabIcon = keyof typeof Ionicons.glyphMap;
@@ -32,6 +33,7 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarLabelStyle: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
       }}
     >
       <Tabs.Screen
