@@ -35,6 +35,49 @@
       "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt."
     }
   },
+  "onboarding": {
+    "step": "Étape {{current}}/{{total}}",
+    "skip": "Passer",
+    "skipAll": "Passer tout",
+    "continue": "Continuer",
+    "intro": {
+      "title": "Bienvenue sur Wellness 🎉",
+      "subtitle": "Trois piliers, une routine. Configure ton profil en 1 minute — ou passe et fais-le plus tard.",
+      "start": "Commencer"
+    },
+    "infos": {
+      "title": "Tes infos",
+      "subtitle": "Servent aux calculs (calories, progression). Tout est modifiable ensuite.",
+      "firstName": "Prénom",
+      "sex": "Sexe",
+      "sexes": { "female": "Femme", "male": "Homme", "unspecified": "Non précisé" },
+      "birthDate": "Date de naissance",
+      "weight": "Poids (kg)",
+      "height": "Taille (cm)"
+    },
+    "pillars": {
+      "title": "Tes activités",
+      "subtitle": "Active les piliers que tu veux suivre. Les autres onglets restent masqués."
+    },
+    "goal": {
+      "title": "Ton objectif",
+      "subtitle": "Oriente les recommandations. Tu peux le changer quand tu veux.",
+      "options": {
+        "muscle": "Prise de masse",
+        "weightloss": "Perte de poids",
+        "performance": "Performance",
+        "health": "Santé générale"
+      }
+    },
+    "summary": {
+      "title": "C'est prêt !",
+      "subtitle": "Voici ta configuration. Tu peux tout ajuster dans les réglages.",
+      "pillars": "Piliers actifs",
+      "none": "Non défini",
+      "note": "Ton profil n'est pas encore synchronisé (arrive bientôt). Tu peux commencer à utiliser l'app.",
+      "cta": "C'est parti"
+    }
+  },
   "auth": {
     "email": "Email",
     "password": "Mot de passe",

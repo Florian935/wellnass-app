@@ -18,7 +18,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
 - [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)
-- [~] **Écrans légaux & consentement + âge 16+** (1.21) — CGU/confidentialité (brouillon) + contrôle d'âge. PR ouverte, testé device. Textes juridiques réels à fournir.
+- [x] **Légal + consentement + âge 16+** (1.21) — CGU/confidentialité (brouillon) + contrôle d'âge — mergé, testé device (05/07/2026)
+- [x] **🏷️ Tag v0.1.0** — fin de version V0.1 (05/07/2026)
+- [~] **V0.2 — Onboarding skippable** (1.7-1.11) — parcours intro/infos/piliers/objectif/récap + store profil. PR ouverte. Profil en mémoire (persistance via table `profiles` = US suivante).
 
 ---
 

@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import '@/i18n';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
+import { useProfileStore } from '@/stores/profile-store';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
@@ -39,6 +40,7 @@ export default function RootLayout() {
   const { loaded, error } = useAppFonts();
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
+  const onboardingCompleted = useProfileStore((s) => s.onboardingCompleted);
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
@@ -52,18 +54,31 @@ export default function RootLayout() {
     }
   }, [ready]);
 
-  // Redirige selon l'état de session (compte-profil-onboarding §2).
+  // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {
     if (!ready) {
       return;
     }
-    const inAuthGroup = segments[0] === '(auth)';
-    if (!session && !inAuthGroup) {
-      router.replace('/(auth)/sign-in');
-    } else if (session && inAuthGroup) {
+    const group = segments[0];
+    const inAuth = group === '(auth)';
+    const inOnboarding = group === '(onboarding)';
+
+    if (!session) {
+      if (!inAuth) {
+        router.replace('/(auth)/sign-in');
+      }
+      return;
+    }
+    if (!onboardingCompleted) {
+      if (!inOnboarding) {
+        router.replace('/(onboarding)/intro');
+      }
+      return;
+    }
+    if (inAuth || inOnboarding) {
       router.replace('/(tabs)');
     }
-  }, [ready, session, segments, router]);
+  }, [ready, session, onboardingCompleted, segments, router]);
 
   // Tant que les polices / la session ne sont pas prêtes, on laisse le splash.
   if (!ready) {
@@ -76,6 +91,7 @@ export default function RootLayout() {
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen
             name="settings"

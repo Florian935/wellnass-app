@@ -1,46 +1,14 @@
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PILLARS, UNIT_SYSTEMS, type Pillar } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { Segment } from '@/components/Segment';
 import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const THEME_OPTIONS = ['system', 'light', 'dark'] as const;
-
-type SegmentProps<T extends string> = {
-  options: readonly T[];
-  value: T;
-  onChange: (value: T) => void;
-  label: (option: T) => string;
-};
-
-function Segment<T extends string>({ options, value, onChange, label }: SegmentProps<T>) {
-  const { colors } = useTheme();
-  return (
-    <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      {options.map((option) => {
-        const selected = value === option;
-        return (
-          <Pressable
-            key={option}
-            accessibilityRole="button"
-            accessibilityState={{ selected }}
-            onPress={() => onChange(option)}
-            style={[styles.segmentItem, selected && { backgroundColor: colors.accent }]}
-          >
-            <Text
-              style={[styles.segmentLabel, { color: selected ? colors.accentText : colors.text }]}
-            >
-              {label(option)}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -137,18 +105,4 @@ const styles = StyleSheet.create({
   rowLabel: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
   signOut: { marginTop: 12 },
-  segment: {
-    flexDirection: 'row',
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 4,
-    gap: 4,
-  },
-  segmentItem: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  segmentLabel: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
 });
