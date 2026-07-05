@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Scaffolding du monorepo (npm workspaces + Expo + shared)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **Racine monorepo** : `package.json` (npm workspaces `apps/*` + `packages/*`),
+  `tsconfig.base.json` (TS strict + `noUncheckedIndexedAccess`), `.editorconfig`, `.nvmrc`
+  (Node 20), config Prettier (`.prettierrc.json`, `.prettierignore`). Scripts agrégés :
+  `typecheck` / `lint` / `test` / `mobile`.
+- **`apps/mobile`** (`@wellness/mobile`) : app **Expo SDK 57** (React Native 0.86, React 19.2)
+  générée avec **Expo Router**, adaptée au monorepo (`metro.config.js` : watch racine +
+  résolution `node_modules` hoistés). Démo du template retirée, écran d'accueil minimal.
+  - **i18n** (`src/i18n/`) : i18next + react-i18next + expo-localization, **FR + EN**,
+    résolution de la langue du terminal, français par défaut.
+  - **State** (`src/stores/settings-store.ts`) : store **Zustand** des réglages (langue,
+    thème, piliers actifs opt-in — décision H).
+- **`packages/shared`** (`@wellness/shared`) : types + schémas **Zod** partagés — champs de
+  synchro transverses (UUID client, timestamps UTC, soft delete) et piliers / locales.
+- **`apps/admin`** (`@wellness/admin`) : **stub** du back-office web (détaillé en V0.7).
+
+### Modifié
+- **CLAUDE.md** : état du projet (scaffolding posé) + section **Commandes** renseignée +
+  arbre de structure (`apps/`, `packages/`).
+- **TODO.md** : items de scaffolding cochés (monorepo, app Expo, i18n, Commandes).
+
+### Technique / Notes
+- Vérifié : `npm install` (604 paquets) OK, `npm run typecheck` OK sur les 3 workspaces,
+  `expo export --platform web` OK (bundle Metro résout `@wellness/shared` et i18n).
+- **Pas encore câblés** (US dédiées à venir) : dev build EAS, runner de tests, Supabase,
+  intégration PowerSync.
+
 ## 05/07/2026 — Ajout du bundle design FitTrio (handoff Claude Design)
 
 _Branche : `docs/verdict-spike-001`_

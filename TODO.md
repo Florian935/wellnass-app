@@ -29,12 +29,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [ ] Source de la **base d'aliments** — CIQUAL + OpenFoodFacts + plan de traduction EN (avant V0.4)
 
 ### Scaffolding (fondations, à poser avant tout code fonctionnel)
-- [ ] Initialiser le **monorepo** (`apps/mobile`, `apps/admin`, `packages/shared`)
-- [ ] Créer l'**app Expo** (React Native + TypeScript + Expo Router + Zustand)
-- [ ] Mettre en place le **dev build Expo** (Expo Go insuffisant — module natif PowerSync)
+- [x] Initialiser le **monorepo** (`apps/mobile`, `apps/admin`, `packages/shared`) — npm workspaces (05/07/2026)
+- [x] Créer l'**app Expo** (React Native + TypeScript + Expo Router + Zustand) — SDK 57, Metro monorepo (05/07/2026)
+- [x] Poser l'infra **i18n** (i18next + expo-localization, FR + EN, aucune chaîne en dur) (05/07/2026)
+- [x] Renseigner la section **Commandes** de [CLAUDE.md](CLAUDE.md) (05/07/2026)
+- [ ] Mettre en place le **dev build Expo** (EAS) (Expo Go insuffisant — module natif PowerSync)
+- [ ] Câbler un **runner de tests** (Jest/Vitest) + `npm run test`
 - [ ] Provisionner **Supabase** (Postgres + Auth + Storage + RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
-- [ ] Poser l'infra **i18n** (i18next + expo-localization, FR + EN, aucune chaîne en dur)
-- [ ] Renseigner la section **Commandes** de [CLAUDE.md](CLAUDE.md) (build / test / lint / typecheck / migrations / seed)
+- [ ] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository)
 
 ---
 
@@ -54,3 +56,5 @@ démarrent leur cycle spec → plan → design → validation → code.
 - [x] Phase de cadrage : fusion des cadrages Florian + Damien, arbitrages A→H, roadmap versionnée (04/07/2026)
 - [x] Process de travail : workflow spec→plan→design→validation→code, branches, `/commit` (revue + CHANGELOG + push `dev`) (05/07/2026)
 - [x] Fichiers de config dépôt : `.gitignore` + `.gitattributes` (normalisation LF) (05/07/2026)
+- [x] Bundle design FitTrio (handoff Claude Design) importé dans `design/` (05/07/2026)
+- [x] Scaffolding monorepo : npm workspaces + Expo (SDK 57, Router, Zustand, i18n FR/EN) + `packages/shared` (Zod) + stub `apps/admin` — typecheck ✅, bundle web ✅ (05/07/2026)
