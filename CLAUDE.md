@@ -4,12 +4,12 @@ Guidage pour Claude Code (claude.ai/code) sur ce dépôt.
 
 ## État du projet
 
-**Phase de cadrage terminée — aucun code applicatif n'existe encore.** Les deux cadrages
-initiaux (Florian et Damien) ont été **fusionnés** en une base documentaire unique sous
-[`docs/`](docs/). La stack et les grandes décisions sont figées (voir ci-dessous). Le
-scaffolding (monorepo, app Expo, Supabase) n'est **pas** encore initialisé. Quand tu poseras
-les premières fondations, mets à jour la section « Commandes » avec les vraies commandes
-(build / test / lint / typecheck).
+**Cadrage terminé, scaffolding du monorepo posé.** Les deux cadrages initiaux (Florian et
+Damien) ont été **fusionnés** en une base documentaire unique sous [`docs/`](docs/). La stack et
+les grandes décisions sont figées (voir ci-dessous). Le **monorepo npm workspaces** est
+initialisé (`apps/mobile` Expo, `apps/admin` stub, `packages/shared`) ; l'app mobile bundle et
+le typecheck passe. **Restent à poser** : dev build Expo (EAS), Supabase, intégration PowerSync
+(voir [TODO.md](TODO.md)).
 
 ### Sources de vérité (à lire avant toute décision produit ou archi)
 - [SYNTHESE-CADRAGE.md](SYNTHESE-CADRAGE.md) — journal des 8 arbitrages tranchés le 04/07/2026.
@@ -113,6 +113,11 @@ vient d'être livré.
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
 /design                     → maquettes par fonctionnalité (exportées de Claude Design)
+/apps
+  /mobile                   → app Expo (React Native, Expo Router, Zustand, i18n)
+  /admin                    → back-office web (stub, V0.7)
+/packages
+  /shared                   → types + schémas Zod partagés
 /docs
   /product                  → vision, prd, personas, metriques-succes
   /specs
@@ -124,7 +129,37 @@ vient d'être livré.
 
 ## Commandes
 
-*À compléter dès l'initialisation du scaffolding* (build, test, lint, typecheck, migrations, seed).
+**Monorepo npm workspaces** (Node ≥ 20, voir [.nvmrc](.nvmrc)). Depuis la racine :
+
+| Commande | Effet |
+|---|---|
+| `npm install` | Installe toutes les dépendances (hoistées à la racine). |
+| `npm run typecheck` | `tsc --noEmit` sur tous les workspaces. |
+| `npm run lint` | Lint des workspaces qui l'exposent (`expo lint` + eslint-config-expo côté mobile). |
+| `npm run test` | Tests des workspaces (**Vitest** sur `packages/shared`). |
+| `npm run mobile` | Raccourci → démarre le serveur de dev Expo de `apps/mobile`. |
+
+**App mobile** (`apps/mobile`, package `@wellness/mobile`) :
+
+| Commande (dans `apps/mobile`) | Effet |
+|---|---|
+| `npx expo start` | Serveur de dev (nécessitera un **dev build**, pas Expo Go — module natif PowerSync). |
+| `npx expo start --android` | Ouvre sur Android. |
+| `npx expo export --platform web` | Bundle web (utilisé comme smoke-test de bundling). |
+| `npx expo install --check` | Vérifie l'alignement des versions avec le SDK Expo. |
+| `npm run build:dev` | Build EAS **dev client** (APK, requis pour PowerSync) — nécessite `eas login` + `eas init`. |
+| `npm run build:preview` / `build:prod` | Build EAS bêta interne (APK) / Play Store (AAB). |
+
+> **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
+> `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
+> Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
+> **CI** : GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) exécute
+> typecheck + lint + tests sur chaque PR vers `dev`/`main`.
+> **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
+> `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
+> (`npm run build:dev`).
+> **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
+> Supabase/PowerSync — à ajouter avec les US correspondantes.
 
 ## Langue
 

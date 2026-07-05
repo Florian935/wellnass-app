@@ -10,6 +10,96 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — CI GitHub Actions + ESLint mobile
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **`.github/workflows/ci.yml`** : workflow **CI** sur PR/push vers `dev`/`main` — `npm ci`
+  puis **typecheck + lint + tests** (Node depuis `.nvmrc`, cache npm, concurrency avec
+  annulation, timeout 15 min). Répond à bonnes-pratiques §10 (qualité < 10 min sur chaque PR).
+- **ESLint mobile** : `eslint` + `eslint-config-expo` (flat config `eslint.config.js`) —
+  `npm run lint` (`expo lint`) désormais non interactif.
+
+### Modifié
+- **`src/i18n/index.ts`** : suppression d'une warning eslint (faux positif
+  `import/no-named-as-default-member` sur `i18n.use()`), lint à **0 problème**.
+- **CLAUDE.md** / **TODO.md** : CI et lint documentés.
+
+### Technique / Notes
+- Vérifié en local : `npm run lint` (0 problème), `npm run typecheck` OK, `npm run test`
+  (15/15) ; `ci.yml` = YAML valide.
+
+## 05/07/2026 — Config EAS (profils de build Android)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **`apps/mobile/eas.json`** : 3 profils alignés sur architecture §9 —
+  `development` (dev client APK, **requis PowerSync**), `preview` (bêta interne APK),
+  `production` (AAB, `autoIncrement`) ; `submit.production` → Google Play **track internal**.
+  `appVersionSource: remote` (EAS gère le `versionCode`).
+- **Scripts npm** mobile : `build:dev` / `build:preview` / `build:prod` / `submit:prod`.
+- **README mobile** : section Builds (EAS) + procédure `eas login` / `eas init`.
+
+### Technique / Notes
+- **`eas init` effectué** (compte `damdamdeoh`) : `extra.eas.projectId`, bloc `updates`
+  (EAS Update) et `runtimeVersion` (policy `appVersion`) ajoutés dans `app.json` ; dépendances
+  `expo-dev-client` + `expo-updates` installées.
+- **Reste à faire** : lancer le **premier build** (`npm run build:dev`).
+- Vérifié : `eas.json` = JSON valide, `npm run typecheck` OK, `expo install --check` aligné.
+
+## 05/07/2026 — Runner de tests unitaires (Vitest sur packages/shared)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **Vitest** sur `packages/shared` (`vitest.config.ts`, env node) avec **seuils de couverture
+  à 100 %** (statements / branches / functions / lines) — exigence bonnes-pratiques §4 pour la
+  logique pure. Scripts `test`, `test:watch`, `test:coverage`.
+- **15 tests** couvrant les schémas Zod : `sync.test.ts` (UUID, timestamp UTC, champs de synchro,
+  soft delete, contenu global sans `userId`) et `pillar.test.ts` (piliers, locales FR/EN).
+
+### Modifié
+- **package.json** (`@wellness/shared`) : dépendances de dev `vitest` + `@vitest/coverage-v8`.
+- **CLAUDE.md** / **TODO.md** : commande `test` documentée, item runner de tests coché.
+
+### Technique / Notes
+- Vérifié : `npm run test` OK (15/15), couverture **100 %**, `npm run typecheck` OK (fichiers de
+  test inclus).
+- Tests **mobile** (jest-expo) volontairement différés à la première feature.
+
+## 05/07/2026 — Scaffolding du monorepo (npm workspaces + Expo + shared)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **Racine monorepo** : `package.json` (npm workspaces `apps/*` + `packages/*`),
+  `tsconfig.base.json` (TS strict + `noUncheckedIndexedAccess`), `.editorconfig`, `.nvmrc`
+  (Node 20), config Prettier (`.prettierrc.json`, `.prettierignore`). Scripts agrégés :
+  `typecheck` / `lint` / `test` / `mobile`.
+- **`apps/mobile`** (`@wellness/mobile`) : app **Expo SDK 57** (React Native 0.86, React 19.2)
+  générée avec **Expo Router**, adaptée au monorepo (`metro.config.js` : watch racine +
+  résolution `node_modules` hoistés). Démo du template retirée, écran d'accueil minimal.
+  - **i18n** (`src/i18n/`) : i18next + react-i18next + expo-localization, **FR + EN**,
+    résolution de la langue du terminal, français par défaut.
+  - **State** (`src/stores/settings-store.ts`) : store **Zustand** des réglages (langue,
+    thème, piliers actifs opt-in — décision H).
+- **`packages/shared`** (`@wellness/shared`) : types + schémas **Zod** partagés — champs de
+  synchro transverses (UUID client, timestamps UTC, soft delete) et piliers / locales.
+- **`apps/admin`** (`@wellness/admin`) : **stub** du back-office web (détaillé en V0.7).
+
+### Modifié
+- **CLAUDE.md** : état du projet (scaffolding posé) + section **Commandes** renseignée +
+  arbre de structure (`apps/`, `packages/`).
+- **TODO.md** : items de scaffolding cochés (monorepo, app Expo, i18n, Commandes).
+
+### Technique / Notes
+- Vérifié : `npm install` (604 paquets) OK, `npm run typecheck` OK sur les 3 workspaces,
+  `expo export --platform web` OK (bundle Metro résout `@wellness/shared` et i18n).
+- **Pas encore câblés** (US dédiées à venir) : dev build EAS, runner de tests, Supabase,
+  intégration PowerSync.
+
 ## 05/07/2026 — Ajout du bundle design FitTrio (handoff Claude Design)
 
 _Branche : `docs/verdict-spike-001`_

@@ -1,0 +1,16 @@
+{
+  "name": "@wellness/admin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Back-office web d'administration (gestion de contenu : exercices, programmes, aliments). Détaillé en V0.7 — framework non figé.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wellness/shared": "*"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.3"
+  }
+}

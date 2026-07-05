@@ -1,0 +1,15 @@
+{
+  "common": {
+    "appName": "Wellness"
+  },
+  "home": {
+    "title": "Bienvenue 👋",
+    "subtitle": "Musculation · Running · Nutrition, enfin réunis.",
+    "scaffoldNotice": "Squelette du monorepo posé. Les fonctionnalités arrivent version par version."
+  },
+  "pillars": {
+    "strength": "Musculation",
+    "running": "Course",
+    "nutrition": "Nutrition"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "wellness-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Écosystème bien-être mobile (Musculation · Running · Nutrition) — monorepo",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "mobile": "npm run start --workspace @wellness/mobile",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  }
+}

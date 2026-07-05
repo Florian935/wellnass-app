@@ -1,0 +1,15 @@
+{
+  "common": {
+    "appName": "Wellness"
+  },
+  "home": {
+    "title": "Welcome 👋",
+    "subtitle": "Strength · Running · Nutrition, finally together.",
+    "scaffoldNotice": "Monorepo skeleton in place. Features ship version by version."
+  },
+  "pillars": {
+    "strength": "Strength",
+    "running": "Running",
+    "nutrition": "Nutrition"
+  }
+}
