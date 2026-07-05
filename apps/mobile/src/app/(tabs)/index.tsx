@@ -22,7 +22,10 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('settings.title')}
             hitSlop={10}
-            style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={StyleSheet.flatten([
+              styles.iconBtn,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ])}
           >
             <Ionicons name="person-circle-outline" size={26} color={colors.text} />
           </Pressable>

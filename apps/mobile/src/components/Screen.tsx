@@ -14,8 +14,13 @@ type ScreenProps = {
 export function Screen({ children, edges = ['top', 'bottom'], center = false }: ScreenProps) {
   const { colors } = useTheme();
   return (
-    <SafeAreaView edges={edges} style={[styles.safe, { backgroundColor: colors.background }]}>
-      <View style={[styles.content, center && styles.centered]}>{children}</View>
+    <SafeAreaView
+      edges={edges}
+      style={StyleSheet.flatten([styles.safe, { backgroundColor: colors.background }])}
+    >
+      <View style={StyleSheet.flatten([styles.content, center && styles.centered])}>
+        {children}
+      </View>
     </SafeAreaView>
   );
 }
