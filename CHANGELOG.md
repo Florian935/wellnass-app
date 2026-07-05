@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Session persistante & chiffrée (SecureStore / Keystore, item 9.8)
+
+_Branche : `feat/9.8-secure-session`_
+
+### Ajouté
+- **`lib/secure-storage.ts`** : adaptateur de stockage **chiffré et persistant** pour la
+  session Supabase via `expo-secure-store` (Android Keystore — architecture §7). Découpage en
+  morceaux (SecureStore limite ~2 Ko/valeur ; la session Supabase dépasse cette taille).
+
+### Modifié
+- **`lib/supabase.ts`** : le client utilise désormais `secureStorage` (session **persistée**
+  entre redémarrages, item 1.5 + chiffrée, item 9.8) au lieu du stockage mémoire temporaire.
+- Dépendances : `+ expo-secure-store` ; **retrait** de `@react-native-async-storage/async-storage`
+  (devenu inutilisé → un module natif de moins dans le build).
+
+### Technique / Notes
+- **Nécessite un nouveau `build:dev`** : `expo-secure-store` est un module natif absent du dev
+  client actuel. Après rebuild, la session survit à une fermeture complète de l'app.
+- **PowerSync** volontairement **non inclus** dans ce rebuild (US dédiée) : compat native à
+  vérifier avec RN 0.86 (new architecture) avant de l'ajouter.
+
 ## 05/07/2026 — V0.1 : authentification Supabase (inscription, connexion, session)
 
 _Branche : `feat/1.1-auth-supabase`_

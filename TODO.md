@@ -16,7 +16,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **V0.1 — Auth Supabase** (1.1/1.4/1.5/1.6/9.5) — inscription, connexion, session, reset, déconnexion. PR ouverte, testé sur device. Session en mémoire (stockage chiffré 9.8 différé au rebuild PowerSync).
+- [~] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore + branchement Supabase. PR ouverte ; **rebuild `build:dev` requis** pour tester.
+- [ ] **PowerSync** (9.13/9.3) — SQLite local + connecteur Supabase (US dédiée ; vérifier compat RN 0.86 new-arch).
 
 ---
 
@@ -65,5 +66,6 @@ démarrent leur cycle spec → plan → design → validation → code.
 - [x] **V0.1 — Polices custom** : Bricolage / Hanken / Space Mono d'après la maquette — mergé, testé sur device (05/07/2026)
 - [x] **V0.1 — Unités (1.15) + blocs dashboard** : métrique/impérial (conversions 100 %) + accueil étoffé — mergé, testé sur device (05/07/2026)
 - [x] **Écrans piliers** : en-tête structuré (`ScreenHeader`) + tagline — mergé (05/07/2026)
+- [x] **V0.1 — Auth Supabase** (1.1/1.4/1.5/1.6/9.5) : inscription, connexion, session, reset, déconnexion — mergé, testé sur device (05/07/2026)
 - [x] ESLint mobile (eslint-config-expo, flat config) + config EAS (`eas.json`) + `eas init` (05/07/2026)
 - [x] CI GitHub Actions : typecheck + lint + tests sur chaque PR `dev`/`main` (05/07/2026)
