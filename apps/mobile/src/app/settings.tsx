@@ -1,9 +1,11 @@
+import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PILLARS, UNIT_SYSTEMS, type Pillar } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { useAuthStore } from '@/stores/auth-store';
+import { useProfileStore } from '@/stores/profile-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -13,6 +15,7 @@ const THEME_OPTIONS = ['system', 'light', 'dark'] as const;
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const activePillars = useSettingsStore((s) => s.activePillars);
   const togglePillar = useSettingsStore((s) => s.togglePillar);
   const theme = useSettingsStore((s) => s.theme);
@@ -21,11 +24,26 @@ export default function SettingsScreen() {
   const setUnits = useSettingsStore((s) => s.setUnits);
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
+  const restartOnboarding = useProfileStore((s) => s.restartOnboarding);
+
+  const relaunchOnboarding = () => {
+    restartOnboarding();
+    router.replace('/(onboarding)/intro');
+  };
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
-      {/* Piliers actifs (décision H) */}
+      {/* Profil */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+        {t('settings.profile.title')}
+      </Text>
+      <View style={styles.stack}>
+        <Button label={t('settings.profile.edit')} variant="ghost" onPress={() => router.push('/profile')} />
+        <Button label={t('settings.profile.relaunchOnboarding')} variant="ghost" onPress={relaunchOnboarding} />
+      </View>
+
+      {/* Piliers actifs (décision H) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.pillars.title')}
       </Text>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -105,4 +123,5 @@ const styles = StyleSheet.create({
   rowLabel: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
   signOut: { marginTop: 12 },
+  stack: { gap: 10 },
 });
