@@ -29,6 +29,7 @@ export function resolveDeviceLocale(): Locale {
   return DEFAULT_LOCALE;
 }
 
+// eslint-disable-next-line import/no-named-as-default-member -- i18n est l'instance i18next, .use() est une méthode
 void i18n.use(initReactI18next).init({
   resources,
   lng: resolveDeviceLocale(),

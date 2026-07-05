@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — CI GitHub Actions + ESLint mobile
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **`.github/workflows/ci.yml`** : workflow **CI** sur PR/push vers `dev`/`main` — `npm ci`
+  puis **typecheck + lint + tests** (Node depuis `.nvmrc`, cache npm, concurrency avec
+  annulation, timeout 15 min). Répond à bonnes-pratiques §10 (qualité < 10 min sur chaque PR).
+- **ESLint mobile** : `eslint` + `eslint-config-expo` (flat config `eslint.config.js`) —
+  `npm run lint` (`expo lint`) désormais non interactif.
+
+### Modifié
+- **`src/i18n/index.ts`** : suppression d'une warning eslint (faux positif
+  `import/no-named-as-default-member` sur `i18n.use()`), lint à **0 problème**.
+- **CLAUDE.md** / **TODO.md** : CI et lint documentés.
+
+### Technique / Notes
+- Vérifié en local : `npm run lint` (0 problème), `npm run typecheck` OK, `npm run test`
+  (15/15) ; `ci.yml` = YAML valide.
+
 ## 05/07/2026 — Config EAS (profils de build Android)
 
 _Branche : `chore/scaffolding-monorepo`_

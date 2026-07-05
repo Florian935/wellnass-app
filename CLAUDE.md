@@ -135,7 +135,7 @@ vient d'être livré.
 |---|---|
 | `npm install` | Installe toutes les dépendances (hoistées à la racine). |
 | `npm run typecheck` | `tsc --noEmit` sur tous les workspaces. |
-| `npm run lint` | Lint des workspaces qui l'exposent (`expo lint` côté mobile). |
+| `npm run lint` | Lint des workspaces qui l'exposent (`expo lint` + eslint-config-expo côté mobile). |
 | `npm run test` | Tests des workspaces (**Vitest** sur `packages/shared`). |
 | `npm run mobile` | Raccourci → démarre le serveur de dev Expo de `apps/mobile`. |
 
@@ -153,6 +153,8 @@ vient d'être livré.
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
 > Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
+> **CI** : GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) exécute
+> typecheck + lint + tests sur chaque PR vers `dev`/`main`.
 > **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
 > `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
 > (`npm run build:dev`).
