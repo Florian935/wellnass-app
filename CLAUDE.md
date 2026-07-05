@@ -136,7 +136,7 @@ vient d'être livré.
 | `npm install` | Installe toutes les dépendances (hoistées à la racine). |
 | `npm run typecheck` | `tsc --noEmit` sur tous les workspaces. |
 | `npm run lint` | Lint des workspaces qui l'exposent (`expo lint` côté mobile). |
-| `npm run test` | Tests des workspaces (aucun runner câblé pour l'instant). |
+| `npm run test` | Tests des workspaces (**Vitest** sur `packages/shared`). |
 | `npm run mobile` | Raccourci → démarre le serveur de dev Expo de `apps/mobile`. |
 
 **App mobile** (`apps/mobile`, package `@wellness/mobile`) :
@@ -151,8 +151,8 @@ vient d'être livré.
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
 > Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
-> **Pas encore câblés** : EAS (dev build), tests (Jest/Vitest), Supabase/PowerSync — à ajouter
-> avec les US correspondantes.
+> **Pas encore câblés** : EAS (dev build), tests **mobile** (jest-expo — viendront avec la 1ʳᵉ
+> feature), Supabase/PowerSync — à ajouter avec les US correspondantes.
 
 ## Langue
 

@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Runner de tests unitaires (Vitest sur packages/shared)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **Vitest** sur `packages/shared` (`vitest.config.ts`, env node) avec **seuils de couverture
+  à 100 %** (statements / branches / functions / lines) — exigence bonnes-pratiques §4 pour la
+  logique pure. Scripts `test`, `test:watch`, `test:coverage`.
+- **15 tests** couvrant les schémas Zod : `sync.test.ts` (UUID, timestamp UTC, champs de synchro,
+  soft delete, contenu global sans `userId`) et `pillar.test.ts` (piliers, locales FR/EN).
+
+### Modifié
+- **package.json** (`@wellness/shared`) : dépendances de dev `vitest` + `@vitest/coverage-v8`.
+- **CLAUDE.md** / **TODO.md** : commande `test` documentée, item runner de tests coché.
+
+### Technique / Notes
+- Vérifié : `npm run test` OK (15/15), couverture **100 %**, `npm run typecheck` OK (fichiers de
+  test inclus).
+- Tests **mobile** (jest-expo) volontairement différés à la première feature.
+
 ## 05/07/2026 — Scaffolding du monorepo (npm workspaces + Expo + shared)
 
 _Branche : `chore/scaffolding-monorepo`_

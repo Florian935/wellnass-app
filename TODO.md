@@ -33,8 +33,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Créer l'**app Expo** (React Native + TypeScript + Expo Router + Zustand) — SDK 57, Metro monorepo (05/07/2026)
 - [x] Poser l'infra **i18n** (i18next + expo-localization, FR + EN, aucune chaîne en dur) (05/07/2026)
 - [x] Renseigner la section **Commandes** de [CLAUDE.md](CLAUDE.md) (05/07/2026)
+- [x] Câbler un **runner de tests** — Vitest sur `packages/shared` (couverture 100 %) + `npm run test` (05/07/2026)
 - [ ] Mettre en place le **dev build Expo** (EAS) (Expo Go insuffisant — module natif PowerSync)
-- [ ] Câbler un **runner de tests** (Jest/Vitest) + `npm run test`
+- [ ] Câbler les **tests mobile** (jest-expo) — avec la 1ʳᵉ feature
 - [ ] Provisionner **Supabase** (Postgres + Auth + Storage + RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
 - [ ] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository)
 
@@ -58,3 +59,4 @@ démarrent leur cycle spec → plan → design → validation → code.
 - [x] Fichiers de config dépôt : `.gitignore` + `.gitattributes` (normalisation LF) (05/07/2026)
 - [x] Bundle design FitTrio (handoff Claude Design) importé dans `design/` (05/07/2026)
 - [x] Scaffolding monorepo : npm workspaces + Expo (SDK 57, Router, Zustand, i18n FR/EN) + `packages/shared` (Zod) + stub `apps/admin` — typecheck ✅, bundle web ✅ (05/07/2026)
+- [x] Runner de tests : Vitest sur `packages/shared`, 15 tests, couverture **100 %** (05/07/2026)
