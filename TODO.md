@@ -17,7 +17,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ## 🚧 En cours
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
-- [~] **PowerSync** (9.13/9.3) — SDK op-sqlite + schéma + connecteur Supabase + provider câblés. PR ouverte. **Reste** : config cloud (publication Supabase + sync rules) + `build:dev` + test sync.
+- [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)
+- [~] **Écrans légaux & consentement + âge 16+** (1.21) — CGU/confidentialité (brouillon) + contrôle d'âge. PR ouverte, testé device. Textes juridiques réels à fournir.
 
 ---
 

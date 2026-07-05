@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.1 : écrans légaux & consentement + âge 16+ (item 1.21)
+
+_Branche : `feat/1.21-legal-consent`_
+
+### Ajouté
+- **`packages/shared/age.ts`** : `computeAge`, `isAtLeast`, `toDate` (validation calendrier) +
+  `MIN_SIGNUP_AGE` (16). **11 tests, couverture 100 %.**
+- **Inscription** : champs **date de naissance** (JJ/MM/AAAA) avec contrôle **âge ≥ 16 ans**
+  (RGPD) + **case de consentement** CGU / politique de confidentialité (obligatoire).
+- **Écrans légaux** `(auth)/terms` et `(auth)/privacy` (composant `LegalScreen`, contenu
+  **brouillon** bilingue à faire relire juridiquement) accessibles via liens à l'inscription.
+- Composant `Checkbox` réutilisable. i18n FR/EN complet.
+
+### Technique / Notes
+- Frontend pur (testé en hot-reload). Vérifié : `typecheck` OK, `lint` (0 problème),
+  `test` **39/39** (shared 100 %).
+- Contenu légal = **placeholder** (roadmap : « textes juridiques à fournir / faire relire »).
+
 ## 05/07/2026 — V0.1 : intégration PowerSync (SQLite local + connecteur Supabase, 9.13)
 
 _Branche : `feat/9.13-powersync`_

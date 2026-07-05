@@ -55,7 +55,23 @@
       "signInLink": "Sign in",
       "passwordTooShort_one": "Password must be at least {{count}} character.",
       "passwordTooShort_other": "Password must be at least {{count}} characters.",
-      "passwordMismatch": "Passwords don't match."
+      "passwordMismatch": "Passwords don't match.",
+      "birthDate": "Date of birth",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "invalidBirthDate": "Invalid date of birth.",
+      "tooYoung_one": "You must be at least {{count}} year old to create an account.",
+      "tooYoung_other": "You must be at least {{count}} years old to create an account.",
+      "consentRequired": "You must accept the Terms and Privacy Policy.",
+      "consent": {
+        "accessibility": "Accept the Terms and Privacy Policy",
+        "prefix": "I accept the ",
+        "terms": "Terms of Service",
+        "middle": " and the ",
+        "privacy": "Privacy Policy",
+        "suffix": "."
+      }
     },
     "forgot": {
       "title": "Forgot password",
@@ -67,6 +83,27 @@
       "title": "Verify your email",
       "message": "We sent a verification link to {{email}}. Open it, then sign in.",
       "cta": "Go to sign in"
+    }
+  },
+  "legal": {
+    "draftNotice": "⚠️ Draft document — will be replaced by a legally reviewed version before launch.",
+    "terms": {
+      "title": "Terms of Service",
+      "body": [
+        "By using Wellness, you agree to use the app for its intended purpose: tracking your strength, running and nutrition activities.",
+        "You are responsible for the accuracy of the information you enter. Wellness does not provide medical advice; consult a health professional before any training or diet program.",
+        "Your account is personal. You are responsible for keeping your credentials confidential.",
+        "The minimum age to create an account is 16."
+      ]
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "body": [
+        "We only collect the data needed to run the app: account (email), profile and the activity data you enter.",
+        "Your data is isolated per user and securely synced to the cloud. It is never sold to third parties.",
+        "Health and location data are never shared without your explicit consent.",
+        "You can request an export or deletion of your data at any time from settings."
+      ]
     }
   },
   "pillarScreens": {

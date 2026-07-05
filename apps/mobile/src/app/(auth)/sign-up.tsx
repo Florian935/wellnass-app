@@ -2,7 +2,9 @@ import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { MIN_SIGNUP_AGE, isAtLeast, toDate } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { Checkbox } from '@/components/Checkbox';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
@@ -21,6 +23,10 @@ export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [day, setDay] = useState('');
+  const [month, setMonth] = useState('');
+  const [year, setYear] = useState('');
+  const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,6 +40,19 @@ export default function SignUpScreen() {
       setError(t('auth.signUp.passwordMismatch'));
       return;
     }
+    const birthDate = toDate(Number(day), Number(month), Number(year));
+    if (!birthDate) {
+      setError(t('auth.signUp.invalidBirthDate'));
+      return;
+    }
+    if (!isAtLeast(birthDate, MIN_SIGNUP_AGE)) {
+      setError(t('auth.signUp.tooYoung', { count: MIN_SIGNUP_AGE }));
+      return;
+    }
+    if (!consent) {
+      setError(t('auth.signUp.consentRequired'));
+      return;
+    }
     setLoading(true);
     const result = await signUp(email.trim(), password);
     setLoading(false);
@@ -44,7 +63,6 @@ export default function SignUpScreen() {
     if (result.needsVerification) {
       router.replace({ pathname: '/(auth)/verify-email', params: { email: email.trim() } });
     }
-    // Sinon (confirmation désactivée) : session ouverte → redirection par le layout racine.
   };
 
   return (
@@ -77,6 +95,62 @@ export default function SignUpScreen() {
         textContentType="newPassword"
       />
 
+      {/* Date de naissance — contrôle d'âge RGPD (16+) */}
+      <Text style={[styles.groupLabel, { color: colors.textMuted }]}>
+        {t('auth.signUp.birthDate')}
+      </Text>
+      <View style={styles.dateRow}>
+        <View style={styles.dateField}>
+          <TextField
+            label={t('auth.signUp.day')}
+            value={day}
+            onChangeText={setDay}
+            keyboardType="number-pad"
+            maxLength={2}
+            placeholder="JJ"
+          />
+        </View>
+        <View style={styles.dateField}>
+          <TextField
+            label={t('auth.signUp.month')}
+            value={month}
+            onChangeText={setMonth}
+            keyboardType="number-pad"
+            maxLength={2}
+            placeholder="MM"
+          />
+        </View>
+        <View style={[styles.dateField, styles.yearField]}>
+          <TextField
+            label={t('auth.signUp.year')}
+            value={year}
+            onChangeText={setYear}
+            keyboardType="number-pad"
+            maxLength={4}
+            placeholder="AAAA"
+          />
+        </View>
+      </View>
+
+      {/* Consentement CGU + confidentialité */}
+      <Checkbox
+        checked={consent}
+        onToggle={() => setConsent((v) => !v)}
+        accessibilityLabel={t('auth.signUp.consent.accessibility')}
+      >
+        <Text style={[styles.consentText, { color: colors.textMuted }]}>
+          {t('auth.signUp.consent.prefix')}
+          <Link href="/(auth)/terms" style={[styles.link, { color: colors.accent }]}>
+            {t('auth.signUp.consent.terms')}
+          </Link>
+          {t('auth.signUp.consent.middle')}
+          <Link href="/(auth)/privacy" style={[styles.link, { color: colors.accent }]}>
+            {t('auth.signUp.consent.privacy')}
+          </Link>
+          {t('auth.signUp.consent.suffix')}
+        </Text>
+      </Checkbox>
+
       {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
 
       <Button label={t('auth.signUp.cta')} onPress={onSubmit} loading={loading} />
@@ -96,6 +170,11 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   link: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   error: { fontFamily: fontFamily.bodyMedium, fontSize: 14 },
+  groupLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13, marginBottom: -8 },
+  dateRow: { flexDirection: 'row', gap: 12 },
+  dateField: { flex: 1 },
+  yearField: { flex: 1.4 },
+  consentText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 'auto' },
   footerText: { fontFamily: fontFamily.body, fontSize: 14 },
 });
