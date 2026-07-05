@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.1 : shell de navigation (onglets, thème, états vides)
+
+_Branche : `feat/2.1-navigation-onglets`_
+
+### Ajouté
+- **Navigation à onglets** (spec navigation-ux §2 · items 2.1/2.2) : groupe `src/app/(tabs)/`
+  — Accueil, Muscu, Course, Alim. Les onglets des **piliers non activés sont masqués**
+  (décision H), pilotés par le store, réactivables dans les Réglages (`href: null`).
+- **Écran Réglages** (`settings.tsx`, en modale) : activation des piliers + **choix du thème**
+  clair / sombre / système (item 1.16).
+- **Système de thème** (`src/theme/`) : échelle nommée clair/sombre (accent terracotta) dérivée
+  de la maquette de référence, hook `useTheme`, application à la navigation + StatusBar.
+- **États vides soignés** (item 2.10) : composant `EmptyState` (icône + texte + CTA) sur chaque
+  écran pilier + accueil ; conteneur `Screen` thémé.
+- **i18n FR + EN** de toute l'US (aucune chaîne en dur — décision G).
+- Dépendance `@expo/vector-icons` (icônes onglets/états vides).
+
+### Technique / Notes
+- Vérifié : `typecheck` OK, `lint` (0 problème), `test` (15/15), `expo export web` OK (11 routes).
+- **Aucun module natif ajouté** → chargeable par le dev client existant sans rebuild.
+- **Différé** : polices custom (Bricolage Grotesque / Hanken Grotesk / Space Mono) et unités
+  métrique/impérial (item 1.15) — US dédiées.
+
 ## 05/07/2026 — Socle Supabase local
 
 _Branche : `chore/supabase-socle`_

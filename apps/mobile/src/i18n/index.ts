@@ -1,3 +1,5 @@
+// Polyfill Intl.PluralRules (Hermes ne l'expose pas complètement) — doit précéder i18next.
+import 'intl-pluralrules';
 import { getLocales } from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
