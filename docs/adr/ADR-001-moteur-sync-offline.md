@@ -1,7 +1,7 @@
 # ADR-001 — Moteur de synchronisation offline-first
 
-- **Statut** : ✅ **Accepté** — PowerSync retenu, sous réserve de confirmation par le [spike 001](../specs/technical/spike-001-powersync.md).
-- **Date** : 30/06/2026 (proposé) · 04/07/2026 (accepté après arbitrages de cadrage)
+- **Statut** : ✅ **Accepté et confirmé** — PowerSync retenu, **confirmé par le [spike 001](../specs/technical/spike-001-powersync.md)** le 05/07/2026.
+- **Date** : 30/06/2026 (proposé) · 04/07/2026 (accepté après arbitrages de cadrage) · **05/07/2026 (confirmé par le spike)**
 - **Décideurs** : les 2 devs (Florian + Damien), pilotage technique délégué à Claude Code.
 - **Lié à** : décision de cadrage [B — Moteur de synchro offline](../../SYNTHESE-CADRAGE.md) · principe offline-first structurant.
 
@@ -40,6 +40,29 @@ Base locale SQLite éprouvée pour RN, mais synchro contre Supabase **codée à 
 **Option A — PowerSync**, parce que c'est l'option qui **neutralise le mieux le risque de synchro maison** pour une petite équipe, tout en étant pensée pour Supabase. Décision actée le 04/07/2026 lors de la mise en commun des cadrages.
 
 **Conditionnelle** : la décision est **figée sous réserve de confirmation par le [spike 001](../specs/technical/spike-001-powersync.md)** (compat dev build Expo + synchro réelle + comportement offline/conflits + tenue sur données volumineuses GPS). En cas d'échec du spike → repli sur **C (Legend-State)** puis **B (WatermelonDB)**.
+
+## Résultat du spike 001 (05/07/2026) — ✅ CONFIRMÉ
+
+Mini-app Expo jetable (React Native + Expo SDK 54, dev build Android sur Pixel 6a) branchée sur une instance PowerSync Cloud reliée à un projet Supabase (table jouet `todos`). Les 6 critères de réussite ont été déroulés :
+
+| # | Critère | Verdict |
+|---|---------|---------|
+| 1 | Build (dev build Expo + module natif PowerSync) | ✅ Compile et tourne sur Pixel 6a |
+| 2 | Écriture offline (mode avion) persistante localement | ✅ Instantané, persistant après fermeture, reprise auto au retour réseau |
+| 3 | Synchro montante (upload → Supabase) | ✅ |
+| 4 | Synchro descendante (Supabase → app) | ✅ |
+| 5 | Conflit même donnée (tel offline vs édition Supabase) | ✅ *Last-write-wins* côté client, déterministe, sans corruption — **configurable** dans `uploadData` |
+| 6 | DX / effort pour 2 devs | ✅ Raisonnable (client ≈ 5 fichiers), à condition de connaître 2 pièges de config (ci-dessous) |
+
+**Verdict : PowerSync est validé.** Aucun critère bloquant (1–4) n'a échoué ; le repli C/B n'est pas activé.
+
+### Pièges de configuration rencontrés (à intégrer au provisioning)
+1. **Auth Supabase → PowerSync** : Supabase signe ses JWT avec des **clés asymétriques ES256** (nouveau système *JWT Signing Keys*). Il faut activer **« Use Supabase Auth »** dans PowerSync → *Client Auth* (champ *JWT Secret* laissé vide), sinon la connexion de streaming est rejetée en **401 `PSYNC_S2101`** — l'upload continue de marcher (il tape direct sur Supabase), mais **rien ne descend**, ce qui masque la cause.
+2. **Sync Streams `edition: 3`** : le nouveau format exige **`auto_subscribe: true`** sur le stream, sinon le client ne s'abonne à rien et **ne reçoit aucune donnée descendante** (connexion pourtant « saine »).
+
+### Réserve — reste à valider
+- **Tenue sur données volumineuses (traces GPS running)** : **non couverte** par ce spike (table jouet uniquement). À éprouver avant/pendant la V0.5 (running), comme prévu.
+- Comportement de la **reprise réseau** à re-tester hors artefacts du dev build (couplage app ↔ Metro).
 
 ## Conséquences
 

@@ -50,6 +50,13 @@ with check (auth.uid() = user_id);
 
 -- Publication lue par PowerSync (réplication logique)
 create publication powersync for table public.todos;
+
+-- Rôle de réplication DÉDIÉ pour PowerSync (⚠️ requis — ne PAS utiliser le user `postgres`).
+-- Remplace <MDP_FORT> par un mot de passe fort : tu le saisiras dans PowerSync en 2.2.
+-- (Nouveau secret, différent du mot de passe DB — à garder pour toi.)
+create role powersync_role with replication bypassrls login password '<MDP_FORT>';
+grant select on all tables in schema public to powersync_role;
+alter default privileges in schema public grant select on tables to powersync_role;
 ```
 
 ### 1.4 Créer un utilisateur de test
@@ -77,25 +84,35 @@ create publication powersync for table public.todos;
 - [ ] Crée un compte sur **powersync.com** (console PowerSync / JourneyApps).
 - [ ] Crée une **nouvelle instance** (offre gratuite « dev »).
 
-### 2.2 Connecter PowerSync à Supabase
-- [ ] Dans l'instance, ajoute une **connexion à la base** (cherche un parcours **« Connect to Supabase »** s'il existe — il pré-remplit l'auth).
-- [ ] Renseigne les infos de connexion **Direct** (Phase 1.5) + le **mot de passe DB**.
-- [ ] Valide → PowerSync doit indiquer la connexion **OK / replicating**.
-- [ ] *(L'intégration Supabase configure normalement l'auth toute seule pour faire confiance aux JWT Supabase — si une étape « JWKS / Auth » est demandée manuellement, dis-le-moi.)*
+### 2.2 Connecter PowerSync à Supabase (Database Connection)
+> L'UI actuelle ne propose pas de wizard « Connect to Supabase » : c'est un **formulaire Postgres générique**. Remplis-le à la main.
+- [ ] **Host** : la connexion **Direct** de Supabase (`db.xxxx.supabase.co`, port `5432`) fonctionne — PowerSync Cloud joint bien l'IPv6. *(Si la connexion directe est refusée, bascule sur le **Session pooler** IPv4 : host `aws-<region>.pooler.supabase.com`, port `5432`, et user suffixé `powersync_role.<project-ref>`.)*
+- [ ] **Database Name** : `postgres` · **SSL Mode** : `verify-full` (PowerSync embarque le CA Supabase, aucun certif à fournir).
+- [ ] **Username** : `powersync_role` · **Password** : le `<MDP_FORT>` créé en 1.3. **(Pas le user `postgres`.)**
+- [ ] **Test Connection** → puis **Save Connection**. PowerSync doit passer **replicating**.
 
-### 2.3 Définir les Sync Rules
-- [ ] Dans l'instance, ouvre **Sync Rules** et colle ceci :
+### 2.2b Auth client (⚠️ piège vécu au spike — 401 `PSYNC_S2101`)
+> Supabase signe ses JWT avec des **clés asymétriques ES256** (nouveau *JWT Signing Keys*). Sans ce réglage, le streaming est rejeté en **401** : l'upload marche quand même (il tape direct sur Supabase) mais **rien ne descend**, ce qui masque la cause.
+- [ ] Menu **Client Auth** de l'instance → **coche « Use Supabase Auth »**.
+- [ ] Laisse le champ **« Supabase JWT Secret » VIDE** (inutile avec les clés asymétriques).
+- [ ] **Save and Deploy** → PowerSync auto-détecte le JWKS (`/auth/v1/.well-known/jwks.json`) et l'audience `authenticated`.
+
+### 2.3 Définir le Sync Stream
+> L'UI actuelle utilise le nouveau format **« Sync Streams » (`edition: 3`)**, plus le YAML `bucket_definitions` legacy.
+> ⚠️ **Piège vécu au spike** : en edition 3, un stream **n'est PAS synchronisé automatiquement** — il faut **`auto_subscribe: true`**, sinon le client ne s'abonne à rien et **ne reçoit aucune donnée descendante** (alors que la connexion paraît saine).
+- [ ] Dans l'instance, ouvre **Sync Streams** et colle ceci :
 
 ```yaml
-bucket_definitions:
+config:
+  edition: 3
+
+streams:
   user_todos:
-    # un "bucket" de données par utilisateur connecté
-    parameters: select request.user_id() as user_id
-    data:
-      - select * from todos where user_id = bucket.user_id
+    auto_subscribe: true
+    query: SELECT * FROM todos WHERE user_id = auth.user_id()
 ```
 
-- [ ] **Deploy / Save** les sync rules.
+- [ ] **Deploy** le stream.
 
 ### 2.4 Récupérer l'URL de l'instance
 - [ ] Note l'**URL de l'instance PowerSync** (du type `https://xxxxx.powersync.journeyapps.com`).

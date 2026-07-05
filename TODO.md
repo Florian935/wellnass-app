@@ -23,7 +23,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ## ⏭️ À faire prochainement (avant / début V0.1)
 
 ### Décisions bloquantes à trancher
-- [ ] Confirmer **PowerSync** via le spike ([spike-001](docs/specs/technical/spike-001-powersync.md)) — **conditionne le modèle de données** (ADR-001)
+- [x] Confirmer **PowerSync** via le spike ([spike-001](docs/specs/technical/spike-001-powersync.md)) — ✅ **validé le 05/07/2026** (voir [ADR-001](docs/adr/ADR-001-moteur-sync-offline.md)), débloque le modèle de données
 - [ ] Trancher **Mapbox vs MapLibre** (fournisseur de cartes, running V0.5)
 - [ ] Source des **GIF d'exercices** — exercises-dataset vs ExerciseDB (avant V0.2)
 - [ ] Source de la **base d'aliments** — CIQUAL + OpenFoodFacts + plan de traduction EN (avant V0.4)

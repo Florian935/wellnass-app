@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Ajout du bundle design FitTrio (handoff Claude Design)
+
+_Branche : `docs/verdict-spike-001`_
+
+### Ajouté
+- **`design/`** : bundle de handoff exporté depuis Claude Design (« FitTrio ») — prototype
+  HTML/CSS/JS (`FitTrio.dc.html`), preview (`FitTrio.preview.webp`), `design-system.md`,
+  script `support.js` et `README.md` d'instructions pour l'agent.
+
+### Fichiers touchés
+- `design/FitTrio.dc.html`, `design/FitTrio.preview.webp`, `design/README.md`,
+  `design/design-system.md`, `design/support.js`
+
+## 05/07/2026 — Spike 001 PowerSync : verdict ✅ + runbook corrigé
+
+_Branche : `docs/verdict-spike-001`_
+
+### Ajouté
+- **ADR-001** — section « Résultat du spike 001 (05/07/2026) » : tableau des 6 critères,
+  verdict (**PowerSync validé**), 2 pièges de config rencontrés, réserve sur la volumétrie GPS.
+
+### Modifié
+- **ADR-001** : statut → « ✅ Accepté et confirmé » (confirmé par le spike le 05/07/2026).
+- **runbook-provisioning-spike** : rôle de réplication dédié `powersync_role` (1.3) ;
+  formulaire de connexion réel + étape **Client Auth « Use Supabase Auth »** contre le 401
+  `PSYNC_S2101` (2.2/2.2b) ; **Sync Streams `edition: 3` avec `auto_subscribe: true`** (2.3).
+
+### Technique / Notes
+- Le code de la mini-app du spike vit **hors du repo** (`../wellness-spike`, dépôt git séparé),
+  conforme à la spec spike-001 (« jetable / archivé hors du repo principal »).
+
+### Fichiers touchés
+- `docs/adr/ADR-001-moteur-sync-offline.md`, `docs/specs/technical/runbook-provisioning-spike.md`,
+  `CHANGELOG.md`, `TODO.md`
+
 ## 05/07/2026 — Ajout de `.gitignore` et `.gitattributes`
 
 _Branche : `chore/gitignore-gitattributes` · commit précédent : `d81b11e`_
