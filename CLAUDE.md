@@ -117,7 +117,8 @@ vient d'être livré.
   /mobile                   → app Expo (React Native, Expo Router, Zustand, i18n)
   /admin                    → back-office web (stub, V0.7)
 /packages
-  /shared                   → types + schémas Zod partagés
+  /shared                   → types + schémas Zod partagés (+ database.types générés)
+/supabase                   → config locale, migrations, seed (stack Docker via CLI)
 /docs
   /product                  → vision, prd, personas, metriques-succes
   /specs
@@ -150,6 +151,15 @@ vient d'être livré.
 | `npm run build:dev` | Build EAS **dev client** (APK, requis pour PowerSync) — nécessite `eas login` + `eas init`. |
 | `npm run build:preview` / `build:prod` | Build EAS bêta interne (APK) / Play Store (AAB). |
 
+**Supabase local** (nécessite **Docker Desktop** + CLI `supabase` — via `npx supabase`) :
+
+| Commande (racine) | Effet |
+|---|---|
+| `npm run db:start` / `db:stop` | Démarre / arrête la stack Supabase locale. |
+| `npm run db:reset` | Recrée la base + rejoue les migrations + `seed.sql`. |
+| `npm run db:status` | Affiche URL + clés locales (à mettre dans `apps/mobile/.env`). |
+| `npm run db:types` | Régénère `packages/shared/src/database.types.ts` depuis le schéma local. |
+
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
 > Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
@@ -158,8 +168,12 @@ vient d'être livré.
 > **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
 > `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
 > (`npm run build:dev`).
+> **Supabase** : socle local posé ([supabase/](supabase/)) — config, migration de conventions
+> (trigger `set_updated_at`), client typé mobile ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts),
+> Auth). **Non provisionné** (pas de projet cloud ; migration non appliquée — Docker requis).
+> Schéma métier à créer avec les US.
 > **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
-> Supabase/PowerSync — à ajouter avec les US correspondantes.
+> **PowerSync** (SQLite local + sync) — à ajouter avec les US correspondantes.
 
 ## Langue
 
