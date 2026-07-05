@@ -16,7 +16,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **Écrans piliers** — en-tête structuré (`ScreenHeader`) + tagline sur Muscu/Course/Alim. PR ouverte.
+- [~] **V0.1 — Auth Supabase** (1.1/1.4/1.5/1.6/9.5) — inscription, connexion, session, reset, déconnexion. PR ouverte, testé sur device. Session en mémoire (stockage chiffré 9.8 différé au rebuild PowerSync).
 
 ---
 
@@ -64,5 +64,6 @@ démarrent leur cycle spec → plan → design → validation → code.
 - [x] **V0.1 — Shell de navigation** : onglets + masquage piliers (2.1/2.2), thème (1.16), états vides (2.10), i18n FR/EN — mergé, **testé sur device** (05/07/2026)
 - [x] **V0.1 — Polices custom** : Bricolage / Hanken / Space Mono d'après la maquette — mergé, testé sur device (05/07/2026)
 - [x] **V0.1 — Unités (1.15) + blocs dashboard** : métrique/impérial (conversions 100 %) + accueil étoffé — mergé, testé sur device (05/07/2026)
+- [x] **Écrans piliers** : en-tête structuré (`ScreenHeader`) + tagline — mergé (05/07/2026)
 - [x] ESLint mobile (eslint-config-expo, flat config) + config EAS (`eas.json`) + `eas init` (05/07/2026)
 - [x] CI GitHub Actions : typecheck + lint + tests sur chaque PR `dev`/`main` (05/07/2026)

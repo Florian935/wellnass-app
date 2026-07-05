@@ -1,6 +1,8 @@
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PILLARS, UNIT_SYSTEMS, type Pillar } from '@wellness/shared';
+import { Button } from '@/components/Button';
+import { useAuthStore } from '@/stores/auth-store';
 import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -49,6 +51,8 @@ export default function SettingsScreen() {
   const setTheme = useSettingsStore((s) => s.setTheme);
   const units = useSettingsStore((s) => s.units);
   const setUnits = useSettingsStore((s) => s.setUnits);
+  const email = useAuthStore((s) => s.session?.user.email);
+  const signOut = useAuthStore((s) => s.signOut);
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
@@ -100,6 +104,15 @@ export default function SettingsScreen() {
         label={(option) => t(`settings.units.${option}`)}
       />
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.units.hint')}</Text>
+
+      {/* Compte */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.account.title')}
+      </Text>
+      {email ? <Text style={[styles.rowLabel, { color: colors.text }]}>{email}</Text> : null}
+      <View style={styles.signOut}>
+        <Button label={t('settings.account.signOut')} variant="ghost" onPress={() => void signOut()} />
+      </View>
     </ScrollView>
   );
 }
@@ -123,6 +136,7 @@ const styles = StyleSheet.create({
   },
   rowLabel: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
+  signOut: { marginTop: 12 },
   segment: {
     flexDirection: 'row',
     borderRadius: 16,
