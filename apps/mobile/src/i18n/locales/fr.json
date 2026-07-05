@@ -31,6 +31,40 @@
       "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt."
     }
   },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "signIn": {
+      "title": "Connexion",
+      "subtitle": "Content de te revoir 👋",
+      "cta": "Se connecter",
+      "forgot": "Mot de passe oublié ?",
+      "noAccount": "Pas encore de compte ?",
+      "signUpLink": "Créer un compte"
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoins Wellness en quelques secondes.",
+      "confirmPassword": "Confirmer le mot de passe",
+      "cta": "Créer le compte",
+      "hasAccount": "Déjà un compte ?",
+      "signInLink": "Se connecter",
+      "passwordTooShort_one": "Le mot de passe doit faire au moins {{count}} caractère.",
+      "passwordTooShort_other": "Le mot de passe doit faire au moins {{count}} caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "subtitle": "On t'envoie un lien de réinitialisation par email.",
+      "cta": "Envoyer le lien",
+      "sent": "Si un compte existe pour {{email}}, un lien de réinitialisation vient d'être envoyé."
+    },
+    "verify": {
+      "title": "Vérifie ton email",
+      "message": "On a envoyé un lien de vérification à {{email}}. Ouvre-le, puis connecte-toi.",
+      "cta": "Aller à la connexion"
+    }
+  },
   "pillarScreens": {
     "strength": {
       "tagline": "Programmes, séances et records.",
@@ -65,6 +99,10 @@
       "metric": "Métrique",
       "imperial": "Impérial",
       "hint": "Métrique (kg, km) ou impérial (lb, mi). S'applique à tous les affichages."
+    },
+    "account": {
+      "title": "Compte",
+      "signOut": "Se déconnecter"
     }
   }
 }

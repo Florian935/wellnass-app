@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.1 : authentification Supabase (inscription, connexion, session)
+
+_Branche : `feat/1.1-auth-supabase`_
+
+### Ajouté
+- **Store d'auth** (`stores/auth-store.ts`) : session Supabase + `signUp` / `signIn` /
+  `signOut` / `resetPassword`, résolution de session au démarrage et abonnement
+  `onAuthStateChange` (session persistante, refresh silencieux — items 1.1/1.4/1.5/1.6/9.5).
+- **Groupe de routes `(auth)`** : `sign-in`, `sign-up`, `forgot-password`, `verify-email`.
+- **Gating de navigation** dans le layout racine : redirige vers `(auth)` sans session, vers
+  `(tabs)` une fois connecté (splash maintenu jusqu'à résolution de la session).
+- **Composants** réutilisables : `Button`, `TextField`, `FormScreen`.
+- Réglages : section **Compte** (email + déconnexion). i18n FR/EN complet.
+
+### Modifié
+- **`lib/supabase.ts`** : stockage de session **en mémoire** (aucun module natif) pour tester
+  le flux sur le dev client actuel sans rebuild.
+
+### Technique / Notes
+- Vérifié : `typecheck` OK, `lint` (0 problème), `test` 28/28, testé sur device (inscription →
+  vérif email → connexion → déconnexion).
+- **`.env`** local (gitignoré) créé pour charger les clés client Supabase.
+- **Différé** (prochain dev build, groupé avec PowerSync) : stockage **chiffré/persistant**
+  (`expo-secure-store`, item 9.8). En attendant, la session ne survit pas à une fermeture totale.
+- **Différé** (US dédiées) : OAuth Google, CGU + âge 16+ (1.21), onboarding (V0.2),
+  localisation des messages d'erreur Supabase.
+
 ## 05/07/2026 — Écrans piliers : en-tête structuré (ScreenHeader)
 
 _Branche : `feat/pillar-screens`_
