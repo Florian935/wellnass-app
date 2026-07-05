@@ -147,12 +147,16 @@ vient d'être livré.
 | `npx expo start --android` | Ouvre sur Android. |
 | `npx expo export --platform web` | Bundle web (utilisé comme smoke-test de bundling). |
 | `npx expo install --check` | Vérifie l'alignement des versions avec le SDK Expo. |
+| `npm run build:dev` | Build EAS **dev client** (APK, requis pour PowerSync) — nécessite `eas login` + `eas init`. |
+| `npm run build:preview` / `build:prod` | Build EAS bêta interne (APK) / Play Store (AAB). |
 
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
 > Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
-> **Pas encore câblés** : EAS (dev build), tests **mobile** (jest-expo — viendront avec la 1ʳᵉ
-> feature), Supabase/PowerSync — à ajouter avec les US correspondantes.
+> **EAS** : profils de build définis ([eas.json](apps/mobile/eas.json)) ; il reste à lancer
+> `eas login` + `eas init` (injecte le `projectId`) puis le premier build.
+> **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
+> Supabase/PowerSync — à ajouter avec les US correspondantes.
 
 ## Langue
 

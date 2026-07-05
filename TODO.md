@@ -34,7 +34,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Poser l'infra **i18n** (i18next + expo-localization, FR + EN, aucune chaîne en dur) (05/07/2026)
 - [x] Renseigner la section **Commandes** de [CLAUDE.md](CLAUDE.md) (05/07/2026)
 - [x] Câbler un **runner de tests** — Vitest sur `packages/shared` (couverture 100 %) + `npm run test` (05/07/2026)
-- [ ] Mettre en place le **dev build Expo** (EAS) (Expo Go insuffisant — module natif PowerSync)
+- [~] Mettre en place le **dev build Expo** (EAS) — profils `eas.json` posés ; reste `eas login` + `eas init` + 1er build (compte Expo requis)
 - [ ] Câbler les **tests mobile** (jest-expo) — avec la 1ʳᵉ feature
 - [ ] Provisionner **Supabase** (Postgres + Auth + Storage + RLS) — cf. [runbook-provisioning-spike](docs/specs/technical/runbook-provisioning-spike.md)
 - [ ] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository)

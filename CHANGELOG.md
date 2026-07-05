@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Config EAS (profils de build Android)
+
+_Branche : `chore/scaffolding-monorepo`_
+
+### Ajouté
+- **`apps/mobile/eas.json`** : 3 profils alignés sur architecture §9 —
+  `development` (dev client APK, **requis PowerSync**), `preview` (bêta interne APK),
+  `production` (AAB, `autoIncrement`) ; `submit.production` → Google Play **track internal**.
+  `appVersionSource: remote` (EAS gère le `versionCode`).
+- **Scripts npm** mobile : `build:dev` / `build:preview` / `build:prod` / `submit:prod`.
+- **README mobile** : section Builds (EAS) + procédure `eas login` / `eas init`.
+
+### Technique / Notes
+- **Non fait dans ce lot** (nécessite un compte Expo, auth interactive) : `eas login`,
+  `eas init` (injecte `extra.eas.projectId`), premier build. OTA (EAS Update) à configurer
+  ensuite avec le `projectId`.
+- Vérifié : `eas.json` = JSON valide, `npm run typecheck` OK.
+
 ## 05/07/2026 — Runner de tests unitaires (Vitest sur packages/shared)
 
 _Branche : `chore/scaffolding-monorepo`_
