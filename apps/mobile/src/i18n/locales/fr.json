@@ -33,14 +33,17 @@
   },
   "pillarScreens": {
     "strength": {
+      "tagline": "Programmes, séances et records.",
       "emptyTitle": "Aucune séance pour l'instant",
       "emptyMessage": "Tes entraînements de musculation apparaîtront ici. Bientôt : démarrer une séance libre."
     },
     "running": {
+      "tagline": "Sorties, allures et progression.",
       "emptyTitle": "Prêt à courir ?",
       "emptyMessage": "Tes sorties et tes allures s'afficheront ici. Le suivi GPS arrive dans une prochaine version."
     },
     "nutrition": {
+      "tagline": "Repas, calories et macros.",
       "emptyTitle": "Ton journal est vide",
       "emptyMessage": "Tes repas et tes calories apparaîtront ici. Le journal alimentaire arrive bientôt."
     }

@@ -33,14 +33,17 @@
   },
   "pillarScreens": {
     "strength": {
+      "tagline": "Programs, workouts and records.",
       "emptyTitle": "No workout yet",
       "emptyMessage": "Your strength sessions will appear here. Coming soon: start a free workout."
     },
     "running": {
+      "tagline": "Runs, paces and progress.",
       "emptyTitle": "Ready to run?",
       "emptyMessage": "Your runs and paces will show up here. GPS tracking is coming in a later version."
     },
     "nutrition": {
+      "tagline": "Meals, calories and macros.",
       "emptyTitle": "Your log is empty",
       "emptyMessage": "Your meals and calories will appear here. The food journal is coming soon."
     }

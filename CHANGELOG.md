@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — Écrans piliers : en-tête structuré (ScreenHeader)
+
+_Branche : `feat/pillar-screens`_
+
+### Ajouté
+- **Composant `ScreenHeader`** réutilisable : gros titre display + sous-titre + action optionnelle.
+- Les 3 écrans piliers (Muscu / Course / Alim) reçoivent un **en-tête + tagline** au-dessus de
+  l'état vide (plutôt qu'un simple état vide centré). i18n FR/EN.
+
+### Technique / Notes
+- Frontend pur, aucun package. Vérifié : `typecheck` OK, `lint` (0 problème), `test` 28/28.
+
 ## 05/07/2026 — V0.1 : unités (1.15) + blocs du dashboard d'accueil
 
 _Branche : `feat/1.15-unites-dashboard`_
