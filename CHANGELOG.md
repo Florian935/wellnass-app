@@ -23,10 +23,11 @@ _Branche : `chore/scaffolding-monorepo`_
 - **README mobile** : section Builds (EAS) + procédure `eas login` / `eas init`.
 
 ### Technique / Notes
-- **Non fait dans ce lot** (nécessite un compte Expo, auth interactive) : `eas login`,
-  `eas init` (injecte `extra.eas.projectId`), premier build. OTA (EAS Update) à configurer
-  ensuite avec le `projectId`.
-- Vérifié : `eas.json` = JSON valide, `npm run typecheck` OK.
+- **`eas init` effectué** (compte `damdamdeoh`) : `extra.eas.projectId`, bloc `updates`
+  (EAS Update) et `runtimeVersion` (policy `appVersion`) ajoutés dans `app.json` ; dépendances
+  `expo-dev-client` + `expo-updates` installées.
+- **Reste à faire** : lancer le **premier build** (`npm run build:dev`).
+- Vérifié : `eas.json` = JSON valide, `npm run typecheck` OK, `expo install --check` aligné.
 
 ## 05/07/2026 — Runner de tests unitaires (Vitest sur packages/shared)
 

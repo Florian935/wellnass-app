@@ -153,8 +153,9 @@ vient d'être livré.
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
 > Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
-> **EAS** : profils de build définis ([eas.json](apps/mobile/eas.json)) ; il reste à lancer
-> `eas login` + `eas init` (injecte le `projectId`) puis le premier build.
+> **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
+> `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
+> (`npm run build:dev`).
 > **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
 > Supabase/PowerSync — à ajouter avec les US correspondantes.
 
