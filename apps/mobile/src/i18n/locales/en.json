@@ -15,9 +15,20 @@
   },
   "home": {
     "greeting": "Hello 👋",
-    "empty": {
-      "title": "Your day starts here",
-      "message": "The dashboard will show your workouts, nutrition and streak. Enable your pillars in settings to tailor the home screen."
+    "today": {
+      "title": "Today's session",
+      "empty": "No workout planned today — active rest ✓"
+    },
+    "streak": {
+      "title": "Streak",
+      "count_one": "{{count}} day",
+      "count_other": "{{count}} days",
+      "days": ["M", "T", "W", "T", "F", "S", "S"],
+      "empty": "Log an activity today to start your streak."
+    },
+    "nutrition": {
+      "title": "Nutrition",
+      "empty": "No meals logged yet. The food journal is coming soon."
     }
   },
   "pillarScreens": {
@@ -45,6 +56,12 @@
       "system": "System",
       "light": "Light",
       "dark": "Dark"
+    },
+    "units": {
+      "title": "Units",
+      "metric": "Metric",
+      "imperial": "Imperial",
+      "hint": "Metric (kg, km) or imperial (lb, mi). Applies to all displays."
     }
   }
 }

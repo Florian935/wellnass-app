@@ -16,7 +16,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **V0.1 — Polices custom** (Bricolage / Hanken / Space Mono d'après la maquette) — PR ouverte, testé sur device.
+- [~] **V0.1 — Unités (1.15) + blocs dashboard** — préférence métrique/impérial (conversions testées 100 %) + accueil étoffé (états vides structurés). PR ouverte, testé sur device.
 
 ---
 
@@ -62,5 +62,6 @@ démarrent leur cycle spec → plan → design → validation → code.
 - [x] Scaffolding monorepo : npm workspaces + Expo (SDK 57, Router, Zustand, i18n FR/EN) + `packages/shared` (Zod) + stub `apps/admin` — typecheck ✅, bundle web ✅ (05/07/2026)
 - [x] Runner de tests : Vitest sur `packages/shared`, 15 tests, couverture **100 %** (05/07/2026)
 - [x] **V0.1 — Shell de navigation** : onglets + masquage piliers (2.1/2.2), thème (1.16), états vides (2.10), i18n FR/EN — mergé, **testé sur device** (05/07/2026)
+- [x] **V0.1 — Polices custom** : Bricolage / Hanken / Space Mono d'après la maquette — mergé, testé sur device (05/07/2026)
 - [x] ESLint mobile (eslint-config-expo, flat config) + config EAS (`eas.json`) + `eas init` (05/07/2026)
 - [x] CI GitHub Actions : typecheck + lint + tests sur chaque PR `dev`/`main` (05/07/2026)
