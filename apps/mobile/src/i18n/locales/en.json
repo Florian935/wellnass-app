@@ -2,6 +2,10 @@
   "common": {
     "appName": "Wellness"
   },
+  "sync": {
+    "connected": "Synced",
+    "offline": "Offline"
+  },
   "tabs": {
     "home": "Home",
     "strength": "Strength",

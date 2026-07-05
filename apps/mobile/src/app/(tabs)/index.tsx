@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Card } from '@/components/Card';
+import { SyncStatus } from '@/components/SyncStatus';
 import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -43,9 +44,10 @@ export default function HomeScreen() {
   return (
     <Screen edges={['top']}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerTexts}>
           <Text style={[styles.hello, { color: colors.textMuted }]}>{t('home.greeting')}</Text>
           <Text style={[styles.title, { color: colors.text }]}>{t('common.appName')}</Text>
+          <SyncStatus />
         </View>
         <Link href="/settings" asChild>
           <Pressable
@@ -108,6 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
+  headerTexts: { gap: 4 },
   hello: { fontFamily: fontFamily.bodyMedium, fontSize: 14 },
   title: { fontFamily: fontFamily.displayXBold, fontSize: 28, letterSpacing: -0.8 },
   iconBtn: {

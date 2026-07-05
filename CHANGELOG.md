@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.1 : intégration PowerSync (SQLite local + connecteur Supabase, 9.13)
+
+_Branche : `feat/9.13-powersync`_
+
+### Ajouté
+- **SDK PowerSync** (compatible RN 0.86 / new architecture) : `@powersync/react-native`,
+  `@powersync/react`, adaptateur **`@powersync/op-sqlite` + `@op-engineering/op-sqlite`**,
+  polyfill `@azure/core-asynciterator-polyfill`, plugin babel `transform-async-generator-functions`.
+- **`src/powersync/`** :
+  - `schema.ts` — schéma local (table jouet `todos` du runbook pour valider le pipeline).
+  - `connector.ts` — connecteur Supabase (`fetchCredentials` via JWT, `uploadData` rejoue le CRUD).
+  - `system.ts` — `PowerSyncDatabase` sur op-sqlite.
+  - `PowerSyncProvider.tsx` — contexte + connexion auto quand une session existe.
+- **Indicateur de synchro** (`SyncStatus`) dans l'accueil (navigation-ux §7).
+- Config `babel.config.js` + `metro.config.js` (inlineRequires blockList op-sqlite).
+
+### Technique / Notes
+- Vérifié : `typecheck` OK (API PowerSync validées), `lint` (0 problème), `test` 28/28.
+- ⚠️ **Non testé au runtime** : modules natifs (op-sqlite) → nécessite un **nouveau `build:dev`**
+  ET une **config cloud** (table + publication Supabase, sync rules PowerSync — voir runbook).
+  Schéma métier réel à ajouter avec les US (ici table jouet `todos`).
+
 ## 05/07/2026 — Session persistante & chiffrée (SecureStore / Keystore, item 9.8)
 
 _Branche : `feat/9.8-secure-session`_
