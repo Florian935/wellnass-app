@@ -124,7 +124,7 @@ bucket_definitions:
   client ([lib/id.ts](../../../apps/mobile/src/lib/id.ts)), pose `created_at`/`updated_at` UTC, et
   **supprime en soft** (`update … set deleted_at = ?`). **Aucun SQL dans les écrans ni les hooks
   d'écran.**
-- **Lectures** : hooks `useQuery` de `@powersync/react-native` (watched queries **réactives** —
+- **Lectures** : hooks `useQuery` de `@powersync/react` (watched queries **réactives** —
   se rafraîchissent automatiquement à chaque écriture locale ou synchro descendante). Exposés par
   chaque repository sous forme de hooks typés (ex. `useActiveWorkout()`, `useExerciseLibrary()`).
 - **Zustand** : conservé **uniquement pour l'UI éphémère** (valeurs d'un champ en cours de frappe,

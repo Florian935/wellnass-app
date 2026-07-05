@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — Plan d'implémentation US1 (socle data muscu)
+
+_Branche : `docs/schema-donnees-muscu` · commit précédent : `cabe5f6`_
+
+### Ajouté
+- **Plan d'implémentation** [`docs/plans/us1-socle-data-muscu.md`](docs/plans/us1-socle-data-muscu.md) :
+  22 tâches en 5 phases (backend Supabase + RLS + sync rules → schémas/logique `packages/shared`
+  TDD → couche data mobile repository → jest-expo + bascule des écrans → vérif device). Découpage
+  bite-sized, commits bornés, points 🔴 humains isolés (migrations cloud, sync rules dashboard).
+
+### Corrigé (revue de plan)
+- `useQuery`/`useStatus` rattachés au bon package **`@powersync/react`** (et non `@powersync/react-native`).
+- Ajout explicite du **gate de chargement/routing** (remplace `hasHydrated` ; évite le flash
+  d'onboarding avec les lectures async) + sémantique d'upsert des réglages par défaut au 1er accès.
+- Migration du symbole `MUSCLE_GROUPS`/`MuscleGroup` vers `@wellness/shared` ; reshape explicite
+  de l'ancien modèle imbriqué `entries[].sets[]` vers `workout_sets` plat.
+
+### Technique / Notes
+- Commit **docs uniquement**. Revue de plan (agent `plan-document-reviewer`) traitée ; validation
+  humaine (Damien/Florian) requise avant implémentation (workflow CLAUDE.md).
+
 ## 06/07/2026 — Spec : schéma de données socle & muscu (PowerSync / Supabase)
 
 _Branche : `docs/schema-donnees-muscu` · commit précédent : `727c7f6`_
