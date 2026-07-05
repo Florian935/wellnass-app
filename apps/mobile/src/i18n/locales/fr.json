@@ -55,7 +55,23 @@
       "signInLink": "Se connecter",
       "passwordTooShort_one": "Le mot de passe doit faire au moins {{count}} caractère.",
       "passwordTooShort_other": "Le mot de passe doit faire au moins {{count}} caractères.",
-      "passwordMismatch": "Les mots de passe ne correspondent pas."
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "birthDate": "Date de naissance",
+      "day": "Jour",
+      "month": "Mois",
+      "year": "Année",
+      "invalidBirthDate": "Date de naissance invalide.",
+      "tooYoung_one": "Tu dois avoir au moins {{count}} an pour créer un compte.",
+      "tooYoung_other": "Tu dois avoir au moins {{count}} ans pour créer un compte.",
+      "consentRequired": "Tu dois accepter les CGU et la politique de confidentialité.",
+      "consent": {
+        "accessibility": "Accepter les CGU et la politique de confidentialité",
+        "prefix": "J'accepte les ",
+        "terms": "conditions d'utilisation",
+        "middle": " et la ",
+        "privacy": "politique de confidentialité",
+        "suffix": "."
+      }
     },
     "forgot": {
       "title": "Mot de passe oublié",
@@ -67,6 +83,27 @@
       "title": "Vérifie ton email",
       "message": "On a envoyé un lien de vérification à {{email}}. Ouvre-le, puis connecte-toi.",
       "cta": "Aller à la connexion"
+    }
+  },
+  "legal": {
+    "draftNotice": "⚠️ Document brouillon — sera remplacé par une version rédigée et relue juridiquement avant le lancement.",
+    "terms": {
+      "title": "Conditions d'utilisation",
+      "body": [
+        "En utilisant Wellness, tu acceptes d'utiliser l'application de manière conforme à sa destination : le suivi de tes activités de musculation, de course et de nutrition.",
+        "Tu es responsable de l'exactitude des informations que tu saisis. Wellness ne fournit pas de conseil médical ; consulte un professionnel de santé avant tout programme d'entraînement ou régime.",
+        "Ton compte est personnel. Tu es responsable de la confidentialité de tes identifiants.",
+        "L'âge minimum requis pour créer un compte est de 16 ans."
+      ]
+    },
+    "privacy": {
+      "title": "Politique de confidentialité",
+      "body": [
+        "Nous collectons uniquement les données nécessaires au fonctionnement de l'application : compte (email), profil et données d'activité que tu saisis.",
+        "Tes données sont isolées par utilisateur et synchronisées de façon sécurisée vers le cloud. Elles ne sont jamais vendues à des tiers.",
+        "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
+        "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
+      ]
     }
   },
   "pillarScreens": {
