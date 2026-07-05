@@ -8,9 +8,11 @@ import { useTranslation } from 'react-i18next';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
 import '@/i18n';
+import { useHydrated } from '@/lib/zustand-secure-storage';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useProfileStore } from '@/stores/profile-store';
+import { useSettingsStore } from '@/stores/settings-store';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
@@ -41,12 +43,14 @@ export default function RootLayout() {
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
   const onboardingCompleted = useProfileStore((s) => s.onboardingCompleted);
+  const profileHydrated = useHydrated(useProfileStore);
+  const settingsHydrated = useHydrated(useSettingsStore);
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
   const fontsReady = loaded || error;
-  const ready = fontsReady && !initializing;
+  const ready = fontsReady && !initializing && profileHydrated && settingsHydrated;
 
   useEffect(() => {
     if (ready) {
@@ -99,6 +103,17 @@ export default function RootLayout() {
               presentation: 'modal',
               headerShown: true,
               title: t('settings.title'),
+              headerStyle: { backgroundColor: colors.surface },
+              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+              headerTintColor: colors.accent,
+            }}
+          />
+          <Stack.Screen
+            name="profile"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              title: t('profile.title'),
               headerStyle: { backgroundColor: colors.surface },
               headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
               headerTintColor: colors.accent,

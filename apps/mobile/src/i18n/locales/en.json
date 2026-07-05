@@ -17,8 +17,13 @@
     "running": "Running",
     "nutrition": "Nutrition"
   },
+  "profile": {
+    "title": "Profile",
+    "save": "Save"
+  },
   "home": {
     "greeting": "Hello 👋",
+    "greetingName": "Hello {{name}} 👋",
     "today": {
       "title": "Today's session",
       "empty": "No workout planned today — active rest ✓"
@@ -168,6 +173,11 @@
   },
   "settings": {
     "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "edit": "Edit my profile",
+      "relaunchOnboarding": "Restart onboarding"
+    },
     "pillars": {
       "title": "Active pillars",
       "hint": "Tabs for disabled pillars are hidden. You can re-enable them anytime."

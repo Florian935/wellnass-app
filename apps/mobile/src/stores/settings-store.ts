@@ -1,7 +1,9 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { PILLARS, type Locale, type Pillar, type UnitSystem } from '@wellness/shared';
 
 import i18n, { resolveDeviceLocale } from '@/i18n';
+import { secureStateStorage } from '@/lib/zustand-secure-storage';
 
 type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -20,22 +22,42 @@ type SettingsState = {
   togglePillar: (pillar: Pillar) => void;
 };
 
-// TODO(scaffolding) : persister via PowerSync/SQLite une fois le spike figé.
-export const useSettingsStore = create<SettingsState>((set) => ({
-  locale: resolveDeviceLocale(),
-  theme: 'system',
-  units: 'metric',
-  activePillars: [...PILLARS],
-  setLocale: (locale) => {
-    void i18n.changeLanguage(locale);
-    set({ locale });
-  },
-  setTheme: (theme) => set({ theme }),
-  setUnits: (units) => set({ units }),
-  togglePillar: (pillar) =>
-    set((state) => ({
-      activePillars: state.activePillars.includes(pillar)
-        ? state.activePillars.filter((p) => p !== pillar)
-        : [...state.activePillars, pillar],
-    })),
-}));
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      locale: resolveDeviceLocale(),
+      theme: 'system',
+      units: 'metric',
+      activePillars: [...PILLARS],
+      setLocale: (locale) => {
+        void i18n.changeLanguage(locale);
+        set({ locale });
+      },
+      setTheme: (theme) => set({ theme }),
+      setUnits: (units) => set({ units }),
+      togglePillar: (pillar) =>
+        set((state) => ({
+          activePillars: state.activePillars.includes(pillar)
+            ? state.activePillars.filter((p) => p !== pillar)
+            : [...state.activePillars, pillar],
+        })),
+    }),
+    {
+      name: 'wellness.settings',
+      storage: createJSONStorage(() => secureStateStorage),
+      // Persiste uniquement les données, pas les actions.
+      partialize: (state) => ({
+        locale: state.locale,
+        theme: state.theme,
+        units: state.units,
+        activePillars: state.activePillars,
+      }),
+      // Réapplique la langue persistée à i18next après réhydratation.
+      onRehydrateStorage: () => (state) => {
+        if (state?.locale) {
+          void i18n.changeLanguage(state.locale);
+        }
+      },
+    },
+  ),
+);

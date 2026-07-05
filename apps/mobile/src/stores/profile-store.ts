@@ -1,5 +1,7 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Goal, Sex } from '@wellness/shared';
+import { secureStateStorage } from '@/lib/zustand-secure-storage';
 
 export type ProfileData = {
   firstName: string;
@@ -15,18 +17,28 @@ type ProfileState = ProfileData & {
   onboardingCompleted: boolean;
   update: (patch: Partial<ProfileData>) => void;
   completeOnboarding: () => void;
+  restartOnboarding: () => void;
 };
 
-// TODO(profile-sync) : persister via la table `profiles` (PowerSync/Supabase). Pour l'instant
-// en mémoire → l'onboarding se rejoue après un redémarrage complet de l'app.
-export const useProfileStore = create<ProfileState>((set) => ({
-  firstName: '',
-  sex: 'unspecified',
-  birthDate: null,
-  weightKg: null,
-  heightCm: null,
-  goal: null,
-  onboardingCompleted: false,
-  update: (patch) => set(patch),
-  completeOnboarding: () => set({ onboardingCompleted: true }),
-}));
+// Persisté (chiffré) via SecureStore. TODO(profile-sync) : à terme, source de vérité dans la
+// table `profiles` (PowerSync/Supabase) pour la synchro multi-appareils.
+export const useProfileStore = create<ProfileState>()(
+  persist(
+    (set) => ({
+      firstName: '',
+      sex: 'unspecified',
+      birthDate: null,
+      weightKg: null,
+      heightCm: null,
+      goal: null,
+      onboardingCompleted: false,
+      update: (patch) => set(patch),
+      completeOnboarding: () => set({ onboardingCompleted: true }),
+      restartOnboarding: () => set({ onboardingCompleted: false }),
+    }),
+    {
+      name: 'wellness.profile',
+      storage: createJSONStorage(() => secureStateStorage),
+    },
+  ),
+);

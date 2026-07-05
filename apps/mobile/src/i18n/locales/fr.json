@@ -17,8 +17,13 @@
     "running": "Course",
     "nutrition": "Nutrition"
   },
+  "profile": {
+    "title": "Profil",
+    "save": "Enregistrer"
+  },
   "home": {
     "greeting": "Bonjour 👋",
+    "greetingName": "Bonjour {{name}} 👋",
     "today": {
       "title": "Séance du jour",
       "empty": "Pas d'entraînement prévu aujourd'hui — repos actif ✓"
@@ -168,6 +173,11 @@
   },
   "settings": {
     "title": "Réglages",
+    "profile": {
+      "title": "Profil",
+      "edit": "Modifier mon profil",
+      "relaunchOnboarding": "Relancer l'onboarding"
+    },
     "pillars": {
       "title": "Piliers actifs",
       "hint": "Les onglets des piliers désactivés sont masqués. Tu peux les réactiver à tout moment."

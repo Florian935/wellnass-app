@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.2 : profil persistant & éditable (item 1.12)
+
+_Branche : `feat/1.12-profil-persist`_
+
+### Ajouté (4 points)
+1. **Persistance** des stores `profile` et `settings` via **SecureStore** (Zustand `persist`,
+   chiffré) — l'onboarding et les préférences (thème, unités, piliers, langue) **survivent au
+   redémarrage**. Gating d'hydratation dans le layout racine (`useHydrated`).
+2. **Écran Profil éditable** (`app/profile.tsx`, modale) accessible depuis les Réglages :
+   prénom, sexe, date de naissance, poids, taille, objectif (item 1.12).
+3. **Accueil personnalisé** : « Bonjour {prénom} » quand le profil est renseigné.
+4. **Relancer l'onboarding** depuis les Réglages (compte-profil-onboarding §3.3).
+
+### Technique / Notes
+- `lib/zustand-secure-storage.ts` (StateStorage SecureStore + hook `useHydrated`).
+- Frontend + SecureStore (déjà dans le dev build) → **pas de rebuild**. Vérifié : `typecheck`,
+  `lint` (0 problème), `test` 43/43.
+
 ## 05/07/2026 — V0.2 : onboarding skippable (items 1.7-1.11)
 
 _Branche : `feat/1.7-onboarding`_
