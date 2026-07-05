@@ -1,10 +1,59 @@
 {
   "common": {
-    "appName": "Wellness"
+    "appName": "Wellness",
+    "cancel": "Cancel"
   },
   "sync": {
     "connected": "Synced",
     "offline": "Offline"
+  },
+  "muscle": {
+    "chest": "Chest",
+    "back": "Back",
+    "legs": "Legs",
+    "shoulders": "Shoulders",
+    "arms": "Arms",
+    "core": "Core"
+  },
+  "exercises": {
+    "title": "Exercises",
+    "search": "Search",
+    "searchPlaceholder": "Exercise name…",
+    "createCustom": "+ Create custom exercise",
+    "customName": "Exercise name",
+    "add": "Add",
+    "customBadge": "custom"
+  },
+  "workout": {
+    "freeTitle": "Free workout",
+    "freeSubtitle": "Add exercises on the fly, no program needed.",
+    "startFree": "Start a free workout",
+    "resumeTitle": "Workout in progress",
+    "resume": "Resume workout",
+    "exerciseCount_one": "{{count}} exercise",
+    "exerciseCount_other": "{{count}} exercises",
+    "historyCount_one": "{{count}} workout logged",
+    "historyCount_other": "{{count}} workouts logged",
+    "none": "No workout in progress.",
+    "backHome": "Back to home",
+    "empty": "Add your first exercise to get started.",
+    "set": "Set",
+    "reps": "Reps",
+    "weight": "Kg",
+    "addSet": "+ Set",
+    "addExercise": "+ Add exercise",
+    "finish": "Finish",
+    "rest": "Rest {{seconds}}s",
+    "skipRest": "Skip",
+    "summary": {
+      "title": "Workout done 💪",
+      "subtitle": "Nice work. Here's your recap.",
+      "duration": "Duration",
+      "minutes": "{{count}} min",
+      "exercises": "Exercises",
+      "sets": "Sets completed",
+      "volume": "Total volume"
+    }
   },
   "tabs": {
     "home": "Home",

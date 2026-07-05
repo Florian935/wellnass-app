@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — V0.2 : séance libre (muscu) — 10 items
+
+_Branche : `feat/3.23-seance-libre`_
+
+### Ajouté (parcours cœur muscu)
+- **Bibliothèque d'exercices** (3.13) : seed local bilingue (16 exercices, 6 groupes musculaires)
+  + **recherche** (3.14) + **favoris** (3.15) + **exercice personnalisé** (3.16). Écran
+  `exercises.tsx` (sélecteur).
+- **Séance libre** (3.23) : `workout.tsx` — ajout d'exercices au fil de l'eau, **validation de
+  série** reps × charge (3.25), **chrono de repos** automatique 90 s (3.28), **ajout/suppression
+  de série** (3.30), **édition charge/reps en direct** (3.31), chrono de séance.
+- **Résumé de fin de séance** (3.35) : durée, exercices, séries validées, volume total.
+- Onglet **Muscu** : démarrer / reprendre une séance ; compteur d'historique.
+
+### Technique / Notes
+- Stores `exercise` (favoris + perso) et `workout` (séance active + historique) **persistés**
+  chiffrés (SecureStore) — la séance survit à un kill (spec 3.36).
+- Frontend + local (pas de rebuild). Vérifié : `typecheck` OK, `lint` (0 problème), `test` 43/43.
+- **Différé** : synchro cloud (tables `exercises`/`workouts` PowerSync), GIF/démos (6.1, décision
+  bloquante), records/1RM (3.22), types de séries avancés (3.27), vibration fin de repos (3.29).
+
 ## 05/07/2026 — V0.2 : profil persistant & éditable (item 1.12)
 
 _Branche : `feat/1.12-profil-persist`_
