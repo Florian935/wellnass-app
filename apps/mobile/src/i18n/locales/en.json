@@ -2,14 +2,49 @@
   "common": {
     "appName": "Wellness"
   },
-  "home": {
-    "title": "Welcome 👋",
-    "subtitle": "Strength · Running · Nutrition, finally together.",
-    "scaffoldNotice": "Monorepo skeleton in place. Features ship version by version."
+  "tabs": {
+    "home": "Home",
+    "strength": "Strength",
+    "running": "Running",
+    "nutrition": "Food"
   },
   "pillars": {
     "strength": "Strength",
     "running": "Running",
     "nutrition": "Nutrition"
+  },
+  "home": {
+    "greeting": "Hello 👋",
+    "empty": {
+      "title": "Your day starts here",
+      "message": "The dashboard will show your workouts, nutrition and streak. Enable your pillars in settings to tailor the home screen."
+    }
+  },
+  "pillarScreens": {
+    "strength": {
+      "emptyTitle": "No workout yet",
+      "emptyMessage": "Your strength sessions will appear here. Coming soon: start a free workout."
+    },
+    "running": {
+      "emptyTitle": "Ready to run?",
+      "emptyMessage": "Your runs and paces will show up here. GPS tracking is coming in a later version."
+    },
+    "nutrition": {
+      "emptyTitle": "Your log is empty",
+      "emptyMessage": "Your meals and calories will appear here. The food journal is coming soon."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "pillars": {
+      "title": "Active pillars",
+      "hint": "Tabs for disabled pillars are hidden. You can re-enable them anytime."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    }
   }
 }

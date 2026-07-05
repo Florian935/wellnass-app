@@ -16,7 +16,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- _(rien pour l'instant)_
+- [~] **V0.1 — Shell de navigation** (items 2.1 onglets, 2.2 masquage piliers, 1.16 thème, 2.10 états vides) — PR ouverte, en revue. Polices custom (Bricolage/Hanken/Space Mono) et unités (1.15) différées.
 
 ---
 

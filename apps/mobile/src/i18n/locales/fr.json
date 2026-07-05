@@ -2,14 +2,49 @@
   "common": {
     "appName": "Wellness"
   },
-  "home": {
-    "title": "Bienvenue 👋",
-    "subtitle": "Musculation · Running · Nutrition, enfin réunis.",
-    "scaffoldNotice": "Squelette du monorepo posé. Les fonctionnalités arrivent version par version."
+  "tabs": {
+    "home": "Accueil",
+    "strength": "Muscu",
+    "running": "Course",
+    "nutrition": "Alim"
   },
   "pillars": {
     "strength": "Musculation",
     "running": "Course",
     "nutrition": "Nutrition"
+  },
+  "home": {
+    "greeting": "Bonjour 👋",
+    "empty": {
+      "title": "Ta journée commence ici",
+      "message": "Le tableau de bord affichera tes séances, ta nutrition et ta régularité. Active tes piliers dans les réglages pour personnaliser l'accueil."
+    }
+  },
+  "pillarScreens": {
+    "strength": {
+      "emptyTitle": "Aucune séance pour l'instant",
+      "emptyMessage": "Tes entraînements de musculation apparaîtront ici. Bientôt : démarrer une séance libre."
+    },
+    "running": {
+      "emptyTitle": "Prêt à courir ?",
+      "emptyMessage": "Tes sorties et tes allures s'afficheront ici. Le suivi GPS arrive dans une prochaine version."
+    },
+    "nutrition": {
+      "emptyTitle": "Ton journal est vide",
+      "emptyMessage": "Tes repas et tes calories apparaîtront ici. Le journal alimentaire arrive bientôt."
+    }
+  },
+  "settings": {
+    "title": "Réglages",
+    "pillars": {
+      "title": "Piliers actifs",
+      "hint": "Les onglets des piliers désactivés sont masqués. Tu peux les réactiver à tout moment."
+    },
+    "appearance": {
+      "title": "Apparence",
+      "system": "Système",
+      "light": "Clair",
+      "dark": "Sombre"
+    }
   }
 }
