@@ -4,4 +4,5 @@
  */
 export * from './sync';
 export * from './pillar';
+export * from './units';
 export type { Database, Json } from './database.types';

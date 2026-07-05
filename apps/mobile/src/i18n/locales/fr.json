@@ -15,9 +15,20 @@
   },
   "home": {
     "greeting": "Bonjour 👋",
-    "empty": {
-      "title": "Ta journée commence ici",
-      "message": "Le tableau de bord affichera tes séances, ta nutrition et ta régularité. Active tes piliers dans les réglages pour personnaliser l'accueil."
+    "today": {
+      "title": "Séance du jour",
+      "empty": "Pas d'entraînement prévu aujourd'hui — repos actif ✓"
+    },
+    "streak": {
+      "title": "Régularité",
+      "count_one": "{{count}} jour",
+      "count_other": "{{count}} jours",
+      "days": ["L", "M", "M", "J", "V", "S", "D"],
+      "empty": "Valide une activité aujourd'hui pour lancer ta série."
+    },
+    "nutrition": {
+      "title": "Nutrition",
+      "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt."
     }
   },
   "pillarScreens": {
@@ -45,6 +56,12 @@
       "system": "Système",
       "light": "Clair",
       "dark": "Sombre"
+    },
+    "units": {
+      "title": "Unités",
+      "metric": "Métrique",
+      "imperial": "Impérial",
+      "hint": "Métrique (kg, km) ou impérial (lb, mi). S'applique à tous les affichages."
     }
   }
 }

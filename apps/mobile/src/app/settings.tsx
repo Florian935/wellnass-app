@@ -1,11 +1,44 @@
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { PILLARS, type Pillar } from '@wellness/shared';
+import { PILLARS, UNIT_SYSTEMS, type Pillar } from '@wellness/shared';
 import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const THEME_OPTIONS = ['system', 'light', 'dark'] as const;
+
+type SegmentProps<T extends string> = {
+  options: readonly T[];
+  value: T;
+  onChange: (value: T) => void;
+  label: (option: T) => string;
+};
+
+function Segment<T extends string>({ options, value, onChange, label }: SegmentProps<T>) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      {options.map((option) => {
+        const selected = value === option;
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            onPress={() => onChange(option)}
+            style={[styles.segmentItem, selected && { backgroundColor: colors.accent }]}
+          >
+            <Text
+              style={[styles.segmentLabel, { color: selected ? colors.accentText : colors.text }]}
+            >
+              {label(option)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { t } = useTranslation();
@@ -14,6 +47,8 @@ export default function SettingsScreen() {
   const togglePillar = useSettingsStore((s) => s.togglePillar);
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
+  const units = useSettingsStore((s) => s.units);
+  const setUnits = useSettingsStore((s) => s.setUnits);
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
@@ -47,29 +82,24 @@ export default function SettingsScreen() {
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.appearance.title')}
       </Text>
-      <View style={[styles.segment, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {THEME_OPTIONS.map((option) => {
-          const selected = theme === option;
-          return (
-            <Pressable
-              key={option}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              onPress={() => setTheme(option)}
-              style={[styles.segmentItem, selected && { backgroundColor: colors.accent }]}
-            >
-              <Text
-                style={[
-                  styles.segmentLabel,
-                  { color: selected ? colors.accentText : colors.text },
-                ]}
-              >
-                {t(`settings.appearance.${option}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <Segment
+        options={THEME_OPTIONS}
+        value={theme}
+        onChange={setTheme}
+        label={(option) => t(`settings.appearance.${option}`)}
+      />
+
+      {/* Unités (item 1.15) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.units.title')}
+      </Text>
+      <Segment
+        options={UNIT_SYSTEMS}
+        value={units}
+        onChange={setUnits}
+        label={(option) => t(`settings.units.${option}`)}
+      />
+      <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.units.hint')}</Text>
     </ScrollView>
   );
 }

@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/07/2026 — V0.1 : unités (1.15) + blocs du dashboard d'accueil
+
+_Branche : `feat/1.15-unites-dashboard`_
+
+### Ajouté
+- **Unités métrique/impérial** (item 1.15) :
+  - **`packages/shared/units.ts`** : `UnitSystem` + schéma Zod, conversions pures
+    (`kgToLb`/`lbToKg`, `kmToMi`/`miToKm`), formateurs `displayWeight`/`displayDistance`
+    (stockage **toujours en SI**, conversion à l'affichage). **13 tests, couverture 100 %.**
+  - Préférence `units` dans le store + **section « Unités »** dans les Réglages (segmented).
+- **Tableau de bord d'accueil** (spec navigation-ux §3) : blocs en **états vides structurés** —
+  *Séance du jour*, *Régularité* (semaine + compteur de série pluralisé), *Nutrition*
+  (affiché seulement si le pilier est actif). Nouveau composant `Card`.
+
+### Modifié
+- Réglages : segment extrait en composant `Segment` réutilisé (thème + unités).
+- Accueil : `EmptyState` unique remplacé par les blocs du dashboard.
+- i18n FR/EN : clés dashboard + unités (avec pluriels `count_one`/`count_other`).
+
+### Technique / Notes
+- Vérifié : `typecheck` OK, `lint` (0 problème), `test` **28/28** (couverture shared 100 %),
+  testé sur le dev client. Aucun package natif → pas de rebuild.
+
 ## 05/07/2026 — Polices custom (identité de la maquette)
 
 _Branche : `feat/design-fonts`_
