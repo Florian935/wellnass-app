@@ -13,4 +13,5 @@ export * from './workout';
 export * from './program';
 export * from './nutrition';
 export * from './records';
+export * from './running';
 export type { Database, Json } from './database.types';

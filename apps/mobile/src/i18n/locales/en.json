@@ -468,6 +468,7 @@
     "profile": {
       "title": "Profile",
       "edit": "Edit my profile",
+      "nutrition": "Nutrition profile",
       "relaunchOnboarding": "Restart onboarding"
     },
     "pillars": {
@@ -489,6 +490,65 @@
     "account": {
       "title": "Account",
       "signOut": "Sign out"
+    }
+  },
+  "running": {
+    "tracker": {
+      "notificationTitle": "Run in progress",
+      "notificationBody": "GPS tracking active — tap to return to your run."
+    },
+    "start": {
+      "title": "Free run",
+      "subtitle": "Record your run with GPS, or enter it manually.",
+      "gpsMode": "GPS tracking",
+      "gpsModeHint": "Record your track, distance and pace in real time.",
+      "manualMode": "No-GPS mode",
+      "manualModeHint": "No track: you'll enter the distance at the end.",
+      "startCta": "Start a free run",
+      "starting": "Starting…"
+    },
+    "resume": {
+      "title": "Run in progress",
+      "subtitle": "A run is already being recorded.",
+      "cta": "Resume run"
+    },
+    "permission": {
+      "title": "Location required",
+      "message": "GPS tracking needs access to your location. Without this permission, you can continue in no-GPS mode or cancel the run.",
+      "continueManual": "Continue without GPS",
+      "cancelRun": "Cancel run"
+    },
+    "active": {
+      "distance": "Distance",
+      "kmUnit": "km",
+      "duration": "Time",
+      "avgPace": "Average pace",
+      "instantPace": "Current pace",
+      "paceUnit": "/km",
+      "noData": "—",
+      "gpsActive": "GPS active",
+      "gpsSearching": "Searching for GPS signal…",
+      "gpsManual": "No-GPS mode",
+      "pause": "Pause",
+      "resume": "Resume",
+      "stop": "Finish",
+      "finishing": "Finishing…"
+    },
+    "summary": {
+      "title": "Run complete 🏃",
+      "subtitle": "Well done! Here's your recap.",
+      "loading": "Loading…",
+      "notFound": "Run not found or deleted.",
+      "distance": "Distance",
+      "duration": "Duration",
+      "avgPace": "Average pace",
+      "manualDistance": "Distance covered",
+      "manualDistancePlaceholder": "e.g. 5.2",
+      "rpe": "Perceived effort (RPE 1-10)",
+      "rpeValue": "Perceived effort: {{value}} / 10",
+      "notes": "Note (optional)",
+      "notesPlaceholder": "How did this run go?",
+      "done": "Done"
     }
   }
 }

@@ -491,5 +491,64 @@
       "title": "Compte",
       "signOut": "Se déconnecter"
     }
+  },
+  "running": {
+    "tracker": {
+      "notificationTitle": "Course en cours",
+      "notificationBody": "Suivi GPS actif — appuie pour revenir à la course."
+    },
+    "start": {
+      "title": "Course libre",
+      "subtitle": "Enregistre ta sortie avec le GPS, ou saisis-la à la main.",
+      "gpsMode": "Suivi GPS",
+      "gpsModeHint": "Enregistre ta trace, ta distance et ton allure en temps réel.",
+      "manualMode": "Mode sans GPS",
+      "manualModeHint": "Sans trace : tu saisiras la distance à la fin.",
+      "startCta": "Démarrer une course libre",
+      "starting": "Démarrage…"
+    },
+    "resume": {
+      "title": "Course en cours",
+      "subtitle": "Une course est déjà en cours d'enregistrement.",
+      "cta": "Reprendre la course"
+    },
+    "permission": {
+      "title": "Localisation nécessaire",
+      "message": "Le suivi GPS a besoin d'accéder à ta position. Sans cette autorisation, tu peux continuer en mode sans GPS ou annuler la course.",
+      "continueManual": "Continuer sans GPS",
+      "cancelRun": "Annuler la course"
+    },
+    "active": {
+      "distance": "Distance",
+      "kmUnit": "km",
+      "duration": "Temps",
+      "avgPace": "Allure moyenne",
+      "instantPace": "Allure instantanée",
+      "paceUnit": "/km",
+      "noData": "—",
+      "gpsActive": "GPS actif",
+      "gpsSearching": "Recherche du signal GPS…",
+      "gpsManual": "Mode sans GPS",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "stop": "Terminer",
+      "finishing": "Clôture…"
+    },
+    "summary": {
+      "title": "Course terminée 🏃",
+      "subtitle": "Bravo ! Voici ton récap.",
+      "loading": "Chargement…",
+      "notFound": "Course introuvable ou supprimée.",
+      "distance": "Distance",
+      "duration": "Durée",
+      "avgPace": "Allure moyenne",
+      "manualDistance": "Distance parcourue",
+      "manualDistancePlaceholder": "Ex. 5.2",
+      "rpe": "Ressenti (RPE 1-10)",
+      "rpeValue": "Effort perçu : {{value}} / 10",
+      "notes": "Note (facultatif)",
+      "notesPlaceholder": "Comment s'est passée cette course ?",
+      "done": "Terminé"
+    }
   }
 }
