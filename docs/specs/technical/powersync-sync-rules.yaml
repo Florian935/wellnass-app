@@ -44,6 +44,9 @@ streams:
   food_entries:
     auto_subscribe: true
     query: SELECT * FROM food_entries WHERE user_id = auth.user_id() AND deleted_at IS NULL
+  runs:
+    auto_subscribe: true
+    query: SELECT * FROM runs WHERE user_id = auth.user_id() AND deleted_at IS NULL
 
   # ── Contenu custom de l'utilisateur (owner_id = auth.user_id()) ─────────────
   exercises_custom:

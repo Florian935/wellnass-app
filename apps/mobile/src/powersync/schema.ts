@@ -13,6 +13,9 @@ import { column, Schema, Table } from '@powersync/react-native';
  * US3 : table personal_records ajoutée.
  * Migration : supabase/migrations/20260706140002_personal_records.sql
  *
+ * Running R1 : table runs ajoutée (tracker GPS nu, course libre).
+ * Migration : supabase/migrations/20260707120000_running_runs.sql
+ *
  * Conventions :
  * - L'`id` (UUID, PK texte) est **implicite** dans PowerSync ; on ne le déclare pas.
  * - Les timestamps sont des chaînes ISO 8601 UTC → type `text`.
@@ -248,6 +251,25 @@ const personal_records = new Table({
   deleted_at: column.text,
 });
 
+// ── Running R1 : course libre ─────────────────────────────────────────────
+
+const runs = new Table({
+  user_id: column.text,
+  status: column.text,
+  source: column.text,
+  started_at: column.text,
+  finished_at: column.text,
+  duration_seconds: column.integer,
+  distance_m: column.real,
+  avg_pace_s_per_km: column.real,
+  gps_track: column.text,
+  rpe: column.integer,
+  notes: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
@@ -266,4 +288,5 @@ export const AppSchema = new Schema({
   sessions,
   exercise_plans,
   personal_records,
+  runs,
 });
