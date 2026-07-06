@@ -70,23 +70,26 @@ export default function RunStartScreen() {
 
   /**
    * Boîte de dialogue affichée quand la localisation est refusée : continuer en
-   * mode manuel (la course créée reste active, on bascule juste sa source côté
-   * suivi) ou annuler la course.
+   * mode manuel (annule la course GPS créée et en démarre une nouvelle en mode
+   * manuel) ou annuler la course complètement.
    */
-  const promptPermissionDenied = (runId: string) => {
+  const promptPermissionDenied = (gpsRunId: string) => {
     Alert.alert(t('running.permission.title'), t('running.permission.message'), [
       {
         text: t('running.permission.cancelRun'),
         style: 'cancel',
         onPress: () => {
-          void cancelRun(runId);
+          void cancelRun(gpsRunId);
         },
       },
       {
         text: t('running.permission.continueManual'),
-        onPress: () => {
-          // La course est déjà créée (source 'gps') ; en R1 on la poursuit
-          // en suivi manuel : pas de trace GPS, le suivi affiche le chrono.
+        onPress: async () => {
+          // Annule la course GPS (permission refusée, inutilisable) et en
+          // démarre une nouvelle en mode manuel pour que l'écran actif affiche
+          // le chrono sans chercher un signal GPS indisponible.
+          await cancelRun(gpsRunId);
+          await startRun('manual');
           router.push('/run/active');
         },
       },

@@ -468,6 +468,7 @@
     "profile": {
       "title": "Profile",
       "edit": "Edit my profile",
+      "nutrition": "Nutrition profile",
       "relaunchOnboarding": "Restart onboarding"
     },
     "pillars": {

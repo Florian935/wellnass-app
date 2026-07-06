@@ -101,6 +101,46 @@ jest.mock('expo-constants', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Mock expo-location (natif — accès GPS)
+// ---------------------------------------------------------------------------
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestBackgroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  getCurrentPositionAsync: jest.fn().mockResolvedValue(null),
+  watchPositionAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  PermissionStatus: { GRANTED: 'granted', DENIED: 'denied', UNDETERMINED: 'undetermined' },
+  Accuracy: { High: 5, Highest: 6, BestForNavigation: 6 },
+}));
+
+// ---------------------------------------------------------------------------
+// Mock expo-task-manager (natif — tâches de fond)
+// ---------------------------------------------------------------------------
+jest.mock('expo-task-manager', () => ({
+  defineTask: jest.fn(),
+  isTaskRegisteredAsync: jest.fn().mockResolvedValue(false),
+  unregisterTaskAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock expo-keep-awake (natif — empêche la mise en veille écran)
+// ---------------------------------------------------------------------------
+jest.mock('expo-keep-awake', () => ({
+  useKeepAwake: jest.fn(),
+  activateKeepAwakeAsync: jest.fn().mockResolvedValue(undefined),
+  deactivateKeepAwake: jest.fn(),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock @/running/tracker — module natif (expo-location + expo-task-manager)
+// ---------------------------------------------------------------------------
+jest.mock('@/running/tracker', () => ({
+  startTracking: jest.fn().mockResolvedValue({ ok: true }),
+  stopTracking: jest.fn().mockResolvedValue(undefined),
+  pauseTracking: jest.fn().mockResolvedValue(undefined),
+  resumeTracking: jest.fn(),
+}));
+
+// ---------------------------------------------------------------------------
 // Mock @supabase/supabase-js — client réseau non nécessaire en tests unitaires
 // ---------------------------------------------------------------------------
 jest.mock('@supabase/supabase-js', () => ({
