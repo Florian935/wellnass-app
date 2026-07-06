@@ -53,7 +53,10 @@ function RecordCard({ record }: { record: BeatenRecord }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const typeLabel = t(`workout.summary.records.type.${record.type}`, record.type);
-  const valueLabel = `${record.value} kg`;
+  const valueLabel =
+    record.type === 'best_volume'
+      ? `${record.value}`
+      : `${record.value} kg`;
   return (
     <View
       style={[

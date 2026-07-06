@@ -264,7 +264,7 @@ function ExerciseSection({
             </Text>
             <Text style={[styles.recordValue, { color: colors.text }]}>
               {rec.type === 'best_volume'
-                ? `${rec.value.toFixed(0)} ${t('progress.unit.kg')}`
+                ? rec.value.toFixed(0)
                 : `${rec.value.toFixed(1)} ${t('progress.unit.kg')}`}
             </Text>
           </View>

@@ -43,7 +43,6 @@ import { getAppLanguage } from '@/i18n';
 import { generateId } from '@/lib/id';
 import { nowUtc } from './_sql';
 import {
-  finishWorkout,
   getWorkoutSets,
   type WorkoutEntry,
   type WorkoutSetItem,
@@ -439,20 +438,6 @@ export async function evaluateWorkoutRecords(
   });
 
   return beaten;
-}
-
-/**
- * Termine une séance puis évalue ses records, dans cet ordre, et retourne les
- * records battus. Ne duplique aucune logique : délègue à `finishWorkout` puis à
- * `evaluateWorkoutRecords`. Pratique pour l'écran de séance (un seul appel dans
- * `onFinish`).
- */
-export async function finishWorkoutAndEvaluate(
-  workoutId: string,
-  opts?: { rpe?: number | null; notes?: string | null },
-): Promise<BeatenRecord[]> {
-  await finishWorkout(workoutId, opts);
-  return evaluateWorkoutRecords(workoutId);
 }
 
 // ---------------------------------------------------------------------------
