@@ -226,13 +226,12 @@ export function useActiveWorkout(): {
   const activeRow = workoutRows[0] ?? null;
   const workoutId = activeRow?.id ?? '';
 
-  // Requête des séries toujours appelée (règle des hooks) ; désactivée via un
-  // filtre impossible quand il n'y a pas de séance active.
-  const setsSql = workoutId
-    ? SELECT_SETS_FOR_WORKOUT
-    : `${SELECT_SETS_FOR_WORKOUT} AND 0`;
+  // Requête des séries toujours appelée (règle des hooks), avec la requête
+  // statique. Quand `workoutId === ''` (pas de séance active), la clause
+  // `s.workout_id = ?` ne matche aucune ligne → résultat vide, comportement
+  // voulu. Le hook reste donc appelable de façon stable dans tous les cas.
   const { data: setRows, isLoading: setsLoading } = useQuery<WorkoutSetDbRow>(
-    setsSql,
+    SELECT_SETS_FOR_WORKOUT,
     [lang, workoutId],
   );
 
