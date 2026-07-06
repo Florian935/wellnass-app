@@ -98,3 +98,95 @@ values
   ('b1000015-0002-4000-8000-000000000015', 'a1000015-0000-4000-8000-000000000015', null, 'en', 'Plank',                 null, now(), now()),
   ('b1000016-0002-4000-8000-000000000016', 'a1000016-0000-4000-8000-000000000016', null, 'en', 'Crunch',                null, now(), now())
 on conflict (id) do nothing;
+
+-- ============================================================
+-- US2 — Programme éditorial placeholder "Full Body Débutant"
+-- Réf. : docs/specs/technical/schema-donnees-muscu.md §4.3
+--
+-- Contenu placeholder — industrialisé dans le back-office V0.7.
+-- Inserts exécutés sous service role (bypass RLS) car owner_id is null.
+--
+-- UUIDs déterministes :
+--   program              → c1000001-0000-4000-8000-000000000001
+--   program_translations → c2000001-0001-4000-8000-000000000001 (fr)
+--                          c2000001-0002-4000-8000-000000000001 (en)
+--   sessions             → c3000001-0000-4000-8000-000000000001 (Séance A)
+--                          c3000002-0000-4000-8000-000000000002 (Séance B)
+--                          c3000003-0000-4000-8000-000000000003 (Séance C)
+--   exercise_plans       → c4000001-… à c4000009-… (3 plans par séance)
+-- ============================================================
+
+-- -----------------------------------------------------------
+-- programs (éditorial — owner_id null, status 'published')
+-- -----------------------------------------------------------
+insert into public.programs (id, owner_id, pillar, status, is_active, level, goal, duration_weeks, created_at, updated_at)
+values (
+  'c1000001-0000-4000-8000-000000000001',
+  null,
+  'strength',
+  'published',
+  false,
+  'beginner',
+  'muscle',
+  8,
+  now(), now()
+)
+on conflict (id) do nothing;
+
+-- -----------------------------------------------------------
+-- program_translations FR + EN
+-- -----------------------------------------------------------
+insert into public.program_translations (id, program_id, owner_id, lang, name, summary, description, created_at, updated_at)
+values
+  (
+    'c2000001-0001-4000-8000-000000000001',
+    'c1000001-0000-4000-8000-000000000001',
+    null, 'fr',
+    'Full Body Débutant — 3 séances/sem',
+    'Programme complet pour débuter la musculation sur 8 semaines.',
+    'Ce programme full body 3 fois par semaine cible tous les groupes musculaires à chaque séance. Idéal pour acquérir les bases techniques et progresser rapidement en force et en volume. Repos recommandé entre les séances : 48 h minimum.',
+    now(), now()
+  ),
+  (
+    'c2000001-0002-4000-8000-000000000001',
+    'c1000001-0000-4000-8000-000000000001',
+    null, 'en',
+    'Full Body Beginner — 3 sessions/week',
+    '8-week full body program to start strength training.',
+    'This 3-day-per-week full body program targets all muscle groups every session. Perfect for building a solid technical foundation and making rapid strength and size gains. Recommended rest between sessions: at least 48 h.',
+    now(), now()
+  )
+on conflict (id) do nothing;
+
+-- -----------------------------------------------------------
+-- sessions (3 séances : A, B, C)
+-- -----------------------------------------------------------
+insert into public.sessions (id, program_id, owner_id, order_index, name, created_at, updated_at)
+values
+  ('c3000001-0000-4000-8000-000000000001', 'c1000001-0000-4000-8000-000000000001', null, 0, 'Séance A', now(), now()),
+  ('c3000002-0000-4000-8000-000000000002', 'c1000001-0000-4000-8000-000000000001', null, 1, 'Séance B', now(), now()),
+  ('c3000003-0000-4000-8000-000000000003', 'c1000001-0000-4000-8000-000000000001', null, 2, 'Séance C', now(), now())
+on conflict (id) do nothing;
+
+-- -----------------------------------------------------------
+-- exercise_plans
+-- Séance A : Squat · Développé couché · Rowing barre
+-- Séance B : Soulevé de terre · Développé incliné · Traction
+-- Séance C : Fente · Développé militaire · Gainage
+-- target_reps en texte pour autoriser les fourchettes (ex. "8-12")
+-- -----------------------------------------------------------
+insert into public.exercise_plans (id, session_id, owner_id, exercise_id, order_index, set_type, target_sets, target_reps, target_weight_kg, rest_seconds, created_at, updated_at)
+values
+  -- Séance A
+  ('c4000001-0000-4000-8000-000000000001', 'c3000001-0000-4000-8000-000000000001', null, 'a1000007-0000-4000-8000-000000000007', 0, 'normal', 3, '8-12',  null, 120, now(), now()),
+  ('c4000002-0000-4000-8000-000000000002', 'c3000001-0000-4000-8000-000000000001', null, 'a1000001-0000-4000-8000-000000000001', 1, 'normal', 3, '8-12',  null, 90,  now(), now()),
+  ('c4000003-0000-4000-8000-000000000003', 'c3000001-0000-4000-8000-000000000001', null, 'a1000005-0000-4000-8000-000000000005', 2, 'normal', 3, '8-12',  null, 90,  now(), now()),
+  -- Séance B
+  ('c4000004-0000-4000-8000-000000000004', 'c3000002-0000-4000-8000-000000000002', null, 'a1000008-0000-4000-8000-000000000008', 0, 'normal', 3, '5-8',   null, 120, now(), now()),
+  ('c4000005-0000-4000-8000-000000000005', 'c3000002-0000-4000-8000-000000000002', null, 'a1000002-0000-4000-8000-000000000002', 1, 'normal', 3, '8-12',  null, 90,  now(), now()),
+  ('c4000006-0000-4000-8000-000000000006', 'c3000002-0000-4000-8000-000000000002', null, 'a1000004-0000-4000-8000-000000000004', 2, 'normal', 3, '6-10',  null, 90,  now(), now()),
+  -- Séance C
+  ('c4000007-0000-4000-8000-000000000007', 'c3000003-0000-4000-8000-000000000003', null, 'a1000010-0000-4000-8000-000000000010', 0, 'normal',   3, '10-12', null, 90,  now(), now()),
+  ('c4000008-0000-4000-8000-000000000008', 'c3000003-0000-4000-8000-000000000003', null, 'a1000011-0000-4000-8000-000000000011', 1, 'normal',   3, '8-12',  null, 90,  now(), now()),
+  ('c4000009-0000-4000-8000-000000000009', 'c3000003-0000-4000-8000-000000000003', null, 'a1000015-0000-4000-8000-000000000015', 2, 'duration', 3, null,    null, 60,  now(), now())
+on conflict (id) do nothing;

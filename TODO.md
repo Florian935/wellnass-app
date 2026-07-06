@@ -32,6 +32,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   **RLS sur 2 appareils**, i18n FR/EN.
 - [ ] **Relecture a posteriori par Damien** — le merge US1 a court-circuité la relecture à deux
   (zones sync/sécurité) sur décision explicite de Florian ; à repasser.
+- [ ] **US2 (une fois intégrée)** : appliquer les migrations `20260706130000_programmes_tables.sql`
+  (+ FK workouts) et `20260706130001_programmes_rls.sql` sur le cloud, **redéployer les sync rules**
+  (elles incluent désormais les 4 tables programmes), rejouer le seed (programme éditorial), **vérif
+  device US2** (créer/dupliquer/activer un programme, démarrer une séance depuis un programme).
 
 ---
 
@@ -46,7 +50,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35) — mergé (PR #13), testé device (06/07/2026). ⚠️ stores persistés **local Zustand** (dette data adressée par le cadrage ci-dessous).
 - [x] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) + plan [us1-socle-data-muscu.md](docs/plans/us1-socle-data-muscu.md), tous deux revus et **validés**. Découpé en 3 US. (06/07/2026)
 - [x] **US1 — Socle data (bascule PowerSync)** — **code mergé dans `dev`** (`248e2b2`, 06/07/2026) : `packages/shared` (schémas Zod + logique, 127 tests), 4 repositories, schéma PowerSync local, migrations+RLS+seed+sync rules, bascule de tous les écrans + gate offline, jest-expo, suppression des stores Zustand (dette soldée). typecheck/lint/test verts, 2 revues + fix offline-first. **Activation cloud + vérif device = section 🔴 en haut.**
-- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) — plan [us2-programmes-muscu.md](docs/plans/us2-programmes-muscu.md) **relu + approuvé**. Périmètre : structure + biblio + duplication + programme actif + démarrer une séance depuis un programme (3.1-3.6, 3.12, 3.24). Implémentation subagent-driven **en cours**. (Planning/progression/notifs → US2b.)
+- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) — **code terminé** (13 commits) : schémas shared (+47 tests), migrations+RLS+seed+sync rules, schéma local, `program-repository`, écrans biblio/création/détail/activation + démarrer depuis programme (3.1-3.6, 3.12, 3.24). typecheck/lint/test verts, revue repo + revue finale **GO**. **Reste** : intégration (PR/merge) + activation cloud + vérif device (section 🔴). (Planning/progression/notifs → US2b.)
 
 ---
 

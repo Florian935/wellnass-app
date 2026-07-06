@@ -165,6 +165,12 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        <Stack.Screen
+          name="programs"
+          options={{
+            headerShown: false,
+          }}
+        />
         <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>

@@ -11,6 +11,7 @@ import {
   useActiveWorkout,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
+import { useActiveProgram } from '@/data/repositories/program-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -21,6 +22,7 @@ export default function StrengthScreen() {
   const { workout: active } = useActiveWorkout();
   const { workouts } = useWorkoutHistory();
   const historyCount = workouts.length;
+  const { program: activeProgram } = useActiveProgram('strength');
 
   const onStart = async () => {
     await startWorkout();
@@ -59,6 +61,31 @@ export default function StrengthScreen() {
         </Card>
       )}
 
+      <Card>
+        <View style={styles.cardHeader}>
+          <Ionicons name="list-outline" size={18} color={colors.accent} />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {t('programs.title')}
+          </Text>
+        </View>
+        {activeProgram ? (
+          <View style={styles.activeProgramRow}>
+            <View style={[styles.activeDot, { backgroundColor: colors.accent }]} />
+            <Text
+              style={[styles.activeProgramName, { color: colors.text }]}
+              numberOfLines={1}
+            >
+              {activeProgram.name}
+            </Text>
+          </View>
+        ) : (
+          <Text style={[styles.cardText, { color: colors.textMuted }]}>
+            {t('programs.subtitle')}
+          </Text>
+        )}
+        <Button label={t('programs.browseLibrary')} variant="ghost" onPress={() => router.push('/programs')} />
+      </Card>
+
       {historyCount > 0 ? (
         <Text style={[styles.history, { color: colors.textMuted }]}>
           {t('workout.historyCount', { count: historyCount })}
@@ -73,4 +100,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   history: { fontFamily: fontFamily.body, fontSize: 13, textAlign: 'center', marginTop: 8 },
+  activeProgramRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  activeDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  activeProgramName: { fontFamily: fontFamily.bodySemi, fontSize: 14, flex: 1 },
 });
