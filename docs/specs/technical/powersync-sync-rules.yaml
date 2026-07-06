@@ -1,0 +1,27 @@
+# Sync rules PowerSync — US1 (socle transverse + pilier musculation).
+# Appliquées manuellement sur le tableau de bord PowerSync (Settings → Sync Rules).
+# Non déployées automatiquement — à copier-coller dans l'interface ou via l'API PowerSync.
+# Réf. : docs/specs/technical/schema-donnees-muscu.md §3.2.
+#
+# Deux buckets :
+#   user_data      — données propres à l'utilisateur (profiles, réglages, exercices custom,
+#                    favoris, séances, séries). Paramétré par request.user_id().
+#   shared_content — contenu de bibliothèque (exercices + traductions owner_id null).
+#                    Lecture seule côté app (aucune écriture de bibliothèque depuis l'app).
+
+bucket_definitions:
+  user_data:
+    parameters: select request.user_id() as user_id
+    data:
+      - select * from profiles              where user_id = bucket.user_id and deleted_at is null
+      - select * from user_settings         where user_id = bucket.user_id and deleted_at is null
+      - select * from exercises             where owner_id = bucket.user_id and deleted_at is null
+      - select * from exercise_translations where owner_id = bucket.user_id and deleted_at is null
+      - select * from exercise_favorites    where user_id = bucket.user_id and deleted_at is null
+      - select * from workouts              where user_id = bucket.user_id and deleted_at is null
+      - select * from workout_sets          where user_id = bucket.user_id and deleted_at is null
+
+  shared_content:
+    data:
+      - select * from exercises             where owner_id is null and deleted_at is null
+      - select * from exercise_translations where owner_id is null and deleted_at is null
