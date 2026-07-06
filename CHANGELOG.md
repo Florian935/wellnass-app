@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — US1 : socle data muscu sur PowerSync (bascule complète)
+
+_Branche : `feature/data-socle-muscu` (22 commits) · commit précédent sur `dev` : `69134aa`_
+
+### Ajouté
+- **`packages/shared`** : schémas Zod + logique pure — `contentOwnerSyncFieldsSchema` (owner_id), `exercise`
+  (+ `resolveExerciseName`, fallback FR), `workout` (+ `computeVolume`, hors échauffement),
+  `user_settings`, `profileRow`. Couverture Vitest portée à **127 tests**.
+- **Couche data mobile** (`apps/mobile/src/data/repositories/`) : helpers `_sql` (UUID client, UTC,
+  soft delete via PATCH) + 4 repositories (`profile`, `settings`, `exercise`, `workout`) — lectures
+  réactives `useQuery` (`@powersync/react`), écritures via repository. Séance en cours = ligne
+  `workouts` active.
+- **Schéma PowerSync local** : 7 tables (remplace la table jouet `todos`).
+- **Backend Supabase** (fichiers, à appliquer) : migrations `tables` + `RLS` (9.6), `seed.sql`
+  (16 exercices bilingues, UUID déterministes), `powersync-sync-rules.yaml`.
+- **jest-expo** câblé (+ mocks PowerSync) — `npm run test` couvre désormais mobile **et** shared.
+
+### Modifié
+- Bascule de tous les écrans vers les repositories : onboarding, profil, réglages (+ masquage
+  onglets, thème/unités/langue synchronisés), accueil, exercices, séance, résumé.
+- **Gate de routing** (`_layout.tsx`) : splash tant que la base locale n'a pas résolu, puis
+  onboarding vs app selon `onboarding_completed_at` — remplace `hasHydrated`. `ensureSettings`
+  crée la ligne de réglages au 1er accès.
+- `generateId` → **UUID v4** (`expo-crypto`).
+
+### Supprimé
+- Stores Zustand persistés `profile` / `workout` / `exercise` / `settings`, `data/exercises.ts`,
+  `lib/zustand-secure-storage.ts` (**dette data soldée** : `grep persist( = 0`).
+
+### Corrigé (revues)
+- Revue workout-repo : requête des séries stable sans séance active (le `AND 0` mal placé).
+- Revue finale : **démarrage offline-first** — `isLoading` ne dépend plus de `hasSynced` (évitait un
+  splash infini hors-ligne pour un compte connecté) ; langue des noms d'exercices cohérente en
+  séance (langue applicative, pas locale device) ; garde anti double-séance-active dans `startWorkout`.
+
+### Technique / Notes
+- Enums alignés sur `@wellness/shared` (`SEXES`, `GOALS`, `UNIT_SYSTEMS`, `PILLARS`).
+- **Checkpoints 🔴 humains restants avant merge** : appliquer les 2 migrations sur Supabase cloud +
+  vérifier le nom de la publication `powersync` ; déployer les sync rules sur le dashboard PowerSync ;
+  **vérif device** (offline, sync montante/descendante, RLS 2 appareils, i18n FR/EN) — Task 22.
+- Repositories mobiles non couverts en unitaire (module natif) → validés device.
+
 ## 06/07/2026 — Plan d'implémentation US1 (socle data muscu)
 
 _Branche : `docs/schema-donnees-muscu` · commit précédent : `cabe5f6`_
