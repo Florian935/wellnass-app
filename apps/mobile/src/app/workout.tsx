@@ -9,12 +9,12 @@ import { TextField } from '@/components/TextField';
 import {
   addSet,
   cancelWorkout,
-  finishWorkout,
   removeSet,
   updateSet,
   useActiveWorkout,
   type WorkoutSetItem,
 } from '@/data/repositories/workout-repository';
+import { finishWorkoutAndEvaluate } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -88,7 +88,9 @@ export default function WorkoutScreen() {
   };
 
   const onFinish = async () => {
-    await finishWorkout(workoutId);
+    // Termine la séance PUIS évalue les records (records lus par le résumé via
+    // useWorkoutRecords, pas via l'état du routeur) avant de naviguer.
+    await finishWorkoutAndEvaluate(workoutId);
     router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
   };
 
