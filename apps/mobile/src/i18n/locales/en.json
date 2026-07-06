@@ -532,6 +532,22 @@
       "resume": "Resume",
       "stop": "Finish",
       "finishing": "Finishing…"
+    },
+    "summary": {
+      "title": "Run complete 🏃",
+      "subtitle": "Well done! Here's your recap.",
+      "loading": "Loading…",
+      "notFound": "Run not found or deleted.",
+      "distance": "Distance",
+      "duration": "Duration",
+      "avgPace": "Average pace",
+      "manualDistance": "Distance covered",
+      "manualDistancePlaceholder": "e.g. 5.2",
+      "rpe": "Perceived effort (RPE 1-10)",
+      "rpeValue": "Perceived effort: {{value}} / 10",
+      "notes": "Note (optional)",
+      "notesPlaceholder": "How did this run go?",
+      "done": "Done"
     }
   }
 }

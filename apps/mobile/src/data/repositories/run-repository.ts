@@ -65,6 +65,20 @@ export type RunHistoryItem = {
   notes: string | null;
 };
 
+/** Détail complet d'une course (résumé post-clôture). */
+export type RunDetail = {
+  id: string;
+  source: RunSource;
+  status: string;
+  startedAt: string;
+  finishedAt: string | null;
+  durationSeconds: number | null;
+  distanceM: number | null;
+  avgPaceSPerKm: number | null;
+  rpe: number | null;
+  notes: string | null;
+};
+
 /** Champs persistés lors d'un flush (le tracker fournit le cumul courant). */
 export type FlushInput = {
   /** Segment de points GPS encodé (via `encodeSegment`) à ajouter à la trace. */
@@ -113,6 +127,20 @@ type RunHistoryDbRow = {
   notes: string | null;
 };
 
+/** Ligne brute d'une course au détail (résumé post-clôture). */
+type RunDetailDbRow = {
+  id: string;
+  source: string;
+  status: string;
+  started_at: string;
+  finished_at: string | null;
+  duration_seconds: number | null;
+  distance_m: number | null;
+  avg_pace_s_per_km: number | null;
+  rpe: number | null;
+  notes: string | null;
+};
+
 // ---------------------------------------------------------------------------
 // Requêtes SQL (noms de tables/colonnes statiques ; valeurs liées via ?)
 // ---------------------------------------------------------------------------
@@ -132,6 +160,15 @@ const SELECT_HISTORY = `
   FROM runs
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
+`;
+
+/** Détail d'une course par id (tous statuts, non supprimée). */
+const SELECT_RUN_BY_ID = `
+  SELECT id, source, status, started_at, finished_at, duration_seconds, distance_m,
+         avg_pace_s_per_km, rpe, notes
+  FROM runs
+  WHERE id = ? AND deleted_at IS NULL
+  LIMIT 1
 `;
 
 // ---------------------------------------------------------------------------
@@ -155,6 +192,22 @@ function rowToHistoryItem(row: RunHistoryDbRow): RunHistoryItem {
   return {
     id: row.id,
     source: row.source as RunSource,
+    startedAt: row.started_at,
+    finishedAt: row.finished_at,
+    durationSeconds: row.duration_seconds,
+    distanceM: row.distance_m,
+    avgPaceSPerKm: row.avg_pace_s_per_km,
+    rpe: row.rpe,
+    notes: row.notes,
+  };
+}
+
+/** Convertit une ligne course détail SQLite → RunDetail (camelCase). */
+function rowToRunDetail(row: RunDetailDbRow): RunDetail {
+  return {
+    id: row.id,
+    source: row.source as RunSource,
+    status: row.status,
     startedAt: row.started_at,
     finishedAt: row.finished_at,
     durationSeconds: row.duration_seconds,
@@ -203,6 +256,27 @@ export function useRunHistory(): {
   const runs = data.map(rowToHistoryItem);
 
   return { runs, isLoading };
+}
+
+/**
+ * Course individuelle par id, réactive aux changements de la base locale.
+ *
+ * Utilisé par l'écran de résumé pour relire la course après les patches
+ * (RPE, notes, distance manuelle) sans re-fetch explicite.
+ * `isLoading = queryLoading` (offline-first).
+ */
+export function useRun(runId: string | undefined): {
+  run: RunDetail | null;
+  isLoading: boolean;
+} {
+  const { data, isLoading: queryLoading } =
+    useQuery<RunDetailDbRow>(SELECT_RUN_BY_ID, [runId ?? '']);
+
+  const isLoading = queryLoading;
+  const row = data[0] ?? null;
+  const run = row ? rowToRunDetail(row) : null;
+
+  return { run, isLoading };
 }
 
 // ---------------------------------------------------------------------------
@@ -428,4 +502,56 @@ export async function finishManualRun(
 export async function cancelRun(runId: string): Promise<void> {
   await patch('runs', runId, { status: 'cancelled' });
   await softDelete('runs', runId);
+}
+
+/**
+ * Enregistre le ressenti post-course (RPE et/ou notes) sur une course déjà clôturée.
+ *
+ * Patch partiel : seuls les champs présents dans `feedback` sont écrits
+ * (idiome `'rpe' in` / `'notes' in` — passer `undefined` explicitement est une erreur,
+ * il faut omettre la clé pour ne pas écrire). Pas de garde de statut : cette fonction
+ * est conçue pour compléter une course déjà `completed`.
+ */
+export async function setRunFeedback(
+  runId: string,
+  feedback: { rpe?: number | null; notes?: string | null },
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('rpe' in feedback) columns['rpe'] = feedback.rpe;
+  if ('notes' in feedback) columns['notes'] = feedback.notes;
+  await patch('runs', runId, columns);
+}
+
+/**
+ * Enregistre la distance d'une course **manuelle** saisie sur l'écran de résumé.
+ *
+ * Uniquement pour `source='manual'` : vérifie le champ avant de patcher.
+ * Recalcule `avg_pace_s_per_km` à partir de la nouvelle distance et de la durée
+ * persistée (source de vérité = tracker, flushée avant `finishRun`).
+ * No-op si la course n'est pas trouvée ou n'est pas manuelle.
+ */
+export async function setManualRunDistance(
+  runId: string,
+  distanceM: number,
+): Promise<void> {
+  const row = await powerSync.getOptional<{
+    source: string;
+    duration_seconds: number | null;
+  }>(
+    `SELECT source, duration_seconds FROM runs WHERE id = ? AND deleted_at IS NULL`,
+    [runId],
+  );
+
+  if (!row || row.source !== 'manual') {
+    return;
+  }
+
+  const durationSeconds = row.duration_seconds ?? null;
+  const avgPace =
+    durationSeconds !== null ? averagePace(distanceM, durationSeconds) : null;
+
+  await patch('runs', runId, {
+    distance_m: distanceM,
+    avg_pace_s_per_km: avgPace,
+  });
 }

@@ -533,6 +533,22 @@
       "resume": "Reprendre",
       "stop": "Terminer",
       "finishing": "Clôture…"
+    },
+    "summary": {
+      "title": "Course terminée 🏃",
+      "subtitle": "Bravo ! Voici ton récap.",
+      "loading": "Chargement…",
+      "notFound": "Course introuvable ou supprimée.",
+      "distance": "Distance",
+      "duration": "Durée",
+      "avgPace": "Allure moyenne",
+      "manualDistance": "Distance parcourue",
+      "manualDistancePlaceholder": "Ex. 5.2",
+      "rpe": "Ressenti (RPE 1-10)",
+      "rpeValue": "Effort perçu : {{value}} / 10",
+      "notes": "Note (facultatif)",
+      "notesPlaceholder": "Comment s'est passée cette course ?",
+      "done": "Terminé"
     }
   }
 }
