@@ -11,4 +11,5 @@ export * from './settings';
 export * from './exercise';
 export * from './workout';
 export * from './program';
+export * from './records';
 export type { Database, Json } from './database.types';
