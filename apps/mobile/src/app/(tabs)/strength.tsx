@@ -108,6 +108,23 @@ export default function StrengthScreen() {
           onPress={() => router.push('/history')}
         />
       </Card>
+
+      <Card>
+        <View style={styles.cardHeader}>
+          <Ionicons name="trending-up-outline" size={18} color={colors.accent} />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {t('progress.title')}
+          </Text>
+        </View>
+        <Text style={[styles.cardText, { color: colors.textMuted }]}>
+          {t('progress.strengthCardSubtitle')}
+        </Text>
+        <Button
+          label={t('progress.title')}
+          variant="ghost"
+          onPress={() => router.push('/progress')}
+        />
+      </Card>
     </Screen>
   );
 }
