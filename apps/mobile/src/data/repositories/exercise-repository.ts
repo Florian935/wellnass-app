@@ -23,6 +23,7 @@
 
 import { useQuery, useStatus } from '@powersync/react';
 import type { MuscleGroup, Source } from '@wellness/shared';
+import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
@@ -112,7 +113,8 @@ export function useExercises(search?: string): {
   isLoading: boolean;
 } {
   const status = useStatus();
-  const lang = resolveDeviceLocale();
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
 
   const term = search?.trim() ?? '';
   const hasSearch = term.length > 0;
@@ -136,7 +138,8 @@ export function useExercises(search?: string): {
  */
 export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: boolean } {
   const status = useStatus();
-  const lang = resolveDeviceLocale();
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
 
   // Réutilise la sélection de base et ne garde que les lignes favorisées.
   const sql = `${SELECT_EXERCISES} AND f.id IS NOT NULL ${ORDER_BY_NAME}`;

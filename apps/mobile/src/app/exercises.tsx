@@ -1,29 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MUSCLE_GROUPS, SEED_EXERCISES, type MuscleGroup } from '@/data/exercises';
+import { MUSCLE_GROUPS, type MuscleGroup } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { useExerciseStore } from '@/stores/exercise-store';
+import {
+  useExercises,
+  addCustomExercise,
+  toggleFavorite,
+  type ExerciseListItem,
+} from '@/data/repositories/exercise-repository';
 import { useWorkoutStore } from '@/stores/workout-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-type LibraryItem = { id: string; name: string; muscle: MuscleGroup; custom: boolean };
-
 export default function ExercisesScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
 
-  const customExercises = useExerciseStore((s) => s.customExercises);
-  const favoriteIds = useExerciseStore((s) => s.favoriteIds);
-  const toggleFavorite = useExerciseStore((s) => s.toggleFavorite);
-  const addCustom = useExerciseStore((s) => s.addCustom);
   const addExercise = useWorkoutStore((s) => s.addExercise);
   const hasActive = useWorkoutStore((s) => s.active !== null);
 
@@ -32,35 +30,25 @@ export default function ExercisesScreen() {
   const [newName, setNewName] = useState('');
   const [newMuscle, setNewMuscle] = useState<MuscleGroup>('chest');
 
-  const items = useMemo<LibraryItem[]>(() => {
-    const seed: LibraryItem[] = SEED_EXERCISES.map((e) => ({
-      id: e.id,
-      name: e.name[lang],
-      muscle: e.muscle,
-      custom: false,
-    }));
-    const custom: LibraryItem[] = customExercises.map((e) => ({ ...e, custom: true }));
-    const all = [...custom, ...seed];
-    const filtered = query
-      ? all.filter((e) => e.name.toLowerCase().includes(query.trim().toLowerCase()))
-      : all;
-    return filtered.sort((a, b) => {
-      const fa = favoriteIds.includes(a.id) ? 0 : 1;
-      const fb = favoriteIds.includes(b.id) ? 0 : 1;
-      return fa - fb;
-    });
-  }, [customExercises, favoriteIds, lang, query]);
+  const { exercises, isLoading } = useExercises(query);
 
-  const onPick = (item: LibraryItem) => {
+  // Trie côté JS : favoris en premier, puis ordre alphabétique déjà fourni par SQL
+  const items = [...exercises].sort((a, b) => {
+    const fa = a.isFavorite ? 0 : 1;
+    const fb = b.isFavorite ? 0 : 1;
+    return fa - fb;
+  });
+
+  const onPick = (item: ExerciseListItem) => {
     if (hasActive) {
       addExercise(item.id, item.name);
       router.back();
     }
   };
 
-  const onCreate = () => {
+  const onCreate = async () => {
     if (!newName.trim()) return;
-    addCustom(newName, newMuscle);
+    await addCustomExercise(newName, newMuscle);
     setNewName('');
     setCreating(false);
   };
@@ -99,14 +87,17 @@ export default function ExercisesScreen() {
         </View>
       )}
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        keyboardShouldPersistTaps="handled"
-        renderItem={({ item }) => {
-          const favorite = favoriteIds.includes(item.id);
-          return (
+      {isLoading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) => (
             <Pressable
               onPress={() => onPick(item)}
               style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -115,20 +106,20 @@ export default function ExercisesScreen() {
                 <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
                 <Text style={[styles.muscle, { color: colors.textMuted }]}>
                   {t(`muscle.${item.muscle}`)}
-                  {item.custom ? ` · ${t('exercises.customBadge')}` : ''}
+                  {item.source === 'custom' ? ` · ${t('exercises.customBadge')}` : ''}
                 </Text>
               </View>
               <Pressable onPress={() => toggleFavorite(item.id)} hitSlop={10}>
                 <Ionicons
-                  name={favorite ? 'star' : 'star-outline'}
+                  name={item.isFavorite ? 'star' : 'star-outline'}
                   size={22}
-                  color={favorite ? colors.accent : colors.textMuted}
+                  color={item.isFavorite ? colors.accent : colors.textMuted}
                 />
               </Pressable>
             </Pressable>
-          );
-        }}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }
@@ -142,6 +133,7 @@ const styles = StyleSheet.create({
   createActions: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1 },
   list: { padding: 20, gap: 10 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
