@@ -23,7 +23,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **V0.2 — Onboarding skippable** (1.7-1.11) — parcours 5 étapes + store profil — mergé, testé device (05/07/2026)
 - [x] **V0.2 — Profil persistant & éditable** (1.12) — persistance SecureStore + profil éditable + accueil perso + relance onboarding — mergé, testé device (05/07/2026)
 - [x] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35) — mergé (PR #13), testé device (06/07/2026). ⚠️ stores persistés **local Zustand** (dette data adressée par le cadrage ci-dessous).
-- [~] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec technique [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) rédigée + revue **approuvée**. 13 tables (socle + muscu complet), repository + lectures réactives, bascule des stores Zustand. **Validée** — découpée en 3 US ci-dessous. (06/07/2026)
+- [x] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) + plan [us1-socle-data-muscu.md](docs/plans/us1-socle-data-muscu.md), tous deux revus et **validés**. Découpé en 3 US. (06/07/2026)
+- [~] **US1 — Socle data (bascule PowerSync)** (`feature/data-socle-muscu`) — **code terminé** : `packages/shared` (schémas Zod + logique, 127 tests), 4 repositories, schéma PowerSync local, migrations+RLS+seed+sync rules (fichiers), bascule de tous les écrans + gate offline, jest-expo, suppression des stores Zustand (dette soldée). typecheck/lint/test verts, 2 revues traitées. **Reste (🔴 humain avant merge)** : appliquer migrations cloud + publication, déployer sync rules dashboard, **vérif device** (Task 22), PR relue par les 2 devs.
 
 ---
 

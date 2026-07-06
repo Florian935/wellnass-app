@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  contentOwnerSyncFieldsSchema,
   contentSyncFieldsSchema,
   syncFieldsSchema,
   utcTimestampSchema,
@@ -49,6 +50,14 @@ describe('syncFieldsSchema', () => {
   it('exige userId', () => {
     const { userId: _userId, ...withoutUser } = base;
     expect(syncFieldsSchema.safeParse(withoutUser).success).toBe(false);
+  });
+});
+
+describe('contentOwnerSyncFieldsSchema', () => {
+  it('accepte owner_id null (contenu biblio) et un uuid (custom)', () => {
+    const base = { id: crypto.randomUUID(), createdAt: '2026-07-06T00:00:00Z', updatedAt: '2026-07-06T00:00:00Z', deletedAt: null };
+    expect(contentOwnerSyncFieldsSchema.safeParse({ ...base, ownerId: null }).success).toBe(true);
+    expect(contentOwnerSyncFieldsSchema.safeParse({ ...base, ownerId: 'x' }).success).toBe(false);
   });
 });
 

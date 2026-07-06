@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import type { Pillar } from '@wellness/shared';
-import { useSettingsStore } from '@/stores/settings-store';
+import { PILLARS, type Pillar } from '@wellness/shared';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -22,7 +22,9 @@ const PILLAR_ICON: Record<Pillar, TabIcon> = {
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const activePillars = useSettingsStore((s) => s.activePillars);
+  const { settings } = useSettings();
+  // Tant que les réglages ne sont pas chargés, on affiche tous les piliers par défaut.
+  const activePillars = settings?.activePillars ?? [...PILLARS];
 
   const isActive = (pillar: Pillar) => activePillars.includes(pillar);
 

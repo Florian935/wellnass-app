@@ -6,7 +6,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
-import { useWorkoutStore, type WorkoutSet } from '@/stores/workout-store';
+import {
+  addSet,
+  cancelWorkout,
+  finishWorkout,
+  removeSet,
+  updateSet,
+  useActiveWorkout,
+  type WorkoutSetItem,
+} from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -35,12 +43,7 @@ export default function WorkoutScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const active = useWorkoutStore((s) => s.active);
-  const addSet = useWorkoutStore((s) => s.addSet);
-  const removeSet = useWorkoutStore((s) => s.removeSet);
-  const updateSet = useWorkoutStore((s) => s.updateSet);
-  const finish = useWorkoutStore((s) => s.finish);
-  const cancel = useWorkoutStore((s) => s.cancel);
+  const { workout: active } = useActiveWorkout();
 
   const elapsed = useElapsed(active?.startedAt);
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
@@ -73,23 +76,24 @@ export default function WorkoutScreen() {
     );
   }
 
+  const workoutId = active.id;
   const toNum = (v: string) => (v.trim() === '' ? null : Number(v));
 
-  const onValidate = (ei: number, si: number, current: WorkoutSet) => {
-    const nextDone = !current.done;
-    updateSet(ei, si, { done: nextDone });
+  const onValidate = (set: WorkoutSetItem) => {
+    const nextDone = !set.done;
+    void updateSet(set.id, { done: nextDone });
     if (nextDone) {
       setRestEndsAt(nextRestEnd());
     }
   };
 
-  const onFinish = () => {
-    finish();
-    router.replace('/workout-summary');
+  const onFinish = async () => {
+    await finishWorkout(workoutId);
+    router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
   };
 
-  const onCancel = () => {
-    cancel();
+  const onCancel = async () => {
+    await cancelWorkout(workoutId);
     router.replace('/(tabs)');
   };
 
@@ -110,9 +114,9 @@ export default function WorkoutScreen() {
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
         ) : null}
 
-        {active.entries.map((entry, ei) => (
+        {active.entries.map((entry) => (
           <View
-            key={`${entry.exerciseId}-${ei}`}
+            key={entry.exerciseId}
             style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
             <Text style={[styles.exName, { color: colors.text }]}>{entry.exerciseName}</Text>
@@ -125,13 +129,13 @@ export default function WorkoutScreen() {
             </View>
 
             {entry.sets.map((set, si) => (
-              <View key={si} style={styles.setRow}>
+              <View key={set.id} style={styles.setRow}>
                 <Text style={[styles.colSet, { color: colors.text }]}>{si + 1}</Text>
                 <View style={styles.colInput}>
                   <TextField
                     label=""
                     value={set.reps?.toString() ?? ''}
-                    onChangeText={(v) => updateSet(ei, si, { reps: toNum(v) })}
+                    onChangeText={(v) => void updateSet(set.id, { reps: toNum(v) })}
                     keyboardType="number-pad"
                   />
                 </View>
@@ -139,26 +143,30 @@ export default function WorkoutScreen() {
                   <TextField
                     label=""
                     value={set.weightKg?.toString() ?? ''}
-                    onChangeText={(v) => updateSet(ei, si, { weightKg: toNum(v) })}
+                    onChangeText={(v) => void updateSet(set.id, { weightKg: toNum(v) })}
                     keyboardType="decimal-pad"
                   />
                 </View>
                 <View style={styles.colActions}>
-                  <Pressable onPress={() => onValidate(ei, si, set)} hitSlop={6}>
+                  <Pressable onPress={() => onValidate(set)} hitSlop={6}>
                     <Ionicons
                       name={set.done ? 'checkmark-circle' : 'ellipse-outline'}
                       size={26}
                       color={set.done ? colors.success : colors.textMuted}
                     />
                   </Pressable>
-                  <Pressable onPress={() => removeSet(ei, si)} hitSlop={6}>
+                  <Pressable onPress={() => void removeSet(set.id)} hitSlop={6}>
                     <Ionicons name="remove-circle-outline" size={22} color={colors.textMuted} />
                   </Pressable>
                 </View>
               </View>
             ))}
 
-            <Button label={t('workout.addSet')} variant="ghost" onPress={() => addSet(ei)} />
+            <Button
+              label={t('workout.addSet')}
+              variant="ghost"
+              onPress={() => void addSet(workoutId, entry.exerciseId)}
+            />
           </View>
         ))}
 

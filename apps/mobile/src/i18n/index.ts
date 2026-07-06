@@ -31,6 +31,18 @@ export function resolveDeviceLocale(): Locale {
   return DEFAULT_LOCALE;
 }
 
+/**
+ * Langue applicative courante (`'fr'` | `'en'`), lue sur l'instance i18next.
+ *
+ * À utiliser hors contexte React (repositories non-hook) là où `useTranslation`
+ * n'est pas disponible. Reflète la préférence utilisateur synchronisée
+ * (`user_settings.language`) une fois appliquée via `i18n.changeLanguage`, avec
+ * repli sur `fr`. Toute langue autre que `en` est ramenée à `fr`.
+ */
+export function getAppLanguage(): Locale {
+  return i18n.language === 'en' ? 'en' : 'fr';
+}
+
 // eslint-disable-next-line import/no-named-as-default-member -- i18n est l'instance i18next, .use() est une méthode
 void i18n.use(initReactI18next).init({
   resources,

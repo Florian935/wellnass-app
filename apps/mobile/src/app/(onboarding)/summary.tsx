@@ -5,8 +5,9 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useProfileStore } from '@/stores/profile-store';
-import { useSettingsStore } from '@/stores/settings-store';
+import { PILLARS } from '@wellness/shared';
+import { completeOnboarding, useProfile } from '@/data/repositories/profile-repository';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -24,12 +25,13 @@ export default function OnboardingSummary() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const profile = useProfileStore();
-  const activePillars = useSettingsStore((s) => s.activePillars);
-  const completeOnboarding = useProfileStore((s) => s.completeOnboarding);
+  const { profile } = useProfile();
+  const { settings } = useSettings();
+  // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
+  const activePillars = settings?.activePillars ?? [...PILLARS];
 
-  const finish = () => {
-    completeOnboarding();
+  const finish = async () => {
+    await completeOnboarding();
     router.replace('/(tabs)');
   };
 
@@ -45,14 +47,16 @@ export default function OnboardingSummary() {
         subtitle={t('onboarding.summary.subtitle')}
       />
       <Card>
-        {profile.firstName ? (
+        {profile?.firstName ? (
           <Row label={t('onboarding.infos.firstName')} value={profile.firstName} />
         ) : null}
         <Row label={t('onboarding.summary.pillars')} value={pillarsLabel} />
         <Row
           label={t('onboarding.goal.title')}
           value={
-            profile.goal ? t(`onboarding.goal.options.${profile.goal}`) : t('onboarding.summary.none')
+            profile?.mainGoal
+              ? t(`onboarding.goal.options.${profile.mainGoal}`)
+              : t('onboarding.summary.none')
           }
         />
       </Card>

@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { Card } from '@/components/Card';
 import { SyncStatus } from '@/components/SyncStatus';
-import { useProfileStore } from '@/stores/profile-store';
-import { useSettingsStore } from '@/stores/settings-store';
+import { PILLARS } from '@wellness/shared';
+import { useProfile } from '@/data/repositories/profile-repository';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -38,8 +39,11 @@ function DashboardCard({
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const activePillars = useSettingsStore((s) => s.activePillars);
-  const firstName = useProfileStore((s) => s.firstName);
+  const { settings } = useSettings();
+  // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const { profile } = useProfile();
+  const firstName = profile?.firstName ?? '';
 
   const weekDays = t('home.streak.days', { returnObjects: true }) as string[];
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');

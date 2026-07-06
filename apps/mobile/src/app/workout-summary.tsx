@@ -1,30 +1,37 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { computeVolume } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useWorkoutStore, type CompletedWorkout } from '@/stores/workout-store';
+import {
+  getWorkoutSets,
+  useWorkoutHistory,
+} from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-function stats(workout: CompletedWorkout) {
-  let doneSets = 0;
-  let volume = 0;
-  for (const entry of workout.entries) {
-    for (const set of entry.sets) {
-      if (set.done) {
-        doneSets += 1;
-        volume += (set.reps ?? 0) * (set.weightKg ?? 0);
-      }
-    }
-  }
-  const durationMin = Math.max(
-    1,
-    Math.round((new Date(workout.finishedAt).getTime() - new Date(workout.startedAt).getTime()) / 60000),
-  );
-  return { exercises: workout.entries.length, doneSets, volume: Math.round(volume), durationMin };
+/** Récapitulatif calculé à partir de la séance terminée et de ses séries. */
+type Summary = {
+  exercises: number;
+  doneSets: number;
+  volume: number;
+  durationMin: number;
+};
+
+async function buildSummary(
+  workoutId: string,
+  durationSeconds: number | null,
+): Promise<Summary> {
+  const sets = await getWorkoutSets(workoutId);
+  const doneSets = sets.filter((s) => s.done).length;
+  const volume = Math.round(computeVolume(sets));
+  const durationMin = Math.max(1, Math.round((durationSeconds ?? 0) / 60));
+  const exercises = new Set(sets.map((s) => s.exerciseId)).size;
+  return { exercises, doneSets, volume, durationMin };
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -41,24 +48,44 @@ export default function WorkoutSummaryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const last = useWorkoutStore((s) => s.history[0]);
+  const { id } = useLocalSearchParams<{ id?: string }>();
+
+  const { workouts } = useWorkoutHistory();
+  const workout = workouts.find((w) => w.id === id) ?? null;
+  const durationSeconds = workout?.durationSeconds ?? null;
+
+  const [summary, setSummary] = useState<Summary | null>(null);
+
+  useEffect(() => {
+    if (!id || !workout) {
+      return;
+    }
+    let cancelled = false;
+    void buildSummary(id, durationSeconds).then((result) => {
+      if (!cancelled) {
+        setSummary(result);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+    // On dépend de primitives stables (id, durée) plutôt que de l'objet `workout`,
+    // dont l'identité change à chaque rendu de `useWorkoutHistory`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, durationSeconds]);
 
   return (
     <FormScreen>
       <ScreenHeader title={t('workout.summary.title')} subtitle={t('workout.summary.subtitle')} />
-      {last ? (
+      {summary ? (
         <Card>
-          {(() => {
-            const s = stats(last);
-            return (
-              <>
-                <Row label={t('workout.summary.duration')} value={t('workout.summary.minutes', { count: s.durationMin })} />
-                <Row label={t('workout.summary.exercises')} value={String(s.exercises)} />
-                <Row label={t('workout.summary.sets')} value={String(s.doneSets)} />
-                <Row label={t('workout.summary.volume')} value={`${s.volume} kg`} />
-              </>
-            );
-          })()}
+          <Row
+            label={t('workout.summary.duration')}
+            value={t('workout.summary.minutes', { count: summary.durationMin })}
+          />
+          <Row label={t('workout.summary.exercises')} value={String(summary.exercises)} />
+          <Row label={t('workout.summary.sets')} value={String(summary.doneSets)} />
+          <Row label={t('workout.summary.volume')} value={`${summary.volume} kg`} />
         </Card>
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>

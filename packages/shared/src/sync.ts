@@ -39,3 +39,13 @@ export type SyncFields = z.infer<typeof syncFieldsSchema>;
  */
 export const contentSyncFieldsSchema = syncFieldsSchema.omit({ userId: true });
 export type ContentSyncFields = z.infer<typeof contentSyncFieldsSchema>;
+
+/**
+ * Contenu partageable : `owner_id` nullable (null = bibliothèque globale,
+ * UUID = contenu personnalisé créé par l'utilisateur).
+ * Sans `userId` (remplacé par `ownerId` pour distinguer les deux cas).
+ */
+export const contentOwnerSyncFieldsSchema = syncFieldsSchema
+  .omit({ userId: true })
+  .extend({ ownerId: uuidSchema.nullable() });
+export type ContentOwnerSyncFields = z.infer<typeof contentOwnerSyncFieldsSchema>;

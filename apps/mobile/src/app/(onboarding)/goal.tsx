@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { GOALS, type Goal } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
-import { useProfileStore } from '@/stores/profile-store';
+import { upsertProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -14,11 +14,10 @@ export default function OnboardingGoal() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const update = useProfileStore((s) => s.update);
   const [goal, setGoal] = useState<Goal | null>(null);
 
-  const onContinue = () => {
-    update({ goal });
+  const onContinue = async () => {
+    await upsertProfile({ mainGoal: goal });
     router.push(NEXT);
   };
 

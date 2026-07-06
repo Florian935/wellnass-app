@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { FormScreen } from '@/components/FormScreen';
-import { useProfileStore } from '@/stores/profile-store';
+import { completeOnboarding } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -11,10 +11,9 @@ export default function OnboardingIntro() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const completeOnboarding = useProfileStore((s) => s.completeOnboarding);
 
-  const skipAll = () => {
-    completeOnboarding();
+  const skipAll = async () => {
+    await completeOnboarding();
     router.replace('/(tabs)');
   };
 

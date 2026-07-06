@@ -1,12 +1,18 @@
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { PILLARS, UNIT_SYSTEMS, type Pillar } from '@wellness/shared';
+import {
+  PILLARS,
+  UNIT_SYSTEMS,
+  type Pillar,
+  type Theme,
+  type UnitSystem,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
+import { upsertProfile } from '@/data/repositories/profile-repository';
+import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useAuthStore } from '@/stores/auth-store';
-import { useProfileStore } from '@/stores/profile-store';
-import { useSettingsStore } from '@/stores/settings-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -16,18 +22,18 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const activePillars = useSettingsStore((s) => s.activePillars);
-  const togglePillar = useSettingsStore((s) => s.togglePillar);
-  const theme = useSettingsStore((s) => s.theme);
-  const setTheme = useSettingsStore((s) => s.setTheme);
-  const units = useSettingsStore((s) => s.units);
-  const setUnits = useSettingsStore((s) => s.setUnits);
+  const { settings } = useSettings();
+  // Defaults null-safe tant que les réglages ne sont pas chargés / synchronisés.
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const theme = settings?.theme ?? 'system';
+  const units = settings?.units ?? 'metric';
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
-  const restartOnboarding = useProfileStore((s) => s.restartOnboarding);
 
-  const relaunchOnboarding = () => {
-    restartOnboarding();
+  const relaunchOnboarding = async () => {
+    // Réinitialise le drapeau d'onboarding via le profil ; la gate de routing
+    // redirigera automatiquement vers l'onboarding.
+    await upsertProfile({ onboardingCompletedAt: null });
     router.replace('/(onboarding)/intro');
   };
 
@@ -39,7 +45,7 @@ export default function SettingsScreen() {
       </Text>
       <View style={styles.stack}>
         <Button label={t('settings.profile.edit')} variant="ghost" onPress={() => router.push('/profile')} />
-        <Button label={t('settings.profile.relaunchOnboarding')} variant="ghost" onPress={relaunchOnboarding} />
+        <Button label={t('settings.profile.relaunchOnboarding')} variant="ghost" onPress={() => void relaunchOnboarding()} />
       </View>
 
       {/* Piliers actifs (décision H) */}
@@ -58,7 +64,7 @@ export default function SettingsScreen() {
             <Text style={[styles.rowLabel, { color: colors.text }]}>{t(`pillars.${pillar}`)}</Text>
             <Switch
               value={activePillars.includes(pillar)}
-              onValueChange={() => togglePillar(pillar)}
+              onValueChange={() => void togglePillar(pillar)}
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"
               accessibilityLabel={t(`pillars.${pillar}`)}
@@ -75,7 +81,7 @@ export default function SettingsScreen() {
       <Segment
         options={THEME_OPTIONS}
         value={theme}
-        onChange={setTheme}
+        onChange={(next: Theme) => void updateSettings({ theme: next })}
         label={(option) => t(`settings.appearance.${option}`)}
       />
 
@@ -86,7 +92,7 @@ export default function SettingsScreen() {
       <Segment
         options={UNIT_SYSTEMS}
         value={units}
-        onChange={setUnits}
+        onChange={(next: UnitSystem) => void updateSettings({ units: next })}
         label={(option) => t(`settings.units.${option}`)}
       />
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.units.hint')}</Text>

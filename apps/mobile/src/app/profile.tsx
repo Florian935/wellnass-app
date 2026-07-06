@@ -6,7 +6,7 @@ import { GOALS, SEXES, toDate, type Goal, type Sex } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { useProfileStore } from '@/stores/profile-store';
+import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -20,28 +20,27 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const profile = useProfileStore();
-  const update = useProfileStore((s) => s.update);
+  const { profile } = useProfile();
 
-  const initial = splitIso(profile.birthDate);
-  const [firstName, setFirstName] = useState(profile.firstName);
-  const [sex, setSex] = useState<Sex>(profile.sex);
+  const initial = splitIso(profile?.birthDate ?? null);
+  const [firstName, setFirstName] = useState(profile?.firstName ?? '');
+  const [sex, setSex] = useState<Sex>(profile?.sex ?? 'unspecified');
   const [day, setDay] = useState(initial.d);
   const [month, setMonth] = useState(initial.m);
   const [year, setYear] = useState(initial.y);
-  const [weight, setWeight] = useState(profile.weightKg?.toString() ?? '');
-  const [height, setHeight] = useState(profile.heightCm?.toString() ?? '');
-  const [goal, setGoal] = useState<Goal | null>(profile.goal);
+  const [weight, setWeight] = useState(profile?.weightKg?.toString() ?? '');
+  const [height, setHeight] = useState(profile?.heightCm?.toString() ?? '');
+  const [goal, setGoal] = useState<Goal | null>(profile?.mainGoal ?? null);
 
-  const onSave = () => {
+  const onSave = async () => {
     const birth = toDate(Number(day), Number(month), Number(year));
-    update({
+    await upsertProfile({
       firstName: firstName.trim(),
       sex,
       birthDate: birth ? birth.toISOString().slice(0, 10) : null,
       weightKg: weight ? Number(weight) : null,
       heightCm: height ? Number(height) : null,
-      goal,
+      mainGoal: goal,
     });
     router.back();
   };
