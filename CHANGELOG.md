@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — chore(db) : types Supabase régénérés (food, recipes, runs, bodyweight)
+
+_Branche : `chore/db-types-food-recipes`_
+
+### Modifié
+- **`packages/shared/src/database.types.ts`** régénéré via l'API Management Supabase après
+  application sur le cloud des migrations food (`150000/150001` + seed), running (`120000`),
+  recettes/poids (`130000/130001`). Contient désormais `foods`/`food_*`, `recipes`/
+  `recipe_ingredients`, `meal_templates`/`meal_template_items`, `body_weight_entries`, `runs`.
+
+### Technique / Notes
+- **Cloud à jour** : 10 tables créées + seed 50 aliments + RLS + publication PowerSync (24 tables) —
+  appliqué via API Management. `typecheck` vert.
+- Reste (hors SQL) : redéployer les **sync rules edition 3** sur le dashboard PowerSync.
+
 ## 06/07/2026 — V0.4 US4.24 : recettes, repas types, poids & stats
 
 _Branche : `feature/4.24-recettes-poids-stats`_
