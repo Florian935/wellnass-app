@@ -59,6 +59,19 @@ export default function StrengthScreen() {
         </Card>
       )}
 
+      <Card>
+        <View style={styles.cardHeader}>
+          <Ionicons name="list-outline" size={18} color={colors.accent} />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {t('programs.title')}
+          </Text>
+        </View>
+        <Text style={[styles.cardText, { color: colors.textMuted }]}>
+          {t('programs.subtitle')}
+        </Text>
+        <Button label={t('programs.browseLibrary')} variant="ghost" onPress={() => router.push('/programs')} />
+      </Card>
+
       {historyCount > 0 ? (
         <Text style={[styles.history, { color: colors.textMuted }]}>
           {t('workout.historyCount', { count: historyCount })}

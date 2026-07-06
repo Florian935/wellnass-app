@@ -220,6 +220,26 @@
       "emptyMessage": "Your meals and calories will appear here. The food journal is coming soon."
     }
   },
+  "programs": {
+    "title": "Programs",
+    "subtitle": "Editorial library and my programs.",
+    "sectionLibrary": "Library",
+    "sectionMine": "My programs",
+    "levelAll": "All",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "weeks_one": "{{count}} week",
+    "weeks_other": "{{count}} weeks",
+    "active": "Active",
+    "duplicate": "Duplicate",
+    "duplicateA11y": "Duplicate program {{name}}",
+    "emptyLibrary": "No programs match this filter.",
+    "emptyMine": "You have no programs yet. Duplicate a library program to get started.",
+    "browseLibrary": "Browse programs"
+  },
   "settings": {
     "title": "Settings",
     "profile": {

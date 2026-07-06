@@ -220,6 +220,26 @@
       "emptyMessage": "Tes repas et tes calories apparaîtront ici. Le journal alimentaire arrive bientôt."
     }
   },
+  "programs": {
+    "title": "Programmes",
+    "subtitle": "Bibliothèque éditoriale et mes programmes.",
+    "sectionLibrary": "Bibliothèque",
+    "sectionMine": "Mes programmes",
+    "levelAll": "Tous",
+    "level": {
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "advanced": "Avancé"
+    },
+    "weeks_one": "{{count}} semaine",
+    "weeks_other": "{{count}} semaines",
+    "active": "Actif",
+    "duplicate": "Dupliquer",
+    "duplicateA11y": "Dupliquer le programme {{name}}",
+    "emptyLibrary": "Aucun programme disponible pour ce filtre.",
+    "emptyMine": "Tu n'as pas encore de programme. Duplique un programme de la bibliothèque pour commencer.",
+    "browseLibrary": "Voir les programmes"
+  },
   "settings": {
     "title": "Réglages",
     "profile": {
