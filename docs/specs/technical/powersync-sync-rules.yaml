@@ -15,6 +15,7 @@ bucket_definitions:
     data:
       - select * from profiles              where user_id = bucket.user_id and deleted_at is null
       - select * from user_settings         where user_id = bucket.user_id and deleted_at is null
+      - select * from nutrition_profiles    where user_id = bucket.user_id and deleted_at is null
       - select * from exercises             where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_translations where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_favorites    where user_id = bucket.user_id and deleted_at is null

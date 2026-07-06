@@ -70,6 +70,64 @@
     "title": "Profile",
     "save": "Save"
   },
+  "nutrition": {
+    "title": "Nutrition profile",
+    "kcal": "kcal",
+    "done": "Done",
+    "editProfile": "Edit nutrition profile",
+    "setupPrompt": "Set up your nutrition profile to get your calorie target and macros.",
+    "setupCta": "Set up",
+    "objective": {
+      "title": "Nutrition goal",
+      "options": {
+        "bulk": "Bulk",
+        "cut": "Cut",
+        "maintain": "Maintain",
+        "weightloss": "Gradual weight loss"
+      }
+    },
+    "activity": {
+      "title": "Activity level",
+      "options": {
+        "sedentary": "Sedentary",
+        "light": "Lightly active (1-2 days/wk)",
+        "moderate": "Moderately active (3-5 days/wk)",
+        "active": "Very active (6-7 days/wk)",
+        "very_active": "Extremely active"
+      }
+    },
+    "calories": {
+      "title": "Calorie needs",
+      "tdee": "Estimated expenditure (TDEE)",
+      "target": "Daily target",
+      "targetShort": "target",
+      "manual": "Adjust manually (kcal)",
+      "recompute": "Back to automatic calculation",
+      "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
+      "completeProfile": "Complete my profile"
+    },
+    "macros": {
+      "title": "Macro split",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "grams": "g",
+      "reset": "Reset macros"
+    },
+    "restrictions": {
+      "title": "Restrictions & preferences",
+      "options": {
+        "vegetarian": "Vegetarian",
+        "vegan": "Vegan",
+        "gluten_free": "Gluten-free",
+        "lactose_free": "Lactose-free",
+        "halal": "Halal",
+        "kosher": "Kosher"
+      },
+      "allergens": "Allergens",
+      "allergensPlaceholder": "e.g. peanuts, tree nuts…"
+    }
+  },
   "home": {
     "greeting": "Hello 👋",
     "greetingName": "Hello {{name}} 👋",

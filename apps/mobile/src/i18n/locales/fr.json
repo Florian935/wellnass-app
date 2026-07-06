@@ -70,6 +70,64 @@
     "title": "Profil",
     "save": "Enregistrer"
   },
+  "nutrition": {
+    "title": "Profil nutritionnel",
+    "kcal": "kcal",
+    "done": "Terminer",
+    "editProfile": "Modifier le profil nutritionnel",
+    "setupPrompt": "Configure ton profil nutritionnel pour obtenir ton objectif calorique et tes macros.",
+    "setupCta": "Configurer",
+    "objective": {
+      "title": "Objectif nutritionnel",
+      "options": {
+        "bulk": "Prise de masse",
+        "cut": "Sèche",
+        "maintain": "Maintien",
+        "weightloss": "Perte progressive"
+      }
+    },
+    "activity": {
+      "title": "Niveau d'activité",
+      "options": {
+        "sedentary": "Sédentaire",
+        "light": "Légèrement actif (1-2 j/sem)",
+        "moderate": "Modérément actif (3-5 j/sem)",
+        "active": "Très actif (6-7 j/sem)",
+        "very_active": "Extrêmement actif"
+      }
+    },
+    "calories": {
+      "title": "Besoin calorique",
+      "tdee": "Dépense estimée (TDEE)",
+      "target": "Objectif du jour",
+      "targetShort": "objectif",
+      "manual": "Ajuster manuellement (kcal)",
+      "recompute": "Revenir au calcul automatique",
+      "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
+      "completeProfile": "Compléter mon profil"
+    },
+    "macros": {
+      "title": "Répartition des macros",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides",
+      "grams": "g",
+      "reset": "Réinitialiser les macros"
+    },
+    "restrictions": {
+      "title": "Restrictions & préférences",
+      "options": {
+        "vegetarian": "Végétarien",
+        "vegan": "Végétalien",
+        "gluten_free": "Sans gluten",
+        "lactose_free": "Sans lactose",
+        "halal": "Halal",
+        "kosher": "Casher"
+      },
+      "allergens": "Allergènes",
+      "allergensPlaceholder": "Ex. arachides, fruits à coque…"
+    }
+  },
   "home": {
     "greeting": "Bonjour 👋",
     "greetingName": "Bonjour {{name}} 👋",
@@ -309,6 +367,7 @@
     "profile": {
       "title": "Profil",
       "edit": "Modifier mon profil",
+      "nutrition": "Profil nutritionnel",
       "relaunchOnboarding": "Relancer l'onboarding"
     },
     "pillars": {
