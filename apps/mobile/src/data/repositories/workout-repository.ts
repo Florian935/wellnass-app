@@ -35,6 +35,7 @@ import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 /** Une série telle qu'affichée dans la séance active. */
 export type WorkoutSetItem = {
   id: string;
+  exerciseId: string;
   setType: SetType;
   reps: number | null;
   weightKg: number | null;
@@ -152,6 +153,7 @@ const SELECT_HISTORY = `
 function rowToSetItem(row: WorkoutSetDbRow): WorkoutSetItem {
   return {
     id: row.id,
+    exerciseId: row.exercise_id,
     setType: row.set_type as SetType,
     reps: row.reps,
     weightKg: row.weight_kg,

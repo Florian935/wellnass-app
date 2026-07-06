@@ -19,9 +19,8 @@
  */
 
 import { useQuery, useStatus } from '@powersync/react';
-import type { UserSettingsRow } from '@wellness/shared';
+import type { Pillar, UserSettingsRow } from '@wellness/shared';
 import { PILLARS } from '@wellness/shared';
-import type { Pillar } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';

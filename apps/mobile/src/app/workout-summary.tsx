@@ -11,7 +11,6 @@ import {
   getWorkoutSets,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
-import { powerSync } from '@/powersync/system';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -23,22 +22,6 @@ type Summary = {
   durationMin: number;
 };
 
-/**
- * Nombre d'exercices distincts d'une séance terminée.
- *
- * `getWorkoutSets` n'expose pas `exercise_id` sur ses items (il est réservé au
- * regroupement interne du repository) ; on lit donc le décompte des exercices
- * distincts directement en lecture seule sur la base locale.
- */
-async function countExercises(workoutId: string): Promise<number> {
-  const row = await powerSync.getOptional<{ n: number }>(
-    `SELECT COUNT(DISTINCT exercise_id) AS n FROM workout_sets
-     WHERE workout_id = ? AND deleted_at IS NULL`,
-    [workoutId],
-  );
-  return row?.n ?? 0;
-}
-
 async function buildSummary(
   workoutId: string,
   durationSeconds: number | null,
@@ -47,7 +30,7 @@ async function buildSummary(
   const doneSets = sets.filter((s) => s.done).length;
   const volume = Math.round(computeVolume(sets));
   const durationMin = Math.max(1, Math.round((durationSeconds ?? 0) / 60));
-  const exercises = await countExercises(workoutId);
+  const exercises = new Set(sets.map((s) => s.exerciseId)).size;
   return { exercises, doneSets, volume, durationMin };
 }
 

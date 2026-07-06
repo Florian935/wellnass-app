@@ -11,6 +11,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
+import { useSettings } from '@/data/repositories/settings-repository';
 
 // ---------------------------------------------------------------------------
 // Mock useSettings (branchement indirect sur PowerSync) — isolé du réseau
@@ -22,8 +23,6 @@ jest.mock('@/data/repositories/settings-repository', () => ({
     isLoading: false,
   })),
 }));
-
-import { useSettings } from '@/data/repositories/settings-repository';
 
 /**
  * Composant de test minimal : affiche un libellé selon l'état des réglages.
