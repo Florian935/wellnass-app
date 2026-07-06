@@ -99,7 +99,7 @@ function WorkoutDetailView({ workoutId }: { workoutId: string }) {
             onPress={() => router.back()}
             hitSlop={12}
             accessibilityRole="button"
-            accessibilityLabel="Retour"
+            accessibilityLabel={t('common.back')}
           >
             <Ionicons name="arrow-back" size={24} color={colors.accent} />
           </Pressable>

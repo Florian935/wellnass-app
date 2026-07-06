@@ -69,6 +69,15 @@ describe('estimate1RM', () => {
     // 100 * (1 + 5/30) = 116.666... → arrondi à 116.67
     expect(result).toBe(116.67);
   });
+
+  it('fonctionne avec un poids décimal (0.5 kg)', () => {
+    // 60.5 * (1 + 3/30) = 60.5 * 1.1 = 66.55
+    expect(estimate1RM(60.5, 3)).toBeCloseTo(66.55, 2);
+  });
+
+  it('retourne le poids lui-même pour exactement 1 rep', () => {
+    expect(estimate1RM(100, 1)).toBe(100);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -388,5 +397,37 @@ describe('computeWorkoutRecords', () => {
       expect(r).toHaveProperty('reps');
       expect(r).toHaveProperty('weightKg');
     }
+  });
+
+  it('garde le premier max en cas d\'égalité stricte (deux séries même poids)', () => {
+    const exercises = [
+      {
+        exerciseId: EX1,
+        sets: [
+          { reps: 5, weightKg: 100, setType: 'normal', done: true },
+          { reps: 8, weightKg: 100, setType: 'normal', done: true },
+        ],
+      },
+    ];
+    const records = computeWorkoutRecords(exercises);
+    const maxWeight = records.find((r) => r.exerciseId === EX1 && r.type === 'max_weight');
+    expect(maxWeight).toBeDefined();
+    // En égalité, le premier candidat (reps=5) est retenu car la condition est >
+    expect(maxWeight?.value).toBe(100);
+    expect(maxWeight?.reps).toBe(5);
+  });
+
+  it('ignore les séries de type duration (poids null) pour max_weight et estimated_1rm', () => {
+    const exercises = [
+      {
+        exerciseId: EX1,
+        sets: [
+          // Série durée : pas de reps ni de poids → aucun record possible
+          { reps: null, weightKg: null, setType: 'duration', done: true },
+        ],
+      },
+    ];
+    const records = computeWorkoutRecords(exercises);
+    expect(records).toHaveLength(0);
   });
 });

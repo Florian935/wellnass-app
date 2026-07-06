@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Wellness",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "back": "Retour"
   },
   "sync": {
     "connected": "Synchronisé",
