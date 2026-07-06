@@ -9,12 +9,13 @@ import { TextField } from '@/components/TextField';
 import {
   addSet,
   cancelWorkout,
+  finishWorkout,
   removeSet,
   updateSet,
   useActiveWorkout,
   type WorkoutSetItem,
 } from '@/data/repositories/workout-repository';
-import { finishWorkoutAndEvaluate } from '@/data/repositories/records-repository';
+import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -88,9 +89,18 @@ export default function WorkoutScreen() {
   };
 
   const onFinish = async () => {
-    // Termine la séance PUIS évalue les records (records lus par le résumé via
-    // useWorkoutRecords, pas via l'état du routeur) avant de naviguer.
-    await finishWorkoutAndEvaluate(workoutId);
+    // 1. Clôture de la séance : doit réussir (statut 'completed').
+    await finishWorkout(workoutId);
+    // 2. Évaluation des records : enrichissement best-effort. Un échec (session
+    //    expirée, erreur de transaction…) ne doit jamais bloquer la navigation :
+    //    le résumé lit les records de façon réactive (useWorkoutRecords) et
+    //    affichera simplement zéro record le cas échéant.
+    try {
+      await evaluateWorkoutRecords(workoutId);
+    } catch (error) {
+      console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
+    }
+    // 3. Navigation vers le résumé, quoi qu'il advienne à l'étape 2.
     router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
   };
 
