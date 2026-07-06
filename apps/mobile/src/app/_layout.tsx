@@ -177,6 +177,28 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="food-picker"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('journal.addFood'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="food-custom"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('journal.createFood'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="programs"
           options={{
             headerShown: false,

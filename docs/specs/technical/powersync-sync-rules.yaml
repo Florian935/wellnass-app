@@ -38,6 +38,12 @@ streams:
   personal_records:
     auto_subscribe: true
     query: SELECT * FROM personal_records WHERE user_id = auth.user_id() AND deleted_at IS NULL
+  food_favorites:
+    auto_subscribe: true
+    query: SELECT * FROM food_favorites WHERE user_id = auth.user_id() AND deleted_at IS NULL
+  food_entries:
+    auto_subscribe: true
+    query: SELECT * FROM food_entries WHERE user_id = auth.user_id() AND deleted_at IS NULL
 
   # ── Contenu custom de l'utilisateur (owner_id = auth.user_id()) ─────────────
   exercises_custom:
@@ -58,6 +64,12 @@ streams:
   exercise_plans_custom:
     auto_subscribe: true
     query: SELECT * FROM exercise_plans WHERE owner_id = auth.user_id() AND deleted_at IS NULL
+  foods_custom:
+    auto_subscribe: true
+    query: SELECT * FROM foods WHERE owner_id = auth.user_id() AND deleted_at IS NULL
+  food_translations_custom:
+    auto_subscribe: true
+    query: SELECT * FROM food_translations WHERE owner_id = auth.user_id() AND deleted_at IS NULL
 
   # ── Contenu de bibliothèque (owner_id IS NULL, lecture seule) ───────────────
   exercises_library:
@@ -78,3 +90,9 @@ streams:
   exercise_plans_library:
     auto_subscribe: true
     query: SELECT * FROM exercise_plans WHERE owner_id IS NULL AND deleted_at IS NULL
+  foods_library:
+    auto_subscribe: true
+    query: SELECT * FROM foods WHERE owner_id IS NULL AND deleted_at IS NULL
+  food_translations_library:
+    auto_subscribe: true
+    query: SELECT * FROM food_translations WHERE owner_id IS NULL AND deleted_at IS NULL

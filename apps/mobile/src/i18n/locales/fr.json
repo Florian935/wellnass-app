@@ -137,6 +137,56 @@
       "allergensPlaceholder": "Ex. arachides, fruits à coque…"
     }
   },
+  "food": {
+    "categories": {
+      "meat": "Viandes",
+      "fish": "Poissons",
+      "starchy": "Féculents",
+      "vegetables": "Légumes",
+      "fruits": "Fruits",
+      "dairy": "Produits laitiers",
+      "nuts": "Oléagineux",
+      "drinks": "Boissons",
+      "other": "Autre"
+    },
+    "custom": {
+      "hint": "Renseigne les valeurs pour 100 g. Seules les calories sont obligatoires.",
+      "category": "Catégorie",
+      "per100": "Valeurs pour 100 g",
+      "save": "Créer l'aliment"
+    }
+  },
+  "journal": {
+    "today": "Aujourd'hui",
+    "remaining": "restantes",
+    "over": "dépassé",
+    "setTarget": "Définir un objectif calorique",
+    "prevDay": "Jour précédent",
+    "nextDay": "Jour suivant",
+    "addFood": "Ajouter un aliment",
+    "searchFood": "Rechercher",
+    "searchPlaceholder": "Nom d'un aliment…",
+    "noFood": "Aucun aliment trouvé.",
+    "searchOff": "Chercher « {{term}} » sur OpenFoodFacts",
+    "searching": "Recherche…",
+    "offNone": "Aucun résultat OpenFoodFacts.",
+    "per100": "kcal /100 g",
+    "quickAdd": "Ajout rapide (calories)",
+    "createFood": "Créer un aliment",
+    "name": "Nom",
+    "grams": "Quantité (g)",
+    "add": "Ajouter",
+    "delete": "Supprimer",
+    "deleteConfirm": "Retirer cet aliment du journal ?",
+    "longPressDelete": "Appui long pour supprimer",
+    "tabs": { "all": "Tous", "favorites": "Favoris" },
+    "meals": {
+      "breakfast": "Petit-déjeuner",
+      "lunch": "Déjeuner",
+      "dinner": "Dîner",
+      "snack": "Collation"
+    }
+  },
   "home": {
     "greeting": "Bonjour 👋",
     "greetingName": "Bonjour {{name}} 👋",
