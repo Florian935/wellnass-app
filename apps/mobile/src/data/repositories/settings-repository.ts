@@ -18,7 +18,7 @@
  * JWT) : en lecture, `WHERE deleted_at IS NULL LIMIT 1` suffit.
  */
 
-import { useQuery, useStatus } from '@powersync/react';
+import { useQuery } from '@powersync/react';
 import type { Pillar, UserSettingsRow } from '@wellness/shared';
 import { PILLARS } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
@@ -122,19 +122,18 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
 /**
  * Réglages de l'utilisateur courant, réactifs aux changements de la base locale.
  *
- * `isLoading` reflète l'état de la base locale, pas seulement « 0 ligne » :
- *  - tant que `useQuery` n'a pas résolu (ouverture SQLite / premier rendu) ;
- *  - OU tant que la première synchro n'est pas terminée (`status.hasSynced` faux),
- *    pour distinguer « pas encore chargé » de « chargé, aucune ligne ».
+ * `isLoading` ne dépend QUE de la résolution de la requête locale (SQLite),
+ * jamais de la synchro réseau : le routage / contenu ne doit pas se bloquer sur
+ * une synchro réseau (offline-first, ADR-001 / décision B). La base locale est
+ * disponible hors-ligne ; `useQuery.isLoading` se résout sans réseau.
  *
  * Une fois `isLoading` faux et `settings` null, le consommateur doit appeler
  * `ensureSettings()` pour initialiser la ligne de réglages par défaut.
  */
 export function useSettings(): { settings: UserSettings | null; isLoading: boolean } {
-  const status = useStatus();
   const { data, isLoading: queryLoading } = useQuery<SettingsDbRow>(SELECT_CURRENT);
 
-  const isLoading = queryLoading || !status.hasSynced;
+  const isLoading = queryLoading;
   const row = data[0];
   const settings = row ? rowToSettings(row) : null;
 

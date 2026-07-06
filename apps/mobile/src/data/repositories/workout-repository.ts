@@ -21,11 +21,12 @@
  * en lecture, filtrer sur `deleted_at IS NULL` + `status` suffit.
  */
 
-import { useQuery, useStatus } from '@powersync/react';
+import { useQuery } from '@powersync/react';
 import type { SetType } from '@wellness/shared';
+import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { resolveDeviceLocale } from '@/i18n';
+import { getAppLanguage } from '@/i18n';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
 // ---------------------------------------------------------------------------
@@ -211,16 +212,19 @@ function groupSetsByExercise(rows: WorkoutSetDbRow[]): WorkoutEntry[] {
  * de la base locale. Les séries sont lues via une seconde requête filtrée sur
  * l'id de la séance active, puis regroupées par exercice.
  *
- * `isLoading` reflète l'état de la base locale (voir profile/settings-repository) :
- *  - tant que `useQuery` n'a pas résolu ;
- *  - OU tant que la première synchro n'est pas terminée (`status.hasSynced` faux).
+ * `isLoading` ne dépend QUE de la résolution des requêtes locales (voir
+ * profile/settings-repository) : le contenu ne doit pas se bloquer sur une
+ * synchro réseau (offline-first, ADR-001 / décision B).
+ *
+ * Le nom d'exercice est résolu dans la langue applicative (préférence
+ * utilisateur synchronisée), cohérent avec `exercise-repository`.
  */
 export function useActiveWorkout(): {
   workout: ActiveWorkout | null;
   isLoading: boolean;
 } {
-  const status = useStatus();
-  const lang = resolveDeviceLocale();
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
 
   const { data: workoutRows, isLoading: workoutLoading } =
     useQuery<WorkoutDbRow>(SELECT_ACTIVE_WORKOUT);
@@ -237,7 +241,7 @@ export function useActiveWorkout(): {
     [lang, workoutId],
   );
 
-  const isLoading = workoutLoading || setsLoading || !status.hasSynced;
+  const isLoading = workoutLoading || setsLoading;
 
   if (!activeRow) {
     return { workout: null, isLoading };
@@ -261,11 +265,10 @@ export function useWorkoutHistory(): {
   workouts: WorkoutHistoryItem[];
   isLoading: boolean;
 } {
-  const status = useStatus();
   const { data, isLoading: queryLoading } =
     useQuery<WorkoutDbRow>(SELECT_HISTORY);
 
-  const isLoading = queryLoading || !status.hasSynced;
+  const isLoading = queryLoading;
   const workouts = data.map(rowToHistoryItem);
 
   return { workouts, isLoading };
@@ -301,11 +304,26 @@ async function nextOrderIndex(workoutId: string): Promise<number> {
 
 /**
  * Démarre une nouvelle séance vide et retourne son id.
- * Le·la consommateur·rice s'assure qu'aucune autre séance n'est active.
+ *
+ * Garde défensive : si une séance `status='active'` non supprimée existe déjà
+ * pour l'utilisateur courant, on retourne son id au lieu d'en créer une seconde
+ * (au plus une séance active à la fois).
  */
 export async function startWorkout(): Promise<string> {
+  const userId = currentUserId();
+
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM workouts
+     WHERE user_id = ? AND status = 'active' AND deleted_at IS NULL
+     LIMIT 1`,
+    [userId],
+  );
+  if (existing) {
+    return existing.id;
+  }
+
   return insertWithSyncFields('workouts', {
-    user_id: currentUserId(),
+    user_id: userId,
     session_id: null,
     program_id: null,
     status: 'active',
@@ -463,7 +481,7 @@ export async function getWorkoutSets(
   workoutId: string,
 ): Promise<WorkoutSetItem[]> {
   const rows = await powerSync.getAll<WorkoutSetDbRow>(SELECT_SETS_FOR_WORKOUT, [
-    resolveDeviceLocale(),
+    getAppLanguage(),
     workoutId,
   ]);
   return rows.map(rowToSetItem);

@@ -14,7 +14,7 @@
  * (pas besoin de filtrer sur `user_id`). En écriture, `user_id` reste obligatoire.
  */
 
-import { useQuery, useStatus } from '@powersync/react';
+import { useQuery } from '@powersync/react';
 import type { ProfileRow } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -100,18 +100,17 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
 /**
  * Profil de l'utilisateur courant, réactif aux changements de la base locale.
  *
- * `isLoading` reflète l'état de la base locale, pas seulement « 0 ligne » :
- *  - tant que `useQuery` n'a pas résolu (ouverture SQLite / premier rendu) ;
- *  - OU tant que la première synchro n'est pas terminée (`status.hasSynced` faux),
- *    pour distinguer « pas encore chargé » de « chargé, aucune ligne ».
+ * `isLoading` ne dépend QUE de la résolution de la requête locale (SQLite),
+ * jamais de la synchro réseau : le routage / contenu ne doit pas se bloquer sur
+ * une synchro réseau (offline-first, ADR-001 / décision B). La base locale est
+ * disponible hors-ligne ; `useQuery.isLoading` se résout sans réseau.
  *
  * Remplace le drapeau `hasHydrated` des ex-stores Zustand.
  */
 export function useProfile(): { profile: Profile | null; isLoading: boolean } {
-  const status = useStatus();
   const { data, isLoading: queryLoading } = useQuery<ProfileDbRow>(SELECT_CURRENT);
 
-  const isLoading = queryLoading || !status.hasSynced;
+  const isLoading = queryLoading;
   const row = data[0];
   const profile = row ? rowToProfile(row) : null;
 

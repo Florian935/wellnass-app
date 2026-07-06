@@ -21,7 +21,7 @@
  *  - `owner_id` / `user_id` = utilisateur de la session courante à l'écriture.
  */
 
-import { useQuery, useStatus } from '@powersync/react';
+import { useQuery } from '@powersync/react';
 import type { MuscleGroup, Source } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
@@ -104,15 +104,14 @@ function rowToListItem(row: ExerciseListDbRow): ExerciseListItem {
  * Optionnellement filtrés par `search` (recherche insensible à la casse sur le
  * nom résolu dans la langue courante).
  *
- * `isLoading` reflète l'état de la base locale (voir profile/settings-repository) :
- *  - tant que `useQuery` n'a pas résolu ;
- *  - OU tant que la première synchro n'est pas terminée (`status.hasSynced` faux).
+ * `isLoading` ne dépend QUE de la résolution de la requête locale (voir
+ * profile/settings-repository) : le contenu ne doit pas se bloquer sur une
+ * synchro réseau (offline-first, ADR-001 / décision B).
  */
 export function useExercises(search?: string): {
   exercises: ExerciseListItem[];
   isLoading: boolean;
 } {
-  const status = useStatus();
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
@@ -126,7 +125,7 @@ export function useExercises(search?: string): {
 
   const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, params);
 
-  const isLoading = queryLoading || !status.hasSynced;
+  const isLoading = queryLoading;
   const exercises = data.map(rowToListItem);
 
   return { exercises, isLoading };
@@ -137,7 +136,6 @@ export function useExercises(search?: string): {
  * Même forme que `useExercises` (nom résolu, drapeau favori toujours `true`).
  */
 export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: boolean } {
-  const status = useStatus();
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
@@ -146,7 +144,7 @@ export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: bool
 
   const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, [lang]);
 
-  const isLoading = queryLoading || !status.hasSynced;
+  const isLoading = queryLoading;
   const exercises = data.map(rowToListItem);
 
   return { exercises, isLoading };
