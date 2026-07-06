@@ -8,4 +8,5 @@ export * from './units';
 export * from './age';
 export * from './profile';
 export * from './exercise';
+export * from './workout';
 export type { Database, Json } from './database.types';
