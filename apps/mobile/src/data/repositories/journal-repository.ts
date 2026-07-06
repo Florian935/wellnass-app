@@ -63,6 +63,38 @@ export function useDayEntries(date: string): { entries: JournalEntry[]; isLoadin
   return { entries: data.map(rowToEntry), isLoading };
 }
 
+/** Total nutritionnel par jour renseigné depuis `sinceDate` (stats §7.2). */
+export type DailyTotal = { logDate: string; kcal: number; proteinG: number; carbsG: number; fatG: number };
+
+const SELECT_DAILY_TOTALS = `
+  SELECT log_date,
+    SUM(kcal) AS kcal, SUM(protein_g) AS protein_g, SUM(carbs_g) AS carbs_g, SUM(fat_g) AS fat_g
+  FROM food_entries
+  WHERE deleted_at IS NULL AND log_date >= ?
+  GROUP BY log_date
+  ORDER BY log_date
+`;
+
+export function useDailyTotals(sinceDate: string): { totals: DailyTotal[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{
+    log_date: string;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  }>(SELECT_DAILY_TOTALS, [sinceDate]);
+  return {
+    totals: data.map((r) => ({
+      logDate: r.log_date,
+      kcal: Math.round(r.kcal),
+      proteinG: Math.round(r.protein_g),
+      carbsG: Math.round(r.carbs_g),
+      fatG: Math.round(r.fat_g),
+    })),
+    isLoading,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Écritures
 // ---------------------------------------------------------------------------

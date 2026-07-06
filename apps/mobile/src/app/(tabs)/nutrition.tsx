@@ -19,6 +19,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { removeEntry, useDayEntries, type JournalEntry } from '@/data/repositories/journal-repository';
+import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -104,14 +105,24 @@ export default function NutritionScreen() {
         title={t('pillars.nutrition')}
         subtitle={t('pillarScreens.nutrition.tagline')}
         action={
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('nutrition.title')}
-            onPress={() => router.push('/nutrition-profile')}
-            hitSlop={10}
-          >
-            <Ionicons name="options-outline" size={24} color={colors.accent} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('stats.title')}
+              onPress={() => router.push('/nutrition-stats')}
+              hitSlop={10}
+            >
+              <Ionicons name="stats-chart-outline" size={23} color={colors.accent} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('nutrition.title')}
+              onPress={() => router.push('/nutrition-profile')}
+              hitSlop={10}
+            >
+              <Ionicons name="options-outline" size={24} color={colors.accent} />
+            </Pressable>
+          </View>
         }
       />
 
@@ -205,12 +216,35 @@ function MealSection({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
+  const mealLabel = t(`journal.meals.${meal}`);
+
+  const saveAsTemplate = () => {
+    const items = entries.map((e) => ({
+      foodId: e.foodId,
+      name: e.name,
+      quantityG: e.quantityG,
+      kcal: e.kcal,
+      proteinG: e.proteinG,
+      carbsG: e.carbsG,
+      fatG: e.fatG,
+    }));
+    void saveMealAsTemplate(mealLabel, items).then(() =>
+      Alert.alert(t('journal.templateSaved'), mealLabel),
+    );
+  };
 
   return (
     <View style={styles.meal}>
       <View style={styles.mealHead}>
-        <Text style={[styles.mealName, { color: colors.text }]}>{t(`journal.meals.${meal}`)}</Text>
-        <Text style={[styles.mealKcal, { color: colors.textMuted }]}>{mealKcal} {t('nutrition.kcal')}</Text>
+        <Text style={[styles.mealName, { color: colors.text }]}>{mealLabel}</Text>
+        <View style={styles.mealHeadRight}>
+          {entries.length > 0 ? (
+            <Pressable onPress={saveAsTemplate} hitSlop={8} accessibilityLabel={t('journal.saveMeal')}>
+              <Ionicons name="bookmark-outline" size={18} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
+          <Text style={[styles.mealKcal, { color: colors.textMuted }]}>{mealKcal} {t('nutrition.kcal')}</Text>
+        </View>
       </View>
       <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {entries.map((e) => (
@@ -247,6 +281,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   dayLabel: { fontFamily: fontFamily.bodyBold, fontSize: 16, textTransform: 'capitalize' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  mealHeadRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   content: { gap: 16, paddingBottom: 32 },
   totals: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14 },
   totalsHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },

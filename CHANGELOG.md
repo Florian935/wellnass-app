@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — V0.4 US4.24 : recettes, repas types, poids & stats
+
+_Branche : `feature/4.24-recettes-poids-stats`_
+
+### Ajouté (items 4.24-4.26, 1.13, 4.30, 4.31)
+- **`packages/shared`** : `recipe.ts` (schémas recettes/ingrédients/repas types + helpers `perServing`/
+  `scalePortions`) + `bodyweight.ts` (pesées + `weightTrend`/`averageIntake`). **+tests** (306 shared).
+- **5 tables PowerSync** (user_id) : `recipes`, `recipe_ingredients`, `meal_templates`,
+  `meal_template_items`, `body_weight_entries`. Migrations `20260707130000/130001` + RLS + sync rules edition 3.
+- **Repositories** : `recipe-repository` (totaux SQL), `meal-template-repository` (save/apply),
+  `bodyweight-repository` + `useDailyTotals` (stats apports).
+- **Écrans** : `recipe-edit` (ingrédients via food-picker mode recette, total + par portion, 4.24/4.25) ;
+  **food-picker** étendu (onglets Recettes/Repas types + mode recette) ; **nutrition-stats** (pesée,
+  courbe poids 4 sem/3 mois/1 an, apports moyens 7/30 j — `ProgressLineChart` réutilisé) ; onglet
+  Nutrition (icône Suivi + « enregistrer comme repas type » par repas, 4.26).
+
+### Technique / Notes
+- `typecheck` + `lint` (0 erreur) + `test` verts.
+- **Différé** : 4.32 stat croisée déficit/volume, rappels 1.14/2.5 (`expo-notifications` natif), planning/liste de courses (V1.1).
+- **Checkpoints 🔴** : appliquer migrations `130000/130001` sur Supabase, redéployer sync rules (5 streams), `db:types`, vérif device.
+
 ## 06/07/2026 — V0.4 US4.8 : base d'aliments & journal alimentaire
 
 _Branche : `feature/4.8-aliments-journal` · commit précédent sur `dev` : `632f5b5`_

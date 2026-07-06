@@ -270,6 +270,64 @@ const runs = new Table({
   deleted_at: column.text,
 });
 
+// ── V0.4 : recettes, repas types, poids corporel ──────────────────────────
+// Migration : supabase/migrations/20260707130000_recipes_bodyweight.sql
+const recipes = new Table({
+  user_id: column.text,
+  name: column.text,
+  servings: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const recipe_ingredients = new Table({
+  recipe_id: column.text,
+  user_id: column.text,
+  food_id: column.text,
+  name: column.text,
+  quantity_g: column.real,
+  kcal: column.integer,
+  protein_g: column.real,
+  carbs_g: column.real,
+  fat_g: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const meal_templates = new Table({
+  user_id: column.text,
+  name: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const meal_template_items = new Table({
+  template_id: column.text,
+  user_id: column.text,
+  food_id: column.text,
+  name: column.text,
+  quantity_g: column.real,
+  kcal: column.integer,
+  protein_g: column.real,
+  carbs_g: column.real,
+  fat_g: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const body_weight_entries = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  weight_kg: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
@@ -278,6 +336,11 @@ export const AppSchema = new Schema({
   food_translations,
   food_favorites,
   food_entries,
+  recipes,
+  recipe_ingredients,
+  meal_templates,
+  meal_template_items,
+  body_weight_entries,
   exercises,
   exercise_translations,
   exercise_favorites,
