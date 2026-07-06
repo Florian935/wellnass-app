@@ -208,7 +208,16 @@ export default function FoodPickerScreen() {
       )}
 
       <View style={[styles.footer, { borderTopColor: colors.border }]}>
-        {mode === 'journal' ? <Button label={t('journal.quickAdd')} variant="ghost" onPress={() => setQuickAdd(true)} /> : null}
+        {mode === 'journal' ? (
+          <>
+            <Button
+              label={t('quickList.title')}
+              variant="ghost"
+              onPress={() => router.push({ pathname: '/meal-quick-entry', params: { date, meal } })}
+            />
+            <Button label={t('journal.quickAdd')} variant="ghost" onPress={() => setQuickAdd(true)} />
+          </>
+        ) : null}
         <Button label={t('journal.createFood')} variant="ghost" onPress={() => router.push('/food-custom')} />
       </View>
     </View>

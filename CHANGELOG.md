@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — V0.4 : saisie de repas par liste (langage naturel) + copier un repas (4.5 / 4.18)
+
+_Branche : `feature/4.5-saisie-langage-naturel`_
+
+### Ajouté
+- **Saisie par liste (4.5)** : écrire un repas en une phrase (« une banane, 3 tranches de pain de
+  mie, et beurre de cacahuète ») → l'app retrouve chaque aliment.
+  - `@wellness/shared/meal-parser` : parseur pur (segmentation `,`/et/avec/and/with/+/retours ligne,
+    quantité chiffre|mot, unités FR/EN tranche/tbsp/verre/g…, décimales `2,5` préservées) +
+    `normalizeName` / `bestMatchIndex` (recherche floue tolérante **accents + pluriel**) +
+    `DEFAULT_UNIT_GRAMS`. **+12 tests** (318 au total).
+  - Écran `meal-quick-entry` : analyse → **revue éditable** (grammes/kcal, items non reconnus
+    signalés) → confirmation. Rien n'est ajouté avant validation (spec §8). Offline. Entrée depuis
+    le food-picker (« Saisie par liste »).
+- **Copier (4.18)** : `copyMeal` / `duplicateDay` (repository) + action « **Copier d'hier** » sur un
+  repas vide du journal.
+
+### Technique / Notes
+- `typecheck` + `lint` (0 erreur) + `test` verts.
+- **Reste V0.4** : 4.15 renommer/ajouter repas (schéma), 4.32 stat croisée, 4.10 scan + 1.14/2.5
+  rappels (**natif** → nouveau build).
+
 ## 06/07/2026 — chore(db) : types Supabase régénérés (food, recipes, runs, bodyweight)
 
 _Branche : `chore/db-types-food-recipes`_

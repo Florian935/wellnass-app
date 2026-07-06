@@ -14,6 +14,7 @@ export * from './program';
 export * from './nutrition';
 export * from './records';
 export * from './food';
+export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
 export * from './running';

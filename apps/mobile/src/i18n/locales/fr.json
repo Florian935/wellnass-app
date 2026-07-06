@@ -184,6 +184,8 @@
     "noTemplate": "Aucun repas type. Enregistre un repas depuis le journal.",
     "saveMeal": "Enregistrer comme repas type",
     "templateSaved": "Repas type enregistré ✓",
+    "copyYesterday": "Copier d'hier",
+    "nothingYesterday": "Rien à copier pour ce repas hier.",
     "tabs": {
       "all": "Tous",
       "favorites": "Favoris",
@@ -196,6 +198,18 @@
       "dinner": "Dîner",
       "snack": "Collation"
     }
+  },
+  "quickList": {
+    "title": "Saisie par liste",
+    "hint": "Écris ton repas en une phrase, l'app retrouve chaque aliment. Rien n'est ajouté avant ta confirmation.",
+    "label": "Ton repas",
+    "placeholder": "Ex. : une banane, 3 tranches de pain de mie, et beurre de cacahuète",
+    "analyze": "Analyser",
+    "review": "À vérifier",
+    "unmatched": "non reconnu",
+    "nothing": "Aucun aliment détecté.",
+    "addCount_one": "Ajouter {{count}} aliment",
+    "addCount_other": "Ajouter {{count}} aliments"
   },
   "recipes": {
     "title": "Recette",

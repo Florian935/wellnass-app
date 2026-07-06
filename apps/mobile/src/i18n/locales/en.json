@@ -184,6 +184,8 @@
     "noTemplate": "No meal template. Save a meal from the journal.",
     "saveMeal": "Save as meal template",
     "templateSaved": "Meal template saved ✓",
+    "copyYesterday": "Copy from yesterday",
+    "nothingYesterday": "Nothing to copy for this meal yesterday.",
     "tabs": {
       "all": "All",
       "favorites": "Favorites",
@@ -196,6 +198,18 @@
       "dinner": "Dinner",
       "snack": "Snack"
     }
+  },
+  "quickList": {
+    "title": "List entry",
+    "hint": "Write your meal in one sentence; the app finds each food. Nothing is added until you confirm.",
+    "label": "Your meal",
+    "placeholder": "e.g. one banana, 3 slices of bread, and peanut butter",
+    "analyze": "Analyze",
+    "review": "Review",
+    "unmatched": "not recognized",
+    "nothing": "No food detected.",
+    "addCount_one": "Add {{count}} food",
+    "addCount_other": "Add {{count}} foods"
   },
   "recipes": {
     "title": "Recipe",
