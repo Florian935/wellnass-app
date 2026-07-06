@@ -205,6 +205,17 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="meal-quick-entry"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('quickList.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="recipe-edit"
           options={{
             presentation: 'modal',

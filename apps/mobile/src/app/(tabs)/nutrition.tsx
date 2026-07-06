@@ -18,7 +18,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
-import { removeEntry, useDayEntries, type JournalEntry } from '@/data/repositories/journal-repository';
+import { copyMeal, removeEntry, useDayEntries, type JournalEntry } from '@/data/repositories/journal-repository';
 import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -192,6 +192,7 @@ export default function NutritionScreen() {
           <MealSection
             key={meal}
             meal={meal}
+            day={day}
             entries={entries.filter((e) => e.mealType === meal)}
             onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal } })}
             onDeleteEntry={onDeleteEntry}
@@ -204,11 +205,13 @@ export default function NutritionScreen() {
 
 function MealSection({
   meal,
+  day,
   entries,
   onAdd,
   onDeleteEntry,
 }: {
   meal: MealType;
+  day: string;
   entries: JournalEntry[];
   onAdd: () => void;
   onDeleteEntry: (e: JournalEntry) => void;
@@ -217,6 +220,12 @@ function MealSection({
   const { colors } = useTheme();
   const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
   const mealLabel = t(`journal.meals.${meal}`);
+
+  const copyFromYesterday = () => {
+    void copyMeal(addDays(day, -1), meal, day).then((n) => {
+      if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
+    });
+  };
 
   const saveAsTemplate = () => {
     const items = entries.map((e) => ({
@@ -263,10 +272,18 @@ function MealSection({
             <Text style={[styles.entryKcal, { color: colors.textMuted }]}>{e.kcal} {t('nutrition.kcal')}</Text>
           </Pressable>
         ))}
-        <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
-          <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
-          <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
-        </Pressable>
+        <View style={styles.mealActions}>
+          <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
+            <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+            <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
+          </Pressable>
+          {entries.length === 0 ? (
+            <Pressable onPress={copyFromYesterday} style={styles.addRow} accessibilityRole="button">
+              <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
+              <Text style={[styles.copyLabel, { color: colors.textMuted }]}>{t('journal.copyYesterday')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -317,6 +334,8 @@ const styles = StyleSheet.create({
   entryName: { fontFamily: fontFamily.bodySemi, fontSize: 15, flexShrink: 1 },
   entryQty: { fontFamily: fontFamily.mono, fontSize: 12 },
   entryKcal: { fontFamily: fontFamily.mono, fontSize: 13 },
+  mealActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   addRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 12 },
   addLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  copyLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
 });
