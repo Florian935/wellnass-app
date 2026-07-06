@@ -179,13 +179,55 @@
     "delete": "Supprimer",
     "deleteConfirm": "Retirer cet aliment du journal ?",
     "longPressDelete": "Appui long pour supprimer",
-    "tabs": { "all": "Tous", "favorites": "Favoris" },
+    "itemCount_one": "{{count}} aliment",
+    "itemCount_other": "{{count}} aliments",
+    "noTemplate": "Aucun repas type. Enregistre un repas depuis le journal.",
+    "saveMeal": "Enregistrer comme repas type",
+    "templateSaved": "Repas type enregistré ✓",
+    "tabs": {
+      "all": "Tous",
+      "favorites": "Favoris",
+      "recipes": "Recettes",
+      "templates": "Repas types"
+    },
     "meals": {
       "breakfast": "Petit-déjeuner",
       "lunch": "Déjeuner",
       "dinner": "Dîner",
       "snack": "Collation"
     }
+  },
+  "recipes": {
+    "title": "Recette",
+    "name": "Nom de la recette",
+    "create": "Créer une recette",
+    "createHint": "Compose une recette avec plusieurs ingrédients, puis réutilise-la dans ton journal.",
+    "servings": "Portions",
+    "servingsToAdd": "Nombre de portions",
+    "serving": "portion",
+    "total": "Total",
+    "perServing": "Par portion",
+    "ingredients": "Ingrédients",
+    "addIngredient": "+ Ajouter un ingrédient",
+    "removeIngredient": "Retirer cet ingrédient ?",
+    "done": "Terminer",
+    "none": "Aucune recette."
+  },
+  "stats": {
+    "title": "Suivi",
+    "weight": {
+      "title": "Poids corporel",
+      "log": "Poids du jour",
+      "save": "Enregistrer",
+      "empty": "Aucune pesée enregistrée.",
+      "trend": { "up": "en hausse", "down": "en baisse", "stable": "stable" }
+    },
+    "intake": {
+      "title": "Apports moyens",
+      "empty": "Pas encore assez de données.",
+      "perDay": "par jour"
+    },
+    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" }
   },
   "home": {
     "greeting": "Bonjour 👋",

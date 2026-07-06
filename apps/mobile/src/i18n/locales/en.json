@@ -179,13 +179,55 @@
     "delete": "Delete",
     "deleteConfirm": "Remove this food from the journal?",
     "longPressDelete": "Long-press to delete",
-    "tabs": { "all": "All", "favorites": "Favorites" },
+    "itemCount_one": "{{count}} food",
+    "itemCount_other": "{{count}} foods",
+    "noTemplate": "No meal template. Save a meal from the journal.",
+    "saveMeal": "Save as meal template",
+    "templateSaved": "Meal template saved ✓",
+    "tabs": {
+      "all": "All",
+      "favorites": "Favorites",
+      "recipes": "Recipes",
+      "templates": "Templates"
+    },
     "meals": {
       "breakfast": "Breakfast",
       "lunch": "Lunch",
       "dinner": "Dinner",
       "snack": "Snack"
     }
+  },
+  "recipes": {
+    "title": "Recipe",
+    "name": "Recipe name",
+    "create": "Create a recipe",
+    "createHint": "Build a recipe with several ingredients, then reuse it in your journal.",
+    "servings": "Servings",
+    "servingsToAdd": "Number of servings",
+    "serving": "serving",
+    "total": "Total",
+    "perServing": "Per serving",
+    "ingredients": "Ingredients",
+    "addIngredient": "+ Add an ingredient",
+    "removeIngredient": "Remove this ingredient?",
+    "done": "Done",
+    "none": "No recipe."
+  },
+  "stats": {
+    "title": "Tracking",
+    "weight": {
+      "title": "Body weight",
+      "log": "Today's weight",
+      "save": "Save",
+      "empty": "No weigh-in recorded.",
+      "trend": { "up": "trending up", "down": "trending down", "stable": "stable" }
+    },
+    "intake": {
+      "title": "Average intake",
+      "empty": "Not enough data yet.",
+      "perDay": "per day"
+    },
+    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" }
   },
   "home": {
     "greeting": "Hello 👋",

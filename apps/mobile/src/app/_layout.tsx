@@ -202,6 +202,28 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="recipe-edit"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('recipes.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="nutrition-stats"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('stats.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="programs"
           options={{
             headerShown: false,
