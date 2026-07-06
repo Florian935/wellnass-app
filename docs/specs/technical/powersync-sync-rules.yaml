@@ -1,116 +1,56 @@
-# Sync rules PowerSync — Sync Streams (edition 3).
-# Appliquées manuellement sur le tableau de bord PowerSync (Settings → Sync Rules) puis « Deploy ».
-# Réf. : docs/specs/technical/schema-donnees-muscu.md §3.2 · https://docs.powersync.com/sync/streams/overview
+# Sync rules PowerSync — format `bucket_definitions` (standard, tous SDK).
+# À coller dans le dashboard PowerSync (Settings → Sync Rules) puis « Deploy ».
+# Réf. : docs/specs/technical/schema-donnees-muscu.md §3.2
 #
-# Migration de format : l'instance PowerSync est en **edition 3 (streams)**, pas en ancien
-# `bucket_definitions`. Un stream = une requête ; `auth.user_id()` remplace `request.user_id()`.
-# `auto_subscribe: true` → l'app synchronise automatiquement (offline-first, aucune souscription
-# explicite côté client).
+# ⚠️ Format : on utilise `bucket_definitions` (et non `streams`/edition 3). Les Sync Streams
+# `auto_subscribe` ne délivraient aucune donnée au client (SDK connecté mais 0 bucket) ; le
+# format `bucket_definitions` est consommé nativement par @powersync/react-native sans
+# souscription côté client. `request.user_id()` = id utilisateur extrait du JWT Supabase.
 #
-# Trois familles de streams :
-#   * données utilisateur (user_id = auth.user_id())
-#   * contenu custom de l'utilisateur (owner_id = auth.user_id())
-#   * contenu de bibliothèque (owner_id IS NULL, lecture seule côté app)
+# Deux buckets :
+#   user_data      — données propres à l'utilisateur (user_id) + contenu custom (owner_id = user).
+#   shared_content — contenu de bibliothèque (owner_id NULL), lecture seule côté app.
 
-config:
-  edition: 3
+bucket_definitions:
+  user_data:
+    parameters: select request.user_id() as user_id
+    data:
+      # ── Socle transverse ──────────────────────────────────────────────────
+      - select * from profiles              where user_id = bucket.user_id and deleted_at is null
+      - select * from user_settings         where user_id = bucket.user_id and deleted_at is null
+      - select * from nutrition_profiles    where user_id = bucket.user_id and deleted_at is null
+      # ── Musculation ───────────────────────────────────────────────────────
+      - select * from exercises             where owner_id = bucket.user_id and deleted_at is null
+      - select * from exercise_translations where owner_id = bucket.user_id and deleted_at is null
+      - select * from exercise_favorites    where user_id = bucket.user_id and deleted_at is null
+      - select * from workouts              where user_id = bucket.user_id and deleted_at is null
+      - select * from workout_sets          where user_id = bucket.user_id and deleted_at is null
+      - select * from programs              where owner_id = bucket.user_id and deleted_at is null
+      - select * from program_translations  where owner_id = bucket.user_id and deleted_at is null
+      - select * from sessions              where owner_id = bucket.user_id and deleted_at is null
+      - select * from exercise_plans        where owner_id = bucket.user_id and deleted_at is null
+      - select * from personal_records      where user_id = bucket.user_id and deleted_at is null
+      # ── Alimentation ──────────────────────────────────────────────────────
+      - select * from foods                 where owner_id = bucket.user_id and deleted_at is null
+      - select * from food_translations     where owner_id = bucket.user_id and deleted_at is null
+      - select * from food_favorites        where user_id = bucket.user_id and deleted_at is null
+      - select * from food_entries          where user_id = bucket.user_id and deleted_at is null
+      - select * from recipes               where user_id = bucket.user_id and deleted_at is null
+      - select * from recipe_ingredients    where user_id = bucket.user_id and deleted_at is null
+      - select * from meal_templates        where user_id = bucket.user_id and deleted_at is null
+      - select * from meal_template_items   where user_id = bucket.user_id and deleted_at is null
+      - select * from body_weight_entries   where user_id = bucket.user_id and deleted_at is null
+      # ── Running ───────────────────────────────────────────────────────────
+      - select * from runs                  where user_id = bucket.user_id and deleted_at is null
 
-streams:
-  # ── Données utilisateur (user_id) ──────────────────────────────────────────
-  profiles:
-    auto_subscribe: true
-    query: SELECT * FROM profiles WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  user_settings:
-    auto_subscribe: true
-    query: SELECT * FROM user_settings WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  nutrition_profiles:
-    auto_subscribe: true
-    query: SELECT * FROM nutrition_profiles WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  exercise_favorites:
-    auto_subscribe: true
-    query: SELECT * FROM exercise_favorites WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  workouts:
-    auto_subscribe: true
-    query: SELECT * FROM workouts WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  workout_sets:
-    auto_subscribe: true
-    query: SELECT * FROM workout_sets WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  personal_records:
-    auto_subscribe: true
-    query: SELECT * FROM personal_records WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  food_favorites:
-    auto_subscribe: true
-    query: SELECT * FROM food_favorites WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  food_entries:
-    auto_subscribe: true
-    query: SELECT * FROM food_entries WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  recipes:
-    auto_subscribe: true
-    query: SELECT * FROM recipes WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  recipe_ingredients:
-    auto_subscribe: true
-    query: SELECT * FROM recipe_ingredients WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  meal_templates:
-    auto_subscribe: true
-    query: SELECT * FROM meal_templates WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  meal_template_items:
-    auto_subscribe: true
-    query: SELECT * FROM meal_template_items WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  body_weight_entries:
-    auto_subscribe: true
-    query: SELECT * FROM body_weight_entries WHERE user_id = auth.user_id() AND deleted_at IS NULL
-  runs:
-    auto_subscribe: true
-    query: SELECT * FROM runs WHERE user_id = auth.user_id() AND deleted_at IS NULL
-
-  # ── Contenu custom de l'utilisateur (owner_id = auth.user_id()) ─────────────
-  exercises_custom:
-    auto_subscribe: true
-    query: SELECT * FROM exercises WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  exercise_translations_custom:
-    auto_subscribe: true
-    query: SELECT * FROM exercise_translations WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  programs_custom:
-    auto_subscribe: true
-    query: SELECT * FROM programs WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  program_translations_custom:
-    auto_subscribe: true
-    query: SELECT * FROM program_translations WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  sessions_custom:
-    auto_subscribe: true
-    query: SELECT * FROM sessions WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  exercise_plans_custom:
-    auto_subscribe: true
-    query: SELECT * FROM exercise_plans WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  foods_custom:
-    auto_subscribe: true
-    query: SELECT * FROM foods WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-  food_translations_custom:
-    auto_subscribe: true
-    query: SELECT * FROM food_translations WHERE owner_id = auth.user_id() AND deleted_at IS NULL
-
-  # ── Contenu de bibliothèque (owner_id IS NULL, lecture seule) ───────────────
-  exercises_library:
-    auto_subscribe: true
-    query: SELECT * FROM exercises WHERE owner_id IS NULL AND deleted_at IS NULL
-  exercise_translations_library:
-    auto_subscribe: true
-    query: SELECT * FROM exercise_translations WHERE owner_id IS NULL AND deleted_at IS NULL
-  programs_library:
-    auto_subscribe: true
-    query: SELECT * FROM programs WHERE owner_id IS NULL AND status = 'published' AND deleted_at IS NULL
-  program_translations_library:
-    auto_subscribe: true
-    query: SELECT * FROM program_translations WHERE owner_id IS NULL AND deleted_at IS NULL
-  sessions_library:
-    auto_subscribe: true
-    query: SELECT * FROM sessions WHERE owner_id IS NULL AND deleted_at IS NULL
-  exercise_plans_library:
-    auto_subscribe: true
-    query: SELECT * FROM exercise_plans WHERE owner_id IS NULL AND deleted_at IS NULL
-  foods_library:
-    auto_subscribe: true
-    query: SELECT * FROM foods WHERE owner_id IS NULL AND deleted_at IS NULL
-  food_translations_library:
-    auto_subscribe: true
-    query: SELECT * FROM food_translations WHERE owner_id IS NULL AND deleted_at IS NULL
+  shared_content:
+    data:
+      # Bibliothèque globale (owner_id NULL) — lecture seule côté app.
+      - select * from exercises             where owner_id is null and deleted_at is null
+      - select * from exercise_translations where owner_id is null and deleted_at is null
+      - select * from programs              where owner_id is null and status = 'published' and deleted_at is null
+      - select * from program_translations  where owner_id is null and deleted_at is null
+      - select * from sessions              where owner_id is null and deleted_at is null
+      - select * from exercise_plans        where owner_id is null and deleted_at is null
+      - select * from foods                 where owner_id is null and deleted_at is null
+      - select * from food_translations     where owner_id is null and deleted_at is null
