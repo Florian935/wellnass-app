@@ -7,10 +7,13 @@ import { column, Schema, Table } from '@powersync/react-native';
  * des tables Supabase (colonnes snake_case, types PowerSync : text / integer / real).
  * Référence : docs/specs/technical/schema-donnees-muscu.md §4
  *
+ * US2 : 4 tables programmes ajoutées — programs, program_translations, sessions,
+ * exercise_plans. Migration : supabase/migrations/20260706130000_programmes_tables.sql
+ *
  * Conventions :
  * - L'`id` (UUID, PK texte) est **implicite** dans PowerSync ; on ne le déclare pas.
  * - Les timestamps sont des chaînes ISO 8601 UTC → type `text`.
- * - Les booléens (`done`) sont stockés en `integer` (0 = false, 1 = true).
+ * - Les booléens (`is_active`, `done`) sont stockés en `integer` (0 = false, 1 = true).
  * - Le mapping camelCase se fait dans la couche Zod partagée, pas ici.
  */
 
@@ -101,6 +104,58 @@ const workout_sets = new Table({
   deleted_at: column.text,
 });
 
+// ── US2 : tables programmes ────────────────────────────────────────────────
+
+const programs = new Table({
+  owner_id: column.text,
+  pillar: column.text,
+  status: column.text,
+  is_active: column.integer,
+  level: column.text,
+  goal: column.text,
+  duration_weeks: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const program_translations = new Table({
+  program_id: column.text,
+  owner_id: column.text,
+  lang: column.text,
+  name: column.text,
+  summary: column.text,
+  description: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const sessions = new Table({
+  program_id: column.text,
+  owner_id: column.text,
+  order_index: column.integer,
+  name: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const exercise_plans = new Table({
+  session_id: column.text,
+  owner_id: column.text,
+  exercise_id: column.text,
+  order_index: column.integer,
+  set_type: column.text,
+  target_sets: column.integer,
+  target_reps: column.text,
+  target_weight_kg: column.real,
+  rest_seconds: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
@@ -109,4 +164,8 @@ export const AppSchema = new Schema({
   exercise_favorites,
   workouts,
   workout_sets,
+  programs,
+  program_translations,
+  sessions,
+  exercise_plans,
 });
