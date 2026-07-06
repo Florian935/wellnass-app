@@ -6,7 +6,11 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useWorkoutStore } from '@/stores/workout-store';
+import {
+  startWorkout,
+  useActiveWorkout,
+  useWorkoutHistory,
+} from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -14,12 +18,12 @@ export default function StrengthScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const active = useWorkoutStore((s) => s.active);
-  const start = useWorkoutStore((s) => s.start);
-  const historyCount = useWorkoutStore((s) => s.history.length);
+  const { workout: active } = useActiveWorkout();
+  const { workouts } = useWorkoutHistory();
+  const historyCount = workouts.length;
 
-  const onStart = () => {
-    start();
+  const onStart = async () => {
+    await startWorkout();
     router.push('/workout');
   };
 

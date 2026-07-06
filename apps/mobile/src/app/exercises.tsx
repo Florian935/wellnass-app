@@ -13,7 +13,10 @@ import {
   toggleFavorite,
   type ExerciseListItem,
 } from '@/data/repositories/exercise-repository';
-import { useWorkoutStore } from '@/stores/workout-store';
+import {
+  addExerciseToWorkout,
+  useActiveWorkout,
+} from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -22,8 +25,7 @@ export default function ExercisesScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const addExercise = useWorkoutStore((s) => s.addExercise);
-  const hasActive = useWorkoutStore((s) => s.active !== null);
+  const { workout: active } = useActiveWorkout();
 
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
@@ -39,9 +41,9 @@ export default function ExercisesScreen() {
     return fa - fb;
   });
 
-  const onPick = (item: ExerciseListItem) => {
-    if (hasActive) {
-      addExercise(item.id, item.name);
+  const onPick = async (item: ExerciseListItem) => {
+    if (active) {
+      await addExerciseToWorkout(active.id, item.id);
       router.back();
     }
   };
@@ -99,7 +101,7 @@ export default function ExercisesScreen() {
           keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
             <Pressable
-              onPress={() => onPick(item)}
+              onPress={() => void onPick(item)}
               style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
             >
               <View style={styles.rowText}>
