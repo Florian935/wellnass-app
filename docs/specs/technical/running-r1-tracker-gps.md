@@ -50,7 +50,15 @@ Table utilisateur (bucket `user_data`), colonnes de synchro §3.1 de [offline-sy
 
 > **Encodage de la trace (format figé — append-friendly)** : **polyline encodée** (Google encoded polyline, précision ~1e-5) pour les coordonnées + **tableau de deltas de temps** parallèle (secondes depuis `started_at`). Les deux sont **concaténables par segment** : un flush **ajoute** l'encodage des nouveaux points sans réencoder toute la trace (voir §5). Fonctions pures `@wellness/shared`, testées : `encodeSegment(points)` (encode un incrément), `appendToTrack(track, segment)`, `decodeTrack(track)`. Métrique/impérial (1.15) = **affichage uniquement** ; stockage toujours en mètres/secondes.
 
-**Migration** : `runs` + trigger `set_updated_at` + index `runs(user_id, status) where deleted_at is null` + `alter publication powersync add table public.runs`. **RLS** (table utilisateur, comme `workouts`) : select/insert/update `user_id = auth.uid()`, pas de delete. **Sync rules** : `select * from runs where user_id = bucket.user_id and deleted_at is null` dans `user_data`.
+**Migration** : `runs` + trigger `set_updated_at` + index `runs(user_id, status) where deleted_at is null` + `alter publication powersync add table public.runs`. **RLS** (table utilisateur, comme `workouts`) : select/insert/update `user_id = auth.uid()`, pas de delete.
+
+**Sync rules — format edition 3 (Sync Streams)** ⚠️ : l'instance PowerSync est en **edition 3 (streams)**, PAS en ancien `bucket_definitions` (rework Damien 06/07 — l'ancien format n'était pas déployable). Ajouter un **stream** dans [powersync-sync-rules.yaml](powersync-sync-rules.yaml), même patron que les streams « données utilisateur » existants (`auth.user_id()`, `auto_subscribe: true`) :
+```yaml
+streams:
+  runs:
+    query: SELECT * FROM runs WHERE user_id = auth.user_id()
+    auto_subscribe: true
+```
 
 > ⚠️ **Coordination timestamp de migration** : Damien travaille en parallèle sur V0.4 nutrition (migrations `20260706140000/140001`, records `140002`). Choisir un timestamp **nettement postérieur** — proposé `20260707120000_running_runs.sql` — et se synchroniser avec lui pour éviter une collision (cf. incident du 06/07 sur `140000`).
 
