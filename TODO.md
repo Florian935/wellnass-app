@@ -14,6 +14,27 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ---
 
+## 🔴 Bloquant — infra cloud (accès **Damien**)
+
+> **US1 mergée dans `dev` (`248e2b2`) mais NON activée** : l'app buildée depuis `dev` marche en
+> local/offline, mais **la synchro PowerSync échoue** tant que le cloud n'a pas le schéma. À régler
+> en priorité — nécessite les accès Supabase/PowerSync (Damien).
+
+- [ ] **Appliquer les migrations Supabase cloud** — `supabase db push` (fichiers
+  `20260706120000_socle_muscu_tables.sql` + `20260706120001_socle_muscu_rls.sql`) **+ vérifier /
+  créer la publication `powersync`** (`create publication powersync;` si absente).
+- [ ] **Déployer les sync rules** sur le dashboard PowerSync depuis
+  [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
+- [ ] **`npm run db:types`** une fois les tables appliquées (régénère `packages/shared/database.types.ts`).
+- [ ] **Appliquer le seed** des 16 exercices (`supabase db reset` local, ou insert cloud) pour
+  peupler la bibliothèque.
+- [ ] **Vérif device US1 (Task 22)** : écriture/lecture mode avion, sync montante, sync descendante,
+  **RLS sur 2 appareils**, i18n FR/EN.
+- [ ] **Relecture a posteriori par Damien** — le merge US1 a court-circuité la relecture à deux
+  (zones sync/sécurité) sur décision explicite de Florian ; à repasser.
+
+---
+
 ## 🚧 En cours
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
@@ -24,7 +45,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **V0.2 — Profil persistant & éditable** (1.12) — persistance SecureStore + profil éditable + accueil perso + relance onboarding — mergé, testé device (05/07/2026)
 - [x] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35) — mergé (PR #13), testé device (06/07/2026). ⚠️ stores persistés **local Zustand** (dette data adressée par le cadrage ci-dessous).
 - [x] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) + plan [us1-socle-data-muscu.md](docs/plans/us1-socle-data-muscu.md), tous deux revus et **validés**. Découpé en 3 US. (06/07/2026)
-- [~] **US1 — Socle data (bascule PowerSync)** (`feature/data-socle-muscu`) — **code terminé** : `packages/shared` (schémas Zod + logique, 127 tests), 4 repositories, schéma PowerSync local, migrations+RLS+seed+sync rules (fichiers), bascule de tous les écrans + gate offline, jest-expo, suppression des stores Zustand (dette soldée). typecheck/lint/test verts, 2 revues traitées. **Reste (🔴 humain avant merge)** : appliquer migrations cloud + publication, déployer sync rules dashboard, **vérif device** (Task 22), PR relue par les 2 devs.
+- [x] **US1 — Socle data (bascule PowerSync)** — **code mergé dans `dev`** (`248e2b2`, 06/07/2026) : `packages/shared` (schémas Zod + logique, 127 tests), 4 repositories, schéma PowerSync local, migrations+RLS+seed+sync rules, bascule de tous les écrans + gate offline, jest-expo, suppression des stores Zustand (dette soldée). typecheck/lint/test verts, 2 revues + fix offline-first. **Activation cloud + vérif device = section 🔴 en haut.**
+- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) — plan [us2-programmes-muscu.md](docs/plans/us2-programmes-muscu.md) **relu + approuvé**. Périmètre : structure + biblio + duplication + programme actif + démarrer une séance depuis un programme (3.1-3.6, 3.12, 3.24). Implémentation subagent-driven **en cours**. (Planning/progression/notifs → US2b.)
 
 ---
 
@@ -44,13 +66,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Câbler un **runner de tests** — Vitest sur `packages/shared` (couverture 100 %) + `npm run test` (05/07/2026)
 - [x] **Dev build Expo** (EAS) — profils `eas.json`, `eas init`, **1er build `build:dev` réussi** (APK dev client) (05/07/2026)
 - [~] **Socle Supabase local** — `supabase/` (config, migration conventions, seed), client typé mobile + `.env.example`, scripts `db:*`. Reste : `db:start` (Docker) + provisioning cloud + schéma métier (avec les US)
-- [ ] Câbler les **tests mobile** (jest-expo) — avec l'US1 socle data ci-dessous
+- [x] Câbler les **tests mobile** (jest-expo) — fait avec l'US1 (mocks PowerSync + smoke) (06/07/2026)
 - [x] Provisionner **Supabase cloud** (projet) + instance **PowerSync** — provisionné (confirmé 06/07/2026). Reste : pousser tables + RLS + sync rules (US1)
 - [~] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository) — plomberie posée (schéma jouet `todos`, connecteur générique) ; vrai schéma métier = US1
 
 ### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
-- [ ] **US1 — Socle data** (`feature/data-socle-muscu`) : conventions + `profiles` + `user_settings` + `exercises`/`_translations`/`_favorites` + `workouts`/`workout_sets` + seed Supabase + **bascule** séance libre / profil / réglages (fin de la dette Zustand). Tables + RLS + sync rules. jest-expo câblé ici. *(le gros morceau)*
-- [ ] **US2 — Programmes muscu** (`feature/programmes-muscu`) : `programs`/`program_translations`/`sessions`/`exercise_plans` (V0.3)
+- [x] **US1 — Socle data** — mergée dans `dev` (`248e2b2`, 06/07/2026). Activation cloud + device = section 🔴 en haut.
+- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) : `programs`/`program_translations`/`sessions`/`exercise_plans` (V0.3) — plan approuvé, implémentation en cours.
 - [ ] **US3 — Historique & records** (`feature/historique-records-muscu`) : `personal_records` + courbes/historique (V0.3)
 
 ---
