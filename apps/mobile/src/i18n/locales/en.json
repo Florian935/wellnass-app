@@ -137,6 +137,56 @@
       "allergensPlaceholder": "e.g. peanuts, tree nuts…"
     }
   },
+  "food": {
+    "categories": {
+      "meat": "Meat",
+      "fish": "Fish",
+      "starchy": "Starchy",
+      "vegetables": "Vegetables",
+      "fruits": "Fruits",
+      "dairy": "Dairy",
+      "nuts": "Nuts & seeds",
+      "drinks": "Drinks",
+      "other": "Other"
+    },
+    "custom": {
+      "hint": "Enter values per 100 g. Only calories are required.",
+      "category": "Category",
+      "per100": "Values per 100 g",
+      "save": "Create food"
+    }
+  },
+  "journal": {
+    "today": "Today",
+    "remaining": "remaining",
+    "over": "over",
+    "setTarget": "Set a calorie target",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "addFood": "Add food",
+    "searchFood": "Search",
+    "searchPlaceholder": "Food name…",
+    "noFood": "No food found.",
+    "searchOff": "Search “{{term}}” on OpenFoodFacts",
+    "searching": "Searching…",
+    "offNone": "No OpenFoodFacts result.",
+    "per100": "kcal /100 g",
+    "quickAdd": "Quick add (calories)",
+    "createFood": "Create food",
+    "name": "Name",
+    "grams": "Quantity (g)",
+    "add": "Add",
+    "delete": "Delete",
+    "deleteConfirm": "Remove this food from the journal?",
+    "longPressDelete": "Long-press to delete",
+    "tabs": { "all": "All", "favorites": "Favorites" },
+    "meals": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    }
+  },
   "home": {
     "greeting": "Hello 👋",
     "greetingName": "Hello {{name}} 👋",

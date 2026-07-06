@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — V0.4 US4.8 : base d'aliments & journal alimentaire
+
+_Branche : `feature/4.8-aliments-journal` · commit précédent sur `dev` : `632f5b5`_
+
+### Ajouté (cœur du pilier Alimentation — items 4.8/4.9/4.11-4.14/4.16/4.17/4.19-4.23)
+- **`packages/shared/src/food.ts`** : enums (catégories, sources, repas), schémas `foods`/
+  `food_translations`/`food_entries`/portions, helpers purs `resolveFoodName` / `scaleNutrition` /
+  `sumNutrients`. **+16 tests** (253 shared).
+- **4 tables PowerSync** : `foods` (owner_id null = bibliothèque), `food_translations`,
+  `food_favorites`, `food_entries` (snapshot). Migrations `20260706150000_food_tables.sql` +
+  `150001_food_rls.sql` + **sync rules edition 3** (streams food) + **seed 50 aliments bilingues** curés.
+- **`food-repository`** (recherche nom résolu SQL, favoris, aliment perso, import OFF) +
+  **`journal-repository`** (entrées du jour, ajout/maj/suppr) + **`lib/openfoodfacts.ts`** (recherche texte, sans clé).
+- **Écrans** : onglet **Nutrition** = journal (nav jours, totaux + barres macros temps réel, 4 repas) ;
+  **food-picker** (recherche locale + OpenFoodFacts, favoris, portions/quantité, quick add) ;
+  **food-custom** (aliment perso). FR + EN.
+
+### Technique / Notes
+- `typecheck` + `lint` (0 erreur) + `test` verts.
+- **Différé** : scan code-barres (4.10, expo-camera), renommer/ajouter repas (4.15), copier repas/
+  journée (4.18), recettes & repas types (4.24-4.26), poids & stats (1.13/1.14/4.30-4.32), notif repas (2.5).
+- **Checkpoints 🔴 humains** : appliquer migrations `150000/150001` + **seed** sur Supabase, redéployer
+  les sync rules (streams food), `db:types`, vérif device.
+
 ## 06/07/2026 — V0.5 Running R1 : tracker GPS nu (course libre)
 
 _Branche : `feature/running-r1-tracker` · commit précédent sur `dev` : `5f1b91d`_

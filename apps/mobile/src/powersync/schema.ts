@@ -68,6 +68,61 @@ const nutrition_profiles = new Table({
   deleted_at: column.text,
 });
 
+// ── V0.4 : base d'aliments + journal ───────────────────────────────────────
+// Migration : supabase/migrations/20260706150000_food_tables.sql
+const foods = new Table({
+  owner_id: column.text, // null = bibliothèque (app/CIQUAL), non-null = perso/OFF
+  source: column.text,
+  category: column.text,
+  barcode: column.text,
+  kcal_per_100g: column.real,
+  protein_per_100g: column.real,
+  carbs_per_100g: column.real,
+  sugars_per_100g: column.real,
+  fat_per_100g: column.real,
+  saturated_fat_per_100g: column.real,
+  fiber_per_100g: column.real,
+  portions: column.text, // JSON [{labelFr,labelEn,grams}]
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const food_translations = new Table({
+  food_id: column.text,
+  owner_id: column.text,
+  lang: column.text,
+  name: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const food_favorites = new Table({
+  user_id: column.text,
+  food_id: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const food_entries = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  meal_type: column.text,
+  order_index: column.integer,
+  food_id: column.text,
+  name: column.text,
+  quantity_g: column.real,
+  kcal: column.integer,
+  protein_g: column.real,
+  carbs_g: column.real,
+  fat_g: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 const exercises = new Table({
   owner_id: column.text,
   source: column.text,
@@ -219,6 +274,10 @@ export const AppSchema = new Schema({
   profiles,
   user_settings,
   nutrition_profiles,
+  foods,
+  food_translations,
+  food_favorites,
+  food_entries,
   exercises,
   exercise_translations,
   exercise_favorites,
