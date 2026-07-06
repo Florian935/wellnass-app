@@ -54,7 +54,13 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
           break;
       }
       if (result?.error) {
-        // Erreur non fatale → on relance pour réessayer plus tard (transaction non complétée).
+        // Trace l'échec (une erreur d'upload silencieuse bloque toute la synchro via le
+        // write-checkpoint — cf. bug ensureSettings/doublon user_id). On relance pour
+        // réessayer plus tard (transaction non complétée).
+        console.warn(
+          `[PowerSync] upload ${op.op} ${op.table} échoué :`,
+          result.error.message ?? result.error,
+        );
         throw result.error;
       }
     }

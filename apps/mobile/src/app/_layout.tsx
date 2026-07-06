@@ -3,6 +3,7 @@ import '@azure/core-asynciterator-polyfill';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import { useStatus } from '@powersync/react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -58,6 +59,7 @@ function RootNavigator() {
   const initializing = useAuthStore((s) => s.initializing);
   const { profile, isLoading: profileLoading } = useProfile();
   const { settings, isLoading: settingsLoading } = useSettings();
+  const syncStatus = useStatus();
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
@@ -79,14 +81,15 @@ function RootNavigator() {
     }
   }, [ready]);
 
-  // Bootstrap : à la première connexion, une fois la synchro terminée, si aucune
-  // ligne de réglages n'existe encore, on l'initialise avec les defaults. Ne
-  // s'exécute qu'une fois (dès qu'une ligne existe, `settings` n'est plus null).
+  // Bootstrap : on n'initialise les réglages par défaut qu'une fois la **synchro
+  // initiale terminée** (`hasSynced`). Sinon on créerait une ligne locale alors que
+  // le serveur en a déjà une → doublon sur la contrainte unique `user_id`, dont
+  // l'upload échoue en boucle et **bloque toute la synchro** (write-checkpoint).
   useEffect(() => {
-    if (session && !settingsLoading && settings == null) {
+    if (session && syncStatus.hasSynced && !settingsLoading && settings == null) {
       void ensureSettings();
     }
-  }, [session, settingsLoading, settings]);
+  }, [session, syncStatus.hasSynced, settingsLoading, settings]);
 
   // Applique la langue persistée dans les réglages à i18next (la préférence
   // utilisateur synchronisée prime sur la locale de l'appareil).
