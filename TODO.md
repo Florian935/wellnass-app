@@ -36,6 +36,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (+ FK workouts) et `20260706130001_programmes_rls.sql` sur le cloud, **redéployer les sync rules**
   (elles incluent désormais les 4 tables programmes), rejouer le seed (programme éditorial), **vérif
   device US2** (créer/dupliquer/activer un programme, démarrer une séance depuis un programme).
+- [ ] **US3** : appliquer la migration `20260706140002_personal_records.sql` sur le cloud,
+  **redéployer les sync rules** (incluent désormais `personal_records`), **nouveau dev build**
+  (`npm run build:dev` — `react-native-svg` natif), **vérif device US3** (record détecté à la
+  clôture + mis en avant au résumé, historique liste/détail, courbes qui s'affichent, volume/groupe).
 
 ---
 
@@ -50,8 +54,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **V0.2 — Séance libre (muscu)** — bibliothèque/recherche/favoris/perso (3.13-3.16), séance libre + validation + chrono repos + édition séries (3.23/3.25/3.28/3.30/3.31), résumé (3.35) — mergé (PR #13), testé device (06/07/2026). ⚠️ stores persistés **local Zustand** (dette data adressée par le cadrage ci-dessous).
 - [x] **Cadrage — Schéma de données socle & muscu (PowerSync)** — spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md) + plan [us1-socle-data-muscu.md](docs/plans/us1-socle-data-muscu.md), tous deux revus et **validés**. Découpé en 3 US. (06/07/2026)
 - [x] **US1 — Socle data (bascule PowerSync)** — **code mergé dans `dev`** (`248e2b2`, 06/07/2026) : `packages/shared` (schémas Zod + logique, 127 tests), 4 repositories, schéma PowerSync local, migrations+RLS+seed+sync rules, bascule de tous les écrans + gate offline, jest-expo, suppression des stores Zustand (dette soldée). typecheck/lint/test verts, 2 revues + fix offline-first. **Activation cloud + vérif device = section 🔴 en haut.**
-- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) — **code terminé** (13 commits) : schémas shared (+47 tests), migrations+RLS+seed+sync rules, schéma local, `program-repository`, écrans biblio/création/détail/activation + démarrer depuis programme (3.1-3.6, 3.12, 3.24). typecheck/lint/test verts, revue repo + revue finale **GO**. **Reste** : intégration (PR/merge) + activation cloud + vérif device (section 🔴). (Planning/progression/notifs → US2b.)
-- [~] **V0.4 — US4.1 Profil nutritionnel & TDEE** (`feature/4.1-profil-nutritionnel-repo`, 1.10/4.1-4.7) — objectif nutritionnel, facteur d'activité (5 niveaux), TDEE Mifflin-St Jeor, objectif calorique (auto + surcharge manuelle), macros par défaut/manuelles (%↔g), restrictions/allergènes. Calculs purs + `nutritionProfileRowSchema` dans `@wellness/shared` (+28 tests), **table `nutrition_profiles`** (schéma PowerSync + migrations 140000/140001 + RLS + sync rules), `nutrition-repository` (`useQuery`/upsert), écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.1-profil-nutritionnel.md](docs/specs/functional/us/4.1-profil-nutritionnel.md). **Reste** : activation cloud (migrations+sync rules) + vérif device (section 🔴). (4.7 câblage planning muscu = ultérieur.)
+- [x] **US2 — Programmes muscu** — **mergée dans `dev`** (`cdf0032`, 06/07/2026) : schémas shared, migrations+RLS+seed+sync rules, `program-repository`, écrans biblio/création/détail/activation + démarrer depuis programme (3.1-3.6, 3.12, 3.24). Revues repo + finale GO. Activation cloud + device = section 🔴. (Planning/progression/notifs → US2b.)
+- [x] **US3 — Historique & records** — **mergée dans `dev`** (06/07/2026) : logique records shared (Epley, +39 tests), table `personal_records`+RLS+sync rules, `records-repository` (détection à la clôture), graphes (`react-native-svg`+gifted-charts), écrans historique + progression + records au résumé (3.22/3.38/3.21/3.39/3.40). Revues repo + finale GO. Activation cloud + **dev build svg** + device = section 🔴. (Notif record 3.42 → V0.8.)
+- [~] **V0.4 — US4.1 Profil nutritionnel & TDEE** (`feature/4.1-profil-nutritionnel-repo`, 1.10/4.1-4.7) — objectif nutritionnel, facteur d'activité (5 niveaux), TDEE Mifflin-St Jeor, objectif calorique (auto + surcharge manuelle), macros par défaut/manuelles (%↔g), restrictions/allergènes. Calculs purs + `nutritionProfileRowSchema` dans `@wellness/shared` (+28 tests), **table `nutrition_profiles`** (schéma PowerSync + migrations 140000/140001 + RLS + sync rules), `nutrition-repository` (`useQuery`/upsert), écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.1-profil-nutritionnel.md](docs/specs/functional/us/4.1-profil-nutritionnel.md). **Reste** : activation cloud (migrations+sync rules) + vérif device (section 🔴). (4.7 câblage planning muscu = ultérieur.) _(mergée en parallèle par Damien)_
+- [ ] **US transverse — Affichage des unités (métrique/impérial)** : câbler `displayWeight`/`useSettings().units` sur tout l'affichage des poids muscu (US1 séance, US2 programmes, US3 records/historique/progression). `displayWeight` existe déjà (`@wellness/shared`, testé) mais n'est utilisé nulle part → aujourd'hui tout s'affiche en kg quel que soit le réglage (1.15). Dette pré-existante, à traiter d'un coup.
 
 ---
 
@@ -77,8 +83,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
 - [x] **US1 — Socle data** — mergée dans `dev` (`248e2b2`, 06/07/2026). Activation cloud + device = section 🔴 en haut.
-- [~] **US2 — Programmes muscu** (`feature/programmes-muscu`) : `programs`/`program_translations`/`sessions`/`exercise_plans` (V0.3) — plan approuvé, implémentation en cours.
-- [ ] **US3 — Historique & records** (`feature/historique-records-muscu`) : `personal_records` + courbes/historique (V0.3)
+- [x] **US2 — Programmes muscu** — mergée dans `dev` (`cdf0032`, 06/07/2026).
+- [x] **US3 — Historique & records** — mergée dans `dev` (06/07/2026). **Pilier muscu (V0.2+V0.3) complet côté code.**
 
 ---
 

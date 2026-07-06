@@ -15,6 +15,7 @@ import {
   useActiveWorkout,
   type WorkoutSetItem,
 } from '@/data/repositories/workout-repository';
+import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -88,7 +89,18 @@ export default function WorkoutScreen() {
   };
 
   const onFinish = async () => {
+    // 1. Clôture de la séance : doit réussir (statut 'completed').
     await finishWorkout(workoutId);
+    // 2. Évaluation des records : enrichissement best-effort. Un échec (session
+    //    expirée, erreur de transaction…) ne doit jamais bloquer la navigation :
+    //    le résumé lit les records de façon réactive (useWorkoutRecords) et
+    //    affichera simplement zéro record le cas échéant.
+    try {
+      await evaluateWorkoutRecords(workoutId);
+    } catch (error) {
+      console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
+    }
+    // 3. Navigation vers le résumé, quoi qu'il advienne à l'étape 2.
     router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
   };
 

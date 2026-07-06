@@ -182,6 +182,8 @@ function RootNavigator() {
             headerShown: false,
           }}
         />
+        <Stack.Screen name="history" options={{ headerShown: false }} />
+        <Stack.Screen name="progress" options={{ headerShown: false }} />
         <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>

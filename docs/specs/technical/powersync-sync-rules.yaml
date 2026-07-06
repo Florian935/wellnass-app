@@ -26,6 +26,8 @@ bucket_definitions:
       - select * from program_translations where owner_id = bucket.user_id and deleted_at is null
       - select * from sessions             where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_plans       where owner_id = bucket.user_id and deleted_at is null
+      # US3 — records personnels de l'utilisateur
+      - select * from personal_records    where user_id = bucket.user_id and deleted_at is null
 
   shared_content:
     data:

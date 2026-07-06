@@ -1,7 +1,8 @@
 {
   "common": {
     "appName": "Wellness",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
   },
   "sync": {
     "connected": "Synced",
@@ -52,7 +53,15 @@
       "minutes": "{{count}} min",
       "exercises": "Exercises",
       "sets": "Sets completed",
-      "volume": "Total volume"
+      "volume": "Total volume",
+      "records": {
+        "sectionTitle": "Records beaten 🏆",
+        "type": {
+          "max_weight": "Max weight",
+          "estimated_1rm": "Est. 1RM",
+          "best_volume": "Set volume"
+        }
+      }
     }
   },
   "tabs": {
@@ -360,6 +369,98 @@
         "empty": "No exercises found."
       },
       "done": "Done"
+    }
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "Your completed workouts.",
+    "empty": {
+      "title": "No workouts yet",
+      "message": "Finish your first workout to see it here."
+    },
+    "filterAll": "All",
+    "filter7d": "7 days",
+    "filter30d": "30 days",
+    "filter90d": "90 days",
+    "row": {
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "rpe": "RPE {{value}}"
+    },
+    "detail": {
+      "notFoundTitle": "Workout not found",
+      "notFoundMessage": "This workout does not exist or has been deleted.",
+      "sectionExercises": "Exercises",
+      "emptyExercises": "No sets recorded for this workout.",
+      "sectionRecords": "Records beaten 🏆",
+      "metaDuration": "Duration",
+      "metaVolume": "Volume",
+      "metaRpe": "RPE",
+      "metaNotes": "Notes",
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "setNormal": "Normal",
+      "setWarmup": "Warm",
+      "setSuperset": "Super",
+      "setDuration": "Duration",
+      "setBodyweight": "BW",
+      "repsWeight": "{{reps}} × {{kg}} kg",
+      "repsOnly": "{{reps}} reps",
+      "weightOnly": "{{kg}} kg",
+      "record": {
+        "max_weight": "Max weight",
+        "estimated_1rm": "Est. 1RM",
+        "best_volume": "Set volume"
+      }
+    }
+  },
+  "progress": {
+    "title": "Progress",
+    "subtitle": "Personal records and progression charts.",
+    "strengthCardSubtitle": "Records, loads and volume by muscle group.",
+    "cta": {
+      "startWorkout": "Start a workout"
+    },
+    "unit": {
+      "kg": "kg"
+    },
+    "weeklyVolume": {
+      "title": "Volume this week",
+      "chartTitle": "Volume by muscle group",
+      "emptyTitle": "No volume this week",
+      "emptyMessage": "Complete a workout to see volume broken down by muscle group."
+    },
+    "exercise": {
+      "title": "By exercise",
+      "placeholder": "Choose an exercise…",
+      "selectA11y": "Choose an exercise",
+      "empty": "Select an exercise to see its records and progression chart."
+    },
+    "records": {
+      "title": "Personal records",
+      "empty": "No records yet for this exercise. Complete a workout to create some.",
+      "type": {
+        "max_weight": "Max weight",
+        "estimated_1rm": "Est. 1RM",
+        "best_volume": "Set volume"
+      }
+    },
+    "curve": {
+      "title": "Progression chart",
+      "empty": "Not enough data for this period. Complete a few workouts to see the chart.",
+      "metric": {
+        "max_weight": "Max weight",
+        "volume": "Volume"
+      },
+      "metricLabel": {
+        "max_weight": "Max weight",
+        "volume": "Volume"
+      },
+      "period": {
+        "30d": "30 d",
+        "90d": "90 d",
+        "1y": "1 yr"
+      }
     }
   },
   "settings": {

@@ -11,6 +11,10 @@ import {
   getWorkoutSets,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
+import {
+  useWorkoutRecords,
+  type BeatenRecord,
+} from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -40,6 +44,57 @@ function Row({ label, value }: { label: string; value: string }) {
     <View style={styles.row}>
       <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{label}</Text>
       <Text style={[styles.rowValue, { color: colors.text }]}>{value}</Text>
+    </View>
+  );
+}
+
+/** Carte de célébration pour un record personnel battu. */
+function RecordCard({ record }: { record: BeatenRecord }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const typeLabel = t(`workout.summary.records.type.${record.type}`, record.type);
+  const valueLabel =
+    record.type === 'best_volume'
+      ? `${record.value}`
+      : `${record.value} kg`;
+  return (
+    <View
+      style={[
+        styles.recordCard,
+        { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+      ]}
+    >
+      <Text style={[styles.recordIcon]}>🏆</Text>
+      <View style={styles.recordBody}>
+        <Text style={[styles.recordExercise, { color: colors.text }]} numberOfLines={1}>
+          {record.exerciseName}
+        </Text>
+        <Text style={[styles.recordMeta, { color: colors.textMuted }]}>
+          {typeLabel} · {valueLabel}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+/** Section "Records battus" — rendu uniquement si des records existent. */
+function RecordsSection({ workoutId }: { workoutId: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { records, isLoading } = useWorkoutRecords(workoutId);
+
+  // Ne rien afficher pendant le chargement (évite le flash "section vide").
+  if (isLoading) return null;
+  if (records.length === 0) return null;
+
+  return (
+    <View style={styles.recordsSection}>
+      <Text style={[styles.recordsSectionTitle, { color: colors.text }]}>
+        {t('workout.summary.records.sectionTitle')}
+      </Text>
+      {records.map((record) => (
+        <RecordCard key={`${record.exerciseId}-${record.type}`} record={record} />
+      ))}
     </View>
   );
 }
@@ -90,6 +145,7 @@ export default function WorkoutSummaryScreen() {
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>
       )}
+      {id ? <RecordsSection workoutId={id} /> : null}
       <View style={styles.footer}>
         <Button label={t('workout.backHome')} onPress={() => router.replace('/(tabs)')} />
       </View>
@@ -103,4 +159,24 @@ const styles = StyleSheet.create({
   rowValue: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
   empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center' },
   footer: { marginTop: 'auto' },
+  // Records section
+  recordsSection: { gap: 10 },
+  recordsSectionTitle: {
+    fontFamily: fontFamily.displaySemi,
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  recordCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  recordIcon: { fontSize: 22 },
+  recordBody: { flex: 1, gap: 2 },
+  recordExercise: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
+  recordMeta: { fontFamily: fontFamily.body, fontSize: 13 },
 });
