@@ -10,6 +10,9 @@ import { column, Schema, Table } from '@powersync/react-native';
  * US2 : 4 tables programmes ajoutées — programs, program_translations, sessions,
  * exercise_plans. Migration : supabase/migrations/20260706130000_programmes_tables.sql
  *
+ * US3 : table personal_records ajoutée.
+ * Migration : supabase/migrations/20260706140000_personal_records.sql
+ *
  * Conventions :
  * - L'`id` (UUID, PK texte) est **implicite** dans PowerSync ; on ne le déclare pas.
  * - Les timestamps sont des chaînes ISO 8601 UTC → type `text`.
@@ -104,7 +107,7 @@ const workout_sets = new Table({
   deleted_at: column.text,
 });
 
-// ── US2 : tables programmes ────────────────────────────────────────────────
+// ── US2 : tables programmes ───────────────────────────────────────────────
 
 const programs = new Table({
   owner_id: column.text,
@@ -156,6 +159,22 @@ const exercise_plans = new Table({
   deleted_at: column.text,
 });
 
+// ── US3 : records personnels ───────────────────────────────────────────────
+
+const personal_records = new Table({
+  user_id: column.text,
+  exercise_id: column.text,
+  type: column.text,
+  value: column.real,
+  reps: column.integer,
+  weight_kg: column.real,
+  workout_id: column.text,
+  achieved_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
@@ -168,4 +187,5 @@ export const AppSchema = new Schema({
   program_translations,
   sessions,
   exercise_plans,
+  personal_records,
 });
