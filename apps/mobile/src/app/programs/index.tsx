@@ -114,7 +114,21 @@ export default function ProgramsScreen() {
 
   return (
     <Screen edges={['top']}>
-      <ScreenHeader title={t('programs.title')} subtitle={t('programs.subtitle')} />
+      <ScreenHeader
+        title={t('programs.title')}
+        subtitle={t('programs.subtitle')}
+        action={
+          <Pressable
+            onPress={() => router.push('/programs/edit')}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel={t('programs.create')}
+            style={[styles.createBtn, { backgroundColor: colors.accent }]}
+          >
+            <Ionicons name="add" size={24} color={colors.accentText} />
+          </Pressable>
+        }
+      />
 
       {/* Filtre par niveau */}
       <View style={styles.filtersRow}>
@@ -271,6 +285,13 @@ const styles = StyleSheet.create({
   },
   duplicateBtn: {
     padding: 4,
+  },
+  createBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyCard: {
     padding: 16,

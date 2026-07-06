@@ -238,7 +238,49 @@
     "duplicateA11y": "Dupliquer le programme {{name}}",
     "emptyLibrary": "Aucun programme disponible pour ce filtre.",
     "emptyMine": "Tu n'as pas encore de programme. Duplique un programme de la bibliothèque pour commencer.",
-    "browseLibrary": "Voir les programmes"
+    "browseLibrary": "Voir les programmes",
+    "create": "Créer un programme",
+    "edit": {
+      "createTitle": "Nouveau programme",
+      "createSubtitle": "Donne un nom à ton programme, puis compose tes séances.",
+      "editTitle": "Éditer le programme",
+      "editSubtitle": "Ajoute des séances et des exercices avec leurs objectifs.",
+      "name": "Nom du programme",
+      "namePlaceholder": "Ex. Full body 3 jours",
+      "level": "Niveau",
+      "levelNone": "Non précisé",
+      "goal": "Objectif",
+      "goalPlaceholder": "Ex. Prise de masse (facultatif)",
+      "durationWeeks": "Durée (semaines)",
+      "durationPlaceholder": "Ex. 8",
+      "createCta": "Créer et composer",
+      "creating": "Création…",
+      "sectionSessions": "Séances",
+      "addSession": "+ Ajouter une séance",
+      "sessionDefaultName": "Séance {{letter}}",
+      "removeSession": "Supprimer la séance",
+      "removeSessionA11y": "Supprimer la séance {{name}}",
+      "emptySessions": "Aucune séance. Ajoute une première séance pour composer ton programme.",
+      "emptyPlans": "Aucun exercice dans cette séance.",
+      "addExercise": "+ Ajouter un exercice",
+      "removeExerciseA11y": "Retirer l'exercice {{name}}",
+      "targets": {
+        "sets": "Séries",
+        "setsPlaceholder": "Ex. 4",
+        "reps": "Répétitions",
+        "repsPlaceholder": "Ex. 8-12",
+        "weight": "Charge (kg)",
+        "weightPlaceholder": "Ex. 60",
+        "rest": "Repos (s)",
+        "restPlaceholder": "Ex. 90"
+      },
+      "picker": {
+        "title": "Choisir un exercice",
+        "close": "Fermer",
+        "empty": "Aucun exercice trouvé."
+      },
+      "done": "Terminé"
+    }
   },
   "settings": {
     "title": "Réglages",

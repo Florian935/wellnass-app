@@ -238,7 +238,49 @@
     "duplicateA11y": "Duplicate program {{name}}",
     "emptyLibrary": "No programs match this filter.",
     "emptyMine": "You have no programs yet. Duplicate a library program to get started.",
-    "browseLibrary": "Browse programs"
+    "browseLibrary": "Browse programs",
+    "create": "Create a program",
+    "edit": {
+      "createTitle": "New program",
+      "createSubtitle": "Name your program, then build your sessions.",
+      "editTitle": "Edit program",
+      "editSubtitle": "Add sessions and exercises with their targets.",
+      "name": "Program name",
+      "namePlaceholder": "e.g. Full body 3 days",
+      "level": "Level",
+      "levelNone": "Unspecified",
+      "goal": "Goal",
+      "goalPlaceholder": "e.g. Muscle gain (optional)",
+      "durationWeeks": "Duration (weeks)",
+      "durationPlaceholder": "e.g. 8",
+      "createCta": "Create and build",
+      "creating": "Creating…",
+      "sectionSessions": "Sessions",
+      "addSession": "+ Add a session",
+      "sessionDefaultName": "Session {{letter}}",
+      "removeSession": "Remove session",
+      "removeSessionA11y": "Remove session {{name}}",
+      "emptySessions": "No sessions yet. Add a first session to build your program.",
+      "emptyPlans": "No exercises in this session.",
+      "addExercise": "+ Add an exercise",
+      "removeExerciseA11y": "Remove exercise {{name}}",
+      "targets": {
+        "sets": "Sets",
+        "setsPlaceholder": "e.g. 4",
+        "reps": "Reps",
+        "repsPlaceholder": "e.g. 8-12",
+        "weight": "Weight (kg)",
+        "weightPlaceholder": "e.g. 60",
+        "rest": "Rest (s)",
+        "restPlaceholder": "e.g. 90"
+      },
+      "picker": {
+        "title": "Choose an exercise",
+        "close": "Close",
+        "empty": "No exercises found."
+      },
+      "done": "Done"
+    }
   },
   "settings": {
     "title": "Settings",
