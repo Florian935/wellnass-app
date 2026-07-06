@@ -304,6 +304,49 @@
       "done": "Done"
     }
   },
+  "history": {
+    "title": "History",
+    "subtitle": "Your completed workouts.",
+    "empty": {
+      "title": "No workouts yet",
+      "message": "Finish your first workout to see it here."
+    },
+    "filterAll": "All",
+    "filter7d": "7 days",
+    "filter30d": "30 days",
+    "filter90d": "90 days",
+    "row": {
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "rpe": "RPE {{value}}"
+    },
+    "detail": {
+      "notFoundTitle": "Workout not found",
+      "notFoundMessage": "This workout does not exist or has been deleted.",
+      "sectionExercises": "Exercises",
+      "emptyExercises": "No sets recorded for this workout.",
+      "sectionRecords": "Records beaten 🏆",
+      "metaDuration": "Duration",
+      "metaVolume": "Volume",
+      "metaRpe": "RPE",
+      "metaNotes": "Notes",
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "setNormal": "Normal",
+      "setWarmup": "Warm",
+      "setSuperset": "Super",
+      "setDuration": "Duration",
+      "setBodyweight": "BW",
+      "repsWeight": "{{reps}} × {{kg}} kg",
+      "repsOnly": "{{reps}} reps",
+      "weightOnly": "{{kg}} kg",
+      "record": {
+        "max_weight": "Max weight",
+        "estimated_1rm": "Est. 1RM",
+        "best_volume": "Set volume"
+      }
+    }
+  },
   "settings": {
     "title": "Settings",
     "profile": {

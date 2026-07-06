@@ -304,6 +304,49 @@
       "done": "Terminé"
     }
   },
+  "history": {
+    "title": "Historique",
+    "subtitle": "Tes séances terminées.",
+    "empty": {
+      "title": "Aucune séance enregistrée",
+      "message": "Termine ta première séance pour la retrouver ici."
+    },
+    "filterAll": "Tout",
+    "filter7d": "7 jours",
+    "filter30d": "30 jours",
+    "filter90d": "90 jours",
+    "row": {
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "rpe": "RPE {{value}}"
+    },
+    "detail": {
+      "notFoundTitle": "Séance introuvable",
+      "notFoundMessage": "Cette séance n'existe pas ou a été supprimée.",
+      "sectionExercises": "Exercices",
+      "emptyExercises": "Aucune série enregistrée pour cette séance.",
+      "sectionRecords": "Records battus 🏆",
+      "metaDuration": "Durée",
+      "metaVolume": "Volume",
+      "metaRpe": "RPE",
+      "metaNotes": "Notes",
+      "durationMin": "{{count}} min",
+      "volumeKg": "{{volume}} kg",
+      "setNormal": "Normale",
+      "setWarmup": "Éch.",
+      "setSuperset": "Super",
+      "setDuration": "Durée",
+      "setBodyweight": "PdC",
+      "repsWeight": "{{reps}} × {{kg}} kg",
+      "repsOnly": "{{reps}} reps",
+      "weightOnly": "{{kg}} kg",
+      "record": {
+        "max_weight": "Charge max",
+        "estimated_1rm": "1RM estimé",
+        "best_volume": "Volume série"
+      }
+    }
+  },
   "settings": {
     "title": "Réglages",
     "profile": {
