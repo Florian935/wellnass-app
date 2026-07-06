@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
+import { generateId } from '@/lib/id';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
 // ---------------------------------------------------------------------------
@@ -332,6 +333,124 @@ export async function startWorkout(): Promise<string> {
     duration_seconds: null,
     rpe: null,
     notes: null,
+  });
+}
+
+/** Insère une ligne dans une transaction en injectant les champs de synchro. */
+async function txInsert(
+  tx: { execute: (sql: string, params?: unknown[]) => Promise<unknown> },
+  table: string,
+  values: Record<string, unknown>,
+): Promise<string> {
+  const id = typeof values['id'] === 'string' ? (values['id'] as string) : generateId();
+  const now = nowUtc();
+  const merged: Record<string, unknown> = {
+    ...values,
+    id,
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  };
+  const columns = Object.keys(merged);
+  const placeholders = columns.map(() => '?').join(', ');
+  const params = columns.map((col) => merged[col]);
+  await tx.execute(
+    `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
+    params,
+  );
+  return id;
+}
+
+/**
+ * Démarre une séance à partir d'une séance planifiée d'un programme (spec §3.24) et
+ * retourne l'id de la séance créée.
+ *
+ * Garde défensive identique à `startWorkout` : si une séance `status='active'` non
+ * supprimée existe déjà pour l'utilisateur courant, on retourne son id sans en créer
+ * une seconde (au plus une séance active à la fois).
+ *
+ * Sinon, dans une transaction atomique (une séance partielle est impossible) :
+ *  1. lit le `program_id` de la séance planifiée (`sessions`) ;
+ *  2. lit ses `exercise_plans` (triés par `order_index`) ;
+ *  3. insère la ligne `workouts` (session_id + program_id renseignés, `status='active'`) ;
+ *  4. pour chaque plan, insère `max(1, target_sets)` séries pré-remplies :
+ *     `set_type` et `weight_kg` repris du plan, `reps` laissé nul (la cible est une
+ *     plage type « 8-12 », que l'utilisateur renseigne), `done=false`. L'`order_index`
+ *     est séquentiel sur l'ensemble de la séance.
+ */
+export async function startWorkoutFromSession(
+  sessionId: string,
+): Promise<string> {
+  const userId = currentUserId();
+
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM workouts
+     WHERE user_id = ? AND status = 'active' AND deleted_at IS NULL
+     LIMIT 1`,
+    [userId],
+  );
+  if (existing) {
+    return existing.id;
+  }
+
+  return powerSync.writeTransaction(async (tx) => {
+    // 1. Programme de rattachement de la séance planifiée.
+    const session = await tx.getOptional<{ program_id: string }>(
+      `SELECT program_id FROM sessions WHERE id = ? AND deleted_at IS NULL`,
+      [sessionId],
+    );
+    if (!session) {
+      throw new Error('Séance de programme introuvable : démarrage impossible.');
+    }
+
+    // 2. Exercices planifiés de la séance, dans l'ordre.
+    const plans = await tx.getAll<{
+      exercise_id: string;
+      set_type: string;
+      target_sets: number | null;
+      target_weight_kg: number | null;
+    }>(
+      `SELECT exercise_id, set_type, target_sets, target_weight_kg
+       FROM exercise_plans
+       WHERE session_id = ? AND deleted_at IS NULL
+       ORDER BY order_index`,
+      [sessionId],
+    );
+
+    // 3. Nouvelle séance active rattachée à la séance et au programme.
+    const workoutId = await txInsert(tx, 'workouts', {
+      user_id: userId,
+      session_id: sessionId,
+      program_id: session.program_id,
+      status: 'active',
+      started_at: nowUtc(),
+      finished_at: null,
+      duration_seconds: null,
+      rpe: null,
+      notes: null,
+    });
+
+    // 4. Séries pré-remplies : max(1, target_sets) par exercice planifié.
+    let orderIndex = 0;
+    for (const plan of plans) {
+      const count = Math.max(1, plan.target_sets ?? 1);
+      for (let i = 0; i < count; i++) {
+        await txInsert(tx, 'workout_sets', {
+          workout_id: workoutId,
+          user_id: userId,
+          exercise_id: plan.exercise_id,
+          order_index: orderIndex,
+          set_type: plan.set_type,
+          reps: null,
+          weight_kg: plan.target_weight_kg,
+          duration_seconds: null,
+          done: 0,
+        });
+        orderIndex += 1;
+      }
+    }
+
+    return workoutId;
   });
 }
 

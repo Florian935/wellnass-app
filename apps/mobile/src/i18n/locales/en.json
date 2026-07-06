@@ -251,6 +251,8 @@
       "reps": "{{reps}} reps",
       "weight": "{{kg}} kg",
       "rest": "{{seconds}}s rest",
+      "startSession": "Start this session",
+      "starting": "Starting…",
       "activate": "Activate program",
       "activating": "Activating…",
       "alreadyActive": "Active program",

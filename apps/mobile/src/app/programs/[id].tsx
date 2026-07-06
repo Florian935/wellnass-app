@@ -21,6 +21,7 @@ import {
   type PlanItem,
   type SessionDetail,
 } from '@/data/repositories/program-repository';
+import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -49,6 +50,7 @@ function ProgramDetailView({ programId }: { programId: string }) {
 
   const [activating, setActivating] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [startingSessionId, setStartingSessionId] = useState<string | null>(null);
 
   // Un programme appartient à l'utilisateur s'il figure dans « Mes programmes ».
   const isOwned = myPrograms.some((p) => p.id === programId);
@@ -62,6 +64,19 @@ function ProgramDetailView({ programId }: { programId: string }) {
       // Écriture offline-first : un échec est très improbable ; on réactive le bouton.
     } finally {
       setActivating(false);
+    }
+  };
+
+  const onStartSession = async (sessionId: string) => {
+    if (startingSessionId) return;
+    setStartingSessionId(sessionId);
+    try {
+      await startWorkoutFromSession(sessionId);
+      router.push('/workout');
+    } catch {
+      // Écriture offline-first : échec très improbable ; on réactive le bouton.
+    } finally {
+      setStartingSessionId(null);
     }
   };
 
@@ -151,7 +166,13 @@ function ProgramDetailView({ programId }: { programId: string }) {
         ) : (
           <View style={styles.sessionList}>
             {detail.sessions.map((session) => (
-              <SessionCard key={session.id} session={session} />
+              <SessionCard
+                key={session.id}
+                session={session}
+                onStart={() => void onStartSession(session.id)}
+                starting={startingSessionId === session.id}
+                startDisabled={startingSessionId !== null}
+              />
             ))}
           </View>
         )}
@@ -197,7 +218,17 @@ function ProgramDetailView({ programId }: { programId: string }) {
 // Carte de séance (read-only)
 // ---------------------------------------------------------------------------
 
-function SessionCard({ session }: { session: SessionDetail }) {
+function SessionCard({
+  session,
+  onStart,
+  starting,
+  startDisabled,
+}: {
+  session: SessionDetail;
+  onStart: () => void;
+  starting: boolean;
+  startDisabled: boolean;
+}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
@@ -220,6 +251,16 @@ function SessionCard({ session }: { session: SessionDetail }) {
           ))}
         </View>
       )}
+
+      {session.plans.length > 0 ? (
+        <Button
+          label={starting ? t('programs.detail.starting') : t('programs.detail.startSession')}
+          variant="ghost"
+          onPress={onStart}
+          loading={starting}
+          disabled={startDisabled}
+        />
+      ) : null}
     </View>
   );
 }
