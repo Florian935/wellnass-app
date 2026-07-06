@@ -14,13 +14,16 @@
  *                             `status` ('draft' | 'published'), `is_active` (0/1),
  *                             `level`, `goal`, `duration_weeks`, `pillar`.
  *  - `program_translations` : une ligne par (programme, langue) ; `name`, `summary`,
- *                             `description`. Un programme custom n'a qu'une traduction
- *                             (langue applicative de saisie).
+ *                             `description`. Un programme **créé** from scratch (`createProgram`)
+ *                             n'a qu'une traduction (langue applicative de saisie) ; une
+ *                             **duplication** (`duplicateProgram`) recopie **toutes** les
+ *                             traductions de la source — un programme éditorial bilingue
+ *                             dupliqué reste ainsi bilingue.
  *  - `sessions`             : séances d'un programme, ordonnées par `order_index`.
  *  - `exercise_plans`       : exercices planifiés d'une séance, ordonnés par `order_index`.
  *
- * Résolution du nom : faite en SQL avec repli langue courante → `fr`
- * (voir `resolveProgramName` / `resolveExerciseName` côté domaine).
+ * Résolution du nom : faite **en SQL** (jamais via les helpers domaine) avec repli
+ * langue courante → `fr`, et repli final chaîne vide côté mapper si aucune traduction.
  *
  * Règles offline-first (voir docs/specs/technical/offline-sync.md) :
  *  - UUID généré côté client (via `insertWithSyncFields` ou `generateId`).
