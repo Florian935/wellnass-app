@@ -52,7 +52,15 @@
       "minutes": "{{count}} min",
       "exercises": "Exercises",
       "sets": "Sets completed",
-      "volume": "Total volume"
+      "volume": "Total volume",
+      "records": {
+        "sectionTitle": "Records beaten 🏆",
+        "type": {
+          "max_weight": "Max weight",
+          "estimated_1rm": "Est. 1RM",
+          "best_volume": "Set volume"
+        }
+      }
     }
   },
   "tabs": {

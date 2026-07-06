@@ -52,7 +52,15 @@
       "minutes": "{{count}} min",
       "exercises": "Exercices",
       "sets": "Séries validées",
-      "volume": "Volume total"
+      "volume": "Volume total",
+      "records": {
+        "sectionTitle": "Records battus 🏆",
+        "type": {
+          "max_weight": "Charge max",
+          "estimated_1rm": "1RM estimé",
+          "best_volume": "Volume série"
+        }
+      }
     }
   },
   "tabs": {
