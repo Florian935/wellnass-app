@@ -491,5 +491,11 @@
       "title": "Compte",
       "signOut": "Se déconnecter"
     }
+  },
+  "running": {
+    "tracker": {
+      "notificationTitle": "Course en cours",
+      "notificationBody": "Suivi GPS actif — appuie pour revenir à la course."
+    }
   }
 }

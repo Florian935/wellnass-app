@@ -8,6 +8,9 @@ import { useTranslation } from 'react-i18next';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
 import i18n from '@/i18n';
+// Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
+// (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
+import '@/running/tracker-task';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';

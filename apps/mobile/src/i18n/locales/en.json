@@ -490,5 +490,11 @@
       "title": "Account",
       "signOut": "Sign out"
     }
+  },
+  "running": {
+    "tracker": {
+      "notificationTitle": "Run in progress",
+      "notificationBody": "GPS tracking active — tap to return to your run."
+    }
   }
 }
