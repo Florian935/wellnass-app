@@ -44,6 +44,24 @@ const user_settings = new Table({
   deleted_at: column.text,
 });
 
+// ── V0.4 : profil nutritionnel (une ligne par compte) ──────────────────────
+// Migration : supabase/migrations/20260706140000_nutrition_tables.sql
+const nutrition_profiles = new Table({
+  user_id: column.text,
+  objective: column.text,
+  activity_level: column.text,
+  manual_calories: column.integer,
+  manual_protein_g: column.integer,
+  manual_carbs_g: column.integer,
+  manual_fat_g: column.integer,
+  restrictions: column.text, // JSON sérialisé
+  allergens: column.text, // JSON sérialisé
+  training_day_bonus: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 const exercises = new Table({
   owner_id: column.text,
   source: column.text,
@@ -159,6 +177,7 @@ const exercise_plans = new Table({
 export const AppSchema = new Schema({
   profiles,
   user_settings,
+  nutrition_profiles,
   exercises,
   exercise_translations,
   exercise_favorites,

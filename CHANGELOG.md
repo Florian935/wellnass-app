@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — V0.4 US4.1 : profil nutritionnel & TDEE (1.10 / 4.1-4.7)
+
+_Branche : `feature/4.1-profil-nutritionnel-repo` · commit précédent sur `dev` : `a1c9e9f`_
+
+### Ajouté (première US de la V0.4 — Alimentation)
+- **`packages/shared/src/nutrition.ts`** : calculs purs — **TDEE Mifflin-St Jeor** (homme +5 /
+  femme −161 / non précisé = moyenne, constante −78) × **facteur d'activité** 5 niveaux (4.1/4.2),
+  **objectif calorique** = TDEE + delta d'objectif avec **surcharge manuelle** prioritaire (4.3),
+  **macros par défaut** selon l'objectif (4.4) + conversions **%↔grammes** (grammes prioritaires,
+  spec §8, 4.5), `objectiveFromGoal`, bonus jours d'entraînement (4.7). **+ `nutritionProfileRowSchema`**
+  (Zod) + enum `DIET_RESTRICTIONS` (4.6). **+28 tests** (202 au total shared).
+- **Table `nutrition_profiles`** (une ligne par compte) : schéma **PowerSync local** + migrations
+  Supabase `20260706140000_nutrition_tables.sql` + `…140001_nutrition_rls.sql` (RLS user_id) +
+  **sync rules** (bucket `user_data`).
+- **`data/repositories/nutrition-repository.ts`** : `useNutritionProfile()` (lecture réactive
+  `useQuery`) + `upsertNutritionProfile()` (écriture via `_sql`, mapping snake↔camel, JSON pour
+  restrictions/allergènes). Aligné sur le pattern repository US1 (aucun store Zustand).
+- **Écran Profil nutritionnel** (`nutrition-profile.tsx`, modale) : objectif, activité, TDEE en
+  direct, macros éditables + barres, restrictions en puces, allergènes, état « profil incomplet ».
+- **Onglet Nutrition** : carte résumé (objectif calorique + macros) ou CTA de configuration.
+  Entrée Réglages (gated pilier actif) + route modale.
+- **i18n FR + EN** : bloc `nutrition.*` complet (aucune chaîne en dur).
+
+### Technique / Notes
+- **Rebasé sur la nouvelle archi `dev`** : la 1ʳᵉ version (branche `feature/4.1-profil-nutritionnel`,
+  commit `981b91d`) suivait le pattern Zustand/SecureStore, **supprimé par l'US1** (bascule
+  repositories/PowerSync). Portée intégralement sur la couche data actuelle.
+- `typecheck` + `lint` (0 problème) + `test` verts (jest-expo mobile + vitest shared).
+- **Checkpoints 🔴 humains avant activation** : appliquer les migrations nutrition sur Supabase
+  cloud, vérifier la publication `powersync`, redéployer les sync rules PowerSync, `db:types`,
+  **vérif device** (offline, sync, RLS) — comme US1/US2.
+- **Décision bloquante 4.8 tranchée** le 06/07/2026 : base d'aliments = **CIQUAL (bruts FR + trad. EN)
+  + OpenFoodFacts** (scan) — débloque les US base d'aliments / journal.
+- **Différé** : câblage 4.7 au planning muscu (dépend de la donnée planning).
+
 ## 06/07/2026 — US2 : programmes muscu (structure + bibliothèque + lien séance)
 
 _Branche : `feature/programmes-muscu` (13 commits) · commit précédent sur `dev` : `5e590fd`_
