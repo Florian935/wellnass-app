@@ -10,4 +10,5 @@ export * from './profile';
 export * from './settings';
 export * from './exercise';
 export * from './workout';
+export * from './program';
 export type { Database, Json } from './database.types';
