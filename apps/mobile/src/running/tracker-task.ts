@@ -35,6 +35,7 @@
  */
 
 import {
+  MAX_PLAUSIBLE_SPEED_MS,
   encodeSegment,
   haversineMeters,
   type GpsPoint,
@@ -105,6 +106,51 @@ export function initialTrackerState(): TrackerState {
  * `tracker.ts` le réinitialise via `startTracking` et le mute pour pause/reprise.
  */
 export const trackerState: TrackerState = initialTrackerState();
+
+// ─────────────────────────────────────────────────────────────────────────────
+// État de pause observable (source de vérité unique)
+// ─────────────────────────────────────────────────────────────────────────────
+// `trackerState.paused` est LE seul drapeau de pause. Il change à trois endroits :
+//   - pause/reprise manuelle (`tracker.pauseTracking` / `resumeTracking`) ;
+//   - auto-pause et auto-reprise (`evaluateAutoPause`, ci-dessous).
+// Pour que l'écran React reflète l'auto-pause (qui se produit hors interaction
+// utilisateur), tout changement DOIT passer par `setPaused`, qui mute le drapeau
+// et notifie les abonnés. Micro-émetteur module-level, sans lib de state.
+
+type PausedListener = (paused: boolean) => void;
+const pausedListeners = new Set<PausedListener>();
+
+/**
+ * Mute l'unique drapeau de pause (`trackerState.paused`) et notifie les abonnés
+ * si la valeur change réellement. Point de passage obligé pour toute pause/reprise
+ * (manuelle ou auto), afin que l'UI reste synchrone avec l'état réel du tracker.
+ */
+export function setPaused(next: boolean): void {
+  if (trackerState.paused === next) {
+    return;
+  }
+  trackerState.paused = next;
+  for (const listener of pausedListeners) {
+    listener(next);
+  }
+}
+
+/** État de pause courant (lecture directe de la source de vérité). */
+export function getPaused(): boolean {
+  return trackerState.paused;
+}
+
+/**
+ * Abonne un écouteur aux changements de l'état de pause. Renvoie la fonction de
+ * désabonnement. L'écouteur n'est pas appelé immédiatement : l'appelant lit
+ * `getPaused()` pour son état initial.
+ */
+export function subscribePaused(listener: PausedListener): () => void {
+  pausedListeners.add(listener);
+  return () => {
+    pausedListeners.delete(listener);
+  };
+}
 
 /**
  * Dernière promesse de flush en vol, exposée pour permettre à `tracker.stopTracking`
@@ -202,12 +248,6 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
 }
 
 /**
- * Seuil de vitesse maximale plausible (m/s), aligné sur `@wellness/shared`.
- * Au-delà, le segment est un artefact GPS et n'incrémente pas la distance.
- */
-const MAX_PLAUSIBLE_SPEED_MS = 12;
-
-/**
  * Met à jour l'état d'auto-pause d'après un nouveau point.
  *
  * Vitesse basse continue pendant `AUTO_PAUSE_DELAY_S` → passe en pause.
@@ -229,13 +269,13 @@ function evaluateAutoPause(p: GpsPoint): void {
     if (s.lowSpeedSinceT === null) {
       s.lowSpeedSinceT = s.lastPointT;
     } else if (!s.paused && p.t - s.lowSpeedSinceT >= AUTO_PAUSE_DELAY_S) {
-      s.paused = true;
+      setPaused(true);
     }
   } else {
     // Vitesse revenue au-dessus du seuil : réinitialise et reprend si auto-pausé.
     s.lowSpeedSinceT = null;
     if (s.paused) {
-      s.paused = false;
+      setPaused(false);
     }
   }
 }

@@ -18,11 +18,16 @@
  * L'écran fait : `await stopTracking()` PUIS `finishRun(runId, …)`.
  * `stopTracking` doit donc :
  *   1. arrêter les mises à jour de position (`stopLocationUpdatesAsync`) ;
- *   2. DRAINER : attendre que le tout dernier flush en vol soit persisté, afin
- *      qu'AUCUN flush tardif ne retombe APRÈS `finishRun`.
- * Le repository garde en plus `flushTrack` contre les courses non actives (filet
- * de sécurité), mais `stopTracking` draine malgré tout pour un séquencement propre
- * (`avg_pace` calculé par `finishRun` reste cohérent avec la dernière distance).
+ *   2. DRAINER : attendre que le tout dernier flush en vol soit persisté.
+ * Subtilité : après `stopLocationUpdatesAsync`, l'OS peut encore livrer UN dernier
+ * lot à la tâche, qui installe alors un NOUVEAU `lastFlushPromise` — postérieur à
+ * celui déjà capturé. Le drain ré-attend donc la poignée tant qu'elle change
+ * (boucle bornée), pour absorber ce dernier lot en vol.
+ * Malgré cela, la garantie ultime reste le garde-fou du repository : `flushTrack`
+ * ignore toute course qui n'est plus `active`. Un flush tardif qui retomberait
+ * après `finishRun` serait donc de toute façon sans effet — le drain vise avant
+ * tout un séquencement propre (`avg_pace` calculé par `finishRun` cohérent avec la
+ * dernière distance), le garde-fou de statut étant le filet de sécurité final.
  */
 
 import i18n from '@/i18n';
@@ -33,6 +38,7 @@ import {
   initialTrackerState,
   lastFlushPromise,
   setLastFlushPromise,
+  setPaused,
   trackerState,
 } from './tracker-task';
 
@@ -83,6 +89,9 @@ export async function startTracking(
   const bg = await Location.requestBackgroundPermissionsAsync();
 
   // 2. Réinitialise l'état module partagé pour cette course.
+  //    `setPaused(false)` d'abord : passe par la source de vérité unique et
+  //    notifie l'UI si une pause (manuelle ou auto) était encore active.
+  setPaused(false);
   Object.assign(trackerState, initialTrackerState(), {
     runId,
     startedAtMs,
@@ -125,17 +134,38 @@ export async function stopTracking(): Promise<void> {
     await Location.stopLocationUpdatesAsync(RUN_TASK);
   }
   // Drain : attendre le tout dernier flush en vol (déjà « catché » à la source).
+  // Un ultime lot livré par l'OS après l'arrêt peut réinstaller `lastFlushPromise`
+  // APRÈS notre capture ; on ré-attend donc tant que la poignée change (borné).
   await drain();
   // Détache l'état : plus aucune course suivie (la ligne `runs` reste la vérité).
+  //    `setPaused(false)` d'abord : notifie l'UI si une pause était active.
+  setPaused(false);
   Object.assign(trackerState, initialTrackerState());
 }
 
+/** Nombre maximal d'itérations de drain (borne dure contre une boucle infinie). */
+const MAX_DRAIN_ITERATIONS = 3;
+
 /**
- * Attend la résolution du dernier flush en vol. Exposé pour les tests et pour
- * un usage explicite ; `stopTracking` l'appelle déjà.
+ * Attend la résolution du dernier flush en vol jusqu'à stabilité. Exposé pour les
+ * tests et pour un usage explicite ; `stopTracking` l'appelle déjà.
+ *
+ * Un ultime lot GPS livré après l'arrêt peut réinstaller `lastFlushPromise` (via
+ * `setLastFlushPromise`) APRÈS que nous ayons capturé la poignée courante. On
+ * capture donc, on attend, puis on recommence si la poignée a changé entre-temps —
+ * borné à `MAX_DRAIN_ITERATIONS` pour ne jamais boucler indéfiniment. Le garde-fou
+ * de statut du repository reste le filet de sécurité final (voir en-tête).
  */
 export async function drain(): Promise<void> {
-  await lastFlushPromise;
+  for (let i = 0; i < MAX_DRAIN_ITERATIONS; i++) {
+    const captured = lastFlushPromise;
+    await captured;
+    // `lastFlushPromise` est une liaison de module vivante : si un lot tardif l'a
+    // remplacée pendant l'attente, on ré-attend la nouvelle poignée.
+    if (lastFlushPromise === captured) {
+      return;
+    }
+  }
 }
 
 /**
@@ -148,7 +178,7 @@ export async function pauseTracking(): Promise<void> {
   if (s.runId === null || s.paused) {
     return;
   }
-  s.paused = true;
+  setPaused(true);
   s.lowSpeedSinceT = null;
   await persistCurrentState();
 }
@@ -162,7 +192,7 @@ export function resumeTracking(): void {
   if (s.runId === null || !s.paused) {
     return;
   }
-  s.paused = false;
+  setPaused(false);
   s.lowSpeedSinceT = null;
 }
 

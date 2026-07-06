@@ -10,6 +10,7 @@ import { Button } from '@/components/Button';
 import { SyncStatus } from '@/components/SyncStatus';
 import { finishRun, useActiveRun } from '@/data/repositories/run-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
+import { getPaused, subscribePaused } from '@/running/tracker-task';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -63,8 +64,12 @@ export default function RunActiveScreen() {
   const { run: active, isLoading } = useActiveRun();
 
   const elapsedSeconds = useElapsedSeconds(active?.startedAt);
-  const [paused, setPaused] = useState(false);
+  // État de pause piloté par la source de vérité unique du tracker : reflète aussi
+  // l'auto-pause (déclenchée hors interaction) pour que le bouton ne mente jamais.
+  const [paused, setPaused] = useState(getPaused);
   const [stopping, setStopping] = useState(false);
+
+  useEffect(() => subscribePaused(setPaused), []);
 
   const isGps = active?.source === 'gps';
   const gpsTrack = active?.gpsTrack ?? null;
@@ -111,12 +116,12 @@ export default function RunActiveScreen() {
       : t('running.active.gpsSearching');
 
   const onTogglePause = () => {
+    // L'affichage suit l'émetteur du tracker (`subscribePaused`) : ces appels
+    // mutent la source de vérité, qui notifie l'écran. Pas de `setPaused` local.
     if (paused) {
       resumeTracking();
-      setPaused(false);
     } else {
       void pauseTracking();
-      setPaused(true);
     }
   };
 

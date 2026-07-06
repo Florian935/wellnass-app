@@ -77,8 +77,11 @@ export function haversineMeters(
  * Seuil de vitesse maximale plausible en m/s.
  * Au-dela, le segment est considere comme un artefact GPS et ignore.
  * 12 m/s ~43 km/h (bien au-dela du sprint humain max ~10 m/s en competition).
+ *
+ * Exporte comme source de verite unique : le tracker de fond (`tracker-task.ts`)
+ * l'importe pour son propre filtre d'outliers plutot que de le redeclarer.
  */
-const MAX_PLAUSIBLE_SPEED_MS = 12;
+export const MAX_PLAUSIBLE_SPEED_MS = 12;
 
 /**
  * Calcule la distance totale d'une trace GPS en metres.
