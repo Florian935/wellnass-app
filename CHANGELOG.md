@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — chore(db) : sync rules PowerSync en edition 3 + types Supabase générés
+
+_Branche : `chore/db-types-sync-edition3` · commit précédent sur `dev` : `d45ac5b`_
+
+### Modifié
+- **`docs/specs/technical/powersync-sync-rules.yaml`** : **réécrit en Sync Streams (edition 3)**
+  pour coller à l'instance PowerSync réelle (l'ancien format `bucket_definitions` n'était pas
+  déployable dessus). 18 streams `auto_subscribe` couvrant les 13 tables (données utilisateur
+  `user_id`, contenu custom `owner_id = auth.user_id()`, bibliothèque `owner_id IS NULL`) —
+  socle + muscu (US1/US2/US3) + nutrition.
+- **`packages/shared/src/database.types.ts`** : régénéré depuis le schéma Supabase cloud
+  (`supabase gen types`) — remplace le fichier vide. Contient profils, réglages, exercices,
+  séances, programmes, **nutrition_profiles**.
+
+### Technique / Notes
+- `typecheck` + `test` (241) verts ; lint 0 erreur (warnings pré-existants US3).
+- **`personal_records` (US3, migration 140002) absent** des types : la table n'est pas encore
+  appliquée sur le cloud. À régénérer (`npm run db:types`) une fois 140002 appliquée — les sync
+  rules l'incluent déjà (à déployer quand la table existe).
+
 ## 06/07/2026 — V0.4 US4.1 : profil nutritionnel & TDEE (1.10 / 4.1-4.7)
 
 _Branche : `feature/4.1-profil-nutritionnel-repo` · commit précédent sur `dev` : `a1c9e9f`_
