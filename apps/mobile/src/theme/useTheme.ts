@@ -1,14 +1,19 @@
 import { useColorScheme } from 'react-native';
-import { useSettingsStore } from '@/stores/settings-store';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { palettes, type ColorScheme, type Palette } from './colors';
 
 /**
- * Résout le schéma effectif : la préférence utilisateur (Réglages) prime ; en mode
- * « système » on suit le réglage OS. Indépendant de la langue et des unités.
+ * Résout le schéma effectif : la préférence utilisateur (Réglages, persistée via
+ * PowerSync) prime ; en mode « système » on suit le réglage OS. Indépendant de la
+ * langue et des unités.
+ *
+ * Tant que les réglages ne sont pas chargés (`settings` null), on retombe sur
+ * `'system'` afin d'éviter tout plantage / flash.
  */
 export function useColorSchemePref(): ColorScheme {
   const system = useColorScheme();
-  const preference = useSettingsStore((s) => s.theme);
+  const { settings } = useSettings();
+  const preference = settings?.theme ?? 'system';
   if (preference === 'system') {
     return system === 'dark' ? 'dark' : 'light';
   }

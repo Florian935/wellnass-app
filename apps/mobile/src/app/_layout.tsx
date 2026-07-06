@@ -7,8 +7,9 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
-import '@/i18n';
+import i18n from '@/i18n';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAppFonts } from '@/theme/fonts';
@@ -53,16 +54,20 @@ function RootNavigator() {
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
   const { profile, isLoading: profileLoading } = useProfile();
+  const { settings, isLoading: settingsLoading } = useSettings();
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
   const fontsReady = loaded || error;
-  // Le profil n'est pertinent qu'une fois authentifié : sans session, PowerSync ne
-  // synchronise pas et `isLoading` resterait vrai (on ne bloquerait jamais le routage
-  // vers l'écran de connexion).
+  // Le profil / les réglages ne sont pertinents qu'une fois authentifié : sans
+  // session, PowerSync ne synchronise pas et `isLoading` resterait vrai (on ne
+  // bloquerait jamais le routage vers l'écran de connexion).
   const profileReady = !session || !profileLoading;
-  const ready = fontsReady && !initializing && profileReady;
+  // On attend aussi les réglages avant de router, pour appliquer le thème/la langue
+  // sans flash (voir gate compte-profil-onboarding §2/§3).
+  const settingsReady = !session || !settingsLoading;
+  const ready = fontsReady && !initializing && profileReady && settingsReady;
   const onboardingCompleted = profile?.onboardingCompletedAt != null;
 
   useEffect(() => {
@@ -70,6 +75,24 @@ function RootNavigator() {
       void SplashScreen.hideAsync();
     }
   }, [ready]);
+
+  // Bootstrap : à la première connexion, une fois la synchro terminée, si aucune
+  // ligne de réglages n'existe encore, on l'initialise avec les defaults. Ne
+  // s'exécute qu'une fois (dès qu'une ligne existe, `settings` n'est plus null).
+  useEffect(() => {
+    if (session && !settingsLoading && settings == null) {
+      void ensureSettings();
+    }
+  }, [session, settingsLoading, settings]);
+
+  // Applique la langue persistée dans les réglages à i18next (la préférence
+  // utilisateur synchronisée prime sur la locale de l'appareil).
+  useEffect(() => {
+    const language = settings?.language;
+    if (language && i18n.language !== language) {
+      void i18n.changeLanguage(language);
+    }
+  }, [settings?.language]);
 
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {

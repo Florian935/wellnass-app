@@ -5,8 +5,9 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { PILLARS } from '@wellness/shared';
 import { completeOnboarding, useProfile } from '@/data/repositories/profile-repository';
-import { useSettingsStore } from '@/stores/settings-store';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -25,7 +26,9 @@ export default function OnboardingSummary() {
   const { colors } = useTheme();
   const router = useRouter();
   const { profile } = useProfile();
-  const activePillars = useSettingsStore((s) => s.activePillars);
+  const { settings } = useSettings();
+  // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
+  const activePillars = settings?.activePillars ?? [...PILLARS];
 
   const finish = async () => {
     await completeOnboarding();
