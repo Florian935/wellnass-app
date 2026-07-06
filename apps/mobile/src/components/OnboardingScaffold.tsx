@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useProfileStore } from '@/stores/profile-store';
+import { completeOnboarding } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -32,10 +32,9 @@ export function OnboardingScaffold({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const completeOnboarding = useProfileStore((s) => s.completeOnboarding);
 
-  const skipAll = () => {
-    completeOnboarding();
+  const skipAll = async () => {
+    await completeOnboarding();
     router.replace('/(tabs)');
   };
 

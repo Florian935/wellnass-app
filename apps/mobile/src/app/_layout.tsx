@@ -8,10 +8,9 @@ import { useTranslation } from 'react-i18next';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
 import '@/i18n';
+import { useProfile } from '@/data/repositories/profile-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
-import { useProfileStore } from '@/stores/profile-store';
-import { useSettingsStore } from '@/stores/settings-store';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
@@ -35,21 +34,36 @@ function navTheme(base: NavTheme, colors: ReturnType<typeof useTheme>['colors'])
   };
 }
 
-export default function RootLayout() {
+/**
+ * Navigateur racine — vit **à l'intérieur** de `PowerSyncProvider` afin de pouvoir
+ * lire le profil via `useProfile()` (basé sur `useQuery`/`useStatus` de PowerSync).
+ *
+ * Gate de routing (compte-profil-onboarding §2/§3) :
+ *  - tant que les polices ne sont pas chargées, que l'auth s'initialise ou que le
+ *    profil se charge (`useProfile().isLoading` — base locale pas encore synchronisée),
+ *    on laisse le splash natif : on ne route pas (évite le flash d'onboarding / la
+ *    boucle de redirection) ;
+ *  - une fois prêt et authentifié : si `onboardingCompletedAt == null` → onboarding,
+ *    sinon → app.
+ */
+function RootNavigator() {
   const { t } = useTranslation();
   const { scheme, colors } = useTheme();
   const { loaded, error } = useAppFonts();
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
-  const onboardingCompleted = useProfileStore((s) => s.onboardingCompleted);
-  const profileHydrated = useProfileStore((s) => s.hasHydrated);
-  const settingsHydrated = useSettingsStore((s) => s.hasHydrated);
+  const { profile, isLoading: profileLoading } = useProfile();
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
   const fontsReady = loaded || error;
-  const ready = fontsReady && !initializing && profileHydrated && settingsHydrated;
+  // Le profil n'est pertinent qu'une fois authentifié : sans session, PowerSync ne
+  // synchronise pas et `isLoading` resterait vrai (on ne bloquerait jamais le routage
+  // vers l'écran de connexion).
+  const profileReady = !session || !profileLoading;
+  const ready = fontsReady && !initializing && profileReady;
+  const onboardingCompleted = profile?.onboardingCompletedAt != null;
 
   useEffect(() => {
     if (ready) {
@@ -83,56 +97,62 @@ export default function RootLayout() {
     }
   }, [ready, session, onboardingCompleted, segments, router]);
 
-  // Tant que les polices / la session ne sont pas prêtes, on laisse le splash.
+  // Tant que les polices / la session / le profil ne sont pas prêts, on laisse le splash.
   if (!ready) {
     return null;
   }
 
   return (
+    <ThemeProvider value={theme}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(onboarding)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="settings"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('settings.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="profile"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('profile.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="exercises"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('exercises.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
+      </Stack>
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <PowerSyncProvider>
-      <ThemeProvider value={theme}>
-        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(onboarding)" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="settings"
-            options={{
-              presentation: 'modal',
-              headerShown: true,
-              title: t('settings.title'),
-              headerStyle: { backgroundColor: colors.surface },
-              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
-              headerTintColor: colors.accent,
-            }}
-          />
-          <Stack.Screen
-            name="profile"
-            options={{
-              presentation: 'modal',
-              headerShown: true,
-              title: t('profile.title'),
-              headerStyle: { backgroundColor: colors.surface },
-              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
-              headerTintColor: colors.accent,
-            }}
-          />
-          <Stack.Screen
-            name="exercises"
-            options={{
-              presentation: 'modal',
-              headerShown: true,
-              title: t('exercises.title'),
-              headerStyle: { backgroundColor: colors.surface },
-              headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
-              headerTintColor: colors.accent,
-            }}
-          />
-          <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
-        </Stack>
-      </ThemeProvider>
+      <RootNavigator />
     </PowerSyncProvider>
   );
 }

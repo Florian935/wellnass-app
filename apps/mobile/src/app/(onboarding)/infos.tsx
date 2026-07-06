@@ -6,7 +6,7 @@ import { SEXES, toDate, type Sex } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { useProfileStore } from '@/stores/profile-store';
+import { upsertProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -16,7 +16,6 @@ export default function OnboardingInfos() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const update = useProfileStore((s) => s.update);
 
   const [firstName, setFirstName] = useState('');
   const [sex, setSex] = useState<Sex>('unspecified');
@@ -26,9 +25,9 @@ export default function OnboardingInfos() {
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
 
-  const onContinue = () => {
+  const onContinue = async () => {
     const birth = toDate(Number(day), Number(month), Number(year));
-    update({
+    await upsertProfile({
       firstName: firstName.trim(),
       sex,
       birthDate: birth ? birth.toISOString().slice(0, 10) : null,
