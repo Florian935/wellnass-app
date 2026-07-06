@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — US3 : historique & records muscu
+
+_Branche : `feature/historique-records-muscu` · commit précédent sur `dev` : `a1c9e9f`_
+
+### Ajouté
+- **`packages/shared`** : logique records — `estimate1RM` (Epley), `computeWorkoutRecords` (max charge / 1RM estimé / meilleur volume, hors échauffement), `personalRecordRowSchema` — +39 tests (213 au total).
+- **Backend** : table `personal_records` + **RLS** (table utilisateur) + sync rules + schéma PowerSync local.
+- **`records-repository`** : `evaluateWorkoutRecords` (détection **strictement supérieur** à la clôture, insert atomique), `useWorkoutRecords`/`useExerciseRecords`/`useExerciseProgression`/`useMuscleVolumeThisWeek`/`useWorkoutDetail`. Calcul branché **après** `finishWorkout` (best-effort, clôture résiliente).
+- **Graphes** : `react-native-svg` + `react-native-gifted-charts` ; composants `ProgressLineChart`/`MuscleVolumeBarChart` (thémés, empty-safe).
+- **Écrans** : historique (liste + détail, 3.38), progression (records par exercice + courbe charge/volume 30/90j/1an + volume par groupe musculaire semaine, 3.21/3.39/3.40), **mise en avant des records battus au résumé** (3.22). Entrées depuis l'onglet muscu.
+
+### Corrigé (revues)
+- Clôture de séance **résiliente** : `onFinish` navigue même si l'évaluation des records échoue.
+- Label du record `best_volume` (reps×kg) affiché **sans « kg »** (évite « 800 kg »).
+- Retrait de `finishWorkoutAndEvaluate` (code mort).
+
+### Technique / Notes
+- Périmètre : records + historique + courbes. **Hors périmètre** : notification push nouveau record (3.42, différée V0.8 — détection déjà posée) ; alerte déséquilibre (3.41).
+- Records = **journal** (nouvelle ligne par record, jamais d'écrasement) — compatible gamification future.
+- **Nouveau dev build requis** (`react-native-svg` natif) avant test device.
+- **Dette connue (transverse, pré-existante)** : l'affichage des poids ignore le réglage métrique/impérial (1.15) sur **tout le muscu** (US1/US2/US3) — `displayWeight` (`@wellness/shared`) existe mais n'est câblé nulle part → **US de suivi dédiée** (voir TODO).
+- **Checkpoints 🔴 humains** : migration `personal_records` + sync rules sur le cloud, dev build svg, vérif device.
+
 ## 06/07/2026 — US2 : programmes muscu (structure + bibliothèque + lien séance)
 
 _Branche : `feature/programmes-muscu` (13 commits) · commit précédent sur `dev` : `5e590fd`_
