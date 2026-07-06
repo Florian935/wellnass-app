@@ -275,18 +275,35 @@ let flushChain: Promise<unknown> = Promise.resolve();
  *
  * **Appelable hors React** (depuis la tâche de fond du tracker).
  *
- * Déroulé (sérialisé, voir ci-dessus) : lit la `gps_track` courante,
- * `appendToTrack(current, segmentEncoded)`, puis `patch` de `gps_track`,
- * `distance_m` et `duration_seconds`. Le tracker fournit les scalaires cumulés
- * (source de vérité) ; `flushTrack` ne recalcule rien.
+ * Déroulé (sérialisé, voir ci-dessus) : lit la ligne courante, puis — **uniquement
+ * si la course est encore `active` et non supprimée** — `appendToTrack(current,
+ * segmentEncoded)` et `patch` de `gps_track` / `distance_m` / `duration_seconds`.
+ * Le tracker fournit les scalaires cumulés (source de vérité) ; `flushTrack` ne
+ * recalcule rien.
+ *
+ * Garde de statut : un flush background tardif peut résoudre APRÈS `finishRun` /
+ * `cancelRun`. Sans garde il écraserait une ligne déjà `completed`/`cancelled` (et
+ * rendrait `avg_pace` incohérent avec la distance réécrite). Si la course n'est plus
+ * active (ou est supprimée / introuvable), on jette silencieusement le segment
+ * tardif (no-op).
  */
 export function flushTrack(runId: string, input: FlushInput): Promise<void> {
   const run = flushChain.then(async () => {
-    const row = await powerSync.getOptional<{ gps_track: string | null }>(
-      `SELECT gps_track FROM runs WHERE id = ?`,
+    const row = await powerSync.getOptional<{
+      status: string;
+      deleted_at: string | null;
+      gps_track: string | null;
+    }>(
+      `SELECT status, deleted_at, gps_track FROM runs WHERE id = ?`,
       [runId],
     );
-    const current = row?.gps_track ?? '';
+
+    // Course terminée / annulée / supprimée / introuvable : segment tardif jeté.
+    if (!row || row.status !== 'active' || row.deleted_at !== null) {
+      return;
+    }
+
+    const current = row.gps_track ?? '';
     const appended = appendToTrack(current, input.segmentEncoded);
 
     await patch('runs', runId, {
@@ -327,17 +344,6 @@ export async function resumeRun(_runId: string): Promise<void> {
 }
 
 /**
- * Renseigne la distance d'une course en saisie manuelle (`source='manual'`).
- * Simple `patch` de `distance_m` — utilisé quand il n'y a pas de trace GPS.
- */
-export async function setManualDistance(
-  runId: string,
-  distanceM: number,
-): Promise<void> {
-  await patch('runs', runId, { distance_m: distanceM });
-}
-
-/**
  * Termine une course : passe le statut à `completed`, pose `finished_at`, et
  * calcule `avg_pace_s_per_km` à partir des **scalaires flushés** (`distance_m` /
  * `duration_seconds`) — on ne recalcule JAMAIS la distance depuis la trace complète
@@ -349,19 +355,31 @@ export async function setManualDistance(
  *
  * RPE / notes ne sont écrits que s'ils sont présents dans `opts` (patch partiel :
  * l'écran de résumé pourra les compléter plus tard via un autre `patch`).
+ *
+ * Garde de statut : on ne clôture qu'une course **active** non supprimée. Si la
+ * ligne est introuvable, déjà `completed`/`cancelled`, ou supprimée → no-op (on ne
+ * re-complète pas et on ne re-stampe pas `finished_at`). Le patch partiel des RPE /
+ * notes par l'écran de résumé passe par un `patch` direct, pas par `finishRun`.
  */
 export async function finishRun(
   runId: string,
   opts?: FinishInput,
 ): Promise<void> {
   const row = await powerSync.getOptional<{
+    status: string;
+    deleted_at: string | null;
     source: string;
     distance_m: number | null;
     duration_seconds: number | null;
   }>(
-    `SELECT source, distance_m, duration_seconds FROM runs WHERE id = ?`,
+    `SELECT status, deleted_at, source, distance_m, duration_seconds FROM runs WHERE id = ?`,
     [runId],
   );
+
+  // Course introuvable / déjà terminée / annulée / supprimée : no-op.
+  if (!row || row.status !== 'active' || row.deleted_at !== null) {
+    return;
+  }
 
   // Distance retenue : la saisie manuelle prime uniquement en source manuelle.
   const manualDistance = opts?.manualDistanceM;
