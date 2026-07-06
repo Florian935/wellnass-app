@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 06/07/2026 — V0.5 Running R1 : tracker GPS nu (course libre)
+
+_Branche : `feature/running-r1-tracker` · commit précédent sur `dev` : `5f1b91d`_
+
+### Ajouté (premier incrément V0.5 — Running)
+- **`packages/shared/src/running.ts`** : calculs GPS purs — `haversineMeters`, `totalDistance` (filtre
+  outliers via `MAX_PLAUSIBLE_SPEED_MS`), `averagePace`, `instantPace`, **encodage trace append-friendly**
+  (`encodeSegment`/`appendToTrack`/`decodeTrack`, polyline + deltas de temps, length-prefix), `runRowSchema`.
+  **+45 tests.**
+- **Table `runs`** : migration `20260707120000_running_runs.sql` + RLS (table utilisateur) + **stream
+  edition 3** + schéma PowerSync local. Trace GPS = **1 colonne encodée** sur la ligne (pas de table de
+  points → 1 ligne/course, évite l'explosion PowerSync).
+- **`run-repository`** : `useActiveRun`/`useRun`/`useRunHistory`, `startRun` (garde anti double-active),
+  `flushTrack` (append-only **sérialisé**, garde de statut), `finishRun` (au stop, `avg_pace` des scalaires
+  flushés, garde active), `cancelRun` (soft delete), `setRunFeedback`/`setManualRunDistance`.
+- **Suivi GPS** : `expo-location` + `expo-task-manager` + **foreground service Android** (nouveau dev build),
+  service `tracker`/`tracker-task` (encode+append par batch, auto-pause, pause observable, stop→drain→finish).
+- **Écrans** : démarrage course libre (GPS/sans-GPS, refus permission → bascule manuelle), suivi temps réel
+  (distance/temps/allure inst.+moy., pause/reprise, écran verrouillé, keep-awake), résumé (RPE/note/distance
+  manuelle). i18n FR/EN, smoke test.
+
+### Technique / Notes
+- **Découpage V0.5** : R1 (ce livrable) → R2 carte (**Mapbox/MapLibre à trancher**) → R3 profil/programmes → R4 stats/records/GPX.
+- **Nouveau dev build requis** (`expo-location`/`task-manager` natifs) avant tout test device.
+- Revues repo + finale : **GO**. Le cœur (GPS arrière-plan, écran verrouillé, batterie, reprise après kill,
+  offline→sync) **n'est validable que sur le terrain** = checkpoint 🔴 humain (Task 10).
+- **Checkpoints 🔴** : migration `runs` + stream sur le cloud, dev build, **validation terrain**.
+- Caveats terrain notés : relance process Android (batch ignoré si `startTracking` pas rejoué), seuils
+  auto-pause à ajuster, rendu notif foreground service à vérifier.
+
 ## 06/07/2026 — chore(db) : sync rules PowerSync en edition 3 + types Supabase générés
 
 _Branche : `chore/db-types-sync-edition3` · commit précédent sur `dev` : `d45ac5b`_

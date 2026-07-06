@@ -40,6 +40,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   **redéployer les sync rules** (incluent désormais `personal_records`), **nouveau dev build**
   (`npm run build:dev` — `react-native-svg` natif), **vérif device US3** (record détecté à la
   clôture + mis en avant au résumé, historique liste/détail, courbes qui s'affichent, volume/groupe).
+- [ ] **Running R1** : appliquer `20260707120000_running_runs.sql` sur le cloud, **redéployer les sync
+  rules** (stream `runs`), **nouveau dev build** (`expo-location`/`task-manager` natifs), **VALIDATION
+  TERRAIN** (Task 10, le cœur de R1) : course réelle écran verrouillé + arrière-plan, perte GPS,
+  auto-pause, mode avion→sync (1 ligne/course), **reprise après kill**, batterie 30-45 min, RLS 2 comptes,
+  i18n. Caveats à vérifier : relance process Android, seuils auto-pause, notif foreground service.
 
 ---
 
@@ -58,6 +63,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **US3 — Historique & records** — **mergée dans `dev`** (06/07/2026) : logique records shared (Epley, +39 tests), table `personal_records`+RLS+sync rules, `records-repository` (détection à la clôture), graphes (`react-native-svg`+gifted-charts), écrans historique + progression + records au résumé (3.22/3.38/3.21/3.39/3.40). Revues repo + finale GO. Activation cloud + **dev build svg** + device = section 🔴. (Notif record 3.42 → V0.8.)
 - [~] **V0.4 — US4.1 Profil nutritionnel & TDEE** (`feature/4.1-profil-nutritionnel-repo`, 1.10/4.1-4.7) — objectif nutritionnel, facteur d'activité (5 niveaux), TDEE Mifflin-St Jeor, objectif calorique (auto + surcharge manuelle), macros par défaut/manuelles (%↔g), restrictions/allergènes. Calculs purs + `nutritionProfileRowSchema` dans `@wellness/shared` (+28 tests), **table `nutrition_profiles`** (schéma PowerSync + migrations 140000/140001 + RLS + sync rules), `nutrition-repository` (`useQuery`/upsert), écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.1-profil-nutritionnel.md](docs/specs/functional/us/4.1-profil-nutritionnel.md). **Reste** : activation cloud (migrations+sync rules) + vérif device (section 🔴). (4.7 câblage planning muscu = ultérieur.) _(mergée en parallèle par Damien)_
 - [ ] **US transverse — Affichage des unités (métrique/impérial)** : câbler `displayWeight`/`useSettings().units` sur tout l'affichage des poids muscu (US1 séance, US2 programmes, US3 records/historique/progression). `displayWeight` existe déjà (`@wellness/shared`, testé) mais n'est utilisé nulle part → aujourd'hui tout s'affiche en kg quel que soit le réglage (1.15). Dette pré-existante, à traiter d'un coup.
+
+### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
+- [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**
+- [ ] **Running R2 — Carte** (5.17/5.27) : tracé en direct + résumé. **Décision bloquante : Mapbox vs MapLibre.**
+- [ ] **Running R3 — Profil coureur + programmes** (5.1-5.11).
+- [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
 ---
 
