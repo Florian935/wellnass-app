@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — EAS : projet sous l'organisation Expo (owner → `wellness-appl`)
+
+_Branche : `chore/expo-org-owner`_
+
+### Modifié
+- **[apps/mobile/app.json](apps/mobile/app.json)** : `owner` `damdamdeoh` → `wellness-appl`
+  (organisation Expo), suite au **transfert** du projet EAS vers l'org (buildable à deux).
+  `extra.eas.projectId` (`4d24d343-…ac689`) + `updates.url` **inchangés** (le transfert conserve
+  le projectId) et cohérents entre eux.
+
+### Technique / Notes
+- Débloque le build par **Florian** (`florian935` invité dans l'org).
+- Transfert **confirmé côté serveur** (`eas project:info` → `@wellness-appl/wellness-app`, même
+  projectId). Le `owner` local encore à `damdamdeoh` provoquait un mismatch qui **bloquait toute
+  commande `eas`** (`env:push` : « does not match owner specified in the "owner" field ») — d'où cette mise à jour.
+- **Reste** (section URGENT TODO) : EAS Environment Variables `EXPO_PUBLIC_*` (preview + production
+  = faites) ; confirmer un `eas build` sous l'org puis retirer la bannière.
+
 ## 07/07/2026 — Corrige le nom d'app dans les permissions de localisation (SparkWine → Wellness)
 
 _Branche : `fix/app-name-location-permissions`_
