@@ -31,6 +31,26 @@ _Branche : `fix/food-entries-order-index-overflow`_
   gardent l'`order_index` géant et continueront de bloquer la file tant que la base locale
   n'est pas réinitialisée (`disconnectAndClear`) — ce fix ne concerne que les écritures futures.
 
+## 07/07/2026 — Corrige la résolution de `@wellness/shared` sous Windows (Metro)
+
+_Branche : `fix/metro-resolution-shared-windows`_
+
+### Corrigé
+- **Bundling natif impossible sur Windows** : Metro échouait avec
+  `Unable to resolve "@wellness/shared" from …/goal.tsx` (donc écran d'erreur du dev-client au
+  lieu de l'app). Cause : sur Windows, npm workspaces crée des **junctions** (et non des
+  symlinks) pour lier les packages locaux ; le resolver Metro ne les suit pas (`lstat` ne les
+  voit pas comme des liens). Correctif : `resolver.extraNodeModules` dans
+  [apps/mobile/metro.config.js](apps/mobile/metro.config.js) mappe explicitement
+  `@wellness/shared` → `packages/shared`.
+
+### Technique / Notes
+- Lancement sur **téléphone Android physique en USB depuis Windows** (mémo débogage) :
+  1. `adb reverse tcp:8081 tcp:8081` puis viser `http://127.0.0.1:8081` (le loopback n'est pas
+     filtré par le pare-feu Windows, qui bloque sinon le port 8081 en Wi-Fi → `ETIMEDOUT`).
+  2. Démarrer Metro **sans** `--host localhost` (sinon bind IPv6 `::1` seul et `adb reverse`,
+     qui tape en IPv4, renvoie `unexpected end of stream`).
+
 ## 07/07/2026 — V0.4 : repas personnalisables (4.15) + alerte croisée déficit/volume (4.32)
 
 _Branche : `feature/4.15-4.32-finitions-v04`_
