@@ -39,8 +39,8 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "SparkWine utilise votre position pour suivre vos courses.",
-          "locationWhenInUsePermission": "SparkWine utilise votre position pour suivre vos courses.",
+          "locationAlwaysAndWhenInUsePermission": "Wellness utilise votre position pour suivre vos courses.",
+          "locationWhenInUsePermission": "Wellness utilise votre position pour suivre vos courses.",
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }

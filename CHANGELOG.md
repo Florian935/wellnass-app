@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — Corrige le nom d'app dans les permissions de localisation (SparkWine → Wellness)
+
+_Branche : `fix/app-name-location-permissions`_
+
+### Corrigé
+- **Permissions de localisation** ([app.json](apps/mobile/app.json)) : la popup système affichait
+  « **SparkWine** utilise votre position… » (copier-coller d'un autre projet) au lieu de
+  « **Wellness** ». Corrigé sur `locationAlwaysAndWhenInUsePermission` + `locationWhenInUsePermission`.
+
+### Technique / Notes
+- Seule occurrence dans le code suivi (l'artefact `android/…/app.config` est ignoré et se régénère).
+- Prend effet au prochain build natif.
+
 ## 07/07/2026 — Corrige le bouton « Enregistrer » qui passait à la ligne (écran Suivi)
 
 _Branche : `fix/weight-save-button-wrap`_
