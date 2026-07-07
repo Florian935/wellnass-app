@@ -2,6 +2,13 @@
 
 Guidage pour Claude Code (claude.ai/code) sur ce dépôt.
 
+> ## ⚠️🔴 AVANT TOUTE CHOSE (Damien) — à traiter en PRIORITÉ absolue
+> Si tu démarres une session : **traite d'abord la section « 🔴🔴 URGENT » en tête de
+> [TODO.md](TODO.md)** (setup Expo Organisation pour builder à deux) **avant tout autre travail**.
+> Florian est actuellement **bloqué pour builder l'app** (le projet EAS est sous ton compte perso
+> `damdamdeoh`, non partageable) et contourne via un `app.json` local à ne pas committer. Règle ce
+> point en premier, puis retire cette bannière. _(Ajouté le 07/07/2026.)_
+
 ## État du projet
 
 **Cadrage terminé, scaffolding du monorepo posé.** Les deux cadrages initiaux (Florian et

@@ -10,7 +10,31 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 06/07/2026*
+*Dernière mise à jour : 07/07/2026*
+
+---
+
+## 🔴🔴 URGENT — DAMIEN, À TRAITER EN PREMIER (setup build à deux)
+
+> **Contexte (07/07/2026)** : Florian est **bloqué pour builder l'app** (EAS). Le projet Expo est
+> sous ton **compte perso `damdamdeoh`** (`projectId 4d24d343-…`), non partageable avec un autre
+> compte perso → `eas build` / `eas init` renvoient « Entity not authorized » pour `florian935`.
+> En dépannage, Florian build via un **`app.json` local modifié** (`owner`/`projectId` à lui) qu'il
+> **ne doit pas committer** — c'est un contournement, pas la solution.
+
+- [ ] **Créer une Organisation Expo** (expo.dev) et y **transférer/héberger** le projet `wellness-app`.
+- [ ] **Inviter `florian935`** (`florian.martin63000@gmail.com`) comme membre (Developer/Admin).
+- [ ] Mettre `apps/mobile/app.json` → `"owner": "<nom-de-l-org>"` (au lieu de `damdamdeoh`),
+  committer sur `dev`. Vérifier que `extra.eas.projectId` + `updates.url` pointent bien le projet
+  de l'org (cohérents entre eux).
+- [ ] Confirmer à Florian que `npm run build:preview` / `build:dev` passent sous son compte, puis
+  qu'il **restaure** son `app.json` (`git checkout apps/mobile/app.json`).
+- [ ] **Coordination migrations** : se mettre d'accord sur les **plages de timestamps** de migration
+  (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`).
+  → convention à écrire (ex. par pilier/personne).
+- [ ] Retirer la bannière ⚠️🔴 en tête de [CLAUDE.md](CLAUDE.md) une fois ce point réglé.
+
+**Ensuite seulement**, reprendre le reste (activation cloud ci-dessous, V0.4, etc.).
 
 ---
 
