@@ -38,7 +38,10 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={isPrimary ? colors.accentText : colors.accent} />
       ) : (
-        <Text style={[styles.label, { color: isPrimary ? colors.accentText : colors.text }]}>
+        <Text
+          numberOfLines={1}
+          style={[styles.label, { color: isPrimary ? colors.accentText : colors.text }]}
+        >
           {label}
         </Text>
       )}
