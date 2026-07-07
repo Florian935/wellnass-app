@@ -29,6 +29,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   de l'org (cohérents entre eux).
 - [ ] Confirmer à Florian que `npm run build:preview` / `build:dev` passent sous son compte, puis
   qu'il **restaure** son `app.json` (`git checkout apps/mobile/app.json`).
+- [ ] **Config env des builds autonomes** : `eas.json` n'a **aucun bloc `env`** → les builds
+  `preview`/`production` (JS embarqué, compilé sur EAS cloud) sortent **sans** `EXPO_PUBLIC_SUPABASE_URL`
+  / `_ANON_KEY` / `EXPO_PUBLIC_POWERSYNC_URL` → **crash au démarrage** (`supabase.ts` lève à l'import).
+  Les dev builds marchaient seulement parce que Metro injectait le `.env` local. **Fix durable** :
+  déclarer ces 3 variables via **EAS Environment Variables** (`eas env:create`, non commitées) pour les
+  environnements `preview`/`production` (anon key = publique par design → OK côté client). Contournement
+  actuel de Florian : bloc `env` local dans `eas.json` (non commité).
 - [ ] **Coordination migrations** : se mettre d'accord sur les **plages de timestamps** de migration
   (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`).
   → convention à écrire (ex. par pilier/personne).
