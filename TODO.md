@@ -24,18 +24,18 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 - [x] **Créer une Organisation Expo** (expo.dev) et y **transférer/héberger** le projet `wellness-app`. — org `wellness-appl`, projet transféré (07/07/2026).
 - [x] **Inviter `florian935`** (`florian.martin63000@gmail.com`) comme membre (Developer/Admin).
-- [~] Mettre `apps/mobile/app.json` → `"owner": "wellness-appl"` (au lieu de `damdamdeoh`),
-  committer sur `dev`. `extra.eas.projectId` + `updates.url` inchangés/cohérents (transfert). — code fait
-  (branche `chore/expo-org-owner`, PR), **à merger après confirmation build Florian**.
+- [x] Mettre `apps/mobile/app.json` → `"owner": "wellness-appl"` (au lieu de `damdamdeoh`). —
+  **mergé dans `dev`** (PR #28, 07/07/2026). `extra.eas.projectId` + `updates.url` inchangés/cohérents.
+  Transfert confirmé serveur (`eas project:info` → `@wellness-appl/wellness-app`, même projectId).
 - [ ] Confirmer à Florian que `npm run build:preview` / `build:dev` passent sous son compte, puis
   qu'il **restaure** son `app.json` (`git checkout apps/mobile/app.json`).
-- [ ] **Config env des builds autonomes** : `eas.json` n'a **aucun bloc `env`** → les builds
-  `preview`/`production` (JS embarqué, compilé sur EAS cloud) sortent **sans** `EXPO_PUBLIC_SUPABASE_URL`
-  / `_ANON_KEY` / `EXPO_PUBLIC_POWERSYNC_URL` → **crash au démarrage** (`supabase.ts` lève à l'import).
-  Les dev builds marchaient seulement parce que Metro injectait le `.env` local. **Fix durable** :
-  déclarer ces 3 variables via **EAS Environment Variables** (`eas env:create`, non commitées) pour les
-  environnements `preview`/`production` (anon key = publique par design → OK côté client). Contournement
-  actuel de Florian : bloc `env` local dans `eas.json` (non commité).
+- [x] **Config env des builds autonomes** — ✅ **fait (07/07/2026)** : les 3 `EXPO_PUBLIC_*`
+  (`SUPABASE_URL` / `_ANON_KEY` / `POWERSYNC_URL`) déclarées via **EAS Environment Variables**
+  (`eas env:push` depuis `apps/mobile/.env`) pour **preview + production** (visibility PUBLIC ;
+  vraies valeurs vérifiées via `eas env:list --format long`). _Contexte :_ `eas.json` n'a aucun bloc
+  `env` → sinon les builds `preview`/`production` (JS compilé sur EAS cloud) sortaient **sans** ces
+  variables → **crash au démarrage** (`supabase.ts` lève à l'import ; les dev builds marchaient car
+  Metro injecte le `.env` local).
 - [ ] **Coordination migrations** : se mettre d'accord sur les **plages de timestamps** de migration
   (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`).
   → convention à écrire (ex. par pilier/personne).
@@ -95,6 +95,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [~] **V0.4 — US4.1 Profil nutritionnel & TDEE** (`feature/4.1-profil-nutritionnel-repo`, 1.10/4.1-4.7) — objectif nutritionnel, facteur d'activité (5 niveaux), TDEE Mifflin-St Jeor, objectif calorique (auto + surcharge manuelle), macros par défaut/manuelles (%↔g), restrictions/allergènes. Calculs purs + `nutritionProfileRowSchema` dans `@wellness/shared` (+28 tests), **table `nutrition_profiles`** (schéma PowerSync + migrations 140000/140001 + RLS + sync rules), `nutrition-repository` (`useQuery`/upsert), écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.1-profil-nutritionnel.md](docs/specs/functional/us/4.1-profil-nutritionnel.md). **Reste** : activation cloud (migrations+sync rules) + vérif device (section 🔴). (4.7 câblage planning muscu = ultérieur.) _(mergée en parallèle par Damien)_
 - [~] **V0.4 — US4.8 Base d'aliments & journal** (`feature/4.8-aliments-journal`, 4.8/4.9/4.11-4.14/4.16/4.17/4.19-4.23) — 50 aliments bilingues (seed), recherche + OpenFoodFacts + favoris + aliment perso, journal 4 repas (nav jours, totaux + barres macros temps réel, quick add, portions). `food.ts` (+16 tests), 4 tables PowerSync + migrations `150000/150001` + RLS + sync rules + seed, `food-repository`/`journal-repository`/`lib/openfoodfacts`, écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.8-aliments-journal.md](docs/specs/functional/us/4.8-aliments-journal.md). **Reste** : activation cloud (migrations+seed+sync rules) + vérif device. **Différé** : scan (4.10), renommer/ajouter repas (4.15), copier (4.18), recettes (4.24-4.26), poids & stats (1.13/1.14/4.30-4.32), notif (2.5).
 - [~] **V0.4 — US4.24 Recettes, repas types, poids & stats** (`feature/4.24-recettes-poids-stats`, 4.24-4.26/1.13/4.30/4.31) — recettes (ingrédients + portions + valeurs par portion), repas types (enregistrer/réappliquer), poids corporel (pesée/jour + tendance + courbe 4 sem/3 mois/1 an), apports moyens 7/30 j + courbe. `recipe.ts`/`bodyweight.ts` (+tests), 5 tables PowerSync + migrations `130000/130001` + RLS + sync rules, repos + écrans (`recipe-edit`, `nutrition-stats`, food-picker étendu). typecheck/lint/test verts. Spec : [us/4.24-recettes-poids-stats.md](docs/specs/functional/us/4.24-recettes-poids-stats.md). **Reste** : activation cloud + vérif device. **Différé** : 4.32 stat croisée, rappels (natif), planning (V1.1).
+- [x] **Session test device + correctifs (07/07/2026)** — app lancée sur **Pixel 6a** (USB) et passe de
+  tests. Correctifs mergés dans `dev` : **résolution `@wellness/shared` sous Windows/Metro** (junction npm →
+  `resolver.extraNodeModules`, PR #24) · **sync du journal** (`order_index: Date.now()` dépassait l'`integer`
+  Postgres → `MAX(order_index)+1`, PR #25) · **bouton « Enregistrer »** qui wrappait (PR #26) · **nom d'app**
+  dans les permissions localisation (SparkWine → Wellness, PR #29). Journal nutrition **vérifié device**
+  (ajout aliment + upload sync OK). Constat : le **dashboard d'accueil est un placeholder statique** (3 cartes
+  non branchées) → spec US « Dashboard live » V0.6 rédigée
+  ([us/7.4-7.7-dashboard-live.md](docs/specs/functional/us/7.4-7.7-dashboard-live.md), **PR #27 à valider**).
 - [ ] **US transverse — Affichage des unités (métrique/impérial)** : câbler `displayWeight`/`useSettings().units` sur tout l'affichage des poids muscu (US1 séance, US2 programmes, US3 records/historique/progression). `displayWeight` existe déjà (`@wellness/shared`, testé) mais n'est utilisé nulle part → aujourd'hui tout s'affiche en kg quel que soit le réglage (1.15). Dette pré-existante, à traiter d'un coup.
 
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
