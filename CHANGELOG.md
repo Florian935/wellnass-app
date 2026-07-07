@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — Spec US « Dashboard live » (V0.6) — à valider
+
+_Branche : `docs/us-dashboard-live`_
+
+### Ajouté
+- **[us/7.4-7.7-dashboard-live.md](docs/specs/functional/us/7.4-7.7-dashboard-live.md)** : spec
+  d'implémentation du tableau de bord d'accueil (MVP V0.6). Branche les cartes sur les vraies données
+  (séance du jour + CTA, résumé nutrition, streak réel 2.9, poids/tendance), conformément à
+  [navigation-ux.md](docs/specs/functional/navigation-ux.md) §3. Corrige le **placeholder statique**
+  actuel (message « arrive bientôt » faux, streak figé à 0) repéré en test device. Personnalisation
+  (drag & drop, tailles, persistance) + widgets 7.8-7.10 explicitement **différés**.
+- **[TODO.md](TODO.md)** : US ajoutée au pipeline V0.6 (statut « à valider »).
+
+### Technique / Notes
+- **Aucun code** : spec seule, en attente de validation (workflow spec → plan → design → validation → code).
+  Étape design/maquette (Claude Design) à produire avant implémentation.
+
 ## 07/07/2026 — Corrige le bouton « Enregistrer » qui passait à la ligne (écran Suivi)
 
 _Branche : `fix/weight-save-button-wrap`_

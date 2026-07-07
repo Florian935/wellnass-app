@@ -103,6 +103,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [ ] **Running R3 — Profil coureur + programmes** (5.1-5.11).
 - [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
+### V0.6 — Dashboard, streak & sync cloud
+- [ ] **US Dashboard « live » (MVP)** (2.9/7.4-7.7) — brancher les cartes de l'accueil sur les
+  **vraies données** (séance du jour + CTA, résumé nutrition, streak réel + semaine, poids/tendance).
+  Corrige le **placeholder actuel** (message « arrive bientôt » faux, streak figé à 0) repéré en test
+  device (07/07/2026). Spec **à valider** : [us/7.4-7.7-dashboard-live.md](docs/specs/functional/us/7.4-7.7-dashboard-live.md).
+  Personnalisation (drag & drop 7.1-7.3/7.11/7.12) + widgets 7.8-7.10 = **US ultérieure**.
+
 ---
 
 ## ⏭️ À faire prochainement (avant / début V0.1)
