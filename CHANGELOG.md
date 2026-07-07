@@ -22,9 +22,24 @@ _Branche : `chore/expo-org-owner`_
 
 ### Technique / Notes
 - Débloque le build par **Florian** (`florian935` invité dans l'org).
-- **À ne pas merger avant** confirmation que `eas build` passe sous l'org (sinon `dev` casse les builds).
-- **Reste** (section URGENT TODO) : déclarer les **EAS Environment Variables** `EXPO_PUBLIC_*`
-  (preview/production), sinon crash au démarrage des builds autonomes.
+- Transfert **confirmé côté serveur** (`eas project:info` → `@wellness-appl/wellness-app`, même
+  projectId). Le `owner` local encore à `damdamdeoh` provoquait un mismatch qui **bloquait toute
+  commande `eas`** (`env:push` : « does not match owner specified in the "owner" field ») — d'où cette mise à jour.
+- **Reste** (section URGENT TODO) : EAS Environment Variables `EXPO_PUBLIC_*` (preview + production
+  = faites) ; confirmer un `eas build` sous l'org puis retirer la bannière.
+
+## 07/07/2026 — Corrige le nom d'app dans les permissions de localisation (SparkWine → Wellness)
+
+_Branche : `fix/app-name-location-permissions`_
+
+### Corrigé
+- **Permissions de localisation** ([app.json](apps/mobile/app.json)) : la popup système affichait
+  « **SparkWine** utilise votre position… » (copier-coller d'un autre projet) au lieu de
+  « **Wellness** ». Corrigé sur `locationAlwaysAndWhenInUsePermission` + `locationWhenInUsePermission`.
+
+### Technique / Notes
+- Seule occurrence dans le code suivi (l'artefact `android/…/app.config` est ignoré et se régénère).
+- Prend effet au prochain build natif.
 
 ## 07/07/2026 — Corrige le bouton « Enregistrer » qui passait à la ligne (écran Suivi)
 
