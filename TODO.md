@@ -22,11 +22,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > En dépannage, Florian build via un **`app.json` local modifié** (`owner`/`projectId` à lui) qu'il
 > **ne doit pas committer** — c'est un contournement, pas la solution.
 
-- [ ] **Créer une Organisation Expo** (expo.dev) et y **transférer/héberger** le projet `wellness-app`.
-- [ ] **Inviter `florian935`** (`florian.martin63000@gmail.com`) comme membre (Developer/Admin).
-- [ ] Mettre `apps/mobile/app.json` → `"owner": "<nom-de-l-org>"` (au lieu de `damdamdeoh`),
-  committer sur `dev`. Vérifier que `extra.eas.projectId` + `updates.url` pointent bien le projet
-  de l'org (cohérents entre eux).
+- [x] **Créer une Organisation Expo** (expo.dev) et y **transférer/héberger** le projet `wellness-app`. — org `wellness-appl`, projet transféré (07/07/2026).
+- [x] **Inviter `florian935`** (`florian.martin63000@gmail.com`) comme membre (Developer/Admin).
+- [~] Mettre `apps/mobile/app.json` → `"owner": "wellness-appl"` (au lieu de `damdamdeoh`),
+  committer sur `dev`. `extra.eas.projectId` + `updates.url` inchangés/cohérents (transfert). — code fait
+  (branche `chore/expo-org-owner`, PR), **à merger après confirmation build Florian**.
 - [ ] Confirmer à Florian que `npm run build:preview` / `build:dev` passent sous son compte, puis
   qu'il **restaure** son `app.json` (`git checkout apps/mobile/app.json`).
 - [ ] **Config env des builds autonomes** : `eas.json` n'a **aucun bloc `env`** → les builds

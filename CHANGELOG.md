@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — EAS : projet sous l'organisation Expo (owner → `wellness-appl`)
+
+_Branche : `chore/expo-org-owner`_
+
+### Modifié
+- **[apps/mobile/app.json](apps/mobile/app.json)** : `owner` `damdamdeoh` → `wellness-appl`
+  (organisation Expo), suite au **transfert** du projet EAS vers l'org (buildable à deux).
+  `extra.eas.projectId` (`4d24d343-…ac689`) + `updates.url` **inchangés** (le transfert conserve
+  le projectId) et cohérents entre eux.
+
+### Technique / Notes
+- Débloque le build par **Florian** (`florian935` invité dans l'org).
+- **À ne pas merger avant** confirmation que `eas build` passe sous l'org (sinon `dev` casse les builds).
+- **Reste** (section URGENT TODO) : déclarer les **EAS Environment Variables** `EXPO_PUBLIC_*`
+  (preview/production), sinon crash au démarrage des builds autonomes.
+
 ## 07/07/2026 — Corrige le bouton « Enregistrer » qui passait à la ligne (écran Suivi)
 
 _Branche : `fix/weight-save-button-wrap`_
