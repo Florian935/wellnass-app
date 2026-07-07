@@ -199,6 +199,15 @@
       "snack": "Snack"
     }
   },
+  "meals": {
+    "manage": "Manage meals",
+    "hint": "Rename, add or remove your meals. Leave blank to keep the default name.",
+    "mealN": "Meal {{n}}",
+    "newMeal": "New meal",
+    "add": "+ Add a meal",
+    "remove": "Remove",
+    "done": "Save"
+  },
   "quickList": {
     "title": "List entry",
     "hint": "Write your meal in one sentence; the app finds each food. Nothing is added until you confirm.",
@@ -241,7 +250,8 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
-    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" }
+    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" },
+    "deficitAlert": "Large calorie deficit this week despite high strength-training volume. Make sure you eat enough to recover."
   },
   "home": {
     "greeting": "Hello 👋",

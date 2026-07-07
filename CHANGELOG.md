@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — V0.4 : repas personnalisables (4.15) + alerte croisée déficit/volume (4.32)
+
+_Branche : `feature/4.15-4.32-finitions-v04`_
+
+### Ajouté
+- **Repas personnalisables (4.15)** : renommer / ajouter / supprimer ses repas.
+  - `@wellness/shared` : `mealConfigItemSchema`, `DEFAULT_MEAL_CONFIG`, `resolveMealConfig`,
+    champ `meals` sur `nutritionProfileRowSchema`. Migration `20260707140000` (colonne `meals` jsonb +
+    **relâche le CHECK `food_entries.meal_type`** pour autoriser des clés custom). Schéma PowerSync + repo.
+  - Journal rendu depuis la config ; écran **Gérer les repas** (`nutrition-meals`). Signatures
+    repository `MealType` → `string` (clés de repas libres).
+- **Alerte croisée (4.32)** : `shouldAlertDeficitVolume` (shared) + carte sur `nutrition-stats` —
+  déficit calorique hebdo ≥ 15 % **et** fort volume muscu (Σ reps×kg sur 7 j) → conseil de récupération.
+  Première stat croisée inter-piliers (décision H).
+
+### Technique / Notes
+- `typecheck` + `lint` (0 erreur) + `test` (325) verts.
+- **Checkpoint 🔴** : appliquer la migration `20260707140000_nutrition_meals.sql` sur le cloud.
+- **Reste V0.4** : 4.10 scan + 1.14/2.5 rappels (**natif** → build).
+
 ## 07/07/2026 — V0.4 : saisie de repas par liste (langage naturel) + copier un repas (4.5 / 4.18)
 
 _Branche : `feature/4.5-saisie-langage-naturel`_

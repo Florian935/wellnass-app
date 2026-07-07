@@ -199,6 +199,15 @@
       "snack": "Collation"
     }
   },
+  "meals": {
+    "manage": "Gérer les repas",
+    "hint": "Renomme, ajoute ou supprime tes repas. Laisse vide pour garder le nom par défaut.",
+    "mealN": "Repas {{n}}",
+    "newMeal": "Nouveau repas",
+    "add": "+ Ajouter un repas",
+    "remove": "Supprimer",
+    "done": "Enregistrer"
+  },
   "quickList": {
     "title": "Saisie par liste",
     "hint": "Écris ton repas en une phrase, l'app retrouve chaque aliment. Rien n'est ajouté avant ta confirmation.",
@@ -241,7 +250,8 @@
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
     },
-    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" }
+    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" },
+    "deficitAlert": "Déficit calorique important cette semaine malgré un fort volume de musculation. Pense à manger assez pour récupérer."
   },
   "home": {
     "greeting": "Bonjour 👋",

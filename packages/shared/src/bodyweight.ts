@@ -50,3 +50,25 @@ export function averageIntake(dailyTotals: ReadonlyArray<Nutrients>): Nutrients 
     fatG: Math.round(sum.fatG / n),
   };
 }
+
+// --- Corrélation muscu ↔ apports (spec §7.3, item 4.32) ----------------------
+
+/** Seuils de l'alerte croisée déficit + fort volume (heuristiques, ajustables). */
+export const DEFICIT_ALERT_RATIO = 0.15; // apports ≥ 15 % sous l'objectif
+export const HIGH_VOLUME_THRESHOLD = 8000; // volume muscu hebdo (Σ reps × kg)
+
+/**
+ * Vrai si la semaine cumule un **déficit calorique important** (apports moyens nettement
+ * sous l'objectif) **et** un **fort volume de musculation** — signal de sous-alimentation
+ * face à la charge d'entraînement (première stat croisée inter-piliers, décision H).
+ */
+export function shouldAlertDeficitVolume(params: {
+  avgDailyKcal: number;
+  targetKcal: number;
+  weeklyVolume: number;
+}): boolean {
+  const { avgDailyKcal, targetKcal, weeklyVolume } = params;
+  if (targetKcal <= 0 || avgDailyKcal <= 0) return false;
+  const deficitRatio = (targetKcal - avgDailyKcal) / targetKcal;
+  return deficitRatio >= DEFICIT_ALERT_RATIO && weeklyVolume >= HIGH_VOLUME_THRESHOLD;
+}

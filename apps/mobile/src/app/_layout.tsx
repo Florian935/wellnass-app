@@ -238,6 +238,17 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="nutrition-meals"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('meals.manage'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="programs"
           options={{
             headerShown: false,

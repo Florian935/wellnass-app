@@ -200,6 +200,31 @@ export function macroRatiosFromGrams(grams: MacroGrams): MacroRatios {
   };
 }
 
+// --- Configuration des repas (spec §4.1, item 4.15) --------------------------
+
+/** Clés des repas par défaut (petit-déj / déj / dîner / collation). */
+export const DEFAULT_MEAL_KEYS = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+
+/** Un repas de la journée : clé stable + libellé personnalisé (`null` = libellé par défaut i18n). */
+export const mealConfigItemSchema = z.object({
+  key: z.string().min(1),
+  label: z.string().nullable().default(null),
+});
+export type MealConfigItem = z.infer<typeof mealConfigItemSchema>;
+
+/** Configuration par défaut : les 4 repas standards, libellés i18n. */
+export const DEFAULT_MEAL_CONFIG: MealConfigItem[] = DEFAULT_MEAL_KEYS.map((key) => ({
+  key,
+  label: null,
+}));
+
+/** Renvoie la config de repas de l'utilisateur, ou les 4 repas par défaut si absente/vide. */
+export function resolveMealConfig(
+  meals: ReadonlyArray<MealConfigItem> | null | undefined,
+): MealConfigItem[] {
+  return meals && meals.length > 0 ? [...meals] : DEFAULT_MEAL_CONFIG;
+}
+
 // --- Ligne synchronisée (table nutrition_profiles) ---------------------------
 
 /**
@@ -224,6 +249,8 @@ export const nutritionProfileRowSchema = syncFieldsSchema.extend({
   allergens: z.array(z.string()).default([]),
   /** Bonus calorique des jours d'entraînement (item 4.7, opt-in) ; 0 = désactivé. */
   trainingDayBonus: z.number().nonnegative().default(0),
+  /** Repas personnalisés (renommer / ajouter / supprimer, item 4.15) ; `null` = 4 repas par défaut. */
+  meals: z.array(mealConfigItemSchema).nullable().default(null),
 });
 
 export type NutritionProfileRow = z.infer<typeof nutritionProfileRowSchema>;

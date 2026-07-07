@@ -8,7 +8,6 @@ import {
   scaleNutrition,
   scalePortions,
   type FoodPortion,
-  type MealType,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
@@ -41,10 +40,10 @@ export default function FoodPickerScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string; meal?: MealType; mode?: string; recipeId?: string }>();
+  const params = useLocalSearchParams<{ date?: string; meal?: string; mode?: string; recipeId?: string }>();
   const mode = params.mode === 'recipe' ? 'recipe' : 'journal';
   const date = params.date ?? '';
-  const meal = (params.meal ?? 'breakfast') as MealType;
+  const meal = params.meal ?? 'breakfast';
   const recipeId = params.recipeId ?? '';
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 

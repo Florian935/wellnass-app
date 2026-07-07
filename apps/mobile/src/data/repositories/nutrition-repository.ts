@@ -17,7 +17,7 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { DietRestriction, NutritionProfileRow } from '@wellness/shared';
+import type { DietRestriction, MealConfigItem, NutritionProfileRow } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
@@ -40,6 +40,7 @@ export type NutritionProfileInput = Pick<
   | 'restrictions'
   | 'allergens'
   | 'trainingDayBonus'
+  | 'meals'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -55,6 +56,7 @@ type NutritionDbRow = {
   restrictions: string | null;
   allergens: string | null;
   training_day_bonus: number | null;
+  meals: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -95,6 +97,7 @@ function rowToNutritionProfile(row: NutritionDbRow): NutritionProfile {
     restrictions: parseJsonColumn<DietRestriction[]>(row.restrictions, []),
     allergens: parseJsonColumn<string[]>(row.allergens, []),
     trainingDayBonus: row.training_day_bonus ?? 0,
+    meals: parseJsonColumn<MealConfigItem[] | null>(row.meals, null),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -113,6 +116,7 @@ function inputToColumns(input: Partial<NutritionProfileInput>): Record<string, u
   if ('restrictions' in input) columns['restrictions'] = JSON.stringify(input.restrictions ?? []);
   if ('allergens' in input) columns['allergens'] = JSON.stringify(input.allergens ?? []);
   if ('trainingDayBonus' in input) columns['training_day_bonus'] = input.trainingDayBonus;
+  if ('meals' in input) columns['meals'] = input.meals ? JSON.stringify(input.meals) : null;
   return columns;
 }
 

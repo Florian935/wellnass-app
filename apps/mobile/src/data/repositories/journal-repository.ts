@@ -7,7 +7,6 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { MealType } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
@@ -15,7 +14,7 @@ import { insertWithSyncFields, patch, softDelete } from './_sql';
 /** Entrée du journal telle qu'affichée. */
 export type JournalEntry = {
   id: string;
-  mealType: MealType;
+  mealType: string;
   foodId: string | null;
   name: string;
   quantityG: number | null;
@@ -47,7 +46,7 @@ const SELECT_DAY = `
 function rowToEntry(row: JournalDbRow): JournalEntry {
   return {
     id: row.id,
-    mealType: row.meal_type as MealType,
+    mealType: row.meal_type,
     foodId: row.food_id,
     name: row.name,
     quantityG: row.quantity_g,
@@ -121,7 +120,7 @@ export type EntrySnapshot = {
 /** Ajoute une entrée (aliment ou quick add) à un repas d'une journée. Retourne l'id. */
 export async function addFoodEntry(
   date: string,
-  mealType: MealType,
+  mealType: string,
   snapshot: EntrySnapshot,
 ): Promise<string> {
   return insertWithSyncFields('food_entries', {
@@ -170,7 +169,7 @@ type CopyRow = {
 };
 
 /** Copie toutes les entrées d'un repas d'un jour source vers (date, meal). Retourne le nb copié (4.18). */
-export async function copyMeal(fromDate: string, meal: MealType, toDate: string): Promise<number> {
+export async function copyMeal(fromDate: string, meal: string, toDate: string): Promise<number> {
   const rows = await powerSync.getAll<CopyRow>(
     `SELECT meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g
      FROM food_entries WHERE log_date = ? AND meal_type = ? AND deleted_at IS NULL ORDER BY order_index, created_at`,
@@ -198,7 +197,7 @@ export async function duplicateDay(fromDate: string, toDate: string): Promise<nu
     [fromDate],
   );
   for (const r of rows) {
-    await addFoodEntry(toDate, r.meal_type as MealType, {
+    await addFoodEntry(toDate, r.meal_type, {
       foodId: r.food_id,
       name: r.name,
       quantityG: r.quantity_g,
