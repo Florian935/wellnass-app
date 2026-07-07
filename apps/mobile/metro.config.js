@@ -17,7 +17,15 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// 3. PowerSync : désactiver les inline requires pour son entrée (évite
+// 3. Map explicite des packages workspace : sur Windows, npm crée des
+//    *junctions* (et non des symlinks) que le resolver Metro ne suit pas
+//    (lstat ne les voit pas comme des liens) → « Unable to resolve
+//    @wellness/shared ». On pointe donc directement vers le dossier réel.
+config.resolver.extraNodeModules = {
+  '@wellness/shared': path.resolve(workspaceRoot, 'packages/shared'),
+};
+
+// 4. PowerSync : désactiver les inline requires pour son entrée (évite
 //    « Cannot read property 'PowerSyncDatabase' of undefined »). Voir doc op-sqlite.
 config.transformer.getTransformOptions = async () => ({
   transform: {
