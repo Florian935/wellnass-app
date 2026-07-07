@@ -117,6 +117,22 @@ export type EntrySnapshot = {
   fatG: number;
 };
 
+/**
+ * Prochain `order_index` pour un repas donné : `MAX + 1` (même idiome que les autres
+ * repos). On garde un petit entier séquentiel — surtout **pas** `Date.now()`, dont la
+ * valeur en millisecondes dépasse le `integer` Postgres de `food_entries.order_index`
+ * (l'upload PowerSync échouait alors avec « out of range for type integer »).
+ */
+async function nextOrderIndex(logDate: string, mealType: string): Promise<number> {
+  const row = await powerSync.getOptional<{ max_index: number | null }>(
+    `SELECT MAX(order_index) AS max_index FROM food_entries
+     WHERE log_date = ? AND meal_type = ? AND deleted_at IS NULL`,
+    [logDate, mealType],
+  );
+  const max = row?.max_index;
+  return max === null || max === undefined ? 0 : max + 1;
+}
+
 /** Ajoute une entrée (aliment ou quick add) à un repas d'une journée. Retourne l'id. */
 export async function addFoodEntry(
   date: string,
@@ -127,7 +143,7 @@ export async function addFoodEntry(
     user_id: currentUserId(),
     log_date: date,
     meal_type: mealType,
-    order_index: Date.now(),
+    order_index: await nextOrderIndex(date, mealType),
     food_id: snapshot.foodId,
     name: snapshot.name,
     quantity_g: snapshot.quantityG,
