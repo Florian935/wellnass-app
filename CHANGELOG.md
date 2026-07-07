@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — Corrige le bouton « Enregistrer » qui passait à la ligne (écran Suivi)
+
+_Branche : `fix/weight-save-button-wrap`_
+
+### Corrigé
+- **Bouton « Enregistrer » (pesée, écran Suivi) tronqué sur 2 lignes** : le conteneur avait une
+  largeur fixe `120` trop courte pour le libellé. Passé en `minWidth: 120` (le bouton s'adapte
+  au texte, robuste aux traductions) — [nutrition-stats.tsx](apps/mobile/src/app/nutrition-stats.tsx).
+- **Défensif** : `numberOfLines={1}` sur le libellé du composant [Button](apps/mobile/src/components/Button.tsx)
+  — un libellé de bouton ne doit jamais wrapper sur 2 lignes (évite ce défaut ailleurs).
+
+### Technique / Notes
+- Trouvé en testant l'app sur device. `typecheck` + `lint` (0 erreur) + `test` (325 + 21) verts.
+- Vérifié en live : le libellé tient désormais sur une seule ligne.
+
 ## 07/07/2026 — Corrige l'overflow de `food_entries.order_index` (sync PowerSync)
 
 _Branche : `fix/food-entries-order-index-overflow`_

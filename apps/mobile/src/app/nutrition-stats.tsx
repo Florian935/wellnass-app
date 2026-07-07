@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   trend: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   hint: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 19 },
   logRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
-  logBtn: { width: 120 },
+  logBtn: { minWidth: 120 },
   avgRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   avgKcal: { fontFamily: fontFamily.displayBold, fontSize: 30 },
   avgUnit: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
