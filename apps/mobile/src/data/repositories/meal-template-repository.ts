@@ -4,7 +4,6 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { MealType } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { addFoodEntry, type EntrySnapshot } from './journal-repository';
@@ -85,7 +84,7 @@ export async function saveMealAsTemplate(name: string, items: EntrySnapshot[]): 
 }
 
 /** Réapplique un repas type : ajoute tous ses items au repas (date, meal) donné. */
-export async function applyTemplate(templateId: string, date: string, meal: MealType): Promise<void> {
+export async function applyTemplate(templateId: string, date: string, meal: string): Promise<void> {
   const items = await powerSync.getAll<TemplateItemDbRow>(
     `SELECT food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g
      FROM meal_template_items WHERE template_id = ? AND deleted_at IS NULL`,

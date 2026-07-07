@@ -14,6 +14,7 @@ import {
   nutritionProfileRowSchema,
   objectiveCalorieDelta,
   objectiveFromGoal,
+  resolveMealConfig,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -202,5 +203,32 @@ describe('nutritionProfileRowSchema', () => {
     });
     expect(parsed.restrictions).toEqual(['vegan', 'gluten_free']);
     expect(parsed.manualProteinG).toBe(180);
+  });
+});
+
+describe('meal config (4.15)', () => {
+  it('renvoie les 4 repas par défaut si null/vide', () => {
+    expect(resolveMealConfig(null).map((m) => m.key)).toEqual([
+      'breakfast', 'lunch', 'dinner', 'snack',
+    ]);
+    expect(resolveMealConfig([])).toHaveLength(4);
+  });
+  it('renvoie la config custom si présente', () => {
+    const custom = [
+      { key: 'breakfast', label: 'Matin' },
+      { key: 'custom-1', label: 'Pré-workout' },
+    ];
+    expect(resolveMealConfig(custom)).toEqual(custom);
+  });
+  it('valide le champ meals sur la ligne', () => {
+    const parsed = nutritionProfileRowSchema.parse({
+      id: '11111111-1111-4111-8111-111111111111',
+      userId: '22222222-2222-4222-8222-222222222222',
+      createdAt: '2026-07-07T10:00:00Z',
+      updatedAt: '2026-07-07T10:00:00Z',
+      deletedAt: null,
+      meals: [{ key: 'breakfast', label: 'Petit-déj' }],
+    });
+    expect(parsed.meals?.[0]?.label).toBe('Petit-déj');
   });
 });

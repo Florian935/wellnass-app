@@ -8,7 +8,6 @@ import {
   bestMatchIndex,
   parseMealText,
   scaleNutrition,
-  type MealType,
   type ParsedUnit,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -55,9 +54,9 @@ export default function MealQuickEntryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string; meal?: MealType }>();
+  const params = useLocalSearchParams<{ date?: string; meal?: string }>();
   const date = params.date ?? '';
-  const meal = (params.meal ?? 'breakfast') as MealType;
+  const meal = params.meal ?? 'breakfast';
 
   const { foods } = useFoods();
   const candidateNames = useMemo(() => foods.map((f) => f.name), [foods]);

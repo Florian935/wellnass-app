@@ -4,15 +4,15 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
-  MEAL_TYPES,
+  DEFAULT_MEAL_KEYS,
   computeAge,
   defaultMacroRatios,
   macroGramsFromCalories,
   objectiveFromGoal,
+  resolveMealConfig,
   sumNutrients,
   targetCalories,
   tdee,
-  type MealType,
 } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -187,30 +187,42 @@ export default function NutritionScreen() {
           ) : null}
         </View>
 
-        {/* Repas (4.14) */}
-        {MEAL_TYPES.map((meal) => (
-          <MealSection
-            key={meal}
-            meal={meal}
-            day={day}
-            entries={entries.filter((e) => e.mealType === meal)}
-            onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal } })}
-            onDeleteEntry={onDeleteEntry}
-          />
-        ))}
+        {/* Repas configurables (4.14 / 4.15) */}
+        {resolveMealConfig(nutritionProfile?.meals).map((m) => {
+          const label =
+            m.label ?? (DEFAULT_MEAL_KEYS.includes(m.key as never) ? t(`journal.meals.${m.key}`) : m.key);
+          return (
+            <MealSection
+              key={m.key}
+              mealKey={m.key}
+              mealLabel={label}
+              day={day}
+              entries={entries.filter((e) => e.mealType === m.key)}
+              onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
+              onDeleteEntry={onDeleteEntry}
+            />
+          );
+        })}
+
+        <Pressable onPress={() => router.push('/nutrition-meals')} style={styles.manageMeals}>
+          <Ionicons name="create-outline" size={16} color={colors.textMuted} />
+          <Text style={[styles.manageMealsLabel, { color: colors.textMuted }]}>{t('meals.manage')}</Text>
+        </Pressable>
       </ScrollView>
     </Screen>
   );
 }
 
 function MealSection({
-  meal,
+  mealKey,
+  mealLabel,
   day,
   entries,
   onAdd,
   onDeleteEntry,
 }: {
-  meal: MealType;
+  mealKey: string;
+  mealLabel: string;
   day: string;
   entries: JournalEntry[];
   onAdd: () => void;
@@ -219,10 +231,9 @@ function MealSection({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
-  const mealLabel = t(`journal.meals.${meal}`);
 
   const copyFromYesterday = () => {
-    void copyMeal(addDays(day, -1), meal, day).then((n) => {
+    void copyMeal(addDays(day, -1), mealKey, day).then((n) => {
       if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
     });
   };
@@ -338,4 +349,6 @@ const styles = StyleSheet.create({
   addRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 12 },
   addLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   copyLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  manageMeals: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
+  manageMealsLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
 });

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { perServing, scalePortions, recipeRowSchema } from './recipe';
-import { averageIntake, weightTrend, bodyWeightEntryRowSchema } from './bodyweight';
+import {
+  averageIntake,
+  shouldAlertDeficitVolume,
+  weightTrend,
+  bodyWeightEntryRowSchema,
+} from './bodyweight';
 
 describe('recipe helpers', () => {
   it('perServing divise le total par le nombre de portions', () => {
@@ -65,5 +70,20 @@ describe('bodyweight helpers', () => {
       weightKg: 78.5,
     });
     expect(w.weightKg).toBe(78.5);
+  });
+});
+
+describe('shouldAlertDeficitVolume (4.32)', () => {
+  it('alerte si déficit ≥15% ET fort volume', () => {
+    expect(shouldAlertDeficitVolume({ avgDailyKcal: 2000, targetKcal: 2500, weeklyVolume: 9000 })).toBe(true);
+  });
+  it('pas d’alerte si déficit faible', () => {
+    expect(shouldAlertDeficitVolume({ avgDailyKcal: 2400, targetKcal: 2500, weeklyVolume: 9000 })).toBe(false);
+  });
+  it('pas d’alerte si volume faible', () => {
+    expect(shouldAlertDeficitVolume({ avgDailyKcal: 2000, targetKcal: 2500, weeklyVolume: 3000 })).toBe(false);
+  });
+  it('pas d’alerte si données manquantes', () => {
+    expect(shouldAlertDeficitVolume({ avgDailyKcal: 0, targetKcal: 2500, weeklyVolume: 9000 })).toBe(false);
   });
 });
