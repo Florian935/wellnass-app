@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 07/07/2026 — Corrige l'overflow de `food_entries.order_index` (sync PowerSync)
+
+_Branche : `fix/food-entries-order-index-overflow`_
+
+### Corrigé
+- **Le journal alimentaire ne se synchronisait pas au cloud** : `addFoodEntry` écrivait
+  `order_index: Date.now()` (epoch en **ms**, ≈ 1,78 × 10¹²), au-delà du `integer` Postgres
+  de `food_entries.order_index` (max 2,147 × 10⁹). SQLite local l'acceptait (typage lâche,
+  affichage OK) mais chaque upload PowerSync échouait — `value "…" is out of range for type
+  integer` — et **rejouait en boucle toutes les ~5 s**, bloquant toute la file d'upload.
+  Correctif : `order_index` = `MAX(order_index)+1` scopé au repas (helper `nextOrderIndex`,
+  même idiome que `workout-repository` / `program-repository`) → un petit entier séquentiel.
+  Fichier : [journal-repository.ts](apps/mobile/src/data/repositories/journal-repository.ts).
+
+### Technique / Notes
+- Trouvé en testant l'app sur device (Pixel 6a) : warning `[PowerSync] upload PUT food_entries
+  échoué` en boucle. Le connecteur upload via `op.opData` (snapshot capturé à l'écriture,
+  [connector.ts](apps/mobile/src/powersync/connector.ts)) : les entrées **déjà** créées
+  gardent l'`order_index` géant et continueront de bloquer la file tant que la base locale
+  n'est pas réinitialisée (`disconnectAndClear`) — ce fix ne concerne que les écritures futures.
+
 ## 07/07/2026 — V0.4 : repas personnalisables (4.15) + alerte croisée déficit/volume (4.32)
 
 _Branche : `feature/4.15-4.32-finitions-v04`_
