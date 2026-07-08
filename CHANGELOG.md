@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/07/2026 — Running R1 : correction du crash au lancement d'une course (permission Android)
+
+_Branche : `fix/location-receive-boot-completed` (commit précédent : `d8b919e`)_
+
+### Corrigé
+- **[apps/mobile/app.json](apps/mobile/app.json)** : ajout de
+  `android.permissions: ["android.permission.RECEIVE_BOOT_COMPLETED"]`. Sans cette permission,
+  l'app **plantait quelques secondes après le démarrage d'une course** (puis en boucle à chaque
+  relance) : à la 1ʳᵉ position GPS, `expo-location` (`LocationTaskConsumer`) demande à
+  `expo-task-manager` de programmer un **job JobScheduler persistant** pour livrer la position à
+  la tâche JS ; Android **exige** `RECEIVE_BOOT_COMPLETED` pour tout job persistant → sinon
+  `IllegalArgumentException: Requested job cannot be persisted without holding ...RECEIVE_BOOT_COMPLETED`
+  → `FATAL EXCEPTION` (process tué, `crashed too many times, killing!`).
+
+### Technique / Notes
+- **Diagnostic** : `adb logcat` sur l'APK **preview** installé sur un Pixel 6a (Android 14/15).
+  Le foreground service démarrait correctement — la piste initiale « foreground service mal
+  déclaré » était donc **fausse** ; c'est bien le job persistant de task-manager qui manquait la
+  permission (trace : `TaskManagerUtils.scheduleJob` → `LocationTaskConsumer.reportLocationsImmediately`).
+- En Expo (prebuild), `android.permissions` est **additif** avec les permissions injectées par les
+  config plugins (`expo-location` : `FOREGROUND_SERVICE`, `ACCESS_BACKGROUND_LOCATION`, etc.) — celles-ci
+  restent en place ; on ne fait qu'**ajouter** `RECEIVE_BOOT_COMPLETED`.
+- **Nécessite un nouveau build** (`npm run build:dev` / `build:preview`) pour prendre effet : la
+  permission est native, l'APK actuel ne peut pas être corrigé à chaud. Validation terrain à refaire.
+- Qualité : `typecheck` **OK** (3 workspaces), `lint` **OK** (0 erreur ; 4 warnings pré-existants
+  hors périmètre dans `charts-smoke.test.tsx`). Tests non exécutés (changement de config native
+  `app.json`, sans impact possible sur les suites ; tests mobile non encore câblés).
+- Hors périmètre volontairement laissé de côté : modif locale non commitée de `apps/mobile/eas.json`
+  (bloc `env` `EXPO_PUBLIC_*`).
+
 ## 07/07/2026 — EAS : projet sous l'organisation Expo (owner → `wellness-appl`)
 
 _Branche : `chore/expo-org-owner`_

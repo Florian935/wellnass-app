@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 07/07/2026*
+*Dernière mise à jour : 09/07/2026*
 
 ---
 
@@ -76,6 +76,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   TERRAIN** (Task 10, le cœur de R1) : course réelle écran verrouillé + arrière-plan, perte GPS,
   auto-pause, mode avion→sync (1 ligne/course), **reprise après kill**, batterie 30-45 min, RLS 2 comptes,
   i18n. Caveats à vérifier : relance process Android, seuils auto-pause, notif foreground service.
+  - [x] **Fix crash au lancement d'une course** (`fix/location-receive-boot-completed`, 09/07/2026) :
+    ajout de la permission `RECEIVE_BOOT_COMPLETED` (manquait → `expo-location`/`task-manager`
+    plantait à la 1ʳᵉ position GPS en programmant un job persistant). Diagnostic via `adb logcat`
+    sur l'APK preview (Pixel 6a). **Nécessite un nouveau build** pour valider (l'APK actuel plante).
 
 ---
 
