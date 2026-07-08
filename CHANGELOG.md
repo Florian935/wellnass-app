@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/07/2026 — chore(db) : CLI Supabase + régén des types depuis le cloud + activation cloud actée
+
+_Branche : `chore/supabase-cli-db-types-cloud` (commit précédent sur `dev` : `e70e2df`)_
+
+### Ajouté
+- **Supabase CLI** en devDependency racine (`supabase@^2.109.1`) — les scripts `db:*` la résolvent
+  via `npm run` (l'install globale npm est volontairement bloquée par Supabase). La génération de
+  types depuis le **cloud** ne nécessite ni Docker ni Supabase local.
+
+### Modifié
+- **[package.json](package.json)** : le script `db:types` bascule de `--local` (exigeait Docker +
+  une base Supabase locale) vers `--project-id nsxzflxsgovriwwvflxe` (génération depuis le **cloud**,
+  source de vérité du projet). Corrige un **footgun** : `--local` sans Docker échouait en laissant
+  la redirection `>` **vider `database.types.ts`**.
+- **[packages/shared/src/database.types.ts](packages/shared/src/database.types.ts)** régénéré depuis
+  le cloud — inclut désormais la colonne `meals` de `nutrition_profiles` (migration `20260707140000`),
+  absente depuis le 06/07. Confirme que **le cloud est à jour** : toutes les migrations appliquées,
+  publication `powersync` + sync rules déployées.
+- **[TODO.md](TODO.md)** : section « infra cloud » requalifiée en **activation faite (09/07/2026)** ;
+  correction de la mention périmée « sync rules **edition 3** » → format réel **`bucket_definitions`**
+  (les Sync Streams `auto_subscribe` ne délivraient aucune donnée au client ; revert documenté en tête
+  de [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml)). Reste = **vérif
+  device** par pilier + validation terrain running.
+
+### Technique / Notes
+- Qualité : `lint` 0 erreur (4 warnings pré-existants hors périmètre, `charts-smoke.test.tsx`),
+  `typecheck` OK (3 workspaces), `test` **325** verts.
+- `--project-id` s'authentifie via le token Supabase déjà présent dans l'environnement ; **aucun
+  secret committé** (le project-ref est public, présent dans l'URL de l'API).
+
 ## 09/07/2026 — Running R1 : correction du crash au lancement d'une course (permission Android)
 
 _Branche : `fix/location-receive-boot-completed` (commit précédent : `d8b919e`)_
