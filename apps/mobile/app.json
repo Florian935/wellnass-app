@@ -45,6 +45,12 @@
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Wellness utilise la caméra pour scanner les codes-barres des aliments."
+        }
       ]
     ],
     "experiments": {

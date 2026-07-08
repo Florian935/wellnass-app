@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/07/2026 — V0.4 US4.10 : scan code-barres nutrition (OpenFoodFacts)
+
+_Branche : `feature/4.10-scan-code-barres` (commit précédent sur `dev` : `c26abe2`)_
+
+### Ajouté
+- **Scan de code-barres (4.10)** : ajout d'un aliment au journal en scannant son EAN/UPC.
+  - **`expo-camera`** (`~57.0.1`) + config plugin dans [app.json](apps/mobile/app.json)
+    (`cameraPermission` FR). **Module natif → nécessite un nouveau dev build.**
+  - **[lib/openfoodfacts.ts](apps/mobile/src/lib/openfoodfacts.ts)** : `fetchOpenFoodFactsByBarcode`
+    (API produit v2, garde le code numérique EAN/UPC, `null` si introuvable/hors-réseau ; constantes
+    d'URL/headers/fields factorisées avec la recherche texte existante).
+  - **[food-repository.ts](apps/mobile/src/data/repositories/food-repository.ts)** :
+    `findFoodByBarcode` — lookup **local** (lecture ponctuelle) pour réutiliser un produit déjà
+    importé et **éviter un doublon** avant d'interroger le réseau.
+  - **Écran [food-scan.tsx](apps/mobile/src/app/food-scan.tsx)** (modale) : caméra + cadre de visée,
+    machine à états (scan → résolution → quantité / introuvable), gestion de la permission,
+    verrou anti double-scan. Résolution : local d'abord, puis OpenFoodFacts, puis état « introuvable »
+    (rescan / créer un aliment). Ajout au journal via `addFoodEntry`, retour au journal (`dismissAll`).
+  - Entrée **« Scanner »** dans le footer du food-picker (mode journal) + route déclarée dans
+    [_layout.tsx](apps/mobile/src/app/_layout.tsx). i18n FR/EN (`scan.*`).
+
+### Modifié
+- **[food-picker.tsx](apps/mobile/src/app/food-picker.tsx)** : le `QuantityPanel` local est
+  **extrait** en composant partagé [components/QuantityPanel.tsx](apps/mobile/src/components/QuantityPanel.tsx)
+  (avec le type `PickTarget`), réutilisé par le picker et l'écran de scan (DRY).
+
+### Technique / Notes
+- Qualité : `typecheck` OK (3 workspaces), `lint` 0 erreur (4 warnings pré-existants hors périmètre),
+  `test` **325** verts. Régénération des typed-routes Expo pour inclure la route `food-scan`.
+- Pas de test unitaire ajouté : `fetchOpenFoodFactsByBarcode` (réseau) et `findFoodByBarcode`
+  (module natif PowerSync) suivent la même convention que l'existant (`searchOpenFoodFacts`,
+  repositories) → validés device.
+- **Reste 🔴** : nouveau **dev build** (`expo-camera`) + **vérif device** (scan réel, permission
+  refusée, produit absent d'OpenFoodFacts, offline).
+
 ## 09/07/2026 — chore(db) : CLI Supabase + régén des types depuis le cloud + activation cloud actée
 
 _Branche : `chore/supabase-cli-db-types-cloud` (commit précédent sur `dev` : `e70e2df`)_

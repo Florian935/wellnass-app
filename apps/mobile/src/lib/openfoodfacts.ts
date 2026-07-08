@@ -1,9 +1,9 @@
 /**
- * Client OpenFoodFacts — recherche d'aliments industriels par texte (item 4.11).
+ * Client OpenFoodFacts — recherche d'aliments industriels par texte (item 4.11) et
+ * lookup par code-barres (item 4.10, alimenté par le scan `expo-camera`).
  * API publique, sans clé. Doc : https://world.openfoodfacts.org/data
  *
- * Le scan code-barres (4.10) est différé (nécessite expo-camera) ; ici, recherche texte
- * uniquement. Réseau requis pour cette recherche (le reste du journal marche hors-ligne).
+ * Réseau requis pour ces appels (le reste du journal marche hors-ligne).
  */
 
 export type OffFood = {
@@ -24,6 +24,9 @@ type OffProduct = {
 };
 
 const SEARCH_URL = 'https://world.openfoodfacts.org/cgi/search.pl';
+const PRODUCT_URL = 'https://world.openfoodfacts.org/api/v2/product';
+const OFF_FIELDS = 'code,product_name,product_name_fr,product_name_en,nutriments';
+const OFF_HEADERS = { 'User-Agent': 'WellnessApp/0.4 (contact via app)' };
 
 function num(v: number | string | undefined): number | null {
   if (v == null) return null;
@@ -61,13 +64,11 @@ export async function searchOpenFoodFacts(query: string, lang = 'fr'): Promise<O
     action: 'process',
     json: '1',
     page_size: '20',
-    fields: 'code,product_name,product_name_fr,product_name_en,nutriments',
+    fields: OFF_FIELDS,
   });
 
   try {
-    const res = await fetch(`${SEARCH_URL}?${params.toString()}`, {
-      headers: { 'User-Agent': 'WellnessApp/0.4 (contact via app)' },
-    });
+    const res = await fetch(`${SEARCH_URL}?${params.toString()}`, { headers: OFF_HEADERS });
     if (!res.ok) return [];
     const data = (await res.json()) as { products?: OffProduct[] };
     const products = data.products ?? [];
@@ -79,5 +80,28 @@ export async function searchOpenFoodFacts(query: string, lang = 'fr'): Promise<O
     return mapped;
   } catch {
     return [];
+  }
+}
+
+/**
+ * Récupère un produit OpenFoodFacts par son code-barres (item 4.10, scan). Renvoie
+ * l'aliment normalisé, `null` si introuvable / sans calories exploitables, ou en cas
+ * d'erreur réseau. Le code-barres scanné n'est retenu que s'il est numérique (EAN/UPC).
+ */
+export async function fetchOpenFoodFactsByBarcode(barcode: string, lang = 'fr'): Promise<OffFood | null> {
+  const code = barcode.trim();
+  if (!/^\d{6,14}$/.test(code)) return null;
+
+  const params = new URLSearchParams({ fields: OFF_FIELDS });
+  try {
+    const res = await fetch(`${PRODUCT_URL}/${code}.json?${params.toString()}`, { headers: OFF_HEADERS });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { status?: number; product?: OffProduct };
+    if (data.status !== 1 || !data.product) return null;
+    const mapped = mapProduct(data.product, lang);
+    // On garantit que le code-barres scanné est bien porté par le résultat.
+    return mapped ? { ...mapped, barcode: mapped.barcode ?? code } : null;
+  } catch {
+    return null;
   }
 }

@@ -208,6 +208,17 @@
     "remove": "Remove",
     "done": "Save"
   },
+  "scan": {
+    "title": "Scan a barcode",
+    "hint": "Point at the product's barcode.",
+    "resolving": "Looking up product…",
+    "notFound": "Product not found. Try again or create a food.",
+    "rescan": "Scan again",
+    "permission": {
+      "message": "Allow camera access to scan barcodes.",
+      "grant": "Allow camera"
+    }
+  },
   "quickList": {
     "title": "List entry",
     "hint": "Write your meal in one sentence; the app finds each food. Nothing is added until you confirm.",

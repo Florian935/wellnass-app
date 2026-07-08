@@ -208,6 +208,17 @@
     "remove": "Supprimer",
     "done": "Enregistrer"
   },
+  "scan": {
+    "title": "Scanner un code-barres",
+    "hint": "Vise le code-barres du produit.",
+    "resolving": "Recherche du produit…",
+    "notFound": "Produit introuvable. Réessaie ou crée un aliment.",
+    "rescan": "Scanner à nouveau",
+    "permission": {
+      "message": "Autorise l'accès à la caméra pour scanner les codes-barres.",
+      "grant": "Autoriser la caméra"
+    }
+  },
   "quickList": {
     "title": "Saisie par liste",
     "hint": "Écris ton repas en une phrase, l'app retrouve chaque aliment. Rien n'est ajouté avant ta confirmation.",
