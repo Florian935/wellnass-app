@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   UNIT_SYSTEMS,
+  CM_PER_IN,
+  cmToFtIn,
   displayDistance,
   displayWeight,
+  ftInToCm,
   kgToLb,
   kmToMi,
   lbToKg,
@@ -69,5 +72,25 @@ describe('displayDistance', () => {
 
   it('impérial : convertit en mi', () => {
     expect(displayDistance(10, 'imperial')).toEqual({ value: 6.21, unit: 'mi' });
+  });
+});
+
+describe('taille cm <-> ft/in', () => {
+  it('cmToFtIn arrondit au pouce le plus proche', () => {
+    expect(cmToFtIn(178)).toEqual({ feet: 5, inches: 10 });
+    expect(cmToFtIn(152.4)).toEqual({ feet: 5, inches: 0 });
+  });
+  it('gère le report à 12 pouces (retenue sur le pied)', () => {
+    expect(cmToFtIn(182)).toEqual({ feet: 6, inches: 0 }); // 71.65 -> 72 in -> 6 ft 0 in
+  });
+  it("ftInToCm est l'inverse (aux arrondis près)", () => {
+    expect(ftInToCm(5, 10)).toBeCloseTo(177.8, 1);
+    expect(ftInToCm(6, 0)).toBeCloseTo(182.88, 1);
+  });
+  it('round-trip cm -> ft/in -> cm tolère l\'arrondi au pouce (<= ~1.3 cm)', () => {
+    for (const cm of [150, 165, 172, 178, 190]) {
+      const { feet, inches } = cmToFtIn(cm);
+      expect(Math.abs(ftInToCm(feet, inches) - cm)).toBeLessThanOrEqual(1.3);
+    }
   });
 });
