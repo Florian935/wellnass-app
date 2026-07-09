@@ -41,10 +41,8 @@
     "set": "Set",
     "reps": "Reps",
     "weight": "Load",
-    "set": {
-      "weightPlaceholderMetric": "e.g. 60",
-      "weightPlaceholderImperial": "e.g. 130"
-    },
+    "weightPlaceholderMetric": "e.g. 60",
+    "weightPlaceholderImperial": "e.g. 130",
     "addSet": "+ Set",
     "addExercise": "+ Add exercise",
     "finish": "Finish",

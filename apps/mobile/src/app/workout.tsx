@@ -158,7 +158,7 @@ export default function WorkoutScreen() {
                     label=""
                     value={units.weightInputValue(set.weightKg)}
                     onChangeText={(v) => void updateSet(set.id, { weightKg: units.parseWeightToKg(v) })}
-                    placeholder={t(units.system === 'imperial' ? 'workout.set.weightPlaceholderImperial' : 'workout.set.weightPlaceholderMetric')}
+                    placeholder={t(units.system === 'imperial' ? 'workout.weightPlaceholderImperial' : 'workout.weightPlaceholderMetric')}
                     keyboardType="decimal-pad"
                   />
                 </View>

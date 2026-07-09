@@ -41,10 +41,8 @@
     "set": "Série",
     "reps": "Reps",
     "weight": "Charge",
-    "set": {
-      "weightPlaceholderMetric": "Ex. 60",
-      "weightPlaceholderImperial": "Ex. 130"
-    },
+    "weightPlaceholderMetric": "Ex. 60",
+    "weightPlaceholderImperial": "Ex. 130",
     "addSet": "+ Série",
     "addExercise": "+ Ajouter un exercice",
     "finish": "Terminer",
