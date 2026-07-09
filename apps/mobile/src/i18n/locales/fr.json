@@ -40,7 +40,11 @@
     "empty": "Ajoute un premier exercice pour commencer.",
     "set": "Série",
     "reps": "Reps",
-    "weight": "Kg",
+    "weight": "Charge",
+    "set": {
+      "weightPlaceholderMetric": "Ex. 60",
+      "weightPlaceholderImperial": "Ex. 130"
+    },
     "addSet": "+ Série",
     "addExercise": "+ Ajouter un exercice",
     "finish": "Terminer",

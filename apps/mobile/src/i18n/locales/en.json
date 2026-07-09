@@ -40,7 +40,11 @@
     "empty": "Add your first exercise to get started.",
     "set": "Set",
     "reps": "Reps",
-    "weight": "Kg",
+    "weight": "Load",
+    "set": {
+      "weightPlaceholderMetric": "e.g. 60",
+      "weightPlaceholderImperial": "e.g. 130"
+    },
     "addSet": "+ Set",
     "addExercise": "+ Add exercise",
     "finish": "Finish",

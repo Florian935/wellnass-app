@@ -18,6 +18,7 @@ import {
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 const REST_SECONDS = 90;
 
@@ -42,6 +43,7 @@ function useElapsed(startedAt: string | undefined): string {
 export default function WorkoutScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
   const router = useRouter();
 
   const { workout: active } = useActiveWorkout();
@@ -136,7 +138,7 @@ export default function WorkoutScreen() {
             <View style={styles.setsHeader}>
               <Text style={[styles.colSet, styles.muted, { color: colors.textMuted }]}>{t('workout.set')}</Text>
               <Text style={[styles.colInput, styles.muted, { color: colors.textMuted }]}>{t('workout.reps')}</Text>
-              <Text style={[styles.colInput, styles.muted, { color: colors.textMuted }]}>{t('workout.weight')}</Text>
+              <Text style={[styles.colInput, styles.muted, { color: colors.textMuted }]}>{`${t('workout.weight')} (${units.weightSymbol})`}</Text>
               <View style={styles.colActions} />
             </View>
 
@@ -154,8 +156,9 @@ export default function WorkoutScreen() {
                 <View style={styles.colInput}>
                   <TextField
                     label=""
-                    value={set.weightKg?.toString() ?? ''}
-                    onChangeText={(v) => void updateSet(set.id, { weightKg: toNum(v) })}
+                    value={units.weightInputValue(set.weightKg)}
+                    onChangeText={(v) => void updateSet(set.id, { weightKg: units.parseWeightToKg(v) })}
+                    placeholder={t(units.system === 'imperial' ? 'workout.set.weightPlaceholderImperial' : 'workout.set.weightPlaceholderMetric')}
                     keyboardType="decimal-pad"
                   />
                 </View>
