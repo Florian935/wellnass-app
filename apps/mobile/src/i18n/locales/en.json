@@ -493,8 +493,9 @@
         "setsPlaceholder": "e.g. 4",
         "reps": "Reps",
         "repsPlaceholder": "e.g. 8-12",
-        "weight": "Weight (kg)",
-        "weightPlaceholder": "e.g. 60",
+        "weight": "Load",
+        "weightPlaceholderMetric": "e.g. 60",
+        "weightPlaceholderImperial": "e.g. 130",
         "rest": "Rest (s)",
         "restPlaceholder": "e.g. 90"
       },
@@ -519,7 +520,6 @@
     "filter90d": "90 days",
     "row": {
       "durationMin": "{{count}} min",
-      "volumeKg": "{{volume}} kg",
       "rpe": "RPE {{value}}"
     },
     "detail": {

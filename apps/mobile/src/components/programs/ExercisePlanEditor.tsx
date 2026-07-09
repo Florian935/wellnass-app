@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -9,6 +9,7 @@ import {
 } from '@/data/repositories/program-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 type ExercisePlanEditorProps = {
   plan: PlanItem;
@@ -30,14 +31,6 @@ function toNonNegativeInt(value: string): number | null {
   return Number.isFinite(n) && n >= 0 && Number.isInteger(n) ? n : null;
 }
 
-/** Convertit une saisie en nombre positif, ou null si vide/invalide. */
-function toPositiveNumber(value: string): number | null {
-  const trimmed = value.trim().replace(',', '.');
-  if (trimmed === '') return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) && n > 0 ? n : null;
-}
-
 /** Affiche une valeur numérique nullable en chaîne pour un champ contrôlé. */
 function numToStr(value: number | null): string {
   return value === null ? '' : String(value);
@@ -54,10 +47,13 @@ function numToStr(value: number | null): string {
 export function ExercisePlanEditor({ plan }: ExercisePlanEditorProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const [sets, setSets] = useState(numToStr(plan.targetSets));
   const [reps, setReps] = useState(plan.targetReps ?? '');
-  const [weight, setWeight] = useState(numToStr(plan.targetWeightKg));
+  const weight0 = units.weightInputValue(plan.targetWeightKg);
+  const [weight, setWeight] = useState(weight0);
+  const initialWeightRef = useRef(weight0);
   const [rest, setRest] = useState(numToStr(plan.restSeconds));
 
   const commitSets = () => {
@@ -68,7 +64,11 @@ export function ExercisePlanEditor({ plan }: ExercisePlanEditorProps) {
     void updateExercisePlan(plan.id, { targetReps: trimmed === '' ? null : trimmed });
   };
   const commitWeight = () => {
-    void updateExercisePlan(plan.id, { targetWeightKg: toPositiveNumber(weight) });
+    const next =
+      weight === initialWeightRef.current
+        ? (plan.targetWeightKg ?? null)
+        : units.parseWeightToKg(weight);
+    void updateExercisePlan(plan.id, { targetWeightKg: next });
   };
   const commitRest = () => {
     void updateExercisePlan(plan.id, { restSeconds: toNonNegativeInt(rest) });
@@ -135,7 +135,7 @@ export function ExercisePlanEditor({ plan }: ExercisePlanEditorProps) {
       <View style={styles.targetsRow}>
         <View style={styles.targetField}>
           <Text style={[styles.targetLabel, { color: colors.textMuted }]}>
-            {t('programs.edit.targets.weight')}
+            {`${t('programs.edit.targets.weight')} (${units.weightSymbol})`}
           </Text>
           <TextInput
             style={fieldStyle}
@@ -143,7 +143,7 @@ export function ExercisePlanEditor({ plan }: ExercisePlanEditorProps) {
             onChangeText={setWeight}
             onBlur={commitWeight}
             keyboardType="decimal-pad"
-            placeholder={t('programs.edit.targets.weightPlaceholder')}
+            placeholder={t(units.system === 'imperial' ? 'programs.edit.targets.weightPlaceholderImperial' : 'programs.edit.targets.weightPlaceholderMetric')}
             placeholderTextColor={colors.textMuted}
           />
         </View>
