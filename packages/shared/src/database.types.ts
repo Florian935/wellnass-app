@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       body_weight_entries: {
@@ -518,6 +543,7 @@ export type Database = {
           manual_carbs_g: number | null
           manual_fat_g: number | null
           manual_protein_g: number | null
+          meals: Json | null
           objective: string | null
           restrictions: Json
           training_day_bonus: number
@@ -534,6 +560,7 @@ export type Database = {
           manual_carbs_g?: number | null
           manual_fat_g?: number | null
           manual_protein_g?: number | null
+          meals?: Json | null
           objective?: string | null
           restrictions?: Json
           training_day_bonus?: number
@@ -550,6 +577,7 @@ export type Database = {
           manual_carbs_g?: number | null
           manual_fat_g?: number | null
           manual_protein_g?: number | null
+          meals?: Json | null
           objective?: string | null
           restrictions?: Json
           training_day_bonus?: number
@@ -1266,6 +1294,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

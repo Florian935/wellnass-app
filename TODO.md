@@ -45,37 +45,34 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ---
 
-## 🔴 Bloquant — infra cloud (accès **Damien**)
+## 🟠 Activation cloud — ✅ FAITE (09/07/2026), reste la vérif device
 
-> **US1 mergée dans `dev` (`248e2b2`) mais NON activée** : l'app buildée depuis `dev` marche en
-> local/offline, mais **la synchro PowerSync échoue** tant que le cloud n'a pas le schéma. À régler
-> en priorité — nécessite les accès Supabase/PowerSync (Damien).
+> **Cloud activé (09/07/2026)** : toutes les migrations sont appliquées sur Supabase, la publication
+> `powersync` est en place et les **sync rules sont déployées** sur PowerSync. ⚠️ **Format réel =
+> `bucket_definitions`** (et **non** « edition 3 » comme l'écrivaient les anciennes entrées TODO /
+> CHANGELOG) : les Sync Streams `auto_subscribe` ne délivraient aucune donnée au client → revert
+> documenté en tête de [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
+> Il **reste la vérif device** (accès Damien + téléphone) pour chaque pilier + la validation terrain running.
 
-- [ ] **Appliquer les migrations Supabase cloud** — `supabase db push` (fichiers
-  `20260706120000_socle_muscu_tables.sql` + `20260706120001_socle_muscu_rls.sql`) **+ vérifier /
-  créer la publication `powersync`** (`create publication powersync;` si absente).
-- [ ] **Déployer les sync rules** sur le dashboard PowerSync depuis
-  [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
-- [ ] **`npm run db:types`** une fois les tables appliquées (régénère `packages/shared/database.types.ts`).
-- [ ] **Appliquer le seed** des 16 exercices (`supabase db reset` local, ou insert cloud) pour
-  peupler la bibliothèque.
+- [x] **Migrations Supabase cloud appliquées** — les 14 migrations (socle + muscu US1/US2/US3, nutrition,
+  food, recettes/poids, running `runs`, `nutrition_meals`) sont sur le cloud ; publication `powersync`
+  en place (gérée via `alter publication … add table` dans les migrations).
+- [x] **Sync rules déployées** — format `bucket_definitions`, 2 buckets (`user_data` / `shared_content`),
+  toutes les tables — depuis [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
+- [x] **`database.types.ts` régénéré depuis le cloud** (09/07/2026, `supabase gen types --project-id …`) —
+  inclut la colonne `meals` ; typecheck vert sur les 3 workspaces.
+- [x] **Seed** (16 exercices bilingues + 50 aliments) appliqué au cloud (chore db, 06/07/2026).
 - [ ] **Vérif device US1 (Task 22)** : écriture/lecture mode avion, sync montante, sync descendante,
   **RLS sur 2 appareils**, i18n FR/EN.
 - [ ] **Relecture a posteriori par Damien** — le merge US1 a court-circuité la relecture à deux
   (zones sync/sécurité) sur décision explicite de Florian ; à repasser.
-- [ ] **US2 (une fois intégrée)** : appliquer les migrations `20260706130000_programmes_tables.sql`
-  (+ FK workouts) et `20260706130001_programmes_rls.sql` sur le cloud, **redéployer les sync rules**
-  (elles incluent désormais les 4 tables programmes), rejouer le seed (programme éditorial), **vérif
-  device US2** (créer/dupliquer/activer un programme, démarrer une séance depuis un programme).
-- [ ] **US3** : appliquer la migration `20260706140002_personal_records.sql` sur le cloud,
-  **redéployer les sync rules** (incluent désormais `personal_records`), **nouveau dev build**
-  (`npm run build:dev` — `react-native-svg` natif), **vérif device US3** (record détecté à la
-  clôture + mis en avant au résumé, historique liste/détail, courbes qui s'affichent, volume/groupe).
-- [ ] **Running R1** : appliquer `20260707120000_running_runs.sql` sur le cloud, **redéployer les sync
-  rules** (stream `runs`), **nouveau dev build** (`expo-location`/`task-manager` natifs), **VALIDATION
-  TERRAIN** (Task 10, le cœur de R1) : course réelle écran verrouillé + arrière-plan, perte GPS,
-  auto-pause, mode avion→sync (1 ligne/course), **reprise après kill**, batterie 30-45 min, RLS 2 comptes,
-  i18n. Caveats à vérifier : relance process Android, seuils auto-pause, notif foreground service.
+- [ ] **Vérif device US2** : créer/dupliquer/activer un programme, démarrer une séance depuis un programme.
+- [ ] **Vérif device US3** — **nouveau dev build requis** (`npm run build:dev`, `react-native-svg` natif) :
+  record détecté à la clôture + mis en avant au résumé, historique liste/détail, courbes qui s'affichent, volume/groupe.
+- [ ] **Running R1** — **nouveau dev build requis** (`expo-location`/`task-manager` natifs + fix permission
+  `RECEIVE_BOOT_COMPLETED`), **VALIDATION TERRAIN** (Task 10, le cœur de R1) : course réelle écran verrouillé
+  + arrière-plan, perte GPS, auto-pause, mode avion→sync (1 ligne/course), **reprise après kill**, batterie
+  30-45 min, RLS 2 comptes, i18n. Caveats à vérifier : relance process Android, seuils auto-pause, notif foreground service.
   - [x] **Fix crash au lancement d'une course** (`fix/location-receive-boot-completed`, 09/07/2026) :
     ajout de la permission `RECEIVE_BOOT_COMPLETED` (manquait → `expo-location`/`task-manager`
     plantait à la 1ʳᵉ position GPS en programmant un job persistant). Diagnostic via `adb logcat`
@@ -97,7 +94,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **US2 — Programmes muscu** — **mergée dans `dev`** (`cdf0032`, 06/07/2026) : schémas shared, migrations+RLS+seed+sync rules, `program-repository`, écrans biblio/création/détail/activation + démarrer depuis programme (3.1-3.6, 3.12, 3.24). Revues repo + finale GO. Activation cloud + device = section 🔴. (Planning/progression/notifs → US2b.)
 - [x] **US3 — Historique & records** — **mergée dans `dev`** (06/07/2026) : logique records shared (Epley, +39 tests), table `personal_records`+RLS+sync rules, `records-repository` (détection à la clôture), graphes (`react-native-svg`+gifted-charts), écrans historique + progression + records au résumé (3.22/3.38/3.21/3.39/3.40). Revues repo + finale GO. Activation cloud + **dev build svg** + device = section 🔴. (Notif record 3.42 → V0.8.)
 - [~] **V0.4 — US4.1 Profil nutritionnel & TDEE** (`feature/4.1-profil-nutritionnel-repo`, 1.10/4.1-4.7) — objectif nutritionnel, facteur d'activité (5 niveaux), TDEE Mifflin-St Jeor, objectif calorique (auto + surcharge manuelle), macros par défaut/manuelles (%↔g), restrictions/allergènes. Calculs purs + `nutritionProfileRowSchema` dans `@wellness/shared` (+28 tests), **table `nutrition_profiles`** (schéma PowerSync + migrations 140000/140001 + RLS + sync rules), `nutrition-repository` (`useQuery`/upsert), écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.1-profil-nutritionnel.md](docs/specs/functional/us/4.1-profil-nutritionnel.md). **Reste** : activation cloud (migrations+sync rules) + vérif device (section 🔴). (4.7 câblage planning muscu = ultérieur.) _(mergée en parallèle par Damien)_
-- [~] **V0.4 — US4.8 Base d'aliments & journal** (`feature/4.8-aliments-journal`, 4.8/4.9/4.11-4.14/4.16/4.17/4.19-4.23) — 50 aliments bilingues (seed), recherche + OpenFoodFacts + favoris + aliment perso, journal 4 repas (nav jours, totaux + barres macros temps réel, quick add, portions). `food.ts` (+16 tests), 4 tables PowerSync + migrations `150000/150001` + RLS + sync rules + seed, `food-repository`/`journal-repository`/`lib/openfoodfacts`, écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.8-aliments-journal.md](docs/specs/functional/us/4.8-aliments-journal.md). **Reste** : activation cloud (migrations+seed+sync rules) + vérif device. **Différé** : scan (4.10), renommer/ajouter repas (4.15), copier (4.18), recettes (4.24-4.26), poids & stats (1.13/1.14/4.30-4.32), notif (2.5).
+- [~] **V0.4 — US4.8 Base d'aliments & journal** (`feature/4.8-aliments-journal`, 4.8/4.9/4.11-4.14/4.16/4.17/4.19-4.23) — 50 aliments bilingues (seed), recherche + OpenFoodFacts + favoris + aliment perso, journal 4 repas (nav jours, totaux + barres macros temps réel, quick add, portions). `food.ts` (+16 tests), 4 tables PowerSync + migrations `150000/150001` + RLS + sync rules + seed, `food-repository`/`journal-repository`/`lib/openfoodfacts`, écrans + FR/EN. typecheck/lint/test verts. Spec : [us/4.8-aliments-journal.md](docs/specs/functional/us/4.8-aliments-journal.md). **Reste** : activation cloud (migrations+seed+sync rules) + vérif device. **Différé** : renommer/ajouter repas (4.15), copier (4.18), recettes (4.24-4.26), poids & stats (1.13/1.14/4.30-4.32), notif (2.5).
+- [x] **V0.4 — US4.10 Scan code-barres** (`feature/4.10-scan-code-barres`) — scan EAN/UPC via `expo-camera` → recherche d'abord le code-barres **en local** (évite un doublon d'import), sinon **OpenFoodFacts par code-barres** → panneau quantité (composant `QuantityPanel` extrait, partagé avec le picker) → ajout au journal. Gère la permission caméra + l'état « introuvable » (rescan / créer un aliment), FR/EN. `fetchOpenFoodFactsByBarcode` (`lib/openfoodfacts`) + `findFoodByBarcode` (`food-repository`) + écran `food-scan`. typecheck/lint/test verts. **Reste** : nouveau **dev build** (`expo-camera` natif) + vérif device.
 - [~] **V0.4 — US4.24 Recettes, repas types, poids & stats** (`feature/4.24-recettes-poids-stats`, 4.24-4.26/1.13/4.30/4.31) — recettes (ingrédients + portions + valeurs par portion), repas types (enregistrer/réappliquer), poids corporel (pesée/jour + tendance + courbe 4 sem/3 mois/1 an), apports moyens 7/30 j + courbe. `recipe.ts`/`bodyweight.ts` (+tests), 5 tables PowerSync + migrations `130000/130001` + RLS + sync rules, repos + écrans (`recipe-edit`, `nutrition-stats`, food-picker étendu). typecheck/lint/test verts. Spec : [us/4.24-recettes-poids-stats.md](docs/specs/functional/us/4.24-recettes-poids-stats.md). **Reste** : activation cloud + vérif device. **Différé** : 4.32 stat croisée, rappels (natif), planning (V1.1).
 - [x] **Session test device + correctifs (07/07/2026)** — app lancée sur **Pixel 6a** (USB) et passe de
   tests. Correctifs mergés dans `dev` : **résolution `@wellness/shared` sous Windows/Metro** (junction npm →

@@ -20,6 +20,9 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
-    "db:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts"
+    "db:types": "supabase gen types typescript --project-id nsxzflxsgovriwwvflxe > packages/shared/src/database.types.ts"
+  },
+  "devDependencies": {
+    "supabase": "^2.109.1"
   }
 }

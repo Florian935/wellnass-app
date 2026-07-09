@@ -194,6 +194,17 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="food-scan"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('scan.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="food-custom"
           options={{
             presentation: 'modal',

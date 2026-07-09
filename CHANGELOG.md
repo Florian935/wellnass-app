@@ -33,6 +33,71 @@ _Branche : `feature/1.15-unites-metrique-imperial` (commit précédent : `c2c0e8
 - **Workflow** : spec ✔ → plan ✔ (revu par un plan-document-reviewer : *Approved*) → maquette
   **écartée** (option 2, changement d'UI mineur, validé par Florian le 09/07/2026) → **code à suivre**.
 
+## 09/07/2026 — V0.4 US4.10 : scan code-barres nutrition (OpenFoodFacts)
+
+_Branche : `feature/4.10-scan-code-barres` (commit précédent sur `dev` : `c26abe2`)_
+
+### Ajouté
+- **Scan de code-barres (4.10)** : ajout d'un aliment au journal en scannant son EAN/UPC.
+  - **`expo-camera`** (`~57.0.1`) + config plugin dans [app.json](apps/mobile/app.json)
+    (`cameraPermission` FR). **Module natif → nécessite un nouveau dev build.**
+  - **[lib/openfoodfacts.ts](apps/mobile/src/lib/openfoodfacts.ts)** : `fetchOpenFoodFactsByBarcode`
+    (API produit v2, garde le code numérique EAN/UPC, `null` si introuvable/hors-réseau ; constantes
+    d'URL/headers/fields factorisées avec la recherche texte existante).
+  - **[food-repository.ts](apps/mobile/src/data/repositories/food-repository.ts)** :
+    `findFoodByBarcode` — lookup **local** (lecture ponctuelle) pour réutiliser un produit déjà
+    importé et **éviter un doublon** avant d'interroger le réseau.
+  - **Écran [food-scan.tsx](apps/mobile/src/app/food-scan.tsx)** (modale) : caméra + cadre de visée,
+    machine à états (scan → résolution → quantité / introuvable), gestion de la permission,
+    verrou anti double-scan. Résolution : local d'abord, puis OpenFoodFacts, puis état « introuvable »
+    (rescan / créer un aliment). Ajout au journal via `addFoodEntry`, retour au journal (`dismissAll`).
+  - Entrée **« Scanner »** dans le footer du food-picker (mode journal) + route déclarée dans
+    [_layout.tsx](apps/mobile/src/app/_layout.tsx). i18n FR/EN (`scan.*`).
+
+### Modifié
+- **[food-picker.tsx](apps/mobile/src/app/food-picker.tsx)** : le `QuantityPanel` local est
+  **extrait** en composant partagé [components/QuantityPanel.tsx](apps/mobile/src/components/QuantityPanel.tsx)
+  (avec le type `PickTarget`), réutilisé par le picker et l'écran de scan (DRY).
+
+### Technique / Notes
+- Qualité : `typecheck` OK (3 workspaces), `lint` 0 erreur (4 warnings pré-existants hors périmètre),
+  `test` **325** verts. Régénération des typed-routes Expo pour inclure la route `food-scan`.
+- Pas de test unitaire ajouté : `fetchOpenFoodFactsByBarcode` (réseau) et `findFoodByBarcode`
+  (module natif PowerSync) suivent la même convention que l'existant (`searchOpenFoodFacts`,
+  repositories) → validés device.
+- **Reste 🔴** : nouveau **dev build** (`expo-camera`) + **vérif device** (scan réel, permission
+  refusée, produit absent d'OpenFoodFacts, offline).
+
+## 09/07/2026 — chore(db) : CLI Supabase + régén des types depuis le cloud + activation cloud actée
+
+_Branche : `chore/supabase-cli-db-types-cloud` (commit précédent sur `dev` : `e70e2df`)_
+
+### Ajouté
+- **Supabase CLI** en devDependency racine (`supabase@^2.109.1`) — les scripts `db:*` la résolvent
+  via `npm run` (l'install globale npm est volontairement bloquée par Supabase). La génération de
+  types depuis le **cloud** ne nécessite ni Docker ni Supabase local.
+
+### Modifié
+- **[package.json](package.json)** : le script `db:types` bascule de `--local` (exigeait Docker +
+  une base Supabase locale) vers `--project-id nsxzflxsgovriwwvflxe` (génération depuis le **cloud**,
+  source de vérité du projet). Corrige un **footgun** : `--local` sans Docker échouait en laissant
+  la redirection `>` **vider `database.types.ts`**.
+- **[packages/shared/src/database.types.ts](packages/shared/src/database.types.ts)** régénéré depuis
+  le cloud — inclut désormais la colonne `meals` de `nutrition_profiles` (migration `20260707140000`),
+  absente depuis le 06/07. Confirme que **le cloud est à jour** : toutes les migrations appliquées,
+  publication `powersync` + sync rules déployées.
+- **[TODO.md](TODO.md)** : section « infra cloud » requalifiée en **activation faite (09/07/2026)** ;
+  correction de la mention périmée « sync rules **edition 3** » → format réel **`bucket_definitions`**
+  (les Sync Streams `auto_subscribe` ne délivraient aucune donnée au client ; revert documenté en tête
+  de [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml)). Reste = **vérif
+  device** par pilier + validation terrain running.
+
+### Technique / Notes
+- Qualité : `lint` 0 erreur (4 warnings pré-existants hors périmètre, `charts-smoke.test.tsx`),
+  `typecheck` OK (3 workspaces), `test` **325** verts.
+- `--project-id` s'authentifie via le token Supabase déjà présent dans l'environnement ; **aucun
+  secret committé** (le project-ref est public, présent dans l'URL de l'API).
+
 ## 09/07/2026 — Running R1 : correction du crash au lancement d'une course (permission Android)
 
 _Branche : `fix/location-receive-boot-completed` (commit précédent : `d8b919e`)_

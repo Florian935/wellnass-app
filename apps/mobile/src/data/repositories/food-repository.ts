@@ -95,6 +95,21 @@ export function useFoods(search?: string): { foods: FoodListItem[]; isLoading: b
   return { foods: data.map(rowToItem), isLoading };
 }
 
+/**
+ * Cherche un aliment déjà présent en base (bibliothèque, perso ou OFF importé) par son
+ * code-barres — lecture ponctuelle (non réactive). Évite de réimporter un produit déjà
+ * scanné. Retourne l'aliment résolu dans `lang` (fallback fr), ou `null`.
+ */
+export async function findFoodByBarcode(barcode: string, lang: 'fr' | 'en'): Promise<FoodListItem | null> {
+  const code = barcode.trim();
+  if (!code) return null;
+  const row = await powerSync.getOptional<FoodListDbRow>(
+    `${SELECT_FOODS} AND f.barcode = ? LIMIT 1`,
+    [lang, code],
+  );
+  return row ? rowToItem(row) : null;
+}
+
 /** Aliments favoris de l'utilisateur courant. */
 export function useFavoriteFoods(): { foods: FoodListItem[]; isLoading: boolean } {
   const { i18n } = useTranslation();

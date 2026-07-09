@@ -7,9 +7,9 @@ import {
   perServing,
   scaleNutrition,
   scalePortions,
-  type FoodPortion,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import {
@@ -25,16 +25,6 @@ import { applyTemplate, useMealTemplates } from '@/data/repositories/meal-templa
 import { searchOpenFoodFacts, type OffFood } from '@/lib/openfoodfacts';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-
-type PickTarget = {
-  id: string;
-  name: string;
-  kcalPer100g: number;
-  proteinPer100g: number | null;
-  carbsPer100g: number | null;
-  fatPer100g: number | null;
-  portions: FoodPortion[];
-};
 
 export default function FoodPickerScreen() {
   const { t, i18n } = useTranslation();
@@ -210,6 +200,11 @@ export default function FoodPickerScreen() {
         {mode === 'journal' ? (
           <>
             <Button
+              label={t('scan.title')}
+              variant="ghost"
+              onPress={() => router.push({ pathname: '/food-scan', params: { date, meal } })}
+            />
+            <Button
               label={t('quickList.title')}
               variant="ghost"
               onPress={() => router.push({ pathname: '/meal-quick-entry', params: { date, meal } })}
@@ -236,36 +231,6 @@ function FoodRow({ item, onPick }: { item: FoodListItem; onPick: () => void }) {
         <Ionicons name={item.isFavorite ? 'star' : 'star-outline'} size={22} color={item.isFavorite ? colors.accent : colors.textMuted} />
       </Pressable>
     </Pressable>
-  );
-}
-
-function QuantityPanel({ target, onCancel, onConfirm }: { target: PickTarget; onCancel: () => void; onConfirm: (grams: number) => void | Promise<void> }) {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-  const lang = i18n.language === 'en' ? 'en' : 'fr';
-  const [grams, setGrams] = useState(String(target.portions[0]?.grams ?? 100));
-  const g = Number(grams.replace(',', '.')) || 0;
-  const kcal = scaleNutrition(target, g).kcal;
-
-  return (
-    <View style={[styles.screen, styles.panel, { backgroundColor: colors.background }]}>
-      <Text style={[styles.panelTitle, { color: colors.text }]}>{target.name}</Text>
-      <Text style={[styles.panelKcal, { color: colors.accent }]}>{kcal} {t('nutrition.kcal')}</Text>
-      {target.portions.length > 0 ? (
-        <View style={styles.portions}>
-          {target.portions.map((p, i) => (
-            <Pressable key={i} onPress={() => setGrams(String(p.grams))} style={[styles.portion, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.portionLabel, { color: colors.text }]}>{lang === 'en' ? p.labelEn : p.labelFr} ({p.grams} g)</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-      <TextField label={t('journal.grams')} value={grams} onChangeText={setGrams} keyboardType="decimal-pad" />
-      <View style={styles.panelActions}>
-        <Button label={t('common.cancel')} variant="ghost" onPress={onCancel} />
-        <Button label={t('journal.add')} onPress={() => void onConfirm(Math.round(g))} disabled={g <= 0} />
-      </View>
-    </View>
   );
 }
 
@@ -332,9 +297,6 @@ const styles = StyleSheet.create({
   panel: { gap: 16 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
-  portions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  portion: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
-  portionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   panelActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   macroRow: { flexDirection: 'row', gap: 10 },
   macroField: { flex: 1 },
