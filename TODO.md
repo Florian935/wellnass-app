@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 09/07/2026 (spec + plan US 1.15 unités validés → passage au code)*
+*Dernière mise à jour : 09/07/2026 (US 1.15 unités : code terminé et revu → reste recette device)*
 
 ---
 
@@ -108,11 +108,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [~] **US 1.15 transverse — Affichage & saisie des unités (métrique/impérial)** : câbler
   `useSettings().units` sur **tout l'affichage ET toute la saisie** des grandeurs (poids charges +
   corporel, distance, allure, taille), stockage toujours SI. Dette pré-existante (`displayWeight`
-  existait mais n'était lu nulle part → tout s'affichait en kg/km).
+  existait mais n'était lu nulle part → tout s'affichait en kg/km). **Code terminé, reste recette device.**
   - [x] **Spec** ([us/1.15-unites-metrique-imperial.md](docs/specs/functional/us/1.15-unites-metrique-imperial.md)) — commit `c2c0e84`, revue *Approved*.
   - [x] **Plan** ([1.15-unites-metrique-imperial.md](docs/plans/1.15-unites-metrique-imperial.md)) — 14 tâches TDD, revue *Approved*.
   - [x] **Design/maquette** — écartée (option 2 : changement d'UI mineur), validé Florian 09/07/2026.
-  - [ ] **Code** — Phase A shared (ft/in, allure, parseurs) → Phase B hook `useUnits()` + smoke test → Phase C+D i18n + 12 écrans (1 commit/écran) → Phase E garde-fou grep + recette device.
+  - [x] **Code** — 16 commits (`0d1df62`→`379a7cc`), subagent-driven : shared (ft/in, allure, parseurs) + hook `useUnits()` + smoke test + branchement de tous les écrans/composants (affichage + saisie) + i18n FR/EN (miroir) + anti-dérive. Garde-fou grep vert, typecheck/lint/test verts (343 shared + 23 mobile), parité FR/EN 495/495. Revues par phase + revue finale (1 bloquant corrigé : collision clé `workout.set`).
+  - [ ] **Recette device (Task 14 DoD)** — **nécessite un build** : bascule metric↔imperial réactive sur toutes les surfaces §1, en FR **et** EN ; round-trip saisie ; taille en ft/in ; anti-dérive (rouvrir/enregistrer sans modifier ne change pas le SI stocké). _À vérifier aussi : rebord UX du champ charge en impérial (ré-affichage à la frappe)._
   - _US 100 % client : validable sans activation cloud (pas de checkpoint 🔴)._
 
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
