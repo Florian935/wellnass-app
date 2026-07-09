@@ -13,6 +13,7 @@ import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 /** Horloge locale : secondes écoulées depuis `startedAt`, rafraîchie chaque seconde. */
 function useElapsedSeconds(startedAt: string | undefined): number {
@@ -36,15 +37,6 @@ function formatDuration(totalSeconds: number): string {
   return `${mm}:${ss}`;
 }
 
-/** Formate une allure en s/km → `M:SS` (ou `—` si nulle). */
-function formatPace(sPerKm: number | null, noData: string): string {
-  if (sPerKm == null || !Number.isFinite(sPerKm) || sPerKm <= 0) return noData;
-  const total = Math.round(sPerKm);
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
 /**
  * Écran de suivi temps réel d'une course (Running R1, 5.13-5.16 / 5.20-5.22).
  *
@@ -57,6 +49,7 @@ export default function RunActiveScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const units = useUnits();
 
   // Empêche la mise en veille de l'écran pendant le suivi (5.x / 2.3).
   useKeepAwake();
@@ -101,7 +94,6 @@ export default function RunActiveScreen() {
   }
 
   const distanceM = active.distanceM ?? 0;
-  const distanceKm = (distanceM / 1000).toFixed(2);
 
   // Allure moyenne : distance / durée nette (flushée) si dispo, sinon horloge
   // (durée nette exclut les pauses ; l'horloge est un repli tant qu'aucun flush).
@@ -162,9 +154,11 @@ export default function RunActiveScreen() {
       <View style={styles.body}>
         {/* Distance en grand */}
         <View style={styles.hero}>
-          <Text style={[styles.distanceValue, { color: colors.text }]}>{distanceKm}</Text>
+          <Text style={[styles.distanceValue, { color: colors.text }]}>
+            {units.formatDistanceValue(distanceM / 1000)}
+          </Text>
           <Text style={[styles.distanceUnit, { color: colors.textMuted }]}>
-            {t('running.active.kmUnit')}
+            {units.distanceSymbol}
           </Text>
         </View>
 
@@ -186,11 +180,7 @@ export default function RunActiveScreen() {
                 {t('running.active.avgPace')}
               </Text>
               <Text style={[styles.paceValue, { color: colors.text }]}>
-                {formatPace(avgPaceValue, t('running.active.noData'))}
-                <Text style={[styles.paceUnit, { color: colors.textMuted }]}>
-                  {' '}
-                  {t('running.active.paceUnit')}
-                </Text>
+                {units.formatPace(avgPaceValue)}
               </Text>
             </View>
             <View style={styles.paceItem}>
@@ -198,11 +188,7 @@ export default function RunActiveScreen() {
                 {t('running.active.instantPace')}
               </Text>
               <Text style={[styles.paceValue, { color: colors.text }]}>
-                {formatPace(instantPaceValue, t('running.active.noData'))}
-                <Text style={[styles.paceUnit, { color: colors.textMuted }]}>
-                  {' '}
-                  {t('running.active.paceUnit')}
-                </Text>
+                {units.formatPace(instantPaceValue)}
               </Text>
             </View>
           </View>
@@ -261,7 +247,6 @@ const styles = StyleSheet.create({
   paces: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
   paceItem: { alignItems: 'center', gap: 4 },
   paceValue: { fontFamily: fontFamily.monoBold, fontSize: 24 },
-  paceUnit: { fontFamily: fontFamily.body, fontSize: 13 },
   controls: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12 },
   pauseBtn: {
     minHeight: 52,

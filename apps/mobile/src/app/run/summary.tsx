@@ -19,6 +19,7 @@ import {
 } from '@/data/repositories/run-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 // ---------------------------------------------------------------------------
 // Helpers d'affichage
@@ -35,15 +36,6 @@ function formatDuration(totalSeconds: number | null): string {
   if (m > 0 || h > 0) parts.push(`${String(m).padStart(2, '0')} min`);
   parts.push(`${String(s).padStart(2, '0')} s`);
   return parts.join(' ');
-}
-
-/** Formate une allure en s/km → `M:SS /km` (ou `—` si nulle). */
-function formatPace(sPerKm: number | null, noData: string): string {
-  if (sPerKm == null || !Number.isFinite(sPerKm) || sPerKm <= 0) return noData;
-  const total = Math.round(sPerKm);
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +113,7 @@ export default function RunSummaryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const units = useUnits();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const { run, isLoading } = useRun(id);
@@ -128,8 +121,8 @@ export default function RunSummaryScreen() {
   // État local du formulaire de feedback
   const [rpe, setRpe] = useState<number | null>(run?.rpe ?? null);
   const [notes, setNotes] = useState<string>(run?.notes ?? '');
-  // Distance manuelle saisie (texte libre ; stocke en km)
-  const [manualDistanceKm, setManualDistanceKm] = useState<string>('');
+  // Distance manuelle saisie (texte libre ; dans l'unité d'affichage courante)
+  const [manualDistanceText, setManualDistanceText] = useState<string>('');
 
   // Sync initial des champs depuis la DB quand la course charge (premier rendu).
   // On utilise un ref pour n'initialiser qu'une fois.
@@ -168,11 +161,11 @@ export default function RunSummaryScreen() {
 
   const onManualDistanceSubmit = async () => {
     if (!id) return;
-    const km = parseFloat(manualDistanceKm.replace(',', '.'));
-    if (!Number.isFinite(km) || km <= 0) return;
+    const km = units.parseDistanceToKm(manualDistanceText);
+    if (km == null) return;
     try {
       await setManualRunDistance(id, km * 1000);
-      setManualDistanceKm('');
+      setManualDistanceText('');
     } catch (err) {
       console.warn('[RunSummary] setManualRunDistance failed:', err);
     }
@@ -212,11 +205,9 @@ export default function RunSummaryScreen() {
   // ----- affichage des métriques -----
 
   const distanceKm =
-    run.distanceM !== null ? (run.distanceM / 1000).toFixed(2) : null;
+    run.distanceM !== null ? run.distanceM / 1000 : null;
 
   const durationDisplay = formatDuration(run.durationSeconds);
-
-  const paceDisplay = formatPace(run.avgPaceSPerKm, t('running.active.noData'));
 
   return (
     <FormScreen>
@@ -230,19 +221,15 @@ export default function RunSummaryScreen() {
         <StatRow
           label={t('running.summary.distance')}
           value={
-            distanceKm
-              ? `${distanceKm} ${t('running.active.kmUnit')}`
+            distanceKm !== null
+              ? units.formatDistance(distanceKm)
               : t('running.active.noData')
           }
         />
         <StatRow label={t('running.summary.duration')} value={durationDisplay} />
         <StatRow
           label={t('running.summary.avgPace')}
-          value={
-            run.avgPaceSPerKm !== null
-              ? `${paceDisplay} ${t('running.active.paceUnit')}`
-              : t('running.active.noData')
-          }
+          value={units.formatPace(run.avgPaceSPerKm)}
         />
       </Card>
 
@@ -263,17 +250,17 @@ export default function RunSummaryScreen() {
                 },
               ]}
               keyboardType="decimal-pad"
-              placeholder={t('running.summary.manualDistancePlaceholder')}
+              placeholder={t(`running.summary.manualDistancePlaceholder_${units.system}`)}
               placeholderTextColor={colors.textMuted}
-              value={manualDistanceKm}
-              onChangeText={setManualDistanceKm}
+              value={manualDistanceText}
+              onChangeText={setManualDistanceText}
               onBlur={onManualDistanceSubmit}
               onSubmitEditing={onManualDistanceSubmit}
               returnKeyType="done"
               accessibilityLabel={t('running.summary.manualDistance')}
             />
             <Text style={[styles.distanceUnit, { color: colors.textMuted }]}>
-              {t('running.active.kmUnit')}
+              {units.distanceSymbol}
             </Text>
           </View>
         </Card>

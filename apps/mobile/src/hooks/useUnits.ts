@@ -54,6 +54,13 @@ export function useUnits() {
         const v = system === 'imperial' ? kmToMi(km) : km;
         return `${nf2.format(v)} ${symbols.distance}`;
       },
+      /** Valeur numérique convertie, formatée à 2 décimales (sans symbole). Pour les
+       *  layouts « grand nombre + petite unité » qui affichent le symbole séparément. */
+      formatDistanceValue: (km: number | null | undefined): string => {
+        if (km == null) return '—';
+        const v = system === 'imperial' ? kmToMi(km) : km;
+        return nf2.format(v);
+      },
       formatHeight: (cm: number | null | undefined): string => {
         if (cm == null) return '—';
         if (system === 'imperial') {
