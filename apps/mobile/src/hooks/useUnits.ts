@@ -79,6 +79,10 @@ export function useUnits() {
       parseDistanceToKm: (text: string) => parseDistanceToKmPure(text, system),
       heightPartsToCm: (a: string, b: string) => heightPartsToCmPure(a, b, system),
 
+      // Valeur numérique convertie vers l'unité d'affichage (pour alimenter les graphes ; sans arrondi ni symbole).
+      toWeightValue: (kg: number): number => (system === 'imperial' ? kgToLb(kg) : kg),
+      toDistanceValue: (km: number): number => (system === 'imperial' ? kmToMi(km) : km),
+
       // Pré-remplissage des champs : 1 décimale (cohérent avec l'affichage). La légère
       // dérive d'arrondi en impérial (kg→lb→kg) est neutralisée en amont par l'anti-dérive
       // de la saisie (on ne réécrit pas le SI si le champ n'a pas été modifié — cf. plan §D).

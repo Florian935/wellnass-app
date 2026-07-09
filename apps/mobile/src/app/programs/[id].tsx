@@ -24,6 +24,7 @@ import {
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 // ---------------------------------------------------------------------------
 // Composant principal
@@ -272,6 +273,7 @@ function SessionCard({
 function PlanRow({ plan }: { plan: PlanItem }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const targets: string[] = [];
   if (plan.targetSets !== null) {
@@ -281,7 +283,7 @@ function PlanRow({ plan }: { plan: PlanItem }) {
     targets.push(t('programs.detail.reps', { reps: plan.targetReps }));
   }
   if (plan.targetWeightKg !== null) {
-    targets.push(t('programs.detail.weight', { kg: plan.targetWeightKg }));
+    targets.push(t('programs.detail.weight', { weight: units.formatWeight(plan.targetWeightKg) }));
   }
   if (plan.restSeconds !== null) {
     targets.push(t('programs.detail.rest', { seconds: plan.restSeconds }));

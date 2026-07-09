@@ -447,7 +447,7 @@
       "sets_one": "{{count}} set",
       "sets_other": "{{count}} sets",
       "reps": "{{reps}} reps",
-      "weight": "{{kg}} kg",
+      "weight": "{{weight}}",
       "rest": "{{seconds}}s rest",
       "startSession": "Start this session",
       "starting": "Starting…",
@@ -551,9 +551,6 @@
     "strengthCardSubtitle": "Records, loads and volume by muscle group.",
     "cta": {
       "startWorkout": "Start a workout"
-    },
-    "unit": {
-      "kg": "kg"
     },
     "weeklyVolume": {
       "title": "Volume this week",

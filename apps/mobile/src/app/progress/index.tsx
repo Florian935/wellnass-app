@@ -47,6 +47,7 @@ import {
 import type { ExerciseListItem } from '@/data/repositories/exercise-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
 
 // ---------------------------------------------------------------------------
 // Constantes de toggles
@@ -170,6 +171,7 @@ export default function ProgressScreen() {
 function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
   const { volumes, isLoading } = useMuscleVolumeThisWeek();
 
   if (isLoading) {
@@ -182,7 +184,7 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
 
   const chartData = volumes.map((v) => ({
     label: t(`muscle.${v.muscle as MuscleGroup}`),
-    value: v.volume,
+    value: units.toWeightValue(v.volume),
   }));
 
   if (chartData.length === 0) {
@@ -201,7 +203,7 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
       <MuscleVolumeBarChart
         data={chartData}
         title={t('progress.weeklyVolume.chartTitle')}
-        unit={t('progress.unit.kg')}
+        unit={units.weightSymbol}
       />
     </Card>
   );
@@ -230,6 +232,7 @@ function ExerciseSection({
 }: ExerciseSectionProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const { records, isLoading: recordsLoading } = useExerciseRecords(exercise.id);
   const { points, isLoading: pointsLoading } = useExerciseProgression(exercise.id, metric, period);
@@ -265,7 +268,7 @@ function ExerciseSection({
             <Text style={[styles.recordValue, { color: colors.text }]}>
               {rec.type === 'best_volume'
                 ? rec.value.toFixed(0)
-                : `${rec.value.toFixed(1)} ${t('progress.unit.kg')}`}
+                : units.formatWeight(rec.value)}
             </Text>
           </View>
         ))}
@@ -285,7 +288,7 @@ function ExerciseSection({
 
     const chartData = points.map((p) => ({
       label: formatDateShort(p.date),
-      value: p.value,
+      value: units.toWeightValue(p.value),
     }));
 
     if (chartData.length === 0) {
@@ -311,7 +314,7 @@ function ExerciseSection({
       <ProgressLineChart
         data={chartData}
         title={t(`progress.curve.metricLabel.${metric}`)}
-        unit={t('progress.unit.kg')}
+        unit={units.weightSymbol}
       />
     );
   };
