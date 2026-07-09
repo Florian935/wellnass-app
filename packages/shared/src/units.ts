@@ -84,3 +84,41 @@ export function formatPaceMMSS(secondsPerUnit: number | null, noData: string): s
   const s = total % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
+
+/** Parse un nombre tolérant (virgule ou point) ; null si vide/invalide. */
+function parseNumberLoose(text: string): number | null {
+  const t = text.trim().replace(',', '.');
+  if (t === '') return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Texte saisi dans l'unité `system` -> kg (SI) ; null si vide/invalide. */
+export function parseWeightToKg(text: string, system: UnitSystem): number | null {
+  const n = parseNumberLoose(text);
+  if (n === null) return null;
+  return system === 'imperial' ? lbToKg(n) : n;
+}
+
+/** Texte saisi dans l'unité `system` -> km (SI) ; null si vide/invalide. */
+export function parseDistanceToKm(text: string, system: UnitSystem): number | null {
+  const n = parseNumberLoose(text);
+  if (n === null) return null;
+  return system === 'imperial' ? miToKm(n) : n;
+}
+
+/**
+ * Deux champs de taille -> cm (SI).
+ * - metric  : `a` = cm (champ unique), `b` ignoré.
+ * - imperial: `a` = pieds, `b` = pouces.
+ * Renvoie null si aucune valeur exploitable.
+ */
+export function heightPartsToCm(a: string, b: string, system: UnitSystem): number | null {
+  if (system === 'metric') {
+    return parseNumberLoose(a);
+  }
+  const ft = parseNumberLoose(a);
+  const inch = parseNumberLoose(b);
+  if (ft === null && inch === null) return null;
+  return ftInToCm(ft ?? 0, inch ?? 0);
+}

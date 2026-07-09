@@ -8,11 +8,14 @@ import {
   displayWeight,
   formatPaceMMSS,
   ftInToCm,
+  heightPartsToCm,
   kgToLb,
   kmToMi,
   lbToKg,
   miToKm,
   paceToSystem,
+  parseDistanceToKm,
+  parseWeightToKg,
   unitSystemSchema,
 } from './units';
 
@@ -113,5 +116,35 @@ describe('allure', () => {
     expect(formatPaceMMSS(null, '—')).toBe('—');
     expect(formatPaceMMSS(0, '—')).toBe('—');
     expect(formatPaceMMSS(Number.NaN, '—')).toBe('—');
+  });
+});
+
+describe('parseurs de saisie -> SI', () => {
+  it('poids metric : virgule et point -> kg', () => {
+    expect(parseWeightToKg('72,5', 'metric')).toBeCloseTo(72.5, 5);
+    expect(parseWeightToKg('72.5', 'metric')).toBeCloseTo(72.5, 5);
+  });
+  it('poids imperial : lb -> kg', () => {
+    expect(parseWeightToKg('160', 'imperial')).toBeCloseTo(160 / 2.2046226218, 4);
+  });
+  it('distance imperial : mi -> km', () => {
+    expect(parseDistanceToKm('3,1', 'imperial')).toBeCloseTo(3.1 / 0.6213711922, 4);
+  });
+  it('vide / invalide -> null', () => {
+    expect(parseWeightToKg('', 'metric')).toBeNull();
+    expect(parseWeightToKg('   ', 'metric')).toBeNull();
+    expect(parseWeightToKg('abc', 'metric')).toBeNull();
+    expect(parseDistanceToKm('', 'imperial')).toBeNull();
+  });
+  it('heightPartsToCm : ft/in -> cm ; metric = 1er arg ; vide -> null', () => {
+    expect(heightPartsToCm('5', '10', 'imperial')).toBeCloseTo(177.8, 1);
+    expect(heightPartsToCm('178', '', 'metric')).toBeCloseTo(178, 5);
+    expect(heightPartsToCm('', '', 'imperial')).toBeNull();
+    expect(heightPartsToCm('', '', 'metric')).toBeNull();
+  });
+  it('round-trip kg -> lb affiché (1 déc) -> kg, dérive <= 0.1 kg', () => {
+    const kg = 72.5;
+    const lbRounded = Number((kg * 2.2046226218).toFixed(1));
+    expect(Math.abs(parseWeightToKg(String(lbRounded), 'imperial')! - kg)).toBeLessThanOrEqual(0.1);
   });
 });
