@@ -306,8 +306,10 @@
       "sex": "Sex",
       "sexes": { "female": "Female", "male": "Male", "unspecified": "Prefer not to say" },
       "birthDate": "Date of birth",
-      "weight": "Weight (kg)",
-      "height": "Height (cm)"
+      "weight": "Weight",
+      "height": "Height",
+      "heightFeet": "Feet",
+      "heightInches": "Inches"
     },
     "pillars": {
       "title": "Your activities",

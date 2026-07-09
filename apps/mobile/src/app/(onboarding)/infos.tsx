@@ -7,6 +7,7 @@ import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { upsertProfile } from '@/data/repositories/profile-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -16,6 +17,7 @@ export default function OnboardingInfos() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const units = useUnits();
 
   const [firstName, setFirstName] = useState('');
   const [sex, setSex] = useState<Sex>('unspecified');
@@ -23,7 +25,8 @@ export default function OnboardingInfos() {
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
   const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
+  const [heightA, setHeightA] = useState('');
+  const [heightB, setHeightB] = useState('');
 
   const onContinue = async () => {
     const birth = toDate(Number(day), Number(month), Number(year));
@@ -31,8 +34,8 @@ export default function OnboardingInfos() {
       firstName: firstName.trim(),
       sex,
       birthDate: birth ? birth.toISOString().slice(0, 10) : null,
-      weightKg: weight ? Number(weight) : null,
-      heightCm: height ? Number(height) : null,
+      weightKg: units.parseWeightToKg(weight),
+      heightCm: units.heightPartsToCm(heightA, heightB),
     });
     router.push(NEXT);
   };
@@ -77,14 +80,53 @@ export default function OnboardingInfos() {
         </View>
       </View>
 
-      <View style={styles.dateRow}>
-        <View style={styles.dateField}>
-          <TextField label={t('onboarding.infos.weight')} value={weight} onChangeText={setWeight} keyboardType="decimal-pad" />
+      {units.system === 'imperial' ? (
+        <View style={styles.dateRow}>
+          <View style={styles.dateField}>
+            <TextField
+              label={`${t('onboarding.infos.weight')} (${units.weightSymbol})`}
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="decimal-pad"
+            />
+          </View>
+          <View style={styles.dateField}>
+            <TextField
+              label={`${t('onboarding.infos.heightFeet')} (ft)`}
+              value={heightA}
+              onChangeText={setHeightA}
+              keyboardType="number-pad"
+            />
+          </View>
+          <View style={styles.dateField}>
+            <TextField
+              label={`${t('onboarding.infos.heightInches')} (in)`}
+              value={heightB}
+              onChangeText={setHeightB}
+              keyboardType="number-pad"
+            />
+          </View>
         </View>
-        <View style={styles.dateField}>
-          <TextField label={t('onboarding.infos.height')} value={height} onChangeText={setHeight} keyboardType="number-pad" />
+      ) : (
+        <View style={styles.dateRow}>
+          <View style={styles.dateField}>
+            <TextField
+              label={`${t('onboarding.infos.weight')} (${units.weightSymbol})`}
+              value={weight}
+              onChangeText={setWeight}
+              keyboardType="decimal-pad"
+            />
+          </View>
+          <View style={styles.dateField}>
+            <TextField
+              label={`${t('onboarding.infos.height')} (cm)`}
+              value={heightA}
+              onChangeText={setHeightA}
+              keyboardType="number-pad"
+            />
+          </View>
         </View>
-      </View>
+      )}
     </OnboardingScaffold>
   );
 }
