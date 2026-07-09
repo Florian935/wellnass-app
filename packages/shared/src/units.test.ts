@@ -147,4 +147,21 @@ describe('parseurs de saisie -> SI', () => {
     const lbRounded = Number((kg * 2.2046226218).toFixed(1));
     expect(Math.abs(parseWeightToKg(String(lbRounded), 'imperial')! - kg)).toBeLessThanOrEqual(0.1);
   });
+  it('rejette la notation scientifique et les caractères parasites -> null', () => {
+    expect(parseWeightToKg('1e2', 'metric')).toBeNull();
+    expect(parseWeightToKg('1.2.3', 'metric')).toBeNull();
+    expect(parseDistanceToKm('Infinity', 'metric')).toBeNull();
+  });
+  it('rejette les valeurs négatives ou nulles (poids/distance impossibles) -> null', () => {
+    expect(parseWeightToKg('-5', 'metric')).toBeNull();
+    expect(parseWeightToKg('0', 'metric')).toBeNull();
+    expect(parseDistanceToKm('-3', 'imperial')).toBeNull();
+    expect(parseDistanceToKm('0', 'metric')).toBeNull();
+  });
+  it('distance metric : point décimal -> km (chemin métrique)', () => {
+    expect(parseDistanceToKm('10.5', 'metric')).toBeCloseTo(10.5, 5);
+  });
+  it('heightPartsToCm : pouces seuls (pieds vides) valides -> cm', () => {
+    expect(heightPartsToCm('', '11', 'imperial')).toBeCloseTo(27.94, 1);
+  });
 });

@@ -85,25 +85,26 @@ export function formatPaceMMSS(secondsPerUnit: number | null, noData: string): s
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-/** Parse un nombre tolérant (virgule ou point) ; null si vide/invalide. */
+/** Parse un nombre tolérant (virgule ou point) ; null si vide/invalide/notation scientifique. */
 function parseNumberLoose(text: string): number | null {
   const t = text.trim().replace(',', '.');
   if (t === '') return null;
+  if (!/^-?\d+(\.\d+)?$/.test(t)) return null; // rejette 1e2, "abc", "Infinity", "1.2.3", etc.
   const n = Number(t);
   return Number.isFinite(n) ? n : null;
 }
 
-/** Texte saisi dans l'unité `system` -> kg (SI) ; null si vide/invalide. */
+/** Texte saisi dans l'unité `system` -> kg (SI) ; null si vide/invalide/négatif/zéro. */
 export function parseWeightToKg(text: string, system: UnitSystem): number | null {
   const n = parseNumberLoose(text);
-  if (n === null) return null;
+  if (n === null || n <= 0) return null;
   return system === 'imperial' ? lbToKg(n) : n;
 }
 
-/** Texte saisi dans l'unité `system` -> km (SI) ; null si vide/invalide. */
+/** Texte saisi dans l'unité `system` -> km (SI) ; null si vide/invalide/négatif/zéro. */
 export function parseDistanceToKm(text: string, system: UnitSystem): number | null {
   const n = parseNumberLoose(text);
-  if (n === null) return null;
+  if (n === null || n <= 0) return null;
   return system === 'imperial' ? miToKm(n) : n;
 }
 
