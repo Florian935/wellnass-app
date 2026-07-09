@@ -256,6 +256,8 @@
     "weight": {
       "title": "Poids corporel",
       "log": "Poids du jour",
+      "logPlaceholderMetric": "Ex. 72",
+      "logPlaceholderImperial": "Ex. 158",
       "save": "Enregistrer",
       "empty": "Aucune pesée enregistrée.",
       "trend": { "up": "en hausse", "down": "en baisse", "stable": "stable" }

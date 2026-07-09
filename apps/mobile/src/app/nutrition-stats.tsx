@@ -21,6 +21,7 @@ import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositorie
 import { useDailyTotals } from '@/data/repositories/journal-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -44,6 +45,7 @@ type IntakeRange = keyof typeof INTAKE_RANGES;
 export default function NutritionStatsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const { latest } = useLatestWeight();
   const [weightInput, setWeightInput] = useState('');
@@ -84,12 +86,12 @@ export default function NutritionStatsScreen() {
   });
 
   const trend = weightTrend(weightEntries.map((e) => e.weightKg));
-  const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: e.weightKg }));
+  const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
   const intakeData = totals.map((d) => ({ label: shortLabel(d.logDate), value: d.kcal }));
 
   const saveWeight = async () => {
-    const kg = Number(weightInput.replace(',', '.'));
-    if (!Number.isFinite(kg) || kg <= 0) return;
+    const kg = units.parseWeightToKg(weightInput);
+    if (kg == null || kg <= 0) return;
     await logWeight(isoDay(new Date()), kg);
     setWeightInput('');
   };
@@ -109,7 +111,7 @@ export default function NutritionStatsScreen() {
       <Card>
         {latest ? (
           <View style={styles.latestRow}>
-            <Text style={[styles.latestValue, { color: colors.text }]}>{latest.weightKg} kg</Text>
+            <Text style={[styles.latestValue, { color: colors.text }]}>{units.formatWeight(latest.weightKg)}</Text>
             <Text style={[styles.trend, { color: trend === 'down' ? colors.success : trend === 'up' ? colors.danger : colors.textMuted }]}>
               {t(`stats.weight.trend.${trend}`)}
             </Text>
@@ -119,7 +121,7 @@ export default function NutritionStatsScreen() {
         )}
         <View style={styles.logRow}>
           <View style={{ flex: 1 }}>
-            <TextField label={t('stats.weight.log')} value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder="kg" />
+            <TextField label={`${t('stats.weight.log')} (${units.weightSymbol})`} value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t(units.system === 'imperial' ? 'stats.weight.logPlaceholderImperial' : 'stats.weight.logPlaceholderMetric')} />
           </View>
           <View style={styles.logBtn}>
             <Button label={t('stats.weight.save')} onPress={() => void saveWeight()} disabled={!weightInput} />
@@ -131,7 +133,7 @@ export default function NutritionStatsScreen() {
       {weightData.length >= 2 ? (
         <Card>
           <Segment options={Object.keys(WEIGHT_RANGES) as WeightRange[]} value={weightRange} onChange={setWeightRange} label={(o) => t(`stats.ranges.${o}`)} />
-          <ProgressLineChart data={weightData} unit="kg" />
+          <ProgressLineChart data={weightData} unit={units.weightSymbol} />
         </Card>
       ) : null}
 

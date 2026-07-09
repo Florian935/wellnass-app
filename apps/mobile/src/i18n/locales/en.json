@@ -256,6 +256,8 @@
     "weight": {
       "title": "Body weight",
       "log": "Today's weight",
+      "logPlaceholderMetric": "e.g. 72",
+      "logPlaceholderImperial": "e.g. 158",
       "save": "Save",
       "empty": "No weigh-in recorded.",
       "trend": { "up": "trending up", "down": "trending down", "stable": "stable" }
