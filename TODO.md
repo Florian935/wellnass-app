@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 09/07/2026*
+*Dernière mise à jour : 09/07/2026 (spec + plan US 1.15 unités validés → passage au code)*
 
 ---
 
@@ -107,7 +107,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (ajout aliment + upload sync OK). Constat : le **dashboard d'accueil est un placeholder statique** (3 cartes
   non branchées) → spec US « Dashboard live » V0.6 rédigée
   ([us/7.4-7.7-dashboard-live.md](docs/specs/functional/us/7.4-7.7-dashboard-live.md), **PR #27 à valider**).
-- [ ] **US transverse — Affichage des unités (métrique/impérial)** : câbler `displayWeight`/`useSettings().units` sur tout l'affichage des poids muscu (US1 séance, US2 programmes, US3 records/historique/progression). `displayWeight` existe déjà (`@wellness/shared`, testé) mais n'est utilisé nulle part → aujourd'hui tout s'affiche en kg quel que soit le réglage (1.15). Dette pré-existante, à traiter d'un coup.
+- [~] **US 1.15 transverse — Affichage & saisie des unités (métrique/impérial)** : câbler
+  `useSettings().units` sur **tout l'affichage ET toute la saisie** des grandeurs (poids charges +
+  corporel, distance, allure, taille), stockage toujours SI. Dette pré-existante (`displayWeight`
+  existait mais n'était lu nulle part → tout s'affichait en kg/km).
+  - [x] **Spec** ([us/1.15-unites-metrique-imperial.md](docs/specs/functional/us/1.15-unites-metrique-imperial.md)) — commit `c2c0e84`, revue *Approved*.
+  - [x] **Plan** ([1.15-unites-metrique-imperial.md](docs/plans/1.15-unites-metrique-imperial.md)) — 14 tâches TDD, revue *Approved*.
+  - [x] **Design/maquette** — écartée (option 2 : changement d'UI mineur), validé Florian 09/07/2026.
+  - [ ] **Code** — Phase A shared (ft/in, allure, parseurs) → Phase B hook `useUnits()` + smoke test → Phase C+D i18n + 12 écrans (1 commit/écran) → Phase E garde-fou grep + recette device.
+  - _US 100 % client : validable sans activation cloud (pas de checkpoint 🔴)._
 
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
 - [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**

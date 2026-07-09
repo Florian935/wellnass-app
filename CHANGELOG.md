@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/07/2026 — US 1.15 : cadrage (spec + plan) affichage & saisie des unités (métrique/impérial)
+
+_Branche : `feature/1.15-unites-metrique-imperial` (commit précédent : `c2c0e84`)_
+
+### Ajouté
+- **[docs/plans/1.15-unites-metrique-imperial.md](docs/plans/1.15-unites-metrique-imperial.md)** :
+  plan d'implémentation de l'US 1.15 (14 tâches TDD). Approche A validée : logique pure étendue
+  dans `packages/shared/src/units.ts` (conversions taille cm↔ft/in, allure s/km↔s/mi + format
+  `M:SS`, parseurs de saisie tolérants vide→`null`) + hook mince `apps/mobile/src/hooks/useUnits.ts`
+  (formateurs/parseurs liés au réglage `useSettings().units` et à la locale i18n via
+  `Intl.NumberFormat`) ; branchement de 12 écrans (affichage + saisie) ; refonte des clés i18n
+  porteuses d'unité (FR+EN miroir) ; anti-dérive d'arrondi par champ ; garde-fou grep.
+- Pour mémoire, la **spec** correspondante ([docs/specs/functional/us/1.15-unites-metrique-imperial.md](docs/specs/functional/us/1.15-unites-metrique-imperial.md))
+  avait été commitée en `c2c0e84` (non encore tracée ici) : elle est consignée avec ce commit.
+
+### Technique / Notes
+- **Décisions de cadrage** : stockage **toujours en SI** (aucune migration/sync/PowerSync) →
+  **US 100 % client, validable sans activation cloud** (pas de checkpoint 🔴). Unités **découplées
+  de la langue**. Seul vrai changement d'UI de saisie : la **taille** (1 champ `cm` en métrique →
+  2 champs `ft` + `in` en impérial).
+- **Workflow** : spec ✔ → plan ✔ (revu par un plan-document-reviewer : *Approved*) → maquette
+  **écartée** (option 2, changement d'UI mineur, validé par Florian le 09/07/2026) → **code à suivre**.
+
 ## 09/07/2026 — Running R1 : correction du crash au lancement d'une course (permission Android)
 
 _Branche : `fix/location-receive-boot-completed` (commit précédent : `d8b919e`)_
