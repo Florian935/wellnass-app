@@ -18,6 +18,7 @@ import {
   type BeatenRecord,
 } from '@/data/repositories/records-repository';
 import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 // ---------------------------------------------------------------------------
@@ -155,6 +156,7 @@ function WorkoutDetailView({ workoutId }: { workoutId: string }) {
 function MetaRow({ detail }: { detail: WorkoutDetail }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const items: { label: string; value: string }[] = [];
 
@@ -169,7 +171,7 @@ function MetaRow({ detail }: { detail: WorkoutDetail }) {
   if (detail.volume > 0) {
     items.push({
       label: t('history.detail.metaVolume'),
-      value: t('history.detail.volumeKg', { volume: Math.round(detail.volume) }),
+      value: t('history.detail.volumeKg', { volume: units.formatWeight(detail.volume) }),
     });
   }
   if (detail.rpe != null) {
@@ -233,6 +235,7 @@ function ExerciseCard({ entry }: { entry: WorkoutEntry }) {
 function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const setTypeLabelMap: Record<string, string> = {
     normal: t('history.detail.setNormal'),
@@ -245,11 +248,11 @@ function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
 
   let valueLabel: string;
   if (set.reps != null && set.weightKg != null) {
-    valueLabel = t('history.detail.repsWeight', { reps: set.reps, kg: set.weightKg });
+    valueLabel = t('history.detail.repsWeight', { reps: set.reps, weight: units.formatWeight(set.weightKg) });
   } else if (set.reps != null) {
     valueLabel = t('history.detail.repsOnly', { reps: set.reps });
   } else if (set.weightKg != null) {
-    valueLabel = t('history.detail.weightOnly', { kg: set.weightKg });
+    valueLabel = t('history.detail.weightOnly', { weight: units.formatWeight(set.weightKg) });
   } else if (set.durationSeconds != null) {
     valueLabel = `${set.durationSeconds}s`;
   } else {
@@ -277,14 +280,15 @@ function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
 function RecordRow({ record }: { record: BeatenRecord }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
 
   const typeLabel = t(`history.detail.record.${record.type}`);
 
   const valueParts: string[] = [];
   if (record.reps != null && record.weightKg != null) {
-    valueParts.push(t('history.detail.repsWeight', { reps: record.reps, kg: record.weightKg }));
+    valueParts.push(t('history.detail.repsWeight', { reps: record.reps, weight: units.formatWeight(record.weightKg) }));
   } else if (record.weightKg != null) {
-    valueParts.push(t('history.detail.volumeKg', { volume: Math.round(record.value) }));
+    valueParts.push(t('history.detail.volumeKg', { volume: units.formatWeight(record.value) }));
   } else {
     valueParts.push(String(Math.round(record.value)));
   }

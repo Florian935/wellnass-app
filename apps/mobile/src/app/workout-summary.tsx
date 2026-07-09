@@ -15,6 +15,7 @@ import {
   useWorkoutRecords,
   type BeatenRecord,
 } from '@/data/repositories/records-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -52,11 +53,12 @@ function Row({ label, value }: { label: string; value: string }) {
 function RecordCard({ record }: { record: BeatenRecord }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
   const typeLabel = t(`workout.summary.records.type.${record.type}`, record.type);
   const valueLabel =
     record.type === 'best_volume'
       ? `${record.value}`
-      : `${record.value} kg`;
+      : units.formatWeight(record.value);
   return (
     <View
       style={[
@@ -102,6 +104,7 @@ function RecordsSection({ workoutId }: { workoutId: string }) {
 export default function WorkoutSummaryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const units = useUnits();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
@@ -140,7 +143,7 @@ export default function WorkoutSummaryScreen() {
           />
           <Row label={t('workout.summary.exercises')} value={String(summary.exercises)} />
           <Row label={t('workout.summary.sets')} value={String(summary.doneSets)} />
-          <Row label={t('workout.summary.volume')} value={`${summary.volume} kg`} />
+          <Row label={t('workout.summary.volume')} value={units.formatWeight(summary.volume)} />
         </Card>
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>
