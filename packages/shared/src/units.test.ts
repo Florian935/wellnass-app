@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   UNIT_SYSTEMS,
   CM_PER_IN,
+  MI_PER_KM,
   cmToFtIn,
   displayDistance,
   displayWeight,
+  formatPaceMMSS,
   ftInToCm,
   kgToLb,
   kmToMi,
   lbToKg,
   miToKm,
+  paceToSystem,
   unitSystemSchema,
 } from './units';
 
@@ -92,5 +95,23 @@ describe('taille cm <-> ft/in', () => {
       const { feet, inches } = cmToFtIn(cm);
       expect(Math.abs(ftInToCm(feet, inches) - cm)).toBeLessThanOrEqual(1.3);
     }
+  });
+});
+
+describe('allure', () => {
+  it('metric : s/km inchangé', () => {
+    expect(paceToSystem(300, 'metric')).toBe(300);
+  });
+  it('imperial : s/mi = s/km / MI_PER_KM', () => {
+    expect(paceToSystem(300, 'imperial')).toBeCloseTo(300 / MI_PER_KM, 1);
+  });
+  it('formatPaceMMSS formate M:SS, pad des secondes', () => {
+    expect(formatPaceMMSS(300, '—')).toBe('5:00');
+    expect(formatPaceMMSS(483, '—')).toBe('8:03');
+  });
+  it('formatPaceMMSS renvoie le placeholder si null/<=0/NaN', () => {
+    expect(formatPaceMMSS(null, '—')).toBe('—');
+    expect(formatPaceMMSS(0, '—')).toBe('—');
+    expect(formatPaceMMSS(Number.NaN, '—')).toBe('—');
   });
 });

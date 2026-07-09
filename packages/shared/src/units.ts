@@ -68,3 +68,19 @@ export function cmToFtIn(cm: number): { feet: number; inches: number } {
 export function ftInToCm(feet: number, inches: number): number {
   return (feet * 12 + inches) * CM_PER_IN;
 }
+
+/** Allure s/km -> s par unité affichée (mile en impérial). */
+export function paceToSystem(sPerKm: number, system: UnitSystem): number {
+  return system === 'imperial' ? sPerKm / MI_PER_KM : sPerKm;
+}
+
+/** Secondes par unité -> "M:SS" ; placeholder si nul/négatif/NaN. */
+export function formatPaceMMSS(secondsPerUnit: number | null, noData: string): string {
+  if (secondsPerUnit == null || !Number.isFinite(secondsPerUnit) || secondsPerUnit <= 0) {
+    return noData;
+  }
+  const total = Math.round(secondsPerUnit);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
