@@ -57,21 +57,31 @@ export function useUnits() {
       formatHeight: (cm: number | null | undefined): string => {
         if (cm == null) return '—';
         if (system === 'imperial') {
+          // `ft`/`in` sont des entiers (jamais de séparateur de milliers pour une taille humaine)
+          // → pas de passage par Intl, contrairement au cm métrique.
           const { feet, inches } = cmToFtIn(cm);
           return `${feet} ft ${inches} in`;
         }
+        // 'cm' est codé en dur : la hauteur n'a pas de clé dans `unitSymbol`.
         return `${nf0.format(cm)} cm`;
       },
       formatPace: (sPerKm: number | null | undefined): string => {
-        const secs = sPerKm == null ? null : paceToSystem(sPerKm, system);
-        const mmss = formatPaceMMSS(secs, noData);
-        return mmss === noData ? mmss : `${mmss} /${symbols.distance}`;
+        // Garde explicite (évite de comparer le résultat au sentinel par identité) :
+        // reproduit le contrat de formatPaceMMSS (null / <= 0 / non fini → pas de donnée).
+        if (sPerKm == null || sPerKm <= 0 || !Number.isFinite(sPerKm)) {
+          return noData;
+        }
+        const mmss = formatPaceMMSS(paceToSystem(sPerKm, system), '');
+        return `${mmss} /${symbols.distance}`;
       },
 
       parseWeightToKg: (text: string) => parseWeightToKgPure(text, system),
       parseDistanceToKm: (text: string) => parseDistanceToKmPure(text, system),
       heightPartsToCm: (a: string, b: string) => heightPartsToCmPure(a, b, system),
 
+      // Pré-remplissage des champs : 1 décimale (cohérent avec l'affichage). La légère
+      // dérive d'arrondi en impérial (kg→lb→kg) est neutralisée en amont par l'anti-dérive
+      // de la saisie (on ne réécrit pas le SI si le champ n'a pas été modifié — cf. plan §D).
       weightInputValue: (kg: number | null | undefined): string =>
         kg == null ? '' : String(Number((system === 'imperial' ? kgToLb(kg) : kg).toFixed(1))),
       distanceInputValue: (km: number | null | undefined): string =>

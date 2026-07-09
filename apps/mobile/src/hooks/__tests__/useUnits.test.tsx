@@ -46,5 +46,6 @@ describe('useUnits', () => {
     expect(result.current.formatDistance(5.2)).toBe('3.23 mi');
     expect(result.current.formatHeight(178)).toBe('5 ft 10 in');
     expect(result.current.formatPace(300)).toBe('8:03 /mi');
+    expect(result.current.parseWeightToKg('160')).toBeCloseTo(72.57, 1);
   });
 });
