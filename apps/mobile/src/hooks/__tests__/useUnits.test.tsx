@@ -23,7 +23,7 @@ jest.mock('@/data/repositories/settings-repository', () => ({
 }));
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => k, i18n: langMock }),
+  useTranslation: () => ({ t: (k: string) => k, i18n: langMock }),
 }));
 
 describe('useUnits', () => {
