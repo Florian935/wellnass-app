@@ -18,4 +18,5 @@ export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
 export * from './running';
+export * from './date';
 export type { Database, Json } from './database.types';
