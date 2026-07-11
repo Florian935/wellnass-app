@@ -823,6 +823,19 @@
       "beginner": "Débutant",
       "intermediate": "Régulier",
       "advanced": "Confirmé"
+    },
+    "library": {
+      "tab": "Bibliothèque",
+      "myTab": "Mes programmes",
+      "title": "Programmes de course",
+      "use": "Utiliser",
+      "used": "Copié dans mes programmes ✓",
+      "filters": "Filtres",
+      "filterObjective": "Objectif",
+      "filterLevel": "Niveau",
+      "filterDuration": "Durée",
+      "filterAll": "Tous",
+      "empty": "Aucun programme ne correspond."
     }
   }
 }

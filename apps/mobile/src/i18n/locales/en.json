@@ -823,6 +823,19 @@
       "beginner": "Beginner",
       "intermediate": "Regular",
       "advanced": "Experienced"
+    },
+    "library": {
+      "tab": "Library",
+      "myTab": "My programs",
+      "title": "Running programs",
+      "use": "Use",
+      "used": "Copied to my programs ✓",
+      "filters": "Filters",
+      "filterObjective": "Goal",
+      "filterLevel": "Level",
+      "filterDuration": "Duration",
+      "filterAll": "All",
+      "empty": "No program matches."
     }
   }
 }
