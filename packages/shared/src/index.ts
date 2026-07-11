@@ -19,4 +19,5 @@ export * from './recipe';
 export * from './bodyweight';
 export * from './running';
 export * from './date';
+export * from './streak';
 export type { Database, Json } from './database.types';
