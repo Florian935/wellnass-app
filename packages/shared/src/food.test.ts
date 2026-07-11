@@ -3,12 +3,18 @@ import {
   FOOD_CATEGORIES,
   FOOD_SOURCES,
   MEAL_TYPES,
+  MICRONUTRIENT_KEYS,
   foodEntryRowSchema,
   foodRowSchema,
   foodSourceSchema,
   mealTypeSchema,
+  micronutrientsSchema,
+  parseMicronutrients,
   resolveFoodName,
+  saltFromSodiumMg,
+  scaleMicronutrients,
   scaleNutrition,
+  sumMicronutrients,
   sumNutrients,
 } from './food';
 
@@ -77,6 +83,76 @@ describe('sumNutrients', () => {
   });
 });
 
+describe('micronutriments (4.33)', () => {
+  describe('parseMicronutrients', () => {
+    it('lit un objet et un JSON string', () => {
+      expect(parseMicronutrients({ magnesium_mg: 79, iron_mg: 2.7 })).toEqual({
+        magnesium_mg: 79,
+        iron_mg: 2.7,
+      });
+      expect(parseMicronutrients('{"sodium_mg":120}')).toEqual({ sodium_mg: 120 });
+    });
+    it('ignore clés inconnues, valeurs négatives/non-finies, et JSON invalide', () => {
+      expect(
+        parseMicronutrients({ magnesium_mg: 10, unknown_x: 5, iron_mg: -3, calcium_mg: 'x' }),
+      ).toEqual({ magnesium_mg: 10 });
+      expect(parseMicronutrients('pas du json')).toEqual({});
+      expect(parseMicronutrients(null)).toEqual({});
+      expect(parseMicronutrients(42)).toEqual({});
+    });
+    it('couvre exactement le panel de 10 clés', () => {
+      expect(MICRONUTRIENT_KEYS).toHaveLength(10);
+      expect(MICRONUTRIENT_KEYS).toContain('cholesterol_mg');
+      expect(MICRONUTRIENT_KEYS).toContain('vitamin_b12_ug');
+    });
+  });
+
+  describe('scaleMicronutrients', () => {
+    it('met à l’échelle uniquement les clés présentes (arrondi 1 déc.)', () => {
+      // épinards /100 g → 180 g : magnésium 79 → 142,2 ; fer 2,7 → 4,9
+      expect(scaleMicronutrients({ magnesium_mg: 79, iron_mg: 2.7 }, 180)).toEqual({
+        magnesium_mg: 142.2,
+        iron_mg: 4.9,
+      });
+    });
+    it('n’invente jamais une clé absente', () => {
+      expect(scaleMicronutrients({ sodium_mg: 100 }, 50)).toEqual({ sodium_mg: 50 });
+      expect(scaleMicronutrients({}, 200)).toEqual({});
+    });
+    it('0 g → toutes les clés présentes à 0', () => {
+      expect(scaleMicronutrients({ iron_mg: 5 }, 0)).toEqual({ iron_mg: 0 });
+    });
+  });
+
+  describe('sumMicronutrients', () => {
+    it('additionne clé à clé, clés disjointes conservées', () => {
+      expect(
+        sumMicronutrients([{ magnesium_mg: 10, iron_mg: 2 }, { magnesium_mg: 5, calcium_mg: 30 }]),
+      ).toEqual({ magnesium_mg: 15, iron_mg: 2, calcium_mg: 30 });
+    });
+    it('liste vide → {}', () => {
+      expect(sumMicronutrients([])).toEqual({});
+    });
+  });
+
+  describe('saltFromSodiumMg', () => {
+    it('sodium × 2,5 / 1000 arrondi 2 déc.', () => {
+      expect(saltFromSodiumMg(142)).toBe(0.36);
+      expect(saltFromSodiumMg(79)).toBe(0.2);
+      expect(saltFromSodiumMg(300)).toBe(0.75);
+      expect(saltFromSodiumMg(0)).toBe(0);
+    });
+  });
+
+  describe('micronutrientsSchema', () => {
+    it('rejette une clé hors panel (écriture stricte)', () => {
+      expect(micronutrientsSchema.safeParse({ magnesium_mg: 10 }).success).toBe(true);
+      expect(micronutrientsSchema.safeParse({ foo_mg: 10 }).success).toBe(false);
+      expect(micronutrientsSchema.safeParse({ iron_mg: -1 }).success).toBe(false);
+    });
+  });
+});
+
 describe('schemas', () => {
   const sync = {
     id: '11111111-1111-4111-8111-111111111111',
@@ -98,6 +174,19 @@ describe('schemas', () => {
     expect(parsed.barcode).toBeNull();
     expect(parsed.portions[0]?.grams).toBe(120);
     expect(parsed.carbsPer100g).toBeNull();
+    expect(parsed.micronutrients).toEqual({});
+  });
+
+  it('accepte les micronutriments sur un aliment', () => {
+    const parsed = foodRowSchema.parse({
+      ...sync,
+      ownerId: null,
+      source: 'library',
+      category: 'vegetables',
+      kcalPer100g: 24,
+      micronutrients: { magnesium_mg: 79, iron_mg: 2.7 },
+    });
+    expect(parsed.micronutrients.magnesium_mg).toBe(79);
   });
 
   it('valide une entrée de journal (quick add sans foodId)', () => {

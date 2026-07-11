@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { scaleNutrition } from '@wellness/shared';
+import { scaleMicronutrients, scaleNutrition } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { findFoodByBarcode, importOpenFoodFactsFood } from '@/data/repositories/food-repository';
@@ -56,6 +56,7 @@ export default function FoodScanScreen() {
         carbsPer100g: off.carbsPer100g,
         fatPer100g: off.fatPer100g,
         portions: [],
+        micronutrients: off.micronutrients,
       });
       setPhase('quantity');
       return;
@@ -99,6 +100,7 @@ export default function FoodScanScreen() {
         onCancel={rescan}
         onConfirm={async (grams) => {
           const n = scaleNutrition(target, grams);
+          const micronutrients = scaleMicronutrients(target.micronutrients ?? {}, grams);
           await addFoodEntry(date, meal, {
             foodId: target.id,
             name: target.name,
@@ -107,6 +109,7 @@ export default function FoodScanScreen() {
             proteinG: n.proteinG,
             carbsG: n.carbsG,
             fatG: n.fatG,
+            micronutrients,
           });
           router.dismissAll();
         }}

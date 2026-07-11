@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  .lt {
+    color-scheme: light;
+    --txt:#33291f; --panel:#33291f; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#d9a888;
+    --acc:#c0562f; --acc-rgb:192,86,47; --grn:#7c8a5b;
+    --card:#fffaf2; --line:#ece0cd; --line2:#e0d0b6; --mut:#96856f; --mut2:#a8967d; --sub:#8a7458; --deep:#5c4a35; --lbl:#7a6850;
+    --soft:#f3ddd0; --softline:#e6c3ae; --accdk:#a34e2c;
+    --track:#eadcc6; --chip:#faf5ec; --chipline:#e8dcc9; --btnsoft:#e6d7bf; --seg:#e8dcc9;
+    --tert:#faf3e6; --tertline:#dcc9ab; --field:#fffaf2; --frame:#efe4d1; --bezel:#241c15;
+    --grnbg:#e5e8d5; --grntx:#5f6b3e; --empty:#f3ede1;
+  }
+  .dk {
+    color-scheme: dark;
+    --txt:#f4ecdd; --panel:#30271e; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#d9a888;
+    --acc:#dd6e40; --acc-rgb:221,110,64; --grn:#a9ba7e;
+    --card:#241e18; --line:#342c24; --line2:#352d24; --mut:#a4937c; --mut2:#8b7c66; --sub:#a2917a; --deep:#c4b298; --lbl:#9a8a71;
+    --soft:#3a281d; --softline:#4a3124; --accdk:#e58a5f;
+    --track:#362c22; --chip:#241e18; --chipline:#342c24; --btnsoft:#2d251d; --seg:#342c24;
+    --tert:#241e18; --tertline:#3a3026; --field:#241e18; --frame:#1a140f; --bezel:#0c0906;
+    --grnbg:#2d3123; --grntx:#b0bd80; --empty:#2e2820;
+  }
+  body { margin:0; background:radial-gradient(circle at 50% 0%, #ece0cd 0%, #ddd0ba 55%, #d3c5ac 100%); min-height:100vh; font-family:'Hanken Grotesk',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:#33291f; padding:56px 48px 90px; }
+  a { color:#c0562f; text-decoration:none; } a:hover { color:#a34e2c; }
+  .hgs { scrollbar-width:none; } .hgs::-webkit-scrollbar { display:none; }
+</style>
+</helmet>
+
+<div style="max-width:1680px; margin:0 auto;">
+
+  <!-- Masthead -->
+  <div style="display:flex; align-items:center; gap:18px; margin-bottom:8px;">
+    <div style="width:56px; height:56px; border-radius:18px; background:#c0562f; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 26px -8px rgba(192,86,47,.55); flex:none;">
+      <svg width="28" height="28" viewBox="0 0 38 38" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><rect x="12" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><rect x="22" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><path d="M16 19h6M8 19h4M26 19h4"/></svg>
+    </div>
+    <div>
+      <div style="font:700 12px 'Space Mono',monospace; color:#c0562f; letter-spacing:2px;">FITTRIO · NUTRITION</div>
+      <h1 style="margin:2px 0 0; font:800 38px 'Bricolage Grotesque',sans-serif; color:#33291f; letter-spacing:-1.4px;">Micronutriments</h1>
+    </div>
+  </div>
+  <p style="margin:0 0 46px; color:#8a7458; font-size:16px; max-width:680px;">Deux écrans nutrition dans le langage terracotta de FitTrio — détail d'un aliment avec section repliable « Valeurs détaillées », et saisie des micros pour un aliment personnalisé. Clair &amp; sombre. Accordéons cliquables.</p>
+
+  <!-- ══════════ ÉCRAN 1 ══════════ -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:22px;">
+    <span style="font:700 12px 'Space Mono',monospace; color:#96856f; letter-spacing:1.5px;">ÉCRAN 1</span>
+    <div style="flex:1; height:1px; background:#c9b79a;"></div>
+    <span style="font:600 15px 'Hanken Grotesk'; color:#5c4a35;">Détail d'un aliment · Valeurs détaillées</span>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:40px; margin-bottom:72px;">
+    <sc-for list="{{ detailFrames }}" as="f" hint-placeholder-count="5">
+    <div id="{{ f.cap }}" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:9px;">
+        <span style="font:700 12px 'Space Mono'; color:#fff; background:#c0562f; padding:3px 9px; border-radius:7px;">{{ f.cap }}</span>
+        <span style="font:700 12px 'Hanken Grotesk'; color:#8a7458; text-transform:uppercase; letter-spacing:.5px;">{{ f.tag }}</span>
+        <span style="font:400 13px 'Hanken Grotesk'; color:#a8967d;">{{ f.desc }}</span>
+      </div>
+
+      <div class="{{ f.theme }}" style="width:392px; min-height:812px; border-radius:46px; border:9px solid var(--bezel); background:var(--frame); overflow:hidden; box-shadow:0 40px 90px -24px rgba(60,40,20,.5); display:flex; flex-direction:column;">
+        <!-- status bar -->
+        <div style="height:40px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+          <span style="font:700 14px 'Space Mono'; color:var(--txt); letter-spacing:.5px;">9:41</span>
+          <div style="display:flex; align-items:center; gap:5px; color:var(--txt); opacity:.85;">
+            <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>
+            <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+          </div>
+        </div>
+
+        <div style="flex:1; padding:2px 22px 28px; display:flex; flex-direction:column;">
+          <!-- grabber -->
+          <div style="width:44px; height:5px; border-radius:3px; background:var(--line2); margin:2px auto 12px;"></div>
+          <!-- header -->
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <button style="width:38px; height:38px; border:none; border-radius:12px; background:var(--btnsoft); color:var(--deep); font-size:19px; cursor:pointer;">‹</button>
+            <span style="font:600 13px 'Hanken Grotesk'; color:var(--mut);">Détail de l'aliment</span>
+            <span style="width:38px; text-align:center; font-size:20px; color:var(--acc);">⭐</span>
+          </div>
+
+          <!-- name -->
+          <span style="align-self:flex-start; padding:5px 12px; border-radius:999px; background:var(--soft); color:var(--accdk); font:700 12px 'Hanken Grotesk';">{{ f.category }}</span>
+          <h2 style="margin:10px 0 16px; font:700 27px 'Bricolage Grotesque'; letter-spacing:-.6px; color:var(--txt);">{{ f.name }}</h2>
+
+          <!-- portion selector -->
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+            <button style="width:46px; height:46px; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); color:var(--deep); font-size:22px; cursor:pointer; flex:none;">−</button>
+            <div style="flex:1; height:46px; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); display:flex; align-items:center; justify-content:center; gap:6px;">
+              <span style="font:700 19px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">{{ f.portionNum }}</span>
+              <span style="font:400 13px 'Space Mono'; color:var(--mut);">{{ f.portionUnit }}</span>
+            </div>
+            <button style="width:46px; height:46px; border:none; border-radius:14px; background:var(--acc); color:#fff; font-size:22px; cursor:pointer; flex:none;">+</button>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:18px;">
+            <span style="padding:7px 14px; border-radius:999px; background:var(--acc); color:#fff; font:700 12px 'Hanken Grotesk';">{{ f.portionChip }}</span>
+            <span style="padding:7px 14px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font:600 12px 'Hanken Grotesk';">100 g</span>
+            <span style="padding:7px 14px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font:600 12px 'Hanken Grotesk';">Portion</span>
+          </div>
+
+          <!-- kcal + macros hero -->
+          <div style="background:var(--panel); border-radius:20px; padding:18px 18px; color:var(--paneltx); display:flex; align-items:center; gap:16px;">
+            <div style="flex:none; text-align:center; min-width:62px;">
+              <div style="font:800 34px 'Bricolage Grotesque'; color:#fff; letter-spacing:-1px; line-height:1;">{{ f.kcal }}</div>
+              <div style="font:700 11px 'Space Mono'; color:var(--panelacc); margin-top:3px;">kcal</div>
+            </div>
+            <div style="width:1px; align-self:stretch; background:rgba(255,255,255,.15);"></div>
+            <div style="flex:1; display:flex;">
+              <div style="flex:1; text-align:center;"><div style="font:700 21px 'Bricolage Grotesque'; color:#fff; line-height:1; letter-spacing:-.5px;">{{ f.macP }}</div><div style="font:600 11px 'Hanken Grotesk'; color:var(--panelacc); margin-top:5px;">Prot.</div></div>
+              <div style="flex:1; text-align:center;"><div style="font:700 21px 'Bricolage Grotesque'; color:#fff; line-height:1; letter-spacing:-.5px;">{{ f.macG }}</div><div style="font:600 11px 'Hanken Grotesk'; color:var(--panelacc); margin-top:5px;">Gluc.</div></div>
+              <div style="flex:1; text-align:center;"><div style="font:700 21px 'Bricolage Grotesque'; color:#fff; line-height:1; letter-spacing:-.5px;">{{ f.macL }}</div><div style="font:600 11px 'Hanken Grotesk'; color:var(--panelacc); margin-top:5px;">Lip.</div></div>
+            </div>
+          </div>
+          <div style="font:400 10px 'Space Mono'; color:var(--mut); text-align:right; margin:6px 2px 16px;">{{ f.forLabel }}</div>
+
+          <!-- ACCORDION -->
+          <button onClick="{{ f.toggle }}" style="width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px 18px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Valeurs détaillées</div>
+              <div style="font-size:12.5px; color:var(--mut); margin-top:1px;">Micronutriments · pour {{ f.portionChip }}</div>
+            </div>
+            <span style="{{ f.chevStyle }}">›</span>
+          </button>
+
+          <sc-if value="{{ f.open }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:14px; display:flex; flex-direction:column; gap:18px;">
+
+            <!-- empty state -->
+            <sc-if value="{{ f.empty }}">
+            <div style="background:var(--card); border:1px dashed var(--line2); border-radius:18px; padding:34px 24px; text-align:center;">
+              <div style="width:56px; height:56px; border-radius:18px; background:var(--empty); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:26px;">🔍</div>
+              <div style="font:700 16px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:6px;">Données détaillées non disponibles pour cet aliment</div>
+              <div style="font-size:13px; line-height:1.5; color:var(--mut); max-width:250px; margin:0 auto;">Ce produit n'a aucun micronutriment renseigné dans la base OpenFoodFacts.</div>
+            </div>
+            </sc-if>
+
+            <!-- groups -->
+            <sc-if value="{{ f.hasGroups }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ f.groups }}" as="g" hint-placeholder-count="3">
+            <div>
+              <div style="font:700 11px 'Space Mono'; color:var(--acc); letter-spacing:.8px; margin:0 2px 8px;">{{ g.title }}</div>
+              <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:6px 16px;">
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                <div style="padding:11px 0; border-bottom:1px solid var(--line);">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px;">
+                    <span style="font:600 13.5px 'Hanken Grotesk'; color:var(--sub);">{{ it.label }}</span>
+                    <span style="white-space:nowrap;"><span style="font:700 17px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.4px;">{{ it.val }}</span> <span style="font:400 11px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span></span>
+                  </div>
+                  <div style="text-align:right; font:400 10.5px 'Space Mono'; color:var(--mut2); margin-top:2px;">{{ it.per100 }}</div>
+                  <sc-if value="{{ it.hasSub }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:8px; border-top:1px dashed var(--line);">
+                    <span style="font:400 12.5px 'Hanken Grotesk'; color:var(--mut);">{{ it.subLabel }} <span style="font-size:10.5px; color:var(--mut2);">· dérivé</span></span>
+                    <span style="white-space:nowrap;"><span style="font:700 15px 'Bricolage Grotesque'; color:var(--sub); letter-spacing:-.3px;">{{ it.subVal }}</span> <span style="font:400 10px 'Space Mono'; color:var(--mut);">{{ it.subUnit }}</span></span>
+                  </div>
+                  <div style="text-align:right; font:400 10px 'Space Mono'; color:var(--mut2); margin-top:2px;">{{ it.subPer }}</div>
+                  </sc-if>
+                </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-for>
+            </sc-if>
+
+            <!-- source note -->
+            <sc-if value="{{ f.hasNote }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; gap:9px; align-items:flex-start; background:var(--tert); border:1px solid var(--tertline); border-radius:14px; padding:12px 14px;">
+              <span style="font-size:14px; line-height:1.3;">ⓘ</span>
+              <span style="font-size:12px; line-height:1.45; color:var(--sub);">{{ f.note }}</span>
+            </div>
+            </sc-if>
+
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+
+  <!-- ══════════ ÉCRAN 2 ══════════ -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:22px;">
+    <span style="font:700 12px 'Space Mono',monospace; color:#96856f; letter-spacing:1.5px;">ÉCRAN 2</span>
+    <div style="flex:1; height:1px; background:#c9b79a;"></div>
+    <span style="font:600 15px 'Hanken Grotesk'; color:#5c4a35;">Aliment personnalisé · saisie des micros</span>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:40px;">
+    <sc-for list="{{ customFrames }}" as="c" hint-placeholder-count="2">
+    <div id="{{ c.cap }}" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:9px;">
+        <span style="font:700 12px 'Space Mono'; color:#fff; background:#c0562f; padding:3px 9px; border-radius:7px;">{{ c.cap }}</span>
+        <span style="font:700 12px 'Hanken Grotesk'; color:#8a7458; text-transform:uppercase; letter-spacing:.5px;">{{ c.tag }}</span>
+        <span style="font:400 13px 'Hanken Grotesk'; color:#a8967d;">{{ c.desc }}</span>
+      </div>
+
+      <div class="{{ c.theme }}" style="width:392px; min-height:812px; border-radius:46px; border:9px solid var(--bezel); background:var(--frame); overflow:hidden; box-shadow:0 40px 90px -24px rgba(60,40,20,.5); display:flex; flex-direction:column;">
+        <div style="height:40px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px;">
+          <span style="font:700 14px 'Space Mono'; color:var(--txt); letter-spacing:.5px;">9:41</span>
+          <div style="display:flex; align-items:center; gap:5px; color:var(--txt); opacity:.85;">
+            <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>
+            <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+          </div>
+        </div>
+
+        <div style="flex:1; padding:2px 22px 28px; display:flex; flex-direction:column;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin:6px 0 16px;">
+            <button style="width:38px; height:38px; border:none; border-radius:12px; background:var(--btnsoft); color:var(--deep); font-size:19px; cursor:pointer;">‹</button>
+            <span style="font:600 13px 'Hanken Grotesk'; color:var(--mut);">Nouvel aliment</span>
+            <span style="font:700 13px 'Hanken Grotesk'; color:var(--mut2);">Enreg.</span>
+          </div>
+
+          <h2 style="margin:0 0 4px; font:700 27px 'Bricolage Grotesque'; letter-spacing:-.6px; color:var(--txt);">Aliment personnalisé</h2>
+          <p style="margin:0 0 18px; font-size:14px; color:var(--mut);">Ajoute un produit à ta bibliothèque.</p>
+
+          <!-- name -->
+          <div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:6px;">Nom de l'aliment</div>
+          <div style="height:48px; border:1.5px solid var(--acc); border-radius:14px; background:var(--field); display:flex; align-items:center; padding:0 15px; font:600 15px 'Hanken Grotesk'; color:var(--txt); margin-bottom:14px;">Granola maison</div>
+
+          <!-- category -->
+          <div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:6px;">Catégorie</div>
+          <div style="height:48px; border:1.5px solid var(--line2); border-radius:14px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 15px; font:600 15px 'Hanken Grotesk'; color:var(--txt); margin-bottom:18px;">Petit-déjeuner<span style="color:var(--mut); font-size:16px;">▾</span></div>
+
+          <!-- per 100g nutrition -->
+          <div style="font:700 11px 'Space Mono'; color:var(--acc); letter-spacing:.8px; margin:0 2px 10px;">POUR 100 G</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+            <sc-for list="{{ custNutri }}" as="it" hint-placeholder-count="4">
+            <div>
+              <div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:5px;">{{ it.label }}</div>
+              <div style="height:46px; border:1.5px solid {{ it.border }}; border-radius:13px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 13px;">
+                <span style="font:700 17px 'Bricolage Grotesque'; color:{{ it.color }}; letter-spacing:-.4px;">{{ it.disp }}</span>
+                <span style="font:400 12px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span>
+              </div>
+            </div>
+            </sc-for>
+          </div>
+
+          <!-- ACCORDION optional -->
+          <button onClick="{{ c.toggle }}" style="width:100%; text-align:left; background:var(--soft); border:1px solid var(--softline); border-radius:16px; padding:15px 18px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font:700 15px 'Hanken Grotesk'; color:var(--accdk);">Valeurs détaillées</div>
+              <div style="font-size:12.5px; color:var(--accdk); opacity:.8; margin-top:1px;">Facultatif · micronutriments / 100 g</div>
+            </div>
+            <span style="{{ c.chevStyle }} color:var(--accdk);">›</span>
+          </button>
+
+          <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-top:16px; display:flex; flex-direction:column; gap:18px;">
+            <sc-for list="{{ customGroups }}" as="g" hint-placeholder-count="3">
+            <div>
+              <div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.8px; margin:0 2px 10px;">{{ g.title }}</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2">
+                <div>
+                  <div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:5px;">{{ it.label }}</div>
+                  <div style="height:46px; border:1.5px solid {{ it.border }}; border-radius:13px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 13px;">
+                    <span style="font:700 17px 'Bricolage Grotesque'; color:{{ it.color }}; letter-spacing:-.4px;">{{ it.disp }}</span>
+                    <span style="font:400 12px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span>
+                  </div>
+                </div>
+                </sc-for>
+              </div>
+            </div>
+            </sc-for>
+            <div style="display:flex; gap:9px; align-items:flex-start; padding:0 2px;">
+              <span style="font-size:13px; line-height:1.3; color:var(--mut2);">ⓘ</span>
+              <span style="font-size:12px; line-height:1.45; color:var(--mut);">Tous ces champs sont facultatifs — laisse vide ce que tu ne connais pas.</span>
+            </div>
+          </div>
+          </sc-if>
+
+          <div style="flex:1; min-height:22px;"></div>
+          <button style="height:54px; border:none; border-radius:17px; background:var(--acc); color:#fff; font:700 16px 'Hanken Grotesk'; cursor:pointer; margin-top:20px; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.55);">Enregistrer l'aliment</button>
+        </div>
+      </div>
+    </div>
+    </sc-for>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { open: { epi:true, epiDk:true, defaut:false, indus:true, vide:true, cust:true, custDk:true } };
+  toggle(k) { this.setState(s => ({ open: { ...s.open, [k]: !s.open[k] } })); }
+
+  renderVals() {
+    const O = this.state.open;
+    const chev = o => 'font-size:22px; color:var(--mut); display:inline-block; transition:transform .25s cubic-bezier(.4,0,.2,1);' + (o ? 'transform:rotate(90deg);' : '');
+    const it = (label, val, unit, p100) => ({ label, val, unit, per100: '100 g : ' + p100 + ' ' + unit });
+    const sodium = (val, p100, subVal, subP) => ({
+      label: 'Sodium', val, unit: 'mg', per100: '100 g : ' + p100 + ' mg',
+      hasSub: true, subLabel: 'Sel', subVal, subUnit: 'g', subPer: '100 g : ' + subP + ' g',
+    });
+
+    const epiGroups = [
+      { title: 'LIPIDES', items: [ it('Cholestérol', '0', 'mg', '0') ] },
+      { title: 'MINÉRAUX', items: [
+        sodium('142', '79', '0,36', '0,20'),
+        it('Magnésium', '142', 'mg', '79'),
+        it('Potassium', '1004', 'mg', '558'),
+        it('Calcium', '178', 'mg', '99'),
+        it('Fer', '4,9', 'mg', '2,7'),
+      ] },
+      { title: 'VITAMINES', items: [
+        it('Vitamine C', '50', 'mg', '28'),
+        it('Vitamine D', '0', 'µg', '0'),
+        it('Vitamine B9', '349', 'µg', '194'),
+        it('Vitamine B12', '0', 'µg', '0'),
+      ] },
+    ];
+    const indusGroups = [
+      { title: 'LIPIDES', items: [ it('Cholestérol', '2', 'mg', '7') ] },
+      { title: 'MINÉRAUX', items: [ sodium('90', '300', '0,23', '0,75') ] },
+    ];
+
+    const epi = {
+      category: 'Légume', name: 'Épinards cuits', portionNum: '180', portionUnit: 'g', portionChip: '180 g',
+      kcal: '43', macP: '5,3 g', macG: '6,5 g', macL: '0,7 g', forLabel: 'POUR 180 G · PAR RAPPORT À 100 G',
+      groups: epiGroups, hasGroups: true, empty: false, hasNote: false, note: '',
+    };
+    const indus = {
+      category: 'Snack sucré', name: 'Biscuits nappés chocolat', portionNum: '30', portionUnit: 'g', portionChip: '30 g',
+      kcal: '150', macP: '1,5 g', macG: '20 g', macL: '7 g', forLabel: 'POUR 30 G (2 BISCUITS)',
+      groups: indusGroups, hasGroups: true, empty: false,
+      hasNote: true, note: 'Complété via OpenFoodFacts — seuls le sodium et le cholestérol sont renseignés pour ce produit.',
+    };
+    const vide = {
+      category: 'Plat préparé', name: 'Nuggets de poulet', portionNum: '100', portionUnit: 'g', portionChip: '100 g',
+      kcal: '245', macP: '14 g', macG: '15 g', macL: '14 g', forLabel: 'POUR 100 G',
+      groups: [], hasGroups: false, empty: true,
+      hasNote: true, note: 'Aucun micronutriment renseigné sur OpenFoodFacts pour ce code-barres.',
+    };
+
+    const mk = (id, cap, tag, desc, cfg) => ({ id, cap, tag, desc, open: O[id], toggle: () => this.toggle(id), chevStyle: chev(O[id]), theme: cfg.theme, ...cfg });
+
+    const detailFrames = [
+      mk('epi', '1a', 'Clair', 'Aliment riche · accordéon ouvert', { theme: 'lt', ...epi }),
+      mk('epiDk', '1b', 'Sombre', 'Aliment riche · sombre', { theme: 'dk', ...epi }),
+      mk('defaut', '1c', 'Clair', 'État par défaut · accordéon fermé', { theme: 'lt', ...epi, open: O.defaut }),
+      mk('indus', '1d', 'Clair', 'Produit industriel · champs partiels', { theme: 'lt', ...indus }),
+      mk('vide', '1e', 'Clair', 'Produit sans micros · état vide', { theme: 'lt', ...vide }),
+    ];
+
+    // custom form fields
+    const cf = (label, value, unit) => {
+      const filled = value !== '';
+      return { label, unit, disp: filled ? value : '—', border: filled ? 'var(--acc)' : 'var(--line2)', color: filled ? 'var(--txt)' : 'var(--mut2)' };
+    };
+    const custNutri = [ cf('Calories', '412', 'kcal'), cf('Protéines', '9', 'g'), cf('Glucides', '62', 'g'), cf('Lipides', '14', 'g') ];
+    const customGroups = [
+      { title: 'LIPIDES', items: [ cf('Cholestérol', '', 'mg') ] },
+      { title: 'MINÉRAUX', items: [ cf('Sodium', '120', 'mg'), cf('Magnésium', '', 'mg'), cf('Potassium', '300', 'mg'), cf('Calcium', '', 'mg'), cf('Fer', '2', 'mg') ] },
+      { title: 'VITAMINES', items: [ cf('Vitamine C', '', 'mg'), cf('Vitamine D', '', 'µg'), cf('Vitamine B9', '', 'µg'), cf('Vitamine B12', '', 'µg') ] },
+    ];
+
+    const customFrames = [
+      { cap: '2a', tag: 'Clair', desc: 'Bloc ouvert · 3 champs remplis', theme: 'lt', open: O.cust, toggle: () => this.toggle('cust'), chevStyle: chev(O.cust) },
+      { cap: '2b', tag: 'Sombre', desc: 'Bloc ouvert · sombre', theme: 'dk', open: O.custDk, toggle: () => this.toggle('custDk'), chevStyle: chev(O.custDk) },
+    ];
+
+    return { detailFrames, customFrames, custNutri, customGroups };
+  }
+}
+</script>
+</body>
+</html>

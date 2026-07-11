@@ -354,3 +354,23 @@ values
   ('d2000050-0001-4000-8000-000000000000', 'd1000050-0000-4000-8000-000000000000', null, 'fr', 'Sucre', now(), now()),
   ('d3000050-0002-4000-8000-000000000000', 'd1000050-0000-4000-8000-000000000000', null, 'en', 'Sugar', now(), now())
 on conflict (id) do nothing;
+
+-- ─── US 4.33 : micronutriments (socle), valeurs pour 100 g d'après CIQUAL (ANSES) ───────────
+-- Enrichissement d'un sous-ensemble d'aliments bruts bien caractérisés. Les autres aliments
+-- conservent le défaut '{}' (donnée non renseignée — jamais de valeur inventée, cf. spec 4.33).
+-- Clés : cholesterol_mg, sodium_mg, magnesium_mg, potassium_mg, calcium_mg, iron_mg,
+--        vitamin_c_mg, vitamin_d_ug, vitamin_b9_ug, vitamin_b12_ug. À relire/compléter (checkpoint 🔴).
+update public.foods set micronutrients = '{"cholesterol_mg":55,"sodium_mg":59,"magnesium_mg":29,"potassium_mg":363,"calcium_mg":12,"iron_mg":0.5,"vitamin_d_ug":10,"vitamin_b9_ug":26,"vitamin_b12_ug":3}'
+  where id = 'd1000006-0000-4000-8000-000000000000'; -- Saumon
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":2,"magnesium_mg":36,"potassium_mg":370,"calcium_mg":19,"iron_mg":3.3,"vitamin_c_mg":1.5,"vitamin_b9_ug":181}'
+  where id = 'd1000019-0000-4000-8000-000000000000'; -- Lentilles cuites
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":33,"magnesium_mg":21,"potassium_mg":316,"calcium_mg":47,"iron_mg":0.73,"vitamin_c_mg":89,"vitamin_b9_ug":63}'
+  where id = 'd1000020-0000-4000-8000-000000000000'; -- Brocoli
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":79,"magnesium_mg":79,"potassium_mg":558,"calcium_mg":99,"iron_mg":2.7,"vitamin_c_mg":28,"vitamin_d_ug":0,"vitamin_b9_ug":194,"vitamin_b12_ug":0}'
+  where id = 'd1000024-0000-4000-8000-000000000000'; -- Épinards
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":1,"magnesium_mg":27,"potassium_mg":358,"calcium_mg":5,"iron_mg":0.26,"vitamin_c_mg":8.7,"vitamin_b9_ug":20}'
+  where id = 'd1000028-0000-4000-8000-000000000000'; -- Banane
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":0,"magnesium_mg":10,"potassium_mg":181,"calcium_mg":40,"iron_mg":0.1,"vitamin_c_mg":53,"vitamin_b9_ug":30}'
+  where id = 'd1000030-0000-4000-8000-000000000000'; -- Orange
+update public.foods set micronutrients = '{"cholesterol_mg":0,"sodium_mg":1,"magnesium_mg":270,"potassium_mg":733,"calcium_mg":269,"iron_mg":3.7,"vitamin_b9_ug":44}'
+  where id = 'd1000042-0000-4000-8000-000000000000'; -- Amandes

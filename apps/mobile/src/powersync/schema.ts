@@ -84,6 +84,7 @@ const foods = new Table({
   saturated_fat_per_100g: column.real,
   fiber_per_100g: column.real,
   portions: column.text, // JSON [{labelFr,labelEn,grams}]
+  micronutrients: column.text, // JSON socle 4.33 (pour 100 g)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -119,6 +120,7 @@ const food_entries = new Table({
   protein_g: column.real,
   carbs_g: column.real,
   fat_g: column.real,
+  micronutrients: column.text, // JSON socle 4.33 (snapshot figé pour la quantité)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

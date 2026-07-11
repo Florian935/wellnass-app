@@ -6,7 +6,8 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { FoodCategory, FoodPortion, FoodSource } from '@wellness/shared';
+import type { FoodCategory, FoodPortion, FoodSource, Micronutrients } from '@wellness/shared';
+import { parseMicronutrients } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -24,6 +25,8 @@ export type FoodListItem = {
   carbsPer100g: number | null;
   fatPer100g: number | null;
   portions: FoodPortion[];
+  /** Micronutriments pour 100 g (socle 4.33). Clés absentes = non renseignées. */
+  micronutrients: Micronutrients;
   isFavorite: boolean;
 };
 
@@ -36,6 +39,7 @@ type FoodListDbRow = {
   carbs_per_100g: number | null;
   fat_per_100g: number | null;
   portions: string | null;
+  micronutrients: string | null;
   name: string | null;
   is_favorite: number;
 };
@@ -52,7 +56,7 @@ function parsePortions(raw: string | null): FoodPortion[] {
 
 const SELECT_FOODS = `
   SELECT f.id, f.source, f.category, f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g,
-         f.fat_per_100g, f.portions,
+         f.fat_per_100g, f.portions, f.micronutrients,
          COALESCE(tl.name, tfr.name) AS name,
          (fav.id IS NOT NULL) AS is_favorite
   FROM foods f
@@ -75,6 +79,7 @@ function rowToItem(row: FoodListDbRow): FoodListItem {
     carbsPer100g: row.carbs_per_100g,
     fatPer100g: row.fat_per_100g,
     portions: parsePortions(row.portions),
+    micronutrients: parseMicronutrients(row.micronutrients),
     isFavorite: row.is_favorite === 1,
   };
 }
@@ -138,6 +143,8 @@ export type CustomFoodInput = {
   proteinPer100g?: number | null;
   carbsPer100g?: number | null;
   fatPer100g?: number | null;
+  /** Micronutriments pour 100 g (facultatif, socle 4.33). */
+  micronutrients?: Micronutrients;
 };
 
 /**
@@ -159,6 +166,7 @@ export async function addCustomFood(input: CustomFoodInput): Promise<string> {
     saturated_fat_per_100g: null,
     fiber_per_100g: null,
     portions: JSON.stringify([]),
+    micronutrients: JSON.stringify(input.micronutrients ?? {}),
   });
   await insertWithSyncFields('food_translations', {
     food_id: foodId,
@@ -181,6 +189,7 @@ export async function importOpenFoodFactsFood(input: {
   proteinPer100g?: number | null;
   carbsPer100g?: number | null;
   fatPer100g?: number | null;
+  micronutrients?: Micronutrients;
 }): Promise<string> {
   const ownerId = currentUserId();
   const foodId = await insertWithSyncFields('foods', {
@@ -196,6 +205,7 @@ export async function importOpenFoodFactsFood(input: {
     saturated_fat_per_100g: null,
     fiber_per_100g: null,
     portions: JSON.stringify([]),
+    micronutrients: JSON.stringify(input.micronutrients ?? {}),
   });
   await insertWithSyncFields('food_translations', {
     food_id: foodId,

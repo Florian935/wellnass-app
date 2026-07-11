@@ -6,6 +6,8 @@
  * Réseau requis pour ces appels (le reste du journal marche hors-ligne).
  */
 
+import type { MicronutrientKey, Micronutrients } from '@wellness/shared';
+
 export type OffFood = {
   barcode: string | null;
   name: string;
@@ -13,14 +15,18 @@ export type OffFood = {
   proteinPer100g: number | null;
   carbsPer100g: number | null;
   fatPer100g: number | null;
+  /** Micronutriments normalisés pour 100 g (socle 4.33). Souvent vide côté OFF. */
+  micronutrients: Micronutrients;
 };
+
+type Nutriments = Record<string, number | string | undefined>;
 
 type OffProduct = {
   code?: string;
   product_name?: string;
   product_name_fr?: string;
   product_name_en?: string;
-  nutriments?: Record<string, number | string | undefined>;
+  nutriments?: Nutriments;
 };
 
 const SEARCH_URL = 'https://world.openfoodfacts.org/cgi/search.pl';
@@ -32,6 +38,38 @@ function num(v: number | string | undefined): number | null {
   if (v == null) return null;
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Correspondance OpenFoodFacts → socle micronutriments. Les champs `*_100g` d'OFF sont
+ * normalisés en **grammes** ; on convertit vers l'unité de la clé (mg = ×1000, µg = ×1e6).
+ * `fields` liste les alias OFF possibles (le premier renseigné gagne).
+ */
+const MICRO_MAP: { key: MicronutrientKey; fields: string[]; factor: number }[] = [
+  { key: 'cholesterol_mg', fields: ['cholesterol_100g'], factor: 1000 },
+  { key: 'sodium_mg', fields: ['sodium_100g'], factor: 1000 },
+  { key: 'magnesium_mg', fields: ['magnesium_100g'], factor: 1000 },
+  { key: 'potassium_mg', fields: ['potassium_100g'], factor: 1000 },
+  { key: 'calcium_mg', fields: ['calcium_100g'], factor: 1000 },
+  { key: 'iron_mg', fields: ['iron_100g'], factor: 1000 },
+  { key: 'vitamin_c_mg', fields: ['vitamin-c_100g'], factor: 1000 },
+  { key: 'vitamin_d_ug', fields: ['vitamin-d_100g'], factor: 1_000_000 },
+  { key: 'vitamin_b9_ug', fields: ['vitamin-b9_100g', 'folates_100g'], factor: 1_000_000 },
+  { key: 'vitamin_b12_ug', fields: ['vitamin-b12_100g'], factor: 1_000_000 },
+];
+
+/** Extrait et normalise les micronutriments du bloc `nutriments`. Clés omises si absentes/≤0. */
+export function mapOffMicronutrients(n: Nutriments): Micronutrients {
+  const out: Micronutrients = {};
+  for (const m of MICRO_MAP) {
+    let raw: number | null = null;
+    for (const f of m.fields) {
+      raw = num(n[f]);
+      if (raw != null) break;
+    }
+    if (raw != null && raw > 0) out[m.key] = Math.round(raw * m.factor * 10) / 10;
+  }
+  return out;
 }
 
 function mapProduct(p: OffProduct, lang: string): OffFood | null {
@@ -47,6 +85,7 @@ function mapProduct(p: OffProduct, lang: string): OffFood | null {
     proteinPer100g: num(n['proteins_100g']),
     carbsPer100g: num(n['carbohydrates_100g']),
     fatPer100g: num(n['fat_100g']),
+    micronutrients: mapOffMicronutrients(n),
   };
 }
 

@@ -5,8 +5,10 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   perServing,
+  scaleMicronutrients,
   scaleNutrition,
   scalePortions,
+  type Micronutrients,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
@@ -59,6 +61,7 @@ export default function FoodPickerScreen() {
     proteinG: number;
     carbsG: number;
     fatG: number;
+    micronutrients?: Micronutrients;
   }) => {
     if (mode === 'recipe') {
       await addRecipeIngredient(recipeId, snapshot);
@@ -76,7 +79,7 @@ export default function FoodPickerScreen() {
 
   const pickOff = async (off: OffFood) => {
     const id = await importOpenFoodFactsFood({ ...off, category: 'other' });
-    setTarget({ id, name: off.name, kcalPer100g: off.kcalPer100g, proteinPer100g: off.proteinPer100g, carbsPer100g: off.carbsPer100g, fatPer100g: off.fatPer100g, portions: [] });
+    setTarget({ id, name: off.name, kcalPer100g: off.kcalPer100g, proteinPer100g: off.proteinPer100g, carbsPer100g: off.carbsPer100g, fatPer100g: off.fatPer100g, portions: [], micronutrients: off.micronutrients });
   };
 
   if (quickAdd) {
@@ -102,7 +105,8 @@ export default function FoodPickerScreen() {
         onCancel={() => setTarget(null)}
         onConfirm={async (grams) => {
           const n = scaleNutrition(target, grams);
-          await addSnapshot({ foodId: target.id, name: target.name, quantityG: grams, kcal: n.kcal, proteinG: n.proteinG, carbsG: n.carbsG, fatG: n.fatG });
+          const micronutrients = scaleMicronutrients(target.micronutrients ?? {}, grams);
+          await addSnapshot({ foodId: target.id, name: target.name, quantityG: grams, kcal: n.kcal, proteinG: n.proteinG, carbsG: n.carbsG, fatG: n.fatG, micronutrients });
         }}
       />
     );
@@ -170,7 +174,7 @@ export default function FoodPickerScreen() {
           keyboardShouldPersistTaps="handled"
           style={styles.list}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <FoodRow item={item} onPick={() => setTarget({ id: item.id, name: item.name, kcalPer100g: item.kcalPer100g, proteinPer100g: item.proteinPer100g, carbsPer100g: item.carbsPer100g, fatPer100g: item.fatPer100g, portions: item.portions })} />}
+          renderItem={({ item }) => <FoodRow item={item} onPick={() => setTarget({ id: item.id, name: item.name, kcalPer100g: item.kcalPer100g, proteinPer100g: item.proteinPer100g, carbsPer100g: item.carbsPer100g, fatPer100g: item.fatPer100g, portions: item.portions, micronutrients: item.micronutrients })} />}
           ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>}
           ListFooterComponent={
             tab === 'all' && search.trim().length >= 2 ? (

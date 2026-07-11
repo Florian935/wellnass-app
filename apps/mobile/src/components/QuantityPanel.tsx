@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { scaleNutrition, type FoodPortion } from '@wellness/shared';
+import { scaleNutrition, type FoodPortion, type Micronutrients } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { MicronutrientDetails } from '@/components/MicronutrientDetails';
 import { TextField } from '@/components/TextField';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -16,6 +17,8 @@ export type PickTarget = {
   carbsPer100g: number | null;
   fatPer100g: number | null;
   portions: FoodPortion[];
+  /** Micronutriments pour 100 g (socle 4.33). Vide = section « Valeurs détaillées » masquée. */
+  micronutrients?: Micronutrients;
 };
 
 /**
@@ -37,21 +40,25 @@ export function QuantityPanel({
   const [grams, setGrams] = useState(String(target.portions[0]?.grams ?? 100));
   const g = Number(grams.replace(',', '.')) || 0;
   const kcal = scaleNutrition(target, g).kcal;
+  const micronutrients = target.micronutrients ?? {};
 
   return (
     <View style={[styles.panel, { backgroundColor: colors.background }]}>
-      <Text style={[styles.panelTitle, { color: colors.text }]}>{target.name}</Text>
-      <Text style={[styles.panelKcal, { color: colors.accent }]}>{kcal} {t('nutrition.kcal')}</Text>
-      {target.portions.length > 0 ? (
-        <View style={styles.portions}>
-          {target.portions.map((p, i) => (
-            <Pressable key={i} onPress={() => setGrams(String(p.grams))} style={[styles.portion, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.portionLabel, { color: colors.text }]}>{lang === 'en' ? p.labelEn : p.labelFr} ({p.grams} g)</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
-      <TextField label={t('journal.grams')} value={grams} onChangeText={setGrams} keyboardType="decimal-pad" />
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={[styles.panelTitle, { color: colors.text }]}>{target.name}</Text>
+        <Text style={[styles.panelKcal, { color: colors.accent }]}>{kcal} {t('nutrition.kcal')}</Text>
+        {target.portions.length > 0 ? (
+          <View style={styles.portions}>
+            {target.portions.map((p, i) => (
+              <Pressable key={i} onPress={() => setGrams(String(p.grams))} style={[styles.portion, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.portionLabel, { color: colors.text }]}>{lang === 'en' ? p.labelEn : p.labelFr} ({p.grams} g)</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+        <TextField label={t('journal.grams')} value={grams} onChangeText={setGrams} keyboardType="decimal-pad" />
+        <MicronutrientDetails micronutrients={micronutrients} grams={Math.round(g)} />
+      </ScrollView>
       <View style={styles.panelActions}>
         <Button label={t('common.cancel')} variant="ghost" onPress={onCancel} />
         <Button label={t('journal.add')} onPress={() => void onConfirm(Math.round(g))} disabled={g <= 0} />
@@ -62,6 +69,7 @@ export function QuantityPanel({
 
 const styles = StyleSheet.create({
   panel: { flex: 1, padding: 16, gap: 16 },
+  content: { gap: 16, paddingBottom: 8 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
   portions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

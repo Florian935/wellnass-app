@@ -125,6 +125,41 @@
       "grams": "g",
       "reset": "Réinitialiser les macros"
     },
+    "micros": {
+      "title": "Valeurs détaillées",
+      "subtitle": "Micronutriments",
+      "optional": "Facultatif · micronutriments / 100 g",
+      "optionalHint": "Tous ces champs sont facultatifs — laisse vide ce que tu ne connais pas.",
+      "derived": "dérivé",
+      "per100": "100 g : {{value}} {{unit}}",
+      "units": {
+        "mg": "mg",
+        "ug": "µg",
+        "g": "g"
+      },
+      "groups": {
+        "lipids": "LIPIDES",
+        "minerals": "MINÉRAUX",
+        "vitamins": "VITAMINES"
+      },
+      "labels": {
+        "cholesterol_mg": "Cholestérol",
+        "sodium_mg": "Sodium",
+        "salt": "Sel",
+        "magnesium_mg": "Magnésium",
+        "potassium_mg": "Potassium",
+        "calcium_mg": "Calcium",
+        "iron_mg": "Fer",
+        "vitamin_c_mg": "Vitamine C",
+        "vitamin_d_ug": "Vitamine D",
+        "vitamin_b9_ug": "Vitamine B9",
+        "vitamin_b12_ug": "Vitamine B12"
+      },
+      "empty": {
+        "title": "Données détaillées non disponibles pour cet aliment",
+        "body": "Aucun micronutriment n'est renseigné pour cet aliment."
+      }
+    },
     "restrictions": {
       "title": "Restrictions & préférences",
       "options": {

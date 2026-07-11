@@ -7,6 +7,8 @@
  */
 
 import { useQuery } from '@powersync/react';
+import type { Micronutrients } from '@wellness/shared';
+import { parseMicronutrients } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
@@ -22,6 +24,8 @@ export type JournalEntry = {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  /** Snapshot des micronutriments figés pour la quantité (socle 4.33). */
+  micronutrients: Micronutrients;
 };
 
 type JournalDbRow = {
@@ -34,10 +38,11 @@ type JournalDbRow = {
   protein_g: number;
   carbs_g: number;
   fat_g: number;
+  micronutrients: string | null;
 };
 
 const SELECT_DAY = `
-  SELECT id, meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g
+  SELECT id, meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g, micronutrients
   FROM food_entries
   WHERE log_date = ? AND deleted_at IS NULL
   ORDER BY order_index, created_at
@@ -54,6 +59,7 @@ function rowToEntry(row: JournalDbRow): JournalEntry {
     proteinG: row.protein_g,
     carbsG: row.carbs_g,
     fatG: row.fat_g,
+    micronutrients: parseMicronutrients(row.micronutrients),
   };
 }
 
@@ -115,6 +121,8 @@ export type EntrySnapshot = {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  /** Micronutriments déjà mis à l'échelle pour la quantité (facultatif, socle 4.33). */
+  micronutrients?: Micronutrients;
 };
 
 /**
@@ -151,13 +159,21 @@ export async function addFoodEntry(
     protein_g: snapshot.proteinG,
     carbs_g: snapshot.carbsG,
     fat_g: snapshot.fatG,
+    micronutrients: JSON.stringify(snapshot.micronutrients ?? {}),
   });
 }
 
 /** Met à jour la quantité + le snapshot nutritionnel d'une entrée existante. */
 export async function updateEntry(
   entryId: string,
-  values: { quantityG: number; kcal: number; proteinG: number; carbsG: number; fatG: number },
+  values: {
+    quantityG: number;
+    kcal: number;
+    proteinG: number;
+    carbsG: number;
+    fatG: number;
+    micronutrients?: Micronutrients;
+  },
 ): Promise<void> {
   await patch('food_entries', entryId, {
     quantity_g: values.quantityG,
@@ -165,6 +181,7 @@ export async function updateEntry(
     protein_g: values.proteinG,
     carbs_g: values.carbsG,
     fat_g: values.fatG,
+    micronutrients: JSON.stringify(values.micronutrients ?? {}),
   });
 }
 
@@ -182,25 +199,35 @@ type CopyRow = {
   protein_g: number;
   carbs_g: number;
   fat_g: number;
+  micronutrients: string | null;
 };
+
+const COPY_COLS =
+  'meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g, micronutrients';
+
+/** Reconstruit un snapshot d'entrée à partir d'une ligne copiée (micros inclus). */
+function copyRowToSnapshot(r: CopyRow): EntrySnapshot {
+  return {
+    foodId: r.food_id,
+    name: r.name,
+    quantityG: r.quantity_g,
+    kcal: r.kcal,
+    proteinG: r.protein_g,
+    carbsG: r.carbs_g,
+    fatG: r.fat_g,
+    micronutrients: parseMicronutrients(r.micronutrients),
+  };
+}
 
 /** Copie toutes les entrées d'un repas d'un jour source vers (date, meal). Retourne le nb copié (4.18). */
 export async function copyMeal(fromDate: string, meal: string, toDate: string): Promise<number> {
   const rows = await powerSync.getAll<CopyRow>(
-    `SELECT meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g
+    `SELECT ${COPY_COLS}
      FROM food_entries WHERE log_date = ? AND meal_type = ? AND deleted_at IS NULL ORDER BY order_index, created_at`,
     [fromDate, meal],
   );
   for (const r of rows) {
-    await addFoodEntry(toDate, meal, {
-      foodId: r.food_id,
-      name: r.name,
-      quantityG: r.quantity_g,
-      kcal: r.kcal,
-      proteinG: r.protein_g,
-      carbsG: r.carbs_g,
-      fatG: r.fat_g,
-    });
+    await addFoodEntry(toDate, meal, copyRowToSnapshot(r));
   }
   return rows.length;
 }
@@ -208,20 +235,12 @@ export async function copyMeal(fromDate: string, meal: string, toDate: string): 
 /** Duplique le journal complet d'un jour source vers `toDate` (tous repas). Retourne le nb copié (4.18). */
 export async function duplicateDay(fromDate: string, toDate: string): Promise<number> {
   const rows = await powerSync.getAll<CopyRow>(
-    `SELECT meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g
+    `SELECT ${COPY_COLS}
      FROM food_entries WHERE log_date = ? AND deleted_at IS NULL ORDER BY order_index, created_at`,
     [fromDate],
   );
   for (const r of rows) {
-    await addFoodEntry(toDate, r.meal_type, {
-      foodId: r.food_id,
-      name: r.name,
-      quantityG: r.quantity_g,
-      kcal: r.kcal,
-      proteinG: r.protein_g,
-      carbsG: r.carbs_g,
-      fatG: r.fat_g,
-    });
+    await addFoodEntry(toDate, r.meal_type, copyRowToSnapshot(r));
   }
   return rows.length;
 }

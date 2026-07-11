@@ -44,6 +44,60 @@ export const foodPortionSchema = z.object({
 });
 export type FoodPortion = z.infer<typeof foodPortionSchema>;
 
+// --- Micronutriments (socle 4.33) --------------------------------------------
+
+/**
+ * Socle de micronutriments (spec 4.33). Toutes les clés sont **optionnelles** : une clé
+ * absente = donnée **non renseignée** (jamais 0). L'unité est encodée dans le nom de la clé
+ * (mg, sauf vitamines D/B9/B12 en µg) et **ne doit jamais changer** (clés stables).
+ * Valeurs **pour 100 g** sur un aliment (`foods`), **figées pour la quantité** dans le journal
+ * (`food_entries`).
+ */
+export const MICRONUTRIENT_KEYS = [
+  'cholesterol_mg',
+  'sodium_mg',
+  'magnesium_mg',
+  'potassium_mg',
+  'calcium_mg',
+  'iron_mg',
+  'vitamin_c_mg',
+  'vitamin_d_ug',
+  'vitamin_b9_ug',
+  'vitamin_b12_ug',
+] as const;
+export type MicronutrientKey = (typeof MICRONUTRIENT_KEYS)[number];
+
+const micronutrientFields = Object.fromEntries(
+  MICRONUTRIENT_KEYS.map((k) => [k, z.number().nonnegative().optional()]),
+) as Record<MicronutrientKey, z.ZodOptional<z.ZodNumber>>;
+
+/** Écriture stricte : seules les clés connues du panel sont acceptées. */
+export const micronutrientsSchema = z.object(micronutrientFields).strict();
+export type Micronutrients = z.infer<typeof micronutrientsSchema>;
+
+/**
+ * Lecture **tolérante** d'un JSON micronutriments venu de la base : ignore les clés hors
+ * panel, les valeurs non numériques / négatives, et renvoie `{}` sur JSON invalide.
+ * (Ne jette jamais — la base ne doit pas casser l'affichage.)
+ */
+export function parseMicronutrients(input: unknown): Micronutrients {
+  let obj: unknown = input;
+  if (typeof input === 'string') {
+    try {
+      obj = JSON.parse(input);
+    } catch {
+      return {};
+    }
+  }
+  if (obj == null || typeof obj !== 'object') return {};
+  const out: Micronutrients = {};
+  for (const key of MICRONUTRIENT_KEYS) {
+    const v = (obj as Record<string, unknown>)[key];
+    if (typeof v === 'number' && Number.isFinite(v) && v >= 0) out[key] = v;
+  }
+  return out;
+}
+
 // --- Aliment (valeurs pour 100 g, universelles/numériques) -------------------
 
 export const foodRowSchema = contentOwnerSyncFieldsSchema.extend({
@@ -61,6 +115,8 @@ export const foodRowSchema = contentOwnerSyncFieldsSchema.extend({
   fiberPer100g: z.number().nonnegative().nullable().default(null),
   /** Portions usuelles (JSON). Vide = grammes uniquement. */
   portions: z.array(foodPortionSchema).default([]),
+  /** Micronutriments pour 100 g (JSON, socle 4.33). Clés absentes = non renseignées. */
+  micronutrients: micronutrientsSchema.default({}),
 });
 export type FoodRow = z.infer<typeof foodRowSchema>;
 
@@ -96,6 +152,8 @@ export const foodEntryRowSchema = syncFieldsSchema.extend({
   proteinG: z.number().nonnegative().default(0),
   carbsG: z.number().nonnegative().default(0),
   fatG: z.number().nonnegative().default(0),
+  /** Snapshot des micronutriments figés pour la quantité (JSON, socle 4.33). */
+  micronutrients: micronutrientsSchema.default({}),
 });
 export type FoodEntryRow = z.infer<typeof foodEntryRowSchema>;
 
@@ -153,4 +211,49 @@ export function sumNutrients(entries: ReadonlyArray<Nutrients>): Nutrients {
     }),
     { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 },
   );
+}
+
+// --- Micronutriments : helpers purs (spec 4.33 §3.3) -------------------------
+
+/** Arrondi à 1 décimale (les micros portent des valeurs fines, notamment en µg). */
+function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+/**
+ * Met à l'échelle les micronutriments pour 100 g vers `grams` grammes.
+ * Seules les clés **présentes** sont mises à l'échelle (une clé absente reste absente,
+ * jamais forcée à 0). Arrondi à 1 décimale.
+ */
+export function scaleMicronutrients(per100g: Micronutrients, grams: number): Micronutrients {
+  const factor = grams / 100;
+  const out: Micronutrients = {};
+  for (const key of MICRONUTRIENT_KEYS) {
+    const v = per100g[key];
+    if (v != null) out[key] = round1(v * factor);
+  }
+  return out;
+}
+
+/**
+ * Somme clé à clé d'une liste de micronutriments (agrégat d'un jour). Une clé n'apparaît
+ * dans le résultat que si **au moins une** entrée la renseigne. Arrondi à 1 décimale.
+ */
+export function sumMicronutrients(list: ReadonlyArray<Micronutrients>): Micronutrients {
+  const out: Micronutrients = {};
+  for (const m of list) {
+    for (const key of MICRONUTRIENT_KEYS) {
+      const v = m[key];
+      if (v != null) out[key] = round1((out[key] ?? 0) + v);
+    }
+  }
+  return out;
+}
+
+/**
+ * Sel (g) dérivé du sodium (mg) : `sodium × 2,5 / 1000`, arrondi à 2 décimales (les valeurs
+ * de sel sont petites : ex. 142 mg → 0,36 g). Affichage seulement (non stocké).
+ */
+export function saltFromSodiumMg(sodiumMg: number): number {
+  return Math.round((sodiumMg * 2.5) / 10) / 100;
 }

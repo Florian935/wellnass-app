@@ -9,15 +9,16 @@
 
 | Fichier | Rôle |
 |---|---|
-| [FitTrio.dc.html](FitTrio.dc.html) | La maquette : 14 écrans + logique d'états (balise `<x-dc>`) |
-| [support.js](support.js) | Le **`dc-runtime`** de Claude Design que la maquette charge (`<script src="./support.js">`). Généré, ne pas éditer. |
-| [FitTrio.preview.webp](FitTrio.preview.webp) | Aperçu rendu de la maquette |
+| [FitTrio.dc.html](FitTrio.dc.html) | La maquette principale : 14 écrans + logique d'états (balise `<x-dc>`) |
+| [FitTrio - Composants.dc.html](FitTrio%20-%20Composants.dc.html) | Bibliothèque de composants du design system (extraits réutilisables) |
+| [FitTrio - Micronutriments.dc.html](FitTrio%20-%20Micronutriments.dc.html) | **US 4.33** — détail aliment (section « Valeurs détaillées ») + aliment perso (saisie micros). Clair & sombre, accordéons. |
+| [support.js](support.js) | Le **`dc-runtime`** de Claude Design que les maquettes chargent (`<script src="./support.js">`). Généré, ne pas éditer. |
+| [Architecture Applicative.md](Architecture%20Applicative.md) / [.jpg](Architecture%20Applicative.jpg) | Arborescence des écrans + descriptif des fonctionnalités, pilier par pilier. |
+| [FitTrio.preview.webp](FitTrio.preview.webp) · [screenshots/](screenshots/) | Aperçus rendus des maquettes |
 | [README.md](README.md) | Note de handoff auto-générée par Claude Design |
 
-> ℹ️ Les noms de fichiers étaient intervertis à l'import (contenus dans les mauvais fichiers) ;
-> ils ont été remis d'aplomb pour que la maquette soit ouvrable telle quelle (`FitTrio.dc.html`
-> + `support.js` côte à côte). Le README de handoff mentionne un chemin imbriqué
-> (`prototype-d-application-markdown/project/…`) qui ne correspond pas à ce dossier à plat.
+> ℹ️ Toutes les maquettes sont **à plat** dans ce dossier et chargent le même `support.js` (les
+> ouvrir via un serveur HTTP local, voir ci-dessous).
 
 ## Ouvrir la maquette
 
