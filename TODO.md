@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 11/07/2026 (US 4.33 micronutriments : code terminé → reste activation cloud + recette device)*
+*Dernière mise à jour : 11/07/2026 (US 1.15 unités : livrée & validée device ✅ · US 4.33 micronutriments : code terminé → reste activation cloud + recette device)*
 
 ---
 
@@ -106,16 +106,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (ajout aliment + upload sync OK). Constat : le **dashboard d'accueil est un placeholder statique** (3 cartes
   non branchées) → spec US « Dashboard live » V0.6 rédigée
   ([us/7.4-7.7-dashboard-live.md](docs/specs/functional/us/7.4-7.7-dashboard-live.md), **PR #27 à valider**).
-- [~] **US 1.15 transverse — Affichage & saisie des unités (métrique/impérial)** : câbler
+- [x] **US 1.15 transverse — Affichage & saisie des unités (métrique/impérial)** — **livrée & validée device (11/07/2026)** : câbler
   `useSettings().units` sur **tout l'affichage ET toute la saisie** des grandeurs (poids charges +
   corporel, distance, allure, taille), stockage toujours SI. Dette pré-existante (`displayWeight`
-  existait mais n'était lu nulle part → tout s'affichait en kg/km). **Code terminé, reste recette device.**
+  existait mais n'était lu nulle part → tout s'affichait en kg/km).
   - [x] **Spec** ([us/1.15-unites-metrique-imperial.md](docs/specs/functional/us/1.15-unites-metrique-imperial.md)) — commit `c2c0e84`, revue *Approved*.
   - [x] **Plan** ([1.15-unites-metrique-imperial.md](docs/plans/1.15-unites-metrique-imperial.md)) — 14 tâches TDD, revue *Approved*.
   - [x] **Design/maquette** — écartée (option 2 : changement d'UI mineur), validé Florian 09/07/2026.
   - [x] **Code** — 16 commits (`0d1df62`→`379a7cc`), subagent-driven : shared (ft/in, allure, parseurs) + hook `useUnits()` + smoke test + branchement de tous les écrans/composants (affichage + saisie) + i18n FR/EN (miroir) + anti-dérive. Garde-fou grep vert, typecheck/lint/test verts (343 shared + 23 mobile), parité FR/EN 495/495. Revues par phase + revue finale (1 bloquant corrigé : collision clé `workout.set`).
-  - [ ] **Recette device (Task 14 DoD)** — **nécessite un build** : bascule metric↔imperial réactive sur toutes les surfaces §1, en FR **et** EN ; round-trip saisie ; taille en ft/in ; anti-dérive (rouvrir/enregistrer sans modifier ne change pas le SI stocké). _À vérifier aussi : rebord UX du champ charge en impérial (ré-affichage à la frappe)._
-  - _US 100 % client : validable sans activation cloud (pas de checkpoint 🔴)._
+  - [x] **Recette device (11/07/2026)** — build preview `87de89b5`, testé Pixel 6a : bascule metric↔imperial (Réglages → Unités) OK sur les surfaces §1, taille en ft/in OK, saisie round-trip OK.
+  - _Décision produit actée : unités = **réglage in-app**, défaut **métrique**, **non dérivées de la région OS** (découplage confirmé). Le changement de région du téléphone n'influe volontairement pas ; l'utilisateur choisit dans Réglages._
+  - _US 100 % client : validée sans activation cloud (pas de checkpoint 🔴)._
 
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
 - [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**
