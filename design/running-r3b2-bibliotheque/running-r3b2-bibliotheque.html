@@ -1,0 +1,109 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r3l{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:860px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:64ch;margin:0;font-size:15px;}
+  .stage{max-width:860px;margin:0 auto;display:flex;justify-content:center;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:400px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 14px;}
+
+  /* tabs */
+  .tabs{display:flex;background:var(--surface-alt);border-radius:12px;padding:4px;gap:4px;margin:0 4px 14px;}
+  .tab{flex:1;text-align:center;padding:9px;font-size:14px;font-weight:700;border-radius:9px;color:var(--muted);}
+  .tab.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(51,41,31,.08);}
+
+  /* filters */
+  .filters{display:flex;flex-direction:column;gap:10px;margin:0 4px 16px;}
+  .frow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .flabel{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;width:100%;}
+  .pill{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--ink);}
+  .pill.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+
+  /* program cards */
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  .prog{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:0 1px 2px rgba(51,41,31,.04);}
+  .prog h3{margin:0 0 4px;font-size:17px;font-weight:800;letter-spacing:-.01em;}
+  .prog .summ{color:var(--muted);font-size:13px;margin:0 0 12px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;}
+  .chip{background:var(--surface-alt);color:var(--ink);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;}
+  .use{appearance:none;border:0;width:100%;background:var(--accent);color:var(--accent-text);font-weight:700;font-size:14px;padding:11px;border-radius:12px;font-family:var(--sans);}
+
+  .notes{max-width:860px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r3l">
+  <header class="head">
+    <p class="eyebrow">Wellness · Running R3b-ii · Maquette</p>
+    <h1 class="title">Bibliothèque de programmes de course</h1>
+    <p class="sub">Un onglet « Bibliothèque » dans les programmes de course : parcourir des programmes pré-construits, filtrer par objectif / niveau / durée, et « Utiliser » (copie dans « Mes programmes », éditable). Réutilise l'infra bibliothèque muscu. Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Programmes</span></div>
+      <p class="screen-title">Programmes de course</p>
+
+      <div class="tabs">
+        <span class="tab">Mes programmes</span>
+        <span class="tab on">Bibliothèque</span>
+      </div>
+
+      <div class="filters">
+        <div class="frow">
+          <span class="flabel">Objectif</span>
+          <span class="pill">Tous</span><span class="pill on">10 km</span><span class="pill">Semi</span><span class="pill">Endurance</span>
+        </div>
+        <div class="frow">
+          <span class="flabel">Niveau</span>
+          <span class="pill on">Tous</span><span class="pill">Débutant</span><span class="pill">Régulier</span><span class="pill">Confirmé</span>
+        </div>
+      </div>
+
+      <div class="cards">
+        <article class="prog">
+          <h3>10 km en 8 semaines</h3>
+          <p class="summ">Prépare un premier 10 km avec 3 séances par semaine.</p>
+          <div class="chips"><span class="chip">Objectif : 10 km</span><span class="chip">Débutant</span><span class="chip">8 sem.</span></div>
+          <button class="use">Utiliser</button>
+        </article>
+        <article class="prog">
+          <h3>Prépa semi-marathon</h3>
+          <p class="summ">Monte en volume vers le semi avec 4 séances par semaine.</p>
+          <div class="chips"><span class="chip">Objectif : Semi</span><span class="chip">Régulier</span><span class="chip">10 sem.</span></div>
+          <button class="use">Utiliser</button>
+        </article>
+        <article class="prog">
+          <h3>Reprise en douceur</h3>
+          <p class="summ">Reviens à la course progressivement, sans pression.</p>
+          <div class="chips"><span class="chip">Objectif : Endurance</span><span class="chip">Débutant</span><span class="chip">6 sem.</span></div>
+          <button class="use">Utiliser</button>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Onglet</strong> « Bibliothèque » à côté de « Mes programmes » dans le même écran (patron muscu). Filtres <strong>objectif / niveau / durée</strong> (combinés).</li>
+      <li><strong>« Utiliser »</strong> = <code>duplicateProgram</code> → copie <strong>éditable et non active</strong> dans « Mes programmes », puis navigation vers son détail (l'utilisateur active/personnalise ensuite).</li>
+      <li><strong>Contenu seedé</strong> : 3 programmes « starter » bilingues FR+EN (idempotents, synchronisés via <code>shared_content</code>). Enrichissement curé = tâche contenu ultérieure.</li>
+      <li><strong>Aucune migration de schéma</strong> ; niveau = enum <code>beginner/intermediate/advanced</code> (« Régulier » = <code>intermediate</code>). Réutilise <code>useProgramLibrary</code> (filtre pilier ajouté) + <code>duplicateProgram</code>.</li>
+      <li><em>Polices : stand-ins système ici ; en app = Bricolage / Hanken / Space Mono.</em></li>
+    </ul>
+  </section>
+</div>
