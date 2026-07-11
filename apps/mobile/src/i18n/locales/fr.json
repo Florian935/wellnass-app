@@ -652,6 +652,7 @@
       "title": "Profil",
       "edit": "Modifier mon profil",
       "nutrition": "Profil nutritionnel",
+      "running": "Profil coureur",
       "relaunchOnboarding": "Relancer l'onboarding"
     },
     "pillars": {
@@ -676,6 +677,40 @@
     }
   },
   "running": {
+    "profile": {
+      "title": "Profil coureur",
+      "objective": "Objectif",
+      "level": "Niveau",
+      "ref5k": "Allure de référence (5 km)",
+      "ref5kHint": "Ton allure actuelle sur 5 km",
+      "ref5kPlaceholderMetric": "5:00",
+      "ref5kPlaceholderImperial": "8:03",
+      "frequency": "Fréquence hebdo visée",
+      "paces": "Mes allures d'entraînement",
+      "pacesEmpty": "Renseigne ton allure de référence pour voir tes allures cibles."
+    },
+    "objective": {
+      "5k": "5 km",
+      "10k": "10 km",
+      "semi": "Semi-marathon",
+      "marathon": "Marathon",
+      "perte_poids": "Perte de poids",
+      "endurance": "Endurance générale"
+    },
+    "level": {
+      "debutant": "Débutant (< 3 mois)",
+      "regulier": "Régulier (3-12 mois)",
+      "confirme": "Confirmé (> 1 an)"
+    },
+    "sessionType": {
+      "endurance": "Endurance fondamentale",
+      "fractionne": "Fractionné (VMA)",
+      "sortie_longue": "Sortie longue",
+      "recuperation": "Récupération active"
+    },
+    "paces": {
+      "range": "{{min}} – {{max}}"
+    },
     "tracker": {
       "notificationTitle": "Course en cours",
       "notificationBody": "Suivi GPS actif — appuie pour revenir à la course."

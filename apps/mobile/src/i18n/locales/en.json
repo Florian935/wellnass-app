@@ -652,6 +652,7 @@
       "title": "Profile",
       "edit": "Edit my profile",
       "nutrition": "Nutrition profile",
+      "running": "Runner profile",
       "relaunchOnboarding": "Restart onboarding"
     },
     "pillars": {
@@ -676,6 +677,40 @@
     }
   },
   "running": {
+    "profile": {
+      "title": "Runner profile",
+      "objective": "Goal",
+      "level": "Level",
+      "ref5k": "Reference pace (5 km)",
+      "ref5kHint": "Your current pace over 5 km",
+      "ref5kPlaceholderMetric": "5:00",
+      "ref5kPlaceholderImperial": "8:03",
+      "frequency": "Target weekly frequency",
+      "paces": "My training paces",
+      "pacesEmpty": "Enter your reference pace to see your target paces."
+    },
+    "objective": {
+      "5k": "5 km",
+      "10k": "10 km",
+      "semi": "Half marathon",
+      "marathon": "Marathon",
+      "perte_poids": "Weight loss",
+      "endurance": "General endurance"
+    },
+    "level": {
+      "debutant": "Beginner (< 3 months)",
+      "regulier": "Regular (3-12 months)",
+      "confirme": "Experienced (> 1 year)"
+    },
+    "sessionType": {
+      "endurance": "Base endurance",
+      "fractionne": "Intervals (VO2max)",
+      "sortie_longue": "Long run",
+      "recuperation": "Active recovery"
+    },
+    "paces": {
+      "range": "{{min}} – {{max}}"
+    },
     "tracker": {
       "notificationTitle": "Run in progress",
       "notificationBody": "GPS tracking active — tap to return to your run."

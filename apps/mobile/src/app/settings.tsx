@@ -52,6 +52,13 @@ export default function SettingsScreen() {
             onPress={() => router.push('/nutrition-profile')}
           />
         ) : null}
+        {activePillars.includes('running') ? (
+          <Button
+            label={t('settings.profile.running')}
+            variant="ghost"
+            onPress={() => router.push('/running-profile')}
+          />
+        ) : null}
         <Button label={t('settings.profile.relaunchOnboarding')} variant="ghost" onPress={() => void relaunchOnboarding()} />
       </View>
 

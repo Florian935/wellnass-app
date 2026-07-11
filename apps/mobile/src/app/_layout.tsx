@@ -183,6 +183,17 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="running-profile"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('running.profile.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="food-picker"
           options={{
             presentation: 'modal',
