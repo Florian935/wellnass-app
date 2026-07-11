@@ -18,6 +18,7 @@ export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
 export * from './running';
+export * from './geo';
 export * from './date';
 export * from './streak';
 export type { Database, Json } from './database.types';
