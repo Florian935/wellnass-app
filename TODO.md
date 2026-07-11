@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 11/07/2026 (Running R3a profil coureur : code livré et revu → reste checkpoint 🔴 cloud+device)*
+*Dernière mise à jour : 12/07/2026 (Running R3b-i programme custom : code livré et revu → reste checkpoint 🔴 cloud+device après R3a)*
 
 ---
 
@@ -124,7 +124,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **Running R2 — Carte** (5.17/5.27) — **livrée & validée device (11/07/2026)** (`feature/running-r2-carte`, MapLibre + MapTiler, [ADR-006](docs/adr/ADR-006-cartographie.md)). `simplifyTrack` (Douglas-Peucker, shared, testé) + `RouteMap` réutilisable (live `follow` / résumé fit-bounds) + `RunDetail.gpsTrack` + branchement `active`/`summary` + i18n FR/EN. Cadrage complet (spec→plan→maquette), revues par phase + finale. Clé MapTiler en EAS env (preview+prod, hors git). **Validé sur Pixel** : carte live tracé+caméra, résumé fit-bounds, tuiles outdoor, états vides. Différé : tuiles offline, sélecteur de style, export GPX (R4).
 - [~] **Running R3 — Profil coureur + programmes** (5.1-5.11) — **découpé en R3a/R3b/R3c** :
   - [~] **R3a — Profil coureur + types de séance** (5.1, 5.8-5.11) — **code livré & revu** (`feature/running-r3a-profil-types`). `running-paces` (VMA dérivée + plages d'allure, testé) + parse allure M:SS ; table **`running_profiles`** (migration `20260712090000` + RLS + sync rules + schéma PowerSync) ; `running-profile-repository` ; écran profil + « Mes allures » + route + entrée Réglages ; i18n FR/EN. Cadrage complet, revues par phase + finale (*Approved*). typecheck/lint/tests verts. **Reste 🔴 (avec Damien)** : confirmer le timestamp de migration, **appliquer la migration cloud + déployer sync rules + `npm run db:types`**, puis **vérif device**. _Récup +90-120 : plafond d'affichage à confirmer produit._
-  - [ ] **R3b — Programmes de course** (5.4 custom, 5.2 bibliothèque, 5.3 filtres).
+  - [~] **R3b — Programmes de course** — **découpé en R3b-i / R3b-ii** :
+    - [~] **R3b-i — Programme custom** (5.4) — **code livré & revu** (`feature/running-r3b1-programme-custom`). Réutilise l'infra programmes muscu (pilier-aware) ; contenu de séance running (type + cible) ajouté à `sessions` (migration `20260712100000`) ; repo (`updateRunningSession`/`updateProgram`/`updateProgramTranslation`/duplicate étendu) ; écrans `running-programs` (liste/détail/éditeur) + allure dérivée R3a. Blocs d'intervalles différés. Cadrage + revues (par phase + finale *Approved*). typecheck/lint/tests verts, muscu non régressé. **Reste 🔴 (après R3a, avec Damien)** : migration cloud + `db:types` + vérif device.
+    - [ ] **R3b-ii — Bibliothèque + filtres + seed** (5.2, 5.3) : programmes seedés bilingues (shared_content) + parcours/filtres.
   - [ ] **R3c — Planning + coordination muscu/running + séance manquée** (5.5, 5.6, 5.7).
 - [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
