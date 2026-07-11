@@ -804,6 +804,60 @@ export async function activateProgram(programId: string): Promise<void> {
 }
 
 /**
+ * Met à jour les métadonnées scalaires d'un programme personnalisé
+ * (level, goal, durationWeeks). Seules les clés présentes dans `input` sont modifiées.
+ * Compatible offline-first : écrit en SQLite local, PowerSync synchronise ensuite.
+ */
+export async function updateProgram(
+  programId: string,
+  input: {
+    level?: ProgramLevel | null;
+    goal?: string | null;
+    durationWeeks?: number | null;
+  },
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('level' in input) columns['level'] = input.level;
+  if ('goal' in input) columns['goal'] = input.goal;
+  if ('durationWeeks' in input) columns['duration_weeks'] = input.durationWeeks;
+  await patch('programs', programId, columns);
+}
+
+/**
+ * Met à jour la traduction d'un programme pour la langue applicative courante.
+ * Si la ligne n'existe pas encore pour cette langue, elle est insérée.
+ * Compatible offline-first.
+ */
+export async function updateProgramTranslation(
+  programId: string,
+  input: { name?: string; summary?: string | null },
+): Promise<void> {
+  const ownerId = currentUserId();
+  const lang = getAppLanguage();
+
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM program_translations WHERE program_id = ? AND lang = ? AND deleted_at IS NULL`,
+    [programId, lang],
+  );
+
+  if (existing) {
+    const columns: Record<string, unknown> = {};
+    if ('name' in input) columns['name'] = input.name;
+    if ('summary' in input) columns['summary'] = input.summary;
+    await patch('program_translations', existing.id, columns);
+  } else {
+    await insertWithSyncFields('program_translations', {
+      program_id: programId,
+      owner_id: ownerId,
+      lang,
+      name: input.name ?? '',
+      summary: input.summary ?? null,
+      description: null,
+    });
+  }
+}
+
+/**
  * Supprime un programme (soft delete du programme + de ses séances + de leurs plans
  * + de ses traductions). Les identifiants sont récupérés via `getAll`.
  */

@@ -1,0 +1,339 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { sessionTargetPace, type ProgramSessionType } from '@wellness/shared';
+import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
+import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import {
+  activateProgram,
+  duplicateProgram,
+  useProgramDetail,
+  type SessionDetail,
+} from '@/data/repositories/program-repository';
+import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { fontFamily } from '@/theme/fonts';
+import { useTheme } from '@/theme/useTheme';
+import { useUnits } from '@/hooks/useUnits';
+
+export default function RunningProgramDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const programId = typeof id === 'string' ? id : '';
+  return <RunningProgramDetailView programId={programId} />;
+}
+
+function RunningProgramDetailView({ programId }: { programId: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const units = useUnits();
+
+  const { detail, isLoading } = useProgramDetail(programId);
+  const { runnerProfile } = useRunnerProfile();
+  const [activating, setActivating] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+
+  const onActivate = async () => {
+    if (activating || detail?.isActive) return;
+    setActivating(true);
+    try {
+      await activateProgram(programId);
+    } catch {
+      // Écriture offline-first.
+    } finally {
+      setActivating(false);
+    }
+  };
+
+  const onDuplicate = async () => {
+    if (duplicating) return;
+    setDuplicating(true);
+    try {
+      const newId = await duplicateProgram(programId);
+      router.replace(`/running-programs/${newId}`);
+    } catch {
+      // Silencieux.
+    } finally {
+      setDuplicating(false);
+    }
+  };
+
+  const onEdit = () => {
+    router.push(`/running-programs/edit?id=${programId}`);
+  };
+
+  if (isLoading && !detail) {
+    return (
+      <Screen edges={['top']} center>
+        <ActivityIndicator color={colors.accent} />
+      </Screen>
+    );
+  }
+
+  if (!detail) {
+    return (
+      <Screen edges={['top']}>
+        <ScreenHeader title={t('programs.detail.notFoundTitle')} />
+        <Text style={[styles.notFound, { color: colors.textMuted }]}>
+          {t('programs.detail.notFoundMessage')}
+        </Text>
+      </Screen>
+    );
+  }
+
+  const metaChips: string[] = [];
+  if (detail.goal) metaChips.push(t(`running.objective.${detail.goal}`));
+  if (detail.level) metaChips.push(t(`running.programLevel.${detail.level}`));
+  if (detail.durationWeeks) {
+    metaChips.push(t('programs.weeks', { count: detail.durationWeeks }));
+  }
+
+  return (
+    <Screen edges={['top']}>
+      <ScreenHeader
+        title={detail.name}
+        action={
+          detail.isActive ? (
+            <View style={[styles.activeBadge, { backgroundColor: colors.accent }]}>
+              <Text style={[styles.activeBadgeText, { color: colors.accentText }]}>
+                {t('running.program.activeBadge')}
+              </Text>
+            </View>
+          ) : null
+        }
+      />
+
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Chips de métadonnées */}
+        {metaChips.length > 0 ? (
+          <Text style={[styles.meta, { color: colors.textMuted }]}>
+            {metaChips.join(' · ')}
+          </Text>
+        ) : null}
+
+        {/* Séances */}
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('running.program.sessions')}
+        </Text>
+
+        {detail.sessions.length === 0 ? (
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+              {t('running.program.emptySessions')}
+            </Text>
+          </Card>
+        ) : (
+          <View style={styles.sessionList}>
+            {detail.sessions.map((session, index) => (
+              <RunningSessionCard
+                key={session.id}
+                session={session}
+                index={index}
+                ref5kPaceSPerKm={runnerProfile?.ref5kPaceSPerKm ?? null}
+                units={units}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          {detail.isActive ? (
+            <Button
+              label={t('programs.detail.alreadyActive')}
+              onPress={() => undefined}
+              disabled
+            />
+          ) : (
+            <Button
+              label={activating ? t('programs.detail.activating') : t('running.program.activate')}
+              onPress={() => void onActivate()}
+              loading={activating}
+            />
+          )}
+
+          <Button
+            label={t('running.program.edit')}
+            variant="ghost"
+            onPress={onEdit}
+          />
+
+          <Button
+            label={duplicating ? t('programs.detail.duplicating') : t('running.program.duplicate')}
+            variant="ghost"
+            onPress={() => void onDuplicate()}
+            loading={duplicating}
+            disabled={duplicating}
+          />
+        </View>
+      </ScrollView>
+    </Screen>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Carte de séance (read-only)
+// ---------------------------------------------------------------------------
+
+type RunningSessionCardProps = {
+  session: SessionDetail;
+  index: number;
+  ref5kPaceSPerKm: number | null;
+  units: ReturnType<typeof useUnits>;
+};
+
+function RunningSessionCard({
+  session,
+  index,
+  ref5kPaceSPerKm,
+  units,
+}: RunningSessionCardProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const sessionName =
+    session.name?.trim() ||
+    t('running.program.sessionDefaultName', { letter: sessionLetter(index) });
+
+  const sessionType = session.sessionType as ProgramSessionType | null;
+
+  // Libellé du type de séance
+  const typeLabel = sessionType
+    ? t(`running.sessionType.${sessionType}`)
+    : null;
+
+  // Cible formatée
+  let targetLabel: string | null = null;
+  if (session.targetDistanceM != null && session.targetDistanceM > 0) {
+    const km = session.targetDistanceM / 1000;
+    targetLabel = units.formatDistance(km);
+  } else if (session.targetDurationSeconds != null && session.targetDurationSeconds > 0) {
+    const minutes = Math.round(session.targetDurationSeconds / 60);
+    targetLabel = `${minutes} min`;
+  }
+
+  // Allure cible calculée
+  let paceLabel: string | null = null;
+  if (sessionType) {
+    if (ref5kPaceSPerKm == null) {
+      paceLabel = t('running.program.noProfileHint');
+    } else {
+      const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
+      if (range) {
+        paceLabel = `${units.formatPace(range.minSPerKm)} – ${units.formatPace(range.maxSPerKm)}`;
+      }
+    }
+  }
+
+  return (
+    <View
+      style={[styles.sessionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+    >
+      <Text style={[styles.sessionName, { color: colors.text }]}>{sessionName}</Text>
+
+      <View style={styles.chipsRow}>
+        {typeLabel ? (
+          <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <Text style={[styles.chipText, { color: colors.textMuted }]}>{typeLabel}</Text>
+          </View>
+        ) : null}
+        {targetLabel ? (
+          <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <Text style={[styles.chipText, { color: colors.textMuted }]}>{targetLabel}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      {paceLabel ? (
+        <Text style={[styles.paceLabel, { color: colors.textMuted }]}>{paceLabel}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** Lettre de séance à partir d'un index 0-based : A, B, C… */
+function sessionLetter(index: number): string {
+  return index < 26 ? String.fromCharCode(65 + index) : String(index + 1);
+}
+
+const styles = StyleSheet.create({
+  scroll: { paddingBottom: 32 },
+  meta: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontFamily: fontFamily.displaySemi,
+    fontSize: 18,
+    letterSpacing: -0.3,
+    marginBottom: 12,
+  },
+  sessionList: { gap: 12 },
+  sessionCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 10,
+  },
+  sessionName: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 15,
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  chipText: {
+    fontFamily: fontFamily.body,
+    fontSize: 12,
+  },
+  paceLabel: {
+    fontFamily: fontFamily.mono,
+    fontSize: 13,
+  },
+  emptyCard: { padding: 16 },
+  emptyText: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  activeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  activeBadgeText: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 12,
+  },
+  actions: {
+    gap: 10,
+    marginTop: 28,
+  },
+  notFound: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});
