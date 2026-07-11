@@ -41,7 +41,7 @@ export function StreakCard() {
         <Text style={[styles.streakWord, { color: colors.textMuted }]}>
           {isEmpty
             ? t('home.streak.empty')
-            : t('home.streak.count', { count: current })}
+            : t('home.streak.suffix', { count: current })}
         </Text>
       </View>
 

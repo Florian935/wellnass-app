@@ -320,6 +320,8 @@
       "title": "Régularité",
       "count_one": "{{count}} jour",
       "count_other": "{{count}} jours",
+      "suffix_one": "jour d'affilée",
+      "suffix_other": "jours d'affilée",
       "days": ["L", "M", "M", "J", "V", "S", "D"],
       "empty": "Valide une activité aujourd'hui pour lancer ta série."
     },

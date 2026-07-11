@@ -320,6 +320,8 @@
       "title": "Streak",
       "count_one": "{{count}} day",
       "count_other": "{{count}} days",
+      "suffix_one": "day in a row",
+      "suffix_other": "days in a row",
       "days": ["M", "T", "W", "T", "F", "S", "S"],
       "empty": "Log an activity today to start your streak."
     },
