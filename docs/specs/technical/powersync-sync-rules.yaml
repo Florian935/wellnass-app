@@ -41,6 +41,7 @@ bucket_definitions:
       - select * from meal_template_items   where user_id = bucket.user_id and deleted_at is null
       - select * from body_weight_entries   where user_id = bucket.user_id and deleted_at is null
       # ── Running ───────────────────────────────────────────────────────────
+      - select * from running_profiles      where user_id = bucket.user_id and deleted_at is null
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null
 
   shared_content:

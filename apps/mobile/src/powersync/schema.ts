@@ -254,6 +254,20 @@ const personal_records = new Table({
   deleted_at: column.text,
 });
 
+// ── Running R3a : profil coureur ──────────────────────────────────────────
+// Migration : supabase/migrations/20260712090000_running_profiles.sql
+
+const running_profiles = new Table({
+  user_id: column.text,
+  objective: column.text,
+  level: column.text,
+  ref_5k_pace_s_per_km: column.real,
+  weekly_frequency: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── Running R1 : course libre ─────────────────────────────────────────────
 
 const runs = new Table({
@@ -354,5 +368,6 @@ export const AppSchema = new Schema({
   sessions,
   exercise_plans,
   personal_records,
+  running_profiles,
   runs,
 });
