@@ -33,7 +33,7 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { Pillar, ProgramLevel, SetType } from '@wellness/shared';
+import type { Pillar, ProgramLevel, ProgramSessionType, SetType } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -75,6 +75,12 @@ export type SessionDetail = {
   name: string | null;
   orderIndex: number;
   plans: PlanItem[];
+  /** Running uniquement — null pour les séances muscu. */
+  sessionType: ProgramSessionType | null;
+  /** Running uniquement (mètres) — null pour les séances muscu. */
+  targetDistanceM: number | null;
+  /** Running uniquement (secondes) — null pour les séances muscu. */
+  targetDurationSeconds: number | null;
 };
 
 /** Détail complet d'un programme : entête + séances + plans. */
@@ -124,11 +130,14 @@ type ProgramListDbRow = {
   name: string | null;
 };
 
-/** Ligne brute d'une séance (sans plans). */
+/** Ligne brute d'une séance (sans plans). Colonnes running nullables pour muscu. */
 type SessionDbRow = {
   id: string;
   name: string | null;
   order_index: number;
+  session_type: string | null;
+  target_distance_m: number | null;
+  target_duration_seconds: number | null;
 };
 
 /**
@@ -167,9 +176,12 @@ const SELECT_PROGRAM_BASE = `
 
 const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
 
-/** Séances d'un programme, triées par position. Premier `?` = id du programme. */
+/**
+ * Séances d'un programme, triées par position. Premier `?` = id du programme.
+ * Colonnes running incluses (nulles pour les séances muscu — harmless).
+ */
 const SELECT_SESSIONS_FOR_PROGRAM = `
-  SELECT id, name, order_index
+  SELECT id, name, order_index, session_type, target_distance_m, target_duration_seconds
   FROM sessions
   WHERE program_id = ? AND deleted_at IS NULL
   ORDER BY order_index
@@ -239,6 +251,9 @@ function buildSessionDetails(
     name: s.name,
     orderIndex: s.order_index,
     plans: [],
+    sessionType: (s.session_type as ProgramSessionType | null) ?? null,
+    targetDistanceM: s.target_distance_m,
+    targetDurationSeconds: s.target_duration_seconds,
   }));
 
   const bySessionId = new Map<string, SessionDetail>();
@@ -306,8 +321,12 @@ export function useProgramLibrary(filters?: ProgramLibraryFilters): {
  * Programmes personnalisés de l'utilisateur courant (`owner_id = user`), réactifs.
  * PowerSync ne réplique que les lignes de l'utilisateur ; le filtre `owner_id = ?`
  * exclut néanmoins explicitement l'éditorial (owner_id null).
+ *
+ * @param pillar — filtre optionnel par pilier. Non fourni = tous les piliers (comportement
+ *   muscu historique inchangé). Les écrans running passent `'running'` pour n'obtenir que
+ *   leurs programmes. Le filtre est ajouté comme clause WHERE paramétrée (pas d'injection).
  */
-export function useMyPrograms(): {
+export function useMyPrograms(pillar?: Pillar): {
   programs: ProgramListItem[];
   isLoading: boolean;
 } {
@@ -315,12 +334,13 @@ export function useMyPrograms(): {
   const lang = i18n.language === 'en' ? 'en' : 'fr';
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
 
-  const sql = `${SELECT_PROGRAM_BASE} AND p.owner_id = ? ${ORDER_BY_NAME}`;
+  const sql = pillar
+    ? `${SELECT_PROGRAM_BASE} AND p.owner_id = ? AND p.pillar = ? ${ORDER_BY_NAME}`
+    : `${SELECT_PROGRAM_BASE} AND p.owner_id = ? ${ORDER_BY_NAME}`;
 
-  const { data, isLoading: queryLoading } = useQuery<ProgramListDbRow>(sql, [
-    lang,
-    userId,
-  ]);
+  const params = pillar ? [lang, userId, pillar] : [lang, userId];
+
+  const { data, isLoading: queryLoading } = useQuery<ProgramListDbRow>(sql, params);
 
   const isLoading = queryLoading;
   const programs = data.map(rowToListItem);
@@ -550,6 +570,30 @@ export async function removeExercisePlan(planId: string): Promise<void> {
 }
 
 /**
+ * Met à jour le contenu running d'une séance (type, distance cible, durée cible, nom).
+ * Seules les clés présentes dans `input` sont modifiées (même pattern que
+ * `updateExercisePlan`). Compatible offline-first : écrit en SQLite local, PowerSync
+ * synchronise ensuite.
+ */
+export async function updateRunningSession(
+  sessionId: string,
+  input: {
+    sessionType?: ProgramSessionType;
+    targetDistanceM?: number | null;
+    targetDurationSeconds?: number | null;
+    name?: string;
+  },
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('sessionType' in input) columns['session_type'] = input.sessionType;
+  if ('targetDistanceM' in input) columns['target_distance_m'] = input.targetDistanceM;
+  if ('targetDurationSeconds' in input) columns['target_duration_seconds'] = input.targetDurationSeconds;
+  if ('name' in input) columns['name'] = input.name;
+
+  await patch('sessions', sessionId, columns);
+}
+
+/**
  * Retire une séance d'un programme (soft delete de la séance ET de tous ses plans).
  */
 export async function removeSession(sessionId: string): Promise<void> {
@@ -655,12 +699,17 @@ export async function duplicateProgram(
     }
 
     // 3. Copie des séances (nouveaux id) — on conserve la correspondance ancien→nouveau.
+    //    Colonnes running incluses : les séances muscu les ont à NULL (aucun effet).
     const sourceSessions = await tx.getAll<{
       id: string;
       order_index: number;
       name: string | null;
+      session_type: string | null;
+      target_distance_m: number | null;
+      target_duration_seconds: number | null;
     }>(
-      `SELECT id, order_index, name FROM sessions
+      `SELECT id, order_index, name, session_type, target_distance_m, target_duration_seconds
+       FROM sessions
        WHERE program_id = ? AND deleted_at IS NULL
        ORDER BY order_index`,
       [sourceProgramId],
@@ -673,6 +722,9 @@ export async function duplicateProgram(
         owner_id: ownerId,
         order_index: s.order_index,
         name: s.name,
+        session_type: s.session_type,
+        target_distance_m: s.target_distance_m,
+        target_duration_seconds: s.target_duration_seconds,
       });
       sessionIdMap.set(s.id, newSessionId);
     }
