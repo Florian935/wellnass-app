@@ -9,6 +9,8 @@ import {
   VMA_COEFFICIENT,
   derivedVmaPace,
   sessionTargetPace,
+  PROGRAM_SESSION_TYPES,
+  hasRunningSessionTarget,
 } from './running-paces';
 
 describe('schemas enum running-paces', () => {
@@ -87,5 +89,26 @@ describe('sessionTargetPace avec ref = 300 s/km', () => {
         expect(result.minSPerKm).toBeLessThan(result.maxSPerKm);
       }
     }
+  });
+});
+
+describe('PROGRAM_SESSION_TYPES', () => {
+  it('exclut course_libre', () => {
+    expect(PROGRAM_SESSION_TYPES).not.toContain('course_libre');
+    expect(PROGRAM_SESSION_TYPES).toEqual(['endurance', 'fractionne', 'sortie_longue', 'recuperation']);
+  });
+  it('est un sous-ensemble de SESSION_TYPES', () => {
+    expect(PROGRAM_SESSION_TYPES.every((t) => (SESSION_TYPES as readonly string[]).includes(t))).toBe(true);
+  });
+});
+
+describe('hasRunningSessionTarget', () => {
+  it('distance seule -> true', () => { expect(hasRunningSessionTarget(6000, null)).toBe(true); });
+  it('duree seule -> true', () => { expect(hasRunningSessionTarget(null, 1800)).toBe(true); });
+  it('les deux -> true', () => { expect(hasRunningSessionTarget(6000, 1800)).toBe(true); });
+  it('aucune / 0 / null -> false', () => {
+    expect(hasRunningSessionTarget(null, null)).toBe(false);
+    expect(hasRunningSessionTarget(0, 0)).toBe(false);
+    expect(hasRunningSessionTarget(undefined, undefined)).toBe(false);
   });
 });

@@ -24,6 +24,23 @@ export const SESSION_TYPES = ['endurance', 'fractionne', 'sortie_longue', 'recup
 export const sessionTypeSchema = z.enum(SESSION_TYPES);
 export type SessionType = z.infer<typeof sessionTypeSchema>;
 
+/** Types de seance utilisables dans un programme (course libre exclue). */
+export const PROGRAM_SESSION_TYPES = ['endurance', 'fractionne', 'sortie_longue', 'recuperation'] as const;
+export type ProgramSessionType = (typeof PROGRAM_SESSION_TYPES)[number];
+
+// ---------------------------------------------------------------------------
+// Validation de cible de seance
+// ---------------------------------------------------------------------------
+
+/** Une seance running de programme a besoin d'au moins une cible (distance en m OU duree en s). */
+export function hasRunningSessionTarget(
+  targetDistanceM: number | null | undefined,
+  targetDurationSeconds: number | null | undefined,
+): boolean {
+  return (targetDistanceM != null && targetDistanceM > 0)
+    || (targetDurationSeconds != null && targetDurationSeconds > 0);
+}
+
 // ---------------------------------------------------------------------------
 // Derivation VMA
 // ---------------------------------------------------------------------------
