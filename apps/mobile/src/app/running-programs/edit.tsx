@@ -11,6 +11,7 @@ import { TextField } from '@/components/TextField';
 import {
   addSession,
   createProgram,
+  updateProgram,
   updateProgramTranslation,
   useProgramDetail,
 } from '@/data/repositories/program-repository';
@@ -183,12 +184,21 @@ function RunningProgramComposer({ programId }: { programId: string }) {
   const { detail, isLoading } = useProgramDetail(programId);
   const [addingSession, setAddingSession] = useState(false);
 
-  // Métadonnées éditables
+  // Métadonnées éditables — textuelles
   const [name, setName] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
 
+  // Métadonnées éditables — scalaires (objectif / niveau / durée)
+  const [goal, setGoal] = useState<ObjectiveChoice | null>(null);
+  const [level, setLevel] = useState<LevelChoice | null>(null);
+  const [durationWeeks, setDurationWeeks] = useState<string | null>(null);
+
   const currentName = name ?? (detail?.name ?? '');
   const currentSummary = summary ?? '';
+  const currentGoal: ObjectiveChoice =
+    goal ?? ((detail?.goal as RunnerObjective | null | undefined) ?? NO_OBJECTIVE);
+  const currentLevel: LevelChoice =
+    level ?? (detail?.level ?? NO_LEVEL);
 
   const onAddSession = async () => {
     if (addingSession) return;
@@ -213,6 +223,28 @@ function RunningProgramComposer({ programId }: { programId: string }) {
   const commitSummary = () => {
     const trimmed = currentSummary.trim();
     void updateProgramTranslation(programId, { summary: trimmed === '' ? null : trimmed });
+  };
+
+  const commitGoal = (value: ObjectiveChoice) => {
+    setGoal(value);
+    void updateProgram(programId, { goal: value === NO_OBJECTIVE ? null : value });
+  };
+
+  const commitLevel = (value: LevelChoice) => {
+    setLevel(value);
+    void updateProgram(programId, { level: value === NO_LEVEL ? null : value });
+  };
+
+  const commitDurationWeeks = () => {
+    const raw = (durationWeeks ?? '').trim();
+    if (raw === '') {
+      void updateProgram(programId, { durationWeeks: null });
+      return;
+    }
+    const parsed = Number(raw);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      void updateProgram(programId, { durationWeeks: parsed });
+    }
   };
 
   if (isLoading && !detail) {
@@ -253,6 +285,44 @@ function RunningProgramComposer({ programId }: { programId: string }) {
             onBlur={commitSummary}
             autoCapitalize="sentences"
             placeholder={t('running.program.summaryPlaceholder')}
+          />
+
+          <View style={styles.field}>
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+              {t('running.program.objective')}
+            </Text>
+            <Segment
+              options={OBJECTIVE_CHOICES}
+              value={currentGoal}
+              onChange={commitGoal}
+              label={(o) =>
+                o === NO_OBJECTIVE ? '—' : t(`running.objective.${o}`)
+              }
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+              {t('running.program.level')}
+            </Text>
+            <Segment
+              options={LEVEL_CHOICES}
+              value={currentLevel}
+              onChange={commitLevel}
+              label={(l) =>
+                l === NO_LEVEL ? '—' : t(`running.programLevel.${l}`)
+              }
+            />
+          </View>
+
+          <TextField
+            label={t('running.program.durationWeeks')}
+            value={durationWeeks ?? (detail?.durationWeeks != null ? String(detail.durationWeeks) : '')}
+            onChangeText={setDurationWeeks}
+            onBlur={commitDurationWeeks}
+            keyboardType="number-pad"
+            maxLength={3}
+            placeholder={t('running.program.durationPlaceholder')}
           />
         </View>
 
