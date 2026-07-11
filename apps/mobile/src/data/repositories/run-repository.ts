@@ -77,6 +77,8 @@ export type RunDetail = {
   avgPaceSPerKm: number | null;
   rpe: number | null;
   notes: string | null;
+  /** Trace GPS brute encodée (à décoder via `decodeTrack`), `null` si aucune. */
+  gpsTrack: string | null;
 };
 
 /** Champs persistés lors d'un flush (le tracker fournit le cumul courant). */
@@ -139,6 +141,7 @@ type RunDetailDbRow = {
   avg_pace_s_per_km: number | null;
   rpe: number | null;
   notes: string | null;
+  gps_track: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -165,7 +168,7 @@ const SELECT_HISTORY = `
 /** Détail d'une course par id (tous statuts, non supprimée). */
 const SELECT_RUN_BY_ID = `
   SELECT id, source, status, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes
+         avg_pace_s_per_km, rpe, notes, gps_track
   FROM runs
   WHERE id = ? AND deleted_at IS NULL
   LIMIT 1
@@ -215,6 +218,7 @@ function rowToRunDetail(row: RunDetailDbRow): RunDetail {
     avgPaceSPerKm: row.avg_pace_s_per_km,
     rpe: row.rpe,
     notes: row.notes,
+    gpsTrack: row.gps_track,
   };
 }
 

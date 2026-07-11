@@ -111,6 +111,7 @@ describe('Résumé course — smoke test (rendu sans planter)', () => {
       avgPaceSPerKm: 323,
       rpe: 7,
       notes: 'Bonne sortie.',
+      gpsTrack: null,
     };
     (useRun as jest.Mock).mockReturnValueOnce({ run: fakeRun, isLoading: false });
     const { getByTestId } = await render(<RunSummaryShell runId="run-abc" />);
@@ -132,6 +133,7 @@ describe('Résumé course — smoke test (rendu sans planter)', () => {
       avgPaceSPerKm: null,
       rpe: null,
       notes: null,
+      gpsTrack: null,
     };
     (useRun as jest.Mock).mockReturnValueOnce({ run: fakeRun, isLoading: false });
     const { getByTestId } = await render(<RunSummaryShell runId="run-manual" />);
