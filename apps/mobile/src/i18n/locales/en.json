@@ -308,7 +308,13 @@
     "greetingName": "Hello {{name}} 👋",
     "today": {
       "title": "Today's session",
-      "empty": "No workout planned today — active rest ✓"
+      "empty": "No active program. Create one to see your next session here.",
+      "session": "Session {{index}} · {{name}}",
+      "exercises_one": "{{count}} exercise",
+      "exercises_other": "{{count}} exercises",
+      "cta": "Start session",
+      "resume": "Resume session",
+      "createProgram": "Create a program"
     },
     "streak": {
       "title": "Streak",
@@ -319,7 +325,19 @@
     },
     "nutrition": {
       "title": "Nutrition",
-      "empty": "No meals logged yet. The food journal is coming soon."
+      "empty": "No meals logged yet. The food journal is coming soon.",
+      "caloriesGoal": "{{kcal}} / {{target}} kcal",
+      "caloriesNoGoal": "{{kcal}} kcal",
+      "cta": "+ Add a meal",
+      "setGoal": "Set my goal",
+      "setGoalHint": "Set your calorie goal to track your daily meals."
+    },
+    "weight": {
+      "title": "Body weight",
+      "empty": "No weigh-in yet.",
+      "addFirst": "Add my first weigh-in",
+      "link": "View chart →",
+      "sub": "Latest weigh-in · 7-day trend"
     }
   },
   "onboarding": {

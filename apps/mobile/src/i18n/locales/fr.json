@@ -308,7 +308,13 @@
     "greetingName": "Bonjour {{name}} 👋",
     "today": {
       "title": "Séance du jour",
-      "empty": "Pas d'entraînement prévu aujourd'hui — repos actif ✓"
+      "empty": "Aucun programme actif. Crée-en un pour voir ta prochaine séance ici.",
+      "session": "Séance {{index}} · {{name}}",
+      "exercises_one": "{{count}} exercice",
+      "exercises_other": "{{count}} exercices",
+      "cta": "Démarrer la séance",
+      "resume": "Reprendre la séance",
+      "createProgram": "Créer un programme"
     },
     "streak": {
       "title": "Régularité",
@@ -319,7 +325,19 @@
     },
     "nutrition": {
       "title": "Nutrition",
-      "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt."
+      "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt.",
+      "caloriesGoal": "{{kcal}} / {{target}} kcal",
+      "caloriesNoGoal": "{{kcal}} kcal",
+      "cta": "+ Ajouter un repas",
+      "setGoal": "Définir mon objectif",
+      "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour."
+    },
+    "weight": {
+      "title": "Poids corporel",
+      "empty": "Aucune pesée enregistrée.",
+      "addFirst": "Ajouter ma première pesée",
+      "link": "Voir la courbe →",
+      "sub": "Dernière pesée · tendance 7 jours"
     }
   },
   "onboarding": {
