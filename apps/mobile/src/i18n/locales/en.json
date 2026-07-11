@@ -733,8 +733,8 @@
       "done": "Done"
     },
     "map": {
-      "unavailable": "Map unavailable (missing MapTiler key)",
-      "noTrack": "No GPS track recorded",
+      "unavailable": "Map unavailable",
+      "noTrack": "No GPS route for this run",
       "awaitingGps": "Waiting for GPS signal…"
     }
   }

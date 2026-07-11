@@ -733,8 +733,8 @@
       "done": "Terminé"
     },
     "map": {
-      "unavailable": "Carte indisponible (clé MapTiler manquante)",
-      "noTrack": "Aucune trace GPS enregistrée",
+      "unavailable": "Carte indisponible",
+      "noTrack": "Aucun tracé GPS pour cette course",
       "awaitingGps": "En attente du signal GPS…"
     }
   }
