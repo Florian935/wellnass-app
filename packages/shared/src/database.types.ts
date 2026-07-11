@@ -258,6 +258,7 @@ export type Database = {
           kcal: number
           log_date: string
           meal_type: string
+          micronutrients: Json
           name: string
           order_index: number
           protein_g: number
@@ -275,6 +276,7 @@ export type Database = {
           kcal?: number
           log_date: string
           meal_type: string
+          micronutrients?: Json
           name: string
           order_index?: number
           protein_g?: number
@@ -292,6 +294,7 @@ export type Database = {
           kcal?: number
           log_date?: string
           meal_type?: string
+          micronutrients?: Json
           name?: string
           order_index?: number
           protein_g?: number
@@ -396,6 +399,7 @@ export type Database = {
           fiber_per_100g: number | null
           id: string
           kcal_per_100g: number
+          micronutrients: Json
           owner_id: string | null
           portions: Json
           protein_per_100g: number | null
@@ -414,6 +418,7 @@ export type Database = {
           fiber_per_100g?: number | null
           id: string
           kcal_per_100g: number
+          micronutrients?: Json
           owner_id?: string | null
           portions?: Json
           protein_per_100g?: number | null
@@ -432,6 +437,7 @@ export type Database = {
           fiber_per_100g?: number | null
           id?: string
           kcal_per_100g?: number
+          micronutrients?: Json
           owner_id?: string | null
           portions?: Json
           protein_per_100g?: number | null

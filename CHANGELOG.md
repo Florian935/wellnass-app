@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 11/07/2026 — US 4.33 : activation cloud (types régénérés)
+
+_Branche : `feature/4.33-micronutriments` (commit précédent : `33ea91f`). Migration
+`20260711140000_food_micronutrients.sql` **appliquée sur le cloud** par Damien._
+
+### Modifié
+- **`packages/shared/src/database.types.ts`** régénéré depuis le cloud (`supabase gen types
+  --project-id …`) : inclut `foods.micronutrients` et `food_entries.micronutrients` (`Json`).
+  typecheck (3 workspaces) vert.
+
+### Technique / Notes
+- **Sync rules** inchangées (streams en `select *`). **Reste** : re-seed cloud des 7 aliments
+  enrichis (bloc `update … set micronutrients` de `seed.sql`, à exécuter dans le SQL editor) +
+  **vérif device**.
+
 ## 11/07/2026 — US 4.33 : micronutriments (socle) + rangement du dossier design
 
 _Branche : `feature/4.33-micronutriments` (commit précédent : `e26596b`). Spec + plan + maquette
