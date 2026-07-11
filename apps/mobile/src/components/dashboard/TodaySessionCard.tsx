@@ -7,8 +7,9 @@
  *  - `no-program`     : texte vide + CTA "Créer un programme"
  *
  * Routing :
- *  - Démarrer / reprendre → `/workout` (via `startWorkoutFromSession` pour has-session)
- *  - Créer un programme   → `/programs`
+ *  - Démarrer → démarre la séance planifiée via `startWorkoutFromSession(session.id)` puis `/workout`
+ *  - Reprendre → `/workout` (séance déjà en cours)
+ *  - Créer un programme → `/programs`
  */
 
 import { useRouter } from 'expo-router';
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
 import { useNextSession } from '@/data/repositories/dashboard-repository';
+import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -49,16 +51,9 @@ export function TodaySessionCard() {
       if (starting) return;
       setStarting(true);
       try {
-        // On cherche la session via le programme actif ; on la démarre par son index.
-        // startWorkoutFromSession attend un sessionId — le dashboard-repository
-        // expose orderIndex, pas l'id. On start une séance libre et navigate.
-        // NOTE : useNextSession expose `session.orderIndex` mais pas l'id de session.
-        // Pour démarrer la séance liée au programme, on redirige vers /workout
-        // après un startWorkout générique (comportement identique à strength.tsx).
-        // Un câblage fin (startWorkoutFromSession) sera fait quand le dashboard
-        // aura accès à l'id de session (Phase E ou refacto dashboard-repository).
-        const { startWorkout } = await import('@/data/repositories/workout-repository');
-        await startWorkout();
+        // Démarre la séance planifiée du programme (pré-remplit ses exercices),
+        // même mécanisme que l'écran détail de programme (programs/[id].tsx).
+        await startWorkoutFromSession(session.id);
         router.push('/workout');
       } catch {
         // Offline-first : échec très improbable.

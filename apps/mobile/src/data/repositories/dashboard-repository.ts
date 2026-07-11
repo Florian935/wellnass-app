@@ -45,6 +45,8 @@ export type NextSessionState =
   | {
       state: 'has-session';
       session: {
+        /** Id de la séance — pour `startWorkoutFromSession(id)`. */
+        id: string;
         /** Nom de la séance (fallback : « Séance N » si null). */
         name: string;
         /** Position 0-based dans le programme (orderIndex de la séance). */
@@ -86,6 +88,7 @@ export function useNextSession(): NextSessionState {
     return {
       state: 'has-session',
       session: {
+        id: first.id,
         // Fallback : « Séance N » (N = orderIndex + 1, affiché 1-based dans le widget)
         name: first.name ?? `Séance ${first.orderIndex + 1}`,
         orderIndex: first.orderIndex,
