@@ -1,0 +1,202 @@
+<style>
+  :root {
+    --bg: #f7eede; --surface: #fffaf2; --surface-alt: #f3ddd0; --border: #ece0cd;
+    --ink: #33291f; --muted: #96856f; --accent: #c0562f; --accent-text: #fff;
+    --success: #7c8a5b;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --radius: 18px; --shadow: 0 1px 2px rgba(51,41,31,.06), 0 8px 24px rgba(51,41,31,.06);
+  }
+  * { box-sizing: border-box; }
+  .r2 {
+    font-family: var(--sans); color: var(--ink); margin: 0; padding: 40px 24px 64px;
+    background: radial-gradient(120% 80% at 100% 0%, #fbf3e6 0%, var(--bg) 55%); min-height: 100%; line-height: 1.5;
+  }
+  .head { max-width: 1040px; margin: 0 auto 32px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 8px; }
+  .title { font-weight: 800; font-size: clamp(26px, 4vw, 38px); letter-spacing: -.02em; margin: 0 0 10px; text-wrap: balance; }
+  .sub { color: var(--muted); max-width: 66ch; margin: 0; font-size: 15px; }
+
+  .stage { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; align-items: start; }
+  .panel-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 12px 4px; }
+  .panel-label .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); }
+
+  .phone { background: var(--bg); border: 1px solid var(--border); border-radius: 34px; padding: 14px; box-shadow: var(--shadow); max-width: 380px; margin: 0 auto; }
+  .statusbar { display: flex; justify-content: space-between; padding: 6px 12px 12px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+  .screen-title { font-weight: 800; font-size: 18px; letter-spacing: -.01em; padding: 0 4px; margin: 0 0 12px; }
+
+  /* Map card */
+  .mapcard { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: 0 1px 2px rgba(51,41,31,.04); }
+  .mapwrap { position: relative; aspect-ratio: 4 / 3; }
+  .mapwrap svg { display: block; width: 100%; height: 100%; }
+  .attrib { position: absolute; right: 6px; bottom: 6px; font-size: 9px; color: #5c5344; background: rgba(255,255,255,.72); padding: 1px 6px; border-radius: 6px; font-family: var(--sans); }
+  .followpill { position: absolute; left: 8px; top: 8px; font-size: 10px; font-weight: 700; color: var(--accent-text); background: var(--accent); padding: 3px 9px; border-radius: 999px; }
+
+  /* Live hero + stats */
+  .hero { text-align: center; padding: 10px 0 4px; }
+  .hero .val { font-family: var(--mono); font-weight: 700; font-size: 40px; letter-spacing: -.03em; }
+  .hero .unit { color: var(--muted); font-size: 14px; }
+  .paces { display: flex; justify-content: center; gap: 36px; padding: 8px 0 12px; }
+  .paceitem { text-align: center; }
+  .paceitem .v { font-family: var(--mono); font-weight: 700; font-size: 20px; }
+  .paceitem .k { color: var(--muted); font-size: 12px; }
+  .runbtns { display: flex; gap: 10px; padding: 12px 4px 4px; }
+  .btn { flex: 1; text-align: center; font-weight: 700; font-size: 14px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+  .btn.stop { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+  /* Summary metrics */
+  .metrics { display: flex; justify-content: space-between; padding: 14px 6px; gap: 8px; }
+  .metric { text-align: center; flex: 1; }
+  .metric .v { font-family: var(--mono); font-weight: 700; font-size: 20px; }
+  .metric .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .maptop { padding: 12px 4px 2px; }
+
+  /* Style options */
+  .styles { max-width: 1040px; margin: 40px auto 0; }
+  .styles h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin: 0 0 4px; }
+  .styles p { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .swatch { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  .swatch .cap { padding: 12px 14px; }
+  .swatch .cap b { font-size: 15px; }
+  .swatch .cap span { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .swatch .cap .rec { color: var(--success); font-weight: 700; }
+  .swatch .mapwrap { aspect-ratio: 16 / 9; }
+
+  .notes { max-width: 1040px; margin: 32px auto 0; padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .notes h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin: 0 0 12px; }
+  .notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; }
+  .notes li { font-size: 14px; }
+  .notes code { font-family: var(--mono); font-size: 12.5px; background: var(--surface-alt); padding: 1px 6px; border-radius: 6px; }
+
+  .cards { display: flex; flex-direction: column; gap: 4px; }
+</style>
+
+<!-- Faux "carte" réutilisable : fond abstrait (blocs = rues/parcs) + tracé (polyline accent) -->
+<svg style="display:none">
+  <symbol id="basemap-outdoor" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice">
+    <rect width="200" height="150" fill="#eef1e6"/>
+    <rect x="0" y="0" width="200" height="150" fill="#e7ecdb"/>
+    <path d="M-5 40 H205 M-5 92 H205 M45 -5 V155 M120 -5 V155" stroke="#d9dcc9" stroke-width="7" fill="none"/>
+    <path d="M-5 65 H205 M80 -5 V155 M160 -5 V155" stroke="#e3e6d5" stroke-width="4" fill="none"/>
+    <rect x="128" y="12" width="58" height="44" rx="8" fill="#cfe0b8"/>
+    <rect x="14" y="100" width="46" height="38" rx="8" fill="#cfe0b8"/>
+    <path d="M0 120 q40 -10 80 6 t120 -2" stroke="#bcd3e6" stroke-width="6" fill="none" opacity=".8"/>
+  </symbol>
+  <symbol id="basemap-streets" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice">
+    <rect width="200" height="150" fill="#f1efec"/>
+    <path d="M-5 40 H205 M-5 92 H205 M45 -5 V155 M120 -5 V155" stroke="#e2ded8" stroke-width="7" fill="none"/>
+    <path d="M-5 65 H205 M80 -5 V155 M160 -5 V155" stroke="#eae7e2" stroke-width="4" fill="none"/>
+    <rect x="128" y="12" width="58" height="44" rx="4" fill="#e7e3dd"/>
+    <rect x="14" y="100" width="46" height="38" rx="4" fill="#e7e3dd"/>
+    <rect x="150" y="98" width="42" height="40" rx="4" fill="#e7e3dd"/>
+  </symbol>
+  <!-- Tracé (une boucle de course) + départ + position courante -->
+  <symbol id="trace" viewBox="0 0 200 150">
+    <path d="M40 120 C30 90 55 78 70 82 C92 88 86 55 70 46 C52 36 78 22 108 28 C140 34 150 60 138 80 C128 96 150 108 168 96"
+          fill="none" stroke="#c0562f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="40" cy="120" r="5" fill="#fffaf2" stroke="#c0562f" stroke-width="3"/>
+  </symbol>
+  <symbol id="trace-live" viewBox="0 0 200 150">
+    <path d="M40 120 C30 90 55 78 70 82 C92 88 86 55 70 46 C52 36 78 22 108 28"
+          fill="none" stroke="#c0562f" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="40" cy="120" r="5" fill="#fffaf2" stroke="#c0562f" stroke-width="3"/>
+    <circle cx="108" cy="28" r="7" fill="#c0562f" stroke="#fffaf2" stroke-width="3"/>
+  </symbol>
+</svg>
+
+<div class="r2">
+  <header class="head">
+    <p class="eyebrow">Wellness · US 5.17 / 5.27 · Running R2 · Maquette</p>
+    <h1 class="title">Carte du parcours</h1>
+    <p class="sub">Tracé GPS sur fond MapLibre / MapTiler : carte qui suit la position pendant la course, carte statique ajustée au parcours au résumé. Rendu dans le design system de l'app. En bas : deux styles de fond de carte à trancher.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- LIVE -->
+    <section>
+      <p class="panel-label"><span class="dot"></span> Course en direct (5.17)</p>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▲ suivi GPS actif</span></div>
+        <div class="cards">
+          <div class="hero"><div class="val">5,20</div><div class="unit">km</div></div>
+          <div class="paces">
+            <div class="paceitem"><div class="v">27:14</div><div class="k">durée</div></div>
+            <div class="paceitem"><div class="v">5:14</div><div class="k">allure /km</div></div>
+          </div>
+          <div class="mapcard">
+            <div class="mapwrap">
+              <svg viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><use href="#basemap-outdoor"/></svg>
+              <svg viewBox="0 0 200 150" preserveAspectRatio="none" style="position:absolute;inset:0"><use href="#trace-live"/></svg>
+              <span class="followpill">Suit ma position</span>
+              <span class="attrib">© OpenStreetMap · © MapTiler</span>
+            </div>
+          </div>
+          <div class="runbtns">
+            <div class="btn">Pause</div>
+            <div class="btn stop">Terminer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section>
+      <p class="panel-label"><span class="dot"></span> Résumé de course (5.27)</p>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>course terminée 💪</span></div>
+        <div class="cards">
+          <p class="screen-title">Course terminée</p>
+          <div class="mapcard">
+            <div class="maptop"></div>
+            <div class="mapwrap">
+              <svg viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice"><use href="#basemap-outdoor"/></svg>
+              <svg viewBox="0 0 200 150" preserveAspectRatio="none" style="position:absolute;inset:0"><use href="#trace"/></svg>
+              <span class="attrib">© OpenStreetMap · © MapTiler</span>
+            </div>
+            <div class="metrics">
+              <div class="metric"><div class="v">7,80</div><div class="k">km</div></div>
+              <div class="metric"><div class="v">41:03</div><div class="k">durée</div></div>
+              <div class="metric"><div class="v">5:16</div><div class="k">allure /km</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- STYLE CHOICE -->
+  <section class="styles">
+    <h2>Style de fond de carte — à trancher</h2>
+    <p>Même tracé (accent bordeaux), deux fonds MapTiler. Le choix se fait ici ; il se règle par une seule URL de style (aucun impact code).</p>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="mapwrap">
+          <svg viewBox="0 0 200 112" preserveAspectRatio="xMidYMid slice"><use href="#basemap-outdoor"/></svg>
+          <svg viewBox="0 0 200 150" preserveAspectRatio="none" style="position:absolute;inset:0"><use href="#trace"/></svg>
+        </div>
+        <div class="cap"><b>Outdoor / relief</b> <span class="rec">Recommandé pour la course</span><span>Parcs, chemins, plans d'eau mis en valeur — lisible en nature comme en ville.</span></div>
+      </div>
+      <div class="swatch">
+        <div class="mapwrap">
+          <svg viewBox="0 0 200 112" preserveAspectRatio="xMidYMid slice"><use href="#basemap-streets"/></svg>
+          <svg viewBox="0 0 200 150" preserveAspectRatio="none" style="position:absolute;inset:0"><use href="#trace"/></svg>
+        </div>
+        <div class="cap"><b>Rues (streets)</b><span>Carte urbaine neutre, très lisible en ville, plus sobre.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>Décisions & états (rappel)</h2>
+    <ul>
+      <li><strong>Live</strong> : le tracé s'étend en temps réel + marqueur de position ; la caméra <strong>suit</strong> la position. <strong>Résumé</strong> : carte statique ajustée au parcours (<code>fitBounds</code>).</li>
+      <li><strong>Tracé</strong> simplifié à l'affichage (<code>simplifyTrack</code>, Douglas-Peucker ~5 m) — la trace stockée reste complète.</li>
+      <li><strong>États sans carte</strong> : « En attente du signal GPS… » (course GPS sans point) · « Aucun tracé GPS » (course manuelle) · « Carte indisponible » (clé absente). Hors-ligne : la zone reste neutre, l'écran n'est jamais bloqué (tracking 100 % offline).</li>
+      <li><strong>Tuiles en ligne au MVP</strong> · attribution © OSM / © MapTiler visible · clé <code>EXPO_PUBLIC_MAPTILER_KEY</code> en env (jamais committée).</li>
+      <li><em>Fonds de carte ci-dessus = représentation stylisée</em> (les tuiles réelles ne chargent pas dans une maquette). Le rendu final = tuiles MapTiler du style choisi.</li>
+    </ul>
+  </section>
+</div>
