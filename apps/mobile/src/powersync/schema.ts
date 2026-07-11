@@ -218,6 +218,10 @@ const sessions = new Table({
   owner_id: column.text,
   order_index: column.integer,
   name: column.text,
+  // Running R3b-i : contenu de séance de course (additif, rétrocompatible muscu)
+  session_type: column.text,
+  target_distance_m: column.integer,
+  target_duration_seconds: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
