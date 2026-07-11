@@ -20,6 +20,8 @@ import {
   parseWeightToKg as parseWeightToKgPure,
   parseDistanceToKm as parseDistanceToKmPure,
   heightPartsToCm as heightPartsToCmPure,
+  parsePaceToSPerKm,
+  formatPaceValue,
   type UnitSystem,
 } from '@wellness/shared';
 import { useSettings } from '@/data/repositories/settings-repository';
@@ -85,6 +87,9 @@ export function useUnits() {
       parseWeightToKg: (text: string) => parseWeightToKgPure(text, system),
       parseDistanceToKm: (text: string) => parseDistanceToKmPure(text, system),
       heightPartsToCm: (a: string, b: string) => heightPartsToCmPure(a, b, system),
+      parsePace: (text: string) => parsePaceToSPerKm(text, system),
+      paceInputValue: (sPerKm: number | null | undefined) =>
+        sPerKm == null ? '' : formatPaceValue(sPerKm, system),
 
       // Valeur numérique convertie vers l'unité d'affichage (pour alimenter les graphes ; sans arrondi ni symbole).
       toWeightValue: (kg: number): number => (system === 'imperial' ? kgToLb(kg) : kg),
