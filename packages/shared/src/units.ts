@@ -123,3 +123,23 @@ export function heightPartsToCm(a: string, b: string, system: UnitSystem): numbe
   if (ft === null && inch === null) return null;
   return ftInToCm(ft ?? 0, inch ?? 0);
 }
+
+/**
+ * Parse "M:SS" (secondes 0-59) saisi dans l'unité `system` -> s/km (SI).
+ * Retourne null si vide, invalide, ou hors plage de course à pied (2:30 à 12:00 /km).
+ */
+export function parsePaceToSPerKm(text: string, system: UnitSystem): number | null {
+  const t = text.trim();
+  const m = /^(\d{1,3}):([0-5]\d)$/.exec(t); // M:SS, secondes 00-59
+  if (!m) return null;
+  const perDisplayUnit = Number(m[1]) * 60 + Number(m[2]);
+  const sPerKm = system === 'imperial' ? perDisplayUnit * MI_PER_KM : perDisplayUnit;
+  // Garde de plausibilité (course à pied) : 2:30 à 12:00 /km.
+  if (sPerKm < 150 || sPerKm > 720) return null;
+  return sPerKm;
+}
+
+/** s/km -> "M:SS" dans l'unité `system` (sans symbole), pour pré-remplir un champ. */
+export function formatPaceValue(sPerKm: number, system: UnitSystem): string {
+  return formatPaceMMSS(paceToSystem(sPerKm, system), '');
+}

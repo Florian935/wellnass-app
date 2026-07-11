@@ -7,6 +7,7 @@ import {
   displayDistance,
   displayWeight,
   formatPaceMMSS,
+  formatPaceValue,
   ftInToCm,
   heightPartsToCm,
   kgToLb,
@@ -15,6 +16,7 @@ import {
   miToKm,
   paceToSystem,
   parseDistanceToKm,
+  parsePaceToSPerKm,
   parseWeightToKg,
   unitSystemSchema,
 } from './units';
@@ -163,5 +165,72 @@ describe('parseurs de saisie -> SI', () => {
   });
   it('heightPartsToCm : pouces seuls (pieds vides) valides -> cm', () => {
     expect(heightPartsToCm('', '11', 'imperial')).toBeCloseTo(27.94, 1);
+  });
+});
+
+describe('parsePaceToSPerKm', () => {
+  it('"5:00" metric -> 300 s/km', () => {
+    expect(parsePaceToSPerKm('5:00', 'metric')).toBe(300);
+  });
+
+  it('"8:03" imperial -> ~300 s/km (+-1)', () => {
+    // 8*60+3 = 483 s/mi ; 483 * MI_PER_KM = ~300.12 s/km
+    const result = parsePaceToSPerKm('8:03', 'imperial');
+    expect(result).not.toBeNull();
+    expect(Math.abs(result! - 300)).toBeLessThanOrEqual(1);
+  });
+
+  it('chaine vide -> null', () => {
+    expect(parsePaceToSPerKm('', 'metric')).toBeNull();
+  });
+
+  it('"abc" -> null', () => {
+    expect(parsePaceToSPerKm('abc', 'metric')).toBeNull();
+  });
+
+  it('"5:99" (secondes >= 60) -> null', () => {
+    expect(parsePaceToSPerKm('5:99', 'metric')).toBeNull();
+  });
+
+  it('"5" (format invalide sans ":SS") -> null', () => {
+    expect(parsePaceToSPerKm('5', 'metric')).toBeNull();
+  });
+
+  it('"1:00" (60 s/km, trop rapide) -> null', () => {
+    expect(parsePaceToSPerKm('1:00', 'metric')).toBeNull();
+  });
+
+  it('"15:00" (900 s/km, trop lent) -> null', () => {
+    expect(parsePaceToSPerKm('15:00', 'metric')).toBeNull();
+  });
+
+  it('accepte des espaces en debut/fin (trim)', () => {
+    expect(parsePaceToSPerKm('  5:00  ', 'metric')).toBe(300);
+  });
+});
+
+describe('formatPaceValue', () => {
+  it('metric 300 s/km -> "5:00"', () => {
+    expect(formatPaceValue(300, 'metric')).toBe('5:00');
+  });
+
+  it('imperial 300 s/km -> "8:03" (300 / MI_PER_KM ~= 483 s/mi)', () => {
+    // Valeur calculee : paceToSystem(300, 'imperial') = 300/0.6213711922 ~= 482.803
+    // Math.round(482.803) = 483 -> "8:03"
+    expect(formatPaceValue(300, 'imperial')).toBe('8:03');
+  });
+
+  it('round-trip metric : formatPaceValue(300, "metric") parse -> ~300', () => {
+    const str = formatPaceValue(300, 'metric');
+    const back = parsePaceToSPerKm(str, 'metric');
+    expect(back).not.toBeNull();
+    expect(Math.abs(back! - 300)).toBeLessThanOrEqual(1);
+  });
+
+  it('round-trip imperial : formatPaceValue(300, "imperial") parse -> ~300 (+-1)', () => {
+    const str = formatPaceValue(300, 'imperial');
+    const back = parsePaceToSPerKm(str, 'imperial');
+    expect(back).not.toBeNull();
+    expect(Math.abs(back! - 300)).toBeLessThanOrEqual(1);
   });
 });
