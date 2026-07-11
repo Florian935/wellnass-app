@@ -97,6 +97,7 @@ export type ProgramDetail = {
 
 /** Filtres facultatifs pour la bibliothèque éditoriale. */
 export type ProgramLibraryFilters = {
+  pillar?: Pillar;
   level?: ProgramLevel;
   goal?: string;
   durationWeeks?: number;
@@ -294,6 +295,10 @@ export function useProgramLibrary(filters?: ProgramLibraryFilters): {
   const clauses: string[] = ["p.owner_id IS NULL", "p.status = 'published'"];
   const params: unknown[] = [lang];
 
+  if (filters?.pillar !== undefined) {
+    clauses.push('p.pillar = ?');
+    params.push(filters.pillar);
+  }
   if (filters?.level !== undefined) {
     clauses.push('p.level = ?');
     params.push(filters.level);
