@@ -731,6 +731,10 @@
       "notes": "Note (facultatif)",
       "notesPlaceholder": "Comment s'est passée cette course ?",
       "done": "Terminé"
+    },
+    "map": {
+      "unavailable": "Carte indisponible (clé MapTiler manquante)",
+      "noTrack": "Aucune trace GPS enregistrée"
     }
   }
 }

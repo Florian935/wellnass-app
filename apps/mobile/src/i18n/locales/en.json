@@ -731,6 +731,10 @@
       "notes": "Note (optional)",
       "notesPlaceholder": "How did this run go?",
       "done": "Done"
+    },
+    "map": {
+      "unavailable": "Map unavailable (missing MapTiler key)",
+      "noTrack": "No GPS track recorded"
     }
   }
 }
