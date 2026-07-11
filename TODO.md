@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 11/07/2026 (Running R2 carte : livrée & validée device ✅)*
+*Dernière mise à jour : 11/07/2026 (Running R3a profil coureur : code livré et revu → reste checkpoint 🔴 cloud+device)*
 
 ---
 
@@ -122,7 +122,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
 - [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**
 - [x] **Running R2 — Carte** (5.17/5.27) — **livrée & validée device (11/07/2026)** (`feature/running-r2-carte`, MapLibre + MapTiler, [ADR-006](docs/adr/ADR-006-cartographie.md)). `simplifyTrack` (Douglas-Peucker, shared, testé) + `RouteMap` réutilisable (live `follow` / résumé fit-bounds) + `RunDetail.gpsTrack` + branchement `active`/`summary` + i18n FR/EN. Cadrage complet (spec→plan→maquette), revues par phase + finale. Clé MapTiler en EAS env (preview+prod, hors git). **Validé sur Pixel** : carte live tracé+caméra, résumé fit-bounds, tuiles outdoor, états vides. Différé : tuiles offline, sélecteur de style, export GPX (R4).
-- [ ] **Running R3 — Profil coureur + programmes** (5.1-5.11).
+- [~] **Running R3 — Profil coureur + programmes** (5.1-5.11) — **découpé en R3a/R3b/R3c** :
+  - [~] **R3a — Profil coureur + types de séance** (5.1, 5.8-5.11) — **code livré & revu** (`feature/running-r3a-profil-types`). `running-paces` (VMA dérivée + plages d'allure, testé) + parse allure M:SS ; table **`running_profiles`** (migration `20260712090000` + RLS + sync rules + schéma PowerSync) ; `running-profile-repository` ; écran profil + « Mes allures » + route + entrée Réglages ; i18n FR/EN. Cadrage complet, revues par phase + finale (*Approved*). typecheck/lint/tests verts. **Reste 🔴 (avec Damien)** : confirmer le timestamp de migration, **appliquer la migration cloud + déployer sync rules + `npm run db:types`**, puis **vérif device**. _Récup +90-120 : plafond d'affichage à confirmer produit._
+  - [ ] **R3b — Programmes de course** (5.4 custom, 5.2 bibliothèque, 5.3 filtres).
+  - [ ] **R3c — Planning + coordination muscu/running + séance manquée** (5.5, 5.6, 5.7).
 - [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
 ---
