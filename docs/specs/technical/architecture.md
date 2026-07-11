@@ -41,7 +41,7 @@
 | **Internationalisation** | **i18next + react-i18next + expo-localization** | UI externalisée dès le début, **FR + EN dès le lancement** (décision G, voir [i18n.md](./i18n.md)) |
 | **Format des messages** | ICU MessageFormat | Pluriels, genre, interpolation typée |
 | **Listes** | FlashList | Perf sur listes longues (historique, base d'aliments) |
-| **Cartographie** | Mapbox ou MapLibre (**à trancher**, point ouvert) | Rendu carte GPS running, rendu côté app (pas de dépendance Google Maps runtime) |
+| **Cartographie** | **MapLibre + MapTiler** ([ADR-006](../../adr/ADR-006-cartographie.md)) | Rendu carte GPS running, rendu côté app (pas de dépendance Google Maps runtime) |
 
 > **TypeScript strict** partout (`strict: true`), types générés depuis le schéma DB (pas de duplication manuelle) — voir [bonnes-pratiques.md](./bonnes-pratiques.md).
 
@@ -78,7 +78,7 @@
 | **PowerSync** | Synchro offline-first managée (SQLite ↔ Supabase) | V1 (à confirmer par spike) | Repli : Legend-State, puis WatermelonDB (voir [ADR-001](../../adr/ADR-001-moteur-sync-offline.md)) |
 | **OpenFoodFacts** | Base d'aliments scan (produits industriels), déjà multilingue | V1 | USDA FoodData Central |
 | **CIQUAL (ANSES)** | Base d'aliments bruts FR (import statique) — **traduction EN à produire** (décision G) | V1 | Mapping USDA pour les noms EN |
-| **Mapbox / MapLibre** | Rendu carte GPS running | V1 (fournisseur **à trancher**) | Tuiles OpenStreetMap |
+| **MapLibre + MapTiler** | Rendu carte GPS running ([ADR-006](../../adr/ADR-006-cartographie.md)) | V0.5 (R2) | Tuiles MapTiler (palier gratuit) ; évolution Stadia/Protomaps |
 | **Expo Location** | GPS running (traces, allure) | V1 | — |
 | **Expo Notifications** | Notifications push (rappels, records, streak en danger) | V1 | — |
 | **Health Connect** (Android) | Écriture des séances, lecture du poids | V1 (Apple Health = iOS, plus tard) | — |
@@ -134,7 +134,7 @@ Contrairement au cadrage initial, les grands arbitrages (stack mobile, Supabase,
 
 - [ ] **Source des GIF de démonstration** d'exercices : bundlés (poids initial élevé) vs téléchargés à la demande + cache local (recommandé). Source candidate : `exercises-dataset` (433, FR+EN), `free-exercise-db`, `ExerciseDB` (~11 000). — *décision humaine (contenu).*
 - [ ] **Source de la base d'aliments** : combinaison CIQUAL (bruts FR) + OpenFoodFacts (industriels, scan) — arbitrer la stratégie d'import et la traduction EN de CIQUAL. — *décision humaine (contenu).*
-- [ ] **Fournisseur de cartes** : Mapbox (managé, quota) vs MapLibre + tuiles OpenStreetMap (auto-hébergé). — ADR à rédiger.
+- [x] **Fournisseur de cartes** : **MapLibre + MapTiler** (palier gratuit) — tranché le 11/07/2026, voir [ADR-006](../../adr/ADR-006-cartographie.md). Pistes d'évolution : Stadia (EU) / Protomaps auto-hébergé.
 - [ ] **Confirmation PowerSync** : dépend du **spike** (voir [spike-001-powersync.md](./spike-001-powersync.md)) ; repli C (Legend-State) puis B (WatermelonDB) documenté dans [ADR-001](../../adr/ADR-001-moteur-sync-offline.md).
 - [ ] **Outil de gestion des traductions UI** : Weblate self-hosted vs PR JSON (voir [i18n.md](./i18n.md)).
 - [ ] **RGPD** : DPA à signer avec chaque service tiers (Supabase, PowerSync, Sentry, PostHog, OpenFoodFacts).

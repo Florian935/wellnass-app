@@ -206,7 +206,7 @@ Colonne **Statut** : ✅ Validé · ❌ Refusé · 🔄 À modifier · ⏳ Repor
 | 5.16 | Auto-pause | Pause auto à l'arrêt, reprise auto. Désactivable. | Moyen | 2h | 🟢 | | |
 | 5.22 | Mise en pause / reprise | Pause manuelle (GPS + chrono). | Moyen | 2h | 🟢 | | |
 | 5.20 | Écran verrouillé | Notification persistante (Android). Live Activity iOS lors du portage. | Difficile | 6h | 🟢 | | Indispensable en course réelle. Rester cross-platform (arbitrage E). |
-| 5.17 | Carte du parcours en direct | Tracé GPS pendant et après la course. | Difficile | 6h | 🟡 | | Clé Mapbox ou MapLibre + tuiles. |
+| 5.17 | Carte du parcours en direct | Tracé GPS pendant et après la course. | Difficile | 6h | 🟡 | | **MapLibre + MapTiler** (ADR-006). |
 | 5.21 | Mode sans GPS | Suivi à la durée seule (streak + historique, exclu des records). | Facile | 2h | 🟢 | | Couvre aussi le tapis. |
 | 5.19 | Annonces audio périodiques | À chaque km (paramétrable) : distance, temps, allure. | Facile | 2h | 🟢 | | |
 | 5.23 | Prolonger ou raccourcir | Terminer avant la cible ou continuer en libre. | Facile | 1h | 🟢 | | |
@@ -364,7 +364,7 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 - avant **V0.1** → confirmer **PowerSync** par le [spike-001](../specs/technical/spike-001-powersync.md) (conditionne le modèle de données) — cf. [ADR-001](../adr/ADR-001-moteur-sync-offline.md).
 - avant **V0.2** → source des GIF d'exercices (6.1) : exercises-dataset vs ExerciseDB.
 - avant **V0.4** → source de la base d'aliments (4.8) : CIQUAL + OpenFoodFacts (+ plan de traduction EN).
-- avant **V0.5** → fournisseur de cartes (5.17) : Mapbox vs MapLibre.
+- ~~avant **V0.5** → fournisseur de cartes (5.17) : Mapbox vs MapLibre~~ → **tranché : MapLibre + MapTiler** (ADR-006, 11/07/2026).
 - avant **V0.8** → clé OAuth Google, textes CGU / confidentialité (rédaction dès que possible, relecture juridique). **OAuth Apple n'est plus bloquant** (reporté avec iOS).
 
 ---

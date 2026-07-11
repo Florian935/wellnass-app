@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 11/07/2026 (US 7.4–7.7 Dashboard live : livrée & validée device ✅)*
+*Dernière mise à jour : 11/07/2026 (ADR-006 cartographie : MapLibre + MapTiler → Running R2 débloqué)*
 
 ---
 
@@ -121,7 +121,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ### V0.5 — Running (spec [running-r1-tracker-gps.md](docs/specs/technical/running-r1-tracker-gps.md), découpage R1-R4)
 - [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**
-- [ ] **Running R2 — Carte** (5.17/5.27) : tracé en direct + résumé. **Décision bloquante : Mapbox vs MapLibre.**
+- [ ] **Running R2 — Carte** (5.17/5.27) : tracé en direct + résumé. **Débloqué** → **MapLibre + MapTiler** ([ADR-006](docs/adr/ADR-006-cartographie.md), 11/07/2026). Prochaine étape : cadrage R2 (spec → plan → maquette → code). Trace stockée encodée sur `run` (R1) → downsampling Douglas-Peucker à l'affichage.
 - [ ] **Running R3 — Profil coureur + programmes** (5.1-5.11).
 - [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
