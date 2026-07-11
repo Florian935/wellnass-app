@@ -734,7 +734,8 @@
     },
     "map": {
       "unavailable": "Map unavailable (missing MapTiler key)",
-      "noTrack": "No GPS track recorded"
+      "noTrack": "No GPS track recorded",
+      "awaitingGps": "Waiting for GPS signal…"
     }
   }
 }

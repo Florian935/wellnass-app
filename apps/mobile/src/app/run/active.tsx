@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { averagePace, decodeTrack, instantPace } from '@wellness/shared';
+import { averagePace, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
 import { useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
+import { RouteMap } from '@/components/running/RouteMap';
 import { SyncStatus } from '@/components/SyncStatus';
 import { finishRun, useActiveRun } from '@/data/repositories/run-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
@@ -73,6 +74,9 @@ export default function RunActiveScreen() {
     () => (isGps && gpsTrack ? decodeTrack(gpsTrack) : []),
     [isGps, gpsTrack],
   );
+
+  // Simplification de la trace pour le rendu cartographique (epsilon 5 m).
+  const simplified = useMemo(() => simplifyTrack(points, 5), [points]);
 
   if (isLoading) {
     return (
@@ -195,6 +199,19 @@ export default function RunActiveScreen() {
         ) : null}
       </View>
 
+      {/* Carte du parcours en temps réel */}
+      <View style={styles.mapCard}>
+        <RouteMap
+          points={simplified}
+          follow
+          emptyLabel={t(
+            active.source === 'manual'
+              ? 'running.map.noTrack'
+              : 'running.map.awaitingGps',
+          )}
+        />
+      </View>
+
       <View style={styles.controls}>
         {isGps ? (
           <Pressable
@@ -247,6 +264,7 @@ const styles = StyleSheet.create({
   paces: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
   paceItem: { alignItems: 'center', gap: 4 },
   paceValue: { fontFamily: fontFamily.monoBold, fontSize: 24 },
+  mapCard: { paddingHorizontal: 20, paddingBottom: 12 },
   controls: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12 },
   pauseBtn: {
     minHeight: 52,

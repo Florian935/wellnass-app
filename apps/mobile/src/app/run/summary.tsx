@@ -1,5 +1,6 @@
+import { decodeTrack, simplifyTrack } from '@wellness/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
+import { RouteMap } from '@/components/running/RouteMap';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   setManualRunDistance,
@@ -123,6 +125,13 @@ export default function RunSummaryScreen() {
   const [notes, setNotes] = useState<string>(run?.notes ?? '');
   // Distance manuelle saisie (texte libre ; dans l'unité d'affichage courante)
   const [manualDistanceText, setManualDistanceText] = useState<string>('');
+
+  // Décodage + simplification de la trace GPS pour la carte du parcours.
+  const points = useMemo(
+    () => (run?.gpsTrack ? decodeTrack(run.gpsTrack) : []),
+    [run],
+  );
+  const simplified = useMemo(() => simplifyTrack(points, 5), [points]);
 
   // Sync initial des champs depuis la DB quand la course charge (premier rendu).
   // On utilise un ref pour n'initialiser qu'une fois.
@@ -265,6 +274,14 @@ export default function RunSummaryScreen() {
           </View>
         </Card>
       ) : null}
+
+      {/* Carte du parcours (GPS → trace ; manuel → état vide) */}
+      <Card>
+        <RouteMap
+          points={simplified}
+          emptyLabel={t('running.map.noTrack')}
+        />
+      </Card>
 
       {/* Ressenti : RPE */}
       <Card>

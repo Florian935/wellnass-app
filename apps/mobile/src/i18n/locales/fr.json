@@ -734,7 +734,8 @@
     },
     "map": {
       "unavailable": "Carte indisponible (clé MapTiler manquante)",
-      "noTrack": "Aucune trace GPS enregistrée"
+      "noTrack": "Aucune trace GPS enregistrée",
+      "awaitingGps": "En attente du signal GPS…"
     }
   }
 }
