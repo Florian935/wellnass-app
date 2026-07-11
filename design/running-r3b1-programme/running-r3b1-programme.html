@@ -1,0 +1,147 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r3b{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:920px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:64ch;margin:0;font-size:15px;}
+  .stage{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px;align-items:start;}
+  .panel-label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:0 0 12px 4px;}
+  .panel-label .dot{width:8px;height:8px;border-radius:999px;background:var(--accent);}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:390px;margin:0 auto;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .cards{display:flex;flex-direction:column;gap:16px;}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0;}
+
+  .metaline{display:flex;flex-wrap:wrap;gap:6px;padding:0 4px;}
+  .chip{background:var(--surface-alt);color:var(--ink);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;}
+  .chip.active{background:var(--success);color:#fff;}
+  .summary{color:var(--muted);font-size:13px;padding:0 4px;margin:0;}
+
+  .section-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 0 2px;}
+  .sess{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .sess .l{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .sess .n{font-weight:700;font-size:15px;}
+  .sess .t{color:var(--muted);font-size:12px;}
+  .sess .pace{font-family:var(--mono);font-weight:700;font-size:14px;white-space:nowrap;text-align:right;}
+  .sess .pace .u{color:var(--muted);font-size:11px;font-weight:400;}
+
+  .btnrow{display:flex;gap:10px;padding:4px 4px 0;}
+  .btn{flex:1;text-align:center;font-weight:700;font-size:14px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--ink);}
+  .btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+
+  /* editor */
+  .fieldlabel{font-weight:600;font-size:13px;color:var(--muted);margin:0 0 6px 2px;}
+  .typegrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .typ{border:1px solid var(--border);border-radius:12px;padding:11px 12px;font-size:13px;font-weight:600;background:var(--surface);color:var(--ink);text-align:center;}
+  .typ.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .toggle{display:flex;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  .toggle .o{flex:1;text-align:center;padding:10px;font-size:13px;font-weight:600;background:var(--surface);color:var(--muted);}
+  .toggle .o.on{background:var(--surface-alt);color:var(--ink);}
+  .input{background:var(--surface);border:1px solid var(--border);border-radius:14px;min-height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+  .input .val{font-family:var(--mono);font-size:18px;font-weight:700;}
+  .input .suf{color:var(--muted);font-size:14px;}
+  .paceout{background:var(--surface-alt);border-radius:12px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+  .paceout .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .paceout .v{font-family:var(--mono);font-weight:700;font-size:15px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px;}
+
+  .notes{max-width:920px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r3b">
+  <header class="head">
+    <p class="eyebrow">Wellness · Running R3b-i · Maquette</p>
+    <h1 class="title">Programme de course custom</h1>
+    <p class="sub">Créer un programme de course : métadonnées + séances (type + cible distance ou durée). L'allure cible de chaque séance est dérivée du type et du profil coureur (R3a). Réutilise l'infra programmes muscu. Exemple avec une allure de réf de 5:00/km.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- DETAIL -->
+    <section>
+      <p class="panel-label"><span class="dot"></span> Détail du programme</p>
+      <div class="phone"><div class="cards">
+        <p class="screen-title" style="padding-top:8px;">10 km en 8 semaines</p>
+        <div class="metaline">
+          <span class="chip active">Actif</span>
+          <span class="chip">Objectif : 10 km</span>
+          <span class="chip">Niveau : Régulier</span>
+          <span class="chip">8 semaines</span>
+        </div>
+        <p class="summary">Progresse vers un 10 km avec 3 séances/semaine : endurance, fractionné, sortie longue.</p>
+
+        <p class="section-label">Séances</p>
+        <div class="sess">
+          <div class="l"><span class="n">Séance 1 · Endurance</span><span class="t">8 km · base aérobie</span></div>
+          <span class="pace">6:00–6:30<br><span class="u">/km</span></span>
+        </div>
+        <div class="sess">
+          <div class="l"><span class="n">Séance 2 · Fractionné</span><span class="t">6 km · intervalles VMA</span></div>
+          <span class="pace">4:45–5:00<br><span class="u">/km</span></span>
+        </div>
+        <div class="sess">
+          <div class="l"><span class="n">Séance 3 · Sortie longue</span><span class="t">12 km</span></div>
+          <span class="pace">5:30–6:00<br><span class="u">/km</span></span>
+        </div>
+
+        <div class="btnrow">
+          <div class="btn">Dupliquer</div>
+          <div class="btn primary">Éditer</div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- EDITOR -->
+    <section>
+      <p class="panel-label"><span class="dot"></span> Éditeur de séance</p>
+      <div class="phone"><div class="cards">
+        <p class="screen-title" style="padding-top:8px;">Séance 2</p>
+        <div class="card">
+          <div>
+            <p class="fieldlabel">Type de séance</p>
+            <div class="typegrid">
+              <span class="typ">Endurance</span>
+              <span class="typ on">Fractionné</span>
+              <span class="typ">Sortie longue</span>
+              <span class="typ">Récupération</span>
+            </div>
+          </div>
+          <div>
+            <p class="fieldlabel">Cible</p>
+            <div class="toggle"><span class="o on">Distance</span><span class="o">Durée</span></div>
+            <div class="input"><span class="val">6,0</span><span class="suf">km</span></div>
+          </div>
+          <div class="paceout">
+            <span class="k">Allure cible</span>
+            <span class="v">4:45–5:00 /km</span>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Réutilise l'infra programmes muscu</strong> : tables <code>programs</code> (<code>pillar='running'</code>) / <code>sessions</code> / <code>program_translations</code> (nom + résumé bilingues). Séances running = 3 colonnes ajoutées à <code>sessions</code> (type + cible distance/durée).</li>
+      <li><strong>Séance = type + cible</strong> (distance en km <em>ou</em> durée en min). L'<strong>allure cible</strong> est <em>affichée</em> (dérivée du type + profil R3a via <code>sessionTargetPace</code>, en min/km ou min/mi), jamais stockée.</li>
+      <li>Types de programme : endurance, fractionné, sortie longue, récupération (<strong>course libre exclue</strong>).</li>
+      <li><strong>Un seul programme running actif</strong> à la fois. Duplication possible. État « pas de profil » → invite à définir l'allure de réf.</li>
+      <li><strong>Différé</strong> : structure de blocs du fractionné (6×400 m…), bibliothèque + filtres + seed (R3b-ii), planning (R3c), démarrer une course depuis une séance.</li>
+      <li><em>Polices : stand-ins système ici ; en app = Bricolage / Hanken / Space Mono.</em></li>
+    </ul>
+  </section>
+</div>
