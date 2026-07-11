@@ -355,6 +355,145 @@ values
   ('d3000050-0002-4000-8000-000000000000', 'd1000050-0000-4000-8000-000000000000', null, 'en', 'Sugar', now(), now())
 on conflict (id) do nothing;
 
+-- ============================================================
+-- R3b-ii — Programmes de course (bibliothèque) — contenu STARTER à curer/enrichir en back-office V0.7.
+-- Réf. : docs/specs/functional/running.md, schema sessions R3b-i (session_type + cibles).
+--
+-- UUIDs déterministes (préfixe e — distinct de muscu c1…/c2…/c3… et aliments d1…/d2…/d3…) :
+--   programs             → e1000001-… / e1000002-… / e1000003-…
+--   program_translations → e2000001-0001-… (fr) / e2000001-0002-… (en) …idem 0002, 0003
+--   sessions             → e3000001-… à e3000010-…
+--
+-- Toutes les séances running ont session_type + target_distance_m (contrainte sessions_running_target_chk).
+-- ============================================================
+
+-- -----------------------------------------------------------
+-- programs running (éditorial — owner_id null, status 'published')
+-- -----------------------------------------------------------
+insert into public.programs (id, owner_id, pillar, status, is_active, level, goal, duration_weeks, created_at, updated_at)
+values
+  (
+    'e1000001-0000-4000-8000-000000000001',
+    null,
+    'running',
+    'published',
+    false,
+    'beginner',
+    '10k',
+    8,
+    now(), now()
+  ),
+  (
+    'e1000002-0000-4000-8000-000000000002',
+    null,
+    'running',
+    'published',
+    false,
+    'intermediate',
+    'semi',
+    10,
+    now(), now()
+  ),
+  (
+    'e1000003-0000-4000-8000-000000000003',
+    null,
+    'running',
+    'published',
+    false,
+    'beginner',
+    'endurance',
+    6,
+    now(), now()
+  )
+on conflict (id) do nothing;
+
+-- -----------------------------------------------------------
+-- program_translations running FR + EN
+-- -----------------------------------------------------------
+insert into public.program_translations (id, program_id, owner_id, lang, name, summary, description, created_at, updated_at)
+values
+  -- Programme 1 — 10k / débutant / 8 semaines
+  (
+    'e2000001-0001-4000-8000-000000000001',
+    'e1000001-0000-4000-8000-000000000001',
+    null, 'fr',
+    '10 km en 8 semaines',
+    'Prépare un premier 10 km avec 3 séances par semaine.',
+    'Prépare un premier 10 km avec 3 séances par semaine.',
+    now(), now()
+  ),
+  (
+    'e2000001-0002-4000-8000-000000000001',
+    'e1000001-0000-4000-8000-000000000001',
+    null, 'en',
+    '10K in 8 weeks',
+    'Prepare for your first 10K with 3 sessions per week.',
+    'Prepare for your first 10K with 3 sessions per week.',
+    now(), now()
+  ),
+  -- Programme 2 — semi / intermédiaire / 10 semaines
+  (
+    'e2000002-0001-4000-8000-000000000002',
+    'e1000002-0000-4000-8000-000000000002',
+    null, 'fr',
+    'Prépa semi-marathon',
+    'Monte en volume vers le semi avec 4 séances par semaine.',
+    'Monte en volume vers le semi avec 4 séances par semaine.',
+    now(), now()
+  ),
+  (
+    'e2000002-0002-4000-8000-000000000002',
+    'e1000002-0000-4000-8000-000000000002',
+    null, 'en',
+    'Half-marathon prep',
+    'Build up to the half with 4 sessions per week.',
+    'Build up to the half with 4 sessions per week.',
+    now(), now()
+  ),
+  -- Programme 3 — endurance / débutant / 6 semaines
+  (
+    'e2000003-0001-4000-8000-000000000003',
+    'e1000003-0000-4000-8000-000000000003',
+    null, 'fr',
+    'Reprise en douceur',
+    'Reviens à la course progressivement, sans pression.',
+    'Reviens à la course progressivement, sans pression.',
+    now(), now()
+  ),
+  (
+    'e2000003-0002-4000-8000-000000000003',
+    'e1000003-0000-4000-8000-000000000003',
+    null, 'en',
+    'Easy return to running',
+    'Ease back into running, no pressure.',
+    'Ease back into running, no pressure.',
+    now(), now()
+  )
+on conflict (id) do nothing;
+
+-- -----------------------------------------------------------
+-- sessions running (owner_id null, session_type + target_distance_m obligatoires)
+-- Programme 1 — 10k/débutant : endurance 5k · fractionne 5k · sortie_longue 8k
+-- Programme 2 — semi/intermédiaire : endurance 8k · fractionne 6k · sortie_longue 16k · recuperation 5k
+-- Programme 3 — endurance/débutant : endurance 4k · recuperation 3k · sortie_longue 6k
+-- -----------------------------------------------------------
+insert into public.sessions (id, program_id, owner_id, order_index, name, session_type, target_distance_m, target_duration_seconds, created_at, updated_at)
+values
+  -- Programme 1 (e1000001)
+  ('e3000001-0000-4000-8000-000000000001', 'e1000001-0000-4000-8000-000000000001', null, 0, null, 'endurance',     5000, null, now(), now()),
+  ('e3000002-0000-4000-8000-000000000002', 'e1000001-0000-4000-8000-000000000001', null, 1, null, 'fractionne',    5000, null, now(), now()),
+  ('e3000003-0000-4000-8000-000000000003', 'e1000001-0000-4000-8000-000000000001', null, 2, null, 'sortie_longue', 8000, null, now(), now()),
+  -- Programme 2 (e1000002)
+  ('e3000004-0000-4000-8000-000000000004', 'e1000002-0000-4000-8000-000000000002', null, 0, null, 'endurance',     8000,  null, now(), now()),
+  ('e3000005-0000-4000-8000-000000000005', 'e1000002-0000-4000-8000-000000000002', null, 1, null, 'fractionne',    6000,  null, now(), now()),
+  ('e3000006-0000-4000-8000-000000000006', 'e1000002-0000-4000-8000-000000000002', null, 2, null, 'sortie_longue', 16000, null, now(), now()),
+  ('e3000007-0000-4000-8000-000000000007', 'e1000002-0000-4000-8000-000000000002', null, 3, null, 'recuperation',  5000,  null, now(), now()),
+  -- Programme 3 (e1000003)
+  ('e3000008-0000-4000-8000-000000000008', 'e1000003-0000-4000-8000-000000000003', null, 0, null, 'endurance',     4000, null, now(), now()),
+  ('e3000009-0000-4000-8000-000000000009', 'e1000003-0000-4000-8000-000000000003', null, 1, null, 'recuperation',  3000, null, now(), now()),
+  ('e3000010-0000-4000-8000-000000000010', 'e1000003-0000-4000-8000-000000000003', null, 2, null, 'sortie_longue', 6000, null, now(), now())
+on conflict (id) do nothing;
+
 -- ─── US 4.33 : micronutriments (socle), valeurs pour 100 g d'après CIQUAL (ANSES) ───────────
 -- Enrichissement d'un sous-ensemble d'aliments bruts bien caractérisés. Les autres aliments
 -- conservent le défaut '{}' (donnée non renseignée — jamais de valeur inventée, cf. spec 4.33).
