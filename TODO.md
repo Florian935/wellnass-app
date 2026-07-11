@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 12/07/2026 (Nutrition : finitions 4.7 calories jour de séance + 4.18 copier une journée — code livré & vérifié, 100 % client, reste recette device)*
+*Dernière mise à jour : 12/07/2026 (Running R3b-ii bibliothèque de programmes : code livré & revu → reste checkpoint 🔴 seed cloud+device après R3a+R3b-i)*
 
 ---
 
@@ -127,7 +127,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   - [~] **R3a — Profil coureur + types de séance** (5.1, 5.8-5.11) — **code livré & revu** (`feature/running-r3a-profil-types`). `running-paces` (VMA dérivée + plages d'allure, testé) + parse allure M:SS ; table **`running_profiles`** (migration `20260712090000` + RLS + sync rules + schéma PowerSync) ; `running-profile-repository` ; écran profil + « Mes allures » + route + entrée Réglages ; i18n FR/EN. Cadrage complet, revues par phase + finale (*Approved*). typecheck/lint/tests verts. **Reste 🔴 (avec Damien)** : confirmer le timestamp de migration, **appliquer la migration cloud + déployer sync rules + `npm run db:types`**, puis **vérif device**. _Récup +90-120 : plafond d'affichage à confirmer produit._
   - [~] **R3b — Programmes de course** — **découpé en R3b-i / R3b-ii** :
     - [~] **R3b-i — Programme custom** (5.4) — **code livré & revu** (`feature/running-r3b1-programme-custom`). Réutilise l'infra programmes muscu (pilier-aware) ; contenu de séance running (type + cible) ajouté à `sessions` (migration `20260712100000`) ; repo (`updateRunningSession`/`updateProgram`/`updateProgramTranslation`/duplicate étendu) ; écrans `running-programs` (liste/détail/éditeur) + allure dérivée R3a. Blocs d'intervalles différés. Cadrage + revues (par phase + finale *Approved*). typecheck/lint/tests verts, muscu non régressé. **Reste 🔴 (après R3a, avec Damien)** : migration cloud + `db:types` + vérif device.
-    - [ ] **R3b-ii — Bibliothèque + filtres + seed** (5.2, 5.3) : programmes seedés bilingues (shared_content) + parcours/filtres.
+    - [~] **R3b-ii — Bibliothèque + filtres + seed** (5.2, 5.3) — **code livré & revu** (`feature/running-r3b2-bibliotheque`). Filtre pilier sur `useProgramLibrary` (champ `filters.pillar`, appelants muscu intacts) + `duplicateProgram` copie non active confirmée ; **seed** 3 programmes starter bilingues FR+EN (préfixe UUID `e…`, idempotent, séances `session_type`+cible conformes à la check R3b-i) ; **onglet « Bibliothèque »** (parcours + filtres objectif/niveau/durée + « Utiliser » → duplication → détail copie) ; i18n `running.library.*` FR/EN. Cadrage complet, revues spec (*conforme*) + qualité (*Approved*). typecheck/lint/tests verts (400 shared + 29 mobile), parité 617/617, muscu non régressé. _Micro-écart : résumé non affiché sur carte (comme muscu) — à arbitrer produit._ **Reste 🔴 (après R3a + R3b-i, avec Damien)** : appliquer le **seed cloud** (pas de `db:types`, pas de schéma changé) + vérif device (sync `shared_content`).
   - [ ] **R3c — Planning + coordination muscu/running + séance manquée** (5.5, 5.6, 5.7).
 - [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
 
