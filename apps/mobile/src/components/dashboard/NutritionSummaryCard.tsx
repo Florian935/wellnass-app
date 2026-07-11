@@ -43,7 +43,8 @@ export function NutritionSummaryCard() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { kcal, target, macros, hasProfile, isLoading } = useNutritionSummary();
+  const { kcal, effectiveTarget, isTrainingDay, trainingBonus, macros, hasProfile, isLoading } =
+    useNutritionSummary();
 
   if (isLoading) return null;
 
@@ -63,6 +64,8 @@ export function NutritionSummaryCard() {
   }
 
   // ── État : profil configuré ────────────────────────────────────────────────
+  // Objectif effectif = base + bonus jour d'entraînement (4.7) le cas échéant.
+  const target = effectiveTarget;
   const pct = target != null && target > 0
     ? Math.min(100, Math.round((kcal / target) * 100))
     : 0;
@@ -76,6 +79,13 @@ export function NutritionSummaryCard() {
           ? t('home.nutrition.caloriesGoal', { kcal, target })
           : t('home.nutrition.caloriesNoGoal', { kcal })}
       </Text>
+
+      {/* Badge jour d'entraînement (4.7) */}
+      {isTrainingDay ? (
+        <Text style={[styles.trainingBadge, { color: colors.accent }]}>
+          {t('home.nutrition.trainingDayBadge', { kcal: trainingBonus })}
+        </Text>
+      ) : null}
 
       {/* Barre de progression (uniquement si objectif défini) */}
       {target != null ? (
@@ -114,6 +124,7 @@ export function NutritionSummaryCard() {
 const styles = StyleSheet.create({
   emptyText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   kcalValue: { fontFamily: fontFamily.monoBold, fontSize: 22, letterSpacing: -0.5 },
+  trainingBadge: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: -2 },
   track: { height: 9, borderRadius: 999, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 999 },
   macrosRow: { flexDirection: 'row', gap: 8 },

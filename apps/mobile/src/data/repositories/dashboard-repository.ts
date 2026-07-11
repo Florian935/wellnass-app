@@ -26,6 +26,7 @@ import {
   objectiveFromGoal,
   targetCalories,
   tdee,
+  trainingDayCalories,
   type DayActivity,
 } from '@wellness/shared';
 import { useNutritionProfile } from './nutrition-repository';
@@ -106,6 +107,33 @@ export function useNextSession(): NextSessionState {
 }
 
 // ---------------------------------------------------------------------------
+// useIsTrainingDay — support 4.7 (calories des jours d'entraînement)
+// ---------------------------------------------------------------------------
+
+/**
+ * Indique si `dayKey` (AAAA-MM-JJ local) est un « jour d'entraînement » :
+ * au moins une séance muscu terminée OU une course terminée ce jour-là
+ * (décision produit 12/07 — voir spec 4.7-4.18 §2).
+ *
+ * Détection **rétroactive** (faute de planning muscu daté) : composée de
+ * `useWorkoutHistory` + `useRunHistory` (mêmes hooks que `useStreakData`, aucune
+ * SQL directe). Les timestamps `finishedAt` (UTC) sont ramenés au jour **local**
+ * via `localDayKey`, cohérent avec l'indexation `log_date` du journal.
+ */
+export function useIsTrainingDay(dayKey: string): { isTrainingDay: boolean; isLoading: boolean } {
+  const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
+  const { runs, isLoading: runsLoading } = useRunHistory();
+
+  const isTrainingDay = useMemo(() => {
+    const doneOnDay = (arr: { finishedAt: string | null }[]) =>
+      arr.some((x) => x.finishedAt != null && localDayKey(new Date(x.finishedAt)) === dayKey);
+    return doneOnDay(workouts) || doneOnDay(runs);
+  }, [workouts, runs, dayKey]);
+
+  return { isTrainingDay, isLoading: workoutsLoading || runsLoading };
+}
+
+// ---------------------------------------------------------------------------
 // useNutritionSummary — widget 7.5
 // ---------------------------------------------------------------------------
 
@@ -114,13 +142,21 @@ export type NutritionSummary = {
   /** Calories consommées aujourd'hui (0 si aucune entrée). */
   kcal: number;
   /**
-   * Objectif calorique calculé (TDEE + delta objectif, ou override manuel).
+   * Objectif calorique **de base** (TDEE + delta objectif, ou override manuel),
+   * hors bonus jour d'entraînement. Sert de référence pour les macros cibles.
    * `null` si le profil est incomplet (poids, taille, âge ou objectif manquants).
-   *
-   * NOTE MVP : le bonus des jours d'entraînement (`trainingDayBonus`) n'est pas
-   * appliqué ici — son rattachement au planning sera câblé ultérieurement.
    */
   target: number | null;
+  /**
+   * Objectif calorique **effectif** du jour = `target` + bonus jour d'entraînement
+   * si aujourd'hui est un jour de séance ET qu'un bonus > 0 est réglé (4.7).
+   * Égal à `target` sinon. `null` si `target` est `null`.
+   */
+  effectiveTarget: number | null;
+  /** Vrai si aujourd'hui est un jour d'entraînement ET qu'un bonus s'applique (4.7). */
+  isTrainingDay: boolean;
+  /** Bonus calorique jour de séance effectivement appliqué (0 si aucun). */
+  trainingBonus: number;
   /** Macronutriments consommés aujourd'hui en grammes (0 si aucune entrée). */
   macros: { p: number; g: number; l: number };
   /**
@@ -144,8 +180,9 @@ export function useNutritionSummary(): NutritionSummary {
   const { totals, isLoading: totalsLoading } = useDailyTotals(todayKey);
   const { nutritionProfile, isLoading: nutritionLoading } = useNutritionProfile();
   const { profile, isLoading: profileLoading } = useProfile();
+  const { isTrainingDay: trainedToday, isLoading: trainingLoading } = useIsTrainingDay(todayKey);
 
-  const isLoading = totalsLoading || nutritionLoading || profileLoading;
+  const isLoading = totalsLoading || nutritionLoading || profileLoading || trainingLoading;
 
   // Totaux du jour (peut être absent = zéros)
   const todayTotal = totals.find((t) => t.logDate === todayKey);
@@ -172,10 +209,17 @@ export function useNutritionSummary(): NutritionSummary {
       ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
       : null;
 
+  // Bonus jour d'entraînement (4.7) : appliqué seulement si jour de séance ET bonus > 0.
+  const bonus = nutritionProfile?.trainingDayBonus ?? 0;
+  const isTrainingDay = trainedToday && bonus > 0 && target != null;
+  const trainingBonus = isTrainingDay ? bonus : 0;
+  const effectiveTarget =
+    target != null && isTrainingDay ? trainingDayCalories(target, bonus) : target;
+
   // Profil considéré « configuré » si un objectif nutritionnel explicite est posé
   const hasProfile = nutritionProfile?.objective != null;
 
-  return { kcal, target, macros, hasProfile, isLoading };
+  return { kcal, target, effectiveTarget, isTrainingDay, trainingBonus, macros, hasProfile, isLoading };
 }
 
 // ---------------------------------------------------------------------------

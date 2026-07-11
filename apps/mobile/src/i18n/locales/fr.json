@@ -114,6 +114,8 @@
       "targetShort": "objectif",
       "manual": "Ajuster manuellement (kcal)",
       "recompute": "Revenir au calcul automatique",
+      "trainingBonus": "Bonus jour d'entraînement (kcal)",
+      "trainingBonusHint": "Ajouté à l'objectif les jours avec une séance de muscu ou une course. 0 = désactivé.",
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
       "completeProfile": "Compléter mon profil"
     },
@@ -223,6 +225,9 @@
     "templateSaved": "Repas type enregistré ✓",
     "copyYesterday": "Copier d'hier",
     "nothingYesterday": "Rien à copier pour ce repas hier.",
+    "copyDayYesterday": "Copier toute la journée d'hier",
+    "nothingYesterdayFull": "Rien à copier : la journée d'hier est vide.",
+    "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
     "tabs": {
       "all": "Tous",
       "favorites": "Favoris",
@@ -328,6 +333,7 @@
       "title": "Nutrition",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
+      "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
       "cta": "+ Ajouter un repas",
       "setGoal": "Définir mon objectif",
       "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour."

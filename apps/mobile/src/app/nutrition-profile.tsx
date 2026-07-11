@@ -42,6 +42,12 @@ function parseNumber(value: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+/** Bonus calorique (entier ≥ 0). Vide / invalide / négatif → 0 (désactivé). */
+function parseBonus(value: string): number {
+  const n = Math.round(Number(value.replace(',', '.')));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 export default function NutritionProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -54,6 +60,7 @@ export default function NutritionProfileScreen() {
     nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
   const activityLevel: ActivityLevel = nutritionProfile?.activityLevel ?? 'moderate';
   const manualCalories = nutritionProfile?.manualCalories ?? null;
+  const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const restrictions = nutritionProfile?.restrictions ?? [];
   const allergens = nutritionProfile?.allergens ?? [];
 
@@ -164,6 +171,17 @@ export default function NutritionProfileScreen() {
               onPress={() => void upsertNutritionProfile({ manualCalories: null })}
             />
           ) : null}
+          {/* Bonus jour d'entraînement (4.7) — 0/vide = désactivé */}
+          <TextField
+            label={t('nutrition.calories.trainingBonus')}
+            value={trainingBonus > 0 ? String(trainingBonus) : ''}
+            onChangeText={(v) => void upsertNutritionProfile({ trainingDayBonus: parseBonus(v) })}
+            keyboardType="number-pad"
+            placeholder="0"
+          />
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('nutrition.calories.trainingBonusHint')}
+          </Text>
         </Card>
       )}
 
@@ -316,6 +334,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   cardText: { fontFamily: fontFamily.body, fontSize: 15, lineHeight: 21 },
+  hint: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 17 },
   list: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
   listItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },

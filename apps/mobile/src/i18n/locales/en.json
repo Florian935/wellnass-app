@@ -114,6 +114,8 @@
       "targetShort": "target",
       "manual": "Adjust manually (kcal)",
       "recompute": "Back to automatic calculation",
+      "trainingBonus": "Training-day bonus (kcal)",
+      "trainingBonusHint": "Added to your goal on days with a strength or running session. 0 = off.",
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
       "completeProfile": "Complete my profile"
     },
@@ -223,6 +225,9 @@
     "templateSaved": "Meal template saved ✓",
     "copyYesterday": "Copy from yesterday",
     "nothingYesterday": "Nothing to copy for this meal yesterday.",
+    "copyDayYesterday": "Copy all of yesterday",
+    "nothingYesterdayFull": "Nothing to copy: yesterday is empty.",
+    "trainingDayBadge": "+{{kcal}} kcal · training day",
     "tabs": {
       "all": "All",
       "favorites": "Favorites",
@@ -328,6 +333,7 @@
       "title": "Nutrition",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
+      "trainingDayBadge": "+{{kcal}} kcal · training day",
       "cta": "+ Add a meal",
       "setGoal": "Set my goal",
       "setGoalHint": "Set your calorie goal to track your daily meals."

@@ -13,12 +13,20 @@ import {
   sumNutrients,
   targetCalories,
   tdee,
+  trainingDayCalories,
 } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
-import { copyMeal, removeEntry, useDayEntries, type JournalEntry } from '@/data/repositories/journal-repository';
+import { useIsTrainingDay } from '@/data/repositories/dashboard-repository';
+import {
+  copyMeal,
+  duplicateDay,
+  removeEntry,
+  useDayEntries,
+  type JournalEntry,
+} from '@/data/repositories/journal-repository';
 import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -60,6 +68,14 @@ export default function NutritionScreen() {
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
   const target = tdeeValue != null ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null) : null;
+
+  // Objectif effectif = base + bonus jour d'entraînement (4.7), le cas échéant.
+  // Les macros cibles restent calées sur l'objectif de base (bonus non ventilé).
+  const { isTrainingDay } = useIsTrainingDay(day);
+  const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
+  const trainingApplies = target != null && isTrainingDay && trainingBonus > 0;
+  const effectiveTarget = trainingApplies ? trainingDayCalories(target!, trainingBonus) : target;
+
   const manualSet =
     nutritionProfile?.manualProteinG != null ||
     nutritionProfile?.manualCarbsG != null ||
@@ -75,7 +91,7 @@ export default function NutritionScreen() {
       : null;
 
   const totals = sumNutrients(entries);
-  const remaining = target != null ? target - totals.kcal : null;
+  const remaining = effectiveTarget != null ? effectiveTarget - totals.kcal : null;
 
   const isToday = day === isoDay(new Date());
   const dayLabel = isToday
@@ -97,6 +113,13 @@ export default function NutritionScreen() {
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('journal.delete'), style: 'destructive', onPress: () => void removeEntry(entry.id) },
     ]);
+  };
+
+  // Copier toute la journée d'hier (4.18) — proposé uniquement si le jour est vide.
+  const copyYesterday = () => {
+    void duplicateDay(addDays(day, -1), day).then((n) => {
+      if (n === 0) Alert.alert(t('journal.copyDayYesterday'), t('journal.nothingYesterdayFull'));
+    });
   };
 
   return (
@@ -146,8 +169,13 @@ export default function NutritionScreen() {
             <View>
               <Text style={[styles.kcalValue, { color: colors.text }]}>{totals.kcal}</Text>
               <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>
-                {target != null ? `/ ${target} ${t('nutrition.kcal')}` : t('nutrition.kcal')}
+                {effectiveTarget != null ? `/ ${effectiveTarget} ${t('nutrition.kcal')}` : t('nutrition.kcal')}
               </Text>
+              {trainingApplies ? (
+                <Text style={[styles.trainingBadge, { color: colors.accent }]}>
+                  {t('journal.trainingDayBadge', { kcal: trainingBonus })}
+                </Text>
+              ) : null}
             </View>
             {remaining != null ? (
               <View style={styles.remaining}>
@@ -186,6 +214,19 @@ export default function NutritionScreen() {
             </Pressable>
           ) : null}
         </View>
+
+        {/* Copier la journée d'hier (4.18) — seulement si le jour affiché est vide */}
+        {entries.length === 0 ? (
+          <Pressable
+            onPress={copyYesterday}
+            style={[styles.copyDay, { borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={t('journal.copyDayYesterday')}
+          >
+            <Ionicons name="copy-outline" size={16} color={colors.accent} />
+            <Text style={[styles.copyDayLabel, { color: colors.accent }]}>{t('journal.copyDayYesterday')}</Text>
+          </Pressable>
+        ) : null}
 
         {/* Repas configurables (4.14 / 4.15) */}
         {resolveMealConfig(nutritionProfile?.meals).map((m) => {
@@ -326,6 +367,18 @@ const styles = StyleSheet.create({
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 4 },
   setupLink: { fontFamily: fontFamily.bodySemi, fontSize: 14, textAlign: 'center' },
+  trainingBadge: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: 2 },
+  copyDay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  copyDayLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   meal: { gap: 8 },
   mealHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
   mealName: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
