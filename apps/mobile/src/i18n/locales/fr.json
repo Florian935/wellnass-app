@@ -318,8 +318,6 @@
     },
     "streak": {
       "title": "Régularité",
-      "count_one": "{{count}} jour",
-      "count_other": "{{count}} jours",
       "suffix_one": "jour d'affilée",
       "suffix_other": "jours d'affilée",
       "days": ["L", "M", "M", "J", "V", "S", "D"],
@@ -327,7 +325,6 @@
     },
     "nutrition": {
       "title": "Nutrition",
-      "empty": "Aucun repas enregistré. Le journal alimentaire arrive bientôt.",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
       "cta": "+ Ajouter un repas",

@@ -318,8 +318,6 @@
     },
     "streak": {
       "title": "Streak",
-      "count_one": "{{count}} day",
-      "count_other": "{{count}} days",
       "suffix_one": "day in a row",
       "suffix_other": "days in a row",
       "days": ["M", "T", "W", "T", "F", "S", "S"],
@@ -327,7 +325,6 @@
     },
     "nutrition": {
       "title": "Nutrition",
-      "empty": "No meals logged yet. The food journal is coming soon.",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
       "cta": "+ Add a meal",

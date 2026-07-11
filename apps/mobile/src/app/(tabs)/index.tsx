@@ -4,7 +4,10 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
-import { DashboardCard } from '@/components/DashboardCard';
+import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
+import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
+import { StreakCard } from '@/components/dashboard/StreakCard';
+import { WeightCard } from '@/components/dashboard/WeightCard';
 import { PILLARS } from '@wellness/shared';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
@@ -20,7 +23,6 @@ export default function HomeScreen() {
   const { profile } = useProfile();
   const firstName = profile?.firstName ?? '';
 
-  const weekDays = t('home.streak.days', { returnObjects: true }) as string[];
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
 
   return (
@@ -47,39 +49,17 @@ export default function HomeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.blocks} showsVerticalScrollIndicator={false}>
-        {/* Séance du jour */}
-        <DashboardCard icon="calendar-outline" title={t('home.today.title')}>
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-            {t('home.today.empty')}
-          </Text>
-        </DashboardCard>
+        {/* 1. Séance du jour — pilier musculation */}
+        {activePillars.includes('strength') ? <TodaySessionCard /> : null}
 
-        {/* Régularité / streak (motivation — conservé) */}
-        <DashboardCard icon="flame-outline" title={t('home.streak.title')}>
-          <Text style={[styles.streakValue, { color: colors.text }]}>
-            {t('home.streak.count', { count: 0 })}
-          </Text>
-          <View style={styles.weekRow}>
-            {weekDays.map((day, i) => (
-              <View key={`${day}-${i}`} style={styles.dayCol}>
-                <View style={[styles.dayDot, { borderColor: colors.border }]} />
-                <Text style={[styles.dayLabel, { color: colors.textMuted }]}>{day}</Text>
-              </View>
-            ))}
-          </View>
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-            {t('home.streak.empty')}
-          </Text>
-        </DashboardCard>
+        {/* 2. Résumé nutritionnel — pilier nutrition */}
+        {activePillars.includes('nutrition') ? <NutritionSummaryCard /> : null}
 
-        {/* Nutrition — seulement si le pilier est activé */}
-        {activePillars.includes('nutrition') ? (
-          <DashboardCard icon="nutrition-outline" title={t('home.nutrition.title')}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-              {t('home.nutrition.empty')}
-            </Text>
-          </DashboardCard>
-        ) : null}
+        {/* 3. Régularité / streak — toujours affiché */}
+        <StreakCard />
+
+        {/* 4. Poids corporel — pilier nutrition (H4) */}
+        {activePillars.includes('nutrition') ? <WeightCard /> : null}
       </ScrollView>
     </Screen>
   );
@@ -104,10 +84,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   blocks: { gap: 14, paddingBottom: 24 },
-  emptyText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
-  streakValue: { fontFamily: fontFamily.displayBold, fontSize: 24, letterSpacing: -0.5 },
-  weekRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  dayCol: { alignItems: 'center', gap: 6 },
-  dayDot: { width: 22, height: 22, borderRadius: 11, borderWidth: 1.5 },
-  dayLabel: { fontFamily: fontFamily.bodyMedium, fontSize: 12 },
 });
