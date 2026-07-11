@@ -53,6 +53,8 @@ export type NextSessionState =
         orderIndex: number;
         /** Nombre d'exercices planifiés (plans.length). */
         exerciseCount: number;
+        /** Nom du programme actif (pour le contexte affiché dans le widget). */
+        programName: string;
       };
       isLoading: boolean;
     }
@@ -93,6 +95,7 @@ export function useNextSession(): NextSessionState {
         name: first.name ?? `Séance ${first.orderIndex + 1}`,
         orderIndex: first.orderIndex,
         exerciseCount: first.plans.length,
+        programName: program.name,
       },
       isLoading,
     };

@@ -310,6 +310,7 @@
       "title": "Today's session",
       "empty": "No active program. Create one to see your next session here.",
       "session": "Session {{index}} · {{name}}",
+      "program": "Program “{{name}}”",
       "exercises_one": "{{count}} exercise",
       "exercises_other": "{{count}} exercises",
       "cta": "Start session",

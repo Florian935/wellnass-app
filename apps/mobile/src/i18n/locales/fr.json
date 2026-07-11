@@ -310,6 +310,7 @@
       "title": "Séance du jour",
       "empty": "Aucun programme actif. Crée-en un pour voir ta prochaine séance ici.",
       "session": "Séance {{index}} · {{name}}",
+      "program": "Programme « {{name}} »",
       "exercises_one": "{{count}} exercice",
       "exercises_other": "{{count}} exercices",
       "cta": "Démarrer la séance",

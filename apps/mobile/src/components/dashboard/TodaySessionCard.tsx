@@ -76,6 +76,9 @@ export function TodaySessionCard() {
               {t('home.today.exercises', { count: session.exerciseCount })}
             </Text>
           </View>
+          <Text style={[styles.programName, { color: colors.textMuted }]} numberOfLines={1}>
+            {t('home.today.program', { name: session.programName })}
+          </Text>
         </View>
         <Button
           label={t('home.today.cta')}
@@ -107,7 +110,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     letterSpacing: -0.3,
   },
-  metaRow: { flexDirection: 'row', alignItems: 'center' },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  programName: { fontFamily: fontFamily.body, fontSize: 13, flex: 1 },
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
