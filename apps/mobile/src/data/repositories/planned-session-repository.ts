@@ -214,6 +214,35 @@ export function useMissedSessions(): {
 }
 
 // ---------------------------------------------------------------------------
+// useHasPlannedSession — support US 4.7b (anticipation bonus calorique)
+// ---------------------------------------------------------------------------
+
+const SELECT_HAS_PLANNED = `
+  SELECT 1 AS has FROM planned_sessions
+  WHERE owner_id = ? AND scheduled_date = ?
+    AND status IN ('planned','done') AND deleted_at IS NULL
+  LIMIT 1`;
+
+/**
+ * Indique si une séance planifiée (statut `planned` ou `done`) existe pour
+ * `dayKey` (AAAA-MM-JJ) et l'utilisateur courant. Réactif aux changements locaux.
+ *
+ * Utilisé par `useIsTrainingDay` (dashboard-repository) pour la détection
+ * anticipée des jours d'entraînement (US 4.7b).
+ */
+export function useHasPlannedSession(dayKey: string): {
+  hasPlanned: boolean;
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ has: number }>(SELECT_HAS_PLANNED, [
+    userId,
+    dayKey,
+  ]);
+  return { hasPlanned: (data?.length ?? 0) > 0, isLoading };
+}
+
+// ---------------------------------------------------------------------------
 // Écritures (hors contexte hook) — toutes optimistes (SQLite immédiat)
 // ---------------------------------------------------------------------------
 
