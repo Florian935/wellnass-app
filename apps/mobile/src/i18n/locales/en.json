@@ -790,6 +790,13 @@
       "notesPlaceholder": "How did this run go?",
       "done": "Done"
     },
+    "export": {
+      "cta": "Export (GPX)",
+      "defaultName": "Run on {{date}}",
+      "dialogTitle": "Share run (GPX)",
+      "errorUnavailable": "Sharing is not available on this device.",
+      "errorFailed": "Export failed. Please try again."
+    },
     "map": {
       "unavailable": "Map unavailable",
       "noTrack": "No GPS route for this run",

@@ -790,6 +790,13 @@
       "notesPlaceholder": "Comment s'est passée cette course ?",
       "done": "Terminé"
     },
+    "export": {
+      "cta": "Exporter (GPX)",
+      "defaultName": "Course du {{date}}",
+      "dialogTitle": "Partager la course (GPX)",
+      "errorUnavailable": "Le partage n'est pas disponible sur cet appareil.",
+      "errorFailed": "Échec de l'export. Réessaie."
+    },
     "map": {
       "unavailable": "Carte indisponible",
       "noTrack": "Aucun tracé GPS pour cette course",

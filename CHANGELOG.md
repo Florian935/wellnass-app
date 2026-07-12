@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Export GPX d'une course (US 5.33)
+
+Branche `feature/5.33-export-gpx`.
+
+### Ajouté
+- **Export GPX** d'une course GPS terminée : bouton « Exporter (GPX) » sous la carte du
+  résumé de course, visible uniquement pour une course GPS terminée avec ≥ 2 points valides.
+  Génère un fichier `.gpx` (GPX 1.1, sans altitude) et l'ouvre via la feuille de partage OS.
+  100 % local/hors-ligne (aucun réseau, cloud ni migration).
+- `@wellness/shared` : `buildGpx(points, { startedAtMs, name })` (pur, testé), `gpxFileName`
+  (nom daté en heure locale), `isValidCoord(lat, lng)` (extrait d'`isValidFix`).
+- `apps/mobile/src/lib/gpx-export.ts` : couche native (écriture cache + `Sharing.shareAsync`).
+- i18n FR/EN : `running.export.*` (cta, defaultName, dialogTitle, erreurs).
+
+### Modifié
+- `isValidFix` délègue désormais à `isValidCoord` (comportement inchangé — fix records préservé).
+
+### Technique / Notes
+- Dépendances : `expo-sharing` (~57.0.3) + `expo-file-system` (~57.0.0) → **nouveau build requis**.
+- API `expo-file-system` **legacy** (`writeAsStringAsync` + `cacheDirectory`), nom de fichier
+  cache fixe (`course.gpx`) pour éviter l'accumulation. Tests : 20 nouveaux (buildGpx + gpxFileName
+  + isValidCoord), régression `isValidFix` verte.
+
 ## 12/07/2026 — Fix UI : écran Musculation non défilable + cartes collées
 
 Branche `fix/strength-scroll-spacing`.

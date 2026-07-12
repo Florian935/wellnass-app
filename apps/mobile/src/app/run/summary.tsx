@@ -1,5 +1,6 @@
 import {
   decodeTrack,
+  isValidCoord,
   RUNNING_RECORD_DISTANCES,
   simplifyTrack,
   type RecordDistanceKey,
@@ -7,6 +8,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   StyleSheet,
   Text,
@@ -26,6 +28,7 @@ import {
   useRun,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
+import { exportRunAsGpx } from '@/lib/gpx-export';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -213,6 +216,16 @@ export default function RunSummaryScreen() {
   );
   const simplified = useMemo(() => simplifyTrack(points, 5), [points]);
 
+  // Nombre de points VALIDES (mêmes règles que buildGpx : null island, hors bornes).
+  // Réutilise le décodage déjà fait pour la carte (pas de re-décodage).
+  const validPointCount = useMemo(
+    () => points.filter((p) => isValidCoord(p.lat, p.lng)).length,
+    [points],
+  );
+
+  // État de l'export GPX (bouton en chargement pendant la génération/partage).
+  const [isExporting, setIsExporting] = useState(false);
+
   // Sync initial des champs depuis la DB quand la course charge (premier rendu).
   // On utilise un ref pour n'initialiser qu'une fois.
   const [feedbackInit, setFeedbackInit] = useState(false);
@@ -287,6 +300,23 @@ export default function RunSummaryScreen() {
     }
   };
 
+  const onExport = async () => {
+    if (!run || isExporting) return;
+    setIsExporting(true);
+    try {
+      const result = await exportRunAsGpx(run, t);
+      if ('error' in result) {
+        const message =
+          result.error === 'unavailable'
+            ? t('running.export.errorUnavailable')
+            : t('running.export.errorFailed');
+        Alert.alert(t('running.export.cta'), message);
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const onDone = () => {
     router.replace('/(tabs)/running');
   };
@@ -324,6 +354,10 @@ export default function RunSummaryScreen() {
     run.distanceM !== null ? run.distanceM / 1000 : null;
 
   const durationDisplay = formatDuration(run.durationSeconds);
+
+  // Export GPX : uniquement une course GPS terminée avec ≥ 2 points valides.
+  const canExport =
+    run.status === 'completed' && run.source !== 'manual' && validPointCount >= 2;
 
   return (
     <FormScreen>
@@ -394,6 +428,16 @@ export default function RunSummaryScreen() {
           emptyLabel={t('running.map.noTrack')}
         />
       </Card>
+
+      {/* Export GPX (course GPS terminée avec trace ≥ 2 points valides) */}
+      {canExport ? (
+        <Button
+          label={t('running.export.cta')}
+          variant="ghost"
+          loading={isExporting}
+          onPress={onExport}
+        />
+      ) : null}
 
       {/* Ressenti : RPE */}
       <Card>
