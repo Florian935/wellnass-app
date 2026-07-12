@@ -307,6 +307,20 @@ const planned_sessions = new Table({
   deleted_at: column.text,
 });
 
+// ── Running R4b : records d'allure personnels (1 ligne par utilisateur × distance) ──
+// Migration : supabase/migrations/20260712120000_running_pace_records.sql
+
+const running_pace_records = new Table({
+  user_id: column.text,
+  distance_key: column.text,
+  best_time_seconds: column.integer,
+  run_id: column.text,
+  achieved_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── V0.4 : recettes, repas types, poids corporel ──────────────────────────
 // Migration : supabase/migrations/20260707130000_recipes_bodyweight.sql
 const recipes = new Table({
@@ -391,4 +405,5 @@ export const AppSchema = new Schema({
   running_profiles,
   runs,
   planned_sessions,
+  running_pace_records,
 });
