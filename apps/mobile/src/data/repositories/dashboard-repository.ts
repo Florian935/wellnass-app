@@ -29,6 +29,7 @@ import {
   isTrainingDay as computeIsTrainingDay,
   localDayKey,
   objectiveFromGoal,
+  PILLARS,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -46,7 +47,6 @@ import { useSettings } from './settings-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
-import { PILLARS } from '@wellness/shared';
 
 // ---------------------------------------------------------------------------
 // useNextSession — widget 7.4
@@ -435,7 +435,7 @@ export function useMostRecentRecord(): {
   isLoading: boolean;
 } {
   const { i18n } = useTranslation();
-  const lang = i18n.language === 'en' ? 'en' : 'fr';
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
 
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
 

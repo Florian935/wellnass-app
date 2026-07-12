@@ -12,10 +12,12 @@
  *  - Course          : badge « Course » + « {distance} — {M:SS} » + date.
  *
  * Formatage :
- *  - Poids muscu (`max_weight` / `estimated_1rm`) via `useUnits().formatWeight` ;
- *    `best_volume` = charge cumulée sans conversion → `.toFixed(0)` + symbole kg.
+ *  - Poids muscu (`max_weight` / `estimated_1rm`) via `useUnits().formatWeight`
+ *    (respecte le réglage métrique/impérial) ;
+ *  - `best_volume` = charge cumulée **toujours en kg** (comme le widget Volume 7.9),
+ *    avec séparateur de milliers localisé (pas de conversion impériale d'un volume).
  *  - Temps de course en M:SS via `formatPaceMMSS` (helper partagé).
- *  - Date courte locale JJ/MM/AAAA.
+ *  - Date courte locale JJ/MM/AAAA (`—` si date invalide).
  *
  * Routing :
  *  - Muscu  → `/progress` (Progression).
@@ -41,16 +43,17 @@ const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
   marathon: 'running.records.distanceMarathon',
 };
 
-/** Formate une date ISO en JJ/MM/AAAA (date courte locale). */
+/** Formate une date ISO en JJ/MM/AAAA (date courte locale) ; `—` si invalide. */
 function formatDateFr(iso: string): string {
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
 export function RecordRecentCard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
@@ -77,7 +80,7 @@ export function RecordRecentCard() {
   if (record.pillar === 'strength') {
     const value =
       record.type === 'best_volume'
-        ? `${record.value.toFixed(0)} ${units.weightSymbol}`
+        ? `${new Intl.NumberFormat(i18n.language).format(Math.round(record.value))} kg`
         : units.formatWeight(record.value);
     label = `${record.exerciseName} — ${value}`;
     route = '/progress';
