@@ -19,7 +19,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   formatDurationHms,
@@ -84,30 +84,41 @@ function isoToDate(iso: string): string {
 export default function RunningHistoryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  // Chargement consolidé au niveau écran : `useRunHistory` est la source unique des
+  // trois sections (useRunStats / usePaceTrend en dépendent). On gate tout le corps sur
+  // son `isLoading` pour éviter que la résolution initiale de PowerSync (runs=[]) ne
+  // s'affiche comme un faux « aucune course » (0/0/0 + courbe vide + EmptyState).
+  const { isLoading } = useRunHistory();
 
   return (
     <Screen edges={['top']}>
       <ScreenHeader title={t('running.history.title')} />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('running.history.statsTitle')}
-        </Text>
-        <StatsSection />
+      {isLoading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {t('running.history.statsTitle')}
+          </Text>
+          <StatsSection />
 
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('running.history.paceTitle')}
-        </Text>
-        <PaceSection />
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+            {t('running.history.paceTitle')}
+          </Text>
+          <PaceSection />
 
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('running.history.title')}
-        </Text>
-        <RunListSection />
-      </ScrollView>
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+            {t('running.history.runsSectionTitle')}
+          </Text>
+          <RunListSection />
+        </ScrollView>
+      )}
     </Screen>
   );
 }
@@ -259,6 +270,7 @@ function RunListSection() {
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 32 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   sectionTitle: {
     fontFamily: fontFamily.displaySemi,
     fontSize: 18,

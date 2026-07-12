@@ -885,6 +885,7 @@
       "title": "History & progress",
       "empty": "No run recorded yet.",
       "statsTitle": "Statistics",
+      "runsSectionTitle": "Runs",
       "period": "Period",
       "week": "Week",
       "month": "Month",
