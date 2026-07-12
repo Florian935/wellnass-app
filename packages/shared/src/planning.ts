@@ -8,12 +8,12 @@ export type PlannedStatus = 'planned' | 'done' | 'skipped';
  * Sécurise les saisies UI (TextField) : `durationWeeks` doit être un entier > 0 (sinon
  * `generatePlannedSessions` produirait 0 séance en silence), les jours affectés ∈ [0..6].
  */
-export const planRunningProgramInputSchema = z.object({
+export const planProgramInputSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   durationWeeks: z.number().int().positive(),
   dayAssignments: z.record(z.string(), z.number().int().min(0).max(6)),
 });
-export type PlanRunningProgramInput = z.infer<typeof planRunningProgramInputSchema>;
+export type PlanProgramInput = z.infer<typeof planProgramInputSchema>;
 
 /** Session du template de programme : un type de séance associé à un jour de semaine. */
 export interface PlanTemplateSession {

@@ -29,7 +29,7 @@
 
 import { useQuery } from '@powersync/react';
 import type {
-  PlanRunningProgramInput,
+  PlanProgramInput,
   PlanTemplateSession,
   ProgramSessionType,
 } from '@wellness/shared';
@@ -37,7 +37,7 @@ import {
   addDays,
   generatePlannedSessions,
   localDayKey,
-  planRunningProgramInputSchema,
+  planProgramInputSchema,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -64,7 +64,7 @@ export type PlannedSessionItem = {
   orderIndex: number;
 };
 
-// Le type `PlanRunningProgramInput` (+ son schéma Zod `planRunningProgramInputSchema`)
+// Le type `PlanProgramInput` (+ son schéma Zod `planProgramInputSchema`)
 // est défini et exporté par `@wellness/shared` : validation runtime des saisies UI.
 
 // ---------------------------------------------------------------------------
@@ -218,7 +218,7 @@ function currentUserId(): string {
  * pas de séances `owner_id = user` : la garde « template vide » lèvera alors une erreur.
  *
  * Les entrées (`startDate`, `durationWeeks`, `dayAssignments`) sont validées par
- * `planRunningProgramInputSchema` (Zod) AVANT d'ouvrir la transaction : `durationWeeks`
+ * `planProgramInputSchema` (Zod) AVANT d'ouvrir la transaction : `durationWeeks`
  * doit être un entier > 0 (sinon une durée vide/NaN produirait 0 séance en silence tout en
  * activant quand même le programme).
  *
@@ -237,12 +237,12 @@ function currentUserId(): string {
  */
 export async function planRunningProgram(
   programId: string,
-  rawInput: PlanRunningProgramInput,
+  rawInput: PlanProgramInput,
 ): Promise<number> {
   const ownerId = currentUserId();
   // Validation runtime AVANT toute écriture : rejette durée vide/NaN/négative, format de
   // date invalide, jours affectés hors [0..6]. `parse` lève une ZodError le cas échéant.
-  const input = planRunningProgramInputSchema.parse({
+  const input = planProgramInputSchema.parse({
     startDate: rawInput.startDate,
     durationWeeks: rawInput.durationWeeks,
     dayAssignments: rawInput.dayAssignments,

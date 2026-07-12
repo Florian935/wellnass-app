@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   generatePlannedSessions,
   isMissed,
-  planRunningProgramInputSchema,
+  planProgramInputSchema,
   type PlanTemplateSession,
 } from './planning';
 
@@ -43,7 +43,7 @@ describe('isMissed', () => {
   it('future + planned ≠ manquée', () => expect(isMissed('2026-07-20', 'planned', '2026-07-13')).toBe(false));
 });
 
-describe('planRunningProgramInputSchema', () => {
+describe('planProgramInputSchema', () => {
   const valid = {
     startDate: '2026-07-13',
     durationWeeks: 8,
@@ -51,26 +51,26 @@ describe('planRunningProgramInputSchema', () => {
   };
 
   it('accepte une entrée valide', () => {
-    expect(planRunningProgramInputSchema.parse(valid)).toEqual(valid);
+    expect(planProgramInputSchema.parse(valid)).toEqual(valid);
   });
   it('rejette une durée de 0', () => {
-    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: 0 })).toThrow();
+    expect(() => planProgramInputSchema.parse({ ...valid, durationWeeks: 0 })).toThrow();
   });
   it('rejette une durée négative', () => {
-    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: -3 })).toThrow();
+    expect(() => planProgramInputSchema.parse({ ...valid, durationWeeks: -3 })).toThrow();
   });
   it('rejette une durée non entière', () => {
-    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: 2.5 })).toThrow();
+    expect(() => planProgramInputSchema.parse({ ...valid, durationWeeks: 2.5 })).toThrow();
   });
   it('rejette une durée NaN', () => {
-    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: NaN })).toThrow();
+    expect(() => planProgramInputSchema.parse({ ...valid, durationWeeks: NaN })).toThrow();
   });
   it('rejette une date au mauvais format', () => {
-    expect(() => planRunningProgramInputSchema.parse({ ...valid, startDate: '13/07/2026' })).toThrow();
+    expect(() => planProgramInputSchema.parse({ ...valid, startDate: '13/07/2026' })).toThrow();
   });
   it('rejette un jour affecté hors [0..6]', () => {
     expect(() =>
-      planRunningProgramInputSchema.parse({ ...valid, dayAssignments: { 's-1': 7 } }),
+      planProgramInputSchema.parse({ ...valid, dayAssignments: { 's-1': 7 } }),
     ).toThrow();
   });
 });
