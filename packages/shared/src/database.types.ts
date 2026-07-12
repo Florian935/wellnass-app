@@ -652,6 +652,63 @@ export type Database = {
           },
         ]
       }
+      planned_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          owner_id: string
+          program_id: string
+          scheduled_date: string
+          session_id: string
+          status: string
+          updated_at: string
+          week_index: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          owner_id: string
+          program_id: string
+          scheduled_date: string
+          session_id: string
+          status?: string
+          updated_at?: string
+          week_index?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          owner_id?: string
+          program_id?: string
+          scheduled_date?: string
+          session_id?: string
+          status?: string
+          updated_at?: string
+          week_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planned_sessions_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planned_sessions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           birth_date: string | null
@@ -879,6 +936,86 @@ export type Database = {
         }
         Relationships: []
       }
+      running_pace_records: {
+        Row: {
+          achieved_at: string
+          best_time_seconds: number
+          created_at: string
+          deleted_at: string | null
+          distance_key: string
+          id: string
+          run_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at: string
+          best_time_seconds: number
+          created_at?: string
+          deleted_at?: string | null
+          distance_key: string
+          id: string
+          run_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          best_time_seconds?: number
+          created_at?: string
+          deleted_at?: string | null
+          distance_key?: string
+          id?: string
+          run_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "running_pace_records_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      running_profiles: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          level: string | null
+          objective: string | null
+          ref_5k_pace_s_per_km: number | null
+          updated_at: string
+          user_id: string
+          weekly_frequency: number | null
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          level?: string | null
+          objective?: string | null
+          ref_5k_pace_s_per_km?: number | null
+          updated_at?: string
+          user_id: string
+          weekly_frequency?: number | null
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          level?: string | null
+          objective?: string | null
+          ref_5k_pace_s_per_km?: number | null
+          updated_at?: string
+          user_id?: string
+          weekly_frequency?: number | null
+        }
+        Relationships: []
+      }
       runs: {
         Row: {
           avg_pace_s_per_km: number | null
@@ -942,6 +1079,9 @@ export type Database = {
           order_index: number
           owner_id: string | null
           program_id: string
+          session_type: string | null
+          target_distance_m: number | null
+          target_duration_seconds: number | null
           updated_at: string
         }
         Insert: {
@@ -952,6 +1092,9 @@ export type Database = {
           order_index?: number
           owner_id?: string | null
           program_id: string
+          session_type?: string | null
+          target_distance_m?: number | null
+          target_duration_seconds?: number | null
           updated_at?: string
         }
         Update: {
@@ -962,6 +1105,9 @@ export type Database = {
           order_index?: number
           owner_id?: string | null
           program_id?: string
+          session_type?: string | null
+          target_distance_m?: number | null
+          target_duration_seconds?: number | null
           updated_at?: string
         }
         Relationships: [
