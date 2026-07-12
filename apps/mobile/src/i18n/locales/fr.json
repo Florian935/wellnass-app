@@ -901,6 +901,18 @@
       "trendImproving": "En progrès",
       "trendDeclining": "En baisse",
       "trendStable": "Stable"
+    },
+    "records": {
+      "sectionTitle": "Records d'allure",
+      "none": "—",
+      "distance1k": "1 km",
+      "distance5k": "5 km",
+      "distance10k": "10 km",
+      "distanceSemi": "Semi",
+      "distanceMarathon": "Marathon",
+      "newRecordTitle": "Nouveau record !",
+      "newRecordBody": "Tu as battu ton record sur {{distances}}",
+      "refPaceUpdated": "Allure de référence mise à jour"
     }
   }
 }

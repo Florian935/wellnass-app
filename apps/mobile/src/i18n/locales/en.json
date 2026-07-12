@@ -901,6 +901,18 @@
       "trendImproving": "Improving",
       "trendDeclining": "Declining",
       "trendStable": "Stable"
+    },
+    "records": {
+      "sectionTitle": "Pace records",
+      "none": "—",
+      "distance1k": "1 km",
+      "distance5k": "5 km",
+      "distance10k": "10 km",
+      "distanceSemi": "Half",
+      "distanceMarathon": "Marathon",
+      "newRecordTitle": "New record!",
+      "newRecordBody": "You beat your record on {{distances}}",
+      "refPaceUpdated": "Reference pace updated"
     }
   }
 }
