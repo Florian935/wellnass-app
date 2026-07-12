@@ -20,7 +20,8 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.wellness.app",
       "permissions": [
-        "android.permission.RECEIVE_BOOT_COMPLETED"
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -54,7 +55,13 @@
           "cameraPermission": "Wellness utilise la caméra pour scanner les codes-barres des aliments."
         }
       ],
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-notifications",
+        {
+          "color": "#dd6e40"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

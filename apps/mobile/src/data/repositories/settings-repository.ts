@@ -20,7 +20,12 @@
 
 import { useQuery } from '@powersync/react';
 import type { Pillar, UserSettingsRow } from '@wellness/shared';
-import { PILLARS, parseJsonColumn } from '@wellness/shared';
+import {
+  PILLARS,
+  defaultNotificationPrefs,
+  parseJsonColumn,
+  parseNotificationPrefs,
+} from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
@@ -72,7 +77,8 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     units: row.units as UserSettings['units'],
     language: row.language as UserSettings['language'],
     activePillars: parseJsonColumn<Pillar[]>(row.active_pillars, [...PILLARS]),
-    notifications: parseJsonColumn<Record<string, boolean>>(row.notifications, {}),
+    // Parse tolérant : anciennes valeurs (Record<string,boolean> ou {}) → défauts.
+    notifications: parseNotificationPrefs(parseJsonColumn(row.notifications, null)),
     dashboardLayout: parseJsonColumn<unknown>(row.dashboard_layout, null),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -165,7 +171,7 @@ export async function updateSettings(patchInput: Partial<SettingsInput>): Promis
     units: 'metric',
     language: deviceLocale,
     activePillars: [...PILLARS],
-    notifications: {},
+    notifications: defaultNotificationPrefs(),
     dashboardLayout: null,
   });
 
@@ -206,7 +212,7 @@ export async function togglePillar(pillar: Pillar): Promise<void> {
     units: 'metric',
     language: deviceLocale,
     active_pillars: JSON.stringify(next),
-    notifications: JSON.stringify({}),
+    notifications: JSON.stringify(defaultNotificationPrefs()),
     dashboard_layout: null,
   });
 }
@@ -219,7 +225,8 @@ export async function togglePillar(pillar: Pillar): Promise<void> {
  * NE PAS appeler pendant le chargement.
  *
  * Defaults : `theme='system'`, `units='metric'`, `language` = locale appareil
- * (FR ou EN, sinon FR), `active_pillars` = tous les piliers, `notifications={}`,
+ * (FR ou EN, sinon FR), `active_pillars` = tous les piliers,
+ * `notifications` = préférences par défaut (`defaultNotificationPrefs()`),
  * `dashboard_layout=null`.
  */
 export async function ensureSettings(): Promise<void> {
@@ -234,7 +241,7 @@ export async function ensureSettings(): Promise<void> {
     units: 'metric',
     language: deviceLocale,
     active_pillars: JSON.stringify([...PILLARS]),
-    notifications: JSON.stringify({}),
+    notifications: JSON.stringify(defaultNotificationPrefs()),
     dashboard_layout: null,
   });
 }
