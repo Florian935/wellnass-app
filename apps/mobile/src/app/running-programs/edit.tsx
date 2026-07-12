@@ -194,7 +194,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
   const [durationWeeks, setDurationWeeks] = useState<string | null>(null);
 
   const currentName = name ?? (detail?.name ?? '');
-  const currentSummary = summary ?? '';
+  const currentSummary = summary ?? (detail?.summary ?? '');
   const currentGoal: ObjectiveChoice =
     goal ?? ((detail?.goal as RunnerObjective | null | undefined) ?? NO_OBJECTIVE);
   const currentLevel: LevelChoice =
@@ -280,7 +280,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
           />
           <TextField
             label={t('running.program.summary')}
-            value={summary ?? ''}
+            value={summary ?? (detail?.summary ?? '')}
             onChangeText={setSummary}
             onBlur={commitSummary}
             autoCapitalize="sentences"

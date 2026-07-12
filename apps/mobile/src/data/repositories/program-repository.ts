@@ -86,6 +86,8 @@ export type SessionDetail = {
 export type ProgramDetail = {
   id: string;
   name: string;
+  /** Résumé résolu (langue courante → fr), null si aucune traduction. */
+  summary: string | null;
   pillar: Pillar;
   level: ProgramLevel | null;
   goal: string | null;
@@ -175,6 +177,31 @@ const SELECT_PROGRAM_BASE = `
 `;
 
 const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
+
+/**
+ * Ligne brute d'un programme pour la vue **détail** : identique à la vue liste plus
+ * le `summary` résolu (langue courante → fr). Requête dédiée à `useProgramDetail`
+ * pour ne pas alourdir les vues liste qui n'affichent pas le résumé.
+ */
+type ProgramDetailDbRow = ProgramListDbRow & {
+  summary: string | null;
+};
+
+/**
+ * Sélection d'un programme pour l'écran détail : nom ET résumé résolus (langue
+ * courante → fr, mêmes jointures `tl`/`tfr` que `SELECT_PROGRAM_BASE`).
+ * Premier `?` = langue courante ; second `?` = id du programme.
+ */
+const SELECT_PROGRAM_DETAIL_HEADER = `
+  SELECT p.id, p.pillar, p.level, p.goal, p.duration_weeks, p.is_active,
+         COALESCE(tl.name, tfr.name) AS name,
+         COALESCE(tl.summary, tfr.summary) AS summary
+  FROM programs p
+  LEFT JOIN program_translations tl  ON tl.program_id = p.id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN program_translations tfr ON tfr.program_id = p.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE p.deleted_at IS NULL AND p.id = ?
+  LIMIT 1
+`;
 
 /**
  * Séances d'un programme, triées par position. Premier `?` = id du programme.
@@ -393,10 +420,8 @@ export function useProgramDetail(programId: string): {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
-  const headerSql = `${SELECT_PROGRAM_BASE} AND p.id = ? LIMIT 1`;
-
   const { data: headerRows, isLoading: headerLoading } =
-    useQuery<ProgramListDbRow>(headerSql, [lang, programId]);
+    useQuery<ProgramDetailDbRow>(SELECT_PROGRAM_DETAIL_HEADER, [lang, programId]);
   const { data: sessionRows, isLoading: sessionsLoading } =
     useQuery<SessionDbRow>(SELECT_SESSIONS_FOR_PROGRAM, [programId]);
   const { data: planRows, isLoading: plansLoading } = useQuery<PlanDbRow>(
@@ -414,6 +439,7 @@ export function useProgramDetail(programId: string): {
   const base = rowToListItem(header);
   const detail: ProgramDetail = {
     ...base,
+    summary: header.summary,
     sessions: buildSessionDetails(sessionRows, planRows),
   };
 
