@@ -54,8 +54,7 @@
           "cameraPermission": "Wellness utilise la caméra pour scanner les codes-barres des aliments."
         }
       ],
-      "@maplibre/maplibre-react-native",
-      "expo-sharing"
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,
