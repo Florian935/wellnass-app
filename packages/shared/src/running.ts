@@ -83,6 +83,47 @@ export function haversineMeters(
  */
 export const MAX_PLAUSIBLE_SPEED_MS = 12;
 
+// ---------------------------------------------------------------------------
+// Filtre des fixes GPS invalides a l'ingestion
+// ---------------------------------------------------------------------------
+
+/**
+ * Precision horizontale maximale (m) acceptee pour un fix GPS.
+ * Au-dela, le fix est trop degrade pour etre fiable et est ecarte a l'ingestion.
+ */
+export const ACCURACY_MAX_M = 50;
+
+/**
+ * Coordonnee GPS candidate a l'ingestion. `accuracy` = precision horizontale
+ * estimee en metres (peut etre absente/`null`, cas `LocationObject` d'Expo).
+ */
+export interface GpsFixCandidate {
+  lat: number;
+  lng: number;
+  accuracy?: number | null;
+}
+
+/**
+ * Predicat PUR : un fix GPS est-il valide (a conserver dans la trace) ?
+ *
+ * Rejette un fix si :
+ *  - `lat`/`lng` absents ou non finis (NaN, Infinity) ;
+ *  - `lat === 0 && lng === 0` (« null island » — fix degrade classique) ;
+ *  - hors bornes geographiques (`|lat| > 90` ou `|lng| > 180`) ;
+ *  - `accuracy` presente et `> ACCURACY_MAX_M` (precision trop mauvaise).
+ *
+ * Un `accuracy` absent/`null` n'entraine PAS de rejet (l'info n'est pas toujours
+ * fournie par la plateforme). Fonction pure, testable avec des objets simples.
+ */
+export function isValidFix(fix: GpsFixCandidate): boolean {
+  const { lat, lng, accuracy } = fix;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat === 0 && lng === 0) return false; // null island
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return false; // hors bornes
+  if (accuracy != null && accuracy > ACCURACY_MAX_M) return false;
+  return true;
+}
+
 /**
  * Calcule la distance totale d'une trace GPS en metres.
  *
@@ -106,6 +147,50 @@ export function totalDistance(points: ReadonlyArray<GpsPoint>): number {
     total += dist;
   }
   return total;
+}
+
+// ---------------------------------------------------------------------------
+// Vitesse lissee (auto-pause) — Volet B
+// ---------------------------------------------------------------------------
+
+/**
+ * Vitesse moyenne LISSEE (m/s) sur les `windowS` dernieres secondes de la trace.
+ *
+ * Contrairement a la vitesse instantanee point-a-point (tres bruitee en GPS —
+ * une marche lente reelle a 0,72 m/s plonge regulierement sous 0,5 m/s), on
+ * moyenne la distance parcourue sur une fenetre temporelle. Un vrai arret
+ * prolonge fait tendre cette moyenne vers 0 ; un simple creux de bruit ne la
+ * fait pas passer sous le seuil. Les segments « glitch » (> `MAX_PLAUSIBLE_SPEED_MS`
+ * ou delta-t nul) sont exclus, coherent avec `totalDistance`.
+ *
+ * @param points  - Points GPS ordonnes dans le temps (au moins 2 utiles).
+ * @param windowS - Largeur de la fenetre en secondes.
+ * @returns Vitesse moyenne en m/s sur la fenetre, ou `null` si indeterminee
+ *          (< 2 points dans la fenetre, ou duree de fenetre nulle).
+ */
+export function smoothedSpeedMs(
+  points: ReadonlyArray<GpsPoint>,
+  windowS: number,
+): number | null {
+  if (points.length < 2) return null;
+  const lastT = points[points.length - 1]!.t;
+  const windowStart = lastT - windowS;
+  const windowPoints = points.filter((p) => p.t >= windowStart);
+  if (windowPoints.length < 2) return null;
+
+  let dist = 0;
+  for (let i = 1; i < windowPoints.length; i++) {
+    const prev = windowPoints[i - 1]!;
+    const curr = windowPoints[i]!;
+    const dt = curr.t - prev.t;
+    if (dt <= 0) continue;
+    const segDist = haversineMeters(prev, curr);
+    if (segDist / dt > MAX_PLAUSIBLE_SPEED_MS) continue; // glitch GPS
+    dist += segDist;
+  }
+  const duration = lastT - windowPoints[0]!.t;
+  if (duration <= 0) return null;
+  return dist / duration;
 }
 
 // ---------------------------------------------------------------------------
@@ -188,6 +273,57 @@ const POLY_SEPARATOR = '|'; // separateur polyline / temps dans un segment
 const SEGMENT_SEPARATOR = '~'; // separateur entre segments dans la piste
 
 // ---------------------------------------------------------------------------
+// Versionnage du format de segment (precision d'encodage des coordonnees)
+// ---------------------------------------------------------------------------
+//
+// Historique : les premieres traces encodent les coordonnees a 1e-5 (~1,1 m).
+// Cette maille est trop grossiere pour une marche lente (pas ~0,7 m sous la
+// maille) → la trace DECODEE sous-compte la distance et un record 1 km peut
+// manquer. On passe donc a 1e-6 (~0,11 m).
+//
+// Compat ascendante OBLIGATOIRE : les traces deja stockees (1e-5) doivent
+// continuer a se decoder correctement. On introduit un marqueur de version en
+// TETE du contenu de chaque segment :
+//
+//   - Segment HERITE (v0, 1e-5)  : `<coords>|<times>`   (aucun marqueur)
+//   - Segment VERSIONNE (v1, 1e-6) : `#1#<coords>|<times>`
+//
+// Le marqueur commence par `#` (ASCII 35), STRICTEMENT hors du domaine polyline
+// Google (ASCII 63-126). Un segment herite commence donc toujours par un
+// caractere >= 63 : la presence de `#` en premiere position est un signal
+// non ambigu de segment versionne. `decodeTrack` lit la version par segment et
+// applique le facteur de precision correspondant → une trace MIXTE (segments
+// 1e-5 herites puis 1e-6) se decode correctement, dans l'ordre.
+
+/** Prefixe/suffixe du marqueur de version en tete de contenu de segment. */
+const VERSION_MARKER = '#';
+
+/** Version d'encodage courante des NOUVEAUX segments. */
+const CURRENT_SEGMENT_VERSION = 1;
+
+/** Facteur de precision des coordonnees par version de segment. */
+const PRECISION_BY_VERSION: Record<number, number> = {
+  0: 1e5, // herite : 1e-5 (~1,1 m)
+  1: 1e6, // courant : 1e-6 (~0,11 m)
+};
+
+// Separateur coords/temps a l'INTERIEUR d'un segment, selon la version.
+//
+// A 1e-5, les deltas etaient assez petits pour que le caractere `|` (ASCII 124)
+// n'apparaisse jamais dans un chunk polyline → separateur sur (donc conserve
+// pour la compat des segments HERITES v0). A 1e-6, les deltas sont 10x plus
+// grands et un chunk peut valoir `|` : ce separateur devient ambigu. Les
+// segments VERSIONNES (v1+) utilisent donc un separateur STRICTEMENT hors du
+// domaine polyline (63-126) : `,` (ASCII 44), que `encodeValue` n'emet jamais.
+const SEG_SEPARATOR_V0 = POLY_SEPARATOR; // herite : `|`
+const SEG_SEPARATOR_V1 = ','; // versionne : hors domaine polyline
+
+/** Separateur coords/temps applicable a une version de segment donnee. */
+function segSeparatorForVersion(version: number): string {
+  return version === 0 ? SEG_SEPARATOR_V0 : SEG_SEPARATOR_V1;
+}
+
+// ---------------------------------------------------------------------------
 // Primitives varint / zigzag (algorithme Google encoded polyline)
 // ---------------------------------------------------------------------------
 
@@ -232,13 +368,16 @@ function decodeValue(encoded: string, index: number): { value: number; nextIndex
 // Encodage polyline coordonnees (lat/lng) a precision 1e-5
 // ---------------------------------------------------------------------------
 
-function encodeCoords(points: ReadonlyArray<{ lat: number; lng: number }>): string {
+function encodeCoords(
+  points: ReadonlyArray<{ lat: number; lng: number }>,
+  precision: number,
+): string {
   let prevLat = 0;
   let prevLng = 0;
   let encoded = '';
   for (const p of points) {
-    const lat = Math.round(p.lat * 1e5);
-    const lng = Math.round(p.lng * 1e5);
+    const lat = Math.round(p.lat * precision);
+    const lng = Math.round(p.lng * precision);
     encoded += encodeValue(lat - prevLat);
     encoded += encodeValue(lng - prevLng);
     prevLat = lat;
@@ -247,7 +386,10 @@ function encodeCoords(points: ReadonlyArray<{ lat: number; lng: number }>): stri
   return encoded;
 }
 
-function decodeCoords(encoded: string): Array<{ lat: number; lng: number }> {
+function decodeCoords(
+  encoded: string,
+  precision: number,
+): Array<{ lat: number; lng: number }> {
   const result: Array<{ lat: number; lng: number }> = [];
   let idx = 0;
   let lat = 0;
@@ -259,7 +401,7 @@ function decodeCoords(encoded: string): Array<{ lat: number; lng: number }> {
     const dLng = decodeValue(encoded, idx);
     idx = dLng.nextIndex;
     lng += dLng.value;
-    result.push({ lat: lat / 1e5, lng: lng / 1e5 });
+    result.push({ lat: lat / precision, lng: lng / precision });
   }
   return result;
 }
@@ -331,9 +473,14 @@ function decodeTimes(encoded: string, count: number): number[] {
  */
 export function encodeSegment(points: ReadonlyArray<GpsPoint>): string {
   if (points.length === 0) return '';
-  const coords = encodeCoords(points);
+  const precision = PRECISION_BY_VERSION[CURRENT_SEGMENT_VERSION]!;
+  const coords = encodeCoords(points, precision);
   const times = encodeTimes(points);
-  return coords + POLY_SEPARATOR + times;
+  const separator = segSeparatorForVersion(CURRENT_SEGMENT_VERSION);
+  // Marqueur de version en tete : `#<version>#` (voir bloc versionnage).
+  const versionTag =
+    VERSION_MARKER + CURRENT_SEGMENT_VERSION.toString() + VERSION_MARKER;
+  return versionTag + coords + separator + times;
 }
 
 /**
@@ -378,14 +525,31 @@ export function decodeTrack(track: string): GpsPoint[] {
 
     if (segment === '') continue;
 
-    // Decoder le segment
-    const sepIdx = segment.indexOf(POLY_SEPARATOR);
+    // Lire l'eventuel marqueur de version en tete de segment.
+    // Herite (v0, 1e-5) : aucun marqueur (le contenu commence par un chunk
+    //   polyline, ASCII >= 63). Versionne (v1+, 1e-6) : prefixe `#<version>#`.
+    let version = 0;
+    let body = segment;
+    if (segment.startsWith(VERSION_MARKER)) {
+      const endMarker = segment.indexOf(VERSION_MARKER, 1);
+      if (endMarker === -1) continue; // marqueur malformed
+      const parsedVersion = parseInt(segment.slice(1, endMarker), 10);
+      if (isNaN(parsedVersion)) continue; // version illisible
+      version = parsedVersion;
+      body = segment.slice(endMarker + 1);
+    }
+    const precision = PRECISION_BY_VERSION[version];
+    if (precision === undefined) continue; // version inconnue → segment ignore
+
+    // Decoder le corps du segment (coords <sep> temps). Le separateur depend de
+    // la version (`|` herite, `,` versionne — voir bloc versionnage).
+    const sepIdx = body.indexOf(segSeparatorForVersion(version));
     if (sepIdx === -1) continue; // segment malformed
 
-    const coordsPart = segment.slice(0, sepIdx);
-    const timesPart = segment.slice(sepIdx + 1);
+    const coordsPart = body.slice(0, sepIdx);
+    const timesPart = body.slice(sepIdx + 1);
 
-    const coords = decodeCoords(coordsPart);
+    const coords = decodeCoords(coordsPart, precision);
     const times = decodeTimes(timesPart, coords.length);
 
     for (let i = 0; i < coords.length; i++) {
