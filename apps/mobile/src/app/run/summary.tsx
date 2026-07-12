@@ -232,12 +232,22 @@ export default function RunSummaryScreen() {
     if (!id || !run || detectionRun.current) return;
     if (run.source === 'manual' || run.status !== 'completed') return;
     detectionRun.current = true;
+    let cancelled = false;
     detectAndStoreRunRecords(id)
-      .then(setBeatenRecords)
+      .then((beaten) => {
+        if (!cancelled) setBeatenRecords(beaten);
+      })
       .catch((err) => {
         console.warn('[RunSummary] detectAndStoreRunRecords failed:', err);
       });
-  }, [id, run]);
+    return () => {
+      cancelled = true;
+    };
+    // Déps primitives : `useRun` renvoie un nouvel objet `run` à chaque rendu.
+    // On dépend des seules valeurs lues (status/source) ; le corps lit `run`/`id`
+    // et le ref `detectionRun` garantit l'exécution unique (one-shot).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, run?.status, run?.source]);
 
   const isManual = run?.source === 'manual';
   const hasDistance = run?.distanceM !== null && run?.distanceM !== undefined;
