@@ -1,32 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
-import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
-import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
-import { StreakCard } from '@/components/dashboard/StreakCard';
-import { WeightCard } from '@/components/dashboard/WeightCard';
-import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
-import { MuscleVolumeCard } from '@/components/dashboard/MuscleVolumeCard';
-import { RunningWeekCard } from '@/components/dashboard/RunningWeekCard';
-import { PILLARS } from '@wellness/shared';
+import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
+import { DashboardWidgetRow } from '@/components/dashboard/DashboardWidgetRow';
+import { useDashboardLayout } from '@/data/repositories/dashboard-layout-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
-import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { settings } = useSettings();
-  // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
-  const activePillars = settings?.activePillars ?? [...PILLARS];
   const { profile } = useProfile();
   const firstName = profile?.firstName ?? '';
 
+  const [editing, setEditing] = useState(false);
+  const { layout, toggleVisible, setSize } = useDashboardLayout();
+
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
+
+  // Hors édition : uniquement les widgets visibles. En édition : tous (déjà
+  // filtrés par piliers dans le layout résolu), les masqués marqués.
+  const rendered = editing ? layout.widgets : layout.widgets.filter((w) => w.visible);
 
   return (
     <Screen edges={['top']}>
@@ -34,46 +33,80 @@ export default function HomeScreen() {
         <View style={styles.headerTexts}>
           <Text style={[styles.hello, { color: colors.textMuted }]}>{greeting}</Text>
           <Text style={[styles.title, { color: colors.text }]}>{t('common.appName')}</Text>
-          <SyncStatus />
+          {editing ? (
+            <Text style={[styles.hello, { color: colors.accent }]}>
+              {t('home.customize.editHint')}
+            </Text>
+          ) : (
+            <SyncStatus />
+          )}
         </View>
-        <Link href="/settings" asChild>
+
+        <View style={styles.headerActions}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={t('settings.title')}
-            hitSlop={10}
+            accessibilityState={{ selected: editing }}
+            accessibilityLabel={
+              editing ? t('home.customize.done') : t('home.customize.edit')
+            }
+            onPress={() => setEditing((v) => !v)}
+            hitSlop={8}
             style={StyleSheet.flatten([
-              styles.iconBtn,
-              { backgroundColor: colors.surface, borderColor: colors.border },
+              styles.persBtn,
+              editing
+                ? { backgroundColor: colors.accent, borderColor: colors.accent }
+                : { backgroundColor: colors.surface, borderColor: colors.border },
             ])}
           >
-            <Ionicons name="person-circle-outline" size={26} color={colors.text} />
+            <Ionicons
+              name={editing ? 'checkmark' : 'create-outline'}
+              size={16}
+              color={editing ? '#fff' : colors.text}
+            />
+            <Text
+              style={[styles.persBtnText, { color: editing ? '#fff' : colors.text }]}
+            >
+              {editing ? t('home.customize.done') : t('home.customize.edit')}
+            </Text>
           </Pressable>
-        </Link>
+
+          {!editing ? (
+            <Link href="/settings" asChild>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('settings.title')}
+                hitSlop={10}
+                style={StyleSheet.flatten([
+                  styles.iconBtn,
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                ])}
+              >
+                <Ionicons name="person-circle-outline" size={26} color={colors.text} />
+              </Pressable>
+            </Link>
+          ) : null}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.blocks} showsVerticalScrollIndicator={false}>
-        {/* 1. Séance du jour — pilier musculation */}
-        {activePillars.includes('strength') ? <TodaySessionCard /> : null}
-
-        {/* 2. Résumé nutritionnel — pilier nutrition */}
-        {activePillars.includes('nutrition') ? <NutritionSummaryCard /> : null}
-
-        {/* 3. Régularité / streak — toujours affiché */}
-        <StreakCard />
-
-        {/* 4. Poids corporel — pilier nutrition (H4) */}
-        {activePillars.includes('nutrition') ? <WeightCard /> : null}
-
-        {/* 5. Record récent — piliers muscu OU course (US 7.8) */}
-        {activePillars.includes('strength') || activePillars.includes('running') ? (
-          <RecordRecentCard />
+        {rendered.length === 0 && !editing ? (
+          <Text style={[styles.empty, { color: colors.textMuted }]}>
+            {t('home.customize.empty')}
+          </Text>
         ) : null}
 
-        {/* 6. Volume muscu de la semaine — pilier musculation (US 7.9) */}
-        {activePillars.includes('strength') ? <MuscleVolumeCard /> : null}
-
-        {/* 7. Résumé running de la semaine — pilier running (US 7.10) */}
-        {activePillars.includes('running') ? <RunningWeekCard /> : null}
+        {rendered.map((w) => (
+          <DashboardWidgetRow
+            key={w.id}
+            editing={editing}
+            visible={w.visible}
+            size={w.size}
+            onToggleVisible={() => toggleVisible(w.id)}
+            onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
+          >
+            <DashboardWidget id={w.id} size={w.size} />
+          </DashboardWidgetRow>
+        ))}
       </ScrollView>
     </Screen>
   );
@@ -86,9 +119,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  headerTexts: { gap: 4 },
+  headerTexts: { gap: 4, flex: 1 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   hello: { fontFamily: fontFamily.bodyMedium, fontSize: 14 },
   title: { fontFamily: fontFamily.displayXBold, fontSize: 28, letterSpacing: -0.8 },
+  persBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  persBtnText: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   iconBtn: {
     width: 44,
     height: 44,
@@ -98,4 +142,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   blocks: { gap: 14, paddingBottom: 24 },
+  empty: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20, textAlign: 'center' },
 });
