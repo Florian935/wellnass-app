@@ -25,4 +25,5 @@ export * from './date';
 export * from './planning';
 export * from './run-stats';
 export * from './streak';
+export * from './training-day';
 export type { Database, Json } from './database.types';
