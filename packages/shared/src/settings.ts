@@ -2,6 +2,23 @@ import { z } from 'zod';
 import { localeSchema, PILLARS, pillarSchema } from './pillar';
 import { unitSystemSchema } from './units';
 import { syncFieldsSchema } from './sync';
+import { defaultNotificationPrefs } from './notifications';
+
+/**
+ * Schéma Zod des préférences de notifications (voir `notifications.ts`).
+ * Les heures sont bornées à [0, 23] et `maxPerDay >= 1`. La forme est validée
+ * ici ; le parse *tolérant* des anciennes valeurs (colonne enrichie sans
+ * migration) reste à la charge de `parseNotificationPrefs` côté repository.
+ */
+const hourSchema = z.number().int().min(0).max(23);
+export const notificationPrefsSchema = z.object({
+  streakDanger: z.boolean(),
+  reminderHour: hourSchema,
+  dndEnabled: z.boolean(),
+  dndStartHour: hourSchema,
+  dndEndHour: hourSchema,
+  maxPerDay: z.number().int().min(1),
+});
 
 /**
  * Thème visuel de l'interface.
@@ -36,10 +53,12 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
   activePillars: z.array(pillarSchema).default([...PILLARS]),
 
   /**
-   * Préférences de notifications par type.
-   * Clé = identifiant de type de notification, valeur = activé/désactivé.
+   * Préférences de notifications (rappel streak, Ne pas déranger, max/jour).
+   * Objet typé `NotificationPrefs` — colonne enrichie depuis l'ancien
+   * `Record<string, boolean>` **sans migration** : le parse tolérant
+   * (`parseNotificationPrefs`) applique les défauts aux anciennes valeurs.
    */
-  notifications: z.record(z.string(), z.boolean()).default({}),
+  notifications: notificationPrefsSchema.default(defaultNotificationPrefs()),
 
   /**
    * Disposition du dashboard (JSON libre).

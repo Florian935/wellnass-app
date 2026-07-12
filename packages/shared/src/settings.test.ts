@@ -55,9 +55,16 @@ describe('userSettingsRowSchema — defaults', () => {
     expect(row.activePillars).toEqual([...PILLARS]);
   });
 
-  it('applique notifications = {} par défaut', () => {
+  it('applique notifications = préférences par défaut', () => {
     const row = userSettingsRowSchema.parse({ ...syncBase });
-    expect(row.notifications).toEqual({});
+    expect(row.notifications).toEqual({
+      streakDanger: true,
+      reminderHour: 20,
+      dndEnabled: true,
+      dndStartHour: 22,
+      dndEndHour: 7,
+      maxPerDay: 3,
+    });
   });
 
   it('applique dashboardLayout = null par défaut', () => {
@@ -90,12 +97,33 @@ describe('userSettingsRowSchema — valeurs explicites', () => {
     expect(row.activePillars).toEqual(['strength', 'nutrition']);
   });
 
-  it('accepte des préférences de notifications', () => {
-    const row = userSettingsRowSchema.parse({
-      ...syncBase,
-      notifications: { workout: true, streak: false },
-    });
-    expect(row.notifications).toEqual({ workout: true, streak: false });
+  it('accepte des préférences de notifications explicites', () => {
+    const prefs = {
+      streakDanger: false,
+      reminderHour: 8,
+      dndEnabled: false,
+      dndStartHour: 23,
+      dndEndHour: 6,
+      maxPerDay: 5,
+    };
+    const row = userSettingsRowSchema.parse({ ...syncBase, notifications: prefs });
+    expect(row.notifications).toEqual(prefs);
+  });
+
+  it('rejette des préférences de notifications avec une heure hors bornes', () => {
+    expect(() =>
+      userSettingsRowSchema.parse({
+        ...syncBase,
+        notifications: {
+          streakDanger: true,
+          reminderHour: 24,
+          dndEnabled: true,
+          dndStartHour: 22,
+          dndEndHour: 7,
+          maxPerDay: 3,
+        },
+      }),
+    ).toThrow();
   });
 
   it('accepte un dashboardLayout non nul', () => {
