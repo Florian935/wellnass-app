@@ -291,6 +291,22 @@ const runs = new Table({
   deleted_at: column.text,
 });
 
+// ── Running R3c-i : planification datée (table générique pilier-agnostique) ──
+// Migration : supabase/migrations/20260712110000_planned_sessions.sql
+
+const planned_sessions = new Table({
+  owner_id: column.text,
+  program_id: column.text,
+  session_id: column.text,
+  scheduled_date: column.text, // AAAA-MM-JJ
+  status: column.text,
+  week_index: column.integer,
+  completed_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── V0.4 : recettes, repas types, poids corporel ──────────────────────────
 // Migration : supabase/migrations/20260707130000_recipes_bodyweight.sql
 const recipes = new Table({
@@ -374,4 +390,5 @@ export const AppSchema = new Schema({
   personal_records,
   running_profiles,
   runs,
+  planned_sessions,
 });
