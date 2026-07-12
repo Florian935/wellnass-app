@@ -10,6 +10,17 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix : champs du programme de course enregistrés à la saisie
+
+_Branche : `fix/running-program-fields-onchange`. Suite du fix précédent : les champs texte du composer de programme (nom, résumé, **durée en semaines**) souffraient du même défaut que la cible de séance — commit `onBlur` uniquement, donc perdus si « Terminé » était tapé sans quitter le champ (le `Keyboard.dismiss()` posé avant ne suffit pas : le blur est asynchrone, `router.back()` navigue avant). 100 % JS._
+
+### Corrigé
+- **`running-programs/edit.tsx`** : commit-on-change sur les 3 champs du composer (`saveName`/`saveSummary`/`saveDurationWeeks` branchés sur `onChangeText`, écriture uniquement si valeur valide, `onBlur` conservé). Plus de perte à la modification, quel que soit le geste de sortie.
+- Le **formulaire de création** (`RunningProgramCreateForm`) lit déjà l'état au submit (bouton « Créer ») — non concerné (aucune dépendance au blur).
+
+### Technique / Notes
+- Généralise le pattern commit-on-change du fix cible-de-séance à tous les champs texte running. Qualité verte (typecheck / lint / 451 shared + 29 mobile). Rebuild preview pour re-recette.
+
 ## 12/07/2026 — Fix : cible de séance perdue sans blur + contrainte cloud bloquante
 
 _Branche : `fix/running-commit-on-change`. Suite de la recette device : la durée d'une séance n'était pas enregistrée si l'utilisateur tapait « Terminé » sans sortir du champ (commit uniquement `onBlur`). Cause secondaire : une CHECK constraint cloud bloquait la synchro PowerSync pendant l'édition. 100 % JS + 1 migration cloud (déjà appliquée)._
