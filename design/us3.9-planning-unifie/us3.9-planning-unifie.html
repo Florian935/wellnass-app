@@ -1,0 +1,182 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;--warn:#b5761f;
+    --run:#c0562f;--strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:920px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:70ch;margin:0;font-size:15px;}
+  .stage{max-width:920px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:390px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 4px;}
+
+  .weeknav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 13px;margin:0 4px 14px;}
+  .weeknav .nav{width:30px;height:30px;border-radius:8px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .weeknav .lbl{font-weight:700;font-size:14px;}
+
+  .legend{display:flex;gap:14px;margin:0 4px 12px;font-size:12px;color:var(--muted);}
+  .legend .k{display:flex;align-items:center;gap:6px;font-weight:600;}
+  .dotc{width:10px;height:10px;border-radius:50%;}
+
+  .daycard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:0 4px 9px;}
+  .daycard.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .dhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;}
+  .dname{font-weight:800;font-size:14px;}
+  .ddate{color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .coord{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warn);background:#fbeee0;border:1px solid #e7c9a6;border-radius:999px;padding:2px 8px;}
+  .todaytag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);}
+  .sess{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:var(--surface-alt);}
+  .sess + .sess{margin-top:7px;}
+  .sess .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .sess.run .dot{background:var(--run);} .sess.str .dot{background:var(--strength);}
+  .sess .body{flex:1;min-width:0;}
+  .sess .stype{font-weight:700;font-size:13.5px;}
+  .sess .smeta{color:var(--muted);font-size:12px;}
+  .sess .space{font-family:var(--mono);font-size:12px;color:var(--run);font-weight:700;white-space:nowrap;}
+  .pill{font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;color:#fff;}
+  .pill.run{background:var(--run);} .pill.str{background:var(--strength);}
+  .rest{color:var(--muted);font-size:13px;font-style:italic;padding:2px;}
+
+  .banner{margin:0 4px 12px;background:#fbeee0;border:1px solid #e7c9a6;border-radius:14px;padding:10px 13px;font-size:13px;}
+  .banner b{color:var(--warn);}
+
+  /* wizard */
+  .field{margin:0 4px 14px;}
+  .flabel{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 7px;}
+  .input{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:15px;font-weight:600;}
+  .assign{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px;margin:0 4px 9px;}
+  .assign .top{display:flex;align-items:center;gap:8px;margin:0 0 8px;}
+  .assign .sname{font-weight:800;font-size:14px;}
+  .assign .meta{color:var(--muted);font-size:12px;}
+  .days{display:flex;gap:4px;}
+  .day{flex:1;text-align:center;padding:6px 0;font-size:11px;font-weight:700;border-radius:7px;background:var(--surface-alt);color:var(--muted);}
+  .day.on{background:var(--strength);color:#fff;}
+  .cta{appearance:none;border:0;width:calc(100% - 8px);margin:8px 4px 0;background:var(--strength);color:#fff;font-weight:700;font-size:15px;padding:13px;border-radius:12px;font-family:var(--sans);}
+
+  .notes{max-width:920px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US 3.9 · Maquette</p>
+    <h1 class="title">Planning unifié — muscu &amp; course</h1>
+    <p class="sub">Un seul « Mon planning » où les séances de musculation et de course cohabitent sur le même calendrier. Planifier un programme (muscu ou running) via l'assistant semaine type ; indicateur discret quand deux séances tombent le même jour (coordination). Réutilise l'infra générique R3c-i — aucune migration. Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- Écran 1 : calendrier unifié -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Mon planning</span></div>
+      <p class="screen-title">Mon planning</p>
+      <div class="weeknav"><span class="nav">‹</span><span class="lbl">Semaine du 13/07</span><span class="nav">›</span></div>
+
+      <div class="legend">
+        <span class="k"><span class="dotc" style="background:var(--strength)"></span>Muscu</span>
+        <span class="k"><span class="dotc" style="background:var(--run)"></span>Course</span>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Lundi</span><span class="ddate">13/07</span></div>
+        <div class="sess str">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Push (haut du corps)</span><span class="smeta">5 exercices</span></span>
+          <span class="pill str">Muscu</span>
+        </div>
+      </div>
+
+      <div class="daycard today">
+        <div class="dhead"><span class="dname">Mardi</span><span class="ddate">14/07 · <span class="todaytag">Aujourd'hui</span></span><span class="coord">2 séances</span></div>
+        <div class="sess str">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Legs</span><span class="smeta">6 exercices</span></span>
+          <span class="pill str">Muscu</span>
+        </div>
+        <div class="sess run">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Endurance</span><span class="smeta">8,0 km</span></span>
+          <span class="space">5:30–6:00</span>
+        </div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Mercredi</span><span class="ddate">15/07</span></div>
+        <div class="sess run">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Fractionné</span><span class="smeta">5,0 km</span></span>
+          <span class="space">4:15–4:30</span>
+        </div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Jeudi</span><span class="ddate">16/07</span></div>
+        <div class="rest">Repos</div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Vendredi</span><span class="ddate">17/07</span></div>
+        <div class="sess str">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Pull</span><span class="smeta">5 exercices</span></span>
+          <span class="pill str">Muscu</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran 2 : assistant Planifier (muscu) -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Planifier</span></div>
+      <p class="screen-title">Planifier « Full body 8 sem. »</p>
+
+      <div class="field">
+        <p class="flabel">Durée (semaines)</p>
+        <div class="input">8</div>
+      </div>
+      <div class="field">
+        <p class="flabel">Semaine de début</p>
+        <div class="weeknav" style="margin:0"><span class="nav">‹</span><span class="lbl">Semaine du lun. 14/07</span><span class="nav">›</span></div>
+      </div>
+
+      <p class="flabel" style="margin:0 4px 8px;">Semaine type</p>
+      <div class="assign">
+        <div class="top"><span class="pill str">Muscu</span><span class="sname">Push</span><span class="meta">· 5 exercices</span></div>
+        <div class="days"><span class="day on">Lun</span><span class="day">Mar</span><span class="day">Mer</span><span class="day">Jeu</span><span class="day">Ven</span><span class="day">Sam</span><span class="day">Dim</span></div>
+      </div>
+      <div class="assign">
+        <div class="top"><span class="pill str">Muscu</span><span class="sname">Legs</span><span class="meta">· 6 exercices</span></div>
+        <div class="days"><span class="day">Lun</span><span class="day">Mar</span><span class="day on">Mer</span><span class="day">Jeu</span><span class="day">Ven</span><span class="day">Sam</span><span class="day">Dim</span></div>
+      </div>
+      <div class="assign">
+        <div class="top"><span class="pill str">Muscu</span><span class="sname">Pull</span><span class="meta">· 5 exercices</span></div>
+        <div class="days"><span class="day">Lun</span><span class="day">Mar</span><span class="day">Mer</span><span class="day">Jeu</span><span class="day on">Ven</span><span class="day">Sam</span><span class="day">Dim</span></div>
+      </div>
+
+      <button class="cta">Planifier · 24 séances</button>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Un seul « Mon planning »</strong> (route <code>/planning</code>) : muscu et course sur le même calendrier semaine, séances distinguées par pilier (couleur + puce).</li>
+      <li><strong>Séance muscu</strong> = nom + <strong>N exercices</strong> ; <strong>séance course</strong> = type + cible + allure (via profil R3a).</li>
+      <li><strong>Coordination (5.6)</strong> : indicateur discret <strong>« N séances »</strong> quand ≥ 2 séances (planned+done) le même jour. <strong>Non bloquant</strong> (décision H).</li>
+      <li><strong>Assistant « Planifier »</strong> partagé (muscu &amp; running) : durée + semaine de début + affectation de chaque séance à un jour. Accessible depuis le détail programme des 2 piliers.</li>
+      <li><strong>Généralise l'infra R3c-i</strong> (repo pilier-agnostique, table <code>planned_sessions</code>) — <strong>aucune migration, aucun cloud</strong>. Séances manquées + reporter/sauter/faite : inchangés (tous piliers).</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage / Hanken / Space Mono. Muscu = bordeaux charte, course = terracotta.</em></li>
+    </ul>
+  </section>
+</div>
