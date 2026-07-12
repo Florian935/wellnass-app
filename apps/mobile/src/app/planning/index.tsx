@@ -36,6 +36,12 @@ import { useTheme } from '@/theme/useTheme';
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
+/**
+ * Couleur de pilier « muscu » : bordeaux de la charte (fixe, hors thème clair/sombre —
+ * la palette d'app ne porte pas ce rôle ; mirroir de la maquette `--strength`).
+ */
+const STRENGTH_COLOR = '#6b0028';
+
 /** Construit une `Date` locale depuis une clé AAAA-MM-JJ (jamais `new Date('AAAA-MM-JJ')`). */
 function dateFromKey(key: string): Date {
   const [y, m, d] = key.split('-').map(Number);
@@ -187,6 +193,11 @@ export default function PlanningScreen() {
             const dayKey = localDayKey(addDays(weekStartDate, i));
             const dayItems = byDate[dayKey] ?? [];
             const isToday = dayKey === todayKey;
+            // Coordination (5.6) : compte les séances réellement présentes ce jour
+            // (planned + done ; on exclut skipped). Indicateur discret si ≥ 2.
+            const coordCount = dayItems.filter(
+              (it) => it.status === 'planned' || it.status === 'done',
+            ).length;
             return (
               <View
                 key={key}
@@ -199,9 +210,21 @@ export default function PlanningScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.dayHeader, { color: colors.text }]}>
-                  {t(`common.weekday.${key}`)} · {formatDayKey(dayKey)}
-                </Text>
+                <View style={styles.dayHeaderRow}>
+                  <Text style={[styles.dayHeader, { color: colors.text }]}>
+                    {t(`common.weekday.${key}`)} · {formatDayKey(dayKey)}
+                  </Text>
+                  {coordCount >= 2 ? (
+                    <View
+                      style={[styles.coordBadge, { borderColor: colors.accent }]}
+                      accessibilityRole="text"
+                    >
+                      <Text style={[styles.coordText, { color: colors.accent }]}>
+                        {t('planning.multipleSameDay', { count: coordCount })}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
                 {dayItems.length === 0 ? (
                   <Text style={[styles.restDay, { color: colors.textMuted }]}>
                     {t('planning.restDay')}
@@ -294,18 +317,35 @@ function PlannedSessionRow({
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  const isRunning = item.pillar === 'running';
   const sessionType = item.sessionType as ProgramSessionType | null;
-  const typeLabel = sessionType ? t(`running.sessionType.${sessionType}`) : item.sessionName;
+
+  // Titre : muscu = nom de séance (fallback « Séance N ») ; running = type de séance.
+  let typeLabel: string | null;
+  if (isRunning) {
+    typeLabel = sessionType ? t(`running.sessionType.${sessionType}`) : item.sessionName;
+  } else {
+    typeLabel = item.sessionName?.trim()
+      ? item.sessionName
+      : t('programs.detail.sessionFallback', { index: item.orderIndex + 1 });
+  }
+
+  // Muscu : ligne « N exercices ». Running : cible (distance/durée) + allure.
+  const exerciseLabel = isRunning
+    ? null
+    : t('workout.exerciseCount', { count: item.exerciseCount });
 
   let targetLabel: string | null = null;
-  if (item.targetDistanceM != null && item.targetDistanceM > 0) {
-    targetLabel = units.formatDistance(item.targetDistanceM / 1000);
-  } else if (item.targetDurationSeconds != null && item.targetDurationSeconds > 0) {
-    targetLabel = `${Math.round(item.targetDurationSeconds / 60)} min`;
+  if (isRunning) {
+    if (item.targetDistanceM != null && item.targetDistanceM > 0) {
+      targetLabel = units.formatDistance(item.targetDistanceM / 1000);
+    } else if (item.targetDurationSeconds != null && item.targetDurationSeconds > 0) {
+      targetLabel = `${Math.round(item.targetDurationSeconds / 60)} min`;
+    }
   }
 
   let paceLabel: string | null = null;
-  if (sessionType) {
+  if (isRunning && sessionType) {
     if (ref5kPaceSPerKm == null) {
       paceLabel = t('planning.noProfileHint');
     } else {
@@ -315,6 +355,9 @@ function PlannedSessionRow({
       }
     }
   }
+
+  const pillarColor = isRunning ? colors.accent : STRENGTH_COLOR;
+  const pillarLabel = t(isRunning ? 'planning.pillarRunning' : 'planning.pillarStrength');
 
   // Statut affiché : manqué (calculé), fait, sauté.
   let statusLabel: string | null = null;
@@ -339,6 +382,10 @@ function PlannedSessionRow({
         dimmed && styles.rowDimmed,
       ]}
     >
+      <View
+        style={[styles.pillarDot, { backgroundColor: pillarColor }]}
+        accessibilityLabel={pillarLabel}
+      />
       <View style={styles.rowText}>
         <Text
           style={[
@@ -354,6 +401,9 @@ function PlannedSessionRow({
             {formatDayKey(item.scheduledDate)}
           </Text>
         ) : null}
+        {exerciseLabel ? (
+          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{exerciseLabel}</Text>
+        ) : null}
         {targetLabel ? (
           <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{targetLabel}</Text>
         ) : null}
@@ -361,11 +411,16 @@ function PlannedSessionRow({
           <Text style={[styles.rowPace, { color: colors.textMuted }]}>{paceLabel}</Text>
         ) : null}
       </View>
-      {statusLabel ? (
-        <View style={[styles.statusBadge, { borderColor: colors.border }]}>
-          <Text style={[styles.statusText, { color: colors.textMuted }]}>{statusLabel}</Text>
+      <View style={styles.rowEnd}>
+        <View style={[styles.pillarChip, { backgroundColor: pillarColor }]}>
+          <Text style={styles.pillarChipText}>{pillarLabel}</Text>
         </View>
-      ) : null}
+        {statusLabel ? (
+          <View style={[styles.statusBadge, { borderColor: colors.border }]}>
+            <Text style={[styles.statusText, { color: colors.textMuted }]}>{statusLabel}</Text>
+          </View>
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -403,7 +458,25 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
-  dayHeader: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  dayHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  dayHeader: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  coordBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  coordText: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   restDay: { fontFamily: fontFamily.body, fontSize: 13 },
   dayItems: { gap: 8 },
   row: {
@@ -417,7 +490,21 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rowDimmed: { opacity: 0.55 },
+  pillarDot: { width: 10, height: 10, borderRadius: 5, flex: 0 },
   rowText: { flex: 1, gap: 2 },
+  rowEnd: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  pillarChip: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  pillarChipText: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 9,
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
   rowTitle: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   strike: { textDecorationLine: 'line-through' },
   rowMeta: { fontFamily: fontFamily.body, fontSize: 12 },
