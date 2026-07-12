@@ -48,13 +48,18 @@
   - Course : affiché (tous les programmes course sont possédés par construction).
 - **Confirmation** : `Alert.alert(nom du programme, « Cette action supprimera le programme et toutes ses
   séances. Continuer ? », [Annuler, Supprimer(destructive)])`.
-- **Effet** (transactionnel autant que possible) : `deleteProgram` durci —
-  1. si le programme est **actif** (`is_active=1`) → le passer `is_active=0` **avant** le soft delete
-     (invariant « au plus 1 actif par pilier » préservé) ;
-  2. **cascade `planned_sessions`** : soft-delete toutes les `planned_sessions` (de l'`owner`) dont le
-     `program_id` = ce programme (ou `session_id` ∈ séances du programme) et `deleted_at IS NULL` ;
-  3. cascade existante (séances → exercise_plans → translations → programme).
-- **Après suppression** : revenir à la liste (`router.replace` vers l'onglet/liste programmes) ; état de
+- **Effet** : `deleteProgram` durci —
+  1. **[transaction]** si le programme est **actif** (`is_active=1`) → le passer `is_active=0` **puis** poser le
+     soft delete du programme **dans une même `writeTransaction`** (atomicité : jamais de ligne soft-deletée
+     restée `is_active=1` — cohérent avec `activateProgram` qui filtre `is_active=1 AND deleted_at IS NULL`).
+     L'ordre `is_active=0` **avant** le soft-delete est impératif (sinon l'UPDATE ne matcherait plus la ligne).
+  2. **cascade `planned_sessions`** : soft-delete toutes les `planned_sessions` **de l'owner** dont
+     `program_id = ce programme` et `deleted_at IS NULL` — **un seul filtre `program_id` suffit** (il couvre
+     toutes les séances du programme ; inutile de lister les `session_id`). Peut rester séquentielle (hors
+     transaction) — volume borné.
+  3. cascade existante (séances → exercise_plans → translations).
+- **Après suppression** : `router.replace('/programs')` (muscu) ou `router.replace('/running-programs')` (course) ;
+  état de
   chargement pendant l'opération ; en cas d'erreur, message non bloquant (`Alert`), on reste sur l'écran.
 - **Programme actif supprimé** : après suppression, plus aucun programme actif pour ce pilier (l'utilisateur peut
   en activer un autre). Le dashboard/écran pilier reflète l'absence (déjà géré par `useActiveProgram → null`).
@@ -63,8 +68,9 @@
 - **Où** : icône corbeille existante dans les éditeurs (muscu + course), en **mode édition** du programme.
 - **Ajout** : **confirmation** `Alert.alert(nom de la séance, « Supprimer cette séance ? », [Annuler,
   Supprimer(destructive)])` avant l'appel à `removeSession`.
-- **Effet** : `removeSession` durci — cascade `planned_sessions` (soft-delete celles dont `session_id` = cette
-  séance) en plus de la cascade exercise_plans existante.
+- **Effet** : `removeSession` durci — cascade `planned_sessions` (soft-delete celles **de l'owner** dont
+  `session_id` = cette séance, `deleted_at IS NULL`) en plus de la cascade exercise_plans existante. (Les séances
+  ne portent pas `is_active` → aucune désactivation nécessaire ici.)
 - Réactif : la séance disparaît de l'éditeur (UI `useQuery`).
 
 ### 2.3 Règles / cas limites
@@ -78,10 +84,9 @@
 ## 3. Architecture
 
 - **`program-repository.ts`** :
-  - `deleteProgram(programId)` — ajouter, **avant** la cascade actuelle : `UPDATE programs SET is_active=0` si
-    actif (ou l'inclure dans le patch de soft delete) ; et une **cascade `planned_sessions`** (soft-delete par
-    `program_id` **ou** `session_id ∈` séances du programme, owner courant). Idéalement en transaction (`txInsert`/
-    patchs groupés) — a minima séquentiel cohérent avec l'existant.
+  - `deleteProgram(programId)` — **`writeTransaction`** pour `is_active=0` (si actif) **+** soft-delete du
+    programme (atomique, dans cet ordre) ; **cascade `planned_sessions`** par `program_id` (owner courant) —
+    séquentielle acceptable ; puis cascade existante séances/plans/translations.
   - `removeSession(sessionId)` — ajouter la **cascade `planned_sessions`** (soft-delete par `session_id`).
   - Réutiliser `softDelete` de `_sql`.
 - **`components/Button.tsx`** : variante `'destructive'` (fond/texte dérivés de `colors.danger` ; même API).
