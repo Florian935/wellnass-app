@@ -41,6 +41,6 @@ export const palettes: Record<ColorScheme, Palette> = {
     accent: '#dd6e40',
     accentText: '#ffffff',
     success: '#a9ba7e',
-    danger: '#dd6e40',
+    danger: '#e0524a',
   },
 };
