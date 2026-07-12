@@ -26,6 +26,8 @@ export type JournalEntry = {
   fatG: number;
   /** Snapshot des micronutriments figés pour la quantité (socle 4.33). */
   micronutrients: Micronutrients;
+  /** Horodatage de création (ISO UTC) — affiché dans le détail de l'entrée. */
+  createdAt: string;
 };
 
 type JournalDbRow = {
@@ -39,10 +41,11 @@ type JournalDbRow = {
   carbs_g: number;
   fat_g: number;
   micronutrients: string | null;
+  created_at: string;
 };
 
 const SELECT_DAY = `
-  SELECT id, meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g, micronutrients
+  SELECT id, meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g, micronutrients, created_at
   FROM food_entries
   WHERE log_date = ? AND deleted_at IS NULL
   ORDER BY order_index, created_at
@@ -60,6 +63,7 @@ function rowToEntry(row: JournalDbRow): JournalEntry {
     carbsG: row.carbs_g,
     fatG: row.fat_g,
     micronutrients: parseMicronutrients(row.micronutrients),
+    createdAt: row.created_at,
   };
 }
 
@@ -188,6 +192,38 @@ export async function updateEntry(
 /** Supprime (soft delete) une entrée du journal. */
 export async function removeEntry(entryId: string): Promise<void> {
   await softDelete('food_entries', entryId);
+}
+
+/**
+ * Réordonne une entrée au sein de son repas : échange son `order_index` avec l'entrée
+ * voisine (au-dessus si `up`, en dessous si `down`). Sans voisin (extrémité), no-op.
+ */
+export async function moveEntry(entryId: string, direction: 'up' | 'down'): Promise<void> {
+  const entry = await powerSync.getOptional<{
+    id: string;
+    log_date: string;
+    meal_type: string;
+    order_index: number;
+  }>(
+    `SELECT id, log_date, meal_type, order_index FROM food_entries WHERE id = ? AND deleted_at IS NULL`,
+    [entryId],
+  );
+  if (!entry) return;
+
+  const neighbor = await powerSync.getOptional<{ id: string; order_index: number }>(
+    direction === 'up'
+      ? `SELECT id, order_index FROM food_entries
+         WHERE log_date = ? AND meal_type = ? AND deleted_at IS NULL AND order_index < ?
+         ORDER BY order_index DESC LIMIT 1`
+      : `SELECT id, order_index FROM food_entries
+         WHERE log_date = ? AND meal_type = ? AND deleted_at IS NULL AND order_index > ?
+         ORDER BY order_index ASC LIMIT 1`,
+    [entry.log_date, entry.meal_type, entry.order_index],
+  );
+  if (!neighbor) return;
+
+  await patch('food_entries', entry.id, { order_index: neighbor.order_index });
+  await patch('food_entries', neighbor.id, { order_index: entry.order_index });
 }
 
 type CopyRow = {

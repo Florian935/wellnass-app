@@ -16,6 +16,10 @@ export type PickTarget = {
   proteinPer100g: number | null;
   carbsPer100g: number | null;
   fatPer100g: number | null;
+  /** Détail facultatif pour 100 g : sucres / AG saturés / fibres (affichés si présents). */
+  sugarsPer100g?: number | null;
+  saturatedFatPer100g?: number | null;
+  fiberPer100g?: number | null;
   portions: FoodPortion[];
   /** Micronutriments pour 100 g (socle 4.33). Vide = section « Valeurs détaillées » masquée. */
   micronutrients?: Micronutrients;
@@ -42,6 +46,15 @@ export function QuantityPanel({
   const kcal = scaleNutrition(target, g).kcal;
   const micronutrients = target.micronutrients ?? {};
 
+  // Détail facultatif (sucres / AG saturés / fibres) mis à l'échelle, affiché si renseigné.
+  const scaleG = (per100: number | null | undefined): number | null =>
+    per100 == null ? null : Math.round((per100 * g) / 100);
+  const extras = [
+    { key: 'sugars', label: t('food.custom.sugars'), value: scaleG(target.sugarsPer100g) },
+    { key: 'saturatedFat', label: t('food.custom.saturatedFat'), value: scaleG(target.saturatedFatPer100g) },
+    { key: 'fiber', label: t('food.custom.fiber'), value: scaleG(target.fiberPer100g) },
+  ].filter((e) => e.value != null);
+
   return (
     <View style={[styles.panel, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -57,6 +70,11 @@ export function QuantityPanel({
           </View>
         ) : null}
         <TextField label={t('journal.grams')} value={grams} onChangeText={setGrams} keyboardType="decimal-pad" />
+        {extras.length > 0 ? (
+          <Text style={[styles.extras, { color: colors.textMuted }]}>
+            {extras.map((e) => `${e.label} ${e.value} g`).join('  ·  ')}
+          </Text>
+        ) : null}
         <MicronutrientDetails micronutrients={micronutrients} grams={Math.round(g)} />
       </ScrollView>
       <View style={styles.panelActions}>
@@ -72,6 +90,7 @@ const styles = StyleSheet.create({
   content: { gap: 16, paddingBottom: 8 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
+  extras: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
   portions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   portion: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   portionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },

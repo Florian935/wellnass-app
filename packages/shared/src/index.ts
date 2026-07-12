@@ -4,6 +4,8 @@
  */
 export * from './sync';
 export * from './pillar';
+export * from './json-column';
+export * from './search';
 export * from './units';
 export * from './age';
 export * from './profile';

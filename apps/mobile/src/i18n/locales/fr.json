@@ -205,8 +205,19 @@
       "hint": "Renseigne les valeurs pour 100 g. Seules les calories sont obligatoires.",
       "category": "Catégorie",
       "per100": "Valeurs pour 100 g",
-      "save": "Créer l'aliment"
-    }
+      "sugars": "Sucres",
+      "saturatedFat": "AG saturés",
+      "fiber": "Fibres",
+      "moreMacros": "Détail (facultatif)",
+      "save": "Créer l'aliment",
+      "update": "Enregistrer les modifications"
+    },
+    "editTitle": "Modifier l'aliment",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteConfirm": "Retirer cet aliment de ta base ? Les entrées déjà journalisées sont conservées.",
+    "libraryReadOnly": "Les aliments de la bibliothèque ne sont pas modifiables.",
+    "longPressEdit": "Appui long pour modifier ou supprimer"
   },
   "journal": {
     "today": "Aujourd'hui",
@@ -219,6 +230,9 @@
     "searchFood": "Rechercher",
     "searchPlaceholder": "Nom d'un aliment…",
     "noFood": "Aucun aliment trouvé.",
+    "noRecent": "Aucun aliment récent. Ajoute des aliments pour les retrouver ici.",
+    "addedCount": "{{count}} ajouté(s) à ce repas",
+    "done": "Terminé",
     "searchOff": "Chercher « {{term}} » sur OpenFoodFacts",
     "searching": "Recherche…",
     "offNone": "Aucun résultat OpenFoodFacts.",
@@ -243,11 +257,17 @@
     "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
     "detail": {
       "quantity": "{{grams}} g",
-      "close": "Fermer"
+      "close": "Fermer",
+      "edit": "Modifier la quantité",
+      "save": "Enregistrer",
+      "loggedAt": "à {{time}}",
+      "moveUp": "Monter",
+      "moveDown": "Descendre"
     },
     "tabs": {
       "all": "Tous",
       "favorites": "Favoris",
+      "recent": "Récents",
       "recipes": "Recettes",
       "templates": "Repas types"
     },
