@@ -1,0 +1,306 @@
+/**
+ * Historique & progression de course (R4a — phase D).
+ *
+ * Écran en lecture seule, trois sections :
+ *  1. Statistiques agrégées (distance / temps / nombre) par période (semaine / mois / début).
+ *  2. Courbe d'allure moyenne sur 30 ou 90 jours + libellé de tendance.
+ *  3. Liste des courses terminées (date, distance, durée, allure) → détail au tap.
+ *
+ * Conventions :
+ *  - Aucune chaîne en dur — namespace i18n `running.history.*` (+ `running.active.noData`).
+ *  - Distances / allures / durées formatées via `useUnits` + `formatDurationHms`.
+ *  - Dates : `dayKey` (courbe) est déjà `AAAA-MM-JJ` → découpage direct en JJ/MM ;
+ *    `finishedAt` est un timestamp ISO complet → `new Date(iso)` pour la liste.
+ *  - Empty states : jamais de graphique vide rendu (ProgressLineChart rend null si vide,
+ *    on affiche en plus une note) ; EmptyState quand aucune course.
+ *  - Offline-first : tout vient de PowerSync local (via useRunHistory).
+ */
+
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import {
+  formatDurationHms,
+  paceToSystem,
+  type PaceTrendKind,
+  type StatPeriod,
+} from '@wellness/shared';
+import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
+import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { Segment } from '@/components/Segment';
+import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
+import {
+  usePaceTrend,
+  useRunHistory,
+  useRunStats,
+} from '@/data/repositories/run-repository';
+import { useUnits } from '@/hooks/useUnits';
+import { fontFamily } from '@/theme/fonts';
+import { useTheme } from '@/theme/useTheme';
+
+// ---------------------------------------------------------------------------
+// Constantes de toggles
+// ---------------------------------------------------------------------------
+
+const PERIOD_OPTIONS: readonly StatPeriod[] = ['week', 'month', 'all'];
+/** Fenêtres de la courbe d'allure (jours) et leur clé i18n. */
+const PACE_WINDOWS = { days30: 30, days90: 90 } as const;
+type PaceWindow = keyof typeof PACE_WINDOWS;
+const PACE_WINDOW_OPTIONS: readonly PaceWindow[] = ['days30', 'days90'];
+
+/** Clé i18n de tendance selon le sens de progression de l'allure. */
+const TREND_KEY: Record<PaceTrendKind, string> = {
+  improving: 'running.history.trendImproving',
+  declining: 'running.history.trendDeclining',
+  stable: 'running.history.trendStable',
+};
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** `AAAA-MM-JJ` → `JJ/MM` (découpage direct, pas de `new Date`). */
+function dayKeyToShort(dayKey: string): string {
+  const [, mm, dd] = dayKey.split('-');
+  return `${dd}/${mm}`;
+}
+
+/** Timestamp ISO complet → `JJ/MM/AAAA`. */
+function isoToDate(iso: string): string {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+// ---------------------------------------------------------------------------
+// Écran principal
+// ---------------------------------------------------------------------------
+
+export default function RunningHistoryScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  return (
+    <Screen edges={['top']}>
+      <ScreenHeader title={t('running.history.title')} />
+
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('running.history.statsTitle')}
+        </Text>
+        <StatsSection />
+
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('running.history.paceTitle')}
+        </Text>
+        <PaceSection />
+
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('running.history.title')}
+        </Text>
+        <RunListSection />
+      </ScrollView>
+    </Screen>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section statistiques
+// ---------------------------------------------------------------------------
+
+function StatsSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+  const [period, setPeriod] = useState<StatPeriod>('week');
+  const { stats } = useRunStats(period);
+
+  const cards = [
+    { key: 'totalDistance', value: units.formatDistance(stats.totalDistanceM / 1000) },
+    { key: 'totalTime', value: formatDurationHms(stats.totalDurationS) },
+    { key: 'runCount', value: String(stats.count) },
+  ] as const;
+
+  return (
+    <Card style={styles.statsCard}>
+      <Segment
+        options={PERIOD_OPTIONS}
+        value={period}
+        onChange={setPeriod}
+        label={(p) => t(`running.history.${p}`)}
+      />
+      <View style={styles.statsRow}>
+        {cards.map((c) => (
+          <View
+            key={c.key}
+            style={[styles.statChip, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+          >
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+              {t(`running.history.${c.key}`)}
+            </Text>
+            <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+              {c.value}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section courbe d'allure
+// ---------------------------------------------------------------------------
+
+function PaceSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+  const [window, setWindow] = useState<PaceWindow>('days90');
+  const { points, trend } = usePaceTrend(PACE_WINDOWS[window]);
+
+  // Allure convertie vers l'unité d'affichage (secondes par km ou par mile).
+  const chartData = points.map((p) => ({
+    label: dayKeyToShort(p.dayKey),
+    value: paceToSystem(p.paceSPerKm, units.system),
+  }));
+  const paceUnitLabel = t('running.history.paceUnit', { unit: units.distanceSymbol });
+
+  return (
+    <Card style={styles.paceCard}>
+      <Segment
+        options={PACE_WINDOW_OPTIONS}
+        value={window}
+        onChange={setWindow}
+        label={(w) => t(`running.history.${w}`)}
+      />
+      <View style={styles.trendRow}>
+        <Text style={[styles.trendLabel, { color: colors.textMuted }]}>
+          {t('running.history.trend')}
+        </Text>
+        <Text style={[styles.trendValue, { color: colors.text }]}>
+          {t(TREND_KEY[trend])}
+        </Text>
+      </View>
+      {chartData.length === 0 ? (
+        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+          {t('running.history.paceEmpty')}
+        </Text>
+      ) : (
+        <ProgressLineChart data={chartData} unit={paceUnitLabel} />
+      )}
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section liste des courses
+// ---------------------------------------------------------------------------
+
+function RunListSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+  const router = useRouter();
+  const { runs } = useRunHistory();
+
+  if (runs.length === 0) {
+    return (
+      <EmptyState
+        icon="walk-outline"
+        title={t('running.history.title')}
+        message={t('running.history.empty')}
+      />
+    );
+  }
+
+  return (
+    <View style={styles.list}>
+      {runs.map((run) => (
+        <Pressable
+          key={run.id}
+          accessibilityRole="button"
+          onPress={() => router.push('/run/summary?id=' + run.id)}
+          style={({ pressed }) => [
+            styles.runRow,
+            { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+          ]}
+        >
+          <View style={styles.runInfo}>
+            <Text style={[styles.runDate, { color: colors.text }]}>
+              {run.finishedAt ? isoToDate(run.finishedAt) : t('running.active.noData')}
+            </Text>
+            <Text style={[styles.runMeta, { color: colors.textMuted }]}>
+              {units.formatDistance(run.distanceM == null ? null : run.distanceM / 1000)}
+              {'  ·  '}
+              {formatDurationHms(run.durationSeconds)}
+              {'  ·  '}
+              {units.formatPace(run.avgPaceSPerKm)}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Styles
+// ---------------------------------------------------------------------------
+
+const styles = StyleSheet.create({
+  scroll: { paddingBottom: 32 },
+  sectionTitle: {
+    fontFamily: fontFamily.displaySemi,
+    fontSize: 18,
+    letterSpacing: -0.3,
+    marginBottom: 12,
+  },
+  sectionTitleSpaced: { marginTop: 28 },
+  statsCard: { gap: 14 },
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statChip: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 4,
+    alignItems: 'center',
+  },
+  statLabel: { fontFamily: fontFamily.body, fontSize: 12, textAlign: 'center' },
+  statValue: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
+  paceCard: { gap: 14 },
+  trendRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  trendLabel: { fontFamily: fontFamily.body, fontSize: 13 },
+  trendValue: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  emptyText: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  list: { gap: 10 },
+  runRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  runInfo: { flex: 1, gap: 4 },
+  runDate: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  runMeta: { fontFamily: fontFamily.body, fontSize: 13 },
+});

@@ -69,6 +69,11 @@ export default function RunningScreen() {
             variant="ghost"
             onPress={() => router.push('/running-planning')}
           />
+          <Button
+            label={t('running.history.title')}
+            variant="ghost"
+            onPress={() => router.push('/running-history')}
+          />
         </Card>
       ) : null}
     </Screen>
