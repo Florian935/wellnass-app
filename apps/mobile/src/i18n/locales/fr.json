@@ -759,6 +759,21 @@
       "imperial": "Impérial",
       "hint": "Métrique (kg, km) ou impérial (lb, mi). S'applique à tous les affichages."
     },
+    "notifications": {
+      "title": "Notifications",
+      "streakReminder": "Rappel série en danger",
+      "streakReminderDesc": "Un rappel le soir si tu n'as rien fait aujourd'hui.",
+      "reminderTime": "Heure du rappel",
+      "dndTitle": "Ne pas déranger",
+      "dnd": "Ne pas déranger",
+      "dndDesc": "Aucune notification pendant la plage choisie.",
+      "dndStart": "Début",
+      "dndEnd": "Fin",
+      "hint": "La plage peut enjamber minuit (ex. 22:00 → 07:00). Max 3 notifications par jour.",
+      "permissionDenied": "Notifications désactivées au niveau du système. Active-les dans les paramètres Android pour recevoir les rappels.",
+      "decreaseHour": "Diminuer l'heure",
+      "increaseHour": "Augmenter l'heure"
+    },
     "account": {
       "title": "Compte",
       "signOut": "Se déconnecter"
@@ -991,5 +1006,11 @@
     "generatedCount_other": "Planifier · {{count}} séances",
     "planErrorTitle": "Échec de la planification",
     "planErrorMessage": "La planification a échoué. Réessaie."
+  },
+  "notifications": {
+    "streakDanger": {
+      "title": "Ta série est en danger 🔥",
+      "body": "Fais une activité aujourd'hui pour garder ta série."
+    }
   }
 }

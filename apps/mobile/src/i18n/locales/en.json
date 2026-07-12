@@ -759,6 +759,21 @@
       "imperial": "Imperial",
       "hint": "Metric (kg, km) or imperial (lb, mi). Applies to all displays."
     },
+    "notifications": {
+      "title": "Notifications",
+      "streakReminder": "Streak-at-risk reminder",
+      "streakReminderDesc": "An evening reminder if you haven't done anything today.",
+      "reminderTime": "Reminder time",
+      "dndTitle": "Do not disturb",
+      "dnd": "Do not disturb",
+      "dndDesc": "No notifications during the chosen window.",
+      "dndStart": "Start",
+      "dndEnd": "End",
+      "hint": "The window can span midnight (e.g. 22:00 → 07:00). Max 3 notifications per day.",
+      "permissionDenied": "Notifications are turned off at the system level. Enable them in your Android settings to receive reminders.",
+      "decreaseHour": "Decrease hour",
+      "increaseHour": "Increase hour"
+    },
     "account": {
       "title": "Account",
       "signOut": "Sign out"
@@ -991,5 +1006,11 @@
     "generatedCount_other": "Plan · {{count}} sessions",
     "planErrorTitle": "Planning failed",
     "planErrorMessage": "Planning failed. Please try again."
+  },
+  "notifications": {
+    "streakDanger": {
+      "title": "Your streak is at risk 🔥",
+      "body": "Do an activity today to keep your streak going."
+    }
   }
 }
