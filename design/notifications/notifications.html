@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — Notifications (Réglages, V0.6)</title>
+<style>
+  :root{
+    --bg:#1c150e; --surface:#30271e; --surfaceAlt:#3a2e22; --border:#3a2e22;
+    --text:#f4ecdd; --muted:#c9b79a; --accent:#dd6e40; --accentText:#fff; --radius:16px;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+    --mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0b07;color:var(--text);font-family:var(--body);padding:32px 16px;line-height:1.5}
+  h1{font-family:var(--display);font-weight:800;font-size:22px;text-align:center;margin:0 0 4px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin:0 auto 28px;max-width:620px}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .phone{width:344px;background:var(--bg);border-radius:34px;padding:14px 12px 22px;border:1px solid #2a2018;
+    box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .notch{width:120px;height:6px;border-radius:99px;background:#000;margin:2px auto 14px;opacity:.5}
+  .screentitle{font-family:var(--display);font-weight:800;font-size:24px;padding:2px 8px 4px}
+  .sectlabel{font-family:var(--body);font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);padding:18px 10px 8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 8px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:14px 16px}
+  .row + .row{border-top:1px solid var(--border)}
+  .row .lbl{font-family:var(--body);font-weight:600;font-size:15px;color:var(--text)}
+  .row .desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .grow{flex:1;min-width:0}
+  /* switch */
+  .sw{flex:0 0 auto;width:46px;height:28px;border-radius:99px;padding:3px;display:flex;align-items:center}
+  .sw .knob{width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+  .sw.on{background:var(--accent);justify-content:flex-end}
+  .sw.off{background:var(--surfaceAlt);border:1px solid var(--border)}
+  /* stepper */
+  .stepper{flex:0 0 auto;display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:12px;
+    background:var(--surfaceAlt);overflow:hidden}
+  .stepper button{width:34px;height:34px;border:none;background:transparent;color:var(--accent);font-size:18px;
+    font-family:var(--body);font-weight:700}
+  .stepper .val{min-width:58px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--text);
+    border-left:1px solid var(--border);border-right:1px solid var(--border);height:34px;line-height:34px}
+  .disabled{opacity:.4}
+  .hint{color:var(--muted);font-size:12px;padding:10px 12px 0;margin:0 8px}
+  .caption{font-family:var(--display);font-weight:700;font-size:13px;text-align:center;margin:14px 0 0;color:var(--accent)}
+  /* variante permission refusée */
+  .banner{margin:0 8px 4px;background:#3a2410;border:1px solid #6b4a1f;border-radius:12px;padding:12px 14px;
+    font-size:12.5px;color:#f0d9b8}
+  .banner b{color:#fff}
+  .legend{width:320px;background:#14100b;border:1px solid var(--border);border-radius:16px;padding:18px}
+  .legend h2{font-family:var(--display);font-weight:700;font-size:15px;margin:0 0 12px}
+  .legend .item{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .legend .item b{color:var(--text)}
+  code{font-family:var(--mono);background:#14100b;padding:1px 5px;border-radius:5px;font-size:12px;color:var(--muted)}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:26px}
+</style>
+</head>
+<body>
+  <h1>Notifications — section Réglages</h1>
+  <p class="sub">V0.6 · rappel streak en danger (2.6), Ne pas déranger à fenêtre configurable (2.8), gestion par type (1.17). Interrupteurs + sélecteurs d'heure (stepper JS, sans dépendance native). Thème réel de l'app.</p>
+
+  <div class="stage">
+
+    <!-- ÉTAT NOMINAL -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screentitle">Réglages</div>
+
+      <div class="sectlabel">Notifications</div>
+      <div class="card">
+        <div class="row">
+          <div class="grow">
+            <div class="lbl">Rappel série en danger</div>
+            <div class="desc">Un rappel le soir si tu n'as rien fait aujourd'hui.</div>
+          </div>
+          <div class="sw on"><div class="knob"></div></div>
+        </div>
+        <div class="row">
+          <div class="grow"><div class="lbl">Heure du rappel</div></div>
+          <div class="stepper">
+            <button>−</button><div class="val">20:00</div><button>+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sectlabel">Ne pas déranger</div>
+      <div class="card">
+        <div class="row">
+          <div class="grow">
+            <div class="lbl">Ne pas déranger</div>
+            <div class="desc">Aucune notification pendant la plage choisie.</div>
+          </div>
+          <div class="sw on"><div class="knob"></div></div>
+        </div>
+        <div class="row">
+          <div class="grow"><div class="lbl">Début</div></div>
+          <div class="stepper">
+            <button>−</button><div class="val">22:00</div><button>+</button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="grow"><div class="lbl">Fin</div></div>
+          <div class="stepper">
+            <button>−</button><div class="val">07:00</div><button>+</button>
+          </div>
+        </div>
+      </div>
+      <p class="hint">La plage peut enjamber minuit (ex. 22:00 → 07:00). Max 3 notifications par jour.</p>
+
+      <div class="caption">État nominal (permission accordée)</div>
+    </div>
+
+    <!-- ÉTAT PERMISSION REFUSÉE + DND OFF -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screentitle">Réglages</div>
+
+      <div class="sectlabel">Notifications</div>
+      <div class="banner">🔕 <b>Notifications désactivées</b> au niveau du système. Active-les dans les paramètres Android pour recevoir les rappels.</div>
+      <div class="card">
+        <div class="row">
+          <div class="grow">
+            <div class="lbl">Rappel série en danger</div>
+            <div class="desc">Un rappel le soir si tu n'as rien fait aujourd'hui.</div>
+          </div>
+          <div class="sw off"><div class="knob"></div></div>
+        </div>
+        <div class="row disabled">
+          <div class="grow"><div class="lbl">Heure du rappel</div></div>
+          <div class="stepper">
+            <button>−</button><div class="val">20:00</div><button>+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sectlabel">Ne pas déranger</div>
+      <div class="card">
+        <div class="row">
+          <div class="grow">
+            <div class="lbl">Ne pas déranger</div>
+            <div class="desc">Aucune notification pendant la plage choisie.</div>
+          </div>
+          <div class="sw off"><div class="knob"></div></div>
+        </div>
+        <div class="row disabled">
+          <div class="grow"><div class="lbl">Début</div></div>
+          <div class="stepper"><button>−</button><div class="val">22:00</div><button>+</button></div>
+        </div>
+        <div class="row disabled">
+          <div class="grow"><div class="lbl">Fin</div></div>
+          <div class="stepper"><button>−</button><div class="val">07:00</div><button>+</button></div>
+        </div>
+      </div>
+
+      <div class="caption">Permission refusée + rappel / DND désactivés</div>
+    </div>
+
+    <!-- LÉGENDE -->
+    <div class="legend">
+      <h2>Comportement</h2>
+      <div class="item"><b>Rappel série (2.6)</b> — notification locale planifiée pour aujourd'hui à l'heure choisie <b>uniquement si</b> tu n'as fait aucune activité (muscu/course/nutrition) ; annulée dès que tu es actif. Re-évalué à l'ouverture de l'app.</div>
+      <div class="item"><b>Ne pas déranger (2.8)</b> — aucune notification planifiée dans la plage <code>[début, fin)</code> (peut enjamber minuit). Défaut 22:00→07:00.</div>
+      <div class="item"><b>Gestion par type (1.17)</b> — chaque type se coupe indépendamment. Au MVP : le rappel série. La structure accueille les futurs types (rappel repas, suggestion de séance…).</div>
+      <div class="item"><b>Persistance</b> — <code>user_settings.notifications</code> (déjà synchronisé). Aucune migration.</div>
+      <div class="item"><b>Permission refusée</b> — la section reste visible et invite à activer dans les paramètres système ; aucune planification, aucun crash.</div>
+    </div>
+
+  </div>
+
+  <p class="foot">Maquette statique — couleurs/typos du thème réel (sombre). Le sélecteur d'heure est un stepper JS (pas de date-picker natif).</p>
+</body>
+</html>
