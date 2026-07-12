@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 12/07/2026 (Running R4b records d'allure + maj auto allure de réf : code livré, revu & intégré dev — reste checkpoint 🔴 cloud après R3a/R3b-i/R3c-i · export GPX + dénivelé différés)*
+*Dernière mise à jour : 12/07/2026 (Cloud running déployé + build preview + recette device : 5 correctifs R3/R4 livrés & revus, intégrés dev — rebuild à faire pour re-recette · export GPX + dénivelé différés)*
 
 ---
 

@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix : 5 correctifs running (recette device R3/R4)
+
+_Branche : `fix/running-r3-r4-persistance-ui`. Bugs remontés à la recette device du build preview ; cause racine diagnostiquée puis corrigée, revue qualité (bug 4 repris en 2 passes). **100 % JS** (aucune migration, aucun schéma) → simple rebuild pour re-tester._
+
+### Corrigé
+- **Cause racine commune (init offline-first)** : plusieurs champs contrôlés étaient figés au montage via `useState(() => valeurAsyncPowerSync)` — avant résolution de `useQuery` la valeur était `null`, le champ restait vide au rechargement bien que la donnée soit **bien enregistrée**. Idiome corrigé partout : state local `null` + valeur affichée `local ?? valeurDB`.
+  - **Allure de référence** (`running-profile.tsx`) : s'affiche désormais au rechargement du profil coureur (l'écriture fonctionnait déjà).
+  - **Séance de course** (`RunningSessionEditor.tsx`) : le **type de cible « Durée »** et sa valeur sont conservés à la réouverture (valeurs effectives dérivées de la séance rechargée).
+  - **Résumé de programme** (`program-repository.ts` + `running-programs/edit.tsx`) : `ProgramDetail` **expose** désormais `summary` (requête détail dédiée `COALESCE(tl.summary, tfr.summary)`, `SELECT_PROGRAM_BASE` liste inchangé) et le champ est pré-rempli à l'édition. _(Durée : round-trip vérifié correct — l'affichage vide était le même artefact de timing, résolu par l'idiome null-init.)_
+- **Sélecteur « Objectif »** : `Segment` gagne une prop **opt-in `scrollable`** (scroll horizontal, largeur intrinsèque) — plus de retour à la ligne disgracieux ; les ~10 autres usages de `Segment` inchangés (défaut `false`).
+- **Courbe d'allure — axe Y en M:SS** : `ProgressLineChart` gagne une prop **opt-in `formatYLabel`** qui **impose l'échelle tracée** (`maxValue`/`yAxisOffset`/`stepValue`) **et** les libellés sur la même plage `[min, max]` (helper pur testé `buildPaceYAxis` dans `@wellness/shared`, +6 tests) → les points tombent pile sur leurs graduations M:SS (au lieu de secondes brutes sur une échelle 0→max). Cas une seule course (`min==max`) géré (bande ±30 s). Muscu (`progress/index.tsx`) inchangé (opt-in).
+
+### Technique / Notes
+- Chemins d'écriture (SQLite/PowerSync) et schéma **inchangés** — bugs purement UI/affichage/requête. Composants partagés (`Segment`, `ProgressLineChart`) modifiés **uniquement via props opt-in** (rétro-compatible). React Compiler-safe (state + valeurs dérivées, aucun memo manuel).
+- Qualité verte (typecheck 3 workspaces / lint / **451 shared + 29 mobile**). 6 commits (1 par bug + reprise du bug 4).
+- **Rebuild preview** requis pour re-recette (pas de migration/cloud).
+
 ## 12/07/2026 — Running R4b : records d'allure + maj auto allure de réf
 
 _Branche : `feature/running-r4b-records`. Cadrage complet (spec+plan+maquette validés) puis code subagent-driven (revue spec + qualité par phase + revue finale = **Ready to merge**). **US data → checkpoint 🔴 cloud non encore appliqué (après R3a/R3b-i/R3c-i).** Aucun module natif ajouté → **pas de rebuild**._
