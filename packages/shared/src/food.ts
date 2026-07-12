@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { contentOwnerSyncFieldsSchema, syncFieldsSchema, uuidSchema } from './sync';
 import { localeSchema } from './pillar';
+import { parseJsonColumn } from './json-column';
 
 /**
  * Domaine Alimentation — aliments, portions, journal.
@@ -81,18 +82,8 @@ export type Micronutrients = z.infer<typeof micronutrientsSchema>;
  * (Ne jette jamais — la base ne doit pas casser l'affichage.)
  */
 export function parseMicronutrients(input: unknown): Micronutrients {
-  let obj: unknown = input;
-  // Tolère le **double encodage** : PowerSync/op-sqlite ré-encode les colonnes texte-JSON
-  // écrites côté client (une string JSON dans une string JSON). Les données synchronisées
-  // du serveur sont en simple encodage. On parse donc jusqu'à 2 fois : après le 1ᵉʳ parse
-  // d'une valeur double-encodée, on obtient encore une string → on reparse.
-  for (let i = 0; i < 2 && typeof obj === 'string'; i += 1) {
-    try {
-      obj = JSON.parse(obj);
-    } catch {
-      return {};
-    }
-  }
+  // Tolère le double encodage des colonnes texte-JSON client (cf. parseJsonColumn).
+  const obj = parseJsonColumn<unknown>(input, null);
   if (obj == null || typeof obj !== 'object') return {};
   const out: Micronutrients = {};
   for (const key of MICRONUTRIENT_KEYS) {
@@ -237,6 +228,35 @@ export function scaleMicronutrients(per100g: Micronutrients, grams: number): Mic
     if (v != null) out[key] = round1(v * factor);
   }
   return out;
+}
+
+/** Snapshot nutritionnel d'une entrée du journal (valeurs figées pour une quantité). */
+export type EntryNutritionSnapshot = Nutrients & { micronutrients: Micronutrients };
+
+/**
+ * Recalcule le snapshot d'une entrée du journal pour une **nouvelle quantité**, par règle
+ * de trois depuis le snapshot déjà mis à l'échelle (`fromGrams` → `toGrams`). On reconstitue
+ * une base « pour 100 g » en flottant puis on réutilise `scaleNutrition`/`scaleMicronutrients` :
+ * un **seul arrondi** est appliqué, exactement comme à l'ajout (cf. food-picker).
+ *
+ * `fromGrams` doit être > 0 (une entrée « quick add » sans grammes n'est pas remise à l'échelle).
+ */
+export function rescaleEntryNutrition(
+  snapshot: EntryNutritionSnapshot,
+  fromGrams: number,
+  toGrams: number,
+): EntryNutritionSnapshot {
+  if (fromGrams <= 0) return snapshot;
+  const per100g = {
+    kcalPer100g: (snapshot.kcal * 100) / fromGrams,
+    proteinPer100g: (snapshot.proteinG * 100) / fromGrams,
+    carbsPer100g: (snapshot.carbsG * 100) / fromGrams,
+    fatPer100g: (snapshot.fatG * 100) / fromGrams,
+  };
+  return {
+    ...scaleNutrition(per100g, toGrams),
+    micronutrients: scaleMicronutrients(snapshot.micronutrients, (toGrams * 100) / fromGrams),
+  };
 }
 
 /**

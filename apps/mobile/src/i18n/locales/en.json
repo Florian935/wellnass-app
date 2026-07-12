@@ -205,8 +205,19 @@
       "hint": "Enter values per 100 g. Only calories are required.",
       "category": "Category",
       "per100": "Values per 100 g",
-      "save": "Create food"
-    }
+      "sugars": "Sugars",
+      "saturatedFat": "Saturated fat",
+      "fiber": "Fiber",
+      "moreMacros": "Breakdown (optional)",
+      "save": "Create food",
+      "update": "Save changes"
+    },
+    "editTitle": "Edit food",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Remove this food from your library? Already-logged entries are kept.",
+    "libraryReadOnly": "Library foods can't be edited.",
+    "longPressEdit": "Long-press to edit or delete"
   },
   "journal": {
     "today": "Today",
@@ -219,6 +230,9 @@
     "searchFood": "Search",
     "searchPlaceholder": "Food name…",
     "noFood": "No food found.",
+    "noRecent": "No recent foods yet. Log foods to find them here.",
+    "addedCount": "{{count}} added to this meal",
+    "done": "Done",
     "searchOff": "Search “{{term}}” on OpenFoodFacts",
     "searching": "Searching…",
     "offNone": "No OpenFoodFacts result.",
@@ -243,11 +257,17 @@
     "trainingDayBadge": "+{{kcal}} kcal · training day",
     "detail": {
       "quantity": "{{grams}} g",
-      "close": "Close"
+      "close": "Close",
+      "edit": "Edit quantity",
+      "save": "Save",
+      "loggedAt": "at {{time}}",
+      "moveUp": "Move up",
+      "moveDown": "Move down"
     },
     "tabs": {
       "all": "All",
       "favorites": "Favorites",
+      "recent": "Recent",
       "recipes": "Recipes",
       "templates": "Templates"
     },

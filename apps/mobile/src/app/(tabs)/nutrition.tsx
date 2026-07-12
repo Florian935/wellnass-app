@@ -9,6 +9,7 @@ import {
   defaultMacroRatios,
   macroGramsFromCalories,
   objectiveFromGoal,
+  rescaleEntryNutrition,
   resolveMealConfig,
   saltFromSodiumMg,
   sumMicronutrients,
@@ -18,8 +19,10 @@ import {
   trainingDayCalories,
   type MicronutrientKey,
 } from '@wellness/shared';
+import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { TextField } from '@/components/TextField';
 import { MicronutrientDetails } from '@/components/MicronutrientDetails';
 import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useProfile } from '@/data/repositories/profile-repository';
@@ -28,7 +31,9 @@ import { useIsTrainingDay } from '@/data/repositories/dashboard-repository';
 import {
   copyMeal,
   duplicateDay,
+  moveEntry,
   removeEntry,
+  updateEntry,
   useDayEntries,
   type JournalEntry,
 } from '@/data/repositories/journal-repository';
@@ -139,6 +144,11 @@ export default function NutritionScreen() {
       if (n === 0) Alert.alert(t('journal.copyDayYesterday'), t('journal.nothingYesterdayFull'));
     });
   };
+
+  // Position de l'entrée sélectionnée dans son repas (réordonnancement, 4.34) — `entries`
+  // est déjà trié par order_index, donc les voisins déterminent si on peut monter/descendre.
+  const detailSiblings = detailEntry ? entries.filter((e) => e.mealType === detailEntry.mealType) : [];
+  const detailIdx = detailEntry ? detailSiblings.findIndex((e) => e.id === detailEntry.id) : -1;
 
   return (
     <Screen edges={['top']}>
@@ -274,7 +284,16 @@ export default function NutritionScreen() {
       </ScrollView>
 
       {/* Détail d'une entrée de journal (4.34) — snapshot de la quantité journalisée */}
-      <EntryDetailModal entry={detailEntry} onClose={() => setDetailEntry(null)} />
+      <EntryDetailModal
+        entry={detailEntry}
+        onClose={() => setDetailEntry(null)}
+        onMoveUp={detailIdx > 0 ? () => void moveEntry(detailEntry!.id, 'up') : undefined}
+        onMoveDown={
+          detailIdx >= 0 && detailIdx < detailSiblings.length - 1
+            ? () => void moveEntry(detailEntry!.id, 'down')
+            : undefined
+        }
+      />
     </Screen>
   );
 }
@@ -324,15 +343,101 @@ function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
 }
 
 /** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
-function EntryDetailModal({ entry, onClose }: { entry: JournalEntry | null; onClose: () => void }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
+function EntryDetailModal({
+  entry,
+  onClose,
+  onMoveUp,
+  onMoveDown,
+}: {
+  entry: JournalEntry | null;
+  onClose: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+}) {
   if (entry == null) return null;
+  // Remonté à chaque ouverture (key) : l'état d'édition repart propre pour chaque entrée.
+  return (
+    <EntryDetailContent
+      key={entry.id}
+      entry={entry}
+      onClose={onClose}
+      onMoveUp={onMoveUp}
+      onMoveDown={onMoveDown}
+    />
+  );
+}
+
+function EntryDetailContent({
+  entry,
+  onClose,
+  onMoveUp,
+  onMoveDown,
+}: {
+  entry: JournalEntry;
+  onClose: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+
+  // Édition de la quantité — possible seulement si l'entrée porte des grammes
+  // (les « quick add » sans quantité restent en simple consultation).
+  const canEdit = entry.quantityG != null && entry.quantityG > 0;
+  const oldQty = entry.quantityG ?? 0;
+  const [editing, setEditing] = useState(false);
+  const [grams, setGrams] = useState(String(entry.quantityG ?? ''));
+  const [saving, setSaving] = useState(false);
+
+  const g = Math.round(Number(grams.replace(',', '.')) || 0);
+
+  // Recalcul du snapshot pour la nouvelle quantité (règle de trois, un seul arrondi — shared).
+  const preview = editing && canEdit ? rescaleEntryNutrition(entry, oldQty, g) : entry;
+  const previewMicros = preview.micronutrients;
+
   const macros: { key: MacroKey; value: number }[] = [
-    { key: 'protein', value: entry.proteinG },
-    { key: 'carbs', value: entry.carbsG },
-    { key: 'fat', value: entry.fatG },
+    { key: 'protein', value: preview.proteinG },
+    { key: 'carbs', value: preview.carbsG },
+    { key: 'fat', value: preview.fatG },
   ];
+
+  // Heure de journalisation (horodatage), format local court.
+  const loggedTime = new Date(entry.createdAt).toLocaleTimeString(i18n.language, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  const onSave = async () => {
+    if (!canEdit || g <= 0) return;
+    setSaving(true);
+    const n = rescaleEntryNutrition(entry, oldQty, g);
+    await updateEntry(entry.id, {
+      quantityG: g,
+      kcal: n.kcal,
+      proteinG: n.proteinG,
+      carbsG: n.carbsG,
+      fatG: n.fatG,
+      micronutrients: n.micronutrients,
+    });
+    onClose();
+  };
+
+  const onDelete = () => {
+    Alert.alert(entry.name, t('journal.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('journal.delete'),
+        style: 'destructive',
+        onPress: () => {
+          void removeEntry(entry.id);
+          onClose();
+        },
+      },
+    ]);
+  };
+
+  const canReorder = !editing && (onMoveUp != null || onMoveDown != null);
+
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.modalBackdrop} onPress={onClose}>
@@ -340,22 +445,58 @@ function EntryDetailModal({ entry, onClose }: { entry: JournalEntry | null; onCl
           <View style={styles.modalHead}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={2}>{entry.name}</Text>
-              {entry.quantityG != null ? (
+              {!editing ? (
                 <Text style={[styles.modalSub, { color: colors.textMuted }]}>
-                  {t('journal.detail.quantity', { grams: entry.quantityG })}
+                  {entry.quantityG != null ? `${t('journal.detail.quantity', { grams: entry.quantityG })} · ` : ''}
+                  {t('journal.detail.loggedAt', { time: loggedTime })}
                 </Text>
               ) : null}
             </View>
+            {canReorder ? (
+              <View style={styles.reorderRow}>
+                <Pressable
+                  onPress={onMoveUp}
+                  disabled={onMoveUp == null}
+                  hitSlop={8}
+                  accessibilityLabel={t('journal.detail.moveUp')}
+                >
+                  <Ionicons name="chevron-up" size={22} color={onMoveUp ? colors.text : colors.border} />
+                </Pressable>
+                <Pressable
+                  onPress={onMoveDown}
+                  disabled={onMoveDown == null}
+                  hitSlop={8}
+                  accessibilityLabel={t('journal.detail.moveDown')}
+                >
+                  <Ionicons name="chevron-down" size={22} color={onMoveDown ? colors.text : colors.border} />
+                </Pressable>
+              </View>
+            ) : null}
             <Pressable onPress={onClose} hitSlop={10} accessibilityLabel={t('journal.detail.close')}>
               <Ionicons name="close" size={26} color={colors.textMuted} />
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalBody} showsVerticalScrollIndicator={false}>
-            {/* Macros de la quantité */}
+          <ScrollView
+            contentContainerStyle={styles.modalBody}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Champ quantité en mode édition */}
+            {editing ? (
+              <TextField
+                label={t('journal.grams')}
+                value={grams}
+                onChangeText={setGrams}
+                keyboardType="decimal-pad"
+                autoFocus
+              />
+            ) : null}
+
+            {/* Macros de la quantité (aperçu live en édition) */}
             <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.detailKcalRow}>
-                <Text style={[styles.detailKcal, { color: colors.text }]}>{entry.kcal}</Text>
+                <Text style={[styles.detailKcal, { color: colors.text }]}>{preview.kcal}</Text>
                 <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')}</Text>
               </View>
               <View style={styles.detailMacroRow}>
@@ -370,11 +511,34 @@ function EntryDetailModal({ entry, onClose }: { entry: JournalEntry | null; onCl
 
             {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
             <MicronutrientDetails
-              micronutrients={entry.micronutrients}
+              micronutrients={previewMicros}
               grams={100}
               showPer100={false}
               defaultOpen
             />
+
+            {/* Actions : modifier la quantité / supprimer (4.34) */}
+            {editing ? (
+              <View style={styles.detailActions}>
+                <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditing(false)} />
+                <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={g <= 0} />
+              </View>
+            ) : (
+              <View style={styles.detailActions}>
+                <Pressable
+                  onPress={onDelete}
+                  style={styles.deleteAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('journal.delete')}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                  <Text style={[styles.deleteLabel, { color: colors.danger }]}>{t('journal.delete')}</Text>
+                </Pressable>
+                {canEdit ? (
+                  <Button label={t('journal.detail.edit')} onPress={() => setEditing(true)} />
+                ) : null}
+              </View>
+            )}
           </ScrollView>
         </Pressable>
       </Pressable>
@@ -528,6 +692,10 @@ const styles = StyleSheet.create({
   detailMacroRow: { flexDirection: 'row', gap: 10 },
   detailMacro: { flex: 1, gap: 2 },
   detailMacroVal: { fontFamily: fontFamily.monoBold, fontSize: 16 },
+  reorderRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  detailActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 4 },
+  deleteAction: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 4 },
+  deleteLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   meal: { gap: 8 },
   mealHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
   mealName: { fontFamily: fontFamily.displaySemi, fontSize: 17 },

@@ -10,6 +10,7 @@ import {
   mealTypeSchema,
   micronutrientsSchema,
   parseMicronutrients,
+  rescaleEntryNutrition,
   resolveFoodName,
   saltFromSodiumMg,
   scaleMicronutrients,
@@ -66,6 +67,37 @@ describe('scaleNutrition', () => {
       carbsG: 0,
       fatG: 0,
     });
+  });
+});
+
+describe('rescaleEntryNutrition', () => {
+  const snapshot = {
+    kcal: 107,
+    proteinG: 1,
+    carbsG: 28,
+    fatG: 0,
+    micronutrients: { magnesium_mg: 32, potassium_mg: 430 },
+  };
+
+  it('double la quantité (120 → 240 g)', () => {
+    expect(rescaleEntryNutrition(snapshot, 120, 240)).toEqual({
+      kcal: 214,
+      proteinG: 2,
+      carbsG: 56,
+      fatG: 0,
+      micronutrients: { magnesium_mg: 64, potassium_mg: 860 },
+    });
+  });
+
+  it('réduit la quantité (120 → 60 g)', () => {
+    const r = rescaleEntryNutrition(snapshot, 120, 60);
+    expect(r.kcal).toBe(54); // round(107/2) = 54 (arrondi unique)
+    expect(r.carbsG).toBe(14);
+    expect(r.micronutrients).toEqual({ magnesium_mg: 16, potassium_mg: 215 });
+  });
+
+  it('renvoie le snapshot inchangé si fromGrams <= 0 (quick add)', () => {
+    expect(rescaleEntryNutrition(snapshot, 0, 240)).toBe(snapshot);
   });
 });
 
