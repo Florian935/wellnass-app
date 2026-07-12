@@ -19,6 +19,7 @@ export * from './recipe';
 export * from './bodyweight';
 export * from './running';
 export * from './running-paces';
+export * from './pace-records';
 export * from './geo';
 export * from './date';
 export * from './planning';
