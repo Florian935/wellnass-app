@@ -20,6 +20,16 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Moteur d'analyses croisées poussées (corrélations)** : au-delà du socle de
+  croisement déjà cadré, un vrai moteur qui met les données en relation — tendance des PR selon le
+  volume/intensité, surplus vs déficit calorique corrélé à l'évolution des perfs, impact des pas
+  sur la récup et les perfs, etc.
+  _Vérifié le 13/07/2026 : le **socle** du croisement EST cadré (calories ajustées aux jours
+  d'entraînement + vue « séances vs apports » §7.1-7.3 ; alerte déficit + fort volume US 4.32 =
+  « première stat croisée » ; courbes volume/PR 3.21/3.39/3.40 ; RPE capté 3.34/5.24). Mais ce sont
+  des stats croisées simples, pas un moteur de corrélation. Les analyses causales décrites ici ne
+  sont PAS au cadrage → idée neuve. Dépend en partie de [[donnees-sommeil-pas]] (pas trackés) et
+  recoupe les « analyses avancées » du [[module-coach-coache]]._
 - [12/07/2026] 🆕 **Intégration de l'IA** dans le produit (thème transverse à préciser).
 - [12/07/2026] 🆕 **Nutrition — suggestion de recettes healthy** : l'utilisateur renseigne les
   ingrédients qu'il a, l'app propose des recettes saines correspondantes (piste IA à évaluer).
