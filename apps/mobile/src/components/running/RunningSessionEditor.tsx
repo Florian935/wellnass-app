@@ -50,14 +50,19 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
     session.sessionType ?? null,
   );
 
-  // État local — toggle distance/durée
-  const [targetKind, setTargetKind] = useState<TargetKind>(
-    session.targetDurationSeconds != null && session.targetDistanceM == null
+  // État local — toggle distance/durée.
+  // Offline-first : démarre null ; la valeur effective est dérivée de la séance
+  // (re-émise par useProgramDetail après un commit, sans remontage du composant) tant
+  // que l'utilisateur n'a pas basculé le toggle. Évite le gel « distance » vide au reload.
+  const [targetKind, setTargetKind] = useState<TargetKind | null>(null);
+  const effectiveTargetKind: TargetKind =
+    targetKind ??
+    (session.targetDurationSeconds != null && session.targetDistanceM == null
       ? 'duration'
-      : 'distance',
-  );
+      : 'distance');
 
-  // État local — valeur du champ de saisie (dans l'unité d'affichage)
+  // État local — valeur du champ de saisie (dans l'unité d'affichage).
+  // Même idiome : null = pas de saisie en cours → on retombe sur la valeur de la séance.
   const initDistanceInput = units.distanceInputValue(
     session.targetDistanceM != null ? session.targetDistanceM / 1000 : null,
   );
@@ -66,8 +71,10 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
       ? String(Math.round(session.targetDurationSeconds / 60))
       : '';
 
-  const [distanceInput, setDistanceInput] = useState(initDistanceInput);
-  const [durationInput, setDurationInput] = useState(initDurationInput);
+  const [distanceInput, setDistanceInput] = useState<string | null>(null);
+  const [durationInput, setDurationInput] = useState<string | null>(null);
+  const effectiveDistanceInput = distanceInput ?? initDistanceInput;
+  const effectiveDurationInput = durationInput ?? initDurationInput;
 
   // Erreur de validation
   const [targetError, setTargetError] = useState(false);
@@ -85,11 +92,11 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
     let distanceM: number | null = null;
     let durationSeconds: number | null = null;
 
-    if (targetKind === 'distance') {
-      const km = units.parseDistanceToKm(distanceInput);
+    if (effectiveTargetKind === 'distance') {
+      const km = units.parseDistanceToKm(effectiveDistanceInput);
       distanceM = km != null && km > 0 ? Math.round(km * 1000) : null;
     } else {
-      const minutes = parseFloat(durationInput.trim());
+      const minutes = parseFloat(effectiveDurationInput.trim());
       durationSeconds =
         Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes * 60) : null;
     }
@@ -100,7 +107,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
     }
     setTargetError(false);
 
-    if (targetKind === 'distance') {
+    if (effectiveTargetKind === 'distance') {
       void updateRunningSession(session.id, {
         targetDistanceM: distanceM,
         targetDurationSeconds: null,
@@ -208,7 +215,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
         </Text>
         <View style={[styles.toggle, { backgroundColor: colors.background, borderColor: colors.border }]}>
           {(['distance', 'duration'] as const).map((kind) => {
-            const selected = targetKind === kind;
+            const selected = effectiveTargetKind === kind;
             return (
               <Pressable
                 key={kind}
@@ -240,14 +247,14 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
       </View>
 
       {/* Champ de saisie */}
-      {targetKind === 'distance' ? (
+      {effectiveTargetKind === 'distance' ? (
         <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
             {t('running.program.targetDistance', { unit: units.distanceSymbol })}
           </Text>
           <TextInput
             style={inputStyle}
-            value={distanceInput}
+            value={effectiveDistanceInput}
             onChangeText={(v) => {
               setDistanceInput(v);
               setTargetError(false);
@@ -265,7 +272,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
           </Text>
           <TextInput
             style={inputStyle}
-            value={durationInput}
+            value={effectiveDurationInput}
             onChangeText={(v) => {
               setDurationInput(v);
               setTargetError(false);
