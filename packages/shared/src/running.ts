@@ -250,27 +250,16 @@ export function instantPace(
 }
 
 // ---------------------------------------------------------------------------
-// Encodage polyline Google (precision 1e-5) + deltas temporels
+// Encodage polyline Google (coordonnees) + deltas temporels
 //
-// Format d'un segment encode :
-//   <polyline_encoded>|<time_delta_encoded>
-//
-// Le separateur `|` ne peut pas apparaitre dans un polyline Google encode
-// (seuls les caracteres ASCII 63-126 sont utilises).
-//
-// Format de la piste complete (plusieurs segments) :
-//   <segment1>~<segment2>~...
-//
-// Le separateur `~` (ASCII 126) est hors du domaine polyline (63-125),
-// ce qui garantit l'absence d'ambiguite.
-//
-// Les deltas temporels (entiers, secondes depuis debut de course) sont
-// encodes en delta-encode puis avec le meme varint/zigzag que le polyline,
-// separes par des virgules dans la partie time.
+// Coordonnees encodees en Google Encoded Polyline ; deltas temporels (secondes
+// depuis le depart) avec le meme schema varint/zigzag. La PRECISION des coords et
+// le SEPARATEUR coords/temps dependent de la VERSION du segment (voir le bloc
+// « Versionnage du format de segment » ci-dessous). La piste complete est une
+// concatenation de blocs prefixes par leur longueur : `<len1>:<seg1><len2>:<seg2>...`.
 // ---------------------------------------------------------------------------
 
-const POLY_SEPARATOR = '|'; // separateur polyline / temps dans un segment
-const SEGMENT_SEPARATOR = '~'; // separateur entre segments dans la piste
+const POLY_SEPARATOR = '|'; // separateur polyline / temps dans un segment herite (v0)
 
 // ---------------------------------------------------------------------------
 // Versionnage du format de segment (precision d'encodage des coordonnees)
@@ -365,7 +354,7 @@ function decodeValue(encoded: string, index: number): { value: number; nextIndex
 }
 
 // ---------------------------------------------------------------------------
-// Encodage polyline coordonnees (lat/lng) a precision 1e-5
+// Encodage polyline coordonnees (lat/lng) — precision parametree (voir versionnage)
 // ---------------------------------------------------------------------------
 
 function encodeCoords(
@@ -439,34 +428,22 @@ function decodeTimes(encoded: string, count: number): number[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Encode un segment de points GPS en une chaine compacte.
+ * Encode un segment de points GPS en une chaine compacte, au format COURANT (v1).
  *
- * Format : `<polyline_coords>|<time_deltas>`
+ * Format d'un segment v1 : `#1#<polyline_coords>,<time_deltas>`
+ *  - `#1#` : marqueur de version en tete (voir le bloc « Versionnage du format de
+ *    segment » plus haut) — `#` (ASCII 35) est hors du domaine polyline, donc non
+ *    ambigu face a un segment herite v0 qui, lui, commence par un octet >= 63.
+ *  - coordonnees encodees en Google Encoded Polyline a precision 1e-6 (~0,11 m) ;
+ *  - deltas temporels (s depuis le depart) avec le meme schema varint/zigzag ;
+ *  - separateur coords/temps `,` (ASCII 44, hors domaine polyline) — a 1e-6 les
+ *    deltas peuvent emettre `|`, d'ou l'abandon de `|` (conserve pour decoder les
+ *    segments HERITES v0 uniquement).
  *
- * Les coordonnees sont encodees avec l'algorithme Google Encoded Polyline
- * (precision 1e-5). Les deltas temporels (en secondes depuis le debut de
- * la course) utilisent le meme schema varint/zigzag.
- *
- * Le separateur `|` ne peut pas apparaitre dans un polyline Google encode
- * (domaine ASCII 63-126 hors `|`=124... en fait `|` = 124 = 0x7C).
- *
- * Note de securite : `|` (ASCII 124) est dans le domaine theorique du polyline
- * (63-126). Pour garantir l'absence d'ambiguite, on utilise le separateur
- * entre les deux parties (coords et temps) d'un meme segment, et `~` (ASCII 126,
- * valeur max du domaine polyline) comme separateur inter-segments.
- * L'encodeur n'emet jamais `~` car la valeur 126-63=63=0x3F=0b111111 correspond
- * a un chunk dont tous les bits data valent 1 et le bit continuation vaut 1,
- * ce qui ne termine jamais un chunk — il est toujours suivi d'un autre octet.
- * En pratique Google encode polyline utilise 63-90 et 95-126 ; le caractere
- * `~`=126 peut apparaitre comme dernier octet d'un chunk dont la valeur delta
- * code serait exactement 63 (0x3F en zigzag non-shifted). C'est theoriquement
- * possible. On choisit donc un separateur de segment qui ne peut PAS etre emis :
- * on prefixe chaque segment par sa longueur en ASCII decimal + ':'.
- *
- * Nouveau format piste : `<len1>:<seg1><len2>:<seg2>...`
- * ou <lenN> est la longueur en octets du segment encode N.
- *
- * Cela rend `appendToTrack` O(1) en n'ayant pas a decoder les segments precedents.
+ * La piste complete est une concatenation de blocs prefixes par leur longueur
+ * (`<len1>:<seg1><len2>:<seg2>...`), ce qui rend `appendToTrack` O(1) : on n'a pas
+ * a re-decoder les segments precedents. `decodeTrack` lit `<len>` puis exactement
+ * `<len>` octets, et dispatche le decodage du segment selon son marqueur de version.
  *
  * @param points - Points GPS du segment.
  * @returns Chaine encodee du segment, ou `""` si `points` est vide.
