@@ -9,6 +9,7 @@
  *  - `useNextSession`      → widget 7.4 (prochaine séance / séance active)
  *  - `useNutritionSummary` → widget 7.5 (résumé nutritionnel du jour)
  *  - `useStreakData`        → widget 7.6 (série de jours actifs + pastilles semaine)
+ *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -18,6 +19,8 @@
  */
 
 import { useMemo } from 'react';
+import { useQuery } from '@powersync/react';
+import { useTranslation } from 'react-i18next';
 import {
   activeDayKeys,
   computeAge,
@@ -29,14 +32,19 @@ import {
   tdee,
   trainingDayCalories,
   type DayActivity,
+  type RecordDistanceKey,
+  type RecordType,
 } from '@wellness/shared';
 import { useNutritionProfile } from './nutrition-repository';
 import { useProfile } from './profile-repository';
 import { useDailyTotals } from './journal-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory } from './run-repository';
+import { useRunningRecords } from './running-record-repository';
+import { useSettings } from './settings-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
+import { PILLARS } from '@wellness/shared';
 
 // ---------------------------------------------------------------------------
 // useNextSession — widget 7.4
@@ -354,4 +362,132 @@ export function useStreakData(windowDays = 30): StreakData {
     last7,
     isLoading,
   };
+}
+
+// ---------------------------------------------------------------------------
+// useMostRecentRecord — widget 7.8
+// ---------------------------------------------------------------------------
+
+/**
+ * Dernier record battu, tous piliers actifs confondus, retourné par
+ * `useMostRecentRecord`. Discriminé par `pillar` :
+ *  - `strength` : record muscu (`type`, `value`, `exerciseName`) ;
+ *  - `running`  : record d'allure (`distanceKey`, `bestTimeSeconds`).
+ * Dans les deux cas, `achievedAt` (ISO UTC) sert au tri et à l'affichage de la date.
+ */
+export type MostRecentRecord =
+  | {
+      pillar: 'strength';
+      type: RecordType;
+      value: number;
+      exerciseName: string;
+      achievedAt: string;
+    }
+  | {
+      pillar: 'running';
+      distanceKey: RecordDistanceKey;
+      bestTimeSeconds: number;
+      achievedAt: string;
+    };
+
+/** Ligne brute du record muscu le plus récent (nom d'exercice résolu langue → fr). */
+type MostRecentRecordDbRow = {
+  type: string;
+  value: number;
+  achieved_at: string;
+  exercise_name: string | null;
+};
+
+/**
+ * Record muscu le plus récent de l'utilisateur courant, avec nom d'exercice résolu
+ * (langue courante → fr). Premier `?` = langue courante. Reproduit le patron de
+ * jointure/locale de `SELECT_RECORDS_FOR_WORKOUT` (records-repository).
+ */
+const SELECT_MOST_RECENT_STRENGTH_RECORD = `
+  SELECT r.type, r.value, r.achieved_at,
+         COALESCE(tl.name, tfr.name) AS exercise_name
+  FROM personal_records r
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = r.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = r.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE r.deleted_at IS NULL
+  ORDER BY r.achieved_at DESC
+  LIMIT 1
+`;
+
+/**
+ * Expose le dernier record battu (muscu OU course) pour le widget 7.8.
+ *
+ * Compose deux sources — record muscu le plus récent (`useQuery` ci-dessus) et
+ * records d'allure (`useRunningRecords`, on garde le `achievedAt` le plus récent) —
+ * puis retourne le plus récent des deux.
+ *
+ * **Respect des piliers actifs** : les deux sources sont TOUJOURS lues (hooks
+ * inconditionnels, React Compiler), mais on ignore la source d'un pilier non actif
+ * lors de la fusion (filtrage sur les résultats). On ne montre jamais le record
+ * d'un pilier désactivé. Tant que les réglages ne sont pas chargés, tous les
+ * piliers sont supposés actifs (cohérent avec le dashboard).
+ */
+export function useMostRecentRecord(): {
+  record: MostRecentRecord | null;
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+  const { settings } = useSettings();
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+
+  // Sources lues inconditionnellement (règle des hooks / React Compiler).
+  const { data: strengthRows, isLoading: strengthLoading } =
+    useQuery<MostRecentRecordDbRow>(SELECT_MOST_RECENT_STRENGTH_RECORD, [lang]);
+  const { records: runningRecords, isLoading: runningLoading } = useRunningRecords();
+
+  const isLoading = strengthLoading || runningLoading;
+
+  // Candidat muscu (si le pilier est actif).
+  const strengthRow = strengthRows[0];
+  const strengthCandidate: MostRecentRecord | null =
+    strengthActive && strengthRow != null
+      ? {
+          pillar: 'strength',
+          type: strengthRow.type as RecordType,
+          value: strengthRow.value,
+          exerciseName: strengthRow.exercise_name ?? '',
+          achievedAt: strengthRow.achieved_at,
+        }
+      : null;
+
+  // Candidat running : le record d'allure au `achievedAt` le plus récent (si actif).
+  let runningCandidate: MostRecentRecord | null = null;
+  if (runningActive) {
+    let latest: (typeof runningRecords)[number] | null = null;
+    for (const rec of runningRecords) {
+      if (latest == null || rec.achievedAt > latest.achievedAt) {
+        latest = rec;
+      }
+    }
+    if (latest != null) {
+      runningCandidate = {
+        pillar: 'running',
+        distanceKey: latest.distanceKey,
+        bestTimeSeconds: latest.bestTimeSeconds,
+        achievedAt: latest.achievedAt,
+      };
+    }
+  }
+
+  // Fusion : le plus récent des candidats restants.
+  let record: MostRecentRecord | null = null;
+  if (strengthCandidate != null && runningCandidate != null) {
+    record =
+      strengthCandidate.achievedAt >= runningCandidate.achievedAt
+        ? strengthCandidate
+        : runningCandidate;
+  } else {
+    record = strengthCandidate ?? runningCandidate;
+  }
+
+  return { record, isLoading };
 }
