@@ -1,0 +1,80 @@
+# .easignore — fichiers exclus de l'archive uploadée à EAS Build.
+#
+# ⚠️ IMPORTANT : si ce fichier existe, EAS l'utilise **À LA PLACE** de .gitignore
+# (il ne les combine pas). Il DOIT donc reprendre les exclusions essentielles de
+# .gitignore (node_modules, secrets, caches, artefacts natifs) + le superflu non
+# nécessaire au build (docs, maquettes, migrations…).
+#
+# Objectif : l'archive ne contient que ce qu'il faut pour builder l'app mobile.
+# (Sans ce fichier, l'archive faisait ~344 Mo car node_modules/.git/.expo étaient
+# embarqués ; upload ~5 min.)
+
+# --- Dépendances (réinstallées par EAS Build) ---
+node_modules/
+
+# --- Git & caches de dev (regénérés) ---
+.git/
+.expo/
+.expo-shared/
+.metro-cache/
+.metro-health-check*
+.cache/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+coverage/
+
+# --- Secrets & config sensible (JAMAIS uploadés — EAS utilise ses propres env vars) ---
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p8
+*.p12
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.jks
+!debug.keystore
+
+# --- Artefacts de build natif / sorties ---
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+ios/build/
+ios/Pods/
+*.apk
+*.aab
+dist/
+web-build/
+
+# --- Logs / OS / IDE ---
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+.vscode/
+
+# --- Non nécessaire au build de l'app mobile ---
+# Documentation, cadrage, maquettes, config Supabase locale, commandes Claude Code,
+# CI, fichiers Markdown racine, bases SQLite de debug.
+# NB : on NE PAS exclure apps/admin/ ni packages/* → ce sont des workspaces npm dont
+# le package.json doit rester présent pour que `npm ci` réussisse sur EAS.
+docs/
+design/
+supabase/
+.claude/
+.github/
+*.db
+*.db-wal
+*.db-shm
+CHANGELOG.md
+TODO.md
+SYNTHESE-CADRAGE.md
+CLAUDE.md
+README.md
