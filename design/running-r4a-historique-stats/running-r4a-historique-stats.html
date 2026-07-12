@@ -1,0 +1,121 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;--warn:#b5761f;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r4l{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:900px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:66ch;margin:0;font-size:15px;}
+  .stage{max-width:900px;margin:0 auto;display:flex;justify-content:center;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:400px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 14px;}
+  .sectlabel{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 4px 8px;}
+
+  .seg{display:flex;background:var(--surface-alt);border-radius:12px;padding:4px;gap:4px;margin:0 4px 12px;}
+  .seg span{flex:1;text-align:center;padding:8px;font-size:13px;font-weight:700;border-radius:9px;color:var(--muted);}
+  .seg span.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(51,41,31,.08);}
+
+  .stats{display:flex;gap:9px;margin:0 4px 4px;}
+  .stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 11px;text-align:center;}
+  .stat .v{font-size:19px;font-weight:800;letter-spacing:-.01em;}
+  .stat .v small{font-size:12px;font-weight:700;color:var(--muted);}
+  .stat .k{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:.04em;}
+
+  .chartcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin:0 4px;}
+  .chartcard .ct{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 4px;}
+  .chartcard .ct h3{margin:0;font-size:15px;font-weight:800;}
+  .chartcard .ct .trend{font-size:12px;font-weight:700;color:var(--success);}
+  .chartcard .cu{font-size:11px;color:var(--muted);font-family:var(--mono);margin:0 0 10px;}
+  .svgwrap{position:relative;}
+  .axis{font-family:var(--mono);font-size:9px;fill:var(--muted);}
+
+  .list{margin:0 4px;}
+  .run{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;}
+  .run + .run{margin-top:8px;}
+  .run .dot{width:34px;height:34px;border-radius:10px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;}
+  .run .body{flex:1;min-width:0;}
+  .run .rd{font-weight:800;font-size:14px;}
+  .run .rm{color:var(--muted);font-size:12.5px;}
+  .run .rp{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);white-space:nowrap;}
+  .chev{color:var(--muted);font-size:18px;}
+
+  .notes{max-width:900px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r4l">
+  <header class="head">
+    <p class="eyebrow">Wellness · Running R4a · Maquette</p>
+    <h1 class="title">Historique &amp; progression des courses</h1>
+    <p class="sub">Un écran qui réunit les statistiques (distance / temps / nombre par semaine, mois ou depuis le début), la courbe d'allure moyenne sur 30 ou 90 jours avec sa tendance, et la liste chronologique des courses (tap → détail avec carte). Lecture seule sur les données existantes — aucune migration, aucun nouveau build. Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Historique</span></div>
+      <p class="screen-title">Historique &amp; progression</p>
+
+      <p class="sectlabel">Statistiques</p>
+      <div class="seg"><span>Semaine</span><span class="on">Mois</span><span>Depuis le début</span></div>
+      <div class="stats">
+        <div class="stat"><div class="v">42,3<small> km</small></div><div class="k">Distance</div></div>
+        <div class="stat"><div class="v">3 h 48</div><div class="k">Temps</div></div>
+        <div class="stat"><div class="v">7</div><div class="k">Courses</div></div>
+      </div>
+
+      <p class="sectlabel">Allure moyenne</p>
+      <div class="chartcard">
+        <div class="ct"><h3>Allure moyenne</h3><span class="trend">↘ En progrès</span></div>
+        <p class="cu">min/km · 90 derniers jours</p>
+        <svg viewBox="0 0 320 130" width="100%" height="130" preserveAspectRatio="none" aria-label="Courbe d'allure moyenne">
+          <line x1="34" y1="10" x2="34" y2="108" stroke="#ece0cd"/>
+          <line x1="34" y1="108" x2="312" y2="108" stroke="#ece0cd"/>
+          <text class="axis" x="30" y="26" text-anchor="end">5:00</text>
+          <text class="axis" x="30" y="62" text-anchor="end">5:30</text>
+          <text class="axis" x="30" y="100" text-anchor="end">6:00</text>
+          <path d="M46,34 L92,86 L138,58 L184,70 L230,44 L276,52 L306,30"
+                fill="none" stroke="#c0562f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M46,34 L92,86 L138,58 L184,70 L230,44 L276,52 L306,30 L306,108 L46,108 Z"
+                fill="#c0562f" opacity="0.10"/>
+          <g fill="#c0562f">
+            <circle cx="46" cy="34" r="3"/><circle cx="92" cy="86" r="3"/><circle cx="138" cy="58" r="3"/>
+            <circle cx="184" cy="70" r="3"/><circle cx="230" cy="44" r="3"/><circle cx="276" cy="52" r="3"/><circle cx="306" cy="30" r="3"/>
+          </g>
+          <text class="axis" x="46" y="120" text-anchor="middle">18/04</text>
+          <text class="axis" x="184" y="120" text-anchor="middle">02/06</text>
+          <text class="axis" x="300" y="120" text-anchor="middle">14/07</text>
+        </svg>
+        <div class="seg" style="margin:8px 0 0;"><span>30 j</span><span class="on">90 j</span></div>
+      </div>
+
+      <p class="sectlabel">Courses</p>
+      <div class="list">
+        <div class="run"><span class="dot">🏃</span><span class="body"><span class="rd">14/07/2026</span><span class="rm">8,2 km · 42 min 10 s</span></span><span class="rp">5:08 /km</span><span class="chev">›</span></div>
+        <div class="run"><span class="dot">🏃</span><span class="body"><span class="rd">11/07/2026</span><span class="rm">5,0 km · 27 min 30 s</span></span><span class="rp">5:30 /km</span><span class="chev">›</span></div>
+        <div class="run"><span class="dot">🏃</span><span class="body"><span class="rd">08/07/2026</span><span class="rm">12,4 km · 1 h 08 min</span></span><span class="rp">5:29 /km</span><span class="chev">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Un seul écran</strong> « Historique &amp; progression » (onglet Course) : stats + courbe + liste. Lecture seule sur <code>runs</code>.</li>
+      <li><strong>Stats</strong> par période <strong>calendaire</strong> : semaine (lun→dim), mois, depuis le début. Distance / temps / nombre de courses (via <code>useUnits</code>).</li>
+      <li><strong>Courbe d'allure</strong> <strong>globale</strong> (pas par type — les courses n'ont pas de type) sur fenêtres <strong>glissantes</strong> 30 / 90 j + <strong>tendance</strong>. ⚠️ Allure basse = rapide → une <strong>ligne descendante = progrès</strong> (libellé de tendance pour lever l'ambiguïté). Réutilise <code>ProgressLineChart</code>.</li>
+      <li><strong>Liste</strong> chronologique (terminées, plus récentes d'abord) → <strong>tap = détail existant</strong> (<code>run/summary?id=</code>, carte + splits). Pas de filtre (type/programme indisponibles).</li>
+      <li><strong>Différés</strong> : export GPX (5.33), records d'allure + maj réf (R4b), dénivelé (5.32, altitude non captée), découpage par type.</li>
+      <li><em>Polices : stand-ins système ici ; en app = Bricolage / Hanken / Space Mono. Courbe = illustrative.</em></li>
+    </ul>
+  </section>
+</div>
