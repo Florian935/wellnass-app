@@ -1,9 +1,10 @@
 /**
- * Repository de la planification datée des séances (pilier Running — R3c-i).
+ * Repository de la planification datée des séances (pilier-agnostique : muscu + running).
  *
  * Responsabilité unique : lire/écrire la table locale PowerSync `planned_sessions`
  * (instances datées d'un programme) et exposer des vues « semaine » et « manquées »
- * prêtes pour l'UI (nom + métadonnées de la séance résolus par jointure sur `sessions`).
+ * prêtes pour l'UI (nom + métadonnées de la séance résolus par jointure sur `sessions`,
+ * pilier + nombre d'exercices résolus par jointure sur `programs` / `exercise_plans`).
  *
  * Modèle de données (voir docs/specs/functional/running.md et
  * docs/specs/technical/modele-donnees.md) :
@@ -13,7 +14,7 @@
  *                         pilier-agnostique ; le filtrage running se fait par jointure sur
  *                         `programs.pillar`.
  *
- * Planification (`planRunningProgram`) : génération datée des instances à partir du
+ * Planification (`planProgram`) : génération datée des instances à partir du
  * template de séances du programme + affectation d'un jour de semaine par séance, le
  * tout dans UNE transaction atomique (soft-delete des `planned` existants → insertion
  * des nouvelles → activation du programme inlinée). Voir `@wellness/shared` :
@@ -29,6 +30,7 @@
 
 import { useQuery } from '@powersync/react';
 import type {
+  Pillar,
   PlanProgramInput,
   PlanTemplateSession,
   ProgramSessionType,
@@ -62,6 +64,8 @@ export type PlannedSessionItem = {
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
   orderIndex: number;
+  pillar: Pillar;
+  exerciseCount: number;
 };
 
 // Le type `PlanProgramInput` (+ son schéma Zod `planProgramInputSchema`)
@@ -84,6 +88,8 @@ type PlannedSessionDbRow = {
   target_distance_m: number | null;
   target_duration_seconds: number | null;
   order_index: number;
+  pillar: string;
+  exercise_count: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -91,29 +97,38 @@ type PlannedSessionDbRow = {
 // ---------------------------------------------------------------------------
 
 /**
- * Séances planifiées d'une plage de dates (vue semaine), owner-scopées.
+ * Séances planifiées d'une plage de dates (vue semaine), owner-scopées, TOUS piliers.
+ * Le pilier est résolu par jointure sur `programs.pillar` (aucun filtre pilier) et le
+ * nombre d'exercices planifiés (muscu) par sous-requête corrélée sur `exercise_plans`.
  * Params : owner_id, date début (>=), date fin (<=).
  */
 const SELECT_PLANNED_BETWEEN = `
   SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.status, ps.week_index,
-         s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index
+         s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index,
+         p.pillar AS pillar,
+         (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
   WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
     AND ps.scheduled_date >= ? AND ps.scheduled_date <= ?
   ORDER BY ps.scheduled_date, s.order_index
 `;
 
 /**
- * Séances running encore `planned` avec une date passée (manquées), owner-scopées.
- * Filtrage running via jointure sur `programs.pillar`. Params : owner_id, date du jour (<).
+ * Séances encore `planned` avec une date passée (manquées), owner-scopées, TOUS piliers.
+ * La jointure sur `programs` fournit le pilier (aucun filtre pilier) ; le nombre
+ * d'exercices planifiés (muscu) est résolu par sous-requête corrélée sur `exercise_plans`.
+ * Params : owner_id, date du jour (<).
  */
-const SELECT_MISSED_RUNNING = `
+const SELECT_MISSED = `
   SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.status, ps.week_index,
-         s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index
+         s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index,
+         p.pillar AS pillar,
+         (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
-  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL AND p.pillar = 'running'
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
   WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND ps.status = 'planned' AND ps.scheduled_date < ?
   ORDER BY ps.scheduled_date, s.order_index
 `;
@@ -136,6 +151,8 @@ function rowToItem(row: PlannedSessionDbRow): PlannedSessionItem {
     targetDistanceM: row.target_distance_m,
     targetDurationSeconds: row.target_duration_seconds,
     orderIndex: row.order_index,
+    pillar: row.pillar as Pillar,
+    exerciseCount: row.exercise_count,
   };
 }
 
@@ -145,7 +162,8 @@ function rowToItem(row: PlannedSessionDbRow): PlannedSessionItem {
 
 /**
  * Séances planifiées de la semaine commençant à `weekStartDate` (AAAA-MM-JJ inclus)
- * jusqu'au 6e jour suivant (inclus), réactives aux changements locaux.
+ * jusqu'au 6e jour suivant (inclus), réactives aux changements locaux. TOUS piliers
+ * (muscu + running) : chaque item porte son `pillar` et son `exerciseCount` (muscu).
  *
  * La `Date` est construite composant par composant depuis la chaîne AAAA-MM-JJ pour
  * éviter tout décalage de fuseau (pas de `new Date('AAAA-MM-JJ')` interprété UTC).
@@ -173,8 +191,9 @@ export function useWeekPlan(weekStartDate: string): {
 }
 
 /**
- * Séances running manquées de l'utilisateur courant : statut encore `planned` et date
- * strictement antérieure à aujourd'hui. Réactives aux changements locaux.
+ * Séances manquées de l'utilisateur courant, TOUS piliers (muscu + running) : statut
+ * encore `planned` et date strictement antérieure à aujourd'hui. Réactives aux
+ * changements locaux. Chaque item porte son `pillar` et son `exerciseCount` (muscu).
  *
  * `today` est calculé côté JS et passé en paramètre lié (jamais interpolé).
  */
@@ -185,7 +204,7 @@ export function useMissedSessions(): {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
   const today = localDayKey(new Date());
 
-  const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_MISSED_RUNNING, [
+  const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_MISSED, [
     userId,
     today,
   ]);
@@ -208,7 +227,7 @@ function currentUserId(): string {
 }
 
 /**
- * Planifie un programme running : génère les instances datées de toutes les séances
+ * Planifie un programme (tous piliers) : génère les instances datées de toutes les séances
  * pour `durationWeeks` semaines, puis active le programme. Le tout dans UNE transaction
  * atomique (aucun état partiel possible).
  *
@@ -235,7 +254,7 @@ function currentUserId(): string {
  *
  * Retourne le nombre d'instances générées.
  */
-export async function planRunningProgram(
+export async function planProgram(
   programId: string,
   rawInput: PlanProgramInput,
 ): Promise<number> {
@@ -325,6 +344,13 @@ export async function planRunningProgram(
     return generated.length;
   });
 }
+
+/**
+ * @deprecated Alias transitoire vers `planProgram` (renommage pilier-agnostique).
+ * Conservé le temps de recâbler le seul appelant (`running-programs/plan.tsx`) ;
+ * il sera supprimé une fois l'assistant de planification migré vers `planProgram`.
+ */
+export const planRunningProgram = planProgram;
 
 /** Reporte une séance planifiée à une nouvelle date (AAAA-MM-JJ). */
 export async function reschedulePlannedSession(
