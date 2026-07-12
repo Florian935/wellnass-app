@@ -160,6 +160,10 @@
       "empty": {
         "title": "No detailed data available for this food",
         "body": "No micronutrient is recorded for this food."
+      },
+      "tracked": {
+        "title": "Tracked micronutrients",
+        "hint": "Pick the micronutrients to show in the daily recap, on top of macros."
       }
     },
     "restrictions": {
@@ -228,6 +232,10 @@
     "copyDayYesterday": "Copy all of yesterday",
     "nothingYesterdayFull": "Nothing to copy: yesterday is empty.",
     "trainingDayBadge": "+{{kcal}} kcal · training day",
+    "detail": {
+      "quantity": "{{grams}} g",
+      "close": "Close"
+    },
     "tabs": {
       "all": "All",
       "favorites": "Favorites",

@@ -82,9 +82,13 @@ export type Micronutrients = z.infer<typeof micronutrientsSchema>;
  */
 export function parseMicronutrients(input: unknown): Micronutrients {
   let obj: unknown = input;
-  if (typeof input === 'string') {
+  // Tolère le **double encodage** : PowerSync/op-sqlite ré-encode les colonnes texte-JSON
+  // écrites côté client (une string JSON dans une string JSON). Les données synchronisées
+  // du serveur sont en simple encodage. On parse donc jusqu'à 2 fois : après le 1ᵉʳ parse
+  // d'une valeur double-encodée, on obtient encore une string → on reparse.
+  for (let i = 0; i < 2 && typeof obj === 'string'; i += 1) {
     try {
-      obj = JSON.parse(input);
+      obj = JSON.parse(obj);
     } catch {
       return {};
     }

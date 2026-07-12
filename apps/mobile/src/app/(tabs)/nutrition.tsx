@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,13 +10,18 @@ import {
   macroGramsFromCalories,
   objectiveFromGoal,
   resolveMealConfig,
+  saltFromSodiumMg,
+  sumMicronutrients,
   sumNutrients,
   targetCalories,
   tdee,
   trainingDayCalories,
+  type MicronutrientKey,
 } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { MicronutrientDetails } from '@/components/MicronutrientDetails';
+import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useIsTrainingDay } from '@/data/repositories/dashboard-repository';
@@ -41,6 +46,16 @@ const addDays = (iso: string, n: number) => {
 
 const MACRO_KEYS = ['protein', 'carbs', 'fat'] as const;
 type MacroKey = (typeof MACRO_KEYS)[number];
+
+/** Unité d'un micronutriment déduite du suffixe de sa clé (`_mg` / `_ug`). */
+const microUnit = (key: MicronutrientKey): 'mg' | 'ug' => (key.endsWith('_ug') ? 'ug' : 'mg');
+
+/** Format micro : entier ≥ 10, sinon 1 décimale ; virgule décimale en FR (cf. MicronutrientDetails). */
+function fmtMicro(n: number, lang: 'fr' | 'en', decimals?: number): string {
+  const d = decimals ?? (n >= 10 ? 0 : 1);
+  const s = n.toFixed(d);
+  return lang === 'fr' ? s.replace('.', ',') : s;
+}
 const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
   protein: 'accent',
   carbs: 'success',
@@ -56,6 +71,9 @@ export default function NutritionScreen() {
   const { nutritionProfile } = useNutritionProfile();
   const [day, setDay] = useState(() => isoDay(new Date()));
   const { entries } = useDayEntries(day);
+
+  // Entrée sélectionnée pour le détail (4.34) — tap sur une entrée du journal.
+  const [detailEntry, setDetailEntry] = useState<JournalEntry | null>(null);
 
   // Objectif calorique + macros cibles (même logique que le profil nutritionnel).
   const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
@@ -208,6 +226,9 @@ export default function NutritionScreen() {
               );
             })}
           </View>
+          {/* Micronutriments suivis du jour (4.35) */}
+          <TrackedMicrosRecap entries={entries} />
+
           {target == null ? (
             <Pressable onPress={() => router.push('/nutrition-profile')}>
               <Text style={[styles.setupLink, { color: colors.accent }]}>{t('journal.setTarget')}</Text>
@@ -241,6 +262,7 @@ export default function NutritionScreen() {
               entries={entries.filter((e) => e.mealType === m.key)}
               onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
               onDeleteEntry={onDeleteEntry}
+              onSelectEntry={setDetailEntry}
             />
           );
         })}
@@ -250,7 +272,113 @@ export default function NutritionScreen() {
           <Text style={[styles.manageMealsLabel, { color: colors.textMuted }]}>{t('meals.manage')}</Text>
         </Pressable>
       </ScrollView>
+
+      {/* Détail d'une entrée de journal (4.34) — snapshot de la quantité journalisée */}
+      <EntryDetailModal entry={detailEntry} onClose={() => setDetailEntry(null)} />
     </Screen>
+  );
+}
+
+/** Totaux du jour des micronutriments suivis, sous les barres macros du récap (4.35). */
+function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const tracked = useTrackedMicros((s) => s.tracked);
+  const dayMicros = useMemo(
+    () => sumMicronutrients(entries.map((e) => e.micronutrients)),
+    [entries],
+  );
+  if (tracked.length === 0) return null;
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+  const row = (label: string, value: string, unit: string, key: string) => (
+    <View key={key} style={styles.microRow}>
+      <Text style={[styles.microLabel, { color: colors.textMuted }]} numberOfLines={1}>{label}</Text>
+      <Text style={styles.microValueWrap}>
+        <Text style={[styles.microValue, { color: colors.text }]}>{value}</Text>
+        <Text style={[styles.microUnit, { color: colors.textMuted }]}> {unit}</Text>
+      </Text>
+    </View>
+  );
+
+  return (
+    <View style={[styles.microsRecap, { borderTopColor: colors.border }]}>
+      {tracked.map((key) =>
+        row(
+          t(`nutrition.micros.labels.${key}`),
+          fmtMicro(dayMicros[key] ?? 0, lang),
+          t(`nutrition.micros.units.${microUnit(key)}`),
+          key,
+        ),
+      )}
+      {tracked.includes('sodium_mg')
+        ? row(
+            t('nutrition.micros.labels.salt'),
+            fmtMicro(saltFromSodiumMg(dayMicros.sodium_mg ?? 0), lang, 2),
+            t('nutrition.micros.units.g'),
+            'salt',
+          )
+        : null}
+    </View>
+  );
+}
+
+/** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
+function EntryDetailModal({ entry, onClose }: { entry: JournalEntry | null; onClose: () => void }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  if (entry == null) return null;
+  const macros: { key: MacroKey; value: number }[] = [
+    { key: 'protein', value: entry.proteinG },
+    { key: 'carbs', value: entry.carbsG },
+    { key: 'fat', value: entry.fatG },
+  ];
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.modalBackdrop} onPress={onClose}>
+        <Pressable style={[styles.modalSheet, { backgroundColor: colors.background }]} onPress={() => {}}>
+          <View style={styles.modalHead}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={2}>{entry.name}</Text>
+              {entry.quantityG != null ? (
+                <Text style={[styles.modalSub, { color: colors.textMuted }]}>
+                  {t('journal.detail.quantity', { grams: entry.quantityG })}
+                </Text>
+              ) : null}
+            </View>
+            <Pressable onPress={onClose} hitSlop={10} accessibilityLabel={t('journal.detail.close')}>
+              <Ionicons name="close" size={26} color={colors.textMuted} />
+            </Pressable>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.modalBody} showsVerticalScrollIndicator={false}>
+            {/* Macros de la quantité */}
+            <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.detailKcalRow}>
+                <Text style={[styles.detailKcal, { color: colors.text }]}>{entry.kcal}</Text>
+                <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')}</Text>
+              </View>
+              <View style={styles.detailMacroRow}>
+                {macros.map((mm) => (
+                  <View key={mm.key} style={styles.detailMacro}>
+                    <Text style={[styles.macroName, { color: colors.textMuted }]}>{t(`nutrition.macros.${mm.key}`)}</Text>
+                    <Text style={[styles.detailMacroVal, { color: colors.text }]}>{mm.value} g</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
+            <MicronutrientDetails
+              micronutrients={entry.micronutrients}
+              grams={100}
+              showPer100={false}
+              defaultOpen
+            />
+          </ScrollView>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -261,6 +389,7 @@ function MealSection({
   entries,
   onAdd,
   onDeleteEntry,
+  onSelectEntry,
 }: {
   mealKey: string;
   mealLabel: string;
@@ -268,6 +397,7 @@ function MealSection({
   entries: JournalEntry[];
   onAdd: () => void;
   onDeleteEntry: (e: JournalEntry) => void;
+  onSelectEntry: (e: JournalEntry) => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -311,6 +441,7 @@ function MealSection({
         {entries.map((e) => (
           <Pressable
             key={e.id}
+            onPress={() => onSelectEntry(e)}
             onLongPress={() => onDeleteEntry(e)}
             style={styles.entry}
             accessibilityHint={t('journal.longPressDelete')}
@@ -368,6 +499,12 @@ const styles = StyleSheet.create({
   fill: { height: '100%', borderRadius: 4 },
   setupLink: { fontFamily: fontFamily.bodySemi, fontSize: 14, textAlign: 'center' },
   trainingBadge: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: 2 },
+  microsRecap: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, gap: 8 },
+  microRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
+  microLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13, flexShrink: 1 },
+  microValueWrap: { flexShrink: 0 },
+  microValue: { fontFamily: fontFamily.monoBold, fontSize: 14 },
+  microUnit: { fontFamily: fontFamily.mono, fontSize: 11 },
   copyDay: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -379,6 +516,18 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   copyDayLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  modalSheet: { maxHeight: '85%', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
+  modalHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
+  modalTitle: { fontFamily: fontFamily.displayBold, fontSize: 20 },
+  modalSub: { fontFamily: fontFamily.mono, fontSize: 13, marginTop: 2 },
+  modalBody: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
+  detailMacros: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
+  detailKcalRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
+  detailKcal: { fontFamily: fontFamily.displayBold, fontSize: 32 },
+  detailMacroRow: { flexDirection: 'row', gap: 10 },
+  detailMacro: { flex: 1, gap: 2 },
+  detailMacroVal: { fontFamily: fontFamily.monoBold, fontSize: 16 },
   meal: { gap: 8 },
   mealHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
   mealName: { fontFamily: fontFamily.displaySemi, fontSize: 17 },

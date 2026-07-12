@@ -53,10 +53,17 @@ export function MicronutrientDetails({
   micronutrients,
   grams,
   defaultOpen = false,
+  showPer100 = true,
 }: {
   micronutrients: Micronutrients;
   grams: number;
   defaultOpen?: boolean;
+  /**
+   * Affiche la valeur de référence « pour 100 g » sous chaque nutriment.
+   * Mettre à `false` quand `micronutrients` est déjà un snapshot mis à l'échelle
+   * (détail d'une entrée de journal, 4.34) — la ligne « pour 100 g » n'aurait pas de sens.
+   */
+  showPer100?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -110,9 +117,11 @@ export function MicronutrientDetails({
                             <Text style={[styles.itemUnit, { color: colors.textMuted }]}> {unitLabel(it.unit)}</Text>
                           </Text>
                         </View>
-                        <Text style={[styles.per100, { color: colors.textMuted }]}>
-                          {t('nutrition.micros.per100', { value: fmt(per100, lang), unit: unitLabel(it.unit) })}
-                        </Text>
+                        {showPer100 ? (
+                          <Text style={[styles.per100, { color: colors.textMuted }]}>
+                            {t('nutrition.micros.per100', { value: fmt(per100, lang), unit: unitLabel(it.unit) })}
+                          </Text>
+                        ) : null}
                         {it.key === 'sodium_mg' ? (
                           <View style={[styles.sub, { borderTopColor: colors.border }]}>
                             <Text style={[styles.subLabel, { color: colors.textMuted }]}>

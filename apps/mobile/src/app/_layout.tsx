@@ -16,6 +16,7 @@ import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
+import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
 import { useTheme } from '@/theme/useTheme';
@@ -80,6 +81,11 @@ function RootNavigator() {
       void SplashScreen.hideAsync();
     }
   }, [ready]);
+
+  // Charge la préférence locale des micronutriments suivis (US 4.35), une seule fois.
+  useEffect(() => {
+    void useTrackedMicros.getState().hydrate();
+  }, []);
 
   // Bootstrap : on n'initialise les réglages par défaut qu'une fois la **synchro
   // initiale terminée** (`hasSynced`). Sinon on créerait une ligne locale alors que

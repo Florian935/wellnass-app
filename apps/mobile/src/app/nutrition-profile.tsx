@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ACTIVITY_LEVELS,
   DIET_RESTRICTIONS,
+  MICRONUTRIENT_KEYS,
   NUTRITION_OBJECTIVES,
   activityFactor,
   computeAge,
@@ -26,6 +27,7 @@ import {
   upsertNutritionProfile,
   useNutritionProfile,
 } from '@/data/repositories/nutrition-repository';
+import { useTrackedMicros } from '@/stores/tracked-micros';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -63,6 +65,10 @@ export default function NutritionProfileScreen() {
   const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const restrictions = nutritionProfile?.restrictions ?? [];
   const allergens = nutritionProfile?.allergens ?? [];
+
+  // Micronutriments suivis dans le récap (US 4.35) — préférence locale.
+  const trackedMicros = useTrackedMicros((s) => s.tracked);
+  const toggleMicro = useTrackedMicros((s) => s.toggle);
 
   const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
   const tdeeValue = tdee({
@@ -278,6 +284,34 @@ export default function NutritionProfileScreen() {
         placeholder={t('nutrition.restrictions.allergensPlaceholder')}
         autoCapitalize="none"
       />
+
+      {/* Micronutriments suivis dans le récap (4.35) */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('nutrition.micros.tracked.title')}</Text>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>{t('nutrition.micros.tracked.hint')}</Text>
+      <View style={styles.chips}>
+        {MICRONUTRIENT_KEYS.map((key) => {
+          const active = trackedMicros.includes(key);
+          return (
+            <Pressable
+              key={key}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              onPress={() => toggleMicro(key)}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: active ? colors.accent : colors.surface,
+                  borderColor: active ? colors.accent : colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.chipLabel, { color: active ? colors.accentText : colors.text }]}>
+                {t(`nutrition.micros.labels.${key}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <View style={styles.footer}>
         <Button label={t('nutrition.done')} onPress={() => router.back()} />

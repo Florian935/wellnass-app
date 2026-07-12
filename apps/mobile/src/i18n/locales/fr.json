@@ -160,6 +160,10 @@
       "empty": {
         "title": "Données détaillées non disponibles pour cet aliment",
         "body": "Aucun micronutriment n'est renseigné pour cet aliment."
+      },
+      "tracked": {
+        "title": "Micronutriments suivis",
+        "hint": "Choisis les micronutriments à afficher dans le récap du jour, en plus des macros."
       }
     },
     "restrictions": {
@@ -228,6 +232,10 @@
     "copyDayYesterday": "Copier toute la journée d'hier",
     "nothingYesterdayFull": "Rien à copier : la journée d'hier est vide.",
     "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
+    "detail": {
+      "quantity": "{{grams}} g",
+      "close": "Fermer"
+    },
     "tabs": {
       "all": "Tous",
       "favorites": "Favoris",

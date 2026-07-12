@@ -92,6 +92,13 @@ describe('micronutriments (4.33)', () => {
       });
       expect(parseMicronutrients('{"sodium_mg":120}')).toEqual({ sodium_mg: 120 });
     });
+    it('tolère le double encodage (colonnes texte-JSON écrites par le client via PowerSync)', () => {
+      // Valeur telle que stockée par op-sqlite : une string JSON dans une string JSON.
+      const doubleEncoded = JSON.stringify(JSON.stringify({ magnesium_mg: 32.4, potassium_mg: 430 }));
+      expect(parseMicronutrients(doubleEncoded)).toEqual({ magnesium_mg: 32.4, potassium_mg: 430 });
+      // Ne reparse pas à l'infini : une string JSON dont le contenu reste une string → {}.
+      expect(parseMicronutrients(JSON.stringify(JSON.stringify('pas un objet')))).toEqual({});
+    });
     it('ignore clés inconnues, valeurs négatives/non-finies, et JSON invalide', () => {
       expect(
         parseMicronutrients({ magnesium_mg: 10, unknown_x: 5, iron_mg: -3, calcium_mg: 'x' }),
