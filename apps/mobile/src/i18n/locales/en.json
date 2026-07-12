@@ -368,6 +368,11 @@
       "strength": "Strength",
       "running": "Running",
       "link": "View records →"
+    },
+    "volumeWeek": {
+      "title": "Strength volume · week",
+      "empty": "No session this week.",
+      "link": "Details →"
     }
   },
   "onboarding": {

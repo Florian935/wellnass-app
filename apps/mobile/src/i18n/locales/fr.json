@@ -368,6 +368,11 @@
       "strength": "Muscu",
       "running": "Course",
       "link": "Voir les records →"
+    },
+    "volumeWeek": {
+      "title": "Volume muscu · semaine",
+      "empty": "Aucune séance cette semaine.",
+      "link": "Détail →"
     }
   },
   "onboarding": {
