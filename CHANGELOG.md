@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Suppression de programmes & de séances (muscu + course)
+
+Branche `feature/suppression-programmes-seances`. Permet de supprimer un programme
+(muscu **si possédé** + course) et une séance depuis l'app, proprement (cascade planning,
+désactivation si actif, confirmations). **100 % client, soft delete, aucune migration, aucune
+dépendance native, offline-first, i18n FR/EN à parité.**
+
+### Ajouté
+- **Variante `Button` `destructive`** (`apps/mobile/src/components/Button.tsx`) — fond plein
+  `colors.danger`, texte/spinner `accentText` ; même API (label/loading/disabled), a11y conservée.
+- **Bouton « Supprimer le programme »** sur les écrans détail muscu
+  (`app/programs/[id].tsx`, **uniquement si `isOwned`**) et course (`app/running-programs/[id].tsx`,
+  tous possédés) : confirmation `Alert` (titre = nom, message `deleteConfirm`), garde anti-double-tap
+  + état `deleting` (loading), `deleteProgram` puis `router.replace` vers la liste ; en cas d'erreur,
+  `Alert` non bloquant et maintien sur l'écran.
+- **Confirmation avant suppression d'une séance** dans les deux éditeurs
+  (`components/programs/SessionEditor.tsx`, `components/running/RunningSessionEditor.tsx`) :
+  `Alert.alert(nom séance, removeSessionConfirm, [Annuler, Supprimer(destructive)])` autour de
+  `removeSession` (auparavant suppression immédiate sans confirmation).
+- **i18n FR/EN** (parité) — `programs.detail.{delete,deleting,deleteConfirm,deleteError,
+  deleteErrorMessage}`, `programs.edit.removeSessionConfirm`, `running.program.{delete,deleting,
+  deleteConfirm,deleteError,deleteErrorMessage,removeSessionConfirm}`.
+
+### Modifié
+- **`deleteProgram` durci** (`data/repositories/program-repository.ts`) — enveloppe désormais dans
+  une **`writeTransaction`** le passage `is_active=0` (si le programme est actif) **puis** le
+  soft-delete du programme, dans cet ordre impératif (jamais de ligne soft-deletée restée active,
+  cohérent avec `activateProgram` qui filtre `is_active=1 AND deleted_at IS NULL`). Ajoute une
+  **cascade `planned_sessions`** owner-scopée par `program_id` (nettoie les entrées de planning
+  orphelines). La cascade existante (séances → `exercise_plans` → `program_translations`) est
+  préservée. Idempotent (`deleted_at IS NULL`).
+- **`removeSession` durci** — ajoute une **cascade `planned_sessions`** owner-scopée par
+  `session_id`, en plus de la cascade `exercise_plans` existante.
+
+### Technique / Notes
+- Owner résolu via `currentUserId()` ; timestamps UTC ; écritures locales (PowerSync synchronise
+  ensuite). Aucune régression des cascades existantes. typecheck/lint/tests verts (595 tests shared).
+- Hors périmètre : hard delete, corbeille/restauration, multi-sélection.
+
 ## 13/07/2026 — Notifications locales : rappel série en danger, Ne pas déranger, gestion par type (US 2.6/2.8/1.17)
 
 Branche `feature/notifications-v0.6`. Rappel local « série en danger » (2.6), fenêtre **Ne pas

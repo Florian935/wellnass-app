@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   PROGRAM_SESSION_TYPES,
@@ -147,7 +147,14 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
   };
 
   const onRemove = () => {
-    void removeSession(session.id);
+    Alert.alert(displayName, t('running.program.removeSessionConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('running.program.removeSession'),
+        style: 'destructive',
+        onPress: () => void removeSession(session.id),
+      },
+    ]);
   };
 
   // ---------------------------------------------------------------------------

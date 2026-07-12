@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   addExercisePlan,
@@ -40,7 +40,14 @@ export function SessionEditor({ session, fallbackName }: SessionEditorProps) {
   };
 
   const onRemoveSession = () => {
-    void removeSession(session.id);
+    Alert.alert(displayName, t('programs.edit.removeSessionConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('programs.edit.removeSession'),
+        style: 'destructive',
+        onPress: () => void removeSession(session.id),
+      },
+    ]);
   };
 
   return (
