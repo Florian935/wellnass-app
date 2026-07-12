@@ -854,7 +854,6 @@
     },
     "planning": {
       "title": "Mon planning",
-      "plan": "Planifier",
       "planCta": "Planifier ce programme",
       "startDate": "Semaine de début",
       "weekOf": "Semaine du {{date}}",
