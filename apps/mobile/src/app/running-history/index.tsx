@@ -23,6 +23,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { useTranslation } from 'react-i18next';
 import {
   formatDurationHms,
+  formatPaceMMSS,
   paceToSystem,
   RUNNING_RECORD_DISTANCES,
   type PaceTrendKind,
@@ -226,7 +227,11 @@ function PaceSection() {
           {t('running.history.paceEmpty')}
         </Text>
       ) : (
-        <ProgressLineChart data={chartData} unit={paceUnitLabel} />
+        <ProgressLineChart
+          data={chartData}
+          unit={paceUnitLabel}
+          formatYLabel={(s) => formatPaceMMSS(s, '')}
+        />
       )}
     </Card>
   );

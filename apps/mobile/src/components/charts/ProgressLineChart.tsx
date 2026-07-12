@@ -7,11 +7,20 @@ type DataPoint = {
   value: number;
 };
 
+const NO_OF_SECTIONS = 4;
+
 type ProgressLineChartProps = {
   data: DataPoint[];
   title?: string;
   unit?: string;
   width?: number;
+  /**
+   * Opt-in : formate chaque libellé de l'axe Y (valeur brute → texte). Par défaut
+   * `undefined` → axe Y numérique natif inchangé (usage muscu). Quand fourni, on
+   * construit `noOfSections + 1` graduations réparties sur [min(value), max(value)]
+   * et on les formate (ex. allure en secondes → M:SS).
+   */
+  formatYLabel?: (value: number) => string;
 };
 
 /**
@@ -19,7 +28,7 @@ type ProgressLineChartProps = {
  * Composant présentationnel : aucune récupération de données.
  * Si `data` est vide, rend null.
  */
-export function ProgressLineChart({ data, title, unit, width }: ProgressLineChartProps) {
+export function ProgressLineChart({ data, title, unit, width, formatYLabel }: ProgressLineChartProps) {
   const { colors } = useTheme();
 
   if (data.length === 0) return null;
@@ -30,6 +39,19 @@ export function ProgressLineChart({ data, title, unit, width }: ProgressLineChar
     value: point.value,
     label: point.label,
   }));
+
+  // Libellés d'axe Y formatés (opt-in) : noOfSections + 1 graduations réparties
+  // linéairement de min à max des valeurs, puis formatées via `formatYLabel`.
+  let yAxisLabelTexts: string[] | undefined;
+  if (formatYLabel) {
+    const values = chartData.map((d) => d.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const step = (max - min) / NO_OF_SECTIONS;
+    yAxisLabelTexts = Array.from({ length: NO_OF_SECTIONS + 1 }, (_, i) =>
+      formatYLabel(min + step * i),
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -57,7 +79,8 @@ export function ProgressLineChart({ data, title, unit, width }: ProgressLineChar
         xAxisLabelTextStyle={{ color: colors.textMuted, fontSize: 11 }}
         yAxisTextStyle={{ color: colors.textMuted, fontSize: 11 }}
         backgroundColor={colors.surface}
-        noOfSections={4}
+        noOfSections={NO_OF_SECTIONS}
+        yAxisLabelTexts={yAxisLabelTexts}
         isAnimated
       />
     </View>
