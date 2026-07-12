@@ -38,8 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
-import { generateId } from '@/lib/id';
-import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
+import { insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -615,31 +614,6 @@ export async function removeSession(sessionId: string): Promise<void> {
 // ---------------------------------------------------------------------------
 // Duplication et activation (transactions atomiques)
 // ---------------------------------------------------------------------------
-
-/** Insère une ligne dans une transaction en injectant les champs de synchro. */
-async function txInsert(
-  tx: { execute: (sql: string, params?: unknown[]) => Promise<unknown> },
-  table: string,
-  values: Record<string, unknown>,
-): Promise<string> {
-  const id = typeof values['id'] === 'string' ? (values['id'] as string) : generateId();
-  const now = nowUtc();
-  const merged: Record<string, unknown> = {
-    ...values,
-    id,
-    created_at: now,
-    updated_at: now,
-    deleted_at: null,
-  };
-  const columns = Object.keys(merged);
-  const placeholders = columns.map(() => '?').join(', ');
-  const params = columns.map((col) => merged[col]);
-  await tx.execute(
-    `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
-    params,
-  );
-  return id;
-}
 
 /**
  * Duplique un programme (éditorial ou autre) en un NOUVEAU programme personnalisé

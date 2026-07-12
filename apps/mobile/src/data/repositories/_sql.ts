@@ -76,6 +76,48 @@ export async function insertWithSyncFields(
 }
 
 // ---------------------------------------------------------------------------
+// Insertion dans une transaction
+// ---------------------------------------------------------------------------
+
+/**
+ * Insère une ligne DANS une transaction (`writeTransaction`) en injectant les champs
+ * de synchro, à la manière de `insertWithSyncFields` mais via l'objet `tx` fourni :
+ *  - `id`         : UUID généré par `generateId()` si absent de `values`
+ *  - `created_at` : nowUtc()
+ *  - `updated_at` : nowUtc()
+ *  - `deleted_at` : null
+ *
+ * À utiliser à la place de `insertWithSyncFields` dans une transaction : cette dernière
+ * passe par le `powerSync.execute` GLOBAL (hors transaction), ce qui casserait
+ * l'atomicité. Les clés de `values` sont les noms de colonnes snake_case exacts.
+ *
+ * Retourne l'`id` utilisé.
+ */
+export async function txInsert(
+  tx: { execute: (sql: string, params?: unknown[]) => Promise<unknown> },
+  table: string,
+  values: Record<string, unknown>,
+): Promise<string> {
+  const id = typeof values['id'] === 'string' ? (values['id'] as string) : generateId();
+  const now = nowUtc();
+  const merged: Record<string, unknown> = {
+    ...values,
+    id,
+    created_at: now,
+    updated_at: now,
+    deleted_at: null,
+  };
+  const columns = Object.keys(merged);
+  const placeholders = columns.map(() => '?').join(', ');
+  const params = columns.map((col) => merged[col]);
+  await tx.execute(
+    `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`,
+    params,
+  );
+  return id;
+}
+
+// ---------------------------------------------------------------------------
 // Mise à jour partielle (PATCH)
 // ---------------------------------------------------------------------------
 
