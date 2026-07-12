@@ -888,6 +888,7 @@
   },
   "planning": {
     "title": "Mon planning",
+    "subtitle": "Planifie tes séances sur ton calendrier.",
     "planCta": "Planifier ce programme",
     "startDate": "Semaine de début",
     "weekOf": "Semaine du {{date}}",

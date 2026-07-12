@@ -15,6 +15,7 @@ import {
   localDayKey,
   sessionTargetPace,
   startOfWeek,
+  type Pillar,
   type ProgramSessionType,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -25,7 +26,7 @@ import {
   useProgramDetail,
   type SessionDetail,
 } from '@/data/repositories/program-repository';
-import { planRunningProgram } from '@/data/repositories/planned-session-repository';
+import { planProgram } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -96,7 +97,7 @@ function PlanView({ programId }: { programId: string }) {
     if (!canPlan) return;
     setPlanning(true);
     try {
-      await planRunningProgram(programId, {
+      await planProgram(programId, {
         startDate: weekStart,
         durationWeeks: parsedDuration,
         dayAssignments,
@@ -191,6 +192,7 @@ function PlanView({ programId }: { programId: string }) {
               key={session.id}
               session={session}
               index={index}
+              pillar={detail.pillar}
               ref5kPaceSPerKm={runnerProfile?.ref5kPaceSPerKm ?? null}
               units={units}
               assignedDay={dayAssignments[session.id]}
@@ -224,6 +226,7 @@ function PlanView({ programId }: { programId: string }) {
 type PlanSessionCardProps = {
   session: SessionDetail;
   index: number;
+  pillar: Pillar;
   ref5kPaceSPerKm: number | null;
   units: ReturnType<typeof useUnits>;
   assignedDay: number | undefined;
@@ -233,6 +236,7 @@ type PlanSessionCardProps = {
 function PlanSessionCard({
   session,
   index,
+  pillar,
   ref5kPaceSPerKm,
   units,
   assignedDay,
@@ -241,21 +245,31 @@ function PlanSessionCard({
   const { t } = useTranslation();
   const { colors } = useTheme();
 
-  const sessionName =
-    session.name?.trim() ||
-    t('running.program.sessionDefaultName', { letter: sessionLetter(index) });
+  const isRunning = pillar === 'running';
 
-  const sessionType = session.sessionType as ProgramSessionType | null;
+  // Nom de séance : running → « Séance {lettre} », muscu → nom saisi ou « Séance {n} ».
+  const sessionName = isRunning
+    ? session.name?.trim() ||
+      t('running.program.sessionDefaultName', { letter: sessionLetter(index) })
+    : session.name?.trim() ||
+      t('programs.detail.sessionFallback', { index: session.orderIndex + 1 });
+
+  // Type/cible/allure sont spécifiques au running ; pour la muscu la ligne se limite au nom.
+  const sessionType = isRunning
+    ? (session.sessionType as ProgramSessionType | null)
+    : null;
   const typeLabel = sessionType ? t(`running.sessionType.${sessionType}`) : null;
 
   let targetLabel: string | null = null;
-  if (session.targetDistanceM != null && session.targetDistanceM > 0) {
-    targetLabel = units.formatDistance(session.targetDistanceM / 1000);
-  } else if (
-    session.targetDurationSeconds != null &&
-    session.targetDurationSeconds > 0
-  ) {
-    targetLabel = `${Math.round(session.targetDurationSeconds / 60)} min`;
+  if (isRunning) {
+    if (session.targetDistanceM != null && session.targetDistanceM > 0) {
+      targetLabel = units.formatDistance(session.targetDistanceM / 1000);
+    } else if (
+      session.targetDurationSeconds != null &&
+      session.targetDurationSeconds > 0
+    ) {
+      targetLabel = `${Math.round(session.targetDurationSeconds / 60)} min`;
+    }
   }
 
   let paceLabel: string | null = null;

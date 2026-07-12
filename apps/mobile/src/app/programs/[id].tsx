@@ -85,6 +85,10 @@ function ProgramDetailView({ programId }: { programId: string }) {
     router.push(`/programs/edit?id=${programId}`);
   };
 
+  const onPlan = () => {
+    router.push(`/planning/plan?id=${programId}`);
+  };
+
   const onDuplicate = async () => {
     if (duplicating) return;
     setDuplicating(true);
@@ -193,6 +197,12 @@ function ProgramDetailView({ programId }: { programId: string }) {
               loading={activating}
             />
           )}
+
+          <Button
+            label={t('planning.planCta')}
+            variant="ghost"
+            onPress={onPlan}
+          />
 
           {isOwned ? (
             <Button

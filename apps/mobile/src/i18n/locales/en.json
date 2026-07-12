@@ -888,6 +888,7 @@
   },
   "planning": {
     "title": "My plan",
+    "subtitle": "Schedule your sessions on your calendar.",
     "planCta": "Plan this program",
     "startDate": "Start week",
     "weekOf": "Week of {{date}}",

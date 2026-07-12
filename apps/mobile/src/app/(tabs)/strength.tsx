@@ -88,6 +88,23 @@ export default function StrengthScreen() {
 
       <Card>
         <View style={styles.cardHeader}>
+          <Ionicons name="calendar-outline" size={18} color={colors.accent} />
+          <Text style={[styles.cardTitle, { color: colors.text }]}>
+            {t('planning.title')}
+          </Text>
+        </View>
+        <Text style={[styles.cardText, { color: colors.textMuted }]}>
+          {t('planning.subtitle')}
+        </Text>
+        <Button
+          label={t('planning.title')}
+          variant="ghost"
+          onPress={() => router.push('/planning')}
+        />
+      </Card>
+
+      <Card>
+        <View style={styles.cardHeader}>
           <Ionicons name="time-outline" size={18} color={colors.accent} />
           <Text style={[styles.cardTitle, { color: colors.text }]}>
             {t('history.title')}
