@@ -180,10 +180,23 @@ export async function detectAndStoreRunRecords(
   const achievedAt = run.finished_at ?? nowUtc();
 
   const beaten: RecordDistanceKey[] = [];
+  // Temps 5 km RETENU (arrondi, tel que stocké) si le 5 km est battu — sert à
+  // dériver l'allure de référence de façon cohérente avec ce qui est persisté.
+  let rounded5k: number | null = null;
 
+  // Écritures des records = source de vérité, faites AVANT la maj du profil (dérivé)
+  // et HORS transaction : choix délibéré (offline-first, base locale mono-utilisateur).
+  // Une erreur dans cette boucle interrompt les distances suivantes (fail-fast) ; c'est
+  // acceptable car le backfill, idempotent, reprendra proprement au prochain lancement.
   for (const { key } of RUNNING_RECORD_DISTANCES) {
     const timeSeconds = records[key];
     if (timeSeconds == null) continue;
+
+    // On arrondit UNE seule fois et on compare arrondi ↔ arrondi : comparer le float
+    // brut au temps déjà stocké (entier) casserait l'idempotence (ex. 299,6 s stocké à
+    // 300 rebattrait 300 à chaque replay). Ici `rounded < stored` est strictement `false`
+    // au replay → aucun re-patch, aucune re-célébration.
+    const rounded = Math.round(timeSeconds);
 
     const existing = await powerSync.getOptional<{
       id: string;
@@ -198,29 +211,29 @@ export async function detectAndStoreRunRecords(
       await insertWithSyncFields('running_pace_records', {
         user_id: userId,
         distance_key: key,
-        best_time_seconds: Math.round(timeSeconds),
+        best_time_seconds: rounded,
         run_id: runId,
         achieved_at: achievedAt,
       });
       beaten.push(key);
-    } else if (timeSeconds < existing.best_time_seconds) {
+      if (key === '5k') rounded5k = rounded;
+    } else if (rounded < existing.best_time_seconds) {
       await patch('running_pace_records', existing.id, {
-        best_time_seconds: Math.round(timeSeconds),
+        best_time_seconds: rounded,
         run_id: runId,
         achieved_at: achievedAt,
       });
       beaten.push(key);
+      if (key === '5k') rounded5k = rounded;
     }
   }
 
-  // Record 5 km battu → met à jour l'allure de référence (s/km) du profil coureur.
-  if (beaten.includes('5k')) {
-    const fiveKTime = records['5k'];
-    if (fiveKTime != null) {
-      await upsertRunnerProfile({
-        ref5kPaceSPerKm: Math.round(fiveKTime / 5),
-      });
-    }
+  // Record 5 km battu → met à jour l'allure de référence (s/km) du profil coureur,
+  // dérivée du temps ARRONDI retenu (cohérence avec le record stocké).
+  if (rounded5k != null) {
+    await upsertRunnerProfile({
+      ref5kPaceSPerKm: Math.round(rounded5k / 5),
+    });
   }
 
   return beaten;
