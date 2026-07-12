@@ -870,7 +870,6 @@
       "rescheduleToday": "Aujourd'hui",
       "rescheduleTomorrow": "Demain",
       "reschedulePlus7": "+7 jours",
-      "rescheduleChoose": "Choisir un jour…",
       "skip": "Sauter",
       "markDone": "Marquer comme faite",
       "statusDone": "Faite",
@@ -879,7 +878,9 @@
       "empty": "Aucun programme planifié. Planifie un programme depuis son détail.",
       "noProfileHint": "Définis ton allure de référence dans le profil coureur pour voir les allures cibles.",
       "generatedCount_one": "Planifier · {{count}} séance",
-      "generatedCount_other": "Planifier · {{count}} séances"
+      "generatedCount_other": "Planifier · {{count}} séances",
+      "planErrorTitle": "Échec de la planification",
+      "planErrorMessage": "La planification a échoué. Réessaie."
     }
   }
 }

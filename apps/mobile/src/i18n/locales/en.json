@@ -870,7 +870,6 @@
       "rescheduleToday": "Today",
       "rescheduleTomorrow": "Tomorrow",
       "reschedulePlus7": "+7 days",
-      "rescheduleChoose": "Choose a day…",
       "skip": "Skip",
       "markDone": "Mark as done",
       "statusDone": "Done",
@@ -879,7 +878,9 @@
       "empty": "No program planned. Plan one from its detail screen.",
       "noProfileHint": "Set your reference pace in the runner profile to see target paces.",
       "generatedCount_one": "Plan · {{count}} session",
-      "generatedCount_other": "Plan · {{count}} sessions"
+      "generatedCount_other": "Plan · {{count}} sessions",
+      "planErrorTitle": "Planning failed",
+      "planErrorMessage": "Planning failed. Please try again."
     }
   }
 }

@@ -103,7 +103,10 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
       });
       router.replace('/running-planning');
     } catch {
-      Alert.alert(t('running.planning.planCta'), t('running.planning.empty'));
+      Alert.alert(
+        t('running.planning.planErrorTitle'),
+        t('running.planning.planErrorMessage'),
+      );
       setPlanning(false);
     }
   };
