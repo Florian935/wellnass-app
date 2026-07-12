@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix UI : sélecteur de niveau (création/édition de programme)
+
+Branche `fix/segment-niveau-muscu-wrap`.
+
+### Corrigé
+- Le sélecteur segmenté « Niveau » faisait passer « Intermédiaire » sur deux lignes (mode par défaut
+  `flex: 1` à 4 colonnes égales, libellés trop longs). Passage en mode `scrollable` (une ligne, largeur
+  intrinsèque, défilement horizontal si besoin) — cohérent avec le sélecteur d'objectif de course.
+- Fichiers : `apps/mobile/src/app/programs/edit.tsx` (muscu), `apps/mobile/src/app/running-programs/edit.tsx`
+  (course, création + édition — même classe de bug).
+
+### Technique / Notes
+- Aucun changement du composant `Segment` (le mode `scrollable` existait déjà) ; simple opt-in par écran.
+
 ## 12/07/2026 — US 4.7b : détection anticipée des jours d'entraînement (nutrition)
 
 Étend `useIsTrainingDay(dayKey)` pour qu'une séance **planifiée** (`planned_sessions`, statut

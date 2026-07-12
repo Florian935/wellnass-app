@@ -143,6 +143,7 @@ function RunningProgramCreateForm({ onCreated }: { onCreated: (id: string) => vo
               {t('running.program.level')}
             </Text>
             <Segment
+              scrollable
               options={LEVEL_CHOICES}
               value={level}
               onChange={setLevel}
@@ -342,6 +343,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
               {t('running.program.level')}
             </Text>
             <Segment
+              scrollable
               options={LEVEL_CHOICES}
               value={currentLevel}
               onChange={commitLevel}

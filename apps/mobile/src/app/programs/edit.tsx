@@ -118,6 +118,7 @@ function ProgramCreateForm({ onCreated }: { onCreated: (id: string) => void }) {
               {t('programs.edit.level')}
             </Text>
             <Segment
+              scrollable
               options={LEVEL_CHOICES}
               value={level}
               onChange={setLevel}
