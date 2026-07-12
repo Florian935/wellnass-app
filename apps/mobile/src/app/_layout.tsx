@@ -15,6 +15,7 @@ import i18n from '@/i18n';
 import '@/running/tracker-task';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
+import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useTrackedMicros } from '@/stores/tracked-micros';
@@ -106,6 +107,12 @@ function RootNavigator() {
       void i18n.changeLanguage(language);
     }
   }, [settings?.language]);
+
+  // Notifications (US 2.6) : monte le planificateur du rappel « série en danger ».
+  // Hook inconditionnel (appelé avant tout retour anticipé). Assure la permission
+  // + le canal Android à l'init, puis (re)planifie/annule selon l'activité du jour
+  // et les préférences — au montage, sur changement, et au retour au premier plan.
+  useStreakReminderScheduler();
 
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {

@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Notifications locales : rappel série en danger, Ne pas déranger, gestion par type (US 2.6/2.8/1.17)
+
+Branche `feature/notifications-v0.6`. Rappel local « série en danger » (2.6), fenêtre **Ne pas
+déranger** configurable + plafond quotidien (2.8), **gestion par type** depuis les Réglages (1.17).
+**Une seule dépendance native ajoutée** (`expo-notifications`), **aucune migration** (colonne texte
+`user_settings.notifications` enrichie), offline-first, i18n FR/EN à parité.
+
+### Ajouté
+- **Logique pure (`@wellness/shared/notifications.ts`)** — interface `NotificationPrefs`
+  (`streakDanger`, `reminderHour`, `dndEnabled`, `dndStartHour`, `dndEndHour`, `maxPerDay`) ;
+  `defaultNotificationPrefs()` (`true/20/true/22/7/3` — `reminderHour=20` volontairement hors DND
+  `[22,7)`) ; `parseNotificationPrefs()` **tolérant** (null/`{}`/ancien `Record<string,boolean>` →
+  défauts, heures bornées 0-23, `maxPerDay≥1`) ; `isWithinDnd()` (fenêtre simple **et** enjambant
+  minuit) ; `shouldScheduleStreakReminder()` ; `canScheduleMore()`. **Couverture Vitest** (défauts,
+  bornes, DND minuit, règle streak, max/jour).
+- **Wrapper natif (`apps/mobile/src/lib/notifications.ts`)** — API **expo-notifications SDK 57** :
+  `ensurePermissionAndChannel()` (canal Android `reminders`, get/request permissions, retourne
+  `granted`), `scheduleStreakReminder(date, content)` (trigger `DATE`, identifiant stable
+  `STREAK_REMINDER_ID` → idempotent), `cancelStreakReminder()`, `setNotificationHandler` (affichage
+  au premier plan). Permission refusée / module indisponible = **no-op silencieux** (jamais de throw).
+- **Repository + scheduler (`notification-repository.ts`)** — `useNotificationPrefs()` (prefs
+  réactives), `updateNotificationPrefs(current, patch)` (merge + `updateSettings`),
+  `useStreakReminderScheduler()` : (re)planifie/annule selon `activeToday` (`useStreakData`) + prefs,
+  au montage / changement / retour au premier plan (`AppState`, abonnement nettoyé au démontage).
+- **Réglages (`settings.tsx`)** — sections « Notifications » (Switch rappel streak + `HourStepper`
+  heure de rappel) et « Ne pas déranger » (Switch + steppers début/fin), suivant la maquette et le
+  thème sombre. `HourStepper` : sélecteur d'heure 0-23 **pur JS** (boucle modulo 24, a11y), aucune
+  dépendance native. Bandeau informatif si permission système refusée (non bloquant).
+- **Init (`_layout.tsx`)** — montage de `useStreakReminderScheduler()` dans `RootNavigator`
+  (permission + canal à l'init, (re)planification à l'ouverture).
+- **i18n** — `settings.notifications.*` + `notifications.streakDanger.{title,body}` FR **et** EN à parité.
+
+### Modifié
+- **`@wellness/shared/settings.ts`** — colonne `notifications` : `z.record(z.string(), z.boolean())`
+  → schéma typé `notificationPrefsSchema` (`.default(defaultNotificationPrefs())`). **Sans migration**
+  (colonne texte). `settings.test.ts` adapté (nouvelle forme + rejet d'heure hors bornes).
+- **`settings-repository.ts`** — lecture `notifications` via
+  `parseNotificationPrefs(parseJsonColumn(row.notifications, null))` ; défauts d'insertion via
+  `defaultNotificationPrefs()`.
+
+### Technique / Notes
+- `expo-notifications@~57.0.3` (aligné SDK 57) + plugin `app.json` + permission Android
+  `POST_NOTIFICATIONS`. `owner`/`projectId` inchangés.
+- **Nouveau build requis** (dépendance native) → recette device à faire (permission, rappel, DND,
+  toggles). typecheck/lint/tests verts (595 tests shared), parité i18n confirmée.
+
 ## 12/07/2026 — Personnalisation du dashboard : mode édition, drag & drop, masquer, taille (US 7.1/7.2/7.3/7.11/7.12)
 
 Branche `feature/dashboard-personnalisation`. Rend l'accueil personnalisable, disposition
