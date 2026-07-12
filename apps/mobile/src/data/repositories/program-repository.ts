@@ -625,8 +625,15 @@ export async function updateRunningSession(
 
 /**
  * Retire une séance d'un programme (soft delete de la séance ET de tous ses plans).
+ *
+ * Cascade également les `planned_sessions` de l'utilisateur courant qui référencent
+ * cette séance (`session_id`), afin de ne pas laisser d'entrées de planning orphelines
+ * (US suppression). Owner-scopé et idempotent (`deleted_at IS NULL`).
  */
 export async function removeSession(sessionId: string): Promise<void> {
+  const ownerId = currentUserId();
+  const now = nowUtc();
+
   const plans = await powerSync.getAll<{ id: string }>(
     `SELECT id FROM exercise_plans WHERE session_id = ? AND deleted_at IS NULL`,
     [sessionId],
@@ -634,6 +641,14 @@ export async function removeSession(sessionId: string): Promise<void> {
   for (const plan of plans) {
     await softDelete('exercise_plans', plan.id);
   }
+
+  // Cascade planning : soft-delete les séances planifiées de l'owner liées à cette séance.
+  await powerSync.execute(
+    `UPDATE planned_sessions SET deleted_at = ?, updated_at = ?
+     WHERE session_id = ? AND owner_id = ? AND deleted_at IS NULL`,
+    [now, now, sessionId, ownerId],
+  );
+
   await softDelete('sessions', sessionId);
 }
 
@@ -865,8 +880,44 @@ export async function updateProgramTranslation(
 /**
  * Supprime un programme (soft delete du programme + de ses séances + de leurs plans
  * + de ses traductions). Les identifiants sont récupérés via `getAll`.
+ *
+ * Durcissements (US suppression) :
+ *  1. **[transaction]** si le programme est actif (`is_active=1`), le passer `is_active=0`
+ *     **puis** poser le soft-delete du programme dans une **même `writeTransaction`**.
+ *     L'ordre est impératif : `is_active=0` d'abord, car `activateProgram` filtre
+ *     `is_active=1 AND deleted_at IS NULL` — on ne veut jamais laisser une ligne
+ *     soft-deletée restée active.
+ *  2. cascade `planned_sessions` de l'owner par `program_id` (un seul filtre suffit :
+ *     il couvre toutes les séances planifiées du programme) — nettoie les orphelins de planning.
+ *  3. cascade existante (séances → exercise_plans → traductions), séquentielle.
+ *
+ * Idempotent : toutes les écritures filtrent `deleted_at IS NULL`.
  */
 export async function deleteProgram(programId: string): Promise<void> {
+  const ownerId = currentUserId();
+  const now = nowUtc();
+
+  // 1. Désactivation (si actif) + soft-delete du programme, atomiques et ordonnés.
+  await powerSync.writeTransaction(async (tx) => {
+    await tx.execute(
+      `UPDATE programs SET is_active = 0, updated_at = ?
+       WHERE id = ? AND is_active = 1 AND deleted_at IS NULL`,
+      [now, programId],
+    );
+    await tx.execute(
+      `UPDATE programs SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`,
+      [now, now, programId],
+    );
+  });
+
+  // 2. Cascade planning : soft-delete les séances planifiées de l'owner pour ce programme.
+  await powerSync.execute(
+    `UPDATE planned_sessions SET deleted_at = ?, updated_at = ?
+     WHERE program_id = ? AND owner_id = ? AND deleted_at IS NULL`,
+    [now, now, programId, ownerId],
+  );
+
+  // 3. Cascade existante : séances → plans → traductions.
   const sessions = await powerSync.getAll<{ id: string }>(
     `SELECT id FROM sessions WHERE program_id = ? AND deleted_at IS NULL`,
     [programId],
@@ -889,6 +940,4 @@ export async function deleteProgram(programId: string): Promise<void> {
   for (const t of translations) {
     await softDelete('program_translations', t.id);
   }
-
-  await softDelete('programs', programId);
 }
