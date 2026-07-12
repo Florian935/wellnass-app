@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix : cible de séance perdue sans blur + contrainte cloud bloquante
+
+_Branche : `fix/running-commit-on-change`. Suite de la recette device : la durée d'une séance n'était pas enregistrée si l'utilisateur tapait « Terminé » sans sortir du champ (commit uniquement `onBlur`). Cause secondaire : une CHECK constraint cloud bloquait la synchro PowerSync pendant l'édition. 100 % JS + 1 migration cloud (déjà appliquée)._
+
+### Corrigé
+- **Cible de séance (distance/durée) enregistrée à la saisie** (`RunningSessionEditor.tsx`) : nouveau `saveTargetValue(kind, rawValue)` (commit-on-change silencieux — écrit **uniquement si la valeur est valide**, sans flash d'erreur pendant la frappe) branché sur `onChangeText` des deux champs, en plus de l'`onBlur` existant. Plus de perte de saisie si « Terminé » est tapé sans blur.
+- **« Terminé » ferme le clavier avant de naviguer** (`running-programs/edit.tsx`) : `Keyboard.dismiss()` puis `router.back()` → les champs d'entête du programme (`name`/`summary`/`durationWeeks`, commit `onBlur`) sont bien enregistrés avant de quitter.
+- **Contrainte cloud `sessions_running_target_chk` retirée** (`20260712130000_drop_sessions_running_target_chk.sql`, appliquée manuellement au cloud le 12/07) : cette CHECK multi-colonnes (« type ⇒ cible obligatoire », posée en R3b-i) **rejetait les écritures intermédiaires** (type choisi avant la cible) et **bloquait la file d'upload PowerSync** → aucune écriture running ne montait au cloud. La règle « cible requise » reste validée **côté app** (`hasRunningSessionTarget`).
+
+### Technique / Notes
+- **Leçon offline-first** (ajoutée à [bonnes-pratiques.md](docs/specs/technical/bonnes-pratiques.md) §5) : éviter les CHECK constraints multi-colonnes dépendant d'un état complet — elles rejettent les écritures optimistes incrémentales et bloquent la synchro. Valider ces invariants côté application.
+- `db:types` inchangé (drop de contrainte ≠ changement de colonnes). Diagnostic confirmé par requête cloud (durée `NULL` avant drop → OK après). Qualité verte (typecheck / lint / 451 shared + 29 mobile). **Rebuild preview** pour re-recette.
+
 ## 12/07/2026 — Fix : 5 correctifs running (recette device R3/R4)
 
 _Branche : `fix/running-r3-r4-persistance-ui`. Bugs remontés à la recette device du build preview ; cause racine diagnostiquée puis corrigée, revue qualité (bug 4 repris en 2 passes). **100 % JS** (aucune migration, aucun schéma) → simple rebuild pour re-tester._
