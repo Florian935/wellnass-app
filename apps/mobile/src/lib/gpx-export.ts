@@ -8,7 +8,7 @@
  * (`buildGpx`, `gpxFileName`, `isValidCoord`).
  */
 
-import { buildGpx, decodeTrack } from '@wellness/shared';
+import { buildGpx, decodeTrack, gpxFileName } from '@wellness/shared';
 // API LEGACY d'expo-file-system (SDK 57) : `writeAsStringAsync` + `cacheDirectory`.
 // Choix legacy (vs nouvelle API `File`) : plus éprouvée sur l'existant et cohérente
 // avec op-sqlite/PowerSync (cf. spec §4). La nouvelle API vit sous l'import racine.
@@ -16,13 +16,6 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import type { TFunction } from 'i18next';
 import type { RunDetail } from '@/data/repositories/run-repository';
-
-/**
- * Nom de fichier PHYSIQUE fixe dans le cache : réécrit à chaque export pour éviter
- * l'accumulation de fichiers (cf. spec §4). Le nom « lisible/daté » sert de titre de
- * dialogue, pas de nom de fichier physique.
- */
-const CACHE_FILE_NAME = 'course.gpx';
 
 /** Résultat typé pour que l'écran affiche le bon message. */
 export type GpxExportResult =
@@ -44,6 +37,11 @@ export async function exportRunAsGpx(
   const points = run.gpsTrack ? decodeTrack(run.gpsTrack) : [];
 
   const startedAtMs = Date.parse(run.startedAt);
+  // Date de départ corrompue (NaN) → échec propre AVANT tout `toISOString`/`toLocaleString`.
+  if (Number.isNaN(startedAtMs)) {
+    return { error: 'failed' };
+  }
+
   // Libellé daté i18n (date/heure LOCALE) — RunDetail n'a AUCUN nom (cf. spec §3).
   const date = new Date(startedAtMs).toLocaleString();
   const name = t('running.export.defaultName', { date });
@@ -53,7 +51,11 @@ export async function exportRunAsGpx(
     return { error: 'empty' };
   }
 
-  const uri = FileSystem.cacheDirectory + CACHE_FILE_NAME;
+  // Nom de fichier PHYSIQUE lisible et daté (`course-AAAA-MM-JJ-HHmm.gpx`) : c'est le
+  // nom que verra l'app réceptrice (Strava/Garmin…). Un ré-export de la même course
+  // (même horodatage) écrase le fichier ; des courses différentes créent des fichiers
+  // distincts (texte léger, purgé par l'OS avec le cache).
+  const uri = FileSystem.cacheDirectory + gpxFileName(run.startedAt);
 
   try {
     await FileSystem.writeAsStringAsync(uri, gpx);

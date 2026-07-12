@@ -306,6 +306,9 @@ export default function RunSummaryScreen() {
     try {
       const result = await exportRunAsGpx(run, t);
       if ('error' in result) {
+        // `unavailable` = partage indisponible ; sinon message générique. Le cas
+        // `empty` (< 2 points valides) est défensif et inatteignable ici (le bouton
+        // n'est affiché que si `validPointCount >= 2`) → couvert par `errorFailed`.
         const message =
           result.error === 'unavailable'
             ? t('running.export.errorUnavailable')

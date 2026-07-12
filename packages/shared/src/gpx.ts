@@ -69,13 +69,15 @@ export interface BuildGpxOptions {
  *
  * Fonction PURE, déterministe, sans dépendance native ni I/O.
  *
- * @returns La chaîne GPX, ou `null` si moins de 2 points valides après filtrage
- *          (défensif : le bouton n'aurait pas dû s'afficher).
+ * @returns La chaîne GPX, ou `null` si `startedAtMs` n'est pas fini (date de départ
+ *          corrompue → éviter un `RangeError` sur `toISOString`) ou si moins de 2
+ *          points valides après filtrage (défensif : le bouton n'aurait pas dû s'afficher).
  */
 export function buildGpx(
   points: ReadonlyArray<GpsPoint>,
   opts: BuildGpxOptions,
 ): string | null {
+  if (!Number.isFinite(opts.startedAtMs)) return null;
   const valid = points.filter((p) => isValidCoord(p.lat, p.lng));
   if (valid.length < 2) return null;
 

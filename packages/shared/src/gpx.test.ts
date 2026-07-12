@@ -128,4 +128,9 @@ describe('buildGpx', () => {
   it('retourne null pour un tableau vide', () => {
     expect(buildGpx([], { startedAtMs: STARTED_AT_MS, name: 'x' })).toBeNull();
   });
+
+  it('retourne null si startedAtMs n\'est pas fini (date corrompue) — pas de RangeError', () => {
+    expect(buildGpx(POINTS, { startedAtMs: NaN, name: 'x' })).toBeNull();
+    expect(buildGpx(POINTS, { startedAtMs: Infinity, name: 'x' })).toBeNull();
+  });
 });
