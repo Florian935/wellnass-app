@@ -120,6 +120,32 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
     }
   };
 
+  /**
+   * Sauvegarde silencieuse de la cible à la saisie (commit-on-change).
+   * Offline-first : n'écrit QUE si la valeur est valide, sans jamais afficher
+   * l'erreur « cible requise » pendant la frappe. Filet contre la perte de saisie
+   * lorsque « Terminé » est tapé sans blur préalable. PowerSync coalesce les écritures.
+   */
+  const saveTargetValue = (kind: TargetKind, rawValue: string) => {
+    if (kind === 'distance') {
+      const km = units.parseDistanceToKm(rawValue);
+      if (km != null && km > 0) {
+        void updateRunningSession(session.id, {
+          targetDistanceM: Math.round(km * 1000),
+          targetDurationSeconds: null,
+        });
+      }
+    } else {
+      const min = parseFloat(rawValue.trim());
+      if (Number.isFinite(min) && min > 0) {
+        void updateRunningSession(session.id, {
+          targetDurationSeconds: Math.round(min * 60),
+          targetDistanceM: null,
+        });
+      }
+    }
+  };
+
   const onRemove = () => {
     void removeSession(session.id);
   };
@@ -258,6 +284,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
             onChangeText={(v) => {
               setDistanceInput(v);
               setTargetError(false);
+              saveTargetValue(effectiveTargetKind, v);
             }}
             onBlur={commitTarget}
             keyboardType="decimal-pad"
@@ -276,6 +303,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
             onChangeText={(v) => {
               setDurationInput(v);
               setTargetError(false);
+              saveTargetValue(effectiveTargetKind, v);
             }}
             onBlur={commitTarget}
             keyboardType="decimal-pad"

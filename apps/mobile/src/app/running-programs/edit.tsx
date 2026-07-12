@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { RUNNER_OBJECTIVES, type ProgramLevel, type RunnerObjective } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -361,7 +361,13 @@ function RunningProgramComposer({ programId }: { programId: string }) {
         </View>
 
         <View style={styles.done}>
-          <Button label={t('running.program.done')} onPress={() => router.back()} />
+          <Button
+            label={t('running.program.done')}
+            onPress={() => {
+              Keyboard.dismiss();
+              router.back();
+            }}
+          />
         </View>
       </ScrollView>
     </Screen>
