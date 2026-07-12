@@ -15,9 +15,10 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { weightTrend } from '@wellness/shared';
+import { weightTrend, type WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import {
   useLatestWeight,
   useWeightEntries,
@@ -35,7 +36,7 @@ function sevenDaysAgo(): string {
   return isoDay(d);
 }
 
-export function WeightCard() {
+export function WeightCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -45,6 +46,17 @@ export function WeightCard() {
   const { entries, isLoading: entriesLoading } = useWeightEntries(sevenDaysAgo());
 
   if (latestLoading || entriesLoading) return null;
+
+  // ── Variante compacte (US 7.11) : dernière pesée ───────────────────────────
+  if (size === 'compact') {
+    return (
+      <DashboardCardCompact
+        icon="scale-outline"
+        title={t('home.weight.title')}
+        value={latest != null ? units.formatWeight(latest.weightKg) : t('home.weight.compactEmpty')}
+      />
+    );
+  }
 
   // ── État : aucune pesée ────────────────────────────────────────────────────
   if (latest == null) {

@@ -27,8 +27,9 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatPaceMMSS, type RecordDistanceKey } from '@wellness/shared';
+import { formatPaceMMSS, type RecordDistanceKey, type WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { useMostRecentRecord } from '@/data/repositories/dashboard-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -52,7 +53,7 @@ function formatDateFr(iso: string): string {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
-export function RecordRecentCard() {
+export function RecordRecentCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -61,8 +62,40 @@ export function RecordRecentCard() {
 
   if (isLoading) return null;
 
+  // Libellé + route partagés (compact ↔ normal). Null si aucun record.
+  let label: string | null = null;
+  let route: '/progress' | '/running-history' = '/progress';
+  let badge = '';
+  if (record != null) {
+    badge = t(`home.record.${record.pillar}`);
+    if (record.pillar === 'strength') {
+      const value =
+        record.type === 'best_volume'
+          ? `${new Intl.NumberFormat(i18n.language).format(Math.round(record.value))} kg`
+          : units.formatWeight(record.value);
+      label = `${record.exerciseName} — ${value}`;
+      route = '/progress';
+    } else {
+      const distance = t(RECORD_DISTANCE_KEY[record.distanceKey]);
+      const time = formatPaceMMSS(record.bestTimeSeconds, '—');
+      label = `${distance} — ${time}`;
+      route = '/running-history';
+    }
+  }
+
+  // ── Variante compacte (US 7.11) : record court ─────────────────────────────
+  if (size === 'compact') {
+    return (
+      <DashboardCardCompact
+        icon="trophy-outline"
+        title={t('home.record.title')}
+        value={label ?? t('home.record.compactEmpty')}
+      />
+    );
+  }
+
   // ── État : aucun record ────────────────────────────────────────────────────
-  if (record == null) {
+  if (record == null || label == null) {
     return (
       <DashboardCard icon="trophy-outline" title={t('home.record.title')}>
         <Text style={[styles.emptyText, { color: colors.textMuted }]}>
@@ -73,24 +106,6 @@ export function RecordRecentCard() {
   }
 
   // ── État : record présent ──────────────────────────────────────────────────
-  const badge = t(`home.record.${record.pillar}`);
-
-  let label: string;
-  let route: '/progress' | '/running-history';
-  if (record.pillar === 'strength') {
-    const value =
-      record.type === 'best_volume'
-        ? `${new Intl.NumberFormat(i18n.language).format(Math.round(record.value))} kg`
-        : units.formatWeight(record.value);
-    label = `${record.exerciseName} — ${value}`;
-    route = '/progress';
-  } else {
-    const distance = t(RECORD_DISTANCE_KEY[record.distanceKey]);
-    const time = formatPaceMMSS(record.bestTimeSeconds, '—');
-    label = `${distance} — ${time}`;
-    route = '/running-history';
-  }
-
   return (
     <DashboardCard icon="trophy-outline" title={t('home.record.title')}>
       <View style={styles.row}>

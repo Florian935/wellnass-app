@@ -328,6 +328,18 @@
   "home": {
     "greeting": "Hello 👋",
     "greetingName": "Hello {{name}} 👋",
+    "customize": {
+      "edit": "Customize",
+      "done": "Done",
+      "editHint": "Editing mode",
+      "hiddenBadge": "Hidden",
+      "show": "Show widget",
+      "hide": "Hide widget",
+      "sizeCompact": "Switch to compact size",
+      "sizeFull": "Switch to normal size",
+      "drag": "Move widget",
+      "empty": "No widget shown. Enable widgets in editing mode."
+    },
     "today": {
       "title": "Today's session",
       "empty": "No active program. Create one to see your next session here.",
@@ -337,14 +349,18 @@
       "exercises_other": "{{count}} exercises",
       "cta": "Start session",
       "resume": "Resume session",
-      "createProgram": "Create a program"
+      "createProgram": "Create a program",
+      "compactActive": "In progress",
+      "compactNone": "None"
     },
     "streak": {
       "title": "Streak",
       "suffix_one": "day in a row",
       "suffix_other": "days in a row",
       "days": ["M", "T", "W", "T", "F", "S", "S"],
-      "empty": "Log an activity today to start your streak."
+      "empty": "Log an activity today to start your streak.",
+      "compact_one": "{{count}} d",
+      "compact_other": "{{count}} d"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -353,26 +369,33 @@
       "trainingDayBadge": "+{{kcal}} kcal · training day",
       "cta": "+ Add a meal",
       "setGoal": "Set my goal",
-      "setGoalHint": "Set your calorie goal to track your daily meals."
+      "setGoalHint": "Set your calorie goal to track your daily meals.",
+      "compactRemaining": "{{kcal}} kcal left",
+      "compactConsumed": "{{kcal}} kcal",
+      "compactNoGoal": "No goal set"
     },
     "weight": {
       "title": "Body weight",
       "empty": "No weigh-in yet.",
       "addFirst": "Add my first weigh-in",
       "link": "View chart →",
-      "sub": "Latest weigh-in · 7-day trend"
+      "sub": "Latest weigh-in · 7-day trend",
+      "compactEmpty": "No weigh-in"
     },
     "record": {
       "title": "Recent record",
       "empty": "No record set yet.",
       "strength": "Strength",
       "running": "Running",
-      "link": "View records →"
+      "link": "View records →",
+      "compactEmpty": "None"
     },
     "volumeWeek": {
       "title": "Strength volume · week",
       "empty": "No session this week.",
-      "link": "Details →"
+      "link": "Details →",
+      "compactTotal": "{{kg}} kg",
+      "compactEmpty": "— kg"
     },
     "runningWeek": {
       "title": "Running · week",

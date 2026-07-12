@@ -18,8 +18,10 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { useNutritionSummary } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -39,7 +41,7 @@ function MacroChip({ label, value }: MacroChipProps) {
   );
 }
 
-export function NutritionSummaryCard() {
+export function NutritionSummaryCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -47,6 +49,27 @@ export function NutritionSummaryCard() {
     useNutritionSummary();
 
   if (isLoading) return null;
+
+  // ── Variante compacte (US 7.11) : kcal restantes (ou consommées) ────────────
+  if (size === 'compact') {
+    let value: string;
+    if (!hasProfile) {
+      value = t('home.nutrition.compactNoGoal');
+    } else if (effectiveTarget != null) {
+      value = t('home.nutrition.compactRemaining', {
+        kcal: Math.max(0, effectiveTarget - kcal),
+      });
+    } else {
+      value = t('home.nutrition.compactConsumed', { kcal });
+    }
+    return (
+      <DashboardCardCompact
+        icon="nutrition-outline"
+        title={t('home.nutrition.title')}
+        value={value}
+      />
+    );
+  }
 
   // ── État : profil non configuré ────────────────────────────────────────────
   if (!hasProfile) {

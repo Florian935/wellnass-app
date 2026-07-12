@@ -18,20 +18,39 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { MuscleGroup } from '@wellness/shared';
+import type { MuscleGroup, WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { MuscleVolumeBarChart } from '@/components/charts/MuscleVolumeBarChart';
 import { useMuscleVolumeThisWeek } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function MuscleVolumeCard() {
-  const { t } = useTranslation();
+export function MuscleVolumeCard({ size = 'full' }: { size?: WidgetSize }) {
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const { volumes, isLoading } = useMuscleVolumeThisWeek();
 
   if (isLoading) return null;
+
+  // ── Variante compacte (US 7.11) : total kg semaine (pas de conversion) ─────
+  if (size === 'compact') {
+    const total = volumes.reduce((sum, v) => sum + v.volume, 0);
+    return (
+      <DashboardCardCompact
+        icon="barbell-outline"
+        title={t('home.volumeWeek.title')}
+        value={
+          volumes.length === 0
+            ? t('home.volumeWeek.compactEmpty')
+            : t('home.volumeWeek.compactTotal', {
+                kg: new Intl.NumberFormat(i18n.language).format(Math.round(total)),
+              })
+        }
+      />
+    );
+  }
 
   // ── État : aucune séance cette semaine ─────────────────────────────────────
   if (volumes.length === 0) {

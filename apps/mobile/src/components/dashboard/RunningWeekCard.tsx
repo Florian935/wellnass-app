@@ -21,14 +21,16 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { useRunStats } from '@/data/repositories/run-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function RunningWeekCard() {
+export function RunningWeekCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -38,6 +40,26 @@ export function RunningWeekCard() {
   const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
 
   if (statsLoading || profileLoading) return null;
+
+  // ── Variante compacte (US 7.11) : distance + séances ───────────────────────
+  if (size === 'compact') {
+    const goal = runnerProfile?.weeklyFrequency ?? null;
+    const sessions =
+      goal != null
+        ? t('home.runningWeek.sessionsGoal', { count: stats.count, goal })
+        : t('home.runningWeek.sessions', { count: stats.count });
+    const value =
+      stats.count === 0
+        ? t('home.runningWeek.empty')
+        : `${units.formatDistance(stats.totalDistanceM / 1000)} · ${sessions}`;
+    return (
+      <DashboardCardCompact
+        icon="walk-outline"
+        title={t('home.runningWeek.title')}
+        value={value}
+      />
+    );
+  }
 
   // ── État : aucune course cette semaine ─────────────────────────────────────
   if (stats.count === 0) {

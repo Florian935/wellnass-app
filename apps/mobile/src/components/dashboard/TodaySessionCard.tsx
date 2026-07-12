@@ -16,14 +16,16 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { useNextSession } from '@/data/repositories/dashboard-repository';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function TodaySessionCard() {
+export function TodaySessionCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -31,6 +33,19 @@ export function TodaySessionCard() {
   const [starting, setStarting] = useState(false);
 
   if (next.isLoading) return null;
+
+  // ── Variante compacte (US 7.11) : titre + nom séance / état ─────────────────
+  if (size === 'compact') {
+    const value =
+      next.state === 'active-workout'
+        ? t('home.today.compactActive')
+        : next.state === 'has-session'
+          ? next.session.name
+          : t('home.today.compactNone');
+    return (
+      <DashboardCardCompact icon="calendar-outline" title={t('home.today.title')} value={value} />
+    );
+  }
 
   // ── État : séance en cours ──────────────────────────────────────────────────
   if (next.state === 'active-workout') {

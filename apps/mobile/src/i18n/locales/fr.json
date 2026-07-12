@@ -328,6 +328,18 @@
   "home": {
     "greeting": "Bonjour 👋",
     "greetingName": "Bonjour {{name}} 👋",
+    "customize": {
+      "edit": "Personnaliser",
+      "done": "Terminé",
+      "editHint": "Mode édition",
+      "hiddenBadge": "Masqué",
+      "show": "Afficher le widget",
+      "hide": "Masquer le widget",
+      "sizeCompact": "Passer en taille compacte",
+      "sizeFull": "Passer en taille normale",
+      "drag": "Déplacer le widget",
+      "empty": "Aucun widget affiché. Active des widgets en mode édition."
+    },
     "today": {
       "title": "Séance du jour",
       "empty": "Aucun programme actif. Crée-en un pour voir ta prochaine séance ici.",
@@ -337,14 +349,18 @@
       "exercises_other": "{{count}} exercices",
       "cta": "Démarrer la séance",
       "resume": "Reprendre la séance",
-      "createProgram": "Créer un programme"
+      "createProgram": "Créer un programme",
+      "compactActive": "En cours",
+      "compactNone": "Aucune"
     },
     "streak": {
       "title": "Régularité",
       "suffix_one": "jour d'affilée",
       "suffix_other": "jours d'affilée",
       "days": ["L", "M", "M", "J", "V", "S", "D"],
-      "empty": "Valide une activité aujourd'hui pour lancer ta série."
+      "empty": "Valide une activité aujourd'hui pour lancer ta série.",
+      "compact_one": "{{count}} j",
+      "compact_other": "{{count}} j"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -353,26 +369,33 @@
       "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
       "cta": "+ Ajouter un repas",
       "setGoal": "Définir mon objectif",
-      "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour."
+      "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour.",
+      "compactRemaining": "{{kcal}} kcal restantes",
+      "compactConsumed": "{{kcal}} kcal",
+      "compactNoGoal": "Objectif non défini"
     },
     "weight": {
       "title": "Poids corporel",
       "empty": "Aucune pesée enregistrée.",
       "addFirst": "Ajouter ma première pesée",
       "link": "Voir la courbe →",
-      "sub": "Dernière pesée · tendance 7 jours"
+      "sub": "Dernière pesée · tendance 7 jours",
+      "compactEmpty": "Aucune pesée"
     },
     "record": {
       "title": "Record récent",
       "empty": "Aucun record battu pour l'instant.",
       "strength": "Muscu",
       "running": "Course",
-      "link": "Voir les records →"
+      "link": "Voir les records →",
+      "compactEmpty": "Aucun"
     },
     "volumeWeek": {
       "title": "Volume muscu · semaine",
       "empty": "Aucune séance cette semaine.",
-      "link": "Détail →"
+      "link": "Détail →",
+      "compactTotal": "{{kg}} kg",
+      "compactEmpty": "— kg"
     },
     "runningWeek": {
       "title": "Course · semaine",

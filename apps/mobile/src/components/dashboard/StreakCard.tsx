@@ -11,17 +11,30 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
+import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
 import { useStreakData } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function StreakCard() {
+export function StreakCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { current, last7, isLoading } = useStreakData();
 
   if (isLoading) return null;
+
+  // ── Variante compacte (US 7.11) : « N j » ──────────────────────────────────
+  if (size === 'compact') {
+    return (
+      <DashboardCardCompact
+        icon="flame-outline"
+        title={t('home.streak.title')}
+        value={t('home.streak.compact', { count: current })}
+      />
+    );
+  }
 
   const weekDays = t('home.streak.days', { returnObjects: true }) as string[];
   const isEmpty = current === 0;
