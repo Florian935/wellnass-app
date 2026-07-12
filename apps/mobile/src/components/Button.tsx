@@ -5,7 +5,7 @@ import { useTheme } from '@/theme/useTheme';
 type ButtonProps = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'ghost';
+  variant?: 'primary' | 'ghost' | 'destructive';
   loading?: boolean;
   disabled?: boolean;
 };
@@ -19,7 +19,14 @@ export function Button({
 }: ButtonProps) {
   const { colors } = useTheme();
   const isPrimary = variant === 'primary';
+  const isDestructive = variant === 'destructive';
+  const isSolid = isPrimary || isDestructive;
   const isDisabled = disabled || loading;
+
+  // Couleurs selon la variante : plein (accent / danger) ou contour (ghost).
+  const solidColor = isDestructive ? colors.danger : colors.accent;
+  const spinnerColor = isSolid ? colors.accentText : colors.accent;
+  const labelColor = isSolid ? colors.accentText : colors.text;
 
   return (
     <Pressable
@@ -29,19 +36,16 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        isPrimary
-          ? { backgroundColor: colors.accent }
+        isSolid
+          ? { backgroundColor: solidColor }
           : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
         (pressed || isDisabled) && { opacity: isDisabled ? 0.5 : 0.85 },
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.accentText : colors.accent} />
+        <ActivityIndicator color={spinnerColor} />
       ) : (
-        <Text
-          numberOfLines={1}
-          style={[styles.label, { color: isPrimary ? colors.accentText : colors.text }]}
-        >
+        <Text numberOfLines={1} style={[styles.label, { color: labelColor }]}>
           {label}
         </Text>
       )}
