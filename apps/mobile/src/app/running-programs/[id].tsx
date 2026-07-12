@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   activateProgram,
+  deleteProgram,
   duplicateProgram,
   useProgramDetail,
   type SessionDetail,
@@ -40,6 +42,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
   const { runnerProfile } = useRunnerProfile();
   const [activating, setActivating] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const onActivate = async () => {
     if (activating || detail?.isActive) return;
@@ -64,6 +67,33 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
     } finally {
       setDuplicating(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await deleteProgram(programId);
+      router.replace('/running-programs');
+    } catch {
+      setDeleting(false);
+      Alert.alert(
+        t('running.program.deleteError'),
+        t('running.program.deleteErrorMessage'),
+      );
+    }
+  };
+
+  const onDelete = () => {
+    if (deleting) return;
+    Alert.alert(detail?.name ?? '', t('running.program.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('running.program.delete'),
+        style: 'destructive',
+        onPress: () => void handleDelete(),
+      },
+    ]);
   };
 
   const onEdit = () => {
@@ -185,6 +215,14 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
             onPress={() => void onDuplicate()}
             loading={duplicating}
             disabled={duplicating}
+          />
+
+          <Button
+            label={deleting ? t('running.program.deleting') : t('running.program.delete')}
+            variant="destructive"
+            onPress={onDelete}
+            loading={deleting}
+            disabled={deleting}
           />
         </View>
       </ScrollView>

@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   activateProgram,
+  deleteProgram,
   duplicateProgram,
   useProgramDetail,
   useMyPrograms,
@@ -51,6 +53,7 @@ function ProgramDetailView({ programId }: { programId: string }) {
 
   const [activating, setActivating] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [startingSessionId, setStartingSessionId] = useState<string | null>(null);
 
   // Un programme appartient à l'utilisateur s'il figure dans « Mes programmes ».
@@ -100,6 +103,33 @@ function ProgramDetailView({ programId }: { programId: string }) {
     } finally {
       setDuplicating(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await deleteProgram(programId);
+      router.replace('/programs');
+    } catch {
+      setDeleting(false);
+      Alert.alert(
+        t('programs.detail.deleteError'),
+        t('programs.detail.deleteErrorMessage'),
+      );
+    }
+  };
+
+  const onDelete = () => {
+    if (deleting) return;
+    Alert.alert(detail?.name ?? '', t('programs.detail.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('programs.detail.delete'),
+        style: 'destructive',
+        onPress: () => void handleDelete(),
+      },
+    ]);
   };
 
   // ── Loading ──────────────────────────────────────────────────────────────
@@ -219,6 +249,16 @@ function ProgramDetailView({ programId }: { programId: string }) {
               disabled={duplicating}
             />
           )}
+
+          {isOwned ? (
+            <Button
+              label={deleting ? t('programs.detail.deleting') : t('programs.detail.delete')}
+              variant="destructive"
+              onPress={onDelete}
+              loading={deleting}
+              disabled={deleting}
+            />
+          ) : null}
         </View>
       </ScrollView>
     </Screen>
