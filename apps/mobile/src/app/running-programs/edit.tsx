@@ -248,6 +248,34 @@ function RunningProgramComposer({ programId }: { programId: string }) {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Commit-on-change (offline-first) : enregistre à la frappe pour ne pas perdre
+  // la saisie si l'utilisateur tape « Terminé » sans faire perdre le focus au champ
+  // (l'onBlur ne se déclencherait pas). PowerSync coalesce les écritures locales.
+  // ---------------------------------------------------------------------------
+
+  const saveName = (v: string) => {
+    const trimmed = v.trim();
+    if (trimmed) void updateProgramTranslation(programId, { name: trimmed });
+  };
+
+  const saveSummary = (v: string) => {
+    const trimmed = v.trim();
+    void updateProgramTranslation(programId, { summary: trimmed === '' ? null : trimmed });
+  };
+
+  const saveDurationWeeks = (v: string) => {
+    const raw = v.trim();
+    if (raw === '') {
+      void updateProgram(programId, { durationWeeks: null });
+      return;
+    }
+    const parsed = Number(raw);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      void updateProgram(programId, { durationWeeks: parsed });
+    }
+  };
+
   if (isLoading && !detail) {
     return (
       <Screen edges={['top']} center>
@@ -274,7 +302,10 @@ function RunningProgramComposer({ programId }: { programId: string }) {
           <TextField
             label={t('running.program.name')}
             value={name ?? (detail?.name ?? '')}
-            onChangeText={setName}
+            onChangeText={(v) => {
+              setName(v);
+              saveName(v);
+            }}
             onBlur={commitName}
             autoCapitalize="sentences"
             placeholder={t('running.program.namePlaceholder')}
@@ -282,7 +313,10 @@ function RunningProgramComposer({ programId }: { programId: string }) {
           <TextField
             label={t('running.program.summary')}
             value={summary ?? (detail?.summary ?? '')}
-            onChangeText={setSummary}
+            onChangeText={(v) => {
+              setSummary(v);
+              saveSummary(v);
+            }}
             onBlur={commitSummary}
             autoCapitalize="sentences"
             placeholder={t('running.program.summaryPlaceholder')}
@@ -320,7 +354,10 @@ function RunningProgramComposer({ programId }: { programId: string }) {
           <TextField
             label={t('running.program.durationWeeks')}
             value={durationWeeks ?? (detail?.durationWeeks != null ? String(detail.durationWeeks) : '')}
-            onChangeText={setDurationWeeks}
+            onChangeText={(v) => {
+              setDurationWeeks(v);
+              saveDurationWeeks(v);
+            }}
             onBlur={commitDurationWeeks}
             keyboardType="number-pad"
             maxLength={3}
