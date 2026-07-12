@@ -104,6 +104,12 @@ En une passe, elle :
 ajoute les US au fur et à mesure qu'elles entrent dans le pipeline ; `/commit` coche ce qui
 vient d'être livré.
 
+### Idées — IDEAS.md
+[IDEAS.md](IDEAS.md) à la racine est la **boîte de dépôt** des idées brutes captées au fil de
+l'eau, **avant** tout cadrage. Ce n'est pas le pipeline : on y note vite, on relit
+régulièrement pour trier. Une idée retenue devient une US (spec → plan → design → validation)
+et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec la décision.
+
 ## Méthode de travail attendue
 
 - Suivre la [roadmap versionnée](docs/roadmap/roadmap.md) : livrer **par versions** (chaque fin de
@@ -117,6 +123,7 @@ vient d'être livré.
 
 ```
 /TODO.md                    → suivi vivant des tâches (coché par /commit)
+/IDEAS.md                   → boîte de dépôt des idées brutes à trier (avant cadrage en US)
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
 /design                     → maquettes par fonctionnalité (exportées de Claude Design)
