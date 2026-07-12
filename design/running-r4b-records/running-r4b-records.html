@@ -1,0 +1,139 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;--gold:#c9a96e;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r4l{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:920px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:66ch;margin:0;font-size:15px;}
+  .stage{max-width:920px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:390px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 4px;}
+  .sectlabel{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 4px 8px;}
+
+  /* records */
+  .reccard{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+  .rec{display:flex;align-items:center;gap:12px;padding:13px 14px;}
+  .rec + .rec{border-top:1px solid var(--border);}
+  .rec .badge{width:38px;height:38px;border-radius:11px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--accent);flex:none;font-family:var(--mono);}
+  .rec .body{flex:1;min-width:0;}
+  .rec .rd{font-weight:800;font-size:15px;}
+  .rec .rm{color:var(--muted);font-size:12px;}
+  .rec .rp{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;text-align:right;}
+  .rec .rp small{display:block;font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.03em;}
+  .rec.empty .rp{color:var(--muted);}
+  .rec.empty .rd{color:var(--muted);}
+  .chev{color:var(--muted);font-size:18px;}
+
+  /* celebration banner */
+  .cap{color:var(--muted);font-size:13px;padding:0 4px;margin:0 0 14px;}
+  .celebr{margin:0 4px 16px;border-radius:16px;padding:16px;background:linear-gradient(135deg,#6b0028 0%,#8a1a3f 100%);color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow);}
+  .celebr .spark{position:absolute;top:-8px;right:14px;font-size:34px;opacity:.9;}
+  .celebr h3{margin:0 0 4px;font-size:19px;font-weight:800;letter-spacing:-.01em;}
+  .celebr p{margin:0;font-size:14px;opacity:.94;}
+  .celebr .chips{display:flex;gap:6px;flex-wrap:wrap;margin:11px 0 0;}
+  .celebr .chip{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;}
+  .celebr .ref{margin:11px 0 0;font-size:12.5px;color:var(--gold);font-weight:700;display:flex;align-items:center;gap:6px;}
+
+  .summ-mini{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;margin:0 4px;}
+  .summ-mini .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+  .summ-mini .row .k{color:var(--muted);}
+  .summ-mini .row .v{font-weight:700;font-family:var(--mono);}
+
+  .notes{max-width:920px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r4l">
+  <header class="head">
+    <p class="eyebrow">Wellness · Running R4b · Maquette</p>
+    <h1 class="title">Records d'allure &amp; célébration</h1>
+    <p class="sub">Records personnels calculés depuis les traces GPS (meilleur segment glissant sur 1/5/10 km, semi, marathon), affichés en section de l'écran Historique, et célébrés in-app à la fin d'une course qui bat un record — avec mise à jour auto de l'allure de référence quand le 5 km tombe. Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- Écran 1 : section Records dans l'Historique -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Historique</span></div>
+      <p class="screen-title">Historique &amp; progression</p>
+      <p class="cap">… stats · courbe d'allure · courses …</p>
+
+      <p class="sectlabel">Records d'allure</p>
+      <div class="reccard">
+        <div class="rec">
+          <span class="badge">1 km</span>
+          <span class="body"><span class="rd">4:02</span><span class="rm">14/07/2026</span></span>
+          <span class="rp">4:02<small>/KM</small></span>
+          <span class="chev">›</span>
+        </div>
+        <div class="rec">
+          <span class="badge">5 km</span>
+          <span class="body"><span class="rd">4:18</span><span class="rm">02/07/2026</span></span>
+          <span class="rp">4:18<small>/KM</small></span>
+          <span class="chev">›</span>
+        </div>
+        <div class="rec">
+          <span class="badge">10 km</span>
+          <span class="body"><span class="rd">4:35</span><span class="rm">21/06/2026</span></span>
+          <span class="rp">4:35<small>/KM</small></span>
+          <span class="chev">›</span>
+        </div>
+        <div class="rec empty">
+          <span class="badge">Semi</span>
+          <span class="body"><span class="rd">Pas encore de record</span></span>
+          <span class="rp">—</span>
+        </div>
+        <div class="rec empty">
+          <span class="badge">Mara</span>
+          <span class="body"><span class="rd">Pas encore de record</span></span>
+          <span class="rp">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran 2 : résumé de course avec célébration -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Résumé</span></div>
+      <p class="screen-title">Course terminée</p>
+      <p class="cap">Résumé de la sortie</p>
+
+      <div class="celebr">
+        <span class="spark">🏅</span>
+        <h3>Nouveau record !</h3>
+        <p>Tu as battu ton record sur&nbsp;:</p>
+        <div class="chips"><span class="chip">1 km · 4:02</span><span class="chip">5 km · 4:18</span></div>
+        <p class="ref">★ Allure de référence mise à jour (5 km)</p>
+      </div>
+
+      <div class="summ-mini">
+        <div class="row"><span class="k">Distance</span><span class="v">12,4 km</span></div>
+        <div class="row"><span class="k">Durée</span><span class="v">57 min 12 s</span></div>
+        <div class="row"><span class="k">Allure moyenne</span><span class="v">4:37 /km</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Records</strong> = <strong>meilleur segment glissant</strong> au sein d'une même course (1/5/10 km, semi, marathon), calculé depuis la trace GPS (interpolation au franchissement, filtre d'outliers). <strong>Persistés</strong> dans <code>running_pace_records</code> (migration → 🔴 cloud).</li>
+      <li><strong>Section « Records »</strong> dans l'écran Historique : allure + date par distance, <strong>tap → détail de la course</strong> ; « — » si pas encore de record. <strong>Backfill</strong> de l'historique existant au 1ᵉʳ affichage si vide.</li>
+      <li><strong>Détection à la fin</strong> (courses GPS uniquement, idempotente) → <strong>célébration in-app</strong> (bandeau animé, aucun module natif). Rejouer le résumé ne re-célèbre pas.</li>
+      <li><strong>Maj auto de l'allure de référence</strong> quand le <strong>5 km</strong> est battu (5.31).</li>
+      <li><strong>Différés</strong> : notification poussée (infra dédiée, couvrira muscu), dénivelé (5.32), export GPX (5.33), découpage par type.</li>
+      <li><em>Polices : stand-ins système ici ; en app = Bricolage / Hanken / Space Mono. Bandeau : couleurs charte bordeaux + doré.</em></li>
+    </ul>
+  </section>
+</div>
