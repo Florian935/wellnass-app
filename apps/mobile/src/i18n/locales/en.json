@@ -361,6 +361,13 @@
       "addFirst": "Add my first weigh-in",
       "link": "View chart →",
       "sub": "Latest weigh-in · 7-day trend"
+    },
+    "record": {
+      "title": "Recent record",
+      "empty": "No record set yet.",
+      "strength": "Strength",
+      "running": "Running",
+      "link": "View records →"
     }
   },
   "onboarding": {

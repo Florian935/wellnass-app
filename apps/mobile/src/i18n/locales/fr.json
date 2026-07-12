@@ -361,6 +361,13 @@
       "addFirst": "Ajouter ma première pesée",
       "link": "Voir la courbe →",
       "sub": "Dernière pesée · tendance 7 jours"
+    },
+    "record": {
+      "title": "Record récent",
+      "empty": "Aucun record battu pour l'instant.",
+      "strength": "Muscu",
+      "running": "Course",
+      "link": "Voir les records →"
     }
   },
   "onboarding": {
