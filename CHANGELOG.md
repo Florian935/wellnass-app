@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix UI : écran Musculation non défilable + cartes collées
+
+Branche `fix/strength-scroll-spacing`.
+
+### Corrigé
+- L'onglet **Musculation** posait ses cartes directement dans `Screen` (hauteur fixe) **sans `ScrollView`
+  ni espacement** → impossible de défiler (carte « Progression » inatteignable) et cartes collées. Ajout d'un
+  `ScrollView` (pattern du dashboard `(tabs)/index.tsx`) avec `contentContainerStyle={{ gap: 14, paddingBottom: 24 }}`,
+  en-tête `ScreenHeader` conservé fixe. Fichier : `apps/mobile/src/app/(tabs)/strength.tsx`.
+
+### Technique / Notes
+- Le pilier Course (`(tabs)/running.tsx`) n'est pas concerné (2 cartes max, tient sans défilement).
+
 ## 12/07/2026 — Fix UI : sélecteur de niveau (création/édition de programme)
 
 Branche `fix/segment-niveau-muscu-wrap`.

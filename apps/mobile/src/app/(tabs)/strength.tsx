@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
@@ -33,6 +33,7 @@ export default function StrengthScreen() {
     <Screen edges={['top']}>
       <ScreenHeader title={t('pillars.strength')} subtitle={t('pillarScreens.strength.tagline')} />
 
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
       {active ? (
         <Card>
           <View style={styles.cardHeader}>
@@ -142,11 +143,13 @@ export default function StrengthScreen() {
           onPress={() => router.push('/progress')}
         />
       </Card>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: { gap: 14, paddingBottom: 24 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
