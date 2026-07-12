@@ -64,6 +64,11 @@ export default function RunningScreen() {
             variant="ghost"
             onPress={() => router.push('/running-programs')}
           />
+          <Button
+            label={t('running.planning.title')}
+            variant="ghost"
+            onPress={() => router.push('/running-planning')}
+          />
         </Card>
       ) : null}
     </Screen>

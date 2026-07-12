@@ -1,0 +1,451 @@
+import { useState } from 'react';
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import {
+  addDays,
+  isMissed,
+  localDayKey,
+  sessionTargetPace,
+  startOfWeek,
+  type ProgramSessionType,
+} from '@wellness/shared';
+import { Button } from '@/components/Button';
+import { EmptyState } from '@/components/EmptyState';
+import { Screen } from '@/components/Screen';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import {
+  markPlannedSessionDone,
+  reschedulePlannedSession,
+  skipPlannedSession,
+  useMissedSessions,
+  useWeekPlan,
+  type PlannedSessionItem,
+} from '@/data/repositories/planned-session-repository';
+import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { useUnits } from '@/hooks/useUnits';
+import { fontFamily } from '@/theme/fonts';
+import { useTheme } from '@/theme/useTheme';
+
+/** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
+const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+
+/** Construit une `Date` locale depuis une clé AAAA-MM-JJ (jamais `new Date('AAAA-MM-JJ')`). */
+function dateFromKey(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y!, m! - 1, d!);
+}
+
+/** Formate une clé AAAA-MM-JJ en JJ/MM/AAAA (affichage FR). */
+function formatDayKey(key: string): string {
+  const [y, m, d] = key.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+export default function RunningPlanningScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+
+  const [weekStart, setWeekStart] = useState<string>(() =>
+    localDayKey(startOfWeek(new Date())),
+  );
+  const [selected, setSelected] = useState<PlannedSessionItem | null>(null);
+
+  const { items } = useWeekPlan(weekStart);
+  const { items: missed } = useMissedSessions();
+  const { runnerProfile } = useRunnerProfile();
+
+  const todayKey = localDayKey(new Date());
+  const ref5kPaceSPerKm = runnerProfile?.ref5kPaceSPerKm ?? null;
+
+  const onPrevWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), -7)));
+  const onNextWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), 7)));
+
+  // Regroupe les séances de la semaine par date planifiée.
+  const byDate: Record<string, PlannedSessionItem[]> = {};
+  for (const item of items) {
+    (byDate[item.scheduledDate] ??= []).push(item);
+  }
+
+  const weekStartDate = dateFromKey(weekStart);
+  const isEmpty = items.length === 0 && missed.length === 0;
+
+  const closeSheet = () => setSelected(null);
+
+  const onReschedule = async (target: string) => {
+    if (!selected) return;
+    const id = selected.id;
+    closeSheet();
+    try {
+      await reschedulePlannedSession(id, target);
+    } catch {
+      // Écriture offline-first optimiste.
+    }
+  };
+
+  const onSkip = async () => {
+    if (!selected) return;
+    const id = selected.id;
+    closeSheet();
+    try {
+      await skipPlannedSession(id);
+    } catch {
+      // Écriture offline-first optimiste.
+    }
+  };
+
+  const onMarkDone = async () => {
+    if (!selected) return;
+    const id = selected.id;
+    closeSheet();
+    try {
+      await markPlannedSessionDone(id);
+    } catch {
+      // Écriture offline-first optimiste.
+    }
+  };
+
+  return (
+    <Screen edges={['top']}>
+      <ScreenHeader title={t('running.planning.title')} />
+
+      {/* Sélecteur de semaine */}
+      <View style={styles.weekSelector}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('running.planning.prevWeek')}
+          onPress={onPrevWeek}
+          hitSlop={8}
+          style={[styles.weekArrow, { borderColor: colors.border }]}
+        >
+          <Text style={[styles.weekArrowText, { color: colors.text }]}>◀</Text>
+        </Pressable>
+        <Text style={[styles.weekLabel, { color: colors.text }]}>
+          {t('running.planning.weekOf', { date: formatDayKey(weekStart) })}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('running.planning.nextWeek')}
+          onPress={onNextWeek}
+          hitSlop={8}
+          style={[styles.weekArrow, { borderColor: colors.border }]}
+        >
+          <Text style={[styles.weekArrowText, { color: colors.text }]}>▶</Text>
+        </Pressable>
+      </View>
+
+      {isEmpty ? (
+        <EmptyState
+          icon="calendar-outline"
+          title={t('running.planning.title')}
+          message={t('running.planning.empty')}
+        />
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Bannière séances manquées */}
+          {missed.length > 0 ? (
+            <View
+              style={[
+                styles.missedBanner,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <Text style={[styles.missedTitle, { color: colors.text }]}>
+                {t('running.planning.missedTitle')}
+              </Text>
+              <Text style={[styles.missedCount, { color: colors.textMuted }]}>
+                {t('running.planning.missedCount', { count: missed.length })}
+              </Text>
+              <View style={styles.missedList}>
+                {missed.map((item) => (
+                  <PlannedSessionRow
+                    key={item.id}
+                    item={item}
+                    todayKey={todayKey}
+                    ref5kPaceSPerKm={ref5kPaceSPerKm}
+                    units={units}
+                    showDate
+                    onPress={() => setSelected(item)}
+                  />
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {/* 7 cartes de jour (lun → dim) */}
+          {WEEKDAY_KEYS.map((key, i) => {
+            const dayKey = localDayKey(addDays(weekStartDate, i));
+            const dayItems = byDate[dayKey] ?? [];
+            const isToday = dayKey === todayKey;
+            return (
+              <View
+                key={key}
+                style={[
+                  styles.dayCard,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: isToday ? colors.accent : colors.border,
+                    borderWidth: isToday ? 2 : 1,
+                  },
+                ]}
+              >
+                <Text style={[styles.dayHeader, { color: colors.text }]}>
+                  {t(`common.weekday.${key}`)} · {formatDayKey(dayKey)}
+                </Text>
+                {dayItems.length === 0 ? (
+                  <Text style={[styles.restDay, { color: colors.textMuted }]}>
+                    {t('running.planning.restDay')}
+                  </Text>
+                ) : (
+                  <View style={styles.dayItems}>
+                    {dayItems.map((item) => (
+                      <PlannedSessionRow
+                        key={item.id}
+                        item={item}
+                        todayKey={todayKey}
+                        ref5kPaceSPerKm={ref5kPaceSPerKm}
+                        units={units}
+                        onPress={() => setSelected(item)}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {/* Feuille d'actions sur une séance */}
+      <Modal
+        visible={selected !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeSheet}
+      >
+        <Pressable style={styles.backdrop} onPress={closeSheet}>
+          <Pressable
+            style={[styles.sheet, { backgroundColor: colors.background }]}
+            onPress={() => undefined}
+          >
+            <Button label={t('running.planning.markDone')} onPress={() => void onMarkDone()} />
+            <Text style={[styles.sheetSection, { color: colors.textMuted }]}>
+              {t('running.planning.reschedule')}
+            </Text>
+            <Button
+              label={t('running.planning.rescheduleToday')}
+              variant="ghost"
+              onPress={() => void onReschedule(todayKey)}
+            />
+            <Button
+              label={t('running.planning.rescheduleTomorrow')}
+              variant="ghost"
+              onPress={() => void onReschedule(localDayKey(addDays(new Date(), 1)))}
+            />
+            <Button
+              label={t('running.planning.reschedulePlus7')}
+              variant="ghost"
+              onPress={() => void onReschedule(localDayKey(addDays(new Date(), 7)))}
+            />
+            <Button
+              label={t('running.planning.skip')}
+              variant="ghost"
+              onPress={() => void onSkip()}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </Screen>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Ligne de séance planifiée (badge de statut + type + cible + allure)
+// ---------------------------------------------------------------------------
+
+type PlannedSessionRowProps = {
+  item: PlannedSessionItem;
+  todayKey: string;
+  ref5kPaceSPerKm: number | null;
+  units: ReturnType<typeof useUnits>;
+  onPress: () => void;
+  /** Affiche la date de la séance (bannière « manquées », hors carte de jour). */
+  showDate?: boolean;
+};
+
+function PlannedSessionRow({
+  item,
+  todayKey,
+  ref5kPaceSPerKm,
+  units,
+  onPress,
+  showDate = false,
+}: PlannedSessionRowProps) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const sessionType = item.sessionType as ProgramSessionType | null;
+  const typeLabel = sessionType ? t(`running.sessionType.${sessionType}`) : item.sessionName;
+
+  let targetLabel: string | null = null;
+  if (item.targetDistanceM != null && item.targetDistanceM > 0) {
+    targetLabel = units.formatDistance(item.targetDistanceM / 1000);
+  } else if (item.targetDurationSeconds != null && item.targetDurationSeconds > 0) {
+    targetLabel = `${Math.round(item.targetDurationSeconds / 60)} min`;
+  }
+
+  let paceLabel: string | null = null;
+  if (sessionType) {
+    if (ref5kPaceSPerKm == null) {
+      paceLabel = t('running.planning.noProfileHint');
+    } else {
+      const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
+      if (range) {
+        paceLabel = `${units.formatPace(range.minSPerKm)} – ${units.formatPace(range.maxSPerKm)}`;
+      }
+    }
+  }
+
+  // Statut affiché : manqué (calculé), fait, sauté.
+  let statusLabel: string | null = null;
+  if (isMissed(item.scheduledDate, item.status, todayKey)) {
+    statusLabel = t('running.planning.statusMissed');
+  } else if (item.status === 'done') {
+    statusLabel = t('running.planning.statusDone');
+  } else if (item.status === 'skipped') {
+    statusLabel = t('running.planning.statusSkipped');
+  }
+
+  const dimmed = item.status === 'done' || item.status === 'skipped';
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={typeLabel ?? undefined}
+      onPress={onPress}
+      style={[
+        styles.row,
+        { backgroundColor: colors.background, borderColor: colors.border },
+        dimmed && styles.rowDimmed,
+      ]}
+    >
+      <View style={styles.rowText}>
+        <Text
+          style={[
+            styles.rowTitle,
+            { color: colors.text },
+            item.status === 'skipped' && styles.strike,
+          ]}
+        >
+          {typeLabel}
+        </Text>
+        {showDate ? (
+          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>
+            {formatDayKey(item.scheduledDate)}
+          </Text>
+        ) : null}
+        {targetLabel ? (
+          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{targetLabel}</Text>
+        ) : null}
+        {paceLabel ? (
+          <Text style={[styles.rowPace, { color: colors.textMuted }]}>{paceLabel}</Text>
+        ) : null}
+      </View>
+      {statusLabel ? (
+        <View style={[styles.statusBadge, { borderColor: colors.border }]}>
+          <Text style={[styles.statusText, { color: colors.textMuted }]}>{statusLabel}</Text>
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { paddingBottom: 32, gap: 12 },
+  weekSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 16,
+  },
+  weekArrow: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekArrowText: { fontFamily: fontFamily.bodyBold, fontSize: 16 },
+  weekLabel: { flex: 1, textAlign: 'center', fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  missedBanner: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    gap: 6,
+  },
+  missedTitle: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  missedCount: { fontFamily: fontFamily.body, fontSize: 13 },
+  missedList: { gap: 8, marginTop: 6 },
+  dayCard: {
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+  },
+  dayHeader: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  restDay: { fontFamily: fontFamily.body, fontSize: 13 },
+  dayItems: { gap: 8 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  rowDimmed: { opacity: 0.55 },
+  rowText: { flex: 1, gap: 2 },
+  rowTitle: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  strike: { textDecorationLine: 'line-through' },
+  rowMeta: { fontFamily: fontFamily.body, fontSize: 12 },
+  rowPace: { fontFamily: fontFamily.mono, fontSize: 12 },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  statusText: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 32,
+    gap: 10,
+  },
+  sheetSection: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 6,
+  },
+});

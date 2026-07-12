@@ -288,6 +288,12 @@ function RootNavigator() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="running-planning"
+          options={{
+            headerShown: false,
+          }}
+        />
         <Stack.Screen name="history" options={{ headerShown: false }} />
         <Stack.Screen name="run" options={{ headerShown: false }} />
         <Stack.Screen name="progress" options={{ headerShown: false }} />

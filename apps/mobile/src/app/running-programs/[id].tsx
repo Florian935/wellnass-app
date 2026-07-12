@@ -70,6 +70,10 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
     router.push(`/running-programs/edit?id=${programId}`);
   };
 
+  const onPlan = () => {
+    router.push(`/running-programs/plan?id=${programId}`);
+  };
+
   if (isLoading && !detail) {
     return (
       <Screen edges={['top']} center>
@@ -162,6 +166,12 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
               loading={activating}
             />
           )}
+
+          <Button
+            label={t('running.planning.planCta')}
+            variant="ghost"
+            onPress={onPlan}
+          />
 
           <Button
             label={t('running.program.edit')}
