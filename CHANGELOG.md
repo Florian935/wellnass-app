@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Fix : précision GPS & records d'allure (marche/course lente)
+
+Correctif du bug device : une marche de 1,01 km ne produisait **aucun record** (section
+« Records d'allure » à « — », pas de badge 1 km) et la carte affichait un point aberrant à (0,0).
+Diagnostic complet : [docs/specs/technical/fix-running-gps-precision-records.md](docs/specs/technical/fix-running-gps-precision-records.md).
+Branche `fix/running-gps-precision-records`.
+
+### Corrigé
+- **Volet C (cause dominante) — précision d'encodage de trace `1e-5` → `1e-6`** (`packages/shared/src/running.ts`).
+  La maille `1e-5` (~1,1 m) écrasait les pas d'une marche lente (~0,7 m) → la trace **décodée**
+  sous-comptait la distance (< 1 km) alors que le tracker live cumulait ~1,01 km → aucun record.
+  Passage à `1e-6` (~0,11 m) : trace décodée fidèle, record 1 km posé.
+- **Volet A — filtre des fixes GPS invalides à l'ingestion** (helper pur `isValidFix` dans shared,
+  câblé dans `apps/mobile/src/running/tracker-task.ts`). Rejette (0,0) « null island », coordonnées
+  hors bornes, coords non finies, et `accuracy > 50 m`. Un fix rejeté n'entre ni dans la trace, ni
+  dans le cumul distance/durée, ni comme `lastPoint`.
+- **Volet B — auto-pause moins sensible au mouvement lent réel.** Seuil abaissé `0,5 → 0,3 m/s`
+  **et** comparaison sur la **vitesse lissée** (moyenne sur fenêtre `AUTO_PAUSE_WINDOW_S = 10 s`,
+  helper pur `smoothedSpeedMs`) au lieu de la vitesse instantanée bruitée. Une marche lente réelle
+  ne déclenche plus de fausse pause ; un arrêt réel prolongé reste détecté ; auto-reprise conservée.
+
+### Technique / Notes
+- **Compat ascendante** (Volet C) : marqueur de version **par segment** — un segment hérité (v0,
+  `1e-5`, sans marqueur) et un nouveau segment (v1, `1e-6`, préfixe `#1#`) coexistent dans la même
+  trace et se décodent chacun à leur précision. Séparateur coords/temps `,` pour v1 (hors domaine
+  polyline, car à `1e-6` le caractère `|` peut apparaître dans un chunk). **Aucune migration DB.**
+- `distance_m` d'affichage **inchangé** (reste le cumul live pleine précision).
+- Tests : test de reproduction (`fix-running-gps-precision-records.test.ts`, rouge avant / vert
+  après) + tests unitaires `isValidFix`, `smoothedSpeedMs`, round-trip `1e-6`, décodage hérité `1e-5`
+  et trace mixte. typecheck/lint/tests verts (shared 478 + mobile 29). **Rebuild preview requis**
+  pour recette device (badge 1 km attendu).
+
 ## 12/07/2026 — US 3.9 : planning muscu daté + calendrier unifié (coordination muscu↔running)
 
 _Branche : `feature/us3.9-planning-unifie`. Cadrage complet (spec+plan+maquette validés) puis code subagent-driven (revues par phase + finale = **Ready to merge**). **Généralise** l'infra de planification R3c-i (pilier-agnostique) : livre le planning muscu **et** l'essentiel de la coordination 5.6. **100 % JS — aucune migration, aucun cloud, aucune dépendance native** (`planned_sessions` déjà déployée)._

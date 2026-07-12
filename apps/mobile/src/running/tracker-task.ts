@@ -38,6 +38,8 @@ import {
   MAX_PLAUSIBLE_SPEED_MS,
   encodeSegment,
   haversineMeters,
+  isValidFix,
+  smoothedSpeedMs,
   type GpsPoint,
 } from '@wellness/shared';
 import * as TaskManager from 'expo-task-manager';
@@ -48,13 +50,25 @@ import { flushTrack } from '@/data/repositories/run-repository';
 export const RUN_TASK = 'run-location-task';
 
 /**
- * Seuil de vitesse (m/s) sous lequel l'auto-pause peut se déclencher.
- * ~0,5 m/s ≈ 1,8 km/h : en dessous, on considère l'utilisateur à l'arrêt.
+ * Seuil de vitesse LISSÉE (m/s) sous lequel l'auto-pause peut se déclencher.
+ *
+ * Abaissé de 0,5 à 0,3 m/s (~1,1 km/h) — Volet B : 0,5 m/s coupait une marche
+ * lente réelle (~0,72 m/s) dont le bruit GPS plonge sous le seuil. 0,3 m/s
+ * réserve l'auto-pause au quasi-arrêt. La vitesse comparée n'est PLUS la vitesse
+ * instantanée point-à-point (bruitée) mais la vitesse moyenne sur une fenêtre
+ * (`AUTO_PAUSE_WINDOW_S`), calculée par `smoothedSpeedMs` (@wellness/shared).
  */
-export const AUTO_PAUSE_SPEED_MS = 0.5;
+export const AUTO_PAUSE_SPEED_MS = 0.3;
 
 /** Durée (s) de vitesse basse continue avant déclenchement de l'auto-pause. */
 export const AUTO_PAUSE_DELAY_S = 8;
+
+/**
+ * Fenêtre (s) de lissage de la vitesse pour l'auto-pause. Moyenner sur ~10 s
+ * absorbe les creux instantanés de bruit GPS sans retarder la détection d'un
+ * arrêt réel (arrêt → moyenne tend vers 0 en quelques secondes).
+ */
+export const AUTO_PAUSE_WINDOW_S = 10;
 
 /**
  * État mutable de la course en cours, partagé entre `tracker.ts` (contrôle) et la
@@ -84,6 +98,12 @@ export interface TrackerState {
    * durée sous le seuil pour déclencher l'auto-pause.
    */
   lowSpeedSinceT: number | null;
+  /**
+   * Fenêtre glissante des derniers points GPS retenus (bornée à
+   * `AUTO_PAUSE_WINDOW_S`), pour calculer la vitesse LISSÉE de l'auto-pause
+   * (Volet B). Évite la sensibilité au bruit de la vitesse instantanée.
+   */
+  recentPoints: GpsPoint[];
 }
 
 /** Valeurs par défaut d'un état « aucun suivi ». */
@@ -98,6 +118,7 @@ export function initialTrackerState(): TrackerState {
     paused: false,
     autoPause: true,
     lowSpeedSinceT: null,
+    recentPoints: [],
   };
 }
 
@@ -166,17 +187,38 @@ export function setLastFlushPromise(p: Promise<void>): void {
 }
 
 /**
- * Convertit un lot de positions natives en points GPS relatifs à la course.
+ * Convertit un lot de positions natives en points GPS relatifs à la course,
+ * en ÉCARTANT les fixes invalides (Volet A : null island (0,0), hors bornes,
+ * précision dégradée > seuil). Le filtre `isValidFix` (pur, dans `@wellness/shared`)
+ * est la source de vérité ; ici on ne fait qu'adapter le `LocationObject` d'Expo
+ * (`coords.accuracy` peut être `null`).
+ *
  * `t` = (timestamp position − epoch départ) / 1000, en secondes (peut être
  * fractionnaire ; les entiers ne sont requis que pour l'encodage temporel, géré
  * par `encodeSegment`).
+ *
+ * Un fix rejeté n'entre pas dans le résultat : il n'est donc ni encodé, ni
+ * cumulé (distance/durée), ni retenu comme `lastPoint` par `handleLocationBatch`.
  */
 function toGpsPoints(locations: LocationObject[], startedAtMs: number): GpsPoint[] {
-  return locations.map((loc) => ({
-    lat: loc.coords.latitude,
-    lng: loc.coords.longitude,
-    t: (loc.timestamp - startedAtMs) / 1000,
-  }));
+  const points: GpsPoint[] = [];
+  for (const loc of locations) {
+    if (
+      !isValidFix({
+        lat: loc.coords.latitude,
+        lng: loc.coords.longitude,
+        accuracy: loc.coords.accuracy,
+      })
+    ) {
+      continue; // fix invalide : écarté à l'ingestion.
+    }
+    points.push({
+      lat: loc.coords.latitude,
+      lng: loc.coords.longitude,
+      t: (loc.timestamp - startedAtMs) / 1000,
+    });
+  }
+  return points;
 }
 
 /**
@@ -248,31 +290,40 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
 }
 
 /**
- * Met à jour l'état d'auto-pause d'après un nouveau point.
+ * Met à jour l'état d'auto-pause d'après un nouveau point (Volet B).
  *
- * Vitesse basse continue pendant `AUTO_PAUSE_DELAY_S` → passe en pause.
- * Reprise dès qu'une vitesse au-dessus du seuil est observée.
+ * La décision s'appuie sur la vitesse LISSÉE (`smoothedSpeedMs`) sur la fenêtre
+ * `AUTO_PAUSE_WINDOW_S`, et non sur la vitesse instantanée point-à-point (trop
+ * bruitée : une marche lente réelle plonge régulièrement sous le seuil sans être
+ * à l'arrêt). Le point courant est ajouté à la fenêtre glissante bornée.
+ *
+ * Vitesse lissée basse en continu pendant `AUTO_PAUSE_DELAY_S` → passe en pause.
+ * Reprise dès que la vitesse lissée repasse au-dessus du seuil (auto-reprise).
  */
 function evaluateAutoPause(p: GpsPoint): void {
   const s = trackerState;
-  if (s.lastPoint === null || s.lastPointT === null) {
-    return; // premier point : pas de vitesse mesurable.
+
+  // Ajouter le point à la fenêtre glissante et purger ce qui sort de la fenêtre.
+  s.recentPoints.push(p);
+  const windowStart = p.t - AUTO_PAUSE_WINDOW_S;
+  while (s.recentPoints.length > 0 && s.recentPoints[0]!.t < windowStart) {
+    s.recentPoints.shift();
   }
-  const dt = p.t - s.lastPointT;
-  if (dt <= 0) {
-    return;
+
+  const speed = smoothedSpeedMs(s.recentPoints, AUTO_PAUSE_WINDOW_S);
+  if (speed === null) {
+    return; // fenêtre insuffisante : pas de décision.
   }
-  const speed = haversineMeters(s.lastPoint, p) / dt;
 
   if (speed < AUTO_PAUSE_SPEED_MS) {
     // Sous le seuil : démarrer/poursuivre la fenêtre de vitesse basse.
     if (s.lowSpeedSinceT === null) {
-      s.lowSpeedSinceT = s.lastPointT;
+      s.lowSpeedSinceT = p.t;
     } else if (!s.paused && p.t - s.lowSpeedSinceT >= AUTO_PAUSE_DELAY_S) {
       setPaused(true);
     }
   } else {
-    // Vitesse revenue au-dessus du seuil : réinitialise et reprend si auto-pausé.
+    // Vitesse lissée revenue au-dessus du seuil : réinitialise, reprend si auto-pausé.
     s.lowSpeedSinceT = null;
     if (s.paused) {
       setPaused(false);
