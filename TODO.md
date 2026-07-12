@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 12/07/2026 (Running R3c-i planning daté + séance manquée : code livré & revu → reste checkpoint 🔴 cloud+device après R3a+R3b-i · 5.6 coordination différée faute de planning muscu daté)*
+*Dernière mise à jour : 12/07/2026 (Running R4a historique + stats + courbe d'allure : code livré, revu & intégré dev — lecture seule, aucun rebuild · R4b records + export GPX + dénivelé différés)*
 
 ---
 
@@ -132,7 +132,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   - [~] **R3c — Planning + coordination muscu/running + séance manquée** (5.5, 5.6, 5.7) — **découpé en R3c-i / (5.6 différée)** :
     - [~] **R3c-i — Planning daté + séance manquée** (5.5, 5.7) — **code livré & revu** (`feature/running-r3c1-planning`). Première **couche de planification datée** : table générique **`planned_sessions`** (migration `20260712110000` + RLS `owner_id` + sync rule `user_data` + schéma PowerSync) ; logique partagée testée (`generatePlannedSessions` semaine type 0=lundi + `isMissed` + helpers `date.ts`, validation Zod) ; `planned-session-repository` (`planRunningProgram` transactionnel idempotent + activation inlinée, `useWeekPlan`, `useMissedSessions`, reporter/sauter/fait ; `txInsert` extrait dans `_sql`) ; écrans **assistant Planifier** (durée + date de début + semaine type) + **vue semaine 7 jours** (allures via profil R3a, séances manquées, actions) ; i18n `running.planning.*` + `common.weekday.*`. Sélection de date en **JS pur** (pas de dépendance native). Cadrage complet (spec→plan→maquette), revues par phase (spec+qualité) + finale (*Ready to merge*). typecheck/lint/tests verts (shared 423 + mobile 29), parité 659/659, muscu non régressé. **Reste 🔴 (après R3a+R3b-i, avec Damien)** : appliquer la migration cloud + déployer sync rule + `npm run db:types` + vérif device.
     - [ ] **5.6 — Coordination muscu ↔ running** (alerte 2 séances le même jour) — **différée** : dépend d'un **planning muscu daté** (US muscu 3.9, non construit). La table `planned_sessions` pilier-aware la prépare.
-- [ ] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33).
+- [~] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33) — **découpé R4a / R4b / (GPX + dénivelé différés)** :
+  - [x] **R4a — Historique + stats + courbe d'allure** (5.28, 5.29, 6.1) — **code livré & revu, intégré `dev`** (`feature/running-r4a-historique-stats`). Écran « Historique & progression » : stats (semaine/mois/début), courbe d'allure globale 30/90 j + tendance, liste chronologique → détail. Logique partagée testée (`run-stats.ts`, +`formatDurationHms`) + hooks lecture (`useRunStats`/`usePaceTrend`, `useRunHistory` inchangé). Lecture seule : **aucune migration, aucun rebuild**. Cadrage complet, revues par phase (spec+qualité) + finale (*Ready to merge*). typecheck/lint/tests verts (shared 436 + mobile 29), parité 678/678. _Pas de checkpoint 🔴 (lecture seule)._
+  - [ ] **R4b — Records d'allure (segment glissant) + maj auto allure de réf** (5.30, 5.31).
+  - [ ] **Export GPX** (5.33) — incrément dédié (nécessite `expo-sharing` + `expo-file-system` → nouveau build).
+  - [ ] **Dénivelé cumulé** (5.32) — **différé** : aucune altitude captée (`GpsPoint = {lat,lng,t}`) ; nécessite de modifier le tracker (R1) + étendre `GpsPoint`/le codec + un build.
+  - [ ] **Découpage par type de séance** (stats/courbe par type) — différé : les courses libres n'ont pas de `session_type`.
 
 ---
 
