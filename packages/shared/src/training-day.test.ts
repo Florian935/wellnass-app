@@ -41,4 +41,10 @@ describe('isTrainingDay', () => {
       isTrainingDay({ retroactiveDone: false, hasPlanned: false, dayKey: YESTERDAY, todayKey: TODAY }),
     ).toBe(false);
   });
+
+  it('rétroactif ET planifié (les deux signaux vrais) -> vrai', () => {
+    expect(
+      isTrainingDay({ retroactiveDone: true, hasPlanned: true, dayKey: TODAY, todayKey: TODAY }),
+    ).toBe(true);
+  });
 });

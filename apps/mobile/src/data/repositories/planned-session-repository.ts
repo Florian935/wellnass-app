@@ -239,7 +239,7 @@ export function useHasPlannedSession(dayKey: string): {
     userId,
     dayKey,
   ]);
-  return { hasPlanned: (data?.length ?? 0) > 0, isLoading };
+  return { hasPlanned: data.length > 0, isLoading };
 }
 
 // ---------------------------------------------------------------------------
