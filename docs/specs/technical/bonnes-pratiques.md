@@ -51,6 +51,7 @@ Pyramide de tests, du plus au moins nombreux :
 - **Toute écriture passe par un repository** — pas de SQL dans les composants ni les hooks d'écran. Le repository écrit dans le SQLite local géré par PowerSync ; la synchro est transparente.
 - **Migrations versionnées** (numérotées, immuables une fois mergées) côté Postgres, cohérentes avec le schéma local répliqué.
 - **Sync rules par utilisateur** (un bucket par `user_id`) ; contenu global (exercices/programmes/aliments) répliqué en lecture seule — voir [offline-sync.md](./offline-sync.md) §3.
+- **Éviter les CHECK constraints multi-colonnes qui dépendent d'un état complet** : en offline-first, l'édition est incrémentale et optimiste ; une contrainte du type « si A alors B non nul » rejette les écritures intermédiaires côté serveur et **bloque la file de synchro PowerSync**. Valider ces invariants **côté app** (formulaire) et non par une CHECK SQL bloquante. Cf. `sessions_running_target_chk` retirée (20260712130000).
 
 ## 6. Sécurité
 
