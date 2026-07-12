@@ -880,6 +880,27 @@
       "generatedCount_other": "Planifier · {{count}} séances",
       "planErrorTitle": "Échec de la planification",
       "planErrorMessage": "La planification a échoué. Réessaie."
+    },
+    "history": {
+      "title": "Historique & progression",
+      "empty": "Aucune course enregistrée.",
+      "statsTitle": "Statistiques",
+      "period": "Période",
+      "week": "Semaine",
+      "month": "Mois",
+      "all": "Depuis le début",
+      "totalDistance": "Distance totale",
+      "totalTime": "Temps total",
+      "runCount": "Courses",
+      "paceTitle": "Allure moyenne",
+      "paceUnit": "min/{{unit}}",
+      "paceEmpty": "Pas assez de données pour tracer une courbe d'allure.",
+      "days30": "30 j",
+      "days90": "90 j",
+      "trend": "Tendance",
+      "trendImproving": "En progrès",
+      "trendDeclining": "En baisse",
+      "trendStable": "Stable"
     }
   }
 }

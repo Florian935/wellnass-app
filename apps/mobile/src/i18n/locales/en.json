@@ -880,6 +880,27 @@
       "generatedCount_other": "Plan · {{count}} sessions",
       "planErrorTitle": "Planning failed",
       "planErrorMessage": "Planning failed. Please try again."
+    },
+    "history": {
+      "title": "History & progress",
+      "empty": "No run recorded yet.",
+      "statsTitle": "Statistics",
+      "period": "Period",
+      "week": "Week",
+      "month": "Month",
+      "all": "All time",
+      "totalDistance": "Total distance",
+      "totalTime": "Total time",
+      "runCount": "Runs",
+      "paceTitle": "Average pace",
+      "paceUnit": "min/{{unit}}",
+      "paceEmpty": "Not enough data to plot a pace curve.",
+      "days30": "30 d",
+      "days90": "90 d",
+      "trend": "Trend",
+      "trendImproving": "Improving",
+      "trendDeclining": "Declining",
+      "trendStable": "Stable"
     }
   }
 }
