@@ -46,30 +46,30 @@ export function Segment<T extends string>({
     );
   });
 
-  const containerStyle = [
-    styles.segment,
-    { backgroundColor: colors.surface, borderColor: colors.border },
-  ];
+  const surface = { backgroundColor: colors.surface, borderColor: colors.border };
 
   if (scrollable) {
+    // La disposition (ligne + gap + padding) vient de `contentContainerStyle` ;
+    // le `style` du ScrollView ne porte que le cadre (bordure/rayon/fond).
     return (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        style={containerStyle}
+        style={[styles.viewport, surface]}
       >
         {items}
       </ScrollView>
     );
   }
 
-  return <View style={containerStyle}>{items}</View>;
+  return <View style={[styles.segment, surface]}>{items}</View>;
 }
 
 const styles = StyleSheet.create({
   segment: { flexDirection: 'row', borderRadius: 16, borderWidth: 1, padding: 4, gap: 4 },
-  scrollContent: { gap: 4 },
+  viewport: { borderRadius: 16, borderWidth: 1 },
+  scrollContent: { flexDirection: 'row', padding: 4, gap: 4 },
   item: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
   itemScrollable: {
     paddingVertical: 10,

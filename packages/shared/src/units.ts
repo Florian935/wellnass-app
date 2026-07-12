@@ -143,3 +143,52 @@ export function parsePaceToSPerKm(text: string, system: UnitSystem): number | nu
 export function formatPaceValue(sPerKm: number, system: UnitSystem): string {
   return formatPaceMMSS(paceToSystem(sPerKm, system), '');
 }
+
+/** Élargissement de bande (secondes) quand toutes les valeurs d'allure sont égales. */
+const PACE_AXIS_FLAT_PAD_S = 30;
+
+/**
+ * Échelle d'un axe Y d'allure, cohérente avec ses libellés.
+ *
+ * `react-native-gifted-charts` trace toujours les points sur SA propre échelle
+ * (`0 → maxValue`, chaque valeur diminuée de `yAxisOffset`). Fournir seulement
+ * `yAxisLabelTexts` ne fait que remplacer le TEXTE des graduations sans bouger
+ * l'échelle → labels et points désalignés. Ce helper calcule conjointement l'échelle
+ * ET les libellés pour que le point d'allure X tombe pile sur son libellé.
+ *
+ * Retour :
+ *  - `maxValue`    = plage utile (`max - min`) : haut de l'axe une fois l'offset appliqué.
+ *  - `yAxisOffset` = `min` : la lib soustrait cette valeur à chaque point (bas de l'axe = min).
+ *  - `stepValue`   = `(max - min) / sections` : hauteur d'une graduation.
+ *  - `labels`      = `sections + 1` libellés, **ordre bas→haut** (index 0 = min ; la lib
+ *                    mappe `labels[sections - i]` sur la i-ème section tracée du haut).
+ *
+ * Cas `min === max` (une seule course ou valeurs égales) : bande élargie de ±30 s pour
+ * éviter `stepValue = 0` et des graduations identiques, courbe centrée. Jamais de division
+ * par zéro. L'orientation n'est pas inversée (secondes basses en bas → point bas = plus
+ * rapide = « ligne descendante = progrès »).
+ *
+ * @param values   valeurs d'allure (secondes par unité) des points tracés.
+ * @param sections nombre de sections de l'axe (= `noOfSections` passé au LineChart).
+ * @param format   formateur d'un libellé (ex. `formatPaceMMSS(v, '')` → "M:SS").
+ */
+export function buildPaceYAxis(
+  values: number[],
+  sections: number,
+  format: (value: number) => string,
+): { labels: string[]; maxValue: number; yAxisOffset: number; stepValue: number } {
+  const rawMin = Math.min(...values);
+  const rawMax = Math.max(...values);
+
+  // Bande élargie quand plat, sinon plage réelle.
+  const min = rawMin === rawMax ? rawMin - PACE_AXIS_FLAT_PAD_S : rawMin;
+  const max = rawMin === rawMax ? rawMax + PACE_AXIS_FLAT_PAD_S : rawMax;
+
+  const range = max - min;
+  const stepValue = range / sections;
+
+  // Libellés du bas (min) vers le haut (max) : labels[i] = min + step*i.
+  const labels = Array.from({ length: sections + 1 }, (_, i) => format(min + stepValue * i));
+
+  return { labels, maxValue: range, yAxisOffset: min, stepValue };
+}

@@ -3,6 +3,7 @@ import {
   UNIT_SYSTEMS,
   CM_PER_IN,
   MI_PER_KM,
+  buildPaceYAxis,
   cmToFtIn,
   displayDistance,
   displayWeight,
@@ -232,5 +233,56 @@ describe('formatPaceValue', () => {
     const back = parsePaceToSPerKm(str, 'imperial');
     expect(back).not.toBeNull();
     expect(Math.abs(back! - 300)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('buildPaceYAxis', () => {
+  const fmt = (v: number) => formatPaceMMSS(v, '');
+
+  it('renvoie sections + 1 libellés', () => {
+    const axis = buildPaceYAxis([300, 360, 330], 4, fmt);
+    expect(axis.labels).toHaveLength(5);
+  });
+
+  it('libellés ordonnés bas→haut sur [min, max] (échelle cohérente)', () => {
+    // min=300 (5:00), max=360 (6:00), 4 sections -> pas de 15 s.
+    const axis = buildPaceYAxis([300, 360, 330], 4, fmt);
+    expect(axis.yAxisOffset).toBe(300); // bas de l'axe = min
+    expect(axis.maxValue).toBe(60); // plage tracée = max - min
+    expect(axis.stepValue).toBe(15); // (360-300)/4
+    // labels[0] = bas = min ; labels[4] = haut = max.
+    expect(axis.labels).toEqual(['5:00', '5:15', '5:30', '5:45', '6:00']);
+  });
+
+  it('échelle et libellés couvrent la même plage (point aligné sur son libellé)', () => {
+    const axis = buildPaceYAxis([300, 360], 4, fmt);
+    // Un point de valeur v est tracé à (v - yAxisOffset) sur une échelle 0..maxValue.
+    // Le haut (maxValue) correspond à max, le bas (0) à min : plage identique aux labels.
+    expect(axis.yAxisOffset + axis.maxValue).toBe(360); // haut = max
+    expect(axis.yAxisOffset).toBe(300); // bas = min
+    expect(fmt(axis.yAxisOffset + axis.stepValue * 4)).toBe(axis.labels[4]);
+  });
+
+  it('cas min === max : bande élargie ±30 s, pas de stepValue nul', () => {
+    const axis = buildPaceYAxis([330, 330, 330], 4, fmt);
+    expect(axis.stepValue).not.toBe(0);
+    expect(axis.yAxisOffset).toBe(300); // 330 - 30
+    expect(axis.maxValue).toBe(60); // (330+30) - (330-30)
+    expect(axis.stepValue).toBe(15);
+    // Libellés distincts, valeur plate centrée (5:30 au milieu).
+    expect(axis.labels).toEqual(['5:00', '5:15', '5:30', '5:45', '6:00']);
+    expect(new Set(axis.labels).size).toBe(5);
+  });
+
+  it('valeur unique : même traitement que min === max', () => {
+    const axis = buildPaceYAxis([300], 4, fmt);
+    expect(axis.stepValue).toBe(15);
+    expect(axis.labels[2]).toBe('5:00'); // valeur centrée
+  });
+
+  it('applique le formateur M:SS à chaque graduation', () => {
+    const axis = buildPaceYAxis([300, 480], 4, fmt);
+    // (480-300)/4 = 45 s -> 5:00, 5:45, 6:30, 7:15, 8:00
+    expect(axis.labels).toEqual(['5:00', '5:45', '6:30', '7:15', '8:00']);
   });
 });

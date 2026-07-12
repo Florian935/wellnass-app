@@ -1,3 +1,4 @@
+import { buildPaceYAxis } from '@wellness/shared';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
 import { useTheme } from '@/theme/useTheme';
@@ -7,6 +8,7 @@ type DataPoint = {
   value: number;
 };
 
+/** Nombre de gridlines de l'axe Y ; on génère `NO_OF_SECTIONS + 1` libellés (bornes incluses). */
 const NO_OF_SECTIONS = 4;
 
 type ProgressLineChartProps = {
@@ -17,8 +19,9 @@ type ProgressLineChartProps = {
   /**
    * Opt-in : formate chaque libellé de l'axe Y (valeur brute → texte). Par défaut
    * `undefined` → axe Y numérique natif inchangé (usage muscu). Quand fourni, on
-   * construit `noOfSections + 1` graduations réparties sur [min(value), max(value)]
-   * et on les formate (ex. allure en secondes → M:SS).
+   * impose à la fois l'échelle tracée (`maxValue`/`yAxisOffset`/`stepValue`) ET les
+   * libellés (`yAxisLabelTexts`) sur la même plage [min, max] — voir `buildPaceYAxis` —
+   * pour que chaque point tombe pile sur son libellé (ex. allure en secondes → M:SS).
    */
   formatYLabel?: (value: number) => string;
 };
@@ -40,18 +43,12 @@ export function ProgressLineChart({ data, title, unit, width, formatYLabel }: Pr
     label: point.label,
   }));
 
-  // Libellés d'axe Y formatés (opt-in) : noOfSections + 1 graduations réparties
-  // linéairement de min à max des valeurs, puis formatées via `formatYLabel`.
-  let yAxisLabelTexts: string[] | undefined;
-  if (formatYLabel) {
-    const values = chartData.map((d) => d.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const step = (max - min) / NO_OF_SECTIONS;
-    yAxisLabelTexts = Array.from({ length: NO_OF_SECTIONS + 1 }, (_, i) =>
-      formatYLabel(min + step * i),
-    );
-  }
+  // Axe Y formaté (opt-in) : on impose l'échelle À LA LIB en plus des libellés, sinon
+  // gifted-charts trace sur son échelle 0→max et les libellés M:SS ne correspondent pas
+  // aux points. `buildPaceYAxis` renvoie l'échelle ET les libellés sur la même plage.
+  const yAxis = formatYLabel
+    ? buildPaceYAxis(chartData.map((d) => d.value), NO_OF_SECTIONS, formatYLabel)
+    : null;
 
   return (
     <View style={styles.container}>
@@ -80,7 +77,14 @@ export function ProgressLineChart({ data, title, unit, width, formatYLabel }: Pr
         yAxisTextStyle={{ color: colors.textMuted, fontSize: 11 }}
         backgroundColor={colors.surface}
         noOfSections={NO_OF_SECTIONS}
-        yAxisLabelTexts={yAxisLabelTexts}
+        {...(yAxis
+          ? {
+              maxValue: yAxis.maxValue,
+              yAxisOffset: yAxis.yAxisOffset,
+              stepValue: yAxis.stepValue,
+              yAxisLabelTexts: yAxis.labels,
+            }
+          : {})}
         isAnimated
       />
     </View>
