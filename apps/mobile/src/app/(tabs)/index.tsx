@@ -107,6 +107,7 @@ export default function HomeScreen() {
             items={rendered}
             onReorder={reorder}
             onDragActiveChange={setDragging}
+            handleAccessibilityLabel={t('home.customize.drag')}
             renderItem={(w, handle) => (
               <DashboardWidgetRow
                 editing

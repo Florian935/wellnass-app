@@ -40,11 +40,14 @@ export function SortableDashboard<T extends SortableItem>({
   renderItem,
   onReorder,
   onDragActiveChange,
+  handleAccessibilityLabel,
 }: {
   items: T[];
   renderItem: (item: T, handle: ReactNode) => ReactNode;
   onReorder: (id: DashboardWidgetId, toIndex: number) => void;
   onDragActiveChange?: (active: boolean) => void;
+  /** Libellé d'accessibilité de la poignée de déplacement (i18n, fourni par l'appelant). */
+  handleAccessibilityLabel: string;
 }) {
   // Hauteurs mesurées par id (mises à jour à chaque onLayout).
   const heights = useRef<Map<string, number>>(new Map());
@@ -118,6 +121,7 @@ export function SortableDashboard<T extends SortableItem>({
           onEnd={endDrag}
           renderItem={renderItem}
           item={item}
+          handleAccessibilityLabel={handleAccessibilityLabel}
         />
       ))}
     </View>
@@ -132,6 +136,7 @@ function SortableRow<T extends SortableItem>({
   onBegin,
   onEnd,
   renderItem,
+  handleAccessibilityLabel,
 }: {
   id: DashboardWidgetId;
   item: T;
@@ -140,6 +145,7 @@ function SortableRow<T extends SortableItem>({
   onBegin: (id: DashboardWidgetId) => void;
   onEnd: (id: DashboardWidgetId, translationY: number) => void;
   renderItem: (item: T, handle: ReactNode) => ReactNode;
+  handleAccessibilityLabel: string;
 }) {
   const translateY = useSharedValue(0);
   const dragging = useSharedValue(false);
@@ -178,7 +184,11 @@ function SortableRow<T extends SortableItem>({
 
   const handle = (
     <GestureDetector gesture={pan}>
-      <Animated.View style={styles.handle} accessibilityRole="adjustable">
+      <Animated.View
+        style={styles.handle}
+        accessibilityRole="adjustable"
+        accessibilityLabel={handleAccessibilityLabel}
+      >
         <View style={styles.handleGlyph}>
           <View style={styles.dot} />
           <View style={styles.dot} />
