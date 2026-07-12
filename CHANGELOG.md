@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Widgets dashboard : Record récent, Volume muscu, Résumé running (US 7.8–7.10)
+
+Branche `feature/7.8-7.10-widgets-dashboard`. 3 widgets additifs sur le tableau de bord,
+100 % client (lectures locales réactives) — aucune migration, cloud ni dépendance native.
+
+### Ajouté
+- **Record récent (7.8)** — `RecordRecentCard` : dernier record battu, muscu OU course, avec
+  badge pilier, libellé (exercice + poids, ou distance + temps M:SS) et date JJ/MM/AAAA. Lien
+  vers Progression (muscu) ou Historique (course). Gardé si pilier `strength` OU `running` actif.
+- **Volume muscu semaine (7.9)** — `MuscleVolumeCard` : histogramme du volume par groupe
+  musculaire de la semaine (réutilise `MuscleVolumeBarChart`, unité **kg**). Gardé si `strength`.
+- **Résumé running semaine (7.10)** — `RunningWeekCard` : distance + nombre de séances de la
+  semaine, avec objectif de séances (`weeklyFrequency`) si défini. Gardé si `running`.
+- `dashboard-repository` : hook composite `useMostRecentRecord()` composant record muscu le plus
+  récent (nouveau `useQuery` + jointure `exercise_translations`) et record d'allure le plus récent
+  (`useRunningRecords`), **filtré selon les piliers actifs** (hooks inconditionnels, filtrage sur
+  les résultats).
+- i18n FR/EN à parité : `home.record.*`, `home.volumeWeek.*`, `home.runningWeek.*`.
+
+### Modifié
+- `(tabs)/index.tsx` : intègre les 3 cartes à la suite des widgets existants, gardées par pilier.
+
+### Technique / Notes
+- Réutilisation stricte : `MuscleVolumeBarChart` non dupliqué ; libellés de groupes musculaires
+  via `muscle.*` existant. Objectif de **distance** hebdo différé (Lot B / colonne dédiée).
+
 ## 12/07/2026 — Export GPX d'une course (US 5.33)
 
 Branche `feature/5.33-export-gpx`.

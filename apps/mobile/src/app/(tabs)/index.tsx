@@ -8,6 +8,9 @@ import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
 import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
 import { StreakCard } from '@/components/dashboard/StreakCard';
 import { WeightCard } from '@/components/dashboard/WeightCard';
+import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
+import { MuscleVolumeCard } from '@/components/dashboard/MuscleVolumeCard';
+import { RunningWeekCard } from '@/components/dashboard/RunningWeekCard';
 import { PILLARS } from '@wellness/shared';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
@@ -60,6 +63,17 @@ export default function HomeScreen() {
 
         {/* 4. Poids corporel — pilier nutrition (H4) */}
         {activePillars.includes('nutrition') ? <WeightCard /> : null}
+
+        {/* 5. Record récent — piliers muscu OU course (US 7.8) */}
+        {activePillars.includes('strength') || activePillars.includes('running') ? (
+          <RecordRecentCard />
+        ) : null}
+
+        {/* 6. Volume muscu de la semaine — pilier musculation (US 7.9) */}
+        {activePillars.includes('strength') ? <MuscleVolumeCard /> : null}
+
+        {/* 7. Résumé running de la semaine — pilier running (US 7.10) */}
+        {activePillars.includes('running') ? <RunningWeekCard /> : null}
       </ScrollView>
     </Screen>
   );
