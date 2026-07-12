@@ -28,8 +28,17 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { PlanTemplateSession, ProgramSessionType } from '@wellness/shared';
-import { addDays, generatePlannedSessions, localDayKey } from '@wellness/shared';
+import type {
+  PlanRunningProgramInput,
+  PlanTemplateSession,
+  ProgramSessionType,
+} from '@wellness/shared';
+import {
+  addDays,
+  generatePlannedSessions,
+  localDayKey,
+  planRunningProgramInputSchema,
+} from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { nowUtc, patch, txInsert } from './_sql';
@@ -55,15 +64,8 @@ export type PlannedSessionItem = {
   orderIndex: number;
 };
 
-/** Affectation d'un jour de semaine (0 = lundi … 6 = dimanche) par séance du template. */
-export type DayAssignments = Record<string, number>;
-
-/** Paramètres de planification d'un programme running. */
-export type PlanRunningProgramInput = {
-  startDate: string; // AAAA-MM-JJ
-  durationWeeks: number;
-  dayAssignments: DayAssignments;
-};
+// Le type `PlanRunningProgramInput` (+ son schéma Zod `planRunningProgramInputSchema`)
+// est défini et exporté par `@wellness/shared` : validation runtime des saisies UI.
 
 // ---------------------------------------------------------------------------
 // Lignes brutes SQLite (colonnes snake_case)
@@ -210,8 +212,19 @@ function currentUserId(): string {
  * pour `durationWeeks` semaines, puis active le programme. Le tout dans UNE transaction
  * atomique (aucun état partiel possible).
  *
- * Étapes (dans la transaction) :
- *  1. Lit les séances (template) du programme, ordonnées.
+ * Pré-requis : `programId` doit être un programme **de l'utilisateur** — les séances-gabarit
+ * sont lues avec `owner_id = user` (typiquement après `duplicateProgram`, qui crée une copie
+ * personnalisée à partir d'un programme éditorial). Un programme éditorial non dupliqué n'a
+ * pas de séances `owner_id = user` : la garde « template vide » lèvera alors une erreur.
+ *
+ * Les entrées (`startDate`, `durationWeeks`, `dayAssignments`) sont validées par
+ * `planRunningProgramInputSchema` (Zod) AVANT d'ouvrir la transaction : `durationWeeks`
+ * doit être un entier > 0 (sinon une durée vide/NaN produirait 0 séance en silence tout en
+ * activant quand même le programme).
+ *
+ * Étapes :
+ *  0. Validation Zod des entrées (hors transaction) → `parsed`.
+ *  1. Lit les séances (template) du programme, ordonnées. Garde : lève si aucune séance.
  *  2. Construit les `templateSessions` à partir de `dayAssignments` — CHAQUE séance doit
  *     avoir une affectation, sinon on lève (pas de skip silencieux).
  *  3. `generatePlannedSessions` (alignement au lundi de la semaine de `startDate`).
@@ -224,9 +237,16 @@ function currentUserId(): string {
  */
 export async function planRunningProgram(
   programId: string,
-  input: PlanRunningProgramInput,
+  rawInput: PlanRunningProgramInput,
 ): Promise<number> {
   const ownerId = currentUserId();
+  // Validation runtime AVANT toute écriture : rejette durée vide/NaN/négative, format de
+  // date invalide, jours affectés hors [0..6]. `parse` lève une ZodError le cas échéant.
+  const input = planRunningProgramInputSchema.parse({
+    startDate: rawInput.startDate,
+    durationWeeks: rawInput.durationWeeks,
+    dayAssignments: rawInput.dayAssignments,
+  });
 
   return powerSync.writeTransaction(async (tx) => {
     // 1. Séances du template.
@@ -236,6 +256,13 @@ export async function planRunningProgram(
        ORDER BY order_index`,
       [programId, ownerId],
     );
+
+    // Garde : programme sans séances (ex. éditorial non dupliqué) → pas d'activation à vide.
+    if (sessionRows.length === 0) {
+      throw new Error(
+        'Aucune séance à planifier pour ce programme : planification impossible.',
+      );
+    }
 
     // 2. Construction du template — chaque séance DOIT avoir une affectation de jour.
     const templateSessions: PlanTemplateSession[] = sessionRows.map((s) => {

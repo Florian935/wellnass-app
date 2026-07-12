@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { generatePlannedSessions, isMissed, type PlanTemplateSession } from './planning';
+import {
+  generatePlannedSessions,
+  isMissed,
+  planRunningProgramInputSchema,
+  type PlanTemplateSession,
+} from './planning';
 
 const sessions: PlanTemplateSession[] = [
   { sessionId: 's-endurance', dayOfWeek: 0 }, // lundi
@@ -36,4 +41,36 @@ describe('isMissed', () => {
   it("aujourd'hui + planned ≠ manquée", () => expect(isMissed('2026-07-13', 'planned', '2026-07-13')).toBe(false));
   it('passée + done ≠ manquée', () => expect(isMissed('2026-07-10', 'done', '2026-07-13')).toBe(false));
   it('future + planned ≠ manquée', () => expect(isMissed('2026-07-20', 'planned', '2026-07-13')).toBe(false));
+});
+
+describe('planRunningProgramInputSchema', () => {
+  const valid = {
+    startDate: '2026-07-13',
+    durationWeeks: 8,
+    dayAssignments: { 's-endurance': 0, 's-longue': 6 },
+  };
+
+  it('accepte une entrée valide', () => {
+    expect(planRunningProgramInputSchema.parse(valid)).toEqual(valid);
+  });
+  it('rejette une durée de 0', () => {
+    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: 0 })).toThrow();
+  });
+  it('rejette une durée négative', () => {
+    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: -3 })).toThrow();
+  });
+  it('rejette une durée non entière', () => {
+    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: 2.5 })).toThrow();
+  });
+  it('rejette une durée NaN', () => {
+    expect(() => planRunningProgramInputSchema.parse({ ...valid, durationWeeks: NaN })).toThrow();
+  });
+  it('rejette une date au mauvais format', () => {
+    expect(() => planRunningProgramInputSchema.parse({ ...valid, startDate: '13/07/2026' })).toThrow();
+  });
+  it('rejette un jour affecté hors [0..6]', () => {
+    expect(() =>
+      planRunningProgramInputSchema.parse({ ...valid, dayAssignments: { 's-1': 7 } }),
+    ).toThrow();
+  });
 });
