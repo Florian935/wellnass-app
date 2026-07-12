@@ -18,6 +18,7 @@ export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
 export * from './running';
+export * from './gpx';
 export * from './running-paces';
 export * from './pace-records';
 export * from './geo';
