@@ -2,7 +2,16 @@
   "common": {
     "appName": "Wellness",
     "cancel": "Cancel",
-    "back": "Back"
+    "back": "Back",
+    "weekday": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
   },
   "sync": {
     "connected": "Synced",
@@ -842,6 +851,35 @@
       "filterDuration": "Duration",
       "filterAll": "All",
       "empty": "No program matches."
+    },
+    "planning": {
+      "title": "My plan",
+      "plan": "Plan",
+      "planCta": "Plan this program",
+      "startDate": "Start week",
+      "weekOf": "Week of {{date}}",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week",
+      "durationWeeks": "Duration (weeks)",
+      "assignDay": "Session day",
+      "restDay": "Rest",
+      "missedTitle": "Missed sessions",
+      "missedCount_one": "{{count}} missed session",
+      "missedCount_other": "{{count}} missed sessions",
+      "reschedule": "Reschedule",
+      "rescheduleToday": "Today",
+      "rescheduleTomorrow": "Tomorrow",
+      "reschedulePlus7": "+7 days",
+      "rescheduleChoose": "Choose a day…",
+      "skip": "Skip",
+      "markDone": "Mark as done",
+      "statusDone": "Done",
+      "statusSkipped": "Skipped",
+      "statusMissed": "Missed",
+      "empty": "No program planned. Plan one from its detail screen.",
+      "noProfileHint": "Set your reference pace in the runner profile to see target paces.",
+      "generatedCount_one": "Plan · {{count}} session",
+      "generatedCount_other": "Plan · {{count}} sessions"
     }
   }
 }

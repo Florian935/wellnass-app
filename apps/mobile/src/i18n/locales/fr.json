@@ -2,7 +2,16 @@
   "common": {
     "appName": "Wellness",
     "cancel": "Annuler",
-    "back": "Retour"
+    "back": "Retour",
+    "weekday": {
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mer",
+      "thu": "Jeu",
+      "fri": "Ven",
+      "sat": "Sam",
+      "sun": "Dim"
+    }
   },
   "sync": {
     "connected": "Synchronisé",
@@ -842,6 +851,35 @@
       "filterDuration": "Durée",
       "filterAll": "Tous",
       "empty": "Aucun programme ne correspond."
+    },
+    "planning": {
+      "title": "Mon planning",
+      "plan": "Planifier",
+      "planCta": "Planifier ce programme",
+      "startDate": "Semaine de début",
+      "weekOf": "Semaine du {{date}}",
+      "prevWeek": "Semaine précédente",
+      "nextWeek": "Semaine suivante",
+      "durationWeeks": "Durée (semaines)",
+      "assignDay": "Jour de la séance",
+      "restDay": "Repos",
+      "missedTitle": "Séances manquées",
+      "missedCount_one": "{{count}} séance manquée",
+      "missedCount_other": "{{count}} séances manquées",
+      "reschedule": "Reporter",
+      "rescheduleToday": "Aujourd'hui",
+      "rescheduleTomorrow": "Demain",
+      "reschedulePlus7": "+7 jours",
+      "rescheduleChoose": "Choisir un jour…",
+      "skip": "Sauter",
+      "markDone": "Marquer comme faite",
+      "statusDone": "Faite",
+      "statusSkipped": "Sautée",
+      "statusMissed": "Manquée",
+      "empty": "Aucun programme planifié. Planifie un programme depuis son détail.",
+      "noProfileHint": "Définis ton allure de référence dans le profil coureur pour voir les allures cibles.",
+      "generatedCount_one": "Planifier · {{count}} séance",
+      "generatedCount_other": "Planifier · {{count}} séances"
     }
   }
 }
