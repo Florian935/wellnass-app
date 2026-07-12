@@ -373,6 +373,16 @@
       "title": "Strength volume · week",
       "empty": "No session this week.",
       "link": "Details →"
+    },
+    "runningWeek": {
+      "title": "Running · week",
+      "empty": "No run this week.",
+      "distance": "Distance",
+      "sessions_one": "{{count}} run",
+      "sessions_other": "{{count}} runs",
+      "sessionsGoal_one": "{{count}} / {{goal}} run",
+      "sessionsGoal_other": "{{count}} / {{goal}} runs",
+      "link": "History →"
     }
   },
   "onboarding": {

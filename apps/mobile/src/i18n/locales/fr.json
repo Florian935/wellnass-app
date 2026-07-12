@@ -373,6 +373,16 @@
       "title": "Volume muscu · semaine",
       "empty": "Aucune séance cette semaine.",
       "link": "Détail →"
+    },
+    "runningWeek": {
+      "title": "Course · semaine",
+      "empty": "Aucune course cette semaine.",
+      "distance": "Distance",
+      "sessions_one": "{{count}} séance",
+      "sessions_other": "{{count}} séances",
+      "sessionsGoal_one": "{{count}} / {{goal}} séance",
+      "sessionsGoal_other": "{{count}} / {{goal}} séances",
+      "link": "Historique →"
     }
   },
   "onboarding": {
