@@ -289,7 +289,7 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
-          name="running-planning"
+          name="planning"
           options={{
             headerShown: false,
           }}

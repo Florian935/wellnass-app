@@ -347,7 +347,7 @@ export async function planProgram(
 
 /**
  * @deprecated Alias transitoire vers `planProgram` (renommage pilier-agnostique).
- * Conservé le temps de recâbler le seul appelant (`running-programs/plan.tsx`) ;
+ * Conservé le temps de recâbler le seul appelant (`planning/plan.tsx`) ;
  * il sera supprimé une fois l'assistant de planification migré vers `planProgram`.
  */
 export const planRunningProgram = planProgram;

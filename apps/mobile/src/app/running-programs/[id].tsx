@@ -71,7 +71,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
   };
 
   const onPlan = () => {
-    router.push(`/running-programs/plan?id=${programId}`);
+    router.push(`/planning/plan?id=${programId}`);
   };
 
   if (isLoading && !detail) {
@@ -168,7 +168,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
           )}
 
           <Button
-            label={t('running.planning.planCta')}
+            label={t('planning.planCta')}
             variant="ghost"
             onPress={onPlan}
           />

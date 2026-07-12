@@ -46,13 +46,13 @@ function formatDayKey(key: string): string {
   return `${d}/${m}/${y}`;
 }
 
-export default function RunningProgramPlanScreen() {
+export default function PlanScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const programId = typeof id === 'string' ? id : '';
-  return <RunningProgramPlanView programId={programId} />;
+  return <PlanView programId={programId} />;
 }
 
-function RunningProgramPlanView({ programId }: { programId: string }) {
+function PlanView({ programId }: { programId: string }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -101,11 +101,11 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
         durationWeeks: parsedDuration,
         dayAssignments,
       });
-      router.replace('/running-planning');
+      router.replace('/planning');
     } catch {
       Alert.alert(
-        t('running.planning.planErrorTitle'),
-        t('running.planning.planErrorMessage'),
+        t('planning.planErrorTitle'),
+        t('planning.planErrorMessage'),
       );
       setPlanning(false);
     }
@@ -122,7 +122,7 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
   if (!detail) {
     return (
       <Screen edges={['top']}>
-        <ScreenHeader title={t('running.planning.planCta')} />
+        <ScreenHeader title={t('planning.planCta')} />
         <Text style={[styles.notFound, { color: colors.textMuted }]}>
           {t('programs.detail.notFoundMessage')}
         </Text>
@@ -134,7 +134,7 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
 
   return (
     <Screen edges={['top']}>
-      <ScreenHeader title={t('running.planning.planCta')} subtitle={detail.name} />
+      <ScreenHeader title={t('planning.planCta')} subtitle={detail.name} />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -143,7 +143,7 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
       >
         {/* Durée */}
         <TextField
-          label={t('running.planning.durationWeeks')}
+          label={t('planning.durationWeeks')}
           value={currentDuration}
           onChangeText={setDuration}
           keyboardType="number-pad"
@@ -153,12 +153,12 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
         {/* Semaine de début */}
         <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-            {t('running.planning.startDate')}
+            {t('planning.startDate')}
           </Text>
           <View style={styles.weekSelector}>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('running.planning.prevWeek')}
+              accessibilityLabel={t('planning.prevWeek')}
               onPress={onPrevWeek}
               hitSlop={8}
               style={[styles.weekArrow, { borderColor: colors.border }]}
@@ -166,11 +166,11 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
               <Text style={[styles.weekArrowText, { color: colors.text }]}>◀</Text>
             </Pressable>
             <Text style={[styles.weekLabel, { color: colors.text }]}>
-              {t('running.planning.weekOf', { date: formatDayKey(weekStart) })}
+              {t('planning.weekOf', { date: formatDayKey(weekStart) })}
             </Text>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={t('running.planning.nextWeek')}
+              accessibilityLabel={t('planning.nextWeek')}
               onPress={onNextWeek}
               hitSlop={8}
               style={[styles.weekArrow, { borderColor: colors.border }]}
@@ -204,8 +204,8 @@ function RunningProgramPlanView({ programId }: { programId: string }) {
           <Button
             label={
               durationValid
-                ? t('running.planning.generatedCount', { count: plannedCount })
-                : t('running.planning.planCta')
+                ? t('planning.generatedCount', { count: plannedCount })
+                : t('planning.planCta')
             }
             onPress={() => void onPlan()}
             loading={planning}
@@ -261,7 +261,7 @@ function PlanSessionCard({
   let paceLabel: string | null = null;
   if (sessionType) {
     if (ref5kPaceSPerKm == null) {
-      paceLabel = t('running.planning.noProfileHint');
+      paceLabel = t('planning.noProfileHint');
     } else {
       const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
       if (range) {
@@ -308,7 +308,7 @@ function PlanSessionCard({
 
       {/* Choix du jour de la semaine */}
       <Text style={[styles.assignLabel, { color: colors.textMuted }]}>
-        {t('running.planning.assignDay')}
+        {t('planning.assignDay')}
       </Text>
       <View style={styles.dayRow}>
         {WEEKDAY_KEYS.map((key, day) => {

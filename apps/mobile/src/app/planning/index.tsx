@@ -48,7 +48,7 @@ function formatDayKey(key: string): string {
   return `${d}/${m}/${y}`;
 }
 
-export default function RunningPlanningScreen() {
+export default function PlanningScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
@@ -114,13 +114,13 @@ export default function RunningPlanningScreen() {
 
   return (
     <Screen edges={['top']}>
-      <ScreenHeader title={t('running.planning.title')} />
+      <ScreenHeader title={t('planning.title')} />
 
       {/* Sélecteur de semaine */}
       <View style={styles.weekSelector}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('running.planning.prevWeek')}
+          accessibilityLabel={t('planning.prevWeek')}
           onPress={onPrevWeek}
           hitSlop={8}
           style={[styles.weekArrow, { borderColor: colors.border }]}
@@ -128,11 +128,11 @@ export default function RunningPlanningScreen() {
           <Text style={[styles.weekArrowText, { color: colors.text }]}>◀</Text>
         </Pressable>
         <Text style={[styles.weekLabel, { color: colors.text }]}>
-          {t('running.planning.weekOf', { date: formatDayKey(weekStart) })}
+          {t('planning.weekOf', { date: formatDayKey(weekStart) })}
         </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('running.planning.nextWeek')}
+          accessibilityLabel={t('planning.nextWeek')}
           onPress={onNextWeek}
           hitSlop={8}
           style={[styles.weekArrow, { borderColor: colors.border }]}
@@ -144,8 +144,8 @@ export default function RunningPlanningScreen() {
       {isEmpty ? (
         <EmptyState
           icon="calendar-outline"
-          title={t('running.planning.title')}
-          message={t('running.planning.empty')}
+          title={t('planning.title')}
+          message={t('planning.empty')}
         />
       ) : (
         <ScrollView
@@ -161,10 +161,10 @@ export default function RunningPlanningScreen() {
               ]}
             >
               <Text style={[styles.missedTitle, { color: colors.text }]}>
-                {t('running.planning.missedTitle')}
+                {t('planning.missedTitle')}
               </Text>
               <Text style={[styles.missedCount, { color: colors.textMuted }]}>
-                {t('running.planning.missedCount', { count: missed.length })}
+                {t('planning.missedCount', { count: missed.length })}
               </Text>
               <View style={styles.missedList}>
                 {missed.map((item) => (
@@ -204,7 +204,7 @@ export default function RunningPlanningScreen() {
                 </Text>
                 {dayItems.length === 0 ? (
                   <Text style={[styles.restDay, { color: colors.textMuted }]}>
-                    {t('running.planning.restDay')}
+                    {t('planning.restDay')}
                   </Text>
                 ) : (
                   <View style={styles.dayItems}>
@@ -238,27 +238,27 @@ export default function RunningPlanningScreen() {
             style={[styles.sheet, { backgroundColor: colors.background }]}
             onPress={() => undefined}
           >
-            <Button label={t('running.planning.markDone')} onPress={() => void onMarkDone()} />
+            <Button label={t('planning.markDone')} onPress={() => void onMarkDone()} />
             <Text style={[styles.sheetSection, { color: colors.textMuted }]}>
-              {t('running.planning.reschedule')}
+              {t('planning.reschedule')}
             </Text>
             <Button
-              label={t('running.planning.rescheduleToday')}
+              label={t('planning.rescheduleToday')}
               variant="ghost"
               onPress={() => void onReschedule(todayKey)}
             />
             <Button
-              label={t('running.planning.rescheduleTomorrow')}
+              label={t('planning.rescheduleTomorrow')}
               variant="ghost"
               onPress={() => void onReschedule(localDayKey(addDays(new Date(), 1)))}
             />
             <Button
-              label={t('running.planning.reschedulePlus7')}
+              label={t('planning.reschedulePlus7')}
               variant="ghost"
               onPress={() => void onReschedule(localDayKey(addDays(new Date(), 7)))}
             />
             <Button
-              label={t('running.planning.skip')}
+              label={t('planning.skip')}
               variant="ghost"
               onPress={() => void onSkip()}
             />
@@ -307,7 +307,7 @@ function PlannedSessionRow({
   let paceLabel: string | null = null;
   if (sessionType) {
     if (ref5kPaceSPerKm == null) {
-      paceLabel = t('running.planning.noProfileHint');
+      paceLabel = t('planning.noProfileHint');
     } else {
       const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
       if (range) {
@@ -319,11 +319,11 @@ function PlannedSessionRow({
   // Statut affiché : manqué (calculé), fait, sauté.
   let statusLabel: string | null = null;
   if (isMissed(item.scheduledDate, item.status, todayKey)) {
-    statusLabel = t('running.planning.statusMissed');
+    statusLabel = t('planning.statusMissed');
   } else if (item.status === 'done') {
-    statusLabel = t('running.planning.statusDone');
+    statusLabel = t('planning.statusDone');
   } else if (item.status === 'skipped') {
-    statusLabel = t('running.planning.statusSkipped');
+    statusLabel = t('planning.statusSkipped');
   }
 
   const dimmed = item.status === 'done' || item.status === 'skipped';

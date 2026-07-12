@@ -65,9 +65,9 @@ export default function RunningScreen() {
             onPress={() => router.push('/running-programs')}
           />
           <Button
-            label={t('running.planning.title')}
+            label={t('planning.title')}
             variant="ghost"
-            onPress={() => router.push('/running-planning')}
+            onPress={() => router.push('/planning')}
           />
           <Button
             label={t('running.history.title')}
