@@ -8,6 +8,7 @@ export * from './units';
 export * from './age';
 export * from './profile';
 export * from './settings';
+export * from './dashboard';
 export * from './exercise';
 export * from './workout';
 export * from './program';
