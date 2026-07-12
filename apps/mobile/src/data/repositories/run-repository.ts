@@ -30,7 +30,19 @@
  */
 
 import { useQuery } from '@powersync/react';
-import { appendToTrack, averagePace, type RunSource } from '@wellness/shared';
+import {
+  appendToTrack,
+  averagePace,
+  localDayKey,
+  aggregateRunStats,
+  paceTrendPoints,
+  paceTrend,
+  type RunSource,
+  type StatPeriod,
+  type RunStats,
+  type PaceTrendPoint,
+  type PaceTrendKind,
+} from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
@@ -281,6 +293,59 @@ export function useRun(runId: string | undefined): {
   const run = row ? rowToRunDetail(row) : null;
 
   return { run, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// Statistiques de course (lecture seule, réutilise useRunHistory)
+// ---------------------------------------------------------------------------
+
+/**
+ * Mappe un `RunHistoryItem` (domaine) vers `StatRun` (agrégation).
+ *
+ * Les courses terminées ont toujours `finishedAt` non-null (filtrées par
+ * `SELECT_HISTORY` sur `status='completed'`). Le jour local est obtenu via
+ * `localDayKey`, cohérent avec l'indexation utilisée dans `dashboard-repository.ts`.
+ */
+function toStatRun(item: RunHistoryItem) {
+  return {
+    finishedAtDayKey: localDayKey(new Date(item.finishedAt as string)),
+    distanceM: item.distanceM,
+    durationS: item.durationSeconds,
+    paceSPerKm: item.avgPaceSPerKm,
+  };
+}
+
+/**
+ * Statistiques agrégées des courses terminées pour la période donnée.
+ *
+ * **Lecture seule** — repose sur `useRunHistory` (dashboard-safe : ne modifie pas
+ * l'historique et ne change pas le comportement de `useIsTrainingDay` / `useStreakData`).
+ * React Compiler gère la mémoïsation ; pas de `useMemo` manuel.
+ */
+export function useRunStats(period: StatPeriod): { stats: RunStats; isLoading: boolean } {
+  const { runs, isLoading } = useRunHistory();
+  const todayKey = localDayKey(new Date());
+  const stats = aggregateRunStats(runs.map(toStatRun), period, todayKey);
+  return { stats, isLoading };
+}
+
+/**
+ * Points d'allure sur les `days` derniers jours et tendance calculée.
+ *
+ * **Lecture seule** — repose sur `useRunHistory` (dashboard-safe, voir `useRunStats`).
+ * `trend` vaut `'improving'` | `'declining'` | `'stable'` (≥ 2 points nécessaires ;
+ * sinon `'stable'` par défaut — voir `paceTrend` dans `@wellness/shared`).
+ */
+export function usePaceTrend(days: number): {
+  points: PaceTrendPoint[];
+  trend: PaceTrendKind;
+  isLoading: boolean;
+} {
+  const { runs, isLoading } = useRunHistory();
+  const todayKey = localDayKey(new Date());
+  const points = paceTrendPoints(runs.map(toStatRun), days, todayKey);
+  const trend = paceTrend(points);
+  return { points, trend, isLoading };
 }
 
 // ---------------------------------------------------------------------------
