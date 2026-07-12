@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — US 4.7b : détection anticipée des jours d'entraînement (nutrition)
+
+Étend `useIsTrainingDay(dayKey)` pour qu'une séance **planifiée** (`planned_sessions`, statut
+`planned`/`done`) compte comme jour d'entraînement **par anticipation** (aujourd'hui + futur).
+Le passé reste rétroactif uniquement. Streak inchangé. Aucune migration, aucun cloud.
+Branche `feature/nutrition-4.7-anticipee`.
+
+### Ajouté
+- **`packages/shared/src/training-day.ts`** : helper pur `isTrainingDay(i: TrainingDayInput): boolean`.
+  Règle : `retroactiveDone || (hasPlanned && dayKey >= todayKey)`. Comparaison lexicographique
+  `AAAA-MM-JJ` (= chronologique). Exporté via `index.ts`.
+- **`packages/shared/src/training-day.test.ts`** : 6 tests Vitest TDD (passé+fait→vrai,
+  passé+planifié-seul→faux, aujourd'hui planifié→vrai, futur planifié→vrai, futur vide→faux,
+  aucun signal→faux). Frontière `dayKey===todayKey` explicitement couverte.
+- **`useHasPlannedSession(dayKey)`** dans `planned-session-repository.ts` : hook réactif
+  owner-scopé (`useAuthStore` + `useQuery`), requête bornée `SELECT 1 … WHERE owner_id=?
+  AND scheduled_date=? AND status IN ('planned','done') AND deleted_at IS NULL LIMIT 1`.
+  Retourne `{ hasPlanned: boolean; isLoading: boolean }`.
+
+### Modifié
+- **`useIsTrainingDay`** dans `dashboard-repository.ts` : compose l'existant (logique rétroactive
+  inchangée, extraite dans `retroactiveDone`) + `useHasPlannedSession(dayKey)`. Import aliasé
+  `isTrainingDay as computeIsTrainingDay` pour éviter la collision de nom avec le champ retourné.
+  `isLoading` = OR des trois hooks. JSDoc mis à jour (rétroactif + anticipé). UI et signature
+  inchangés.
+
 ## 12/07/2026 — Fix : précision GPS & records d'allure (marche/course lente)
 
 Correctif du bug device : une marche de 1,01 km ne produisait **aucun record** (section

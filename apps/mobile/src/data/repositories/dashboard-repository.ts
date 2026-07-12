@@ -22,6 +22,7 @@ import {
   activeDayKeys,
   computeAge,
   computeStreak,
+  isTrainingDay as computeIsTrainingDay,
   localDayKey,
   objectiveFromGoal,
   targetCalories,
@@ -35,6 +36,7 @@ import { useDailyTotals } from './journal-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory } from './run-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
+import { useHasPlannedSession } from './planned-session-repository';
 
 // ---------------------------------------------------------------------------
 // useNextSession — widget 7.4
@@ -113,24 +115,33 @@ export function useNextSession(): NextSessionState {
 /**
  * Indique si `dayKey` (AAAA-MM-JJ local) est un « jour d'entraînement » :
  * au moins une séance muscu terminée OU une course terminée ce jour-là
- * (décision produit 12/07 — voir spec 4.7-4.18 §2).
+ * (rétroactif, tout jour) OU une séance planifiée ce jour-là si `dayKey`
+ * est aujourd'hui ou futur (anticipé via le planning — US 4.7b).
  *
- * Détection **rétroactive** (faute de planning muscu daté) : composée de
- * `useWorkoutHistory` + `useRunHistory` (mêmes hooks que `useStreakData`, aucune
- * SQL directe). Les timestamps `finishedAt` (UTC) sont ramenés au jour **local**
- * via `localDayKey`, cohérent avec l'indexation `log_date` du journal.
+ * Composé de `useWorkoutHistory` + `useRunHistory` (logique rétroactive
+ * inchangée) + `useHasPlannedSession(dayKey)` (anticipation). Les trois hooks
+ * sont appelés inconditionnellement (React Compiler). L'import du helper pur
+ * est aliasé en `computeIsTrainingDay` pour éviter la collision de nom avec
+ * le champ retourné `isTrainingDay`.
  */
 export function useIsTrainingDay(dayKey: string): { isTrainingDay: boolean; isLoading: boolean } {
+  // hooks inconditionnels (règle des hooks React / React Compiler)
   const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
   const { runs, isLoading: runsLoading } = useRunHistory();
+  const { hasPlanned, isLoading: plannedLoading } = useHasPlannedSession(dayKey);
 
-  const isTrainingDay = useMemo(() => {
+  const retroactiveDone = useMemo(() => {
     const doneOnDay = (arr: { finishedAt: string | null }[]) =>
       arr.some((x) => x.finishedAt != null && localDayKey(new Date(x.finishedAt)) === dayKey);
     return doneOnDay(workouts) || doneOnDay(runs);
   }, [workouts, runs, dayKey]);
 
-  return { isTrainingDay, isLoading: workoutsLoading || runsLoading };
+  const todayKey = localDayKey(new Date());
+
+  return {
+    isTrainingDay: computeIsTrainingDay({ retroactiveDone, hasPlanned, dayKey, todayKey }),
+    isLoading: workoutsLoading || runsLoading || plannedLoading,
+  };
 }
 
 // ---------------------------------------------------------------------------
