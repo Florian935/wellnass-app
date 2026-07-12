@@ -128,6 +128,7 @@ function RunningProgramCreateForm({ onCreated }: { onCreated: (id: string) => vo
               {t('running.program.objective')}
             </Text>
             <Segment
+              scrollable
               options={OBJECTIVE_CHOICES}
               value={objective}
               onChange={setObjective}
@@ -292,6 +293,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
               {t('running.program.objective')}
             </Text>
             <Segment
+              scrollable
               options={OBJECTIVE_CHOICES}
               value={currentGoal}
               onChange={commitGoal}
