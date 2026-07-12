@@ -1,9 +1,10 @@
 /**
  * Repository de composition pour le tableau de bord (dashboard).
  *
- * Ce fichier n'exécute AUCUNE requête SQL directe : il compose des hooks
- * existants des autres repositories et des utilitaires de `@wellness/shared`
- * pour exposer des vues agrégées prêtes pour les widgets du dashboard.
+ * Ce fichier compose surtout des hooks existants des autres repositories et des
+ * utilitaires de `@wellness/shared` pour exposer des vues agrégées prêtes pour les
+ * widgets du dashboard. Exception : `useMostRecentRecord` exécute une requête SQL
+ * directe owner-scopée (dernier record muscu) faute de hook existant équivalent.
  *
  * Hooks exposés :
  *  - `useNextSession`      → widget 7.4 (prochaine séance / séance active)
@@ -44,6 +45,7 @@ import { useRunningRecords } from './running-record-repository';
 import { useSettings } from './settings-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
+import { useAuthStore } from '@/stores/auth-store';
 import { PILLARS } from '@wellness/shared';
 
 // ---------------------------------------------------------------------------
@@ -400,8 +402,9 @@ type MostRecentRecordDbRow = {
 
 /**
  * Record muscu le plus récent de l'utilisateur courant, avec nom d'exercice résolu
- * (langue courante → fr). Premier `?` = langue courante. Reproduit le patron de
- * jointure/locale de `SELECT_RECORDS_FOR_WORKOUT` (records-repository).
+ * (langue courante → fr). Paramètres : `[lang, userId]` — 1er `?` = langue courante
+ * (jointure translations), 2nd `?` = `user_id` (owner-scope). Reproduit le patron de
+ * jointure/langue de `SELECT_RECORDS_FOR_WORKOUT` (records-repository).
  */
 const SELECT_MOST_RECENT_STRENGTH_RECORD = `
   SELECT r.type, r.value, r.achieved_at,
@@ -409,7 +412,7 @@ const SELECT_MOST_RECENT_STRENGTH_RECORD = `
   FROM personal_records r
   LEFT JOIN exercise_translations tl  ON tl.exercise_id = r.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
   LEFT JOIN exercise_translations tfr ON tfr.exercise_id = r.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-  WHERE r.deleted_at IS NULL
+  WHERE r.user_id = ? AND r.deleted_at IS NULL
   ORDER BY r.achieved_at DESC
   LIMIT 1
 `;
@@ -434,6 +437,8 @@ export function useMostRecentRecord(): {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+
   const { settings } = useSettings();
   const activePillars = settings?.activePillars ?? [...PILLARS];
   const strengthActive = activePillars.includes('strength');
@@ -441,7 +446,7 @@ export function useMostRecentRecord(): {
 
   // Sources lues inconditionnellement (règle des hooks / React Compiler).
   const { data: strengthRows, isLoading: strengthLoading } =
-    useQuery<MostRecentRecordDbRow>(SELECT_MOST_RECENT_STRENGTH_RECORD, [lang]);
+    useQuery<MostRecentRecordDbRow>(SELECT_MOST_RECENT_STRENGTH_RECORD, [lang, userId]);
   const { records: runningRecords, isLoading: runningLoading } = useRunningRecords();
 
   const isLoading = strengthLoading || runningLoading;
