@@ -1,0 +1,204 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;
+    --warn:#b5761f;--rest:#efe7d6;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r3l{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:980px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:70ch;margin:0;font-size:15px;}
+  .stage{max-width:980px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:390px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 4px;}
+  .screen-cap{color:var(--muted);font-size:13px;padding:0 4px;margin:0 0 14px;}
+
+  /* wizard */
+  .field{margin:0 4px 16px;}
+  .flabel{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0 0 7px;}
+  .input{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:15px;font-weight:600;}
+  .weeknav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 13px;}
+  .weeknav .nav{width:30px;height:30px;border-radius:8px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ink);}
+  .weeknav .lbl{font-weight:700;font-size:14px;}
+  .assign{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;margin:0 4px 10px;}
+  .assign .top{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 4px;}
+  .assign .sname{font-weight:800;font-size:15px;}
+  .assign .pace{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;}
+  .assign .meta{color:var(--muted);font-size:12.5px;margin:0 0 10px;}
+  .days{display:flex;gap:5px;}
+  .day{flex:1;text-align:center;padding:7px 0;font-size:12px;font-weight:700;border-radius:8px;background:var(--surface-alt);color:var(--muted);}
+  .day.on{background:var(--accent);color:var(--accent-text);}
+  .cta{appearance:none;border:0;width:calc(100% - 8px);margin:6px 4px 0;background:var(--accent);color:var(--accent-text);font-weight:700;font-size:15px;padding:13px;border-radius:12px;font-family:var(--sans);}
+
+  /* week view */
+  .banner{margin:0 4px 14px;background:#fbeee0;border:1px solid #e7c9a6;border-radius:14px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;}
+  .banner .ico{font-size:16px;}
+  .banner .btxt{font-size:13px;}
+  .banner .btxt b{color:var(--warn);}
+  .daycard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:0 4px 9px;}
+  .daycard.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .dhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;}
+  .dname{font-weight:800;font-size:14px;}
+  .ddate{color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .todaytag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);}
+  .sess{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:var(--surface-alt);}
+  .sess + .sess{margin-top:7px;}
+  .sess .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;}
+  .sess .body{flex:1;min-width:0;}
+  .sess .stype{font-weight:700;font-size:13.5px;}
+  .sess .starget{color:var(--muted);font-size:12px;}
+  .sess .space{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;white-space:nowrap;}
+  .rest{color:var(--muted);font-size:13px;font-style:italic;padding:2px 2px;}
+  .pill{font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;}
+  .pill.done{background:#e6efe0;color:var(--success);}
+  .pill.skip{background:var(--surface-alt);color:var(--muted);}
+  .pill.miss{background:#fbe3d3;color:var(--warn);}
+  .sess.dim{opacity:.6;}
+
+  /* action sheet */
+  .sheet{max-width:390px;width:100%;align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+  .sheet h4{margin:0 0 3px;font-size:15px;font-weight:800;}
+  .sheet .ssub{color:var(--muted);font-size:12.5px;margin:0 0 14px;}
+  .act{display:flex;align-items:center;gap:11px;padding:12px;border-radius:12px;border:1px solid var(--border);margin-bottom:9px;font-weight:700;font-size:14px;}
+  .act .aico{font-size:16px;}
+  .act small{display:block;font-weight:500;color:var(--muted);font-size:12px;}
+  .quick{display:flex;gap:7px;margin:2px 0 4px;}
+  .quick span{flex:1;text-align:center;background:var(--surface-alt);border-radius:9px;padding:8px 0;font-size:12.5px;font-weight:700;}
+
+  .notes{max-width:980px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r3l">
+  <header class="head">
+    <p class="eyebrow">Wellness · Running R3c-i · Maquette</p>
+    <h1 class="title">Planning de course &amp; séance manquée</h1>
+    <p class="sub">Planifier un programme de course sur un calendrier (semaine type + date de début), le consulter en vue semaine (7 jours), et gérer les séances manquées (reporter / sauter) ou faites. Première couche de planification datée de l'app (table générique <code>planned_sessions</code>). Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- Écran 1 : assistant Planifier -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Planifier</span></div>
+      <p class="screen-title">Planifier « 10 km en 8 semaines »</p>
+      <p class="screen-cap">Choisis une durée, une semaine de départ, et le jour de chaque séance.</p>
+
+      <div class="field">
+        <p class="flabel">Durée (semaines)</p>
+        <div class="input">8</div>
+      </div>
+
+      <div class="field">
+        <p class="flabel">Semaine de début</p>
+        <div class="weeknav"><span class="nav">‹</span><span class="lbl">Semaine du lun. 13/07/2026</span><span class="nav">›</span></div>
+      </div>
+
+      <p class="flabel" style="margin:0 4px 8px;">Semaine type</p>
+
+      <div class="assign">
+        <div class="top"><span class="sname">Endurance</span><span class="pace">5:30–6:00 /km</span></div>
+        <p class="meta">5,0 km · allure de référence + 60-90 s</p>
+        <div class="days"><span class="day on">Lun</span><span class="day">Mar</span><span class="day">Mer</span><span class="day">Jeu</span><span class="day">Ven</span><span class="day">Sam</span><span class="day">Dim</span></div>
+      </div>
+      <div class="assign">
+        <div class="top"><span class="sname">Fractionné</span><span class="pace">4:15–4:30 /km</span></div>
+        <p class="meta">5,0 km · 95-100 % VMA</p>
+        <div class="days"><span class="day">Lun</span><span class="day">Mar</span><span class="day on">Mer</span><span class="day">Jeu</span><span class="day">Ven</span><span class="day">Sam</span><span class="day">Dim</span></div>
+      </div>
+      <div class="assign">
+        <div class="top"><span class="sname">Sortie longue</span><span class="pace">5:00–5:30 /km</span></div>
+        <p class="meta">8,0 km · allure de référence + 30-60 s</p>
+        <div class="days"><span class="day">Lun</span><span class="day">Mar</span><span class="day">Mer</span><span class="day">Jeu</span><span class="day">Ven</span><span class="day on">Sam</span><span class="day">Dim</span></div>
+      </div>
+
+      <button class="cta">Planifier · 24 séances</button>
+    </div>
+
+    <!-- Écran 2 : vue semaine -->
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>Course · Mon planning</span></div>
+      <p class="screen-title">Mon planning</p>
+      <div class="weeknav" style="margin:0 4px 14px;"><span class="nav">‹</span><span class="lbl">Semaine du 13/07</span><span class="nav">›</span></div>
+
+      <div class="banner">
+        <span class="ico">⚠️</span>
+        <span class="btxt"><b>1 séance manquée</b> — Endurance de lundi non faite. Reporter ou sauter ?</span>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Lundi</span><span class="ddate">13/07</span></div>
+        <div class="sess dim">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Endurance</span><span class="starget">5,0 km · 5:30–6:00 /km</span></span>
+          <span class="pill miss">Manquée</span>
+        </div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Mardi</span><span class="ddate">14/07</span></div>
+        <div class="rest">Repos</div>
+      </div>
+
+      <div class="daycard today">
+        <div class="dhead"><span class="dname">Mercredi</span><span class="ddate">15/07 · <span class="todaytag">Aujourd'hui</span></span></div>
+        <div class="sess">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Fractionné</span><span class="starget">5,0 km</span></span>
+          <span class="space">4:15–4:30 /km</span>
+        </div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Jeudi — Vendredi</span><span class="ddate">16-17/07</span></div>
+        <div class="rest">Repos</div>
+      </div>
+
+      <div class="daycard">
+        <div class="dhead"><span class="dname">Samedi</span><span class="ddate">18/07</span></div>
+        <div class="sess">
+          <span class="dot"></span>
+          <span class="body"><span class="stype">Sortie longue</span><span class="starget">8,0 km</span></span>
+          <span class="space">5:00–5:30 /km</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feuille d'actions -->
+    <div class="sheet">
+      <h4>Fractionné · mercredi 15/07</h4>
+      <p class="ssub">5,0 km · allure cible 4:15–4:30 /km</p>
+
+      <div class="act"><span class="aico">✅</span><span>Marquer comme faite<small>Passe la séance en « faite »</small></span></div>
+
+      <div class="act" style="display:block;">
+        <div style="display:flex;align-items:center;gap:11px;"><span class="aico">📅</span><span>Reporter<small>Déplace cette séance (les autres ne bougent pas)</small></span></div>
+        <div class="quick" style="margin-top:10px;"><span>Aujourd'hui</span><span>Demain</span><span>+7 jours</span><span>Choisir…</span></div>
+      </div>
+
+      <div class="act"><span class="aico">⏭️</span><span>Sauter<small>Marque la séance « sautée »</small></span></div>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions (rappel)</h2>
+    <ul>
+      <li><strong>Semaine type + date de début</strong> : à l'activation, l'utilisateur affecte chaque séance-gabarit à un jour de semaine ; l'app génère les instances datées sur toute la durée (<code>durée × séances</code>). Progression auto de volume différée.</li>
+      <li><strong>Vue semaine (7 jours)</strong>, navigation ‹ / › ; jours de repos affichés ; allures dérivées du profil coureur (R3a) via <code>useUnits</code> (min/km ou min/mi).</li>
+      <li><strong>Séance manquée</strong> = date passée encore « planifiée ». Bannière d'agrégation + badge par jour. Actions : <strong>Reporter</strong> (déplace 1 instance ; options rapides + choix de jour, <em>pas de date-picker natif</em>) ou <strong>Sauter</strong>. <strong>Marquer faite</strong> disponible aussi.</li>
+      <li><strong>Marquage manuel</strong> au MVP — <em>démarrer une course depuis une séance planifiée (lien tracker) est différé</em> (R4). Les courses libres comptent dans l'historique/streak indépendamment.</li>
+      <li><strong>Table générique</strong> <code>planned_sessions</code> (pilier hérité de la séance/programme) : prépare le planning muscu (3.9) et la coordination muscu↔running (5.6, différée).</li>
+      <li><em>Polices : stand-ins système ici ; en app = Bricolage / Hanken / Space Mono.</em></li>
+    </ul>
+  </section>
+</div>
