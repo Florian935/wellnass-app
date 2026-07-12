@@ -22,5 +22,6 @@ export * from './running-paces';
 export * from './geo';
 export * from './date';
 export * from './planning';
+export * from './run-stats';
 export * from './streak';
 export type { Database, Json } from './database.types';
