@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Personnalisation du dashboard : mode édition, drag & drop, masquer, taille (US 7.1/7.2/7.3/7.11/7.12)
+
+Branche `feature/dashboard-personnalisation`. Rend l'accueil personnalisable, disposition
+persistée localement **et** dans le cloud via la colonne existante `user_settings.dashboard_layout`.
+**100 % client — aucune migration, aucun checkpoint 🔴 cloud, aucune dépendance native ajoutée**
+(`react-native-reanimated` / `react-native-gesture-handler` déjà présents).
+
+### Ajouté
+- **Logique pure (`@wellness/shared/dashboard.ts`)** — registre `DASHBOARD_WIDGET_IDS` (7 widgets)
+  + `WIDGET_PILLARS` (gardes piliers, `always` transverse jamais filtré) ; types `WidgetSize`,
+  `WidgetLayoutEntry`, `DashboardLayout` ; `defaultDashboardLayout()`, `resolveDashboardLayout()`
+  (défaut, fusion forward-compat, filtre piliers, IDs inconnus ignorés, tri par ordre, recompactage,
+  `visible`/`size` préservés), `moveWidget()` pur/immuable, `parseDashboardLayout()` tolérant.
+  **25 tests Vitest**.
+- **Persistance (`dashboard-layout-repository.ts`)** — `useDashboardLayout()` : lecture réactive
+  (`useSettings`), parse tolérant, résolution filtrée piliers pour l'affichage ; mutateurs
+  `toggleVisible`/`setSize`/`reorder`/`setLayout` écrivant le **layout complet non filtré** via
+  `updateSettings({ dashboardLayout })`. **Débounce ~400 ms** sur le réordonnancement (drag).
+- **Variante compacte (7.11)** — prop `size?: WidgetSize` sur les 7 widgets + composant partagé
+  `DashboardCardCompact` (une ligne : icône + titre + valeur clé), conforme à la maquette.
+- **Mode édition (7.1/7.3)** — bouton « Personnaliser » / « Terminé » dans l'en-tête ; rendu de la
+  disposition résolue via map `id → composant` ; `DashboardWidgetRow` (cadre pointillé, marquage
+  « Masqué » grisé + badge) + `DashboardEditControls` (œil masquer/afficher sur **tous** les widgets
+  y compris streak — **masquabilité uniforme** ; bascule de taille). a11y sur tous les contrôles.
+- **Drag & drop (7.2)** — `SortableDashboard` (`react-native-gesture-handler` `Pan` +
+  `react-native-reanimated`) : poignée par carte, la carte active suit le doigt, calcul d'index
+  cible sur hauteurs mesurées, `reorder(id, toIndex)` au drop. **Défilement du `ScrollView`
+  neutralisé pendant un drag actif.** `GestureHandlerRootView` posé à la racine.
+- i18n FR/EN à parité : `home.customize.*` et clés compactes des widgets (65/65 sur `home.*`).
+
+### Technique / Notes
+- Aucune migration : la colonne `dashboard_layout` (JSON TEXT PowerSync) préexistait. Offline-first.
+- **Reste** : vérification device du drag & drop (non validable en CI — module natif + New Arch).
+  **Auto-scroll près des bords pendant le drag : différé** (spec §8, optionnel MVP).
+
 ## 12/07/2026 — Widgets dashboard : Record récent, Volume muscu, Résumé running (US 7.8–7.10)
 
 Branche `feature/7.8-7.10-widgets-dashboard`. 3 widgets additifs sur le tableau de bord,

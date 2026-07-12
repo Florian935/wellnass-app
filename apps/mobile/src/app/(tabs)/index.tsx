@@ -7,6 +7,7 @@ import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { DashboardWidgetRow } from '@/components/dashboard/DashboardWidgetRow';
+import { SortableDashboard } from '@/components/dashboard/SortableDashboard';
 import { useDashboardLayout } from '@/data/repositories/dashboard-layout-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -19,7 +20,8 @@ export default function HomeScreen() {
   const firstName = profile?.firstName ?? '';
 
   const [editing, setEditing] = useState(false);
-  const { layout, toggleVisible, setSize } = useDashboardLayout();
+  const [dragging, setDragging] = useState(false);
+  const { layout, toggleVisible, setSize, reorder } = useDashboardLayout();
 
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
 
@@ -88,25 +90,50 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.blocks} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.blocks}
+        showsVerticalScrollIndicator={false}
+        // Neutralise le défilement pendant un drag actif (maquette / spec 7.2).
+        scrollEnabled={!dragging}
+      >
         {rendered.length === 0 && !editing ? (
           <Text style={[styles.empty, { color: colors.textMuted }]}>
             {t('home.customize.empty')}
           </Text>
         ) : null}
 
-        {rendered.map((w) => (
-          <DashboardWidgetRow
-            key={w.id}
-            editing={editing}
-            visible={w.visible}
-            size={w.size}
-            onToggleVisible={() => toggleVisible(w.id)}
-            onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
-          >
-            <DashboardWidget id={w.id} size={w.size} />
-          </DashboardWidgetRow>
-        ))}
+        {editing ? (
+          <SortableDashboard
+            items={rendered}
+            onReorder={reorder}
+            onDragActiveChange={setDragging}
+            renderItem={(w, handle) => (
+              <DashboardWidgetRow
+                editing
+                visible={w.visible}
+                size={w.size}
+                handle={handle}
+                onToggleVisible={() => toggleVisible(w.id)}
+                onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
+              >
+                <DashboardWidget id={w.id} size={w.size} />
+              </DashboardWidgetRow>
+            )}
+          />
+        ) : (
+          rendered.map((w) => (
+            <DashboardWidgetRow
+              key={w.id}
+              editing={false}
+              visible={w.visible}
+              size={w.size}
+              onToggleVisible={() => toggleVisible(w.id)}
+              onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
+            >
+              <DashboardWidget id={w.id} size={w.size} />
+            </DashboardWidgetRow>
+          ))
+        )}
       </ScrollView>
     </Screen>
   );

@@ -2,6 +2,7 @@
 import '@azure/core-asynciterator-polyfill';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useStatus } from '@powersync/react';
 import { useEffect } from 'react';
@@ -312,8 +313,10 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <PowerSyncProvider>
-      <RootNavigator />
-    </PowerSyncProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PowerSyncProvider>
+        <RootNavigator />
+      </PowerSyncProvider>
+    </GestureHandlerRootView>
   );
 }
