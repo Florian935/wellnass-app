@@ -127,6 +127,14 @@ export function useStreakReminderScheduler(): void {
       prefs: p,
     });
 
+    // NB (limite assumée MVP) : planification déclenchée UNIQUEMENT à l'ouverture /
+    // au retour au premier plan (pas de tâche d'arrière-plan). Un rappel programmé
+    // plus tôt aujourd'hui peut donc encore se déclencher même si l'utilisateur est
+    // devenu actif alors que l'app était fermée : c'est toléré (simple rappel), et
+    // `apply()` réévalue (annule si actif) au prochain passage au premier plan.
+    // NB : `maxPerDay` n'est pas encore appliqué ici — un seul type de notification
+    // au MVP (rappel streak, id stable → au plus 1 en attente, donc plafond respecté
+    // trivialement). `canScheduleMore` est du câblage prêt pour les futurs types.
     if (should) {
       await scheduleStreakReminder(todayAtHour(reminderHour), {
         title: t('notifications.streakDanger.title'),
