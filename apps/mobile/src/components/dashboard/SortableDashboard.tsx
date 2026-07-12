@@ -2,14 +2,16 @@
  * Conteneur de réorganisation par drag & drop du dashboard (US 7.2).
  *
  * Utilisé UNIQUEMENT en mode édition. Chaque ligne expose une poignée
- * (`react-native-gesture-handler` `Pan`) ; pendant le glissement, la carte
- * active suit le doigt (translateY animé via `react-native-reanimated`) et les
- * voisines se décalent pour matérialiser l'insertion. Au relâchement, l'index
- * cible est calculé à partir des hauteurs mesurées et remonté via `onReorder`.
+ * (`react-native-gesture-handler` `Pan`) ; pendant le glissement, **seule la carte
+ * tirée** suit le doigt (translateY animé via `react-native-reanimated`, avec
+ * ombre/scale de « ghost ») — les voisines ne se décalent pas en direct (pas de
+ * gap animé au MVP). Au relâchement, l'index cible est calculé à partir des
+ * hauteurs mesurées et remonté via `onReorder` ; la liste se réordonne alors.
  *
  * Le défilement du `ScrollView` parent est neutralisé pendant un drag actif via
- * `onDragActiveChange` (cf. maquette : « le défilement est neutralisé pendant
- * le glissement »).
+ * `onDragActiveChange` : passé à `true` au début du geste et remis à `false` dans
+ * `onFinalize` (TOUJOURS appelé, y compris si le geste actif est annulé sans
+ * `onEnd`) → pas de scroll resté bloqué.
  *
  * Hauteurs variables : chaque ligne mesure sa hauteur (`onLayout`) ; le calcul
  * d'index se fait sur les positions cumulées, pas sur une hauteur fixe.
@@ -66,13 +68,18 @@ export function SortableDashboard<T extends SortableItem>({
     [onDragActiveChange],
   );
 
+  // Réinitialisation d'état, appelée depuis `onFinalize` (toujours déclenché) :
+  // garantit que le verrou de scroll est levé même si le geste actif est annulé.
+  const settleDrag = useCallback(() => {
+    setActiveId(null);
+    onDragActiveChange?.(false);
+  }, [onDragActiveChange]);
+
   const endDrag = useCallback(
     (id: DashboardWidgetId, translationY: number) => {
       const order = items.map((it) => it.id);
       const fromIndex = order.indexOf(id);
       if (fromIndex === -1) {
-        setActiveId(null);
-        onDragActiveChange?.(false);
         return;
       }
 
@@ -100,13 +107,11 @@ export function SortableDashboard<T extends SortableItem>({
         }
       }
 
-      setActiveId(null);
-      onDragActiveChange?.(false);
       if (toIndex !== fromIndex) {
         onReorder(id, toIndex);
       }
     },
-    [items, onReorder, onDragActiveChange],
+    [items, onReorder],
   );
 
   return (
@@ -119,6 +124,7 @@ export function SortableDashboard<T extends SortableItem>({
           onMeasure={setHeight}
           onBegin={beginDrag}
           onEnd={endDrag}
+          onSettle={settleDrag}
           renderItem={renderItem}
           item={item}
           handleAccessibilityLabel={handleAccessibilityLabel}
@@ -135,6 +141,7 @@ function SortableRow<T extends SortableItem>({
   onMeasure,
   onBegin,
   onEnd,
+  onSettle,
   renderItem,
   handleAccessibilityLabel,
 }: {
@@ -144,6 +151,7 @@ function SortableRow<T extends SortableItem>({
   onMeasure: (id: string, h: number) => void;
   onBegin: (id: DashboardWidgetId) => void;
   onEnd: (id: DashboardWidgetId, translationY: number) => void;
+  onSettle: () => void;
   renderItem: (item: T, handle: ReactNode) => ReactNode;
   handleAccessibilityLabel: string;
 }) {
@@ -172,6 +180,7 @@ function SortableRow<T extends SortableItem>({
     .onFinalize(() => {
       dragging.value = false;
       translateY.value = withTiming(0, { duration: 160 });
+      runOnJS(onSettle)();
     });
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -186,7 +195,7 @@ function SortableRow<T extends SortableItem>({
     <GestureDetector gesture={pan}>
       <Animated.View
         style={styles.handle}
-        accessibilityRole="adjustable"
+        accessibilityRole="button"
         accessibilityLabel={handleAccessibilityLabel}
       >
         <View style={styles.handleGlyph}>

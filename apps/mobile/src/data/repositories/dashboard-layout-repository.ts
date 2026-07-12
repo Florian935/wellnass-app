@@ -11,11 +11,14 @@
  *   les entrées connues, y compris masquées et de piliers inactifs — le filtrage
  *   est une préoccupation d'affichage, pas de stockage) puis appellent
  *   `updateSettings({ dashboardLayout })`.
- * - Le réordonnancement (drag) est débouncé (~400 ms) pour ne pas marteler la
- *   base pendant le glissement.
+ * - Le réordonnancement (drag) écrit **immédiatement** (une seule fois, au drop —
+ *   `onReorder` n'est PAS appelé en continu pendant le glissement, seul le
+ *   `translateY` l'est). Pas de débounce : il ferait « traîner » le re-render
+ *   réactif (`useQuery`) derrière l'écriture, provoquant un mauvais ordre sur des
+ *   drags rapides + un retour visuel de la carte à son ancienne place.
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   DASHBOARD_WIDGET_IDS,
   defaultDashboardLayout,
@@ -28,9 +31,6 @@ import {
   type WidgetSize,
 } from '@wellness/shared';
 import { updateSettings, useSettings } from './settings-repository';
-
-/** Délai de débounce de l'écriture du réordonnancement pendant le drag (ms). */
-const REORDER_DEBOUNCE_MS = 400;
 
 /**
  * Construit le layout complet NON filtré (les 7 entrées connues) à stocker,
@@ -59,11 +59,16 @@ export function useDashboardLayout(): {
   toggleVisible: (id: DashboardWidgetId) => void;
   setSize: (id: DashboardWidgetId, size: WidgetSize) => void;
   reorder: (id: DashboardWidgetId, toIndex: number) => void;
-  setLayout: (next: DashboardLayout) => void;
 } {
   const { settings, isLoading } = useSettings();
 
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  // Mémoïsé pour une référence stable (évite de recréer les callbacks qui en
+  // dépendent à chaque rendu ; le fallback `[...PILLARS]` créerait sinon un
+  // nouveau tableau à chaque rendu).
+  const activePillars = useMemo(
+    () => settings?.activePillars ?? [...PILLARS],
+    [settings?.activePillars],
+  );
   const storedRaw = settings?.dashboardLayout ?? null;
 
   // Résolu (filtré piliers) pour l'affichage.
@@ -71,23 +76,14 @@ export function useDashboardLayout(): {
   const layout = resolveDashboardLayout(parsed, activePillars);
 
   // Le layout brut le plus récent est gardé dans une ref pour que les mutateurs
-  // débouncés composent sur l'état courant sans dépendre de la fermeture.
+  // composent sur l'état courant sans dépendre de la fermeture (les mutations
+  // successives s'enchaînent avant que `useQuery` n'ait rafraîchi `storedRaw`).
   // Synchronisée dans un effet (interdiction d'écrire un ref pendant le rendu).
   const storedRawRef = useRef<unknown>(storedRaw);
-
-  // --- Débounce du réordonnancement pendant le drag ---
-  const reorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingLayout = useRef<DashboardLayout | null>(null);
 
   useEffect(() => {
     storedRawRef.current = storedRaw;
   }, [storedRaw]);
-
-  useEffect(() => {
-    return () => {
-      if (reorderTimer.current) clearTimeout(reorderTimer.current);
-    };
-  }, []);
 
   const persist = useCallback((next: DashboardLayout) => {
     // Écriture offline-first : erreur très improbable (SQLite local).
@@ -130,9 +126,14 @@ export function useDashboardLayout(): {
     (id: DashboardWidgetId, toIndex: number) => {
       // Le drag manipule la vue filtrée (indices contigus des widgets affichés).
       // On reporte le mouvement sur le layout complet en préservant la position
-      // relative des widgets filtrés parmi les widgets stockés.
+      // relative des widgets filtrés parmi les widgets stockés. `visibleOrder` est
+      // dérivé du MÊME `full` (ref) que le déplacement — jamais du `layout` réactif
+      // qui peut être en retard sur la ref pendant une salve de drags → mapping
+      // cohérent quel que soit le rythme.
       const full = fullLayoutFrom(storedRawRef.current);
-      const visibleOrder = layout.widgets.map((w) => w.id);
+      const visibleOrder = resolveDashboardLayout(full, activePillars).widgets.map(
+        (w) => w.id,
+      );
       const targetId = visibleOrder[toIndex];
 
       let next: DashboardLayout;
@@ -143,22 +144,15 @@ export function useDashboardLayout(): {
         next = moveWidget(full, id, fullTargetIndex === -1 ? toIndex : fullTargetIndex);
       }
 
-      // Mise à jour immédiate de la ref (les mouvements successifs composent) +
-      // écriture débouncée pour ne pas marteler la base pendant le drag.
-      storedRawRef.current = next;
-      pendingLayout.current = next;
-      if (reorderTimer.current) clearTimeout(reorderTimer.current);
-      reorderTimer.current = setTimeout(() => {
-        if (pendingLayout.current) {
-          persist(pendingLayout.current);
-          pendingLayout.current = null;
-        }
-      }, REORDER_DEBOUNCE_MS);
+      // Écriture IMMÉDIATE (une seule fois, au drop) : la ref compose les
+      // mouvements successifs, et `updateSettings` (patch local) déclenche le
+      // re-render réactif sans latence de débounce.
+      setLayout(next);
     },
-    [layout.widgets, persist],
+    [activePillars, setLayout],
   );
 
-  return { layout, isLoading, toggleVisible, setSize, reorder, setLayout };
+  return { layout, isLoading, toggleVisible, setSize, reorder };
 }
 
 /** Ré-export pratique de l'ordre canonique (consommé par la map de rendu). */

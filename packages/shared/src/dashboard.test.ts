@@ -128,6 +128,22 @@ describe('resolveDashboardLayout', () => {
     expect(resolved.widgets).toHaveLength(7);
   });
 
+  it('(d bis) IDs dupliqués dans le stored → dédupliqués (première occurrence)', () => {
+    const stored = {
+      widgets: [
+        { id: 'streak', visible: false, order: 0, size: 'compact' },
+        { id: 'streak', visible: true, order: 1, size: 'full' },
+      ],
+    } as unknown as DashboardLayout;
+    const resolved = resolveDashboardLayout(stored, [...allPillars]);
+    const streaks = resolved.widgets.filter((w) => w.id === 'streak');
+    expect(streaks).toHaveLength(1);
+    // La première occurrence prime (visible:false, compact conservés).
+    expect(streaks[0]!.visible).toBe(false);
+    expect(streaks[0]!.size).toBe('compact');
+    expect(resolved.widgets).toHaveLength(7);
+  });
+
   it('(e) tri par order (stored désordonné)', () => {
     const stored: DashboardLayout = {
       widgets: [
