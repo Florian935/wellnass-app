@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — Personnalisation du dashboard (V0.6 Lot B)</title>
+<style>
+  :root{
+    --bg:#1c150e; --surface:#30271e; --surfaceAlt:#3a2e22; --border:#3a2e22;
+    --text:#f4ecdd; --muted:#c9b79a; --accent:#dd6e40; --accentText:#fff;
+    --success:#a9ba7e; --radius:18px;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+    --mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0b07;color:var(--text);font-family:var(--body);
+    padding:32px 16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1{font-family:var(--display);font-weight:800;font-size:22px;text-align:center;margin:0 0 4px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin:0 auto 28px;max-width:640px}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  /* Téléphone */
+  .phone{width:340px;background:var(--bg);border-radius:34px;padding:14px 12px 20px;
+    border:1px solid #2a2018;box-shadow:0 20px 50px rgba(0,0,0,.5);flex:0 0 auto}
+  .notch{width:120px;height:6px;border-radius:99px;background:#000;margin:2px auto 14px;opacity:.5}
+  .caption{font-family:var(--display);font-weight:700;font-size:13px;text-align:center;
+    margin:14px 0 0;color:var(--accent);letter-spacing:.3px}
+  /* En-tête écran */
+  .screenhead{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 8px 14px;gap:8px}
+  .screenhead .title{font-family:var(--display);font-weight:800;font-size:24px;line-height:1.1}
+  .screenhead .tag{color:var(--muted);font-size:12px;margin-top:2px}
+  .pers-btn{flex:0 0 auto;border:1px solid var(--border);background:transparent;color:var(--text);
+    font-family:var(--body);font-weight:600;font-size:12px;padding:7px 12px;border-radius:99px;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+  .pers-btn.done{background:var(--accent);border-color:var(--accent);color:var(--accentText)}
+  /* Cartes */
+  .cards{display:flex;flex-direction:column;gap:14px;padding:0 8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px;position:relative}
+  .card .ch{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .card .ic{width:18px;height:18px;color:var(--accent)}
+  .card .ct{font-family:var(--display);font-weight:600;font-size:15px}
+  .card .cv{font-family:var(--display);font-weight:700;font-size:26px}
+  .card .cvu{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .card .cs{color:var(--muted);font-size:13px}
+  .pill{display:inline-block;background:var(--surfaceAlt);border-radius:99px;padding:3px 9px;
+    font-size:11px;font-weight:600;color:var(--text)}
+  .cta{margin-top:12px;background:var(--accent);color:#fff;border:none;border-radius:12px;
+    padding:11px;text-align:center;font-family:var(--body);font-weight:700;font-size:13px}
+  /* Mode édition */
+  .editing .card{border-color:#5a4530;border-style:dashed}
+  .edit-overlay{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;
+    border-top:1px dashed var(--border)}
+  .handle{cursor:grab;color:var(--muted);font-size:18px;letter-spacing:-2px;user-select:none;
+    padding:2px 4px}
+  .ctrl{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surfaceAlt);display:flex;align-items:center;justify-content:center;color:var(--text)}
+  .ctrl.active{border-color:var(--accent);color:var(--accent)}
+  .ctrl svg{width:17px;height:17px}
+  .grow{flex:1}
+  .card.hidden{opacity:.5}
+  .card.hidden .badge-hidden{position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;
+    color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  /* Compact */
+  .card.compact{padding:12px 16px}
+  .card.compact .row{display:flex;align-items:center;gap:10px}
+  .card.compact .ct{font-size:14px}
+  .card.compact .val{margin-left:auto;font-family:var(--display);font-weight:700;font-size:17px}
+  .drag-ghost{outline:2px solid var(--accent);box-shadow:0 12px 26px rgba(0,0,0,.55);
+    transform:rotate(-1.2deg) scale(1.02)}
+  .drop-line{height:0;border-top:2px solid var(--accent);margin:-7px 8px;border-radius:2px}
+  /* Légende */
+  .legend{width:320px;background:#14100b;border:1px solid var(--border);border-radius:16px;padding:18px;
+    flex:0 0 auto}
+  .legend h2{font-family:var(--display);font-weight:700;font-size:15px;margin:0 0 12px}
+  .legend .item{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;font-size:13px}
+  .legend .k{flex:0 0 34px;height:34px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surfaceAlt);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+  .legend .k svg{width:17px;height:17px}
+  .legend .d b{color:var(--text)} .legend .d{color:var(--muted)}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:26px}
+  code{font-family:var(--mono);background:#14100b;padding:1px 5px;border-radius:5px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <h1>Personnalisation du dashboard</h1>
+  <p class="sub">V0.6 — Lot B · mode édition : réorganiser (drag&nbsp;&amp;&nbsp;drop), masquer/afficher, taille compacte/normale. Disposition persistée (local + cloud) sans migration. Thème réel de l'app (sombre, accent terracotta).</p>
+
+  <div class="stage">
+
+    <!-- ÉCRAN 1 : vue normale -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screenhead">
+        <div>
+          <div class="title">Accueil</div>
+          <div class="tag">Bonjour Florian 👋</div>
+        </div>
+        <button class="pers-btn">✏️ Personnaliser</button>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="ch"><span class="ic">🏋️</span><span class="ct">Séance du jour</span></div>
+          <div class="cs">Push A — 5 exercices</div>
+          <div class="cta">Démarrer</div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ic">🍎</span><span class="ct">Nutrition</span></div>
+          <div class="cv">1 480 <span class="cvu">/ 2 200 kcal</span></div>
+        </div>
+        <div class="card compact">
+          <div class="row"><span class="ic">🔥</span><span class="ct">Régularité</span><span class="val">7 j</span></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ic">🏆</span><span class="ct">Record récent</span></div>
+          <div class="cs"><span class="pill">Course</span> &nbsp;5 km — 24:30</div>
+        </div>
+      </div>
+      <div class="caption">Vue normale — bouton « Personnaliser »</div>
+    </div>
+
+    <!-- ÉCRAN 2 : mode édition -->
+    <div class="phone editing">
+      <div class="notch"></div>
+      <div class="screenhead">
+        <div>
+          <div class="title">Accueil</div>
+          <div class="tag">Mode édition</div>
+        </div>
+        <button class="pers-btn done">✓ Terminé</button>
+      </div>
+      <div class="cards">
+
+        <!-- carte en cours de glissement -->
+        <div class="card drag-ghost">
+          <div class="ch"><span class="ic">🍎</span><span class="ct">Nutrition</span></div>
+          <div class="cv">1 480 <span class="cvu">/ 2 200 kcal</span></div>
+          <div class="edit-overlay">
+            <span class="handle">⠿</span>
+            <span class="ctrl active" title="Visible"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span class="ctrl" title="Taille normale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/></svg></span>
+            <span class="grow"></span>
+          </div>
+        </div>
+        <div class="drop-line"></div>
+
+        <div class="card">
+          <div class="ch"><span class="ic">🏋️</span><span class="ct">Séance du jour</span></div>
+          <div class="cs">Push A — 5 exercices</div>
+          <div class="edit-overlay">
+            <span class="handle">⠿</span>
+            <span class="ctrl active" title="Visible"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span class="ctrl" title="Taille normale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/></svg></span>
+            <span class="grow"></span>
+          </div>
+        </div>
+
+        <!-- carte passée en compacte -->
+        <div class="card compact">
+          <div class="row"><span class="ic">🔥</span><span class="ct">Régularité</span><span class="val">7 j</span></div>
+          <div class="edit-overlay">
+            <span class="handle">⠿</span>
+            <span class="ctrl active" title="Visible"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <span class="ctrl active" title="Taille compacte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="17" x2="21" y2="17"/></svg></span>
+            <span class="grow"></span>
+          </div>
+        </div>
+
+        <!-- carte masquée -->
+        <div class="card hidden">
+          <span class="badge-hidden">Masqué</span>
+          <div class="ch"><span class="ic">🏆</span><span class="ct">Record récent</span></div>
+          <div class="cs"><span class="pill">Course</span> &nbsp;5 km — 24:30</div>
+          <div class="edit-overlay">
+            <span class="handle">⠿</span>
+            <span class="ctrl" title="Masqué — toucher pour afficher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.9 17.9A10.6 10.6 0 0 1 12 19C5.5 19 2 12 2 12a17 17 0 0 1 4-4.9m3.3-1.7A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.2 3.1"/><line x1="2" y1="2" x2="22" y2="22"/></svg></span>
+            <span class="ctrl" title="Taille normale"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/></svg></span>
+            <span class="grow"></span>
+          </div>
+        </div>
+
+      </div>
+      <div class="caption">Mode édition — glisser, masquer, redimensionner</div>
+    </div>
+
+    <!-- LÉGENDE -->
+    <div class="legend">
+      <h2>Contrôles d'édition</h2>
+      <div class="item">
+        <span class="k">⠿</span>
+        <span class="d"><b>Poignée</b> — glisser pour réorganiser l'ordre des widgets. Le défilement de la page est neutralisé pendant le glissement.</span>
+      </div>
+      <div class="item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <span class="d"><b>Œil</b> — masquer / afficher. Un widget masqué reste listé ici (grisé + « Masqué ») → toujours réaffichable. Présent sur <b>tous</b> les widgets (Streak compris).</span>
+      </div>
+      <div class="item">
+        <span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg></span>
+        <span class="d"><b>Taille</b> — bascule <b>normale</b> (carte) ↔ <b>compacte</b> (une ligne : titre + valeur clé).</span>
+      </div>
+      <div class="item">
+        <span class="k" style="color:var(--accentText);background:var(--accent);border-color:var(--accent)">✓</span>
+        <span class="d"><b>Terminé</b> — sort du mode édition. Chaque changement est <b>persisté</b> aussitôt (<code>user_settings.dashboard_layout</code>) et synchronisé.</span>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0" />
+      <div class="item"><span class="d"><b>Piliers inactifs</b> : les widgets d'un pilier désactivé n'apparaissent ni en vue ni en édition (réapparaissent si le pilier est réactivé).</span></div>
+      <div class="item"><span class="d"><b>Nouveau widget</b> ajouté plus tard : apparaît automatiquement en fin de liste, visible, taille normale (jamais perdu).</span></div>
+    </div>
+
+  </div>
+
+  <p class="foot">Maquette statique — les couleurs/typos suivent le thème réel de l'app (sombre). Les polices exactes (Bricolage&nbsp;Grotesque / Hanken&nbsp;Grotesk / Space&nbsp;Mono) peuvent être approximées ici selon le rendu du navigateur.</p>
+</body>
+</html>
