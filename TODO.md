@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 12/07/2026 (Running R4a historique + stats + courbe d'allure : code livré, revu & intégré dev — lecture seule, aucun rebuild · R4b records + export GPX + dénivelé différés)*
+*Dernière mise à jour : 12/07/2026 (Running R4b records d'allure + maj auto allure de réf : code livré, revu & intégré dev — reste checkpoint 🔴 cloud après R3a/R3b-i/R3c-i · export GPX + dénivelé différés)*
 
 ---
 
@@ -134,7 +134,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
     - [ ] **5.6 — Coordination muscu ↔ running** (alerte 2 séances le même jour) — **différée** : dépend d'un **planning muscu daté** (US muscu 3.9, non construit). La table `planned_sessions` pilier-aware la prépare.
 - [~] **Running R4 — Historique, stats, records d'allure, export GPX** (5.28-5.33) — **découpé R4a / R4b / (GPX + dénivelé différés)** :
   - [x] **R4a — Historique + stats + courbe d'allure** (5.28, 5.29, 6.1) — **code livré & revu, intégré `dev`** (`feature/running-r4a-historique-stats`). Écran « Historique & progression » : stats (semaine/mois/début), courbe d'allure globale 30/90 j + tendance, liste chronologique → détail. Logique partagée testée (`run-stats.ts`, +`formatDurationHms`) + hooks lecture (`useRunStats`/`usePaceTrend`, `useRunHistory` inchangé). Lecture seule : **aucune migration, aucun rebuild**. Cadrage complet, revues par phase (spec+qualité) + finale (*Ready to merge*). typecheck/lint/tests verts (shared 436 + mobile 29), parité 678/678. _Pas de checkpoint 🔴 (lecture seule)._
-  - [ ] **R4b — Records d'allure (segment glissant) + maj auto allure de réf** (5.30, 5.31).
+  - [x] **R4b — Records d'allure (segment glissant) + maj auto allure de réf** (5.30, 5.31) — **code livré & revu, intégré `dev`** (`feature/running-r4b-records`). Table **`running_pace_records`** (migration `20260712120000` + RLS + sync `user_data` + schéma PowerSync) ; logique partagée testée (`pace-records.ts` : meilleur segment glissant + interpolation + filtre outliers, 9 tests) ; `running-record-repository` (`useRunningRecords`, `detectAndStoreRunRecords` idempotent GPS-only + maj ref 5 km, `backfillRunningRecords`) ; **section « Records »** dans l'Historique + **célébration in-app** (bandeau animé charte, aucun module natif). Notification poussée différée. Cadrage complet, revues par phase (spec+qualité) + finale (*Ready to merge*). typecheck/lint/tests verts (shared 445 + mobile 29), parité 688/688, muscu non régressé. **Reste 🔴 (après R3a/R3b-i/R3c-i, avec Damien)** : migration cloud + `db:types` + sync rule + vérif device.
   - [ ] **Export GPX** (5.33) — incrément dédié (nécessite `expo-sharing` + `expo-file-system` → nouveau build).
   - [ ] **Dénivelé cumulé** (5.32) — **différé** : aucune altitude captée (`GpsPoint = {lat,lng,t}`) ; nécessite de modifier le tracker (R1) + étendre `GpsPoint`/le codec + un build.
   - [ ] **Découpage par type de séance** (stats/courbe par type) — différé : les courses libres n'ont pas de `session_type`.
