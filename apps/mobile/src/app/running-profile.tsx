@@ -38,10 +38,9 @@ export default function RunnerProfileScreen() {
   const { runnerProfile } = useRunnerProfile();
 
   // État local pour le champ allure de référence (saisie libre M:SS).
-  // Initialisé depuis la valeur persistée ; mis à jour en local à chaque frappe.
-  const [paceText, setPaceText] = useState<string>(
-    () => units.paceInputValue(runnerProfile?.ref5kPaceSPerKm),
-  );
+  // Offline-first : démarre null ; la valeur affichée retombe sur la valeur persistée
+  // (résolue de façon asynchrone par PowerSync) tant que l'utilisateur n'a pas édité.
+  const [paceText, setPaceText] = useState<string | null>(null);
 
   const objective: RunnerObjective | null = runnerProfile?.objective ?? null;
   const level: RunnerLevel | null = runnerProfile?.level ?? null;
@@ -88,7 +87,7 @@ export default function RunnerProfileScreen() {
       <Card>
         <TextField
           label={`${t('running.profile.ref5k')} (/${units.distanceSymbol})`}
-          value={paceText}
+          value={paceText ?? units.paceInputValue(runnerProfile?.ref5kPaceSPerKm)}
           onChangeText={onPaceChange}
           keyboardType="numbers-and-punctuation"
           placeholder={t(
