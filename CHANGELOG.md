@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — US 3.9 : planning muscu daté + calendrier unifié (coordination muscu↔running)
+
+_Branche : `feature/us3.9-planning-unifie`. Cadrage complet (spec+plan+maquette validés) puis code subagent-driven (revues par phase + finale = **Ready to merge**). **Généralise** l'infra de planification R3c-i (pilier-agnostique) : livre le planning muscu **et** l'essentiel de la coordination 5.6. **100 % JS — aucune migration, aucun cloud, aucune dépendance native** (`planned_sessions` déjà déployée)._
+
+### Ajouté / Modifié
+- **`@wellness/shared`** : `planRunningProgramInput{Schema}` → **`planProgramInput{Schema}`** (pilier-neutre).
+- **`planned-session-repository.ts` — pilier-agnostique** : `planRunningProgram` → **`planProgram`** (active par le pilier du programme) ; `useWeekPlan`/`useMissedSessions` renvoient **tous les piliers** ; `PlannedSessionItem` gagne `pillar` + `exerciseCount` (sous-requête `COUNT(exercise_plans)`). `SELECT_MISSED` (ex-`SELECT_MISSED_RUNNING`) sans filtre pilier.
+- **Écran unifié `/planning`** (renommé depuis `running-planning`) : vue semaine 7 jours affichant **muscu (nom + N exercices, puce bordeaux)** et **running (type/cible/allure, puce terracotta)** mélangés ; **indicateur de coordination** (« N séances ») quand ≥ 2 séances `planned`+`done` le même jour ; bannière manquées + actions (reporter/sauter/faite) tous piliers.
+- **Assistant « Planifier » pilier-aware** (`planning/plan.tsx`) : muscu = noms de séance, running = types ; accessible depuis le détail programme **muscu** (`programs/[id].tsx`) **et** running.
+- **Entrée « Mon planning »** dans l'onglet Muscu (`(tabs)/strength.tsx`, sans gating — pilier socle) et l'onglet Course (recâblée vers `/planning`).
+- **i18n** : `running.planning.*` → namespace partagé **`planning.*`** (+ clés muscu/coordination), parité FR/EN 693/693.
+
+### Technique / Notes
+- **Non-régression running (device-validé)** : renommage i18n/route **exhaustif** ; greps `running.planning.`/`running-planning`/`running-programs/plan`/`planRunningProgram` = **0** ; comportement running iso (branches `if (isRunning)` additives). Vérifié par revue finale (diff commit à commit).
+- **Aucune migration/cloud/rebuild bloquant** : `planned_sessions` + `exercise_plans` déjà déployés/synchronisés. Un simple rebuild preview suffit pour la recette device.
+- Qualité verte (typecheck 3 workspaces / lint / shared 451 + mobile 29) ; 0 doublon i18n.
+- **Débloque** : la coordination 5.6 (indicateur même-jour livré ici) et prépare la détection anticipée des jours d'entraînement (nutrition 4.7).
+- **Suivi (non bloquant)** : le bouton « Planifier » s'affiche sur un programme éditorial non dupliqué (aspérité pré-existante R3c-i — idéalement masquer/rediriger vers duplication) ; à traiter ultérieurement.
+
 ## 12/07/2026 — Fix : champs du programme de course enregistrés à la saisie
 
 _Branche : `fix/running-program-fields-onchange`. Suite du fix précédent : les champs texte du composer de programme (nom, résumé, **durée en semaines**) souffraient du même défaut que la cible de séance — commit `onBlur` uniquement, donc perdus si « Terminé » était tapé sans quitter le champ (le `Keyboard.dismiss()` posé avant ne suffit pas : le blur est asynchrone, `router.back()` navigue avant). 100 % JS._
