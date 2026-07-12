@@ -12,6 +12,7 @@ import {
   appendToTrack,
   decodeTrack,
   isValidFix,
+  isValidCoord,
   ACCURACY_MAX_M,
   smoothedSpeedMs,
   runRowSchema,
@@ -484,6 +485,45 @@ describe('smoothedSpeedMs', () => {
       { lat: toLat(48.85, 1), lng: 2.35, t: 5 },
     ];
     expect(smoothedSpeedMs(pts, WINDOW_S)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isValidCoord (validite geographique pure — partagee par isValidFix et buildGpx)
+// ---------------------------------------------------------------------------
+describe('isValidCoord', () => {
+  it('accepte une coordonnee nominale (Paris)', () => {
+    expect(isValidCoord(48.8566, 2.3522)).toBe(true);
+  });
+
+  it('rejette le point (0,0) « null island »', () => {
+    expect(isValidCoord(0, 0)).toBe(false);
+  });
+
+  it('accepte une coordonnee avec une seule composante nulle', () => {
+    expect(isValidCoord(0, 2.35)).toBe(true);
+    expect(isValidCoord(48.85, 0)).toBe(true);
+  });
+
+  it('rejette une latitude hors bornes (|lat| > 90)', () => {
+    expect(isValidCoord(91, 2.35)).toBe(false);
+    expect(isValidCoord(-90.1, 2.35)).toBe(false);
+  });
+
+  it('rejette une longitude hors bornes (|lng| > 180)', () => {
+    expect(isValidCoord(48.85, 181)).toBe(false);
+    expect(isValidCoord(48.85, -180.5)).toBe(false);
+  });
+
+  it('accepte les bornes exactes (|lat| = 90, |lng| = 180)', () => {
+    expect(isValidCoord(90, 180)).toBe(true);
+    expect(isValidCoord(-90, -180)).toBe(true);
+  });
+
+  it('rejette des coordonnees non finies (NaN / Infinity)', () => {
+    expect(isValidCoord(NaN, 2.35)).toBe(false);
+    expect(isValidCoord(48.85, Infinity)).toBe(false);
+    expect(isValidCoord(-Infinity, 2.35)).toBe(false);
   });
 });
 

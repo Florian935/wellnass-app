@@ -104,12 +104,29 @@ export interface GpsFixCandidate {
 }
 
 /**
+ * Predicat PUR : une coordonnee geographique est-elle valide (WGS84) ?
+ *
+ * Rejette une coordonnee si :
+ *  - `lat`/`lng` non finis (NaN, Infinity) ;
+ *  - `lat === 0 && lng === 0` (« null island » — fix degrade classique) ;
+ *  - hors bornes geographiques (`|lat| > 90` ou `|lng| > 180`).
+ *
+ * Helper partage : `isValidFix` (ingestion GPS) et `buildGpx` (export) s'appuient
+ * dessus, sans dupliquer la logique. N'inclut PAS le filtre `accuracy` (propre a
+ * l'ingestion, absent d'un `GpsPoint`). Fonction pure, testable avec des scalaires.
+ */
+export function isValidCoord(lat: number, lng: number): boolean {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat === 0 && lng === 0) return false; // null island
+  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return false; // hors bornes
+  return true;
+}
+
+/**
  * Predicat PUR : un fix GPS est-il valide (a conserver dans la trace) ?
  *
  * Rejette un fix si :
- *  - `lat`/`lng` absents ou non finis (NaN, Infinity) ;
- *  - `lat === 0 && lng === 0` (« null island » — fix degrade classique) ;
- *  - hors bornes geographiques (`|lat| > 90` ou `|lng| > 180`) ;
+ *  - la coordonnee est invalide (`isValidCoord` : non fini, null island, hors bornes) ;
  *  - `accuracy` presente et `> ACCURACY_MAX_M` (precision trop mauvaise).
  *
  * Un `accuracy` absent/`null` n'entraine PAS de rejet (l'info n'est pas toujours
@@ -117,9 +134,7 @@ export interface GpsFixCandidate {
  */
 export function isValidFix(fix: GpsFixCandidate): boolean {
   const { lat, lng, accuracy } = fix;
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
-  if (lat === 0 && lng === 0) return false; // null island
-  if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return false; // hors bornes
+  if (!isValidCoord(lat, lng)) return false;
   if (accuracy != null && accuracy > ACCURACY_MAX_M) return false;
   return true;
 }
