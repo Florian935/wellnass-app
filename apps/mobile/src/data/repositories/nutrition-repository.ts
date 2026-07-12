@@ -18,6 +18,7 @@
 
 import { useQuery } from '@powersync/react';
 import type { DietRestriction, MealConfigItem, NutritionProfileRow } from '@wellness/shared';
+import { parseJsonColumn } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
@@ -64,20 +65,6 @@ type NutritionDbRow = {
 
 const SELECT_CURRENT =
   'SELECT * FROM nutrition_profiles WHERE deleted_at IS NULL LIMIT 1';
-
-// ---------------------------------------------------------------------------
-// Parsing sécurisé des colonnes JSON
-// ---------------------------------------------------------------------------
-
-/** Parse une colonne TEXT stockée en JSON ; retourne `fallback` si vide/invalide. */
-function parseJsonColumn<T>(raw: string | null | undefined, fallback: T): T {
-  if (!raw) return fallback;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Mapping snake_case ↔ camelCase

@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/07/2026 — Nutrition : édition/suppression d'entrée + 8 correctifs base d'aliments & journal
+
+_Branche : `feature/journal-modifier-supprimer-entree`. Deux lots : (a) éditer la quantité / supprimer une entrée depuis le détail du journal (US4.34) ; (b) 8 correctifs issus d'une analyse des manques du pilier Nutrition (hygiène de données, recherche, saisie rapide, dette technique). **100 % client** — deux parts nécessitant une migration cloud sont explicitement différées (eau, snapshot fibres/sucres/AGS par entrée). Qualité verte (467 tests shared dont +16, typecheck/lint OK sur les fichiers touchés, i18n FR/EN 708/708). Recette device Pixel 6a : recherche accent-insensible, onglet Récents, horodatage + réordonnancement du détail confirmés._
+
+### Ajouté
+- **Éditer la quantité / supprimer une entrée du journal** (`nutrition.tsx`, US4.34) : le détail d'une entrée expose « Modifier la quantité » (champ grammes + aperçu live kcal/macros/micros, recalcul par règle de trois) et « Supprimer » (avec confirmation) ; l'appui long reste un raccourci de suppression.
+- **#1 Éditer / supprimer un aliment de la base** (`food-repository.ts`, `food-custom.tsx`, `food-picker.tsx`) : `updateFood`/`deleteFood`/`getFood`/`isEditableFood`. `food-custom` passe en **mode édition** (param `foodId`, préremplissage) ; **appui long** sur une ligne du picker → Modifier / Supprimer (réservé aux aliments perso & OFF importés ; la bibliothèque `library` reste en lecture seule).
+- **#4 Fibres / sucres / AG saturés** : colonnes désormais **branchées** (saisie dans `food-custom`, stockage `addCustomFood`/`updateFood`, lecture dans `FoodListItem`, aperçu mis à l'échelle dans `QuantityPanel`). Étaient des colonnes mortes.
+- **#5 Saisie rapide** : **onglet « Récents »** (`useRecentFoods`, aliments récemment journalisés) + **multi-ajout** (le picker reste ouvert après un ajout, bannière « N ajouté(s) » + « Terminé »).
+- **#6 Réordonnancement + horodatage** : `moveEntry` (échange d'`order_index`) exposé par des chevrons ↑/↓ dans le détail (désactivés aux extrémités) ; l'heure de journalisation (`created_at`) s'affiche dans le sous-titre du détail.
+
+### Modifié
+- **#3 Recherche d'aliments insensible aux accents/ligatures** (`search.ts`, `food-repository.ts`) : `useFoods` filtre désormais **en mémoire** via `matchesSearch` (repli des diacritiques + ligatures œ/æ) au lieu d'un `LIKE '%…%'` SQL — « boeuf » trouve « Bœuf haché », « pates » trouve « Pâtes ».
+- **#7 Logique de rescale extraite et testée** : `rescaleEntryNutrition` dans `@wellness/shared` (règle de trois depuis le snapshot, un seul arrondi) ; `nutrition.tsx` la consomme au lieu d'un calcul inline.
+
+### Corrigé
+- **#2 Doublons OpenFoodFacts** (`food-picker.tsx`) : la sélection d'un résultat OFF via la recherche texte fait désormais `findFoodByBarcode` **avant** d'importer → plus de lignes `foods` dupliquées (seul le scan dédupliquait jusqu'ici).
+- **#8 Double-encodage JSON (cause racine)** : nouveau helper partagé `parseJsonColumn` (tolérant au double-encodage PowerSync/op-sqlite) ; `parseMicronutrients`, `parsePortions` (`food-repository`), et les `parseJsonColumn` locaux de `settings-repository` (`active_pillars`/`meals`) et `nutrition-repository` s'appuient dessus. Généralise le contournement jusque-là limité aux micronutriments (US4.34).
+
+### Technique / Notes
+- **Nouveaux modules shared** : `json-column.ts` (+6 tests), `search.ts` (+7 tests), `rescaleEntryNutrition` (+3 tests dans `food.test.ts`). i18n FR/EN : +14 clés (`journal.detail.*`, `journal.tabs.recent`, `journal.addedCount/done/noRecent`, `food.edit/delete/deleteConfirm/…`, `food.custom.sugars/saturatedFat/fiber/update`), parité 708/708.
+- **Différé (déclenche le checkpoint 🔴 cloud)** : suivi de l'eau (#6, table `water_logs` à créer) et **snapshot fibres/sucres/AGS par entrée de journal** (#4, 3 colonnes sur `food_entries`) — nécessitent migration + activation cloud, non faites unilatéralement. Les valeurs fibres/sucres/AGS sont pour l'instant visibles à l'ajout (QuantityPanel) mais pas figées par entrée.
+- **Hors périmètre** : les 2 erreurs typecheck préexistantes de `running-history/index.tsx` (typage `router.push(string)`) sont identiques à `origin/dev` — non introduites ici, à traiter séparément (feront échouer la CI).
+
 ## 12/07/2026 — Fix : cible de séance perdue sans blur + contrainte cloud bloquante
 
 _Branche : `fix/running-commit-on-change`. Suite de la recette device : la durée d'une séance n'était pas enregistrée si l'utilisateur tapait « Terminé » sans sortir du champ (commit uniquement `onBlur`). Cause secondaire : une CHECK constraint cloud bloquait la synchro PowerSync pendant l'édition. 100 % JS + 1 migration cloud (déjà appliquée)._

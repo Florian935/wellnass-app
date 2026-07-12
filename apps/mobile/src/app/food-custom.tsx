@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,9 +11,12 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
-import { addCustomFood } from '@/data/repositories/food-repository';
+import { addCustomFood, getFood, updateFood } from '@/data/repositories/food-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** Formate un nombre en string d'édition (vide si null), virgule non imposée. */
+const numToField = (n: number | null | undefined): string => (n == null ? '' : String(n));
 
 /** Champs micronutriments facultatifs, groupés comme la maquette (mg, sauf vitamines D/B9/B12 en µg). */
 const MICRO_GROUPS: { key: string; items: { key: MicronutrientKey; unit: 'mg' | 'ug' }[] }[] = [
@@ -40,18 +43,50 @@ const MICRO_GROUPS: { key: string; items: { key: MicronutrientKey; unit: 'mg' | 
 ];
 
 export default function FoodCustomScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ foodId?: string }>();
+  const foodId = params.foodId ?? '';
+  const editing = foodId.length > 0;
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<FoodCategory>('other');
   const [kcal, setKcal] = useState('');
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
+  const [sugars, setSugars] = useState('');
   const [fat, setFat] = useState('');
+  const [saturated, setSaturated] = useState('');
+  const [fiber, setFiber] = useState('');
   const [microsOpen, setMicrosOpen] = useState(false);
   const [micros, setMicros] = useState<Partial<Record<MicronutrientKey, string>>>({});
+
+  // Mode édition : préremplit depuis l'aliment existant (aliment perso ou OFF importé).
+  useEffect(() => {
+    if (!editing) return;
+    const lang = i18n.language === 'en' ? 'en' : 'fr';
+    let active = true;
+    void getFood(foodId, lang).then((food) => {
+      if (!active || !food) return;
+      setName(food.name);
+      setCategory(food.category);
+      setKcal(numToField(food.kcalPer100g));
+      setProtein(numToField(food.proteinPer100g));
+      setCarbs(numToField(food.carbsPer100g));
+      setSugars(numToField(food.sugarsPer100g));
+      setFat(numToField(food.fatPer100g));
+      setSaturated(numToField(food.saturatedFatPer100g));
+      setFiber(numToField(food.fiberPer100g));
+      const m: Partial<Record<MicronutrientKey, string>> = {};
+      for (const [k, v] of Object.entries(food.micronutrients)) m[k as MicronutrientKey] = String(v);
+      setMicros(m);
+      if (Object.keys(food.micronutrients).length > 0) setMicrosOpen(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [editing, foodId, i18n.language]);
 
   const parse = (s: string) => {
     const n = Number(s.replace(',', '.'));
@@ -77,15 +112,23 @@ export default function FoodCustomScreen() {
 
   const save = async () => {
     if (!canSave) return;
-    await addCustomFood({
+    const input = {
       name,
       category,
       kcalPer100g: kcalNum,
       proteinPer100g: parse(protein),
       carbsPer100g: parse(carbs),
+      sugarsPer100g: parse(sugars),
       fatPer100g: parse(fat),
+      saturatedFatPer100g: parse(saturated),
+      fiberPer100g: parse(fiber),
       micronutrients: collectMicros(),
-    });
+    };
+    if (editing) {
+      await updateFood(foodId, input);
+    } else {
+      await addCustomFood(input);
+    }
     router.back();
   };
 
@@ -122,6 +165,13 @@ export default function FoodCustomScreen() {
         <View style={styles.macroField}><TextField label={`${t('nutrition.macros.protein')} (g)`} value={protein} onChangeText={setProtein} keyboardType="decimal-pad" /></View>
         <View style={styles.macroField}><TextField label={`${t('nutrition.macros.carbs')} (g)`} value={carbs} onChangeText={setCarbs} keyboardType="decimal-pad" /></View>
         <View style={styles.macroField}><TextField label={`${t('nutrition.macros.fat')} (g)`} value={fat} onChangeText={setFat} keyboardType="decimal-pad" /></View>
+      </View>
+
+      <Text style={[styles.label, { color: colors.textMuted }]}>{t('food.custom.moreMacros')}</Text>
+      <View style={styles.macroRow}>
+        <View style={styles.macroField}><TextField label={`${t('food.custom.sugars')} (g)`} value={sugars} onChangeText={setSugars} keyboardType="decimal-pad" /></View>
+        <View style={styles.macroField}><TextField label={`${t('food.custom.saturatedFat')} (g)`} value={saturated} onChangeText={setSaturated} keyboardType="decimal-pad" /></View>
+        <View style={styles.macroField}><TextField label={`${t('food.custom.fiber')} (g)`} value={fiber} onChangeText={setFiber} keyboardType="decimal-pad" /></View>
       </View>
 
       <Pressable
@@ -163,7 +213,11 @@ export default function FoodCustomScreen() {
       ) : null}
 
       <View style={styles.footer}>
-        <Button label={t('food.custom.save')} onPress={() => void save()} disabled={!canSave} />
+        <Button
+          label={editing ? t('food.custom.update') : t('food.custom.save')}
+          onPress={() => void save()}
+          disabled={!canSave}
+        />
       </View>
     </ScrollView>
   );

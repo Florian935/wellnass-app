@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   perServing,
@@ -15,10 +15,14 @@ import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import {
+  deleteFood,
+  findFoodByBarcode,
   importOpenFoodFactsFood,
+  isEditableFood,
   toggleFoodFavorite,
   useFavoriteFoods,
   useFoods,
+  useRecentFoods,
   type FoodListItem,
 } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
@@ -39,11 +43,14 @@ export default function FoodPickerScreen() {
   const recipeId = params.recipeId ?? '';
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
-  const TABS = mode === 'recipe' ? (['all', 'favorites'] as const) : (['all', 'favorites', 'recipes', 'templates'] as const);
+  const TABS = mode === 'recipe'
+    ? (['all', 'favorites'] as const)
+    : (['all', 'favorites', 'recent', 'recipes', 'templates'] as const);
   const [tab, setTab] = useState<string>('all');
   const [search, setSearch] = useState('');
   const { foods } = useFoods(tab === 'all' ? search : undefined);
   const { foods: favoriteFoods } = useFavoriteFoods();
+  const { foods: recentFoods } = useRecentFoods();
   const { recipes } = useRecipes();
   const { templates } = useMealTemplates();
 
@@ -52,6 +59,8 @@ export default function FoodPickerScreen() {
   const [target, setTarget] = useState<PickTarget | null>(null);
   const [recipeTarget, setRecipeTarget] = useState<RecipeListItem | null>(null);
   const [quickAdd, setQuickAdd] = useState(false);
+  // Multi-ajout : on reste dans le picker après un ajout et on cumule un compteur (4.16).
+  const [addedCount, setAddedCount] = useState(0);
 
   const addSnapshot = async (snapshot: {
     foodId: string | null;
@@ -65,10 +74,14 @@ export default function FoodPickerScreen() {
   }) => {
     if (mode === 'recipe') {
       await addRecipeIngredient(recipeId, snapshot);
-    } else {
-      await addFoodEntry(date, meal, snapshot);
+      router.back();
+      return;
     }
-    router.back();
+    // Journal : on enchaîne les ajouts sans quitter l'écran (retour à la liste + compteur).
+    await addFoodEntry(date, meal, snapshot);
+    setTarget(null);
+    setQuickAdd(false);
+    setAddedCount((n) => n + 1);
   };
 
   const runOff = async () => {
@@ -78,8 +91,33 @@ export default function FoodPickerScreen() {
   };
 
   const pickOff = async (off: OffFood) => {
+    // Dédup : si le produit (code-barres) est déjà en base, on le réutilise au lieu de
+    // réimporter une ligne `foods` en double.
+    const existing = off.barcode ? await findFoodByBarcode(off.barcode, lang) : null;
+    if (existing) {
+      setTarget({ id: existing.id, name: existing.name, kcalPer100g: existing.kcalPer100g, proteinPer100g: existing.proteinPer100g, carbsPer100g: existing.carbsPer100g, fatPer100g: existing.fatPer100g, sugarsPer100g: existing.sugarsPer100g, saturatedFatPer100g: existing.saturatedFatPer100g, fiberPer100g: existing.fiberPer100g, portions: existing.portions, micronutrients: existing.micronutrients });
+      return;
+    }
     const id = await importOpenFoodFactsFood({ ...off, category: 'other' });
     setTarget({ id, name: off.name, kcalPer100g: off.kcalPer100g, proteinPer100g: off.proteinPer100g, carbsPer100g: off.carbsPer100g, fatPer100g: off.fatPer100g, portions: [], micronutrients: off.micronutrients });
+  };
+
+  /** Menu Modifier / Supprimer d'un aliment de l'utilisateur (perso ou OFF importé). */
+  const onFoodLongPress = (item: FoodListItem) => {
+    if (!isEditableFood(item.source)) return;
+    Alert.alert(item.name, undefined, [
+      { text: t('food.edit'), onPress: () => router.push({ pathname: '/food-custom', params: { foodId: item.id } }) },
+      {
+        text: t('food.delete'),
+        style: 'destructive',
+        onPress: () =>
+          Alert.alert(item.name, t('food.deleteConfirm'), [
+            { text: t('common.cancel'), style: 'cancel' },
+            { text: t('food.delete'), style: 'destructive', onPress: () => void deleteFood(item.id) },
+          ]),
+      },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
   };
 
   if (quickAdd) {
@@ -126,6 +164,18 @@ export default function FoodPickerScreen() {
 
       <Segment options={TABS} value={tab} onChange={setTab} label={(o) => t(`journal.tabs.${o}`)} />
 
+      {mode === 'journal' && addedCount > 0 ? (
+        <View style={[styles.addedBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Ionicons name="checkmark-circle" size={18} color={colors.success} />
+          <Text style={[styles.addedBannerText, { color: colors.text }]}>
+            {t('journal.addedCount', { count: addedCount })}
+          </Text>
+          <Pressable onPress={() => router.back()} hitSlop={8}>
+            <Text style={[styles.addedBannerDone, { color: colors.accent }]}>{t('journal.done')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       {tab === 'recipes' ? (
         <FlatList
           data={recipes}
@@ -169,13 +219,23 @@ export default function FoodPickerScreen() {
         />
       ) : (
         <FlatList
-          data={tab === 'all' ? foods : favoriteFoods}
+          data={tab === 'all' ? foods : tab === 'recent' ? recentFoods : favoriteFoods}
           keyExtractor={(f) => f.id}
           keyboardShouldPersistTaps="handled"
           style={styles.list}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <FoodRow item={item} onPick={() => setTarget({ id: item.id, name: item.name, kcalPer100g: item.kcalPer100g, proteinPer100g: item.proteinPer100g, carbsPer100g: item.carbsPer100g, fatPer100g: item.fatPer100g, portions: item.portions, micronutrients: item.micronutrients })} />}
-          ListEmptyComponent={<Text style={[styles.empty, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>}
+          renderItem={({ item }) => (
+            <FoodRow
+              item={item}
+              onPick={() => setTarget({ id: item.id, name: item.name, kcalPer100g: item.kcalPer100g, proteinPer100g: item.proteinPer100g, carbsPer100g: item.carbsPer100g, fatPer100g: item.fatPer100g, sugarsPer100g: item.sugarsPer100g, saturatedFatPer100g: item.saturatedFatPer100g, fiberPer100g: item.fiberPer100g, portions: item.portions, micronutrients: item.micronutrients })}
+              onLongPress={() => onFoodLongPress(item)}
+            />
+          )}
+          ListEmptyComponent={
+            <Text style={[styles.empty, { color: colors.textMuted }]}>
+              {tab === 'recent' ? t('journal.noRecent') : t('journal.noFood')}
+            </Text>
+          }
           ListFooterComponent={
             tab === 'all' && search.trim().length >= 2 ? (
               <View style={styles.offSection}>
@@ -222,11 +282,17 @@ export default function FoodPickerScreen() {
   );
 }
 
-function FoodRow({ item, onPick }: { item: FoodListItem; onPick: () => void }) {
+function FoodRow({ item, onPick, onLongPress }: { item: FoodListItem; onPick: () => void; onLongPress?: () => void }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const editable = isEditableFood(item.source);
   return (
-    <Pressable style={[styles.row, { borderColor: colors.border }]} onPress={onPick}>
+    <Pressable
+      style={[styles.row, { borderColor: colors.border }]}
+      onPress={onPick}
+      onLongPress={editable ? onLongPress : undefined}
+      accessibilityHint={editable ? t('food.longPressEdit') : undefined}
+    >
       <View style={{ flex: 1 }}>
         <Text style={[styles.rowName, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
         <Text style={[styles.rowKcal, { color: colors.textMuted }]}>{Math.round(item.kcalPer100g)} {t('journal.per100')} · {t(`food.categories.${item.category}`)}</Text>
@@ -297,6 +363,9 @@ const styles = StyleSheet.create({
   empty: { fontFamily: fontFamily.body, fontSize: 14, textAlign: 'center', paddingVertical: 20 },
   offSection: { gap: 8, marginTop: 8 },
   offTitle: { fontFamily: fontFamily.bodySemi, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
+  addedBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  addedBannerText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  addedBannerDone: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
   footer: { flexDirection: 'row', gap: 12, borderTopWidth: 1, paddingTop: 12 },
   panel: { gap: 16 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
