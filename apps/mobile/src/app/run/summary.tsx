@@ -1,7 +1,13 @@
-import { decodeTrack, simplifyTrack } from '@wellness/shared';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
 import {
+  decodeTrack,
+  RUNNING_RECORD_DISTANCES,
+  simplifyTrack,
+  type RecordDistanceKey,
+} from '@wellness/shared';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Animated,
   StyleSheet,
   Text,
   TextInput,
@@ -19,9 +25,30 @@ import {
   setRunFeedback,
   useRun,
 } from '@/data/repositories/run-repository';
+import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
+
+// ---------------------------------------------------------------------------
+// Constantes
+// ---------------------------------------------------------------------------
+
+/** Couleurs de la charte pour le bandeau de célébration (bordeaux + doré). */
+const CELEBRATION_BG = '#6b0028';
+const CELEBRATION_ACCENT = '#c9a96e';
+
+/** Clé i18n du libellé de distance pour chaque record canonique. */
+const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
+  '1k': 'running.records.distance1k',
+  '5k': 'running.records.distance5k',
+  '10k': 'running.records.distance10k',
+  semi: 'running.records.distanceSemi',
+  marathon: 'running.records.distanceMarathon',
+};
+
+/** Ordre canonique des clés de distance (pour trier les records battus). */
+const RECORD_ORDER: RecordDistanceKey[] = RUNNING_RECORD_DISTANCES.map((d) => d.key);
 
 // ---------------------------------------------------------------------------
 // Helpers d'affichage
@@ -101,6 +128,59 @@ function RpeSelector({
 }
 
 // ---------------------------------------------------------------------------
+// Sous-composant : bandeau de célébration de nouveau record
+// ---------------------------------------------------------------------------
+
+/**
+ * Bandeau in-app affiché en tête du résumé quand la course vient de battre au moins
+ * un record. Apparition subtile (fondu + léger zoom via `Animated`, aucun module
+ * natif). Chips = distances battues (allure non affichée ici, seul le libellé) et
+ * ligne dorée « allure de référence mise à jour » quand le 5 km est tombé.
+ */
+function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
+  const { t } = useTranslation();
+
+  // Valeur animée stockée en state (créée une fois) : lisible pendant le rendu
+  // sans enfreindre la règle React Compiler « pas d'accès aux refs au rendu ».
+  const [anim] = useState(() => new Animated.Value(0));
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: true,
+    }).start();
+  }, [anim]);
+
+  // Distances triées dans l'ordre canonique + libellés i18n.
+  const ordered = RECORD_ORDER.filter((k) => distances.includes(k));
+  const labels = ordered.map((k) => t(RECORD_DISTANCE_KEY[k]));
+  const includes5k = ordered.includes('5k');
+
+  return (
+    <Animated.View
+      style={[
+        styles.celebration,
+        {
+          opacity: anim,
+          transform: [
+            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) },
+          ],
+        },
+      ]}
+    >
+      <Text style={styles.celebrationSpark}>🏅</Text>
+      <Text style={styles.celebrationTitle}>{t('running.records.newRecordTitle')}</Text>
+      <Text style={styles.celebrationBody}>
+        {t('running.records.newRecordBody', { distances: labels.join(', ') })}
+      </Text>
+      {includes5k ? (
+        <Text style={styles.celebrationRef}>★ {t('running.records.refPaceUpdated')}</Text>
+      ) : null}
+    </Animated.View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Écran principal
 // ---------------------------------------------------------------------------
 
@@ -141,6 +221,23 @@ export default function RunSummaryScreen() {
     if (run.rpe !== null) setRpe(run.rpe);
     if (run.notes !== null) setNotes(run.notes);
   }
+
+  // Détection des records battus par cette course, une seule fois au montage.
+  // GPS + terminée uniquement ; l'idempotence du repo garantit qu'un simple
+  // remontage (revisite du résumé) ne re-célèbre pas (retourne []). Le ref évite
+  // un double appel dans le même montage (StrictMode / re-rendus).
+  const [beatenRecords, setBeatenRecords] = useState<RecordDistanceKey[]>([]);
+  const detectionRun = useRef(false);
+  useEffect(() => {
+    if (!id || !run || detectionRun.current) return;
+    if (run.source === 'manual' || run.status !== 'completed') return;
+    detectionRun.current = true;
+    detectAndStoreRunRecords(id)
+      .then(setBeatenRecords)
+      .catch((err) => {
+        console.warn('[RunSummary] detectAndStoreRunRecords failed:', err);
+      });
+  }, [id, run]);
 
   const isManual = run?.source === 'manual';
   const hasDistance = run?.distanceM !== null && run?.distanceM !== undefined;
@@ -224,6 +321,11 @@ export default function RunSummaryScreen() {
         title={t('running.summary.title')}
         subtitle={t('running.summary.subtitle')}
       />
+
+      {/* Célébration in-app d'un ou plusieurs records battus */}
+      {beatenRecords.length > 0 ? (
+        <CelebrationBanner distances={beatenRecords} />
+      ) : null}
 
       {/* Métriques principales */}
       <Card>
@@ -410,6 +512,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     minHeight: 80,
+  },
+  // Célébration de record
+  celebration: {
+    backgroundColor: CELEBRATION_BG,
+    borderRadius: 16,
+    padding: 16,
+    gap: 4,
+    overflow: 'hidden',
+  },
+  celebrationSpark: {
+    fontSize: 30,
+    position: 'absolute',
+    top: 8,
+    right: 14,
+  },
+  celebrationTitle: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 19,
+    color: '#ffffff',
+  },
+  celebrationBody: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    color: '#ffffff',
+  },
+  celebrationRef: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 13,
+    color: CELEBRATION_ACCENT,
+    marginTop: 6,
   },
   // Footer
   footer: { marginTop: 'auto' },

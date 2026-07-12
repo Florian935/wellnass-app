@@ -18,13 +18,15 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   formatDurationHms,
   paceToSystem,
+  RUNNING_RECORD_DISTANCES,
   type PaceTrendKind,
+  type RecordDistanceKey,
   type StatPeriod,
 } from '@wellness/shared';
 import { Card } from '@/components/Card';
@@ -38,6 +40,10 @@ import {
   useRunHistory,
   useRunStats,
 } from '@/data/repositories/run-repository';
+import {
+  backfillRunningRecords,
+  useRunningRecords,
+} from '@/data/repositories/running-record-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -57,6 +63,15 @@ const TREND_KEY: Record<PaceTrendKind, string> = {
   improving: 'running.history.trendImproving',
   declining: 'running.history.trendDeclining',
   stable: 'running.history.trendStable',
+};
+
+/** Clé i18n du libellé de distance pour chaque record canonique. */
+const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
+  '1k': 'running.records.distance1k',
+  '5k': 'running.records.distance5k',
+  '10k': 'running.records.distance10k',
+  semi: 'running.records.distanceSemi',
+  marathon: 'running.records.distanceMarathon',
 };
 
 // ---------------------------------------------------------------------------
@@ -117,6 +132,11 @@ export default function RunningHistoryScreen() {
             {t('running.history.runsSectionTitle')}
           </Text>
           <RunListSection />
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+            {t('running.records.sectionTitle')}
+          </Text>
+          <RecordsSection />
         </ScrollView>
       )}
     </Screen>
@@ -265,6 +285,89 @@ function RunListSection() {
 }
 
 // ---------------------------------------------------------------------------
+// Section records d'allure
+// ---------------------------------------------------------------------------
+
+/**
+ * Records d'allure par distance canonique (1 km → marathon).
+ *
+ * On itère `RUNNING_RECORD_DISTANCES` (ordre figé) et on cherche le record
+ * correspondant : présent → allure (dérivée du meilleur temps : s/km =
+ * bestTimeSeconds / (meters / 1000)) + date + tap vers le détail de la course ;
+ * absent → libellé + « — », non tappable.
+ *
+ * Backfill : au montage, si la requête locale est résolue et qu'aucun record
+ * n'existe, on rejoue une fois la détection sur l'historique GPS (offline-first,
+ * erreurs avalées). Le verrou d'exécution du repo protège des appels concurrents ;
+ * le ref local garantit un seul déclenchement par montage de l'écran.
+ */
+function RecordsSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+  const router = useRouter();
+  const { records, isLoading } = useRunningRecords();
+
+  const backfillTriggered = useRef(false);
+  useEffect(() => {
+    if (isLoading || records.length > 0 || backfillTriggered.current) return;
+    backfillTriggered.current = true;
+    backfillRunningRecords().catch((err) => {
+      console.warn('[RunningHistory] backfillRunningRecords failed:', err);
+    });
+  }, [isLoading, records.length]);
+
+  return (
+    <View style={styles.list}>
+      {RUNNING_RECORD_DISTANCES.map(({ key, meters }) => {
+        const record = records.find((r) => r.distanceKey === key);
+        const label = t(RECORD_DISTANCE_KEY[key]);
+
+        if (!record) {
+          return (
+            <View
+              key={key}
+              style={[styles.runRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <View style={styles.runInfo}>
+                <Text style={[styles.runDate, { color: colors.textMuted }]}>{label}</Text>
+              </View>
+              <Text style={[styles.recordPace, { color: colors.textMuted }]}>
+                {t('running.records.none')}
+              </Text>
+            </View>
+          );
+        }
+
+        const paceSPerKm = record.bestTimeSeconds / (meters / 1000);
+        return (
+          <Pressable
+            key={key}
+            accessibilityRole="button"
+            onPress={() => router.push('/run/summary?id=' + record.runId)}
+            style={({ pressed }) => [
+              styles.runRow,
+              { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
+            ]}
+          >
+            <View style={styles.runInfo}>
+              <Text style={[styles.runDate, { color: colors.text }]}>{label}</Text>
+              <Text style={[styles.runMeta, { color: colors.textMuted }]}>
+                {isoToDate(record.achievedAt)}
+              </Text>
+            </View>
+            <Text style={[styles.recordPace, { color: colors.text }]}>
+              {units.formatPace(paceSPerKm)}
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
 
@@ -315,4 +418,5 @@ const styles = StyleSheet.create({
   runInfo: { flex: 1, gap: 4 },
   runDate: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   runMeta: { fontFamily: fontFamily.body, fontSize: 13 },
+  recordPace: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
 });
