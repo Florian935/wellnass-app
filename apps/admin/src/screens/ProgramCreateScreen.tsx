@@ -14,8 +14,8 @@ import { theme } from '../theme';
  * Formulaire de création d'un programme éditorial (US 8.4). Pilier (requis,
  * musculation par défaut), nom FR + nom EN (les deux requis), niveau (optionnel),
  * objectif (optionnel), durée en semaines (optionnel). Création via
- * `createEditorialProgram` → redirection vers l'écran d'édition (/programs/:id,
- * livré plus tard). Erreurs FR.
+ * `createEditorialProgram` → redirection vers la liste (/programs) avec un état
+ * `created` qui y déclenche une bannière de succès. Erreurs FR.
  */
 export function ProgramCreateScreen() {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export function ProgramCreateScreen() {
       setFormError(fr.programs.error);
       return;
     }
-    navigate(`/programs/${id}`);
+    navigate('/programs', { state: { created: true } });
   }
 
   return (

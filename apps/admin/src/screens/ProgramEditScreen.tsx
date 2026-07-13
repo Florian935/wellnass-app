@@ -670,8 +670,18 @@ function SessionCard({
   const [distance, setDistance] = useState(
     session.targetDistanceM != null ? String(session.targetDistanceM) : '',
   );
-  const [duration, setDuration] = useState(
-    session.targetDurationSeconds != null ? String(session.targetDurationSeconds) : '',
+  // Durée running saisie en Heures + Minutes (stockée en secondes côté base).
+  // Seed-once depuis `targetDurationSeconds` (mêmes garanties anti-clobber que
+  // les autres champs : initialiseurs `useState`, pas de reseed sur prop-change).
+  const [durationHours, setDurationHours] = useState(
+    session.targetDurationSeconds != null
+      ? String(Math.floor(session.targetDurationSeconds / 3600))
+      : '',
+  );
+  const [durationMinutes, setDurationMinutes] = useState(
+    session.targetDurationSeconds != null
+      ? String(Math.floor((session.targetDurationSeconds % 3600) / 60))
+      : '',
   );
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -687,7 +697,16 @@ function SessionCard({
     sessionType?: SessionType | null;
   }) {
     const parsedDistance = toNonNegIntOrNull(distance);
-    const parsedDuration = toNonNegIntOrNull(duration);
+    // Durée : Heures + Minutes → secondes. Les deux vides → null ; sinon on
+    // combine, NaN / négatif ramenés à 0 (garde-fou cohérent avec les autres
+    // cibles qui rejettent le négatif).
+    const hoursEmpty = durationHours.trim() === '';
+    const minutesEmpty = durationMinutes.trim() === '';
+    const parsedDuration =
+      hoursEmpty && minutesEmpty
+        ? null
+        : (toNonNegIntOrNull(durationHours) ?? 0) * 3600 +
+          (toNonNegIntOrNull(durationMinutes) ?? 0) * 60;
     const nextName =
       overrides && 'name' in overrides ? overrides.name : name.trim() ? name.trim() : null;
     const nextType =
@@ -770,16 +789,30 @@ function SessionCard({
               style={styles.input}
             />
           </div>
-          <div style={{ flex: 1, minWidth: 120 }}>
-            <label style={styles.label}>{fr.programs.targetDurationSec}</label>
-            <input
-              type="number"
-              min={0}
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              onBlur={() => persistSession()}
-              style={styles.input}
-            />
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <label style={styles.label}>{fr.programs.targetDurationLabel}</label>
+            <div style={styles.durationRow}>
+              <input
+                type="number"
+                min={0}
+                value={durationHours}
+                placeholder={fr.programs.targetDurationHours}
+                aria-label={fr.programs.targetDurationHours}
+                onChange={(e) => setDurationHours(e.target.value)}
+                onBlur={() => persistSession()}
+                style={styles.input}
+              />
+              <input
+                type="number"
+                min={0}
+                value={durationMinutes}
+                placeholder={fr.programs.targetDurationMinutes}
+                aria-label={fr.programs.targetDurationMinutes}
+                onChange={(e) => setDurationMinutes(e.target.value)}
+                onBlur={() => persistSession()}
+                style={styles.input}
+              />
+            </div>
           </div>
         </div>
       ) : (
@@ -1104,6 +1137,7 @@ const styles: Record<string, React.CSSProperties> = {
     touchAction: 'none',
   },
   runningRow: { display: 'flex', gap: 12, flexWrap: 'wrap' },
+  durationRow: { display: 'flex', gap: 8 },
   exercisesBlock: { display: 'flex', flexDirection: 'column', gap: 10 },
   exercisesHead: {
     display: 'flex',

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   PILLAR_BUILDER,
   PROGRAM_STATUSES,
@@ -25,6 +25,15 @@ type StatusFilter = 'all' | ProgramStatus;
  */
 export function ProgramsScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Bannière de succès après création (retour depuis /programs/new). On lit
+  // l'état d'historique UNE SEULE FOIS au montage (initialiseur d'état, pas de
+  // dépendance qui retriggerait), puis on efface l'état d'historique pour qu'un
+  // rechargement / re-rendu ne réaffiche pas la bannière.
+  const [showCreated, setShowCreated] = useState<boolean>(
+    () => Boolean((location.state as { created?: boolean } | null)?.created),
+  );
 
   const [rows, setRows] = useState<AdminProgramRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +56,16 @@ export function ProgramsScreen() {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  // Efface l'état d'historique une seule fois au montage : un F5 / re-rendu ne
+  // doit pas rejouer la bannière. `showCreated` (état local) garde la bannière
+  // affichée jusqu'à fermeture manuelle. Dépendances vides → pas de boucle.
+  useEffect(() => {
+    if ((location.state as { created?: boolean } | null)?.created) {
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -128,6 +147,20 @@ export function ProgramsScreen() {
             ))}
           </select>
         </div>
+
+        {showCreated && (
+          <div style={styles.success} role="status">
+            <span>{fr.programs.createdOk}</span>
+            <button
+              type="button"
+              aria-label={fr.programs.dismiss}
+              style={styles.successClose}
+              onClick={() => setShowCreated(false)}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {error && (
           <div style={styles.error} role="alert">
@@ -277,6 +310,30 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: radius.sm,
     padding: '8px 10px',
     marginBottom: 12,
+  },
+  success: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    background: '#e4f0e4',
+    border: '1px solid #b7d6b7',
+    color: '#2f7a3f',
+    fontSize: 12.5,
+    fontWeight: 600,
+    borderRadius: radius.sm,
+    padding: '8px 10px',
+    marginBottom: 12,
+  },
+  successClose: {
+    border: 'none',
+    background: 'transparent',
+    color: '#2f7a3f',
+    fontSize: 18,
+    lineHeight: 1,
+    cursor: 'pointer',
+    padding: 0,
+    fontFamily: font,
   },
   muted: { color: colors.muted, fontSize: 13, margin: 0 },
   tableWrap: { overflowX: 'auto' },
