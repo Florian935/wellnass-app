@@ -20,6 +20,69 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+### Salve rétention / adoption / monétisation (13/07/2026)
+
+- [13/07/2026] 🔍 **Principe directeur monétisation (note)** : le différenciateur du produit —
+  l'**intégration des 3 piliers** — est la meilleure frontière payante. Gratuit = excellent tracker
+  mono-pilier ; payant = l'**intelligence de croisement** (analyses, planning intelligent, coaching).
+  Ne JAMAIS faire payer ce qui doit rester gratuit : export RGPD, synchro multi-appareils de base,
+  offline. _Cadre les idées M1→M8 ci-dessous._
+
+- [13/07/2026] 🆕 **[Rétention] Joker / gel de streak (façon Duolingo)** : un « streak freeze » qui
+  protège la série un jour manqué — enlève la frustration qui fait abandonner. Levier de rétention
+  très prouvé. Bon candidat premium (gratuit = 1 joker/mois, payant = plus).
+- [13/07/2026] 🆕 **[Rétention] Notifications de reprise (win-back)** : après X jours d'inactivité,
+  « ça fait 5 jours, on reprend en douceur ? » avec une séance courte proposée.
+- [13/07/2026] 🆕 **[Rétention] Objectifs personnels à échéance + jalons** : « courir 50 km ce mois »,
+  « +5 kg au développé d'ici 8 semaines » — anneau de progression + célébration. Non social
+  (contrairement aux défis V2).
+- [13/07/2026] 🆕 **[Rétention] Check-in quotidien léger (rituel)** : 10 s le matin
+  (humeur/énergie/poids) pour créer la boucle d'habitude. Alimente [[journal-bien-etre]] et les
+  corrélations [[analyses-croisees-poussees]].
+- [13/07/2026] 🆕 **[Rétention] « Il y a 1 an » / souvenirs** : rappel d'une perf ou séance passée à
+  la même date. Rétention émotionnelle, peu coûteux.
+- [13/07/2026] 🆕 **[Rétention] Garde-fou surentraînement / rappel de repos** : détecte l'accumulation
+  et suggère un jour off — éviter la blessure = éviter l'abandon. Recoupe [[detection-plateau-deload]]
+  et [[journal-blessures]].
+
+- [13/07/2026] 🆕 **[Adoption] Mode invité (essai sans compte)** : essayer l'app immédiatement, créer
+  le compte plus tard (migration des données locales). Réduit la friction d'entrée ; va plus loin que
+  l'onboarding skippable déjà cadré.
+- [13/07/2026] 🆕 **[Adoption] Assistant de migration packagé** : l'import GPX/CSV (V1.1) présenté
+  comme un vrai wizard « viens de Strava/Hevy/MyFitnessPal en 2 min », mis en avant à l'onboarding.
+  Angle acquisition de la cible multi-apps.
+- [13/07/2026] 🆕 **[Adoption] Partage de programme par lien/QR** : « essaie mon programme » — un
+  utilisateur partage un template, le destinataire l'importe (et installe l'app). Viralité produit ;
+  recoupe [[bibliotheque-programmes-premium]].
+- [13/07/2026] 🆕 **[Adoption] Aperçu web d'une séance/course partagée** : le destinataire du lien
+  voit un aperçu web soigné → incitation à installer. Entonnoir d'acquisition ; s'appuie sur
+  [[carte-seance-partageable]] et la web app V2.
+- [13/07/2026] 🆕 **[Adoption] Parcours « 7 jours pour démarrer »** : mini-programme d'activation
+  guidé pour les nouveaux, tous piliers, pour atteindre vite le « aha moment ».
+
+- [13/07/2026] 🆕 **[Monétisation] Analyses avancées & corrélations en premium** : le moteur
+  [[analyses-croisees-poussees]] comme cœur de l'offre payante. Le gratuit montre les données, le
+  payant explique les liens (perf ↔ nutrition ↔ récup). C'est LE différenciateur.
+- [13/07/2026] 🆕 **[Monétisation] Historique illimité** : gratuit = N derniers mois de
+  courbes/stats, premium = tout l'historique. Frontière indolore pour le nouvel utilisateur,
+  précieuse pour l'assidu.
+- [13/07/2026] 🆕 **[Monétisation] Bibliothèque de programmes experts premium** : programmes conçus
+  par des coachs (prépa semi, PPL, prise de masse…). Alimente [[module-coach-coache]] et le
+  constructeur admin (US 8.4).
+- [13/07/2026] 🆕 **[Monétisation] Coach IA conversationnel** : sous-cas premium de
+  [[integration-ia]] — pose des questions, ajuste le programme, répond « pourquoi je stagne ? » à
+  partir des données de l'utilisateur.
+- [13/07/2026] 🆕 **[Monétisation] Rapport PDF exportable (bilan santé/perf)** : beau document
+  mensuel/trimestriel à partager avec un coach ou médecin. Le CSV RGPD reste gratuit ; le rapport mis
+  en forme est premium.
+- [13/07/2026] 🆕 **[Monétisation] Plafonds sur le gratuit** : ex. nombre de programmes actifs,
+  d'exercices/aliments custom, ou de séances planifiées à l'avance ; illimité en premium. À doser
+  pour ne pas frustrer l'adoption.
+- [13/07/2026] 🆕 **[Monétisation] Personnalisation premium (cosmétique)** : thèmes, dashboard
+  réarrangeable, badges. Revenu « fanatique » sans toucher aux fonctions cœur.
+- [13/07/2026] 🆕 **[Monétisation] Accès anticipé aux nouveautés** : les abonnés testent les features
+  en avant-première. Renforce le sentiment d'appartenance.
+
 - [13/07/2026] 🆕 **Bilan hebdo/mensuel automatique** : un récap périodique narratif (volume, sorties,
   calories, PR, tendance) poussé en notification — distinct des widgets dashboard (vue live). Digest
   qui raconte la période. S'appuie sur les agrégats déjà cadrés.
