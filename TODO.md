@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 12/07/2026 (Nutrition : édition/suppression d'entrée du journal + 8 durcissements base d'aliments & journal — intégrés dev · eau & snapshot fibres/sucres/AGS par entrée différés, migration cloud requise · précédemment : US 3.9 planning muscu + calendrier unifié)*
+*Dernière mise à jour : 13/07/2026 (Idées : 16 pistes produit consignées dans IDEAS.md après analyse du cadrage · précédemment : Nutrition édition/suppression journal + durcissements base d'aliments)*
 
 ---
 

@@ -20,6 +20,47 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Bilan hebdo/mensuel automatique** : un récap périodique narratif (volume, sorties,
+  calories, PR, tendance) poussé en notification — distinct des widgets dashboard (vue live). Digest
+  qui raconte la période. S'appuie sur les agrégats déjà cadrés.
+- [13/07/2026] 🆕 **Rétrospective annuelle façon « Wrapped »** : récap annuel imagé et partageable
+  (km parcourus, tonnage total, top exercices, records…). Fort levier d'acquisition virale ; recoupe
+  [[carte-seance-partageable]].
+- [13/07/2026] 🆕 **Rappels intelligents contextuels** : notifications situées — « séance prévue
+  aujourd'hui », « déjeuner non loggé », « streak en danger ce soir ». S'appuie sur le planning
+  unifié déjà cadré.
+- [13/07/2026] 🆕 **Carte de séance/course partageable en image** : export visuel (trace GPS + stats,
+  ou résumé muscu) pour stories Insta/WhatsApp. _NB : le feed social est V2 ; ici c'est du partage
+  sortant statique, faisable avant._
+- [13/07/2026] 🆕 **Programme de parrainage** : code d'invitation + récompense. Utile quand la
+  monétisation s'activera (lié à [[offre-payante-coach]] / RevenueCat câblé).
+- [13/07/2026] 🆕 **Reconnaissance de repas par photo** : sous-cas concret de [[integration-ia]] —
+  photo de l'assiette → estimation des aliments/macros. Recoupe [[nutrition-recettes-healthy]].
+- [13/07/2026] 🆕 **Suggestions de substitution d'aliments** : « il te manque 20 g de protéines
+  aujourd'hui → ajoute X ». Complète le socle calories/macros cadré (TDEE, journal).
+- [13/07/2026] 🆕 **Suivi du jeûne intermittent / fenêtre alimentaire** : timer + historique de la
+  fenêtre repas. Public fitness demandeur ; non couvert par le cadrage nutrition.
+- [13/07/2026] 🆕 **Substitution d'exercices (matériel indispo / blessure)** : « banc pris → variante
+  haltères ». Améliore le logging live muscu ; lié à [[journal-blessures]].
+- [13/07/2026] 🆕 **Détection de plateau + suggestion de deload proactive** : au-delà de la surcharge
+  progressive déjà cadrée, détecter la stagnation d'un exercice et proposer un deload. Recoupe
+  [[analyses-croisees-poussees]].
+- [13/07/2026] 🆕 **Météo avant une sortie planifiée** : aujourd'hui la météo n'est qu'un champ
+  post-séance ; l'afficher **en amont** d'une sortie prévue aide à planifier. Lié aux rappels
+  contextuels.
+- [13/07/2026] 🆕 **Journal de bien-être / humeur / énergie** : mini-suivi quotidien (humeur, énergie,
+  stress) — potentielle **4ᵉ dimension légère** cohérente avec le nom « wellness ». Nourrit
+  directement [[analyses-croisees-poussees]] (corrélation récup ↔ perfs).
+- [13/07/2026] 🆕 **Journal blessures/douleurs & courbatures** : noter une zone sensible → l'app évite
+  de programmer ce groupe ou alerte. Complète la récup ; lié à [[substitution-exercices]] et
+  [[analyses-croisees-poussees]].
+- [13/07/2026] 🆕 **Widget écran d'accueil Android** : les widgets 7.x cadrés sont *in-app* ; un vrai
+  widget home-screen (séance du jour, streak, calories restantes) est un gap. _Chevauchement partiel
+  avec le dashboard._
+- [13/07/2026] 🆕 **Commandes / annonces vocales pendant la séance** : mains occupées — « série
+  validée », « prochain exercice ». Étend à la muscu les annonces audio running déjà prévues.
+- [13/07/2026] 🆕 **Langues supplémentaires (ES, DE…)** : extension naturelle post-FR/EN ; l'archi
+  i18n (i18next) est déjà en place.
 - [13/07/2026] 🆕 **Archivage sûr du contenu éditorial (désarchiver + garde-fou d'usage)** : suite au
   CRUD exercices (US 8.2), l'archivage = soft-delete **à sens unique** (pas de « désarchiver » dans
   l'admin) et **sans garde-fou**. Or archiver un exercice **déjà utilisé** dans des séances

@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Idées : consignation de 16 pistes produit dans IDEAS.md
+
+Branche `feature/admin-8.4-constructeur-programmes`. Session de captation d'idées produit : après
+analyse du cadrage (roadmap V0.1→V1.1, « hors périmètre », vision) pour écarter les doublons, ajout
+de 16 idées neuves dans la boîte de dépôt. **Documentation uniquement — aucun code applicatif touché.**
+
+### Ajouté
+- **IDEAS.md** — 16 entrées 🆕 datées du 13/07/2026, en tête de « À trier » : bilan hebdo/mensuel
+  auto, rétrospective annuelle « Wrapped », rappels intelligents contextuels, carte de séance/course
+  partageable en image, programme de parrainage, reconnaissance de repas par photo, substitution
+  d'aliments, jeûne intermittent, substitution d'exercices, détection de plateau + deload, météo
+  avant sortie planifiée, journal bien-être/humeur, journal blessures/douleurs, widget écran
+  d'accueil Android, commandes/annonces vocales en séance, langues supplémentaires (ES/DE).
+- Chaque entrée signale explicitement les **chevauchements avec le cadrage** (ce qui est déjà prévu
+  vs neuf) et tisse des liens `[[…]]` vers les idées connexes (analyses croisées, module coach, IA…).
+
+### Technique / Notes
+- Commit **volontairement limité à IDEAS.md**. `apps/mobile/eas.json` est modifié dans l'arbre de
+  travail (ajout de variables d'env au profil `preview` : URL Supabase, clé **anon publishable**,
+  URL PowerSync) mais **non committé ici** : sujet distinct (config de build, hors périmètre idées).
+  Valeurs publiques par conception (pas de `service_role` ni de secret) ; à trancher par les devs
+  (valeurs en dur vs secrets EAS).
+
 ## 13/07/2026 — Admin : CRUD des exercices éditoriaux + brouillon/publié (US 8.2)
 
 Branche `feature/admin-8.2-exercices-crud`. Gestion des exercices éditoriaux depuis le back-office :
