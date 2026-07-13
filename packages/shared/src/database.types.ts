@@ -401,6 +401,7 @@ export type Database = {
           fat_per_100g: number | null
           fiber_per_100g: number | null
           id: string
+          import_key: string | null
           kcal_per_100g: number
           micronutrients: Json
           owner_id: string | null
@@ -420,6 +421,7 @@ export type Database = {
           fat_per_100g?: number | null
           fiber_per_100g?: number | null
           id: string
+          import_key?: string | null
           kcal_per_100g: number
           micronutrients?: Json
           owner_id?: string | null
@@ -439,6 +441,7 @@ export type Database = {
           fat_per_100g?: number | null
           fiber_per_100g?: number | null
           id?: string
+          import_key?: string | null
           kcal_per_100g?: number
           micronutrients?: Json
           owner_id?: string | null
