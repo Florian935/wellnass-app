@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { sessionTargetPace, type ProgramSessionType } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
@@ -284,12 +285,12 @@ function RunningSessionCard({
     }
   }
 
-  return (
-    <View
-      style={[styles.sessionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-    >
-      <Text style={[styles.sessionName, { color: colors.text }]}>{sessionName}</Text>
+  // Résumé d'en-tête = type + cible (partie omise si absente).
+  const summaryParts = [typeLabel, targetLabel].filter((p): p is string => Boolean(p));
+  const summary = summaryParts.length > 0 ? summaryParts.join(' · ') : undefined;
 
+  return (
+    <CollapsibleCard title={sessionName} summary={summary}>
       <View style={styles.chipsRow}>
         {typeLabel ? (
           <View style={[styles.chip, { backgroundColor: colors.background, borderColor: colors.border }]}>
@@ -306,7 +307,7 @@ function RunningSessionCard({
       {paceLabel ? (
         <Text style={[styles.paceLabel, { color: colors.textMuted }]}>{paceLabel}</Text>
       ) : null}
-    </View>
+    </CollapsibleCard>
   );
 }
 
@@ -330,16 +331,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sessionList: { gap: 12 },
-  sessionCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    gap: 10,
-  },
-  sessionName: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 15,
-  },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
