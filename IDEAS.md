@@ -20,6 +20,20 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Télémétrie d'usage comportementale (enrichir le plan analytics)** : compléter le
+  cadrage analytics existant avec des métriques d'**usage**, pas seulement de résultat métier.
+  _Vérifié le 13/07/2026 : l'**outil** (PostHog auto-hébergé US 9.10, V0.8 + Sentry) et un **doc de
+  métriques** ([metriques-succes.md](docs/product/metriques-succes.md)) SONT cadrés — activation,
+  rétention W1/W4, engagement par pilier (séances/sorties/jours de journal, streak, records), sync,
+  crash, conversion post-V1. Mais ce sont des **résultats**, pas de la télémétrie comportementale._
+  **Non énuméré → à ajouter** : temps passé dans l'app (durée de session) & temps cumulé/jour ;
+  nombre de sessions/jour & fréquence d'ouverture ; **DAU/WAU/MAU + stickiness (DAU/MAU)** ; rétention
+  long terme (W8/W12, courbe lissée) ; **funnels de parcours** (onboarding étape par étape → drop-off,
+  activation pilier, création programme — aurait révélé le bug de rejeu onboarding) ; écrans les
+  plus/moins vus + écran de sortie ; **adoption par fonctionnalité** ; profondeur de session
+  (écrans/actions par session) ; heures/jours d'usage (caler les notifs) ; time-to-value par pilier ;
+  taux de rebond J1. **Faisable dès V0.8** (PostHog capte tout ça) ; surtout un travail de définition
+  d'événements + tableaux de bord. Respecter l'anonymisation/RGPD déjà prévue.
 - [13/07/2026] 🆕 **Garde-manger virtuel (stock) + recettes selon le stock + alertes de réappro** :
   à la validation du « panier de courses », les articles entrent dans un **stock virtuel** (le
   « frigo » de l'app) ; le pilier nutrition propose alors des **recettes à partir de ce qu'on a**, et
