@@ -221,6 +221,7 @@ export type Database = {
           muscle_primary: string
           owner_id: string | null
           source: string
+          status: string
           updated_at: string
         }
         Insert: {
@@ -232,6 +233,7 @@ export type Database = {
           muscle_primary: string
           owner_id?: string | null
           source?: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -243,6 +245,7 @@ export type Database = {
           muscle_primary?: string
           owner_id?: string | null
           source?: string
+          status?: string
           updated_at?: string
         }
         Relationships: []
