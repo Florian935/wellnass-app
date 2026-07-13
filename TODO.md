@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (Idées : 16 pistes produit consignées dans IDEAS.md après analyse du cadrage · précédemment : Nutrition édition/suppression journal + durcissements base d'aliments)*
+*Dernière mise à jour : 13/07/2026 (Bug bloquant consigné : crash + non-enregistrement au rejeu de l'onboarding depuis le profil · précédemment : idées produit dans IDEAS.md)*
 
 ---
 
@@ -42,6 +42,26 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [ ] Retirer la bannière ⚠️🔴 en tête de [CLAUDE.md](CLAUDE.md) une fois ce point réglé.
 
 **Ensuite seulement**, reprendre le reste (activation cloud ci-dessous, V0.4, etc.).
+
+---
+
+## 🐞 Bugs connus / à corriger
+
+> Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
+> (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
+
+- [ ] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding depuis le profil**
+  (remonté par Florian le 13/07/2026, device).
+  **Repro** : 1) première connexion → onboarding complété normalement (OK). 2) Aller dans
+  **Profil** → **relancer l'onboarding**. 3) Sur la **dernière étape**, appuyer sur **« Terminer »**
+  → **crash de l'app**. **Aucune donnée enregistrée** (prénom, date de naissance, sexe, etc.).
+  **Impact** : l'utilisateur ne peut pas rejouer/corriger son profil via l'onboarding ; perte de
+  saisie. **Pistes à explorer** : chemin d'écriture différent entre 1ᵉʳ passage (création) et
+  re-passage (update) — insert vs upsert du profil ? état onboarding déjà « complété » qui casse la
+  soumission finale ? navigation/reset de stack après « Terminer » quand un profil existe déjà ?
+  Vérifier les logs natifs (crash au submit) + le repository de profil (offline-first : écriture
+  locale d'abord). **À investiguer via [superpowers:systematic-debugging] avant tout correctif.**
+  _Non traité ici : on est sur `feature/admin-8.4-…`. Ouvrir `fix/onboarding-rejeu-profil`._
 
 ---
 
