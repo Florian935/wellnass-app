@@ -36,12 +36,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   `env` → sinon les builds `preview`/`production` (JS compilé sur EAS cloud) sortaient **sans** ces
   variables → **crash au démarrage** (`supabase.ts` lève à l'import ; les dev builds marchaient car
   Metro injecte le `.env` local).
-- [ ] **Coordination migrations** : se mettre d'accord sur les **plages de timestamps** de migration
-  (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`).
-  → convention à écrire (ex. par pilier/personne).
-- [ ] Retirer la bannière ⚠️🔴 en tête de [CLAUDE.md](CLAUDE.md) une fois ce point réglé.
-
-**Ensuite seulement**, reprendre le reste (activation cloud ci-dessous, V0.4, etc.).
+- [x] **Coordination migrations** : convention de **plages de timestamps** de migration actée
+  (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`) —
+  OK (14/07/2026).
+- [x] Retirer la bannière ⚠️🔴 en tête de [CLAUDE.md](CLAUDE.md) — **fait (14/07/2026)**.
 
 ---
 
@@ -112,10 +110,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [ ] **Vérif device US2** : créer/dupliquer/activer un programme, démarrer une séance depuis un programme.
 - [ ] **Vérif device US3** — **nouveau dev build requis** (`npm run build:dev`, `react-native-svg` natif) :
   record détecté à la clôture + mis en avant au résumé, historique liste/détail, courbes qui s'affichent, volume/groupe.
-- [ ] **Running R1** — **nouveau dev build requis** (`expo-location`/`task-manager` natifs + fix permission
-  `RECEIVE_BOOT_COMPLETED`), **VALIDATION TERRAIN** (Task 10, le cœur de R1) : course réelle écran verrouillé
-  + arrière-plan, perte GPS, auto-pause, mode avion→sync (1 ligne/course), **reprise après kill**, batterie
-  30-45 min, RLS 2 comptes, i18n. Caveats à vérifier : relance process Android, seuils auto-pause, notif foreground service.
+- [x] **Running R1 — VALIDATION TERRAIN faite (Florian, 14/07/2026)** ✅ : course réelle écran verrouillé
+  + arrière-plan, perte GPS, auto-pause, mode avion→sync (1 ligne/course), reprise après kill, batterie,
+  RLS 2 comptes, i18n — le cœur de R1 est recetté sur device.
   - [x] **Fix crash au lancement d'une course** (`fix/location-receive-boot-completed`, 09/07/2026) :
     ajout de la permission `RECEIVE_BOOT_COMPLETED` (manquait → `expo-location`/`task-manager`
     plantait à la 1ʳᵉ position GPS en programmant un job persistant). Diagnostic via `adb logcat`
@@ -173,7 +170,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **Running R1 — Tracker GPS nu (course libre)** — **mergé dans `dev`** (06/07/2026) : calculs GPS shared (+45 tests) + encodage trace append-friendly, table `runs`+RLS+stream, `run-repository` (flush sérialisé), tracking `expo-location`+task-manager+foreground service, écrans démarrage/suivi/résumé (5.12-5.16, 5.20-5.22, 5.24-5.26). Revues repo + finale GO. **Activation cloud + dev build + VALIDATION TERRAIN = section 🔴.**
 - [x] **Running R2 — Carte** (5.17/5.27) — **livrée & validée device (11/07/2026)** (`feature/running-r2-carte`, MapLibre + MapTiler, [ADR-006](docs/adr/ADR-006-cartographie.md)). `simplifyTrack` (Douglas-Peucker, shared, testé) + `RouteMap` réutilisable (live `follow` / résumé fit-bounds) + `RunDetail.gpsTrack` + branchement `active`/`summary` + i18n FR/EN. Cadrage complet (spec→plan→maquette), revues par phase + finale. Clé MapTiler en EAS env (preview+prod, hors git). **Validé sur Pixel** : carte live tracé+caméra, résumé fit-bounds, tuiles outdoor, états vides. Différé : tuiles offline, sélecteur de style, export GPX (R4).
 - [~] **Running R3 — Profil coureur + programmes** (5.1-5.11) — **découpé en R3a/R3b/R3c** :
-  - [~] **R3a — Profil coureur + types de séance** (5.1, 5.8-5.11) — **code livré & revu** (`feature/running-r3a-profil-types`). `running-paces` (VMA dérivée + plages d'allure, testé) + parse allure M:SS ; table **`running_profiles`** (migration `20260712090000` + RLS + sync rules + schéma PowerSync) ; `running-profile-repository` ; écran profil + « Mes allures » + route + entrée Réglages ; i18n FR/EN. Cadrage complet, revues par phase + finale (*Approved*). typecheck/lint/tests verts. **Reste 🔴 (avec Damien)** : confirmer le timestamp de migration, **appliquer la migration cloud + déployer sync rules + `npm run db:types`**, puis **vérif device**. _Récup +90-120 : plafond d'affichage à confirmer produit._
+  - [~] **R3a — Profil coureur + types de séance** (5.1, 5.8-5.11) — **code livré & revu** (`feature/running-r3a-profil-types`). `running-paces` (VMA dérivée + plages d'allure, testé) + parse allure M:SS ; table **`running_profiles`** (migration `20260712090000` + RLS + sync rules + schéma PowerSync) ; `running-profile-repository` ; écran profil + « Mes allures » + route + entrée Réglages ; i18n FR/EN. Cadrage complet, revues par phase + finale (*Approved*). typecheck/lint/tests verts. **Migration cloud + sync rules + `db:types` appliqués (14/07/2026).** Reste : **vérif device**. _Récup +90-120 : plafond d'affichage à confirmer produit._
   - [~] **R3b — Programmes de course** — **découpé en R3b-i / R3b-ii** :
     - [~] **R3b-i — Programme custom** (5.4) — **code livré & revu** (`feature/running-r3b1-programme-custom`). Réutilise l'infra programmes muscu (pilier-aware) ; contenu de séance running (type + cible) ajouté à `sessions` (migration `20260712100000`) ; repo (`updateRunningSession`/`updateProgram`/`updateProgramTranslation`/duplicate étendu) ; écrans `running-programs` (liste/détail/éditeur) + allure dérivée R3a. Blocs d'intervalles différés. Cadrage + revues (par phase + finale *Approved*). typecheck/lint/tests verts, muscu non régressé. **Reste 🔴 (après R3a, avec Damien)** : migration cloud + `db:types` + vérif device.
     - [~] **R3b-ii — Bibliothèque + filtres + seed** (5.2, 5.3) — **code livré & revu** (`feature/running-r3b2-bibliotheque`). Filtre pilier sur `useProgramLibrary` (champ `filters.pillar`, appelants muscu intacts) + `duplicateProgram` copie non active confirmée ; **seed** 3 programmes starter bilingues FR+EN (préfixe UUID `e…`, idempotent, séances `session_type`+cible conformes à la check R3b-i) ; **onglet « Bibliothèque »** (parcours + filtres objectif/niveau/durée + « Utiliser » → duplication → détail copie) ; i18n `running.library.*` FR/EN. Cadrage complet, revues spec (*conforme*) + qualité (*Approved*). typecheck/lint/tests verts (400 shared + 29 mobile), parité 617/617, muscu non régressé. _Micro-écart : résumé non affiché sur carte (comme muscu) — à arbitrer produit._ **Reste 🔴 (après R3a + R3b-i, avec Damien)** : appliquer le **seed cloud** (pas de `db:types`, pas de schéma changé) + vérif device (sync `shared_content`).
