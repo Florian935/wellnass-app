@@ -20,6 +20,32 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Suggestion de compléments alimentaires + partenariats vendeurs** : recommander des
+  compléments (protéines, créatine, oméga-3, vitamine D, magnésium…) en croisant **alimentation loggée**
+  (carences vs apports, micronutriments US 4.33), **profil nutritionnel** (objectif, TDEE, macros/RDA),
+  **profil fitness** (pilier, volume, intensité) et **perfs/récup**. Ex. « apports en fer bas 5 j
+  d'affilée + gros volume → envisager X ». Volet **monétisation** : **partenariats/affiliation** avec des
+  vendeurs de compléments (lien tracké, revenue-share/CPA — même mécanique d'affiliation que
+  [[module-influenceur]] et [[defis-sponsorises-marques]]). S'appuie sur le socle micronutriments (4.33)
+  et le moteur [[analyses-croisees-poussees]] ; prolonge [[suggestions-substitution-aliments]] (aliment →
+  complément). **Points durs (à instruire) : responsabilité santé / cadre réglementaire** (allégations
+  santé, un complément n'est pas un médicament — conseil ≠ prescription), **conflit d'intérêt** (reco
+  sincère vs sponsorisée → transparence obligatoire), **RGPD/santé** (données sensibles), qualité des
+  données de carence (le journal ne couvre pas tout). Séparer **le moteur de reco** (valeur produit, peut
+  rester neutre/gratuit) de la **couche partenariale** (monétisation par-dessus). Cible **post-V1** (après
+  micros consolidés + activation paiement).
+- [13/07/2026] 🔍 **Mensurations corporelles + historisation (tour de taille, poitrine, bras, cuisses…)** :
+  saisie de mensurations avec **courbes d'évolution** dans le temps, à côté du poids de corps.
+  _Vérifié le 13/07/2026 : **partiellement cadré mais non planifié**. La spec muscu §5 « Mesures
+  corporelles & photos (E8) » ([musculation.md:182-187](docs/specs/functional/musculation.md#L182-L187))
+  décrit déjà des « mesures corporelles optionnelles » + « courbes d'évolution du poids ET des mesures » +
+  photos de progression (galerie privée RLS). MAIS E8 **n'est descendue en aucune US** dans la
+  [roadmap](docs/roadmap/roadmap.md) : pas de version cible, **pas de modèle de données** (seul le poids
+  de corps existe via `bodyweight`). → à promouvoir en US._ Piste data : table `body_measurements`
+  (offline-first, historisée, une ligne par mesure/date), réutilise l'infra courbes du poids (4.30) et le
+  hook `useUnits()` (cm/in). Recoupe les « analyses des coachés (mensurations) » de [[module-coach-coache]]
+  et le check-in [[journal-bien-etre]]. Photos de progression = sous-lot distinct (Storage privé).
+
 - [13/07/2026] 🆕 **Télémétrie d'usage comportementale (enrichir le plan analytics)** : compléter le
   cadrage analytics existant avec des métriques d'**usage**, pas seulement de résultat métier.
   _Vérifié le 13/07/2026 : l'**outil** (PostHog auto-hébergé US 9.10, V0.8 + Sentry) et un **doc de
