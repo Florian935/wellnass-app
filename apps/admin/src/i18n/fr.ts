@@ -149,6 +149,8 @@ export const fr = {
     error: 'Une erreur est survenue. Réessaie.',
     back: 'Retour à la liste',
     noName: '(sans nom)',
+    notFound: 'Programme introuvable.',
+    publishBlocked: 'Renseigne le nom FR et le nom EN pour publier.',
 
     formTitleNew: 'Nouveau programme',
     createTitle: 'Créer un programme',
