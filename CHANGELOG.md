@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Fix — Typecheck `running-history` au vert (route typée)
+
+Branche `fix/finitions-affichage-profils` (depuis `dev` `bbbf82d`). Lot « finitions ».
+
+### Corrigé
+- **2 erreurs typecheck préexistantes** dans `app/running-history/index.tsx` : les
+  `router.push('/run/summary?id=' + …)` (string brute rejetée par le typage de route
+  expo-router) passent en **forme objet typée** `{ pathname: '/run/summary', params: { id } }`,
+  alignée sur l'usage existant de `run/active.tsx`. **Typecheck 100 % vert** sur tous les workspaces.
+
+### Technique / Notes
+- **Vérification (pas de correctif nécessaire)** : `nutrition-profile.tsx` et `running-profile.tsx`
+  ne souffrent PAS du bug « affichage vide » (contrairement à `profile.tsx`/`infos.tsx`) — ils
+  lisent leur donnée de façon **réactive** (consts dérivés à chaque rendu, `paceText` retombe sur
+  la valeur persistée), sans snapshot `useState` au montage. Point de suivi levé.
+- Vérifs vertes : typecheck OK, mobile 33 tests, lint 0 erreur.
+- Reste ouvert : bug **détail programme** (nom tronqué + séance non cliquable) → à cadrer.
+
 ## 13/07/2026 — Fix — Rejeu onboarding : crash, profil affiché vide, date de naissance −1
 
 Branche `fix/onboarding-rejeu-profil` (depuis `dev` `92ef71e`). Correction du bug bloquant

@@ -264,7 +264,7 @@ function RunListSection() {
         <Pressable
           key={run.id}
           accessibilityRole="button"
-          onPress={() => router.push('/run/summary?id=' + run.id)}
+          onPress={() => router.push({ pathname: '/run/summary', params: { id: run.id } })}
           style={({ pressed }) => [
             styles.runRow,
             { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
@@ -349,7 +349,7 @@ function RecordsSection() {
           <Pressable
             key={key}
             accessibilityRole="button"
-            onPress={() => router.push('/run/summary?id=' + record.runId)}
+            onPress={() => router.push({ pathname: '/run/summary', params: { id: record.runId } })}
             style={({ pressed }) => [
               styles.runRow,
               { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.85 : 1 },
