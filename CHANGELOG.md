@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Feat — Détail programme : séances repliables (expansion inline, muscu + running)
+
+Branche `feature/detail-programme-seances-repliables` (depuis `dev` `abaf5df`). Cadrage complet
+(brainstorming → spec → plan, maquette écartée / validation device — précédent 1.15). Exécution
+TDD, 5 tâches, commits par tâche.
+
+### Ajouté
+- **`components/CollapsibleCard.tsx`** : carte de séance repliable réutilisable (en-tête tappable
+  titre + résumé + chevron, toggle local éphémère, `footer` toujours visible, animation
+  `LayoutAnimation` sobre dégradable). Test unitaire (`+1`, replié→déplié).
+- i18n `programs.detail.exerciseCount` (pluriel `_one`/`_other`) fr + en.
+
+### Modifié
+- **Muscu** ([programs/[id].tsx](../apps/mobile/src/app/programs/[id].tsx)) : `SessionCard` via
+  `CollapsibleCard` — séances **repliées par défaut**, ouverture **indépendante** ; en-tête =
+  nom + « N exercices » ; bouton **« Démarrer »** en `footer` (accessible replié). Styles morts
+  supprimés (`sessionCard`, `sessionName`).
+- **Running** ([running-programs/[id].tsx](../apps/mobile/src/app/running-programs/[id].tsx)) :
+  `RunningSessionCard` via `CollapsibleCard` — résumé d'en-tête = **type + cible** (« Endurance ·
+  8 km ») ; détail (puces type/cible + allure) au dépli. Pas de bouton par séance (inchangé).
+
+### Corrigé
+- **Nom d'exercice tronqué** (bug #1) dans `PlanRow` (muscu) : nom et objectifs passent sur **2
+  lignes** (objectifs sous le nom) au lieu de `space-between` sur une ligne → fini le « T… ».
+
+### Technique / Notes
+- Vérifs vertes : typecheck (tous), mobile **34** tests (10 suites), lint **0 erreur**, i18n
+  **796/796**. **100 % client** : aucune donnée/migration/dépendance native. Pas de checkpoint 🔴.
+- **Reste** : recette **device** (risque visuel — repli/dépli, nom 2 lignes, Démarrer replié) +
+  relecture Damien avant merge.
+
 ## 13/07/2026 — Fix — Typecheck `running-history` au vert (route typée)
 
 Branche `fix/finitions-affichage-profils` (depuis `dev` `bbbf82d`). Lot « finitions ».

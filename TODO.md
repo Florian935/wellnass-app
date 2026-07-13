@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (lot finitions : typecheck `running-history` au vert + profils nutrition/coureur vérifiés OK ; précédemment : fix rejeu onboarding + doc dev build Android). Prochain : cadrer le bug détail programme.)*
+*Dernière mise à jour : 13/07/2026 (feat détail programme — séances repliables muscu+running, code livré ; reste recette device avant merge. Précédemment : lot finitions, fix rejeu onboarding, doc dev build Android.)*
 
 ---
 
@@ -50,19 +50,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
 
-- [ ] **Écran détail programme (mobile) — 2 améliorations d'affichage du contenu**
-  (remonté par Florian le 13/07/2026, capture device). Écran
-  [programs/[id].tsx](apps/mobile/src/app/programs/[id].tsx).
-  1. **Nom d'exercice tronqué à ~1 caractère** (« T… », « P… ») → on ne voit pas le contenu de la
-     séance. **Cause** : dans [PlanRow](apps/mobile/src/app/programs/[id].tsx#L342-L356), le nom
-     (`planName`, `flex: 1`, `numberOfLines={1}`) partage **la même ligne** que les objectifs
-     (`planTargets`, `flexShrink: 0`, ex. `3 séries · 3 reps · 0,0 kg · 10 s repos`) ; les objectifs
-     ne rétrécissent pas et écrasent le nom. **Piste** : passer nom et objectifs sur **deux lignes**
-     (objectifs sous le nom) plutôt qu'en `space-between`, ou autoriser le nom à occuper 2 lignes.
-  2. **Séance non cliquable** : la `SessionCard` n'a aucune zone tappable pour **ouvrir le détail
-     d'une séance** (seul « Démarrer cette séance » est accessible). **Piste** : rendre la carte /
-     l'en-tête de séance tappable vers un écran (ou une expansion) de détail de séance.
-  _Non traité ici (on est sur `feature/admin-8.4-…`). Ouvrir `fix/detail-programme-affichage-seance`._
+- [~] **Écran détail programme (mobile) — séances repliables** — **code livré**
+  (`feature/detail-programme-seances-repliables`, 13/07/2026). Cadrage complet (spec + plan,
+  maquette écartée). Composant partagé `CollapsibleCard` : séances **repliées par défaut**,
+  ouverture indépendante, en-tête tappable + chevron, `footer` (Démarrer) toujours visible.
+  **(1) Nom d'exercice tronqué → corrigé** (`PlanRow` sur 2 lignes). **(2) Séance cliquable →
+  expansion inline** (muscu = « N exercices » + liste ; running = « type · cible » + puces/allure).
+  Spec/plan : [detail-programme-seances-repliables.md](docs/specs/functional/us/detail-programme-seances-repliables.md).
+  typecheck/lint/tests verts, i18n 796/796. **100 % client.** **Reste** : recette **device** +
+  relecture Damien avant merge sur `dev`.
 
 - [x] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding** — **corrigé**
   (`fix/onboarding-rejeu-profil`, 13/07/2026), diagnostic device (adb logcat + logs temporaires).
@@ -79,9 +75,6 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] **Typecheck `running-history` au vert** (`fix/finitions-affichage-profils`, 13/07/2026) : les 2
   erreurs préexistantes (`router.push` string → route typée `{ pathname, params }`) corrigées →
   **typecheck 100 % vert** sur tous les workspaces.
-
-- [ ] **Écran détail programme (mobile) — 2 améliorations d'affichage** (voir ci-dessus) — toujours
-  ouvert. Ouvrir `fix/detail-programme-affichage-seance`.
 
 - [ ] **Doc** : [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) créée
   (procédure dev build Android local pour Damien) — 13/07/2026.
