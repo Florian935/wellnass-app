@@ -20,6 +20,15 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Archivage sûr du contenu éditorial (désarchiver + garde-fou d'usage)** : suite au
+  CRUD exercices (US 8.2), l'archivage = soft-delete **à sens unique** (pas de « désarchiver » dans
+  l'admin) et **sans garde-fou**. Or archiver un exercice **déjà utilisé** dans des séances
+  d'utilisateurs (`workout_sets`/`exercise_plans` le référencent) le retire de leur base locale
+  (sync `deleted_at IS NULL`) → **référence orpheline** : le nom disparaît de leur historique.
+  Pistes : (a) écran des **archivés** + **restauration** (`deleted_at → null`) ; (b) **garde-fou** qui
+  compte les usages (`workout_sets`/`exercise_plans` référençant l'exercice) et **prévient/empêche**
+  l'archivage d'un exercice populaire ; (c) généraliser aux autres contenus éditoriaux (aliments,
+  programmes). Transverse aux lots CRUD admin (8.2→8.5). _Noté le 13/07/2026._
 - [13/07/2026] 🆕 **Moteur d'analyses croisées poussées (corrélations)** : au-delà du socle de
   croisement déjà cadré, un vrai moteur qui met les données en relation — tendance des PR selon le
   volume/intensité, surplus vs déficit calorique corrélé à l'évolution des perfs, impact des pas
