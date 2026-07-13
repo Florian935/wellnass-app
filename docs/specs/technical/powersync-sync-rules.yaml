@@ -49,7 +49,10 @@ bucket_definitions:
   shared_content:
     data:
       # Bibliothèque globale (owner_id NULL) — lecture seule côté app.
-      - select * from exercises             where owner_id is null and deleted_at is null
+      # exercises : filtre status='published' (US 8.2) — les brouillons éditoriaux ne descendent jamais
+      # au mobile (même pattern que `programs`). exercise_translations n'a PAS besoin de filtre status :
+      # sans le parent (brouillon non synchronisé), ses traductions ne sont de toute façon pas exploitables.
+      - select * from exercises             where owner_id is null and status = 'published' and deleted_at is null
       - select * from exercise_translations where owner_id is null and deleted_at is null
       - select * from programs              where owner_id is null and status = 'published' and deleted_at is null
       - select * from program_translations  where owner_id is null and deleted_at is null
