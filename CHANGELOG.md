@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Fix — Rejeu onboarding : crash, profil affiché vide, date de naissance −1
+
+Branche `fix/onboarding-rejeu-profil` (depuis `dev` `92ef71e`). Correction du bug bloquant
+« crash + non-enregistrement au 2ᵉ passage de l'onboarding depuis le profil » + finitions.
+Diagnostic device via `adb logcat` (crash JS) puis logs `console.log` temporaires (base saine
+mais affichée vide) — cause racine confirmée à chaque étape, pas de correctif à l'aveugle.
+
+### Corrigé
+- **Crash au « Terminer » du rejeu** (`TypeError: undefined is not a function` dans
+  `OnboardingSummary`) : `active_pillars` triple-encodé était relu comme **chaîne** typée
+  `Pillar[]` → `activePillars.map` plantait le rendu. `parseJsonColumn` gagne un **validateur
+  de forme** optionnel (`isValid`) et déballe jusqu'à 3 niveaux ; `settings-repository` valide
+  que `active_pillars` est bien un tableau de piliers (`isPillarArray`) aux 2 points de lecture.
+- **Profil affiché vide alors que plein en base** (bug d'affichage, données bien enregistrées) :
+  `profile.tsx` et `(onboarding)/infos.tsx` figeaient leur formulaire depuis `useProfile()` **au
+  montage**, or `useQuery` (PowerSync) renvoie `null` au 1ᵉʳ rendu puis les données un tick plus
+  tard → champs vides jamais re-remplis. Ajout d'un **gate sur `isLoading`** (composant formulaire
+  monté après résolution de la requête) sur les 2 écrans.
+- **Perte de données au rejeu** : garde anti-écrasement (prénom / sexe / date) dans `infos.tsx`
+  (à l'image de poids/taille) — un champ non modifié réécrit la valeur du profil, jamais un blanc.
+- **Date de naissance enregistrée à J−1** : `toDate(...).toISOString()` convertissait une date à
+  minuit **local** en **UTC** (décalage −1 j en fuseau UTC+). Nouveau helper pur **`toIsoDate`**
+  (formatage depuis les composants locaux, validé) ; `infos.tsx` + `profile.tsx` l'utilisent.
+- **UI « Modifier le profil »** : sélecteur d'objectif en mode `scrollable` (une ligne) — plus de
+  retour à la ligne disgracieux.
+- **Note récap onboarding** obsolète (« synchro arrive bientôt ») → « profil enregistré et
+  synchronisé de façon sécurisée » (fr + en), la synchro PowerSync étant active.
+
+### Ajouté
+- `packages/shared/src/age.ts` : `toIsoDate(day, month, year)` (+3 tests) — date-only ISO sans
+  décalage de fuseau.
+- `packages/shared/src/json-column.ts` : paramètre `isValid` sur `parseJsonColumn` (+3 tests,
+  triple-encodage + rejet de forme).
+- `docs/specs/technical/dev-build-android-local.md` : procédure complète **dev build Android en
+  local** (JDK 17, SDK/NDK, `gradle.properties`, `ANDROID_HOME`/`local.properties`, conflit de
+  signature, dépannage) — pour que Damien reproduise le setup.
+
+### Fichiers touchés
+`packages/shared/src/{age,json-column}.ts` (+ tests), `settings-repository.ts`,
+`app/(onboarding)/infos.tsx`, `app/profile.tsx`, `i18n/locales/{fr,en}.json`,
+`docs/specs/technical/dev-build-android-local.md`.
+
+### Technique / Notes
+- Vérifs vertes : shared **602** tests, mobile **33**, lint **0 erreur**, parité i18n **794/794**.
+- **Point d'attention (hors périmètre)** : `nutrition-profile.tsx` et `running-profile.tsx`
+  utilisent probablement le même schéma d'init au montage → même risque d'affichage vide à
+  l'ouverture ; à corriger dans un lot dédié (même gate `isLoading`).
+- **2 erreurs typecheck préexistantes** dans `app/running-history/index.tsx` (déjà sur `dev`,
+  non introduites ici) — à traiter à part.
+- 100 % client : aucune migration, aucun redéploiement de sync rules, aucune dépendance native.
+
 ## 13/07/2026 — US 8.4 — Admin : constructeur de programmes éditoriaux (muscu + running)
 
 Branche `feature/admin-8.4-constructeur-programmes`. Back-office `apps/admin` : composer des

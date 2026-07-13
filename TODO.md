@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (2 améliorations consignées : affichage du contenu de séance sur le détail programme mobile — nom tronqué + séance non cliquable · précédemment : bug bloquant rejeu onboarding)*
+*Dernière mise à jour : 13/07/2026 (fix rejeu onboarding livré — crash `active_pillars`, profil affiché vide, anti-écrasement, date de naissance −1, UI objectif, note synchro ; + doc dev build Android local pour Damien)*
 
 ---
 
@@ -64,18 +64,23 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
      l'en-tête de séance tappable vers un écran (ou une expansion) de détail de séance.
   _Non traité ici (on est sur `feature/admin-8.4-…`). Ouvrir `fix/detail-programme-affichage-seance`._
 
-- [ ] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding depuis le profil**
-  (remonté par Florian le 13/07/2026, device).
-  **Repro** : 1) première connexion → onboarding complété normalement (OK). 2) Aller dans
-  **Profil** → **relancer l'onboarding**. 3) Sur la **dernière étape**, appuyer sur **« Terminer »**
-  → **crash de l'app**. **Aucune donnée enregistrée** (prénom, date de naissance, sexe, etc.).
-  **Impact** : l'utilisateur ne peut pas rejouer/corriger son profil via l'onboarding ; perte de
-  saisie. **Pistes à explorer** : chemin d'écriture différent entre 1ᵉʳ passage (création) et
-  re-passage (update) — insert vs upsert du profil ? état onboarding déjà « complété » qui casse la
-  soumission finale ? navigation/reset de stack après « Terminer » quand un profil existe déjà ?
-  Vérifier les logs natifs (crash au submit) + le repository de profil (offline-first : écriture
-  locale d'abord). **À investiguer via [superpowers:systematic-debugging] avant tout correctif.**
-  _Non traité ici : on est sur `feature/admin-8.4-…`. Ouvrir `fix/onboarding-rejeu-profil`._
+- [x] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding** — **corrigé**
+  (`fix/onboarding-rejeu-profil`, 13/07/2026), diagnostic device (adb logcat + logs temporaires).
+  4 causes distinctes trouvées & corrigées : **(1) crash** = `active_pillars` triple-encodé relu
+  en chaîne → `.map` planté → `parseJsonColumn` gagne un validateur de forme + garde `isPillarArray` ;
+  **(2) profil affiché vide** (données pourtant enregistrées) = formulaire figé au montage alors que
+  `useQuery` renvoie `null` au 1ᵉʳ rendu → **gate `isLoading`** sur `profile.tsx` + `infos.tsx` ;
+  **(3) perte de saisie** = garde anti-écrasement prénom/sexe/date ; **(4) date de naissance −1** =
+  `toISOString()` (UTC) sur date locale → helper `toIsoDate`. + objectif `scrollable` (UI) + note
+  synchro corrigée. Vérifs vertes. **Reste** : recette device validée par Florian ✅ ; à mentionner
+  la relecture Damien. **Suivi** : même schéma d'init au montage sur `nutrition-profile`/`running-profile`
+  (risque d'affichage vide) → lot dédié.
+
+- [ ] **Écran détail programme (mobile) — 2 améliorations d'affichage** (voir ci-dessus) — toujours
+  ouvert. Ouvrir `fix/detail-programme-affichage-seance`.
+
+- [ ] **Doc** : [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) créée
+  (procédure dev build Android local pour Damien) — 13/07/2026.
 
 ---
 

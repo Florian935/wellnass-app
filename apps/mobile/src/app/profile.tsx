@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { GOALS, SEXES, toDate, type Goal, type Sex } from '@wellness/shared';
+import { GOALS, SEXES, toIsoDate, type Goal, type Sex } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
+import { upsertProfile, useProfile, type Profile } from '@/data/repositories/profile-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -18,10 +18,18 @@ function splitIso(iso: string | null): { d: string; m: string; y: string } {
 }
 
 export default function ProfileScreen() {
+  const { profile, isLoading } = useProfile();
+  // `useQuery` renvoie null au 1ᵉʳ rendu puis les données un tick plus tard. On attend la
+  // résolution avant de monter le formulaire : sinon `useState` fige les champs sur les
+  // valeurs vides du 1ᵉʳ rendu → profil affiché vide alors qu'il est plein en base.
+  if (isLoading) return null;
+  return <ProfileForm profile={profile} />;
+}
+
+function ProfileForm({ profile }: { profile: Profile | null }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { profile } = useProfile();
   const units = useUnits();
 
   const initial = splitIso(profile?.birthDate ?? null);
@@ -44,11 +52,10 @@ export default function ProfileScreen() {
   const initialHeightRef = useRef(h0);
 
   const onSave = async () => {
-    const birth = toDate(Number(day), Number(month), Number(year));
     await upsertProfile({
       firstName: firstName.trim(),
       sex,
-      birthDate: birth ? birth.toISOString().slice(0, 10) : null,
+      birthDate: toIsoDate(Number(day), Number(month), Number(year)),
       weightKg:
         weight === initialWeightRef.current
           ? (profile?.weightKg ?? null)
@@ -150,6 +157,7 @@ export default function ProfileScreen() {
         value={goal ?? 'health'}
         onChange={setGoal}
         label={(option) => t(`onboarding.goal.options.${option}`)}
+        scrollable
       />
 
       <View style={styles.footer}>

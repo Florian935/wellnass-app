@@ -1,41 +1,83 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { SEXES, toDate, type Sex } from '@wellness/shared';
+import { SEXES, toIsoDate, type Sex } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { upsertProfile } from '@/data/repositories/profile-repository';
+import { upsertProfile, useProfile, type Profile } from '@/data/repositories/profile-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const NEXT = '/(onboarding)/pillars';
 
+/** Découpe une date ISO (AAAA-MM-JJ) en parties de saisie. */
+function splitIso(iso: string | null): { d: string; m: string; y: string } {
+  if (!iso) return { d: '', m: '', y: '' };
+  const [y, m, d] = iso.split('-');
+  return { d: d ?? '', m: m ?? '', y: y ?? '' };
+}
+
 export default function OnboardingInfos() {
+  const { profile, isLoading } = useProfile();
+  // On attend la résolution de la requête locale (null au 1ᵉʳ rendu) avant de monter le
+  // formulaire : sinon les champs se figent vides et, au rejeu, on n'affiche/pré-remplit
+  // rien (même mécanisme que profile.tsx). fix/onboarding-rejeu-profil.
+  if (isLoading) return null;
+  return <InfosForm profile={profile} />;
+}
+
+function InfosForm({ profile }: { profile: Profile | null }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
 
-  const [firstName, setFirstName] = useState('');
-  const [sex, setSex] = useState<Sex>('unspecified');
-  const [day, setDay] = useState('');
-  const [month, setMonth] = useState('');
-  const [year, setYear] = useState('');
-  const [weight, setWeight] = useState('');
-  const [heightA, setHeightA] = useState('');
-  const [heightB, setHeightB] = useState('');
+  // Valeurs initiales figées au montage : si un champ n'a pas bougé, on réécrit la valeur
+  // du profil (lue au submit, donc résolue) plutôt qu'un blanc — même si `useProfile()`
+  // renvoyait `null` au 1ᵉʳ rendu (la requête PowerSync se résout un tick plus tard).
+  const initial = splitIso(profile?.birthDate ?? null);
+  const [firstName, setFirstName] = useState(profile?.firstName ?? '');
+  const initialFirstNameRef = useRef(profile?.firstName ?? '');
+  const [sex, setSex] = useState<Sex>(profile?.sex ?? 'unspecified');
+  const initialSexRef = useRef<Sex>(profile?.sex ?? 'unspecified');
+  const [day, setDay] = useState(initial.d);
+  const [month, setMonth] = useState(initial.m);
+  const [year, setYear] = useState(initial.y);
+  const initialDateRef = useRef(initial);
+
+  // Poids/taille — anti-dérive : on fige la chaîne affichée au montage et on ne
+  // reconvertit que si l'utilisateur l'a modifiée (évite les arrondis metric↔imperial).
+  const weight0 = units.weightInputValue(profile?.weightKg);
+  const [weight, setWeight] = useState(weight0);
+  const initialWeightRef = useRef(weight0);
+  const h0 = units.heightPartsFromCm(profile?.heightCm);
+  const [heightA, setHeightA] = useState(h0.a);
+  const [heightB, setHeightB] = useState(h0.b);
+  const initialHeightRef = useRef(h0);
 
   const onContinue = async () => {
-    const birth = toDate(Number(day), Number(month), Number(year));
+    const dateUnchanged =
+      day === initialDateRef.current.d &&
+      month === initialDateRef.current.m &&
+      year === initialDateRef.current.y;
     await upsertProfile({
-      firstName: firstName.trim(),
-      sex,
-      birthDate: birth ? birth.toISOString().slice(0, 10) : null,
-      weightKg: units.parseWeightToKg(weight),
-      heightCm: units.heightPartsToCm(heightA, heightB),
+      firstName:
+        firstName === initialFirstNameRef.current ? (profile?.firstName ?? null) : firstName.trim(),
+      sex: sex === initialSexRef.current ? (profile?.sex ?? 'unspecified') : sex,
+      birthDate: dateUnchanged
+        ? (profile?.birthDate ?? null)
+        : toIsoDate(Number(day), Number(month), Number(year)),
+      weightKg:
+        weight === initialWeightRef.current
+          ? (profile?.weightKg ?? null)
+          : units.parseWeightToKg(weight),
+      heightCm:
+        heightA === initialHeightRef.current.a && heightB === initialHeightRef.current.b
+          ? (profile?.heightCm ?? null)
+          : units.heightPartsToCm(heightA, heightB),
     });
     router.push(NEXT);
   };

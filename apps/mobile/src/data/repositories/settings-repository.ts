@@ -68,6 +68,15 @@ const SELECT_CURRENT =
 // Mapping snake_case ↔ camelCase
 // ---------------------------------------------------------------------------
 
+/**
+ * Valide que la colonne `active_pillars` décodée est bien un tableau de piliers connus.
+ * Sans ce garde-fou, une ligne corrompue (JSON trop profondément encodé) pouvait laisser
+ * une **chaîne** typée `Pillar[]` → `activePillars.map` plantait le rendu du summary
+ * d'onboarding (crash rejeu, fix/onboarding-rejeu-profil).
+ */
+const isPillarArray = (value: unknown): value is Pillar[] =>
+  Array.isArray(value) && value.every((p) => (PILLARS as readonly string[]).includes(p as string));
+
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToSettings(row: SettingsDbRow): UserSettings {
   return {
@@ -76,7 +85,7 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     theme: row.theme as UserSettings['theme'],
     units: row.units as UserSettings['units'],
     language: row.language as UserSettings['language'],
-    activePillars: parseJsonColumn<Pillar[]>(row.active_pillars, [...PILLARS]),
+    activePillars: parseJsonColumn<Pillar[]>(row.active_pillars, [...PILLARS], isPillarArray),
     // Parse tolérant : anciennes valeurs (Record<string,boolean> ou {}) → défauts.
     notifications: parseNotificationPrefs(parseJsonColumn(row.notifications, null)),
     dashboardLayout: parseJsonColumn<unknown>(row.dashboard_layout, null),
@@ -190,7 +199,7 @@ export async function updateSettings(patchInput: Partial<SettingsInput>): Promis
 export async function togglePillar(pillar: Pillar): Promise<void> {
   const existing = await getCurrentRow();
   const current: Pillar[] = existing
-    ? parseJsonColumn<Pillar[]>(existing.active_pillars, [...PILLARS])
+    ? parseJsonColumn<Pillar[]>(existing.active_pillars, [...PILLARS], isPillarArray)
     : [...PILLARS];
 
   const next = current.includes(pillar)

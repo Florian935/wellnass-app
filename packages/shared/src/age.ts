@@ -44,5 +44,20 @@ export function toDate(day: number, month: number, year: number): Date | null {
   return date;
 }
 
+/**
+ * Formate jour/mois/année en date-only ISO `AAAA-MM-JJ`, ou `null` si invalide.
+ *
+ * ⚠️ Ne PAS utiliser `toDate(...).toISOString()` pour une date de naissance : `toISOString`
+ * convertit en UTC, or `toDate` crée une date à minuit **local** → dans un fuseau en avance
+ * sur UTC (ex. France UTC+1/+2), le 11 à 00 h locale devient le 10 à 22 h UTC → jour -1.
+ * Ici on formate depuis les composants **locaux** de la date validée : aucun décalage.
+ */
+export function toIsoDate(day: number, month: number, year: number): string | null {
+  const date = toDate(day, month, year);
+  if (!date) return null;
+  const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+  return `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 /** Âge minimum requis à l'inscription (RGPD). */
 export const MIN_SIGNUP_AGE = 16;
