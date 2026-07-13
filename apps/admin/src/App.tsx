@@ -1,29 +1,55 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthProvider';
+import { RolesProvider } from './auth/RolesProvider';
 import { RequireAuth } from './auth/RequireAuth';
+import { RequireAdmin } from './auth/RequireAdmin';
+import { useRoles } from './auth/useRoles';
 import { AdminLayout } from './components/AdminLayout';
 import { LoginScreen } from './screens/LoginScreen';
 import { HomePlaceholder } from './screens/HomePlaceholder';
+import { RolesScreen } from './screens/RolesScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
- * (RequireAuth → AdminLayout) avec `/` → accueil placeholder ; toute autre
- * route retombe sur `/`.
+ * (RequireAuth → RequireAdmin → AdminLayout). `/` → accueil ; `/roles` →
+ * gestion des rôles (super_admin uniquement, sinon redirection vers `/`).
+ * Toute autre route retombe sur `/`.
  */
 export function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginScreen />} />
-          <Route element={<RequireAuth />}>
-            <Route element={<AdminLayout />}>
-              <Route path="/" element={<HomePlaceholder />} />
+      <RolesProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginScreen />} />
+            <Route element={<RequireAuth />}>
+              <Route element={<RequireAdmin />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/" element={<HomePlaceholder />} />
+                  <Route
+                    path="/roles"
+                    element={
+                      <RequireSuperAdmin>
+                        <RolesScreen />
+                      </RequireSuperAdmin>
+                    }
+                  />
+                </Route>
+              </Route>
             </Route>
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </RolesProvider>
     </AuthProvider>
   );
+}
+
+/** Restreint une route au super_admin ; sinon renvoie vers l'accueil. */
+function RequireSuperAdmin({ children }: { children: React.ReactElement }) {
+  const { isSuperAdmin } = useRoles();
+  if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }

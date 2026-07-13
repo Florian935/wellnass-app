@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
+import { useRoles } from '../auth/useRoles';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -20,6 +21,7 @@ const NAV_SOON = [
  */
 export function AdminLayout() {
   const { user, signOut } = useAuth();
+  const { isSuperAdmin } = useRoles();
   const [signingOut, setSigningOut] = useState(false);
 
   async function handleLogout() {
@@ -41,9 +43,29 @@ export function AdminLayout() {
           <b style={{ color: '#fff', fontSize: 14 }}>{fr.brand}</b>
         </div>
         <nav style={styles.nav}>
-          <span aria-current="page" style={{ ...styles.navItem, ...styles.navActive }}>
+          <NavLink
+            to="/"
+            end
+            style={({ isActive }) => ({
+              ...styles.navItem,
+              ...styles.navLink,
+              ...(isActive ? styles.navActive : null),
+            })}
+          >
             ▦ {fr.layout.nav.home}
-          </span>
+          </NavLink>
+          {isSuperAdmin && (
+            <NavLink
+              to="/roles"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              🛡️ {fr.roles.nav}
+            </NavLink>
+          )}
           {NAV_SOON.map((item) => (
             <span key={item.label} style={{ ...styles.navItem, ...styles.navSoon }}>
               <span>
@@ -111,6 +133,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: colors.sidebarMuted,
     marginBottom: 2,
   },
+  navLink: { textDecoration: 'none', cursor: 'pointer' },
   navActive: { background: 'rgba(221,110,64,.18)', color: '#fff' },
   navSoon: { opacity: 0.55, cursor: 'default', justifyContent: 'space-between' },
   tag: {

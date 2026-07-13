@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin Fondation-2 : rôles + gate d'accès (US 8.9)
+
+Branche `feature/admin-f2-roles-gate`. Restreint le back-office aux administrateurs (table
+`user_roles` + RLS + gate) et ajoute une gestion minimale des rôles réservée au super_admin.
+⚠️ **La migration est un checkpoint cloud** (apply manuel + `db:types` + bootstrap par Florian
+avant que le gate soit testable en navigateur).
+
+### Ajouté
+- **Migration** `supabase/migrations/20260713100000_admin_user_roles.sql` : table `public.user_roles`
+  (`role` = text + check `super_admin`/`content_editor`/`moderator`, soft delete `deleted_at`), index
+  **unique partiel** `(user_id, role) WHERE deleted_at IS NULL` (ré-attribution possible), trigger
+  `set_updated_at`. Fonctions `is_admin()`/`is_super_admin()` en **`SECURITY DEFINER STABLE SET
+  search_path = public`** (évitent la récursion des policies). RLS : select (propre ligne ou
+  super_admin), insert/update/delete (super_admin). **Hors publication PowerSync** (table web/admin).
+- **`packages/shared/src/database.types.ts`** : ajout **manuel** de l'entrée `user_roles`
+  (Row/Insert/Update/Relationships) + fonctions `is_admin`/`is_super_admin`, pour que
+  `supabase.from('user_roles')` compile avant l'apply cloud (idempotent avec un futur `db:types`).
+- **`apps/admin/src/data/roles.ts`** : couche data (`AdminRole`, `ADMIN_ROLES`, `fetchMyRoles`
+  tolérant aux erreurs, `listRoles`, `grantRole` en update-puis-insert pour réactiver un rôle
+  soft-deleted, `revokeRole` en soft-delete).
+- **Contexte rôles** : `rolesContext.ts`, `RolesProvider.tsx`, `useRoles.ts` — charge les rôles
+  après session (recharge au changement d'utilisateur), expose
+  `roles/isAdmin/isSuperAdmin/rolesLoading/rolesError` ; erreur ⇒ non-admin (pas de crash).
+- **`RequireAdmin.tsx`** : gate à l'intérieur de `RequireAuth` — spinner pendant le chargement,
+  shell si admin, sinon `AccessDenied` (pas de redirection `/login`).
+- **`AccessDenied.tsx`** : écran FR (message + bouton Déconnexion).
+- **`RolesScreen.tsx`** (super_admin) : liste des attributions actives (user_id, rôle, date
+  JJ/MM/AAAA), formulaire d'attribution par `user_id` (UUID + select rôle, aide dashboard Supabase),
+  révocation avec confirmation ; erreurs Supabase surfacées en FR, états de chargement.
+
+### Modifié
+- **`App.tsx`** : `RolesProvider` en racine ; groupe protégé `RequireAuth → RequireAdmin →
+  AdminLayout` ; routes `/` (accueil) et `/roles` (super_admin only, sinon redirection `/`).
+- **`AdminLayout.tsx`** : entrées de nav `NavLink` (Accueil + « Rôles » visible **uniquement si
+  super_admin**), lien actif géré.
+- **`i18n/fr.ts`** : libellés `accessDenied.*` et `roles.*`.
+
+### Technique / Notes
+- **Vérifications** : racine `typecheck` + `lint` **verts** (admin inclus, aucune régression
+  mobile/shared) ; `apps/admin` build OK.
+- **Sécurité** : clé anon uniquement (jamais `service_role`) ; RLS = frontière ; gate client = confort.
+- **Checkpoint cloud (Florian)** : appliquer la migration (SQL Editor) → bootstrap du 1ᵉʳ super_admin
+  (`insert ... select id, 'super_admin' from auth.users where email = ...`) → `npm run db:types` →
+  recette navigateur.
+
 ## 13/07/2026 — Admin Fondation-1 : écran de connexion + shell protégé
 
 Branche `feature/admin-f1-scaffold-auth`. Clôt la fondation-1 du back-office : login + shell
