@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Corrigé — Onglets « Ajouter un aliment » qui passaient à la ligne
+
+Branche `fix/food-picker-onglets-scrollable`. Sur l'écran food-picker, les 5 onglets
+(Tous / Favoris / Récents / Recettes / Repas types) étaient rendus en `Segment` mode fixe
+(`flex: 1`, sans `numberOfLines`) → « Repas types » débordait sur 2 lignes (affichage disgracieux,
+remonté par Florian, capture device).
+
+### Corrigé
+- [food-picker.tsx](apps/mobile/src/app/food-picker.tsx) : ajout de la prop **`scrollable`** au
+  `Segment` des onglets → libellés à largeur intrinsèque, une seule ligne, défilement horizontal si
+  débordement (même patron que les filtres running). Aucune autre modification.
+
+### Technique / Notes
+- Le composant [Segment](apps/mobile/src/components/Segment.tsx) prévoyait déjà ce mode (prop
+  documentée « libellés nombreux/longs ») — correctif d'une ligne, aucun changement du composant.
+- typecheck vert (3 workspaces) ; lint mobile 0 erreur (4 warnings préexistants hors périmètre).
+  **100 % client, aucune migration, aucune dépendance native.** Reste : recette device.
+
 ## 13/07/2026 — Corrigé — Fuite inter-piliers dans « Mes programmes » muscu
 
 Branche `fix/programmes-filtre-pilier` (depuis `dev`). Bug remonté par Florian en recette :

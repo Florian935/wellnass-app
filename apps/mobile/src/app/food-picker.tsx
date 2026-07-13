@@ -162,7 +162,7 @@ export default function FoodPickerScreen() {
         />
       ) : null}
 
-      <Segment options={TABS} value={tab} onChange={setTab} label={(o) => t(`journal.tabs.${o}`)} />
+      <Segment scrollable options={TABS} value={tab} onChange={setTab} label={(o) => t(`journal.tabs.${o}`)} />
 
       {mode === 'journal' && addedCount > 0 ? (
         <View style={[styles.addedBanner, { backgroundColor: colors.surface, borderColor: colors.border }]}>
