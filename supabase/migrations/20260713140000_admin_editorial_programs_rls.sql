@@ -1,6 +1,7 @@
 -- US 8.4 — Admin : constructeur de programmes + RLS d'écriture éditoriale admin.
 -- 🔴 checkpoint cloud : appliqué manuellement par un humain (dashboard SQL Editor),
--- puis `db:types` + redéploiement des sync rules PowerSync.
+-- puis `db:types`. AUCUN redéploiement de sync rules (programs filtre déjà status='published' ;
+-- séances/exos d'un brouillon restent orphelins invisibles côté mobile — cf. spec §3).
 -- Réf. : docs/specs/functional/us/8.4-admin-constructeur-programmes.md,
 --        docs/plans/8.4-admin-constructeur-programmes.md.
 --
