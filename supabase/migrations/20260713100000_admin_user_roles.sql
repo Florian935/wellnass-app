@@ -5,6 +5,21 @@
 -- Réf. : docs/specs/functional/us/8.9-admin-fondation-2-roles-gate.md,
 --        docs/plans/8.9-admin-fondation-2-roles-gate.md.
 
+-- Prérequis autosuffisants : garantit `gen_random_uuid()` et `set_updated_at()`
+-- même si la migration fondation (20260705150000_init_conventions) n'a pas été
+-- appliquée sur cet environnement (ex. projet cloud provisionné autrement).
+-- Idempotent : `create or replace` / `if not exists` → sans effet si déjà présents.
+create extension if not exists pgcrypto;
+create or replace function public.set_updated_at()
+  returns trigger
+  language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
 -- Table des attributions de rôles. Convention projet : role = text + check
 -- (pas d'enum / CREATE TYPE). Soft delete via deleted_at.
 create table public.user_roles (
