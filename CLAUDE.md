@@ -2,13 +2,6 @@
 
 Guidage pour Claude Code (claude.ai/code) sur ce dépôt.
 
-> ## ⚠️🔴 AVANT TOUTE CHOSE (Damien) — à traiter en PRIORITÉ absolue
-> Si tu démarres une session : **traite d'abord la section « 🔴🔴 URGENT » en tête de
-> [TODO.md](TODO.md)** (setup Expo Organisation pour builder à deux) **avant tout autre travail**.
-> Florian est actuellement **bloqué pour builder l'app** (le projet EAS est sous ton compte perso
-> `damdamdeoh`, non partageable) et contourne via un `app.json` local à ne pas committer. Règle ce
-> point en premier, puis retire cette bannière. _(Ajouté le 07/07/2026.)_
-
 ## État du projet
 
 **Cadrage terminé, scaffolding du monorepo posé.** Les deux cadrages initiaux (Florian et
@@ -95,7 +88,9 @@ En une passe, elle :
 - applique le **garde-fou confidentialité** (jamais de secrets) ;
 - tient le **[CHANGELOG.md](CHANGELOG.md)** — une entrée par commit, construite à partir du diff,
   pour garder la **trace complète** des modifications (traçabilité devs / débogage) ;
-- coche le **[TODO.md](TODO.md)** ;
+- **met à jour le [TODO.md](TODO.md)** — étape **obligatoire** à chaque commit & push : cocher
+  (`[x]`) tout ce qui vient d'être livré, mettre à jour l'état (`[~]` en cours) et la date de
+  « Dernière mise à jour » ;
 - crée un **commit conventionnel** en français ;
 - **pousse la branche sur `dev` distant** (fast-forward/merge puis `git push origin dev`).
 

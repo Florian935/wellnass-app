@@ -10,25 +10,25 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (Fix fuite inter-piliers « Mes programmes » muscu — corrigé, reste vérif device. Recettes validées Florian : détail programme, gestion aliments 8.5 (migration RLS appliquée), import 8.6 de base. Précédemment : import CSV 8.6, fix rejeu onboarding.)*
+*Dernière mise à jour : 14/07/2026 (Doc : mise à jour du TODO rendue obligatoire à chaque `/commit` dans CLAUDE.md + retrait de la bannière URGENT en tête. Précédemment (13/07) : fix fuite inter-piliers « Mes programmes » muscu — corrigé, reste vérif device ; recettes validées Florian ; import CSV 8.6.)*
 
 ---
 
-## 🔴🔴 URGENT — DAMIEN, À TRAITER EN PREMIER (setup build à deux)
+## ✅ Build à deux — RÉSOLU (14/07/2026)
 
-> **Contexte (07/07/2026)** : Florian est **bloqué pour builder l'app** (EAS). Le projet Expo est
-> sous ton **compte perso `damdamdeoh`** (`projectId 4d24d343-…`), non partageable avec un autre
-> compte perso → `eas build` / `eas init` renvoient « Entity not authorized » pour `florian935`.
-> En dépannage, Florian build via un **`app.json` local modifié** (`owner`/`projectId` à lui) qu'il
-> **ne doit pas committer** — c'est un contournement, pas la solution.
+> **Résolu (14/07/2026)** : le build à deux fonctionne, le contournement `app.json` local n'est
+> plus nécessaire. Historique conservé ci-dessous pour trace.
+> **Contexte initial (07/07/2026)** : Florian était **bloqué pour builder l'app** (EAS) — projet Expo
+> sous le **compte perso `damdamdeoh`** (`projectId 4d24d343-…`), non partageable → `eas build` /
+> `eas init` renvoyaient « Entity not authorized » pour `florian935`.
 
 - [x] **Créer une Organisation Expo** (expo.dev) et y **transférer/héberger** le projet `wellness-app`. — org `wellness-appl`, projet transféré (07/07/2026).
 - [x] **Inviter `florian935`** (`florian.martin63000@gmail.com`) comme membre (Developer/Admin).
 - [x] Mettre `apps/mobile/app.json` → `"owner": "wellness-appl"` (au lieu de `damdamdeoh`). —
   **mergé dans `dev`** (PR #28, 07/07/2026). `extra.eas.projectId` + `updates.url` inchangés/cohérents.
   Transfert confirmé serveur (`eas project:info` → `@wellness-appl/wellness-app`, même projectId).
-- [ ] Confirmer à Florian que `npm run build:preview` / `build:dev` passent sous son compte, puis
-  qu'il **restaure** son `app.json` (`git checkout apps/mobile/app.json`).
+- [x] `npm run build:preview` / `build:dev` **passent sous le compte de Florian** ; `app.json`
+  restauré, contournement local abandonné (confirmé 14/07/2026).
 - [x] **Config env des builds autonomes** — ✅ **fait (07/07/2026)** : les 3 `EXPO_PUBLIC_*`
   (`SUPABASE_URL` / `_ANON_KEY` / `POWERSYNC_URL`) déclarées via **EAS Environment Variables**
   (`eas env:push` depuis `apps/mobile/.env`) pour **preview + production** (visibility PUBLIC ;

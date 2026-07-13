@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Modifié — Mise à jour du TODO rendue obligatoire à chaque `/commit`
+
+Branche `fix/food-picker-onglets-scrollable`. Demande de Florian : rendre explicite, dans la
+définition du workflow, que la commande `/commit` **doit** tenir à jour le suivi.
+
+### Modifié
+- [CLAUDE.md](CLAUDE.md) (section « Commits ») : la puce « coche le TODO.md » devient
+  « **met à jour le TODO.md** — étape **obligatoire** à chaque commit & push » (cocher `[x]` ce
+  qui est livré, passer en `[~]` ce qui est en cours, actualiser la date de « Dernière mise à
+  jour »). Cohérent avec la section « Suivi — TODO.md » déjà présente.
+
+### Technique / Notes
+- Modification **documentaire uniquement** (Markdown) — aucun code applicatif touché, pas de
+  lint/typecheck/tests pertinents.
+- **Non committé dans cette passe** : une modification de [eas.json](apps/mobile/eas.json) (ajout
+  d'un bloc `env` `EXPO_PUBLIC_*` au profil `preview`) présente dans l'arbre de travail. Sujet
+  distinct, laissé de côté car il **contredit la décision documentée** (config env via
+  `eas env:push`, `eas.json` sans bloc `env` — cf. TODO §URGENT) → à trancher avec Florian/Damien.
+
 ## 13/07/2026 — Corrigé — Onglets « Ajouter un aliment » qui passaient à la ligne
 
 Branche `fix/food-picker-onglets-scrollable`. Sur l'écran food-picker, les 5 onglets
