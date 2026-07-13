@@ -587,6 +587,8 @@
       "emptyPlans": "Aucun exercice dans cette séance.",
       "sessionFallback": "Séance {{index}}",
       "unknownExercise": "Exercice inconnu",
+      "exerciseCount_one": "{{count}} exercice",
+      "exerciseCount_other": "{{count}} exercices",
       "sets_one": "{{count}} série",
       "sets_other": "{{count}} séries",
       "reps": "{{reps}} reps",

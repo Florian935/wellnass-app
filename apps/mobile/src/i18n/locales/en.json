@@ -587,6 +587,8 @@
       "emptyPlans": "No exercises in this session.",
       "sessionFallback": "Session {{index}}",
       "unknownExercise": "Unknown exercise",
+      "exerciseCount_one": "{{count}} exercise",
+      "exerciseCount_other": "{{count}} exercises",
       "sets_one": "{{count}} set",
       "sets_other": "{{count}} sets",
       "reps": "{{reps}} reps",
