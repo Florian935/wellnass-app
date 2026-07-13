@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin Fondation-1 : écran de connexion + shell protégé
+
+Branche `feature/admin-f1-scaffold-auth`. Clôt la fondation-1 du back-office : login + shell
+protégé opérationnels (conforme à `design/admin-f1/admin-f1.html`, thème clair, accent terracotta).
+
+### Ajouté
+- **`LoginScreen`** (`apps/admin/src/screens/`) : formulaire e-mail + mot de passe contrôlés,
+  bouton « Se connecter » avec état de chargement, message d'erreur FR (`Identifiants incorrects`) ;
+  succès → `navigate('/')` ; déjà connecté → `<Navigate to="/">`.
+- **`AdminLayout`** (`apps/admin/src/components/`) : barre latérale sombre (Accueil actif + modules
+  Exercices/Aliments/Programmes/Utilisateurs grisés « bientôt », non cliquables), entête avec titre,
+  e-mail utilisateur et bouton **Déconnexion** (`signOut`), `<Outlet/>`.
+- **`HomePlaceholder`** (`apps/admin/src/screens/`) : message « Back-office — bientôt » + grille des
+  futurs modules (non cliquables) + badge lots à venir.
+- **Router** (`App.tsx`) : `/login` public ; groupe protégé (`RequireAuth` → `AdminLayout`) avec
+  `/` → `HomePlaceholder` ; route `*` → redirection `/`. `AuthProvider` en racine.
+
+### Technique / Notes
+- **Vérifications** : `apps/admin` build OK ; racine `typecheck` + `lint` **verts** (admin inclus),
+  aucune régression mobile/shared ; suites de tests inchangées. Aucune clé réelle (`.env.example` vide).
+- **Flux runtime** (login effectif) nécessite un `.env` avec l'URL + la clé anon Supabase — non
+  exécutable sans les identifiants (recette navigateur côté Florian).
+
 ## 13/07/2026 — Admin Fondation-1 : contexte d'auth Supabase + RequireAuth
 
 Branche `feature/admin-f1-scaffold-auth`.

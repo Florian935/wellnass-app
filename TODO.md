@@ -166,6 +166,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [x] Câbler les **tests mobile** (jest-expo) — fait avec l'US1 (mocks PowerSync + smoke) (06/07/2026)
 - [x] Provisionner **Supabase cloud** (projet) + instance **PowerSync** — provisionné (confirmé 06/07/2026). Reste : pousser tables + RLS + sync rules (US1)
 - [~] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository) — plomberie posée (schéma jouet `todos`, connecteur générique) ; vrai schéma métier = US1
+- [x] **US 8.1a — Admin Fondation-1** (`apps/admin`) : scaffold Vite+React+TS + auth Supabase (login/session/logout) + shell protégé (RequireAuth + layout + placeholder), libellés FR centralisés, `@wellness/shared` réutilisé. Build OK, racine typecheck/lint verts. 100 % client web, aucune migration/cloud. Gate par rôle = F2 (13/07/2026)
 
 ### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
 - [x] **US1 — Socle data** — mergée dans `dev` (`248e2b2`, 06/07/2026). Activation cloud + device = section 🔴 en haut.
