@@ -35,6 +35,43 @@ export const fr = {
     },
   },
 
+  accessDenied: {
+    title: 'Accès refusé',
+    message:
+      "Ton compte n'a pas les droits d'accès au back-office. Contacte un administrateur si tu penses qu'il s'agit d'une erreur.",
+    logout: 'Se déconnecter',
+  },
+
+  roles: {
+    title: 'Rôles',
+    nav: 'Rôles',
+    listTitle: 'Attributions actives',
+    listEmpty: 'Aucune attribution pour le moment.',
+    loading: 'Chargement des rôles…',
+    colUser: 'Utilisateur (user_id)',
+    colRole: 'Rôle',
+    colDate: 'Attribué le',
+    colActions: 'Actions',
+    grantTitle: 'Attribuer un rôle',
+    userIdLabel: 'Identifiant utilisateur (UUID)',
+    userIdHint:
+      "Copie l'UUID de l'utilisateur depuis le dashboard Supabase (Auth → Users).",
+    userIdPlaceholder: '00000000-0000-0000-0000-000000000000',
+    roleLabel: 'Rôle',
+    grantCta: 'Attribuer',
+    granting: 'Attribution…',
+    revoke: 'Révoquer',
+    revoking: 'Révocation…',
+    revokeConfirm: 'Révoquer ce rôle pour cet utilisateur ?',
+    error: 'Une erreur est survenue. Réessaie.',
+    userIdRequired: "Renseigne l'identifiant utilisateur.",
+    roleNames: {
+      super_admin: 'Super administrateur',
+      content_editor: 'Éditeur de contenu',
+      moderator: 'Modérateur',
+    },
+  },
+
   placeholder: {
     title: 'Back-office',
     subtitle: 'La gestion du contenu arrive bientôt.',
