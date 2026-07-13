@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — Admin V0.7 Fondation-1 (login + shell)</title>
+<style>
+  :root{
+    --bg:#f6f4f1; --panel:#ffffff; --border:#e7e1d8; --ink:#2b2019; --muted:#8a7a68;
+    --accent:#dd6e40; --accent-ink:#fff; --danger:#c0492f; --sidebar:#241a12;
+    --sidebar-ink:#f4ecdd; --sidebar-muted:#b9a88f;
+    --font:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#efeae4;color:var(--ink);font-family:var(--font);padding:30px 16px;line-height:1.5}
+  h1{font-size:22px;text-align:center;margin:0 0 4px;font-weight:800}
+  .sub{text-align:center;color:#7a6c5b;font-size:13px;margin:0 auto 26px;max-width:640px}
+  .stage{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .frame{width:560px;max-width:100%;background:var(--bg);border:1px solid #d9d1c6;border-radius:12px;
+    overflow:hidden;box-shadow:0 14px 40px rgba(0,0,0,.16)}
+  .browserbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#e4ded5;border-bottom:1px solid #d3cabc}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .url{flex:1;background:#fff;border:1px solid #d3cabc;border-radius:6px;font-size:11px;color:#7a6c5b;padding:4px 10px}
+  .cap{font-size:12px;font-weight:700;color:var(--accent);text-align:center;margin:12px 0 0}
+
+  /* LOGIN */
+  .login{min-height:340px;display:flex;align-items:center;justify-content:center;padding:34px}
+  .card{width:320px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px;
+    box-shadow:0 4px 18px rgba(0,0,0,.05)}
+  .brand{display:flex;align-items:center;gap:9px;justify-content:center;margin-bottom:18px}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;
+    justify-content:center;color:#fff;font-weight:800;font-size:16px}
+  .brand b{font-size:16px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
+  .field input{width:100%;border:1px solid var(--border);border-radius:9px;padding:9px 11px;font-size:14px;
+    background:#fdfcfb;color:var(--ink)}
+  .btn{width:100%;border:none;border-radius:9px;padding:10px;font-size:14px;font-weight:700;cursor:pointer;
+    background:var(--accent);color:var(--accent-ink);margin-top:6px}
+  .err{background:#fbeae5;border:1px solid #e7b9ab;color:var(--danger);font-size:12.5px;border-radius:8px;
+    padding:8px 10px;margin-bottom:12px}
+  .hintline{font-size:11px;color:var(--muted);text-align:center;margin-top:14px}
+
+  /* SHELL */
+  .shell{display:flex;min-height:360px}
+  .side{width:172px;background:var(--sidebar);color:var(--sidebar-ink);padding:16px 12px;flex:0 0 auto}
+  .side .brand{justify-content:flex-start;margin-bottom:20px}
+  .side .brand b{color:#fff;font-size:14px}
+  .nav a{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;
+    color:var(--sidebar-muted);text-decoration:none;margin-bottom:2px}
+  .nav a.active{background:rgba(221,110,64,.18);color:#fff}
+  .nav a.soon{opacity:.55}
+  .tag{margin-left:auto;font-size:9px;background:rgba(255,255,255,.12);padding:1px 6px;border-radius:99px;color:#e8d9c6}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--panel);
+    border-bottom:1px solid var(--border)}
+  .topbar .title{font-weight:700;font-size:15px}
+  .userbox{display:flex;align-items:center;gap:12px;font-size:12.5px;color:var(--muted)}
+  .logout{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 11px;font-size:12px;
+    font-weight:600;color:var(--ink);cursor:pointer}
+  .content{flex:1;padding:26px;background:var(--bg)}
+  .placeholder{background:var(--panel);border:1px dashed #d8cebf;border-radius:12px;padding:28px;text-align:center}
+  .placeholder h2{margin:0 0 6px;font-size:18px}
+  .placeholder p{color:var(--muted);font-size:13px;margin:0 0 16px}
+  .modules{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:420px;margin:0 auto}
+  .mod{background:#fbf8f4;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:left;opacity:.7}
+  .mod .n{font-weight:700;font-size:13px}
+  .mod .s{font-size:11px;color:var(--muted)}
+  .soonbadge{display:inline-block;font-size:10px;color:var(--accent);border:1px solid var(--accent);
+    border-radius:99px;padding:1px 7px;margin-top:6px}
+  .legend{width:320px;background:#fbf8f4;border:1px solid var(--border);border-radius:12px;padding:18px}
+  .legend h3{margin:0 0 12px;font-size:15px}
+  .legend .it{font-size:13px;color:#5f5346;margin-bottom:11px}
+  .legend .it b{color:var(--ink)}
+  code{background:#efe9e1;padding:1px 5px;border-radius:5px;font-size:12px;color:#6b5d4c}
+  .foot{text-align:center;color:#8a7c6b;font-size:11px;margin-top:24px}
+</style>
+</head>
+<body>
+  <h1>Back-office admin — Fondation-1</h1>
+  <p class="sub">V0.7 · scaffold Vite+React + auth Supabase + shell protégé. Web (hors app mobile). Thème clair, accent terracotta de la marque. Autorisation par rôle = Fondation-2.</p>
+
+  <div class="stage">
+
+    <!-- LOGIN -->
+    <div class="frame">
+      <div class="browserbar">
+        <span class="dot" style="background:#e5675e"></span><span class="dot" style="background:#e8b84b"></span><span class="dot" style="background:#8bc47f"></span>
+        <span class="url">admin.wellness — /login</span>
+      </div>
+      <div class="login">
+        <div class="card">
+          <div class="brand"><span class="logo">W</span><b>Wellness Admin</b></div>
+          <div class="err">Identifiants incorrects. Réessaie.</div>
+          <div class="field"><label>E-mail</label><input value="admin@wellness.fr" /></div>
+          <div class="field"><label>Mot de passe</label><input type="password" value="••••••••" /></div>
+          <button class="btn">Se connecter</button>
+          <div class="hintline">Accès réservé. Connecte-toi avec ton compte.</div>
+        </div>
+      </div>
+      <div class="cap">Écran de connexion (public)</div>
+    </div>
+
+    <!-- SHELL -->
+    <div class="frame">
+      <div class="browserbar">
+        <span class="dot" style="background:#e5675e"></span><span class="dot" style="background:#e8b84b"></span><span class="dot" style="background:#8bc47f"></span>
+        <span class="url">admin.wellness — /</span>
+      </div>
+      <div class="shell">
+        <aside class="side">
+          <div class="brand"><span class="logo">W</span><b>Wellness Admin</b></div>
+          <nav class="nav">
+            <a class="active" href="#">▦ Accueil</a>
+            <a class="soon" href="#">🏋️ Exercices <span class="tag">bientôt</span></a>
+            <a class="soon" href="#">🍎 Aliments <span class="tag">bientôt</span></a>
+            <a class="soon" href="#">📋 Programmes <span class="tag">bientôt</span></a>
+            <a class="soon" href="#">👤 Utilisateurs <span class="tag">bientôt</span></a>
+          </nav>
+        </aside>
+        <div class="main">
+          <div class="topbar">
+            <span class="title">Accueil</span>
+            <div class="userbox"><span>admin@wellness.fr</span><button class="logout">Déconnexion</button></div>
+          </div>
+          <div class="content">
+            <div class="placeholder">
+              <h2>Back-office</h2>
+              <p>La gestion du contenu arrive bientôt.</p>
+              <div class="modules">
+                <div class="mod"><div class="n">Exercices</div><div class="s">Créer / éditer (FR+EN)</div></div>
+                <div class="mod"><div class="n">Aliments</div><div class="s">CRUD + import CSV</div></div>
+                <div class="mod"><div class="n">Programmes</div><div class="s">Constructeur</div></div>
+                <div class="mod"><div class="n">Utilisateurs</div><div class="s">Lecture + modération</div></div>
+              </div>
+              <div class="soonbadge">Modules livrés dans les prochains lots</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap">Shell protégé (connecté) — entête + déconnexion + placeholder</div>
+    </div>
+
+    <!-- LEGENDE -->
+    <div class="legend">
+      <h3>Comportement (F1)</h3>
+      <div class="it"><b>Auth Supabase</b> — connexion e-mail/mot de passe (<code>signInWithPassword</code>), session persistée (localStorage) et restaurée au rechargement, déconnexion.</div>
+      <div class="it"><b>Routes protégées</b> — toute route privée redirige vers <code>/login</code> si non connecté (<code>RequireAuth</code>).</div>
+      <div class="it"><b>Sécurité F1</b> — authentification seule ; aucune donnée/action admin exposée (placeholder). Le <b>gate par rôle</b> (seuls les admins entrent) arrive en <b>Fondation-2</b> (<code>user_roles</code> + RLS).</div>
+      <div class="it"><b>Clé anon uniquement</b> côté client (jamais <code>service_role</code>) ; RLS = frontière de sécurité.</div>
+      <div class="it"><b>Modules grisés</b> — indicatifs, non cliquables : livrés aux lots CRUD (8.2→8.10).</div>
+    </div>
+
+  </div>
+
+  <p class="foot">Maquette statique — thème clair fonctionnel, accent <code>#dd6e40</code>. Le rendu final dépend du CSS d'implémentation (Vite+React).</p>
+</body>
+</html>
