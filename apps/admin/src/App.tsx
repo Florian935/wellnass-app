@@ -13,6 +13,7 @@ import { ExerciseEditScreen } from './screens/ExerciseEditScreen';
 import { ProgramsScreen } from './screens/ProgramsScreen';
 import { ProgramCreateScreen } from './screens/ProgramCreateScreen';
 import { ProgramEditScreen } from './screens/ProgramEditScreen';
+import { FoodImportScreen } from './screens/FoodImportScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
@@ -76,6 +77,14 @@ export function App() {
                     element={
                       <RequireContentEditor>
                         <ProgramEditScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/foods"
+                    element={
+                      <RequireContentEditor>
+                        <FoodImportScreen />
                       </RequireContentEditor>
                     }
                   />

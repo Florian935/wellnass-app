@@ -7,10 +7,7 @@ import { theme } from '../theme';
 
 const { colors, radius, font } = theme;
 
-const NAV_SOON = [
-  { icon: '🍎', label: fr.layout.nav.foods },
-  { icon: '👤', label: fr.layout.nav.users },
-];
+const NAV_SOON = [{ icon: '👤', label: fr.layout.nav.users }];
 
 /**
  * Shell protégé : barre latérale sombre (accueil actif + modules à venir grisés,
@@ -74,6 +71,18 @@ export function AdminLayout() {
               })}
             >
               📋 {fr.layout.nav.programs}
+            </NavLink>
+          )}
+          {isContentEditor && (
+            <NavLink
+              to="/foods"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              🍎 {fr.layout.nav.foods}
             </NavLink>
           )}
           {isSuperAdmin && (

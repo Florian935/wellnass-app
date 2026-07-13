@@ -17,12 +17,14 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/supabase-js": "^2.110.0",
     "@wellness/shared": "*",
+    "papaparse": "^5.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "~19.2.2",
     "@types/react-dom": "~19.2.2",
     "@typescript-eslint/eslint-plugin": "^8.20.0",

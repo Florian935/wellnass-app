@@ -73,6 +73,28 @@ export const fr = {
     },
   },
 
+  foods: {
+    navTitle: 'Aliments',
+    importTitle: 'Import d’aliments (CSV)',
+    importSubtitle:
+      'Importe des aliments éditoriaux depuis un CSV formaté (FR/EN, macros, micros).',
+    pickFile: 'Choisir un fichier CSV',
+    template: 'Télécharger le modèle CSV',
+    parseErrorFile: 'Fichier illisible ou vide.',
+    validSuffix: 'ligne(s) valide(s)',
+    errorsSuffix: 'ligne(s) en erreur',
+    errColRow: 'Ligne',
+    errColField: 'Champ',
+    errColReason: 'Raison',
+    importCta: 'Importer les lignes valides',
+    importing: 'Import en cours…',
+    reportTitle: 'Import terminé',
+    createdSuffix: 'créé(s)',
+    updatedSuffix: 'mis à jour',
+    importError: 'L’import a échoué. Réessaie (l’opération est idempotente).',
+    reset: 'Nouvel import',
+    noValid: 'Aucune ligne valide à importer.',
+  },
   exercises: {
     navTitle: 'Exercices',
     listTitle: 'Exercices éditoriaux',
