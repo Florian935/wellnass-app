@@ -70,34 +70,49 @@ export async function listRoles(): Promise<{
  * On n'utilise PAS `.upsert({ onConflict: 'user_id,role' })` : l'unicité repose
  * sur un **index partiel** (`WHERE deleted_at IS NULL`), or supabase-js ne
  * transmet que les colonnes du `onConflict` — pas le prédicat partiel — donc
- * Postgres ne peut pas inférer l'index comme arbitre. On fait donc
- * **update-puis-insert** : si une ligne (active ou révoquée) existe déjà pour
- * `(user_id, role)`, on la réactive ; sinon on insère.
+ * Postgres ne peut pas inférer l'index comme arbitre.
+ *
+ * Trois cas, dans l'ordre : (1) une attribution **active** existe déjà →
+ * `alreadyActive` (rien à écrire) ; (2) une attribution **révoquée** existe →
+ * on la **réactive** (`deleted_at = null`) ; (3) sinon on **insère**.
  */
 export async function grantRole(
   userId: string,
   role: AdminRole,
-): Promise<{ error: unknown }> {
-  const existing = await supabase
+): Promise<{ error: unknown; alreadyActive?: boolean }> {
+  // (1) Déjà attribuée et active ? → rien à faire.
+  const active = await supabase
     .from('user_roles')
     .select('id')
     .eq('user_id', userId)
     .eq('role', role)
+    .is('deleted_at', null)
     .limit(1)
     .maybeSingle();
 
-  if (existing.error) {
-    return { error: existing.error };
-  }
+  if (active.error) return { error: active.error };
+  if (active.data) return { error: null, alreadyActive: true };
 
-  if (existing.data) {
+  // (2) Attribution révoquée à réactiver ?
+  const revoked = await supabase
+    .from('user_roles')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('role', role)
+    .not('deleted_at', 'is', null)
+    .limit(1)
+    .maybeSingle();
+
+  if (revoked.error) return { error: revoked.error };
+  if (revoked.data) {
     const { error } = await supabase
       .from('user_roles')
       .update({ deleted_at: null })
-      .eq('id', existing.data.id);
+      .eq('id', revoked.data.id);
     return { error };
   }
 
+  // (3) Nouvelle attribution.
   const { error } = await supabase
     .from('user_roles')
     .insert({ user_id: userId, role });

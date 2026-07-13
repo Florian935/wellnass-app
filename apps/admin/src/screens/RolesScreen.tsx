@@ -25,6 +25,7 @@ export function RolesScreen() {
   const [role, setRole] = useState<AdminRole>('content_editor');
   const [granting, setGranting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [formNotice, setFormNotice] = useState<string | null>(null);
 
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
@@ -43,6 +44,7 @@ export function RolesScreen() {
   async function handleGrant(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setFormNotice(null);
 
     const trimmed = userId.trim();
     if (!trimmed) {
@@ -51,11 +53,16 @@ export function RolesScreen() {
     }
 
     setGranting(true);
-    const { error } = await grantRole(trimmed, role);
+    const { error, alreadyActive } = await grantRole(trimmed, role);
     setGranting(false);
 
     if (error) {
       setFormError(fr.roles.error);
+      return;
+    }
+
+    if (alreadyActive) {
+      setFormNotice(fr.roles.alreadyAssigned);
       return;
     }
 
@@ -86,6 +93,11 @@ export function RolesScreen() {
           {formError && (
             <div style={styles.error} role="alert">
               {formError}
+            </div>
+          )}
+          {formNotice && (
+            <div style={styles.notice} role="status">
+              {formNotice}
             </div>
           )}
           <div style={styles.field}>
@@ -232,6 +244,15 @@ const styles: Record<string, React.CSSProperties> = {
     background: colors.dangerBg,
     border: `1px solid ${colors.dangerBorder}`,
     color: colors.danger,
+    fontSize: 12.5,
+    borderRadius: radius.sm,
+    padding: '8px 10px',
+    marginBottom: 12,
+  },
+  notice: {
+    background: colors.field,
+    border: `1px solid ${colors.border}`,
+    color: colors.ink,
     fontSize: 12.5,
     borderRadius: radius.sm,
     padding: '8px 10px',

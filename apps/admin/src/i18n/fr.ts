@@ -65,6 +65,7 @@ export const fr = {
     revokeConfirm: 'Révoquer ce rôle pour cet utilisateur ?',
     error: 'Une erreur est survenue. Réessaie.',
     userIdRequired: "Renseigne l'identifiant utilisateur.",
+    alreadyAssigned: 'Ce rôle est déjà attribué à cet utilisateur.',
     roleNames: {
       super_admin: 'Super administrateur',
       content_editor: 'Éditeur de contenu',
