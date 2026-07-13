@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Corrigé — Onglets du food-picker étirés en hauteur (régression `scrollable`)
+
+Branche `fix/food-picker-onglets-scrollable`. Bug d'affichage remonté par Florian (capture) sur
+l'écran « Ajouter un aliment » : l'onglet sélectionné (« Tous ») s'affichait comme une grande
+barre orange occupant presque toute la hauteur de l'écran, libellé collé en haut, poussant la
+liste des aliments vers le bas. Régression introduite par le passage des onglets en `ScrollView`
+horizontal (commit `41e459b`).
+
+### Corrigé
+- [Segment.tsx](apps/mobile/src/components/Segment.tsx) (variante `scrollable`) : un `ScrollView`
+  horizontal placé **directement** dans un flex colonne (`food-picker` `styles.screen`, `flex: 1`)
+  s'étire sur toute la hauteur disponible, et comme `contentContainerStyle` garde
+  `alignItems: stretch` par défaut, chaque onglet s'étire avec lui. Correctif : envelopper le
+  `ScrollView` dans une `View` qui se cale sur la hauteur du contenu et porte désormais le cadre
+  (bordure/rayon/fond) ; le `ScrollView` ne gère plus que le défilement horizontal. Le `style`
+  `styles.viewport` passe de la `ScrollView` à la `View`.
+
+### Technique / Notes
+- Correctif **UI pur, 100 % client** — aucune migration, aucun cloud, pas de checkpoint 🔴,
+  pas de chaîne i18n touchée.
+- typecheck vert (tous workspaces), lint 0 erreur (4 warnings préexistants dans le smoke test
+  charts, sans rapport), 619 tests shared verts. Pas de test unitaire ajouté : bug de mise en
+  page RN sans logique testable → **à valider visuellement sur device** (dev build).
+- **Non committé dans cette passe** : la modification de [eas.json](apps/mobile/eas.json) (bloc
+  `env` `EXPO_PUBLIC_*` au profil `preview`) toujours présente dans l'arbre — sujet distinct qui
+  contredit la décision documentée (env via `eas env:push`), laissée de côté comme au commit
+  précédent.
+
 ## 14/07/2026 — Modifié — Mise à jour du TODO rendue obligatoire à chaque `/commit`
 
 Branche `fix/food-picker-onglets-scrollable`. Demande de Florian : rendre explicite, dans la

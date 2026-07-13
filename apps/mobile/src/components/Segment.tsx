@@ -49,17 +49,20 @@ export function Segment<T extends string>({
   const surface = { backgroundColor: colors.surface, borderColor: colors.border };
 
   if (scrollable) {
-    // La disposition (ligne + gap + padding) vient de `contentContainerStyle` ;
-    // le `style` du ScrollView ne porte que le cadre (bordure/rayon/fond).
+    // Un `ScrollView` horizontal placé directement dans un flex colonne s'étire sur
+    // toute la hauteur disponible (et les items `stretch` avec lui). On l'enveloppe
+    // dans une `View` qui se cale sur la hauteur du contenu et porte le cadre
+    // (bordure/rayon/fond) ; le `ScrollView` ne gère plus que le défilement.
     return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        style={[styles.viewport, surface]}
-      >
-        {items}
-      </ScrollView>
+      <View style={[styles.viewport, surface]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {items}
+        </ScrollView>
+      </View>
     );
   }
 
