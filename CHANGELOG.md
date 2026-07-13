@@ -10,6 +10,49 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Feat — US 8.5 : gestion de la base d'aliments (CRUD éditorial admin)
+
+Branche `feature/8.5-gestion-aliments` (depuis `dev` `63acf79`). Cadrage complet
+(brainstorming → spec → plan) puis exécution TDD. Complément unitaire de l'import CSV (8.6) :
+lister / rechercher / créer / éditer / archiver les aliments éditoriaux (`owner_id NULL`,
+`source library`).
+
+### Ajouté
+- **`@wellness/shared/food-form.ts`** : `validateFoodInput(input)` pur — valide/mappe les champs
+  saisis (nom FR/EN requis, `category` ∈ enum, kcal requis ≥ 0, macros/micros optionnels ≥ 0,
+  virgule décimale tolérée, seules les clés micros fournies conservées via `micronutrientsSchema`),
+  renvoie `values` typé ou `errors` par champ. **9 tests** (TDD).
+- **Migration** `20260713160000_admin_editorial_foods_rls.sql` : rouvre `insert`/`update` sur
+  `foods` + `food_translations` à `is_content_editor()` (patron identique 8.2/8.4).
+- **Admin** : couche `data/foods.ts` étendue (`listEditorialFoods`, `getFood`, `saveFood`
+  **insert/update ciblé**, `archiveFood` soft-delete) ; écran **liste** `FoodsScreen`
+  (recherche + filtre catégorie + « Nouvel aliment » + « Importer un CSV » + éditer/archiver) ;
+  écran **formulaire** `FoodEditScreen` (création/édition, nom FR/EN, catégorie, kcal, 6 macros,
+  10 micros, `import_key` en lecture seule, erreurs par champ) ; i18n admin FR.
+
+### Modifié
+- **Routing « Aliments »** réorganisé : la **liste devient le hub** (`/foods` → `FoodsScreen`) ;
+  l'import CSV 8.6 déplacé en `/foods/import` (+ lien retour) ; `/foods/new` et `/foods/:id` →
+  `FoodEditScreen`. Nav « Aliments » inchangée (pointe `/foods`).
+
+### Technique / Notes
+- 🔴 **La migration RLS répare aussi l'US 8.6** : la RLS d'origine
+  ([20260706150001_food_rls.sql](supabase/migrations/20260706150001_food_rls.sql)) n'autorisait
+  l'écriture que pour `owner_id = auth.uid()` — l'écriture **éditoriale** (`owner_id NULL`) n'avait
+  jamais été rouverte aux éditeurs de contenu (contrairement aux exos/programmes). Sans elle,
+  **ni 8.5 ni l'import 8.6** ne peuvent écrire l'éditorial. La note « RLS inchangée » de la spec 8.6
+  §4 était **erronée** — corrigée ici.
+- **Pas de `db:types`, pas de sync rule à redéployer** (RLS seule ; archivage via `deleted_at` déjà
+  couvert). Pas de dépendance native. 100 % client admin.
+- **update ciblé à l'édition** (et non upsert) : ne touche que les colonnes du formulaire →
+  `portions` / `import_key` / `barcode` intacts.
+- Vérifs : typecheck (tous) OK, shared **619** tests (dont 9 nouveaux), mobile 34, lint 0 erreur,
+  build admin OK. Revue du diff : miroir du CRUD exos 8.2 (déjà relu), validateur testé.
+- **Reste 🔴 Florian** : appliquer la migration RLS foods (**débloque 8.5 + 8.6**) puis recette
+  (créer / éditer / archiver un aliment ; ré-import CSV 8.6 fonctionnel ; affichage mobile).
+- Différé : validation des aliments signalés (→ 8.7), restauration d'un archivé, édition des
+  `portions`, audit (→ 8.10).
+
 ## 13/07/2026 — Feat — US 8.6 : import d'aliments par CSV (CIQUAL), back-office
 
 Branche `feature/8.6-import-csv-ciqual` (depuis `dev` `81064a5`). Cadrage complet
