@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent, type CSSProperties } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import { parseFoodCsv, type FoodCsvRowError, type FoodImportRecord } from '@wellness/shared';
 import { buildCsvTemplate, importFoods, type ImportResult } from '../data/foods';
@@ -14,6 +15,7 @@ type Phase = 'idle' | 'parsed' | 'importing' | 'done' | 'error';
  * de contenu (gate en amont ; la RLS est la frontière). Écran admin FR.
  */
 export function FoodImportScreen() {
+  const navigate = useNavigate();
   const [fileName, setFileName] = useState<string | null>(null);
   const [valid, setValid] = useState<FoodImportRecord[]>([]);
   const [errors, setErrors] = useState<FoodCsvRowError[]>([]);
@@ -79,6 +81,9 @@ export function FoodImportScreen() {
 
   return (
     <div style={styles.page}>
+      <button type="button" style={styles.linkBtn} onClick={() => navigate('/foods')}>
+        ← {fr.foods.backToList}
+      </button>
       <h1 style={styles.title}>{fr.foods.importTitle}</h1>
       <p style={styles.subtitle}>{fr.foods.importSubtitle}</p>
 

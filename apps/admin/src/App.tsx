@@ -14,6 +14,8 @@ import { ProgramsScreen } from './screens/ProgramsScreen';
 import { ProgramCreateScreen } from './screens/ProgramCreateScreen';
 import { ProgramEditScreen } from './screens/ProgramEditScreen';
 import { FoodImportScreen } from './screens/FoodImportScreen';
+import { FoodsScreen } from './screens/FoodsScreen';
+import { FoodEditScreen } from './screens/FoodEditScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
@@ -84,7 +86,31 @@ export function App() {
                     path="/foods"
                     element={
                       <RequireContentEditor>
+                        <FoodsScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/foods/import"
+                    element={
+                      <RequireContentEditor>
                         <FoodImportScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/foods/new"
+                    element={
+                      <RequireContentEditor>
+                        <FoodEditScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/foods/:id"
+                    element={
+                      <RequireContentEditor>
+                        <FoodEditScreen />
                       </RequireContentEditor>
                     }
                   />
