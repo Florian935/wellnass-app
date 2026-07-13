@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (feat US 8.5 gestion base d'aliments admin — code livré, reste migration RLS + recette ; sa migration RLS débloque aussi 8.6. Précédemment : import CSV 8.6, détail programme séances repliables, lot finitions, fix rejeu onboarding.)*
+*Dernière mise à jour : 13/07/2026 (Bug tracé : fuite inter-piliers « Mes programmes » muscu — pas de filtre pilier, correctif ~2 lignes sur branche dédiée. Précédemment : US 8.5 gestion base d'aliments admin, import CSV 8.6, détail programme séances repliables, fix rejeu onboarding.)*
 
 ---
 
@@ -49,6 +49,20 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
+
+- [ ] **Fuite inter-piliers dans « Mes programmes » muscu (pas de filtre par pilier)** — remonté par
+  Florian le 13/07/2026. **Repro** : Muscu → Mes programmes → les programmes **running** apparaissent
+  aussi (dans « Mes programmes » **et** « Bibliothèque »). **Cause (confirmée code)** : l'écran muscu
+  [programs/index.tsx](apps/mobile/src/app/programs/index.tsx) ne passe **jamais** le pilier —
+  ligne 45 `useMyPrograms()` **sans argument** → tous piliers (cf. commentaire
+  [program-repository.ts:356-358](apps/mobile/src/data/repositories/program-repository.ts#L356-L358)) ;
+  lignes 41-42 `filters` ne contient que `level`, **jamais `pillar`** → la bibliothèque muscu montre
+  aussi le running. L'écran running, lui, filtre correctement (`useMyPrograms('running')` +
+  `useProgramLibrary({ pillar: 'running' })`, [running-programs/index.tsx:62,66](apps/mobile/src/app/running-programs/index.tsx#L62)).
+  **Sens inverse OK** : Florian a confirmé (13/07/2026) que le pilier Running est bien filtré → bug
+  **unidirectionnel, uniquement côté muscu**. **Correctif (~2 lignes)** dans `programs/index.tsx` :
+  `useMyPrograms('strength')` (l.45) + inclure toujours `pillar: 'strength'` dans `filters` (l.41-42).
+  _Branche dédiée `fix/programmes-filtre-pilier`. 100 % client, aucune migration._
 
 - [~] **Écran détail programme (mobile) — séances repliables** — **code livré**
   (`feature/detail-programme-seances-repliables`, 13/07/2026). Cadrage complet (spec + plan,
