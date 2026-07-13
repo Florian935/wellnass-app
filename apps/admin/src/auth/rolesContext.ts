@@ -8,6 +8,8 @@ export interface RolesContextValue {
   isAdmin: boolean;
   /** A le rôle `super_admin` → gestion des rôles. */
   isSuperAdmin: boolean;
+  /** Éditeur de contenu (`super_admin` ou `content_editor`) → CRUD du contenu éditorial. */
+  isContentEditor: boolean;
   /** Chargement des rôles en cours (après session établie). */
   rolesLoading: boolean;
   /** Erreur de lecture des rôles (table absente, réseau…) ; traitée comme non-admin. */

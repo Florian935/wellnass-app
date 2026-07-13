@@ -52,8 +52,8 @@ export function ExercisesScreen() {
       if (groupFilter !== 'all' && r.musclePrimary !== groupFilter) return false;
       if (statusFilter !== 'all' && r.status !== statusFilter) return false;
       if (term) {
-        const name = (r.nameFr ?? '').toLowerCase();
-        if (!name.includes(term)) return false;
+        const haystack = `${r.nameFr ?? ''} ${r.nameEn ?? ''}`.toLowerCase();
+        if (!haystack.includes(term)) return false;
       }
       return true;
     });

@@ -106,6 +106,7 @@ export async function getExercise(id: string): Promise<{
     .from('exercises')
     .select('id, muscle_primary, equipment, status, exercise_translations(lang, name, instructions)')
     .eq('id', id)
+    .is('owner_id', null) // éditorial uniquement (jamais un exercice utilisateur)
     .is('deleted_at', null)
     .maybeSingle();
 
@@ -189,7 +190,9 @@ export async function saveExercise(input: ExerciseInput): Promise<{
       .from('exercise_translations')
       .upsert(t, { onConflict: 'exercise_id,lang' });
     if (error) {
-      return { id: null, error };
+      // L'exercice a bien été créé/mis à jour : on renvoie son `id` (pas null) pour
+      // que l'appelant puisse y revenir et retenter (l'upsert est idempotent).
+      return { id, error };
     }
   }
 
@@ -204,7 +207,8 @@ export async function setStatus(
   const { error } = await supabase
     .from('exercises')
     .update({ status })
-    .eq('id', id);
+    .eq('id', id)
+    .is('owner_id', null); // éditorial uniquement
   return { error };
 }
 
@@ -218,7 +222,8 @@ export async function archiveExercise(id: string): Promise<{ error: unknown }> {
   const { error: exError } = await supabase
     .from('exercises')
     .update({ deleted_at: now })
-    .eq('id', id);
+    .eq('id', id)
+    .is('owner_id', null); // éditorial uniquement
   if (exError) {
     return { error: exError };
   }
@@ -226,6 +231,7 @@ export async function archiveExercise(id: string): Promise<{ error: unknown }> {
   const { error: trError } = await supabase
     .from('exercise_translations')
     .update({ deleted_at: now })
-    .eq('exercise_id', id);
+    .eq('exercise_id', id)
+    .is('owner_id', null); // traductions éditoriales uniquement
   return { error: trError };
 }

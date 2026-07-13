@@ -28,9 +28,30 @@ export function App() {
               <Route element={<RequireAdmin />}>
                 <Route element={<AdminLayout />}>
                   <Route path="/" element={<HomePlaceholder />} />
-                  <Route path="/exercises" element={<ExercisesScreen />} />
-                  <Route path="/exercises/new" element={<ExerciseEditScreen />} />
-                  <Route path="/exercises/:id" element={<ExerciseEditScreen />} />
+                  <Route
+                    path="/exercises"
+                    element={
+                      <RequireContentEditor>
+                        <ExercisesScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/exercises/new"
+                    element={
+                      <RequireContentEditor>
+                        <ExerciseEditScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/exercises/:id"
+                    element={
+                      <RequireContentEditor>
+                        <ExerciseEditScreen />
+                      </RequireContentEditor>
+                    }
+                  />
                   <Route
                     path="/roles"
                     element={
@@ -54,6 +75,15 @@ export function App() {
 function RequireSuperAdmin({ children }: { children: React.ReactElement }) {
   const { isSuperAdmin } = useRoles();
   if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+/** Restreint une route aux éditeurs de contenu (super_admin/content_editor). */
+function RequireContentEditor({ children }: { children: React.ReactElement }) {
+  const { isContentEditor } = useRoles();
+  if (!isContentEditor) {
     return <Navigate to="/" replace />;
   }
   return children;

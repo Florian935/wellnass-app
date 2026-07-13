@@ -20,7 +20,7 @@ const NAV_SOON = [
  */
 export function AdminLayout() {
   const { user, signOut } = useAuth();
-  const { isSuperAdmin } = useRoles();
+  const { isSuperAdmin, isContentEditor } = useRoles();
   const [signingOut, setSigningOut] = useState(false);
 
   async function handleLogout() {
@@ -53,16 +53,18 @@ export function AdminLayout() {
           >
             ▦ {fr.layout.nav.home}
           </NavLink>
-          <NavLink
-            to="/exercises"
-            style={({ isActive }) => ({
-              ...styles.navItem,
-              ...styles.navLink,
-              ...(isActive ? styles.navActive : null),
-            })}
-          >
-            🏋️ {fr.layout.nav.exercises}
-          </NavLink>
+          {isContentEditor && (
+            <NavLink
+              to="/exercises"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              🏋️ {fr.layout.nav.exercises}
+            </NavLink>
+          )}
           {isSuperAdmin && (
             <NavLink
               to="/roles"
