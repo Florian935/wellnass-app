@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   PROGRAM_LEVELS,
@@ -43,6 +43,30 @@ import { theme } from '../theme';
  * Les écritures concurrentes sont bornées par un drapeau `busy`. Les champs texte
  * (nom de séance, cibles running, cibles d'exercice) sont **persistés au blur**.
  */
+/**
+ * Parse un entier depuis une saisie texte : vide → null, non numérique → null, et
+ * **négatif rejeté → null** (les cibles n'ont pas de sens négatif). Sinon l'entier.
+ */
+function toNonNegIntOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number.parseInt(trimmed, 10);
+  if (Number.isNaN(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
+/**
+ * Parse un flottant depuis une saisie texte : vide → null, non numérique → null, et
+ * **négatif rejeté → null**. Sinon le flottant. (Charge en kg : décimales permises.)
+ */
+function toNonNegFloatOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number.parseFloat(trimmed);
+  if (Number.isNaN(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
 export function ProgramEditScreen() {
   const navigate = useNavigate();
   const { id = '' } = useParams<{ id: string }>();
@@ -55,6 +79,9 @@ export function ProgramEditScreen() {
   // Écriture en cours : borne les actions concurrentes + surface d'erreur.
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState(false);
+  // Réorganisation en vol : borne propre à `runReorder` (indépendant de `busy`,
+  // pour ne jamais laisser tomber un dépôt pendant une écriture de champ).
+  const reordering = useRef(false);
 
   const reload = useCallback(async () => {
     const { program: fetched, error } = await getProgram(id);
@@ -102,36 +129,51 @@ export function ProgramEditScreen() {
       if (busy) return;
       setBusy(true);
       setActionError(false);
-      const { error } = await run();
-      if (error) {
+      try {
+        const { error } = await run();
+        if (error) {
+          setActionError(true);
+          return;
+        }
+        // `reload()` peut lever (couche réseau) : le `finally` relâche `busy`.
+        await reload();
+      } catch {
         setActionError(true);
+      } finally {
         setBusy(false);
-        return;
       }
-      await reload();
-      setBusy(false);
     },
     [busy, reload],
   );
 
   /**
    * Réordonnancement optimiste : applique `nextSessions` immédiatement, persiste,
-   * et re-fetch (rollback) si la persistance échoue.
+   * et re-fetch (rollback) si la persistance échoue. **Non gaté sur `busy`** (une
+   * réorganisation ne touche que `order_index` de lignes distinctes, sans conflit
+   * avec une écriture de champ en vol) ; borné par son propre drapeau `reordering`
+   * pour éviter deux réorganisations concurrentes.
    */
   const runReorder = useCallback(
     async (optimistic: ProgramDetail, run: () => Promise<{ error: unknown }>) => {
-      if (busy) return;
+      if (reordering.current) return;
+      reordering.current = true;
+      // L'état optimiste est toujours appliqué avant la persistance.
       setProgram(optimistic);
-      setBusy(true);
       setActionError(false);
-      const { error } = await run();
-      if (error) {
+      try {
+        const { error } = await run();
+        if (error) {
+          setActionError(true);
+          await reload(); // rollback vers la vérité serveur
+        }
+      } catch {
         setActionError(true);
         await reload(); // rollback vers la vérité serveur
+      } finally {
+        reordering.current = false;
       }
-      setBusy(false);
     },
-    [busy, reload],
+    [reload],
   );
 
   if (loading) {
@@ -342,7 +384,12 @@ function MetadataPanel({ program, busy, onSaveMeta, onSetStatus, onBack }: Metad
 
   const nameFrTrimmed = nameFr.trim();
   const nameEnTrimmed = nameEn.trim();
+  // Complétude locale : gate la sauvegarde (on refuse d'enregistrer un nom vide).
   const namesComplete = Boolean(nameFrTrimmed) && Boolean(nameEnTrimmed);
+  // Complétude SERVEUR : gate la publication sur ce qui sera réellement publié
+  // (noms persistés), pas sur la saisie locale non encore enregistrée.
+  const serverNamesComplete =
+    Boolean((program.nameFr ?? '').trim()) && Boolean((program.nameEn ?? '').trim());
 
   async function handleSave() {
     setFormError(null);
@@ -350,15 +397,11 @@ function MetadataPanel({ program, busy, onSaveMeta, onSetStatus, onBack }: Metad
       setFormError(fr.programs.requiredBoth);
       return;
     }
-    const parsedDuration = durationWeeks.trim()
-      ? Number.parseInt(durationWeeks.trim(), 10)
-      : null;
     setSaving(true);
     await onSaveMeta({
       level: level ? level : null,
       goal: goal.trim() ? goal.trim() : null,
-      durationWeeks:
-        parsedDuration != null && !Number.isNaN(parsedDuration) ? parsedDuration : null,
+      durationWeeks: toNonNegIntOrNull(durationWeeks),
       nameFr: nameFrTrimmed,
       nameEn: nameEnTrimmed,
       summaryFr: summaryFr.trim() ? summaryFr.trim() : null,
@@ -414,8 +457,8 @@ function MetadataPanel({ program, busy, onSaveMeta, onSetStatus, onBack }: Metad
             <button
               type="button"
               style={styles.action}
-              disabled={busy || !namesComplete}
-              title={!namesComplete ? fr.programs.publishBlocked : undefined}
+              disabled={busy || !serverNamesComplete}
+              title={!serverNamesComplete ? fr.programs.publishBlocked : undefined}
               onClick={() => void onSetStatus('published')}
             >
               {fr.programs.publish}
@@ -423,7 +466,7 @@ function MetadataPanel({ program, busy, onSaveMeta, onSetStatus, onBack }: Metad
           )}
         </div>
       </div>
-      {!published && !namesComplete && (
+      {!published && !serverNamesComplete && (
         <p style={styles.hint}>{fr.programs.publishBlocked}</p>
       )}
 
@@ -632,23 +675,19 @@ function SessionCard({
   );
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Resynchronise l'état local si le parent re-fetch (après une autre écriture).
-  useEffect(() => {
-    setName(session.name ?? '');
-    setSessionType((session.sessionType as SessionType | null) ?? '');
-    setDistance(session.targetDistanceM != null ? String(session.targetDistanceM) : '');
-    setDuration(
-      session.targetDurationSeconds != null ? String(session.targetDurationSeconds) : '',
-    );
-  }, [session.name, session.sessionType, session.targetDistanceM, session.targetDurationSeconds]);
+  // C1 anti-clobber : l'état local est **seedé une seule fois** (initialiseurs
+  // `useState` ci-dessus). Pas de reseed sur prop-change : les lignes sont keyées
+  // par `id` dans `SortableList`, donc ajout/retrait/identité remontent le composant
+  // proprement, tandis qu'une réorganisation garde l'identité (pas de remount) et
+  // préserve les saisies en cours. Cela supprime l'écrasement mi-édition.
 
   /** Persiste la séance avec l'état courant (nom + cibles running). */
   function persistSession(overrides?: {
     name?: string | null;
     sessionType?: SessionType | null;
   }) {
-    const parsedDistance = distance.trim() ? Number.parseInt(distance.trim(), 10) : null;
-    const parsedDuration = duration.trim() ? Number.parseInt(duration.trim(), 10) : null;
+    const parsedDistance = toNonNegIntOrNull(distance);
+    const parsedDuration = toNonNegIntOrNull(duration);
     const nextName =
       overrides && 'name' in overrides ? overrides.name : name.trim() ? name.trim() : null;
     const nextType =
@@ -660,14 +699,8 @@ function SessionCard({
     void onUpdateSession({
       name: nextName ?? null,
       sessionType: isRunning ? (nextType ?? null) : null,
-      targetDistanceM:
-        isRunning && parsedDistance != null && !Number.isNaN(parsedDistance)
-          ? parsedDistance
-          : null,
-      targetDurationSeconds:
-        isRunning && parsedDuration != null && !Number.isNaN(parsedDuration)
-          ? parsedDuration
-          : null,
+      targetDistanceM: isRunning ? parsedDistance : null,
+      targetDurationSeconds: isRunning ? parsedDuration : null,
     });
   }
 
@@ -826,26 +859,19 @@ function ExercisePlanRow({ plan, busy, dragHandle, onUpdate, onRemove }: Exercis
     plan.restSeconds != null ? String(plan.restSeconds) : '',
   );
 
-  // Resynchronise si le parent re-fetch.
-  useEffect(() => {
-    setSetType((plan.setType as SetType) ?? 'normal');
-    setTargetSets(plan.targetSets != null ? String(plan.targetSets) : '');
-    setTargetReps(plan.targetReps ?? '');
-    setTargetWeightKg(plan.targetWeightKg != null ? String(plan.targetWeightKg) : '');
-    setRestSeconds(plan.restSeconds != null ? String(plan.restSeconds) : '');
-  }, [plan.setType, plan.targetSets, plan.targetReps, plan.targetWeightKg, plan.restSeconds]);
+  // C1 anti-clobber : seed-once (initialiseurs `useState`), pas de reseed sur
+  // prop-change. Les lignes étant keyées par `id` dans `SortableList`, l'ajout /
+  // retrait / changement d'identité remonte le composant ; une réorganisation
+  // conserve l'identité et donc les saisies en cours.
 
   function persistPlan(overrides?: { setType?: SetType }) {
-    const parsedSets = targetSets.trim() ? Number.parseInt(targetSets.trim(), 10) : null;
-    const parsedWeight = targetWeightKg.trim() ? Number.parseFloat(targetWeightKg.trim()) : null;
-    const parsedRest = restSeconds.trim() ? Number.parseInt(restSeconds.trim(), 10) : null;
     void onUpdate({
       exerciseId: plan.exerciseId,
       setType: overrides?.setType ?? setType,
-      targetSets: parsedSets != null && !Number.isNaN(parsedSets) ? parsedSets : null,
+      targetSets: toNonNegIntOrNull(targetSets),
       targetReps: targetReps.trim() ? targetReps.trim() : null,
-      targetWeightKg: parsedWeight != null && !Number.isNaN(parsedWeight) ? parsedWeight : null,
-      restSeconds: parsedRest != null && !Number.isNaN(parsedRest) ? parsedRest : null,
+      targetWeightKg: toNonNegFloatOrNull(targetWeightKg),
+      restSeconds: toNonNegIntOrNull(restSeconds),
     });
   }
 
