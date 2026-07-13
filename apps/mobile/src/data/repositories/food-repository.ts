@@ -281,6 +281,9 @@ export async function importOpenFoodFactsFood(input: {
   proteinPer100g?: number | null;
   carbsPer100g?: number | null;
   fatPer100g?: number | null;
+  sugarsPer100g?: number | null;
+  saturatedFatPer100g?: number | null;
+  fiberPer100g?: number | null;
   micronutrients?: Micronutrients;
 }): Promise<string> {
   const ownerId = currentUserId();
@@ -292,10 +295,10 @@ export async function importOpenFoodFactsFood(input: {
     kcal_per_100g: input.kcalPer100g,
     protein_per_100g: input.proteinPer100g ?? null,
     carbs_per_100g: input.carbsPer100g ?? null,
-    sugars_per_100g: null,
+    sugars_per_100g: input.sugarsPer100g ?? null,
     fat_per_100g: input.fatPer100g ?? null,
-    saturated_fat_per_100g: null,
-    fiber_per_100g: null,
+    saturated_fat_per_100g: input.saturatedFatPer100g ?? null,
+    fiber_per_100g: input.fiberPer100g ?? null,
     portions: JSON.stringify([]),
     micronutrients: JSON.stringify(input.micronutrients ?? {}),
   });

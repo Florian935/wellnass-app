@@ -99,7 +99,7 @@ export default function FoodPickerScreen() {
       return;
     }
     const id = await importOpenFoodFactsFood({ ...off, category: 'other' });
-    setTarget({ id, name: off.name, kcalPer100g: off.kcalPer100g, proteinPer100g: off.proteinPer100g, carbsPer100g: off.carbsPer100g, fatPer100g: off.fatPer100g, portions: [], micronutrients: off.micronutrients });
+    setTarget({ id, name: off.name, kcalPer100g: off.kcalPer100g, proteinPer100g: off.proteinPer100g, carbsPer100g: off.carbsPer100g, fatPer100g: off.fatPer100g, sugarsPer100g: off.sugarsPer100g, saturatedFatPer100g: off.saturatedFatPer100g, fiberPer100g: off.fiberPer100g, portions: [], micronutrients: off.micronutrients });
   };
 
   /** Menu Modifier / Supprimer d'un aliment de l'utilisateur (perso ou OFF importé). */

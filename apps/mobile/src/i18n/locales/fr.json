@@ -292,6 +292,11 @@
     "hint": "Vise le code-barres du produit.",
     "resolving": "Recherche du produit…",
     "notFound": "Produit introuvable. Réessaie ou crée un aliment.",
+    "error": {
+      "network": "Pas de connexion. Vérifie ton réseau et réessaie.",
+      "unknownCode": "Code-barres inconnu ({{code}}). Crée l'aliment ou rescanne.",
+      "incomplete": "Fiche sans calories exploitables. Crée l'aliment manuellement."
+    },
     "rescan": "Scanner à nouveau",
     "permission": {
       "message": "Autorise l'accès à la caméra pour scanner les codes-barres.",

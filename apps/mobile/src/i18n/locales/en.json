@@ -292,6 +292,11 @@
     "hint": "Point at the product's barcode.",
     "resolving": "Looking up product…",
     "notFound": "Product not found. Try again or create a food.",
+    "error": {
+      "network": "No connection. Check your network and try again.",
+      "unknownCode": "Unknown barcode ({{code}}). Create the food or scan again.",
+      "incomplete": "No usable calories on this product. Create the food manually."
+    },
     "rescan": "Scan again",
     "permission": {
       "message": "Allow camera access to scan barcodes.",

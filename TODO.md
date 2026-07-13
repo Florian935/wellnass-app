@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅, voir §Bugs connus. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -47,6 +47,19 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
+
+- [x] **Scan code-barres : « produit introuvable » trompeur + affichage nutritionnel pauvre** —
+  **corrigé** (`fix/scan-code-barres`, 14/07/2026). Investigation (adb logcat + test direct endpoint
+  OFF) : le scan **fonctionne** (validé Perrier physique) ; les échecs venaient de scanner des
+  **codes-barres à l'écran** (mauvaise lecture → code absent d'OFF). Le pot de Nutella ne scanne pas
+  (surface courbée = autofocus). **(1)** `fetchOpenFoodFactsByBarcode` renvoie un **résultat typé**
+  `OffLookup` + helper pur `interpretOffProduct` → messages honnêtes (réseau / code inconnu affiché /
+  fiche incomplète) au lieu d'« introuvable » générique. **(2)** `QuantityPanel` affiche **P/G/L** +
+  **sucres/AGS/fibres** désormais captés depuis OFF et **stockés** à l'import (les 2 flux scan +
+  recherche texte). +5 tests (39/39 mobile), i18n 787/787, typecheck/lint verts. **100 % client, pas
+  de checkpoint 🔴.** **Reste** : recette device (rescanner un vrai produit → P/G/L + sucres/AGS
+  visibles ; scanner une image → « code inconnu (…) »). _Note : `eas.json` local de Florian non
+  commité (identifiants, hors git)._
 
 - [x] **Onglets du food-picker étirés en hauteur (« Ajouter un aliment »)** — **corrigé**
   (`fix/food-picker-onglets-scrollable`, 14/07/2026). Régression de la variante `scrollable` de

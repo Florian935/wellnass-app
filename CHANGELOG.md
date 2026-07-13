@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Corrigé + Modifié — Scan code-barres : échecs honnêtes + affichage nutritionnel enrichi
+
+Branche `fix/scan-code-barres`. Investigation d'un « produit introuvable » au scan (Florian, adb
+logcat + test direct de l'endpoint OFF). **Diagnostic** : ni OpenFoodFacts (HTTP 200 + données
+complètes pour le Nutella `3017620422003`, quel que soit le User-Agent), ni notre parsing n'étaient
+en cause. Le scan **fonctionne** (validé sur une bouteille Perrier physique) ; les échecs venaient de
+scanner des **codes-barres à l'écran** (images Google / site OFF) → mauvaise lecture caméra → code
+erroné réellement absent d'OFF. Le pot de Nutella lui-même ne scanne pas (surface courbée/brillante =
+autofocus qui peine), ce n'est pas un bug.
+
+### Corrigé
+- **Messages d'échec de scan honnêtes** : `fetchOpenFoodFactsByBarcode` ne renvoie plus un `null`
+  fourre-tout mais un **résultat typé** `OffLookup` (`found` / `notFound` / `incomplete` /
+  `networkError` / `invalidCode`). L'écran de scan affiche désormais un message distinct :
+  « Pas de connexion » (réseau), « Code-barres inconnu (`<code lu>`) » (avec le code, pour repérer
+  une mauvaise lecture), ou « fiche sans calories ». Avant : tout tombait sur « produit introuvable ».
+- Logique de décision isolée dans un helper **pur `interpretOffProduct`** (testable sans réseau).
+
+### Modifié
+- **Affichage nutritionnel au scan / dans le picker** : le `QuantityPanel` affiche maintenant la ligne
+  **macros P/G/L** (mise à l'échelle en direct, motif repris de `nutrition-stats`), et **sucres /
+  AG saturés / fibres** sont désormais **captés depuis OFF** (`mapProduct` + `OffFood` étendus),
+  **stockés** à l'import (`importOpenFoodFactsFood`, au lieu de `null`) et affichés present-only.
+  Les deux flux (scan + recherche texte du food-picker) passent ces champs au panneau.
+
+### Technique / Notes
+- **i18n** FR/EN : +3 clés `scan.error.*` (parité 787/787) ; macros réutilisent `nutrition.macros.*`
+  (aucune nouvelle clé). Sucres/AGS/fibres réutilisent `food.custom.*`.
+- Tests `packages`… → mobile `openfoodfacts.test.ts` : +5 tests sur `interpretOffProduct` (found +
+  repli code-barres + sous-macros, notFound status 0, incomplete sans kcal / sans nom). 39/39 mobile.
+- **100 % client** — aucune migration, aucune dépendance native, pas de checkpoint 🔴.
+- **Point d'attention** : les produits déjà importés **avant** ce commit ont sucres/AGS/fibres à
+  `null` en local → au re-scan ils remontent depuis le local sans ces champs ; les nouveaux scans ont
+  tout. Logs de diagnostic temporaires (`[SCAN]…`) retirés. `apps/mobile/eas.json` **non commité**
+  (contournement env local de Florian, contient des identifiants → hors git par convention).
+
 ## 14/07/2026 — Corrigé — Onglets du food-picker étirés en hauteur (régression `scrollable`)
 
 Branche `fix/food-picker-onglets-scrollable`. Bug d'affichage remonté par Florian (capture) sur

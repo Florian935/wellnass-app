@@ -18,6 +18,9 @@ const BARCODE_TYPES = ['ean13', 'ean8', 'upc_a', 'upc_e'] as const;
 
 type Phase = 'scanning' | 'resolving' | 'quantity' | 'notfound';
 
+/** Raison de l'échec d'un scan, pour afficher un message honnête (réseau vs code inconnu…). */
+type Failure = 'networkError' | 'notFound' | 'invalidCode' | 'incomplete';
+
 /**
  * Écran de scan de code-barres (item 4.10). Scanne un EAN/UPC → cherche l'aliment
  * d'abord en local (déjà importé), sinon sur OpenFoodFacts, puis propose la quantité
@@ -35,6 +38,8 @@ export default function FoodScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [phase, setPhase] = useState<Phase>('scanning');
   const [target, setTarget] = useState<PickTarget | null>(null);
+  const [failure, setFailure] = useState<Failure>('notFound');
+  const [scannedCode, setScannedCode] = useState('');
   const lockedCode = useRef<string | null>(null);
 
   const resolve = async (code: string) => {
@@ -46,21 +51,26 @@ export default function FoodScanScreen() {
       return;
     }
     const off = await fetchOpenFoodFactsByBarcode(code, lang);
-    if (off) {
-      const id = await importOpenFoodFactsFood({ ...off, category: 'other' });
+    if (off.kind === 'found') {
+      const id = await importOpenFoodFactsFood({ ...off.food, category: 'other' });
       setTarget({
         id,
-        name: off.name,
-        kcalPer100g: off.kcalPer100g,
-        proteinPer100g: off.proteinPer100g,
-        carbsPer100g: off.carbsPer100g,
-        fatPer100g: off.fatPer100g,
+        name: off.food.name,
+        kcalPer100g: off.food.kcalPer100g,
+        proteinPer100g: off.food.proteinPer100g,
+        carbsPer100g: off.food.carbsPer100g,
+        fatPer100g: off.food.fatPer100g,
+        sugarsPer100g: off.food.sugarsPer100g,
+        saturatedFatPer100g: off.food.saturatedFatPer100g,
+        fiberPer100g: off.food.fiberPer100g,
         portions: [],
-        micronutrients: off.micronutrients,
+        micronutrients: off.food.micronutrients,
       });
       setPhase('quantity');
       return;
     }
+    setFailure(off.kind);
+    setScannedCode(code);
     setPhase('notfound');
   };
 
@@ -76,6 +86,14 @@ export default function FoodScanScreen() {
     setTarget(null);
     setPhase('scanning');
   };
+
+  // Message honnête selon la cause de l'échec (réseau vs code inconnu vs fiche incomplète).
+  const failureMessage =
+    failure === 'networkError'
+      ? t('scan.error.network')
+      : failure === 'incomplete'
+        ? t('scan.error.incomplete')
+        : t('scan.error.unknownCode', { code: scannedCode });
 
   // ── Permission caméra ─────────────────────────────────────────────────────
   if (!permission) {
@@ -122,7 +140,7 @@ export default function FoodScanScreen() {
     return (
       <Centered>
         <Ionicons name="alert-circle-outline" size={48} color={colors.textMuted} />
-        <Text style={[styles.info, { color: colors.text }]}>{t('scan.notFound')}</Text>
+        <Text style={[styles.info, { color: colors.text }]}>{failureMessage}</Text>
         <Button label={t('scan.rescan')} onPress={rescan} />
         <Button
           label={t('journal.createFood')}

@@ -1,4 +1,4 @@
-import { mapOffMicronutrients } from '@/lib/openfoodfacts';
+import { interpretOffProduct, mapOffMicronutrients } from '@/lib/openfoodfacts';
 
 describe('mapOffMicronutrients (4.33)', () => {
   it('normalise les grammes OFF vers mg (×1000) et µg (×1e6)', () => {
@@ -32,5 +32,66 @@ describe('mapOffMicronutrients (4.33)', () => {
       vitamin_b9_ug: 194,
       calcium_mg: 99,
     });
+  });
+});
+
+describe('interpretOffProduct (4.10 — cause d’échec)', () => {
+  it('produit valide (nom + kcal) → found, avec repli du code-barres + sous-macros', () => {
+    const res = interpretOffProduct(
+      {
+        status: 1,
+        product: {
+          code: '3017620422003',
+          product_name_fr: 'Nutella',
+          nutriments: {
+            'energy-kcal_100g': 539,
+            proteins_100g: 6.3,
+            carbohydrates_100g: 57.5,
+            fat_100g: 30.9,
+            sugars_100g: 56.3,
+            'saturated-fat_100g': 10.6,
+          },
+        },
+      },
+      'fr',
+      '3017620422003',
+    );
+    expect(res.kind).toBe('found');
+    if (res.kind === 'found') {
+      expect(res.food.name).toBe('Nutella');
+      expect(res.food.kcalPer100g).toBe(539);
+      expect(res.food.barcode).toBe('3017620422003');
+      // Sous-macros captées (4.10 — afficher un maximum d'info au scan) ; fibres absentes → null.
+      expect(res.food.sugarsPer100g).toBe(56.3);
+      expect(res.food.saturatedFatPer100g).toBe(10.6);
+      expect(res.food.fiberPer100g).toBeNull();
+    }
+  });
+
+  it('replie sur le code scanné quand la fiche ne porte pas son code', () => {
+    const res = interpretOffProduct(
+      { status: 1, product: { product_name: 'Eau', nutriments: { 'energy-kcal_100g': 0 } } },
+      'fr',
+      '1234567890123',
+    );
+    // kcal 0 reste exploitable (num renvoie 0, non null) → found, code replié
+    expect(res).toEqual(expect.objectContaining({ kind: 'found' }));
+    if (res.kind === 'found') expect(res.food.barcode).toBe('1234567890123');
+  });
+
+  it('status 0 (OFF ne connaît pas le code) → notFound', () => {
+    expect(interpretOffProduct({ status: 0 }, 'fr', '0000000000000')).toEqual({ kind: 'notFound' });
+  });
+
+  it('produit présent mais sans calories exploitables → incomplete', () => {
+    expect(
+      interpretOffProduct({ status: 1, product: { product_name_fr: 'Truc', nutriments: {} } }, 'fr', '3017620422003'),
+    ).toEqual({ kind: 'incomplete' });
+  });
+
+  it('produit sans nom → incomplete', () => {
+    expect(
+      interpretOffProduct({ status: 1, product: { nutriments: { 'energy-kcal_100g': 42 } } }, 'fr', '3017620422003'),
+    ).toEqual({ kind: 'incomplete' });
   });
 });

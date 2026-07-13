@@ -15,6 +15,10 @@ export type OffFood = {
   proteinPer100g: number | null;
   carbsPer100g: number | null;
   fatPer100g: number | null;
+  /** Sous-macros facultatives (renseignées si OFF les fournit). */
+  sugarsPer100g: number | null;
+  saturatedFatPer100g: number | null;
+  fiberPer100g: number | null;
   /** Micronutriments normalisés pour 100 g (socle 4.33). Souvent vide côté OFF. */
   micronutrients: Micronutrients;
 };
@@ -85,6 +89,9 @@ function mapProduct(p: OffProduct, lang: string): OffFood | null {
     proteinPer100g: num(n['proteins_100g']),
     carbsPer100g: num(n['carbohydrates_100g']),
     fatPer100g: num(n['fat_100g']),
+    sugarsPer100g: num(n['sugars_100g']),
+    saturatedFatPer100g: num(n['saturated-fat_100g']),
+    fiberPer100g: num(n['fiber_100g']),
     micronutrients: mapOffMicronutrients(n),
   };
 }
@@ -123,24 +130,51 @@ export async function searchOpenFoodFacts(query: string, lang = 'fr'): Promise<O
 }
 
 /**
- * Récupère un produit OpenFoodFacts par son code-barres (item 4.10, scan). Renvoie
- * l'aliment normalisé, `null` si introuvable / sans calories exploitables, ou en cas
- * d'erreur réseau. Le code-barres scanné n'est retenu que s'il est numérique (EAN/UPC).
+ * Résultat d'un lookup OpenFoodFacts par code-barres (item 4.10). On distingue les
+ * causes d'échec au lieu de tout écraser en `null` : l'écran de scan peut ainsi afficher
+ * un message honnête (réseau vs code inconnu vs fiche incomplète) plutôt qu'un « introuvable »
+ * trompeur.
  */
-export async function fetchOpenFoodFactsByBarcode(barcode: string, lang = 'fr'): Promise<OffFood | null> {
+export type OffLookup =
+  | { kind: 'found'; food: OffFood }
+  | { kind: 'notFound' } // OFF a répondu mais ne connaît pas ce code-barres (status 0)
+  | { kind: 'incomplete' } // produit présent mais sans calories exploitables
+  | { kind: 'networkError' } // fetch en échec / réponse non-200 / parse KO
+  | { kind: 'invalidCode' }; // code scanné non numérique (pas un EAN/UPC)
+
+/**
+ * Interprète la réponse `api/v2` d'OpenFoodFacts (fonction **pure**, testable sans réseau).
+ * `code` sert de repli si la fiche ne reporte pas son propre code-barres.
+ */
+export function interpretOffProduct(
+  data: { status?: number; product?: OffProduct },
+  lang: string,
+  code: string,
+): OffLookup {
+  if (data.status !== 1 || !data.product) return { kind: 'notFound' };
+  const mapped = mapProduct(data.product, lang);
+  if (!mapped) return { kind: 'incomplete' };
+  // On garantit que le code-barres scanné est bien porté par le résultat.
+  return { kind: 'found', food: { ...mapped, barcode: mapped.barcode ?? code } };
+}
+
+/**
+ * Récupère un produit OpenFoodFacts par son code-barres (item 4.10, scan). Le code-barres
+ * scanné n'est retenu que s'il est numérique (EAN/UPC). Renvoie un {@link OffLookup} qui
+ * qualifie l'échec éventuel (réseau, code inconnu, fiche incomplète).
+ */
+export async function fetchOpenFoodFactsByBarcode(barcode: string, lang = 'fr'): Promise<OffLookup> {
   const code = barcode.trim();
-  if (!/^\d{6,14}$/.test(code)) return null;
+  if (!/^\d{6,14}$/.test(code)) return { kind: 'invalidCode' };
 
   const params = new URLSearchParams({ fields: OFF_FIELDS });
+  const url = `${PRODUCT_URL}/${code}.json?${params.toString()}`;
   try {
-    const res = await fetch(`${PRODUCT_URL}/${code}.json?${params.toString()}`, { headers: OFF_HEADERS });
-    if (!res.ok) return null;
+    const res = await fetch(url, { headers: OFF_HEADERS });
+    if (!res.ok) return { kind: 'networkError' };
     const data = (await res.json()) as { status?: number; product?: OffProduct };
-    if (data.status !== 1 || !data.product) return null;
-    const mapped = mapProduct(data.product, lang);
-    // On garantit que le code-barres scanné est bien porté par le résultat.
-    return mapped ? { ...mapped, barcode: mapped.barcode ?? code } : null;
+    return interpretOffProduct(data, lang, code);
   } catch {
-    return null;
+    return { kind: 'networkError' };
   }
 }

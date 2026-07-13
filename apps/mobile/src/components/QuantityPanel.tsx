@@ -43,7 +43,8 @@ export function QuantityPanel({
   const lang = i18n.language === 'en' ? 'en' : 'fr';
   const [grams, setGrams] = useState(String(target.portions[0]?.grams ?? 100));
   const g = Number(grams.replace(',', '.')) || 0;
-  const kcal = scaleNutrition(target, g).kcal;
+  const scaled = scaleNutrition(target, g);
+  const kcal = scaled.kcal;
   const micronutrients = target.micronutrients ?? {};
 
   // Détail facultatif (sucres / AG saturés / fibres) mis à l'échelle, affiché si renseigné.
@@ -60,6 +61,9 @@ export function QuantityPanel({
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={[styles.panelTitle, { color: colors.text }]}>{target.name}</Text>
         <Text style={[styles.panelKcal, { color: colors.accent }]}>{kcal} {t('nutrition.kcal')}</Text>
+        <Text style={[styles.macros, { color: colors.textMuted }]}>
+          {t('nutrition.macros.protein')} {scaled.proteinG} g · {t('nutrition.macros.carbs')} {scaled.carbsG} g · {t('nutrition.macros.fat')} {scaled.fatG} g
+        </Text>
         {target.portions.length > 0 ? (
           <View style={styles.portions}>
             {target.portions.map((p, i) => (
@@ -90,6 +94,7 @@ const styles = StyleSheet.create({
   content: { gap: 16, paddingBottom: 8 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
+  macros: { fontFamily: fontFamily.mono, fontSize: 13, lineHeight: 18 },
   extras: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
   portions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   portion: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
