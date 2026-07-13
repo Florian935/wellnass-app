@@ -20,6 +20,70 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [13/07/2026] 🆕 **Garde-manger virtuel (stock) + recettes selon le stock + alertes de réappro** :
+  à la validation du « panier de courses », les articles entrent dans un **stock virtuel** (le
+  « frigo » de l'app) ; le pilier nutrition propose alors des **recettes à partir de ce qu'on a**, et
+  **alerte** quand un aliment est bientôt en rupture. Ferme une boucle avec les briques prévues :
+  planning repas (US 4.27) → liste de courses (US 4.28) → **panier validé → garde-manger** → recettes
+  ([[nutrition-recettes-healthy]] rendu concret/persistant) → cuisiner/logger **décrémente** le stock
+  → alerte réappro → réalimente la liste. Scan code-barres OpenFoodFacts pour l'ajout. Différenciateur
+  (anti-gaspillage, « je mange quoi ce soir ? » → engagement quotidien). **Points durs** : mode de
+  décrément (manuel vs auto au log d'un repas/recette — sûrement un mix) ; **quantités par article**
+  (données en plus vs journal actuel) ; périmètre logiquement **après** planning + liste (V1.1+).
+  **Piste premium** : garde-manger de base gratuit, intelligence recettes-selon-stock en premium.
+- [13/07/2026] 🆕 **Onglet compétition (muscu/fitness) — groupes / régional / global** : créer de
+  petites compétitions au sein d'un groupe ou à l'échelle régionale/globale (classements par tonnage,
+  distance, PR, progression…). Fort moteur d'engagement + **viralité** (inviter ses potes) → rétention
+  & acquisition. Expression « compétition » de [[clubs-groupes]] ; support des
+  [[defis-sponsorises-marques]]. **Calendrier & difficultés (honnête)** : le social est V2 et la
+  gamification complète V3/V4 → **post-V1** ; **équité** (comparer entre gabarits/niveaux → catégories
+  ou métriques relatives : % progression, score Wilks/DOTS, allure) ; **anti-triche** (données
+  auto-déclarées → classement manipulable, enjeu d'intégrité) ; **vie privée** (classement régional =
+  info de localisation → consentement). À distinguer des objectifs personnels (non sociaux) et des
+  défis sponsorisés (compétition = mécanisme, sponsoring = monétisation par-dessus). Cible **V2+**.
+
+### Salve plateforme créateur / communauté / B2B (13/07/2026)
+
+- [13/07/2026] 🔍 **Principe directeur « plateforme créateur » (note)** : influenceur, coach et
+  marketplace sont **la même plateforme** à des intensités différentes — coach = relation 1-à-1
+  (suivi profond, facturation) ; créateur/influenceur = 1-à-plusieurs (programmes vendus en volume,
+  communauté). Construire une **plateforme créateur unifiée** à deux modes plutôt que deux produits :
+  mêmes briques (studio de programmes, paiement/reversements, analytics d'audience). Cadre les idées
+  [[module-influenceur]], [[module-coach-coache]] et [[marketplace-createurs-coachs]] ci-dessous.
+
+- [13/07/2026] 🆕 **Module influenceur (volant d'acquisition à deux faces)** : faire de l'app le canal
+  de **livraison ET de monétisation** des influenceurs fitness, pour qu'ils l'adoptent et amènent leur
+  audience. Thèse : l'influenceur gagne de l'argent + gagne du temps (remplace PDF + Sheets + DM +
+  Stripe) → il promeut l'app lui-même → ses abonnés arrivent pour SON contenu → ils restent grâce à
+  l'intégration muscu/nutrition/course → preuves de résultats → recrutement d'autres créateurs.
+  **Plus-values concrètes** : (a) **studio de publication de programmes brandés** — réutilise le
+  constructeur admin **US 8.4** ; (b) **partage de revenus/commission** (⚠️ infra paiement marketplace
+  + reversements, au-delà de RevenueCat) ; (c) **espace créateur white-label léger** (thème/logo/
+  vitrine) ; (d) **dashboard analytics d'audience** consenti/anonymisé (rétention, adhérence,
+  résultats moyens) ; (e) **affiliation/parrainage créateur** (code/lien unique, CPA ou revenue-share
+  — généralise [[programme-parrainage]]) ; (f) **défis animés par le créateur** ; (g) **broadcast**
+  aux abonnés ; (h) lien avec le contenu YouTube/Insta ; (i) upsell coaching 1-à-1 via
+  [[module-coach-coache]]. **Garde-fous** : marketplace bilatéral (fiscalité, droits de contenu,
+  consentement RGPD des analytics), modération/responsabilité (programmes → risque blessure),
+  amorçage poule/œuf (démarrer avec quelques créateurs triés), dépend de l'activation paiement
+  (post-V1). **Reco court terme** : brique la moins chère et quasi prête = ouvrir le **studio 8.4** +
+  un **système d'affiliation** pour les 1ers créateurs démarchés. _À penser fusionné avec
+  [[module-coach-coache]] (cf. note ci-dessus)._
+- [13/07/2026] 🆕 **Marketplace de créateurs & coachs** : place de marché de programmes/plans —
+  vitrines par créateur, notes/avis, découverte, badge « créateur vérifié ». Généralisation de
+  [[module-influenceur]] + [[module-coach-coache]] ; alimente [[bibliotheque-programmes-premium]].
+- [13/07/2026] 🆕 **Clubs & groupes (communauté)** : clubs de running, « crews » de salle — espace de
+  groupe, classements, sorties communes. Brique communauté distincte du feed social (V2) ; support
+  naturel pour les [[defis-sponsorises-marques]] et les défis animés par un créateur.
+- [13/07/2026] 🆕 **Défis sponsorisés par des marques** : une marque finance un challenge (dotations)
+  → engagement + revenu + acquisition. S'appuie sur [[clubs-groupes]] et la couche défis/sociale.
+- [13/07/2026] 🆕 **Offre salles de sport (white-label) — B2B** : la salle offre l'app à ses adhérents
+  et y publie ses cours/programmes. Revenu B2B récurrent ; réutilise le studio de programmes (US 8.4)
+  et le white-label du [[module-influenceur]].
+- [13/07/2026] 🆕 **Score de récupération / readiness (façon Whoop/Oura)** : croise sommeil, RPE et
+  charge d'entraînement → « prêt à performer aujourd'hui ? ». S'appuie sur [[donnees-sommeil-pas]],
+  [[journal-bien-etre]] et [[analyses-croisees-poussees]] ; recoupe le garde-fou surentraînement.
+
 ### Salve rétention / adoption / monétisation (13/07/2026)
 
 - [13/07/2026] 🔍 **Principe directeur monétisation (note)** : le différenciateur du produit —
