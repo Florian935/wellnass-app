@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Feat — US 8.6 : import d'aliments par CSV (CIQUAL), back-office
+
+Branche `feature/8.6-import-csv-ciqual` (depuis `dev` `81064a5`). Cadrage complet
+(brainstorming → spec → plan) puis exécution TDD. Remplissage en masse de la base d'aliments
+éditoriale depuis un CSV formaté (FR/EN + macros + micros).
+
+### Ajouté
+- **`@wellness/shared/food-csv.ts`** : `parseFoodCsv(rows)` pur — validation/mapping ligne à ligne
+  (requis, `category` ∈ enum, nombres ≥ 0, `import_key` unique intra-fichier, micros via
+  `micronutrientsSchema`), sépare `valid` / `errors` (ligne, champ, raison). **8 tests** (TDD).
+- **Migration** `20260713150000_foods_import_key.sql` : colonne `foods.import_key` + index unique
+  (arbitre `on conflict` de l'upsert idempotent ; NULL illimités pour OFF/custom). `database.types`
+  régénéré (`import_key`).
+- **Admin** : écran **Import CSV** (`screens/FoodImportScreen.tsx`) — upload → papaparse → aperçu
+  (N valides / M erreurs) → confirmation → rapport (créés / mis à jour) + modèle CSV téléchargeable ;
+  couche `data/foods.ts` (`importFoods` upsert `foods` par `import_key` + `food_translations` FR/EN,
+  `owner_id NULL`, `source library`) ; route `/foods` + nav « Aliments » gated `content_editor` ;
+  i18n admin FR ; dépendance `papaparse`.
+
+### Technique / Notes
+- Contrat CSV (spec §3) : `import_key, name_fr, name_en, category, kcal_per_100g` requis ;
+  macros + 10 micros (`MICRONUTRIENT_KEYS`) optionnels. `portions` hors v1.
+- Vérifs : typecheck (tous) OK, shared **610** tests, mobile 34, lint 0 erreur, build admin OK.
+- **Checkpoint 🔴 déjà appliqué** (migration cloud + `db:types`, 13/07). **Reste** : recette (import
+  d'un échantillon CIQUAL réel, ré-import idempotent, vérif base + affichage mobile) + relecture Damien.
+- Différé : 8.5 (CRUD/édition unitaire), annulation/rollback d'import, import depuis le mobile.
+
 ## 13/07/2026 — Feat — Détail programme : séances repliables (expansion inline, muscu + running)
 
 Branche `feature/detail-programme-seances-repliables` (depuis `dev` `abaf5df`). Cadrage complet

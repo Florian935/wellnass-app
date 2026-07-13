@@ -141,8 +141,8 @@ describe('CollapsibleCard', () => {
 
 ## Notes
 
-- **Gate CLAUDE.md avant code** : ce plan + la spec + la **maquette (Claude Design)** doivent être
-  **validés par Damien ou Florian**. Ne pas démarrer l'implémentation avant validation.
+- **Gate CLAUDE.md** : spec + plan **validés par Florian le 13/07/2026**. **Maquette écartée**
+  (changement UI mineur, validation directe device — précédent 1.15 / finitions nutrition). Code autorisé.
 - **Recette device** attendue (risque visuel) : repli/dépli sur les 2 écrans, plusieurs séances
   ouvertes, nom d'exercice non tronqué, bouton Démarrer accessible en replié (muscu).
 - **100 % client** : aucune migration, aucun redéploiement sync rules, aucune dépendance native

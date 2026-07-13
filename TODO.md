@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (feat détail programme — séances repliables muscu+running, code livré ; reste recette device avant merge. Précédemment : lot finitions, fix rejeu onboarding, doc dev build Android.)*
+*Dernière mise à jour : 13/07/2026 (feat US 8.6 import CSV aliments — code livré + checkpoint appliqué, reste recette. Précédemment : détail programme séances repliables, lot finitions, fix rejeu onboarding, doc dev build Android.)*
 
 ---
 
@@ -210,6 +210,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [~] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository) — plomberie posée (schéma jouet `todos`, connecteur générique) ; vrai schéma métier = US1
 - [x] **US 8.1a — Admin Fondation-1** (`apps/admin`) : scaffold Vite+React+TS + auth Supabase (login/session/logout) + shell protégé (RequireAuth + layout + placeholder), libellés FR centralisés, `@wellness/shared` réutilisé. Build OK, racine typecheck/lint verts. 100 % client web, aucune migration/cloud. Gate par rôle = F2 (13/07/2026)
 - [~] **US 8.4 — Admin constructeur de programmes** (`apps/admin`) : builder éditorial *pillar-aware* (muscu = séances→exos avec séries/reps/charge/repos ; running = cibles type/distance/durée), bilingue FR/EN, brouillon/publié, réorganisation glisser-déposer (@dnd-kit), archivage cascade. Migration RLS d'écriture éditoriale (`is_content_editor`, 4 tables), couche data `programs.ts`, composants `SortableList`/`ExercisePicker`, écrans liste/création/composition, routing gated. Impl. + 3 revues (data layer, écran compo, finale) ✅, typecheck/lint/build verts, mobile inchangé. **Reste 🔴 Florian** : appliquer la migration (projet `nsxzflxsgovriwwvflxe`) + `db:types` + recette (aucune sync rule à redéployer) (13/07/2026)
+- [~] **US 8.6 — Import aliments CSV (CIQUAL)** (`feature/8.6-import-csv-ciqual`, 13/07/2026) — **code livré**. Cadrage complet (spec+plan). `@wellness/shared/food-csv.ts` (`parseFoodCsv` pur, 8 tests TDD) ; migration `foods.import_key` + index unique (**checkpoint appliqué** : migration cloud + `db:types` faits) ; admin : écran Import CSV (upload→papaparse→aperçu→confirmation→rapport + modèle CSV), `data/foods.ts` (upsert idempotent `foods`+`food_translations` FR/EN), route `/foods` + nav « Aliments » gated `content_editor`, `papaparse`. Contrat : `import_key`/`name_fr`/`name_en`/`category`/`kcal` requis + macros/10 micros optionnels. typecheck/lint/tests verts (shared 610), build admin OK. Spec/plan : [8.6-import-csv-ciqual.md](docs/specs/functional/us/8.6-import-csv-ciqual.md). **Reste** : recette (import CIQUAL réel, ré-import idempotent, vérif mobile) + relecture Damien. **Différé** : 8.5 (CRUD), rollback, import mobile.
 
 ### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
 - [x] **US1 — Socle data** — mergée dans `dev` (`248e2b2`, 06/07/2026). Activation cloud + device = section 🔴 en haut.
