@@ -152,7 +152,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ### Décisions bloquantes à trancher
 - [x] Confirmer **PowerSync** via le spike ([spike-001](docs/specs/technical/spike-001-powersync.md)) — ✅ **validé le 05/07/2026** (voir [ADR-001](docs/adr/ADR-001-moteur-sync-offline.md)), débloque le modèle de données
 - [ ] Trancher **Mapbox vs MapLibre** (fournisseur de cartes, running V0.5)
-- [ ] Source des **GIF d'exercices** — exercises-dataset vs ExerciseDB (avant V0.2)
+- 🚫 **BLOQUÉ — Média des exercices (images / GIF)** _(à trancher avec Damien, 13/07/2026)_ : on n'a
+  **ni images ni GIF** pour les exercices, et la **stratégie n'est pas décidée** — (a) **source** du média
+  (exercises-dataset vs ExerciseDB vs médias maison), (b) **licence/droits**, (c) **stockage** (Supabase
+  Storage vs CDN externe), (d) **upload/attribution** côté admin. **Bloque l'US 8.3** (upload média admin) et
+  l'affichage média dans la biblio mobile (`exercises.media_url` reste vide en attendant). → **décision produit
+  + technique à prendre avec Damien avant de démarrer 8.3.** _(Remplace l'ancienne ligne « Source des GIF —
+  exercises-dataset vs ExerciseDB ».)_
 - [x] Source de la **base d'aliments** — ✅ **CIQUAL (bruts FR, + traduction EN) + OpenFoodFacts (industriels via scan)**, tranché le 06/07/2026 — débloque les US base d'aliments / journal (4.8+)
 
 ### Scaffolding (fondations, à poser avant tout code fonctionnel)
