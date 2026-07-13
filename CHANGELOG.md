@@ -32,7 +32,8 @@ horizontal (commit `41e459b`).
   pas de chaîne i18n touchée.
 - typecheck vert (tous workspaces), lint 0 erreur (4 warnings préexistants dans le smoke test
   charts, sans rapport), 619 tests shared verts. Pas de test unitaire ajouté : bug de mise en
-  page RN sans logique testable → **à valider visuellement sur device** (dev build).
+  page RN sans logique testable. **Recette device validée par Florian le 14/07/2026** ✅ (barre
+  d'onglets revenue à une hauteur d'une ligne, défilement horizontal OK).
 - **Non committé dans cette passe** : la modification de [eas.json](apps/mobile/eas.json) (bloc
   `env` `EXPO_PUBLIC_*` au profil `preview`) toujours présente dans l'arbre — sujet distinct qui
   contredit la décision documentée (env via `eas env:push`), laissée de côté comme au commit

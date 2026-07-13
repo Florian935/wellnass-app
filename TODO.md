@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — voir §Bugs connus. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅, voir §Bugs connus. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -54,7 +54,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   horizontal enfant direct d'un flex colonne s'étire sur toute la hauteur → l'onglet sélectionné
   (« Tous ») devenait une grande barre orange, libellé en haut. Fix : `ScrollView` enveloppé dans
   une `View` qui se cale sur la hauteur du contenu et porte le cadre. typecheck/lint/test verts.
-  **100 % client, UI pure.** Reste : **vérif device** (dev build).
+  **100 % client, UI pure.** **Recette device validée par Florian (14/07/2026)** ✅ — reste relecture Damien.
 
 - [x] **Fuite inter-piliers dans « Mes programmes » muscu (pas de filtre par pilier)** — **corrigé**
   (`fix/programmes-filtre-pilier`, 13/07/2026). L'écran muscu [programs/index.tsx](apps/mobile/src/app/programs/index.tsx)
