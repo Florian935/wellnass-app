@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (Bug bloquant consigné : crash + non-enregistrement au rejeu de l'onboarding depuis le profil · précédemment : idées produit dans IDEAS.md)*
+*Dernière mise à jour : 13/07/2026 (2 améliorations consignées : affichage du contenu de séance sur le détail programme mobile — nom tronqué + séance non cliquable · précédemment : bug bloquant rejeu onboarding)*
 
 ---
 
@@ -49,6 +49,20 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
+
+- [ ] **Écran détail programme (mobile) — 2 améliorations d'affichage du contenu**
+  (remonté par Florian le 13/07/2026, capture device). Écran
+  [programs/[id].tsx](apps/mobile/src/app/programs/[id].tsx).
+  1. **Nom d'exercice tronqué à ~1 caractère** (« T… », « P… ») → on ne voit pas le contenu de la
+     séance. **Cause** : dans [PlanRow](apps/mobile/src/app/programs/[id].tsx#L342-L356), le nom
+     (`planName`, `flex: 1`, `numberOfLines={1}`) partage **la même ligne** que les objectifs
+     (`planTargets`, `flexShrink: 0`, ex. `3 séries · 3 reps · 0,0 kg · 10 s repos`) ; les objectifs
+     ne rétrécissent pas et écrasent le nom. **Piste** : passer nom et objectifs sur **deux lignes**
+     (objectifs sous le nom) plutôt qu'en `space-between`, ou autoriser le nom à occuper 2 lignes.
+  2. **Séance non cliquable** : la `SessionCard` n'a aucune zone tappable pour **ouvrir le détail
+     d'une séance** (seul « Démarrer cette séance » est accessible). **Piste** : rendre la carte /
+     l'en-tête de séance tappable vers un écran (ou une expansion) de détail de séance.
+  _Non traité ici (on est sur `feature/admin-8.4-…`). Ouvrir `fix/detail-programme-affichage-seance`._
 
 - [ ] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding depuis le profil**
   (remonté par Florian le 13/07/2026, device).
