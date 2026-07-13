@@ -24,8 +24,13 @@ export function AdminLayout() {
 
   async function handleLogout() {
     setSigningOut(true);
-    await signOut();
-    // La redirection vers /login est assurée par RequireAuth au changement de session.
+    try {
+      await signOut();
+      // La redirection vers /login est assurée par RequireAuth au changement de session.
+    } finally {
+      // Réactive le bouton même si signOut échoue (évite un blocage définitif).
+      setSigningOut(false);
+    }
   }
 
   return (
@@ -36,7 +41,9 @@ export function AdminLayout() {
           <b style={{ color: '#fff', fontSize: 14 }}>{fr.brand}</b>
         </div>
         <nav style={styles.nav}>
-          <span style={{ ...styles.navItem, ...styles.navActive }}>▦ {fr.layout.nav.home}</span>
+          <span aria-current="page" style={{ ...styles.navItem, ...styles.navActive }}>
+            ▦ {fr.layout.nav.home}
+          </span>
           {NAV_SOON.map((item) => (
             <span key={item.label} style={{ ...styles.navItem, ...styles.navSoon }}>
               <span>
