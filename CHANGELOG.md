@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Technique/Notes — Cadrage US « panel nutritionnel étendu » (spec validée)
+
+Branche `feature/panel-nutritionnel-etendu`. **Cadrage uniquement (aucun code applicatif).**
+
+### Ajouté
+- **Spec** [panel-nutritionnel-etendu.md](docs/specs/functional/us/panel-nutritionnel-etendu.md),
+  **validée par Florian** : étendre le panel micronutriments de 10 → 31 nutriments (AG mono/poly/trans
+  + oméga-3/6/9, minéraux zinc/phosphore/cuivre/manganèse/sélénium/iode, vitamines A/E/K/B1/B2/B3/B5/
+  B6/B7), stockés dans la colonne JSON `micronutrients` (**aucune migration**), captés depuis OFF
+  (present-only, garde-fou unité vitamine A en IU). Décisions produit : périmètre complet, **pas de
+  2ᵉ source** (USDA/CIQUAL par nom) pour l'instant.
+
+### Modifié
+- **TODO.md** : US « panel nutritionnel étendu » passée en cadrage (`[~]`, spec validée, reste
+  plan → maquette → code) ; nouvelle US **« enrichir le seed avec les données CIQUAL détaillées »**
+  tracée (prérequis à la valeur réelle du panel — les produits scannés OFF n'ont pas ces détails).
+
 ## 14/07/2026 — Corrigé + Modifié — Scan code-barres : échecs honnêtes + affichage nutritionnel enrichi
 
 Branche `fix/scan-code-barres`. Investigation d'un « produit introuvable » au scan (Florian, adb

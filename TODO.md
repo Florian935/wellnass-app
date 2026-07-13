@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (Cadrage US « panel nutritionnel étendu » — spec validée + US « enrichir seed CIQUAL » tracée (§En cours). Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -142,6 +142,23 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ---
 
 ## 🚧 En cours
+
+- [~] **Panel nutritionnel étendu (AG détaillés + oméga + toutes vitamines/minéraux)** — **cadrage :
+  spec validée** (`feature/panel-nutritionnel-etendu`, 14/07/2026). Prolonge 4.33 (panel étendu
+  différé). +21 nutriments (socle 10 → 31) : AG mono/poly/trans + oméga-3/6/9, minéraux (zinc,
+  phosphore, cuivre, manganèse, sélénium, iode), vitamines A/E/K/B1/B2/B3/B5/B6/B7 — stockés dans la
+  colonne JSON `micronutrients` (**aucune migration**), captés depuis OFF (present-only, garde-fou
+  unité vitamine A en IU), affichés dans `MicronutrientDetails`. Vit C/D/B9/B12 déjà gérées (socle).
+  **Décisions produit (Florian)** : périmètre **complet**, **pas de 2ᵉ source** (USDA/CIQUAL par nom)
+  pour l'instant. Spec : [panel-nutritionnel-etendu.md](docs/specs/functional/us/panel-nutritionnel-etendu.md).
+  **Reste** : plan → maquette → validation → code. **Différé** : objectifs/RDA, édition admin du set
+  étendu, agrégats recettes/repas types. **100 % client, pas de checkpoint 🔴.**
+- [ ] **US — Enrichir le seed d'aliments avec les données CIQUAL détaillées** — prérequis à la
+  **valeur réelle** du panel nutritionnel étendu : les aliments bruts CIQUAL portent des profils
+  complets (AG détaillés, oméga, vitamines, minéraux) absents des produits scannés OFF. À intégrer au
+  **seed** (import CIQUAL, ne rien inventer — reprendre l'export officiel), en alignant les colonnes
+  micros/sous-macros sur le set du panel étendu. Dépend du panel étendu (schéma) + de la source CIQUAL
+  (tranchée le 06/07). _(Tracé le 14/07/2026 sur décision Florian.)_
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
 - [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)
