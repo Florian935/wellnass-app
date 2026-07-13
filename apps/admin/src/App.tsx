@@ -8,6 +8,8 @@ import { AdminLayout } from './components/AdminLayout';
 import { LoginScreen } from './screens/LoginScreen';
 import { HomePlaceholder } from './screens/HomePlaceholder';
 import { RolesScreen } from './screens/RolesScreen';
+import { ExercisesScreen } from './screens/ExercisesScreen';
+import { ExerciseEditScreen } from './screens/ExerciseEditScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
@@ -26,6 +28,9 @@ export function App() {
               <Route element={<RequireAdmin />}>
                 <Route element={<AdminLayout />}>
                   <Route path="/" element={<HomePlaceholder />} />
+                  <Route path="/exercises" element={<ExercisesScreen />} />
+                  <Route path="/exercises/new" element={<ExerciseEditScreen />} />
+                  <Route path="/exercises/:id" element={<ExerciseEditScreen />} />
                   <Route
                     path="/roles"
                     element={

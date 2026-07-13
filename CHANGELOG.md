@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin : CRUD des exercices éditoriaux + brouillon/publié (US 8.2)
+
+Branche `feature/admin-8.2-exercices-crud`. Gestion des exercices éditoriaux depuis le back-office :
+liste (recherche + filtres), création/édition bilingue (FR+EN requis), brouillon/publié, archivage.
+⚠️ **Checkpoint cloud** : migration RLS/status + redéploiement des sync rules PowerSync + `db:types`
+à réaliser par Florian (bon projet) avant recette. **Aucun code mobile modifié.**
+
+### Ajouté
+- **Migration** `supabase/migrations/20260713110000_admin_editorial_exercises.sql` : colonne
+  `exercises.status` (text not null default `'published'`, check `draft`/`published`). RLS réécrite en
+  **DROP+CREATE** (Postgres n'a pas `CREATE OR REPLACE POLICY`) : `exercises_select`
+  (`owner_id = auth.uid()` **ou** éditorial publié **ou** `is_admin()`), `exercises_insert`/`exercises_update`
+  (self **ou** `is_admin()`) ; `exercise_translations_insert`/`exercise_translations_update` rouverts à
+  `is_admin()`. Défaut `'published'` → seed/customs existants restent visibles.
+- **`apps/admin/src/data/exercises.ts`** : couche data (`listEditorialExercises`, `getExercise`,
+  `saveExercise` — upsert exercice + 2 traductions séquentiel, UUID client —, `setStatus`,
+  `archiveExercise` — soft-delete exercice + traductions). Typée via `Database`, réutilise `MUSCLE_GROUPS`.
+- **`apps/admin/src/screens/ExercisesScreen.tsx`** : liste (nom FR, groupe traduit, badge statut, date),
+  recherche par nom, filtres groupe + statut, « Nouvel exercice », actions éditer / publier-brouillon /
+  archiver (confirmation) ; états loading/vide/erreur.
+- **`apps/admin/src/screens/ExerciseEditScreen.tsx`** : formulaire créer/éditer (groupe, équipement
+  optionnel, **nom FR + nom EN requis**, instructions FR/EN optionnelles, statut — brouillon par défaut).
+- **Routes** `/exercises`, `/exercises/new`, `/exercises/:id` sous `RequireAdmin` + `AdminLayout`.
+- **i18n** `apps/admin/src/i18n/fr.ts` : bloc `exercises.*` (liste, colonnes, formulaire, statuts,
+  actions, erreurs, confirmations, noms de groupes).
+
+### Modifié
+- **`packages/shared/src/database.types.ts`** : ajout **manuel** de `status` à `exercises`
+  (Row/Insert/Update), pour que les requêtes admin compilent avant l'apply cloud (idempotent `db:types`).
+- **`docs/specs/technical/powersync-sync-rules.yaml`** : bucket `shared_content`, `exercises` filtre
+  désormais `status = 'published'` (masque les brouillons éditoriaux au mobile, même pattern que
+  `programs`). `exercise_translations` sans filtre status (parent brouillon non synchronisé).
+- **`apps/admin/src/components/AdminLayout.tsx`** : entrée de nav « Exercices » désormais cliquable
+  (NavLink) au lieu de « bientôt ».
+
+### Technique / Notes
+- Sécurité : clé anon uniquement (jamais `service_role`) ; RLS = frontière ; soft-delete uniquement ;
+  brouillons éditoriaux jamais exposés au mobile (filtrés au niveau sync).
+- 🔴 Reste à faire par Florian : appliquer la migration + redéployer les sync rules + `db:types` + recette.
+
 ## 13/07/2026 — Admin Fondation-2 : rôles + gate d'accès (US 8.9)
 
 Branche `feature/admin-f2-roles-gate`. Restreint le back-office aux administrateurs (table
