@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin Fondation-1 : scaffold Vite + React + TypeScript (`apps/admin`)
+
+Branche `feature/admin-f1-scaffold-auth`. Transformation du stub `apps/admin` en app web
+**Vite + React + TypeScript** intégrée au monorepo npm workspaces. **100 % client web, aucune
+migration, aucun cloud.**
+
+### Ajouté
+- **App web `@wellness/admin`** : `package.json` réécrit (deps `react`/`react-dom` **19.2.3 exact**
+  — alignées mobile, `react-router-dom` ^7, `@supabase/supabase-js` ^2.110.0, `@wellness/shared` `*` ;
+  devDeps `vite` ^7, `@vitejs/plugin-react`, `typescript` ~5.6.3, types React, ESLint flat web React).
+  Scripts `dev` / `build` (`tsc -b && vite build`) / `preview` / `typecheck` / `lint`.
+- **Config** : `vite.config.ts` (`@vitejs/plugin-react`), `index.html` (`#root` + `main.tsx`),
+  `tsconfig.json` réécrit (extends base ; `lib` DOM+DOM.Iterable+ESNext, `jsx` react-jsx,
+  `moduleResolution` bundler, `noEmit`, `include ["src"]`), `eslint.config.js` (flat, react-hooks +
+  react-refresh + typescript-eslint), `src/vite-env.d.ts` (typage `import.meta.env` `VITE_*`).
+- **Socle UI** : `src/theme.ts` (tokens couleurs thème clair, accent terracotta `#dd6e40`),
+  `src/index.css` (variables CSS + reset), `src/main.tsx` (`createRoot` + `StrictMode`),
+  `src/App.tsx` minimal (scaffold).
+
+### Supprimé
+- Ancien stub `apps/admin/src/index.ts`.
+
+### Technique / Notes
+- **Intégration monorepo** : `apps/admin` build OK ; racine `typecheck` + `lint` **verts** (admin
+  inclus via `--workspaces --if-present`) ; aucune régression mobile/shared. `vite` 7.3.6 imbriqué
+  dans `apps/admin` (le root garde un `vite` 5.x transitif hoisté, sans impact).
+
 ## 13/07/2026 — Suppression de programmes & de séances (muscu + course)
 
 Branche `feature/suppression-programmes-seances`. Permet de supprimer un programme
