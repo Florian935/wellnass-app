@@ -136,14 +136,18 @@ export type ExercisePlanInput = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-type NamedTranslation = { lang: string; name: string };
+type NamedTranslation = { lang: string; name: string; deleted_at?: string | null };
 
-/** Retrouve le nom d'une langue donnée dans un tableau de traductions. */
+/**
+ * Retrouve le nom d'une langue donnée dans un tableau de traductions, en ignorant
+ * les traductions soft-deletées (`deleted_at` non nul) — aligné sur le repository
+ * mobile qui filtre `deleted_at IS NULL` sur chaque jointure de traduction.
+ */
 function nameForLang(
   translations: readonly NamedTranslation[],
   lang: 'fr' | 'en',
 ): string | null {
-  return translations.find((t) => t.lang === lang)?.name ?? null;
+  return translations.find((t) => t.lang === lang && t.deleted_at == null)?.name ?? null;
 }
 
 /** Transforme un `max(order_index)` en position suivante (0 si aucune ligne). */
@@ -203,8 +207,9 @@ async function nextPlanOrderIndex(
 
 /**
  * Liste des programmes éditoriaux (`owner_id IS NULL`, non supprimés), avec leurs
- * traductions FR/EN jointes, triés du plus récent au plus ancien. L'admin les
- * voit tous (brouillons compris) via la RLS `is_admin()`.
+ * traductions FR/EN jointes, triés du plus récent au plus ancien. Tout l'éditorial
+ * (brouillons compris) est lisible via la RLS `select` des programmes (`owner_id is
+ * null`) ; côté mobile, seuls les publiés descendent (filtre des sync rules).
  */
 export async function listEditorialPrograms(): Promise<{
   rows: AdminProgramRow[];
@@ -213,7 +218,7 @@ export async function listEditorialPrograms(): Promise<{
   const { data, error } = await supabase
     .from('programs')
     .select(
-      'id, pillar, status, level, goal, duration_weeks, created_at, program_translations(lang, name)',
+      'id, pillar, status, level, goal, duration_weeks, created_at, program_translations(lang, name, deleted_at)',
     )
     .is('owner_id', null)
     .is('deleted_at', null)
@@ -259,7 +264,7 @@ export async function getProgram(id: string): Promise<{
   const { data: programData, error: programError } = await supabase
     .from('programs')
     .select(
-      'id, pillar, status, level, goal, duration_weeks, program_translations(lang, name, summary, description)',
+      'id, pillar, status, level, goal, duration_weeks, program_translations(lang, name, summary, description, deleted_at)',
     )
     .eq('id', id)
     .is('owner_id', null) // éditorial uniquement
@@ -278,8 +283,12 @@ export async function getProgram(id: string): Promise<{
     name: string;
     summary: string | null;
     description: string | null;
+    deleted_at: string | null;
   };
-  const translations = (programData.program_translations ?? []) as FullTranslation[];
+  // Ignore les traductions soft-deletées (cf. `nameForLang` / repo mobile).
+  const translations = ((programData.program_translations ?? []) as FullTranslation[]).filter(
+    (t) => t.deleted_at == null,
+  );
   const fr = translations.find((t) => t.lang === 'fr');
   const en = translations.find((t) => t.lang === 'en');
 
@@ -316,7 +325,7 @@ export async function getProgram(id: string): Promise<{
     const { data: plansData, error: plansError } = await supabase
       .from('exercise_plans')
       .select(
-        'id, session_id, order_index, exercise_id, set_type, target_sets, target_reps, target_weight_kg, rest_seconds, exercises(exercise_translations(lang, name))',
+        'id, session_id, order_index, exercise_id, set_type, target_sets, target_reps, target_weight_kg, rest_seconds, exercises(exercise_translations(lang, name, deleted_at))',
       )
       .in('session_id', sessionIds)
       .is('owner_id', null)
@@ -348,7 +357,10 @@ export async function getProgram(id: string): Promise<{
           setType: plan.set_type,
           targetSets: plan.target_sets,
           targetReps: plan.target_reps,
-          targetWeightKg: plan.target_weight_kg,
+          // `numeric` peut remonter en chaîne (PostgREST préserve la précision) : on
+          // coerce en nombre pour que le type déclaré ne mente pas au runtime.
+          targetWeightKg:
+            plan.target_weight_kg == null ? null : Number(plan.target_weight_kg),
           restSeconds: plan.rest_seconds,
         });
       }
@@ -516,7 +528,9 @@ export async function setStatus(
  *  4. soft-delete les `program_translations` du programme ;
  *  5. soft-delete la ligne `programs`.
  * Séquentiel, owner-scopé (`owner_id NULL`) et idempotent ; s'arrête et renvoie à
- * la première erreur.
+ * la première erreur. L'ordre (fin → entête) garantit qu'un arrêt en cours ne laisse
+ * jamais un parent supprimé au-dessus d'enfants vivants ; l'UI doit **retenter** en
+ * cas d'erreur (le rejeu ne touche que les lignes encore vivantes).
  */
 export async function archiveProgram(id: string): Promise<{ error: unknown }> {
   const now = new Date().toISOString();
@@ -534,13 +548,15 @@ export async function archiveProgram(id: string): Promise<{ error: unknown }> {
 
   const sessionIds = (sessionRows ?? []).map((s) => s.id);
 
-  // 2. Plans d'exercice de ces séances.
+  // 2. Plans d'exercice de ces séances. `.is('deleted_at', null)` → vraie
+  //    idempotence : un retry ne réécrit pas `deleted_at` sur des lignes déjà mortes.
   if (sessionIds.length > 0) {
     const { error: plansError } = await supabase
       .from('exercise_plans')
       .update({ deleted_at: now })
       .in('session_id', sessionIds)
-      .is('owner_id', null);
+      .is('owner_id', null)
+      .is('deleted_at', null);
     if (plansError) {
       return { error: plansError };
     }
@@ -551,7 +567,8 @@ export async function archiveProgram(id: string): Promise<{ error: unknown }> {
     .from('sessions')
     .update({ deleted_at: now })
     .eq('program_id', id)
-    .is('owner_id', null);
+    .is('owner_id', null)
+    .is('deleted_at', null);
   if (sessError) {
     return { error: sessError };
   }
@@ -561,7 +578,8 @@ export async function archiveProgram(id: string): Promise<{ error: unknown }> {
     .from('program_translations')
     .update({ deleted_at: now })
     .eq('program_id', id)
-    .is('owner_id', null);
+    .is('owner_id', null)
+    .is('deleted_at', null);
   if (trError) {
     return { error: trError };
   }
@@ -571,7 +589,8 @@ export async function archiveProgram(id: string): Promise<{ error: unknown }> {
     .from('programs')
     .update({ deleted_at: now })
     .eq('id', id)
-    .is('owner_id', null);
+    .is('owner_id', null)
+    .is('deleted_at', null);
   return { error: programError };
 }
 
@@ -645,7 +664,8 @@ export async function removeSession(id: string): Promise<{ error: unknown }> {
     .from('exercise_plans')
     .update({ deleted_at: now })
     .eq('session_id', id)
-    .is('owner_id', null);
+    .is('owner_id', null)
+    .is('deleted_at', null);
   if (plansError) {
     return { error: plansError };
   }
@@ -654,25 +674,27 @@ export async function removeSession(id: string): Promise<{ error: unknown }> {
     .from('sessions')
     .update({ deleted_at: now })
     .eq('id', id)
-    .is('owner_id', null);
+    .is('owner_id', null)
+    .is('deleted_at', null);
   return { error: sessError };
 }
 
 /**
  * Réordonne les séances d'un programme : pour chaque id à l'index `i`, pose
- * `order_index = i`. Écriture séquentielle, owner-scopée ; s'arrête à la première
- * erreur. `programId` sert uniquement au périmètre/lisibilité de l'appel.
+ * `order_index = i`. Écriture séquentielle, owner-scopée et bornée au programme
+ * (`.eq('program_id', programId)` = défense en profondeur contre un `orderedIds`
+ * mal formé) ; s'arrête à la première erreur.
  */
 export async function reorderSessions(
   programId: string,
   orderedIds: string[],
 ): Promise<{ error: unknown }> {
-  void programId;
   for (let i = 0; i < orderedIds.length; i += 1) {
     const { error } = await supabase
       .from('sessions')
       .update({ order_index: i })
       .eq('id', orderedIds[i]!)
+      .eq('program_id', programId)
       .is('owner_id', null);
     if (error) {
       return { error };
@@ -751,19 +773,20 @@ export async function removeExercisePlan(id: string): Promise<{ error: unknown }
 
 /**
  * Réordonne les exercices planifiés d'une séance : pour chaque id à l'index `i`,
- * pose `order_index = i`. Écriture séquentielle, owner-scopée ; s'arrête à la
- * première erreur. `sessionId` sert uniquement au périmètre/lisibilité de l'appel.
+ * pose `order_index = i`. Écriture séquentielle, owner-scopée et bornée à la séance
+ * (`.eq('session_id', sessionId)` = défense en profondeur) ; s'arrête à la première
+ * erreur.
  */
 export async function reorderExercisePlans(
   sessionId: string,
   orderedIds: string[],
 ): Promise<{ error: unknown }> {
-  void sessionId;
   for (let i = 0; i < orderedIds.length; i += 1) {
     const { error } = await supabase
       .from('exercise_plans')
       .update({ order_index: i })
       .eq('id', orderedIds[i]!)
+      .eq('session_id', sessionId)
       .is('owner_id', null);
     if (error) {
       return { error };
