@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin Fondation-1 : contexte d'auth Supabase + RequireAuth
+
+Branche `feature/admin-f1-scaffold-auth`.
+
+### Ajouté
+- **Contexte d'authentification** (`apps/admin/src/auth/`) : `AuthProvider` (`getSession()` au montage
+  + abonnement `onAuthStateChange`, nettoyé au démontage ; expose `session`, `user`, `loading`,
+  `signIn` = `signInWithPassword`, `signOut`), `context.ts` (contexte + type), `useAuth.ts` (hook, dans
+  un module dédié pour la compatibilité fast-refresh).
+- **`RequireAuth`** (garde de route) : écran de chargement (spinner) tant que la session n'est pas
+  restaurée, redirection `<Navigate to="/login">` si non connecté, sinon `<Outlet/>`. F1 =
+  authentification seule (gate par rôle en F2).
+- **Keyframe `admin-spin`** (`index.css`) pour le spinner de chargement.
+
 ## 13/07/2026 — Admin Fondation-1 : client Supabase web + libellés FR
 
 Branche `feature/admin-f1-scaffold-auth`.

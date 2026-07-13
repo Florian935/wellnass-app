@@ -34,3 +34,9 @@ body {
   font-family: var(--font);
   line-height: 1.5;
 }
+
+@keyframes admin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
