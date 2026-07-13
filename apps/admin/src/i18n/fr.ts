@@ -187,7 +187,7 @@ export const fr = {
       sortie_longue: 'Sortie longue',
       recuperation: 'Récupération',
     },
-    targetDistanceM: 'Distance cible (m)',
+    targetDistanceKm: 'Distance cible (km)',
     targetDurationLabel: 'Durée cible',
     targetDurationHours: 'Heures',
     targetDurationMinutes: 'Minutes',

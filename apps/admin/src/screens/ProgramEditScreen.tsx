@@ -667,8 +667,12 @@ function SessionCard({
   const [sessionType, setSessionType] = useState<SessionType | ''>(
     (session.sessionType as SessionType | null) ?? '',
   );
-  const [distance, setDistance] = useState(
-    session.targetDistanceM != null ? String(session.targetDistanceM) : '',
+  // Distance running saisie en **kilomètres** (décimales) mais stockée en mètres
+  // côté base (`target_distance_m`). Seed-once depuis `targetDistanceM` :
+  // m → km (mêmes garanties anti-clobber que les autres champs : initialiseur
+  // `useState`, pas de reseed sur prop-change).
+  const [distanceKm, setDistanceKm] = useState(
+    session.targetDistanceM != null ? String(session.targetDistanceM / 1000) : '',
   );
   // Durée running saisie en Heures + Minutes (stockée en secondes côté base).
   // Seed-once depuis `targetDurationSeconds` (mêmes garanties anti-clobber que
@@ -696,7 +700,10 @@ function SessionCard({
     name?: string | null;
     sessionType?: SessionType | null;
   }) {
-    const parsedDistance = toNonNegIntOrNull(distance);
+    // Distance : saisie en km (décimales) → mètres entiers stockés. Vide / NaN /
+    // négatif → null (garde-fou `toNonNegFloatOrNull`), sinon arrondi au mètre.
+    const parsedKm = toNonNegFloatOrNull(distanceKm);
+    const parsedDistance = parsedKm != null ? Math.round(parsedKm * 1000) : null;
     // Durée : Heures + Minutes → secondes. Les deux vides → null ; sinon on
     // combine, NaN / négatif ramenés à 0 (garde-fou cohérent avec les autres
     // cibles qui rejettent le négatif).
@@ -779,12 +786,13 @@ function SessionCard({
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 120 }}>
-            <label style={styles.label}>{fr.programs.targetDistanceM}</label>
+            <label style={styles.label}>{fr.programs.targetDistanceKm}</label>
             <input
               type="number"
               min={0}
-              value={distance}
-              onChange={(e) => setDistance(e.target.value)}
+              step="0.1"
+              value={distanceKm}
+              onChange={(e) => setDistanceKm(e.target.value)}
               onBlur={() => persistSession()}
               style={styles.input}
             />
