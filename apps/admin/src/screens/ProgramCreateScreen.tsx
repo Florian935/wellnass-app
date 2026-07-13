@@ -41,14 +41,18 @@ export function ProgramCreateScreen() {
       return;
     }
 
-    const parsedDuration = durationWeeks.trim() ? Number.parseInt(durationWeeks.trim(), 10) : null;
+    // Durée : entier ≥ 1 sinon null (parité avec l'écran d'édition — rejette
+    // vide, NaN, 0 et négatifs, même si l'input pose déjà min=1).
+    const parsedDuration = durationWeeks.trim() ? Number.parseInt(durationWeeks.trim(), 10) : NaN;
+    const duration =
+      Number.isNaN(parsedDuration) || parsedDuration < 1 ? null : parsedDuration;
 
     setSaving(true);
     const { id, error } = await createEditorialProgram({
       pillar,
       level: level ? level : null,
       goal: goal.trim() ? goal.trim() : null,
-      durationWeeks: parsedDuration != null && !Number.isNaN(parsedDuration) ? parsedDuration : null,
+      durationWeeks: duration,
       nameFr: fr2,
       nameEn: en2,
     });

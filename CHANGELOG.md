@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — US 8.4 — Admin : constructeur de programmes éditoriaux (muscu + running)
+
+Branche `feature/admin-8.4-constructeur-programmes`. Back-office `apps/admin` : composer des
+programmes éditoriaux (programme → séances → exos muscu | cibles running), bilingue FR/EN,
+brouillon/publié, réorganisation glisser-déposer, archivage. **Aucun changement mobile ni sync rules.**
+
+**Ajouté**
+- Migration `supabase/migrations/20260713140000_admin_editorial_programs_rls.sql` : RLS d'écriture
+  éditoriale (DROP+CREATE `insert`/`update`) sur `programs` / `program_translations` / `sessions` /
+  `exercise_plans`, ouverte aux éditeurs de contenu via `public.is_content_editor()` (réutilisée de 8.2 ;
+  non recréée). SELECT inchangé. 🔴 à appliquer manuellement (SQL Editor) puis `db:types`.
+- Couche data `apps/admin/src/data/programs.ts` (supabase-js, éditorial `owner_id NULL`) : list/get,
+  create/updateMeta/setStatus/archive (soft-delete cascade), séances (add/update/remove/reorder),
+  exos (add/update/remove/reorder). *Pillar-aware*.
+- Composants `apps/admin/src/components/SortableList.tsx` (drag & drop générique @dnd-kit, clavier,
+  contrôlé) + `ExercisePicker.tsx` (exercices éditoriaux **publiés** — évite les références orphelines).
+- Écrans `apps/admin/src/screens/ProgramsScreen.tsx` (liste : recherche, filtres pilier/statut,
+  publier/brouillon, archiver), `ProgramCreateScreen.tsx` (création : pilier + nom FR/EN requis +
+  niveau/objectif/durée), `ProgramEditScreen.tsx` (composition : métadonnées bilingues, séances
+  ajout/nommage auto A/B/C/réorg/retrait, muscu = exos via picker + cibles séries/reps/charge/repos,
+  running = type/distance/durée, publication gated sur le nom serveur).
+- Dépendances `@dnd-kit/core` ^6.3.1, `@dnd-kit/sortable` ^10.0.0, `@dnd-kit/utilities` ^3.2.2 (`apps/admin`).
+- Routes `/programs`, `/programs/new`, `/programs/:id` (gated `RequireContentEditor`) + entrée nav Programmes.
+- Bloc i18n `fr.programs.*`.
+
+**Corrigé (revues qualité)**
+- Data layer : filtre `deleted_at` sur les jointures de traductions (nom obsolète ne réapparaît plus,
+  aligné sur le repo mobile) ; coercion `numeric` `target_weight_kg` → nombre ; idempotence des cascades
+  (`.is('deleted_at', null)`) ; reorder bornés au parent ; JSDoc retry.
+- Écran composition : anti-clobber seed-once des sous-composants (une saisie en cours n'est plus écrasée
+  par un changement de select voisin) ; réorg plus jamais silencieusement ignorée pendant un write en vol ;
+  publication gated sur le nom **serveur** (pas la saisie locale non enregistrée) ; valeurs numériques
+  négatives rejetées (→ null) ; `busy` toujours relâché (try/finally). Parité durée ≥ 1 côté création.
+
+**Technique / Notes**
+- Brouillons non exposés au mobile : `programs` filtre déjà `status='published'` dans les sync rules →
+  **aucun redéploiement**. Séances/exos d'un brouillon restent orphelins invisibles (parent absent), même
+  pattern inoffensif que les traductions d'exercices en 8.2.
+- Revues : couche data (qualité), écran composition (qualité, 2 Critiques corrigés), revue finale (RAS).
+- Périmètre : cadrage `docs/specs/functional/us/8.4-…` + `docs/plans/8.4-…` (commit `37ff6d0`).
+
 ## 13/07/2026 — Idées : consignation de 16 pistes produit dans IDEAS.md
 
 Branche `feature/admin-8.4-constructeur-programmes`. Session de captation d'idées produit : après

@@ -125,8 +125,6 @@ export const fr = {
     listTitle: 'Programmes éditoriaux',
     new: 'Nouveau programme',
     search: 'Rechercher par nom…',
-    filterPillar: 'Tous les piliers',
-    filterStatus: 'Tous les statuts',
     pillarStrength: 'Musculation',
     pillarRunning: 'Course',
     allPillars: 'Tous les piliers',
@@ -152,7 +150,6 @@ export const fr = {
     notFound: 'Programme introuvable.',
     publishBlocked: 'Renseigne le nom FR et le nom EN pour publier.',
 
-    formTitleNew: 'Nouveau programme',
     createTitle: 'Créer un programme',
     pillarLabel: 'Pilier',
     nameFr: 'Nom (FR)',
