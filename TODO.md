@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (Doc : mise à jour du TODO rendue obligatoire à chaque `/commit` dans CLAUDE.md + retrait de la bannière URGENT en tête. Précédemment (13/07) : fix fuite inter-piliers « Mes programmes » muscu — corrigé, reste vérif device ; recettes validées Florian ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (Consolidation : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Précédemment : bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
