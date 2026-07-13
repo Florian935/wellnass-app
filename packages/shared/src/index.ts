@@ -19,6 +19,7 @@ export * from './nutrition';
 export * from './records';
 export * from './food';
 export * from './food-csv';
+export * from './food-form';
 export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
