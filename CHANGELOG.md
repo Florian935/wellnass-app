@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Corrigé — Fuite inter-piliers dans « Mes programmes » muscu
+
+Branche `fix/programmes-filtre-pilier` (depuis `dev`). Bug remonté par Florian en recette :
+côté **Musculation**, l'écran « Mes programmes » **et** la « Bibliothèque » affichaient aussi les
+programmes **running**.
+
+### Corrigé
+- [apps/mobile/src/app/programs/index.tsx](apps/mobile/src/app/programs/index.tsx) : l'écran muscu
+  ne passait **jamais** le pilier → `useMyPrograms()` sans argument (tous piliers) et `filters` sans
+  `pillar`. Fix (~2 lignes, miroir de l'écran running) : `useMyPrograms('strength')` + `pillar:
+  'strength'` toujours présent dans `ProgramLibraryFilters` (avec ou sans filtre de niveau).
+
+### Technique / Notes
+- Bug **unidirectionnel** : l'écran running filtrait déjà correctement (`useMyPrograms('running')` +
+  `useProgramLibrary({ pillar: 'running' })`) — confirmé par Florian. Seul le muscu était touché.
+- typecheck mobile vert. **100 % client, aucune migration, pas de checkpoint 🔴.** **Reste** : vérif device.
+
 ## 13/07/2026 — Feat — US 8.5 : gestion de la base d'aliments (CRUD éditorial admin)
 
 Branche `feature/8.5-gestion-aliments` (depuis `dev` `63acf79`). Cadrage complet

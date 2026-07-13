@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 13/07/2026 (Bug tracé : fuite inter-piliers « Mes programmes » muscu — pas de filtre pilier, correctif ~2 lignes sur branche dédiée. Précédemment : US 8.5 gestion base d'aliments admin, import CSV 8.6, détail programme séances repliables, fix rejeu onboarding.)*
+*Dernière mise à jour : 13/07/2026 (Fix fuite inter-piliers « Mes programmes » muscu — corrigé, reste vérif device. Recettes validées Florian : détail programme, gestion aliments 8.5 (migration RLS appliquée), import 8.6 de base. Précédemment : import CSV 8.6, fix rejeu onboarding.)*
 
 ---
 
@@ -50,29 +50,22 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
 
-- [ ] **Fuite inter-piliers dans « Mes programmes » muscu (pas de filtre par pilier)** — remonté par
-  Florian le 13/07/2026. **Repro** : Muscu → Mes programmes → les programmes **running** apparaissent
-  aussi (dans « Mes programmes » **et** « Bibliothèque »). **Cause (confirmée code)** : l'écran muscu
-  [programs/index.tsx](apps/mobile/src/app/programs/index.tsx) ne passe **jamais** le pilier —
-  ligne 45 `useMyPrograms()` **sans argument** → tous piliers (cf. commentaire
-  [program-repository.ts:356-358](apps/mobile/src/data/repositories/program-repository.ts#L356-L358)) ;
-  lignes 41-42 `filters` ne contient que `level`, **jamais `pillar`** → la bibliothèque muscu montre
-  aussi le running. L'écran running, lui, filtre correctement (`useMyPrograms('running')` +
-  `useProgramLibrary({ pillar: 'running' })`, [running-programs/index.tsx:62,66](apps/mobile/src/app/running-programs/index.tsx#L62)).
-  **Sens inverse OK** : Florian a confirmé (13/07/2026) que le pilier Running est bien filtré → bug
-  **unidirectionnel, uniquement côté muscu**. **Correctif (~2 lignes)** dans `programs/index.tsx` :
-  `useMyPrograms('strength')` (l.45) + inclure toujours `pillar: 'strength'` dans `filters` (l.41-42).
-  _Branche dédiée `fix/programmes-filtre-pilier`. 100 % client, aucune migration._
+- [x] **Fuite inter-piliers dans « Mes programmes » muscu (pas de filtre par pilier)** — **corrigé**
+  (`fix/programmes-filtre-pilier`, 13/07/2026). L'écran muscu [programs/index.tsx](apps/mobile/src/app/programs/index.tsx)
+  ne passait **jamais** le pilier (`useMyPrograms()` sans argument + `filters` sans `pillar`) → les
+  programmes running fuyaient dans « Mes programmes » **et** « Bibliothèque » muscu. Fix ~2 lignes :
+  `useMyPrograms('strength')` + `pillar: 'strength'` toujours présent dans `filters`. Bug
+  **unidirectionnel** (running filtrait déjà bien). typecheck mobile vert. **100 % client, aucune
+  migration.** **Reste** : vérif device.
 
-- [~] **Écran détail programme (mobile) — séances repliables** — **code livré**
-  (`feature/detail-programme-seances-repliables`, 13/07/2026). Cadrage complet (spec + plan,
-  maquette écartée). Composant partagé `CollapsibleCard` : séances **repliées par défaut**,
-  ouverture indépendante, en-tête tappable + chevron, `footer` (Démarrer) toujours visible.
-  **(1) Nom d'exercice tronqué → corrigé** (`PlanRow` sur 2 lignes). **(2) Séance cliquable →
-  expansion inline** (muscu = « N exercices » + liste ; running = « type · cible » + puces/allure).
-  Spec/plan : [detail-programme-seances-repliables.md](docs/specs/functional/us/detail-programme-seances-repliables.md).
-  typecheck/lint/tests verts, i18n 796/796. **100 % client.** **Reste** : recette **device** +
-  relecture Damien avant merge sur `dev`.
+- [x] **Écran détail programme (mobile) — séances repliables** — **livré & mergé `dev`**, **recette
+  device validée par Florian (13/07/2026)**. Cadrage complet (spec + plan, maquette écartée). Composant
+  partagé `CollapsibleCard` : séances **repliées par défaut**, ouverture indépendante, en-tête tappable
+  + chevron, `footer` (Démarrer) toujours visible. **(1) Nom d'exercice tronqué → corrigé** (`PlanRow`
+  sur 2 lignes). **(2) Séance cliquable → expansion inline** (muscu = « N exercices » + liste ; running
+  = « type · cible » + puces/allure). Spec/plan :
+  [detail-programme-seances-repliables.md](docs/specs/functional/us/detail-programme-seances-repliables.md).
+  typecheck/lint/tests verts, i18n 796/796. **100 % client.** Reste : relecture Damien.
 
 - [x] **🔴 BLOQUANT — Crash + non-enregistrement au 2ᵉ passage de l'onboarding** — **corrigé**
   (`fix/onboarding-rejeu-profil`, 13/07/2026), diagnostic device (adb logcat + logs temporaires).
@@ -224,8 +217,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - [~] Intégrer **PowerSync** dans l'app (SQLite local, sync rules, repository) — plomberie posée (schéma jouet `todos`, connecteur générique) ; vrai schéma métier = US1
 - [x] **US 8.1a — Admin Fondation-1** (`apps/admin`) : scaffold Vite+React+TS + auth Supabase (login/session/logout) + shell protégé (RequireAuth + layout + placeholder), libellés FR centralisés, `@wellness/shared` réutilisé. Build OK, racine typecheck/lint verts. 100 % client web, aucune migration/cloud. Gate par rôle = F2 (13/07/2026)
 - [~] **US 8.4 — Admin constructeur de programmes** (`apps/admin`) : builder éditorial *pillar-aware* (muscu = séances→exos avec séries/reps/charge/repos ; running = cibles type/distance/durée), bilingue FR/EN, brouillon/publié, réorganisation glisser-déposer (@dnd-kit), archivage cascade. Migration RLS d'écriture éditoriale (`is_content_editor`, 4 tables), couche data `programs.ts`, composants `SortableList`/`ExercisePicker`, écrans liste/création/composition, routing gated. Impl. + 3 revues (data layer, écran compo, finale) ✅, typecheck/lint/build verts, mobile inchangé. **Reste 🔴 Florian** : appliquer la migration (projet `nsxzflxsgovriwwvflxe`) + `db:types` + recette (aucune sync rule à redéployer) (13/07/2026)
-- [~] **US 8.6 — Import aliments CSV (CIQUAL)** (`feature/8.6-import-csv-ciqual`, 13/07/2026) — **code livré**. Cadrage complet (spec+plan). `@wellness/shared/food-csv.ts` (`parseFoodCsv` pur, 8 tests TDD) ; migration `foods.import_key` + index unique (**checkpoint appliqué** : migration cloud + `db:types` faits) ; admin : écran Import CSV (upload→papaparse→aperçu→confirmation→rapport + modèle CSV), `data/foods.ts` (upsert idempotent `foods`+`food_translations` FR/EN), route `/foods` + nav « Aliments » gated `content_editor`, `papaparse`. Contrat : `import_key`/`name_fr`/`name_en`/`category`/`kcal` requis + macros/10 micros optionnels. typecheck/lint/tests verts (shared 610), build admin OK. Spec/plan : [8.6-import-csv-ciqual.md](docs/specs/functional/us/8.6-import-csv-ciqual.md). **Reste** : recette (import CIQUAL réel, ré-import idempotent, vérif mobile) + relecture Damien. **Différé** : 8.5 (CRUD), rollback, import mobile. **⚠️ Nécessite la migration RLS de l'US 8.5** (écriture éditoriale foods) pour fonctionner — voir ci-dessous.
-- [~] **US 8.5 — Gestion base d'aliments (admin)** (`feature/8.5-gestion-aliments`, 13/07/2026) — **code livré**. Cadrage complet (spec+plan). CRUD éditorial : lister/rechercher/filtrer, **créer**, **éditer** (macros + 10 micros), **archiver** (soft-delete). `@wellness/shared/food-form.ts` (`validateFoodInput` pur, 9 tests TDD) ; `data/foods.ts` étendu (list/get/save insert-ou-update-ciblé/archive) ; écrans `FoodsScreen` (liste = hub) + `FoodEditScreen` (formulaire) ; **routing « Aliments » réorganisé** (`/foods` liste, `/foods/import` = 8.6 déplacé, `/foods/new`, `/foods/:id`) ; i18n admin FR. typecheck/lint/build verts, shared 619 tests. 100 % client admin, pas de dépendance native. Spec/plan : [8.5-gestion-aliments.md](docs/specs/functional/us/8.5-gestion-aliments.md). **🔴 Reste Florian** : appliquer la **migration RLS foods** `20260713160000` (écriture éditoriale — **débloque 8.5 ET 8.6**) puis recette (créer/éditer/archiver ; ré-import 8.6 OK ; affichage mobile). **Différé** : signalements (8.7), restauration, édition `portions`, audit (8.10).
+- [~] **US 8.6 — Import aliments CSV (CIQUAL)** (`feature/8.6-import-csv-ciqual`, 13/07/2026) — **code livré**. Cadrage complet (spec+plan). `@wellness/shared/food-csv.ts` (`parseFoodCsv` pur, 8 tests TDD) ; migration `foods.import_key` + index unique (**checkpoint appliqué** : migration cloud + `db:types` faits) ; admin : écran Import CSV (upload→papaparse→aperçu→confirmation→rapport + modèle CSV), `data/foods.ts` (upsert idempotent `foods`+`food_translations` FR/EN), route `/foods` + nav « Aliments » gated `content_editor`, `papaparse`. Contrat : `import_key`/`name_fr`/`name_en`/`category`/`kcal` requis + macros/10 micros optionnels. typecheck/lint/tests verts (shared 610), build admin OK. Spec/plan : [8.6-import-csv-ciqual.md](docs/specs/functional/us/8.6-import-csv-ciqual.md). **Recette de base OK (13/07/2026)** : import du fichier d'exemple (1 ligne) → chemin complet parse→aperçu→upsert→rapport + RLS validé (après application de la migration RLS 8.5). **Reste** : import d'un vrai lot CIQUAL + ré-import idempotent + relecture Damien. **Différé** : rollback, import mobile.
+- [~] **US 8.5 — Gestion base d'aliments (admin)** (`feature/8.5-gestion-aliments`, 13/07/2026) — **code livré**. Cadrage complet (spec+plan). CRUD éditorial : lister/rechercher/filtrer, **créer**, **éditer** (macros + 10 micros), **archiver** (soft-delete). `@wellness/shared/food-form.ts` (`validateFoodInput` pur, 9 tests TDD) ; `data/foods.ts` étendu (list/get/save insert-ou-update-ciblé/archive) ; écrans `FoodsScreen` (liste = hub) + `FoodEditScreen` (formulaire) ; **routing « Aliments » réorganisé** (`/foods` liste, `/foods/import` = 8.6 déplacé, `/foods/new`, `/foods/:id`) ; i18n admin FR. typecheck/lint/build verts, shared 619 tests. 100 % client admin, pas de dépendance native. Spec/plan : [8.5-gestion-aliments.md](docs/specs/functional/us/8.5-gestion-aliments.md). **Migration RLS `20260713160000` appliquée + recette OK (Florian, 13/07/2026)** : créer/éditer/archiver validés (débloque aussi 8.6). **Reste** : relecture Damien. **Différé** : signalements (8.7), restauration, édition `portions`, audit (8.10).
 
 ### Modèle de données & bascule PowerSync — pilier muscu (spec [schema-donnees-muscu.md](docs/specs/technical/schema-donnees-muscu.md))
 - [x] **US1 — Socle data** — mergée dans `dev` (`248e2b2`, 06/07/2026). Activation cloud + device = section 🔴 en haut.

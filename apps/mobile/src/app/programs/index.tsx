@@ -38,11 +38,13 @@ export default function ProgramsScreen() {
   const [levelFilter, setLevelFilter] = useState<LevelFilter>(ALL_LEVELS);
   const [duplicating, setDuplicating] = useState<string | null>(null);
 
+  // Filtre pilier muscu obligatoire : sans lui, la biblio et « Mes programmes » affichaient
+  // aussi les programmes running (fuite inter-piliers). Miroir de l'écran running.
   const filters: ProgramLibraryFilters =
-    levelFilter === ALL_LEVELS ? {} : { level: levelFilter };
+    levelFilter === ALL_LEVELS ? { pillar: 'strength' } : { pillar: 'strength', level: levelFilter };
 
   const { programs: libraryPrograms, isLoading: libraryLoading } = useProgramLibrary(filters);
-  const { programs: myPrograms, isLoading: myLoading } = useMyPrograms();
+  const { programs: myPrograms, isLoading: myLoading } = useMyPrograms('strength');
 
   const isLoading = libraryLoading || myLoading;
 
