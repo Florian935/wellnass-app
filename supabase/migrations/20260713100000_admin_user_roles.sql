@@ -66,4 +66,24 @@ create policy user_roles_update on public.user_roles
 create policy user_roles_delete on public.user_roles
   for delete using (public.is_super_admin());
 
+-- Immuabilité de l'identité : une attribution ne peut PAS être réaffectée à un
+-- autre utilisateur ni changer de rôle via UPDATE — seul `deleted_at` bascule
+-- (révocation / réactivation). Ferme la surface trop large de la policy UPDATE
+-- (la RLS ne peut pas comparer NEW/OLD ; on l'impose donc par trigger). Empêche
+-- qu'un super_admin (même compromis) transfère un rôle en mutant `user_id`/`role`.
+create or replace function public.user_roles_prevent_identity_change()
+  returns trigger
+  language plpgsql
+as $$
+begin
+  if new.user_id <> old.user_id or new.role <> old.role then
+    raise exception 'user_roles: user_id et role sont immuables (seul deleted_at peut changer)';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger user_roles_immutable before update on public.user_roles
+  for each row execute function public.user_roles_prevent_identity_change();
+
 -- NB : PAS d'ajout à la publication `powersync` (table admin/web uniquement).

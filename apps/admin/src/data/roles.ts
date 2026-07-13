@@ -38,7 +38,12 @@ export async function fetchMyRoles(
     return { roles: [], error };
   }
 
-  const roles = (data ?? []).map((r) => r.role as AdminRole);
+  // Garde runtime : on ne garde que les rôles connus (un rôle ajouté au niveau
+  // SQL avant la mise à jour du type ne « passe » pas silencieusement).
+  const known = new Set<string>(ADMIN_ROLES);
+  const roles = (data ?? [])
+    .map((r) => r.role)
+    .filter((role): role is AdminRole => known.has(role));
   return { roles, error: null };
 }
 
