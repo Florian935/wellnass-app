@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 13/07/2026 — Admin Fondation-1 : client Supabase web + libellés FR
+
+Branche `feature/admin-f1-scaffold-auth`.
+
+### Ajouté
+- **Client Supabase web** (`apps/admin/src/lib/supabase.ts`) : `createClient<Database>` typé via
+  `@wellness/shared`, env `import.meta.env.VITE_SUPABASE_URL/ANON_KEY`, `auth: { persistSession,
+  autoRefreshToken }` (session `localStorage` par défaut). Garde-fou runtime si env manquante.
+  **Clé anon uniquement** (jamais `service_role`).
+- **`.env.example`** (`apps/admin/`) : `VITE_SUPABASE_URL=` / `VITE_SUPABASE_ANON_KEY=` **vides**
+  (couvert par `.gitignore` racine ; jamais de vraie clé).
+- **Libellés FR centralisés** (`apps/admin/src/i18n/fr.ts`) : login, erreurs, layout, placeholder
+  (aucune chaîne d'UI en dur ailleurs).
+
 ## 13/07/2026 — Admin Fondation-1 : scaffold Vite + React + TypeScript (`apps/admin`)
 
 Branche `feature/admin-f1-scaffold-auth`. Transformation du stub `apps/admin` en app web
