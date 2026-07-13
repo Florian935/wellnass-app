@@ -56,7 +56,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   programmes running fuyaient dans « Mes programmes » **et** « Bibliothèque » muscu. Fix ~2 lignes :
   `useMyPrograms('strength')` + `pillar: 'strength'` toujours présent dans `filters`. Bug
   **unidirectionnel** (running filtrait déjà bien). typecheck mobile vert. **100 % client, aucune
-  migration.** **Reste** : vérif device.
+  migration.** **Recette device validée par Florian (13/07/2026)** ✅ — reste relecture Damien.
 
 - [x] **Écran détail programme (mobile) — séances repliables** — **livré & mergé `dev`**, **recette
   device validée par Florian (13/07/2026)**. Cadrage complet (spec + plan, maquette écartée). Composant
