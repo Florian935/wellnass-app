@@ -10,6 +10,8 @@ import { HomePlaceholder } from './screens/HomePlaceholder';
 import { RolesScreen } from './screens/RolesScreen';
 import { ExercisesScreen } from './screens/ExercisesScreen';
 import { ExerciseEditScreen } from './screens/ExerciseEditScreen';
+import { ProgramsScreen } from './screens/ProgramsScreen';
+import { ProgramCreateScreen } from './screens/ProgramCreateScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
@@ -49,6 +51,22 @@ export function App() {
                     element={
                       <RequireContentEditor>
                         <ExerciseEditScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/programs"
+                    element={
+                      <RequireContentEditor>
+                        <ProgramsScreen />
+                      </RequireContentEditor>
+                    }
+                  />
+                  <Route
+                    path="/programs/new"
+                    element={
+                      <RequireContentEditor>
+                        <ProgramCreateScreen />
                       </RequireContentEditor>
                     }
                   />

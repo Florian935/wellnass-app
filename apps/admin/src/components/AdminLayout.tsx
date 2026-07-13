@@ -9,7 +9,6 @@ const { colors, radius, font } = theme;
 
 const NAV_SOON = [
   { icon: '🍎', label: fr.layout.nav.foods },
-  { icon: '📋', label: fr.layout.nav.programs },
   { icon: '👤', label: fr.layout.nav.users },
 ];
 
@@ -63,6 +62,18 @@ export function AdminLayout() {
               })}
             >
               🏋️ {fr.layout.nav.exercises}
+            </NavLink>
+          )}
+          {isContentEditor && (
+            <NavLink
+              to="/programs"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              📋 {fr.layout.nav.programs}
             </NavLink>
           )}
           {isSuperAdmin && (
