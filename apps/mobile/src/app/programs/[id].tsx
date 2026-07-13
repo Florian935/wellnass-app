@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
@@ -283,36 +284,39 @@ function SessionCard({
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  const hasPlans = session.plans.length > 0;
   const sessionName =
     session.name?.trim() ||
     t('programs.detail.sessionFallback', { index: session.orderIndex + 1 });
 
   return (
-    <View style={[styles.sessionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <Text style={[styles.sessionName, { color: colors.text }]}>{sessionName}</Text>
-
-      {session.plans.length === 0 ? (
-        <Text style={[styles.emptyPlans, { color: colors.textMuted }]}>
-          {t('programs.detail.emptyPlans')}
-        </Text>
-      ) : (
+    <CollapsibleCard
+      title={sessionName}
+      summary={t('programs.detail.exerciseCount', { count: session.plans.length })}
+      footer={
+        hasPlans ? (
+          <Button
+            label={starting ? t('programs.detail.starting') : t('programs.detail.startSession')}
+            variant="ghost"
+            onPress={onStart}
+            loading={starting}
+            disabled={startDisabled}
+          />
+        ) : null
+      }
+    >
+      {hasPlans ? (
         <View style={styles.planList}>
           {session.plans.map((plan) => (
             <PlanRow key={plan.id} plan={plan} />
           ))}
         </View>
+      ) : (
+        <Text style={[styles.emptyPlans, { color: colors.textMuted }]}>
+          {t('programs.detail.emptyPlans')}
+        </Text>
       )}
-
-      {session.plans.length > 0 ? (
-        <Button
-          label={starting ? t('programs.detail.starting') : t('programs.detail.startSession')}
-          variant="ghost"
-          onPress={onStart}
-          loading={starting}
-          disabled={startDisabled}
-        />
-      ) : null}
-    </View>
+    </CollapsibleCard>
   );
 }
 
@@ -343,12 +347,12 @@ function PlanRow({ plan }: { plan: PlanItem }) {
     <View style={styles.planRow}>
       <View style={styles.planLeft}>
         <Ionicons name="barbell-outline" size={14} color={colors.textMuted} />
-        <Text style={[styles.planName, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.planName, { color: colors.text }]} numberOfLines={2}>
           {plan.exerciseName || t('programs.detail.unknownExercise')}
         </Text>
       </View>
       {targets.length > 0 ? (
-        <Text style={[styles.planTargets, { color: colors.textMuted }]} numberOfLines={1}>
+        <Text style={[styles.planTargets, { color: colors.textMuted }]}>
           {targets.join(' · ')}
         </Text>
       ) : null}
@@ -375,25 +379,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sessionList: { gap: 12 },
-  sessionCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    gap: 10,
-  },
-  sessionName: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 15,
-  },
-  planList: { gap: 8 },
-  planRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
+  planList: { gap: 12 },
+  // Nom et objectifs sur DEUX lignes (le nom ne partage plus la ligne avec les
+  // objectifs → plus de troncature à ~1 caractère). Cf. bug #1 de la spec.
+  planRow: { gap: 2 },
   planLeft: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -406,7 +396,7 @@ const styles = StyleSheet.create({
   planTargets: {
     fontFamily: fontFamily.mono,
     fontSize: 12,
-    flexShrink: 0,
+    marginLeft: 20,
   },
   emptyPlans: {
     fontFamily: fontFamily.body,
