@@ -33,4 +33,5 @@ export * from './planning';
 export * from './run-stats';
 export * from './streak';
 export * from './training-day';
+export * from './audit';
 export type { Database, Json } from './database.types';
