@@ -97,6 +97,18 @@ export function AdminLayout() {
               🛡️ {fr.roles.nav}
             </NavLink>
           )}
+          {isSuperAdmin && (
+            <NavLink
+              to="/audit"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              📜 {fr.audit.nav}
+            </NavLink>
+          )}
           {NAV_SOON.map((item) => (
             <span key={item.label} style={{ ...styles.navItem, ...styles.navSoon }}>
               <span>

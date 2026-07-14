@@ -8,6 +8,7 @@ import { AdminLayout } from './components/AdminLayout';
 import { LoginScreen } from './screens/LoginScreen';
 import { HomePlaceholder } from './screens/HomePlaceholder';
 import { RolesScreen } from './screens/RolesScreen';
+import { AuditScreen } from './screens/AuditScreen';
 import { ExercisesScreen } from './screens/ExercisesScreen';
 import { ExerciseEditScreen } from './screens/ExerciseEditScreen';
 import { ProgramsScreen } from './screens/ProgramsScreen';
@@ -20,8 +21,8 @@ import { FoodEditScreen } from './screens/FoodEditScreen';
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
  * (RequireAuth → RequireAdmin → AdminLayout). `/` → accueil ; `/roles` →
- * gestion des rôles (super_admin uniquement, sinon redirection vers `/`).
- * Toute autre route retombe sur `/`.
+ * gestion des rôles ; `/audit` → journal d'audit (super_admin uniquement,
+ * sinon redirection vers `/`). Toute autre route retombe sur `/`.
  */
 export function App() {
   return (
@@ -119,6 +120,14 @@ export function App() {
                     element={
                       <RequireSuperAdmin>
                         <RolesScreen />
+                      </RequireSuperAdmin>
+                    }
+                  />
+                  <Route
+                    path="/audit"
+                    element={
+                      <RequireSuperAdmin>
+                        <AuditScreen />
                       </RequireSuperAdmin>
                     }
                   />
