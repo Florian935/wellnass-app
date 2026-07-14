@@ -83,7 +83,7 @@ export function ProgramsScreen() {
   async function handleToggleStatus(row: AdminProgramRow) {
     const next: ProgramStatus = row.status === 'published' ? 'draft' : 'published';
     setBusyId(row.id);
-    const { error: err } = await setStatus(row.id, next);
+    const { error: err } = await setStatus(row.id, next, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);
@@ -95,7 +95,7 @@ export function ProgramsScreen() {
   async function handleArchive(row: AdminProgramRow) {
     if (!window.confirm(fr.programs.archiveConfirm)) return;
     setBusyId(row.id);
-    const { error: err } = await archiveProgram(row.id);
+    const { error: err } = await archiveProgram(row.id, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);

@@ -10,6 +10,7 @@ import {
   type ProgramStatus,
   type SetType,
 } from '@wellness/shared';
+import { logAudit } from './audit';
 
 /**
  * Couche data des programmes éditoriaux (US 8.4 — constructeur de programmes du
@@ -447,6 +448,14 @@ export async function createEditorialProgram(input: CreateProgramInput): Promise
     }
   }
 
+  // Best-effort, uniquement en succès complet (ligne + 2 traductions).
+  await logAudit({
+    action: 'program.create',
+    targetTable: 'programs',
+    targetId: id,
+    targetLabel: input.nameFr,
+  });
+
   return { id, error: null };
 }
 
@@ -503,6 +512,14 @@ export async function updateProgramMeta(
     }
   }
 
+  // Best-effort, uniquement en succès complet (ligne + 2 traductions).
+  await logAudit({
+    action: 'program.update',
+    targetTable: 'programs',
+    targetId: id,
+    targetLabel: input.nameFr,
+  });
+
   return { error: null };
 }
 
@@ -510,13 +527,27 @@ export async function updateProgramMeta(
 export async function setStatus(
   id: string,
   status: ProgramStatus,
+  opts?: { label?: string },
 ): Promise<{ error: unknown }> {
   const { error } = await supabase
     .from('programs')
     .update({ status })
     .eq('id', id)
     .is('owner_id', null); // éditorial uniquement
-  return { error };
+  if (error) return { error };
+
+  // Dépublication hors périmètre : on ne journalise que la publication.
+  if (status === 'published') {
+    await logAudit({
+      action: 'program.publish',
+      targetTable: 'programs',
+      targetId: id,
+      targetLabel: opts?.label ?? null,
+      details: { status },
+    });
+  }
+
+  return { error: null };
 }
 
 /**
@@ -532,7 +563,10 @@ export async function setStatus(
  * jamais un parent supprimé au-dessus d'enfants vivants ; l'UI doit **retenter** en
  * cas d'erreur (le rejeu ne touche que les lignes encore vivantes).
  */
-export async function archiveProgram(id: string): Promise<{ error: unknown }> {
+export async function archiveProgram(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
   const now = new Date().toISOString();
 
   // 1. Séances du programme (id uniquement).
@@ -591,7 +625,18 @@ export async function archiveProgram(id: string): Promise<{ error: unknown }> {
     .eq('id', id)
     .is('owner_id', null)
     .is('deleted_at', null);
-  return { error: programError };
+  if (programError) {
+    return { error: programError };
+  }
+
+  await logAudit({
+    action: 'program.archive',
+    targetTable: 'programs',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
 }
 
 // ---------------------------------------------------------------------------

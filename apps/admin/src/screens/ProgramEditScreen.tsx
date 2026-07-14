@@ -252,7 +252,9 @@ export function ProgramEditScreen() {
         program={program}
         busy={busy}
         onSaveMeta={(input) => runWrite(() => updateProgramMeta(id, input))}
-        onSetStatus={(status) => runWrite(() => setStatus(id, status))}
+        onSetStatus={(status) =>
+          runWrite(() => setStatus(id, status, { label: program.nameFr ?? undefined }))
+        }
         onBack={() => navigate('/programs')}
       />
 
