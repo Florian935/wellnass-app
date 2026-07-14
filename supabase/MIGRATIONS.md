@@ -41,6 +41,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260713150000_foods_import_key`                 | 14/07/2026 | repair (jouée console)        |
 |   [x]   | `20260713160000_admin_editorial_foods_rls`        | 14/07/2026 | repair (jouée console)        |
 |   [x]   | `20260714120000_seed_library_foods_ciqual`        | 14/07/2026 | CLI (`npm run db:push`)       |
+|   [ ]   | `20260714170000_admin_audit_log`                  | —          | à pousser (`npm run db:push`) |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
