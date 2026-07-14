@@ -29,8 +29,8 @@ export async function logAudit(entry: AuditEntryInput): Promise<{ error: unknown
       // `details` est un Record<string, unknown> côté schéma (contrat pur, sans dépendance à
       // Supabase) ; l'appelant garantit un contenu sérialisable en JSON. Cast vers le type
       // généré `Json` (récursif) pour satisfaire l'Insert — pas de perte de garde runtime,
-      // la validation Zod a déjà eu lieu au-dessus.
-      details: (parsed.data.details ?? {}) as Json,
+      // la validation Zod a déjà eu lieu au-dessus (`details` a un `.default({})` : jamais undefined).
+      details: parsed.data.details as Json,
     });
     if (error) console.warn('[audit] échec insert, action non tracée', error);
     return { error };
@@ -51,15 +51,15 @@ export type AuditFilters = {
 
 /** Liste paginée (curseur created_at desc). super_admin only (RLS). Tolérant aux erreurs. */
 export async function listAudit(
-  f: AuditFilters = {},
+  filters: AuditFilters = {},
 ): Promise<{ rows: AuditLogRow[]; error: unknown }> {
   let q = supabase.from('audit_log').select('*').order('created_at', { ascending: false });
-  if (f.actorId) q = q.eq('actor_id', f.actorId);
-  if (f.action) q = q.eq('action', f.action);
-  if (f.from) q = q.gte('created_at', f.from);
-  if (f.to) q = q.lte('created_at', f.to);
-  if (f.before) q = q.lt('created_at', f.before);
-  q = q.limit(f.limit ?? 50);
+  if (filters.actorId) q = q.eq('actor_id', filters.actorId);
+  if (filters.action) q = q.eq('action', filters.action);
+  if (filters.from) q = q.gte('created_at', filters.from);
+  if (filters.to) q = q.lte('created_at', filters.to);
+  if (filters.before) q = q.lt('created_at', filters.before);
+  q = q.limit(filters.limit ?? 50);
   const { data, error } = await q;
   if (error) return { rows: [], error };
   return { rows: data ?? [], error: null };
