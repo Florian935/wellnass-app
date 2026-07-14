@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (Cadrage US « enrichir seed CIQUAL » — spec + plan (design validé), générateur reproductible ; **bloqué en attente de l'export ANSES CIQUAL (Florian)**. Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -157,14 +157,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   parité i18n 808/808. **Reste** : recette device (aliment riche → 3 groupes ; aliment pauvre →
   inchangé ; vit A IU non affichée) + relecture Damien. **Différé** : objectifs/RDA, regroupement
   visuel admin, agrégats recettes/repas types. **100 % client, pas de checkpoint 🔴.**
-- [~] **US — Enrichir le seed d'aliments avec les données CIQUAL détaillées** — **cadrage fait**
-  (`feature/seed-ciqual-enrichment`, 14/07/2026) : [spec](docs/specs/functional/us/seed-ciqual-enrichment.md)
-  + [plan](docs/plans/seed-ciqual-enrichment.md), design validé (brainstorming). Complète les **~50
-  aliments du seed** (micros + sous-macros, macros de base intactes) via un **générateur reproductible**
-  (export CIQUAL → `mapping-foods` UUID→code + `mapping-columns` → `UPDATE` dans `seed.sql` +
-  `cloud-update.sql`), **present-only, ne rien inventer**. Livraison : seed + one-shot cloud (🔴).
-  **🚧 BLOQUÉ — en attente : Florian fournit l'export officiel ANSES CIQUAL (CSV)** (Task 0 du plan).
-  Ensuite : relecture Florian du `mapping-foods.json`. _(Tracé le 14/07/2026.)_
+- [x] **US — Enrichir la bibliothèque d'aliments avec CIQUAL 2025** — **code livré**
+  (`feature/seed-ciqual-enrichment`, 14/07/2026). **Approche A** : bibliothèque reconstruite depuis
+  **CIQUAL 2025** (ANSES/Etalab) — **80 aliments** (50 identités conservées + toute la nutrition
+  CIQUAL **macros de base incluses** ; **+30 nouveaux** fruits/légumes/viandes/poissons/légumineuses/
+  oléagineux), **present-only, ne rien inventer** (oméga = somme des AG ; `trans`/biotine absents de
+  CIQUAL ; café non mappé). **Livraison = migration idempotente** `20260714120000_seed_library_foods_ciqual`
+  (upsert : réconcilie le cloud + insère les 30) — la biblio **quitte `seed.sql`** (nouvelle règle
+  « jamais de SQL manuel »). Tooling reproductible `supabase/scripts/enrich-ciqual/` (générateur +
+  `foods-catalog.json` + `mapping-columns.json`, export brut hors git). Spec+plan à jour (révision).
+  **Reste 🔴 (Florian)** : `npm run db:push` + cocher [MIGRATIONS.md](supabase/MIGRATIONS.md) +
+  `npm run db:reset` (local) + `db:types` + recette device (aliment riche → panel peuplé). _(14/07/2026.)_
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
 - [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)

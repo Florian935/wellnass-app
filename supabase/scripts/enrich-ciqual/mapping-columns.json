@@ -1,0 +1,47 @@
+{
+  "_doc": "Index de colonne CIQUAL 2025 (composition nutritionnelle) -> cible interne. Valeurs pour 100 g, déjà dans l'unité de la clé (g/mg/µg) -> facteur 1. omega = somme des AG mesurés. trans_fat_g et vitamin_b7_ug absents de CIQUAL 2025 (non renseignés).",
+  "base": {
+    "10": "kcal",
+    "15": "protein",
+    "16": "carbs",
+    "17": "fat"
+  },
+  "submacro": {
+    "18": "sugars",
+    "31": "satfat",
+    "26": "fiber"
+  },
+  "micro": {
+    "48": "cholesterol_mg",
+    "32": "monounsaturated_fat_g",
+    "33": "polyunsaturated_fat_g",
+    "42": "omega_9_g",
+    "60": "sodium_mg",
+    "55": "magnesium_mg",
+    "58": "potassium_mg",
+    "50": "calcium_mg",
+    "53": "iron_mg",
+    "61": "zinc_mg",
+    "57": "phosphorus_mg",
+    "52": "copper_mg",
+    "56": "manganese_mg",
+    "59": "selenium_ug",
+    "54": "iodine_ug",
+    "62": "vitamin_a_ug",
+    "72": "vitamin_c_mg",
+    "65": "vitamin_d_ug",
+    "69": "vitamin_e_mg",
+    "70": "vitamin_k_ug",
+    "73": "vitamin_b1_mg",
+    "74": "vitamin_b2_mg",
+    "75": "vitamin_b3_mg",
+    "76": "vitamin_b5_mg",
+    "77": "vitamin_b6_mg",
+    "79": "vitamin_b9_ug",
+    "82": "vitamin_b12_ug"
+  },
+  "microSum": {
+    "omega_3_g": [44, 46, 47],
+    "omega_6_g": [43, 45]
+  }
+}

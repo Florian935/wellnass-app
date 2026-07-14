@@ -1,8 +1,19 @@
 # Plan d'implémentation — Enrichissement du seed CIQUAL
 
-> **Statut** : validé (design). **Bloqué** tant que l'export CIQUAL n'est pas fourni (Task 0).
+> **Statut** : ✅ livré (14/07/2026) — voir la révision d'approche ci-dessous (supersède le détail des tâches).
 > Spec : [seed-ciqual-enrichment.md](../specs/functional/us/seed-ciqual-enrichment.md).
-> Branche : `feature/seed-ciqual-enrichment`. Cases `- [ ]` pour le suivi.
+> Branche : `feature/seed-ciqual-enrichment`.
+>
+> ### ⚠️ Révision (14/07/2026) — réalisé
+> - **Approche A** : bibliothèque reconstruite depuis CIQUAL 2025 (50 identités conservées, toute la
+>   nutrition — macros de base incluses — depuis CIQUAL) **+ 30 aliments** ajoutés → **80** au total.
+> - **Livraison = migration idempotente** `supabase/migrations/20260714120000_seed_library_foods_ciqual.sql`
+>   (upsert) au lieu de seed.sql + one-shot console (nouvelle règle « jamais de SQL manuel »). Les
+>   aliments **quittent `seed.sql`** (pointeur vers la migration).
+> - **Tooling** `supabase/scripts/enrich-ciqual/` : `generate.py` (stdlib) + `foods-catalog.json`
+>   (source unique éditable) + `mapping-columns.json`. Export brut CIQUAL hors git.
+> - **Reste (Florian)** : `npm run db:push` (cloud) + cocher MIGRATIONS.md + `npm run db:reset` (local)
+>   + `db:types` + recette device.
 
 **Objectif :** compléter les ~50 aliments du seed avec les micros + sous-macros CIQUAL, via un
 générateur reproductible (aucune valeur saisie à la main), sans toucher les macros de base.

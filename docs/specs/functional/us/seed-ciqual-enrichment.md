@@ -1,8 +1,23 @@
 # Spec — Enrichissement du seed avec les données CIQUAL (micros + sous-macros)
 
-> **Statut** : à valider (spec). Design validé en brainstorming (14/07/2026, Florian).
-> Prérequis produit du **panel nutritionnel étendu** (US livrée) : sans données réelles, le panel
-> reste vide sur la plupart des aliments.
+> **Statut** : ✅ livré (14/07/2026). Prérequis produit du **panel nutritionnel étendu** (US livrée).
+>
+> ### ⚠️ Révision d'approche (14/07/2026, actée avec Florian) — supersède les §2-6 ci-dessous
+> Après réception de l'export réel (CIQUAL 2025) et discussion, l'approche a évolué :
+> - **Approche A** : on ne « patche » plus les 50 aliments ; on **reconstruit la bibliothèque
+>   entièrement depuis CIQUAL**. Les 50 aliments **gardent leur identité** (UUID, noms FR/EN,
+>   catégorie, portions) mais **toute** leur nutrition vient de CIQUAL — **y compris les macros de
+>   base** (la décision « macros intactes » est **annulée**). **+30 aliments** ajoutés (fruits,
+>   légumes, viandes/poissons, légumineuses, oléagineux).
+> - **Livraison = MIGRATION versionnée** (et **non** seed.sql + one-shot console) : nouvelle règle
+>   CLAUDE.md « jamais de SQL manuel ». La bibliothèque **quitte `seed.sql`** et vit dans
+>   `supabase/migrations/20260714120000_seed_library_foods_ciqual.sql` (upsert **idempotent** :
+>   réconcilie les 50 existants du cloud + insère les 30, rejouable au `db:reset`).
+> - **Oméga** = somme des AG mesurés CIQUAL (ALA+EPA+DHA / LA+AA / oléique). **Absents de CIQUAL** :
+>   `trans_fat_g`, `vitamin_b7_ug` (biotine) → jamais renseignés. **Café noir** : pas de café-boisson
+>   dans CIQUAL → non mappé, valeurs conservées.
+> - **Tooling** : `supabase/scripts/enrich-ciqual/` (générateur Python + `foods-catalog.json` +
+>   `mapping-columns.json`). Export brut hors git.
 
 ## 1. Problème / valeur
 

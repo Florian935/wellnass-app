@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Ajouté — Bibliothèque d'aliments enrichie CIQUAL 2025 (80 aliments, via migration)
+
+Branche `feature/seed-ciqual-enrichment`. Réalise l'US d'enrichissement — **approche A** (voir révision
+dans spec/plan). Données 100 % **CIQUAL 2025** (ANSES, Licence Ouverte / Etalab).
+
+### Ajouté
+- **Migration idempotente** `supabase/migrations/20260714120000_seed_library_foods_ciqual.sql` : upsert
+  de **80 aliments de bibliothèque** (foods + food_translations FR/EN + `micronutrients`). **50**
+  aliments existants voient **toute leur nutrition** (macros de base + sous-macros + 31 micros) reprise
+  de CIQUAL, identités conservées (UUID/noms/catégorie/portions) ; **+30 nouveaux** (fruits, légumes,
+  viandes/poissons, légumineuses, oléagineux). `on conflict do update` → réconcilie les aliments déjà
+  présents sur le cloud + insère les nouveaux ; rejouable au `db:reset`.
+- **Tooling reproductible** `supabase/scripts/enrich-ciqual/` : `generate.py` (stdlib, CSV→migration),
+  `foods-catalog.json` (source unique : identité + code CIQUAL par aliment), `mapping-columns.json`
+  (index colonne CIQUAL → clé/unité), `README.md`, `.gitignore` (export brut hors git).
+
+### Modifié / Supprimé
+- **`supabase/seed.sql`** : la bibliothèque d'aliments **quitte le seed** (remplacée par un pointeur
+  vers la migration). Motif : nouvelle règle CLAUDE.md « jamais de SQL manuel en console » → la donnée
+  de référence cloud passe par une migration versionnée (`db:push`), plus par une application hors-bande.
+- **MIGRATIONS.md** : ligne ajoutée (`[ ]`, à pousser).
+
+### Technique / Notes
+- **Present-only, « ne rien inventer »** : `traces`/`NC`/`< x`/`-` omis. **Oméga** = somme des AG
+  mesurés CIQUAL (ALA+EPA+DHA / linoléique+arachidonique / oléique). **Absents de CIQUAL 2025** :
+  `trans_fat_g`, `vitamin_b7_ug` (biotine) → jamais renseignés. **Café noir** : pas de café-boisson
+  dans CIQUAL (seulement « café moulu ») → non mappé, valeurs conservées. **Vitamine A** = colonne
+  « équivalents rétinol (µg) ». Macros CIQUAL « - » → 0 (correct : glucides viandes, lipides fruits…).
+- **Reste** : `npm run db:push` (cloud) + cocher MIGRATIONS.md + `npm run db:reset` + `db:types`
+  (local, Docker) + recette device. **Aucune dépendance native.**
+
 ## 14/07/2026 — Technique/Notes — Cadrage US « enrichir le seed CIQUAL »
 
 Branche `feature/seed-ciqual-enrichment`. **Cadrage seul (aucun code applicatif)** ; brainstorming +
