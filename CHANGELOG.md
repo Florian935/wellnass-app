@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Technique/Notes — Cadrage US « enrichir le seed CIQUAL »
+
+Branche `feature/seed-ciqual-enrichment`. **Cadrage seul (aucun code applicatif)** ; brainstorming +
+design validés par Florian.
+
+### Ajouté
+- **Spec** [seed-ciqual-enrichment.md](docs/specs/functional/us/seed-ciqual-enrichment.md) + **plan**
+  [seed-ciqual-enrichment.md](docs/plans/seed-ciqual-enrichment.md). Objectif : compléter les ~50
+  aliments du seed avec les **micros (31) + sous-macros** issus de **CIQUAL** (ANSES), sans toucher les
+  macros de base, via un **générateur reproductible** (export CIQUAL + `mapping-foods` UUID→code +
+  `mapping-columns` → `UPDATE public.foods` dans `seed.sql` + `cloud-update.sql` one-shot).
+- Décisions actées : source = export officiel fourni par Florian (hors git, licence Etalab) ; périmètre
+  = 50 aliments seed ; livraison = seed + one-shot cloud (🔴) ; **present-only, « ne rien inventer »**
+  (tokens `traces`/`NC`/`< x` omis) ; vitamine A mappée seulement si colonne µg présente.
+
+### Technique / Notes
+- **Bloqué** en attente de l'export ANSES CIQUAL (CSV) de Florian (Task 0). Ensuite : relecture Florian
+  du `mapping-foods.json` (appariement aliment↔code CIQUAL). Aucune migration, aucun code runtime.
+
 ## 14/07/2026 — Ajouté — Panel nutritionnel étendu (10 → 31 micronutriments)
 
 Branche `feature/panel-nutritionnel-etendu`. Implémentation de l'US cadrée + validée (spec + plan),
