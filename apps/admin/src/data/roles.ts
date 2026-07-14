@@ -128,6 +128,9 @@ export async function grantRole(
   }
 
   // (3) Nouvelle attribution.
+  // `.single()` est sûr : l'insert est réservé au super_admin (RLS user_roles_insert), qui peut
+  // toujours relire la ligne qu'il vient de créer (user_roles_select) — la lecture RETURNING ne
+  // renverra jamais 0 ligne ici. Ne pas transformer en `.maybeSingle()` sans revoir ces policies.
   const { data, error } = await supabase
     .from('user_roles')
     .insert({ user_id: userId, role })
