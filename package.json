@@ -20,6 +20,9 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:status": "supabase status",
+    "db:push": "supabase db push",
+    "db:push:dry": "supabase db push --dry-run",
+    "db:new": "supabase migration new",
     "db:types": "supabase gen types typescript --project-id nsxzflxsgovriwwvflxe > packages/shared/src/database.types.ts"
   },
   "devDependencies": {

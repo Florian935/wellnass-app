@@ -17,6 +17,11 @@
       "channel": "preview",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://nsxzflxsgovriwwvflxe.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_kUwcfgIiDe2h52nh1SKcjA_iRblL2qc",
+        "EXPO_PUBLIC_POWERSYNC_URL": "https://6a498d4449dca2d8a416e6cb.powersync.journeyapps.com"
       }
     },
     "production": {

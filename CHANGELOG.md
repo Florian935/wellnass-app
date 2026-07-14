@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Technique / Notes — Outillage migrations cloud + config build EAS + nettoyage prebuild
+
+Branche `feature/seed-ciqual-enrichment`. Commit précédent : `0b1fac2`. Aligne la doc et l'outillage
+sur le workflow **migrations directement sur le cloud** (pas de Docker chez les devs) et fiabilise le
+build Android local.
+
+### Ajouté
+- **`package.json`** (racine) : scripts `db:new` (`supabase migration new`), `db:push`
+  (`supabase db push`) et `db:push:dry` (`--dry-run`) — remplacent le copier-coller de SQL dans la
+  console Supabase.
+- **`apps/mobile/eas.json`** : bloc `env` sur le profil **preview** — `EXPO_PUBLIC_SUPABASE_URL`,
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY` (clé **publishable**, publique par nature — protégée par RLS),
+  `EXPO_PUBLIC_POWERSYNC_URL`. Pas de secret (`service_role` jamais exposée).
+
+### Modifié
+- **`CLAUDE.md`** : nouvelle section « Migrations base de données (OBLIGATOIRE) » (cycle sans Docker,
+  garde-fou `--linked`, réconciliation `migration repair`) ; tableau des commandes Supabase avec
+  colonne « Docker requis » ; état Supabase passé à **cloud provisionné** ; ajout du registre
+  `supabase/MIGRATIONS.md` dans l'arborescence doc.
+- **`supabase/MIGRATIONS.md`** : réalignement du tableau + ligne `20260714120000_seed_library_foods_ciqual`
+  (à pousser).
+
+### Supprimé (nettoyage)
+- **`android/` (racine)** et **`app.json` (racine)** : artefacts d'un `npx expo run:android` lancé par
+  erreur depuis la racine au lieu de `apps/mobile/`. Le vrai projet natif est `apps/mobile/android/`.
+- Bloc `dependencies` (`expo`/`react`/`react-native`) injecté par erreur dans le **`package.json`
+  racine** par ce même prebuild — ces deps appartiennent à `apps/mobile`, pas au workspace racine
+  (annulé, avec restauration de `package-lock.json`).
+
+### Notes débogage (environnement)
+- Build Android local KO tant que `ANDROID_HOME`/`ANDROID_SDK_ROOT` contenaient des **guillemets
+  littéraux** (« syntaxe du nom de fichier incorrecte » côté Gradle). Corrigé au niveau **variables
+  User** (valeurs sans guillemets) + `platform-tools` ajouté au `PATH`. Rouvrir le terminal après coup.
+- Détection du Pixel 6a par `adb` : nécessite serveur adb propre (`kill-server`/`start-server`) +
+  autorisation RSA acceptée sur le téléphone + mode USB « Transfert de fichiers ».
+
 ## 14/07/2026 — Ajouté — Bibliothèque d'aliments enrichie CIQUAL 2025 (80 aliments, via migration)
 
 Branche `feature/seed-ciqual-enrichment`. Réalise l'US d'enrichissement — **approche A** (voir révision

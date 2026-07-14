@@ -105,6 +105,39 @@ l'eau, **avant** tout cadrage. Ce n'est pas le pipeline : on y note vite, on rel
 régulièrement pour trier. Une idée retenue devient une US (spec → plan → design → validation)
 et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec la décision.
 
+### Migrations base de données (OBLIGATOIRE)
+
+**Jamais de SQL collé à la main dans la console Supabase.** Coller du SQL dans le dashboard
+n'écrit rien dans l'historique CLI (`supabase_migrations.schema_migrations`) : le schéma change
+mais le CLI l'ignore, et repo ↔ cloud divergent silencieusement. Toute évolution de schéma passe
+par un fichier de migration versionné et par le CLI.
+
+> **Contexte actuel : les deux devs (Florian, Damien) n'ont pas Docker.** On développe donc
+> **directement sur la base cloud** (`nsxzflxsgovriwwvflxe`) ; il n'y a **pas de base locale**.
+> L'étape « test en local » (`db:reset`) est donc **sautée** — voir l'encadré Docker plus bas.
+
+Cycle **sans Docker** :
+
+1. **Créer** la migration : `npm run db:new <nom>` (génère le fichier horodaté dans
+   [supabase/migrations/](supabase/migrations/)) — puis écrire le SQL dedans.
+2. **Prévisualiser** : `npm run db:push:dry` (liste les migrations qui vont partir, sans les jouer).
+3. **Pousser sur le cloud** : `npm run db:push`. Le CLI ne joue que les migrations manquantes, dans
+   l'ordre, chacune en transaction (une erreur = rollback propre de cette migration). **À faire dès
+   que la migration est créée** — c'est ce qui remplace le copier-coller dans la console.
+4. **Régénérer les types** : `npm run db:types`.
+5. **Cocher** la migration dans le registre [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md)
+   (case + date) : on sait ainsi, d'un coup d'œil, ce qui a réellement été appliqué sur le cloud.
+
+> **Si un jour Docker est installé** : intercaler un `npm run db:reset` entre les étapes 1 et 2
+> pour tester la séquence complète (base locale jetable + seed) **avant** de pousser sur le cloud.
+> ⚠️ Ne **jamais** ajouter `--linked` à `db reset` : cela viserait le **cloud** et effacerait
+> toutes les données.
+
+> Les migrations ne sont **pas** idempotentes par défaut (`create table` / `create policy` sans
+> garde). Ne jamais rejouer une migration déjà appliquée. Si une migration a été exécutée
+> manuellement (hors CLI), réconcilier l'historique sans rejouer le SQL :
+> `supabase migration repair --status applied <version>`, puis cocher dans le registre.
+
 ## Méthode de travail attendue
 
 - Suivre la [roadmap versionnée](docs/roadmap/roadmap.md) : livrer **par versions** (chaque fin de
@@ -120,6 +153,7 @@ et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec
 /TODO.md                    → suivi vivant des tâches (coché par /commit)
 /IDEAS.md                   → boîte de dépôt des idées brutes à trier (avant cadrage en US)
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
+/supabase/MIGRATIONS.md     → registre coché des migrations poussées sur le cloud
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
 /design                     → maquettes par fonctionnalité (exportées de Claude Design)
 /apps
@@ -160,14 +194,18 @@ et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec
 | `npm run build:dev` | Build EAS **dev client** (APK, requis pour PowerSync) — nécessite `eas login` + `eas init`. |
 | `npm run build:preview` / `build:prod` | Build EAS bêta interne (APK) / Play Store (AAB). |
 
-**Supabase local** (nécessite **Docker Desktop** + CLI `supabase` — via `npx supabase`) :
+**Supabase** (CLI `supabase` via `npx supabase`). Dev **directement sur le cloud** (pas de Docker
+chez les devs) ; les commandes `db:start`/`db:stop`/`db:reset` visent une stack **locale** et
+**requièrent Docker Desktop** — non utilisées actuellement.
 
-| Commande (racine) | Effet |
-|---|---|
-| `npm run db:start` / `db:stop` | Démarre / arrête la stack Supabase locale. |
-| `npm run db:reset` | Recrée la base + rejoue les migrations + `seed.sql`. |
-| `npm run db:status` | Affiche URL + clés locales (à mettre dans `apps/mobile/.env`). |
-| `npm run db:types` | Régénère `packages/shared/src/database.types.ts` depuis le schéma local. |
+| Commande (racine) | Effet | Docker requis |
+|---|---|:---:|
+| `npm run db:new <nom>` | Crée un fichier de migration horodaté dans `supabase/migrations/`. | non |
+| `npm run db:push` / `db:push:dry` | Pousse les migrations manquantes sur le **cloud** / liste-les sans les jouer. | non |
+| `npm run db:types` | Régénère `packages/shared/src/database.types.ts` depuis le schéma **cloud**. | non |
+| `npm run db:status` | Affiche l'état de la stack locale (URL + clés). | oui |
+| `npm run db:start` / `db:stop` | Démarre / arrête la stack Supabase locale. | oui |
+| `npm run db:reset` | Recrée la base **locale** + rejoue les migrations + `seed.sql`. | oui |
 
 > **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
 > `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
@@ -177,10 +215,10 @@ et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec
 > **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
 > `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
 > (`npm run build:dev`).
-> **Supabase** : socle local posé ([supabase/](supabase/)) — config, migration de conventions
-> (trigger `set_updated_at`), client typé mobile ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts),
-> Auth). **Non provisionné** (pas de projet cloud ; migration non appliquée — Docker requis).
-> Schéma métier à créer avec les US.
+> **Supabase** : projet **cloud provisionné** (`nsxzflxsgovriwwvflxe`), migrations appliquées et
+> suivies dans [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md). Dev directement sur le cloud (pas
+> de base locale — Docker non installé). Client typé mobile
+> ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts), Auth). Schéma métier enrichi au fil des US.
 > **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
 > **PowerSync** (SQLite local + sync) — à ajouter avec les US correspondantes.
 

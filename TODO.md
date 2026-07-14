@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 14/07/2026 (recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -35,7 +35,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   vraies valeurs vérifiées via `eas env:list --format long`). _Contexte :_ `eas.json` n'a aucun bloc
   `env` → sinon les builds `preview`/`production` (JS compilé sur EAS cloud) sortaient **sans** ces
   variables → **crash au démarrage** (`supabase.ts` lève à l'import ; les dev builds marchaient car
-  Metro injecte le `.env` local).
+  Metro injecte le `.env` local). _MàJ 14/07/2026 :_ un bloc `env` (mêmes 3 `EXPO_PUBLIC_*`, clé
+  publishable) a aussi été ajouté au profil **preview** dans `eas.json` — redondant/explicite avec
+  les EAS Environment Variables, versionné dans le repo (aucun secret).
 - [x] **Coordination migrations** : convention de **plages de timestamps** de migration actée
   (collisions évitées de justesse le 06-07/07 : nutrition `140000-140002`, running `20260707120000`) —
   OK (14/07/2026).
@@ -166,8 +168,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (upsert : réconcilie le cloud + insère les 30) — la biblio **quitte `seed.sql`** (nouvelle règle
   « jamais de SQL manuel »). Tooling reproductible `supabase/scripts/enrich-ciqual/` (générateur +
   `foods-catalog.json` + `mapping-columns.json`, export brut hors git). Spec+plan à jour (révision).
-  **Reste 🔴 (Florian)** : `npm run db:push` + cocher [MIGRATIONS.md](supabase/MIGRATIONS.md) +
-  `npm run db:reset` (local) + `db:types` + recette device (aliment riche → panel peuplé). _(14/07/2026.)_
+  **Recette device validée par Florian (14/07/2026)** ✅ (build debug sur Pixel 6a). **Reste** :
+  vérifier/finaliser la colonne « Méthode » de la ligne `seed_library_foods_ciqual` dans
+  [MIGRATIONS.md](supabase/MIGRATIONS.md) (cochée `[x]` mais méthode encore « à pousser ») +
+  `db:types` si le schéma a bougé. _(14/07/2026.)_
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
 - [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)
