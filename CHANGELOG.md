@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Ajouté — US 8.10 : log d'audit admin (code livré, subagent-driven)
+
+Branche `feature/8.10-admin-log-audit`. Commit précédent : `c3cc92b` (plan). Exécution subagent-driven
+(implémenteur + revues spec & qualité par tâche, revue finale *ready to merge*). Migration appliquée
+sur le cloud (CLI, 14/07/2026), `db:types` régénérés.
+
+### Ajouté
+- **`@wellness/shared/audit.ts`** (pur, testé) : `AUDIT_ACTIONS` (14 actions, source unique array-first),
+  `AuditAction` dérivé, `auditEntrySchema` (Zod), `auditActionLabelKey`. +5 tests (shared 625).
+- **Migration `20260714170000_admin_audit_log.sql`** : table `audit_log` (web/admin, **hors PowerSync**),
+  append-only — RLS `select` super_admin / `insert` admin (`actor_id = auth.uid()`), **aucune** policy
+  update/delete + **trigger d'immuabilité**. Index created_at/actor/action.
+- **`apps/admin/src/data/audit.ts`** : `logAudit` (best-effort, try/catch global, **ne lève jamais**,
+  capte l'acteur via session) + `listAudit` (curseur `created_at`, filtres acteur/action/période).
+- **Écran `/audit`** (`AuditScreen.tsx`, super_admin) : liste anti-chronologique, filtres
+  acteur/action/dates (bornes en **fuseau local**), pagination « Charger plus » (garde anti-course
+  `requestId`), états vide/erreur, date `JJ/MM/AAAA HH:MM`. Route + `NavLink` gated super_admin.
+- **i18n admin FR** : section `audit` + 14 libellés d'action.
+
+### Modifié
+- **Instrumentation `logAudit`** (best-effort, après succès) : `roles.ts` (grant/revoke — `grantRole`
+  retourne l'id d'attribution, log par branche écrivante), `exercises.ts` (create/update/publish/archive),
+  `programs.ts` (create/update/publish/archive), `foods.ts` (create/update/archive + import = 1 entrée).
+  Écrans passant le libellé : Exercises/Programs/Foods/Roles. Paramètres additifs (`opts?.label`,
+  `revokeRole(id, {role,userId})`) — retours inchangés, aucun appelant cassé.
+
+### Technique / Notes
+- **Écart assumé vs spec §7** (retenu) : `setStatus`/`archive*`/`revokeRole` reçoivent un libellé
+  optionnel de l'écran (le nom n'est pas en main dans la couche). Publication tracée uniquement au
+  passage à `published` (dépublication non tracée). Sous-éditions de programme non auditées.
+- **Point relevé en revue finale (à trancher recette)** : publier un exercice **depuis le formulaire
+  d'édition** est journalisé `exercise.update` (et non `.publish`) — `saveExercise` décide selon
+  `input.id` ; seul le bouton de publication de la **liste** émet `exercise.publish`. Conforme spec §7 ;
+  à accepter ou objet d'un suivi.
+- **Limitations mineures acceptées** : curseur `created_at` sans tie-break ; filtre acteur limité aux
+  lignes chargées.
+- Vérif d'ensemble : typecheck (3 workspaces) + 625 tests shared + lint (0 erreur) + build admin verts.
+- **Reste 🔴 recette (Florian/Damien)** : déclencher une action de chaque type → vérifier les entrées
+  dans `/audit` ; tenter un `update`/`delete` d'entrée → refus (trigger).
+
 ## 14/07/2026 — Ajouté — Plan d'implémentation US 8.10 : log d'audit admin (relu, Approved)
 
 Branche `feature/8.10-admin-log-audit`. Commit précédent : `e0005a1` (spec). Plan issu du skill
