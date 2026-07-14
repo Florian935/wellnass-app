@@ -8,6 +8,7 @@ import {
   MICRONUTRIENT_KEYS,
   parseMicronutrients,
 } from '@wellness/shared';
+import { logAudit } from './audit';
 
 /**
  * Couche data de l'import d'aliments éditoriaux (US 8.6). Requêtes Supabase via supabase-js
@@ -196,6 +197,14 @@ export async function saveFood(input: SaveFoodInput): Promise<{ id: string | nul
     if (error) return { id, error };
   }
 
+  // Best-effort, uniquement en succès complet (ligne + 2 traductions).
+  await logAudit({
+    action: input.id ? 'food.update' : 'food.create',
+    targetTable: 'foods',
+    targetId: id,
+    targetLabel: input.nameFr,
+  });
+
   return { id, error: null };
 }
 
@@ -203,7 +212,10 @@ export async function saveFood(input: SaveFoodInput): Promise<{ id: string | nul
  * Archive un aliment éditorial (soft-delete `deleted_at`) et ses traductions.
  * Séquentiel : l'aliment d'abord, puis ses traductions. Éditorial uniquement.
  */
-export async function archiveFood(id: string): Promise<{ error: unknown }> {
+export async function archiveFood(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
   const now = new Date().toISOString();
 
   const { error: fErr } = await supabase
@@ -218,7 +230,16 @@ export async function archiveFood(id: string): Promise<{ error: unknown }> {
     .update({ deleted_at: now })
     .eq('food_id', id)
     .is('owner_id', null);
-  return { error: tErr };
+  if (tErr) return { error: tErr };
+
+  await logAudit({
+    action: 'food.archive',
+    targetTable: 'foods',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
 }
 
 /** Ordre des colonnes du CSV (= contrat, cf. spec §3). */
@@ -260,7 +281,15 @@ export function buildCsvTemplate(): string {
  * l'upsert est idempotent). Les enregistrements sont supposés déjà valides (`parseFoodCsv`).
  */
 export async function importFoods(records: FoodImportRecord[]): Promise<ImportResult> {
-  if (records.length === 0) return { created: 0, updated: 0 };
+  if (records.length === 0) {
+    await logAudit({
+      action: 'food.import',
+      targetTable: 'foods',
+      targetId: null,
+      details: { count: 0, created: 0, updated: 0 },
+    });
+    return { created: 0, updated: 0 };
+  }
   const keys = records.map((r) => r.importKey);
 
   // Quelles clés existent déjà (éditorial) → distinguer créés / mis à jour dans le rapport.
@@ -318,5 +347,13 @@ export async function importFoods(records: FoodImportRecord[]): Promise<ImportRe
     if (known.has(k)) updated += 1;
     else created += 1;
   }
+
+  await logAudit({
+    action: 'food.import',
+    targetTable: 'foods',
+    targetId: null,
+    details: { count: created + updated, created, updated },
+  });
+
   return { created, updated };
 }

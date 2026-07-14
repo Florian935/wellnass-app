@@ -52,7 +52,7 @@ export function FoodsScreen() {
   async function handleArchive(row: AdminFoodRow) {
     if (!window.confirm(fr.foods.archiveConfirm)) return;
     setBusyId(row.id);
-    const { error: err } = await archiveFood(row.id);
+    const { error: err } = await archiveFood(row.id, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);
