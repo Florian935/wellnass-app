@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Ajouté — Spec US 8.10 : log d'audit admin (cadrage validé)
+
+Branche `feature/8.10-admin-log-audit`. Commit précédent : `9626521`. Première des trois US de
+gouvernance admin restantes (ordre acté : **8.10 audit → 8.7 modération → 8.8 utilisateurs**).
+Cadrage complet issu du brainstorming (Florian, 14/07/2026), relu par un sous-agent
+`spec-document-reviewer` (Approved après 4 corrections).
+
+### Ajouté
+- **Spec fonctionnelle** [docs/specs/functional/us/8.10-admin-log-audit.md](docs/specs/functional/us/8.10-admin-log-audit.md) :
+  journal d'audit append-only et non supprimable des écritures éditoriales + rôles du back-office.
+  - **Périmètre** : rôles (grant/revoke), CRUD exercices/programmes/aliments + import CSV.
+    Exclus : lectures, actions mobile, diff avant/après, sous-éditions de structure d'un programme.
+  - **Capture applicative** (approche A) : `logAudit()` après chaque mutation, best-effort non
+    bloquant. Modèle de menace assumé (clé anon, équipe interne de confiance) ; durcissement futur
+    possible via trigger `user_roles` sans casse.
+  - **Modèle de données** : table `audit_log` (web/admin, hors PowerSync) — `actor_id`/`actor_email`
+    (snapshot, pas de FK cascade), `action`/`target_table`/`target_id`/`target_label`/`details` jsonb.
+    Schéma générique → accueillera 8.7/8.8 sans migration.
+  - **Immuabilité** : RLS `select` super_admin, `insert` admin (`actor_id = auth.uid()`), aucune
+    policy update/delete + trigger anti-`UPDATE`/`DELETE`.
+  - **Écran** `/audit` (super_admin) : liste anti-chronologique + filtres acteur/action/période.
+  - Logique pure `@wellness/shared/audit.ts` (testée), couche I/O `apps/admin/src/data/audit.ts`.
+
+### Technique / Notes
+- Décision produit (Florian) : détail limité à qui/quoi/cible/quand + libellé (pas de diff) ;
+  consultation super_admin only. Checkpoint 🔴 à l'implémentation : migration `audit_log` + `db:types`.
+
 ## 14/07/2026 — Technique / Notes — Outillage migrations cloud + config build EAS + nettoyage prebuild
 
 Branche `feature/seed-ciqual-enrichment`. Commit précédent : `0b1fac2`. Aligne la doc et l'outillage
