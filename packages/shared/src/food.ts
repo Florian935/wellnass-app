@@ -55,14 +55,38 @@ export type FoodPortion = z.infer<typeof foodPortionSchema>;
  * (`food_entries`).
  */
 export const MICRONUTRIENT_KEYS = [
+  // Lipides
   'cholesterol_mg',
+  'monounsaturated_fat_g',
+  'polyunsaturated_fat_g',
+  'trans_fat_g',
+  'omega_3_g',
+  'omega_6_g',
+  'omega_9_g',
+  // Minéraux
   'sodium_mg',
   'magnesium_mg',
   'potassium_mg',
   'calcium_mg',
   'iron_mg',
+  'zinc_mg',
+  'phosphorus_mg',
+  'copper_mg',
+  'manganese_mg',
+  'selenium_ug',
+  'iodine_ug',
+  // Vitamines
+  'vitamin_a_ug',
   'vitamin_c_mg',
   'vitamin_d_ug',
+  'vitamin_e_mg',
+  'vitamin_k_ug',
+  'vitamin_b1_mg',
+  'vitamin_b2_mg',
+  'vitamin_b3_mg',
+  'vitamin_b5_mg',
+  'vitamin_b6_mg',
+  'vitamin_b7_ug',
   'vitamin_b9_ug',
   'vitamin_b12_ug',
 ] as const;

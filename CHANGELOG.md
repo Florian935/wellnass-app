@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Ajouté — Panel nutritionnel étendu (10 → 31 micronutriments)
+
+Branche `feature/panel-nutritionnel-etendu`. Implémentation de l'US cadrée + validée (spec + plan),
+exécution subagent-driven + **revue de code indépendante *Approved***.
+
+### Ajouté
+- **+21 micronutriments** au panel (socle 10 → 31) : AG **monoinsaturés / polyinsaturés / trans** +
+  **oméga-3/6/9** ; minéraux **zinc, phosphore, cuivre, manganèse, sélénium, iode** ; vitamines
+  **A, E, K, B1, B2, B3, B5, B6, B7** (C/D/B9/B12 déjà gérées). Source unique `MICRONUTRIENT_KEYS`
+  (`packages/shared/src/food.ts`) → schéma Zod, `scaleMicronutrients`/`sumMicronutrients`, import CSV
+  et validation du formulaire admin **dérivent automatiquement**.
+- **Capture OpenFoodFacts** (`apps/mobile/src/lib/openfoodfacts.ts`, `MICRO_MAP` 31 entrées) :
+  conversion `*_100g` (grammes) → unité de la clé (g ×1 / mg ×1000 / µg ×1e6). **Garde vitamine A** :
+  omise si l'unité OFF (`vitamin-a_unit`) n'est pas massique (ex. IU) → pas de valeur fausse. La clé
+  `vitamin_a_ug` reste affichable/éditable (seed CIQUAL / admin).
+- **Affichage** (`MicronutrientDetails.tsx`) : groupes Lipides / Minéraux / Vitamines étendus, unité
+  `g` ajoutée au type `Unit`, `unitLabel` généralisé. **Present-only** conservé (aliment pauvre =
+  rendu inchangé). **Formulaire admin** (`FoodEditScreen`) couvre les 31 (via `MICRONUTRIENT_KEYS`).
+
+### Technique / Notes
+- **Aucune migration** (colonne JSON `micronutrients`), **aucune dépendance native**, pas de checkpoint 🔴.
+- i18n : +21 libellés mobile FR/EN (`nutrition.micros.labels.*`, parité **808/808**) + 21 libellés
+  admin FR (`fr.foods.microNames`). Tests : shared **620**, mobile **42** (dont mapping OFF étendu +
+  garde vit A IU). typecheck (3 workspaces) / lint (0 err) / build admin verts.
+- **Écart de plan corrigé** : le découpage en 5 commits par tâche n'était pas viable (le typage
+  exhaustif TS couple `MICRONUTRIENT_KEYS` au fixture `food-form.test.ts` et à l'indexation
+  `fr.foods.microNames`) → **implémentation atomique en un commit**. `Unit` n'incluait pas `'g'`
+  (supposé à tort dans le plan) → corrigé.
+- **Valeur réelle** conditionnée à l'enrichissement du **seed CIQUAL** (US tracée) : un Nutella scanné
+  reste pauvre (donnée absente d'OFF), c'est attendu. **Reste** : recette device.
+
 ## 14/07/2026 — Technique/Notes — Cadrage US « panel nutritionnel étendu » (spec validée)
 
 Branche `feature/panel-nutritionnel-etendu`. **Cadrage uniquement (aucun code applicatif).**

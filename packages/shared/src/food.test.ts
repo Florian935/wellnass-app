@@ -139,10 +139,11 @@ describe('micronutriments (4.33)', () => {
       expect(parseMicronutrients(null)).toEqual({});
       expect(parseMicronutrients(42)).toEqual({});
     });
-    it('couvre exactement le panel de 10 clés', () => {
-      expect(MICRONUTRIENT_KEYS).toHaveLength(10);
+    it('couvre exactement le panel de 31 clés', () => {
+      expect(MICRONUTRIENT_KEYS).toHaveLength(31);
       expect(MICRONUTRIENT_KEYS).toContain('cholesterol_mg');
-      expect(MICRONUTRIENT_KEYS).toContain('vitamin_b12_ug');
+      expect(MICRONUTRIENT_KEYS).toContain('omega_3_g');
+      expect(MICRONUTRIENT_KEYS).toContain('vitamin_b7_ug');
     });
   });
 
@@ -160,6 +161,10 @@ describe('micronutriments (4.33)', () => {
     });
     it('0 g → toutes les clés présentes à 0', () => {
       expect(scaleMicronutrients({ iron_mg: 5 }, 0)).toEqual({ iron_mg: 0 });
+    });
+    it('met à l’échelle et somme les nouvelles clés (oméga-3 en g, zinc en mg)', () => {
+      expect(scaleMicronutrients({ omega_3_g: 2, zinc_mg: 5 }, 50)).toEqual({ omega_3_g: 1, zinc_mg: 2.5 });
+      expect(sumMicronutrients([{ omega_3_g: 1 }, { omega_3_g: 0.5, zinc_mg: 2 }])).toEqual({ omega_3_g: 1.5, zinc_mg: 2 });
     });
   });
 

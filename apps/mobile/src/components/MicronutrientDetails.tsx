@@ -11,11 +11,22 @@ import {
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-type Unit = 'mg' | 'ug';
+type Unit = 'mg' | 'ug' | 'g';
 
 /** Regroupement d'affichage du socle (spec 4.33 §5, calé sur la maquette Micronutriments). */
 const GROUPS: { key: string; items: { key: MicronutrientKey; unit: Unit }[] }[] = [
-  { key: 'lipids', items: [{ key: 'cholesterol_mg', unit: 'mg' }] },
+  {
+    key: 'lipids',
+    items: [
+      { key: 'cholesterol_mg', unit: 'mg' },
+      { key: 'monounsaturated_fat_g', unit: 'g' },
+      { key: 'polyunsaturated_fat_g', unit: 'g' },
+      { key: 'trans_fat_g', unit: 'g' },
+      { key: 'omega_3_g', unit: 'g' },
+      { key: 'omega_6_g', unit: 'g' },
+      { key: 'omega_9_g', unit: 'g' },
+    ],
+  },
   {
     key: 'minerals',
     items: [
@@ -24,13 +35,28 @@ const GROUPS: { key: string; items: { key: MicronutrientKey; unit: Unit }[] }[] 
       { key: 'potassium_mg', unit: 'mg' },
       { key: 'calcium_mg', unit: 'mg' },
       { key: 'iron_mg', unit: 'mg' },
+      { key: 'zinc_mg', unit: 'mg' },
+      { key: 'phosphorus_mg', unit: 'mg' },
+      { key: 'copper_mg', unit: 'mg' },
+      { key: 'manganese_mg', unit: 'mg' },
+      { key: 'selenium_ug', unit: 'ug' },
+      { key: 'iodine_ug', unit: 'ug' },
     ],
   },
   {
     key: 'vitamins',
     items: [
+      { key: 'vitamin_a_ug', unit: 'ug' },
       { key: 'vitamin_c_mg', unit: 'mg' },
       { key: 'vitamin_d_ug', unit: 'ug' },
+      { key: 'vitamin_e_mg', unit: 'mg' },
+      { key: 'vitamin_k_ug', unit: 'ug' },
+      { key: 'vitamin_b1_mg', unit: 'mg' },
+      { key: 'vitamin_b2_mg', unit: 'mg' },
+      { key: 'vitamin_b3_mg', unit: 'mg' },
+      { key: 'vitamin_b5_mg', unit: 'mg' },
+      { key: 'vitamin_b6_mg', unit: 'mg' },
+      { key: 'vitamin_b7_ug', unit: 'ug' },
       { key: 'vitamin_b9_ug', unit: 'ug' },
       { key: 'vitamin_b12_ug', unit: 'ug' },
     ],
@@ -71,7 +97,7 @@ export function MicronutrientDetails({
   const [open, setOpen] = useState(defaultOpen);
 
   const scaled = scaleMicronutrients(micronutrients, grams);
-  const unitLabel = (u: Unit) => (u === 'mg' ? t('nutrition.micros.units.mg') : t('nutrition.micros.units.ug'));
+  const unitLabel = (u: Unit) => t(`nutrition.micros.units.${u}`);
 
   const groups = GROUPS.map((g) => ({
     key: g.key,

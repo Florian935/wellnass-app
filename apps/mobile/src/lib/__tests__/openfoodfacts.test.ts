@@ -33,6 +33,28 @@ describe('mapOffMicronutrients (4.33)', () => {
       calcium_mg: 99,
     });
   });
+
+  it('mappe les nutriments étendus (AG en g ×1, minéraux ×1000, µg ×1e6)', () => {
+    expect(
+      mapOffMicronutrients({
+        'omega-3-fat_100g': 1.2,
+        zinc_100g: 0.005,
+        selenium_100g: 0.00002,
+        'vitamin-b1_100g': 0.0012,
+        'vitamin-pp_100g': 0.016, // B3 (niacine)
+      }),
+    ).toEqual({ omega_3_g: 1.2, zinc_mg: 5, selenium_ug: 20, vitamin_b1_mg: 1.2, vitamin_b3_mg: 16 });
+  });
+
+  it('omet la vitamine A quand OFF la donne en IU (unité non massique)', () => {
+    expect(mapOffMicronutrients({ 'vitamin-a_100g': 400, 'vitamin-a_unit': 'IU' })).toEqual({});
+  });
+
+  it('mappe la vitamine A quand l’unité est massique (g → µg)', () => {
+    expect(mapOffMicronutrients({ 'vitamin-a_100g': 0.0008, 'vitamin-a_unit': 'µg' })).toEqual({
+      vitamin_a_ug: 800,
+    });
+  });
 });
 
 describe('interpretOffProduct (4.10 — cause d’échec)', () => {

@@ -44,20 +44,49 @@ function num(v: number | string | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Unités de masse acceptées pour la garde d'unité (OFF renseigne parfois la vit. A en IU). */
+const MASS_UNITS = new Set(['g', 'mg', 'µg', 'ug', 'mcg']);
+
 /**
- * Correspondance OpenFoodFacts → socle micronutriments. Les champs `*_100g` d'OFF sont
- * normalisés en **grammes** ; on convertit vers l'unité de la clé (mg = ×1000, µg = ×1e6).
- * `fields` liste les alias OFF possibles (le premier renseigné gagne).
+ * Correspondance OpenFoodFacts → panel micronutriments (31 nutriments). Les champs `*_100g` d'OFF
+ * sont normalisés en **grammes** ; on convertit vers l'unité de la clé (g = ×1, mg = ×1000,
+ * µg = ×1e6). `fields` liste les alias OFF possibles (le premier renseigné gagne). `unitField`,
+ * si présent, garde le mapping : on n'extrait la valeur que si l'unité OFF est une unité de masse
+ * (sinon on omet — ex. vitamine A donnée en IU, non convertible de façon fiable).
  */
-const MICRO_MAP: { key: MicronutrientKey; fields: string[]; factor: number }[] = [
+const MICRO_MAP: { key: MicronutrientKey; fields: string[]; factor: number; unitField?: string }[] = [
+  // Lipides
   { key: 'cholesterol_mg', fields: ['cholesterol_100g'], factor: 1000 },
+  { key: 'monounsaturated_fat_g', fields: ['monounsaturated-fat_100g'], factor: 1 },
+  { key: 'polyunsaturated_fat_g', fields: ['polyunsaturated-fat_100g'], factor: 1 },
+  { key: 'trans_fat_g', fields: ['trans-fat_100g'], factor: 1 },
+  { key: 'omega_3_g', fields: ['omega-3-fat_100g'], factor: 1 },
+  { key: 'omega_6_g', fields: ['omega-6-fat_100g'], factor: 1 },
+  { key: 'omega_9_g', fields: ['omega-9-fat_100g'], factor: 1 },
+  // Minéraux
   { key: 'sodium_mg', fields: ['sodium_100g'], factor: 1000 },
   { key: 'magnesium_mg', fields: ['magnesium_100g'], factor: 1000 },
   { key: 'potassium_mg', fields: ['potassium_100g'], factor: 1000 },
   { key: 'calcium_mg', fields: ['calcium_100g'], factor: 1000 },
   { key: 'iron_mg', fields: ['iron_100g'], factor: 1000 },
+  { key: 'zinc_mg', fields: ['zinc_100g'], factor: 1000 },
+  { key: 'phosphorus_mg', fields: ['phosphorus_100g'], factor: 1000 },
+  { key: 'copper_mg', fields: ['copper_100g'], factor: 1000 },
+  { key: 'manganese_mg', fields: ['manganese_100g'], factor: 1000 },
+  { key: 'selenium_ug', fields: ['selenium_100g'], factor: 1_000_000 },
+  { key: 'iodine_ug', fields: ['iodine_100g'], factor: 1_000_000 },
+  // Vitamines
+  { key: 'vitamin_a_ug', fields: ['vitamin-a_100g'], factor: 1_000_000, unitField: 'vitamin-a_unit' },
   { key: 'vitamin_c_mg', fields: ['vitamin-c_100g'], factor: 1000 },
   { key: 'vitamin_d_ug', fields: ['vitamin-d_100g'], factor: 1_000_000 },
+  { key: 'vitamin_e_mg', fields: ['vitamin-e_100g'], factor: 1000 },
+  { key: 'vitamin_k_ug', fields: ['vitamin-k_100g'], factor: 1_000_000 },
+  { key: 'vitamin_b1_mg', fields: ['vitamin-b1_100g'], factor: 1000 },
+  { key: 'vitamin_b2_mg', fields: ['vitamin-b2_100g'], factor: 1000 },
+  { key: 'vitamin_b3_mg', fields: ['vitamin-pp_100g', 'vitamin-b3_100g'], factor: 1000 },
+  { key: 'vitamin_b5_mg', fields: ['pantothenic-acid_100g'], factor: 1000 },
+  { key: 'vitamin_b6_mg', fields: ['vitamin-b6_100g'], factor: 1000 },
+  { key: 'vitamin_b7_ug', fields: ['biotin_100g'], factor: 1_000_000 },
   { key: 'vitamin_b9_ug', fields: ['vitamin-b9_100g', 'folates_100g'], factor: 1_000_000 },
   { key: 'vitamin_b12_ug', fields: ['vitamin-b12_100g'], factor: 1_000_000 },
 ];
@@ -66,6 +95,11 @@ const MICRO_MAP: { key: MicronutrientKey; fields: string[]; factor: number }[] =
 export function mapOffMicronutrients(n: Nutriments): Micronutrients {
   const out: Micronutrients = {};
   for (const m of MICRO_MAP) {
+    if (m.unitField) {
+      const u = n[m.unitField];
+      // Unité renseignée mais non massique (ex. IU) → non convertible de façon fiable, on omet.
+      if (typeof u === 'string' && !MASS_UNITS.has(u.toLowerCase())) continue;
+    }
     let raw: number | null = null;
     for (const f of m.fields) {
       raw = num(n[f]);
