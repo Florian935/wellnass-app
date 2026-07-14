@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AUDIT_ACTIONS, type AuditAction } from '@wellness/shared';
 import { listAudit, type AuditLogRow } from '../data/audit';
 import { fr } from '../i18n/fr';
@@ -24,21 +24,36 @@ export function AuditScreen() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
-  const reload = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    const { rows: fetched, error: err } = await listAudit({
+  // Anti-obsolescence : chaque requête (reload / charger plus) capture un id ;
+  // seule la plus récente applique son résultat (évite qu'une réponse en vol
+  // d'un ancien filtre n'écrase l'état après un changement de filtre).
+  const requestIdRef = useRef(0);
+
+  // Bornes de date en ISO UTC construites depuis l'heure LOCALE : une chaîne
+  // sans `Z` est interprétée dans le fuseau du navigateur, puis `toISOString()`
+  // donne l'UTC correct (sinon Postgres lirait la date brute en UTC → décalage).
+  const filters = useMemo(
+    () => ({
       actorId: actorId || undefined,
       action: action || undefined,
-      from: from || undefined,
-      to: to ? `${to}T23:59:59.999` : undefined,
-      limit: PAGE_SIZE,
-    });
+      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+    }),
+    [actorId, action, from, to],
+  );
+
+  const reload = useCallback(async () => {
+    const localId = ++requestIdRef.current;
+    setLoading(true);
+    setError(false);
+    const { rows: fetched, error: err } = await listAudit({ ...filters, limit: PAGE_SIZE });
+    if (requestIdRef.current !== localId) return;
     setRows(fetched);
     setError(Boolean(err));
     setHasMore(fetched.length === PAGE_SIZE);
     setLoading(false);
-  }, [actorId, action, from, to]);
+    setLoadingMore(false); // libère un « Charger plus » qui aurait été supplanté
+  }, [filters]);
 
   useEffect(() => {
     void reload();
@@ -47,15 +62,14 @@ export function AuditScreen() {
   async function handleLoadMore() {
     const last = rows[rows.length - 1];
     if (!last) return;
+    const localId = ++requestIdRef.current;
     setLoadingMore(true);
     const { rows: fetched, error: err } = await listAudit({
-      actorId: actorId || undefined,
-      action: action || undefined,
-      from: from || undefined,
-      to: to ? `${to}T23:59:59.999` : undefined,
+      ...filters,
       limit: PAGE_SIZE,
       before: last.created_at,
     });
+    if (requestIdRef.current !== localId) return;
     setLoadingMore(false);
     if (err) {
       setError(true);
@@ -92,6 +106,7 @@ export function AuditScreen() {
             value={actorId}
             onChange={(e) => setActorId(e.target.value)}
             style={styles.input}
+            aria-label={fr.audit.filterActor}
           >
             <option value="">{fr.audit.allActors}</option>
             {actorOptions.map(([id, label]) => (
@@ -104,6 +119,7 @@ export function AuditScreen() {
             value={action}
             onChange={(e) => setAction(e.target.value)}
             style={styles.input}
+            aria-label={fr.audit.filterAction}
           >
             <option value="">{fr.audit.allActions}</option>
             {AUDIT_ACTIONS.map((a) => (
