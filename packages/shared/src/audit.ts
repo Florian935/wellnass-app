@@ -7,25 +7,8 @@
  */
 import { z } from 'zod';
 
-/** Actions auditables du back-office. */
-export type AuditAction =
-  | 'role.grant'
-  | 'role.revoke'
-  | 'exercise.create'
-  | 'exercise.update'
-  | 'exercise.archive'
-  | 'exercise.publish'
-  | 'program.create'
-  | 'program.update'
-  | 'program.archive'
-  | 'program.publish'
-  | 'food.create'
-  | 'food.update'
-  | 'food.archive'
-  | 'food.import';
-
-/** Même ordre que l'union `AuditAction`, sans doublon. */
-export const AUDIT_ACTIONS: readonly AuditAction[] = [
+/** Actions auditables du back-office (source unique ; l'union en est dérivée). */
+export const AUDIT_ACTIONS = [
   'role.grant',
   'role.revoke',
   'exercise.create',
@@ -40,7 +23,9 @@ export const AUDIT_ACTIONS: readonly AuditAction[] = [
   'food.update',
   'food.archive',
   'food.import',
-];
+] as const;
+export const auditActionSchema = z.enum(AUDIT_ACTIONS);
+export type AuditAction = z.infer<typeof auditActionSchema>;
 
 /** Entrée d'audit à écrire (avant horodatage/auteur, ajoutés côté data). */
 export type AuditEntryInput = {
@@ -52,8 +37,8 @@ export type AuditEntryInput = {
 };
 
 /** Schéma Zod d'une entrée d'audit : action ∈ union ; targetId uuid|null ; details défaut `{}`. */
-export const auditEntrySchema = z.object({
-  action: z.enum([...AUDIT_ACTIONS] as [AuditAction, ...AuditAction[]]),
+export const auditEntrySchema: z.ZodType<AuditEntryInput> = z.object({
+  action: auditActionSchema,
   targetTable: z.string().nullish(),
   targetId: z.string().uuid().nullish(),
   targetLabel: z.string().nullish(),
