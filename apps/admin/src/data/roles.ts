@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Database } from '@wellness/shared';
+import { logAudit } from './audit';
 
 /**
  * Couche data des rôles d'administration (US 8.9). Requêtes Supabase via
@@ -84,8 +85,8 @@ export async function listRoles(): Promise<{
 export async function grantRole(
   userId: string,
   role: AdminRole,
-): Promise<{ error: unknown; alreadyActive?: boolean }> {
-  // (1) Déjà attribuée et active ? → rien à faire.
+): Promise<{ error: unknown; alreadyActive?: boolean; id?: string }> {
+  // (1) Déjà attribuée et active ? → rien à faire (pas de log : rien n'est écrit).
   const active = await supabase
     .from('user_roles')
     .select('id')
@@ -114,21 +115,55 @@ export async function grantRole(
       .from('user_roles')
       .update({ deleted_at: null })
       .eq('id', revoked.data.id);
-    return { error };
+    if (error) return { error };
+
+    await logAudit({
+      action: 'role.grant',
+      targetTable: 'user_roles',
+      targetId: revoked.data.id,
+      targetLabel: `${role} → ${userId}`,
+      details: { role, targetUserId: userId },
+    });
+    return { error: null, id: revoked.data.id };
   }
 
   // (3) Nouvelle attribution.
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('user_roles')
-    .insert({ user_id: userId, role });
-  return { error };
+    .insert({ user_id: userId, role })
+    .select('id')
+    .single();
+  if (error) return { error };
+
+  const grantedId = data?.id ?? null;
+  await logAudit({
+    action: 'role.grant',
+    targetTable: 'user_roles',
+    targetId: grantedId,
+    targetLabel: `${role} → ${userId}`,
+    details: { role, targetUserId: userId },
+  });
+  return { error: null, id: data?.id };
 }
 
 /** Révoque une attribution (soft-delete : `deleted_at = now`). */
-export async function revokeRole(id: string): Promise<{ error: unknown }> {
+export async function revokeRole(
+  id: string,
+  opts?: { role?: AdminRole; userId?: string },
+): Promise<{ error: unknown }> {
   const { error } = await supabase
     .from('user_roles')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
-  return { error };
+
+  if (error) return { error };
+
+  await logAudit({
+    action: 'role.revoke',
+    targetTable: 'user_roles',
+    targetId: id,
+    targetLabel: opts?.role && opts?.userId ? `${opts.role} → ${opts.userId}` : null,
+    details: opts ? { role: opts.role, targetUserId: opts.userId } : {},
+  });
+  return { error: null };
 }

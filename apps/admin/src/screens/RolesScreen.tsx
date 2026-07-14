@@ -70,12 +70,15 @@ export function RolesScreen() {
     await reload();
   }
 
-  async function handleRevoke(id: string) {
+  async function handleRevoke(row: UserRoleRow) {
     if (!window.confirm(fr.roles.revokeConfirm)) {
       return;
     }
-    setRevokingId(id);
-    const { error } = await revokeRole(id);
+    setRevokingId(row.id);
+    const { error } = await revokeRole(row.id, {
+      role: row.role as AdminRole,
+      userId: row.user_id,
+    });
     setRevokingId(null);
 
     if (error) {
@@ -170,7 +173,7 @@ export function RolesScreen() {
                     <td style={styles.td}>
                       <button
                         type="button"
-                        onClick={() => handleRevoke(r.id)}
+                        onClick={() => handleRevoke(r)}
                         disabled={revokingId === r.id}
                         style={styles.revoke}
                       >
