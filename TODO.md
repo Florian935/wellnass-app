@@ -168,10 +168,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (upsert : réconcilie le cloud + insère les 30) — la biblio **quitte `seed.sql`** (nouvelle règle
   « jamais de SQL manuel »). Tooling reproductible `supabase/scripts/enrich-ciqual/` (générateur +
   `foods-catalog.json` + `mapping-columns.json`, export brut hors git). Spec+plan à jour (révision).
-  **Recette device validée par Florian (14/07/2026)** ✅ (build debug sur Pixel 6a). **Reste** :
-  vérifier/finaliser la colonne « Méthode » de la ligne `seed_library_foods_ciqual` dans
-  [MIGRATIONS.md](supabase/MIGRATIONS.md) (cochée `[x]` mais méthode encore « à pousser ») +
-  `db:types` si le schéma a bougé. _(14/07/2026.)_
+  **Terminée (14/07/2026)** ✅ — migration poussée par CLI (`npm run db:push`, cochée dans
+  [MIGRATIONS.md](supabase/MIGRATIONS.md)) + recette device validée par Florian (build debug Pixel 6a).
 
 - [x] **Session persistante & chiffrée** (1.5/9.8) — SecureStore/Keystore — mergé, **testé sur device** (persistance OK après fermeture) (05/07/2026)
 - [x] **PowerSync** (9.13/9.3) — SQLite local (op-sqlite) + connecteur Supabase + sync streams — mergé, **« Synchronisé » vert sur device** (05/07/2026)
