@@ -13,23 +13,31 @@ export async function logAudit(entry: AuditEntryInput): Promise<{ error: unknown
     console.warn('[audit] entrée invalide, non journalisée', parsed.error);
     return { error: parsed.error };
   }
-  const { data: userData } = await supabase.auth.getUser();
-  const actor = userData?.user;
-  const { error } = await supabase.from('audit_log').insert({
-    actor_id: actor?.id ?? null,
-    actor_email: actor?.email ?? null,
-    action: parsed.data.action,
-    target_table: parsed.data.targetTable ?? null,
-    target_id: parsed.data.targetId ?? null,
-    target_label: parsed.data.targetLabel ?? null,
-    // `details` est un Record<string, unknown> côté schéma (contrat pur, sans dépendance à
-    // Supabase) ; l'appelant garantit un contenu sérialisable en JSON. Cast vers le type
-    // généré `Json` (récursif) pour satisfaire l'Insert — pas de perte de garde runtime,
-    // la validation Zod a déjà eu lieu au-dessus.
-    details: (parsed.data.details ?? {}) as Json,
-  });
-  if (error) console.warn('[audit] échec insert, action non tracée', error);
-  return { error };
+  // Best-effort strict : tout le corps async est gardé. Un rejet inattendu (session
+  // corrompue, exception non-`AuthError` de `getUser()`, réseau) est capté ici afin de
+  // ne JAMAIS lever vers l'appelant — l'action métier ne doit pas casser sur l'audit.
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    const actor = userData?.user;
+    const { error } = await supabase.from('audit_log').insert({
+      actor_id: actor?.id ?? null,
+      actor_email: actor?.email ?? null,
+      action: parsed.data.action,
+      target_table: parsed.data.targetTable ?? null,
+      target_id: parsed.data.targetId ?? null,
+      target_label: parsed.data.targetLabel ?? null,
+      // `details` est un Record<string, unknown> côté schéma (contrat pur, sans dépendance à
+      // Supabase) ; l'appelant garantit un contenu sérialisable en JSON. Cast vers le type
+      // généré `Json` (récursif) pour satisfaire l'Insert — pas de perte de garde runtime,
+      // la validation Zod a déjà eu lieu au-dessus.
+      details: (parsed.data.details ?? {}) as Json,
+    });
+    if (error) console.warn('[audit] échec insert, action non tracée', error);
+    return { error };
+  } catch (error) {
+    console.warn('[audit] échec inattendu, action non tracée', error);
+    return { error };
+  }
 }
 
 export type AuditFilters = {
