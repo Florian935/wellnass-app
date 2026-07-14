@@ -62,7 +62,7 @@ export function ExercisesScreen() {
   async function handleToggleStatus(row: AdminExerciseRow) {
     const next: ExerciseStatus = row.status === 'published' ? 'draft' : 'published';
     setBusyId(row.id);
-    const { error: err } = await setStatus(row.id, next);
+    const { error: err } = await setStatus(row.id, next, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);
@@ -74,7 +74,7 @@ export function ExercisesScreen() {
   async function handleArchive(row: AdminExerciseRow) {
     if (!window.confirm(fr.exercises.archiveConfirm)) return;
     setBusyId(row.id);
-    const { error: err } = await archiveExercise(row.id);
+    const { error: err } = await archiveExercise(row.id, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);

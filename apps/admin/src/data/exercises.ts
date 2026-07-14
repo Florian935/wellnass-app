@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { MUSCLE_GROUPS, type Database, type MuscleGroup } from '@wellness/shared';
+import { logAudit } from './audit';
 
 /**
  * Couche data des exercices éditoriaux (US 8.2). Requêtes Supabase via
@@ -196,6 +197,14 @@ export async function saveExercise(input: ExerciseInput): Promise<{
     }
   }
 
+  // Best-effort, uniquement en succès complet (ligne + 2 traductions).
+  await logAudit({
+    action: input.id ? 'exercise.update' : 'exercise.create',
+    targetTable: 'exercises',
+    targetId: id,
+    targetLabel: input.nameFr,
+  });
+
   return { id, error: null };
 }
 
@@ -203,20 +212,37 @@ export async function saveExercise(input: ExerciseInput): Promise<{
 export async function setStatus(
   id: string,
   status: ExerciseStatus,
+  opts?: { label?: string },
 ): Promise<{ error: unknown }> {
   const { error } = await supabase
     .from('exercises')
     .update({ status })
     .eq('id', id)
     .is('owner_id', null); // éditorial uniquement
-  return { error };
+  if (error) return { error };
+
+  // Dépublication hors périmètre : on ne journalise que la publication.
+  if (status === 'published') {
+    await logAudit({
+      action: 'exercise.publish',
+      targetTable: 'exercises',
+      targetId: id,
+      targetLabel: opts?.label ?? null,
+      details: { status },
+    });
+  }
+
+  return { error: null };
 }
 
 /**
  * Archive un exercice éditorial (soft-delete) et ses traductions
  * (`deleted_at = now`). Séquentiel : l'exercice d'abord, puis ses traductions.
  */
-export async function archiveExercise(id: string): Promise<{ error: unknown }> {
+export async function archiveExercise(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
   const now = new Date().toISOString();
 
   const { error: exError } = await supabase
@@ -233,5 +259,16 @@ export async function archiveExercise(id: string): Promise<{ error: unknown }> {
     .update({ deleted_at: now })
     .eq('exercise_id', id)
     .is('owner_id', null); // traductions éditoriales uniquement
-  return { error: trError };
+  if (trError) {
+    return { error: trError };
+  }
+
+  await logAudit({
+    action: 'exercise.archive',
+    targetTable: 'exercises',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
 }
