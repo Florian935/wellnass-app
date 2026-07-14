@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 14/07/2026 — Ajouté — Plan d'implémentation US 8.10 : log d'audit admin (relu, Approved)
+
+Branche `feature/8.10-admin-log-audit`. Commit précédent : `e0005a1` (spec). Plan issu du skill
+`writing-plans`, relu par un sous-agent `plan-document-reviewer` (Approved, signatures vérifiées
+contre le code réel + migration validée contre 8.9).
+
+### Ajouté
+- **Plan d'implémentation** [docs/plans/8.10-admin-log-audit.md](docs/plans/8.10-admin-log-audit.md) :
+  9 tâches TDD, commits fréquents. Structure — `@wellness/shared/audit.ts` (union d'actions,
+  schéma Zod, clés libellés ; testé), migration `audit_log` (append-only, RLS super_admin, trigger
+  d'immuabilité, hors PowerSync), `apps/admin/src/data/audit.ts` (`logAudit` best-effort +
+  `listAudit` paginé), instrumentation des 4 couches data (rôles, exos, programmes, aliments),
+  écran `/audit` super_admin + route + nav + i18n, vérification d'ensemble.
+
+### Technique / Notes
+- **Écart assumé vs spec §7** (à valider) : `setStatus`/`archive*`/`revokeRole` ne disposent que d'un
+  `id`, pas du nom FR → ajout d'un **paramètre optionnel de libellé** passé par l'écran appelant
+  (additif, comportement de retour inchangé). `grantRole` gagne `.select('id')` + retourne l'id
+  d'attribution (log par branche écrivante). Publication tracée uniquement au passage à `published`
+  (dépublication non tracée). Import CSV = 1 entrée `food.import` (`details.count`).
+- **Checkpoint 🔴** à l'impl : migration `audit_log` via `db:push` + `db:types` (typecheck admin rouge
+  tant que non appliqué). Aucune sync rule (hors PowerSync).
+
 ## 14/07/2026 — Ajouté — Spec US 8.10 : log d'audit admin (cadrage validé)
 
 Branche `feature/8.10-admin-log-audit`. Commit précédent : `9626521`. Première des trois US de
