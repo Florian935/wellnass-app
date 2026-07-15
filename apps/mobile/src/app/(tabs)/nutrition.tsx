@@ -94,12 +94,14 @@ export default function NutritionScreen() {
   // Objectif effectif + bonus du jour SÉLECTIONNÉ : centralisés dans useDayCalorieTarget
   // (RN-02, mode forfait/auto + dépense des courses). Paramétré par `day` → la navigation
   // par jour reste correcte. Les macros cibles restent calées sur l'objectif de base
-  // (bonus non ventilé). `bonusSource` est disponible dans le retour du hook et sera
-  // consommé par le badge en Task 7 (libellé inchangé pour l'instant).
+  // (bonus non ventilé). `bonusSource` pilote le libellé du badge ci-dessous (course vs
+  // jour de séance forfait) ; `isLoading` évite un badge transitoire pendant le chargement.
   const {
     effectiveTarget,
     trainingBonus,
+    bonusSource,
     isTrainingDay: trainingApplies,
+    isLoading: targetLoading,
   } = useDayCalorieTarget(day);
 
   const manualSet =
@@ -202,9 +204,11 @@ export default function NutritionScreen() {
               <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>
                 {effectiveTarget != null ? `/ ${effectiveTarget} ${t('nutrition.kcal')}` : t('nutrition.kcal')}
               </Text>
-              {trainingApplies ? (
+              {trainingApplies && !targetLoading ? (
                 <Text style={[styles.trainingBadge, { color: colors.accent }]}>
-                  {t('journal.trainingDayBadge', { kcal: trainingBonus })}
+                  {t(bonusSource === 'run' ? 'journal.runDayBadge' : 'journal.trainingDayBadge', {
+                    kcal: trainingBonus,
+                  })}
                 </Text>
               ) : null}
             </View>

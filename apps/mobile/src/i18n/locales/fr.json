@@ -282,6 +282,7 @@
     "copyDayYesterday": "Copier toute la journée d'hier",
     "nothingYesterdayFull": "Rien à copier : la journée d'hier est vide.",
     "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
+    "runDayBadge": "+{{kcal}} kcal · course",
     "detail": {
       "quantity": "{{grams}} g",
       "close": "Fermer",
@@ -418,6 +419,7 @@
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
       "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
+      "runDayBadge": "+{{kcal}} kcal · course",
       "cta": "+ Ajouter un repas",
       "setGoal": "Définir mon objectif",
       "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour.",

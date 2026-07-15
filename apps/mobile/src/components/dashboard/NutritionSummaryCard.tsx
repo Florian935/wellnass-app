@@ -45,8 +45,16 @@ export function NutritionSummaryCard({ size = 'full' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { kcal, effectiveTarget, isTrainingDay, trainingBonus, macros, hasProfile, isLoading } =
-    useNutritionSummary();
+  const {
+    kcal,
+    effectiveTarget,
+    isTrainingDay,
+    trainingBonus,
+    bonusSource,
+    macros,
+    hasProfile,
+    isLoading,
+  } = useNutritionSummary();
 
   if (isLoading) return null;
 
@@ -103,10 +111,13 @@ export function NutritionSummaryCard({ size = 'full' }: { size?: WidgetSize }) {
           : t('home.nutrition.caloriesNoGoal', { kcal })}
       </Text>
 
-      {/* Badge jour d'entraînement (4.7) */}
+      {/* Badge jour d'entraînement (4.7) — libellé adapté à l'origine du bonus (RN-02) */}
       {isTrainingDay ? (
         <Text style={[styles.trainingBadge, { color: colors.accent }]}>
-          {t('home.nutrition.trainingDayBadge', { kcal: trainingBonus })}
+          {t(
+            bonusSource === 'run' ? 'home.nutrition.runDayBadge' : 'home.nutrition.trainingDayBadge',
+            { kcal: trainingBonus },
+          )}
         </Text>
       ) : null}
 
