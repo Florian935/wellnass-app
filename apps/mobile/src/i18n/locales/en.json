@@ -375,7 +375,16 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
-    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" }
+    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" },
+    "delta": {
+      "new": "new",
+      "a11y": {
+        "up": "up {{pct}} %",
+        "down": "down {{pct}} %",
+        "flat": "unchanged",
+        "new": "new, no comparison"
+      }
+    }
   },
   "home": {
     "greeting": "Hello 👋",
