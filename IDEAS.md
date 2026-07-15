@@ -20,6 +20,17 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/07/2026] 🆕 **Podométrie — suivi des pas au quotidien** : compter les **pas** de l'utilisateur
+  tout au long de la journée, en **arrière-plan**, **sans avoir à lancer une course** à chaque fois
+  (ce serait relou de démarrer une séance running juste pour compter ses pas quotidiens). **Doit
+  passer par l'accéléromètre du téléphone, pas par le GPS** : cas d'usage clé = marcher sur un **tapis
+  de marche** (walking pad) pendant le travail — le GPS ne bouge pas, donc pas, allure et distance ne
+  seraient pas comptés ; l'accéléromètre, lui, détecte le mouvement. À creuser : capteur/API pas natif
+  (Android step counter / Health Connect côté Android, `expo-sensors`/pédomètre) vs comptage maison
+  sur l'accéléromètre ; objectif de pas quotidien + streak/pastilles ; distinct du pilier Running (pas
+  = activité de fond, pas une séance) mais peut nourrir les analyses transverses (dépense, régularité).
+  Recoupe potentiellement l'intégration santé (Health Connect, US 9.9).
+
 - [15/07/2026] 🆕 **Board de suggestions utilisateurs + votes (feature request board)** : un endroit
   dans l'app (emplacement à définir) où les utilisateurs **soumettent** des idées d'amélioration ou de
   nouvelles fonctionnalités, et où les **autres utilisateurs votent** (upvote) pour celles qu'ils
