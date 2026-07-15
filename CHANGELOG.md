@@ -10,6 +10,15 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recette : fix typage UNION (personal_records)
+
+**Corrigé**
+- `supabase/scripts/recette-dataset.sql` (section 9) — le `UNION ALL` insérait des `null` **nus** dans
+  `reps` / `weight_kg` ; Postgres les typait en `text` → `ERROR 42804: column "reps" is of type integer
+  but expression is of type text` (remontée Florian à l'exécution). Casts explicites `null::int` /
+  `null::numeric` dans les 3 branches. Le bloc `DO $$` étant **transactionnel**, l'échec n'avait **rien
+  appliqué** (effacement inclus → données intactes). Commit précédent : `008c1cd`.
+
 ### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — affichage : graphiques débordants + filtre course multiligne
 
 **Corrigé**

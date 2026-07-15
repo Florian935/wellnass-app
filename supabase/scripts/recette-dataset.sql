@@ -413,15 +413,15 @@ begin
     )
   )
   select gen_random_uuid(), v_user, exercise_id, 'max_weight',
-         round(sess_max, 1), null, sess_max, workout_id, finished_at
+         round(sess_max, 1), null::int, sess_max, workout_id, finished_at
   from ranked where run_max is null or sess_max > run_max
   union all
   select gen_random_uuid(), v_user, exercise_id, 'estimated_1rm',
-         round(sess_1rm, 1), null, null, workout_id, finished_at
+         round(sess_1rm, 1), null::int, null::numeric, workout_id, finished_at
   from ranked where run_1rm is null or sess_1rm > run_1rm
   union all
   select gen_random_uuid(), v_user, exercise_id, 'best_volume',
-         round(sess_vol, 1), null, null, workout_id, finished_at
+         round(sess_vol, 1), null::int, null::numeric, workout_id, finished_at
   from ranked where run_vol is null or sess_vol > run_vol;
 
   ---------------------------------------------------------------------------
