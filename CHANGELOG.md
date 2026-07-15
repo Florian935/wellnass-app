@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recettes device TOUTES validées (TODO)
+
+**Modifié**
+- `TODO.md` — les **6 US en attente de recette** (MUSC-04, MUSC-05, META-06, 4.32, RN-01/02 + 8.10)
+  **recettées et validées par Florian le 16/07/2026** (APK release + dataset de recette ; 8.10 côté
+  back-office web) : bandeau ⛔ « recettes en attente » → **✅ TOUTES VALIDÉES**, cases `[x]`, mentions
+  « 🔴 Reste recette » / « PAS ENCORE RECETTÉ » remplacées par le statut validé. **8.7 (modération) →
+  8.8 (utilisateurs) débloquées** (dépendaient de la recette 8.10).
+
+**Notes**
+- Mise à jour **documentaire** (suivi) uniquement — aucun code ni schéma. Aucun secret.
+  Commit précédent : `bc2ef62`.
+
 ### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recette : fix typage UNION (personal_records)
 
 **Corrigé**

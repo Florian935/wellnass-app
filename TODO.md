@@ -10,17 +10,21 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## ⛔ À NE PAS OUBLIER — recettes en attente
+> ## ✅ Recettes device — TOUTES VALIDÉES (Florian, 16/07/2026)
 >
-> - [ ] **🔴 RECETTE US 8.10 — Log d'audit admin** — code **mergé sur `dev`** (`d7b2976`, 14/07/2026),
->   **PAS ENCORE RECETTÉ**. Recette prévue par **Florian le soir du 15/07/2026**. Dérouler le plan de
+> Les 6 US ci-dessous ont été **recettées et validées par Florian le 16/07/2026** (APK release
+> autonome + dataset de recette `supabase/scripts/recette-dataset.sql`). Historique des plans de
+> recette conservé ci-dessous pour trace.
+>
+> - [x] **✅ RECETTE US 8.10 — Log d'audit admin** — code **mergé sur `dev`** (`d7b2976`, 14/07/2026),
+>   **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. Recette prévue par **Florian le soir du 15/07/2026**. Dérouler le plan de
 >   recette complet (accès `/audit` super_admin, 1 action de chaque type → entrée correcte, no-op/
 >   dépublication/sous-éditions non tracées, **immuabilité** update/delete refusés en SQL, filtres +
 >   pagination, i18n). Point 4 (publication via formulaire d'édition = `exercise.update`) **accepté**.
->   Migration déjà appliquée sur le cloud. **Ne pas démarrer 8.7/8.8 avant d'avoir recetté et validé 8.10.**
+>   Migration déjà appliquée sur le cloud. **8.10 validée → 8.7 (modération) puis 8.8 (utilisateurs) débloquées.**
 >
-> - [ ] **🔴 RECETTE US 4.32 — Alerte croisée déficit + fort volume** — code **mergé sur `dev`**
->   (15/07/2026), **PAS ENCORE RECETTÉ**. Recette prévue par **Florian le soir du 15/07/2026**.
+> - [x] **✅ RECETTE US 4.32 — Alerte croisée déficit + fort volume** — code **mergé sur `dev`**
+>   (15/07/2026), **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. Recette prévue par **Florian le soir du 15/07/2026**.
 >   Dérouler le plan : (1) provoquer l'alerte (≥ 4 jours loggés, moyenne ~≥ 15 % sous l'objectif +
 >   volume muscu 7 j ≥ 8000) → widget « Nutrition & charge » sur le dashboard avec le % ; (2) la lever
 >   (repli) ; (3) seuil < 4 jours → pas d'alerte ; (4) **gating piliers** (désactiver Nutrition ou
@@ -28,8 +32,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   l'écran Stats nutrition** ; (7) mode édition dashboard (cadre vide = constat d'ergonomie) ;
 >   (8) offline. JS pur → reload Metro suffit (pas de nouveau build). Widget conditionnel, 100 % client.
 >
-> - [ ] **🔴 RECETTE US RN-01/RN-02 — Dépense course → objectif du jour** — code **livré sur la branche
->   `feature/rn01-depense-course-objectif`**, **PAS ENCORE RECETTÉ**. ⚠️ **AVANT TOUT : appliquer la
+> - [x] **✅ RECETTE US RN-01/RN-02 — Dépense course → objectif du jour** — code **livré sur la branche
+>   `feature/rn01-depense-course-objectif`**, **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. ⚠️ **AVANT TOUT : appliquer la
 >   migration cloud** (`npm run db:push` de `20260715152227_nutrition_training_bonus_mode` + `npm run
 >   db:types`) — **impératif AVANT de basculer un device synchronisé en mode Auto**, sinon la file de
 >   synchro PowerSync peut se bloquer (colonne inconnue côté Postgres). Puis dérouler : (1) mode
@@ -40,8 +44,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   (objectif/badge du jour affiché, pas d'aujourd'hui) ; (7) **gating** running+nutrition ; (8) i18n
 >   FR/EN ; (9) offline. Après migration, JS pur → reload Metro suffit.
 >
-> - [ ] **🔴 RECETTE US MUSC-04 — Courbe 1RM estimé + période « tout »** — code **livré sur la branche
->   `feature/musc04-courbe-1rm-periode-tout`** (mergée `dev`), **PAS ENCORE RECETTÉ**. Écran Muscu →
+> - [x] **✅ RECETTE US MUSC-04 — Courbe 1RM estimé + période « tout »** — code **livré sur la branche
+>   `feature/musc04-courbe-1rm-periode-tout`** (mergée `dev`), **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. Écran Muscu →
 >   Progression → sélectionner un exercice avec historique : (1) les **3 métriques** (charge max /
 >   volume / **1RM estimé**) tracent une courbe cohérente ; (2) les **4 périodes** (30 j / 90 j / 1 an /
 >   **tout**) ; (3) `max_weight`/`volume` **inchangées** (non-régression) ; (4) le 1RM estimé suit le
@@ -49,16 +53,16 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   → **absent** de la courbe 1RM (voulu) ; (6) empty states (exercice sans historique) ; (7) i18n FR/EN.
 >   **Pas de migration, JS pur** → reload Metro suffit (pas de nouveau build).
 >
-> - [ ] **🔴 RECETTE US META-06 — Comparaison période N vs N-1** — code **livré & mergé sur `dev`**,
->   **PAS ENCORE RECETTÉ**. Vérifier le badge « vs période précédente » (flèche + %, ton neutre) sur
+> - [x] **✅ RECETTE US META-06 — Comparaison période N vs N-1** — code **livré & mergé sur `dev`**,
+>   **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. Vérifier le badge « vs période précédente » (flèche + %, ton neutre) sur
 >   **3 surfaces** : (1) **Course** historique → sous distance/temps/nb, delta en semaine ET mois ;
 >   période **« tout » → aucun badge** ; (2) **Nutrition** stats → carte apports moyens, delta **kcal**
 >   en 7 j ET 30 j ; (3) **Muscu** Progression → volume hebdo **total** + delta « vs semaine
 >   précédente ». Cas **« nouveau »** (période précédente vide) ; lisibilité thème clair/sombre ;
 >   non-régression des chiffres courants. **Pas de migration, JS pur** → reload Metro suffit.
 >
-> - [ ] **🔴 RECETTE US MUSC-05 — Équilibre musculaire (14 j)** — code **livré & mergé sur `dev`**,
->   **PAS ENCORE RECETTÉ**. Écran Muscu → Progression, nouvelle section « Équilibre musculaire (14 j) » :
+> - [x] **✅ RECETTE US MUSC-05 — Équilibre musculaire (14 j)** — code **livré & mergé sur `dev`**,
+>   **RECETTÉ & VALIDÉ (Florian, 16/07/2026) ✅**. Écran Muscu → Progression, nouvelle section « Équilibre musculaire (14 j) » :
 >   (1) barres **par nombre de séries** par groupe, colorées (délaissé = doré, équilibré = bordeaux,
 >   sur-représenté = grisé) ; (2) **alerte douce** listant les groupes délaissés quand l'historique 14 j
 >   est **≥ 12 séries** ; (3) historique **maigre** (< 12 séries) → barres possibles mais **pas d'alerte** ;
@@ -71,7 +75,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 16/07/2026 (Affichage corrigé (§🐞, recette device validée Florian sur APK release) : graphiques qui débordaient de leur carte (largeur mesurée via `onLayout` + axe Y réparti — `ProgressLineChart`/`MuscleVolumeBarChart`) et filtre course « Semaine/Mois/Depuis le début » passé en `Segment scrollable` ; 100 % JS, reload Metro. Précédemment : Recette — dataset corrigé : la courbe « charge max » lit `personal_records` (1 point = 1 record battu) → le dataset sème désormais l'**historique des paliers** (max_weight/1RM/volume, une ligne par record battu, datée de la séance) au lieu d'un point unique ; contrôle « paliers charge max DC » ajouté à `recette-verification.sql` ; idée **infobulle au tap sur les graphiques** captée (IDEAS). Précédemment : Bug consigné (§🐞) : édition/suppression d'un aliment de repas — geste peu découvrable + édition limitée à la quantité (remontée Florian) ; à reproduire device + spec courte avant fix. Précédemment : Outillage de recette **sur device sans EAS** : scripts SQL `recette-dataset.sql` (dataset ~3 mois, une transaction, hard delete ciblé `v_email`) + `recette-verification.sql` (grille de contrôles) couvrant MUSC-04/05, META-06, 4.32, RN-01/02 ; doc `dev-build-android-local.md` enrichie du **mode B — APK autonome release** (`gradlew.bat assembleRelease`, hors quota EAS, install sans fil). Aucun code applicatif ni schéma touché). Précédemment : 15/07/2026 (US MUSC-05 équilibre musculaire par groupe (14 j) — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; section `/progress` barres par séries colorées + alerte groupes délaissés, `computeMuscleBalance` + `useMuscleBalance`, 100 % offline sans migration ; ratio push/pull → MUSC-11 ; catalogue MUSC-05 → ✅ ; reste recette device. Précédemment : US META-06 comparaison période N vs N-1 — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; brique transverse `percentChange`/`previousPeriodTodayKey` + `DeltaBadge` mutualisé, deltas sur 3 surfaces (running/nutrition/muscu), 100 % offline sans migration ; catalogue META-06 → ✅ ; reste recette device. Précédemment : US MUSC-04 courbe 1RM estimé + période « tout » — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; clôture du delta vs spec 6.2 (écran `/progress` existait déjà à ~80 %) ; helper `sessionBestEstimated1RM`, métrique 1RM par séance + période tout, 100 % offline sans migration ; catalogue MUSC-04 → ✅ ; reste recette device. Précédemment : US RN-01/RN-02 dépense course → objectif du jour — **code livré** (subagent-driven, revues par tâche + revue finale *prête à merger*, aucun bloquant) ; 2ᵉ croisement inter-piliers running↔nutrition Phase A ; réglage Forfait/Auto, hook centralisé `useDayCalorieTarget`, badge « · course ». **🔴 Recette en attente — Florian** : migration `training_bonus_mode` (`db:push`+`db:types`) IMPÉRATIVE avant mode Auto sur device synchronisé (sinon file PowerSync bloquée), puis recette (voir bandeau ⛔). Précédemment : US 4.32 alerte croisée déficit+volume — **code livré & mergé sur `dev`** (subagent-driven, revue finale ready to merge) ; 1ʳᵉ stat croisée inter-piliers Phase A ; v1 faible migrée depuis l'écran Stats vers un widget dashboard ; reste recette device. Précédemment : US 8.10 log d'audit admin — **code mergé sur `dev`** (subagent-driven, revue finale ready to merge), migration appliquée cloud + db:types. **🔴 Recette en attente — Florian, soir du 15/07** (voir bandeau ⛔ en tête). Point 4 accepté. 1ʳᵉ des 3 US de gouvernance admin restantes (8.10 → 8.7 → 8.8). Précédemment : recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+*Dernière mise à jour : 16/07/2026 (**Recettes device — TOUTES VALIDÉES (Florian, 16/07/2026)** : les 6 US en attente (MUSC-04, MUSC-05, META-06, 4.32, RN-01/02 via APK release + dataset de recette ; 8.10 côté back-office web) recettées et validées → bandeau ⛔ passé en ✅, US cochées `[x]` dans « En cours » ; **8.7 (modération) → 8.8 (utilisateurs) débloquées**. Précédemment : Affichage corrigé (§🐞, recette device validée Florian sur APK release) : graphiques qui débordaient de leur carte (largeur mesurée via `onLayout` + axe Y réparti — `ProgressLineChart`/`MuscleVolumeBarChart`) et filtre course « Semaine/Mois/Depuis le début » passé en `Segment scrollable` ; 100 % JS, reload Metro. Précédemment : Recette — dataset corrigé : la courbe « charge max » lit `personal_records` (1 point = 1 record battu) → le dataset sème désormais l'**historique des paliers** (max_weight/1RM/volume, une ligne par record battu, datée de la séance) au lieu d'un point unique ; contrôle « paliers charge max DC » ajouté à `recette-verification.sql` ; idée **infobulle au tap sur les graphiques** captée (IDEAS). Précédemment : Bug consigné (§🐞) : édition/suppression d'un aliment de repas — geste peu découvrable + édition limitée à la quantité (remontée Florian) ; à reproduire device + spec courte avant fix. Précédemment : Outillage de recette **sur device sans EAS** : scripts SQL `recette-dataset.sql` (dataset ~3 mois, une transaction, hard delete ciblé `v_email`) + `recette-verification.sql` (grille de contrôles) couvrant MUSC-04/05, META-06, 4.32, RN-01/02 ; doc `dev-build-android-local.md` enrichie du **mode B — APK autonome release** (`gradlew.bat assembleRelease`, hors quota EAS, install sans fil). Aucun code applicatif ni schéma touché). Précédemment : 15/07/2026 (US MUSC-05 équilibre musculaire par groupe (14 j) — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; section `/progress` barres par séries colorées + alerte groupes délaissés, `computeMuscleBalance` + `useMuscleBalance`, 100 % offline sans migration ; ratio push/pull → MUSC-11 ; catalogue MUSC-05 → ✅ ; reste recette device. Précédemment : US META-06 comparaison période N vs N-1 — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; brique transverse `percentChange`/`previousPeriodTodayKey` + `DeltaBadge` mutualisé, deltas sur 3 surfaces (running/nutrition/muscu), 100 % offline sans migration ; catalogue META-06 → ✅ ; reste recette device. Précédemment : US MUSC-04 courbe 1RM estimé + période « tout » — **code livré & mergé sur `dev`** (subagent-driven, revue finale prête à merger) ; clôture du delta vs spec 6.2 (écran `/progress` existait déjà à ~80 %) ; helper `sessionBestEstimated1RM`, métrique 1RM par séance + période tout, 100 % offline sans migration ; catalogue MUSC-04 → ✅ ; reste recette device. Précédemment : US RN-01/RN-02 dépense course → objectif du jour — **code livré** (subagent-driven, revues par tâche + revue finale *prête à merger*, aucun bloquant) ; 2ᵉ croisement inter-piliers running↔nutrition Phase A ; réglage Forfait/Auto, hook centralisé `useDayCalorieTarget`, badge « · course ». **🔴 Recette en attente — Florian** : migration `training_bonus_mode` (`db:push`+`db:types`) IMPÉRATIVE avant mode Auto sur device synchronisé (sinon file PowerSync bloquée), puis recette (voir bandeau ⛔). Précédemment : US 4.32 alerte croisée déficit+volume — **code livré & mergé sur `dev`** (subagent-driven, revue finale ready to merge) ; 1ʳᵉ stat croisée inter-piliers Phase A ; v1 faible migrée depuis l'écran Stats vers un widget dashboard ; reste recette device. Précédemment : US 8.10 log d'audit admin — **code mergé sur `dev`** (subagent-driven, revue finale ready to merge), migration appliquée cloud + db:types. **🔴 Recette en attente — Florian, soir du 15/07** (voir bandeau ⛔ en tête). Point 4 accepté. 1ʳᵉ des 3 US de gouvernance admin restantes (8.10 → 8.7 → 8.8). Précédemment : recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -232,32 +236,29 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **US MUSC-05 — Équilibre musculaire par groupe (14 j)** (`feature/musc05-equilibre-groupes`,
+- [x] **US MUSC-05 — Équilibre musculaire par groupe (14 j)** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/musc05-equilibre-groupes`,
   15/07/2026) — **spec + plan validés**, **code livré & mergé sur `dev`** (subagent-driven, revues par
   tâche + revue finale *prête à merger*, aucun bloquant). Nouvelle section `/progress` : barres **par
   séries** colorées (délaissé/équilibré/sur-représenté vs cible uniforme 1/6) + alerte douce des
   groupes délaissés (≥ 12 séries sur 14 j). Brique pure `computeMuscleBalance` (testée) + hook
   `useMuscleBalance` (14 j) + `MuscleVolumeBarChart` étendu (couleur par barre, rétrocompatible). i18n
   FR/EN, **100 % offline, pas de migration**. 663 tests verts. Ratio pousser/tirer → **MUSC-11** (à
-  cadrer, nécessite le type de mouvement = migration). Catalogue MUSC-05 → ✅. **🔴 Reste recette
-  device** (voir bandeau ⛔).
-- [~] **US META-06 — Comparaison période N vs N-1 (delta)** (`feature/meta06-comparaison-periode`,
+  cadrer, nécessite le type de mouvement = migration). Catalogue MUSC-05 → ✅. **✅ Recette device faite (Florian, 16/07/2026).**
+- [x] **US META-06 — Comparaison période N vs N-1 (delta)** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/meta06-comparaison-periode`,
   15/07/2026) — **spec + plan validés**, **code livré & mergé sur `dev`** (subagent-driven, revues par
   tâche + revue finale *prête à merger*, aucun bloquant). Brique transverse Phase A : `percentChange` +
   `previousPeriodTodayKey` (shared, testés), composant mutualisé `DeltaBadge` (ton neutre), hooks
   `useRunStatsAt`/`useWeeklyVolumeComparison`. Deltas « vs période précédente » sur **3 surfaces**
   (running distance/temps/nb, nutrition kcal moyens, muscu volume hebdo total). i18n FR/EN, **100 %
-  offline, pas de migration**. 658 tests verts. Catalogue META-06 → ✅. **🔴 Reste recette device**
-  (voir bandeau ⛔).
-- [~] **US MUSC-04 — Courbe 1RM estimé + période « tout »** (`feature/musc04-courbe-1rm-periode-tout`,
+  offline, pas de migration**. 658 tests verts. Catalogue META-06 → ✅. **✅ Recette device faite (Florian, 16/07/2026).**
+- [x] **US MUSC-04 — Courbe 1RM estimé + période « tout »** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/musc04-courbe-1rm-periode-tout`,
   15/07/2026) — **spec + plan validés**, **code livré** (subagent-driven, revues par tâche + revue
   finale *prête à merger*, aucun bloquant). Clôture du delta MUSC-04 vs spec 6.2 (l'écran `/progress`
   existait déjà à ~80 %) : helper pur `sessionBestEstimated1RM` (shared, testé), métrique 1RM estimé
   **par séance** + période **tout** dans `useExerciseProgression` (réutilise `estimate1RM`, pas d'Epley
   SQL), toggles 3 métriques × 4 périodes, i18n FR/EN. `max_weight`/`volume` inchangées. **Pas de
-  migration, 100 % offline.** 647 tests verts. Catalogue MUSC-04 → ✅. **🔴 Reste recette device**
-  (voir bandeau ⛔).
-- [~] **US RN-01/RN-02 — Dépense course → objectif du jour** (`feature/rn01-depense-course-objectif`,
+  migration, 100 % offline.** 647 tests verts. Catalogue MUSC-04 → ✅. **✅ Recette device faite (Florian, 16/07/2026).**
+- [x] **US RN-01/RN-02 — Dépense course → objectif du jour** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/rn01-depense-course-objectif`,
   15/07/2026) — **spec + plan validés** (brainstorming Florian + revues spec/plan *Approved*). 2ᵉ
   croisement inter-piliers (running↔nutrition), Phase A du
   [catalogue d'analyses](docs/product/analyses-donnees.md) (déterministe, gratuit, offline). Réglage
@@ -269,9 +270,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   bloquant, non-régression Forfait prouvée) : `estimateRunCalories` + `dayCalorieBonus` (shared, testés),
   câblage repository + schéma PowerSync, migration `training_bonus_mode`, hook centralisé
   `useDayCalorieTarget(dayKey)`, sélecteur profil, badge « · course », i18n FR/EN. typecheck/tests/lint
-  verts. **Checkpoint 🔴 Florian** : `db:push` + `db:types` **puis** recette (voir bandeau ⛔ — migration
-  IMPÉRATIVE avant mode Auto sur device synchronisé).
-- [~] **US 4.32 — Alerte croisée déficit + fort volume** (`feature/4.32-alerte-deficit-volume`,
+  verts. **✅ Migration `training_bonus_mode` appliquée + recette device validée (Florian, 16/07/2026)** :
+  mode Forfait inchangé, Auto = dépense course (somme le même jour), repli forfait jour muscu seul.
+- [x] **US 4.32 — Alerte croisée déficit + fort volume** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/4.32-alerte-deficit-volume`,
   15/07/2026) — **spec validée** (brainstorming Florian + relecture *Approved*). Première **stat
   croisée inter-piliers** (muscu↔nutrition), Phase A du [catalogue d'analyses](docs/product/analyses-donnees.md)
   (déterministe, gratuit, offline, **sans IA**). Widget dashboard conditionnel (déficit ≥ 15 % sur ≥ 4
@@ -286,9 +287,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   hook `useDeficitVolumeAlert` (gating muscu+nutrition, cible de base, volume 7 j), widget
   `DeficitVolumeAlertCard` (rend `null` hors alerte), i18n FR/EN, retrait de l'ancienne alerte sur
   `nutrition-stats`. typecheck/tests(631)/lint verts. **100 % client, offline, pas de checkpoint 🔴.**
-  **Reste 🔴 recette (Florian)** : provoquer/lever l'alerte, gating piliers, disparition écran Stats,
-  cadre vide en mode édition. _(Export web KO = pré-existant op-sqlite, hors 4.32.)_
-- [~] **US 8.10 — Log d'audit admin** (`feature/8.10-admin-log-audit`, 14/07/2026) — **cadrage validé**
+  **✅ Recette device validée (Florian, 16/07/2026)** : alerte provoquée/levée, gating piliers,
+  disparition de l'ancienne alerte écran Stats, cadre vide en mode édition. _(Export web KO = pré-existant op-sqlite, hors 4.32.)_
+- [x] **US 8.10 — Log d'audit admin** — ✅ **recette validée (Florian, 16/07/2026, back-office web)** (`feature/8.10-admin-log-audit`, 14/07/2026) — **cadrage validé**
   (brainstorming Florian + relecture sous-agent *Approved*). Première des 3 US de gouvernance admin
   restantes (ordre : **8.10 → 8.7 modération → 8.8 utilisateurs**). Journal **append-only non
   supprimable** des écritures éditoriales + rôles : table `audit_log` (web/admin, hors PowerSync,
@@ -301,9 +302,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   module `@wellness/shared/audit.ts` (testé), migration `audit_log` (append-only, RLS super_admin,
   trigger immuabilité, **appliquée cloud CLI + db:types**), `data/audit.ts` (`logAudit` best-effort +
   `listAudit`), instrumentation rôles/exos/programmes/aliments, écran `/audit` super_admin (filtres +
-  pagination). typecheck/tests(625)/lint/build verts. **Reste 🔴 recette (Florian/Damien)** :
-  déclencher chaque type d'action → entrées visibles dans `/audit` ; tenter modif/suppr d'entrée → refus.
-  **Recette prévue Florian le 15/07/2026 au soir** (voir bandeau ⛔ en tête de fichier). Point 4
+  pagination). typecheck/tests(625)/lint/build verts. **✅ Recette validée (Florian, 16/07/2026, back-office web)** :
+  chaque type d'action → entrée visible dans `/audit` ; modif/suppr d'entrée refusée (immuabilité) ;
+  filtres/pagination OK. **8.7 (modération) → 8.8 (utilisateurs) débloquées.** Point 4
   (publication d'exercice via formulaire d'édition = `exercise.update`) **accepté** — pas de suivi.
 - [~] **Panel nutritionnel étendu (AG détaillés + oméga + toutes vitamines/minéraux)** — **code livré
   & revu (*Approved*)** (`feature/panel-nutritionnel-etendu`, 14/07/2026). Prolonge 4.33 (panel étendu
