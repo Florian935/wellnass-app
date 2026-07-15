@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — affichage : graphiques débordants + filtre course multiligne
+
+**Corrigé**
+- [ProgressLineChart.tsx](apps/mobile/src/components/charts/ProgressLineChart.tsx) /
+  [MuscleVolumeBarChart.tsx](apps/mobile/src/components/charts/MuscleVolumeBarChart.tsx) — les
+  graphiques débordaient à droite de leur carte (visible Nutrition → Stats). Largeur codée en dur
+  (`window − 48`) sans compter l'axe Y de `react-native-gifted-charts`, rendu **hors** de `width`
+  (empreinte = `yAxisLabelWidth + width + endSpacing`). Largeur désormais **mesurée** via `onLayout`
+  et répartie (axe Y 44 px + marge 12 px + tracé) → tient dans la carte partout (nutrition, course,
+  muscu). Repli au 1ᵉʳ rendu = écran − paddings usuels (garde le test smoke vert).
+- [running-history/index.tsx](apps/mobile/src/app/running-history/index.tsx) — `Segment` de la card
+  « Statistiques » passé en `scrollable` : « Semaine / Mois / Depuis le début » sur une seule ligne
+  défilable (fin du retour à la ligne).
+
+**Notes**
+- **100 % JS** (aucun module natif) → reload Metro suffit, pas de build. **Recette device validée par
+  Florian (16/07/2026)** sur APK release. typecheck/lint/tests verts (charts smoke 6/6, shared 663).
+  Aucun secret. Commit précédent : `b19df7c`. Reste : relecture Damien.
+
 ### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recette : dataset charge max (historique des paliers) + idée infobulle
 
 **Corrigé**

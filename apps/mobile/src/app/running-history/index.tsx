@@ -192,6 +192,7 @@ function StatsSection() {
         value={period}
         onChange={setPeriod}
         label={(p) => t(`running.history.${p}`)}
+        scrollable
       />
       <View style={styles.statsRow}>
         {cards.map((c) => (
