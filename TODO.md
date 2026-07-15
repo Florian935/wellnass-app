@@ -18,6 +18,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   dépublication/sous-éditions non tracées, **immuabilité** update/delete refusés en SQL, filtres +
 >   pagination, i18n). Point 4 (publication via formulaire d'édition = `exercise.update`) **accepté**.
 >   Migration déjà appliquée sur le cloud. **Ne pas démarrer 8.7/8.8 avant d'avoir recetté et validé 8.10.**
+>
+> - [ ] **🔴 RECETTE US 4.32 — Alerte croisée déficit + fort volume** — code **mergé sur `dev`**
+>   (15/07/2026), **PAS ENCORE RECETTÉ**. Recette prévue par **Florian le soir du 15/07/2026**.
+>   Dérouler le plan : (1) provoquer l'alerte (≥ 4 jours loggés, moyenne ~≥ 15 % sous l'objectif +
+>   volume muscu 7 j ≥ 8000) → widget « Nutrition & charge » sur le dashboard avec le % ; (2) la lever
+>   (repli) ; (3) seuil < 4 jours → pas d'alerte ; (4) **gating piliers** (désactiver Nutrition ou
+>   Muscu → widget disparaît) ; (5) message + i18n FR/EN ; (6) **l'ancienne alerte a bien disparu de
+>   l'écran Stats nutrition** ; (7) mode édition dashboard (cadre vide = constat d'ergonomie) ;
+>   (8) offline. JS pur → reload Metro suffit (pas de nouveau build). Widget conditionnel, 100 % client.
 
 *Dernière mise à jour : 15/07/2026 (US 4.32 alerte croisée déficit+volume — **code livré & mergé sur `dev`** (subagent-driven, revue finale ready to merge) ; 1ʳᵉ stat croisée inter-piliers Phase A ; v1 faible migrée depuis l'écran Stats vers un widget dashboard ; reste recette device. Précédemment : US 8.10 log d'audit admin — **code mergé sur `dev`** (subagent-driven, revue finale ready to merge), migration appliquée cloud + db:types. **🔴 Recette en attente — Florian, soir du 15/07** (voir bandeau ⛔ en tête). Point 4 accepté. 1ʳᵉ des 3 US de gouvernance admin restantes (8.10 → 8.7 → 8.8). Précédemment : recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
