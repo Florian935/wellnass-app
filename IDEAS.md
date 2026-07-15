@@ -20,6 +20,18 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/07/2026] 🆕 **Module dédié Powerlifting (SBD)** : mode/module spécifique pour les pratiquants de
+  powerlifting, avec **squat / bench / deadlift** au centre. Spécificités attendues : travail en
+  **pourcentages du 1RM** (le max devient la référence, pas juste une charge saisie), **RPE / RIR**,
+  planification de **blocs** (accumulation → intensification → **peaking / prépa compétition**),
+  **calculateur de barre + disques**, suivi des **tentatives** et des **compétitions** (fédération,
+  catégorie de poids, total, points **Wilks / DOTS / IPF**), historique des maxes par mouvement.
+  **Gros besoin anticipé** sur l'app **et levier d'acquisition** : démarchage prévu de nombreux
+  **coachs powerlifting** → à croiser avec [[module-coach-coache]]. _À creuser :_ cible **ultérieure**
+  (pas V1) ; réutilise le socle muscu existant (exercices, séances, record 1RM Epley déjà en place)
+  mais ajoute % du max, RPE/RIR, calculateur de disques et des objets « compétition ». Recoupe aussi
+  le futur [[catalogue-analyses]] (analyses intra-muscu : progression au % du max, courbe de force).
+
 - [13/07/2026] 🆕 **Suggestion de compléments alimentaires + partenariats vendeurs** : recommander des
   compléments (protéines, créatine, oméga-3, vitamine D, magnésium…) en croisant **alimentation loggée**
   (carences vs apports, micronutriments US 4.33), **profil nutritionnel** (objectif, TDEE, macros/RDA),
