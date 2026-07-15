@@ -62,6 +62,28 @@ export function estimate1RM(weightKg: number, reps: number): number {
   return Math.round(raw * 100) / 100;
 }
 
+/**
+ * Calcule le meilleur 1RM estimé d'une séance à partir de ses séries.
+ *
+ * Seules les séries ayant à la fois `reps` et `weightKg` renseignés
+ * (non `null`) sont prises en compte ; le meilleur (maximum) des
+ * `estimate1RM` obtenus est retourné.
+ *
+ * @param sets - Séries de la séance (reps et poids potentiellement `null`).
+ * @returns Meilleur 1RM estimé, ou `0` si aucune série n'est qualifiante.
+ */
+export function sessionBestEstimated1RM(
+  sets: ReadonlyArray<{ reps: number | null; weightKg: number | null }>,
+): number {
+  let best = 0;
+  for (const s of sets) {
+    if (s.reps == null || s.weightKg == null) continue;
+    const oneRm = estimate1RM(s.weightKg, s.reps);
+    if (oneRm > best) best = oneRm;
+  }
+  return best;
+}
+
 // ---------------------------------------------------------------------------
 // Calcul des records d'une séance
 // ---------------------------------------------------------------------------

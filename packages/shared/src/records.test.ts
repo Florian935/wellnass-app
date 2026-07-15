@@ -5,6 +5,7 @@ import {
   personalRecordRowSchema,
   estimate1RM,
   computeWorkoutRecords,
+  sessionBestEstimated1RM,
 } from './records';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -429,5 +430,36 @@ describe('computeWorkoutRecords', () => {
     ];
     const records = computeWorkoutRecords(exercises);
     expect(records).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sessionBestEstimated1RM
+// ---------------------------------------------------------------------------
+describe('sessionBestEstimated1RM', () => {
+  it('max des 1RM estimés des séries valides d’une séance', () => {
+    // estimate1RM(90,10)=90×(1+10/30)=120 ; estimate1RM(100,5)≈116.67 → max 120
+    expect(
+      sessionBestEstimated1RM([
+        { reps: 5, weightKg: 100 },
+        { reps: 10, weightKg: 90 },
+      ]),
+    ).toBe(estimate1RM(90, 10));
+  });
+  it('ignore les séries à reps/poids manquant', () => {
+    expect(
+      sessionBestEstimated1RM([
+        { reps: null, weightKg: 100 },
+        { reps: 8, weightKg: 80 },
+        { reps: 5, weightKg: null },
+      ]),
+    ).toBe(estimate1RM(80, 8));
+  });
+  it('0 si aucune série qualifiante', () => {
+    expect(sessionBestEstimated1RM([])).toBe(0);
+    expect(sessionBestEstimated1RM([{ reps: null, weightKg: null }])).toBe(0);
+  });
+  it('reps ≤ 1 → renvoie le poids (pas de bonus Epley)', () => {
+    expect(sessionBestEstimated1RM([{ reps: 1, weightKg: 120 }])).toBe(120);
   });
 });
