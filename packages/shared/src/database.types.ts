@@ -594,6 +594,7 @@ export type Database = {
           meals: Json | null
           objective: string | null
           restrictions: Json
+          training_bonus_mode: string
           training_day_bonus: number
           updated_at: string
           user_id: string
@@ -611,6 +612,7 @@ export type Database = {
           meals?: Json | null
           objective?: string | null
           restrictions?: Json
+          training_bonus_mode?: string
           training_day_bonus?: number
           updated_at?: string
           user_id: string
@@ -628,6 +630,7 @@ export type Database = {
           meals?: Json | null
           objective?: string | null
           restrictions?: Json
+          training_bonus_mode?: string
           training_day_bonus?: number
           updated_at?: string
           user_id?: string
