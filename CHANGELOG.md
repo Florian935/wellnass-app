@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 15/07/2026 — `feature/meta06-comparaison-periode` — META-06 livrée (delta N vs N-1, 3 surfaces)
+
+**Ajouté**
+- `percentChange(current, previous)` + `previousPeriodTodayKey(todayKey, period)` + types
+  (`packages/shared/src/comparison.ts`, testés) — écart % + direction ↑/↓/→ (`previous=0` → `null`),
+  et clé de jour de la période précédente (semaine −7 j, mois précédent, `all` → null).
+- Composant mutualisé `DeltaBadge` (`apps/mobile/src/components/DeltaBadge.tsx`) — flèche + %
+  (ou « nouveau »), **ton neutre** (couleur accent), a11y i18n. i18n `stats.delta.*` FR/EN.
+- Hook `useRunStatsAt(period, todayKey)` (run-repository) — agrégat course sur une fenêtre décalée ;
+  `useRunStats` délègue (comportement inchangé).
+- Hook `useWeeklyVolumeComparison()` (records-repository) — volume muscu total semaine courante vs
+  précédente (2 `SUM` bornés, jointure `exercises` alignée sur l'histogramme).
+- Deltas « vs période précédente » sur **3 surfaces** : running (distance/temps/nb, sem/mois),
+  nutrition (kcal moyens 7/30 j), muscu (volume hebdo total). i18n `progress.weeklyVolume.total`/`vsPrevious`.
+
+**Notes**
+- 100 % offline, **pas de migration**. `max_weight`/`volume`/affichages courants inchangés
+  (non-régression). Revue finale *prête à merger* (aucun bloquant). 658 tests verts. Catalogue META-06 → ✅.
+- Mineurs connus (non bloquants) : « 0 vs 0 » affiche « nouveau » (écran totalement vide) ; borne
+  hebdo muscu décalée d'≈ 1 h les 2 semaines de bascule heure été/hiver (impact marginal).
+
 ### 15/07/2026 — `feature/musc04-courbe-1rm-periode-tout` — MUSC-04 clôturée (courbe 1RM estimé + période « tout »)
 
 **Ajouté**
