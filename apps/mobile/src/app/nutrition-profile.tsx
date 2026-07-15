@@ -18,9 +18,11 @@ import {
   type DietRestriction,
   type MacroGrams,
   type NutritionObjective,
+  type TrainingBonusMode,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { useProfile } from '@/data/repositories/profile-repository';
 import {
@@ -38,6 +40,9 @@ const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
   carbs: 'success',
   fat: 'textMuted',
 };
+
+/** Modes du bonus calorique des jours d'entraînement (item RN-02). */
+const TRAINING_BONUS_MODES: readonly TrainingBonusMode[] = ['fixed', 'auto'];
 
 function parseNumber(value: string): number | null {
   const n = Number(value.replace(',', '.'));
@@ -63,6 +68,7 @@ export default function NutritionProfileScreen() {
   const activityLevel: ActivityLevel = nutritionProfile?.activityLevel ?? 'moderate';
   const manualCalories = nutritionProfile?.manualCalories ?? null;
   const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
+  const trainingBonusMode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
   const restrictions = nutritionProfile?.restrictions ?? [];
   const allergens = nutritionProfile?.allergens ?? [];
 
@@ -177,6 +183,19 @@ export default function NutritionProfileScreen() {
               onPress={() => void upsertNutritionProfile({ manualCalories: null })}
             />
           ) : null}
+          {/* Mode du bonus jour d'entraînement (RN-02) : forfait fixe ou auto (dépense course) */}
+          <Text style={[styles.rowLabel, { color: colors.text }]}>
+            {t('nutrition.calories.bonusMode.label')}
+          </Text>
+          <Segment
+            options={TRAINING_BONUS_MODES}
+            value={trainingBonusMode}
+            onChange={(mode) => void upsertNutritionProfile({ trainingBonusMode: mode })}
+            label={(mode) => t(`nutrition.calories.bonusMode.${mode}`)}
+          />
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('nutrition.calories.bonusMode.hint')}
+          </Text>
           {/* Bonus jour d'entraînement (4.7) — 0/vide = désactivé */}
           <TextField
             label={t('nutrition.calories.trainingBonus')}

@@ -123,8 +123,14 @@
       "targetShort": "objectif",
       "manual": "Ajuster manuellement (kcal)",
       "recompute": "Revenir au calcul automatique",
+      "bonusMode": {
+        "label": "Bonus jour d'entraînement",
+        "fixed": "Forfait",
+        "auto": "Auto (dépense course)",
+        "hint": "Forfait : bonus fixe les jours de séance. Auto : suit la dépense estimée des courses ; le forfait sert alors de repli les jours muscu."
+      },
       "trainingBonus": "Bonus jour d'entraînement (kcal)",
-      "trainingBonusHint": "Ajouté à l'objectif les jours avec une séance de muscu ou une course. 0 = désactivé.",
+      "trainingBonusHint": "Ajouté à l'objectif les jours avec une séance de muscu ou une course. En mode Auto, sert de repli les jours muscu. 0 = désactivé.",
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
       "completeProfile": "Compléter mon profil"
     },

@@ -123,8 +123,14 @@
       "targetShort": "target",
       "manual": "Adjust manually (kcal)",
       "recompute": "Back to automatic calculation",
+      "bonusMode": {
+        "label": "Training day bonus",
+        "fixed": "Fixed",
+        "auto": "Auto (run burn)",
+        "hint": "Fixed: a set bonus on training days. Auto: follows your estimated run burn; the fixed bonus is then used as a fallback on strength days."
+      },
       "trainingBonus": "Training-day bonus (kcal)",
-      "trainingBonusHint": "Added to your goal on days with a strength or running session. 0 = off.",
+      "trainingBonusHint": "Added to your goal on days with a strength or running session. In Auto mode, used as a fallback on strength days. 0 = off.",
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
       "completeProfile": "Complete my profile"
     },
