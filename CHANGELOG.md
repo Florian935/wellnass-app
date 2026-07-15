@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 15/07/2026 — `feature/musc04-courbe-1rm-periode-tout` — MUSC-04 clôturée (courbe 1RM estimé + période « tout »)
+
+**Ajouté**
+- `sessionBestEstimated1RM(sets)` (`packages/shared/src/records.ts`, testée) — meilleur 1RM estimé
+  d'une séance (max de `estimate1RM` sur les séries à reps+poids non nuls, 0 sinon).
+- Métrique `estimated_1rm` et période `all` dans `useExerciseProgression` (records-repository) :
+  1RM estimé **par séance** (regroupement `workout_id`, agrégation JS via `sessionBestEstimated1RM`,
+  **pas d'Epley en SQL**) ; borne `all` = epoch. Toggles `/progress` : 3 métriques × 4 périodes.
+- i18n FR/EN : `progress.curve.metric.estimated_1rm`, `metricLabel.estimated_1rm`, `period.all`.
+
+**Notes**
+- Ferme le delta MUSC-04 vs spec 6.2 ; le reste de l'écran `/progress` existait déjà (~80 %).
+  `max_weight`/`volume` **strictement inchangées** (SQL/mapping intouchés). Catalogue MUSC-04 → ✅.
+- 100 % offline, **pas de migration**. Revue finale *prête à merger* (aucun bloquant). 647 tests verts.
+- Recette : un exercice **au poids du corps** (charge 0) n'apparaît pas sur la courbe 1RM (voulu).
+
 ### 15/07/2026 — `feature/rn01-depense-course-objectif` — RN-01/RN-02 dépense course → objectif du jour (code livré)
 
 **Ajouté (code)**
