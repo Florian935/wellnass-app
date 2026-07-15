@@ -16,6 +16,9 @@ import {
   ACCURACY_MAX_M,
   smoothedSpeedMs,
   runRowSchema,
+  estimateRunCalories,
+  NET_KCAL_PER_KG_KM,
+  MAX_INTENSITY_BONUS,
 } from './running';
 
 // ---------------------------------------------------------------------------
@@ -667,5 +670,34 @@ describe('runRowSchema', () => {
   it('exige userId (champ syncFields)', () => {
     const { userId: _uid, ...withoutUser } = validRow;
     expect(runRowSchema.safeParse(withoutUser).success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// estimateRunCalories (depense calorique NET — croisement running <-> nutrition)
+// ---------------------------------------------------------------------------
+describe('estimateRunCalories', () => {
+  it('0 si distance ou poids manquant/nul', () => {
+    expect(estimateRunCalories({ distanceM: null, durationSeconds: 1800, weightKg: 70 })).toBe(0);
+    expect(estimateRunCalories({ distanceM: 10000, durationSeconds: 1800, weightKg: null })).toBe(0);
+    expect(estimateRunCalories({ distanceM: 0, durationSeconds: 1800, weightKg: 70 })).toBe(0);
+    expect(estimateRunCalories({ distanceM: 10000, durationSeconds: 1800, weightKg: 0 })).toBe(0);
+  });
+  it('base NET = poids × km × 1.0 pour une allure « facile » (≤ 8 km/h → +0 %)', () => {
+    expect(estimateRunCalories({ distanceM: 10000, durationSeconds: 4500, weightKg: 70 })).toBe(700);
+  });
+  it('durée absente → base NET seule (pas de terme d’intensité)', () => {
+    expect(estimateRunCalories({ distanceM: 10000, durationSeconds: null, weightKg: 70 })).toBe(700);
+  });
+  it('allure rapide → bonus d’intensité borné à +10 %', () => {
+    const kcal = estimateRunCalories({ distanceM: 10000, durationSeconds: 1800, weightKg: 70 });
+    expect(kcal).toBe(Math.round(700 * (1 + MAX_INTENSITY_BONUS)));
+  });
+  it('allure intermédiaire → bonus proportionnel non plafonné', () => {
+    const kcal = estimateRunCalories({ distanceM: 10000, durationSeconds: 3000, weightKg: 70 });
+    expect(kcal).toBe(Math.round(700 * 1.04));
+  });
+  it('NET_KCAL_PER_KG_KM vaut 1.0', () => {
+    expect(NET_KCAL_PER_KG_KM).toBe(1.0);
   });
 });

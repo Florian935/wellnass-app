@@ -583,3 +583,41 @@ export const runRowSchema = syncFieldsSchema.extend({
   notes: z.string().nullable(),
 });
 export type RunRow = z.infer<typeof runRowSchema>;
+
+// ---------------------------------------------------------------------------
+// Estimation de la depense calorique NET d'une course (croisement running <-> nutrition)
+// ---------------------------------------------------------------------------
+
+/** Cout energetique net de la course a plat (kcal par kg et par km), heuristique ajustable. */
+export const NET_KCAL_PER_KG_KM = 1.0;
+/** Allure « facile » (km/h) en dessous de laquelle aucun surcout d'intensite. */
+export const EASY_KMH = 8;
+/** Surcout d'intensite par km/h au-dessus de EASY_KMH. */
+export const PER_KMH_BONUS = 0.01;
+/** Plafond du surcout d'intensite (EPOC). */
+export const MAX_INTENSITY_BONUS = 0.1;
+
+/**
+ * Estime la depense calorique NET d'une course (energie au-dessus du repos, deja comptee
+ * dans le TDEE). Base ~= poids x distance ; petit terme d'intensite borne pour les allures
+ * rapides (EPOC). Renvoie 0 si distance ou poids manquant/nul.
+ */
+export function estimateRunCalories(params: {
+  distanceM: number | null;
+  durationSeconds: number | null;
+  weightKg: number | null;
+}): number {
+  const { distanceM, durationSeconds, weightKg } = params;
+  if (!distanceM || distanceM <= 0 || !weightKg || weightKg <= 0) return 0;
+  const distanceKm = distanceM / 1000;
+  const base = weightKg * distanceKm * NET_KCAL_PER_KG_KM;
+  let intensityBonus = 0;
+  if (durationSeconds && durationSeconds > 0) {
+    const speedKmh = distanceKm / (durationSeconds / 3600);
+    intensityBonus = Math.min(
+      MAX_INTENSITY_BONUS,
+      Math.max(0, (speedKmh - EASY_KMH) * PER_KMH_BONUS),
+    );
+  }
+  return Math.round(base * (1 + intensityBonus));
+}
