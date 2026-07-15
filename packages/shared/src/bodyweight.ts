@@ -72,3 +72,32 @@ export function shouldAlertDeficitVolume(params: {
   const deficitRatio = (targetKcal - avgDailyKcal) / targetKcal;
   return deficitRatio >= DEFICIT_ALERT_RATIO && weeklyVolume >= HIGH_VOLUME_THRESHOLD;
 }
+
+/** Nombre minimum de jours loggés (sur 7) requis pour évaluer l'alerte déficit + volume. */
+export const MIN_LOGGED_DAYS = 4; // sur 7
+
+export type DeficitVolumeAlert = {
+  show: boolean;
+  deficitPct: number; // écart sous l'objectif en %, arrondi (0 si pas d'alerte)
+  loggedDays: number; // nb de jours loggés en entrée
+};
+
+/**
+ * Règle d'affichage de l'alerte croisée déficit + fort volume (déterministe, pure).
+ * `loggedDailyKcals` = kcal des SEULS jours loggés de la fenêtre 7 j (tableau épars).
+ */
+export function computeDeficitVolumeAlert(params: {
+  loggedDailyKcals: ReadonlyArray<number>;
+  targetKcal: number;
+  weeklyVolume: number;
+}): DeficitVolumeAlert {
+  const { loggedDailyKcals, targetKcal, weeklyVolume } = params;
+  const loggedDays = loggedDailyKcals.length;
+  if (loggedDays < MIN_LOGGED_DAYS || targetKcal <= 0) {
+    return { show: false, deficitPct: 0, loggedDays };
+  }
+  const avgDailyKcal = Math.round(loggedDailyKcals.reduce((s, k) => s + k, 0) / loggedDays);
+  const show = shouldAlertDeficitVolume({ avgDailyKcal, targetKcal, weeklyVolume });
+  const deficitPct = show ? Math.round(((targetKcal - avgDailyKcal) / targetKcal) * 100) : 0;
+  return { show, deficitPct, loggedDays };
+}
