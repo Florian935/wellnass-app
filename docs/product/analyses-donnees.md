@@ -63,8 +63,8 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | MUSC-01 | ✅ | Volume total par séance | Tonnage Σ(reps×charge), échauffements exclus, dans le résumé de fin de séance. | `workout_sets`, `computeVolume()` (workout.ts) | stat | par séance | Feedback immédiat de charge ; comparaison séance à séance. | 3.35 |
 | MUSC-02 | ✅ | Records personnels auto-détectés | Détection par exercice de 3 candidats records (charge max, 1RM estimé, meilleur volume de série). | `workout_sets`, `personal_records`, `computeWorkoutRecords()` | badge | par séance / cumul | Motivation sans boucle de jeu (arbitrage C). | 3.22 / 6.3 |
 | MUSC-03 | ✅ | 1RM estimé (Epley) | Force max théorique 1 rép : charge×(1+reps/30). Dénominateur commun inter-séries. | `workout_sets`, `estimate1RM()` (records.ts) | stat | par série/séance | Normaliser la performance pour suivre la force réelle. | 3.22 |
-| MUSC-04 | ✅ | Courbe de progression charge & volume par exercice | Écran `/progress` : courbe temporelle **charge max / volume / 1RM estimé (meilleur par séance)** par exercice, 4 périodes (30 j / 90 j / 1 an / **tout**). Métrique 1RM réutilise `estimate1RM`/`sessionBestEstimated1RM` (shared). | `workout_sets` agrégés, `personal_records` | courbe | 30/90 j/1 an/tout | Tendance long terme d'un mouvement, valider la surcharge. | **3.21 / 6.2 (livrée)** |
-| MUSC-05 | ✅ | Équilibre par groupe musculaire (14 j) | Section `/progress` : barres **par nombre de séries** (échauffements exclus) colorées selon le classement (délaissé/équilibré/sur-représenté) vs cible uniforme 1/6, + **alerte douce** listant les groupes délaissés. `computeMuscleBalance` (shared) + `useMuscleBalance` (14 j glissants). Ratio pousser/tirer reporté à MUSC-11. | `workout_sets` × `exercises.musclePrimary` | widget | 14 j glissant | Vérifier un stimulus suffisant et équilibré par groupe. | **3.40 / 6.4 / 7.9 (livrée)** |
+| MUSC-04 | ✅ | Courbe de progression charge & volume par exercice | Écran `/progress` : courbe temporelle **charge max / volume / 1RM estimé (meilleur par séance)** par exercice, 4 périodes (30 j / 90 j / 1 an / **tout**). Métrique 1RM réutilise `estimate1RM`/`sessionBestEstimated1RM` (shared). | `workout_sets` agrégés, `personal_records` | courbe | 30/90 j/1 an/tout | Tendance long terme d'un mouvement, valider la surcharge. | **3.21 / 6.2 (livrée · recette device OK 16/07/2026)** |
+| MUSC-05 | ✅ | Équilibre par groupe musculaire (14 j) | Section `/progress` : barres **par nombre de séries** (échauffements exclus) colorées selon le classement (délaissé/équilibré/sur-représenté) vs cible uniforme 1/6, + **alerte douce** listant les groupes délaissés. `computeMuscleBalance` (shared) + `useMuscleBalance` (14 j glissants). Ratio pousser/tirer reporté à MUSC-11. | `workout_sets` × `exercises.musclePrimary` | widget | 14 j glissant | Vérifier un stimulus suffisant et équilibré par groupe. | **3.40 / 6.4 / 7.9 (livrée · recette device OK 16/07/2026)** |
 | MUSC-06 | ⏳ | Alerte de déséquilibre musculaire | Détecte un groupe très sous-sollicité sur 14 j et invite à rééquilibrer. | `workout_sets` + `exercises.musclePrimary` | alerte | glissant 14 j | Prévenir déséquilibres posturaux et risque de blessure. | 3.41 |
 | MUSC-07 | ⏳ | Surcharge progressive assistée | Suggère la prochaine charge/reps depuis les dernières perfs (et RPE). Suggérée, jamais imposée. | `workout_sets` récents, `workouts.rpe` | insight | séance suivante | Guider la progression sans calcul mental (sans imposition). | 3.7 / 6.5 |
 | MUSC-08 | ⏳ | Détection de stagnation & deload | Échec (<80 % reps) 2 sem. consécutives → propose −10 %. Extension : plateau du 1RM estimé sur N sem. | `workout_sets` vs cibles, historique 1RM | alerte | 2 sem. / 4-6 sem. | Sortir d'un plateau, prévenir surmenage et abandon. | 3.8 |
@@ -198,7 +198,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | ID | Statut | Analyse | Description | Données sources | Sortie | Fenêtre | Intention | US liée |
 |---|---|---|---|---|---|---|---|---|
 | MN-01 | ✅ | Bonus calorique les jours de muscu | Objectif = cible + bonus paramétré les jours de séance planifiée/réalisée. | `nutrition_profiles.trainingDayBonus`, `isTrainingDay`, `trainingDayCalories()` | stat | par jour | Manger plus les jours d'effort ; 1er pont entraînement↔nutrition. | 4.7 |
-| MN-02 | ✅ | Alerte déficit calorique + fort volume muscu | **Widget dashboard conditionnel** : apports moyens ≥ 15 % sous l'objectif de base (sur **≥ 4 jours loggés**) ET volume muscu 7 j ≥ 8000. Gating **muscu + nutrition**. Migrée de l'écran Stats vers le dashboard (15/07/2026). | `computeDeficitVolumeAlert`/`shouldAlertDeficitVolume` (bodyweight.ts), `food_entries`, `workout_sets` | widget | 7 j glissants | Prévenir la fonte musculaire/contre-perf due au sous-apport. | **4.32 (livrée)** |
+| MN-02 | ✅ | Alerte déficit calorique + fort volume muscu | **Widget dashboard conditionnel** : apports moyens ≥ 15 % sous l'objectif de base (sur **≥ 4 jours loggés**) ET volume muscu 7 j ≥ 8000. Gating **muscu + nutrition**. Migrée de l'écran Stats vers le dashboard (15/07/2026). | `computeDeficitVolumeAlert`/`shouldAlertDeficitVolume` (bodyweight.ts), `food_entries`, `workout_sets` | widget | 7 j glissants | Prévenir la fonte musculaire/contre-perf due au sous-apport. | **4.32 (livrée · recette device OK 16/07/2026)** |
 | MN-03 | ⏳ | Vue croisée séances muscu vs apports de la semaine | Superpose volume/nb séances muscu et kcal/macros moyennes, semaine par semaine. Seule l'alerte est codée. | `workouts`/`workout_sets`, `food_entries` | tableau | hebdo, multi-semaines | Lire si l'alimentation suit la charge d'entraînement. | 4.32 / §7.3 |
 | MN-04 | ⏳ | Macros ajustées jours muscu (glucides péri-séance) | Réoriente les macros les jours de séance (glucides plus hauts) dans le planning repas. | `nutrition_profiles`, `planned_sessions` muscu, `defaultMacroRatios()` | widget | par jour | Placer les glucides là où ils servent perf/récupération. | §6.2 / 4.7 |
 | MN-05 | ✅ | Moyenne d'apports vs objectif (fenêtre glissante) | Apports moyens/jour (jours vides exclus) confrontés à l'objectif et à la charge. | `averageIntake()`, `food_entries`, `nutrition_profiles` | stat | glissant 7/14/30 j | Base fiable pour les corrélations. | 4.32 (support) |
@@ -228,8 +228,8 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 
 | ID | Statut | Analyse | Description | Données sources | Sortie | Fenêtre | Intention | US liée |
 |---|---|---|---|---|---|---|---|---|
-| RN-01 | ✅ | Dépense calorique estimée d'une course | `estimateRunCalories` (running.ts, testée) : NET ≈ poids × distance × 1,0 kcal/kg/km + terme d'intensité borné (EPOC, +1 %/km·h > 8 km/h, plafond +10 %). Brique de base course↔nutrition. | `runs`, `body_weight_entries`, `profiles` | stat | par course | Vraie dépense d'une sortie pour piloter les apports. | **RN-01/RN-02 (livrée)** |
-| RN-02 | ✅ | Objectif calorique du jour ajusté par la course | Réglage **Forfait/Auto** (`nutrition_profiles.training_bonus_mode`) : en Auto l'objectif du jour suit la dépense estimée des courses terminées (`dayCalorieBonus`, hook `useDayCalorieTarget(dayKey)`), repli forfait les jours muscu ; badge « · course ». Forfait = comportement historique inchangé. | `nutrition_profiles.training_bonus_mode`/`trainingDayBonus`, `runs`, `planned_sessions` | widget | jour | Manger plus les jours de course sans calcul manuel. | **RN-01/RN-02 (livrée)** |
+| RN-01 | ✅ | Dépense calorique estimée d'une course | `estimateRunCalories` (running.ts, testée) : NET ≈ poids × distance × 1,0 kcal/kg/km + terme d'intensité borné (EPOC, +1 %/km·h > 8 km/h, plafond +10 %). Brique de base course↔nutrition. | `runs`, `body_weight_entries`, `profiles` | stat | par course | Vraie dépense d'une sortie pour piloter les apports. | **RN-01/RN-02 (livrée · recette device OK 16/07/2026)** |
+| RN-02 | ✅ | Objectif calorique du jour ajusté par la course | Réglage **Forfait/Auto** (`nutrition_profiles.training_bonus_mode`) : en Auto l'objectif du jour suit la dépense estimée des courses terminées (`dayCalorieBonus`, hook `useDayCalorieTarget(dayKey)`), repli forfait les jours muscu ; badge « · course ». Forfait = comportement historique inchangé. | `nutrition_profiles.training_bonus_mode`/`trainingDayBonus`, `runs`, `planned_sessions` | widget | jour | Manger plus les jours de course sans calcul manuel. | **RN-01/RN-02 (livrée · recette device OK 16/07/2026)** |
 | RN-03 | ⏳ | Ajustement auto du TDEE selon le volume de course | Facteur d'activité (ou +kcal) dérivé du volume réellement enregistré. `activityFactor` reste statique. | `activityFactor`/`tdee`, `runs` agrégés, `nutrition_profiles` | stat | glissant 7-14 j | Objectif calorique qui suit la charge réelle. | §2.2 |
 | RN-04 | 🆕 | Calories nettes restantes après course | « objectif + dépense course − apports = restant » sur le dashboard les jours de sortie. | `food_entries`, `runs`, `targetCalories`, nutrition-summary | widget | jour | Vue immédiate de la marge alimentaire après avoir couru. | §5.2 |
 | RN-05 | 🆕 | Besoin glucidique selon le volume de course | Cible glucides g/kg selon la charge (repos ~3-5, modéré ~5-7, gros ~7-10). | `runs`, `body_weight_entries`, `macroGramsFromCalories` | score | jour/semaine | Assurer le carburant glucidique de l'endurance. | §2.3 |
@@ -287,7 +287,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | META-03 | ✅ | Records personnels muscu + running | Meilleures perfs jamais réalisées : charge max/1RM/volume (muscu), temps par distance (running). | `computeWorkoutRecords`, `computeRunRecords`, records | badge | à chaque séance/course | Célébrer les progrès (motivation, notification). | records muscu/running |
 | META-04 | ✅ | Agrégats segmentés par période | Cumuls par fenêtre calendaire (semaine ISO/mois/début) : distance/durée, apports moyens/jour renseigné. | `aggregateRunStats`, `averageIntake` | stat | sem/mois/tout | Base de comparaison et de reporting périodique. | 5.28/5.29 / §7.2 |
 | META-05 | 🟡 | Score d'intégration (nb de piliers activés) | Combien de piliers réellement utilisés (1/2/3) + taux de consultation des vues croisées. | `pillar.ts`, `user_settings`, télémétrie | stat | mensuel/cohorte | Valider le pari « plus de piliers = meilleure rétention ». | metriques §1-3 |
-| META-06 | ✅ | Comparaison période N vs N-1 (delta) | `DeltaBadge` « vs période précédente » (flèche + %, ton neutre) sur **3 surfaces** : running (distance/temps/nb, sem/mois), nutrition (kcal moyens 7/30 j), muscu (volume hebdo total). Brique pure `percentChange` + `previousPeriodTodayKey` ; « nouveau » si pas de base. | `aggregateRunStats`, `averageIntake`, volume muscu agrégé | stat | sem vs sem / mois vs mois | Feedback de progression concret sur l'effort récent. | **META-06 (livrée)** |
+| META-06 | ✅ | Comparaison période N vs N-1 (delta) | `DeltaBadge` « vs période précédente » (flèche + %, ton neutre) sur **3 surfaces** : running (distance/temps/nb, sem/mois), nutrition (kcal moyens 7/30 j), muscu (volume hebdo total). Brique pure `percentChange` + `previousPeriodTodayKey` ; « nouveau » si pas de base. | `aggregateRunStats`, `averageIntake`, volume muscu agrégé | stat | sem vs sem / mois vs mois | Feedback de progression concret sur l'effort récent. | **META-06 (livrée · recette device OK 16/07/2026)** |
 | META-07 | 🟡 | Rappels contextuels intelligents (multi-signaux) | Décision de notification selon le contexte (séance non faite, repas non loggé, streak en danger). Rappel streak codé, autres déclencheurs à ajouter. | `planned_sessions`, `food_entries`, streak + `NotificationPrefs` | alerte | quotidien (DND) | Réengager au bon moment sans spammer. | 2.6/2.8 |
 | META-08 | 🆕 | Tendance générique par régression linéaire (pente + R²) | Moteur unique par moindres carrés (pente, intercept, R²) pour toute série. Généralise les 2 heuristiques moitié-période. | toute série (volume, records, pace, poids, kcal) | stat | glissant 7/30/90 j | Un composant de tendance réutilisable + fondation des projections. | généralise 5.28/5.29 |
 | META-09 | 🆕 | Lissage par moyenne mobile (7/30 j) | Débruite les points (poids, kcal, allures) par moyenne glissante centrée. | `body_weight_entries`, `food_entries`, `runs`, volume/jour | courbe | glissant 7/30 j | Éviter de sur-réagir à une pesée/un repas isolé. | prolonge 5.28/4.24 |
@@ -337,18 +337,23 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 Sélection au meilleur **ratio valeur/effort pour démarrer**, en privilégiant ce qui s'appuie sur
 des **données et des briques déjà présentes** (✅ à consolider → ⏳ cadré → 🆕 à faible coût).
 
-1. **MUSC-04 — Courbe de progression charge & volume par exercice** (⏳). Données déjà là
+> **MàJ 16/07/2026** — plusieurs de ces pistes sont désormais **livrées ET recettées device** (voir
+> ✅ dans les tables) : **1 (MUSC-04)**, **2 (MUSC-05)**, **6 (META-06)**, **11 (RN-01/RN-02)** — ainsi
+> que **MN-02 (4.32)**, hors liste. Elles sont conservées ci-dessous **barrées** pour la trace ; les
+> candidats encore à démarrer sont les autres (3, 4, 5, 7, 8, 9, 10, 12).
+
+1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.
-2. **MUSC-05 — Volume par groupe musculaire / semaine** (⏳/🟡). Widget muscle-volume existe déjà ;
-   éclater par groupe + signaler le déséquilibre est un incrément à fort impact visuel.
+2. ~~**MUSC-05 — Volume par groupe musculaire / semaine**~~ ✅ **livrée + recette OK** (équilibre 14 j).
+   Widget muscle-volume éclaté par groupe + alerte de déséquilibre.
 3. **RUN-05 — Courbe & tendance d'allure (30/90 j)** (🟡). `paceTrend` existe ; il ne reste qu'à
    l'exposer proprement en courbe. Effort faible.
 4. **NUTR-10 — Adhérence à l'objectif : jours dans la cible** (⏳). Toutes les données sont là
    (`food_entries` vs `targetCalories`) ; complète les moyennes 7/30 j déjà calculées.
 5. **NUTR-17 — Régularité du journal (taux de complétion)** (🆕). Calcul trivial sur
    `food_entries.logDate` ; conditionne la fiabilité de toutes les autres stats nutrition.
-6. **META-06 — Comparaison période N vs N-1 (delta)** (🟡). `aggregateRunStats` et `averageIntake`
-   produisent déjà les agrégats ; il ne manque que le calcul d'écart. Feedback très parlant.
+6. ~~**META-06 — Comparaison période N vs N-1 (delta)**~~ ✅ **livrée + recette OK** (`DeltaBadge` sur
+   running / nutrition / muscu). `aggregateRunStats` + `averageIntake` + `percentChange`.
 7. **META-08 — Tendance générique par régression linéaire (pente + R²)** (🆕). Brique socle
    réutilisable partout ; remplace deux heuristiques et débloque toutes les projections (META-14/15/16).
 8. **META-09 — Lissage par moyenne mobile** (🆕). Petit utilitaire pur, immédiatement utile aux
@@ -357,8 +362,8 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    première stat transverse concrète, quasi gratuite.
 10. **MN-13 — Ratio g/kg protéines vs cible par objectif** (🆕). `proteinG` + `body_weight_entries`
     déjà présents ; repère à très forte valeur pour le pratiquant de muscu, en une jauge.
-11. **RN-01 — Dépense calorique estimée d'une course** (✅ livrée avec RN-02). Brique de base qui
-    débloque toute la famille course↔nutrition (RN-04 restante) ; ne dépend que de données déjà stockées.
+11. ~~**RN-01 — Dépense calorique estimée d'une course**~~ ✅ **livrée + recette OK** (avec RN-02).
+    Brique de base qui débloque la famille course↔nutrition (RN-04 restante) ; données déjà stockées.
 12. **META-19 — Garde-fou surentraînement (ACWR)** (🆕). Standard de préparation physique,
     calculable dès qu'on dispose de la charge combinée ; base commune à RUN-18, MR-10 et TRI-12.
 

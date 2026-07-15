@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — catalogue d'analyses : recette + priorisation à jour
+
+**Modifié**
+- `docs/product/analyses-donnees.md` — mention « recette device OK 16/07/2026 » ajoutée aux **6 analyses
+  livrées & recettées** (MUSC-04, MUSC-05, MN-02/4.32, RN-01, RN-02, META-06) ; section **« Pistes de
+  priorisation »** corrigée : items **1/2/6/11 barrés** (livrés + recettés, statuts périmés ⏳/🟡 retirés),
+  note de MàJ ajoutée. _Rappel : ce catalogue trace l'**existence** d'une analyse (✅ = implémenté), pas
+  la recette — le suivi de recette vit dans `TODO.md` / `CHANGELOG.md`._
+
+**Notes**
+- Mise à jour **documentaire** uniquement — aucun code ni schéma, aucun secret. Commit précédent : `263a539`.
+
 ### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recettes device TOUTES validées (TODO)
 
 **Modifié**
