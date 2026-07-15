@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { averageIntake, weightTrend } from '@wellness/shared';
+import { averageIntake, percentChange, weightTrend } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { DeltaBadge } from '@/components/DeltaBadge';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
@@ -41,8 +42,14 @@ export default function NutritionStatsScreen() {
   const { entries: weightEntries } = useWeightEntries(daysAgo(WEIGHT_RANGES[weightRange]));
 
   const [intakeRange, setIntakeRange] = useState<IntakeRange>('7d');
-  const { totals } = useDailyTotals(daysAgo(INTAKE_RANGES[intakeRange]));
+  const intakeWindowDays = INTAKE_RANGES[intakeRange];
+  const { totals: totalsWithPrevious, isLoading: isIntakeLoading } = useDailyTotals(daysAgo(2 * intakeWindowDays));
+  const intakeThreshold = daysAgo(intakeWindowDays);
+  const totals = totalsWithPrevious.filter((d) => d.logDate >= intakeThreshold);
+  const previousTotals = totalsWithPrevious.filter((d) => d.logDate < intakeThreshold);
   const avg = averageIntake(totals);
+  const previousAvg = averageIntake(previousTotals);
+  const kcalChange = percentChange(avg.kcal, previousAvg.kcal);
 
   const trend = weightTrend(weightEntries.map((e) => e.weightKg));
   const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
@@ -99,6 +106,7 @@ export default function NutritionStatsScreen() {
             <View style={styles.avgRow}>
               <Text style={[styles.avgKcal, { color: colors.text }]}>{avg.kcal}</Text>
               <Text style={[styles.avgUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')} · {t('stats.intake.perDay')}</Text>
+              {!isIntakeLoading ? <DeltaBadge change={kcalChange} /> : null}
             </View>
             <Text style={[styles.macroLine, { color: colors.textMuted }]}>
               {t('nutrition.macros.protein')} {avg.proteinG} g · {t('nutrition.macros.carbs')} {avg.carbsG} g · {t('nutrition.macros.fat')} {avg.fatG} g
