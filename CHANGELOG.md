@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `dev` (exceptionnel, sans branche) — bug consigné : édition/suppression d'un aliment de repas
+
+**Ajouté**
+- `TODO.md` (§🐞 Bugs connus) — nouvelle entrée `[ ]` : *modifier / supprimer un aliment ajouté à un
+  repas* — geste peu découvrable + édition limitée à la quantité. Remontée Florian (16/07/2026).
+  Vérif code [nutrition.tsx](apps/mobile/src/app/(tabs)/nutrition.tsx) : suppression via appui long
+  **ou** fiche détail (corbeille), modification limitée à la **quantité** (grammes) et seulement si
+  `quantityG > 0` (un quick add sans quantité n'est pas éditable ; pas de changement de l'aliment ni
+  des macros). Pistes notées (actions visibles / swipe, édition d'un quick add). À reproduire device +
+  cadrer une spec courte avant `fix/…`.
+
+**Notes**
+- Commit **direct sur `dev`** (dev→dev, sans branche dédiée), **exceptionnellement** à la demande de
+  Florian. Changement **documentaire uniquement** (aucun code ni schéma) → lint/typecheck/tests non
+  rejoués. Aucun secret. Commit précédent : `3898567`.
+
 ### 16/07/2026 — `chore/recette-outillage-device` — outillage de recette sur device (sans EAS)
 
 **Ajouté**
