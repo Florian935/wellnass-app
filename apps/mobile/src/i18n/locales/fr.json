@@ -766,16 +766,19 @@
       "empty": "Pas assez de données sur cette période. Effectue quelques séances pour voir la courbe.",
       "metric": {
         "max_weight": "Charge max",
-        "volume": "Volume"
+        "volume": "Volume",
+        "estimated_1rm": "1RM estimé"
       },
       "metricLabel": {
         "max_weight": "Charge maximale",
-        "volume": "Volume"
+        "volume": "Volume",
+        "estimated_1rm": "1RM estimé"
       },
       "period": {
         "30d": "30 j",
         "90d": "90 j",
-        "1y": "1 an"
+        "1y": "1 an",
+        "all": "Tout"
       }
     }
   },

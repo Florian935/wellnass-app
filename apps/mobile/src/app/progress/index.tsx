@@ -53,8 +53,8 @@ import { useUnits } from '@/hooks/useUnits';
 // Constantes de toggles
 // ---------------------------------------------------------------------------
 
-const METRIC_OPTIONS: readonly ProgressionMetric[] = ['max_weight', 'volume'];
-const PERIOD_OPTIONS: readonly ProgressionPeriod[] = ['30d', '90d', '1y'];
+const METRIC_OPTIONS: readonly ProgressionMetric[] = ['max_weight', 'volume', 'estimated_1rm'];
+const PERIOD_OPTIONS: readonly ProgressionPeriod[] = ['30d', '90d', '1y', 'all'];
 
 // ---------------------------------------------------------------------------
 // Helpers
