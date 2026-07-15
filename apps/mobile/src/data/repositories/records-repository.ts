@@ -33,6 +33,7 @@ import { useQuery } from '@powersync/react';
 import {
   computeVolume,
   computeWorkoutRecords,
+  sessionBestEstimated1RM,
   type MuscleGroup,
   type RecordType,
 } from '@wellness/shared';
@@ -64,10 +65,10 @@ export type BeatenRecord = {
 };
 
 /** Métrique d'une série temporelle de progression. */
-export type ProgressionMetric = 'max_weight' | 'volume';
+export type ProgressionMetric = 'max_weight' | 'volume' | 'estimated_1rm';
 
 /** Période d'une série temporelle de progression. */
-export type ProgressionPeriod = '30d' | '90d' | '1y';
+export type ProgressionPeriod = '30d' | '90d' | '1y' | 'all';
 
 /** Un point d'une série temporelle (date UTC ISO + valeur). */
 export type ProgressionPoint = {
@@ -263,15 +264,22 @@ function groupSetsByExercise(rows: WorkoutSetDbRow[]): WorkoutEntry[] {
 // Bornes temporelles (calculées en JS → ISO UTC, jamais en SQL sur de l'UTC)
 // ---------------------------------------------------------------------------
 
-/** Nombre de jours d'une période de progression. */
-const PERIOD_DAYS: Record<ProgressionPeriod, number> = {
+/** Nombre de jours d'une période de progression bornée (hors « tout »). */
+const PERIOD_DAYS: Record<Exclude<ProgressionPeriod, 'all'>, number> = {
   '30d': 30,
   '90d': 90,
   '1y': 365,
 };
 
-/** Borne basse ISO UTC d'une période « N derniers jours » (now − N jours). */
+/**
+ * Borne basse ISO UTC d'une période de progression.
+ * - `all` : « depuis toujours » → epoch (1970-01-01T00:00:00.000Z).
+ * - autres : « N derniers jours » (now − N jours).
+ */
 function periodLowerBound(period: ProgressionPeriod): string {
+  if (period === 'all') {
+    return new Date(0).toISOString();
+  }
   const days = PERIOD_DAYS[period];
   const bound = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   return bound.toISOString();
@@ -492,14 +500,18 @@ export function useExerciseRecords(exerciseId: string): {
 /**
  * Série temporelle de progression d'un exercice pour l'affichage de courbes.
  *
- * - `max_weight` : records `max_weight` de l'exercice, ordonnés par `achieved_at`,
+ * - `max_weight`    : records `max_weight` de l'exercice, ordonnés par `achieved_at`,
  *   sur la période — chaque point = un record battu (charge max).
- * - `volume`     : pour chaque séance terminée de l'utilisateur sur la période
+ * - `volume`        : pour chaque séance terminée de l'utilisateur sur la période
  *   contenant l'exercice, somme `reps × weight_kg` des séries validées non-échauffement
  *   de cet exercice ; date du point = `finished_at` de la séance.
+ * - `estimated_1rm` : pour chaque séance terminée sur la période contenant l'exercice,
+ *   meilleur 1RM estimé (`sessionBestEstimated1RM`) parmi les séries qualifiantes de
+ *   cet exercice ; date du point = `finished_at` de la séance (le calcul du max des
+ *   1RM Epley est fait en JS pour rester cohérent avec le domaine partagé).
  *
- * La borne basse de la période est un timestamp UTC calculé en JS (now − N jours)
- * et passé en paramètre lié.
+ * La borne basse de la période est un timestamp UTC calculé en JS (now − N jours, ou
+ * epoch pour « tout ») et passé en paramètre lié.
  */
 export function useExerciseProgression(
   exerciseId: string,
@@ -508,11 +520,8 @@ export function useExerciseProgression(
 ): { points: ProgressionPoint[]; isLoading: boolean } {
   const lowerBound = periodLowerBound(period);
 
-  const isVolume = metric === 'volume';
-
-  // Deux requêtes statiques ; on choisit le SQL et les params selon la métrique.
-  // La requête « inactive » est neutralisée par une borne qui ne matche rien
-  // (impossible ici) — on préfère lier un id vide pour l'exclure proprement.
+  // Trois requêtes statiques ; on choisit le SQL selon la métrique. Le `useQuery`
+  // reste un unique appel (règle des hooks), avec les mêmes params liés.
   const maxWeightSql = `
     SELECT achieved_at AS date, value
     FROM personal_records
@@ -535,20 +544,73 @@ export function useExerciseProgression(
     ORDER BY w.finished_at
   `;
 
-  const sql = isVolume ? volumeSql : maxWeightSql;
+  // Séries qualifiantes (mêmes filtres que le volume) ; le meilleur 1RM par séance
+  // est calculé en JS après regroupement par `workout_id`.
+  const estimated1RmSql = `
+    SELECT w.id AS workout_id, w.finished_at AS date,
+           s.reps AS reps, s.weight_kg AS weight_kg
+    FROM workout_sets s
+    JOIN workouts w ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    WHERE s.exercise_id = ? AND s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+      AND w.finished_at >= ?
+    ORDER BY w.finished_at
+  `;
 
+  const sql =
+    metric === 'volume'
+      ? volumeSql
+      : metric === 'estimated_1rm'
+        ? estimated1RmSql
+        : maxWeightSql;
+
+  // Type union couvrant les colonnes des trois requêtes (toutes optionnelles /
+  // nullables) : `date` + `value` (max_weight/volume) ; `workout_id`/`reps`/
+  // `weight_kg` (estimated_1rm). On branche au mapping selon la métrique.
   const { data, isLoading: queryLoading } = useQuery<{
     date: string | null;
-    value: number | null;
+    value?: number | null;
+    workout_id?: string | null;
+    reps?: number | null;
+    weight_kg?: number | null;
   }>(sql, [exerciseId, lowerBound]);
 
   const isLoading = queryLoading;
-  const points: ProgressionPoint[] = data
-    .filter(
-      (row): row is { date: string; value: number } =>
-        row.date != null && row.value != null,
-    )
-    .map((row) => ({ date: row.date, value: row.value }));
+
+  let points: ProgressionPoint[];
+  if (metric === 'estimated_1rm') {
+    // Regroupement par séance : un point par séance = meilleur 1RM estimé de la séance.
+    const byWorkout = new Map<
+      string,
+      { date: string; sets: { reps: number | null; weightKg: number | null }[] }
+    >();
+    for (const row of data) {
+      if (row.workout_id == null || row.date == null) continue;
+      let group = byWorkout.get(row.workout_id);
+      if (!group) {
+        group = { date: row.date, sets: [] };
+        byWorkout.set(row.workout_id, group);
+      }
+      group.sets.push({ reps: row.reps ?? null, weightKg: row.weight_kg ?? null });
+    }
+
+    points = [...byWorkout.values()]
+      .map((group) => ({
+        date: group.date,
+        value: sessionBestEstimated1RM(group.sets),
+      }))
+      .filter((point) => point.value > 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
+  } else {
+    points = data
+      .filter(
+        (row): row is { date: string; value: number } =>
+          row.date != null && row.value != null,
+      )
+      .map((row) => ({ date: row.date, value: row.value }));
+  }
 
   return { points, isLoading };
 }
