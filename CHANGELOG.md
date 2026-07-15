@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 15/07/2026 — Ajouté — Plan d'implémentation US 4.32 (alerte déficit + volume, relu Approved)
+
+Branche `feature/4.32-alerte-deficit-volume`. Plan issu de `writing-plans`, relu par sous-agent
+`plan-document-reviewer` (Approved après corrections).
+
+### Ajouté
+- **Plan** [docs/plans/4.32-alerte-deficit-volume.md](docs/plans/4.32-alerte-deficit-volume.md) :
+  7 tâches TDD — `computeDeficitVolumeAlert` (shared, testé), enregistrement widget `deficit-volume`
+  au registre dashboard (+ maj `dashboard.test.ts`), hook `useDeficitVolumeAlert` (réutilise
+  `useNutritionSummary().target` base + `useDailyTotals` + requête volume 7 j déplacée + gating
+  piliers), widget `DeficitVolumeAlertCard` (rend `null` hors alerte), i18n `home.deficitVolume.*`
+  FR/EN + retrait `stats.deficitAlert`, retrait de l'ancienne alerte sur `nutrition-stats.tsx`,
+  vérif d'ensemble. Pas de checkpoint 🔴.
+
 ## 15/07/2026 — Ajouté — Spec US 4.32 : alerte croisée déficit + fort volume (cadrage validé)
 
 Branche `feature/4.32-alerte-deficit-volume`. Première **stat croisée inter-piliers** (muscu↔nutrition)

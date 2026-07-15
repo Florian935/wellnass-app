@@ -162,8 +162,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   **Découverte** : une v1 faible existe déjà sur l'écran Stats nutrition (commit `193c5ff`) → l'US la
   **déplace** sur le dashboard (retrait de l'ancienne). Logique pure `computeDeficitVolumeAlert`
   (shared, testée) + hook `useDeficitVolumeAlert` + widget. **100 % client, offline, pas de checkpoint
-  🔴.** Spec : [us/4.32-alerte-deficit-volume.md](docs/specs/functional/us/4.32-alerte-deficit-volume.md).
-  **Reste** : plan → validation → code (subagent-driven) + recette device.
+  🔴.** Spec : [us/4.32-alerte-deficit-volume.md](docs/specs/functional/us/4.32-alerte-deficit-volume.md) ·
+  Plan : [plans/4.32-alerte-deficit-volume.md](docs/plans/4.32-alerte-deficit-volume.md) (7 tâches TDD, relu *Approved*, validé Florian).
+  **Reste** : code (subagent-driven, en cours) + recette device.
 - [~] **US 8.10 — Log d'audit admin** (`feature/8.10-admin-log-audit`, 14/07/2026) — **cadrage validé**
   (brainstorming Florian + relecture sous-agent *Approved*). Première des 3 US de gouvernance admin
   restantes (ordre : **8.10 → 8.7 modération → 8.8 utilisateurs**). Journal **append-only non
