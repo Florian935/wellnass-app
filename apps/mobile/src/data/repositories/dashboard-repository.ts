@@ -27,6 +27,8 @@ import {
   computeAge,
   computeDeficitVolumeAlert,
   computeStreak,
+  dayCalorieBonus,
+  estimateRunCalories,
   isTrainingDay as computeIsTrainingDay,
   localDayKey,
   objectiveFromGoal,
@@ -38,9 +40,11 @@ import {
   type DeficitVolumeAlert,
   type RecordDistanceKey,
   type RecordType,
+  type TrainingBonusMode,
 } from '@wellness/shared';
 import { useNutritionProfile } from './nutrition-repository';
 import { useProfile } from './profile-repository';
+import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory } from './run-repository';
@@ -180,6 +184,13 @@ export type NutritionSummary = {
   isTrainingDay: boolean;
   /** Bonus calorique jour de séance effectivement appliqué (0 si aucun). */
   trainingBonus: number;
+  /**
+   * Origine du bonus finalement appliqué (RN-02) :
+   *  - `run`     : mode auto, dépense d'une course terminée aujourd'hui (> 0) ;
+   *  - `forfait` : forfait fixe jour de séance (mode fixed, ou mode auto sans course) ;
+   *  - `none`    : aucun bonus appliqué.
+   */
+  bonusSource: 'run' | 'forfait' | 'none';
   /** Macronutriments consommés aujourd'hui en grammes (0 si aucune entrée). */
   macros: { p: number; g: number; l: number };
   /**
@@ -190,33 +201,62 @@ export type NutritionSummary = {
   isLoading: boolean;
 };
 
-/**
- * Expose le résumé nutritionnel du jour pour le widget 7.5.
- *
- * Composition de `useDailyTotals` (aujourd'hui), `useNutritionProfile` et
- * `useProfile`. Le calcul du TDEE et de l'objectif calorique reproduit
- * exactement le patron de `nutrition-stats.tsx`.
- */
-export function useNutritionSummary(): NutritionSummary {
-  const todayKey = localDayKey(new Date());
+/** Objectif calorique et bonus du jour `dayKey`, retourné par `useDayCalorieTarget`. */
+export type DayCalorieTarget = {
+  /**
+   * Objectif calorique **de base** (TDEE + delta objectif, ou override manuel),
+   * hors bonus jour d'entraînement. Indépendant du jour. `null` si le profil est
+   * incomplet (poids, taille, âge ou objectif manquants).
+   */
+  target: number | null;
+  /**
+   * Objectif calorique **effectif** de `dayKey` = `target` + bonus du jour si
+   * `dayKey` est un jour de séance ET qu'un bonus > 0 s'applique. Égal à `target`
+   * sinon. `null` si `target` est `null`.
+   */
+  effectiveTarget: number | null;
+  /** Bonus calorique du jour effectivement appliqué (0 si aucun). */
+  trainingBonus: number;
+  /**
+   * Origine du bonus appliqué (RN-02) :
+   *  - `run`     : mode auto, dépense d'une course terminée ce jour (> 0) ;
+   *  - `forfait` : forfait fixe jour de séance (mode fixed, ou mode auto sans course) ;
+   *  - `none`    : aucun bonus appliqué.
+   */
+  bonusSource: 'run' | 'forfait' | 'none';
+  /** Vrai si `dayKey` est un jour d'entraînement ET qu'un bonus s'applique. */
+  isTrainingDay: boolean;
+  isLoading: boolean;
+};
 
-  const { totals, isLoading: totalsLoading } = useDailyTotals(todayKey);
+/**
+ * Objectif calorique effectif et bonus d'un jour donné `dayKey` (RN-02).
+ *
+ * Centralise le calcul jusque-là dupliqué entre le dashboard et l'écran journal.
+ * Paramétré par le jour : `useIsTrainingDay(dayKey)` et les courses filtrées sur
+ * `dayKey` — l'écran journal peut donc naviguer entre les jours en restant correct.
+ *
+ * Bonus du jour (délégué à `dayCalorieBonus`, règle pure `@wellness/shared`) :
+ *  - mode `fixed` (défaut) : forfait fixe les jours de séance, 0 sinon
+ *    (strictement identique au comportement 4.7 antérieur) ;
+ *  - mode `auto` : dépense des courses terminées ce jour si > 0 (pilier running
+ *    actif), sinon repli sur le forfait fixe.
+ *
+ * L'objectif de base (`target`) reproduit le patron de `nutrition-stats.tsx` et
+ * reste indépendant du jour. Tous les hooks sous-jacents sont appelés
+ * inconditionnellement (règle des hooks React / React Compiler).
+ */
+export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
   const { nutritionProfile, isLoading: nutritionLoading } = useNutritionProfile();
   const { profile, isLoading: profileLoading } = useProfile();
-  const { isTrainingDay: trainedToday, isLoading: trainingLoading } = useIsTrainingDay(todayKey);
+  const { latest, isLoading: weightLoading } = useLatestWeight();
+  const { isTrainingDay: trainedThatDay, isLoading: trainingLoading } = useIsTrainingDay(dayKey);
+  const { settings } = useSettings();
+  const { runs, isLoading: runsLoading } = useRunHistory();
 
-  const isLoading = totalsLoading || nutritionLoading || profileLoading || trainingLoading;
+  const isLoading = nutritionLoading || profileLoading || weightLoading || trainingLoading || runsLoading;
 
-  // Totaux du jour (peut être absent = zéros)
-  const todayTotal = totals.find((t) => t.logDate === todayKey);
-  const kcal = todayTotal?.kcal ?? 0;
-  const macros = {
-    p: todayTotal?.proteinG ?? 0,
-    g: todayTotal?.carbsG ?? 0,
-    l: todayTotal?.fatG ?? 0,
-  };
-
-  // Calcul de l'objectif — même logique que nutrition-stats.tsx
+  // Calcul de l'objectif de base — même logique que nutrition-stats.tsx (indépendant du jour)
   const objective =
     nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
   const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
@@ -232,17 +272,100 @@ export function useNutritionSummary(): NutritionSummary {
       ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
       : null;
 
-  // Bonus jour d'entraînement (4.7) : appliqué seulement si jour de séance ET bonus > 0.
-  const bonus = nutritionProfile?.trainingDayBonus ?? 0;
-  const isTrainingDay = trainedToday && bonus > 0 && target != null;
-  const trainingBonus = isTrainingDay ? bonus : 0;
-  const effectiveTarget =
-    target != null && isTrainingDay ? trainingDayCalories(target, bonus) : target;
+  // --- Bonus du jour (RN-02) : mode forfait / auto + dépense des courses ---
+  const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
+  const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
+
+  // Poids : dernière pesée si dispo, sinon poids du profil général, sinon null.
+  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
+
+  // Piliers actifs (même patron que useMostRecentRecord / useDeficitVolumeAlert).
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const runningActive = activePillars.includes('running');
+
+  // Dépense des courses terminées ce jour (0 si running inactif).
+  const runCaloriesOnDay = runningActive
+    ? runs
+        .filter((r) => r.finishedAt && localDayKey(new Date(r.finishedAt)) === dayKey)
+        .reduce(
+          (sum, r) =>
+            sum +
+            estimateRunCalories({
+              distanceM: r.distanceM,
+              durationSeconds: r.durationSeconds,
+              weightKg,
+            }),
+          0,
+        )
+    : 0;
+
+  const bonus = dayCalorieBonus({
+    mode,
+    isTrainingDay: trainedThatDay,
+    fixedBonus,
+    runCaloriesToday: runCaloriesOnDay,
+  });
+
+  const trainingBonus = bonus;
+  const isTrainingDay = trainedThatDay && bonus > 0 && target != null;
+  const effectiveTarget = target != null ? trainingDayCalories(target, bonus) : target;
+
+  // Origine du bonus appliqué.
+  const bonusSource: 'run' | 'forfait' | 'none' =
+    mode === 'auto' && runCaloriesOnDay > 0 ? 'run' : bonus > 0 ? 'forfait' : 'none';
+
+  return { target, effectiveTarget, trainingBonus, bonusSource, isTrainingDay, isLoading };
+}
+
+/**
+ * Expose le résumé nutritionnel du jour courant pour le widget 7.5.
+ *
+ * Composition de `useDailyTotals` (aujourd'hui), `useNutritionProfile` (pour
+ * `hasProfile`) et `useDayCalorieTarget(todayKey)` (objectif de base, objectif
+ * effectif, bonus et son origine — calcul centralisé, RN-02).
+ *
+ * Tous les hooks sous-jacents sont appelés inconditionnellement (règle des
+ * hooks React / React Compiler).
+ */
+export function useNutritionSummary(): NutritionSummary {
+  const todayKey = localDayKey(new Date());
+
+  const { totals, isLoading: totalsLoading } = useDailyTotals(todayKey);
+  const { nutritionProfile, isLoading: nutritionLoading } = useNutritionProfile();
+  const {
+    target,
+    effectiveTarget,
+    trainingBonus,
+    bonusSource,
+    isTrainingDay,
+    isLoading: targetLoading,
+  } = useDayCalorieTarget(todayKey);
+
+  const isLoading = totalsLoading || nutritionLoading || targetLoading;
+
+  // Totaux du jour (peut être absent = zéros)
+  const todayTotal = totals.find((t) => t.logDate === todayKey);
+  const kcal = todayTotal?.kcal ?? 0;
+  const macros = {
+    p: todayTotal?.proteinG ?? 0,
+    g: todayTotal?.carbsG ?? 0,
+    l: todayTotal?.fatG ?? 0,
+  };
 
   // Profil considéré « configuré » si un objectif nutritionnel explicite est posé
   const hasProfile = nutritionProfile?.objective != null;
 
-  return { kcal, target, effectiveTarget, isTrainingDay, trainingBonus, macros, hasProfile, isLoading };
+  return {
+    kcal,
+    target,
+    effectiveTarget,
+    isTrainingDay,
+    trainingBonus,
+    bonusSource,
+    macros,
+    hasProfile,
+    isLoading,
+  };
 }
 
 // ---------------------------------------------------------------------------

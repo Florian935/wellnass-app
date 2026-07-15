@@ -16,7 +16,6 @@ import {
   sumNutrients,
   targetCalories,
   tdee,
-  trainingDayCalories,
   type MicronutrientKey,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -27,7 +26,7 @@ import { MicronutrientDetails } from '@/components/MicronutrientDetails';
 import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
-import { useIsTrainingDay } from '@/data/repositories/dashboard-repository';
+import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import {
   copyMeal,
   duplicateDay,
@@ -92,12 +91,16 @@ export default function NutritionScreen() {
   });
   const target = tdeeValue != null ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null) : null;
 
-  // Objectif effectif = base + bonus jour d'entraînement (4.7), le cas échéant.
-  // Les macros cibles restent calées sur l'objectif de base (bonus non ventilé).
-  const { isTrainingDay } = useIsTrainingDay(day);
-  const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
-  const trainingApplies = target != null && isTrainingDay && trainingBonus > 0;
-  const effectiveTarget = trainingApplies ? trainingDayCalories(target!, trainingBonus) : target;
+  // Objectif effectif + bonus du jour SÉLECTIONNÉ : centralisés dans useDayCalorieTarget
+  // (RN-02, mode forfait/auto + dépense des courses). Paramétré par `day` → la navigation
+  // par jour reste correcte. Les macros cibles restent calées sur l'objectif de base
+  // (bonus non ventilé). `bonusSource` est disponible dans le retour du hook et sera
+  // consommé par le badge en Task 7 (libellé inchangé pour l'instant).
+  const {
+    effectiveTarget,
+    trainingBonus,
+    isTrainingDay: trainingApplies,
+  } = useDayCalorieTarget(day);
 
   const manualSet =
     nutritionProfile?.manualProteinG != null ||
