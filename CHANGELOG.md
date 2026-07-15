@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 15/07/2026 — Ajouté — Spec US 4.32 : alerte croisée déficit + fort volume (cadrage validé)
+
+Branche `feature/4.32-alerte-deficit-volume`. Première **stat croisée inter-piliers** (muscu↔nutrition)
+du catalogue d'analyses — Phase A (déterministe, gratuite, offline, **sans IA**). Cadrage issu du
+brainstorming (Florian), relu par un sous-agent `spec-document-reviewer` (Approved).
+
+### Ajouté
+- **Spec fonctionnelle** [docs/specs/functional/us/4.32-alerte-deficit-volume.md](docs/specs/functional/us/4.32-alerte-deficit-volume.md) :
+  widget dashboard **conditionnel** alertant sur une semaine à déficit calorique ≥ 15 % (moyenne sur
+  **≥ 4 jours loggés**) **et** volume muscu 7 j ≥ 8000, message **informatif** paramétré (`%`), gating
+  **piliers actifs** (muscu **et** nutrition). Logique pure `computeDeficitVolumeAlert` (shared, testée)
+  réutilisant `shouldAlertDeficitVolume`/`averageIntake` existants ; hook `useDeficitVolumeAlert`
+  (requête volume 7 j glissante dédiée) ; widget `DeficitVolumeAlertCard`.
+
+### Technique / Notes
+- **Découverte en revue** : une **v1 faible** de 4.32 existe déjà en prod (commit `193c5ff`) sur
+  l'écran **Stats nutrition** (message statique, sans `%`, sans règle ≥4 jours, **sans gating piliers**).
+  **Décision (Florian)** : la **déplacer** sur le dashboard (retrait de l'ancienne + clé `stats.deficitAlert`).
+  `TODO.md` marquait 4.32 « différé » à tort — corrigé.
+- Gating dashboard confirmé : le registre filtre « au moins un pilier actif » → le « les deux requis »
+  est porté par le hook. **100 % client, offline — pas de checkpoint 🔴.**
+
 ## 14/07/2026 — Ajouté — US 8.10 : log d'audit admin (code livré, subagent-driven)
 
 Branche `feature/8.10-admin-log-audit`. Commit précédent : `c3cc92b` (plan). Exécution subagent-driven
