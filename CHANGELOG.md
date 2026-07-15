@@ -10,6 +10,35 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 15/07/2026 — Ajouté — IDEAS.md : SaaS coach (web) + arbitrage surfaces coach/créateur
+
+Branche `docs/ideas-saas-coach`. Capture produit (aucun code, aucune US en pipeline). Issu d'un
+échange de cadrage exploratoire avec Florian + recherche marché (WebSearch). Idée ciblée **post-V1**.
+
+### Ajouté
+- **IDEAS.md** — nouvelle idée `[[saas-coach-import-ia]]` (🔍 à creuser) : **SaaS web séparé** pour
+  coachs (B2B, coach payant, athlète gratuit), 3 modules — **program builder « en béton »**
+  (réutilise le constructeur admin US 8.4), **import IA de fichiers Excel/Sheets hétérogènes** = wedge
+  choisi (parcours → inférence de structure → mapping en préviz → correction → push en base), et
+  **dashboard coach** (athlètes, perfs, stats). Côté client = l'app Wellness gratuite. Monétisation
+  incl. **paiements hors-plateforme sans commission**. Recherche marché consignée (catégorie saturée :
+  Trainerize/TrueCoach/Everfit/… ; concurrent import à benchmarker = **Repport** ; gap paiements).
+  Points durs notés : pipeline import IA non trivial ; **relation coach↔athlète casse le RLS `owner_id`**.
+
+### Modifié
+- **IDEAS.md** — arbitrage daté **15/07/2026** ajouté à `[[module-coach-coache]]` et
+  `[[module-influenceur]]`, principe directeur : **on produit sur le web, on consomme sur mobile**
+  (intensité 1-à-1 coach vs 1-à-N créateur décide de la surface). Conséquences : **console coach →
+  SaaS web** (module coach mobile rendu superflu, seule la **face coaché** reste sur mobile) ;
+  **influenceur reste sur mobile** côté audience (vente/communauté) mais **authoring = moteur web
+  partagé** avec le SaaS coach. MàJ de `[[offre-payante-coach]]` (monétisation portée par le SaaS).
+
+### Technique / Notes
+- **Docs uniquement** (`IDEAS.md` + `CHANGELOG.md`) → lint/typecheck/tests non exécutés (aucune
+  surface de code touchée). `TODO.md` non modifié (aucune US n'entre/ne sort du pipeline).
+- Branche créée **depuis `origin/dev`** (et non depuis `feature/4.32-alerte-deficit-volume`) pour
+  **ne pas embarquer** le commit de code 4.32 en cours (`e918efb`) dans `dev`.
+
 ## 15/07/2026 — Ajouté — Plan d'implémentation US 4.32 (alerte déficit + volume, relu Approved)
 
 Branche `feature/4.32-alerte-deficit-volume`. Plan issu de `writing-plans`, relu par sous-agent

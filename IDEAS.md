@@ -20,6 +20,36 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/07/2026] 🔍 **SaaS coach (web, hors app mobile) — wedge = import IA de fichiers Excel/Sheets** :
+  concrétise et prolonge [[module-coach-coache]] + [[offre-payante-coach]] (12/07). Idée : une
+  **application web séparée** (pas dans l'app mobile), payante (B2B, le **coach paie**, l'athlète reste
+  gratuit), qui permet aux coachs de **construire les programmes de leurs coachés** et de les suivre. Trois
+  modules : **(1) program builder « en béton »** (exigence explicite de Florian) — constructeur manuel très
+  poussé, réutilise/étend le constructeur admin **US 8.4** ; **(2) import IA** = **le wedge choisi** (décision
+  Florian, 15/07) : les coachs bossent aujourd'hui sur des **fichiers Excel/Google Sheets** aux structures
+  **toutes différentes** → pipeline IA qui **parcourt le fichier, infère la structure, propose un mapping en
+  prévisualisation** (programme / cycles / séances / exos), le coach **vérifie et corrige** la traduction,
+  **puis pousse en base** (Postgres/Supabase) ; **(3) dashboard coach** — vue de **tous ses athlètes**, perfs,
+  stats détaillées (tendances, PR, volume/tonnage, nutrition, mensurations…), croisement des données.
+  **Côté client = l'app Wellness gratuite** (différenciateur qu'aucun concurrent n'a : l'athlète suit les
+  programmes de son coach dans une app 3 piliers qu'il veut *pour lui*). **Monétisation** : abonnement coach
+  **+ suivi de paiements souple**, incluant les encaissements **hors plateforme** (virement/espèces coché
+  manuellement, **sans commission** — anti « Stripe-tax »). _Marché (recherche 15/07) :_ le SaaS coach
+  tout-en-un **est saturé** (Trainerize, TrueCoach — 5 % sur CB depuis 01/2026 —, Everfit, MyPTHub, 12REPS,
+  TeamBuildr, TrainingPeaks) → **ne pas attaquer en généraliste**. Deux angles peu couverts = notre pari :
+  (a) **import IA de fichiers hétérogènes** (concurrent le plus proche à **benchmarker en priorité =
+  Repport** ; les autres imposent un CSV à modèle) ; (b) **paiements hors-plateforme** (les plateformes
+  enferment dans leurs rails carte, les coachs bricolent avec Wave/compta). _Points durs (à instruire) :_
+  **le pipeline d'import IA n'est PAS trivial** — l'appel au modèle ≈ 10 % du travail ; les 90 % = ingérer
+  des fichiers en désordre (cellules fusionnées, semaines en colonnes, %1RM vs charges, RPE, texte libre,
+  multi-onglets), **l'écran de préviz/mapping + correction**, et la **confiance** (vérifiable + réversible
+  avant push). **Modèle relation coach↔athlète casse le RLS actuel** (tout est `owner_id`-scopé) → invitation
+  + **consentement de l'athlète** + partage de données ciblé + RGPD. _Réemploi :_ constructeur **8.4**,
+  `packages/shared`, socle Auth/RLS/offline. _Cible :_ **post-V1** (nouvelle ligne produit — ne pas ouvrir en
+  dev tant que Wellness V1 n'est pas posée : admin 8.7/8.8 + recettes device en attente). À fusionner dans la
+  réflexion « plateforme créateur » ([[module-influenceur]], [[marketplace-createurs-coachs]]) et
+  [[bibliotheque-programmes-premium]]. _Prochaine étape :_ vraie session de **brainstorming** avant toute spec.
+
 - [15/07/2026] 🆕 **Profils enrichis (fitness / running / alimentation) + mode « simple » gratuit vs
   « avancé » payant** : la section **Profil** doit être **bien plus poussée** — beaucoup plus de
   **réglages/paramètres** par pilier, pour personnaliser suggestions et analyses. Exemples de réglages
@@ -167,6 +197,14 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
   (post-V1). **Reco court terme** : brique la moins chère et quasi prête = ouvrir le **studio 8.4** +
   un **système d'affiliation** pour les 1ers créateurs démarchés. _À penser fusionné avec
   [[module-coach-coache]] (cf. note ci-dessus)._
+  - _**Arbitrage 15/07/2026** (même principe que [[module-coach-coache]] : produire sur le web,
+    consommer sur mobile) :_ **on garde l'influenceur/créateur dans l'app mobile** — mais côté
+    **audience** (1-à-N) : **vitrine, découverte, achat, communauté, broadcast, défis** vivent sur
+    mobile, là où est son audience. En revanche l'**authoring des programmes** (le builder) est le
+    **même moteur web partagé** que le [[saas-coach-import-ia]] (cf. note « plateforme créateur
+    unifiée » : mêmes briques — studio de programmes, paiement, analytics — **surfaces différentes**).
+    → **« influenceur en mobile » = oui pour la face vente/communauté** ; il construit ses programmes
+    avec le même outil web que le coach._
 - [13/07/2026] 🆕 **Marketplace de créateurs & coachs** : place de marché de programmes/plans —
   vitrines par créateur, notes/avis, découverte, badge « créateur vérifié ». Généralisation de
   [[module-influenceur]] + [[module-coach-coache]] ; alimente [[bibliotheque-programmes-premium]].
@@ -321,8 +359,19 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
   facturation (coachs auto-entrepreneurs), suivi compta, analyses avancées des coachés (tendances,
   nutrition, mensurations, PR, perf, volume, tonnage…) et croisement des données
   muscu/nutrition/bien-être/course.
+  - _**Arbitrage 15/07/2026** (principe directeur : **on produit sur le web, on consomme sur
+    mobile** ; l'intensité de la relation — **1-à-1** coach vs **1-à-N** créateur — décide de la
+    surface de gestion) :_ **séparer les deux faces de la relation.** **Face coach** (construire des
+    programmes détaillés, piloter 10-30 clients, facturer, analyser) = travail lourd clavier/grand
+    écran → **c'est le [[saas-coach-import-ia]] (web)**, PAS un module mobile. La « console coach »
+    sur mobile est donc **rendue superflue par le SaaS** — on **ne construit pas** de console coach
+    sur téléphone. **Face coaché** (recevoir le programme assigné par son coach, le suivre, renvoyer
+    check-ins/retours) = **reste dans l'app mobile Wellness** — ce n'est pas un « module coach », c'est
+    l'app de l'athlète qui sait afficher un programme assigné + un fil avec le coach. → **on ne
+    supprime pas l'idée, on la recadre** : console coach = SaaS ; expérience coaché = mobile._
 - [12/07/2026] 🆕 **Offre payante dédiée** aux coachs et à leurs coachés (monétisation du module
-  Coach ci-dessus).
+  Coach ci-dessus). _MàJ 15/07/2026 : la monétisation coach est portée par le [[saas-coach-import-ia]]
+  (abonnement B2B + paiements souples, dont hors-plateforme sans commission) — voir arbitrage ci-dessus._
 
 ---
 
