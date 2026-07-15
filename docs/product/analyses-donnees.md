@@ -228,8 +228,8 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 
 | ID | Statut | Analyse | Description | Données sources | Sortie | Fenêtre | Intention | US liée |
 |---|---|---|---|---|---|---|---|---|
-| RN-01 | 🆕 | Dépense calorique estimée d'une course | kcal brûlées depuis distance/durée/allure/poids (~1,036 kcal/kg/km, ou MET). Brique de base course↔nutrition. | `runs`, `body_weight_entries`, `profiles` | stat | par course | Vraie dépense d'une sortie pour piloter les apports. | — |
-| RN-02 | 🟡 | Objectif calorique du jour ajusté par la course | Ajoute la dépense course (ou bonus) les jours de sortie. Socle `trainingDayCalories` non rattaché au planning/dépense réelle. | `nutrition_profiles.trainingDayBonus`, `planned_sessions`, `runs` | widget | jour | Manger plus les jours de course sans calcul manuel. | §2.2 / 4.7 |
+| RN-01 | ✅ | Dépense calorique estimée d'une course | `estimateRunCalories` (running.ts, testée) : NET ≈ poids × distance × 1,0 kcal/kg/km + terme d'intensité borné (EPOC, +1 %/km·h > 8 km/h, plafond +10 %). Brique de base course↔nutrition. | `runs`, `body_weight_entries`, `profiles` | stat | par course | Vraie dépense d'une sortie pour piloter les apports. | **RN-01/RN-02 (livrée)** |
+| RN-02 | ✅ | Objectif calorique du jour ajusté par la course | Réglage **Forfait/Auto** (`nutrition_profiles.training_bonus_mode`) : en Auto l'objectif du jour suit la dépense estimée des courses terminées (`dayCalorieBonus`, hook `useDayCalorieTarget(dayKey)`), repli forfait les jours muscu ; badge « · course ». Forfait = comportement historique inchangé. | `nutrition_profiles.training_bonus_mode`/`trainingDayBonus`, `runs`, `planned_sessions` | widget | jour | Manger plus les jours de course sans calcul manuel. | **RN-01/RN-02 (livrée)** |
 | RN-03 | ⏳ | Ajustement auto du TDEE selon le volume de course | Facteur d'activité (ou +kcal) dérivé du volume réellement enregistré. `activityFactor` reste statique. | `activityFactor`/`tdee`, `runs` agrégés, `nutrition_profiles` | stat | glissant 7-14 j | Objectif calorique qui suit la charge réelle. | §2.2 |
 | RN-04 | 🆕 | Calories nettes restantes après course | « objectif + dépense course − apports = restant » sur le dashboard les jours de sortie. | `food_entries`, `runs`, `targetCalories`, nutrition-summary | widget | jour | Vue immédiate de la marge alimentaire après avoir couru. | §5.2 |
 | RN-05 | 🆕 | Besoin glucidique selon le volume de course | Cible glucides g/kg selon la charge (repos ~3-5, modéré ~5-7, gros ~7-10). | `runs`, `body_weight_entries`, `macroGramsFromCalories` | score | jour/semaine | Assurer le carburant glucidique de l'endurance. | §2.3 |
@@ -357,8 +357,8 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    première stat transverse concrète, quasi gratuite.
 10. **MN-13 — Ratio g/kg protéines vs cible par objectif** (🆕). `proteinG` + `body_weight_entries`
     déjà présents ; repère à très forte valeur pour le pratiquant de muscu, en une jauge.
-11. **RN-01 — Dépense calorique estimée d'une course** (🆕). Brique de base qui débloque toute la
-    famille course↔nutrition (RN-02/04) ; ne dépend que de données déjà stockées.
+11. **RN-01 — Dépense calorique estimée d'une course** (✅ livrée avec RN-02). Brique de base qui
+    débloque toute la famille course↔nutrition (RN-04 restante) ; ne dépend que de données déjà stockées.
 12. **META-19 — Garde-fou surentraînement (ACWR)** (🆕). Standard de préparation physique,
     calculable dès qu'on dispose de la charge combinée ; base commune à RUN-18, MR-10 et TRI-12.
 
