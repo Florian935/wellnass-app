@@ -1,17 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@powersync/react';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import {
-  averageIntake,
-  computeAge,
-  objectiveFromGoal,
-  shouldAlertDeficitVolume,
-  targetCalories,
-  tdee,
-  weightTrend,
-} from '@wellness/shared';
+import { averageIntake, weightTrend } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Segment } from '@/components/Segment';
@@ -19,8 +9,6 @@ import { TextField } from '@/components/TextField';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useDailyTotals } from '@/data/repositories/journal-repository';
-import { useProfile } from '@/data/repositories/profile-repository';
-import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -56,35 +44,6 @@ export default function NutritionStatsScreen() {
   const { totals } = useDailyTotals(daysAgo(INTAKE_RANGES[intakeRange]));
   const avg = averageIntake(totals);
 
-  // Alerte croisée déficit + fort volume muscu (4.32) — sur la semaine glissante.
-  const { profile } = useProfile();
-  const { nutritionProfile } = useNutritionProfile();
-  const { totals: week } = useDailyTotals(daysAgo(7));
-  const avg7 = averageIntake(week);
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
-  const tdeeVal = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age: age ?? undefined,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-  });
-  const weekTarget =
-    tdeeVal != null ? targetCalories(tdeeVal, objective, nutritionProfile?.manualCalories ?? null) : 0;
-  const { data: volRows } = useQuery<{ reps: number | null; weight_kg: number | null }>(
-    `SELECT ws.reps, ws.weight_kg FROM workout_sets ws
-     JOIN workouts w ON w.id = ws.workout_id AND w.deleted_at IS NULL
-     WHERE ws.deleted_at IS NULL AND ws.done = 1 AND ws.set_type != 'warmup' AND w.started_at >= ?`,
-    [daysAgo(7) + 'T00:00:00.000Z'],
-  );
-  const weeklyVolume = volRows.reduce((s, r) => s + (r.reps ?? 0) * (r.weight_kg ?? 0), 0);
-  const showDeficitAlert = shouldAlertDeficitVolume({
-    avgDailyKcal: avg7.kcal,
-    targetKcal: weekTarget,
-    weeklyVolume,
-  });
-
   const trend = weightTrend(weightEntries.map((e) => e.weightKg));
   const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
   const intakeData = totals.map((d) => ({ label: shortLabel(d.logDate), value: d.kcal }));
@@ -98,14 +57,6 @@ export default function NutritionStatsScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
-      {/* Alerte croisée déficit + fort volume muscu (4.32) */}
-      {showDeficitAlert ? (
-        <View style={[styles.alert, { backgroundColor: colors.surface, borderColor: colors.danger }]}>
-          <Ionicons name="warning-outline" size={20} color={colors.danger} />
-          <Text style={[styles.alertText, { color: colors.text }]}>{t('stats.deficitAlert')}</Text>
-        </View>
-      ) : null}
-
       {/* Pesée du jour (1.13) */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.weight.title')}</Text>
       <Card>
@@ -162,8 +113,6 @@ export default function NutritionStatsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 20, gap: 14 },
-  alert: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderRadius: 14, padding: 14 },
-  alertText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14, lineHeight: 20 },
   section: { fontFamily: fontFamily.bodySemi, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 },
   latestRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   latestValue: { fontFamily: fontFamily.displayBold, fontSize: 30 },
