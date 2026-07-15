@@ -13,9 +13,16 @@ describe('computeDeficitVolumeAlert', () => {
     expect(r.show).toBe(true);
     expect(r.deficitPct).toBe(20);
   });
-  it('moyenne sur jours loggés uniquement', () => {
-    const r = computeDeficitVolumeAlert({ loggedDailyKcals: [2000, 2000, 2000, 2000], ...base });
-    expect(r.show).toBe(true);
+  it("n'est pas dilué par les jours non loggés (moyenne sur jours loggés)", () => {
+    // Moyenne réelle sur 4 jours = 2500 = objectif → déficit 0 % → pas d'alerte.
+    // Une implémentation qui diviserait par 7 donnerait ~1428 → déficit ~43 % → alerte à tort.
+    expect(
+      computeDeficitVolumeAlert({
+        loggedDailyKcals: [2500, 2500, 2500, 2500],
+        targetKcal: 2500,
+        weeklyVolume: 9000,
+      }).show,
+    ).toBe(false);
   });
   it("pas d'alerte si déficit < 15 %", () => {
     expect(
@@ -31,7 +38,7 @@ describe('computeDeficitVolumeAlert', () => {
       }).show,
     ).toBe(false);
   });
-  it('pas d’alerte si targetKcal <= 0', () => {
+  it("pas d'alerte si targetKcal <= 0", () => {
     expect(
       computeDeficitVolumeAlert({
         loggedDailyKcals: [2000, 2000, 2000, 2000],
