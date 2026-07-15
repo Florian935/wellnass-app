@@ -10,7 +10,7 @@
 import type { Pillar } from './pillar';
 
 /**
- * Identifiants canoniques des 7 widgets du dashboard, dans l'ordre par défaut
+ * Identifiants canoniques des widgets du dashboard, dans l'ordre par défaut
  * (celui de `(tabs)/index.tsx` du Lot A).
  */
 export const DASHBOARD_WIDGET_IDS = [
@@ -21,6 +21,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'record-recent',
   'muscle-volume',
   'running-week',
+  'deficit-volume',
 ] as const;
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number];
@@ -42,6 +43,7 @@ export const WIDGET_PILLARS: Record<DashboardWidgetId, Pillar[] | 'always'> = {
   'record-recent': ['strength', 'running'],
   'muscle-volume': ['strength'],
   'running-week': ['running'],
+  'deficit-volume': ['strength', 'nutrition'],
 };
 
 /** Taille d'affichage d'un widget : carte normale ou ligne compacte. */
@@ -61,7 +63,7 @@ export interface DashboardLayout {
 }
 
 /**
- * Disposition par défaut : les 7 widgets, ordre canonique, tous visibles en
+ * Disposition par défaut : tous les widgets, ordre canonique, tous visibles en
  * taille normale. Nouvelle instance à chaque appel (immuable côté appelant).
  */
 export function defaultDashboardLayout(): DashboardLayout {

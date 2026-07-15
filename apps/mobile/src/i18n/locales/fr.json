@@ -368,8 +368,7 @@
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
     },
-    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" },
-    "deficitAlert": "Déficit calorique important cette semaine malgré un fort volume de musculation. Pense à manger assez pour récupérer."
+    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" }
   },
   "home": {
     "greeting": "Bonjour 👋",
@@ -452,6 +451,10 @@
       "sessionsGoal_one": "{{count}} / {{goal}} séance",
       "sessionsGoal_other": "{{count}} / {{goal}} séances",
       "link": "Historique →"
+    },
+    "deficitVolume": {
+      "title": "Nutrition & charge",
+      "message": "Cette semaine : apports ~{{pct}} % sous ton objectif, avec un volume muscu élevé. Pense à manger assez pour bien récupérer."
     }
   },
   "onboarding": {

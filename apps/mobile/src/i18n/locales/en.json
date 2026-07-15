@@ -368,8 +368,7 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
-    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" },
-    "deficitAlert": "Large calorie deficit this week despite high strength-training volume. Make sure you eat enough to recover."
+    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" }
   },
   "home": {
     "greeting": "Hello 👋",
@@ -452,6 +451,10 @@
       "sessionsGoal_one": "{{count}} / {{goal}} run",
       "sessionsGoal_other": "{{count}} / {{goal}} runs",
       "link": "History →"
+    },
+    "deficitVolume": {
+      "title": "Nutrition & load",
+      "message": "This week: intake ~{{pct}}% below your target, with high lifting volume. Make sure you eat enough to recover well."
     }
   },
   "onboarding": {

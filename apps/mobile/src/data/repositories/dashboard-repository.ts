@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import {
   activeDayKeys,
   computeAge,
+  computeDeficitVolumeAlert,
   computeStreak,
   isTrainingDay as computeIsTrainingDay,
   localDayKey,
@@ -34,6 +35,7 @@ import {
   tdee,
   trainingDayCalories,
   type DayActivity,
+  type DeficitVolumeAlert,
   type RecordDistanceKey,
   type RecordType,
 } from '@wellness/shared';
@@ -495,4 +497,66 @@ export function useMostRecentRecord(): {
   }
 
   return { record, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useDeficitVolumeAlert — widget 7.9 (US 4.32)
+// ---------------------------------------------------------------------------
+
+/** Clé AAAA-MM-JJ locale du jour situé `n` jours avant aujourd'hui (mirroir de nutrition-stats.tsx). */
+const daysAgo = (n: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return localDayKey(d);
+};
+
+/**
+ * Volume muscu (Σ reps × poids) des sets effectifs (non warmup, terminés) sur les 7
+ * derniers jours, tous exercices confondus. Requête copiée de `nutrition-stats.tsx`
+ * (US 4.32, tâche 6 la retirera de cet écran) — duplication temporaire assumée.
+ */
+const SELECT_WEEKLY_STRENGTH_VOLUME = `
+  SELECT ws.reps, ws.weight_kg FROM workout_sets ws
+  JOIN workouts w ON w.id = ws.workout_id AND w.deleted_at IS NULL
+  WHERE ws.deleted_at IS NULL AND ws.done = 1 AND ws.set_type != 'warmup' AND w.started_at >= ?
+`;
+
+/**
+ * Expose l'alerte croisée déficit calorique + fort volume muscu (widget 7.9, US 4.32).
+ *
+ * Composition : apports 7 j (`useDailyTotals`, tableau épars des seuls jours loggés),
+ * cible calorique de base (`useNutritionSummary().target`, hors bonus jour d'entraînement),
+ * volume muscu 7 j (requête dédiée ci-dessus), puis délégation à `computeDeficitVolumeAlert`
+ * (règle pure, `@wellness/shared`).
+ *
+ * **Gating piliers** : nécessite `strength` ET `nutrition` actifs (même lecture de
+ * `settings?.activePillars` que `useMostRecentRecord`). Tous les hooks sous-jacents sont
+ * appelés inconditionnellement (règle des hooks React) ; le gating n'intervient qu'au
+ * moment de retourner le résultat.
+ */
+export function useDeficitVolumeAlert(): DeficitVolumeAlert {
+  const { settings } = useSettings();
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const strengthActive = activePillars.includes('strength');
+  const nutritionActive = activePillars.includes('nutrition');
+
+  const { totals } = useDailyTotals(daysAgo(7));
+  const { target } = useNutritionSummary();
+  const { data: volRows } = useQuery<{ reps: number | null; weight_kg: number | null }>(
+    SELECT_WEEKLY_STRENGTH_VOLUME,
+    [daysAgo(7) + 'T00:00:00.000Z'],
+  );
+
+  if (!(strengthActive && nutritionActive)) {
+    return { show: false, deficitPct: 0, loggedDays: 0 };
+  }
+
+  const loggedDailyKcals = totals.map((d) => d.kcal);
+  const weeklyVolume = volRows.reduce((s, r) => s + (r.reps ?? 0) * (r.weight_kg ?? 0), 0);
+
+  return computeDeficitVolumeAlert({
+    loggedDailyKcals,
+    targetKcal: target ?? 0,
+    weeklyVolume,
+  });
 }
