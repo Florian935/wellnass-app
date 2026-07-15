@@ -143,6 +143,7 @@ select * from (
   union all select 40, 'MUSC-04', 'Séances DC avec charge (courbe 1RM)', '10',      (select dc_sessions::text from onerm), case when (select dc_sessions from onerm)=10 then '✅' else '⚠️' end from cnt
   union all select 41, 'MUSC-04', 'Meilleur 1RM estimé (DC)',            '≈ 90,7',  (select best_1rm::text from onerm),    case when (select best_1rm from onerm) between 89 and 92 then '✅' else '⚠️' end from cnt
   union all select 42, 'MUSC-04', 'Séries tractions charge 0 (exclues)', '3',       (select sets0::text from bodyweight),  case when (select sets0 from bodyweight)=3 then '✅' else '⚠️' end from cnt
+  union all select 43, 'MUSC-04', 'Paliers charge max DC (courbe)',       '6',       (select count(*)::text from public.personal_records p join me on p.user_id=me.uid where p.exercise_id='a1000001-0000-4000-8000-000000000001' and p.type='max_weight' and p.deleted_at is null), case when (select count(*) from public.personal_records p join me on p.user_id=me.uid where p.exercise_id='a1000001-0000-4000-8000-000000000001' and p.type='max_weight' and p.deleted_at is null)=6 then '✅' else '⚠️' end from cnt
 
   -- MUSC-05 — équilibre 14 j (séries par groupe)
   union all select 50, 'MUSC-05', 'Total séries 14 j',       '≥ 12 (≈ 45)', (select coalesce(sum(series),0)::text from grp), case when (select coalesce(sum(series),0) from grp) >= 12 then '✅' else '⚠️' end from cnt

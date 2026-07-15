@@ -377,17 +377,52 @@ begin
   end loop;
 
   ---------------------------------------------------------------------------
-  -- 9) RECORDS MUSCU (max_weight) dérivés des séries — écran records non vide.
+  -- 9) RECORDS MUSCU — HISTORIQUE des paliers (max_weight / estimated_1rm /
+  --    best_volume), reconstitué comme le ferait l'app à la clôture des séances.
+  --
+  --    ⚠️ La courbe « charge max » (écran Progression) lit `personal_records` :
+  --    chaque point = un record battu. Sans cet historique, on n'aurait qu'un
+  --    seul point. On sème donc UNE ligne par palier réellement franchi (valeur
+  --    strictement supérieure aux séances précédentes), datée de la séance.
+  --    Les exercices au poids du corps (charge 0) sont exclus (pas de record de
+  --    charge) → ils restent absents des courbes charge max / 1RM (voulu).
   ---------------------------------------------------------------------------
   insert into public.personal_records
-    (id, user_id, exercise_id, type, value, weight_kg, achieved_at)
-  select gen_random_uuid(), v_user, s.exercise_id, 'max_weight', s.mw, s.mw, now()
-  from (
-    select exercise_id, max(weight_kg) as mw
-    from public.workout_sets
-    where user_id = v_user and weight_kg > 0
-    group by exercise_id
-  ) s;
+    (id, user_id, exercise_id, type, value, reps, weight_kg, workout_id, achieved_at)
+  with sess as (
+    select ws.exercise_id, ws.workout_id, w.finished_at,
+           max(ws.weight_kg)                       as sess_max,
+           max(ws.weight_kg * (1 + ws.reps / 30.0)) as sess_1rm,  -- 1RM Epley
+           max(ws.reps * ws.weight_kg)             as sess_vol
+    from public.workout_sets ws
+    join public.workouts w on w.id = ws.workout_id
+    where ws.user_id = v_user and w.status = 'completed'
+      and ws.set_type <> 'warmup'
+      and ws.weight_kg > 0 and ws.reps is not null
+    group by ws.exercise_id, ws.workout_id, w.finished_at
+  ),
+  ranked as (
+    select s.*,
+           max(sess_max) over w_ex as run_max,
+           max(sess_1rm) over w_ex as run_1rm,
+           max(sess_vol) over w_ex as run_vol
+    from sess s
+    window w_ex as (
+      partition by exercise_id order by finished_at
+      rows between unbounded preceding and 1 preceding
+    )
+  )
+  select gen_random_uuid(), v_user, exercise_id, 'max_weight',
+         round(sess_max, 1), null, sess_max, workout_id, finished_at
+  from ranked where run_max is null or sess_max > run_max
+  union all
+  select gen_random_uuid(), v_user, exercise_id, 'estimated_1rm',
+         round(sess_1rm, 1), null, null, workout_id, finished_at
+  from ranked where run_1rm is null or sess_1rm > run_1rm
+  union all
+  select gen_random_uuid(), v_user, exercise_id, 'best_volume',
+         round(sess_vol, 1), null, null, workout_id, finished_at
+  from ranked where run_vol is null or sess_vol > run_vol;
 
   ---------------------------------------------------------------------------
   -- Récapitulatif

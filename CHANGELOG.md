@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — recette : dataset charge max (historique des paliers) + idée infobulle
+
+**Corrigé**
+- `supabase/scripts/recette-dataset.sql` — la courbe « charge max » (écran Progression) lit
+  `personal_records` : **1 point = 1 record battu** ([records-repository.ts:512-543](apps/mobile/src/data/repositories/records-repository.ts#L512-L543)),
+  pas le max par séance. Le dataset ne semait qu'**un seul** record `max_weight` daté du jour → un
+  point unique (remontée Florian, recette MUSC-04). Il reconstitue désormais l'**historique des
+  paliers** (`max_weight` / `estimated_1rm` / `best_volume`) via fonctions fenêtre : une ligne par
+  palier réellement franchi (valeur strictement supérieure aux séances précédentes), datée de la
+  séance. Exercices au poids du corps (charge 0) **exclus** (restent absents des courbes charge/1RM,
+  comportement voulu). ⚠️ Re-exécuter le script d'injection pour bénéficier du correctif.
+
+**Ajouté**
+- `supabase/scripts/recette-verification.sql` — contrôle « Paliers charge max DC (courbe) »
+  (attendu **6** : 60 → 65 → 70 → 72 → 75 → 80).
+- `IDEAS.md` — idée **infobulle de donnée au tap sur les graphiques** (points cliquables), transverse
+  à tous les graphiques, à cadrer via le workflow spec → plan → design (remontée Florian, recette MUSC-04).
+
+**Notes**
+- Outillage de recette (SQL **non joué par le CLI**) + note d'idée. **Aucun code applicatif, aucun
+  schéma, aucun secret.** Commit précédent : `ac0a691`.
+
 ### 16/07/2026 — `dev` (exceptionnel, sans branche) — bug consigné : édition/suppression d'un aliment de repas
 
 **Ajouté**

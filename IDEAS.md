@@ -20,6 +20,18 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [16/07/2026] 🆕 **Infobulle de donnée au tap sur les graphiques (points cliquables)** : sur **tous** les
+  graphiques de l'app (courbes de progression muscu charge max / volume / 1RM, courbe de poids et
+  d'apports nutrition, courbe d'allure course, histogrammes volume/équilibre muscu), pouvoir **taper un
+  point/une barre** pour afficher la **valeur exacte** + la **date** (aujourd'hui les points ne sont pas
+  cliquables, on lit la valeur « à la louche » sur l'axe). Remonté par Florian pendant la recette MUSC-04
+  (16/07). Faisable : `react-native-gifted-charts` expose `pointerConfig` (LineChart) et le focus au tap
+  (BarChart). Comme c'est **transverse à tous les graphiques** et qu'il y a un **volet design** (apparence
+  de l'infobulle : contenu, format nombre/date, unité, thème clair/sombre, gestion tap hors point), ça doit
+  passer par le workflow **spec → plan → design → validation** avant tout code. Réutilise les composants
+  partagés `ProgressLineChart` / `MuscleVolumeBarChart`. _À creuser :_ format exact affiché par type de
+  graphe, accessibilité, comportement multi-points rapprochés.
+
 - [15/07/2026] 🔍 **SaaS coach (web, hors app mobile) — wedge = import IA de fichiers Excel/Sheets** :
   concrétise et prolonge [[module-coach-coache]] + [[offre-payante-coach]] (12/07). Idée : une
   **application web séparée** (pas dans l'app mobile), payante (B2B, le **coach paie**, l'athlète reste
