@@ -16,6 +16,24 @@ chaque ligne est un candidat à cadrer (spec → plan → design → validation)
 - ⏳ **différé** — cadré (spec/US/IDEAS) mais non réalisé.
 - 🆕 **nouveau** — proposé ici, non encore cadré.
 
+## Règle transverse — filtrage par piliers actifs
+
+Les analyses sont **conditionnées aux piliers que l'utilisateur a activés** (décision H,
+« intégration sans imposition » : les onglets/piliers non activés sont masqués). Aucune analyse ne
+doit s'afficher ni consommer des données d'un pilier inactif.
+
+- **1 pilier activé** → uniquement les analyses **intra** de ce pilier. Aucune inter, aucune tri.
+- **2 piliers activés** → intra des deux + **inter uniquement sur cette paire**. Les autres
+  croisements et le tri-piliers restent masqués.
+- **3 piliers activés** → tout est disponible.
+- Les analyses **Méta / Dérivées** s'appliquent **dans le périmètre des piliers actifs** seulement.
+- **Côté IA** : le proxy n'envoie au modèle que les données des piliers actifs ; insights et chatbot
+  ne raisonnent que sur ceux-ci.
+
+_Précédent d'implémentation : le dashboard filtre déjà ses widgets par `active_pillars` via
+`WIDGET_PILLARS` + `resolveDashboardLayout` (`packages/shared/src/dashboard.ts`) ; les analyses
+héritent de la même logique de gating (`user_settings.active_pillars`)._
+
 ---
 
 ## Intra-Musculation

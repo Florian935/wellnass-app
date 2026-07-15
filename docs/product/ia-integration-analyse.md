@@ -172,12 +172,19 @@ L'IA est **le** candidat naturel au palier payant — la roadmap le prévoit dé
 **« IA »** dans les paliers RevenueCat (Premium muscu → Écosystème → **IA**, item 9.14, câblé mais
 inactif en V1). Principe :
 
-- **Analyse de données** : bon marché → peut servir d'**accroche** (un aperçu gratuit) ou entrer dans
-  un palier bas.
-- **Chatbot muscu** : coût réel → **palier premium**, avec **quota** de messages/mois pour borner la
-  dépense, et surcoût au-delà si besoin.
-- Régle d'or : le **prix du palier** doit couvrir le **coût IA du user le plus actif** du palier +
-  marge. Les estimations §4 donnent la borne (chatbot ≈ 0,4-0,8 $/user/mois d'usage typique).
+**Décision produit (Florian, 15/07/2026)** : les **analyses poussées et transverses (inter/tri-piliers)
+sont payantes**. Modèle freemium retenu :
+
+- **Gratuit = teaser de conversion** : **1 bilan d'analyse croisée par mois** (voire 2), et
+  **volontairement bridé** — il donne un **aperçu** de ce que l'IA sait faire, **sans être exhaustif
+  ni ultra-poussé**. But : donner envie de passer au payant.
+- **Premium = analyses complètes** : analyses croisées **poussées, exhaustives, à la demande** +
+  **chatbot muscu** (avec quota de messages/mois pour borner la dépense, surcoût au-delà si besoin).
+- **Règle d'or** : le **prix du palier** doit couvrir le **coût IA du user le plus actif** du palier +
+  marge. Les estimations §4 donnent la borne (chatbot ≈ 0,4-0,8 $/user/mois d'usage typique ; le
+  teaser gratuit ≈ 1 bilan bridé/mois = coût négligeable).
+
+> Rappel séquencement : gating actif ⇒ monétisation activée ⇒ **post-V1** (RevenueCat inactif en V1).
 
 ---
 
