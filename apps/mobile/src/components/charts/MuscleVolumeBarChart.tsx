@@ -5,6 +5,7 @@ import { useTheme } from '@/theme/useTheme';
 type DataPoint = {
   label: string;
   value: number;
+  color?: string;
 };
 
 type MuscleVolumeBarChartProps = {
@@ -29,7 +30,7 @@ export function MuscleVolumeBarChart({ data, title, unit, width }: MuscleVolumeB
   const chartData = data.map((point) => ({
     value: point.value,
     label: point.label,
-    frontColor: colors.accent,
+    frontColor: point.color ?? colors.accent,
     topLabelTextStyle: { color: colors.textMuted, fontSize: 10 },
   }));
 
