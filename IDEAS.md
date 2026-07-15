@@ -20,6 +20,22 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/07/2026] 🆕 **Board de suggestions utilisateurs + votes (feature request board)** : un endroit
+  dans l'app (emplacement à définir) où les utilisateurs **soumettent** des idées d'amélioration ou de
+  nouvelles fonctionnalités, et où les **autres utilisateurs votent** (upvote) pour celles qu'ils
+  veulent. Système qui **recense toutes les demandes**, classées par nombre de votes ; les plus votées
+  sont candidates au dev (arbitrage Florian + Damien). Style **Canny / Featurebase / roadmap publique**.
+  Briques : soumission (titre + description), **upvote** (1 voix/user), liste triée par votes + filtres
+  (récent / plus votés / statut), **dédoublonnage/fusion** des demandes similaires, **statuts**
+  (à l'étude / planifié / en cours / livré / refusé) visibles par tous, notif à l'auteur/aux votants
+  quand une demande change de statut. Côté **back-office** : triage des demandes (fusion, statut,
+  passage en US → rejoint [[catalogue-analyses]] / la roadmap), **modération** (spam, doublons,
+  hors-sujet) — recoupe l'US 8.7 modération. _Points durs (à instruire) :_ modération & spam,
+  **RGPD** (contenu utilisateur, droit à l'effacement), gestion des attentes (une demande votée ≠
+  promesse de dev), i18n des demandes (FR/EN), abus de vote (multi-comptes). _À creuser :_ cible
+  **post-V1** (nécessite une base d'utilisateurs pour avoir du sens) ; réutilise le socle Auth/RLS
+  offline-first ; boucle vertueuse d'engagement communautaire.
+
 - [15/07/2026] 🆕 **Module dédié Powerlifting (SBD)** : mode/module spécifique pour les pratiquants de
   powerlifting, avec **squat / bench / deadlift** au centre. Spécificités attendues : travail en
   **pourcentages du 1RM** (le max devient la référence, pas juste une charge saisie), **RPE / RIR**,
