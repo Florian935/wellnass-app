@@ -1,12 +1,16 @@
-# Dev build Android en local (sans EAS) — procédure
+# Build Android en local (sans EAS) — procédure
 
-But : installer et lancer l'app **en mode debug sur un téléphone Android physique**, en
-compilant **en local** (sans consommer de quota de build EAS). Le build produit est un
-**development build** (debuggable) connecté à **Metro** : le JS est servi en direct, donc un
-correctif JS ne nécessite **aucun rebuild** (juste `r` dans Metro ou relancer `npm run android`).
+Compiler l'app **en local** (sans consommer de quota de build EAS). Deux modes, mêmes prérequis
+(§1) :
 
-> Rédigé le 13/07/2026 après la mise en place sur le poste de Florian (Windows 10).
-> Cible : que **Damien** (ou tout dev) puisse reproduire la même chose.
+- **Mode A — dev build debug + Metro** (§2-3) : build **debuggable** connecté à **Metro**, JS
+  servi en direct → un correctif JS ne nécessite **aucun rebuild**. Pour développer au quotidien.
+- **Mode B — APK autonome release** (§4) : APK **standalone**, JS embarqué, **sans Metro ni
+  câble** pour l'utiliser. Pour installer l'app sur un tél « comme une vraie appli » (démo,
+  recette hors-poste, usage perso).
+
+> Rédigé le 13/07/2026 (mode A) puis complété le 16/07/2026 (mode B) sur le poste de Florian
+> (Windows 10). Cible : que **Damien** (ou tout dev) puisse reproduire la même chose.
 
 ---
 
@@ -98,7 +102,58 @@ npm run android        # démarre Metro + ouvre le dev build sur le tél
 
 ---
 
-## 4. Fichiers locaux (non commités)
+## 4. Mode B — APK autonome (release, sans Metro ni câble)
+
+But : produire **un fichier `.apk` autonome** qu'on installe sur n'importe quel téléphone par
+simple transfert (mail, Drive/OneDrive, Teams, clé USB), **sans Metro et sans câble** à
+l'utilisation. Idéal quand le quota EAS est épuisé.
+
+Deux points qui rendent ça possible sans config supplémentaire :
+- Le build type `release` est signé avec la **`debug.keystore`** du projet (voir
+  [android/app/build.gradle](../../../apps/mobile/android/app/build.gradle)) → APK **signé et
+  installable** directement, pas de keystore à générer.
+- Les variables `EXPO_PUBLIC_*` du fichier [.env](../../../apps/mobile/.env) local sont
+  **embarquées dans le bundle** au moment du build (Expo CLI les inline) → l'app tourne en
+  autonomie (Supabase, PowerSync) sans Metro.
+
+### Prérequis
+Les **mêmes que §1** (JDK 17, Android SDK + NDK). En revanche, pour **installer** l'APK, le
+téléphone n'a **pas besoin** du mode développeur/débogage USB — juste d'autoriser l'installation
+d'« applis de sources inconnues ».
+
+### Build
+```powershell
+cd apps\mobile\android
+.\gradlew.bat assembleRelease
+```
+- 1ᵉʳ build : long (compilation native). Les suivants sont plus rapides (cache Gradle).
+- APK produit :
+  ```
+  apps\mobile\android\app\build\outputs\apk\release\app-release.apk
+  ```
+- Cet APK est **autonome** : le JS est bundlé dedans, aucun besoin de Metro ni du câble ensuite.
+
+### Installer sur le téléphone (sans fil)
+1. Transférer `app-release.apk` sur le tél : mail à soi-même, Google Drive/OneDrive, Teams, ou
+   copie via clé USB.
+2. Ouvrir le fichier sur le tél → autoriser « installer des applis de sources inconnues » si
+   demandé → installer.
+
+### ⚠️ Conflit de signature avec un dev build déjà installé
+L'APK release (signé `debug.keystore` **du projet**) et un dev build EAS ont le même
+`applicationId` (`com.wellness.app`) mais des **signatures différentes** → Android refuse
+l'install par-dessus (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`). **Désinstaller d'abord** l'app
+existante sur le tél, puis installer l'APK.
+> ⚠️ Désinstaller **efface la base locale** (SQLite) de l'app : compte/onboarding repartent à zéro.
+
+### Quand rebuilder ?
+Contrairement au mode A, **tout** changement (JS **ou** natif) impose un nouveau
+`gradlew.bat assembleRelease` puis une réinstallation : le JS est figé dans l'APK, il n'y a pas
+de Metro pour recharger.
+
+---
+
+## 5. Fichiers locaux (non commités)
 
 Ces fichiers sont **spécifiques au poste** et **gitignorés** (ne pas committer) :
 - `C:\Users\<user>\.gradle\gradle.properties` — pin du JDK 17 (§1.2).
@@ -111,7 +166,7 @@ Ces fichiers sont **spécifiques au poste** et **gitignorés** (ne pas committer
 
 ---
 
-## 5. Dépannage rapide
+## 6. Dépannage rapide
 
 | Erreur | Cause | Fix |
 |---|---|---|
@@ -121,3 +176,4 @@ Ces fichiers sont **spécifiques au poste** et **gitignorés** (ne pas committer
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | APK EAS déjà installé (autre signature) | `adb uninstall com.wellness.app` puis relancer (§2). |
 | `adb: no devices/emulators found` | Tél non autorisé / câble | Réaccepter la popup RSA, `adb devices`, changer de câble (§1.5). |
 | Le JS corrigé n'apparaît pas | App **release** (preview/prod) installée → JS embarqué, pas connecté à Metro | Installer un **dev build** (§2) — seul un build `development`/debug se connecte à Metro. |
+| APK autonome (mode B) crashe au lancement / pas de connexion | `.env` absent ou vide au build → `EXPO_PUBLIC_*` non embarquées | Vérifier [apps/mobile/.env](../../../apps/mobile/.env) (cf. `.env.example`) **avant** `gradlew.bat assembleRelease`. |

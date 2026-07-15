@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `chore/recette-outillage-device` — outillage de recette sur device (sans EAS)
+
+**Ajouté**
+- `supabase/scripts/recette-dataset.sql` — script de **données de test** (pas une migration) :
+  remise à plat (hard delete) des données perso de l'utilisateur cible + injection de ~3 mois
+  d'historique cohérent (muscu 14 j déséquilibrée, historique 1RM DC, tractions charge 0, runs
+  ~2 mois dont 2 aujourd'hui, nutrition 60 j en 3 paliers kcal, poids hebdo, records, profils
+  pré-réglés 3 piliers / nutrition Auto). Couvre les recettes 🔴 en attente : MUSC-04, MUSC-05,
+  META-06, 4.32, RN-01/02. Un seul paramètre à renseigner : `v_email`. Tout en une transaction
+  `DO $$`. À jouer dans le **SQL Editor** cloud (bypass RLS), **jamais** via `db push`.
+- `supabase/scripts/recette-verification.sql` — contrôles **lecture seule** : une grille
+  bloc · contrôle · attendu · obtenu · statut (✅/⚠️) validant le dataset ci-dessus (compteurs,
+  déficit 7 j, deltas N vs N-1, courbe 1RM, équilibre 14 j par groupe, dépense course du jour).
+
+**Modifié**
+- `docs/specs/technical/dev-build-android-local.md` — ajout du **mode B : APK autonome (release,
+  sans Metro ni câble)**. Build local via `gradlew.bat assembleRelease` (signé `debug.keystore`
+  du projet, `EXPO_PUBLIC_*` embarquées depuis `.env`), transfert sans fil, install sans câble,
+  **hors quota EAS**. Intro reformulée (2 modes A/B, prérequis §1 communs), renumérotation
+  (§5 fichiers locaux, §6 dépannage) + 1 ligne de dépannage (`.env` absent → crash au lancement).
+
+**Notes**
+- Aucun code applicatif ni schéma touché (docs `.md` + `.sql` autonomes non importés) → lint/
+  typecheck/tests non rejoués. Scripts SQL **non idempotents** et **destructifs** (hard delete
+  ciblé sur `v_email`) : à réserver à un compte de recette. Aucun secret (email en placeholder
+  `REMPLACE-MOI@exemple.fr`). Commit précédent : `fe11bcb`.
+
 ### 15/07/2026 — `feature/musc05-equilibre-groupes` — MUSC-05 livrée (équilibre par groupe, 14 j)
 
 **Ajouté**
