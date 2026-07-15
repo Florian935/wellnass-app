@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 15/07/2026 — `feature/rn01-depense-course-objectif` — Cadrage RN-01/RN-02 (dépense course → objectif du jour)
+
+**Ajouté**
+- `docs/specs/functional/us/rn01-depense-course-objectif.md` — spec validée : réglage **Forfait/Auto**
+  du bonus calorique ; en Auto l'objectif du jour suit la **dépense estimée des courses terminées**
+  (repli forfait muscu), Forfait inchangé. Formule NET ≈ poids × distance × 1,0 + terme d'intensité
+  borné (EPOC, +1 %/km·h > 8 km/h, plafond +10 %). Croisement running↔nutrition, Phase A.
+- `docs/plans/rn01-depense-course-objectif.md` — plan d'implémentation en 8 tâches (TDD, subagent-driven) :
+  `estimateRunCalories` (running.ts) · `dayCalorieBonus` + mode Zod (nutrition.ts) · câblage repository
+  mobile + schéma PowerSync local · migration `training_bonus_mode` · centralisation objectif effectif ·
+  sélecteur profil · badge adaptatif · catalogue.
+
+**Notes**
+- Revue de spec + revue de plan (subagents) : références codebase vérifiées ; la revue de plan a
+  rattrapé le câblage repository (le mobile ne parse pas via Zod) + le schéma PowerSync local, et
+  2 bugs de référence (poids depuis `profile`, `localDayKey(new Date(...))`).
+- Migration = **checkpoint 🔴 Florian** (`db:push` + `db:types`), non bloquante (défaut `'fixed'`).
+
 ## 15/07/2026 — Ajouté — IDEAS.md : SaaS coach (web) + arbitrage surfaces coach/créateur
 
 Branche `docs/ideas-saas-coach`. Capture produit (aucun code, aucune US en pipeline). Issu d'un
