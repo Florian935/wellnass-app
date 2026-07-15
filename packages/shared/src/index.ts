@@ -23,6 +23,7 @@ export * from './food-form';
 export * from './meal-parser';
 export * from './recipe';
 export * from './bodyweight';
+export * from './muscle-balance';
 export * from './running';
 export * from './gpx';
 export * from './running-paces';
