@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 15/07/2026 — `feature/musc05-equilibre-groupes` — MUSC-05 livrée (équilibre par groupe, 14 j)
+
+**Ajouté**
+- `computeMuscleBalance(setsByGroup)` + constantes de seuils (`packages/shared/src/muscle-balance.ts`,
+  testée) — parts par groupe, classement délaissé/équilibré/sur-représenté vs cible uniforme (1/6),
+  liste des délaissés, `hasEnoughData` (≥ 12 séries). Métrique = **nombre de séries** (comparable
+  entre groupes, contrairement au tonnage).
+- Hook `useMuscleBalance()` (records-repository) — `COUNT` séries + `SUM` tonnage par groupe sur
+  **14 j glissants** (mêmes filtres que `useMuscleVolumeThisWeek`).
+- Section « Équilibre musculaire (14 j) » dans `/progress` : barres par séries **colorées** selon le
+  classement (délaissé = doré `#c9a96e`, équilibré = accent, sur-représenté = grisé) + **alerte douce**
+  listant les groupes délaissés (si historique ≥ 12 séries). i18n `progress.balance.*` FR/EN.
+- `MuscleVolumeBarChart` étendu : couleur par barre optionnelle (`color?`), **rétrocompatible**.
+
+**Notes**
+- 100 % offline, **pas de migration**. Section « volume hebdo » + widget dashboard inchangés
+  (non-régression ; chart rétrocompatible). Revue finale *prête à merger* (aucun bloquant). 663 tests verts.
+- Ratio **pousser/tirer reporté à MUSC-11** (nécessite le « type de mouvement », absent du schéma).
+  Catalogue MUSC-05 → ✅.
+
 ### 15/07/2026 — `feature/meta06-comparaison-periode` — META-06 livrée (delta N vs N-1, 3 surfaces)
 
 **Ajouté**
