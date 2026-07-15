@@ -316,17 +316,30 @@ function toStatRun(item: RunHistoryItem) {
 }
 
 /**
- * Statistiques agrégées des courses terminées pour la période donnée.
+ * Statistiques agrégées des courses terminées pour la période donnée, avec
+ * `todayKey` explicite — permet de comparer une période à la période
+ * précédente via `previousPeriodTodayKey` (voir `@wellness/shared`), en
+ * appelant ce hook une seconde fois avec la clé décalée.
  *
  * **Lecture seule** — repose sur `useRunHistory` (dashboard-safe : ne modifie pas
  * l'historique et ne change pas le comportement de `useIsTrainingDay` / `useStreakData`).
  * React Compiler gère la mémoïsation ; pas de `useMemo` manuel.
  */
-export function useRunStats(period: StatPeriod): { stats: RunStats; isLoading: boolean } {
+export function useRunStatsAt(
+  period: StatPeriod,
+  todayKey: string,
+): { stats: RunStats; isLoading: boolean } {
   const { runs, isLoading } = useRunHistory();
-  const todayKey = localDayKey(new Date());
   const stats = aggregateRunStats(runs.map(toStatRun), period, todayKey);
   return { stats, isLoading };
+}
+
+/**
+ * Statistiques agrégées des courses terminées pour la période donnée, calées
+ * sur « aujourd'hui ». Délègue à `useRunStatsAt` (voir ci-dessus).
+ */
+export function useRunStats(period: StatPeriod): { stats: RunStats; isLoading: boolean } {
+  return useRunStatsAt(period, localDayKey(new Date()));
 }
 
 /**

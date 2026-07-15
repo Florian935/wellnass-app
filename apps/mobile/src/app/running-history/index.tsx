@@ -24,13 +24,17 @@ import { useTranslation } from 'react-i18next';
 import {
   formatDurationHms,
   formatPaceMMSS,
+  localDayKey,
   paceToSystem,
+  percentChange,
+  previousPeriodTodayKey,
   RUNNING_RECORD_DISTANCES,
   type PaceTrendKind,
   type RecordDistanceKey,
   type StatPeriod,
 } from '@wellness/shared';
 import { Card } from '@/components/Card';
+import { DeltaBadge } from '@/components/DeltaBadge';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -39,7 +43,7 @@ import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import {
   usePaceTrend,
   useRunHistory,
-  useRunStats,
+  useRunStatsAt,
 } from '@/data/repositories/run-repository';
 import {
   backfillRunningRecords,
@@ -153,12 +157,32 @@ function StatsSection() {
   const { colors } = useTheme();
   const units = useUnits();
   const [period, setPeriod] = useState<StatPeriod>('week');
-  const { stats } = useRunStats(period);
+
+  const todayKey = localDayKey(new Date());
+  const prevKey = previousPeriodTodayKey(todayKey, period);
+  const { stats, isLoading } = useRunStatsAt(period, todayKey);
+  // `prevKey` est `null` pour la période 'all' (pas de période précédente) : le hook
+  // est appelé quand même (règles des hooks), avec une clé neutre, mais le badge de
+  // comparaison n'est jamais monté dans ce cas (voir `showDelta`).
+  const { stats: prevStats, isLoading: prevLoading } = useRunStatsAt(period, prevKey ?? todayKey);
+  const showDelta = prevKey != null && !isLoading && !prevLoading;
 
   const cards = [
-    { key: 'totalDistance', value: units.formatDistance(stats.totalDistanceM / 1000) },
-    { key: 'totalTime', value: formatDurationHms(stats.totalDurationS) },
-    { key: 'runCount', value: String(stats.count) },
+    {
+      key: 'totalDistance',
+      value: units.formatDistance(stats.totalDistanceM / 1000),
+      delta: percentChange(stats.totalDistanceM, prevStats.totalDistanceM),
+    },
+    {
+      key: 'totalTime',
+      value: formatDurationHms(stats.totalDurationS),
+      delta: percentChange(stats.totalDurationS, prevStats.totalDurationS),
+    },
+    {
+      key: 'runCount',
+      value: String(stats.count),
+      delta: percentChange(stats.count, prevStats.count),
+    },
   ] as const;
 
   return (
@@ -181,6 +205,7 @@ function StatsSection() {
             <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
               {c.value}
             </Text>
+            {showDelta ? <DeltaBadge change={c.delta} style={styles.statDelta} /> : null}
           </View>
         ))}
       </View>
@@ -398,6 +423,7 @@ const styles = StyleSheet.create({
   },
   statLabel: { fontFamily: fontFamily.body, fontSize: 12, textAlign: 'center' },
   statValue: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
+  statDelta: { marginTop: 2 },
   paceCard: { gap: 14 },
   trendRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   trendLabel: { fontFamily: fontFamily.body, fontSize: 13 },
