@@ -34,6 +34,26 @@ _Précédent d'implémentation : le dashboard filtre déjà ses widgets par `act
 `WIDGET_PILLARS` + `resolveDashboardLayout` (`packages/shared/src/dashboard.ts`) ; les analyses
 héritent de la même logique de gating (`user_settings.active_pillars`)._
 
+## Source transverse — indicateurs subjectifs quotidiens (check-in)
+
+Au-delà des données **mesurées** (séances, courses, repas, poids), l'utilisateur peut renseigner
+**chaque jour** des **indicateurs subjectifs** : score de **sommeil**, **motivation**, **fatigue**,
+**stress**, humeur, énergie. Ces signaux sont une **source transverse à croiser dans les analyses** —
+ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, plateau, surmenage).
+
+- **À croiser notamment avec** : score de forme / readiness (TRI-03), récupération, alerte
+  surentraînement/sous-récup (TRI-12), déficit + charge, qualité des séances, tendance des PR.
+- **Exemples d'analyses 🆕** : « corrélation sommeil ↔ performance », « stress/fatigue élevés sur N
+  jours → recommander repos/deload », « motivation en baisse → nudge/rappel bienveillant »,
+  « readiness = f(sommeil, fatigue, charge, RPE) ».
+- **Prérequis (🆕, non cadré)** : un **check-in quotidien léger** (~10 s le matin) + une table
+  historisée dédiée. Cf. idées `journal-bien-etre` et « check-in quotidien » dans
+  [IDEAS.md](../../IDEAS.md). C'est une **dimension transverse** (façon 4ᵉ dimension « wellness »),
+  pas un 4ᵉ pilier activable.
+- **Gating** : soumis à la règle des piliers actifs ci-dessus **et** au freemium (les analyses
+  croisées poussées qui exploitent ces signaux sont payantes — voir
+  [ia-integration-analyse.md](ia-integration-analyse.md) §6).
+
 ---
 
 ## Intra-Musculation

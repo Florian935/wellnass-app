@@ -20,6 +20,25 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/07/2026] 🆕 **Profils enrichis (fitness / running / alimentation) + mode « simple » gratuit vs
+  « avancé » payant** : la section **Profil** doit être **bien plus poussée** — beaucoup plus de
+  **réglages/paramètres** par pilier, pour personnaliser suggestions et analyses. Exemples de réglages
+  à prévoir : **fitness/muscu** (objectif précis, niveau/expérience, matériel & lieu — salle/maison,
+  fréquence hebdo dispo, jours dispo, blessures/contre-indications, préférences d'exercices, durée de
+  séance visée) ; **running** (objectif/distance cible, allures de référence, VMA/FC si dispo,
+  fréquence, terrain, échéance de course) ; **alimentation** (régime/restrictions/allergènes, nombre
+  de repas, macros cibles fines, préférences/aversions, budget/temps de prépa). Ces réglages doivent
+  être **pris en compte dans les analyses, les suggestions de programmes (muscu/running), les plans
+  nutrition et les analyses croisées** (et alimenter le prompt/RAG de l'IA). **Piste monétisation** :
+  deux modes de profil — **« simple » (plan gratuit)** = réglages minimaux, suggestions génériques ;
+  **« poussé / avancé » (plan payant)** = réglages fins qui **débloquent des suggestions de
+  programmes / plans alim / analyses croisées spécifiques et plus personnalisées**. Cohérent avec le
+  principe « l'intelligence de croisement est payante » (cf. [[principe-monetisation]] et
+  [ia-integration-analyse.md](docs/product/ia-integration-analyse.md) §6). Recoupe US 4.1 (profil
+  nutritionnel), 5.1 (profil coureur), onboarding 1.7-1.9, et [[integration-ia]]. _À creuser :_ liste
+  exacte des réglages par pilier ; comment le mode avancé nourrit concrètement les suggestions IA ;
+  où placer le curseur gratuit/payant sans frustrer l'adoption.
+
 - [15/07/2026] 🆕 **Podométrie — suivi des pas au quotidien** : compter les **pas** de l'utilisateur
   tout au long de la journée, en **arrière-plan**, **sans avoir à lancer une course** à chaque fois
   (ce serait relou de démarrer une séance running juste pour compter ses pas quotidiens). **Doit
