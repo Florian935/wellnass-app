@@ -757,6 +757,14 @@
       "emptyTitle": "Aucun volume cette semaine",
       "emptyMessage": "Termine une séance pour voir le volume réparti par groupe musculaire."
     },
+    "balance": {
+      "title": "Équilibre musculaire",
+      "subtitle": "sur 14 jours",
+      "chartTitle": "Séries par groupe",
+      "alert": "Groupes peu travaillés : {{groups}}",
+      "emptyTitle": "Aucune séance sur 14 jours",
+      "emptyMessage": "Termine une séance pour voir la répartition de tes séries par groupe musculaire."
+    },
     "exercise": {
       "title": "Par exercice",
       "placeholder": "Choisir un exercice…",

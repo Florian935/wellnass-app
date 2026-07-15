@@ -28,7 +28,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { percentChange, type MuscleGroup } from '@wellness/shared';
+import { percentChange, type MuscleGroup, type MuscleBalance } from '@wellness/shared';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
 import { EmptyState } from '@/components/EmptyState';
@@ -41,12 +41,14 @@ import { ExercisePicker } from '@/components/programs/ExercisePicker';
 import {
   useExerciseRecords,
   useExerciseProgression,
+  useMuscleBalance,
   useMuscleVolumeThisWeek,
   useWeeklyVolumeComparison,
   type ProgressionMetric,
   type ProgressionPeriod,
 } from '@/data/repositories/records-repository';
 import type { ExerciseListItem } from '@/data/repositories/exercise-repository';
+import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -107,6 +109,18 @@ export default function ProgressScreen() {
           {t('progress.weeklyVolume.title')}
         </Text>
         <WeeklyVolumeSection onStartWorkout={() => router.push('/workout')} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Section 1bis — Équilibre musculaire (14 j)                        */}
+        {/* ---------------------------------------------------------------- */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('progress.balance.title')}
+          <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+            {'  '}
+            {t('progress.balance.subtitle')}
+          </Text>
+        </Text>
+        <MuscleBalanceSection onStartWorkout={() => router.push('/workout')} />
 
         {/* ---------------------------------------------------------------- */}
         {/* Section 2 — Par exercice                                          */}
@@ -227,6 +241,75 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
         unit={units.weightSymbol}
       />
     </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section équilibre musculaire (14 j)
+// ---------------------------------------------------------------------------
+
+/**
+ * Couleur d'une barre selon le classement d'équilibre du groupe :
+ *  - `neglected` → doré charte (#c9a96e) ;
+ *  - `over`      → gris atténué (textMuted) ;
+ *  - `balanced`  → accent thème.
+ */
+function colorFor(status: MuscleBalance['groups'][number]['status'], colors: Palette): string {
+  if (status === 'neglected') return '#c9a96e';
+  if (status === 'over') return colors.textMuted;
+  return colors.accent;
+}
+
+function MuscleBalanceSection({ onStartWorkout }: { onStartWorkout: () => void }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { balance, isLoading } = useMuscleBalance();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingRow}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+
+  if (balance.totalSets === 0) {
+    return (
+      <EmptyState
+        icon="barbell-outline"
+        title={t('progress.balance.emptyTitle')}
+        message={t('progress.balance.emptyMessage')}
+        cta={{ label: t('progress.cta.startWorkout'), onPress: onStartWorkout }}
+      />
+    );
+  }
+
+  const chartData = balance.groups.map((g) => ({
+    label: t(`muscle.${g.muscle}`),
+    value: g.sets,
+    color: colorFor(g.status, colors),
+  }));
+
+  const showAlert = balance.hasEnoughData && balance.neglected.length > 0;
+
+  return (
+    <>
+      {showAlert && (
+        <Card style={styles.balanceAlertCard}>
+          <View style={styles.balanceAlertRow}>
+            <Ionicons name="warning-outline" size={20} color="#c9a96e" />
+            <Text style={[styles.balanceAlertMessage, { color: colors.textMuted }]}>
+              {t('progress.balance.alert', {
+                groups: balance.neglected.map((m) => t(`muscle.${m}`)).join(', '),
+              })}
+            </Text>
+          </View>
+        </Card>
+      )}
+      <Card>
+        <MuscleVolumeBarChart data={chartData} title={t('progress.balance.chartTitle')} />
+      </Card>
+    </>
   );
 }
 
@@ -412,6 +495,25 @@ const styles = StyleSheet.create({
   },
   sectionTitleSpaced: {
     marginTop: 28,
+  },
+  sectionSubtitle: {
+    fontFamily: fontFamily.body,
+    fontSize: 13,
+    letterSpacing: 0,
+  },
+  balanceAlertCard: {
+    marginBottom: 12,
+  },
+  balanceAlertRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  balanceAlertMessage: {
+    flex: 1,
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
   },
   subSectionTitle: {
     fontFamily: fontFamily.bodySemi,

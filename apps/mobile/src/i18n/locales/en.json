@@ -757,6 +757,14 @@
       "emptyTitle": "No volume this week",
       "emptyMessage": "Complete a workout to see volume broken down by muscle group."
     },
+    "balance": {
+      "title": "Muscle balance",
+      "subtitle": "over 14 days",
+      "chartTitle": "Sets per group",
+      "alert": "Under-worked groups: {{groups}}",
+      "emptyTitle": "No workouts in the last 14 days",
+      "emptyMessage": "Complete a workout to see your sets broken down by muscle group."
+    },
     "exercise": {
       "title": "By exercise",
       "placeholder": "Choose an exercise…",
