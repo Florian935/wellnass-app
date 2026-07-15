@@ -658,6 +658,69 @@ export function useMuscleVolumeThisWeek(): {
 }
 
 /**
+ * Volume total (kg) de la semaine courante vs semaine précédente, réactif.
+ *
+ * Mêmes filtres que `useMuscleVolumeThisWeek` (séries validées non-échauffement
+ * de séances terminées), mais sans `GROUP BY muscle_primary` : une somme globale.
+ * - `current`  : `finished_at >= weekStart` (lundi local courant, ISO UTC).
+ * - `previous` : `finished_at` dans `[prevWeekStart, weekStart[` — la semaine
+ *   calendaire précédente (lundi à lundi), `prevWeekStart` dérivé de `weekStart`
+ *   moins 7 jours.
+ *
+ * Deux `useQuery` inconditionnels (règle des hooks) ; `isLoading` est vrai si
+ * l'une des deux requêtes est encore en cours.
+ */
+export function useWeeklyVolumeComparison(): {
+  current: number;
+  previous: number;
+  isLoading: boolean;
+} {
+  const weekStart = startOfWeekLocalUtc();
+  const prevWeekStart = new Date(
+    new Date(weekStart).getTime() - 7 * 24 * 60 * 60 * 1000,
+  ).toISOString();
+
+  const currentSql = `
+    SELECT SUM(s.reps * s.weight_kg) AS v
+    FROM workout_sets s
+    JOIN workouts w ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    JOIN exercises e ON e.id = s.exercise_id AND e.deleted_at IS NULL
+    WHERE s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+      AND w.finished_at >= ?
+  `;
+
+  const previousSql = `
+    SELECT SUM(s.reps * s.weight_kg) AS v
+    FROM workout_sets s
+    JOIN workouts w ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    JOIN exercises e ON e.id = s.exercise_id AND e.deleted_at IS NULL
+    WHERE s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+      AND w.finished_at >= ? AND w.finished_at < ?
+  `;
+
+  const { data: currentData, isLoading: currentLoading } = useQuery<{ v: number | null }>(
+    currentSql,
+    [weekStart],
+  );
+  const { data: previousData, isLoading: previousLoading } = useQuery<{ v: number | null }>(
+    previousSql,
+    [prevWeekStart, weekStart],
+  );
+
+  const current = currentData[0]?.v ?? 0;
+  const previous = previousData[0]?.v ?? 0;
+  const isLoading = currentLoading || previousLoading;
+
+  return { current, previous, isLoading };
+}
+
+/**
  * Détail complet d'une séance terminée (entête + séries regroupées par exercice +
  * volume calculé), réactif. Les noms d'exercice sont résolus dans la langue
  * applicative. Deux requêtes toujours appelées (règle des hooks) : quand

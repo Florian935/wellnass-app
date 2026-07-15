@@ -28,8 +28,9 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { MuscleGroup } from '@wellness/shared';
+import { percentChange, type MuscleGroup } from '@wellness/shared';
 import { Card } from '@/components/Card';
+import { DeltaBadge } from '@/components/DeltaBadge';
 import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -41,6 +42,7 @@ import {
   useExerciseRecords,
   useExerciseProgression,
   useMuscleVolumeThisWeek,
+  useWeeklyVolumeComparison,
   type ProgressionMetric,
   type ProgressionPeriod,
 } from '@/data/repositories/records-repository';
@@ -173,6 +175,7 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
   const { colors } = useTheme();
   const units = useUnits();
   const { volumes, isLoading } = useMuscleVolumeThisWeek();
+  const { current, previous, isLoading: comparisonLoading } = useWeeklyVolumeComparison();
 
   if (isLoading) {
     return (
@@ -200,6 +203,24 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
 
   return (
     <Card>
+      {!comparisonLoading && (
+        <View style={styles.weeklyTotalRow}>
+          <View style={styles.weeklyTotalTextGroup}>
+            <Text style={[styles.weeklyTotalLabel, { color: colors.textMuted }]}>
+              {t('progress.weeklyVolume.total')}
+            </Text>
+            <Text style={[styles.weeklyTotalValue, { color: colors.text }]}>
+              {Math.round(units.toWeightValue(current))} {units.weightSymbol}
+            </Text>
+          </View>
+          <View style={styles.weeklyTotalDelta}>
+            <DeltaBadge change={percentChange(current, previous)} />
+            <Text style={[styles.weeklyTotalDeltaLabel, { color: colors.textMuted }]}>
+              {t('progress.weeklyVolume.vsPrevious')}
+            </Text>
+          </View>
+        </View>
+      )}
       <MuscleVolumeBarChart
         data={chartData}
         title={t('progress.weeklyVolume.chartTitle')}
@@ -404,6 +425,32 @@ const styles = StyleSheet.create({
   loadingRow: {
     paddingVertical: 24,
     alignItems: 'center',
+  },
+  weeklyTotalRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  weeklyTotalTextGroup: {
+    gap: 2,
+  },
+  weeklyTotalLabel: {
+    fontFamily: fontFamily.body,
+    fontSize: 12,
+  },
+  weeklyTotalValue: {
+    fontFamily: fontFamily.displaySemi,
+    fontSize: 22,
+    letterSpacing: -0.3,
+  },
+  weeklyTotalDelta: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  weeklyTotalDeltaLabel: {
+    fontFamily: fontFamily.body,
+    fontSize: 11,
   },
   emptyCard: {
     padding: 20,

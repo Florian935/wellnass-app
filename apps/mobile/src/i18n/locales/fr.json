@@ -752,6 +752,8 @@
     "weeklyVolume": {
       "title": "Volume cette semaine",
       "chartTitle": "Volume par groupe musculaire",
+      "total": "Total",
+      "vsPrevious": "vs. semaine précédente",
       "emptyTitle": "Aucun volume cette semaine",
       "emptyMessage": "Termine une séance pour voir le volume réparti par groupe musculaire."
     },
