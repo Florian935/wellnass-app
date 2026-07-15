@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 15/07/2026 — `feature/rn01-depense-course-objectif` — RN-01/RN-02 dépense course → objectif du jour (code livré)
+
+**Ajouté (code)**
+- `estimateRunCalories` (`packages/shared/src/running.ts`, testée) — dépense NET d'une course ≈ poids ×
+  distance × 1,0 kcal/kg/km + terme d'intensité borné (EPOC, +1 %/km·h > 8 km/h, plafond +10 %) ;
+  0 si distance/poids manquant.
+- `dayCalorieBonus` + type `TrainingBonusMode` (`packages/shared/src/nutrition.ts`, testée) — bonus du
+  jour selon le mode ; champ `trainingBonusMode` (`z.enum(['fixed','auto']).default('fixed')`) au
+  `nutritionProfileRowSchema`.
+- Hook `useDayCalorieTarget(dayKey)` (`dashboard-repository.ts`) — calcul **centralisé** de l'objectif
+  effectif (mode, forfait, poids, courses du jour, gating running+nutrition) exposant `bonusSource`
+  (`run`/`forfait`/`none`) ; consommé par `useNutritionSummary(today)` **et** le journal (jour sélectionné).
+- Sélecteur **Forfait/Auto** dans l'écran profil nutrition (`Segment`) + badge adaptatif « · course »
+  (journal + carte dashboard), i18n FR/EN (`bonusMode.*`, `runDayBadge`).
+- Migration `20260715152227_nutrition_training_bonus_mode.sql` (colonne additive, défaut `'fixed'`,
+  check `in ('fixed','auto')`) + colonne au schéma PowerSync local.
+
+**Modifié**
+- `nutrition.tsx` : suppression du recalcul local d'objectif effectif (dé-duplication) → consomme
+  `useDayCalorieTarget(day)`, redevient sensible au jour navigable.
+- `nutrition-repository.ts` : câblage `training_bonus_mode` ↔ `trainingBonusMode` (lecture + écriture,
+  repli `'fixed'`).
+
+**Notes**
+- Revues spec + plan + revue finale (subagents) : ✅ prêt à merger, aucun bloquant. Non-régression du
+  mode Forfait prouvée (identique à l'existant à l'arrondi près).
+- ⚠️ **Séquencement obligatoire** : appliquer la migration cloud (`db:push` + `db:types`) **AVANT**
+  toute bascule en mode **Auto** sur un device synchronisé — sinon l'`UPDATE` de `training_bonus_mode`
+  vers un Postgres sans la colonne peut **bloquer la file de synchro PowerSync**. En lecture / mode
+  Forfait, aucun risque (repli `'fixed'`).
+
 ### 15/07/2026 — `feature/rn01-depense-course-objectif` — Cadrage RN-01/RN-02 (dépense course → objectif du jour)
 
 **Ajouté**
