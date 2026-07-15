@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 15/07/2026 — Ajouté / Modifié — US 4.32 : alerte croisée déficit + volume (code livré, subagent-driven)
+
+Branche `feature/4.32-alerte-deficit-volume`. Exécution subagent-driven (implémenteur + revues spec &
+qualité par tâche, revue finale *ready to merge*). Première **stat croisée inter-piliers** livrée sous
+forme de **widget dashboard conditionnel**. **100 % client, offline — aucune migration/cloud/natif.**
+
+### Ajouté
+- **`@wellness/shared/bodyweight.ts`** : `computeDeficitVolumeAlert({ loggedDailyKcals, targetKcal,
+  weeklyVolume }) → { show, deficitPct, loggedDays }` + `MIN_LOGGED_DAYS = 4` (réutilise
+  `shouldAlertDeficitVolume`/`averageIntake`). +tests (shared 631).
+- **Registre dashboard** (`dashboard.ts`) : widget `deficit-volume` (`WIDGET_PILLARS`
+  `['strength','nutrition']`) ; `dashboard.test.ts` mis à jour (8 widgets).
+- **Hook** `useDeficitVolumeAlert` (`dashboard-repository.ts`) : `useDailyTotals(7 j)` (épars) →
+  `loggedDailyKcals`, cible **de base** via `useNutritionSummary().target`, requête volume muscu 7 j
+  glissante dédiée (`set_type != 'warmup'`), **gating muscu ET nutrition actifs**.
+- **Widget** `DeficitVolumeAlertCard` (rend `null` hors alerte) + mapping `dashboard-widgets.tsx`.
+- **i18n** `home.deficitVolume.{title,message}` FR/EN (`{{pct}}`).
+
+### Modifié / Supprimé
+- **`nutrition-stats.tsx`** : **retrait** de l'ancienne alerte (v1 faible, commit `193c5ff`) — bloc +
+  calcul + requête volume + imports morts (`Ionicons`, `useQuery`, `useProfile`,
+  `useNutritionProfile`, `tdee`, `targetCalories`, `objectiveFromGoal`, `computeAge`,
+  `shouldAlertDeficitVolume`) + styles. Clé i18n **`stats.deficitAlert` supprimée** (FR/EN). Sections
+  poids & apports intactes.
+
+### Technique / Notes
+- Gating « les deux piliers » porté par le hook (le registre filtre en `.some()`). Cible de base (pas
+  ajustée jour-de-séance). Fenêtre 7 j (borne verbatim de l'existant). typecheck/tests(631)/lint verts.
+- **Reste 🔴 recette (Florian/Damien)** : provoquer/lever l'alerte, gating piliers, disparition de
+  l'écran Stats, cadre vide en mode édition. Export web KO = **pré-existant** (op-sqlite/better-sqlite3,
+  sans rapport avec 4.32).
+
 ## 15/07/2026 — Ajouté — Plan d'implémentation US 4.32 (alerte déficit + volume, relu Approved)
 
 Branche `feature/4.32-alerte-deficit-volume`. Plan issu de `writing-plans`, relu par sous-agent
