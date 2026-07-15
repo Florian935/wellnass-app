@@ -139,6 +139,28 @@ export function trainingDayCalories(target: number, bonus: number): number {
   return Math.round(target + Math.max(0, bonus));
 }
 
+/** Mode de calcul du bonus calorique des jours d'entrainement (item RN-02). */
+export type TrainingBonusMode = 'fixed' | 'auto';
+
+/**
+ * Bonus calorique du jour selon le mode choisi (item RN-02).
+ * `fixed` : forfait fixe les jours de seance, 0 sinon.
+ * `auto` : depense de la course du jour si une course a ete enregistree,
+ * sinon repli sur le forfait fixe (jour de seance sans course), sinon 0.
+ */
+export function dayCalorieBonus(params: {
+  mode: TrainingBonusMode;
+  isTrainingDay: boolean;
+  fixedBonus: number;
+  runCaloriesToday: number;
+}): number {
+  const { mode, isTrainingDay, fixedBonus, runCaloriesToday } = params;
+  const forfait = isTrainingDay && fixedBonus > 0 ? fixedBonus : 0;
+  if (mode === 'fixed') return forfait;
+  if (runCaloriesToday > 0) return runCaloriesToday;
+  return forfait;
+}
+
 // --- Macros (spec §2.3) ------------------------------------------------------
 
 export const PROTEIN_KCAL_PER_G = 4;
@@ -249,6 +271,8 @@ export const nutritionProfileRowSchema = syncFieldsSchema.extend({
   allergens: z.array(z.string()).default([]),
   /** Bonus calorique des jours d'entraînement (item 4.7, opt-in) ; 0 = désactivé. */
   trainingDayBonus: z.number().nonnegative().default(0),
+  /** Mode de calcul du bonus (item RN-02) : forfait fixe ou dépense course auto. */
+  trainingBonusMode: z.enum(['fixed', 'auto']).default('fixed'),
   /** Repas personnalisés (renommer / ajouter / supprimer, item 4.15) ; `null` = 4 repas par défaut. */
   meals: z.array(mealConfigItemSchema).nullable().default(null),
 });

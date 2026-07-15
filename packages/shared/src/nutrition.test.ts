@@ -7,6 +7,7 @@ import {
   activityLevelSchema,
   basalMetabolicRate,
   caloriesFromMacros,
+  dayCalorieBonus,
   defaultMacroRatios,
   macroGramsFromCalories,
   macroRatiosFromGrams,
@@ -130,6 +131,23 @@ describe('trainingDayCalories', () => {
   });
 });
 
+describe('dayCalorieBonus', () => {
+  it('fixed : forfait les jours de séance, 0 sinon', () => {
+    expect(dayCalorieBonus({ mode: 'fixed', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 999 })).toBe(300);
+    expect(dayCalorieBonus({ mode: 'fixed', isTrainingDay: false, fixedBonus: 300, runCaloriesToday: 999 })).toBe(0);
+    expect(dayCalorieBonus({ mode: 'fixed', isTrainingDay: true, fixedBonus: 0, runCaloriesToday: 999 })).toBe(0);
+  });
+  it('auto : dépense course si course terminée', () => {
+    expect(dayCalorieBonus({ mode: 'auto', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 450 })).toBe(450);
+  });
+  it('auto : repli forfait si jour de séance sans course', () => {
+    expect(dayCalorieBonus({ mode: 'auto', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 0 })).toBe(300);
+  });
+  it('auto : 0 si aucune activité', () => {
+    expect(dayCalorieBonus({ mode: 'auto', isTrainingDay: false, fixedBonus: 300, runCaloriesToday: 0 })).toBe(0);
+  });
+});
+
 describe('macros', () => {
   it('fournit les ratios par défaut par objectif (somme 100)', () => {
     for (const objective of NUTRITION_OBJECTIVES) {
@@ -203,6 +221,15 @@ describe('nutritionProfileRowSchema', () => {
     });
     expect(parsed.restrictions).toEqual(['vegan', 'gluten_free']);
     expect(parsed.manualProteinG).toBe(180);
+  });
+
+  describe('trainingBonusMode', () => {
+    it('défaut fixed', () => {
+      expect(nutritionProfileRowSchema.parse(base).trainingBonusMode).toBe('fixed');
+    });
+    it('accepte auto', () => {
+      expect(nutritionProfileRowSchema.parse({ ...base, trainingBonusMode: 'auto' }).trainingBonusMode).toBe('auto');
+    });
   });
 });
 
