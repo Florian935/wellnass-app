@@ -31,9 +31,11 @@
 
 import { useQuery } from '@powersync/react';
 import {
+  computeMuscleBalance,
   computeVolume,
   computeWorkoutRecords,
   sessionBestEstimated1RM,
+  type MuscleBalance,
   type MuscleGroup,
   type RecordType,
 } from '@wellness/shared';
@@ -283,6 +285,16 @@ function periodLowerBound(period: ProgressionPeriod): string {
   const days = PERIOD_DAYS[period];
   const bound = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   return bound.toISOString();
+}
+
+/**
+ * Borne basse ISO UTC d'une fenêtre glissante de `days` jours (now − N jours).
+ * Fonction dédiée (plutôt qu'un `Date.now()` inline dans un hook) pour rester
+ * cohérent avec `periodLowerBound` / `startOfWeekLocalUtc` ci-dessus et respecter
+ * la règle de pureté du rendu (`react-hooks/purity`).
+ */
+function rollingWindowLowerBound(days: number): string {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 /**
@@ -655,6 +667,61 @@ export function useMuscleVolumeThisWeek(): {
   }));
 
   return { volumes, isLoading };
+}
+
+/**
+ * Équilibre du volume d'entraînement par groupe musculaire sur 14 jours glissants
+ * (spec MUSC-05), réactif.
+ *
+ * Fenêtre **glissante** (pas calendaire) : borne basse = `now − 14 jours`, calculée
+ * en JS puis convertie en ISO UTC (voir en-tête de fichier — jamais de comparaison
+ * `date()` SQL sur de l'UTC). Mêmes filtres que `useMuscleVolumeThisWeek` (séries
+ * validées non-échauffement de séances terminées), mais compte aussi le nombre de
+ * séries (`sets`) par groupe en plus du tonnage, et regroupe par `muscle_primary`.
+ *
+ * `sets` par groupe est ensuite transmis à `computeMuscleBalance` (`@wellness/shared`)
+ * qui compare chaque groupe à une cible uniforme (1/6 du volume total) pour
+ * détecter les groupes délaissés / sur-représentés.
+ */
+export function useMuscleBalance(): {
+  balance: MuscleBalance;
+  volumes: { muscle: MuscleGroup; sets: number; tonnage: number }[];
+  isLoading: boolean;
+} {
+  const since = rollingWindowLowerBound(14);
+
+  const sql = `
+    SELECT e.muscle_primary AS muscle,
+           COUNT(*) AS sets,
+           SUM(s.reps * s.weight_kg) AS tonnage
+    FROM workout_sets s
+    JOIN workouts w  ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    JOIN exercises e ON e.id = s.exercise_id AND e.deleted_at IS NULL
+    WHERE s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+      AND w.finished_at >= ?
+    GROUP BY e.muscle_primary
+  `;
+
+  const { data, isLoading } = useQuery<{
+    muscle: string;
+    sets: number | null;
+    tonnage: number | null;
+  }>(sql, [since]);
+
+  const volumes = data.map((row) => ({
+    muscle: row.muscle as MuscleGroup,
+    sets: row.sets ?? 0,
+    tonnage: row.tonnage ?? 0,
+  }));
+
+  const balance = computeMuscleBalance(
+    volumes.map((v) => ({ muscle: v.muscle, sets: v.sets })),
+  );
+
+  return { balance, volumes, isLoading };
 }
 
 /**
