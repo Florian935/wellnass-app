@@ -10,7 +10,16 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-*Dernière mise à jour : 14/07/2026 (US 8.10 log d'audit admin — **code livré** (subagent-driven, revue finale ready to merge), migration appliquée cloud + db:types, reste recette. 1ʳᵉ des 3 US de gouvernance admin restantes (8.10 → 8.7 → 8.8). Précédemment : recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
+> ## ⛔ À NE PAS OUBLIER — recettes en attente
+>
+> - [ ] **🔴 RECETTE US 8.10 — Log d'audit admin** — code **mergé sur `dev`** (`d7b2976`, 14/07/2026),
+>   **PAS ENCORE RECETTÉ**. Recette prévue par **Florian le soir du 15/07/2026**. Dérouler le plan de
+>   recette complet (accès `/audit` super_admin, 1 action de chaque type → entrée correcte, no-op/
+>   dépublication/sous-éditions non tracées, **immuabilité** update/delete refusés en SQL, filtres +
+>   pagination, i18n). Point 4 (publication via formulaire d'édition = `exercise.update`) **accepté**.
+>   Migration déjà appliquée sur le cloud. **Ne pas démarrer 8.7/8.8 avant d'avoir recetté et validé 8.10.**
+
+*Dernière mise à jour : 15/07/2026 (US 8.10 log d'audit admin — **code mergé sur `dev`** (subagent-driven, revue finale ready to merge), migration appliquée cloud + db:types. **🔴 Recette en attente — Florian, soir du 15/07** (voir bandeau ⛔ en tête). Point 4 accepté. 1ʳᵉ des 3 US de gouvernance admin restantes (8.10 → 8.7 → 8.8). Précédemment : recette device CIQUAL validée sur Pixel 6a + outillage : scripts `db:new`/`db:push`/`db:push:dry`, bloc `env` preview dans `eas.json`, doc migrations cloud dans CLAUDE.md ; nettoyage des artefacts de prebuild lancé à la racine par erreur. US « enrichir la bibliothèque CIQUAL » — **code livré** : 80 aliments 100 % CIQUAL 2025 (50 + 30), livrés par **migration idempotente** (biblio sortie de seed.sql), tooling reproductible ; reste `db:push` cloud + device (Florian). Précédemment : US « panel nutritionnel étendu » **code livré & revu (Approved)**, 10 → 31 micronutriments, sans migration ; reste recette device. Fix scan code-barres : messages d'échec honnêtes + affichage P/G/L + sucres/AGS/fibres captés d'OFF — voir §Bugs connus (recette device restante). Fix UI food-picker : onglets `scrollable` étirés en hauteur corrigés — recette device validée par Florian ✅. Précédemment : build à deux RÉSOLU + convention timestamps migration OK ; toutes les migrations cloud running R3a/R3b-i/R3b-ii/R3c-i/R4b + admin 8.4 appliquées (db:types + sync rules) ; validation terrain running R1 recettée par Florian ; MapLibre acté. Il reste la campagne de vérif device — voir sections 🟠 et running. Bannière URGENT retirée ; fix fuite inter-piliers muscu ; import CSV 8.6.)*
 
 ---
 
@@ -160,8 +169,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   `listAudit`), instrumentation rôles/exos/programmes/aliments, écran `/audit` super_admin (filtres +
   pagination). typecheck/tests(625)/lint/build verts. **Reste 🔴 recette (Florian/Damien)** :
   déclencher chaque type d'action → entrées visibles dans `/audit` ; tenter modif/suppr d'entrée → refus.
-  **À trancher recette** : publication d'exercice via le formulaire d'édition journalisée `exercise.update`
-  (seul le bouton liste émet `.publish`) — conforme spec, accepter ou suivi.
+  **Recette prévue Florian le 15/07/2026 au soir** (voir bandeau ⛔ en tête de fichier). Point 4
+  (publication d'exercice via formulaire d'édition = `exercise.update`) **accepté** — pas de suivi.
 - [~] **Panel nutritionnel étendu (AG détaillés + oméga + toutes vitamines/minéraux)** — **code livré
   & revu (*Approved*)** (`feature/panel-nutritionnel-etendu`, 14/07/2026). Prolonge 4.33 (panel étendu
   différé). +21 nutriments (socle 10 → 31) : AG mono/poly/trans + oméga-3/6/9, minéraux (zinc,
