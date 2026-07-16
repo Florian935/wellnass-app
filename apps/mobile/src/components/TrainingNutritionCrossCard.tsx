@@ -17,10 +17,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Plage d'affichage `JJ/MM–JJ/MM` (weekStart → weekStart + 6 j). Affichage uniquement. */
 function weekRangeLabel(weekStart: string): string {
-  const start = new Date(weekStart);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = (d: Date) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+  // Parser le dayKey en composantes LOCALES (pas `new Date(iso)` qui parse minuit UTC → décalage
+  // d'un jour en fuseau négatif ; même patron que `shortLabel` dans nutrition-stats.tsx).
+  const [y, m, d] = weekStart.split('-').map(Number);
+  const start = new Date(y!, m! - 1, d!);
+  const end = new Date(y!, m! - 1, d! + 6);
+  const fmt = (dt: Date) => `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}`;
   return `${fmt(start)}–${fmt(end)}`;
 }
 
