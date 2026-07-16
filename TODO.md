@@ -10,6 +10,48 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🧪 RECETTE À FAIRE — Fix édition/suppression d'une entrée de repas (Florian, soir du 16/07/2026)
+>
+> Code **livré & mergé sur `dev`** (`fix/journal-entree-swipe-edition`, commits `5e00ac9`→`0729039`).
+> **100 % JS → reload Metro suffit** (aucun nouveau build). Spec :
+> [us/fix-journal-entree-swipe-edition.md](docs/specs/functional/us/fix-journal-entree-swipe-edition.md).
+>
+> **Préparation** : ouvrir l'écran **Nutrition**, sur un jour ayant au moins **(a)** un aliment
+> référencé (avec quantité en g), **(b)** un **Ajout rapide (calories)** sans quantité, et si possible
+> **(c)** un aliment scanné/OpenFoodFacts (avec micronutriments).
+>
+> **1. Swipe & découvrabilité**
+> - [ ] Balayer une entrée **vers la gauche** → 2 actions : **Modifier** (doré) + **Supprimer** (rouge).
+> - [ ] Les actions **ne sont pas rognées/coupées** par les bords de la carte du repas (⚠️ point de vigilance `overflow:hidden` — vérifier surtout la **dernière** entrée d'un repas, coins arrondis).
+> - [ ] **Supprimer** → confirmation (titre = nom de l'entrée) → l'entrée disparaît, **totaux du jour** mis à jour.
+> - [ ] **Modifier** → le détail s'ouvre **directement en mode édition**.
+>
+> **2. Tap & appui long**
+> - [ ] **Tap** simple sur une entrée → détail en **consultation** (pas en édition).
+> - [ ] **Appui long** → **ne fait plus rien** (l'ancienne suppression cachée est retirée).
+>
+> **3. Édition d'un quick add (entrée sans quantité)**
+> - [ ] Modifier un **Ajout rapide** → champs **Nom + Calories (kcal) + Protéines/Glucides/Lipides** éditables.
+> - [ ] Changer nom + kcal + une macro → **Enregistrer** → valeurs à jour dans la liste **et** les totaux.
+> - [ ] Ramener **Calories à 0** → bouton **Enregistrer désactivé**.
+>
+> **4. Édition d'une entrée avec quantité (NON-RÉGRESSION)**
+> - [ ] Modifier un aliment référencé → **un seul champ « Quantité (g) »**.
+> - [ ] Changer les grammes → kcal/macros **recalculés proportionnellement** → Enregistrer OK.
+> - [ ] Les **micronutriments** de l'entrée restent corrects (non effacés).
+>
+> **5. i18n** — [ ] Passer l'app en **anglais** (Réglages → Langue) → libellés swipe (Edit/Delete),
+> champs (Name, Calories (kcal)…) et hint bien traduits.
+>
+> **6. Offline** — [ ] En **mode avion** : modifier + supprimer fonctionnent (écriture locale), puis
+> **resync** à la reconnexion.
+>
+> **7. Confort** — [ ] Après Modifier/Supprimer, en revenant à la liste, **aucune ligne ne reste
+> « ouverte »** en position swipée.
+>
+> **Critère de validation** : points 1→5 OK (6/7 = confort/offline, bonus). Tout échec → me remonter le
+> détail (entrée concernée, capture, étape). Une fois validé → cocher le bug §🐞 en `[x]` + relecture Damien.
+
 > ## ✅ Recettes device — TOUTES VALIDÉES (Florian, 16/07/2026)
 >
 > Les 6 US ci-dessous ont été **recettées et validées par Florian le 16/07/2026** (APK release
