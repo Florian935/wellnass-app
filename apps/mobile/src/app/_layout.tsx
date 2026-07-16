@@ -68,7 +68,7 @@ function RootNavigator() {
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
-  const fontsReady = loaded || error;
+  const fontsReady = loaded || error != null;
   // Décision de routing centralisée dans un helper pur testé (@wellness/shared) : gère l'attente
   // (splash), l'auth, l'onboarding et l'app — y compris la garde anti-race offline-first (ne pas
   // conclure « onboarding non fait » sur un profil local absent avant la fin de la synchro initiale,

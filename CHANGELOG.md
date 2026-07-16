@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `dev` — CI en échec : erreur de typage `fontsReady` (_layout.tsx)
+
+**Corrigé**
+- [_layout.tsx:71](apps/mobile/src/app/_layout.tsx#L71) — `fontsReady = loaded || error` produisait
+  le type `true | Error | null` (car `useAppFonts().error` est `Error | null`), refusé par
+  `resolveRootRoute` qui attend `fontsReady: boolean`. Le typecheck CI échouait
+  (TS2322, run #194). Correction : `loaded || error != null` — vrai booléen, **intention préservée**
+  (polices « prêtes » si chargées **ou** en erreur, pour ne pas bloquer le splash indéfiniment).
+
+**Notes**
+- **100 % client, une ligne, aucune migration.** typecheck/lint verts, mobile 42 tests + shared 684 tests OK.
+  Régression introduite par le commit précédent `d1c0e14` (extraction `resolveRootRoute`). Commit précédent : `2b0ecd5`.
+
 ### 16/07/2026 — `fix/onboarding-rejeu-connexion` — onboarding redemandé après réinstallation (race offline-first)
 
 **Corrigé**
