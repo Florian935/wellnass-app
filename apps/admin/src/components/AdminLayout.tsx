@@ -7,8 +7,6 @@ import { theme } from '../theme';
 
 const { colors, radius, font } = theme;
 
-const NAV_SOON = [{ icon: '👤', label: fr.layout.nav.users }];
-
 /**
  * Shell protégé : barre latérale sombre (accueil actif + modules à venir grisés,
  * non cliquables), entête (titre + e-mail utilisateur + Déconnexion) et zone de
@@ -16,7 +14,7 @@ const NAV_SOON = [{ icon: '👤', label: fr.layout.nav.users }];
  */
 export function AdminLayout() {
   const { user, signOut } = useAuth();
-  const { isSuperAdmin, isContentEditor } = useRoles();
+  const { isSuperAdmin, isContentEditor, canManageUsers } = useRoles();
   const [signingOut, setSigningOut] = useState(false);
 
   async function handleLogout() {
@@ -109,14 +107,18 @@ export function AdminLayout() {
               📜 {fr.audit.nav}
             </NavLink>
           )}
-          {NAV_SOON.map((item) => (
-            <span key={item.label} style={{ ...styles.navItem, ...styles.navSoon }}>
-              <span>
-                {item.icon} {item.label}
-              </span>
-              <span style={styles.tag}>{fr.layout.nav.soon}</span>
-            </span>
-          ))}
+          {canManageUsers && (
+            <NavLink
+              to="/users"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              👤 {fr.layout.nav.users}
+            </NavLink>
+          )}
         </nav>
       </aside>
 

@@ -17,6 +17,8 @@ import { ProgramEditScreen } from './screens/ProgramEditScreen';
 import { FoodImportScreen } from './screens/FoodImportScreen';
 import { FoodsScreen } from './screens/FoodsScreen';
 import { FoodEditScreen } from './screens/FoodEditScreen';
+import { UsersScreen } from './screens/UsersScreen';
+import { UserDetailScreen } from './screens/UserDetailScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
@@ -116,6 +118,22 @@ export function App() {
                     }
                   />
                   <Route
+                    path="/users"
+                    element={
+                      <RequireCanManageUsers>
+                        <UsersScreen />
+                      </RequireCanManageUsers>
+                    }
+                  />
+                  <Route
+                    path="/users/:id"
+                    element={
+                      <RequireCanManageUsers>
+                        <UserDetailScreen />
+                      </RequireCanManageUsers>
+                    }
+                  />
+                  <Route
                     path="/roles"
                     element={
                       <RequireSuperAdmin>
@@ -155,6 +173,15 @@ function RequireSuperAdmin({ children }: { children: React.ReactElement }) {
 function RequireContentEditor({ children }: { children: React.ReactElement }) {
   const { isContentEditor } = useRoles();
   if (!isContentEditor) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
+/** Restreint une route aux gestionnaires d'utilisateurs (super_admin/moderator). */
+function RequireCanManageUsers({ children }: { children: React.ReactElement }) {
+  const { canManageUsers } = useRoles();
+  if (!canManageUsers) {
     return <Navigate to="/" replace />;
   }
   return children;
