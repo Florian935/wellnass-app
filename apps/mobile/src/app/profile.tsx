@@ -6,7 +6,12 @@ import { GOALS, SEXES, toIsoDate, type Goal, type Sex } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
-import { upsertProfile, useProfile, type Profile } from '@/data/repositories/profile-repository';
+import {
+  setWeightTarget,
+  upsertProfile,
+  useProfile,
+  type Profile,
+} from '@/data/repositories/profile-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -51,6 +56,11 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
   const [heightB, setHeightB] = useState(h0.b);
   const initialHeightRef = useRef(h0);
 
+  // Target weight — anti-drift: capture mount-time display string in a ref
+  const target0 = units.weightInputValue(profile?.targetWeightKg);
+  const [targetWeight, setTargetWeight] = useState(target0);
+  const initialTargetRef = useRef(target0);
+
   const onSave = async () => {
     await upsertProfile({
       firstName: firstName.trim(),
@@ -66,6 +76,11 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
           : units.heightPartsToCm(heightA, heightB),
       mainGoal: goal,
     });
+    if (targetWeight !== initialTargetRef.current) {
+      await setWeightTarget(
+        targetWeight.trim() === '' ? null : units.parseWeightToKg(targetWeight),
+      );
+    }
     router.back();
   };
 
@@ -158,6 +173,13 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
         onChange={setGoal}
         label={(option) => t(`onboarding.goal.options.${option}`)}
         scrollable
+      />
+
+      <TextField
+        label={`${t('profile.targetWeight')} (${units.weightSymbol})`}
+        value={targetWeight}
+        onChangeText={setTargetWeight}
+        keyboardType="decimal-pad"
       />
 
       <View style={styles.footer}>

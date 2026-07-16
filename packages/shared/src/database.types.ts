@@ -871,6 +871,8 @@ export type Database = {
           main_goal: string | null
           onboarding_completed_at: string | null
           sex: string | null
+          start_weight_kg: number | null
+          target_weight_kg: number | null
           updated_at: string
           user_id: string
           weight_kg: number | null
@@ -885,6 +887,8 @@ export type Database = {
           main_goal?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
+          start_weight_kg?: number | null
+          target_weight_kg?: number | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
@@ -899,6 +903,8 @@ export type Database = {
           main_goal?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
+          start_weight_kg?: number | null
+          target_weight_kg?: number | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null

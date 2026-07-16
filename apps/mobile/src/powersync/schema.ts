@@ -30,6 +30,8 @@ const profiles = new Table({
   sex: column.text,
   height_cm: column.real,
   weight_kg: column.real,
+  target_weight_kg: column.real,
+  start_weight_kg: column.real,
   main_goal: column.text,
   onboarding_completed_at: column.text,
   created_at: column.text,

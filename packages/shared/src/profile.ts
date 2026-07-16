@@ -32,6 +32,12 @@ export const profileRowSchema = syncFieldsSchema.extend({
   /** Poids en kilogrammes (toujours en métrique en base). */
   weightKg: z.number().positive().nullable().default(null),
 
+  /** Poids cible en kg (null = aucun objectif de poids). */
+  targetWeightKg: z.number().positive().nullable().default(null),
+
+  /** Poids de départ figé au moment où la cible est définie (kg). */
+  startWeightKg: z.number().positive().nullable().default(null),
+
   /** Objectif principal de l'utilisateur. */
   mainGoal: goalSchema.nullable().default(null),
 

@@ -88,7 +88,8 @@
   },
   "profile": {
     "title": "Profile",
-    "save": "Save"
+    "save": "Save",
+    "targetWeight": "Target weight"
   },
   "nutrition": {
     "title": "Nutrition profile",
@@ -375,6 +376,13 @@
       "save": "Save",
       "empty": "No weigh-in recorded.",
       "trend": { "up": "trending up", "down": "trending down", "stable": "stable" }
+    },
+    "weightGoal": {
+      "title": "Weight goal progress",
+      "progress": "{{done}} of {{total}}",
+      "remaining": "{{remaining}} to go",
+      "reached": "🎯 Goal reached",
+      "empty": "Set a weight goal in your profile."
     },
     "intake": {
       "title": "Average intake",
