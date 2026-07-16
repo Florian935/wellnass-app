@@ -346,6 +346,16 @@ describe('computeJournalCompletion', () => {
     });
     expect(r).toEqual({ loggedDays: 0, effectiveWindow: 0, pct: 0 });
   });
+  it("aujourd'hui exclu du numérateur même avec historique ancien", () => {
+    // 15/07 compte, 16/07 (aujourd'hui) exclu ; fenêtre pleine 7 j
+    const r = computeJournalCompletion({
+      loggedDayKeys: ['2026-07-15', '2026-07-16'],
+      firstEntryDayKey: '2026-07-01',
+      windowDays: 7,
+      today,
+    });
+    expect(r).toEqual({ loggedDays: 1, effectiveWindow: 7, pct: 14 });
+  });
   it('aucune entrée → tout à 0', () => {
     expect(
       computeJournalCompletion({ loggedDayKeys: [], firstEntryDayKey: null, windowDays: 7, today }),
