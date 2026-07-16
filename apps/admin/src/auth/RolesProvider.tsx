@@ -54,6 +54,8 @@ export function RolesProvider({ children }: { children: ReactNode }) {
       isSuperAdmin: roles.includes('super_admin'),
       isContentEditor:
         roles.includes('super_admin') || roles.includes('content_editor'),
+      canManageUsers:
+        roles.includes('super_admin') || roles.includes('moderator'),
       rolesLoading,
       rolesError,
     }),
