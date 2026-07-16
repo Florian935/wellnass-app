@@ -847,6 +847,7 @@
       "imperial": "Imperial",
       "hint": "Metric (kg, km) or imperial (lb, mi). Applies to all displays."
     },
+    "language": { "title": "Language", "fr": "Français", "en": "English" },
     "notifications": {
       "title": "Notifications",
       "streakReminder": "Streak-at-risk reminder",

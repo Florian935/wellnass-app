@@ -3,8 +3,10 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  LOCALES,
   PILLARS,
   UNIT_SYSTEMS,
+  type Locale,
   type NotificationPrefs,
   type Pillar,
   type Theme,
@@ -18,6 +20,7 @@ import {
   useNotificationPrefs,
   updateNotificationPrefs,
 } from '@/data/repositories/notification-repository';
+import { getAppLanguage } from '@/i18n';
 import { ensurePermissionAndChannel } from '@/lib/notifications';
 import { useAuthStore } from '@/stores/auth-store';
 import { fontFamily } from '@/theme/fonts';
@@ -89,6 +92,7 @@ export default function SettingsScreen() {
   const activePillars = settings?.activePillars ?? [...PILLARS];
   const theme = settings?.theme ?? 'system';
   const units = settings?.units ?? 'metric';
+  const language = settings?.language ?? getAppLanguage();
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
 
@@ -183,6 +187,17 @@ export default function SettingsScreen() {
         label={(option) => t(`settings.units.${option}`)}
       />
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.units.hint')}</Text>
+
+      {/* Langue (FR/EN) — correction bug « aucun sélecteur de langue » */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.language.title')}
+      </Text>
+      <Segment
+        options={LOCALES}
+        value={language}
+        onChange={(next: Locale) => void updateSettings({ language: next })}
+        label={(option) => t(`settings.language.${option}`)}
+      />
 
       {/* Notifications (US 2.6 rappel streak, 1.17 gestion par type) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
