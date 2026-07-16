@@ -177,7 +177,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | MR-03 | 🟡 | Adhérence combinée — planifié vs réalisé | Taux de réalisation tous piliers (done vs planned+skipped+manquées), à consolider en ratio hebdo. | `planned_sessions`, `useMissedSessions`/`useWeekPlan` | stat | sem / 4 sem glissantes | Mesurer la régularité globale, pilier-agnostique. | 3.11 / 5.7 |
 | MR-04 | 🟡 | Streak jours d'entraînement (muscu ∪ course) | Jours actifs consécutifs (muscu OU course). Variante « entraînement seul » non isolée du streak nutrition. | `computeStreak`/`activeDayKeys` (streak.ts) | score | continu | Motivation par la régularité ; base d'un découpage entraînement/nutrition. | 2.x |
 | MR-05 | 🆕 | Charge d'entraînement combinée (sRPE) | Charge = RPE×durée, sommée muscu+course par jour/semaine — unité commune. | `workouts`/`runs` (rpe, durationSeconds) | courbe | jour+sem, tendance 8 sem | Mesure unique de la dose d'entraînement totale. | — |
-| MR-06 | 🆕 | Volume horaire total d'entraînement | Temps total (durée muscu + course) par semaine/mois. | `workouts.durationSeconds` + `runs.durationSeconds` | stat | sem/mois/début | Objectiver l'investissement temps réel des deux piliers. | — |
+| MR-06 | ✅ | Volume horaire total d'entraînement | **Livré** : widget dashboard `training-time` = temps total (muscu + course) de la **semaine ISO** + ventilation par pilier ; gating `['strength','running']`. `computeTrainingTime`/`formatHoursMinutes` (shared, testés) + `useTrainingTime`. | `workouts.duration_seconds` + `runs.duration_seconds` (semaine, borne `finished_at`) | widget | semaine | Objectiver l'investissement temps réel des deux piliers. | **MR-06 (livrée · reste recette device)** |
 | MR-07 | 🆕 | Équilibre force / cardio de la semaine | % (séances ou minutes) muscu vs course + zone cible selon l'objectif. | `workouts` + `runs`, `running_profiles`/objectif | widget | semaine glissante | Vérifier que la balance colle à l'objectif déclaré. | — |
 | MR-08 | 🆕 | Interférence concurrent training | Signale un fort volume course coïncidant avec une chute du volume/charge muscu (et inversement). | `computeVolume` hebdo + `aggregateRunStats` hebdo, `personal_records` | insight | sem à sem, 4-8 sem | Éduquer sur l'arbitrage force/endurance, expliquer une stagnation. | — |
 | MR-09 | ⏳ | Alerte surcharge / suggestion de jour de repos | Détecte l'accumulation de charge combinée et suggère un jour off (jamais imposé). | charge combinée sRPE + série de jours actifs | alerte | glissant 7-10 j | Prévenir blessure/épuisement = éviter l'abandon. | IDEAS garde-fou |
@@ -363,8 +363,8 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    réutilisable partout ; remplace deux heuristiques et débloque toutes les projections (META-14/15/16).
 8. **META-09 — Lissage par moyenne mobile** (🆕). Petit utilitaire pur, immédiatement utile aux
    courbes de poids et d'allure existantes.
-9. **MR-06 — Volume horaire total d'entraînement** (🆕). Simple somme de durées muscu+course ;
-   première stat transverse concrète, quasi gratuite.
+9. ~~**MR-06 — Volume horaire total d'entraînement**~~ ✅ **livré** (reste recette). Widget `training-time`
+   (semaine ISO, muscu+course + ventilation, gating transverse) ; première stat inter-piliers en temps.
 10. **MN-13 — Ratio g/kg protéines vs cible par objectif** (🆕). `proteinG` + `body_weight_entries`
     déjà présents ; repère à très forte valeur pour le pratiquant de muscu, en une jauge.
 11. ~~**RN-01 — Dépense calorique estimée d'une course**~~ ✅ **livrée + recette OK** (avec RN-02).

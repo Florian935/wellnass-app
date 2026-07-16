@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/mr06-temps-entrainement` — widget « Temps d'entraînement » (MR-06, inter-piliers)
+
+**Ajouté** (analyse MR-06 du catalogue, Phase A, 1ʳᵉ stat **inter-piliers** en temps)
+- Widget dashboard **`training-time`** : temps total d'entraînement (muscu + course) de la **semaine
+  ISO courante** (lundi→dimanche, borné `finished_at`) + **ventilation** muscu / course. Gating
+  transverse `['strength','running']` (visible si muscu **OU** course actif) ; ventilation affichée
+  seulement si les deux piliers sont actifs (sinon le total suffit). Variante compacte + empty state.
+- Logique pure `@wellness/shared` : `computeTrainingTime` (agrégation + clamp) et `formatHoursMinutes`
+  (« Xh YY », minutes plancher zéro-paddées) — testées (Vitest).
+- Hook `useTrainingTime` (dashboard-repository) : **composition** de `useRunStats('week')` (course) et
+  `useWorkoutHistory` filtré semaine (muscu), gating au retour, hooks inconditionnels.
+- Composant `TrainingTimeCard` + entrée `WIDGET_COMPONENTS` ; registre `dashboard.ts` étendu
+  (8 → 9 widgets) + `dashboard.test.ts` mis à jour ; i18n `home.trainingTime` FR/EN (parité).
+
+**Technique / Notes**
+- **100 % client, offline, aucune migration** (durées déjà présentes : `workouts`/`runs`
+  `duration_seconds`). Fenêtre alignée sur `muscle-volume`/`running-week` → les chiffres se réconcilient.
+- Exécution **subagent-driven** (commits `f1c8a5a`→`6face77`), spec + plan relus par sous-agent
+  (corrections intégrées : semaine ISO vs 7 j glissants, `formatHoursMinutes` dédié, ordre des commits),
+  **revue finale de code *ready-to-merge*** (cohérence inter-widgets vérifiée au fuseau).
+- typecheck/lint/tests(689) verts. Catalogue MR-06 → ✅.
+- **Reste** : recette device (total + ventilation ; gating 1/2 piliers / nutrition seule ; empty ;
+  compact) + relecture Damien.
+- Commit précédent : `6603c65`.
+
 ### 16/07/2026 — `feature/8.8b-admin-bannissement` — bannissement des utilisateurs (back-office) → US 8.8 complète
 
 **Ajouté** (US 8.8b — seconde moitié de 8.8 ; complète 8.8a)
