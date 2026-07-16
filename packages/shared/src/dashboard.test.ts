@@ -13,7 +13,7 @@ import {
 // Registre
 // ---------------------------------------------------------------------------
 describe('DASHBOARD_WIDGET_IDS / WIDGET_PILLARS', () => {
-  it('déclare les 8 widgets canoniques', () => {
+  it('déclare les 9 widgets canoniques', () => {
     expect(DASHBOARD_WIDGET_IDS).toEqual([
       'today-session',
       'nutrition-summary',
@@ -23,6 +23,7 @@ describe('DASHBOARD_WIDGET_IDS / WIDGET_PILLARS', () => {
       'muscle-volume',
       'running-week',
       'deficit-volume',
+      'training-time',
     ]);
   });
 
@@ -35,6 +36,7 @@ describe('DASHBOARD_WIDGET_IDS / WIDGET_PILLARS', () => {
     expect(WIDGET_PILLARS['muscle-volume']).toEqual(['strength']);
     expect(WIDGET_PILLARS['running-week']).toEqual(['running']);
     expect(WIDGET_PILLARS['deficit-volume']).toEqual(['strength', 'nutrition']);
+    expect(WIDGET_PILLARS['training-time']).toEqual(['strength', 'running']);
   });
 });
 
@@ -42,9 +44,9 @@ describe('DASHBOARD_WIDGET_IDS / WIDGET_PILLARS', () => {
 // defaultDashboardLayout
 // ---------------------------------------------------------------------------
 describe('defaultDashboardLayout', () => {
-  it('renvoie 8 widgets, ordre canonique, visibles, taille full', () => {
+  it('renvoie 9 widgets, ordre canonique, visibles, taille full', () => {
     const layout = defaultDashboardLayout();
-    expect(layout.widgets).toHaveLength(8);
+    expect(layout.widgets).toHaveLength(9);
     layout.widgets.forEach((w, i) => {
       expect(w.id).toBe(DASHBOARD_WIDGET_IDS[i]);
       expect(w.order).toBe(i);
@@ -93,15 +95,15 @@ describe('resolveDashboardLayout', () => {
     };
     const resolved = resolveDashboardLayout(stored, [...allPillars]);
     const ids = resolved.widgets.map((w) => w.id);
-    // streak + weight en tête (ordre stored), puis les 6 nouveaux en fin
+    // streak + weight en tête (ordre stored), puis les 7 nouveaux en fin
     expect(ids.slice(0, 2)).toEqual(['streak', 'weight']);
-    expect(ids).toHaveLength(8);
+    expect(ids).toHaveLength(9);
     // le nouveau today-session ajouté est visible/full
     const today = resolved.widgets.find((w) => w.id === 'today-session')!;
     expect(today.visible).toBe(true);
     expect(today.size).toBe('full');
     // ordre recompacté 0..n-1
-    expect(resolved.widgets.map((w) => w.order)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    expect(resolved.widgets.map((w) => w.order)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
   });
 
   it('(c) filtre piliers : widget d’un pilier inactif absent ; always jamais filtré', () => {
@@ -130,7 +132,7 @@ describe('resolveDashboardLayout', () => {
     } as unknown as DashboardLayout;
     const resolved = resolveDashboardLayout(stored, [...allPillars]);
     expect(resolved.widgets.map((w) => w.id)).not.toContain('widget-fantome');
-    expect(resolved.widgets).toHaveLength(8);
+    expect(resolved.widgets).toHaveLength(9);
   });
 
   it('(d bis) IDs dupliqués dans le stored → dédupliqués (première occurrence)', () => {
@@ -146,7 +148,7 @@ describe('resolveDashboardLayout', () => {
     // La première occurrence prime (visible:false, compact conservés).
     expect(streaks[0]!.visible).toBe(false);
     expect(streaks[0]!.size).toBe('compact');
-    expect(resolved.widgets).toHaveLength(8);
+    expect(resolved.widgets).toHaveLength(9);
   });
 
   it('(e) tri par order (stored désordonné)', () => {
@@ -200,8 +202,8 @@ describe('moveWidget', () => {
   it('déplace un widget vers un index cible et recompacte les order', () => {
     const next = moveWidget(base, 'streak', 0);
     expect(next.widgets[0]!.id).toBe('streak');
-    expect(next.widgets.map((w) => w.order)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
-    expect(next.widgets).toHaveLength(8);
+    expect(next.widgets.map((w) => w.order)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(next.widgets).toHaveLength(9);
   });
 
   it('est pur / immuable (n’altère pas l’entrée)', () => {

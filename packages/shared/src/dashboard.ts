@@ -22,6 +22,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'muscle-volume',
   'running-week',
   'deficit-volume',
+  'training-time',
 ] as const;
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number];
@@ -44,6 +45,7 @@ export const WIDGET_PILLARS: Record<DashboardWidgetId, Pillar[] | 'always'> = {
   'muscle-volume': ['strength'],
   'running-week': ['running'],
   'deficit-volume': ['strength', 'nutrition'],
+  'training-time': ['strength', 'running'],
 };
 
 /** Taille d'affichage d'un widget : carte normale ou ligne compacte. */

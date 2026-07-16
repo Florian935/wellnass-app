@@ -15,6 +15,7 @@ import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
 import { MuscleVolumeCard } from '@/components/dashboard/MuscleVolumeCard';
 import { RunningWeekCard } from '@/components/dashboard/RunningWeekCard';
 import { DeficitVolumeAlertCard } from '@/components/dashboard/DeficitVolumeAlertCard';
+import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
@@ -27,6 +28,7 @@ const WIDGET_COMPONENTS: Record<DashboardWidgetId, WidgetComponent> = {
   'muscle-volume': MuscleVolumeCard,
   'running-week': RunningWeekCard,
   'deficit-volume': DeficitVolumeAlertCard,
+  'training-time': TrainingTimeCard,
 };
 
 /** Rend le widget `id` à la taille demandée. */
