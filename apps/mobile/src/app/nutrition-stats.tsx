@@ -123,7 +123,9 @@ export default function NutritionStatsScreen() {
       {/* Adhérence à l'objectif (NUTR-10) — même fenêtre 7 j/30 j que les apports */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.adherence.title')}</Text>
       <Card>
-        {!adherence.hasTarget ? (
+        {adherence.isLoading ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>…</Text>
+        ) : !adherence.hasTarget ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.noTarget')}</Text>
         ) : adherence.loggedDays === 0 ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.empty')}</Text>
