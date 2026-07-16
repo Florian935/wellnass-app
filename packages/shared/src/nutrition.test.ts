@@ -9,6 +9,7 @@ import {
   caloriesFromMacros,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
+  computeJournalCompletion,
   dayCalorieBonus,
   defaultMacroRatios,
   macroGramsFromCalories,
@@ -313,5 +314,41 @@ describe('computeGoalAdherence', () => {
   });
   it('aucun jour loggé → pct 0 sans division par zéro', () => {
     expect(computeGoalAdherence([], 10)).toEqual({ loggedDays: 0, daysInTarget: 0, pct: 0 });
+  });
+});
+
+describe('computeJournalCompletion', () => {
+  const today = new Date(2026, 6, 16); // 16/07/2026 local ; fenêtre 7 j = [09/07 … 15/07]
+  it('fenêtre pleine : loggés / window', () => {
+    const r = computeJournalCompletion({
+      loggedDayKeys: ['2026-07-10', '2026-07-12', '2026-07-15'],
+      firstEntryDayKey: '2026-07-01',
+      windowDays: 7,
+      today,
+    });
+    expect(r).toEqual({ loggedDays: 3, effectiveWindow: 7, pct: 43 });
+  });
+  it('borne ancienneté : dénominateur = jours depuis la 1ère entrée', () => {
+    const r = computeJournalCompletion({
+      loggedDayKeys: ['2026-07-14', '2026-07-15'],
+      firstEntryDayKey: '2026-07-14',
+      windowDays: 30,
+      today, // [14/07 … 15/07] = 2 jours
+    });
+    expect(r).toEqual({ loggedDays: 2, effectiveWindow: 2, pct: 100 });
+  });
+  it("aujourd'hui exclu : 1ère entrée = aujourd'hui → rien de loggable", () => {
+    const r = computeJournalCompletion({
+      loggedDayKeys: ['2026-07-16'],
+      firstEntryDayKey: '2026-07-16',
+      windowDays: 7,
+      today,
+    });
+    expect(r).toEqual({ loggedDays: 0, effectiveWindow: 0, pct: 0 });
+  });
+  it('aucune entrée → tout à 0', () => {
+    expect(
+      computeJournalCompletion({ loggedDayKeys: [], firstEntryDayKey: null, windowDays: 7, today }),
+    ).toEqual({ loggedDays: 0, effectiveWindow: 0, pct: 0 });
   });
 });

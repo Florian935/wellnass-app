@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { addDays, localDayKey } from './date';
 import type { Goal, Sex } from './profile';
 import { syncFieldsSchema } from './sync';
 
@@ -201,6 +202,44 @@ export function computeGoalAdherence(
   ).length;
   const pct = loggedDays > 0 ? Math.round((daysInTarget / loggedDays) * 100) : 0;
   return { loggedDays, daysInTarget, pct };
+}
+
+/**
+ * Régularité du journal (item NUTR-17) : part des jours renseignés sur la fenêtre des `windowDays`
+ * jours ÉCOULÉS (`[J-windowDays … J-1]`, aujourd'hui exclu), dénominateur borné à l'ancienneté du
+ * compte (`min(fenêtre, jours depuis la 1ʳᵉ entrée)`). Pur. Reçoit un `Date` `today` (jamais une clé —
+ * `new Date("AAAA-MM-JJ")` parse en UTC et décalerait d'un jour). Comparaisons en clés `AAAA-MM-JJ`.
+ */
+export function computeJournalCompletion(params: {
+  loggedDayKeys: string[];
+  firstEntryDayKey: string | null;
+  windowDays: number;
+  today: Date;
+}): { loggedDays: number; effectiveWindow: number; pct: number } {
+  const { loggedDayKeys, firstEntryDayKey, windowDays, today } = params;
+  const empty = { loggedDays: 0, effectiveWindow: 0, pct: 0 };
+
+  const yesterdayKey = localDayKey(addDays(today, -1));
+  const windowStartKey = localDayKey(addDays(today, -windowDays));
+  if (firstEntryDayKey == null) return empty;
+
+  const effectiveStartKey = firstEntryDayKey > windowStartKey ? firstEntryDayKey : windowStartKey;
+  if (effectiveStartKey > yesterdayKey) return empty; // 1ʳᵉ entrée = aujourd'hui / futur
+
+  // Écart EXACT en jours (reparse UTC → pas de dérive heure d'été).
+  const effectiveWindow = Math.max(
+    0,
+    Math.round(
+      (Date.parse(yesterdayKey + 'T00:00:00Z') - Date.parse(effectiveStartKey + 'T00:00:00Z')) /
+        86_400_000,
+    ) + 1,
+  );
+  if (effectiveWindow === 0) return empty;
+
+  const loggedDays = new Set(
+    loggedDayKeys.filter((k) => k >= effectiveStartKey && k <= yesterdayKey),
+  ).size;
+  return { loggedDays, effectiveWindow, pct: Math.round((loggedDays / effectiveWindow) * 100) };
 }
 
 // --- Macros (spec §2.3) ------------------------------------------------------
