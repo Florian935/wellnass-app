@@ -375,6 +375,15 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
+    "protein": {
+      "title": "Protein / body weight",
+      "perKgUnit": "g/kg",
+      "target": "target {{min}}–{{max}} · {{objective}}",
+      "status": { "low": "too low", "in": "on target", "high": "high" },
+      "noWeight": "Log your weight to see your protein-to-weight ratio.",
+      "noData": "No meals logged in this period yet.",
+      "objective": { "bulk": "bulk", "cut": "cut", "maintain": "maintain", "weightloss": "weight loss" }
+    },
     "cross": {
       "title": "Training load & intake (8 wk)",
       "thisWeek": "This week",

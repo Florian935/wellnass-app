@@ -375,6 +375,15 @@
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
     },
+    "protein": {
+      "title": "Apport protéique / poids",
+      "perKgUnit": "g/kg",
+      "target": "cible {{min}}–{{max}} · {{objective}}",
+      "status": { "low": "insuffisant", "in": "dans la cible", "high": "élevé" },
+      "noWeight": "Ajoute une pesée pour voir ton ratio protéines/poids.",
+      "noData": "Pas encore de repas enregistrés sur la période.",
+      "objective": { "bulk": "prise de masse", "cut": "sèche", "maintain": "maintien", "weightloss": "perte de poids" }
+    },
     "cross": {
       "title": "Charge muscu & apports (8 sem)",
       "thisWeek": "Cette semaine",
