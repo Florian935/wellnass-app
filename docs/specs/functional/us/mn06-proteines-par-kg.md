@@ -1,6 +1,6 @@
 # US MN-06 — Apport protéique par kg de poids de corps (vs cible par objectif)
 
-_Spec fonctionnelle. Statut : à valider (brainstorming du 16/07/2026, Florian). Branche :
+_Spec fonctionnelle. Statut : **validée (Florian, 16/07/2026) — code livré**. Branche :
 `feature/mn06-proteines-par-kg` (depuis `dev`). Stat inter-piliers muscu↔nutrition (MN-06) du
 [catalogue d'analyses](../../../product/analyses-donnees.md) — **déterministe, gratuite, offline, sans IA**._
 
