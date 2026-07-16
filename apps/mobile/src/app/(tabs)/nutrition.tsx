@@ -410,18 +410,26 @@ function EntryDetailContent({
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 
-  // Édition de la quantité — possible seulement si l'entrée porte des grammes
-  // (les « quick add » sans quantité restent en simple consultation).
-  const canEdit = entry.quantityG != null && entry.quantityG > 0;
+  // Distinction de type d'entrée :
+  // - AVEC quantité (grammes) → édition par les grammes (règle de trois).
+  // - SANS quantité (quick add / recette) → édition directe de kcal/macros/nom.
+  const hasQuantity = entry.quantityG != null && entry.quantityG > 0;
   const oldQty = entry.quantityG ?? 0;
   const [editing, setEditing] = useState(startEditing ?? false);
   const [grams, setGrams] = useState(String(entry.quantityG ?? ''));
   const [saving, setSaving] = useState(false);
+  const [name, setName] = useState(entry.name);
+  const [kcal, setKcal] = useState(String(entry.kcal));
+  const [protein, setProtein] = useState(String(entry.proteinG));
+  const [carbs, setCarbs] = useState(String(entry.carbsG));
+  const [fat, setFat] = useState(String(entry.fatG));
+  const num = (s: string) => Math.max(0, Math.round(Number(s.replace(',', '.')) || 0));
 
   const g = Math.round(Number(grams.replace(',', '.')) || 0);
 
   // Recalcul du snapshot pour la nouvelle quantité (règle de trois, un seul arrondi — shared).
-  const preview = editing && canEdit ? rescaleEntryNutrition(entry, oldQty, g) : entry;
+  const preview = editing && hasQuantity ? rescaleEntryNutrition(entry, oldQty, g) : entry;
+  const canSave = hasQuantity ? g > 0 : num(kcal) > 0;
   const previewMicros = preview.micronutrients;
 
   const macros: { key: MacroKey; value: number }[] = [
@@ -437,17 +445,29 @@ function EntryDetailContent({
   });
 
   const onSave = async () => {
-    if (!canEdit || g <= 0) return;
+    if (!canSave) return;
     setSaving(true);
-    const n = rescaleEntryNutrition(entry, oldQty, g);
-    await updateEntry(entry.id, {
-      quantityG: g,
-      kcal: n.kcal,
-      proteinG: n.proteinG,
-      carbsG: n.carbsG,
-      fatG: n.fatG,
-      micronutrients: n.micronutrients,
-    });
+    if (hasQuantity) {
+      const n = rescaleEntryNutrition(entry, oldQty, g);
+      await updateEntry(entry.id, {
+        quantityG: g,
+        kcal: n.kcal,
+        proteinG: n.proteinG,
+        carbsG: n.carbsG,
+        fatG: n.fatG,
+        micronutrients: n.micronutrients,
+      });
+    } else {
+      await updateEntry(entry.id, {
+        quantityG: null,
+        name: name.trim() || entry.name,
+        kcal: num(kcal),
+        proteinG: num(protein),
+        carbsG: num(carbs),
+        fatG: num(fat),
+        // pas de micronutrients → micros existants inchangés
+      });
+    }
     onClose();
   };
 
@@ -511,18 +531,49 @@ function EntryDetailContent({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Champ quantité en mode édition */}
+            {/* Champs en mode édition — grammes (règle de trois) ou saisie directe (quick add) */}
             {editing ? (
-              <TextField
-                label={t('journal.grams')}
-                value={grams}
-                onChangeText={setGrams}
-                keyboardType="decimal-pad"
-                autoFocus
-              />
+              hasQuantity ? (
+                <TextField
+                  label={t('journal.grams')}
+                  value={grams}
+                  onChangeText={setGrams}
+                  keyboardType="decimal-pad"
+                  autoFocus
+                />
+              ) : (
+                <>
+                  <TextField label={t('journal.name')} value={name} onChangeText={setName} autoFocus />
+                  <TextField
+                    label={t('journal.detail.calories')}
+                    value={kcal}
+                    onChangeText={setKcal}
+                    keyboardType="decimal-pad"
+                  />
+                  <TextField
+                    label={`${t('nutrition.macros.protein')} (g)`}
+                    value={protein}
+                    onChangeText={setProtein}
+                    keyboardType="decimal-pad"
+                  />
+                  <TextField
+                    label={`${t('nutrition.macros.carbs')} (g)`}
+                    value={carbs}
+                    onChangeText={setCarbs}
+                    keyboardType="decimal-pad"
+                  />
+                  <TextField
+                    label={`${t('nutrition.macros.fat')} (g)`}
+                    value={fat}
+                    onChangeText={setFat}
+                    keyboardType="decimal-pad"
+                  />
+                </>
+              )
             ) : null}
 
-            {/* Macros de la quantité (aperçu live en édition) */}
+            {/* Macros de la quantité (aperçu live en édition ; masqué en édition quick add) */}
+            {!editing || hasQuantity ? (
             <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.detailKcalRow}>
                 <Text style={[styles.detailKcal, { color: colors.text }]}>{preview.kcal}</Text>
@@ -537,6 +588,7 @@ function EntryDetailContent({
                 ))}
               </View>
             </View>
+            ) : null}
 
             {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
             <MicronutrientDetails
@@ -550,7 +602,7 @@ function EntryDetailContent({
             {editing ? (
               <View style={styles.detailActions}>
                 <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditing(false)} />
-                <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={g <= 0} />
+                <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={!canSave} />
               </View>
             ) : (
               <View style={styles.detailActions}>
@@ -563,9 +615,10 @@ function EntryDetailContent({
                   <Ionicons name="trash-outline" size={18} color={colors.danger} />
                   <Text style={[styles.deleteLabel, { color: colors.danger }]}>{t('journal.delete')}</Text>
                 </Pressable>
-                {canEdit ? (
-                  <Button label={t('journal.detail.edit')} onPress={() => setEditing(true)} />
-                ) : null}
+                <Button
+                  label={hasQuantity ? t('journal.detail.edit') : t('journal.swipeEdit')}
+                  onPress={() => setEditing(true)}
+                />
               </View>
             )}
           </ScrollView>
