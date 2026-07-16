@@ -7,6 +7,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useStatus } from '@powersync/react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { resolveRootRoute } from '@wellness/shared';
 
 // Initialise i18next (side-effect) avant le rendu des écrans.
 import i18n from '@/i18n';
@@ -68,15 +69,21 @@ function RootNavigator() {
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
   const fontsReady = loaded || error;
-  // Le profil / les réglages ne sont pertinents qu'une fois authentifié : sans
-  // session, PowerSync ne synchronise pas et `isLoading` resterait vrai (on ne
-  // bloquerait jamais le routage vers l'écran de connexion).
-  const profileReady = !session || !profileLoading;
-  // On attend aussi les réglages avant de router, pour appliquer le thème/la langue
-  // sans flash (voir gate compte-profil-onboarding §2/§3).
-  const settingsReady = !session || !settingsLoading;
-  const ready = fontsReady && !initializing && profileReady && settingsReady;
-  const onboardingCompleted = profile?.onboardingCompletedAt != null;
+  // Décision de routing centralisée dans un helper pur testé (@wellness/shared) : gère l'attente
+  // (splash), l'auth, l'onboarding et l'app — y compris la garde anti-race offline-first (ne pas
+  // conclure « onboarding non fait » sur un profil local absent avant la fin de la synchro initiale,
+  // sinon l'onboarding réapparaît après une réinstallation). Voir fix-onboarding-rejeu-connexion.
+  const route = resolveRootRoute({
+    fontsReady,
+    authInitializing: initializing,
+    hasSession: !!session,
+    profileLoading,
+    hasProfile: profile != null,
+    onboardingCompletedAt: profile?.onboardingCompletedAt ?? null,
+    settingsLoading,
+    hasSynced: !!syncStatus.hasSynced,
+  });
+  const ready = route !== 'wait';
 
   useEffect(() => {
     if (ready) {
@@ -116,29 +123,30 @@ function RootNavigator() {
 
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {
-    if (!ready) {
+    if (route === 'wait') {
       return;
     }
     const group = segments[0];
     const inAuth = group === '(auth)';
     const inOnboarding = group === '(onboarding)';
 
-    if (!session) {
+    if (route === 'auth') {
       if (!inAuth) {
         router.replace('/(auth)/sign-in');
       }
       return;
     }
-    if (!onboardingCompleted) {
+    if (route === 'onboarding') {
       if (!inOnboarding) {
         router.replace('/(onboarding)/intro');
       }
       return;
     }
+    // route === 'app'
     if (inAuth || inOnboarding) {
       router.replace('/(tabs)');
     }
-  }, [ready, session, onboardingCompleted, segments, router]);
+  }, [route, segments, router]);
 
   // Tant que les polices / la session / le profil ne sont pas prêts, on laisse le splash.
   if (!ready) {

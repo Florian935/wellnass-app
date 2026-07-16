@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/onboarding-rejeu-connexion` — onboarding redemandé après réinstallation (race offline-first)
+
+**Corrigé**
+- Sur une **réinstallation**, l'app renvoyait vers l'onboarding pourtant terminé : la gate de routing
+  ([_layout.tsx](apps/mobile/src/app/_layout.tsx)) concluait « onboarding non fait » sur un profil
+  **local** nul, **avant** que PowerSync ait redescendu la ligne `profiles` (qui porte
+  `onboarding_completed_at`) — **race offline-first** (déco/reco OK car la base locale garde le profil).
+  Repro Florian (16/07/2026) : déco/reco OK, réinstall → onboarding systématique.
+- Décision de routing extraite dans une **fonction pure testée** `resolveRootRoute`
+  (`packages/shared/src/root-route.ts`, 8 tests Vitest) : garde « ne pas ouvrir l'onboarding sur profil
+  local absent tant que `hasSynced` n'est pas vrai » ; `_layout.tsx` consomme le helper. **Comportement
+  de routing inchangé hors le cas réinstall.**
+
+**Notes**
+- **100 % client, aucune migration, pas de checkpoint 🔴.** typecheck/lint verts, shared 684 tests.
+  Reste : recette device (réinstaller → reconnexion → app directe) + relecture Damien. Commit précédent : `cf83d61`.
+
 ### 16/07/2026 — `docs/bug-onboarding-rejeu-connexion` — bug onboarding consigné + recettes MN-06/MN-03 validées (TODO)
 
 **Modifié**

@@ -1,0 +1,60 @@
+/**
+ * Décision de routing racine de l'app mobile (gate compte-profil-onboarding), pure et testable.
+ *
+ * Extraite de `_layout.tsx` pour isoler une logique subtile (race offline-first : sur une
+ * réinstallation, la base locale est vide et le profil — qui porte `onboarding_completed_at` — n'est
+ * pas encore redescendu de la synchro ; il ne faut pas conclure « onboarding non fait » avant la fin
+ * de la synchro initiale). Aucune I/O, aucun `Date`.
+ */
+
+export type RootRoute = 'wait' | 'auth' | 'onboarding' | 'app';
+
+export function resolveRootRoute(input: {
+  /** Polices chargées (ou en erreur) — prêtes à rendre. */
+  fontsReady: boolean;
+  /** L'auth store est encore en initialisation (restauration de session). */
+  authInitializing: boolean;
+  /** Une session est ouverte. */
+  hasSession: boolean;
+  /** La requête locale du profil n'est pas encore résolue. */
+  profileLoading: boolean;
+  /** Une ligne de profil existe en base locale. */
+  hasProfile: boolean;
+  /** Horodatage de fin d'onboarding du profil (null si non terminé / pas de profil). */
+  onboardingCompletedAt: string | null;
+  /** La requête locale des réglages n'est pas encore résolue. */
+  settingsLoading: boolean;
+  /** La **synchro initiale** PowerSync est terminée (au moins un cycle depuis la création de la base). */
+  hasSynced: boolean;
+}): RootRoute {
+  const {
+    fontsReady,
+    authInitializing,
+    hasSession,
+    profileLoading,
+    hasProfile,
+    onboardingCompletedAt,
+    settingsLoading,
+    hasSynced,
+  } = input;
+
+  // Splash tant que le socle n'est pas prêt.
+  if (!fontsReady || authInitializing) return 'wait';
+
+  // Sans session, on route vers l'authentification (profil/réglages non pertinents).
+  if (!hasSession) return 'auth';
+
+  // Session ouverte : attendre la résolution des requêtes locales (profil + réglages) pour éviter
+  // tout flash / boucle de redirection.
+  if (profileLoading || settingsLoading) return 'wait';
+
+  // ⭐ Garde anti-race (offline-first) : ne PAS conclure « onboarding non fait » sur un profil local
+  // absent tant que la synchro initiale n'est pas terminée — sur une réinstallation, la ligne profil
+  // n'est peut-être pas encore redescendue. On attend `hasSynced`.
+  if (!hasProfile && !hasSynced) return 'wait';
+
+  const onboardingCompleted = hasProfile && onboardingCompletedAt != null;
+  if (!onboardingCompleted) return 'onboarding';
+
+  return 'app';
+}
