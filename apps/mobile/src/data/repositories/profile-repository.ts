@@ -34,6 +34,8 @@ export type ProfileInput = Pick<
   | 'sex'
   | 'heightCm'
   | 'weightKg'
+  | 'targetWeightKg'
+  | 'startWeightKg'
   | 'mainGoal'
   | 'onboardingCompletedAt'
 >;
@@ -47,6 +49,8 @@ type ProfileDbRow = {
   sex: string | null;
   height_cm: number | null;
   weight_kg: number | null;
+  target_weight_kg: number | null;
+  start_weight_kg: number | null;
   main_goal: string | null;
   onboarding_completed_at: string | null;
   created_at: string;
@@ -70,6 +74,8 @@ function rowToProfile(row: ProfileDbRow): Profile {
     sex: row.sex as Profile['sex'],
     heightCm: row.height_cm,
     weightKg: row.weight_kg,
+    targetWeightKg: row.target_weight_kg,
+    startWeightKg: row.start_weight_kg,
     mainGoal: row.main_goal as Profile['mainGoal'],
     onboardingCompletedAt: row.onboarding_completed_at,
     createdAt: row.created_at,
@@ -86,6 +92,8 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('sex' in input) columns['sex'] = input.sex;
   if ('heightCm' in input) columns['height_cm'] = input.heightCm;
   if ('weightKg' in input) columns['weight_kg'] = input.weightKg;
+  if ('targetWeightKg' in input) columns['target_weight_kg'] = input.targetWeightKg;
+  if ('startWeightKg' in input) columns['start_weight_kg'] = input.startWeightKg;
   if ('mainGoal' in input) columns['main_goal'] = input.mainGoal;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;
