@@ -375,6 +375,18 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
+    "cross": {
+      "title": "Training load & intake (8 wk)",
+      "thisWeek": "This week",
+      "empty": "Log workouts and meals to see the load vs intake cross-view.",
+      "col": {
+        "week": "Week",
+        "sessions": "Sessions",
+        "tonnage": "Tonnage",
+        "kcal": "kcal/day",
+        "protein": "Prot/day"
+      }
+    },
     "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" },
     "delta": {
       "new": "new",

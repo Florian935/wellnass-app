@@ -375,6 +375,18 @@
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
     },
+    "cross": {
+      "title": "Charge muscu & apports (8 sem)",
+      "thisWeek": "Cette semaine",
+      "empty": "Enregistre des séances et des repas pour voir le croisement charge / apports.",
+      "col": {
+        "week": "Semaine",
+        "sessions": "Séances",
+        "tonnage": "Tonnage",
+        "kcal": "kcal/j",
+        "protein": "Prot/j"
+      }
+    },
     "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" },
     "delta": {
       "new": "nouveau",
