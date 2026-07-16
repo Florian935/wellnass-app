@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/8.8a-admin-consultation-utilisateurs` — consultation des utilisateurs (back-office)
+
+**Ajouté** (US 8.8a — première moitié de 8.8 ; le bannissement = 8.8b, à cadrer avec Damien)
+- **Migration** `20260716134626_admin_users_view` (**appliquée cloud CLI + `db:types`**, cochée
+  [MIGRATIONS.md](supabase/MIGRATIONS.md)) :
+  - Fonction `public.can_manage_users()` (`SECURITY DEFINER`, `super_admin` **ou** `moderator`).
+  - Vue `public.admin_users` (`security_invoker=false` + `WHERE can_manage_users()` = **barrière serveur
+    authoritative** ; `REVOKE anon` / `GRANT authenticated`) joignant `auth.users`+`profiles`+
+    `user_settings`, **colonnes sobres RGPD** (email, inscription, dernière connexion, `is_banned`,
+    prénom, objectif, onboarding, piliers, langue — **aucune donnée de santé**). Hors PowerSync.
+- **Gate `canManageUsers`** (super_admin/moderator) : `rolesContext.ts` + `RolesProvider.tsx` + garde de
+  route `RequireCanManageUsers` (`App.tsx`). **`content_editor` explicitement exclu.**
+- **Écrans admin** : liste `/users` (recherche email débouncée + pagination serveur + statut Actif/Banni),
+  fiche `/users/:id` (lecture seule, sobre). Couche data `data/users.ts` (`listUsers`/`getUser`, typés
+  sur la vue). i18n FR `fr.users`.
+
+**Modifié**
+- `AdminLayout` : entrée « Utilisateurs » convertie de placeholder « bientôt » en vrai lien gated
+  `canManageUsers` ; `NAV_SOON` + styles morts retirés.
+
+**Technique / Notes**
+- **Lecture seule, clé anon uniquement (aucun `service_role`), aucune écriture, aucun `logAudit`**
+  (la consultation n'écrit rien). Colonnes de vue toutes nullables → guards systématiques côté écrans
+  (`formatDate`, `renderPillars`/`Array.isArray`, cast des clés i18n littérales, pagination sans
+  interpolation).
+- Exécution **subagent-driven** (commits `48c2f1f`→`5573579`), spec + plan relus par sous-agent
+  (corrections intégrées), **revue finale de code *ready-to-merge*** (barrière serveur validée : un
+  compte non habilité obtient 0 ligne).
+- **Reste** : **recette** (super_admin/moderator voient la liste + fiche ; `content_editor` ne voit rien,
+  `/users` redirige ; recherche/pagination ; compte sans profil → « — ») + **relecture Damien**.
+- **8.8b (bannissement)** à cadrer avec Damien : RPC `SECURITY DEFINER` sur `auth.users.banned_until`
+  + table `user_bans` (motif) + actions UI + audit.
+- Commit précédent : `e2220c4`.
+
 ### 16/07/2026 — `fix/journal-entree-swipe-edition` — implémentation : swipe + édition élargie des entrées de repas
 
 **Corrigé** (bug §🐞 « modifier / supprimer un aliment ajouté à un repas »)
