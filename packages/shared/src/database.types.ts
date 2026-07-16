@@ -1368,6 +1368,48 @@ export type Database = {
           },
         ]
       }
+      user_bans: {
+        Row: {
+          acted_by: string | null
+          action: string
+          created_at: string
+          id: string
+          reason: string | null
+          target_user_id: string
+        }
+        Insert: {
+          acted_by?: string | null
+          action: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_user_id: string
+        }
+        Update: {
+          acted_by?: string | null
+          action?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          target_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_bans_acted_by_fkey"
+            columns: ["acted_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_bans_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1602,6 +1644,7 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: string | null
+          is_admin: boolean | null
           is_banned: boolean | null
           language: string | null
           last_sign_in_at: string | null
@@ -1612,10 +1655,15 @@ export type Database = {
       }
     }
     Functions: {
+      ban_user: {
+        Args: { reason: string; target_user_id: string }
+        Returns: undefined
+      }
       can_manage_users: { Args: never; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      unban_user: { Args: { target_user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
