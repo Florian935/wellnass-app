@@ -236,6 +236,16 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
+- [~] **US MN-03 — Vue croisée « charge muscu & apports » (8 sem)** (`feature/mn03-vue-croisee-seances-apports`,
+  16/07/2026) — **spec rédigée, en attente de validation Florian** (brainstorming validé). 3ᵉ stat
+  croisée inter-piliers (muscu↔nutrition), Phase A, **descriptive** (complète l'alerte 4.32). Tableau
+  8 semaines sur **Nutrition → Stats** : nb séances + tonnage muscu · kcal/j + prot/j (moyenne jours
+  loggés) + mini-tendance `DeltaBadge` vs semaine précédente. Fonction pure `computeWeeklyTrainingNutrition`
+  (shared, testée) + hook `useTrainingNutritionCross` (2 requêtes locales, gating au retour) + composant
+  `TrainingNutritionCrossCard`. **100 % client, offline, pas de migration.** Revue spec sous-agent : 4
+  bloquants corrigés (borne dayKey vs ISO, bucketing sans `weekEnd`, séances via LEFT JOIN, gating au
+  retour). Spec : [us/mn03-vue-croisee-seances-apports.md](docs/specs/functional/us/mn03-vue-croisee-seances-apports.md).
+  **Suite : validation Florian → plan → (maquette ?) → code.**
 - [x] **US MUSC-05 — Équilibre musculaire par groupe (14 j)** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/musc05-equilibre-groupes`,
   15/07/2026) — **spec + plan validés**, **code livré & mergé sur `dev`** (subagent-driven, revues par
   tâche + revue finale *prête à merger*, aucun bloquant). Nouvelle section `/progress` : barres **par
