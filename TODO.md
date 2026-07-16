@@ -237,14 +237,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ## 🚧 En cours
 
 - [~] **US MN-06 — Apport protéique par kg (vs cible par objectif)** (`feature/mn06-proteines-par-kg`,
-  16/07/2026) — **spec rédigée (revue sous-agent : Approved), en attente de validation Florian**. Stat
+  16/07/2026) — **spec validée Florian (16/07/2026), plan rédigé** (revues sous-agent Approved). Stat
   muscu↔nutrition, Phase A, descriptive. Section **Nutrition → Stats** : protéines **g/kg** (moyenne
   7 j/30 j ÷ poids) vs **fourchette cible par objectif** (bulk 1,6–2,2 · maintien 1,6–2,0 · sèche
   1,8–2,4 · perte 1,8–2,2) + statut low/in/high (couleurs neutres MN-05). Pure `computeProteinPerKg`
   + `PROTEIN_TARGETS_G_PER_KG` (shared, testées) + hook `useProteinPerKg` (réutilise `useDailyTotals`/
   `averageIntake`/`useLatestWeight`/objectif) + `ProteinPerKgCard`. **100 % client, offline, pas de
-  migration.** Spec : [us/mn06-proteines-par-kg.md](docs/specs/functional/us/mn06-proteines-par-kg.md).
-  **Suite : validation Florian → plan → code.**
+  migration.** Spec : [us/mn06-proteines-par-kg.md](docs/specs/functional/us/mn06-proteines-par-kg.md) ·
+  Plan : [plans/mn06-proteines-par-kg.md](docs/plans/mn06-proteines-par-kg.md) (6 tâches TDD ; revue :
+  destructuration `useNutritionProfile` corrigée). **Suite : validation du plan → code (subagent-driven).**
 - [~] **US MN-03 — Vue croisée « charge muscu & apports » (8 sem)** (`feature/mn03-vue-croisee-seances-apports`,
   16/07/2026) — **spec + plan validés Florian (16/07/2026), code livré** (subagent-driven, revues
   spec+qualité par tâche + revue finale *prête à merger*). 3ᵉ stat
