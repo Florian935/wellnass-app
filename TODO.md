@@ -244,8 +244,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   (shared, testée) + hook `useTrainingNutritionCross` (2 requêtes locales, gating au retour) + composant
   `TrainingNutritionCrossCard`. **100 % client, offline, pas de migration.** Revue spec sous-agent : 4
   bloquants corrigés (borne dayKey vs ISO, bucketing sans `weekEnd`, séances via LEFT JOIN, gating au
-  retour). Spec : [us/mn03-vue-croisee-seances-apports.md](docs/specs/functional/us/mn03-vue-croisee-seances-apports.md).
-  **Suite : validation Florian → plan → (maquette ?) → code.**
+  retour). **Spec validée Florian (16/07/2026) → plan rédigé** (revue sous-agent : réf. `activePillars`
+  + imports corrigés, `EmptyState` → texte simple, `test` shared-only). Spec :
+  [us/mn03-vue-croisee-seances-apports.md](docs/specs/functional/us/mn03-vue-croisee-seances-apports.md) ·
+  Plan : [plans/mn03-vue-croisee-seances-apports.md](docs/plans/mn03-vue-croisee-seances-apports.md) (6 tâches TDD).
+  **Suite : validation du plan par Florian → (maquette écartée) → code.**
 - [x] **US MUSC-05 — Équilibre musculaire par groupe (14 j)** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/musc05-equilibre-groupes`,
   15/07/2026) — **spec + plan validés**, **code livré & mergé sur `dev`** (subagent-driven, revues par
   tâche + revue finale *prête à merger*, aucun bloquant). Nouvelle section `/progress` : barres **par
