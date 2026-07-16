@@ -10,74 +10,57 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🧪 RECETTE À FAIRE — US 8.8b Bannissement des utilisateurs (back-office web, Florian, 16/07/2026)
+> ## 🧪 RECETTE À FAIRE — US 8.8 Gestion des utilisateurs : consultation (8.8a) + bannissement (8.8b) (back-office web, Florian, 16/07/2026)
 >
-> Code **livré & mergé sur `dev`** (`feature/8.8b-admin-bannissement`, `0845df6`→`b6b3aca`).
-> **Migration cloud déjà appliquée** (`db:push` + `db:types`). Recette sur le **back-office web**. Se
-> fait **après/avec** la recette 8.8a. Spec : [us/8.8b-admin-bannissement.md](docs/specs/functional/us/8.8b-admin-bannissement.md).
+> Code **livré & mergé sur `dev`** (8.8a `feature/8.8a-…` + 8.8b `feature/8.8b-…`). **Migrations cloud
+> déjà appliquées** (`db:push` + `db:types`). Recette sur le **back-office web** (`apps/admin`) — pas
+> l'app mobile. **Se recette d'un bloc** (même écran `/users`). Specs :
+> [8.8a](docs/specs/functional/us/8.8a-admin-consultation-utilisateurs.md) ·
+> [8.8b](docs/specs/functional/us/8.8b-admin-bannissement.md).
 >
-> **Préparation** : compte **super_admin** ; un compte **utilisateur normal** (non-admin) comme cible ;
-> idéalement un compte **moderator** et un compte **admin** (pour tester les garde-fous).
+> **Préparation** : lancer l'admin (`npm run dev -w @wellness/admin`), se connecter en **super_admin**.
+> Avoir sous la main : un **compte utilisateur normal** (non-admin, sera la cible du ban) ; idéalement un
+> compte **moderator** et un compte **content_editor** (rôles attribuables via l'écran `/roles`) pour les
+> tests d'accès et de garde-fous.
 >
-> **1. Bannir / débannir (parcours nominal, super_admin)**
-> - [ ] Fiche d'un **compte normal** → section « Modération » → **Bannir** → une invite demande le
->   **motif** → saisir un motif → le statut passe à **« Banni »**, le **motif** s'affiche, une ligne
->   apparaît dans l'**historique** (date · Banni · motif · acteur).
-> - [ ] **Débannir** → confirmation → statut **« Actif »**, nouvelle ligne « Débanni » dans l'historique.
-> - [ ] **Motif vide** (annuler l'invite ou laisser vide) → **aucune** action (pas de bannissement).
->
-> **2. Garde-fous (le point sensible)**
-> - [ ] Sur **sa propre fiche** (super_admin) → section affiche **« Ce compte ne peut pas être banni »**, pas de bouton Bannir.
-> - [ ] Sur la fiche d'un **compte admin** (moderator/content_editor/super_admin) → idem, **pas de bouton**.
->
-> **3. Rôle moderator**
-> - [ ] Connecté en **moderator** : peut **bannir/débannir** un compte normal (mêmes écrans). _(Le
->   moderator ne verra pas sa trace dans `/audit` — normal, journal réservé super_admin.)_
->
-> **4. Effet réel du ban (important)**
-> - [ ] Un **compte banni** perd l'accès à l'app mobile / la synchro **au prochain rafraîchissement de
->   session** (~1 h) **ou** après déconnexion/reconnexion (connexion refusée). _(À vérifier sur un vrai
->   compte de test — c'est le cœur du mécanisme : `banned_until` bloque le refresh du token.)_
->
-> **Critère de validation** : points 1 + 2 + 4 OK (2 = sécurité, prioritaire ; 4 = confirme que le ban
-> agit vraiment). Tout écart → me remonter le détail. Une fois validé → 8.8b `[x]` + **US 8.8 close** +
-> relecture Damien. _NB : recettes 8.8a (consultation) et fix nutrition (mobile) indépendantes, blocs ci-dessous._
-
-> ## 🧪 RECETTE À FAIRE — US 8.8a Consultation des utilisateurs (back-office web, Florian, 16/07/2026)
->
-> Code **livré & mergé sur `dev`** (`feature/8.8a-admin-consultation-utilisateurs`, commits
-> `48c2f1f`→`5573579`). **Migration cloud déjà appliquée** (`db:push` + `db:types`). Recette sur le
-> **back-office web** (`apps/admin`) — pas l'app mobile. Spec :
-> [us/8.8a-admin-consultation-utilisateurs.md](docs/specs/functional/us/8.8a-admin-consultation-utilisateurs.md).
->
-> **Préparation** : lancer l'admin (`npm run dev -w @wellness/admin` ou build), se connecter avec un
-> compte **super_admin**. Idéalement disposer aussi d'un compte **moderator** et d'un compte
-> **content_editor** pour tester les 3 rôles (attribuables via l'écran `/roles`).
->
-> **1. Accès par rôle (le point sensible)**
+> **1. Accès par rôle — 8.8a (sécurité/RGPD, prioritaire)**
 > - [ ] **super_admin** : l'entrée « 👤 Utilisateurs » apparaît dans la barre latérale → clic → la liste s'affiche.
 > - [ ] **moderator** : même accès (entrée visible + liste).
 > - [ ] **content_editor** : l'entrée « Utilisateurs » est **absente** ; saisir l'URL `/users` à la main → **redirection vers l'accueil** ; la liste ne s'affiche jamais.
-> - [ ] (Optionnel, si possible) un compte **sans rôle** ne peut de toute façon pas entrer dans l'admin.
 >
-> **2. Liste `/users`**
+> **2. Liste `/users` — 8.8a**
 > - [ ] Tableau peuplé : **E-mail · Inscrit le · Dernière connexion · Piliers · Statut**.
 > - [ ] **Recherche par e-mail** : taper une partie d'un e-mail → la liste se filtre (insensible casse).
 > - [ ] **Pagination** (si > 25 comptes) : Précédent/Suivant + « Page X / Y » ; boutons désactivés aux bornes.
-> - [ ] **Statut** : badge « Actif » (et « Banni » si un compte a un `banned_until` futur — sinon tous Actifs, normal en 8.8a).
 > - [ ] Compte **sans profil** (onboarding non terminé) → apparaît quand même, colonnes profil à « — ».
 > - [ ] Dernière connexion **« Jamais »** pour un compte jamais connecté.
 >
-> **3. Fiche `/users/:id`**
+> **3. Fiche `/users/:id` — 8.8a**
 > - [ ] Clic sur une ligne → fiche : sections **Compte / Configuration / Profil**.
-> - [ ] Contenu **sobre** : e-mail, inscription, dernière connexion, statut, piliers actifs, langue, prénom, objectif, onboarding oui/non.
-> - [ ] **AUCUNE donnée de santé** (pas de poids, taille, sexe, date de naissance) — vérifier qu'elles n'apparaissent nulle part.
-> - [ ] **Aucun bouton d'action** (bannir = 8.8b, pas encore là).
-> - [ ] Retour à la liste OK ; id inexistant (URL bidon) → message « Utilisateur introuvable ».
+> - [ ] Contenu **sobre** : e-mail, inscription, dernière connexion, statut, piliers, langue, prénom, objectif, onboarding oui/non.
+> - [ ] **AUCUNE donnée de santé** (pas de poids, taille, sexe, date de naissance) — nulle part.
+> - [ ] Retour à la liste OK ; id inexistant (URL bidon) → « Utilisateur introuvable ».
 >
-> **Critère de validation** : points 1 (les 3 rôles) + 2 + 3 OK. Le point 1 (content_editor exclu) est
-> le plus important (sécurité/RGPD). Tout écart → me remonter le détail. Une fois validé → 8.8a `[x]` +
-> relecture Damien. _NB : la recette du **fix nutrition** (bloc ci-dessous) est indépendante et se fait sur mobile._
+> **4. Bannir / débannir — 8.8b (parcours nominal, super_admin)**
+> - [ ] Fiche d'un **compte normal** → section « Modération » → **Bannir** → invite de **motif** →
+>   saisir un motif → statut **« Banni »** + **motif** affiché + ligne dans l'**historique** (date · Banni · motif · acteur).
+> - [ ] **Débannir** → confirmation → statut **« Actif »** + ligne « Débanni » dans l'historique.
+> - [ ] **Motif vide** (annuler l'invite ou laisser vide) → **aucune** action.
+>
+> **5. Garde-fous du ban — 8.8b (sécurité, prioritaire)**
+> - [ ] Sur **sa propre fiche** (super_admin) → **« Ce compte ne peut pas être banni »**, pas de bouton.
+> - [ ] Sur la fiche d'un **compte admin** (super_admin/moderator/content_editor) → idem, **pas de bouton**.
+> - [ ] En **moderator** : peut bannir/débannir un compte normal (mêmes écrans). _(Sa trace n'apparaît pas dans `/audit` — normal, journal réservé super_admin.)_
+>
+> **6. Effet réel du ban — 8.8b (cœur du mécanisme)**
+> - [ ] Un **compte banni** perd l'accès à l'app mobile / la synchro **au prochain rafraîchissement de
+>   session** (~1 h) **ou** après déconnexion/reconnexion (connexion refusée). _(À vérifier sur un vrai
+>   compte de test : `banned_until` bloque le refresh du token.)_
+>
+> **Critère de validation** : points **1, 3, 4, 5, 6** OK (1 & 5 = sécurité, prioritaires ; 6 = confirme
+> que le ban agit vraiment). Tout écart → me remonter le détail (rôle, compte, capture, étape). Une fois
+> validé → cocher **8.8a `[x]` + 8.8b `[x]` → US 8.8 close** + relecture Damien. _NB : le **fix nutrition**
+> (bloc ci-dessous) est indépendant et se recette sur mobile._
 
 > ## 🧪 RECETTE À FAIRE — Fix édition/suppression d'une entrée de repas (Florian, soir du 16/07/2026)
 >
