@@ -8,7 +8,7 @@
 
 import { useQuery } from '@powersync/react';
 import type { Micronutrients } from '@wellness/shared';
-import { parseMicronutrients } from '@wellness/shared';
+import { computeJournalCompletion, localDayKey, parseMicronutrients } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
@@ -289,4 +289,42 @@ export async function duplicateDay(fromDate: string, toDate: string): Promise<nu
     await addFoodEntry(toDate, r.meal_type, copyRowToSnapshot(r));
   }
   return rows.length;
+}
+
+// ---------------------------------------------------------------------------
+// useJournalCompletion — carte NUTR-17 (régularité du journal)
+// ---------------------------------------------------------------------------
+
+/** Clé AAAA-MM-JJ locale du jour `n` jours avant aujourd'hui (miroir nutrition-stats/dashboard). */
+const daysAgo = (n: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return localDayKey(d);
+};
+
+const SELECT_FIRST_LOG_DATE =
+  'SELECT MIN(log_date) AS first FROM food_entries WHERE deleted_at IS NULL';
+
+/**
+ * Régularité du journal (NUTR-17) sur les `windowDays` jours écoulés : part des jours renseignés,
+ * dénominateur borné à l'ancienneté du compte (1ʳᵉ entrée), aujourd'hui exclu. Compose `useDailyTotals`
+ * (jours renseignés) + `MIN(log_date)` (1ʳᵉ entrée) → règle pure `computeJournalCompletion`.
+ */
+export function useJournalCompletion(windowDays: number): {
+  loggedDays: number;
+  effectiveWindow: number;
+  pct: number;
+  isLoading: boolean;
+} {
+  const { totals, isLoading: totalsLoading } = useDailyTotals(daysAgo(windowDays));
+  const { data, isLoading: firstLoading } = useQuery<{ first: string | null }>(SELECT_FIRST_LOG_DATE);
+  const firstEntryDayKey = data[0]?.first ?? null;
+
+  const { loggedDays, effectiveWindow, pct } = computeJournalCompletion({
+    loggedDayKeys: totals.map((t) => t.logDate),
+    firstEntryDayKey,
+    windowDays,
+    today: new Date(),
+  });
+  return { loggedDays, effectiveWindow, pct, isLoading: totalsLoading || firstLoading };
 }
