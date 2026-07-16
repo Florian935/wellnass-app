@@ -10,6 +10,42 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🧪 RECETTE À FAIRE — US 8.8a Consultation des utilisateurs (back-office web, Florian, 16/07/2026)
+>
+> Code **livré & mergé sur `dev`** (`feature/8.8a-admin-consultation-utilisateurs`, commits
+> `48c2f1f`→`5573579`). **Migration cloud déjà appliquée** (`db:push` + `db:types`). Recette sur le
+> **back-office web** (`apps/admin`) — pas l'app mobile. Spec :
+> [us/8.8a-admin-consultation-utilisateurs.md](docs/specs/functional/us/8.8a-admin-consultation-utilisateurs.md).
+>
+> **Préparation** : lancer l'admin (`npm run dev -w @wellness/admin` ou build), se connecter avec un
+> compte **super_admin**. Idéalement disposer aussi d'un compte **moderator** et d'un compte
+> **content_editor** pour tester les 3 rôles (attribuables via l'écran `/roles`).
+>
+> **1. Accès par rôle (le point sensible)**
+> - [ ] **super_admin** : l'entrée « 👤 Utilisateurs » apparaît dans la barre latérale → clic → la liste s'affiche.
+> - [ ] **moderator** : même accès (entrée visible + liste).
+> - [ ] **content_editor** : l'entrée « Utilisateurs » est **absente** ; saisir l'URL `/users` à la main → **redirection vers l'accueil** ; la liste ne s'affiche jamais.
+> - [ ] (Optionnel, si possible) un compte **sans rôle** ne peut de toute façon pas entrer dans l'admin.
+>
+> **2. Liste `/users`**
+> - [ ] Tableau peuplé : **E-mail · Inscrit le · Dernière connexion · Piliers · Statut**.
+> - [ ] **Recherche par e-mail** : taper une partie d'un e-mail → la liste se filtre (insensible casse).
+> - [ ] **Pagination** (si > 25 comptes) : Précédent/Suivant + « Page X / Y » ; boutons désactivés aux bornes.
+> - [ ] **Statut** : badge « Actif » (et « Banni » si un compte a un `banned_until` futur — sinon tous Actifs, normal en 8.8a).
+> - [ ] Compte **sans profil** (onboarding non terminé) → apparaît quand même, colonnes profil à « — ».
+> - [ ] Dernière connexion **« Jamais »** pour un compte jamais connecté.
+>
+> **3. Fiche `/users/:id`**
+> - [ ] Clic sur une ligne → fiche : sections **Compte / Configuration / Profil**.
+> - [ ] Contenu **sobre** : e-mail, inscription, dernière connexion, statut, piliers actifs, langue, prénom, objectif, onboarding oui/non.
+> - [ ] **AUCUNE donnée de santé** (pas de poids, taille, sexe, date de naissance) — vérifier qu'elles n'apparaissent nulle part.
+> - [ ] **Aucun bouton d'action** (bannir = 8.8b, pas encore là).
+> - [ ] Retour à la liste OK ; id inexistant (URL bidon) → message « Utilisateur introuvable ».
+>
+> **Critère de validation** : points 1 (les 3 rôles) + 2 + 3 OK. Le point 1 (content_editor exclu) est
+> le plus important (sécurité/RGPD). Tout écart → me remonter le détail. Une fois validé → 8.8a `[x]` +
+> relecture Damien. _NB : la recette du **fix nutrition** (bloc ci-dessous) est indépendante et se fait sur mobile._
+
 > ## 🧪 RECETTE À FAIRE — Fix édition/suppression d'une entrée de repas (Florian, soir du 16/07/2026)
 >
 > Code **livré & mergé sur `dev`** (`fix/journal-entree-swipe-edition`, commits `5e00ac9`→`0729039`).
