@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/profil-champs-numeriques-invalides` — champs numériques du Profil : plus d'effacement silencieux
+
+**Corrigé**
+- Écran **Profil** : une saisie non vide mais **invalide** dans un champ numérique (poids, taille,
+  poids cible) écrasait silencieusement la valeur en base à l'enregistrement — le parseur
+  (`parseWeightToKg` / `heightPartsToCm`) renvoie `null` sur une entrée non numérique (ou ≤ 0), et ce
+  `null` était écrit tel quel (pour « Poids cible » cela **supprimait l'objectif**). Désormais un champ
+  numérique non vide qui ne parse pas est détecté : le bouton **« Enregistrer » est désactivé** + message
+  d'aide `profile.invalidNumber` (FR/EN), tant que la saisie n'est pas corrigée. Un champ **vide** reste
+  autorisé (effacement volontaire, ex. retirer le poids cible).
+
+**Technique / Notes**
+- `apps/mobile/src/app/profile.tsx` : parsing centralisé (une fois) + drapeaux `weightInvalid` /
+  `heightInvalid` / `targetInvalid` → `hasInvalidNumber` (garde-fou dans `onSave` + `disabled` du bouton) ;
+  réutilisation des valeurs parsées dans l'`upsertProfile`/`setWeightTarget` (plus de double parsing).
+- **100 % client, aucune migration.** typecheck/lint verts. Suite au point de vigilance de la revue
+  NUTR-11 (durcissement commun des champs numériques du Profil). **Reste : recette device + relecture Damien.**
+- Commit précédent : `a68098b`.
+
 ### 16/07/2026 — `feature/nutr11-progression-poids` — carte « Progression vers l'objectif de poids » (NUTR-11)
 
 **Ajouté** (analyse NUTR-11 du catalogue, Phase A — implémentation subagent-driven)

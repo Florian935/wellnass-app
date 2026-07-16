@@ -89,7 +89,8 @@
   "profile": {
     "title": "Profil",
     "save": "Enregistrer",
-    "targetWeight": "Poids cible"
+    "targetWeight": "Poids cible",
+    "invalidNumber": "Vérifie les champs numériques (poids, taille, poids cible) : valeur invalide."
   },
   "nutrition": {
     "title": "Profil nutritionnel",

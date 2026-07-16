@@ -89,7 +89,8 @@
   "profile": {
     "title": "Profile",
     "save": "Save",
-    "targetWeight": "Target weight"
+    "targetWeight": "Target weight",
+    "invalidNumber": "Check the numeric fields (weight, height, target weight): invalid value."
   },
   "nutrition": {
     "title": "Nutrition profile",
