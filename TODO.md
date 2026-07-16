@@ -164,7 +164,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   → onboarding systématique** (race offline-first). Fix : helper pur testé `resolveRootRoute`
   (@wellness/shared, 8 tests) + câblage `_layout.tsx` → on n'ouvre l'onboarding sur profil local absent
   qu'**après `hasSynced`**. Spec : [us/fix-onboarding-rejeu-connexion.md](docs/specs/functional/us/fix-onboarding-rejeu-connexion.md).
-  **Reste : recette device** (réinstaller l'APK → reconnexion → arrive direct sur l'app) + relecture Damien.
+  **✅ Recette device validée (Florian, 16/07/2026)** (réinstall → reconnexion → app directe, plus d'onboarding fantôme). Reste : relecture Damien.
   _Diagnostic initial : remontée Florian,
   16/07/2026, à reproduire sur device._ ⚠️ **Distinct** du bug déjà corrigé `fix/onboarding-rejeu-profil`
   (crash au 2ᵉ passage) : ici l'onboarding **se relance tout seul à chaque login**. **Vérif code** : la
