@@ -156,7 +156,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | NUTR-14 | 🆕 | Détection de carences vs ANC/RDA | Micronutriments (jour/7 j) vs références (ANC FR/RDA), % de couverture + alerte. **Table de références à ajouter.** | `sumMicronutrients()` + table ANC + profil | alerte | jour + glissant 7/30 j | Passer de la mesure au conseil (fer, calcium, oméga-3…). | prolonge 4.33 |
 | NUTR-15 | 🆕 | Sucres / fibres / AGS vs seuils de référence | Sucres, fibres, acides gras saturés vs repères santé (fibres ≥25-30 g, seuils OMS). | `food_entries` + `foods` (données déjà stockées) | widget | jour, moyenne 7 j | Lecture qualité au-delà des macros globales. | — |
 | NUTR-16 | 🆕 | Répartition calorique par repas | Part kcal/macros par repas (petit-déj/déj/dîner/collation/custom). | `food_entries` par `mealType` | courbe | jour, moyenne 7/30 j | Repérer un dîner trop lourd, le grignotage du soir. | — |
-| NUTR-17 | 🆕 | Régularité du journal (taux de complétion) | Part de jours renseignés, plus longue série journalisée, trous de saisie. | distinct `food_entries.logDate` | score | 7/30/90 j | La fiabilité de toutes les stats dépend de l'assiduité. | — |
+| NUTR-17 | ✅ | Régularité du journal (taux de complétion) | **Livré** : carte Stats nutrition (pct + N/M jours renseignés, 7/30 j) ; dénominateur borné à l'ancienneté, aujourd'hui exclu. `computeJournalCompletion` (shared, dates UTC exact) + `useJournalCompletion`. _(Plus longue série / trous de saisie : différés.)_ | distinct `food_entries.log_date` + `MIN(log_date)` | stat | 7/30 j | La fiabilité de toutes les stats dépend de l'assiduité. | **NUTR-17 (livrée · reste recette device)** |
 | NUTR-18 | 🆕 | Bilan calorique hebdomadaire | Cumul surplus/déficit de la semaine + décompte jours au-dessus/en dessous. | `food_entries`/jour vs `targetCalories()` sur 7 j | insight | semaine glissante | Raisonner en bilan hebdo plutôt qu'en pression quotidienne. | — |
 | NUTR-19 | 🆕 | Variation de poids théorique vs réelle | Variation attendue (~7700 kcal/kg) vs variation pesée. | cumul écarts `food_entries`↔objectif + `body_weight_entries` | insight | 2-4 sem glissantes | Détecter un TDEE mal estimé ou une sous-déclaration. | — |
 | NUTR-20 | 🆕 | Ratio oméga-3 / oméga-6 | Rapport oméga-6/oméga-3, repère (viser bas), alerte si déséquilibré. | `food_entries.micronutrients.omega_3_g`/`omega_6_g` | insight | moyenne 7/30 j | Indicateur qualité des lipides, données déjà présentes. | prolonge 4.33 |
@@ -355,7 +355,8 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    l'exposer proprement en courbe. Effort faible.
 4. ~~**NUTR-10 — Adhérence à l'objectif : jours dans la cible**~~ ✅ **livrée** (reste recette). Carte
    Stats nutrition (pct + N/M jours, 7/30 j), marge % configurable, objectif effectif par jour.
-5. **NUTR-17 — Régularité du journal (taux de complétion)** (🆕). Calcul trivial sur
+5. ~~**NUTR-17 — Régularité du journal (taux de complétion)**~~ ✅ **livrée** (reste recette). Carte
+   Stats nutrition (pct + N/M jours, 7/30 j), dénominateur borné à l'ancienneté, aujourd'hui exclu. _(ancien texte ci-dessous)_ Calcul trivial sur
    `food_entries.logDate` ; conditionne la fiabilité de toutes les autres stats nutrition.
 6. ~~**META-06 — Comparaison période N vs N-1 (delta)**~~ ✅ **livrée + recette OK** (`DeltaBadge` sur
    running / nutrition / muscu). `aggregateRunStats` + `averageIntake` + `percentChange`.

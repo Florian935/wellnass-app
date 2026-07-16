@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/nutr17-regularite-journal` — carte « Régularité du journal » (NUTR-17)
+
+**Ajouté** (analyse NUTR-17 du catalogue, Phase A)
+- Carte **« Régularité du journal »** sur Stats nutrition : part % + « N/M jours renseignés » sur la
+  fenêtre 7 j/30 j (sélecteur partagé). **Dénominateur borné à l'ancienneté** (min(fenêtre, jours depuis
+  la 1ʳᵉ entrée)) ; **aujourd'hui exclu** (fenêtre = jours écoulés jusqu'à hier).
+- Fonction pure `computeJournalCompletion` (shared, testée) : reçoit `today: Date` (pas de reparse de
+  clé en UTC), comparaisons en clés `AAAA-MM-JJ`, écart de jours calculé en **UTC exact** (DST-safe),
+  garde anti-négatif. Hook `useJournalCompletion` (journal-repository : `useDailyTotals` + `MIN(log_date)`).
+- i18n `stats.completion.*` (pluriel `logged_one/_other`) FR/EN.
+
+**Technique / Notes**
+- **100 % client, aucune migration, offline** (lecture de `food_entries` existant). Troisième carte de
+  la section apports (Apports moyens · Adhérence NUTR-10 · Régularité), même sélecteur 7 j/30 j.
+- Exécution **subagent-driven** (commits `9b8b1ec`→`f6b54a1`), spec + plan relus par sous-agent
+  (2 bloquants dates corrigés en amont : `today: Date`, garde anti-négatif, compte UTC exact),
+  **revue finale *ready-to-merge*** (+ test dédié « aujourd'hui exclu du numérateur »).
+- typecheck/lint/tests(702) verts. Catalogue NUTR-17 → ✅.
+- **Reste** : recette device (jours renseignés/sautés ; aujourd'hui non compté ; compte récent = borne
+  ancienneté ; 7 j/30 j ; aucune entrée) + relecture Damien.
+- Commit précédent : `6b650c1`.
+
 ### 16/07/2026 — `feature/nutr10-adherence-objectif` — carte « Adhérence à l'objectif » (NUTR-10)
 
 **Ajouté** (analyse NUTR-10 du catalogue, Phase A)
