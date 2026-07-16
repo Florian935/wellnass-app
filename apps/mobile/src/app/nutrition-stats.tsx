@@ -12,6 +12,7 @@ import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
 import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useDailyTotals } from '@/data/repositories/journal-repository';
+import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -52,6 +53,7 @@ export default function NutritionStatsScreen() {
   const avg = averageIntake(totals);
   const previousAvg = averageIntake(previousTotals);
   const kcalChange = percentChange(avg.kcal, previousAvg.kcal);
+  const adherence = useGoalAdherence(intakeWindowDays);
 
   const trend = weightTrend(weightEntries.map((e) => e.weightKg));
   const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
@@ -114,6 +116,28 @@ export default function NutritionStatsScreen() {
               {t('nutrition.macros.protein')} {avg.proteinG} g · {t('nutrition.macros.carbs')} {avg.carbsG} g · {t('nutrition.macros.fat')} {avg.fatG} g
             </Text>
             {intakeData.length >= 2 ? <ProgressLineChart data={intakeData} unit={t('nutrition.kcal')} /> : null}
+          </>
+        )}
+      </Card>
+
+      {/* Adhérence à l'objectif (NUTR-10) — même fenêtre 7 j/30 j que les apports */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.adherence.title')}</Text>
+      <Card>
+        {!adherence.hasTarget ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.noTarget')}</Text>
+        ) : adherence.loggedDays === 0 ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.empty')}</Text>
+        ) : (
+          <>
+            <View style={styles.avgRow}>
+              <Text style={[styles.avgKcal, { color: colors.text }]}>{adherence.pct} %</Text>
+            </View>
+            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
+              {t('stats.adherence.inTarget', { count: adherence.daysInTarget, total: adherence.loggedDays })}
+            </Text>
+            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
+              {t('stats.adherence.margin', { pct: adherence.marginPct })}
+            </Text>
           </>
         )}
       </Card>

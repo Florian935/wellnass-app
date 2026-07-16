@@ -131,6 +131,10 @@
       },
       "trainingBonus": "Bonus jour d'entraînement (kcal)",
       "trainingBonusHint": "Ajouté à l'objectif les jours avec une séance de muscu ou une course. En mode Auto, sert de repli les jours muscu. 0 = désactivé.",
+      "adherenceMargin": {
+        "label": "Marge d'adhérence",
+        "hint": "Tolérance autour de l'objectif pour compter un jour « dans la cible » (stats d'adhérence)."
+      },
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
       "completeProfile": "Compléter mon profil"
     },
@@ -376,6 +380,14 @@
       "title": "Apports moyens",
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
+    },
+    "adherence": {
+      "title": "Adhérence à l'objectif",
+      "inTarget_one": "{{count}} / {{total}} jour dans la cible",
+      "inTarget_other": "{{count}} / {{total}} jours dans la cible",
+      "margin": "±{{pct}} % de l'objectif",
+      "empty": "Aucun jour renseigné",
+      "noTarget": "Définis ton objectif calorique"
     },
     "protein": {
       "title": "Apport protéique / poids",

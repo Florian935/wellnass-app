@@ -131,6 +131,10 @@
       },
       "trainingBonus": "Training-day bonus (kcal)",
       "trainingBonusHint": "Added to your goal on days with a strength or running session. In Auto mode, used as a fallback on strength days. 0 = off.",
+      "adherenceMargin": {
+        "label": "Adherence margin",
+        "hint": "Tolerance around your goal to count a day as on target (adherence stats)."
+      },
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
       "completeProfile": "Complete my profile"
     },
@@ -376,6 +380,14 @@
       "title": "Average intake",
       "empty": "Not enough data yet.",
       "perDay": "per day"
+    },
+    "adherence": {
+      "title": "Goal adherence",
+      "inTarget_one": "{{count}} / {{total}} day on target",
+      "inTarget_other": "{{count}} / {{total}} days on target",
+      "margin": "±{{pct}}% of the goal",
+      "empty": "No day logged",
+      "noTarget": "Set your calorie goal"
     },
     "protein": {
       "title": "Protein / body weight",

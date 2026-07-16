@@ -44,6 +44,9 @@ const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
 /** Modes du bonus calorique des jours d'entraînement (item RN-02). */
 const TRAINING_BONUS_MODES: readonly TrainingBonusMode[] = ['fixed', 'auto'];
 
+/** Marges d'adhérence proposées (%, item NUTR-10). */
+const ADHERENCE_MARGINS = ['5', '10', '15'] as const;
+
 function parseNumber(value: string): number | null {
   const n = Number(value.replace(',', '.'));
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -206,6 +209,19 @@ export default function NutritionProfileScreen() {
           />
           <Text style={[styles.hint, { color: colors.textMuted }]}>
             {t('nutrition.calories.trainingBonusHint')}
+          </Text>
+          {/* Marge d'adhérence (NUTR-10) : tolérance % pour « dans la cible » */}
+          <Text style={[styles.rowLabel, { color: colors.text }]}>
+            {t('nutrition.calories.adherenceMargin.label')}
+          </Text>
+          <Segment
+            options={ADHERENCE_MARGINS}
+            value={String(nutritionProfile?.adherenceMarginPct ?? 10)}
+            onChange={(v) => void upsertNutritionProfile({ adherenceMarginPct: parseInt(v, 10) })}
+            label={(v) => `${v} %`}
+          />
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('nutrition.calories.adherenceMargin.hint')}
           </Text>
         </Card>
       )}
