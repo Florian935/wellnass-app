@@ -308,6 +308,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
 
+- [x] **Champs numériques du Profil : effacement silencieux sur saisie invalide** — **corrigé**
+  (`fix/profil-champs-numeriques-invalides`, 16/07/2026 ; issu du point de vigilance de la revue NUTR-11).
+  Une saisie non vide mais invalide (texte, ≤ 0) dans poids / taille / poids cible écrivait `null` en base
+  (le parseur renvoie `null`) → **écrasement silencieux** de la valeur (et suppression de l'objectif pour
+  le poids cible). Fix : détection `hasInvalidNumber` → **bouton « Enregistrer » désactivé** + message
+  `profile.invalidNumber` (FR/EN) ; champ **vide** toujours autorisé (effacement volontaire).
+  [profile.tsx](apps/mobile/src/app/profile.tsx). **100 % JS** (reload Metro). **Reste : recette device
+  + relecture Damien.**
 - [x] **Graphiques débordant à droite de leur carte (Nutrition → Stats ; latent muscu/course)** —
   **corrigé** (`fix/affichage-graphes-et-filtre-course`, 16/07/2026). Largeur codée en dur (`window − 48`)
   dans [ProgressLineChart.tsx](apps/mobile/src/components/charts/ProgressLineChart.tsx) /

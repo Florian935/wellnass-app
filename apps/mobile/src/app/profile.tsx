@@ -61,25 +61,36 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
   const [targetWeight, setTargetWeight] = useState(target0);
   const initialTargetRef = useRef(target0);
 
+  // Champs numériques : le parseur renvoie `null` sur une saisie invalide (texte, ≤ 0…).
+  // Un champ non vide qui ne parse pas est « invalide » → on bloque l'enregistrement pour ne
+  // pas écraser silencieusement la valeur existante (un champ VIDE reste autorisé = effacement
+  // volontaire, ex. retirer le poids cible).
+  const weightKgParsed = units.parseWeightToKg(weight);
+  const heightCmParsed = units.heightPartsToCm(heightA, heightB);
+  const targetKgParsed = units.parseWeightToKg(targetWeight);
+
+  const weightInvalid = weight.trim() !== '' && weightKgParsed === null;
+  const heightInvalid =
+    (heightA.trim() !== '' || heightB.trim() !== '') && heightCmParsed === null;
+  const targetInvalid = targetWeight.trim() !== '' && targetKgParsed === null;
+  const hasInvalidNumber = weightInvalid || heightInvalid || targetInvalid;
+
   const onSave = async () => {
+    if (hasInvalidNumber) return; // garde-fou (le bouton est déjà désactivé)
     await upsertProfile({
       firstName: firstName.trim(),
       sex,
       birthDate: toIsoDate(Number(day), Number(month), Number(year)),
       weightKg:
-        weight === initialWeightRef.current
-          ? (profile?.weightKg ?? null)
-          : units.parseWeightToKg(weight),
+        weight === initialWeightRef.current ? (profile?.weightKg ?? null) : weightKgParsed,
       heightCm:
         heightA === initialHeightRef.current.a && heightB === initialHeightRef.current.b
           ? (profile?.heightCm ?? null)
-          : units.heightPartsToCm(heightA, heightB),
+          : heightCmParsed,
       mainGoal: goal,
     });
     if (targetWeight !== initialTargetRef.current) {
-      await setWeightTarget(
-        targetWeight.trim() === '' ? null : units.parseWeightToKg(targetWeight),
-      );
+      await setWeightTarget(targetWeight.trim() === '' ? null : targetKgParsed);
     }
     router.back();
   };
@@ -183,7 +194,12 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
       />
 
       <View style={styles.footer}>
-        <Button label={t('profile.save')} onPress={onSave} />
+        {hasInvalidNumber ? (
+          <Text style={[styles.errorHint, { color: colors.danger }]}>
+            {t('profile.invalidNumber')}
+          </Text>
+        ) : null}
+        <Button label={t('profile.save')} onPress={onSave} disabled={hasInvalidNumber} />
       </View>
     </ScrollView>
   );
@@ -195,5 +211,6 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: 'row', gap: 12 },
   dateField: { flex: 1 },
   yearField: { flex: 1.4 },
-  footer: { marginTop: 8 },
+  footer: { marginTop: 8, gap: 8 },
+  errorHint: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
 });
