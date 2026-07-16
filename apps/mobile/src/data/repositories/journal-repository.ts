@@ -167,26 +167,36 @@ export async function addFoodEntry(
   });
 }
 
-/** Met à jour la quantité + le snapshot nutritionnel d'une entrée existante. */
+/**
+ * Met à jour une entrée existante. Deux usages :
+ *  - entrée avec quantité : quantité + snapshot recalculé (règle de trois côté appelant) ;
+ *  - quick add (sans quantité) : kcal/macros/nom saisis directement (quantityG = null).
+ * `name`/`micronutrients` ne sont écrits que s'ils sont fournis (sinon inchangés).
+ */
 export async function updateEntry(
   entryId: string,
   values: {
-    quantityG: number;
+    quantityG: number | null;
     kcal: number;
     proteinG: number;
     carbsG: number;
     fatG: number;
+    name?: string;
     micronutrients?: Micronutrients;
   },
 ): Promise<void> {
-  await patch('food_entries', entryId, {
+  const patchValues: Record<string, unknown> = {
     quantity_g: values.quantityG,
     kcal: values.kcal,
     protein_g: values.proteinG,
     carbs_g: values.carbsG,
     fat_g: values.fatG,
-    micronutrients: JSON.stringify(values.micronutrients ?? {}),
-  });
+  };
+  if (values.name !== undefined) patchValues.name = values.name;
+  if (values.micronutrients !== undefined) {
+    patchValues.micronutrients = JSON.stringify(values.micronutrients);
+  }
+  await patch('food_entries', entryId, patchValues);
 }
 
 /** Supprime (soft delete) une entrée du journal. */
