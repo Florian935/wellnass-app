@@ -8,6 +8,7 @@ import { DeltaBadge } from '@/components/DeltaBadge';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
+import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useDailyTotals } from '@/data/repositories/journal-repository';
 import { useUnits } from '@/hooks/useUnits';
@@ -115,6 +116,9 @@ export default function NutritionStatsScreen() {
           </>
         )}
       </Card>
+
+      {/* Vue croisée charge muscu ↔ apports (MN-03) — auto-portante, gating muscu+nutrition */}
+      <TrainingNutritionCrossCard />
     </ScrollView>
   );
 }
