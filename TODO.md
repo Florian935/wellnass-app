@@ -145,7 +145,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   **corrigé** (`feature/langue-selecteur-reglages`, 16/07/2026) : `Segment` FR/EN dans Réglages →
   `updateSettings({ language })` ; l'effet i18next + la persistance/sync existaient déjà. 100 % client,
   aucune migration. Spec/plan : [us/langue-selecteur-reglages.md](docs/specs/functional/us/langue-selecteur-reglages.md).
-  **Reste : recette device** (basculer FR↔EN → UI immédiate ; relancer → conservé) + relecture Damien.
+  **✅ Recette device validée (Florian, 16/07/2026)** (bascule FR↔EN immédiate + conservée au relancement). Reste : relecture Damien.
   _remontée Florian, 16/07/2026 (Pixel 6a passé en anglais système, l'app reste en français)._ **Vérif
   code** : la langue du terminal n'est lue **qu'une fois**, à la création du compte, pour initialiser
   `user_settings.language` ([settings-repository.ts:245](apps/mobile/src/data/repositories/settings-repository.ts#L245)) ;
