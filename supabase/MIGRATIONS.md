@@ -43,6 +43,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260714120000_seed_library_foods_ciqual`        | 14/07/2026 | CLI (`npm run db:push`)       |
 |   [x]   | `20260714170000_admin_audit_log`                  | 14/07/2026 | CLI (`npm run db:push`)       |
 |   [x]   | `20260715152227_nutrition_training_bonus_mode`    | 15/07/2026 | CLI (`npm run db:push`)       |
+|   [x]   | `20260716134626_admin_users_view`                 | 16/07/2026 | CLI (`npm run db:push`)       |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
