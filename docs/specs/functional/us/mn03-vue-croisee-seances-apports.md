@@ -1,6 +1,6 @@
 # US MN-03 — Vue croisée « charge muscu & apports » (8 semaines)
 
-_Spec fonctionnelle. Statut : à valider (brainstorming du 16/07/2026, Florian). Branche :
+_Spec fonctionnelle. Statut : **validée (Florian, 16/07/2026) — code livré**. Branche :
 `feature/mn03-vue-croisee-seances-apports` (depuis `dev`). Stat croisée inter-piliers
 (muscu ↔ nutrition) — Phase A du [catalogue d'analyses](../../../product/analyses-donnees.md) (MN-03) :
 **déterministe, gratuite, offline, sans IA**. Complète l'alerte 4.32 (MN-02) côté **descriptif**._

@@ -237,7 +237,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 ## 🚧 En cours
 
 - [~] **US MN-03 — Vue croisée « charge muscu & apports » (8 sem)** (`feature/mn03-vue-croisee-seances-apports`,
-  16/07/2026) — **spec rédigée, en attente de validation Florian** (brainstorming validé). 3ᵉ stat
+  16/07/2026) — **spec + plan validés Florian (16/07/2026), code livré** (subagent-driven, revues
+  spec+qualité par tâche + revue finale *prête à merger*). 3ᵉ stat
   croisée inter-piliers (muscu↔nutrition), Phase A, **descriptive** (complète l'alerte 4.32). Tableau
   8 semaines sur **Nutrition → Stats** : nb séances + tonnage muscu · kcal/j + prot/j (moyenne jours
   loggés) + mini-tendance `DeltaBadge` vs semaine précédente. Fonction pure `computeWeeklyTrainingNutrition`
@@ -248,7 +249,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
   + imports corrigés, `EmptyState` → texte simple, `test` shared-only). Spec :
   [us/mn03-vue-croisee-seances-apports.md](docs/specs/functional/us/mn03-vue-croisee-seances-apports.md) ·
   Plan : [plans/mn03-vue-croisee-seances-apports.md](docs/plans/mn03-vue-croisee-seances-apports.md) (6 tâches TDD).
-  **Suite : validation du plan par Florian → (maquette écartée) → code.**
+  Catalogue MN-03 → ✅. typecheck/lint/tests(671) verts. **🔴 Reste recette device (Florian)** (valeurs/
+  tendances sur données réelles via dataset de recette, cellules « — », empty state, gating en
+  (dés)activant un pilier) + relecture Damien.
 - [x] **US MUSC-05 — Équilibre musculaire par groupe (14 j)** — ✅ **recette device validée (Florian, 16/07/2026)** (`feature/musc05-equilibre-groupes`,
   15/07/2026) — **spec + plan validés**, **code livré & mergé sur `dev`** (subagent-driven, revues par
   tâche + revue finale *prête à merger*, aucun bloquant). Nouvelle section `/progress` : barres **par
