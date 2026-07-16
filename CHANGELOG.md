@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/nutr10-adherence-objectif` — carte « Adhérence à l'objectif » (NUTR-10)
+
+**Ajouté** (analyse NUTR-10 du catalogue, Phase A)
+- Carte **« Adhérence à l'objectif »** sur l'écran Stats nutrition : part % + « N/M jours dans la
+  cible » sur la fenêtre 7 j/30 j (sélecteur existant réutilisé). « Dans la cible » = |kcal du jour −
+  **objectif effectif du jour**| ≤ marge % ; dénominateur = **jours loggés** seulement.
+- **Marge configurable** (5/10/15 %, défaut 10) **synchronisée** : colonne `nutrition_profiles.adherence_margin_pct`
+  (**migration cloud appliquée + `db:types`**, sync rule `select *` inchangée) ; réglage `Segment` dans
+  le profil nutritionnel. Colonne déclarée dans `powersync/schema.ts` + 4 points de mapping repo + schéma
+  Zod (`min 1 max 50 default 10`).
+- **Objectif effectif par jour** (base + bonus jour de séance, mode Forfait/Auto RN-01) calculé en
+  **batch** en réutilisant les briques pures ; helper `computeEffectiveTargetForDay` + `computeGoalAdherence`
+  (shared, testés) ; hook `useGoalAdherence` (dashboard-repository).
+- i18n `stats.adherence.*` (pluriel `inTarget_one/_other`) + `nutrition.calories.adherenceMargin` FR/EN.
+
+**Technique / Notes**
+- **100 % client hormis la migration** (additive, checkpoint 🔴). Objectif effectif calculé en mémoire
+  (données déjà chargées), mode Auto inclus.
+- Exécution **subagent-driven** (commits `bf689ef`→`f61b194`), spec + plan relus par sous-agent
+  (corrections intégrées : schéma PowerSync client, mapping repo, helper pur testable, cas « aujourd'hui »),
+  **revue finale *ready-to-merge*** (+ correctif flash « définis ton objectif » au chargement).
+- typecheck/lint/tests(697) verts. Catalogue NUTR-10 → ✅.
+- **Simplification assumée** : pour aujourd'hui, une séance *planifiée non faite* n'anticipe pas le
+  bonus (le batch reste rétroactif) — cas marginal.
+- **Reste** : recette device (part % + jours dans la cible ; changement de marge ; jour de séance vs
+  base ; 7 j/30 j ; profil sans objectif ; fenêtre vide) + relecture Damien.
+- Commit précédent : `7bd4aef`.
+
 ### 16/07/2026 — `feature/mr06-temps-entrainement` — widget « Temps d'entraînement » (MR-06, inter-piliers)
 
 **Ajouté** (analyse MR-06 du catalogue, Phase A, 1ʳᵉ stat **inter-piliers** en temps)

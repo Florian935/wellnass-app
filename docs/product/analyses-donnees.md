@@ -149,7 +149,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | NUTR-07 | ✅ | Micronutriments agrégés du jour | Somme des 31 micronutriments ; une clé n'apparaît que si renseignée (jamais forcée à 0). | `food_entries.micronutrients`, `sumMicronutrients()` | tableau | jour | Vue micronutritionnelle, socle des carences. | 4.33 |
 | NUTR-08 | ✅ | Sel dérivé du sodium | Sel (g) = sodium (mg) × 2,5/1000, indicatif (non stocké). | `food_entries.micronutrients.sodium_mg`, `saltFromSodiumMg()` | stat | jour/aliment | Parler en sel (repère grand public) plutôt qu'en sodium. | 4.33 |
 | NUTR-09 | ✅ | Résumé nutrition (widget dashboard) | Calories restantes + macros condensées, masqué si pilier inactif. | `dashboard.ts` (nutrition-summary) | widget | jour | Accès immédiat à l'essentiel sans ouvrir le journal. | 7.5 |
-| NUTR-10 | ⏳ | Adhérence à l'objectif : jours dans la cible | Nb/taux de jours où les kcal tombent dans ±10 % de l'objectif. | `food_entries`/jour vs `targetCalories()` | score | 7/30 j | Mesurer la régularité (une moyenne juste peut cacher des jours yo-yo). | 7.2 |
+| NUTR-10 | ✅ | Adhérence à l'objectif : jours dans la cible | **Livré** : carte Stats nutrition (pct + N/M jours dans la cible, 7/30 j) ; « dans la cible » = ±**marge %** (configurable 5/10/15, défaut 10) autour de l'**objectif effectif du jour** (base + bonus RN-01) ; jours loggés seulement. `computeGoalAdherence`/`computeEffectiveTargetForDay` (shared) + `useGoalAdherence`. | `food_entries`/jour vs objectif effectif ; `nutrition_profiles.adherence_margin_pct` | stat | 7/30 j | Mesurer la régularité (une moyenne juste peut cacher des jours yo-yo). | **NUTR-10 (livrée · reste recette device)** |
 | NUTR-11 | ⏳ | Progression vers l'objectif de poids (%) | % entre poids de départ et poids cible. **Champ objectif de poids à ajouter au schéma.** | `body_weight_entries` + objectif de poids (à ajouter) | stat | depuis le départ | Donner un cap chiffré et motivant. | 7.1 |
 | NUTR-12 | ⏳ | Suivi hydratation | Apports eau/boissons vs objectif journalier (ml), incréments rapides. **Table dédiée à créer (V2).** | table dédiée (non présente) | widget | jour | Couvrir un pilier de base du bien-être. | spec §8 (V2) |
 | NUTR-13 | 🆕 | Protéines par kg de poids de corps | g protéines/kg (ex. 1,8) + repère de fourchette selon l'objectif. | `food_entries.proteinG` + dernier `body_weight_entries` | insight | jour, moyenne 7 j | Repère le plus parlant pour le pratiquant de muscu. | — |
@@ -353,8 +353,8 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    Widget muscle-volume éclaté par groupe + alerte de déséquilibre.
 3. **RUN-05 — Courbe & tendance d'allure (30/90 j)** (🟡). `paceTrend` existe ; il ne reste qu'à
    l'exposer proprement en courbe. Effort faible.
-4. **NUTR-10 — Adhérence à l'objectif : jours dans la cible** (⏳). Toutes les données sont là
-   (`food_entries` vs `targetCalories`) ; complète les moyennes 7/30 j déjà calculées.
+4. ~~**NUTR-10 — Adhérence à l'objectif : jours dans la cible**~~ ✅ **livrée** (reste recette). Carte
+   Stats nutrition (pct + N/M jours, 7/30 j), marge % configurable, objectif effectif par jour.
 5. **NUTR-17 — Régularité du journal (taux de complétion)** (🆕). Calcul trivial sur
    `food_entries.logDate` ; conditionne la fiabilité de toutes les autres stats nutrition.
 6. ~~**META-06 — Comparaison période N vs N-1 (delta)**~~ ✅ **livrée + recette OK** (`DeltaBadge` sur
