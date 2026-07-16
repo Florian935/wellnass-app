@@ -33,11 +33,15 @@ import { useQuery } from '@powersync/react';
 import {
   computeMuscleBalance,
   computeVolume,
+  computeWeeklyTrainingNutrition,
   computeWorkoutRecords,
+  localDayKey,
+  PILLARS,
   sessionBestEstimated1RM,
   type MuscleBalance,
   type MuscleGroup,
   type RecordType,
+  type WeeklyTrainingNutrition,
 } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
@@ -45,6 +49,8 @@ import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
 import { generateId } from '@/lib/id';
 import { nowUtc } from './_sql';
+import { useDailyTotals } from './journal-repository';
+import { useSettings } from './settings-repository';
 import {
   getWorkoutSets,
   type WorkoutEntry,
@@ -836,4 +842,71 @@ export function useWorkoutDetail(workoutId: string): {
   };
 
   return { detail, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useTrainingNutritionCross — vue croisée charge muscu ↔ apports (MN-03)
+// ---------------------------------------------------------------------------
+
+const CROSS_WEEKS = 8;
+
+/** 8 lundis locaux (récent → ancien) + bornes basses (ISO UTC minuit local, et dayKey). */
+function last8MondaysLocal(): { weekStarts: string[]; oldestIsoUtc: string; oldestDayKey: string } {
+  const now = new Date();
+  const daysSinceMonday = (now.getDay() + 6) % 7;
+  const weekStarts: string[] = [];
+  let oldest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday, 0, 0, 0, 0);
+  for (let i = 0; i < CROSS_WEEKS; i++) {
+    const m = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday - i * 7, 0, 0, 0, 0);
+    weekStarts.push(localDayKey(m)); // récent → ancien
+    oldest = m;
+  }
+  return { weekStarts, oldestIsoUtc: oldest.toISOString(), oldestDayKey: localDayKey(oldest) };
+}
+
+/**
+ * Vue croisée « charge muscu ↔ apports » sur 8 semaines calendaires (MN-03, descriptif), réactive.
+ * Lecture seule. Tous les hooks sont appelés inconditionnellement (règle des hooks) ; le gating
+ * (muscu ET nutrition actifs) est appliqué AU RETOUR (renvoie `[]` sinon → le composant rend `null`).
+ */
+export function useTrainingNutritionCross(): {
+  weeks: WeeklyTrainingNutrition[];
+  isLoading: boolean;
+} {
+  const { weekStarts, oldestIsoUtc, oldestDayKey } = last8MondaysLocal();
+  const { settings } = useSettings();
+  const pillars = settings?.activePillars ?? [...PILLARS];
+  const active = pillars.includes('strength') && pillars.includes('nutrition');
+
+  // Muscu : une ligne par séance terminée (LEFT JOIN → séances sans série qualifiante comptées, tonnage 0).
+  const sql = `
+    SELECT w.id AS workout_id, w.finished_at AS finished_at,
+           COALESCE(SUM(CASE WHEN s.done = 1 AND s.set_type <> 'warmup'
+                              AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+                         THEN s.reps * s.weight_kg ELSE 0 END), 0) AS tonnage
+    FROM workouts w
+    LEFT JOIN workout_sets s ON s.workout_id = w.id AND s.deleted_at IS NULL
+    WHERE w.status = 'completed' AND w.deleted_at IS NULL AND w.finished_at >= ?
+    GROUP BY w.id, w.finished_at
+  `;
+  const { data: workoutRows, isLoading: wLoading } = useQuery<{
+    workout_id: string; finished_at: string; tonnage: number | null;
+  }>(sql, [oldestIsoUtc]);
+
+  const { totals, isLoading: nLoading } = useDailyTotals(oldestDayKey);
+
+  const isLoading = wLoading || nLoading;
+
+  const weeks = active
+    ? computeWeeklyTrainingNutrition({
+        weekStarts,
+        workouts: workoutRows.map((r) => ({
+          dayKey: localDayKey(new Date(r.finished_at)),
+          tonnage: r.tonnage ?? 0,
+        })),
+        dailyKcals: totals.map((d) => ({ dayKey: d.logDate, kcal: d.kcal, proteinG: d.proteinG })),
+      })
+    : [];
+
+  return { weeks, isLoading };
 }
