@@ -20,13 +20,24 @@ import { useQuery } from '@powersync/react';
 import type {
   DietRestriction,
   MealConfigItem,
+  NutritionObjective,
   NutritionProfileRow,
+  ProteinPerKg,
   TrainingBonusMode,
 } from '@wellness/shared';
-import { parseJsonColumn } from '@wellness/shared';
+import {
+  averageIntake,
+  computeProteinPerKg,
+  localDayKey,
+  objectiveFromGoal,
+  parseJsonColumn,
+} from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
+import { useLatestWeight } from './bodyweight-repository';
+import { useDailyTotals } from './journal-repository';
+import { useProfile } from './profile-repository';
 
 /** Profil nutritionnel applicatif (forme camelCase du domaine partagé). */
 export type NutritionProfile = NutritionProfileRow;
@@ -174,4 +185,44 @@ export async function upsertNutritionProfile(
     user_id: currentUserId(),
     ...columns,
   });
+}
+
+// ---------------------------------------------------------------------------
+// Ratio protéines/kg vs cible objectif (MN-06)
+// ---------------------------------------------------------------------------
+
+export type ProteinWindow = '7d' | '30d';
+const WINDOW_DAYS: Record<ProteinWindow, number> = { '7d': 7, '30d': 30 };
+
+/** Borne basse `AAAA-MM-JJ` local d'il y a `n` jours (pour useDailyTotals). */
+function proteinSinceDayKey(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return localDayKey(d);
+}
+
+/**
+ * Apport protéique g/kg (moyenne sur la fenêtre) vs cible de l'objectif (MN-06), réactif, lecture seule.
+ * Tous les hooks appelés inconditionnellement. `hasWeight` distingue « pas de pesée » de « pas de repas » ;
+ * `objective` sert au libellé de la cible côté composant.
+ */
+export function useProteinPerKg(window: ProteinWindow): {
+  result: ProteinPerKg | null;
+  objective: NutritionObjective;
+  hasWeight: boolean;
+  isLoading: boolean;
+} {
+  const { totals, isLoading: tLoading } = useDailyTotals(proteinSinceDayKey(WINDOW_DAYS[window]));
+  const { latest, isLoading: wLoading } = useLatestWeight();
+  const { profile, isLoading: pLoading } = useProfile();
+  const { nutritionProfile, isLoading: nLoading } = useNutritionProfile();
+
+  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
+  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
+  const avgProteinG = totals.length > 0 ? averageIntake(totals).proteinG : null;
+
+  const result = computeProteinPerKg({ avgProteinG, weightKg, objective });
+  const isLoading = tLoading || wLoading || pLoading || nLoading;
+
+  return { result, objective, hasWeight: weightKg != null, isLoading };
 }
