@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/8.8b-admin-bannissement` — bannissement des utilisateurs (back-office) → US 8.8 complète
+
+**Ajouté** (US 8.8b — seconde moitié de 8.8 ; complète 8.8a)
+- **Migration** `20260716150753_user_bans` (**appliquée cloud CLI + `db:types`**, cochée
+  [MIGRATIONS.md](supabase/MIGRATIONS.md)) :
+  - Table `public.user_bans` **append-only** (historique ban/unban + motif) : RLS `select` réservé à
+    `can_manage_users()`, **aucune** policy d'écriture (seules les RPC écrivent).
+  - RPC `public.ban_user(target_user_id, reason)` / `public.unban_user(target_user_id)`
+    (`SECURITY DEFINER`, `search_path=public`, `revoke execute from public, anon` + `grant to
+    authenticated`) : bannissent en posant `banned_until` à une **date lointaine** (`'9999-12-31'` —
+    ban permanent, évite le risque de parsing `'infinity'` côté GoTrue). Garde-fous **serveur** :
+    habilitation `can_manage_users()`, motif obligatoire, **anti-auto-ban**, **anti-ban d'un compte
+    admin**.
+  - Colonne **`is_admin`** ajoutée **en dernier** à la vue `admin_users` (garde-fou UI, lisible même
+    par un moderator).
+- **Audit** : actions `user.ban` / `user.unban` ajoutées à `AUDIT_ACTIONS`
+  ([packages/shared/src/audit.ts](packages/shared/src/audit.ts)) + libellés `fr.audit.action`.
+- **Data** `data/users.ts` : `banUser` / `unbanUser` (RPC + `logAudit` best-effort) / `listUserBans`.
+- **UI** : section **Modération** sur la fiche `/users/:id` — Bannir (motif obligatoire via prompt) /
+  Débannir (confirmation) + **historique** ; garde-fous UI (section masquée pour **soi-même** et pour un
+  **compte admin**, double barrière avec le serveur) ; i18n `fr.users.ban`.
+
+**Technique / Notes**
+- **Clé anon uniquement (aucun `service_role`), pas de sync rule**, coupure d'accès au **prochain
+  refresh** (~1 h) assumée. `banned_until = '9999-12-31'` (décision Florian : date lointaine plutôt
+  qu'`'infinity'`, non testable en CLI).
+- Exécution **subagent-driven** (commits `0845df6`→`b6b3aca`), spec + plan relus par sous-agent
+  (corrections intégrées), **revue finale de code *ready-to-merge*** (7/7 points sécurité conformes).
+- **Rattrapage** : les specs+plans **8.8a** (jamais commités lors de la livraison) ont été ajoutés au
+  passage (`6ca0d4a`).
+- **Reste** : **recette** (bannir un compte normal → Banni + historique ; auto-ban / ban d'admin
+  refusés ; débannir → Actif ; parcours moderator ; coupure effective au refresh) + **relecture
+  Damien**. **US 8.8 complète** une fois recettée.
+- Commit précédent : `3c1d2e1`.
+
 ### 16/07/2026 — `feature/8.8a-admin-consultation-utilisateurs` — consultation des utilisateurs (back-office)
 
 **Ajouté** (US 8.8a — première moitié de 8.8 ; le bannissement = 8.8b, à cadrer avec Damien)
