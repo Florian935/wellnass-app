@@ -10,6 +10,42 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🧪 RECETTE À FAIRE — US MR-06 Widget « Temps d'entraînement » (dashboard mobile, Florian, 16/07/2026)
+>
+> Code **livré & mergé sur `dev`** (`feature/mr06-temps-entrainement`, `f1c8a5a`→`6face77`). **100 % JS
+> → reload Metro suffit** (aucun build, aucune migration). Recette sur l'**app mobile** (accueil/dashboard).
+> Spec : [us/mr06-temps-entrainement.md](docs/specs/functional/us/mr06-temps-entrainement.md).
+>
+> **Préparation** : avoir au moins **1 séance muscu terminée** ET **1 course terminée** dans la
+> **semaine en cours** (lundi→dimanche). Ouvrir l'accueil (dashboard).
+>
+> **1. Affichage nominal (2 piliers actifs)**
+> - [ ] Le widget **« Temps d'entraînement »** apparaît sur l'accueil.
+> - [ ] **Total** = somme des durées (muscu + course) de la semaine, format « Xh YY ».
+> - [ ] **Ventilation** affichée : « muscu Xh YY · course Xh YY ».
+> - [ ] **Réconciliation** : la durée course correspond à « Résumé running semaine » ; les séances muscu
+>   comptées sont les mêmes que « Volume muscu semaine » (même semaine lundi→dimanche).
+>
+> **2. Gating par pilier**
+> - [ ] Désactiver **Course** (Réglages → piliers) → widget **toujours visible**, **total = muscu seul**,
+>   **pas de ligne de ventilation** (elle ne s'affiche que si les 2 piliers sont actifs).
+> - [ ] Désactiver **Muscu** aussi (ne garder que Nutrition) → widget **absent** de l'accueil.
+> - [ ] Réactiver muscu + course → widget de retour avec total + ventilation.
+>
+> **3. État vide**
+> - [ ] Sur une semaine **sans aucune séance ni course** (ex. naviguer un lundi tôt, ou compte de test) →
+>   « 0h 00 » / « Aucune séance cette semaine ».
+>
+> **4. Personnalisation (mode édition dashboard)**
+> - [ ] Passer le widget en **compact** → une ligne cohérente (total ou « Aucune séance… »).
+> - [ ] Le **masquer / déplacer** fonctionne comme les autres widgets (réordonnancement conservé).
+>
+> **5. i18n** — [ ] Basculer en **anglais** (Réglages → Langue) → « Training time », « strength »/« running », « No session this week ».
+>
+> **Critère de validation** : points 1 + 2 OK (2 = gating, le cœur inter-piliers). Tout écart (surtout si
+> les chiffres ne coïncident pas avec les widgets voisins) → me remonter le détail. Une fois validé →
+> MR-06 `[x]` + relecture Damien.
+
 > ## 🧪 RECETTE À FAIRE — US 8.8 Gestion des utilisateurs : consultation (8.8a) + bannissement (8.8b) (back-office web, Florian, 16/07/2026)
 >
 > Code **livré & mergé sur `dev`** (8.8a `feature/8.8a-…` + 8.8b `feature/8.8b-…`). **Migrations cloud
