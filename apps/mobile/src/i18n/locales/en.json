@@ -377,6 +377,13 @@
       "empty": "No weigh-in recorded.",
       "trend": { "up": "trending up", "down": "trending down", "stable": "stable" }
     },
+    "weightGoal": {
+      "title": "Weight goal progress",
+      "progress": "{{done}} of {{total}}",
+      "remaining": "{{remaining}} to go",
+      "reached": "🎯 Goal reached",
+      "empty": "Set a weight goal in your profile."
+    },
     "intake": {
       "title": "Average intake",
       "empty": "Not enough data yet.",

@@ -377,6 +377,13 @@
       "empty": "Aucune pesée enregistrée.",
       "trend": { "up": "en hausse", "down": "en baisse", "stable": "stable" }
     },
+    "weightGoal": {
+      "title": "Progression vers l'objectif",
+      "progress": "{{done}} sur {{total}}",
+      "remaining": "reste {{remaining}}",
+      "reached": "🎯 Objectif atteint",
+      "empty": "Définis un objectif de poids dans ton profil."
+    },
     "intake": {
       "title": "Apports moyens",
       "empty": "Pas encore assez de données.",

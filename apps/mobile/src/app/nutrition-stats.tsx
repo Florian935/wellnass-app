@@ -10,6 +10,7 @@ import { TextField } from '@/components/TextField';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
 import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
+import { WeightGoalCard } from '@/components/WeightGoalCard';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useDailyTotals, useJournalCompletion } from '@/data/repositories/journal-repository';
 import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
@@ -99,6 +100,9 @@ export default function NutritionStatsScreen() {
           <ProgressLineChart data={weightData} unit={units.weightSymbol} />
         </Card>
       ) : null}
+
+      {/* Progression vers l'objectif de poids (NUTR-11) — auto-portante */}
+      <WeightGoalCard />
 
       {/* Apports moyens (4.31) */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.intake.title')}</Text>
