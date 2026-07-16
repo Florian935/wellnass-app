@@ -16,6 +16,7 @@ export * from './exercise';
 export * from './workout';
 export * from './program';
 export * from './nutrition';
+export * from './protein-target';
 export * from './records';
 export * from './food';
 export * from './food-csv';
