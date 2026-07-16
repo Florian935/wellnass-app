@@ -15,10 +15,11 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { ProfileRow } from '@wellness/shared';
+import { computeWeightGoalProgress, type ProfileRow, type WeightGoalProgress } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, nowUtc, patch } from './_sql';
+import { getLatestWeightKg, useLatestWeight } from './bodyweight-repository';
 
 /** Profil applicatif (forme camelCase du domaine partagé). */
 export type Profile = ProfileRow;
@@ -168,4 +169,45 @@ export async function upsertProfile(patchInput: Partial<ProfileInput>): Promise<
  */
 export async function completeOnboarding(): Promise<void> {
   await upsertProfile({ onboardingCompletedAt: nowUtc() });
+}
+
+/**
+ * Définit / modifie / efface le poids cible. Fige le poids de départ (start_weight_kg)
+ * sur le poids actuel quand la cible est créée ou modifiée (règle NUTR-11).
+ */
+export async function setWeightTarget(targetKg: number | null): Promise<void> {
+  const existing = await getCurrentRow();
+  const currentTarget = existing?.target_weight_kg ?? null;
+
+  if (targetKg == null) {
+    await upsertProfile({ targetWeightKg: null, startWeightKg: null });
+    return;
+  }
+  if (targetKg === currentTarget) return; // inchangé → ne pas ré-ancrer le départ
+
+  const startKg = (await getLatestWeightKg()) ?? existing?.weight_kg ?? null;
+  await upsertProfile({ targetWeightKg: targetKg, startWeightKg: startKg });
+}
+
+// ---------------------------------------------------------------------------
+// Progression vers l'objectif de poids (NUTR-11)
+// ---------------------------------------------------------------------------
+
+/** Progression vers l'objectif de poids, dérivée du profil + de la dernière pesée. */
+export function useWeightGoalProgress(): {
+  progress: WeightGoalProgress | null;
+  hasTarget: boolean;
+  isLoading: boolean;
+} {
+  const { profile, isLoading: pLoading } = useProfile();
+  const { latest, isLoading: wLoading } = useLatestWeight();
+
+  const currentKg = latest?.weightKg ?? profile?.weightKg ?? null;
+  const progress = computeWeightGoalProgress({
+    startKg: profile?.startWeightKg ?? null,
+    targetKg: profile?.targetWeightKg ?? null,
+    currentKg,
+  });
+
+  return { progress, hasTarget: profile?.targetWeightKg != null, isLoading: pLoading || wLoading };
 }

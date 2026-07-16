@@ -34,6 +34,14 @@ export function useLatestWeight(): { latest: WeightEntry | null; isLoading: bool
   return { latest: r ? { id: r.id, logDate: r.log_date, weightKg: r.weight_kg } : null, isLoading };
 }
 
+/** Dernière pesée en kg (ou null) — hors contexte hook. */
+export async function getLatestWeightKg(): Promise<number | null> {
+  const row = await powerSync.getOptional<{ weight_kg: number }>(
+    `SELECT weight_kg FROM body_weight_entries WHERE deleted_at IS NULL ORDER BY log_date DESC LIMIT 1`,
+  );
+  return row?.weight_kg ?? null;
+}
+
 function currentUserId(): string {
   const userId = useAuthStore.getState().session?.user.id;
   if (!userId) throw new Error('Aucune session active : impossible d’écrire une pesée.');
