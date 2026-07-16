@@ -8,6 +8,11 @@ chaque ligne est un candidat à cadrer (spec → plan → design → validation)
 > À **nettoyer, arbitrer et prioriser par Florian & Damien** avant toute entrée en pipeline.
 > Le différenciateur produit est **l'intégration** : les analyses inter-piliers et tri-piliers sont
 > le cœur de la valeur, à ne pas sous-pondérer face aux analyses intra-pilier plus classiques.
+>
+> ⚙️ **Surfaçage** : ce catalogue est un **backlog**, pas une liste d'écrans à shipper. La doctrine
+> d'exposition (4 tiers, conditionnel par défaut, plafond dashboard, briques réutilisables, critère
+> d'entrée) est fixée par [ADR-007 — Surfaçage des analyses](../adr/ADR-007-surfacage-analyses.md).
+> Chaque US d'analyse **déclare son tier + sa condition d'affichage**.
 
 ## Légende des statuts
 
