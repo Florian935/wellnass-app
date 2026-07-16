@@ -375,6 +375,20 @@ export const fr = {
       performance: 'Performance',
       health: 'Santé',
     },
+    ban: {
+      section: 'Modération',
+      banAction: 'Bannir',
+      unbanAction: 'Débannir',
+      reasonPrompt: 'Motif du bannissement (obligatoire) :',
+      confirmUnban: 'Débannir ce compte ?',
+      cannotBan: 'Ce compte ne peut pas être banni.',
+      currentReasonLabel: 'Motif',
+      historyTitle: 'Historique de modération',
+      historyEmpty: 'Aucun événement.',
+      actionBan: 'Banni',
+      actionUnban: 'Débanni',
+      error: 'Action impossible (droits ou règle de sécurité).',
+    },
   },
 
   audit: {
@@ -410,6 +424,8 @@ export const fr = {
       'food.update': 'Modification d’aliment',
       'food.archive': 'Archivage d’aliment',
       'food.import': 'Import d’aliments',
+      'user.ban': 'Bannissement d’utilisateur',
+      'user.unban': 'Débannissement d’utilisateur',
     },
   },
 

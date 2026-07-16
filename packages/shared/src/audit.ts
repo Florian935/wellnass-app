@@ -23,6 +23,8 @@ export const AUDIT_ACTIONS = [
   'food.update',
   'food.archive',
   'food.import',
+  'user.ban',
+  'user.unban',
 ] as const;
 export const auditActionSchema = z.enum(AUDIT_ACTIONS);
 export type AuditAction = z.infer<typeof auditActionSchema>;
