@@ -20,6 +20,15 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [16/07/2026] 🆕 **Poignée de réagencement du dashboard trop petite / peu parlante (UX)** : sur le
+  **dashboard d'accueil**, le mode « personnaliser / réagencer les cards » se déclenche via un **bouton en
+  bas à gauche** qui est **trop petit, pas assez explicite**, et le **drag-and-drop demande trop de
+  précision** pour attraper la poignée. Remonté par Florian en recette (16/07). Pistes à instruire :
+  poignée de glissement **plus grande et plus visible** (icône ⠿ / libellé), **zone de préhension
+  élargie** (hitSlop), mode réagencement plus **découvrable** (ex. appui long sur une card, ou bouton
+  « Personnaliser » clair en haut), **retour visuel** pendant le drag (ombre/placeholder). _À creuser :_
+  ergonomie tactile (taille de cible ≥ 48 dp), accessibilité, cohérence avec la maquette du dashboard.
+
 - [16/07/2026] 🆕 **Infobulle de donnée au tap sur les graphiques (points cliquables)** : sur **tous** les
   graphiques de l'app (courbes de progression muscu charge max / volume / 1RM, courbe de poids et
   d'apports nutrition, courbe d'allure course, histogrammes volume/équilibre muscu), pouvoir **taper un
