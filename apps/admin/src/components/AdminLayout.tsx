@@ -180,14 +180,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   navLink: { textDecoration: 'none', cursor: 'pointer' },
   navActive: { background: 'rgba(221,110,64,.18)', color: '#fff' },
-  navSoon: { opacity: 0.55, cursor: 'default', justifyContent: 'space-between' },
-  tag: {
-    fontSize: 9,
-    background: 'rgba(255,255,255,.12)',
-    padding: '1px 6px',
-    borderRadius: 99,
-    color: '#e8d9c6',
-  },
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
   topbar: {
     display: 'flex',
