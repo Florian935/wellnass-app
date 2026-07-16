@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/journal-entree-swipe-edition` — cadrage (spec + plan) édition/suppression d'une entrée de repas + report US 8.7
+
+**Ajouté**
+- [docs/specs/functional/us/fix-journal-entree-swipe-edition.md](docs/specs/functional/us/fix-journal-entree-swipe-edition.md) —
+  spec du fix du bug §🐞 « modifier / supprimer un aliment ajouté à un repas ». Deux volets :
+  **(1) découvrabilité** = swipe gauche sur l'entrée → Modifier + Supprimer (tap conservé, appui long
+  retiré) ; **(2) édition élargie** = les quick add (entrées sans quantité) deviennent éditables
+  (kcal/P/G/L/nom), les entrées avec quantité restent en édition par les grammes (règle de trois,
+  inchangé). 100 % client, aucune migration. **Validée Florian (16/07/2026)**, relue par sous-agent
+  (3 corrections intégrées : `ReanimatedSwipeable` au lieu du `Swipeable` déprécié, clés i18n
+  rectifiées, `updateEntry.micronutrients` conditionnel).
+- [docs/plans/fix-journal-entree-swipe-edition.md](docs/plans/fix-journal-entree-swipe-edition.md) —
+  plan d'implémentation en 5 tâches (updateEntry → i18n → swipe → édition élargie → vérifs/recette).
+  **Validé Florian (16/07/2026)**, relu par sous-agent (5 corrections mineures intégrées : parité i18n
+  manuelle, swap `onSelectEntry`, suppression `canEdit`, masquage aperçu périmé, unité labels macros).
+
+**Modifié**
+- [docs/roadmap/roadmap.md](docs/roadmap/roadmap.md) — US **8.7 (modération aliments signalés)** passée
+  en **⏳ Reporté** avec justification.
+- [TODO.md](TODO.md) — note de report 8.7 dans « Décisions bloquantes » ; bug §🐞 passé en `[~]`
+  (spec + plan validés, code à venir).
+
+**Notes**
+- **Docs uniquement** (aucun code applicatif touché) → lint/typecheck/tests non pertinents pour ce commit.
+- **Report US 8.7** _(décision Florian, 16/07/2026)_ : modèle **privé par utilisateur** (RLS
+  `foods_select` = `owner_id IS NULL OR owner_id = auth.uid()`) → aliments utilisateurs non partagés +
+  **aucun mécanisme de signalement** (table + geste mobile). La file de modération n'aurait rien à
+  traiter → reprise conditionnée à un choix produit (signalement de l'éditorial, ou modèle
+  communautaire hors périmètre). **8.8 reste disponible.**
+- ⚠️ Nom de branche `fix/journal-entree-swipe-edition` **réutilisé** (une session précédente l'a
+  employé pour l'ajout IDEAS.md, déjà mergé sur `dev`). Sans incidence : travail additif.
+- Commit précédent : `ab2ded2`.
+
 ### 16/07/2026 — `fix/journal-entree-swipe-edition` — 2 idées consignées (IDEAS.md)
 
 **Ajouté**

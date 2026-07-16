@@ -276,7 +276,7 @@ Colonne **Statut** : ✅ Validé · ❌ Refusé · 🔄 À modifier · ⏳ Repor
 | 8.4 | Constructeur de programmes | Drag & drop pour composer des programmes. | Difficile | 8h | 🟢 | | Sert à créer le contenu de 3.1 et 5.2. |
 | 8.5 | Gestion base d'aliments | Créer, modifier, archiver. Validation des signalements. | Moyen | 4h | 🟢 | | |
 | 8.6 | Import aliments CSV | Import en masse via CSV formaté. | Moyen | 3h | 🟢 | | Import initial CIQUAL (+ colonnes EN — arbitrage G). |
-| 8.7 | Modération aliments signalés | File de revue des aliments utilisateurs signalés. | Moyen | 3h | 🟢 | | |
+| 8.7 | Modération aliments signalés | File de revue des aliments utilisateurs signalés. | Moyen | 3h | 🟢 | ⏳ Reporté | **Reportée le 16/07/2026** : le modèle est **privé par utilisateur** (RLS `foods_select` = `owner_id IS NULL OR owner_id = auth.uid()`) → les aliments utilisateurs **ne sont pas partagés**, et **aucun mécanisme de signalement** (table + geste mobile) n'existe. La file de modération n'a donc rien à traiter. Prérequis : soit un signalement d'aliments **éditoriaux**, soit un **modèle communautaire** (hors périmètre actuel). À redéfinir avant reprise. |
 | 8.8 | Gestion utilisateurs | Profils en lecture seule, bannir / débannir. | Moyen | 3h | 🟢 | | |
 | 8.10 | Log d'audit | Toute action admin tracée. Non supprimable. | Moyen | 3h | 🟢 | | |
 
