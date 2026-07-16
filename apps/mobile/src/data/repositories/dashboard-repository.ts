@@ -27,6 +27,8 @@ import {
   activeDayKeys,
   computeAge,
   computeDeficitVolumeAlert,
+  computeEffectiveTargetForDay,
+  computeGoalAdherence,
   computeStreak,
   computeTrainingTime,
   dayCalorieBonus,
@@ -730,4 +732,97 @@ export function useTrainingTime(): TrainingTime {
   });
 
   return { ...agg, strengthActive, runningActive, isLoading: runLoading || workoutLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useGoalAdherence — carte NUTR-10 (adhérence à l'objectif calorique)
+// ---------------------------------------------------------------------------
+
+export type GoalAdherence = {
+  loggedDays: number;
+  daysInTarget: number;
+  pct: number;
+  marginPct: number;
+  hasTarget: boolean;
+  isLoading: boolean;
+};
+
+/**
+ * Adhérence à l'objectif calorique (NUTR-10) sur les `windowDays` derniers jours : part des jours
+ * loggés dont les kcal tombent dans la fourchette ±marge% de l'**objectif effectif du jour** (base +
+ * bonus jour de séance, mode Forfait/Auto). Réutilise le calcul d'objectif de base de
+ * `useDayCalorieTarget` et les briques pures RN-01 (`computeEffectiveTargetForDay`), en batch sur la
+ * fenêtre. Jours d'entraînement / dépense course déterminés depuis l'historique (déjà en mémoire).
+ * Hooks appelés inconditionnellement.
+ */
+export function useGoalAdherence(windowDays: number): GoalAdherence {
+  const { nutritionProfile, isLoading: nutriLoading } = useNutritionProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { latest, isLoading: weightLoading } = useLatestWeight();
+  const { settings } = useSettings();
+  const { totals, isLoading: totalsLoading } = useDailyTotals(daysAgo(windowDays));
+  const { workouts, isLoading: wLoading } = useWorkoutHistory();
+  const { runs, isLoading: rLoading } = useRunHistory();
+
+  const isLoading =
+    nutriLoading || profileLoading || weightLoading || totalsLoading || wLoading || rLoading;
+
+  // Objectif de base (indépendant du jour), même logique que useDayCalorieTarget.
+  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
+  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
+  const tdeeValue = tdee({
+    sex: profile?.sex ?? 'unspecified',
+    weightKg: profile?.weightKg ?? undefined,
+    heightCm: profile?.heightCm ?? undefined,
+    age,
+    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
+  });
+  const targetBase =
+    tdeeValue != null && objective != null
+      ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
+      : null;
+
+  const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
+  const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
+  const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
+  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
+  const runningActive = (settings?.activePillars ?? [...PILLARS]).includes('running');
+
+  // Jours d'entraînement (muscu/course terminés) + dépense course, par jour local.
+  const trainedDays = new Set<string>();
+  for (const w of workouts) if (w.finishedAt) trainedDays.add(localDayKey(new Date(w.finishedAt)));
+  for (const r of runs) if (r.finishedAt) trainedDays.add(localDayKey(new Date(r.finishedAt)));
+  const runCaloriesByDay = new Map<string, number>();
+  if (runningActive) {
+    for (const r of runs) {
+      if (!r.finishedAt) continue;
+      const k = localDayKey(new Date(r.finishedAt));
+      runCaloriesByDay.set(
+        k,
+        (runCaloriesByDay.get(k) ?? 0) +
+          estimateRunCalories({
+            distanceM: r.distanceM,
+            durationSeconds: r.durationSeconds,
+            weightKg,
+          }),
+      );
+    }
+  }
+
+  const perDay = totals.map((d) => ({
+    kcal: d.kcal,
+    effectiveTarget:
+      targetBase == null
+        ? null
+        : computeEffectiveTargetForDay({
+            targetBase,
+            mode,
+            fixedBonus,
+            isTrainingDay: trainedDays.has(d.logDate),
+            runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
+          }),
+  }));
+
+  const { loggedDays, daysInTarget, pct } = computeGoalAdherence(perDay, marginPct);
+  return { loggedDays, daysInTarget, pct, marginPct, hasTarget: targetBase != null, isLoading };
 }
