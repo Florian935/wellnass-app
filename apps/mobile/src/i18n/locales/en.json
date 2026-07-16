@@ -272,6 +272,8 @@
     "delete": "Delete",
     "deleteConfirm": "Remove this food from the journal?",
     "longPressDelete": "Long-press to delete",
+    "swipeEdit": "Edit",
+    "swipeHint": "Swipe to edit or delete",
     "itemCount_one": "{{count}} food",
     "itemCount_other": "{{count}} foods",
     "noTemplate": "No meal template. Save a meal from the journal.",
@@ -288,6 +290,7 @@
       "close": "Close",
       "edit": "Edit quantity",
       "save": "Save",
+      "calories": "Calories (kcal)",
       "loggedAt": "at {{time}}",
       "moveUp": "Move up",
       "moveDown": "Move down"
