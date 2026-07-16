@@ -7,6 +7,8 @@ import {
   activityLevelSchema,
   basalMetabolicRate,
   caloriesFromMacros,
+  computeEffectiveTargetForDay,
+  computeGoalAdherence,
   dayCalorieBonus,
   defaultMacroRatios,
   macroGramsFromCalories,
@@ -257,5 +259,50 @@ describe('meal config (4.15)', () => {
       meals: [{ key: 'breakfast', label: 'Petit-déj' }],
     });
     expect(parsed.meals?.[0]?.label).toBe('Petit-déj');
+  });
+});
+
+describe('computeEffectiveTargetForDay', () => {
+  it('base seule hors jour de séance', () => {
+    expect(
+      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'fixed', fixedBonus: 300, isTrainingDay: false, runCaloriesToday: 0 }),
+    ).toBe(2000);
+  });
+  it('base + forfait un jour de séance (mode fixed)', () => {
+    expect(
+      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'fixed', fixedBonus: 300, isTrainingDay: true, runCaloriesToday: 0 }),
+    ).toBe(2300);
+  });
+  it('base + dépense course (mode auto)', () => {
+    expect(
+      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'auto', fixedBonus: 300, isTrainingDay: true, runCaloriesToday: 450 }),
+    ).toBe(2450);
+  });
+});
+
+describe('computeGoalAdherence', () => {
+  it('compte les jours dans la fourchette ±marge', () => {
+    const r = computeGoalAdherence(
+      [
+        { kcal: 2000, effectiveTarget: 2000 }, // exact → in
+        { kcal: 2180, effectiveTarget: 2000 }, // +9 % → in
+        { kcal: 2300, effectiveTarget: 2000 }, // +15 % → out
+      ],
+      10,
+    );
+    expect(r).toEqual({ loggedDays: 3, daysInTarget: 2, pct: 67 });
+  });
+  it('ignore les jours effectiveTarget null (profil incomplet)', () => {
+    const r = computeGoalAdherence(
+      [
+        { kcal: 2000, effectiveTarget: null },
+        { kcal: 2000, effectiveTarget: 2000 },
+      ],
+      10,
+    );
+    expect(r).toEqual({ loggedDays: 1, daysInTarget: 1, pct: 100 });
+  });
+  it('aucun jour loggé → pct 0 sans division par zéro', () => {
+    expect(computeGoalAdherence([], 10)).toEqual({ loggedDays: 0, daysInTarget: 0, pct: 0 });
   });
 });

@@ -161,6 +161,48 @@ export function dayCalorieBonus(params: {
   return forfait;
 }
 
+/**
+ * Objectif calorique effectif d'un jour = base + bonus du jour (forfait fixe les jours de
+ * séance, ou dépense d'une course en mode auto). Compose `dayCalorieBonus` + `trainingDayCalories`
+ * pour un usage batch (adhérence NUTR-10) hors contexte hook. Pur.
+ */
+export function computeEffectiveTargetForDay(params: {
+  targetBase: number;
+  mode: TrainingBonusMode;
+  fixedBonus: number;
+  isTrainingDay: boolean;
+  runCaloriesToday: number;
+}): number {
+  const bonus = dayCalorieBonus({
+    mode: params.mode,
+    isTrainingDay: params.isTrainingDay,
+    fixedBonus: params.fixedBonus,
+    runCaloriesToday: params.runCaloriesToday,
+  });
+  return trainingDayCalories(params.targetBase, bonus);
+}
+
+/**
+ * Adhérence calorique (item NUTR-10) : part des jours loggés dont les kcal tombent dans la
+ * fourchette ±`marginPct` % de l'objectif effectif du jour. Les jours sans objectif
+ * (`effectiveTarget` null ou ≤ 0) sont ignorés (exclus du dénominateur). Pur.
+ */
+export function computeGoalAdherence(
+  perDay: { kcal: number; effectiveTarget: number | null }[],
+  marginPct: number,
+): { loggedDays: number; daysInTarget: number; pct: number } {
+  const days = perDay.filter(
+    (d): d is { kcal: number; effectiveTarget: number } =>
+      d.effectiveTarget != null && d.effectiveTarget > 0,
+  );
+  const loggedDays = days.length;
+  const daysInTarget = days.filter(
+    (d) => Math.abs(d.kcal - d.effectiveTarget) <= d.effectiveTarget * (marginPct / 100),
+  ).length;
+  const pct = loggedDays > 0 ? Math.round((daysInTarget / loggedDays) * 100) : 0;
+  return { loggedDays, daysInTarget, pct };
+}
+
 // --- Macros (spec §2.3) ------------------------------------------------------
 
 export const PROTEIN_KCAL_PER_G = 4;
