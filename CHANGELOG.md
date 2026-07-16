@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `docs/bug-onboarding-rejeu-connexion` — bug onboarding consigné + recettes MN-06/MN-03 validées (TODO)
+
+**Modifié**
+- `TODO.md` — **US MN-06** (protéines/kg) et **US MN-03** (vue croisée charge muscu & apports 8 sem)
+  passées de `[~]` à `[x]` : **recette device validée par Florian le 16/07/2026** (mentions « 🔴 Reste
+  recette » remplacées par le statut validé ; reste relecture Damien). _Note : validations saisies hors
+  de cette session, intégrées au même commit sur décision de Florian._
+- `TODO.md` — nouvelle entrée dans **§🐞 Bugs connus** : **onboarding relancé à chaque connexion** alors
+  qu'il est déjà terminé (remontée Florian, 16/07/2026, à reproduire sur device). Distinct du bug déjà
+  corrigé `fix/onboarding-rejeu-profil` (qui était un *crash* au 2ᵉ passage). Diagnostic code consigné :
+  la gate de routing ([_layout.tsx:79](apps/mobile/src/app/_layout.tsx#L79), [_layout.tsx:132-137](apps/mobile/src/app/_layout.tsx#L132-L137))
+  route vers l'onboarding dès que `profile` est `null`, et `ready` n'attend que la **requête locale
+  SQLite** (`profileLoading`), **pas** la **synchro initiale réseau** (`hasSynced`) → **hypothèse de race
+  offline-first** (profil pas encore rapatrié = considéré comme onboarding non fait). Pistes de fix
+  (attendre `hasSynced` / distinguer « pas encore synchro » de « nouveau compte ») + question à trancher
+  à la reproduction (chaque login vs réinstall/2ᵉ appareil). À cadrer : spec courte avant fix.
+
+**Notes**
+- Mise à jour **documentaire** (suivi) uniquement — aucun code applicatif ni schéma, aucun secret.
+  Commit précédent : `9f161e0`.
+
 ### 16/07/2026 — `fix/affichage-graphes-et-filtre-course` — catalogue d'analyses : recette + priorisation à jour
 
 **Modifié**
