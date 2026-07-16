@@ -20,6 +20,56 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [16/07/2026] 🆕 **Générateur IA de plan de repas hebdomadaire + liste de courses (nutrition)** :
+  dans le module **nutrition**, un système (piste **IA**) qui **planifie tous les repas de la semaine**
+  à partir de paramètres saisis par l'utilisateur : **nombre de repas/jour**, **nombre de collations/jour**,
+  **calories visées**, **répartition des macros** (P/G/L) souhaitée **par jour et par semaine**. Le système
+  **compose tous les repas** de la semaine pour tenir ces cibles, puis **génère la liste de courses**
+  correspondante (tous les ingrédients nécessaires). Remonté par Florian (16/07). _Vérifié le 16/07/2026 :_
+  **s'appuie sur des briques déjà au backlog, mais les dépasse.** Existent en **manuel/V1.1** : US **4.27
+  Planning repas à la semaine** (vue calendrier, Difficile 6h), US **4.28 Liste de courses générée** (depuis
+  le planning, dépend de 4.27), US **4.29 Export/partage liste** ; et US **4.4 Répartition macros par défaut**
+  (ratios P/G/L selon objectif) + le socle **calories/TDEE**. **Ce qui est neuf ici = la couche génération
+  automatique** (composer les repas pour atteindre calories + répartition macros), là où 4.27 est une saisie
+  **manuelle**. **Nouvel usage IA non cadré** : l'analyse [ia-integration-analyse.md](docs/product/ia-integration-analyse.md)
+  ne liste que **bilan/insight**, **chatbot muscu** et **génération de programme muscu** → ajouter un **usage 3
+  « génération de plan nutrition »** (coût, modèle, batch vs interactif). **Points durs (à instruire)** :
+  **(1)** c'est un **problème d'optimisation sous contraintes** (atteindre kcal + P/G/L sur N repas + collations)
+  — l'IA seule peut dériver sur les totaux ; prévoir **calcul/solveur déterministe** en appui (l'IA propose,
+  un calcul vérifie/ajuste) ; **(2)** **qualité de la base** : il faut assez d'**aliments (CIQUAL)** et surtout
+  de **recettes** avec quantités pour piocher — recoupe [[nutrition-recettes-healthy]] et le **garde-manger
+  virtuel** ; **(3)** **contraintes personnelles** (régime, allergènes, aversions, budget/temps) → recoupe
+  l'idée **« Profils enrichis »** (15/07) ; **(4)** **IA = connexion requise** (dégrader proprement hors-ligne,
+  offline-first), **proxy backend** (clé jamais dans l'app), **consentement + RGPD**, **plafonds de coût** ;
+  **(5)** **révisabilité** : l'utilisateur doit pouvoir **remplacer un repas / régénérer** sans tout casser.
+  **Monétisation** : candidat **premium** naturel (génération = « intelligence », cf. [[principe-monetisation]]
+  et règle d'or de l'analyse IA). _Recoupe :_ [[integration-ia]], 4.27/4.28/4.29, [[nutrition-recettes-healthy]],
+  garde-manger virtuel, profils enrichis, [[reconnaissance-repas-photo]]. _Prochaine étape :_ cadrage plus tard
+  (spec → plan → design) ; probablement **après** que 4.27/4.28 (planning + liste manuels) soient posés.
+
+- [16/07/2026] 🔍 **Import de données depuis d'autres apps (Garmin Connect, Strava…) — trace GPX + FC +
+  données non modélisées** : pour les utilisateurs qui arrivent d'un autre écosystème (Garmin Connect,
+  Strava, et d'autres), pouvoir **importer leurs sorties** (trace GPX) **et** les **métriques qu'on ne
+  capte pas encore** (fréquence cardiaque, altitude, cadence, puissance…). Remonté par Florian (16/07).
+  _Vérifié le 16/07/2026 :_ **partiellement au backlog** — l'US **1.20 « Import de données — GPX (Strava),
+  CSV (Hevy, Strong, MyFitnessPal) »** existe en **V1.1 (post-lancement)** (Difficile, 8h ; note roadmap :
+  *« clé d'adoption pour la cible multi-apps — à remonter en V0.8 si la bêta le réclame »*). L'**export GPX**
+  est **déjà codé** côté `shared` ([gpx.ts](packages/shared/src/gpx.ts)) mais **écriture seule**, **sans
+  altitude ni FC** (données non captées). La **FC est explicitement classée V2** (*« V2 = wearables + zones
+  FC »*) et **n'existe pas dans le modèle de données** aujourd'hui (profil coureur 5.1 : FC « optionnelle »,
+  cibles V1 en **allure**). **Deux briques à ne pas confondre au cadrage** : **(1)** importer la **trace GPX**
+  (géométrie + temps) = proche de l'export existant, coût raisonnable, gros gain « je retrouve mes anciennes
+  sorties » ; **(2)** importer des **données non modélisées** (FC…) = touche **modèle de données + migration +
+  sync rules PowerSync**, plus lourd → cohérent avec V2. **Piège technique à documenter** : le **GPX standard
+  ne porte pas la FC** — elle vit dans une **extension GPX** (`gpxtpx:hr`) ou dans les formats **FIT / TCX**
+  de Garmin ; « import FC » ≠ « import GPX ». **Question de cadrage laissée ouverte (à trancher avant spec)** :
+  le besoin réel est-il **(A) migration/onboarding** (import ponctuel de fichiers en arrivant d'une autre app)
+  ou **(B) usage en parallèle** (sorties Garmin/Strava qui remontent en continu → plutôt une **connexion
+  Strava/Garmin**, pas un import de fichiers) ? La réponse change la solution technique et l'effort. _Recoupe :_
+  « [Adoption] Assistant de migration packagé » (13/07, wizard « viens de Strava/Hevy/MyFitnessPal en 2 min »),
+  [[donnees-sommeil-pas]] et l'intégration Health Connect (US 9.9). _Prochaine étape :_ cadrage plus tard
+  (décision Florian, 16/07) — trancher A/B, puis spec → plan → design.
+
 - [16/07/2026] 🆕 **Poignée de réagencement du dashboard trop petite / peu parlante (UX)** : sur le
   **dashboard d'accueil**, le mode « personnaliser / réagencer les cards » se déclenche via un **bouton en
   bas à gauche** qui est **trop petit, pas assez explicite**, et le **drag-and-drop demande trop de

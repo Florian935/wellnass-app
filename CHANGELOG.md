@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/journal-entree-swipe-edition` — 2 idées consignées (IDEAS.md)
+
+**Ajouté**
+- [IDEAS.md](IDEAS.md), section « À trier » — deux idées brutes captées (hors pipeline, avant cadrage),
+  chacune adossée à l'existant vérifié :
+  - 🔍 **Import de données depuis d'autres apps (Garmin/Strava…)** — trace GPX + FC + données non
+    modélisées. Recoupe l'US 1.20 (déjà backlog V1.1) ; export GPX déjà codé (écriture seule, sans FC) ;
+    FC classée V2. Distinction trace GPX vs métriques non modélisées ; piège FC = extension GPX / FIT / TCX ;
+    question ouverte migration ponctuelle (A) vs connexion continue (B).
+  - 🆕 **Générateur IA de plan de repas hebdo + liste de courses** — s'appuie sur 4.27/4.28/4.4 (manuels,
+    V1.1) mais ajoute la génération IA (nouvel usage IA non cadré). Point dur = optimisation sous contraintes
+    (kcal + macros) → calcul déterministe en appui de l'IA. Candidat premium.
+
+**Notes**
+- **Docs uniquement** (aucun code touché) ; commité sur la branche de travail courante `fix/journal-entree-swipe-edition`
+  (IDEAS.md = fichier transverse hors pipeline). Fichiers non suivis de l'US swipe/édition journal laissés
+  hors de ce commit. Commit précédent : `2399ffd`.
+
 ### 16/07/2026 — `dev` — CI en échec : erreur de typage `fontsReady` (_layout.tsx)
 
 **Corrigé**
