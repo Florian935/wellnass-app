@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `fix/journal-entree-swipe-edition` — implémentation : swipe + édition élargie des entrées de repas
+
+**Corrigé** (bug §🐞 « modifier / supprimer un aliment ajouté à un repas »)
+- **Découvrabilité** : une entrée de repas est désormais un **swipe gauche** (`ReanimatedSwipeable`)
+  révélant **Modifier** (ouvre le détail en édition) et **Supprimer** (confirmation → soft delete).
+  Le **tap** ouvre le détail en consultation. L'**appui long** (suppression invisible) est **retiré**.
+- **Édition élargie** : les **quick add** (entrées sans quantité) deviennent éditables — kcal, P/G/L
+  et **nom** en saisie directe. Les entrées **avec quantité** conservent l'édition par les grammes
+  (règle de trois `rescaleEntryNutrition`, **non régressé**).
+
+**Ajouté**
+- `journal.swipeEdit`, `journal.swipeHint`, `journal.detail.calories` (i18n FR/EN, parité).
+
+**Modifié**
+- `updateEntry` ([journal-repository.ts](apps/mobile/src/data/repositories/journal-repository.ts)) :
+  `quantityG: number | null`, `name?` optionnel, `micronutrients` **conditionnel** (ne réécrit plus
+  `{}` par défaut → micros existants préservés).
+- `EntryDetailContent` / `MealSection` ([nutrition.tsx](apps/mobile/src/app/(tabs)/nutrition.tsx)) :
+  swipe, ouverture directe en édition (`startEditing`), formulaire d'édition branché sur `hasQuantity`,
+  aperçu macros périmé masqué en édition quick add, bouton « Modifier » toujours visible.
+
+**Supprimé**
+- Clé i18n orpheline `journal.longPressDelete` (FR+EN) ; variable `canEdit` (remplacée par `hasQuantity`).
+
+**Technique / Notes**
+- **100 % client, aucune migration, pas de checkpoint 🔴.** typecheck/lint verts, **684 tests** verts.
+- Exécution **subagent-driven** (4 commits `5e00ac9`→`0729039` : updateEntry → i18n → swipe → édition),
+  revues spec + qualité par tâche + **revue finale de code *ready-to-merge*** (aucun bloquant).
+- ⚠️ **Premier usage de `ReanimatedSwipeable` dans le repo** → **recette device** requise : swipe
+  Modifier/Supprimer, tap → détail, édition quick add (kcal/macros/nom), non-régression édition par
+  quantité, **actions de swipe non rognées** malgré `overflow:'hidden'` de la carte de repas, confort
+  de fermeture du swipe après action. Relecture Damien à faire.
+- Commit précédent : `7958b8c`.
+
 ### 16/07/2026 — `fix/journal-entree-swipe-edition` — cadrage (spec + plan) édition/suppression d'une entrée de repas + report US 8.7
 
 **Ajouté**
