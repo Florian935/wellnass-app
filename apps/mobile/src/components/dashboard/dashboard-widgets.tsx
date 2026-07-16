@@ -1,5 +1,5 @@
 /**
- * Map `id → composant` des 7 widgets du dashboard (US 7.1).
+ * Map `id → composant` des widgets du dashboard (US 7.1 ; étendue au fil des US).
  *
  * Centralise le rendu d'un widget à partir de son identifiant de layout et de
  * sa taille, pour que l'écran d'accueil et le conteneur d'édition parcourent la

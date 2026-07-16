@@ -32,7 +32,9 @@ export function TrainingTimeCard({ size = 'full' }: { size?: WidgetSize }) {
   if (tt.runningActive) {
     parts.push(`${t('home.trainingTime.breakdownRunning')} ${formatHoursMinutes(tt.runningSeconds)}`);
   }
-  const breakdown = parts.join(' · ');
+  // Ventilation affichée seulement si les DEUX piliers sont actifs : avec un seul,
+  // la ligne répéterait le total (ex. total « 4h 30 » puis « muscu 4h 30 »).
+  const breakdown = parts.length >= 2 ? parts.join(' · ') : '';
 
   // ── Variante compacte (US 7.11) ────────────────────────────────────────────
   if (size === 'compact') {

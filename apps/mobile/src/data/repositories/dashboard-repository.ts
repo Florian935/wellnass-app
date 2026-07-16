@@ -11,6 +11,7 @@
  *  - `useNutritionSummary` → widget 7.5 (résumé nutritionnel du jour)
  *  - `useStreakData`        → widget 7.6 (série de jours actifs + pastilles semaine)
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
+ *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
