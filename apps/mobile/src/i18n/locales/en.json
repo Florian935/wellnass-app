@@ -389,6 +389,12 @@
       "empty": "No day logged",
       "noTarget": "Set your calorie goal"
     },
+    "completion": {
+      "title": "Logging consistency",
+      "logged_one": "{{count}} / {{total}} day logged",
+      "logged_other": "{{count}} / {{total}} days logged",
+      "empty": "Start logging your journal"
+    },
     "protein": {
       "title": "Protein / body weight",
       "perKgUnit": "g/kg",

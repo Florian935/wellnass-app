@@ -11,7 +11,7 @@ import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
 import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
-import { useDailyTotals } from '@/data/repositories/journal-repository';
+import { useDailyTotals, useJournalCompletion } from '@/data/repositories/journal-repository';
 import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -54,6 +54,7 @@ export default function NutritionStatsScreen() {
   const previousAvg = averageIntake(previousTotals);
   const kcalChange = percentChange(avg.kcal, previousAvg.kcal);
   const adherence = useGoalAdherence(intakeWindowDays);
+  const completion = useJournalCompletion(intakeWindowDays);
 
   const trend = weightTrend(weightEntries.map((e) => e.weightKg));
   const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
@@ -139,6 +140,25 @@ export default function NutritionStatsScreen() {
             </Text>
             <Text style={[styles.macroLine, { color: colors.textMuted }]}>
               {t('stats.adherence.margin', { pct: adherence.marginPct })}
+            </Text>
+          </>
+        )}
+      </Card>
+
+      {/* Régularité du journal (NUTR-17) — même fenêtre 7 j/30 j */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.completion.title')}</Text>
+      <Card>
+        {completion.isLoading ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>…</Text>
+        ) : completion.effectiveWindow === 0 ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.completion.empty')}</Text>
+        ) : (
+          <>
+            <View style={styles.avgRow}>
+              <Text style={[styles.avgKcal, { color: colors.text }]}>{completion.pct} %</Text>
+            </View>
+            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
+              {t('stats.completion.logged', { count: completion.loggedDays, total: completion.effectiveWindow })}
             </Text>
           </>
         )}

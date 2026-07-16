@@ -389,6 +389,12 @@
       "empty": "Aucun jour renseigné",
       "noTarget": "Définis ton objectif calorique"
     },
+    "completion": {
+      "title": "Régularité du journal",
+      "logged_one": "{{count}} / {{total}} jour renseigné",
+      "logged_other": "{{count}} / {{total}} jours renseignés",
+      "empty": "Commence à remplir ton journal"
+    },
     "protein": {
       "title": "Apport protéique / poids",
       "perKgUnit": "g/kg",
