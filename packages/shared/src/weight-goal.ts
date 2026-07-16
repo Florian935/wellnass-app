@@ -27,10 +27,13 @@ export function computeWeightGoalProgress(params: {
   const ratio = Math.min(1, Math.max(0, progressRaw));
   const totalKg = Math.abs(startKg - targetKg);
   const doneKg = ratio * totalKg;
+  const reached = progressRaw >= 1;
 
   return {
-    pct: Math.round(ratio * 100),
-    reached: progressRaw >= 1,
+    // Ne jamais afficher 100 % sans l'objectif atteint : un ratio proche de 1
+    // (ex. 0,996) est plafonné à 99 % pour rester cohérent avec `reached`.
+    pct: reached ? 100 : Math.min(99, Math.round(ratio * 100)),
+    reached,
     startKg,
     targetKg,
     currentKg,

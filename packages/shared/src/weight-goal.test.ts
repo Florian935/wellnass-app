@@ -52,4 +52,12 @@ describe('computeWeightGoalProgress', () => {
     const r = computeWeightGoalProgress({ startKg: 90, targetKg: 78, currentKg: 84 })!;
     expect(r.doneKg + r.remainingKg).toBeCloseTo(r.totalKg);
   });
+
+  it('quasi-atteint (ratio ~0,996) : pct plafonné à 99 %, pas encore atteint', () => {
+    // départ 100, cible 75 → 25 kg à parcourir ; il reste 0,1 kg → ratio 0,996
+    const r = computeWeightGoalProgress({ startKg: 100, targetKg: 75, currentKg: 75.1 })!;
+    expect(r.pct).toBe(99);
+    expect(r.reached).toBe(false);
+    expect(r.remainingKg).toBeGreaterThan(0);
+  });
 });
