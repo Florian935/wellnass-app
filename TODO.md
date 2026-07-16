@@ -484,15 +484,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 
 ## 🚧 En cours
 
-- [~] **US NUTR-11 — Progression vers l'objectif de poids** — **spec + plan validés Florian (16/07/2026)**
-  (branche `feature/nutr11-progression-poids` depuis `dev`). Carte Stats nutrition (section Poids) : **%
+- [~] **US NUTR-11 — Progression vers l'objectif de poids** — **CODE LIVRÉ** (subagent-driven, commits
+  `826cf59`→`8a4c486` sur `feature/nutr11-progression-poids`, revue finale *APPROVED* + correctif
+  d'arrondi). **Spec + plan validés Florian (16/07/2026).** Carte Stats nutrition (section Poids) : **%
   (+ kg)** du chemin entre un **poids de départ figé** et un **poids cible** (Profil). Départ figé à la
   définition de la cible (option A) ; formule bornée [0,1] (perte ou prise) ; actuel = dernière pesée ;
-  dépassement → 100 % + badge « Objectif atteint » ; recul → 0 % ; pas de carte si aucune cible ou
-  départ = cible. **1 migration** (`profiles.target_weight_kg` + `start_weight_kg`) + `computeWeightGoalProgress`
-  (pur, testé) + `setWeightTarget` (fige le départ) + hook `useWeightGoalProgress` + `WeightGoalCard` +
-  i18n FR/EN. **100 % client hormis migration.** **Reste : implémentation (subagent-driven) → recette
-  device → relecture Damien.** Spec :
+  dépassement → 100 % + badge « Objectif atteint » ; recul → 0 % ; pct plafonné à 99 % tant que non
+  atteint ; pas de carte si aucune cible ou départ = cible. **Migration cloud appliquée** (`profiles.target_weight_kg`
+  + `start_weight_kg`, `db:push` + `db:types` + `MIGRATIONS.md`) + `computeWeightGoalProgress` (pur, testé,
+  9 cas) + `setWeightTarget` (fige le départ) + hook `useWeightGoalProgress` + champ « Poids cible » (Profil)
+  + `WeightGoalCard` + i18n FR/EN. **100 % client hormis migration.** typecheck/lint/tests(710) verts.
+  Catalogue NUTR-11 → ✅. **Reste : merge `dev` + recette device + relecture Damien.** Spec :
   [us/nutr11-progression-poids.md](docs/specs/functional/us/nutr11-progression-poids.md) ·
   Plan : [plans/nutr11-progression-poids.md](docs/plans/nutr11-progression-poids.md).
 - [~] **US NUTR-17 — Régularité du journal (taux de complétion)** — **code livré & mergé sur `dev`**

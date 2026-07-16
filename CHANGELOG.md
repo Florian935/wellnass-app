@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/nutr11-progression-poids` — carte « Progression vers l'objectif de poids » (NUTR-11)
+
+**Ajouté** (analyse NUTR-11 du catalogue, Phase A — implémentation subagent-driven)
+- Carte **« Progression vers l'objectif de poids »** sur Stats nutrition (section Poids, après la courbe) :
+  **% (+ kg)** du chemin entre un **poids de départ figé** et un **poids cible**. Départ figé au moment où
+  la cible est définie (option A) ; formule bornée [0,1] (perte comme prise) ; poids actuel = dernière
+  pesée (repli poids profil) ; dépassement → 100 % + badge « 🎯 Objectif atteint » ; recul → 0 % ; pct
+  plafonné à **99 %** tant que l'objectif n'est pas atteint (cohérence badge) ; pas de carte si aucune
+  cible ou départ = cible.
+- Fonction pure `computeWeightGoalProgress` (shared, testée, 9 cas). Write path `setWeightTarget` qui
+  **fige** `start_weight_kg` sur le poids courant à la création/modification de la cible (no-op si
+  inchangée, efface si null). Hook `useWeightGoalProgress`. Champ **« Poids cible »** dans le Profil
+  (câblé uniquement via `setWeightTarget`). `WeightGoalCard` (3 états : loading / invite sans cible /
+  masquée). i18n `stats.weightGoal.*` + `profile.targetWeight` FR/EN.
+
+**Technique / Notes**
+- **Migration cloud appliquée** : `profiles.target_weight_kg` + `start_weight_kg` (numeric nullable,
+  `check > 0`) — `db:push` + `db:types` + colonnes déclarées dans `powersync/schema.ts` + mapping
+  repository (4 points) + `MIGRATIONS.md` coché. Sync rule inchangée (`select * from profiles`).
+- **100 % client hormis la migration**, offline. typecheck/lint/tests(710) verts.
+- Exécution **subagent-driven** (Task 1→5 + clôture), revue de code finale ***APPROVED*** (1 correctif
+  d'arrondi appliqué : pct plafonné à 99 % tant que non atteint + test dédié). Catalogue NUTR-11 → ✅.
+- **Reste** : merge `dev` + recette device (perte/prise, dépassement/badge, recul, modif de cible qui
+  ré-ancre le départ, état vide, unités métrique/impérial, i18n) + relecture Damien.
+- Commit précédent : `331c05b`.
+
 ### 16/07/2026 — `feature/nutr11-progression-poids` — spec + plan « Progression vers l'objectif de poids » (NUTR-11)
 
 **Ajouté** (docs uniquement — pipeline spec → plan, analyse NUTR-11 du catalogue, Phase A)
