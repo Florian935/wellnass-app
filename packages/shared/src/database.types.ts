@@ -664,6 +664,7 @@ export type Database = {
       nutrition_profiles: {
         Row: {
           activity_level: string
+          adherence_margin_pct: number
           allergens: Json
           created_at: string
           deleted_at: string | null
@@ -682,6 +683,7 @@ export type Database = {
         }
         Insert: {
           activity_level?: string
+          adherence_margin_pct?: number
           allergens?: Json
           created_at?: string
           deleted_at?: string | null
@@ -700,6 +702,7 @@ export type Database = {
         }
         Update: {
           activity_level?: string
+          adherence_margin_pct?: number
           allergens?: Json
           created_at?: string
           deleted_at?: string | null
