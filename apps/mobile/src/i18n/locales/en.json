@@ -271,7 +271,6 @@
     "add": "Add",
     "delete": "Delete",
     "deleteConfirm": "Remove this food from the journal?",
-    "longPressDelete": "Long-press to delete",
     "swipeEdit": "Edit",
     "swipeHint": "Swipe to edit or delete",
     "itemCount_one": "{{count}} food",

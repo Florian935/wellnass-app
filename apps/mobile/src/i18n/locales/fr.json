@@ -271,7 +271,6 @@
     "add": "Ajouter",
     "delete": "Supprimer",
     "deleteConfirm": "Retirer cet aliment du journal ?",
-    "longPressDelete": "Appui long pour supprimer",
     "swipeEdit": "Modifier",
     "swipeHint": "Balayer pour modifier ou supprimer",
     "itemCount_one": "{{count}} aliment",

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
@@ -78,6 +79,17 @@ export default function NutritionScreen() {
 
   // Entrée sélectionnée pour le détail (4.34) — tap sur une entrée du journal.
   const [detailEntry, setDetailEntry] = useState<JournalEntry | null>(null);
+  // Détail ouvert directement en mode édition (swipe → « Modifier ») vs simple consultation (tap).
+  const [detailEditing, setDetailEditing] = useState(false);
+
+  const onEditEntry = (entry: JournalEntry) => {
+    setDetailEntry(entry);
+    setDetailEditing(true);
+  };
+  const onSelectEntry = (entry: JournalEntry) => {
+    setDetailEntry(entry);
+    setDetailEditing(false);
+  };
 
   // Objectif calorique + macros cibles (même logique que le profil nutritionnel).
   const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
@@ -279,7 +291,8 @@ export default function NutritionScreen() {
               entries={entries.filter((e) => e.mealType === m.key)}
               onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
               onDeleteEntry={onDeleteEntry}
-              onSelectEntry={setDetailEntry}
+              onSelectEntry={onSelectEntry}
+              onEditEntry={onEditEntry}
             />
           );
         })}
@@ -293,7 +306,11 @@ export default function NutritionScreen() {
       {/* Détail d'une entrée de journal (4.34) — snapshot de la quantité journalisée */}
       <EntryDetailModal
         entry={detailEntry}
-        onClose={() => setDetailEntry(null)}
+        startEditing={detailEditing}
+        onClose={() => {
+          setDetailEntry(null);
+          setDetailEditing(false);
+        }}
         onMoveUp={detailIdx > 0 ? () => void moveEntry(detailEntry!.id, 'up') : undefined}
         onMoveDown={
           detailIdx >= 0 && detailIdx < detailSiblings.length - 1
@@ -352,11 +369,13 @@ function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
 /** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
 function EntryDetailModal({
   entry,
+  startEditing,
   onClose,
   onMoveUp,
   onMoveDown,
 }: {
   entry: JournalEntry | null;
+  startEditing?: boolean;
   onClose: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -367,6 +386,7 @@ function EntryDetailModal({
     <EntryDetailContent
       key={entry.id}
       entry={entry}
+      startEditing={startEditing}
       onClose={onClose}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
@@ -376,11 +396,13 @@ function EntryDetailModal({
 
 function EntryDetailContent({
   entry,
+  startEditing,
   onClose,
   onMoveUp,
   onMoveDown,
 }: {
   entry: JournalEntry;
+  startEditing?: boolean;
   onClose: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
@@ -392,7 +414,7 @@ function EntryDetailContent({
   // (les « quick add » sans quantité restent en simple consultation).
   const canEdit = entry.quantityG != null && entry.quantityG > 0;
   const oldQty = entry.quantityG ?? 0;
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startEditing ?? false);
   const [grams, setGrams] = useState(String(entry.quantityG ?? ''));
   const [saving, setSaving] = useState(false);
 
@@ -561,6 +583,7 @@ function MealSection({
   onAdd,
   onDeleteEntry,
   onSelectEntry,
+  onEditEntry,
 }: {
   mealKey: string;
   mealLabel: string;
@@ -569,6 +592,7 @@ function MealSection({
   onAdd: () => void;
   onDeleteEntry: (e: JournalEntry) => void;
   onSelectEntry: (e: JournalEntry) => void;
+  onEditEntry: (e: JournalEntry) => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -610,21 +634,47 @@ function MealSection({
       </View>
       <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {entries.map((e) => (
-          <Pressable
+          <ReanimatedSwipeable
             key={e.id}
-            onPress={() => onSelectEntry(e)}
-            onLongPress={() => onDeleteEntry(e)}
-            style={styles.entry}
-            accessibilityHint={t('journal.longPressDelete')}
+            friction={2}
+            rightThreshold={40}
+            renderRightActions={() => (
+              <View style={styles.swipeActions}>
+                <Pressable
+                  onPress={() => onEditEntry(e)}
+                  style={[styles.swipeAction, { backgroundColor: colors.accent }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('journal.swipeEdit')}
+                >
+                  <Ionicons name="create-outline" size={20} color="#fff" />
+                  <Text style={styles.swipeActionLabel}>{t('journal.swipeEdit')}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => onDeleteEntry(e)}
+                  style={[styles.swipeAction, { backgroundColor: colors.danger }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('journal.delete')}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#fff" />
+                  <Text style={styles.swipeActionLabel}>{t('journal.delete')}</Text>
+                </Pressable>
+              </View>
+            )}
           >
-            <View style={styles.entryMain}>
-              <Text style={[styles.entryName, { color: colors.text }]} numberOfLines={1}>{e.name}</Text>
-              {e.quantityG != null ? (
-                <Text style={[styles.entryQty, { color: colors.textMuted }]}>{e.quantityG} g</Text>
-              ) : null}
-            </View>
-            <Text style={[styles.entryKcal, { color: colors.textMuted }]}>{e.kcal} {t('nutrition.kcal')}</Text>
-          </Pressable>
+            <Pressable
+              onPress={() => onSelectEntry(e)}
+              style={[styles.entry, { backgroundColor: colors.surface }]}
+              accessibilityHint={t('journal.swipeHint')}
+            >
+              <View style={styles.entryMain}>
+                <Text style={[styles.entryName, { color: colors.text }]} numberOfLines={1}>{e.name}</Text>
+                {e.quantityG != null ? (
+                  <Text style={[styles.entryQty, { color: colors.textMuted }]}>{e.quantityG} g</Text>
+                ) : null}
+              </View>
+              <Text style={[styles.entryKcal, { color: colors.textMuted }]}>{e.kcal} {t('nutrition.kcal')}</Text>
+            </Pressable>
+          </ReanimatedSwipeable>
         ))}
         <View style={styles.mealActions}>
           <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
@@ -718,6 +768,9 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(150,133,111,0.25)',
     gap: 12,
   },
+  swipeActions: { flexDirection: 'row', alignItems: 'stretch' },
+  swipeAction: { justifyContent: 'center', alignItems: 'center', gap: 2, width: 76 },
+  swipeActionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11, color: '#fff' },
   entryMain: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   entryName: { fontFamily: fontFamily.bodySemi, fontSize: 15, flexShrink: 1 },
   entryQty: { fontFamily: fontFamily.mono, fontSize: 12 },
