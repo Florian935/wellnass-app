@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 16/07/2026 — `feature/nutr11-progression-poids` — spec + plan « Progression vers l'objectif de poids » (NUTR-11)
+
+**Ajouté** (docs uniquement — pipeline spec → plan, analyse NUTR-11 du catalogue, Phase A)
+- Spec fonctionnelle [nutr11-progression-poids.md](docs/specs/functional/us/nutr11-progression-poids.md) :
+  carte Stats nutrition (section Poids) montrant un **% (et les kg)** du chemin parcouru entre un **poids
+  de départ figé** et un **poids cible**. Cadrage Florian : départ = poids au moment où la cible est
+  définie (option A) ; formule bornée [0,1] (perte ou prise) ; actuel = dernière pesée ; dépassement →
+  100 % + badge « Objectif atteint » ; recul → 0 % ; pas de carte si aucune cible ou départ = cible.
+- Plan d'implémentation [nutr11-progression-poids.md](docs/plans/nutr11-progression-poids.md) : 7 tâches
+  TDD, 1 migration (colonnes `profiles.target_weight_kg` + `start_weight_kg`), fonction pure
+  `computeWeightGoalProgress`, write path `setWeightTarget` (fige le départ), hook `useWeightGoalProgress`,
+  champ « Poids cible » (Profil), `WeightGoalCard` (Stats), i18n FR/EN.
+
+**Technique / Notes**
+- **Aucun code applicatif** à ce commit (gate CLAUDE.md : spec ✅ validée, plan ✅ validé Florian, maquette
+  écartée → implémentation autorisée ensuite). Commit **sur la branche** (pas de merge `dev` : `/commit`
+  indisponible — classifieur `claude-sonnet-5` down — commit manuel).
+- Commit précédent : `aba444c`.
+
 ### 16/07/2026 — `feature/nutr17-regularite-journal` — carte « Régularité du journal » (NUTR-17)
 
 **Ajouté** (analyse NUTR-17 du catalogue, Phase A)
