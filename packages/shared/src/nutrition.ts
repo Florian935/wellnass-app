@@ -315,6 +315,8 @@ export const nutritionProfileRowSchema = syncFieldsSchema.extend({
   trainingDayBonus: z.number().nonnegative().default(0),
   /** Mode de calcul du bonus (item RN-02) : forfait fixe ou dépense course auto. */
   trainingBonusMode: z.enum(['fixed', 'auto']).default('fixed'),
+  /** Marge d'adhérence à l'objectif (item NUTR-10) : % de tolérance autour de l'objectif effectif. */
+  adherenceMarginPct: z.number().int().min(1).max(50).default(10),
   /** Repas personnalisés (renommer / ajouter / supprimer, item 4.15) ; `null` = 4 repas par défaut. */
   meals: z.array(mealConfigItemSchema).nullable().default(null),
 });

@@ -233,6 +233,15 @@ describe('nutritionProfileRowSchema', () => {
       expect(nutritionProfileRowSchema.parse({ ...base, trainingBonusMode: 'auto' }).trainingBonusMode).toBe('auto');
     });
   });
+
+  describe('adherenceMarginPct', () => {
+    it('défaut 10', () => {
+      expect(nutritionProfileRowSchema.parse(base).adherenceMarginPct).toBe(10);
+    });
+    it('rejette hors bornes (0)', () => {
+      expect(nutritionProfileRowSchema.safeParse({ ...base, adherenceMarginPct: 0 }).success).toBe(false);
+    });
+  });
 });
 
 describe('meal config (4.15)', () => {

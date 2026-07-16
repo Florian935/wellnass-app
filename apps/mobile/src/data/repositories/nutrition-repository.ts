@@ -58,6 +58,7 @@ export type NutritionProfileInput = Pick<
   | 'allergens'
   | 'trainingDayBonus'
   | 'trainingBonusMode'
+  | 'adherenceMarginPct'
   | 'meals'
 >;
 
@@ -75,6 +76,7 @@ type NutritionDbRow = {
   allergens: string | null;
   training_day_bonus: number | null;
   training_bonus_mode: string | null;
+  adherence_margin_pct: number | null;
   meals: string | null;
   created_at: string;
   updated_at: string;
@@ -103,6 +105,7 @@ function rowToNutritionProfile(row: NutritionDbRow): NutritionProfile {
     allergens: parseJsonColumn<string[]>(row.allergens, []),
     trainingDayBonus: row.training_day_bonus ?? 0,
     trainingBonusMode: (row.training_bonus_mode as TrainingBonusMode | null) ?? 'fixed',
+    adherenceMarginPct: row.adherence_margin_pct ?? 10,
     meals: parseJsonColumn<MealConfigItem[] | null>(row.meals, null),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -123,6 +126,7 @@ function inputToColumns(input: Partial<NutritionProfileInput>): Record<string, u
   if ('allergens' in input) columns['allergens'] = JSON.stringify(input.allergens ?? []);
   if ('trainingDayBonus' in input) columns['training_day_bonus'] = input.trainingDayBonus;
   if ('trainingBonusMode' in input) columns['training_bonus_mode'] = input.trainingBonusMode;
+  if ('adherenceMarginPct' in input) columns['adherence_margin_pct'] = input.adherenceMarginPct;
   if ('meals' in input) columns['meals'] = input.meals ? JSON.stringify(input.meals) : null;
   return columns;
 }

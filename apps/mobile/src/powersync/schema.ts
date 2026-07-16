@@ -64,6 +64,7 @@ const nutrition_profiles = new Table({
   allergens: column.text, // JSON sérialisé
   training_day_bonus: column.integer,
   training_bonus_mode: column.text,
+  adherence_margin_pct: column.integer, // % de marge d'adhérence (NUTR-10)
   meals: column.text, // JSON [{key,label}] — repas personnalisés (4.15)
   created_at: column.text,
   updated_at: column.text,
