@@ -27,12 +27,14 @@ import {
   computeAge,
   computeDeficitVolumeAlert,
   computeStreak,
+  computeTrainingTime,
   dayCalorieBonus,
   estimateRunCalories,
   isTrainingDay as computeIsTrainingDay,
   localDayKey,
   objectiveFromGoal,
   PILLARS,
+  startOfWeek,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -47,7 +49,7 @@ import { useProfile } from './profile-repository';
 import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
-import { useRunHistory } from './run-repository';
+import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
 import { useSettings } from './settings-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
@@ -682,4 +684,49 @@ export function useDeficitVolumeAlert(): DeficitVolumeAlert {
     targetKcal: target ?? 0,
     weeklyVolume,
   });
+}
+
+// ---------------------------------------------------------------------------
+// useTrainingTime — widget MR-06 (temps d'entraînement muscu + course)
+// ---------------------------------------------------------------------------
+
+export type TrainingTime = {
+  totalSeconds: number;
+  strengthSeconds: number;
+  runningSeconds: number;
+  strengthActive: boolean;
+  runningActive: boolean;
+  isLoading: boolean;
+};
+
+/**
+ * Temps d'entraînement de la semaine ISO courante (lundi→dimanche) : muscu + course.
+ *
+ * Composition : `useRunStats('week')` fournit la durée course (borne `finished_at`, même
+ * découpage semaine) ; `useWorkoutHistory()` fournit les séances muscu terminées, filtrées
+ * sur la même semaine (borne `finished_at`) et sommées. Gating transverse (`strength`/`running`)
+ * appliqué au retour ; hooks appelés inconditionnellement (règle des hooks).
+ */
+export function useTrainingTime(): TrainingTime {
+  const { settings } = useSettings();
+  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+
+  const { stats, isLoading: runLoading } = useRunStats('week');
+  const { workouts, isLoading: workoutLoading } = useWorkoutHistory();
+
+  const weekStartKey = localDayKey(startOfWeek(new Date()));
+  const strengthSecondsRaw = workouts.reduce((sum, w) => {
+    if (w.durationSeconds == null || w.finishedAt == null) return sum;
+    const dayKey = localDayKey(new Date(w.finishedAt));
+    return dayKey >= weekStartKey ? sum + w.durationSeconds : sum;
+  }, 0);
+
+  const agg = computeTrainingTime({
+    strengthSeconds: strengthActive ? strengthSecondsRaw : 0,
+    runningSeconds: runningActive ? stats.totalDurationS : 0,
+  });
+
+  return { ...agg, strengthActive, runningActive, isLoading: runLoading || workoutLoading };
 }
