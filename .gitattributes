@@ -41,3 +41,6 @@
 *.keystore binary
 *.jks  binary
 *.p12  binary
+
+# --- Gros binaires versionnés via Git LFS ---
+*.apk filter=lfs diff=lfs merge=lfs -text
