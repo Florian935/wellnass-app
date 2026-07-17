@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listUsers, USERS_PAGE_SIZE, type AdminUserRow } from '../data/users';
+import {
+  listUsers,
+  parseActivePillars,
+  USERS_PAGE_SIZE,
+  type AdminUserRow,
+} from '../data/users';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -143,10 +148,9 @@ export function UsersScreen() {
   );
 }
 
-/** Libellés des piliers actifs (Json | null → texte joint), fallback « — ». */
+/** Libellés des piliers actifs (tableau natif OU chaîne JSON → texte joint), fallback « — ». */
 function renderPillars(value: AdminUserRow['active_pillars']): string {
-  if (!Array.isArray(value)) return fr.users.none;
-  const labels = value
+  const labels = parseActivePillars(value)
     .map((k) => fr.users.pillars[k as keyof typeof fr.users.pillars])
     .filter(Boolean);
   return labels.length ? labels.join(' · ') : fr.users.none;

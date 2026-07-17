@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 17/07/2026 — `fix/admin-piliers-affichage` — back-office `/users` : colonne « Piliers » affichée correctement
+
+_Commit précédent : `054e510`._
+
+**Corrigé**
+- Back-office `/users` (liste + fiche) : la colonne/ligne **« Piliers »** affichait « — » pour **tous**
+  les comptes, même ceux ayant des piliers actifs. Cause : le mobile sérialise `active_pillars` avec
+  `JSON.stringify(...)` dans une colonne PowerSync `text` → à la synchro, la **chaîne JSON** est stockée
+  telle quelle dans la colonne `jsonb` `user_settings.active_pillars` (jsonb de type `string`, pas
+  `array`). L'admin faisait un simple `Array.isArray(value)` → toujours faux → « — ». Le mobile, lui,
+  re-parse déjà de façon tolérante (`parseJsonColumn`).
+
+**Ajouté**
+- Helper `parseActivePillars(value)` dans [apps/admin/src/data/users.ts](apps/admin/src/data/users.ts) :
+  normalise `active_pillars` en `string[]`, tolérant à la **chaîne JSON** comme au **tableau natif**
+  (retourne `[]` si absent/illisible). Mutualise la logique entre les deux écrans.
+
+**Modifié**
+- [apps/admin/src/screens/UsersScreen.tsx](apps/admin/src/screens/UsersScreen.tsx) et
+  [apps/admin/src/screens/UserDetailScreen.tsx](apps/admin/src/screens/UserDetailScreen.tsx) :
+  `renderPillars` utilise désormais `parseActivePillars` au lieu du `Array.isArray` direct.
+
+**Technique / Notes**
+- **100 % JS, aucune migration, aucune reprise de données** (les valeurs déjà en base restent lisibles).
+- Correctif défensif côté lecture : si un jour la donnée arrive en tableau natif, le helper la gère aussi.
+- typecheck ✅ · lint ✅ (0 erreur) · tests ✅ (711). Reste : recette back-office + relecture Damien.
+
 ### 16/07/2026 — `fix/profil-champs-numeriques-invalides` — champs numériques du Profil : plus d'effacement silencieux
 
 **Corrigé**

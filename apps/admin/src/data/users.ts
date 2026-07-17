@@ -14,6 +14,28 @@ export type AdminUserRow = Database['public']['Views']['admin_users']['Row'];
 // non-null à travers une vue). Donc `id`, `email`, `created_at`, `active_pillars` (Json | null), etc.
 // sont TOUS nullables → les écrans doivent guarder chaque valeur.
 
+/**
+ * Normalise `active_pillars` en tableau de clés de piliers. Tolère les DEUX formes possibles :
+ * un **tableau natif** (jsonb array) OU une **chaîne JSON** (`"[\"strength\",…]"`). Le mobile
+ * sérialise `active_pillars` avec `JSON.stringify(...)` dans une colonne PowerSync `text` ; à la
+ * synchro cette chaîne atterrit telle quelle dans la colonne `jsonb` `user_settings.active_pillars`
+ * (jsonb de type `string`, pas `array`). Le repo mobile re-parse déjà de façon tolérante
+ * (`parseJsonColumn`) ; l'admin faisait un simple `Array.isArray` → « — » pour tout le monde.
+ * Retourne `[]` si la valeur est absente ou illisible.
+ */
+export function parseActivePillars(value: AdminUserRow['active_pillars']): string[] {
+  let raw: unknown = value;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((k): k is string => typeof k === 'string');
+}
+
 export const USERS_PAGE_SIZE = 25;
 
 /** Liste paginée + recherche par e-mail (ilike). Tri par inscription décroissante. */
