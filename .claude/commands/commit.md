@@ -1,5 +1,5 @@
 ---
-description: Analyse et relit le diff, met à jour CHANGELOG + TODO, commit propre et sûr, puis push sur dev
+description: Analyse et relit le diff, met à jour CHANGELOG + TODO + statut roadmap, commit propre et sûr, puis push sur dev
 argument-hint: [sujet de commit optionnel]
 allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(git checkout:*), Bash(git merge:*), Bash(git fetch:*), Bash(git push:*), Bash(git log:*), Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Read, Edit, Write, Task, Skill
 ---
@@ -55,17 +55,27 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    passe en `[~]` ce qui est en cours, ajoute les nouvelles tâches apparues, et actualise la
    date de « Dernière mise à jour ».
 
-8. **Message de commit** : format conventionnel `type(scope): sujet` **en français**
+8. **Roadmap — statut** (obligatoire si le commit touche une fonctionnalité de la roadmap) :
+   ouvre [`docs/roadmap/roadmap.md`](../../docs/roadmap/roadmap.md) et **mets à jour la colonne
+   Statut** de la/les ligne(s) concernée(s) selon le **réel du code** livré par ce commit :
+   ✅ Livré (fonctionnalité complète et vérifiée) · 🟡 Partiel (socle présent mais incomplet —
+   précise le manque en Remarques) · ⏳ Reporté. Repère la ligne par son **numéro thématique**
+   (ex. `3.34`, `1.18`) grâce au diff/à la spec de l'US. **Actualise aussi le [Récapitulatif]**
+   (compteurs Livré / Partiel / À faire + tableau « Détail par version » + date de « Dernière mise
+   à jour » du fichier). Si le commit ne touche **aucune** fonctionnalité de la roadmap
+   (doc, outillage, fix hors périmètre roadmap), **saute cette étape** et signale-le brièvement.
+
+9. **Message de commit** : format conventionnel `type(scope): sujet` **en français**
    (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`). Si `$ARGUMENTS` est non vide,
    utilise-le comme base du sujet. Ajoute un corps concis si utile.
    Termine **toujours** le message par :
 
    `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
 
-9. **Commit** : `git add` uniquement les fichiers pertinents (jamais les sensibles), puis
-   `git commit`. Affiche ensuite le hash du commit et un `git status` final propre.
+10. **Commit** : `git add` uniquement les fichiers pertinents (jamais les sensibles), puis
+    `git commit`. Affiche ensuite le hash du commit et un `git status` final propre.
 
-10. **Push sur `dev`** : intègre le travail de la branche courante dans `dev` puis pousse.
+11. **Push sur `dev`** : intègre le travail de la branche courante dans `dev` puis pousse.
     `git fetch origin`, puis mets `dev` à jour depuis `origin/dev` et fais avancer `dev` avec
     les commits de la branche (fast-forward si possible, sinon merge), enfin
     `git push origin dev`. Reviens ensuite sur la branche de travail. En cas de conflit ou de

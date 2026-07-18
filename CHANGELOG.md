@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `docs/roadmap-reconciliation` — outillage du suivi roadmap + backlog Reste-à-faire MVP1
+
+**Modifié**
+- [docs/roadmap/roadmap.md](docs/roadmap/roadmap.md) : **colonne Statut renseignée** par réconciliation
+  code ↔ roadmap (✅ Livré · 🟡 Partiel · ⬜ À faire · ⏳ Reporté) sur les ~179 fonctionnalités du
+  périmètre de lancement ; en-têtes de tableaux réalignés (colonne Statut), objectifs de versions
+  annotés (V0.6 « 100 % livrée », V0.8 « quasi vide — reste-à-faire clé »), **Récapitulatif recalculé**
+  (127 livré / 12 partiel / 39 à faire + tableau « Détail par version ») et décisions bloquantes mises à jour.
+- [CLAUDE.md](CLAUDE.md) + [.claude/commands/commit.md](.claude/commands/commit.md) : nouvelle **étape
+  obligatoire** dans le workflow `/commit` — mettre à jour la **colonne Statut de la roadmap** dès qu'un
+  commit livre/fait avancer une fonctionnalité (sautée si le commit ne touche aucune fonctionnalité roadmap).
+  Section « Suivi — TODO.md & roadmap » clarifiant les deux niveaux (TODO = US actives ; roadmap = photo d'ensemble).
+- [TODO.md](TODO.md) : ajout du backlog **« 🗺️ Reste-à-faire MVP1 »** (US candidates priorisées
+  P0/P1/P2 : CONF-01→07, LANCE-01, MUSC-F1→9, RUN-F1→3, CONTENU-01, NUTR-F1, SOCLE-01) + note de suivi.
+
+**Technique / Notes**
+- Travail **documentaire uniquement** : aucun fichier de code (`.ts`/`.tsx`) touché → lint/typecheck/tests
+  non impactés (non relancés). Aucun secret. Cohérent avec la note « Dernière mise à jour » du TODO
+  (18/07/2026) qui décrivait déjà cette réconciliation, restée jusqu'ici **non commitée**.
+- Ce commit **ne livre aucune fonctionnalité** : l'étape « statut roadmap » du workflow est sans objet
+  (le remplissage du Statut EST la charge utile).
+
 ### 18/07/2026 — `feature/meta09-lissage-courbes` — lissage des courbes par moyenne mobile (brique socle META-09)
 
 **Ajouté**

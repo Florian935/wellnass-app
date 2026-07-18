@@ -91,13 +91,26 @@ En une passe, elle :
 - **met à jour le [TODO.md](TODO.md)** — étape **obligatoire** à chaque commit & push : cocher
   (`[x]`) tout ce qui vient d'être livré, mettre à jour l'état (`[~]` en cours) et la date de
   « Dernière mise à jour » ;
+- **met à jour le statut de la [roadmap](docs/roadmap/roadmap.md)** — étape **obligatoire** dès
+  qu'un commit livre (ou fait avancer) une fonctionnalité de la roadmap : passer la colonne
+  **Statut** de la ligne concernée à ✅ Livré / 🟡 Partiel selon le réel du code (voir la légende
+  et le [Récapitulatif](docs/roadmap/roadmap.md#récapitulatif) — pense à ajuster les compteurs
+  livré/partiel/à faire). Ainsi la roadmap reflète **en permanence** où on en est. Si le commit ne
+  touche aucune fonctionnalité de la roadmap (doc, outillage, fix hors périmètre), sauter cette étape ;
 - crée un **commit conventionnel** en français ;
 - **pousse la branche sur `dev` distant** (fast-forward/merge puis `git push origin dev`).
 
-### Suivi — TODO.md
+### Suivi — TODO.md & roadmap
 [TODO.md](TODO.md) à la racine est le **suivi vivant** de tout ce qui reste à faire. On y
 ajoute les US au fur et à mesure qu'elles entrent dans le pipeline ; `/commit` coche ce qui
 vient d'être livré.
+
+La [roadmap](docs/roadmap/roadmap.md) est la **source de vérité de l'avancement produit** : sa
+colonne **Statut** (✅ Livré · 🟡 Partiel · ⬜ À faire · ⏳ Reporté) reflète l'état réel du code,
+**maintenue à jour par `/commit`** (voir ci-dessus). Deux niveaux complémentaires : le TODO suit
+les US **actives** (grain fin, court terme) ; la roadmap donne la **photo d'ensemble** des ~179
+fonctionnalités du périmètre de lancement (**MVP1 = V1.0 complète**). Réconciliation de référence
+faite le 18/07/2026.
 
 ### Idées — IDEAS.md
 [IDEAS.md](IDEAS.md) à la racine est la **boîte de dépôt** des idées brutes captées au fil de
