@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import {
   addDays,
   isMissed,
@@ -29,6 +30,10 @@ import {
   type PlannedSessionItem,
 } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import {
+  startWorkoutFromSession,
+  useActiveWorkout,
+} from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -58,6 +63,7 @@ export default function PlanningScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
+  const router = useRouter();
 
   const [weekStart, setWeekStart] = useState<string>(() =>
     localDayKey(startOfWeek(new Date())),
@@ -67,6 +73,7 @@ export default function PlanningScreen() {
   const { items } = useWeekPlan(weekStart);
   const { items: missed } = useMissedSessions();
   const { runnerProfile } = useRunnerProfile();
+  const { workout: active } = useActiveWorkout();
 
   const todayKey = localDayKey(new Date());
   const ref5kPaceSPerKm = runnerProfile?.ref5kPaceSPerKm ?? null;
@@ -115,6 +122,25 @@ export default function PlanningScreen() {
       await markPlannedSessionDone(id);
     } catch {
       // Écriture offline-first optimiste.
+    }
+  };
+
+  const onStartSelected = async () => {
+    if (!selected) return;
+    if (active) {
+      // Une seule séance active à la fois : on reprend l'existante plutôt que d'en créer une 2e.
+      closeSheet();
+      router.push('/workout');
+      return;
+    }
+    const sessionId = selected.sessionId;
+    const plannedSessionId = selected.id;
+    closeSheet();
+    try {
+      await startWorkoutFromSession(sessionId, { plannedSessionId });
+      router.push('/workout');
+    } catch {
+      // Écriture offline-first optimiste : échec très improbable.
     }
   };
 
@@ -261,7 +287,17 @@ export default function PlanningScreen() {
             style={[styles.sheet, { backgroundColor: colors.background }]}
             onPress={() => undefined}
           >
-            <Button label={t('planning.markDone')} onPress={() => void onMarkDone()} />
+            {selected?.pillar === 'strength' && selected?.status === 'planned' ? (
+              <Button
+                label={active ? t('workout.resume') : t('planning.start')}
+                onPress={() => void onStartSelected()}
+              />
+            ) : null}
+            <Button
+              label={t('planning.markDoneQuick')}
+              variant="ghost"
+              onPress={() => void onMarkDone()}
+            />
             <Text style={[styles.sheetSection, { color: colors.textMuted }]}>
               {t('planning.reschedule')}
             </Text>
