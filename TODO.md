@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**US Refonte-B — spec validée** : spec « Séance du jour sur le hub muscu »
+*Dernière mise à jour : 18/07/2026 (**US Refonte-B — CODE LIVRÉ (subagent-driven)** : 5 tâches implémentées
+(6 commits `10f267b`→`f5c7027`), revue de code globale **sans bloquant**, typecheck/lint/tests verts, parité i18n.
+Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) → hub muscu carte 3 états (Reprendre /
+Séance du jour / repli Séance libre + coche « faite » + mention « prochaine ») + widget dashboard 7.4 réaligné ;
+`useNextSession` retiré. Aucune migration. **Reste : recette device (A+B ensemble) + relecture Damien.**
+Précédemment : **US Refonte-B — spec validée** : spec « Séance du jour sur le hub muscu »
 écrite ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`),
 **validée par Florian** + **revue de spec Approved** (fix : requête tous statuts pour la coche « faite » ;
 `programName` du programme de l'occurrence). Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage
@@ -407,9 +412,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   **Spec ✅ validée Florian + revue Approved**
   ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`).
   Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » +
-  réalignement du widget dashboard 7.4. **Aucune migration**. **Spec ✅ + plan ✅ + maquette ✅** validés Florian
-  ([plan](docs/plans/refonte-muscu-b-seance-du-jour-hub.md) · [maquette](design/refonte-muscu-b/refonte-muscu-b.html)).
-  → **implémentation subagent-driven en cours**.
+  réalignement du widget dashboard 7.4. **Aucune migration**. **CODE LIVRÉ** (subagent-driven, 6 commits
+  `10f267b`→`f5c7027`, revue de code globale sans bloquant ; typecheck/lint/tests verts). Spec ✅ + plan ✅ +
+  maquette ✅ validés Florian. **Reste : recette device (AVEC US-A) + relecture Damien** (passer `[x]` après recette).
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
   par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
   Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter

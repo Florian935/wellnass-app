@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-b` — implémentation US Refonte-B (séance du jour sur le hub)
+
+> Implémentation subagent-driven (6 commits `10f267b`→`f5c7027`), revue de code globale **sans bloquant**.
+> typecheck + lint + tests **verts**, parité i18n FR/EN. **Aucune migration.**
+
+**Ajouté**
+- **Hook `useTodaySession('strength')`** ([dashboard-repository.ts](apps/mobile/src/data/repositories/dashboard-repository.ts)) :
+  source de vérité unique de la « séance du jour ». Lit l'occurrence `planned_sessions` du jour (**tous statuts** →
+  règle `planned` d'abord → sinon `done`), la **prochaine future**, l'état séance active ; `programName` résolu
+  depuis le programme **de l'occurrence** (jointure `program_translations`).
+- **Hub muscu** ([(tabs)/strength.tsx](apps/mobile/src/app/(tabs)/strength.tsx)) : carte d'action à 3 états —
+  Reprendre / **Séance du jour** (« Démarrer » **lié** `plannedSessionId`) / repli **Séance libre** + coche
+  **« ✓ Séance du jour faite »** + mention **« Prochaine : jj/mm · … »** (→ planning). Les 2 lignes coexistent.
+
+**Modifié**
+- **Widget dashboard 7.4** ([TodaySessionCard.tsx](apps/mobile/src/components/dashboard/TodaySessionCard.tsx)) :
+  consomme `useTodaySession` ; démarrage désormais **lié** (corrige la lacune post-US-A où le widget ne marquait
+  pas l'occurrence) ; variantes compact/full + état vide « Créer un programme » conservées.
+- i18n FR/EN : `home.today.next` / `doneToday` / `noneToday`.
+
+**Supprimé**
+- `useNextSession` + type `NextSessionState` (remplacés par `useTodaySession`) ; import `useProgramDetail`
+  devenu inutile ; mock du test `StreakCard.test.tsx` renommé. Grep `useNextSession` → 0.
+
+**Technique / Notes**
+- Offline-first (lecture locale `useQuery`), aucune écriture nouvelle (démarrage géré par US-A). Aucune migration.
+- Points **mineurs** relevés en revue (non bloquants, non corrigés) : (1) repli « Séance N » figé à N=1 pour les
+  lignes coche/prochaine quand `sessions.name` est nul (rare) ; (2) le hub ne gate pas sur `isLoading` → bref flash
+  possible « Séance libre » → « Séance du jour » au 1ᵉʳ rendu (négligeable en SQLite local, comportement pré-existant).
+- **Reste** : recette device (**avec US-A**) + relecture Damien. US-B non cochée `[x]` avant recette.
+
 ### 18/07/2026 — `feature/refonte-muscu-b` — maquette US Refonte-B
 
 **Ajouté**
