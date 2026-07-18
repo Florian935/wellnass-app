@@ -1,4 +1,4 @@
-import { buildPaceYAxis } from '@wellness/shared';
+import { buildPaceYAxis, movingAverage } from '@wellness/shared';
 import { useState } from 'react';
 import { Dimensions, type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
@@ -44,14 +44,35 @@ type ProgressLineChartProps = {
    * pour que chaque point tombe pile sur son libellé (ex. allure en secondes → M:SS).
    */
   formatYLabel?: (value: number) => string;
+  /**
+   * Opt-in : superpose la courbe brute (estompée, sans zone) et la courbe lissée
+   * (accentuée, avec zone) calculée via `movingAverage`. Défaut `false` → rendu
+   * strictement identique à la courbe brute seule. Sans effet si la série a moins de
+   * 4 points (repli automatique sur le rendu brut).
+   */
+  smooth?: boolean;
 };
+
+/** Fenêtre de lissage auto : impaire, bornée [3,7], selon la longueur de série. */
+function autoSmoothWindow(length: number): number {
+  const rounded = Math.round(length / 5);
+  const odd = rounded % 2 === 1 ? rounded : rounded + 1;
+  return Math.min(7, Math.max(3, odd));
+}
 
 /**
  * Courbe de progression thémée — wraps LineChart de react-native-gifted-charts.
  * Composant présentationnel : aucune récupération de données.
  * Si `data` est vide, rend null.
  */
-export function ProgressLineChart({ data, title, unit, width, formatYLabel }: ProgressLineChartProps) {
+export function ProgressLineChart({
+  data,
+  title,
+  unit,
+  width,
+  formatYLabel,
+  smooth,
+}: ProgressLineChartProps) {
   const { colors } = useTheme();
   // Largeur réelle du conteneur (mesurée), pour ne jamais déborder de la carte.
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -78,6 +99,19 @@ export function ProgressLineChart({ data, title, unit, width, formatYLabel }: Pr
   // aux points. `buildPaceYAxis` renvoie l'échelle ET les libellés sur la même plage.
   const yAxis = formatYLabel
     ? buildPaceYAxis(chartData.map((d) => d.value), NO_OF_SECTIONS, formatYLabel)
+    : null;
+
+  // Overlay lissé (opt-in) : le brut garde l'échelle (yAxis ci-dessus, calculé sur le
+  // brut) ; on repose la série lissée sur le même axe. Repli silencieux sur le brut seul
+  // si la série est trop courte pour qu'une moyenne mobile ait du sens.
+  const canSmooth = smooth === true && chartData.length >= 4;
+  const smoothedData = canSmooth
+    ? movingAverage(chartData.map((d) => d.value), autoSmoothWindow(chartData.length)).map(
+        (value, i) => ({
+          value,
+          label: chartData[i]!.label,
+        }),
+      )
     : null;
 
   return (
@@ -115,6 +149,21 @@ export function ProgressLineChart({ data, title, unit, width, formatYLabel }: Pr
               yAxisOffset: yAxis.yAxisOffset,
               stepValue: yAxis.stepValue,
               yAxisLabelTexts: yAxis.labels,
+            }
+          : {})}
+        {...(smoothedData
+          ? {
+              data2: smoothedData,
+              color1: colors.textMuted,
+              dataPointsColor1: colors.textMuted,
+              areaChart1: false,
+              color2: colors.accent,
+              dataPointsColor2: colors.accent,
+              areaChart2: true,
+              startFillColor2: colors.accent,
+              endFillColor2: colors.surface,
+              startOpacity2: 0.25,
+              endOpacity2: 0.02,
             }
           : {})}
         isAnimated

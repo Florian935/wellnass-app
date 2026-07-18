@@ -257,6 +257,7 @@ function PaceSection() {
           data={chartData}
           unit={paceUnitLabel}
           formatYLabel={(s) => formatPaceMMSS(s, '')}
+          smooth
         />
       )}
     </Card>

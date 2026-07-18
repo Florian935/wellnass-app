@@ -97,7 +97,7 @@ export default function NutritionStatsScreen() {
       {weightData.length >= 2 ? (
         <Card>
           <Segment options={Object.keys(WEIGHT_RANGES) as WeightRange[]} value={weightRange} onChange={setWeightRange} label={(o) => t(`stats.ranges.${o}`)} />
-          <ProgressLineChart data={weightData} unit={units.weightSymbol} />
+          <ProgressLineChart data={weightData} unit={units.weightSymbol} smooth />
         </Card>
       ) : null}
 
@@ -120,7 +120,7 @@ export default function NutritionStatsScreen() {
             <Text style={[styles.macroLine, { color: colors.textMuted }]}>
               {t('nutrition.macros.protein')} {avg.proteinG} g · {t('nutrition.macros.carbs')} {avg.carbsG} g · {t('nutrition.macros.fat')} {avg.fatG} g
             </Text>
-            {intakeData.length >= 2 ? <ProgressLineChart data={intakeData} unit={t('nutrition.kcal')} /> : null}
+            {intakeData.length >= 2 ? <ProgressLineChart data={intakeData} unit={t('nutrition.kcal')} smooth /> : null}
           </>
         )}
       </Card>

@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/meta09-lissage-courbes` — lissage des courbes par moyenne mobile (brique socle META-09)
+
+**Ajouté**
+- [moving-average.ts](packages/shared/src/moving-average.ts) : brique pure `movingAverage(values, window)`
+  — moyenne mobile **centrée** (fenêtre en points, bords rétrécis), copie si `window ≤ 1` ou
+  `values.length < 2`. Réutilisable par les courbes et les projections futures (META-14/15/16).
+- [ProgressLineChart](apps/mobile/src/components/charts/ProgressLineChart.tsx) : prop opt-in `smooth`
+  — superpose la courbe **brute estompée** (`data`, sans zone) et la courbe **lissée accentuée**
+  (`data2`, avec zone), fenêtre **auto-adaptée** (impaire, bornée [3,7]), **seuil ≥ 4 points** (sinon
+  brut seul), axe Y inchangé (calculé sur le brut). Rétrocompatible : `smooth` off → rendu identique.
+
+**Modifié**
+- Lissage activé sur **4 courbes** : poids + apports kcal ([nutrition-stats.tsx](apps/mobile/src/app/nutrition-stats.tsx)),
+  allure ([running-history](apps/mobile/src/app/running-history/index.tsx)), progression charge/volume/1RM
+  ([progress](apps/mobile/src/app/progress/index.tsx)).
+
+**Technique / Notes**
+- Maquette légère validée Florian ([design/meta09-lissage-courbes](design/meta09-lissage-courbes/meta09-lissage-courbes.html)).
+- **Aucune** migration, **aucun** contrôle ajouté (fenêtre fixe auto), **aucune** i18n nouvelle —
+  100 % client offline (reload Metro). API `gifted-charts` (data2/areaChart1-2/color1-2) vérifiée sur la
+  version installée. typecheck ✅ · lint ✅ · **790 tests ✅** (shared 746 + mobile 44). Catalogue
+  META-09 → ✅. Spec 1 passe + plan 1 passe (approuvé) + revues par tâche + revue finale *prête à merger*.
+  **Reste : recette device (4 courbes, lissé cohérent + brut visible, pas de glitch d'axe allure) + relecture Damien.**
+
 ### 18/07/2026 — `feature/meta08-tendance-regression-lineaire` — moteur de tendance par régression linéaire (brique socle META-08)
 
 **Ajouté**

@@ -419,6 +419,7 @@ function ExerciseSection({
         data={chartData}
         title={t(`progress.curve.metricLabel.${metric}`)}
         unit={units.weightSymbol}
+        smooth
       />
     );
   };

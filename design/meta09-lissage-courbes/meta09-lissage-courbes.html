@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>META-09 — Lissage des courbes (maquette légère)</title>
+<style>
+  :root {
+    --bordeaux: #6b0028;
+    --dore: #c9a96e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #ece7dc;
+    color: #1c1c1c;
+    padding: 24px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; color: var(--bordeaux); }
+  .sub { color: #6b6257; margin: 0 0 24px; font-size: 14px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+  .panel {
+    flex: 1 1 340px;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  }
+  .panel.light { background: #fffcf5; color: #1c1c1c; }
+  .panel.dark  { background: #171310; color: #f3ede1; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 2px; opacity: .7; font-weight: 600; }
+  .card {
+    border-radius: 14px;
+    padding: 14px 14px 8px;
+    margin-top: 12px;
+  }
+  .light .card { background: #fbf6ec; border: 1px solid #eadfca; }
+  .dark  .card { background: #221b16; border: 1px solid #33291f; }
+  .card-title { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; margin: 6px 2px 2px; opacity: .85; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 22px; height: 0; border-top-width: 3px; border-top-style: solid; display: inline-block; }
+  .swatch.raw { border-top-width: 2px; border-top-style: solid; opacity: .5; }
+  .note { font-size: 13px; margin-top: 22px; padding: 14px 16px; border-radius: 12px; background: #fffcf5; border-left: 4px solid var(--dore); }
+  .note b { color: var(--bordeaux); }
+  svg { width: 100%; height: auto; display: block; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0e0b09; color: #f3ede1; }
+    .note { background: #171310; color: #f3ede1; }
+  }
+</style>
+</head>
+<body>
+  <h1>META-09 — Lissage des courbes par moyenne mobile</h1>
+  <p class="sub">Maquette légère · superposition <b>brut estompé</b> + <b>lissé accentué</b> · fenêtre en points, centrée, auto-adaptée · thèmes clair &amp; sombre.</p>
+
+  <div class="grid">
+    <!-- ===================== THEME CLAIR ===================== -->
+    <div class="panel light">
+      <h2>Thème clair</h2>
+
+      <div class="card">
+        <p class="card-title">Poids (kg) — série dense</p>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Courbe de poids brute et lissée">
+          <!-- gridlines -->
+          <g stroke="#eadfca" stroke-width="1">
+            <line x1="34" y1="20" x2="352" y2="20"/>
+            <line x1="34" y1="55" x2="352" y2="55"/>
+            <line x1="34" y1="90" x2="352" y2="90"/>
+            <line x1="34" y1="125" x2="352" y2="125"/>
+          </g>
+          <g fill="#8a8072" font-size="9" text-anchor="end">
+            <text x="30" y="23">81</text>
+            <text x="30" y="58">80</text>
+            <text x="30" y="93">79</text>
+            <text x="30" y="128">78</text>
+          </g>
+          <!-- RAW faint -->
+          <polyline fill="none" stroke="#9a9081" stroke-width="1.5" opacity="0.5"
+            points="40,40 58,70 76,52 94,88 112,64 130,96 148,78 166,104 184,86 202,110 220,92 238,116 256,100 274,120 292,108 310,124 328,114 346,122"/>
+          <g fill="#9a9081" opacity="0.5">
+            <circle cx="40" cy="40" r="1.6"/><circle cx="76" cy="52" r="1.6"/><circle cx="112" cy="64" r="1.6"/><circle cx="148" cy="78" r="1.6"/><circle cx="184" cy="86" r="1.6"/><circle cx="220" cy="92" r="1.6"/><circle cx="256" cy="100" r="1.6"/><circle cx="292" cy="108" r="1.6"/><circle cx="328" cy="114" r="1.6"/>
+          </g>
+          <!-- SMOOTHED bold + area -->
+          <path d="M40,55 C70,60 90,70 130,82 C170,94 210,100 260,109 C300,116 330,119 346,120 L346,140 L40,140 Z" fill="#6b0028" opacity="0.10"/>
+          <polyline fill="none" stroke="#6b0028" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+            points="40,55 58,60 76,64 94,70 112,74 130,82 148,86 166,92 184,95 202,100 220,103 238,107 256,109 274,112 292,114 310,117 328,119 346,120"/>
+        </svg>
+        <div class="legend">
+          <span><i class="swatch raw" style="border-color:#9a9081"></i> brut (pesées)</span>
+          <span><i class="swatch" style="border-color:#6b0028"></i> lissé (tendance)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">Allure (min/km) — série éparse</p>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Courbe d'allure brute et lissée">
+          <g stroke="#eadfca" stroke-width="1">
+            <line x1="34" y1="20" x2="352" y2="20"/>
+            <line x1="34" y1="60" x2="352" y2="60"/>
+            <line x1="34" y1="100" x2="352" y2="100"/>
+          </g>
+          <g fill="#8a8072" font-size="9" text-anchor="end">
+            <text x="30" y="23">6:00</text>
+            <text x="30" y="63">5:30</text>
+            <text x="30" y="103">5:00</text>
+          </g>
+          <!-- RAW faint (sparse points) -->
+          <polyline fill="none" stroke="#9a9081" stroke-width="1.5" opacity="0.5"
+            points="46,44 96,86 146,58 196,96 246,74 296,104 346,88"/>
+          <g fill="#9a9081" opacity="0.6">
+            <circle cx="46" cy="44" r="2.4"/><circle cx="96" cy="86" r="2.4"/><circle cx="146" cy="58" r="2.4"/><circle cx="196" cy="96" r="2.4"/><circle cx="246" cy="74" r="2.4"/><circle cx="296" cy="104" r="2.4"/><circle cx="346" cy="88" r="2.4"/>
+          </g>
+          <!-- SMOOTHED bold -->
+          <polyline fill="none" stroke="#6b0028" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+            points="46,58 96,66 146,74 196,78 246,86 296,90 346,94"/>
+        </svg>
+        <div class="legend">
+          <span><i class="swatch raw" style="border-color:#9a9081"></i> brut (courses)</span>
+          <span><i class="swatch" style="border-color:#6b0028"></i> lissé (tendance)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== THEME SOMBRE ===================== -->
+    <div class="panel dark">
+      <h2>Thème sombre</h2>
+
+      <div class="card">
+        <p class="card-title">Poids (kg) — série dense</p>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Courbe de poids brute et lissée (sombre)">
+          <g stroke="#33291f" stroke-width="1">
+            <line x1="34" y1="20" x2="352" y2="20"/>
+            <line x1="34" y1="55" x2="352" y2="55"/>
+            <line x1="34" y1="90" x2="352" y2="90"/>
+            <line x1="34" y1="125" x2="352" y2="125"/>
+          </g>
+          <g fill="#9a8f7d" font-size="9" text-anchor="end">
+            <text x="30" y="23">81</text>
+            <text x="30" y="58">80</text>
+            <text x="30" y="93">79</text>
+            <text x="30" y="128">78</text>
+          </g>
+          <polyline fill="none" stroke="#8b8172" stroke-width="1.5" opacity="0.55"
+            points="40,40 58,70 76,52 94,88 112,64 130,96 148,78 166,104 184,86 202,110 220,92 238,116 256,100 274,120 292,108 310,124 328,114 346,122"/>
+          <path d="M40,55 C70,60 90,70 130,82 C170,94 210,100 260,109 C300,116 330,119 346,120 L346,140 L40,140 Z" fill="#c9a96e" opacity="0.12"/>
+          <polyline fill="none" stroke="#d9b878" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+            points="40,55 58,60 76,64 94,70 112,74 130,82 148,86 166,92 184,95 202,100 220,103 238,107 256,109 274,112 292,114 310,117 328,119 346,120"/>
+        </svg>
+        <div class="legend">
+          <span><i class="swatch raw" style="border-color:#8b8172"></i> brut (pesées)</span>
+          <span><i class="swatch" style="border-color:#d9b878"></i> lissé (tendance)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">Allure (min/km) — série éparse</p>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Courbe d'allure brute et lissée (sombre)">
+          <g stroke="#33291f" stroke-width="1">
+            <line x1="34" y1="20" x2="352" y2="20"/>
+            <line x1="34" y1="60" x2="352" y2="60"/>
+            <line x1="34" y1="100" x2="352" y2="100"/>
+          </g>
+          <g fill="#9a8f7d" font-size="9" text-anchor="end">
+            <text x="30" y="23">6:00</text>
+            <text x="30" y="63">5:30</text>
+            <text x="30" y="103">5:00</text>
+          </g>
+          <polyline fill="none" stroke="#8b8172" stroke-width="1.5" opacity="0.55"
+            points="46,44 96,86 146,58 196,96 246,74 296,104 346,88"/>
+          <g fill="#8b8172" opacity="0.7">
+            <circle cx="46" cy="44" r="2.4"/><circle cx="96" cy="86" r="2.4"/><circle cx="146" cy="58" r="2.4"/><circle cx="196" cy="96" r="2.4"/><circle cx="246" cy="74" r="2.4"/><circle cx="296" cy="104" r="2.4"/><circle cx="346" cy="88" r="2.4"/>
+          </g>
+          <polyline fill="none" stroke="#d9b878" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"
+            points="46,58 96,66 146,74 196,78 246,86 296,90 346,94"/>
+        </svg>
+        <div class="legend">
+          <span><i class="swatch raw" style="border-color:#8b8172"></i> brut (courses)</span>
+          <span><i class="swatch" style="border-color:#d9b878"></i> lissé (tendance)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <b>Principe.</b> Le <b>brut</b> reste visible (trait fin estompé + points) pour ne pas masquer les pics/creux réels ;
+    le <b>lissé</b> (trait accentué, couleur d'accent, avec léger dégradé de zone) donne la tendance de fond.
+    Fenêtre <b>en points, centrée</b>, <b>auto-adaptée</b> à la longueur de la série (~3 à 7 points, réduite aux bords).
+    Séries <b>&lt; 4 points</b> → brut seul (pas de faux lissage). Aucun contrôle ajouté, aucune nouvelle section (ADR-007, Tier 1).
+  </p>
+</body>
+</html>
