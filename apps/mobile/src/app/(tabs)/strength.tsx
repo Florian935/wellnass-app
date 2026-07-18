@@ -130,7 +130,8 @@ export default function StrengthScreen() {
                   })}
                 </Text>
               </View>
-            ) : today.state === 'none' && today.nextUpcoming ? (
+            ) : null}
+            {today.state === 'none' && today.nextUpcoming ? (
               <Pressable
                 onPress={() => router.push('/planning')}
                 style={styles.todayNoteRow}
