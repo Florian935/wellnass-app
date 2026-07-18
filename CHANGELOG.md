@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `fix/note-course-clavier-invisible` — note facultative visible sous le clavier (Android)
+
+**Corrigé**
+- Un champ de saisie situé en bas d'écran (typiquement la **note facultative après une course**,
+  écran de résumé de course) restait **masqué par le clavier** pendant la saisie sur Android : on
+  tapait sans voir le texte. Cause : le `KeyboardAvoidingView` partagé de
+  [FormScreen](apps/mobile/src/components/FormScreen.tsx) avait `behavior={undefined}` sur Android
+  (actif seulement sur iOS avec `'padding'`) → aucune remontée du contenu au-dessus du clavier.
+
+**Modifié**
+- `FormScreen` : `behavior={Platform.OS === 'ios' ? 'padding' : 'height'}` — l'évitement du clavier
+  est désormais actif sur Android aussi. Corrige du même coup **tous les formulaires longs** partageant
+  ce conteneur (8 écrans).
+
+**Technique / Notes**
+- **100 % JS, aucune migration.** typecheck ✅ · lint ✅. **Reste : recette device + relecture Damien.**
+
 ### 17/07/2026 — `fix/admin-piliers-affichage` — back-office `/users` : colonne « Piliers » affichée correctement
 
 _Commit précédent : `054e510`._
