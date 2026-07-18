@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**Chantier refonte Muscu ouvert** : audit des flux du pilier Musculation
+*Dernière mise à jour : 18/07/2026 (**US Refonte-A — spec validée** : spec fonctionnelle « Unifier programme →
+planning → séance » écrite ([refonte-muscu-a-…](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md),
+`feature/refonte-muscu-a`), **validée par Florian** et **revue de spec Approved** (1 itération : gating « Démarrer »
+muscu-spécifique). Fusion activer/planifier + démarrer depuis le calendrier + lien de complétion explicite
+(migration `planned_session_id` à venir) + popup de changement de programme ; pilier-agnostique muscu+running.
+Prochaine étape : **plan d'implémentation** (writing-plans). Précédemment : **Chantier refonte Muscu ouvert** : audit des flux du pilier Musculation
 figé dans [docs/refonte-muscu/audit-flux.md](docs/refonte-muscu/audit-flux.md) (5 problèmes de logique de flux,
 validés par Florian, avec preuves fichier:ligne et gravité [S]/[P]) → section **« 🔧 Chantier refonte Muscu »**
 ajoutée au TODO : 4 US **A** (unifier programme→planning→séance, socle) → **B** (séance du jour sur le hub) →
@@ -366,10 +371,13 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 > **structurels** (déjà propagés à Running) **avant** de poursuivre la roadmap. Chaque US suit le
 > workflow **spec → plan → design → validation → code**. Ordre : A → B → C → D.
 
-- [ ] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — démarrer une vraie
+- [~] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — démarrer une vraie
   séance **depuis le calendrier** ; une séance faite **met à jour** la séance planifiée (fait) ;
   clarifier « **activer** » vs « **planifier** » un programme. Corrige les problèmes 1 + 2 de l'audit.
-  ⚠️ Bénéficie aussi à Running (même modèle). Spec → plan → design → validation avant code.
+  ⚠️ Bénéficie aussi à Running (même modèle). **Spec ✅ validée Florian + revue Approved**
+  ([spec](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md),
+  `feature/refonte-muscu-a`). ⚠️ Portera une **migration** `planned_session_id` sur `workouts` (checkpoint
+  cloud). Suite : **plan → design → validation avant code**.
 - [ ] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
   hub muscu (aujourd'hui 4-5 taps). Corrige le problème 3. **Dépend de US-A** (lien planning ↔ séance).
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série

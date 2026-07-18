@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-a` — spec US Refonte-A (unifier programme → planning → séance)
+
+**Ajouté**
+- [docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md) :
+  spec fonctionnelle de l'US-A du chantier refonte Muscu. Reprend le différé de l'US 3.9
+  (« démarrer depuis le planning » + « lien de complétion automatique ») et **fusionne** « activer » /
+  « planifier » un programme. 4 décisions actées (brainstorming Florian) : (1) un seul concept
+  « programme actif = au calendrier » via un geste « Démarrer ce programme » ; (2) action principale
+  « Démarrer la séance » sur une occurrence + secondaires Reporter/Sauter/Marquer-fait ; (3) complétion
+  par **lien explicite** (migration `planned_session_id` sur `workouts` → séance terminée = occurrence
+  `done`) ; (4) popup de changement de programme (retirer/garder les occurrences futures). Pilier-agnostique
+  (muscu + running), offline-first, i18n FR/EN.
+
+**Technique / Notes**
+- **Spec uniquement** (aucun code) → lint/typecheck/tests non impactés. Aucun secret. Ne livre aucune
+  fonctionnalité → aucun Statut roadmap modifié.
+- Revue de spec (subagent) **Approved** après 1 itération : correction du gating « Démarrer » (muscu-spécifique
+  `startWorkoutFromSession` → masqué sur occurrences running, sauf option (a) du §7) pour éviter un workout vide.
+- **Point à trancher au plan** (§7) : inclure ou non le démarrage d'une course planifiée (tracker running) dans
+  US-A — défaut **(b)** = lien de complétion muscu seul, adaptation running en suivant.
+- ⚠️ L'implémentation portera une **migration** `planned_session_id` (checkpoint cloud). Prochaine étape : **plan**.
+
 ### 18/07/2026 — `docs/refonte-muscu` — audit des flux Muscu + ouverture du chantier de refonte
 
 **Ajouté**
