@@ -1,4 +1,5 @@
-import { addDays, localDayKey, startOfWeek } from './date';
+import { addDays, daysBetween, localDayKey, startOfWeek } from './date';
+import { linearRegression } from './regression';
 
 export interface StatRun {
   finishedAtDayKey: string; // AAAA-MM-JJ (jour local de fin)
@@ -48,14 +49,20 @@ export function paceTrendPoints(runs: StatRun[], days: number, todayKey: string)
     .sort((a, b) => (a.dayKey < b.dayKey ? -1 : a.dayKey > b.dayKey ? 1 : 0));
 }
 
+/**
+ * Tendance d'allure sur une série datée (seuil ±2 % sur la fenêtre observée).
+ * Adossée à la régression linéaire (META-08), X = jours écoulés depuis le 1er point.
+ * Diviseur = moyenne de la série (ancien : moyenne de la 1ʳᵉ moitié) — voir spec §5.2/§6.
+ */
 export function paceTrend(points: PaceTrendPoint[]): PaceTrendKind {
   if (points.length < 2) return 'stable';
-  const n = points.length;
-  const firstHalf = points.slice(0, Math.floor(n / 2));
-  const secondHalf = points.slice(Math.ceil(n / 2));
-  const avg = (xs: PaceTrendPoint[]) => xs.reduce((s, p) => s + p.paceSPerKm, 0) / xs.length;
-  const m1 = avg(firstHalf), m2 = avg(secondHalf);
-  const ratio = (m2 - m1) / m1;
+  const base = points.reduce((min, p) => (p.dayKey < min ? p.dayKey : min), points[0]!.dayKey);
+  const last = points.reduce((max, p) => (p.dayKey > max ? p.dayKey : max), points[0]!.dayKey);
+  const fit = linearRegression(points.map((p) => ({ x: daysBetween(base, p.dayKey), y: p.paceSPerKm })));
+  if (fit === null) return 'stable';
+  const meanPace = points.reduce((s, p) => s + p.paceSPerKm, 0) / points.length;
+  if (meanPace === 0) return 'stable';
+  const ratio = (fit.slope * daysBetween(base, last)) / meanPace; // changement relatif sur la fenêtre
   if (ratio < -0.02) return 'improving';
   if (ratio > 0.02) return 'declining';
   return 'stable';

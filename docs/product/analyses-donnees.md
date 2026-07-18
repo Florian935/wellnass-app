@@ -294,7 +294,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | META-05 | 🟡 | Score d'intégration (nb de piliers activés) | Combien de piliers réellement utilisés (1/2/3) + taux de consultation des vues croisées. | `pillar.ts`, `user_settings`, télémétrie | stat | mensuel/cohorte | Valider le pari « plus de piliers = meilleure rétention ». | metriques §1-3 |
 | META-06 | ✅ | Comparaison période N vs N-1 (delta) | `DeltaBadge` « vs période précédente » (flèche + %, ton neutre) sur **3 surfaces** : running (distance/temps/nb, sem/mois), nutrition (kcal moyens 7/30 j), muscu (volume hebdo total). Brique pure `percentChange` + `previousPeriodTodayKey` ; « nouveau » si pas de base. | `aggregateRunStats`, `averageIntake`, volume muscu agrégé | stat | sem vs sem / mois vs mois | Feedback de progression concret sur l'effort récent. | **META-06 (livrée · recette device OK 16/07/2026)** |
 | META-07 | 🟡 | Rappels contextuels intelligents (multi-signaux) | Décision de notification selon le contexte (séance non faite, repas non loggé, streak en danger). Rappel streak codé, autres déclencheurs à ajouter. | `planned_sessions`, `food_entries`, streak + `NotificationPrefs` | alerte | quotidien (DND) | Réengager au bon moment sans spammer. | 2.6/2.8 |
-| META-08 | 🆕 | Tendance générique par régression linéaire (pente + R²) | Moteur unique par moindres carrés (pente, intercept, R²) pour toute série. Généralise les 2 heuristiques moitié-période. | toute série (volume, records, pace, poids, kcal) | stat | glissant 7/30/90 j | Un composant de tendance réutilisable + fondation des projections. | généralise 5.28/5.29 |
+| META-08 | ✅ | Tendance générique par régression linéaire (pente + R²) | **Livré** : moteur pur `linearRegression` (moindres carrés → pente/intercept/R²/`null` sur cas dégénéré, `packages/shared/src/regression.ts`) + helper `daysBetween` (DST-safe). `weightTrend` et `paceTrend` **rebranchés** dessus (X = jours écoulés, verdict = pente × fenêtre), iso-comportement sur séries monotones (goldens de non-régression ; divergences non-monotones figées). R² calculé, non exposé. Débloque les projections META-14/15/16. | toute série (volume, records, pace, poids, kcal) | stat | glissant 7/30/90 j | Un composant de tendance réutilisable + fondation des projections. | **META-08 (livrée · reste recette device)** |
 | META-09 | 🆕 | Lissage par moyenne mobile (7/30 j) | Débruite les points (poids, kcal, allures) par moyenne glissante centrée. | `body_weight_entries`, `food_entries`, `runs`, volume/jour | courbe | glissant 7/30 j | Éviter de sur-réagir à une pesée/un repas isolé. | prolonge 5.28/4.24 |
 | META-10 | 🆕 | Détection d'anomalie / valeur aberrante (z-score) | Repère une valeur >2σ de la moyenne perso (fautes de frappe poids×10, journée extrême). | workouts/runs/food_entries/poids, moyenne+σ glissants | alerte | baseline 30 j | Qualité de données + insight. | réutilise garde-fou GPS |
 | META-11 | 🆕 | Détection de rupture / changement de régime | Point de bascule dans une série (progression stoppée, poids qui cesse de descendre) par comparaison des pentes avant/après. | `personal_records`, `body_weight_entries`, `runs.paceSPerKm` | insight | glissant 6-12 sem | Repérer objectivement QUAND quelque chose a changé. | detection-plateau |
@@ -342,10 +342,11 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 Sélection au meilleur **ratio valeur/effort pour démarrer**, en privilégiant ce qui s'appuie sur
 des **données et des briques déjà présentes** (✅ à consolider → ⏳ cadré → 🆕 à faible coût).
 
-> **MàJ 16/07/2026** — plusieurs de ces pistes sont désormais **livrées ET recettées device** (voir
-> ✅ dans les tables) : **1 (MUSC-04)**, **2 (MUSC-05)**, **6 (META-06)**, **11 (RN-01/RN-02)** — ainsi
-> que **MN-02 (4.32)**, hors liste. Elles sont conservées ci-dessous **barrées** pour la trace ; les
-> candidats encore à démarrer sont les autres (3, 4, 5, 7, 8, 9, 10, 12).
+> **MàJ 18/07/2026** — plusieurs de ces pistes sont désormais **livrées** (voir ✅ dans les tables) :
+> **1 (MUSC-04)**, **2 (MUSC-05)**, **6 (META-06)**, **11 (RN-01/RN-02)** recettées device ; **4
+> (NUTR-10)**, **5 (NUTR-17)**, **9 (MR-06)** et **7 (META-08)** livrées (reste recette) — ainsi que
+> **MN-02 (4.32)**, hors liste. Conservées ci-dessous **barrées** pour la trace ; les candidats encore à
+> démarrer sont les autres (**3 (RUN-05)**, **8 (META-09)**, **10 (MN-13)**, **12 (META-19)**).
 
 1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.
@@ -360,8 +361,9 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    `food_entries.logDate` ; conditionne la fiabilité de toutes les autres stats nutrition.
 6. ~~**META-06 — Comparaison période N vs N-1 (delta)**~~ ✅ **livrée + recette OK** (`DeltaBadge` sur
    running / nutrition / muscu). `aggregateRunStats` + `averageIntake` + `percentChange`.
-7. **META-08 — Tendance générique par régression linéaire (pente + R²)** (🆕). Brique socle
-   réutilisable partout ; remplace deux heuristiques et débloque toutes les projections (META-14/15/16).
+7. ~~**META-08 — Tendance générique par régression linéaire (pente + R²)**~~ ✅ **livrée** (reste
+   recette). Moteur `linearRegression` + `daysBetween` (shared, purs, testés) ; `weightTrend`/`paceTrend`
+   rebranchés, iso-comportement ; débloque toutes les projections (META-14/15/16).
 8. **META-09 — Lissage par moyenne mobile** (🆕). Petit utilitaire pur, immédiatement utile aux
    courbes de poids et d'allure existantes.
 9. ~~**MR-06 — Volume horaire total d'entraînement**~~ ✅ **livré** (reste recette). Widget `training-time`

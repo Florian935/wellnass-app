@@ -1,5 +1,50 @@
 import { describe, expect, it } from 'vitest';
-import { computeDeficitVolumeAlert } from './bodyweight';
+import { computeDeficitVolumeAlert, weightTrend } from './bodyweight';
+
+// Oracle = ancienne implémentation (delta premier↔dernier, seuil ±0,3 kg).
+function oldWeightTrend(weights: readonly number[]): 'up' | 'down' | 'stable' {
+  if (weights.length < 2) return 'stable';
+  const delta = weights[weights.length - 1]! - weights[0]!;
+  if (delta > 0.3) return 'up';
+  if (delta < -0.3) return 'down';
+  return 'stable';
+}
+
+// Construit des entrées datées à jours consécutifs à partir d'un tableau de poids.
+function dated(weights: readonly number[]): { logDate: string; weightKg: number }[] {
+  return weights.map((weightKg, i) => ({
+    logDate: `2026-07-${String(i + 1).padStart(2, '0')}`,
+    weightKg,
+  }));
+}
+
+describe('weightTrend (refacto régression, iso-comportement)', () => {
+  const series: readonly number[][] = [
+    [80, 79.5, 79, 78.4],   // monotone ↓
+    [70, 70.4, 71, 71.6],   // monotone ↑
+    [75, 75.1, 74.9, 75],   // plat (bruit < seuil)
+    [82, 81.8, 81.9, 81.5], // quasi-linéaire ↓
+    [68],                   // < 2 points
+  ];
+  for (const s of series) {
+    it(`concorde avec l'oracle : [${s.join(', ')}]`, () => {
+      expect(weightTrend(dated(s))).toBe(oldWeightTrend(s));
+    });
+  }
+
+  // divergence attendue : non-monotonie, robuste (loin du seuil ±0,3 kg, pas un artefact flottant).
+  // Oracle (delta 1er↔dernier) : 80 - 81 = -1 kg → 'down'. Nouveau (pente régression sur la
+  // fenêtre) : la série remonte nettement au milieu (76→84) → pente positive → slope × span
+  // ≈ +1,5 kg, largement au-dessus du seuil de 0,3 → 'up'. Valeur RÉELLE figée ci-dessous.
+  it("divergence attendue : [81, 76, 84, 80] (non monotone) → 'up' sous le nouveau moteur", () => {
+    expect(weightTrend(dated([81, 76, 84, 80]))).toBe('up');
+  });
+
+  it('série vide → stable', () => expect(weightTrend([])).toBe('stable'));
+
+  it('un seul jour (variance x nulle possible) → stable', () =>
+    expect(weightTrend([{ logDate: '2026-07-01', weightKg: 80 }])).toBe('stable'));
+});
 
 describe('computeDeficitVolumeAlert', () => {
   const base = { targetKcal: 2500, weeklyVolume: 9000 }; // volume ≥ 8000

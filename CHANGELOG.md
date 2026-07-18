@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/meta08-tendance-regression-lineaire` — moteur de tendance par régression linéaire (brique socle META-08)
+
+**Ajouté**
+- [regression.ts](packages/shared/src/regression.ts) : moteur pur `linearRegression(points)` (moindres
+  carrés → `{ slope, intercept, r2, n }`), retourne `null` sur cas dégénéré (< 2 points ou variance de x
+  nulle) ; convention série constante en y → `slope 0, r2 1`. Brique socle réutilisable (débloque les
+  projections META-14/15/16).
+- [daysBetween](packages/shared/src/date.ts) : nombre de jours calendaires entre deux clés `AAAA-MM-JJ`,
+  calcul via midi UTC (DST-safe).
+
+**Modifié**
+- `weightTrend` ([bodyweight.ts](packages/shared/src/bodyweight.ts)) **rebranché** sur la régression :
+  signature élargie de `number[]` à des points datés `{ logDate, weightKg }` ; verdict = `pente × fenêtre`
+  vs seuils inchangés (±0,3 kg). Appelants mis à jour : [nutrition-stats.tsx](apps/mobile/src/app/nutrition-stats.tsx),
+  [WeightCard.tsx](apps/mobile/src/components/dashboard/WeightCard.tsx), et le test [recipe.test.ts](packages/shared/src/recipe.test.ts).
+- `paceTrend` ([run-stats.ts](packages/shared/src/run-stats.ts)) **rebranché** sur la régression
+  (signature inchangée) : X = jours écoulés, diviseur = moyenne de la série, seuils inchangés (±2 %).
+  Correction des `dayKey` de test non datés (`'a'..'d'` → vraies dates).
+
+**Technique / Notes**
+- **Iso-comportement** prouvé par des tests « golden » de non-régression (oracle = ancienne logique) ;
+  divergences non-monotones **figées honnêtement** (ex. `weightTrend([81,76,84,80])` : `down` → `up`
+  ; `paceTrend([360,340,380,350])` : `declining` → `stable`). R² calculé mais **non exposé** (réserve).
+- **Aucune** surface UI, **aucun** i18n, **aucune** migration — 100 % `packages/shared` + 2 appelants
+  mobiles. typecheck ✅ · lint ✅ · **739 tests ✅**. Catalogue META-08 → ✅. Spec+plan+code relus par
+  sous-agents (spec 1 passe, plan 2 passes, revue par tâche + revue finale *prête à merger*).
+  **Reste : recette device (non-régression des tendances poids + allure) + relecture Damien.**
+
 ### 18/07/2026 — `feature/modules-cartes-apercu` — cartes-aperçu des modules (Muscu & Course) + mini-calendrier planning
 
 **Ajouté**

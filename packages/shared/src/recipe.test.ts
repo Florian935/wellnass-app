@@ -43,10 +43,10 @@ describe('recipe helpers', () => {
 
 describe('bodyweight helpers', () => {
   it('weightTrend détecte hausse/baisse/stable (seuil ±0,3)', () => {
-    expect(weightTrend([80, 81])).toBe('up');
-    expect(weightTrend([81, 80])).toBe('down');
-    expect(weightTrend([80, 80.1])).toBe('stable');
-    expect(weightTrend([80])).toBe('stable');
+    expect(weightTrend([{ logDate: '2026-07-01', weightKg: 80 }, { logDate: '2026-07-02', weightKg: 81 }])).toBe('up');
+    expect(weightTrend([{ logDate: '2026-07-01', weightKg: 81 }, { logDate: '2026-07-02', weightKg: 80 }])).toBe('down');
+    expect(weightTrend([{ logDate: '2026-07-01', weightKg: 80 }, { logDate: '2026-07-02', weightKg: 80.1 }])).toBe('stable');
+    expect(weightTrend([{ logDate: '2026-07-01', weightKg: 80 }])).toBe('stable');
   });
   it('averageIntake moyenne sur les jours renseignés', () => {
     expect(
