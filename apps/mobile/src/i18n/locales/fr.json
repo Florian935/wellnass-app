@@ -699,9 +699,6 @@
       "rest": "{{seconds}} s repos",
       "startSession": "Démarrer cette séance",
       "starting": "Démarrage…",
-      "activate": "Activer ce programme",
-      "activating": "Activation…",
-      "alreadyActive": "Programme actif",
       "startProgram": "Démarrer ce programme",
       "editPlanning": "Modifier la planification",
       "edit": "Modifier",
@@ -1132,7 +1129,6 @@
     "rescheduleTomorrow": "Demain",
     "reschedulePlus7": "+7 jours",
     "skip": "Sauter",
-    "markDone": "Marquer comme faite",
     "start": "Démarrer la séance",
     "markDoneQuick": "Marquer fait sans détailler",
     "switchProgram": {

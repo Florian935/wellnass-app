@@ -699,9 +699,6 @@
       "rest": "{{seconds}}s rest",
       "startSession": "Start this session",
       "starting": "Starting…",
-      "activate": "Activate program",
-      "activating": "Activating…",
-      "alreadyActive": "Active program",
       "startProgram": "Start this program",
       "editPlanning": "Edit schedule",
       "edit": "Edit",
@@ -1132,7 +1129,6 @@
     "rescheduleTomorrow": "Tomorrow",
     "reschedulePlus7": "+7 days",
     "skip": "Skip",
-    "markDone": "Mark as done",
     "start": "Start session",
     "markDoneQuick": "Mark done without logging",
     "switchProgram": {
