@@ -1582,6 +1582,7 @@ export type Database = {
           finished_at: string | null
           id: string
           notes: string | null
+          planned_session_id: string | null
           program_id: string | null
           rpe: number | null
           session_id: string | null
@@ -1597,6 +1598,7 @@ export type Database = {
           finished_at?: string | null
           id: string
           notes?: string | null
+          planned_session_id?: string | null
           program_id?: string | null
           rpe?: number | null
           session_id?: string | null
@@ -1612,6 +1614,7 @@ export type Database = {
           finished_at?: string | null
           id?: string
           notes?: string | null
+          planned_session_id?: string | null
           program_id?: string | null
           rpe?: number | null
           session_id?: string | null

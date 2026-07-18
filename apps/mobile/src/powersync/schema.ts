@@ -164,6 +164,7 @@ const workouts = new Table({
   user_id: column.text,
   session_id: column.text,
   program_id: column.text,
+  planned_session_id: column.text, // US Refonte-A : occurrence planifiée réalisée (nullable)
   status: column.text,
   started_at: column.text,
   finished_at: column.text,

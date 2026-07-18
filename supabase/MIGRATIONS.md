@@ -47,6 +47,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260716150753_user_bans`                        | 16/07/2026 | CLI (`npm run db:push`)       |
 |   [x]   | `20260716173555_nutrition_adherence_margin`       | 16/07/2026 | CLI (`npm run db:push`)       |
 |   [x]   | `20260716194509_profiles_weight_goal`             | 16/07/2026 | CLI (`npm run db:push`)       |
+|   [x]   | `20260718125516_workouts_planned_session_link`    | 18/07/2026 | CLI (`npm run db:push`)       |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
