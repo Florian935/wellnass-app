@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/modules-cartes-apercu` — cartes-aperçu des modules (Muscu & Course) + mini-calendrier planning
+
+**Ajouté**
+- [ModulePreviewCard](apps/mobile/src/components/ModulePreviewCard.tsx) : carte de module réutilisable,
+  **entièrement tappable** (icône + titre + chevron + zone d'aperçu). Remplace le pattern « titre +
+  sous-titre générique + bouton » — le bouton disparaît, toute la carte ouvre le module.
+- [PlanningPreview](apps/mobile/src/components/PlanningPreview.tsx) + hook `useUpcomingSessions(days)`
+  ([planned-session-repository](apps/mobile/src/data/repositories/planned-session-repository.ts)) :
+  **mini-calendrier des 4 prochains jours** (aujourd'hui inclus) — une case par jour (abréviation +
+  numéro), pastille(s) colorée(s) par pilier (bordeaux muscu / accent course), « repos » si vide,
+  aujourd'hui surligné, + ligne « Prochaine : … ». Tous piliers, réactif, offline-first.
+- i18n FR/EN : `planning.restShort`, `planning.previewNext`, `planning.previewEmpty`, `programs.noneActive`.
+
+**Modifié**
+- Onglet **Muscu** ([strength](apps/mobile/src/app/(tabs)/strength.tsx)) : modules Programmes (programme
+  actif + durée), Mon planning (mini-calendrier), Historique (2 dernières séances : date + durée),
+  Progression (volume de la semaine + `DeltaBadge`) passés en cartes-aperçu tappables. La carte d'action
+  démarrer/reprendre reste un bouton.
+- Onglet **Course** ([running](apps/mobile/src/app/(tabs)/running.tsx)) : modules Mes programmes
+  (programme running actif), Mon planning (mini-calendrier), Historique (dernière course : distance ·
+  durée · allure) passés en cartes-aperçu tappables.
+
+**Technique / Notes**
+- Réutilise les hooks existants (`useActiveProgram`, `useWorkoutHistory`, `useWeeklyVolumeComparison`,
+  `useRunHistory`) + `percentChange`/`DeltaBadge`. **100 % client, aucune migration.**
+- typecheck ✅ · lint ✅. **Reste : recette device + relecture Damien.**
+
 ### 17/07/2026 — `fix/admin-piliers-affichage` — back-office `/users` : colonne « Piliers » affichée correctement
 
 _Commit précédent : `054e510`._
