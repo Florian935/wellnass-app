@@ -273,7 +273,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**US Refonte-A — maquette validée → GO implémentation** : maquette des
+*Dernière mise à jour : 18/07/2026 (**US Refonte-A — CODE LIVRÉ (subagent-driven)** : 9 tâches implémentées
+(7 commits `c0f6a07`→`c53d85a`), revue de code globale **sans bloquant**, typecheck/lint/tests verts, parité i18n
+FR/EN. Migration `planned_session_id` **appliquée cloud** ; démarrer une séance depuis le calendrier (gaté muscu)
+→ occurrence `done` à la fin ; fusion activer/planifier sur les 2 fiches ; popup de changement de programme.
+**Reste : recette device + relecture Damien** (US-A `[~]`, passera `[x]` après recette). Point à confirmer en
+recette : « reprise » via libellé de bouton (pas de dialogue). Running (démarrage course depuis le calendrier)
+différé (option b). Précédemment : **US Refonte-A — maquette validée → GO implémentation** : maquette des
 3 surfaces ([design](design/refonte-muscu-a/refonte-muscu-a.html)) **validée par Florian**. Les 3 livrables du
 workflow sont réunis (spec ✅ + plan ✅ + design ✅) → passage à l'**implémentation subagent-driven** (9 tâches,
 phases A→G). ⚠️ Task 1 = **migration cloud** `planned_session_id` (checkpoint 🔴 : `db:push` confirmé avant exécution).
@@ -380,13 +386,17 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 > **structurels** (déjà propagés à Running) **avant** de poursuivre la roadmap. Chaque US suit le
 > workflow **spec → plan → design → validation → code**. Ordre : A → B → C → D.
 
-- [~] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — démarrer une vraie
-  séance **depuis le calendrier** ; une séance faite **met à jour** la séance planifiée (fait) ;
-  clarifier « **activer** » vs « **planifier** » un programme. Corrige les problèmes 1 + 2 de l'audit.
-  ⚠️ Bénéficie aussi à Running (même modèle). **Spec ✅ validée Florian + revue Approved**
-  ([spec](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md),
-  `feature/refonte-muscu-a`). ⚠️ Portera une **migration** `planned_session_id` sur `workouts` (checkpoint
-  cloud). Suite : **plan → design → validation avant code**.
+- [~] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — **CODE LIVRÉ**
+  (subagent-driven, 7 commits `c0f6a07`→`c53d85a`, revue de code globale sans bloquant ; typecheck/lint/tests
+  verts). Spec ✅ + plan ✅ + maquette ✅ tous validés Florian
+  ([spec](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md) ·
+  [plan](docs/plans/refonte-muscu-a-unification-programme-planning-seance.md)). Livré : migration
+  `planned_session_id` (**appliquée cloud** + `db:types`), démarrer une séance **depuis le calendrier** (gaté
+  muscu) + occurrence marquée `done` à la fin, fusion activer/planifier sur les 2 fiches, popup de changement
+  de programme, i18n FR/EN. **Reste : recette device + relecture Damien** (passer `[x]` après recette).
+  ⚠️ Point à confirmer en recette : la « reprise » d'une séance active se fait par libellé de bouton, pas par
+  dialogue (spec §3/§7). ⚠️ **Running** : le démarrage d'une course planifiée depuis le calendrier reste
+  **différé** (option b du §7 — « Démarrer » masqué sur occurrences course).
 - [ ] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
   hub muscu (aujourd'hui 4-5 taps). Corrige le problème 3. **Dépend de US-A** (lien planning ↔ séance).
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série

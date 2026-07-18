@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-a` — implémentation US Refonte-A (programme → planning → séance)
+
+> Implémentation subagent-driven (7 commits `c0f6a07`→`c53d85a`), revue de code globale **sans bloquant**.
+> typecheck + lint + tests **verts**, parité i18n FR/EN parfaite.
+
+**Ajouté**
+- **Lien occurrence ↔ séance** : colonne `planned_session_id` (nullable) sur `workouts`
+  ([migration](supabase/migrations/20260718125516_workouts_planned_session_link.sql) **appliquée cloud**
+  + `db:types` + [schéma PowerSync](apps/mobile/src/powersync/schema.ts)).
+- **Démarrer depuis le calendrier** : [planning/index.tsx](apps/mobile/src/app/planning/index.tsx) — action
+  principale « Démarrer la séance » sur une occurrence, **gatée `pillar === 'strength'` + `status === 'planned'`**
+  (jamais de « Démarrer » sur une occurrence course → pas de workout vide) ; garde « reprise » si une séance
+  est déjà active ; « Marquer fait sans détailler » en secondaire.
+- **Popup de changement de programme** : [planning/plan.tsx](apps/mobile/src/app/planning/plan.tsx) —
+  `planProgram(..., { removePreviousFuture })` + `Alert` retirer/garder les séances futures de l'ancien.
+
+**Modifié**
+- [workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts) : `startWorkoutFromSession`
+  pose `planned_session_id` ; `finishWorkout` bascule l'occurrence liée `done` (**best-effort**, ne bloque
+  jamais la clôture) ; `startWorkout` = lien nul ; `cancelWorkout` inchangé (abandon → occurrence reste `planned`).
+- [planned-session-repository.ts](apps/mobile/src/data/repositories/planned-session-repository.ts) :
+  `planProgram` retire (option) les occurrences **futures `planned`** des autres programmes actifs du même
+  pilier, **avant** la désactivation ; historique conservé.
+- **Fusion activer/planifier** sur les **2 fiches** ([programs/[id].tsx](apps/mobile/src/app/programs/%5Bid%5D.tsx)
+  + [running-programs/[id].tsx](apps/mobile/src/app/running-programs/%5Bid%5D.tsx)) : un seul bouton
+  « Démarrer ce programme » / « Modifier la planification » ; `activateProgram` retiré des écrans.
+- i18n FR/EN : clés ajoutées (`planning.start`, `planning.markDoneQuick`, `planning.switchProgram.*`,
+  `programs.detail.startProgram`/`editPlanning`) ; **clés orphelines retirées** (`detail.activate`/`activating`/
+  `alreadyActive`, `planning.markDone`, `running.program.activate`).
+
+**Technique / Notes**
+- **Offline-first** : écritures optimistes locales ; migration additive nullable → rétrocompatible.
+- Point d'attention (revue) : la « reprise » d'une séance active se fait par **changement de libellé** du bouton
+  (« Reprendre ») + navigation directe, plutôt que par un dialogue de confirmation — interprétation à confirmer
+  en recette (spec §3/§7 « proposer de reprendre »).
+- **Reste** : **recette device** (checkpoint migration déjà poussée) + **relecture Damien**. US-A non cochée `[x]`
+  tant que la recette n'est pas validée.
+
 ### 18/07/2026 — `feature/refonte-muscu-a` — maquette US Refonte-A
 
 **Ajouté**
