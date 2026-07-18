@@ -20,3 +20,15 @@ export function addDays(d: Date, n: number): Date {
 export function startOfWeek(d: Date): Date {
   return addDays(d, -weekdayIndex(d));
 }
+
+/**
+ * Nombre de jours calendaires de `fromKey` à `toKey` (clés locales AAAA-MM-JJ).
+ * Calcul via midi UTC → insensible aux transitions d'heure d'été (DST-safe).
+ */
+export function daysBetween(fromKey: string, toKey: string): number {
+  const toMs = (key: string): number => {
+    const [y, m, d] = key.split('-').map(Number);
+    return Date.UTC(y!, m! - 1, d!, 12);
+  };
+  return Math.round((toMs(toKey) - toMs(fromKey)) / 86_400_000);
+}
