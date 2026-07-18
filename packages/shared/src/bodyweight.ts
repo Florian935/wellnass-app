@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { syncFieldsSchema } from './sync';
 import type { Nutrients } from './food';
+import { daysBetween } from './date';
+import { linearRegression } from './regression';
 
 /**
  * Suivi du poids corporel (spec §7.1) + statistiques d'apports (spec §7.2).
@@ -14,12 +16,21 @@ export const bodyWeightEntryRowSchema = syncFieldsSchema.extend({
 });
 export type BodyWeightEntryRow = z.infer<typeof bodyWeightEntryRowSchema>;
 
-/** Tendance de poids sur une série ordonnée (ancienne → récente). Seuil ±0,3 kg. */
-export function weightTrend(weights: ReadonlyArray<number>): 'up' | 'down' | 'stable' {
-  if (weights.length < 2) return 'stable';
-  const delta = weights[weights.length - 1]! - weights[0]!;
-  if (delta > 0.3) return 'up';
-  if (delta < -0.3) return 'down';
+/**
+ * Tendance de poids sur une série datée (seuil ±0,3 kg sur la fenêtre observée).
+ * Adossée à la régression linéaire (META-08), X = jours écoulés depuis la 1ʳᵉ pesée.
+ */
+export function weightTrend(
+  entries: ReadonlyArray<{ logDate: string; weightKg: number }>,
+): 'up' | 'down' | 'stable' {
+  if (entries.length < 2) return 'stable';
+  const base = entries.reduce((min, e) => (e.logDate < min ? e.logDate : min), entries[0]!.logDate);
+  const last = entries.reduce((max, e) => (e.logDate > max ? e.logDate : max), entries[0]!.logDate);
+  const fit = linearRegression(entries.map((e) => ({ x: daysBetween(base, e.logDate), y: e.weightKg })));
+  if (fit === null) return 'stable';
+  const change = fit.slope * daysBetween(base, last); // kg sur la fenêtre
+  if (change > 0.3) return 'up';
+  if (change < -0.3) return 'down';
   return 'stable';
 }
 

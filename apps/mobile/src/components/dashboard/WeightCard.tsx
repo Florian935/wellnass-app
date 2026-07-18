@@ -75,7 +75,7 @@ export function WeightCard({ size = 'full' }: { size?: WidgetSize }) {
   }
 
   // ── État : données présentes ───────────────────────────────────────────────
-  const trend = weightTrend(entries.map((e) => e.weightKg));
+  const trend = weightTrend(entries);
   const trendColor =
     trend === 'down' ? colors.success : trend === 'up' ? colors.danger : colors.textMuted;
   const trendArrow = trend === 'down' ? '▼' : trend === 'up' ? '▲' : '→';

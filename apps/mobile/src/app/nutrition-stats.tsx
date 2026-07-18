@@ -57,7 +57,7 @@ export default function NutritionStatsScreen() {
   const adherence = useGoalAdherence(intakeWindowDays);
   const completion = useJournalCompletion(intakeWindowDays);
 
-  const trend = weightTrend(weightEntries.map((e) => e.weightKg));
+  const trend = weightTrend(weightEntries);
   const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
   const intakeData = totals.map((d) => ({ label: shortLabel(d.logDate), value: d.kcal }));
 
