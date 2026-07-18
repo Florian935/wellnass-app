@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**US Refonte-A — CODE LIVRÉ (subagent-driven)** : 9 tâches implémentées
+*Dernière mise à jour : 18/07/2026 (**US Refonte-B — spec validée** : spec « Séance du jour sur le hub muscu »
+écrite ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`),
+**validée par Florian** + **revue de spec Approved** (fix : requête tous statuts pour la coche « faite » ;
+`programName` du programme de l'occurrence). Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage
+lié `plannedSessionId`), hub 3 états + mention prochaine + coche faite, réalignement du widget dashboard 7.4.
+Aucune migration. Prochaine étape : **plan d'implémentation**. Précédemment : **US Refonte-A — CODE LIVRÉ (subagent-driven)** : 9 tâches implémentées
 (7 commits `c0f6a07`→`c53d85a`), revue de code globale **sans bloquant**, typecheck/lint/tests verts, parité i18n
 FR/EN. Migration `planned_session_id` **appliquée cloud** ; démarrer une séance depuis le calendrier (gaté muscu)
 → occurrence `done` à la fin ; fusion activer/planifier sur les 2 fiches ; popup de changement de programme.
@@ -397,8 +402,12 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   ⚠️ Point à confirmer en recette : la « reprise » d'une séance active se fait par libellé de bouton, pas par
   dialogue (spec §3/§7). ⚠️ **Running** : le démarrage d'une course planifiée depuis le calendrier reste
   **différé** (option b du §7 — « Démarrer » masqué sur occurrences course).
-- [ ] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
+- [~] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
   hub muscu (aujourd'hui 4-5 taps). Corrige le problème 3. **Dépend de US-A** (lien planning ↔ séance).
+  **Spec ✅ validée Florian + revue Approved**
+  ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`).
+  Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » +
+  réalignement du widget dashboard 7.4. **Aucune migration**. Suite : **plan → maquette → validation avant code**.
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
   par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
   Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter

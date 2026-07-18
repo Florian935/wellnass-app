@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-b` — spec US Refonte-B (séance du jour sur le hub muscu)
+
+**Ajouté**
+- [docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md) :
+  spec de l'US-B (chantier refonte Muscu, corrige le problème 3 de l'audit). Décisions (brainstorming Florian) :
+  (1) **source = occurrence réelle du calendrier du jour** (pilier muscu, 1ʳᵉ non faite), « Démarrer » passe
+  `plannedSessionId` → complétion remonte (cohérent US-A) ; (2) rien planifié → « Séance libre » principal +
+  **mention discrète** de la prochaine occurrence ; (3) occurrence du jour **faite** → repli séance libre +
+  **coche « ✓ Séance du jour faite »** ; (4) **hook partagé `useTodaySession('strength')`** (remplace
+  `useNextSession`) consommé par le hub **et** le widget dashboard 7.4 (réaligné, démarrage désormais **lié**).
+
+**Technique / Notes**
+- **Spec uniquement** (aucun code). **Aucune migration** (`planned_session_id` déjà posé par US-A). Aucun secret.
+- Revue de spec (subagent) **Approved** après 1 itération : la requête « occurrence du jour » lit désormais
+  **tous statuts** (pour alimenter la coche « faite ») ; `programName` tiré du programme **de l'occurrence**
+  (jointure `program_translations`), pas de `useActiveProgram` — couvre le cas « garder les séances à venir » d'US-A.
+- Détail pour le plan : nettoyer le mock résiduel `useNextSession` dans `StreakCard.test.tsx` au renommage.
+- Prochaine étape : **plan d'implémentation**.
+
 ### 18/07/2026 — `feature/refonte-muscu-a` — implémentation US Refonte-A (programme → planning → séance)
 
 > Implémentation subagent-driven (7 commits `c0f6a07`→`c53d85a`), revue de code globale **sans bloquant**.
