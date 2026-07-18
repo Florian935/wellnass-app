@@ -273,7 +273,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**US Refonte-A — plan validé** : plan d'implémentation écrit
+*Dernière mise à jour : 18/07/2026 (**US Refonte-A — maquette validée → GO implémentation** : maquette des
+3 surfaces ([design](design/refonte-muscu-a/refonte-muscu-a.html)) **validée par Florian**. Les 3 livrables du
+workflow sont réunis (spec ✅ + plan ✅ + design ✅) → passage à l'**implémentation subagent-driven** (9 tâches,
+phases A→G). ⚠️ Task 1 = **migration cloud** `planned_session_id` (checkpoint 🔴 : `db:push` confirmé avant exécution).
+Précédemment : **US Refonte-A — plan validé** : plan d'implémentation écrit
 ([plan](docs/plans/refonte-muscu-a-unification-programme-planning-seance.md), 9 tâches phases A→G),
 **validé par Florian** et **revue de plan Approved** (1 itération : ajout de la 2ᵉ fiche
 `running-programs/[id].tsx` à la fusion). Reste, avant tout code : **maquette** (design/refonte-muscu-a/)

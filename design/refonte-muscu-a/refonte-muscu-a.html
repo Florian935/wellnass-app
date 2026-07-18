@@ -1,0 +1,223 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#7c8a5b;--warn:#b5761f;
+    --run:#c0562f;--strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1180px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance;}
+  .sub{color:var(--muted);max-width:78ch;margin:0;font-size:15px;}
+  .stage{max-width:1180px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:390px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:390px;width:100%;overflow:hidden;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .screen-title{font-weight:800;font-size:20px;letter-spacing:-.01em;padding:0 4px;margin:0 0 10px;}
+
+  .weeknav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 13px;margin:0 4px 14px;}
+  .weeknav .nav{width:30px;height:30px;border-radius:8px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .weeknav .lbl{font-weight:700;font-size:14px;}
+
+  .daycard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:0 4px 9px;}
+  .daycard.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+  .dhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;}
+  .dname{font-weight:800;font-size:14px;}
+  .ddate{color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .todaytag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);}
+  .sess{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;background:var(--surface-alt);}
+  .sess + .sess{margin-top:7px;}
+  .sess.sel{outline:2px solid var(--strength);outline-offset:1px;}
+  .sess .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .sess.run .dot{background:var(--run);} .sess.str .dot{background:var(--strength);}
+  .sess .body{flex:1;min-width:0;}
+  .sess .stype{font-weight:700;font-size:13.5px;}
+  .sess .smeta{color:var(--muted);font-size:12px;}
+  .sess .space{font-family:var(--mono);font-size:12px;color:var(--run);font-weight:700;white-space:nowrap;}
+  .badge{font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;border:1px solid var(--border);color:var(--muted);}
+  .pill{font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em;color:#fff;}
+  .pill.run{background:var(--run);} .pill.str{background:var(--strength);}
+  .rest{color:var(--muted);font-size:13px;font-style:italic;padding:2px;}
+
+  /* Action sheet (bottom sheet) */
+  .scrim{position:absolute;inset:0;background:rgba(51,41,31,.34);border-radius:34px;}
+  .sheet{position:absolute;left:8px;right:8px;bottom:8px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px 14px 14px;box-shadow:0 -8px 30px rgba(51,41,31,.16);}
+  .sheet .grip{width:38px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 12px;}
+  .sheet .sh-head{display:flex;gap:9px;align-items:center;margin:0 2px 12px;}
+  .sheet .sh-title{font-weight:800;font-size:15px;}
+  .sheet .sh-meta{color:var(--muted);font-size:12px;}
+  .btn{display:block;width:100%;text-align:center;border-radius:12px;padding:12px;font-weight:800;font-size:15px;font-family:var(--sans);border:1px solid transparent;}
+  .btn.primary{background:var(--strength);color:#fff;}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--border);font-weight:700;}
+  .btn.ghost.warn{color:var(--warn);}
+  .btn + .btn{margin-top:8px;}
+  .sh-sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:14px 2px 8px;}
+
+  /* Fiche programme */
+  .meta-line{color:var(--muted);font-size:13px;margin:0 4px 14px;}
+  .sec{font-weight:800;font-size:15px;margin:0 4px 9px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:0 4px 9px;}
+  .card .ct{display:flex;justify-content:space-between;align-items:center;}
+  .card .cn{font-weight:800;font-size:14px;} .card .cm{color:var(--muted);font-size:12px;}
+  .actions{margin:14px 4px 0;display:flex;flex-direction:column;gap:8px;}
+  .activebadge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--strength);border-radius:999px;padding:3px 9px;}
+
+  /* diff strip */
+  .diff{display:flex;gap:8px;margin:2px 4px 0;}
+  .diff .box{flex:1;border:1px dashed var(--border);border-radius:12px;padding:9px;background:#fff8ee;}
+  .diff .lab{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 7px;}
+  .diff .b-old{opacity:.85;} .diff .b-old .lab{color:#b03a3a;}
+  .diff .b-new .lab{color:var(--success);}
+  .mini{display:block;width:100%;text-align:center;border-radius:9px;padding:8px;font-weight:700;font-size:12px;}
+  .mini.solid{background:var(--strength);color:#fff;} .mini.line{background:transparent;color:var(--ink);border:1px solid var(--border);}
+  .mini + .mini{margin-top:6px;}
+
+  /* popup */
+  .alert{position:absolute;left:24px;right:24px;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px 16px;box-shadow:var(--shadow);}
+  .alert .at{font-weight:800;font-size:16px;margin:0 0 6px;}
+  .alert .am{color:var(--muted);font-size:13.5px;margin:0 0 14px;}
+
+  .notes{max-width:1180px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 2px;font-size:13px;font-weight:700;}
+  .flow .step{background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:5px 11px;}
+  .flow .arr{color:var(--muted);font-weight:800;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US Refonte-A · Maquette</p>
+    <h1 class="title">Unifier programme → planning → séance</h1>
+    <p class="sub">Les 3 surfaces qui changent. (1) Le menu d'une séance du calendrier gagne une action principale <b>« Démarrer la séance »</b> (le reste passe en secondaire) ; elle lance le vrai suivi et, une fois terminé, l'occurrence bascule automatiquement « faite ». (2) La fiche programme fusionne ses deux boutons « Activer » + « Planifier » en un seul <b>« Démarrer ce programme »</b>. (3) Changer de programme actif demande quoi faire des séances à venir. Rendu dans le design system de l'app (muscu = bordeaux charte).</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- Écran 1 : calendrier + action sheet -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Mon planning</span></div>
+        <p class="screen-title">Mon planning</p>
+        <div class="weeknav"><span class="nav">‹</span><span class="lbl">Semaine du 13/07</span><span class="nav">›</span></div>
+
+        <div class="daycard today">
+          <div class="dhead"><span class="dname">Mardi</span><span class="ddate">14/07 · <span class="todaytag">Aujourd'hui</span></span></div>
+          <div class="sess str sel">
+            <span class="dot"></span>
+            <span class="body"><span class="stype">Legs</span><span class="smeta">6 exercices</span></span>
+            <span class="pill str">Muscu</span>
+          </div>
+        </div>
+        <div class="daycard">
+          <div class="dhead"><span class="dname">Mercredi</span><span class="ddate">15/07</span></div>
+          <div class="sess run">
+            <span class="dot"></span>
+            <span class="body"><span class="stype">Fractionné</span><span class="smeta">5,0 km</span></span>
+            <span class="space">4:15–4:30</span>
+          </div>
+        </div>
+
+        <!-- sheet ouverte sur la séance muscu sélectionnée -->
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grip"></div>
+          <div class="sh-head"><span class="pill str">Muscu</span><span class="sh-title">Legs</span><span class="sh-meta">· 6 exercices · 14/07</span></div>
+          <button class="btn primary">Démarrer la séance</button>
+          <p class="sh-sec">Ou</p>
+          <button class="btn ghost">Reporter</button>
+          <button class="btn ghost">Sauter</button>
+          <button class="btn ghost warn">Marquer fait sans détailler</button>
+        </div>
+      </div>
+      <p class="caption">Occurrence <b>muscu</b> tapée → <b>Démarrer la séance</b> en principal.<br>Sur une occurrence <b>course</b>, « Démarrer » est masqué (secondaires seuls) — option (b) du §7.</p>
+    </div>
+
+    <!-- Écran 2 : fiche programme fusionnée + diff -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Programme</span></div>
+        <div class="dhead" style="padding:0 4px;margin-bottom:6px;">
+          <p class="screen-title" style="margin:0;">Full body 8 sem.</p>
+          <span class="activebadge">Actif</span>
+        </div>
+        <p class="meta-line">Intermédiaire · 8 semaines · Prise de masse</p>
+
+        <p class="sec">Séances</p>
+        <div class="card"><div class="ct"><span class="cn">Push</span><span class="cm">5 exercices</span></div></div>
+        <div class="card"><div class="ct"><span class="cn">Legs</span><span class="cm">6 exercices</span></div></div>
+        <div class="card"><div class="ct"><span class="cn">Pull</span><span class="cm">5 exercices</span></div></div>
+
+        <div class="actions">
+          <button class="btn primary">Modifier la planification</button>
+          <button class="btn ghost">Modifier</button>
+          <button class="btn ghost">Dupliquer</button>
+        </div>
+      </div>
+      <div class="diff">
+        <div class="box b-old">
+          <p class="lab">Avant — 2 boutons</p>
+          <span class="mini solid">Activer ce programme</span>
+          <span class="mini line">Planifier ce programme</span>
+        </div>
+        <div class="box b-new">
+          <p class="lab">Après — 1 seul</p>
+          <span class="mini solid">Démarrer ce programme</span>
+          <span class="mini line" style="opacity:.55;">(si actif → « Modifier la planification »)</span>
+        </div>
+      </div>
+      <p class="caption">« Activer » et « Planifier » fusionnés. Idem sur la fiche <b>programme de course</b>.</p>
+    </div>
+
+    <!-- Écran 3 : popup changement de programme -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Planifier</span></div>
+        <p class="screen-title">Planifier « Push/Pull/Legs »</p>
+        <div class="field" style="margin:0 4px 12px;">
+          <div class="weeknav" style="margin:0;"><span class="nav">‹</span><span class="lbl">Semaine du lun. 21/07</span><span class="nav">›</span></div>
+        </div>
+        <div class="card"><div class="ct"><span class="cn">Push</span><span class="cm">Lun</span></div></div>
+        <div class="card"><div class="ct"><span class="cn">Pull</span><span class="cm">Mer</span></div></div>
+        <div class="card"><div class="ct"><span class="cn">Legs</span><span class="cm">Ven</span></div></div>
+
+        <div class="scrim"></div>
+        <div class="alert">
+          <p class="at">Changer de programme</p>
+          <p class="am">Ton programme actif « Full body 8 sem. » a des séances à venir. Les retirer du calendrier ou les garder ?</p>
+          <button class="btn primary">Retirer les séances à venir</button>
+          <button class="btn ghost" style="margin-top:8px;">Les garder</button>
+          <button class="btn ghost" style="margin-top:8px;">Annuler</button>
+        </div>
+      </div>
+      <p class="caption">Déclenché quand un <b>autre</b> programme du même pilier est déjà actif. L'<b>historique</b> (faites / passées) est toujours conservé.</p>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Flux de complétion &amp; décisions (rappel spec)</h2>
+    <div class="flow">
+      <span class="step">Calendrier · Démarrer</span><span class="arr">→</span>
+      <span class="step">Séance pré-remplie (liée)</span><span class="arr">→</span>
+      <span class="step">Terminer</span><span class="arr">→</span>
+      <span class="step">Occurrence « faite » ✓</span>
+    </div>
+    <ul>
+      <li><strong>Lien explicite</strong> : la séance porte l'id de l'occurrence (<code>planned_session_id</code>). Terminer la séance → occurrence <code>done</code>. <strong>Abandon</strong> → l'occurrence reste « planifiée ». Séance <strong>libre</strong> ou <strong>ad hoc</strong> (depuis la fiche) → ne touche aucune occurrence.</li>
+      <li><strong>Fusion</strong> : « programme actif » = « programme au calendrier ». Un seul geste « Démarrer ce programme » (assistant date + jours). Plus de bouton « Activer » isolé.</li>
+      <li><strong>« Démarrer » gaté muscu</strong> : <code>startWorkoutFromSession</code> est spécifique muscu → masqué sur les occurrences course (option b). Le démarrage course viendra ensuite.</li>
+      <li><strong>Marquer fait sans détailler</strong> : conservé en secondaire (cas « entraîné hors app », sans logging).</li>
+      <li><strong>Pilier-agnostique</strong> : fusion + actions secondaires + popup s'appliquent aux <strong>2 fiches</strong> (muscu + course).</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage / Hanken / Space Mono. Muscu = bordeaux charte <code>#6b0028</code>, course = terracotta.</em></li>
+    </ul>
+  </section>
+</div>

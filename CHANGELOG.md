@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-a` — maquette US Refonte-A
+
+**Ajouté**
+- [design/refonte-muscu-a/refonte-muscu-a.html](design/refonte-muscu-a/refonte-muscu-a.html) : maquette des
+  3 surfaces modifiées par l'US-A, dans le design system de l'app (muscu = bordeaux `#6b0028`) :
+  (1) menu d'action d'une occurrence du calendrier avec **« Démarrer la séance »** en principal + secondaires
+  (Reporter / Sauter / Marquer fait sans détailler) et « Démarrer » masqué sur les occurrences course ;
+  (2) fiche programme **avant** (Activer + Planifier) → **après** (un seul « Démarrer ce programme » /
+  « Modifier la planification ») ; (3) popup de changement de programme (retirer/garder les futures) +
+  rappel du flux de complétion. Réutilise le langage visuel de la maquette 3.9.
+
+**Technique / Notes**
+- **Design uniquement** (aucun code) → build non impacté. Aucun secret. Ne livre aucune fonctionnalité.
+- **Validée par Florian** → les 3 livrables du workflow (spec ✅ + plan ✅ + design ✅) sont réunis :
+  feu vert pour l'**implémentation** (subagent-driven). ⚠️ Task 1 = migration cloud (checkpoint 🔴, `db:push`
+  confirmé au cas par cas).
+
 ### 18/07/2026 — `feature/refonte-muscu-a` — plan d'implémentation US Refonte-A
 
 **Ajouté**
