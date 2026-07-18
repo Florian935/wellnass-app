@@ -26,7 +26,7 @@ d'extrapoler). **100 % client, offline, gratuit, sans IA.**
 - **Inclus** :
   - brique pure `movingAverage(values, window)` (nouveau module shared `moving-average.ts`) + tests ;
   - prop `smooth` sur `ProgressLineChart` : overlay **brut estompé + lissé accentué**, fenêtre
-    **auto-adaptée**, calculée via la brique ;
+    **auto-adaptée** (calculée **par le composant**), lissage appliqué **via la brique** ;
   - activation de `smooth` sur les **4 courbes** : poids + apports kcal (Nutrition → Stats), allure
     (Course → Stats), progression charge/volume/1RM (Muscu → Progression) ;
   - smoke test composant étendu (`smooth`).
@@ -70,14 +70,20 @@ smooth?: boolean; // défaut false — active la superposition brut + lissé
 ```
 
 Comportement quand `smooth === true` :
-- **Fenêtre auto-adaptée** (calculée par le composant, pas la brique) :
-  `window = clamp(prochain impair de round(length / 5), 3, 7)`. **Si `length < 4`** → pas de lissage
-  (rendu brut seul, strictement comme aujourd'hui).
-- **Deux séries** (gifted-charts) :
+- **Fenêtre auto-adaptée** (calculée **par le composant**, pas la brique) :
+  `window = clamp(oddify(round(length / 5)), 3, 7)`, où `oddify(n)` = `n` s'il est **déjà impair**,
+  sinon `n + 1` (ex. `round=4 → 5` ; `round=5 → 5` ; `round=6 → 7`). **Si `length < 4`** → pas de
+  lissage (rendu brut seul, strictement comme aujourd'hui).
+- **Deux séries** (gifted-charts `LineChart`) :
   - **Brut** = `data` **estompé** : couleur discrète (`textMuted` ou accent faible opacité), points
     légers, **sans** remplissage de zone.
-  - **Lissé** = `data2` **accentué** (`colors.accent`, `curved`), **porteur** du remplissage de zone
-    (`areaChart`).
+  - **Lissé** = `data2` **accentué** (`colors.accent`, `curved`), **porteur** du remplissage de zone.
+  - ⚠️ **Implémentation gifted-charts** : les styles de remplissage et de couleur se pilotent **par
+    série** (`areaChartN ?? areaChart`). Il faut donc passer explicitement **`areaChart1={false}`**
+    (brut sans zone) + **`areaChart2`/`startFillColor2`/`endFillColor2`** (lissé avec zone) et
+    **`color1`/`color2`** distincts — **ne pas** se reposer sur le `areaChart` global actuel (sinon le
+    brut garderait son remplissage et l'overlay ne ressemblerait pas à la maquette). Ne **pas** utiliser
+    `secondaryData` (= axe Y séparé) : le lissé doit partager l'axe du brut.
 - **Axe Y inchangé** : le lissé est **borné par [min, max] du brut** (propriété de la moyenne), donc
   l'échelle existante — y compris `buildPaceYAxis` (allure), calculée sur le brut — **reste valide**.
 - **Rétrocompatibilité** : `smooth` absent/false → rendu **strictement identique** à l'actuel.
