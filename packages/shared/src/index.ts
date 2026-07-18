@@ -41,4 +41,5 @@ export * from './training-day';
 export * from './audit';
 export * from './training-nutrition';
 export * from './training-time';
+export * from './regression';
 export type { Database, Json } from './database.types';
