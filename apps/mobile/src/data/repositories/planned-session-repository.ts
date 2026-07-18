@@ -213,6 +213,30 @@ export function useMissedSessions(): {
   return { items, isLoading };
 }
 
+/**
+ * Séances à venir dans les `days` prochains jours (aujourd'hui inclus), owner-scopées,
+ * TOUS piliers — pour l'aperçu « Mon planning » des onglets piliers (mini-calendrier).
+ * Réactif aux changements locaux. `today` et la borne haute sont calculés côté JS et
+ * passés en paramètres liés (jamais interpolés).
+ */
+export function useUpcomingSessions(days: number): {
+  items: PlannedSessionItem[];
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const today = localDayKey(new Date());
+  const end = localDayKey(addDays(new Date(), Math.max(0, days - 1)));
+
+  const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_PLANNED_BETWEEN, [
+    userId,
+    today,
+    end,
+  ]);
+
+  const items = data.map(rowToItem);
+  return { items, isLoading };
+}
+
 // ---------------------------------------------------------------------------
 // useHasPlannedSession — support US 4.7b (anticipation bonus calorique)
 // ---------------------------------------------------------------------------

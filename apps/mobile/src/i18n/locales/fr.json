@@ -666,6 +666,7 @@
   "programs": {
     "title": "Programmes",
     "subtitle": "Bibliothèque éditoriale et mes programmes.",
+    "noneActive": "Aucun programme actif",
     "sectionLibrary": "Bibliothèque",
     "sectionMine": "Mes programmes",
     "levelAll": "Tous",
@@ -1111,6 +1112,9 @@
     "weekOf": "Semaine du {{date}}",
     "prevWeek": "Semaine précédente",
     "nextWeek": "Semaine suivante",
+    "restShort": "Repos",
+    "previewNext": "Prochaine : {{session}}",
+    "previewEmpty": "Rien de prévu ces prochains jours",
     "durationWeeks": "Durée (semaines)",
     "assignDay": "Jour de la séance",
     "restDay": "Repos",
