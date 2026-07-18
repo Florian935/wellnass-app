@@ -103,6 +103,27 @@ describe('ProgressLineChart — smoke test', () => {
     const { getByTestId } = await render(<ProgressLineChart data={sampleData} />);
     expect(getByTestId('line-chart')).toBeTruthy();
   });
+
+  it('rend avec smooth sur une série longue (≥ 4 points)', async () => {
+    // ⚠️ sampleData du fichier n'a que 3 points → série locale ≥ 4 points ici.
+    const longData = [
+      { label: 'L', value: 80 }, { label: 'Ma', value: 79 }, { label: 'Me', value: 81 },
+      { label: 'J', value: 78 }, { label: 'V', value: 80 }, { label: 'S', value: 79 },
+    ];
+    const { getByTestId } = await render(
+      <ProgressLineChart data={longData} title="Poids" unit="kg" smooth />,
+    );
+    expect(getByTestId('line-chart')).toBeTruthy();
+  });
+
+  it('rend avec smooth sur une série courte (< 4 points) sans crash', async () => {
+    const short = [
+      { label: 'L', value: 80 },
+      { label: 'M', value: 81 },
+    ];
+    const { getByTestId } = await render(<ProgressLineChart data={short} smooth />);
+    expect(getByTestId('line-chart')).toBeTruthy();
+  });
 });
 
 // ---------------------------------------------------------------------------
