@@ -15,7 +15,7 @@ export function FormScreen({ children, edges = ['top', 'bottom'] }: FormScreenPr
     <SafeAreaView edges={edges} style={[styles.safe, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
           contentContainerStyle={styles.content}
