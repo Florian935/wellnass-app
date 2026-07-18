@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-b` — plan d'implémentation US Refonte-B
+
+**Ajouté**
+- [docs/plans/refonte-muscu-b-seance-du-jour-hub.md](docs/plans/refonte-muscu-b-seance-du-jour-hub.md) :
+  plan (5 tâches, aucune migration). **T1** hook `useTodaySession('strength')` (occurrence du jour tous statuts
+  + prochaine future + `programName` via `program_translations` + `hasActiveProgram`) ; **T2** i18n (`next`,
+  `doneToday`, `noneToday`) ; **T3** widget dashboard 7.4 sur le nouveau hook (démarrage **lié** `plannedSessionId`) ;
+  **T4** hub muscu carte 3 états (Reprendre / Séance du jour liée / repli Séance libre + mention « Prochaine » +
+  coche « ✓ faite ») ; **T5** retrait de `useNextSession` + nettoyage mock + contrôle final. Commits atomiques, DoD.
+
+**Technique / Notes**
+- **Plan uniquement** (aucun code). Aucun secret. Ne livre aucune fonctionnalité.
+- Revue de plan (subagent) **Approved** ; 1 correction factuelle intégrée (`startWorkoutFromSession` à **ajouter**
+  à l'import de `strength.tsx`) + robustesse fuseau (formater la date « Prochaine » depuis la chaîne AAAA-MM-JJ,
+  pas `new Date`). Prochaine étape : **maquette** puis validation finale avant code.
+
 ### 18/07/2026 — `feature/refonte-muscu-b` — spec US Refonte-B (séance du jour sur le hub muscu)
 
 **Ajouté**
