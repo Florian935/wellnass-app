@@ -327,6 +327,7 @@ export async function startWorkout(): Promise<string> {
     user_id: userId,
     session_id: null,
     program_id: null,
+    planned_session_id: null,
     status: 'active',
     started_at: nowUtc(),
     finished_at: null,
@@ -367,12 +368,18 @@ async function txInsert(
  *
  * Garde défensive identique à `startWorkout` : si une séance `status='active'` non
  * supprimée existe déjà pour l'utilisateur courant, on retourne son id sans en créer
- * une seconde (au plus une séance active à la fois).
+ * une seconde (au plus une séance active à la fois). **Dans ce cas précis,
+ * `opts.plannedSessionId` est volontairement ignoré** : on ne fait que rendre la main
+ * sur la séance active existante, sans la relier a posteriori à une occurrence
+ * planifiée — la reprise d'une séance active (et son éventuelle association) est
+ * gérée ailleurs, côté UI.
  *
  * Sinon, dans une transaction atomique (une séance partielle est impossible) :
  *  1. lit le `program_id` de la séance planifiée (`sessions`) ;
  *  2. lit ses `exercise_plans` (triés par `order_index`) ;
- *  3. insère la ligne `workouts` (session_id + program_id renseignés, `status='active'`) ;
+ *  3. insère la ligne `workouts` (session_id + program_id renseignés, `status='active'`,
+ *     `planned_session_id` = `opts.plannedSessionId` si fourni, pour relier la séance à
+ *     l'occurrence de planning dont elle découle) ;
  *  4. pour chaque plan, insère `max(1, target_sets)` séries pré-remplies :
  *     `set_type` et `weight_kg` repris du plan, `reps` laissé nul (la cible est une
  *     plage type « 8-12 », que l'utilisateur renseigne), `done=false`. L'`order_index`
@@ -380,6 +387,7 @@ async function txInsert(
  */
 export async function startWorkoutFromSession(
   sessionId: string,
+  opts?: { plannedSessionId?: string },
 ): Promise<string> {
   const userId = currentUserId();
 
@@ -422,6 +430,7 @@ export async function startWorkoutFromSession(
       user_id: userId,
       session_id: sessionId,
       program_id: session.program_id,
+      planned_session_id: opts?.plannedSessionId ?? null,
       status: 'active',
       started_at: nowUtc(),
       finished_at: null,
@@ -480,10 +489,10 @@ export async function finishWorkout(
   id: string,
   opts?: { rpe?: number | null; notes?: string | null },
 ): Promise<void> {
-  const row = await powerSync.getOptional<{ started_at: string }>(
-    `SELECT started_at FROM workouts WHERE id = ?`,
-    [id],
-  );
+  const row = await powerSync.getOptional<{
+    started_at: string;
+    planned_session_id: string | null;
+  }>(`SELECT started_at, planned_session_id FROM workouts WHERE id = ?`, [id]);
 
   const finishedAt = nowUtc();
   const durationSeconds = row
@@ -505,6 +514,20 @@ export async function finishWorkout(
   if (opts && 'notes' in opts) columns['notes'] = opts.notes;
 
   await patch('workouts', id, columns);
+
+  // Best-effort : marque l'occurrence planifiée liée comme faite. Ne doit jamais
+  // faire échouer la clôture de la séance (offline-first : la séance est déjà
+  // close localement, cette étape est une synchronisation secondaire).
+  if (row?.planned_session_id) {
+    try {
+      await patch('planned_sessions', row.planned_session_id, {
+        status: 'done',
+        completed_at: nowUtc(),
+      });
+    } catch (error) {
+      console.warn("Échec du marquage de l'occurrence planifiée (ignoré, best-effort) :", error);
+    }
+  }
 }
 
 /**
