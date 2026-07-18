@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-a` — plan d'implémentation US Refonte-A
+
+**Ajouté**
+- [docs/plans/refonte-muscu-a-unification-programme-planning-seance.md](docs/plans/refonte-muscu-a-unification-programme-planning-seance.md) :
+  plan d'implémentation (9 tâches, phases A→G) de l'US-A. **A** migration `planned_session_id` sur
+  `workouts` + schéma PowerSync + `db:types` (🔴 checkpoint cloud) ; **B** `startWorkoutFromSession`
+  pose le lien / `finishWorkout` marque l'occurrence `done` (best-effort) ; **C** `planProgram` retire
+  les occurrences futures de l'ancien programme ; **D** calendrier : bouton « Démarrer » gaté muscu +
+  garde reprise + « Marquer fait sans détailler » ; **E** fusion des boutons sur les **2 fiches**
+  (muscu `programs/[id].tsx` + running `running-programs/[id].tsx`) + popup de changement de programme ;
+  **F** i18n FR/EN ; **G** contrôle + maquette. Commits atomiques, DoD, ordre/dépendances.
+
+**Technique / Notes**
+- **Plan uniquement** (aucun code) → lint/typecheck/tests non impactés. Aucun secret. Ne livre aucune
+  fonctionnalité → aucun Statut roadmap modifié.
+- Revue de plan (subagent) **Approved** après 1 itération : ajout de la 2ᵉ fiche `running-programs/[id].tsx`
+  à la tâche de fusion (mêmes boutons/clés partagées → sinon régression running + grep i18n cassé) ;
+  correction `useActiveProgram` (singulier) + ordre des hooks ; grep de retrait de clés i18n rendu prudent.
+- Prochaine étape workflow : **maquette** (design/refonte-muscu-a/) puis **validation finale** avant tout code.
+
 ### 18/07/2026 — `feature/refonte-muscu-a` — spec US Refonte-A (unifier programme → planning → séance)
 
 **Ajouté**
