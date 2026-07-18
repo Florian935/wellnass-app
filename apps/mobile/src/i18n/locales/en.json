@@ -1027,7 +1027,6 @@
       "targetDuration": "Duration (min)",
       "targetDistancePlaceholder": "e.g. 10",
       "targetDurationPlaceholder": "e.g. 45",
-      "activate": "Activate this program",
       "activeBadge": "Active",
       "duplicate": "Duplicate",
       "delete": "Delete program",
