@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { percentChange } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -12,10 +13,12 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   startWorkout,
+  startWorkoutFromSession,
   useActiveWorkout,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import { useActiveProgram } from '@/data/repositories/program-repository';
+import { useTodaySession } from '@/data/repositories/dashboard-repository';
 import { useWeeklyVolumeComparison } from '@/data/repositories/records-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -37,10 +40,25 @@ export default function StrengthScreen() {
   const { workouts } = useWorkoutHistory();
   const { program: activeProgram } = useActiveProgram('strength');
   const { current: weekVolume, previous: prevVolume } = useWeeklyVolumeComparison();
+  const today = useTodaySession('strength');
+  const [starting, setStarting] = useState(false);
 
   const onStart = async () => {
     await startWorkout();
     router.push('/workout');
+  };
+
+  const onStartToday = async (sessionId: string, plannedSessionId: string) => {
+    if (starting) return;
+    setStarting(true);
+    try {
+      await startWorkoutFromSession(sessionId, { plannedSessionId });
+      router.push('/workout');
+    } catch {
+      // offline-first : échec improbable
+    } finally {
+      setStarting(false);
+    }
   };
 
   const recentWorkouts = workouts.slice(0, 2);
@@ -50,7 +68,7 @@ export default function StrengthScreen() {
       <ScreenHeader title={t('pillars.strength')} subtitle={t('pillarScreens.strength.tagline')} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Carte d'action : reprendre / démarrer une séance (pas un module-lien). */}
+        {/* Carte d'action : reprendre / séance du jour / démarrer une séance (pas un module-lien). */}
         {active ? (
           <Card>
             <View style={styles.cardHeader}>
@@ -64,6 +82,31 @@ export default function StrengthScreen() {
             </Text>
             <Button label={t('workout.resume')} onPress={() => router.push('/workout')} />
           </Card>
+        ) : today.state === 'today-session' ? (
+          <Card>
+            <View style={styles.cardHeader}>
+              <Ionicons name="barbell" size={18} color={colors.accent} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                {t('home.today.title')}
+              </Text>
+            </View>
+            <Text style={[styles.cardText, { color: colors.textMuted }]}>
+              {today.session.name?.trim() ||
+                t('programs.detail.sessionFallback', { index: today.session.orderIndex + 1 })}
+              {' · '}
+              {t('home.today.exercises', { count: today.session.exerciseCount })}
+            </Text>
+            {today.session.programName ? (
+              <Text style={[styles.cardText, { color: colors.textMuted }]}>
+                {t('home.today.program', { name: today.session.programName })}
+              </Text>
+            ) : null}
+            <Button
+              label={t('home.today.cta')}
+              loading={starting}
+              onPress={() => onStartToday(today.session.sessionId, today.session.plannedSessionId)}
+            />
+          </Card>
         ) : (
           <Card>
             <View style={styles.cardHeader}>
@@ -76,6 +119,38 @@ export default function StrengthScreen() {
               {t('workout.freeSubtitle')}
             </Text>
             <Button label={t('workout.startFree')} onPress={onStart} />
+            {today.state === 'none' && today.doneToday ? (
+              <View style={styles.todayNoteRow}>
+                <Text style={[styles.todayNoteMark, { color: colors.success }]}>✓</Text>
+                <Text style={[styles.todayNoteText, { color: colors.success }]} numberOfLines={1}>
+                  {t('home.today.doneToday', {
+                    name:
+                      today.doneToday.name?.trim() ||
+                      t('programs.detail.sessionFallback', { index: 1 }),
+                  })}
+                </Text>
+              </View>
+            ) : today.state === 'none' && today.nextUpcoming ? (
+              <Pressable
+                onPress={() => router.push('/planning')}
+                style={styles.todayNoteRow}
+                hitSlop={8}
+              >
+                <Ionicons name="calendar-outline" size={14} color={colors.textMuted} />
+                <Text style={[styles.todayNoteText, { color: colors.textMuted }]} numberOfLines={1}>
+                  {(() => {
+                    const [, mm, dd] = today.nextUpcoming.scheduledDate.split('-');
+                    const nextDate = `${dd}/${mm}`;
+                    return t('home.today.next', {
+                      date: nextDate,
+                      name:
+                        today.nextUpcoming.name?.trim() ||
+                        t('programs.detail.sessionFallback', { index: 1 }),
+                    });
+                  })()}
+                </Text>
+              </Pressable>
+            ) : null}
           </Card>
         )}
 
@@ -188,4 +263,7 @@ const styles = StyleSheet.create({
   volumeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   volumeText: { gap: 2 },
   volumeValue: { fontFamily: fontFamily.displaySemi, fontSize: 18 },
+  todayNoteRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  todayNoteMark: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  todayNoteText: { fontFamily: fontFamily.body, fontSize: 13, flexShrink: 1 },
 });
