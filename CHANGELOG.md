@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `docs/refonte-muscu` — audit des flux Muscu + ouverture du chantier de refonte
+
+**Ajouté**
+- [docs/refonte-muscu/audit-flux.md](docs/refonte-muscu/audit-flux.md) : **diagnostic figé** des flux
+  du pilier Musculation (spec vs code réel). 5 problèmes documentés avec preuves (fichier:ligne) et
+  gravité [S]/[P] : (1) planning ↔ logging déconnectés, (2) « activer » vs « planifier » confus,
+  (3) séance du jour enfouie sur le hub, (4) écran de séance en-deçà de la spec §4.3, (5) pas de
+  templates de séance libre. Cross-référence à l'existant (neuf vs MUSC-F4/F5/F6 déjà au backlog) +
+  découpage en 4 US (A→B→C→D) validé par Florian.
+- [TODO.md](TODO.md) : section **« 🔧 Chantier refonte Muscu »** — les 4 US avec portée, dépendances,
+  ordre, et le fait que **US-C absorbe MUSC-F4/F5/F6**.
+
+**Technique / Notes**
+- Documentation uniquement (aucun code touché) → lint/typecheck/tests non impactés (non relancés).
+  Aucun secret. **Ne livre aucune fonctionnalité** → aucun Statut roadmap modifié.
+- **Décision assumée** : les 4 US de refonte ne sont **pas** ajoutées comme lignes de la roadmap
+  versionnée (refonte d'existant ≠ nouvelles features) ; rationale notée dans le TODO. US-C fera
+  évoluer le Statut des items roadmap concernés à sa livraison.
+- Prochaine étape : **US-A** (spec, 1ʳᵉ étape du workflow).
+
 ### 18/07/2026 — `docs/roadmap-reconciliation` — outillage du suivi roadmap + backlog Reste-à-faire MVP1
 
 **Modifié**

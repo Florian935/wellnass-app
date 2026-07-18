@@ -273,7 +273,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**Bilan MVP1 + suivi roadmap outillé** : réconciliation code ↔ roadmap
+*Dernière mise à jour : 18/07/2026 (**Chantier refonte Muscu ouvert** : audit des flux du pilier Musculation
+figé dans [docs/refonte-muscu/audit-flux.md](docs/refonte-muscu/audit-flux.md) (5 problèmes de logique de flux,
+validés par Florian, avec preuves fichier:ligne et gravité [S]/[P]) → section **« 🔧 Chantier refonte Muscu »**
+ajoutée au TODO : 4 US **A** (unifier programme→planning→séance, socle) → **B** (séance du jour sur le hub) →
+**C** (refonte de l'écran de séance, absorbe MUSC-F4/F5/F6) → **D** (templates de séance libre). Hors roadmap
+versionnée (refonte d'existant ≠ features) ; US-C fera évoluer le Statut des items concernés à sa livraison.
+Prochaine étape : **spec US-A**. Précédemment : **Bilan MVP1 + suivi roadmap outillé** : réconciliation code ↔ roadmap
 (3 explorations) → **colonne Statut de la [roadmap](docs/roadmap/roadmap.md) renseignée** (✅ Livré / 🟡 Partiel /
 ⬜ À faire / ⏳ Reporté) + Récapitulatif recalculé (**127 livré / 12 partiel / 39 à faire** sur 179 ; MVP1 = V1.0
 complète ; V0.6 100 % livrée ; V0.8 conformité = principal reste-à-faire). **CLAUDE.md + skill `/commit`** :
@@ -350,6 +356,33 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 - [ ] **NUTR-F1 — Rappels programmés nutrition** (1.14 rappel de pesée + 2.5 rappel de repas). Étend l'infra notif.
 - [ ] **SOCLE-01 — RevenueCat câblé inactif** (9.14) — entitlements posés mais inactifs, aucun paywall.
   **Optionnel** (peu coûteux posé tôt, évite une refonte ; app 100 % gratuite en V1).
+
+---
+
+## 🔧 Chantier refonte Muscu (18/07/2026)
+
+> Problèmes de **logique de flux** du pilier Musculation, validés par Florian. Diagnostic figé :
+> [docs/refonte-muscu/audit-flux.md](docs/refonte-muscu/audit-flux.md). Objectif : corriger les flux
+> **structurels** (déjà propagés à Running) **avant** de poursuivre la roadmap. Chaque US suit le
+> workflow **spec → plan → design → validation → code**. Ordre : A → B → C → D.
+
+- [ ] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — démarrer une vraie
+  séance **depuis le calendrier** ; une séance faite **met à jour** la séance planifiée (fait) ;
+  clarifier « **activer** » vs « **planifier** » un programme. Corrige les problèmes 1 + 2 de l'audit.
+  ⚠️ Bénéficie aussi à Running (même modèle). Spec → plan → design → validation avant code.
+- [ ] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
+  hub muscu (aujourd'hui 4-5 taps). Corrige le problème 3. **Dépend de US-A** (lien planning ↔ séance).
+- [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
+  par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
+  Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter
+  dans ce cadre plutôt qu'isolément.
+- [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
+  réutilisable (spec §4.1). Corrige le problème 5.
+
+> **Note** : ces US ne sont **pas** ajoutées comme lignes de la [roadmap](docs/roadmap/roadmap.md)
+> versionnée (elles relèvent de la **refonte** de fonctionnalités existantes, pas de nouvelles features).
+> US-C consolide des items roadmap déjà présents (MUSC-F4/F5/F6 → 3.26/3.27/3.28/3.29/3.32/3.33/3.34/3.36/3.37…) ;
+> leur Statut roadmap sera mis à jour à la livraison de US-C.
 
 ---
 
