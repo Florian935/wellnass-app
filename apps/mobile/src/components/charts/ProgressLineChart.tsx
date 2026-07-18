@@ -159,6 +159,7 @@ export function ProgressLineChart({
               areaChart1: false,
               color2: colors.accent,
               dataPointsColor2: colors.accent,
+              areaChart2: true,
               startFillColor2: colors.accent,
               endFillColor2: colors.surface,
               startOpacity2: 0.25,
