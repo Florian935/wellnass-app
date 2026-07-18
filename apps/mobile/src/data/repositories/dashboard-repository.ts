@@ -7,18 +7,14 @@
  * directe owner-scopée (dernier record muscu) faute de hook existant équivalent.
  *
  * Hooks exposés :
- *  - `useNextSession`      → widget 7.4 (prochaine séance / séance active)
+ *  - `useTodaySession`      → widget 7.4 + hub muscu (occurrence planifiée du jour)
  *  - `useNutritionSummary` → widget 7.5 (résumé nutritionnel du jour)
  *  - `useStreakData`        → widget 7.6 (série de jours actifs + pastilles semaine)
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
- *  - `useTodaySession`      → hub muscu + widget dashboard (occurrence planifiée du jour)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
- *  - `useProgramDetail` est appelé avec `program?.id ?? ''` : quand l'id est vide,
- *    la requête interne ne matche aucune ligne → `detail` est `null` (comportement
- *    confirmé dans program-repository.ts — la clause `WHERE p.id = ?` retourne 0 ligne).
  */
 
 import { useMemo } from 'react';
@@ -57,80 +53,10 @@ import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
 import { useSettings } from './settings-repository';
-import { useActiveProgram, useProgramDetail } from './program-repository';
+import { useActiveProgram } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
-
-// ---------------------------------------------------------------------------
-// useNextSession — widget 7.4
-// ---------------------------------------------------------------------------
-
-/** État retourné par `useNextSession`. */
-export type NextSessionState =
-  | { state: 'active-workout'; workoutId: string; isLoading: boolean }
-  | {
-      state: 'has-session';
-      session: {
-        /** Id de la séance — pour `startWorkoutFromSession(id)`. */
-        id: string;
-        /** Nom de la séance (fallback : « Séance N » si null). */
-        name: string;
-        /** Position 0-based dans le programme (orderIndex de la séance). */
-        orderIndex: number;
-        /** Nombre d'exercices planifiés (plans.length). */
-        exerciseCount: number;
-        /** Nom du programme actif (pour le contexte affiché dans le widget). */
-        programName: string;
-      };
-      isLoading: boolean;
-    }
-  | { state: 'no-program'; isLoading: boolean };
-
-/**
- * Expose l'état de la prochaine action muscu pour le widget 7.4.
- *
- * Priorité :
- *  1. Une séance est en cours → `active-workout`.
- *  2. Un programme actif a des séances → `has-session` (séance au plus petit orderIndex).
- *  3. Aucun programme actif / programme vide → `no-program`.
- *
- * Tous les hooks sous-jacents sont appelés inconditionnellement.
- */
-export function useNextSession(): NextSessionState {
-  const { workout, isLoading: workoutLoading } = useActiveWorkout();
-  const { program, isLoading: programLoading } = useActiveProgram('strength');
-  // Appel inconditionnel : '' → detail null (requête retourne 0 ligne).
-  const { detail, isLoading: detailLoading } = useProgramDetail(program?.id ?? '');
-
-  const isLoading = workoutLoading || programLoading || detailLoading;
-
-  // 1. Séance en cours
-  if (workout != null) {
-    return { state: 'active-workout', workoutId: workout.id, isLoading };
-  }
-
-  // 2. Programme actif avec séances — sessions sont triées par order_index (ORDER BY order_index dans la requête SQL)
-  if (program != null && detail != null && detail.sessions.length > 0) {
-    // La première séance dans le tableau est celle au plus petit orderIndex
-    const first = detail.sessions[0]!;
-    return {
-      state: 'has-session',
-      session: {
-        id: first.id,
-        // Fallback : « Séance N » (N = orderIndex + 1, affiché 1-based dans le widget)
-        name: first.name ?? `Séance ${first.orderIndex + 1}`,
-        orderIndex: first.orderIndex,
-        exerciseCount: first.plans.length,
-        programName: program.name,
-      },
-      isLoading,
-    };
-  }
-
-  // 3. Pas de programme ou programme vide
-  return { state: 'no-program', isLoading };
-}
 
 // ---------------------------------------------------------------------------
 // useTodaySession — hub muscu + widget dashboard (Refonte-B)
@@ -216,9 +142,8 @@ const SELECT_NEXT_UPCOMING = `
 
 /**
  * Expose l'occurrence planifiée du jour pour `pillar` — source de vérité pour le hub muscu et
- * le widget dashboard (Refonte-B). Contrairement à `useNextSession` (première séance du
- * programme, sans notion de calendrier), ce hook raisonne en **occurrences** (`planned_sessions`)
- * datées sur `scheduled_date`.
+ * le widget dashboard (Refonte-B). Ce hook raisonne en **occurrences** (`planned_sessions`)
+ * datées sur `scheduled_date` (et non « première séance du programme »).
  *
  * Priorité :
  *  1. Une séance est en cours → `active-workout`.

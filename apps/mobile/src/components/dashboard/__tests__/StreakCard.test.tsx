@@ -35,7 +35,7 @@ jest.mock('@/data/repositories/dashboard-repository', () => ({
     last7: [],
     isLoading: false,
   })),
-  useNextSession: jest.fn(),
+  useTodaySession: jest.fn(),
   useNutritionSummary: jest.fn(),
 }));
 
