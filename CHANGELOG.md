@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `fix/food-picker-footer-deborde` — footer « Ajouter un aliment » sans débordement
+
+**Corrigé**
+- Écran **« Ajouter un aliment »** ([food-picker](apps/mobile/src/app/food-picker.tsx)) : le footer
+  aligne jusqu'à **4 boutons** (Scanner, Liste rapide, Ajout rapide, Créer un aliment) en
+  `flexDirection:'row'` sans retour à la ligne → le 4ᵉ bouton **débordait** hors de l'écran (« début de
+  bouton » coupé en bas à droite).
+
+**Modifié**
+- Style `footer` : ajout de `flexWrap:'wrap'` → les boutons passent proprement à la ligne quand ils ne
+  tiennent pas sur une seule rangée (le `gap:12` gère aussi l'espacement vertical).
+
+**Technique / Notes**
+- **100 % JS, aucune migration.** typecheck ✅ · lint ✅. **Reste : recette device + relecture Damien.**
+
 ### 18/07/2026 — `fix/note-course-clavier-invisible` — note facultative visible sous le clavier (Android)
 
 **Corrigé**

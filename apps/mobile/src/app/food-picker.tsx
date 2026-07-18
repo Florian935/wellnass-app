@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   addedBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
   addedBannerText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
   addedBannerDone: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
-  footer: { flexDirection: 'row', gap: 12, borderTopWidth: 1, paddingTop: 12 },
+  footer: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, borderTopWidth: 1, paddingTop: 12 },
   panel: { gap: 16 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
