@@ -12,6 +12,7 @@
  *  - `useStreakData`        → widget 7.6 (série de jours actifs + pastilles semaine)
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
+ *  - `useTodaySession`      → hub muscu + widget dashboard (occurrence planifiée du jour)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -43,6 +44,7 @@ import {
   trainingDayCalories,
   type DayActivity,
   type DeficitVolumeAlert,
+  type Pillar,
   type RecordDistanceKey,
   type RecordType,
   type TrainingBonusMode,
@@ -58,6 +60,7 @@ import { useSettings } from './settings-repository';
 import { useActiveProgram, useProgramDetail } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
+import { getAppLanguage } from '@/i18n';
 
 // ---------------------------------------------------------------------------
 // useNextSession — widget 7.4
@@ -127,6 +130,155 @@ export function useNextSession(): NextSessionState {
 
   // 3. Pas de programme ou programme vide
   return { state: 'no-program', isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useTodaySession — hub muscu + widget dashboard (Refonte-B)
+// ---------------------------------------------------------------------------
+
+/** État retourné par `useTodaySession`. */
+export type TodaySessionState =
+  | { state: 'active-workout'; workoutId: string; isLoading: boolean }
+  | {
+      state: 'today-session';
+      session: {
+        /** Id `planned_sessions.id` — lien de complétion (marquer l'occurrence faite). */
+        plannedSessionId: string;
+        /** Id `sessions.id` — gabarit, pour démarrer la séance. */
+        sessionId: string;
+        /** Nom de la séance (fallback « Séance N » appliqué côté UI, N = orderIndex + 1). */
+        name: string | null;
+        /** Position 0-based dans le programme (orderIndex de la séance). */
+        orderIndex: number;
+        /** Nombre d'exercices planifiés. */
+        exerciseCount: number;
+        /** Nom du programme (traduit langue courante → repli fr). */
+        programName: string | null;
+      };
+      isLoading: boolean;
+    }
+  | {
+      state: 'none';
+      /** Occurrence déjà faite aujourd'hui, si aucune occurrence planifiée ne reste. */
+      doneToday: { name: string | null } | null;
+      /** Prochaine occurrence planifiée à venir (strictement après aujourd'hui), si connue. */
+      nextUpcoming: { scheduledDate: string; name: string | null } | null;
+      /** Vrai si un programme est actif pour `pillar`, même sans occurrence aujourd'hui. */
+      hasActiveProgram: boolean;
+      isLoading: boolean;
+    };
+
+/** Ligne brute d'occurrence planifiée du jour (`SELECT_TODAY_OCCURRENCES`). */
+type TodayOccurrenceDbRow = {
+  id: string;
+  session_id: string;
+  status: string;
+  session_name: string | null;
+  order_index: number;
+  exercise_count: number;
+  program_name: string | null;
+};
+
+/**
+ * Occurrences de `pillar` planifiées pour aujourd'hui (`ps.scheduled_date = ?`), quel que soit
+ * leur statut — permet de distinguer une occurrence encore `planned` d'une occurrence déjà
+ * `done` le même jour. Paramètres : `[lang, userId, pillar, todayKey]`.
+ */
+const SELECT_TODAY_OCCURRENCES = `
+  SELECT ps.id, ps.session_id, ps.status, s.name AS session_name, s.order_index,
+         (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count,
+         COALESCE(tl.name, tfr.name) AS program_name
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  LEFT JOIN program_translations tl  ON tl.program_id  = p.id AND tl.lang  = ?  AND tl.deleted_at  IS NULL
+  LEFT JOIN program_translations tfr ON tfr.program_id = p.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND p.pillar = ? AND ps.scheduled_date = ?
+  ORDER BY s.order_index
+`;
+
+/** Ligne brute de la prochaine occurrence planifiée à venir (`SELECT_NEXT_UPCOMING`). */
+type NextUpcomingDbRow = { scheduled_date: string; session_name: string | null };
+
+/**
+ * Prochaine occurrence `planned` de `pillar` strictement après aujourd'hui, la plus proche.
+ * Paramètres : `[userId, pillar, todayKey]`.
+ */
+const SELECT_NEXT_UPCOMING = `
+  SELECT ps.scheduled_date, s.name AS session_name
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND p.pillar = ? AND ps.status = 'planned' AND ps.scheduled_date > ?
+  ORDER BY ps.scheduled_date, s.order_index
+  LIMIT 1
+`;
+
+/**
+ * Expose l'occurrence planifiée du jour pour `pillar` — source de vérité pour le hub muscu et
+ * le widget dashboard (Refonte-B). Contrairement à `useNextSession` (première séance du
+ * programme, sans notion de calendrier), ce hook raisonne en **occurrences** (`planned_sessions`)
+ * datées sur `scheduled_date`.
+ *
+ * Priorité :
+ *  1. Une séance est en cours → `active-workout`.
+ *  2. Une occurrence `planned` existe aujourd'hui → `today-session` (contient
+ *     `plannedSessionId`, le lien de complétion).
+ *  3. Sinon → `none`, avec repli informatif : occurrence déjà `done` aujourd'hui (`doneToday`),
+ *     prochaine occurrence à venir (`nextUpcoming`), et si un programme est actif (`hasActiveProgram`).
+ *
+ * Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
+ */
+export function useTodaySession(pillar: Pillar): TodaySessionState {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
+  const today = localDayKey(new Date());
+
+  const { workout, isLoading: workoutLoading } = useActiveWorkout();
+  const { program, isLoading: programLoading } = useActiveProgram(pillar);
+  const { data: todayRows, isLoading: todayLoading } = useQuery<TodayOccurrenceDbRow>(
+    SELECT_TODAY_OCCURRENCES,
+    [lang, userId, pillar, today],
+  );
+  const { data: nextRows, isLoading: nextLoading } = useQuery<NextUpcomingDbRow>(
+    SELECT_NEXT_UPCOMING,
+    [userId, pillar, today],
+  );
+
+  const isLoading = workoutLoading || programLoading || todayLoading || nextLoading;
+
+  // 1. Séance en cours
+  if (workout != null) {
+    return { state: 'active-workout', workoutId: workout.id, isLoading };
+  }
+
+  // 2. Occurrence planifiée aujourd'hui — lien de complétion via plannedSessionId
+  const planned = todayRows.find((r) => r.status === 'planned');
+  if (planned) {
+    return {
+      state: 'today-session',
+      session: {
+        plannedSessionId: planned.id,
+        sessionId: planned.session_id,
+        name: planned.session_name,
+        orderIndex: planned.order_index,
+        exerciseCount: planned.exercise_count,
+        programName: planned.program_name,
+      },
+      isLoading,
+    };
+  }
+
+  // 3. Pas d'occurrence planifiée aujourd'hui — repli informatif (déjà fait / à venir / programme actif)
+  const done = todayRows.find((r) => r.status === 'done');
+  const next = nextRows[0];
+  return {
+    state: 'none',
+    doneToday: done ? { name: done.session_name } : null,
+    nextUpcoming: next ? { scheduledDate: next.scheduled_date, name: next.session_name } : null,
+    hasActiveProgram: program != null,
+    isLoading,
+  };
 }
 
 // ---------------------------------------------------------------------------
