@@ -302,7 +302,13 @@ function currentUserId(): string {
  *  3. `generatePlannedSessions` (alignement au lundi de la semaine de `startDate`).
  *  4. Soft-delete de TOUTES les instances encore `planned` de ce programme (re-planification).
  *  5. Insertion des instances générées (`txInsert`).
- *  6. Activation du programme inlinée (UN SEUL actif par pilier) — on ne peut pas appeler
+ *  6. Lecture du programme cible (`target`, notamment son `pillar`) — lue une seule fois, réutilisée
+ *     ci-dessous et pour l'activation.
+ *  7. Si `opts.removePreviousFuture`, soft-delete des occurrences encore `planned` de date ≥
+ *     aujourd'hui de l'ANCIEN programme actif du même pilier (l'historique `done`/`skipped` et
+ *     les occurrences passées sont conservés). DOIT s'exécuter AVANT la désactivation ci-dessous,
+ *     car le sous-select identifie l'ancien programme par `is_active = 1`.
+ *  8. Activation du programme inlinée (UN SEUL actif par pilier) — on ne peut pas appeler
  *     `activateProgram` qui ouvrirait sa PROPRE transaction (imbrication non sûre).
  *
  * Retourne le nombre d'instances générées.
@@ -310,6 +316,7 @@ function currentUserId(): string {
 export async function planProgram(
   programId: string,
   rawInput: PlanProgramInput,
+  opts?: { removePreviousFuture?: boolean },
 ): Promise<number> {
   const ownerId = currentUserId();
   // Validation runtime AVANT toute écriture : rejette durée vide/NaN/négative, format de
@@ -375,7 +382,7 @@ export async function planProgram(
       });
     }
 
-    // 6. Activation inlinée (reproduit activateProgram sans transaction imbriquée).
+    // 6. Lecture du programme cible (pilier requis pour les étapes 7 et 8).
     const target = await tx.getOptional<{ pillar: string }>(
       `SELECT pillar FROM programs WHERE id = ? AND deleted_at IS NULL`,
       [programId],
@@ -383,6 +390,25 @@ export async function planProgram(
     if (!target) {
       throw new Error('Programme introuvable : planification impossible.');
     }
+
+    // 7. Retrait optionnel des occurrences futures encore `planned` de l'ANCIEN programme actif
+    //    du même pilier (l'historique et les occurrences passées sont conservés). Doit s'exécuter
+    //    AVANT la désactivation (étape 8), qui identifie l'ancien programme par `is_active = 1`.
+    if (opts?.removePreviousFuture) {
+      const today = localDayKey(new Date());
+      await tx.execute(
+        `UPDATE planned_sessions SET deleted_at = ?, updated_at = ?
+         WHERE owner_id = ? AND status = 'planned' AND scheduled_date >= ?
+           AND deleted_at IS NULL
+           AND program_id IN (
+             SELECT id FROM programs
+             WHERE owner_id = ? AND pillar = ? AND is_active = 1 AND id <> ? AND deleted_at IS NULL
+           )`,
+        [now, now, ownerId, today, ownerId, target.pillar, programId],
+      );
+    }
+
+    // 8. Activation inlinée (reproduit activateProgram sans transaction imbriquée).
     await tx.execute(
       `UPDATE programs SET is_active = 0, updated_at = ?
        WHERE owner_id = ? AND pillar = ? AND is_active = 1 AND id <> ?
