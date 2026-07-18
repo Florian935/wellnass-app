@@ -10,6 +10,17 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 18/07/2026 — `feature/refonte-muscu-b` — maquette US Refonte-B
+
+**Ajouté**
+- [design/refonte-muscu-b/refonte-muscu-b.html](design/refonte-muscu-b/refonte-muscu-b.html) : maquette des
+  3 états de la carte d'action du hub muscu (Séance du jour liée / repli Séance libre + coche « ✓ faite » +
+  mention « Prochaine » / Reprendre), cartes-modules inchangées dessous. Design system de l'app (muscu bordeaux).
+
+**Technique / Notes**
+- **Design uniquement** (aucun code). **Validée par Florian** → spec ✅ + plan ✅ + design ✅ réunis : feu vert
+  implémentation (subagent-driven, 5 tâches, **aucune migration**).
+
 ### 18/07/2026 — `feature/refonte-muscu-b` — plan d'implémentation US Refonte-B
 
 **Ajouté**

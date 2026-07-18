@@ -1,0 +1,149 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --run:#c0562f;--strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1180px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:78ch;margin:0;font-size:15px;}
+  .stage{max-width:1180px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:380px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:380px;width:100%;}
+  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 12px;color:var(--muted);font-size:12px;font-family:var(--mono);}
+  .h1{font-weight:800;font-size:22px;letter-spacing:-.02em;padding:0 4px;margin:0 0 2px;}
+  .tag{color:var(--muted);font-size:12.5px;padding:0 4px;margin:0 0 14px;}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;margin:0 4px 12px;}
+  .card.accent{border-color:var(--strength);box-shadow:0 0 0 1px var(--strength);}
+  .chead{display:flex;align-items:center;gap:8px;margin:0 0 8px;}
+  .chead .ic{width:18px;height:18px;border-radius:5px;background:var(--strength);display:inline-block;flex:none;}
+  .chead .ic.free{background:var(--accent);}
+  .ctitle{font-weight:800;font-size:15px;letter-spacing:-.01em;}
+  .sname{font-weight:800;font-size:18px;letter-spacing:-.02em;margin:0 0 8px;}
+  .metarow{display:flex;align-items:center;gap:8px;margin:0 0 12px;}
+  .badge{background:var(--surface-alt);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;}
+  .prog{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ctext{color:var(--muted);font-size:13.5px;line-height:1.45;margin:0 0 12px;}
+  .btn{display:block;width:100%;text-align:center;border-radius:12px;padding:13px;font-weight:800;font-size:15px;border:1px solid transparent;}
+  .btn.primary{background:var(--strength);color:#fff;}
+  .btn.free{background:var(--accent);color:#fff;}
+  .subline{display:flex;align-items:center;gap:7px;margin:11px 4px 0;font-size:13px;}
+  .subline.done{color:var(--success);font-weight:700;}
+  .subline.next{color:var(--muted);}
+  .subline .chk{font-weight:900;}
+  .subline .go{margin-left:auto;color:var(--accent);font-weight:800;font-size:18px;}
+
+  /* module preview cards (contexte, sous la carte d'action) */
+  .mod{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 13px;margin:0 4px 8px;}
+  .mod .mi{width:16px;height:16px;border-radius:4px;background:var(--surface-alt);flex:none;}
+  .mod .mt{font-weight:700;font-size:14px;flex:1;}
+  .mod .mv{color:var(--muted);font-size:12px;}
+
+  .notes{max-width:1180px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;}
+  .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US Refonte-B · Maquette</p>
+    <h1 class="title">Séance du jour, en accès direct</h1>
+    <p class="sub">La carte d'action en haut du hub muscu adapte son contenu à ce qui est prévu <em>aujourd'hui</em>, par priorité : reprendre une séance active → démarrer la séance planifiée du jour → sinon séance libre. « Démarrer » lance le vrai suivi lié à l'occurrence (marquée « faite » à la fin, via US-A). Les 4 cartes-modules dessous sont inchangées. Même logique appliquée au widget « Séance du jour » du dashboard. Rendu dans le design system de l'app.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- État 1 : séance du jour -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Muscu</span></div>
+        <p class="h1">Muscu</p>
+        <p class="tag">Ton entraînement, jour après jour.</p>
+
+        <div class="card accent">
+          <div class="chead"><span class="ic"></span><span class="ctitle">Séance du jour</span></div>
+          <p class="sname">Legs</p>
+          <div class="metarow">
+            <span class="badge">6 exercices</span>
+            <span class="prog">Programme « Full body 8 sem. »</span>
+          </div>
+          <span class="btn primary">Démarrer la séance</span>
+        </div>
+
+        <div class="mod"><span class="mi"></span><span class="mt">Programmes</span><span class="mv">Full body 8 sem.</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Mon planning</span><span class="mv">4 prochains jours</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Historique</span><span class="mv">2 dernières</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Progression</span><span class="mv">Volume semaine</span></div>
+      </div>
+      <p class="caption">Une occurrence <b>planifiée aujourd'hui</b> → carte « Séance du jour », « Démarrer » <b>lié</b> à l'occurrence.</p>
+    </div>
+
+    <!-- État 2 : repli séance libre + prochaine + coche -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Muscu</span></div>
+        <p class="h1">Muscu</p>
+        <p class="tag">Ton entraînement, jour après jour.</p>
+
+        <div class="card">
+          <div class="chead"><span class="ic free"></span><span class="ctitle">Séance libre</span></div>
+          <p class="ctext">Démarre à vide et ajoute tes exercices au fil de la séance.</p>
+          <span class="btn free">Démarrer une séance libre</span>
+          <div class="subline done"><span class="chk">✓</span><span>Séance du jour faite · Push</span></div>
+          <div class="subline next"><span>Prochaine : 20/07 · Jambes</span><span class="go">›</span></div>
+        </div>
+
+        <div class="mod"><span class="mi"></span><span class="mt">Programmes</span><span class="mv">Full body 8 sem.</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Mon planning</span><span class="mv">4 prochains jours</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Historique</span><span class="mv">2 dernières</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Progression</span><span class="mv">Volume semaine</span></div>
+      </div>
+      <p class="caption">Rien à démarrer aujourd'hui → <b>Séance libre</b> + coche « faite » (si déjà faite) + mention <b>Prochaine</b> (→ planning).</p>
+    </div>
+
+    <!-- État 3 : reprise -->
+    <div class="col">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>Muscu</span></div>
+        <p class="h1">Muscu</p>
+        <p class="tag">Ton entraînement, jour après jour.</p>
+
+        <div class="card accent">
+          <div class="chead"><span class="ic"></span><span class="ctitle">Séance en cours</span></div>
+          <p class="ctext">Tu as une séance en cours — reprends là où tu t'es arrêté.</p>
+          <span class="btn primary">Reprendre la séance</span>
+        </div>
+
+        <div class="mod"><span class="mi"></span><span class="mt">Programmes</span><span class="mv">Full body 8 sem.</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Mon planning</span><span class="mv">4 prochains jours</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Historique</span><span class="mv">2 dernières</span></div>
+        <div class="mod"><span class="mi"></span><span class="mt">Progression</span><span class="mv">Volume semaine</span></div>
+      </div>
+      <p class="caption">Priorité n°1 : une <b>séance active</b> → « Reprendre » (avant même la séance du jour).</p>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions &amp; portée (rappel spec)</h2>
+    <ul>
+      <li><strong>Source = occurrence réelle du calendrier</strong> (<code>planned_sessions</code>, date = aujourd'hui, pilier muscu, 1ʳᵉ non faite). « Démarrer » passe <code>plannedSessionId</code> → l'occurrence bascule « faite » à la fin (US-A).</li>
+      <li><strong>Priorité stricte</strong> : séance active (Reprendre) → occurrence du jour (Séance du jour) → repli Séance libre.</li>
+      <li><strong>Rien aujourd'hui</strong> : Séance libre reste l'action ; <strong>coche « ✓ faite »</strong> si l'occurrence du jour est déjà faite ; <strong>mention « Prochaine »</strong> (→ planning) si une occurrence future existe.</li>
+      <li><strong>Une seule source de vérité</strong> : hook <code>useTodaySession('strength')</code> partagé par le hub <strong>et</strong> le widget dashboard 7.4 (qui, aligné, démarre désormais <strong>lié</strong> — corrige la lacune post-US-A).</li>
+      <li><strong>Aucune migration</strong> ; offline-first ; i18n FR/EN. <strong>Course</strong> : hors périmètre (même patron applicable plus tard).</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage / Hanken / Space Mono. Muscu = bordeaux charte <code>#6b0028</code>.</em></li>
+    </ul>
+  </section>
+</div>

@@ -407,8 +407,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   **Spec ✅ validée Florian + revue Approved**
   ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`).
   Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » +
-  réalignement du widget dashboard 7.4. **Aucune migration**. **Spec ✅ + plan ✅** validés Florian + revues
-  Approved ([plan](docs/plans/refonte-muscu-b-seance-du-jour-hub.md)). Suite : **maquette → validation finale → code**.
+  réalignement du widget dashboard 7.4. **Aucune migration**. **Spec ✅ + plan ✅ + maquette ✅** validés Florian
+  ([plan](docs/plans/refonte-muscu-b-seance-du-jour-hub.md) · [maquette](design/refonte-muscu-b/refonte-muscu-b.html)).
+  → **implémentation subagent-driven en cours**.
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
   par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
   Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter
