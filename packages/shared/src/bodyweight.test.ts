@@ -32,11 +32,12 @@ describe('weightTrend (refacto régression, iso-comportement)', () => {
     });
   }
 
-  // divergence attendue : non-monotonie / diviseur (m1 → moyenne de série + pente régression).
-  // Oracle (delta 1er↔dernier) : 79 - 80 = -1 kg → 'down'. Nouveau (pente régression, poids
-  // remonte au milieu) : pente positive sur la fenêtre → 'up'. Valeur RÉELLE figée ci-dessous.
-  it("divergence attendue : [80, 78, 82, 79] (non monotone) → 'up' sous le nouveau moteur", () => {
-    expect(weightTrend(dated([80, 78, 82, 79]))).toBe('up');
+  // divergence attendue : non-monotonie, robuste (loin du seuil ±0,3 kg, pas un artefact flottant).
+  // Oracle (delta 1er↔dernier) : 80 - 81 = -1 kg → 'down'. Nouveau (pente régression sur la
+  // fenêtre) : la série remonte nettement au milieu (76→84) → pente positive → slope × span
+  // ≈ +1,5 kg, largement au-dessus du seuil de 0,3 → 'up'. Valeur RÉELLE figée ci-dessous.
+  it("divergence attendue : [81, 76, 84, 80] (non monotone) → 'up' sous le nouveau moteur", () => {
+    expect(weightTrend(dated([81, 76, 84, 80]))).toBe('up');
   });
 
   it('série vide → stable', () => expect(weightTrend([])).toBe('stable'));
