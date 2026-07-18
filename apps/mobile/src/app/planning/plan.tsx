@@ -23,6 +23,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
 import {
+  useActiveProgram,
   useProgramDetail,
   type SessionDetail,
 } from '@/data/repositories/program-repository';
@@ -61,6 +62,8 @@ function PlanView({ programId }: { programId: string }) {
 
   const { detail, isLoading } = useProgramDetail(programId);
   const { runnerProfile } = useRunnerProfile();
+  const { program: activeProgram } = useActiveProgram(detail?.pillar ?? 'strength');
+  const hasOtherActive = !!activeProgram && activeProgram.id !== programId;
 
   // Durée en semaines (saisie libre, pré-remplie depuis le programme).
   const [duration, setDuration] = useState<string | null>(null);
@@ -93,22 +96,31 @@ function PlanView({ programId }: { programId: string }) {
     setDayAssignments((prev) => ({ ...prev, [sessionId]: day }));
   };
 
-  const onPlan = async () => {
-    if (!canPlan) return;
+  const doPlan = async (removePreviousFuture: boolean) => {
     setPlanning(true);
     try {
-      await planProgram(programId, {
-        startDate: weekStart,
-        durationWeeks: parsedDuration,
-        dayAssignments,
-      });
+      await planProgram(
+        programId,
+        { startDate: weekStart, durationWeeks: parsedDuration, dayAssignments },
+        { removePreviousFuture },
+      );
       router.replace('/planning');
     } catch {
-      Alert.alert(
-        t('planning.planErrorTitle'),
-        t('planning.planErrorMessage'),
-      );
+      Alert.alert(t('planning.planErrorTitle'), t('planning.planErrorMessage'));
       setPlanning(false);
+    }
+  };
+
+  const onPlan = () => {
+    if (!canPlan) return;
+    if (hasOtherActive) {
+      Alert.alert(t('planning.switchProgram.title'), t('planning.switchProgram.message'), [
+        { text: t('planning.switchProgram.remove'), onPress: () => void doPlan(true) },
+        { text: t('planning.switchProgram.keep'), onPress: () => void doPlan(false) },
+        { text: t('common.cancel'), style: 'cancel' },
+      ]);
+    } else {
+      void doPlan(false);
     }
   };
 

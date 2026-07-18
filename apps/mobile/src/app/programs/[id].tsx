@@ -16,7 +16,6 @@ import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
-  activateProgram,
   deleteProgram,
   duplicateProgram,
   useProgramDetail,
@@ -52,25 +51,12 @@ function ProgramDetailView({ programId }: { programId: string }) {
   const { detail, isLoading } = useProgramDetail(programId);
   const { programs: myPrograms } = useMyPrograms();
 
-  const [activating, setActivating] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [startingSessionId, setStartingSessionId] = useState<string | null>(null);
 
   // Un programme appartient à l'utilisateur s'il figure dans « Mes programmes ».
   const isOwned = myPrograms.some((p) => p.id === programId);
-
-  const onActivate = async () => {
-    if (activating || detail?.isActive) return;
-    setActivating(true);
-    try {
-      await activateProgram(programId);
-    } catch {
-      // Écriture offline-first : un échec est très improbable ; on réactive le bouton.
-    } finally {
-      setActivating(false);
-    }
-  };
 
   const onStartSession = async (sessionId: string) => {
     if (startingSessionId) return;
@@ -215,23 +201,8 @@ function ProgramDetailView({ programId }: { programId: string }) {
 
         {/* Actions */}
         <View style={styles.actions}>
-          {detail.isActive ? (
-            <Button
-              label={t('programs.detail.alreadyActive')}
-              onPress={() => undefined}
-              disabled
-            />
-          ) : (
-            <Button
-              label={activating ? t('programs.detail.activating') : t('programs.detail.activate')}
-              onPress={() => void onActivate()}
-              loading={activating}
-            />
-          )}
-
           <Button
-            label={t('planning.planCta')}
-            variant="ghost"
+            label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
             onPress={onPlan}
           />
 

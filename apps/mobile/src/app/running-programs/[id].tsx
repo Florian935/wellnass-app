@@ -16,7 +16,6 @@ import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
-  activateProgram,
   deleteProgram,
   duplicateProgram,
   useProgramDetail,
@@ -41,21 +40,8 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
 
   const { detail, isLoading } = useProgramDetail(programId);
   const { runnerProfile } = useRunnerProfile();
-  const [activating, setActivating] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  const onActivate = async () => {
-    if (activating || detail?.isActive) return;
-    setActivating(true);
-    try {
-      await activateProgram(programId);
-    } catch {
-      // Écriture offline-first.
-    } finally {
-      setActivating(false);
-    }
-  };
 
   const onDuplicate = async () => {
     if (duplicating) return;
@@ -184,23 +170,8 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
 
         {/* Actions */}
         <View style={styles.actions}>
-          {detail.isActive ? (
-            <Button
-              label={t('programs.detail.alreadyActive')}
-              onPress={() => undefined}
-              disabled
-            />
-          ) : (
-            <Button
-              label={activating ? t('programs.detail.activating') : t('running.program.activate')}
-              onPress={() => void onActivate()}
-              loading={activating}
-            />
-          )}
-
           <Button
-            label={t('planning.planCta')}
-            variant="ghost"
+            label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
             onPress={onPlan}
           />
 
