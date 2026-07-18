@@ -461,6 +461,9 @@
       "cta": "Start session",
       "resume": "Resume session",
       "createProgram": "Create a program",
+      "next": "Next: {{date}} · {{name}}",
+      "doneToday": "Today's session done · {{name}}",
+      "noneToday": "Nothing planned today",
       "compactActive": "In progress",
       "compactNone": "None"
     },

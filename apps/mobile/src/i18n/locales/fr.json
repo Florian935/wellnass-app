@@ -461,6 +461,9 @@
       "cta": "Démarrer la séance",
       "resume": "Reprendre la séance",
       "createProgram": "Créer un programme",
+      "next": "Prochaine : {{date}} · {{name}}",
+      "doneToday": "Séance du jour faite · {{name}}",
+      "noneToday": "Rien de prévu aujourd'hui",
       "compactActive": "En cours",
       "compactNone": "Aucune"
     },
