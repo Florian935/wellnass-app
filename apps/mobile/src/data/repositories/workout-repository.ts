@@ -57,6 +57,7 @@ export type WorkoutEntry = {
 export type ActiveWorkout = {
   id: string;
   startedAt: string;
+  sessionId: string | null;
   entries: WorkoutEntry[];
 };
 
@@ -91,6 +92,7 @@ type WorkoutDbRow = {
   duration_seconds: number | null;
   rpe: number | null;
   notes: string | null;
+  session_id: string | null;
 };
 
 /**
@@ -116,7 +118,7 @@ type WorkoutSetDbRow = {
 
 /** Séance active de l'utilisateur courant (au plus une). */
 const SELECT_ACTIVE_WORKOUT = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes
+  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id
   FROM workouts
   WHERE status = 'active' AND deleted_at IS NULL
   LIMIT 1
@@ -141,7 +143,7 @@ const SELECT_SETS_FOR_WORKOUT = `
 
 /** Historique des séances terminées, plus récentes d'abord. */
 const SELECT_HISTORY = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes
+  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id
   FROM workouts
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
@@ -251,6 +253,7 @@ export function useActiveWorkout(): {
   const workout: ActiveWorkout = {
     id: activeRow.id,
     startedAt: activeRow.started_at,
+    sessionId: activeRow.session_id,
     entries: groupSetsByExercise(setRows),
   };
 
@@ -273,6 +276,77 @@ export function useWorkoutHistory(): {
   const workouts = data.map(rowToHistoryItem);
 
   return { workouts, isLoading };
+}
+
+/** Ligne brute d'un plan d'exercice (repos cible). */
+type ExercisePlanRestDbRow = {
+  exercise_id: string;
+  rest_seconds: number;
+};
+
+/** Temps de repos planifié par exercice, pour une séance de programme donnée. */
+const SELECT_SESSION_REST = `
+  SELECT exercise_id, rest_seconds
+  FROM exercise_plans
+  WHERE session_id = ? AND deleted_at IS NULL AND rest_seconds IS NOT NULL
+`;
+
+/**
+ * Temps de repos planifiés (`rest_seconds`) des exercices d'une séance de
+ * programme, indexés par `exerciseId`. `sessionId` peut être `null` (séance
+ * libre, sans programme) : le hook reste appelable de façon stable (règle des
+ * hooks), la requête filtre alors sur une chaîne vide et ne matche aucune ligne.
+ */
+export function useSessionRest(sessionId: string | null): Record<string, number> {
+  const { data } = useQuery<ExercisePlanRestDbRow>(SELECT_SESSION_REST, [
+    sessionId ?? '',
+  ]);
+
+  const rest: Record<string, number> = {};
+  for (const row of data) {
+    rest[row.exercise_id] = row.rest_seconds;
+  }
+  return rest;
+}
+
+/** Ligne brute d'une série de la dernière performance (poids/reps). */
+type LastPerformanceDbRow = {
+  weight_kg: number | null;
+  reps: number | null;
+};
+
+/**
+ * Séries validées d'un exercice dans la dernière séance terminée qui le
+ * contient (deux paramètres = `exerciseId` répété : sous-requête de sélection
+ * de la séance la plus récente, puis filtre des séries de cette séance).
+ */
+const SELECT_LAST_PERFORMANCE = `
+  SELECT s.weight_kg, s.reps FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+  WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1
+    AND w.id = (
+      SELECT w2.id FROM workouts w2
+      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1
+      WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
+      ORDER BY w2.finished_at DESC LIMIT 1
+    )
+  ORDER BY s.order_index
+`;
+
+/**
+ * Séries de la dernière séance terminée où l'exercice a été fait (vide si
+ * jamais fait), triées par `order_index` — sert à pré-afficher la performance
+ * précédente à l'écran de saisie.
+ */
+export function useLastPerformance(
+  exerciseId: string,
+): { weightKg: number | null; reps: number | null }[] {
+  const { data } = useQuery<LastPerformanceDbRow>(SELECT_LAST_PERFORMANCE, [
+    exerciseId,
+    exerciseId,
+  ]);
+
+  return data.map((row) => ({ weightKg: row.weight_kg, reps: row.reps }));
 }
 
 // ---------------------------------------------------------------------------
@@ -528,6 +602,21 @@ export async function finishWorkout(
       console.warn("Échec du marquage de l'occurrence planifiée (ignoré, best-effort) :", error);
     }
   }
+}
+
+/**
+ * Enregistre le ressenti d'une séance (RPE / notes) sans passer par `finishWorkout`
+ * (écran de résumé, édition a posteriori). Seules les clés présentes dans `input`
+ * sont modifiées. N'importe pas `_sql` directement côté écran.
+ */
+export async function setWorkoutFeedback(
+  id: string,
+  input: { rpe?: number | null; notes?: string | null },
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('rpe' in input) columns['rpe'] = input.rpe;
+  if ('notes' in input) columns['notes'] = input.notes;
+  await patch('workouts', id, columns);
 }
 
 /**
