@@ -236,6 +236,27 @@ export async function moveEntry(entryId: string, direction: 'up' | 'down'): Prom
   await patch('food_entries', neighbor.id, { order_index: entry.order_index });
 }
 
+/**
+ * Déplace une entrée vers un autre repas (change son `meal_type`) le même jour.
+ * Récupère un `order_index` en fin du repas cible pour l'y placer proprement.
+ * Sert notamment à récupérer une entrée « orpheline » (repas supprimé) via la
+ * section « Autres » du journal. No-op si l'entrée est introuvable ou déjà dans le repas.
+ */
+export async function reassignEntryMeal(
+  entryId: string,
+  newMealKey: string,
+): Promise<void> {
+  const row = await powerSync.getOptional<{ log_date: string; meal_type: string }>(
+    `SELECT log_date, meal_type FROM food_entries WHERE id = ? AND deleted_at IS NULL`,
+    [entryId],
+  );
+  if (!row || row.meal_type === newMealKey) return;
+  await patch('food_entries', entryId, {
+    meal_type: newMealKey,
+    order_index: await nextOrderIndex(row.log_date, newMealKey),
+  });
+}
+
 type CopyRow = {
   meal_type: string;
   food_id: string | null;

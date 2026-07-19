@@ -32,6 +32,7 @@ import {
   copyMeal,
   duplicateDay,
   moveEntry,
+  reassignEntryMeal,
   removeEntry,
   updateEntry,
   useDayEntries,
@@ -162,6 +163,25 @@ export default function NutritionScreen() {
     });
   };
 
+  // Repas configurés résolus (clé + libellé d'affichage). Un repas custom sans nom
+  // retombe sur « Repas N » (et non sur sa clé technique `custom-…`, cf. bug corrigé).
+  const mealList = useMemo(
+    () =>
+      resolveMealConfig(nutritionProfile?.meals).map((m, i) => ({
+        key: m.key,
+        label:
+          m.label ??
+          (DEFAULT_MEAL_KEYS.includes(m.key as never)
+            ? t(`journal.meals.${m.key}`)
+            : t('meals.mealN', { n: i + 1 })),
+      })),
+    [nutritionProfile?.meals, t],
+  );
+  const configuredKeys = useMemo(() => new Set(mealList.map((m) => m.key)), [mealList]);
+  // Entrées « orphelines » : leur repas n'existe plus dans la config (repas supprimé /
+  // renommé avec nouvelle clé). Surfacées dans une section « Autres » pour ne rien perdre.
+  const orphanEntries = entries.filter((e) => !configuredKeys.has(e.mealType));
+
   // Position de l'entrée sélectionnée dans son repas (réordonnancement, 4.34) — `entries`
   // est déjà trié par order_index, donc les voisins déterminent si on peut monter/descendre.
   const detailSiblings = detailEntry ? entries.filter((e) => e.mealType === detailEntry.mealType) : [];
@@ -279,23 +299,34 @@ export default function NutritionScreen() {
         ) : null}
 
         {/* Repas configurables (4.14 / 4.15) */}
-        {resolveMealConfig(nutritionProfile?.meals).map((m) => {
-          const label =
-            m.label ?? (DEFAULT_MEAL_KEYS.includes(m.key as never) ? t(`journal.meals.${m.key}`) : m.key);
-          return (
-            <MealSection
-              key={m.key}
-              mealKey={m.key}
-              mealLabel={label}
-              day={day}
-              entries={entries.filter((e) => e.mealType === m.key)}
-              onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
-              onDeleteEntry={onDeleteEntry}
-              onSelectEntry={onSelectEntry}
-              onEditEntry={onEditEntry}
-            />
-          );
-        })}
+        {mealList.map((m) => (
+          <MealSection
+            key={m.key}
+            mealKey={m.key}
+            mealLabel={m.label}
+            day={day}
+            entries={entries.filter((e) => e.mealType === m.key)}
+            onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
+            onDeleteEntry={onDeleteEntry}
+            onSelectEntry={onSelectEntry}
+            onEditEntry={onEditEntry}
+          />
+        ))}
+
+        {/* Section « Autres » : entrées dont le repas n'existe plus (récupération). Pas
+            d'ajout direct — on les déplace vers un vrai repas depuis leur détail. */}
+        {orphanEntries.length > 0 ? (
+          <MealSection
+            key="__orphan__"
+            mealKey="__orphan__"
+            mealLabel={t('journal.meals.other')}
+            day={day}
+            entries={orphanEntries}
+            onDeleteEntry={onDeleteEntry}
+            onSelectEntry={onSelectEntry}
+            onEditEntry={onEditEntry}
+          />
+        ) : null}
 
         <Pressable onPress={() => router.push('/nutrition-meals')} style={styles.manageMeals}>
           <Ionicons name="create-outline" size={16} color={colors.textMuted} />
@@ -317,6 +348,12 @@ export default function NutritionScreen() {
             ? () => void moveEntry(detailEntry!.id, 'down')
             : undefined
         }
+        meals={mealList}
+        onReassign={(entryId, mealKey) => {
+          void reassignEntryMeal(entryId, mealKey);
+          setDetailEntry(null);
+          setDetailEditing(false);
+        }}
       />
     </Screen>
   );
@@ -367,18 +404,24 @@ function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
 }
 
 /** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
+type MealOption = { key: string; label: string };
+
 function EntryDetailModal({
   entry,
   startEditing,
   onClose,
   onMoveUp,
   onMoveDown,
+  meals,
+  onReassign,
 }: {
   entry: JournalEntry | null;
   startEditing?: boolean;
   onClose: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  meals: MealOption[];
+  onReassign: (entryId: string, mealKey: string) => void;
 }) {
   if (entry == null) return null;
   // Remonté à chaque ouverture (key) : l'état d'édition repart propre pour chaque entrée.
@@ -390,6 +433,8 @@ function EntryDetailModal({
       onClose={onClose}
       onMoveUp={onMoveUp}
       onMoveDown={onMoveDown}
+      meals={meals}
+      onReassign={onReassign}
     />
   );
 }
@@ -400,12 +445,16 @@ function EntryDetailContent({
   onClose,
   onMoveUp,
   onMoveDown,
+  meals,
+  onReassign,
 }: {
   entry: JournalEntry;
   startEditing?: boolean;
   onClose: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  meals: MealOption[];
+  onReassign: (entryId: string, mealKey: string) => void;
 }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -598,6 +647,32 @@ function EntryDetailContent({
               defaultOpen
             />
 
+            {/* Déplacer l'entrée vers un autre repas (récupération des orphelines incluse). */}
+            {!editing && meals.length > 0 ? (
+              <View style={styles.moveBlock}>
+                <Text style={[styles.moveLabel, { color: colors.textMuted }]}>
+                  {t('journal.detail.moveTo')}
+                </Text>
+                <View style={styles.moveChips}>
+                  {meals
+                    .filter((m) => m.key !== entry.mealType)
+                    .map((m) => (
+                      <Pressable
+                        key={m.key}
+                        onPress={() => onReassign(entry.id, m.key)}
+                        style={[styles.moveChip, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('journal.detail.moveToMeal', { meal: m.label })}
+                      >
+                        <Text style={[styles.moveChipLabel, { color: colors.text }]} numberOfLines={1}>
+                          {m.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                </View>
+              </View>
+            ) : null}
+
             {/* Actions : modifier la quantité / supprimer (4.34) */}
             {editing ? (
               <View style={styles.detailActions}>
@@ -642,7 +717,8 @@ function MealSection({
   mealLabel: string;
   day: string;
   entries: JournalEntry[];
-  onAdd: () => void;
+  /** Ajout d'un aliment. Absent pour la section « Autres » (récupération seule). */
+  onAdd?: () => void;
   onDeleteEntry: (e: JournalEntry) => void;
   onSelectEntry: (e: JournalEntry) => void;
   onEditEntry: (e: JournalEntry) => void;
@@ -729,18 +805,20 @@ function MealSection({
             </Pressable>
           </ReanimatedSwipeable>
         ))}
-        <View style={styles.mealActions}>
-          <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
-            <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
-            <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
-          </Pressable>
-          {entries.length === 0 ? (
-            <Pressable onPress={copyFromYesterday} style={styles.addRow} accessibilityRole="button">
-              <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
-              <Text style={[styles.copyLabel, { color: colors.textMuted }]}>{t('journal.copyYesterday')}</Text>
+        {onAdd ? (
+          <View style={styles.mealActions}>
+            <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
+              <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+              <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
             </Pressable>
-          ) : null}
-        </View>
+            {entries.length === 0 ? (
+              <Pressable onPress={copyFromYesterday} style={styles.addRow} accessibilityRole="button">
+                <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
+                <Text style={[styles.copyLabel, { color: colors.textMuted }]}>{t('journal.copyYesterday')}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -806,6 +884,16 @@ const styles = StyleSheet.create({
   detailActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 4 },
   deleteAction: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 4 },
   deleteLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  moveBlock: { gap: 8 },
+  moveLabel: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  moveChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  moveChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14 },
+  moveChipLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   meal: { gap: 8 },
   mealHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
   mealName: { fontFamily: fontFamily.displaySemi, fontSize: 17 },

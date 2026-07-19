@@ -29,6 +29,17 @@ export default function NutritionMealsScreen() {
   const add = () =>
     setMeals((prev) => [...prev, { key: `custom-${Date.now()}`, label: '' }]);
 
+  // Réordonnancement : échange la position i ↔ i+dir. Les clés sont conservées → aucune
+  // entrée du journal n'est orpheline (contrairement à supprimer/recréer un repas).
+  const move = (i: number, dir: -1 | 1) =>
+    setMeals((prev) => {
+      const j = i + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[i]!, next[j]!] = [next[j]!, next[i]!];
+      return next;
+    });
+
   const save = async () => {
     // Libellé vide → null (défaut). Si la config == défaut, on stocke null.
     const normalized: MealConfigItem[] = meals.map((m) => ({
@@ -57,6 +68,32 @@ export default function NutritionMealsScreen() {
               autoCapitalize="sentences"
             />
           </View>
+          <View style={styles.reorder}>
+            <Pressable
+              onPress={() => move(i, -1)}
+              disabled={i === 0}
+              hitSlop={6}
+              accessibilityLabel={t('meals.moveUp')}
+            >
+              <Ionicons
+                name="chevron-up"
+                size={20}
+                color={i === 0 ? colors.border : colors.text}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => move(i, 1)}
+              disabled={i === meals.length - 1}
+              hitSlop={6}
+              accessibilityLabel={t('meals.moveDown')}
+            >
+              <Ionicons
+                name="chevron-down"
+                size={20}
+                color={i === meals.length - 1 ? colors.border : colors.text}
+              />
+            </Pressable>
+          </View>
           {meals.length > 1 ? (
             <Pressable onPress={() => remove(i)} hitSlop={8} style={styles.remove} accessibilityLabel={t('meals.remove')}>
               <Ionicons name="trash-outline" size={20} color={colors.danger} />
@@ -78,6 +115,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, gap: 12 },
   hint: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  reorder: { paddingBottom: 10, gap: 2, alignItems: 'center' },
   remove: { paddingBottom: 14 },
   footer: { marginTop: 12 },
 });
