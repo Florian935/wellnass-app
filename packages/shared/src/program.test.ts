@@ -271,7 +271,7 @@ describe('exercisePlanRowSchema', () => {
   });
 
   it('rejette un setType inconnu', () => {
-    const plan = { ...validPlan, setType: 'dropset' };
+    const plan = { ...validPlan, setType: 'drop_set' };
     expect(exercisePlanRowSchema.safeParse(plan).success).toBe(false);
   });
 

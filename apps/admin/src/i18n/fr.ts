@@ -314,6 +314,8 @@ export const fr = {
       superset: 'Superset',
       duration: 'Durée',
       bodyweight: 'Poids du corps',
+      dropset: 'Dropset',
+      failure: 'Échec',
     },
     targetSets: 'Séries',
     targetReps: 'Répétitions',

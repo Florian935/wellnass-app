@@ -6,10 +6,22 @@ import { syncFieldsSchema, uuidSchema, utcTimestampSchema } from './sync';
  * - `normal`     : série classique (reps + poids).
  * - `warmup`     : échauffement ; **exclue du calcul de volume**.
  * - `superset`   : enchaînement avec un autre exercice.
- * - `duration`   : série à la durée (reps non pertinent, durationSeconds utilisé).
+ * - `duration`   : série à la durée (reps non pertinent, durationSeconds utilisé) ;
+ *                  **exclue du calcul des records** (une charge tenue en gainage
+ *                  n'est pas un record de charge max).
  * - `bodyweight` : série au poids de corps (weightKg peut être nul).
+ * - `dropset`    : série dégressive (baisse de charge sans repos entre les blocs).
+ * - `failure`    : série menée jusqu'à l'échec musculaire.
  */
-export const SET_TYPES = ['normal', 'warmup', 'superset', 'duration', 'bodyweight'] as const;
+export const SET_TYPES = [
+  'normal',
+  'warmup',
+  'superset',
+  'duration',
+  'bodyweight',
+  'dropset',
+  'failure',
+] as const;
 export const setTypeSchema = z.enum(SET_TYPES);
 export type SetType = z.infer<typeof setTypeSchema>;
 
@@ -68,6 +80,14 @@ export const workoutSetRowSchema = syncFieldsSchema.extend({
   durationSeconds: z.number().int().nullable(),
   /** Indique si la série a été validée (cochée) par l'utilisateur. */
   done: z.boolean(),
+  /**
+   * Effort perçu (RPE) de **cette série**, entier entre 1 et 10.
+   * Distinct du `rpe` de séance (`workoutRowSchema.rpe`), qui reflète le
+   * ressenti global de la séance.
+   */
+  rpe: z.number().int().min(1).max(10).nullable(),
+  /** Charge planifiée pour la série, figée au démarrage de la séance. */
+  plannedWeightKg: z.number().nonnegative().nullable(),
 });
 export type WorkoutSetRow = z.infer<typeof workoutSetRowSchema>;
 

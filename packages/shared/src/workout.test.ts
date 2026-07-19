@@ -25,13 +25,23 @@ const BASE_SYNC = {
 // SET_TYPES
 // ---------------------------------------------------------------------------
 describe('SET_TYPES', () => {
-  it('contient les 5 types de série canoniques', () => {
-    expect(SET_TYPES).toEqual(['normal', 'warmup', 'superset', 'duration', 'bodyweight']);
+  it('contient les 7 types de série canoniques', () => {
+    expect(SET_TYPES).toEqual([
+      'normal',
+      'warmup',
+      'superset',
+      'duration',
+      'bodyweight',
+      'dropset',
+      'failure',
+    ]);
   });
 
   it('setTypeSchema accepte une valeur valide', () => {
     expect(setTypeSchema.parse('normal')).toBe('normal');
     expect(setTypeSchema.parse('warmup')).toBe('warmup');
+    expect(setTypeSchema.parse('dropset')).toBe('dropset');
+    expect(setTypeSchema.parse('failure')).toBe('failure');
   });
 
   it('setTypeSchema rejette une valeur inconnue', () => {
@@ -151,6 +161,8 @@ describe('workoutSetRowSchema', () => {
     weightKg: 50,
     durationSeconds: null,
     done: false,
+    rpe: null,
+    plannedWeightKg: null,
   };
 
   it('valide une série complète', () => {
@@ -188,6 +200,61 @@ describe('workoutSetRowSchema', () => {
   it('exige done (booléen)', () => {
     const { done: _done, ...withoutDone } = validSet;
     expect(workoutSetRowSchema.safeParse(withoutDone).success).toBe(false);
+  });
+
+  it('accepte un setType dropset', () => {
+    const row = { ...validSet, setType: 'dropset' };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('accepte un setType failure', () => {
+    const row = { ...validSet, setType: 'failure' };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('rpe accepte 1 (minimum)', () => {
+    const row = { ...validSet, rpe: 1 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('rpe accepte 10 (maximum)', () => {
+    const row = { ...validSet, rpe: 10 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('rpe accepte null', () => {
+    const row = { ...validSet, rpe: null };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('rpe rejette 0 (hors plage)', () => {
+    const row = { ...validSet, rpe: 0 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(false);
+  });
+
+  it('rpe rejette 11 (hors plage)', () => {
+    const row = { ...validSet, rpe: 11 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(false);
+  });
+
+  it('plannedWeightKg accepte 0', () => {
+    const row = { ...validSet, plannedWeightKg: 0 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('plannedWeightKg accepte une valeur positive', () => {
+    const row = { ...validSet, plannedWeightKg: 60 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('plannedWeightKg accepte null', () => {
+    const row = { ...validSet, plannedWeightKg: null };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(true);
+  });
+
+  it('plannedWeightKg rejette une valeur négative', () => {
+    const row = { ...validSet, plannedWeightKg: -1 };
+    expect(workoutSetRowSchema.safeParse(row).success).toBe(false);
   });
 });
 
@@ -254,5 +321,30 @@ describe('computeVolume', () => {
       { setType: 'warmup', reps: 10, weightKg: 40, done: true },   // exclu
     ];
     expect(computeVolume(sets)).toBe(1360);
+  });
+
+  it('compte une série dropset (reps × charge)', () => {
+    const sets = [{ setType: 'dropset', reps: 10, weightKg: 30, done: true }];
+    expect(computeVolume(sets)).toBe(300);
+  });
+
+  it('compte une série failure (reps × charge)', () => {
+    const sets = [{ setType: 'failure', reps: 6, weightKg: 80, done: true }];
+    expect(computeVolume(sets)).toBe(480);
+  });
+
+  it('compte 0 pour une série duration (reps null)', () => {
+    const sets = [{ setType: 'duration', reps: null, weightKg: 20, done: true }];
+    expect(computeVolume(sets)).toBe(0);
+  });
+
+  it('compte 0 pour une série bodyweight sans charge', () => {
+    const sets = [{ setType: 'bodyweight', reps: 12, weightKg: null, done: true }];
+    expect(computeVolume(sets)).toBe(0);
+  });
+
+  it('compte reps × lest pour une série bodyweight lestée', () => {
+    const sets = [{ setType: 'bodyweight', reps: 8, weightKg: 15, done: true }];
+    expect(computeVolume(sets)).toBe(120);
   });
 });
