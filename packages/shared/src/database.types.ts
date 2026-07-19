@@ -1513,7 +1513,9 @@ export type Database = {
           exercise_id: string
           id: string
           order_index: number
+          planned_weight_kg: number | null
           reps: number | null
+          rpe: number | null
           set_type: string
           updated_at: string
           user_id: string
@@ -1528,7 +1530,9 @@ export type Database = {
           exercise_id: string
           id: string
           order_index?: number
+          planned_weight_kg?: number | null
           reps?: number | null
+          rpe?: number | null
           set_type?: string
           updated_at?: string
           user_id: string
@@ -1543,7 +1547,9 @@ export type Database = {
           exercise_id?: string
           id?: string
           order_index?: number
+          planned_weight_kg?: number | null
           reps?: number | null
+          rpe?: number | null
           set_type?: string
           updated_at?: string
           user_id?: string
