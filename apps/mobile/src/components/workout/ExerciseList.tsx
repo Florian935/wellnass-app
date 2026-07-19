@@ -2,10 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { SetType } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
+
+/** Types de série portant un badge dans la liste (`normal`/`superset` n'en ont pas). */
+const BADGE_TYPES: SetType[] = ['warmup', 'dropset', 'failure', 'duration', 'bodyweight'];
 
 type ExerciseListProps = {
   entries: WorkoutEntry[];
@@ -20,8 +24,21 @@ type ExerciseListProps = {
   colors: Palette;
 };
 
-/** « {reps} × {charge} », `—` pour les valeurs manquantes. */
+/** Formate une durée en « m:ss » (série à la durée). */
+function formatDurationMmSs(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
+/**
+ * Résumé d'une série pour la liste : « {durée} + lest » pour une série à la
+ * durée, sinon « {reps} × {charge} » (`—` pour les valeurs manquantes).
+ */
 function formatSetLine(set: WorkoutSetItem, units: ReturnType<typeof useUnits>): string {
+  if (set.setType === 'duration') {
+    const duration = set.durationSeconds == null ? '—' : formatDurationMmSs(set.durationSeconds);
+    return set.weightKg == null ? duration : `${duration} · +${units.formatWeight(set.weightKg)}`;
+  }
   const repsLabel = set.reps == null ? '—' : String(set.reps);
   return `${repsLabel} × ${units.formatWeight(set.weightKg)}`;
 }
@@ -108,7 +125,19 @@ export function ExerciseList({
                     <Text style={[styles.setLabel, { color: colors.textMuted }]}>
                       {`${t('workout.set')} ${index + 1}`}
                     </Text>
+                    {BADGE_TYPES.includes(set.setType) ? (
+                      <View style={[styles.badge, { backgroundColor: colors.surfaceAlt }]}>
+                        <Text style={[styles.badgeText, { color: colors.textMuted }]}>
+                          {t(`workout.setTypeBadge.${set.setType}`)}
+                        </Text>
+                      </View>
+                    ) : null}
                     <Text style={[styles.setValue, { color: colors.text }]}>{formatSetLine(set, units)}</Text>
+                    {set.rpe != null ? (
+                      <Text style={[styles.setRpe, { color: colors.textMuted }]}>
+                        {t('workout.rpeValue', { value: set.rpe })}
+                      </Text>
+                    ) : null}
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={t('workout.unvalidateSet')}
@@ -174,6 +203,9 @@ const styles = StyleSheet.create({
   setRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   setLabel: { fontFamily: fontFamily.body, fontSize: 13, width: 64 },
   setValue: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  badgeText: { fontFamily: fontFamily.bodyBold, fontSize: 10, letterSpacing: 0.3 },
+  setRpe: { fontFamily: fontFamily.monoBold, fontSize: 11 },
   iconBtn: { padding: 2 },
   addSetRow: { paddingTop: 4, paddingBottom: 2 },
   addSetLabel: { fontFamily: fontFamily.bodyBold, fontSize: 14 },

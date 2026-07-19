@@ -79,6 +79,30 @@
     "finishNoSetsTitle": "Aucune série validée",
     "finishNoSetsMessage": "Terminer quand même ?",
     "finishAnyway": "Terminer",
+    "setType": {
+      "normal": "Normale",
+      "warmup": "Échauffement",
+      "dropset": "Dropset",
+      "failure": "Échec",
+      "duration": "Durée",
+      "bodyweight": "Poids de corps"
+    },
+    "setTypeBadge": {
+      "warmup": "Éch.",
+      "dropset": "Drop",
+      "failure": "Échec",
+      "duration": "Durée",
+      "bodyweight": "PdC"
+    },
+    "warmupToggle": "Échauffement",
+    "durationLabel": "Durée",
+    "addedWeightLabel": "Lest",
+    "optional": "option.",
+    "plannedWeight": "Prévu : {{weight}}",
+    "rpeAdd": "＋ RPE série",
+    "rpeValue": "RPE {{value}}",
+    "rpeLabel": "RPE série",
+    "rpeClear": "Effacer",
     "summary": {
       "title": "Séance terminée 💪",
       "subtitle": "Beau travail. Voici ton récap.",

@@ -79,6 +79,30 @@
     "finishNoSetsTitle": "No set logged",
     "finishNoSetsMessage": "Finish anyway?",
     "finishAnyway": "Finish",
+    "setType": {
+      "normal": "Standard",
+      "warmup": "Warm-up",
+      "dropset": "Drop set",
+      "failure": "Failure",
+      "duration": "Duration",
+      "bodyweight": "Bodyweight"
+    },
+    "setTypeBadge": {
+      "warmup": "W-up",
+      "dropset": "Drop",
+      "failure": "Fail",
+      "duration": "Time",
+      "bodyweight": "BW"
+    },
+    "warmupToggle": "Warm-up",
+    "durationLabel": "Duration",
+    "addedWeightLabel": "Added",
+    "optional": "opt.",
+    "plannedWeight": "Planned: {{weight}}",
+    "rpeAdd": "＋ Set RPE",
+    "rpeValue": "RPE {{value}}",
+    "rpeLabel": "Set RPE",
+    "rpeClear": "Clear",
     "summary": {
       "title": "Workout done 💪",
       "subtitle": "Nice work. Here's your recap.",

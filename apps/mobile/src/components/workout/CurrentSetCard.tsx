@@ -1,8 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { SetType } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
+import { useUnits } from '@/hooks/useUnits';
 import type { Palette } from '@/theme/colors';
+
+/**
+ * Types de série exposés dans le sélecteur (C2). `warmup` est traité à part
+ * (raccourci 🔥) et `superset` reste hors périmètre (→ C3), d'où leur absence ici.
+ */
+const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
+
+/** Valeurs de RPE proposées (échelle 1-10). */
+const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 type CurrentSetCardProps = {
   exerciseName: string;
@@ -11,6 +23,9 @@ type CurrentSetCardProps = {
   totalSets: number;
   /** Ligne « dernière fois » déjà formatée, ou `null` pour la masquer. */
   lastPerfLabel: string | null;
+  /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
+  setType: SetType;
+  onSetType: (t: SetType) => void;
   repsValue: string;
   onChangeReps: (value: string) => void;
   weightValue: string;
@@ -19,6 +34,16 @@ type CurrentSetCardProps = {
   onChangeWeight: (value: string) => void;
   /** Incrément (kg) appliqué à la charge sous-jacente via les steppers. */
   onStepWeight: (deltaKg: number) => void;
+  /** Charge planifiée (snapshot du plan, kg) ou `null` si séance libre. */
+  plannedWeightKg: number | null;
+  /** Durée affichée « m:ss » (série de type `duration`). */
+  durationValue: string;
+  onChangeDuration: (value: string) => void;
+  /** Incrément (s) appliqué à la durée via les steppers. */
+  onStepDuration: (deltaSeconds: number) => void;
+  /** RPE de la série (1-10) ou `null`. Persisté immédiatement par le parent. */
+  rpe: number | null;
+  onSetRpe: (rpe: number | null) => void;
   restSeconds: number;
   /** Incrément (s) appliqué au repos de l'exercice via le mini stepper. */
   onStepRest: (deltaSeconds: number) => void;
@@ -58,14 +83,17 @@ function StepButton({
 }
 
 /**
- * Carte « série en cours » du flux guidé (C1). Composant présentational :
- * l'état d'édition et les mutations (updateSet, repos) sont gérés par le parent.
+ * Carte « série en cours » du flux guidé (C1 + enrichissements C2). Composant
+ * présentational : l'état d'édition et les mutations (updateSet, repos) sont
+ * gérés par le parent. Seul l'état d'ouverture du sélecteur RPE est local.
  */
 export function CurrentSetCard({
   exerciseName,
   currentIndex,
   totalSets,
   lastPerfLabel,
+  setType,
+  onSetType,
   repsValue,
   onChangeReps,
   weightValue,
@@ -73,6 +101,12 @@ export function CurrentSetCard({
   weightPlaceholder,
   onChangeWeight,
   onStepWeight,
+  plannedWeightKg,
+  durationValue,
+  onChangeDuration,
+  onStepDuration,
+  rpe,
+  onSetRpe,
   restSeconds,
   onStepRest,
   onSetRest,
@@ -80,6 +114,45 @@ export function CurrentSetCard({
   colors,
 }: CurrentSetCardProps) {
   const { t } = useTranslation();
+  const units = useUnits();
+
+  // Sélecteur RPE : masqué par défaut (peu utilisé), déplié au tap sur « ＋ RPE ».
+  const [rpeOpen, setRpeOpen] = useState(false);
+
+  // Types « au poids de corps » / « à la durée » → le champ charge devient un
+  // lest optionnel (placeholder vide autorisé) ; sinon charge classique.
+  const isLest = setType === 'duration' || setType === 'bodyweight';
+  const isDuration = setType === 'duration';
+  const warmupActive = setType === 'warmup';
+
+  // Écart charge réalisée vs planifiée, calculé en unité d'affichage.
+  const plannedDisplay = plannedWeightKg == null ? null : units.weightInputValue(plannedWeightKg);
+  const realized = weightValue.trim() === '' ? null : Number(weightValue);
+  const deltaRounded =
+    plannedDisplay != null && realized != null && !Number.isNaN(realized)
+      ? Math.round((realized - Number(plannedDisplay)) * 10) / 10
+      : null;
+
+  const renderChip = (type: SetType) => {
+    const active = setType === type;
+    return (
+      <Pressable
+        key={type}
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+        onPress={() => onSetType(type)}
+        style={({ pressed }) => [
+          styles.chip,
+          { backgroundColor: active ? colors.accent : colors.surfaceAlt },
+          pressed && styles.pressed,
+        ]}
+      >
+        <Text style={[styles.chipText, { color: active ? colors.accentText : colors.textMuted }]}>
+          {t(`workout.setType.${type}`)}
+        </Text>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
@@ -88,6 +161,34 @@ export function CurrentSetCard({
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
       </Text>
 
+      {/* Sélecteur de type : chips scrollables + raccourci 🔥 fixé à droite. */}
+      <View style={styles.typeRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          style={styles.typeScroll}
+          contentContainerStyle={styles.typeScrollContent}
+        >
+          {TYPE_CHIPS.map(renderChip)}
+        </ScrollView>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: warmupActive }}
+          onPress={() => onSetType(warmupActive ? 'normal' : 'warmup')}
+          style={({ pressed }) => [
+            styles.chip,
+            styles.warmupChip,
+            { backgroundColor: warmupActive ? colors.accent : colors.surfaceAlt },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.chipText, { color: warmupActive ? colors.accentText : colors.textMuted }]}>
+            {`🔥 ${t('workout.warmupToggle')}`}
+          </Text>
+        </Pressable>
+      </View>
+
       {lastPerfLabel ? (
         <Text style={[styles.lastPerf, { color: colors.textMuted }]}>
           {t('workout.lastTime', { perf: lastPerfLabel })}
@@ -95,27 +196,48 @@ export function CurrentSetCard({
       ) : null}
 
       <View style={styles.fields}>
-        <View style={styles.field}>
-          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{t('workout.reps')}</Text>
-          <TextInput
-            value={repsValue}
-            onChangeText={onChangeReps}
-            keyboardType="number-pad"
-            placeholderTextColor={colors.textMuted}
-            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
-          />
-        </View>
+        {isDuration ? (
+          <View style={styles.field}>
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{t('workout.durationLabel')}</Text>
+            <View style={styles.weightRow}>
+              <StepButton icon="remove" label="-5s" colors={colors} onPress={() => onStepDuration(-5)} />
+              <TextInput
+                value={durationValue}
+                onChangeText={onChangeDuration}
+                accessibilityLabel={t('workout.durationLabel')}
+                placeholderTextColor={colors.textMuted}
+                style={[
+                  styles.input,
+                  styles.weightInput,
+                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
+                ]}
+              />
+              <StepButton icon="add" label="+5s" colors={colors} onPress={() => onStepDuration(5)} />
+            </View>
+          </View>
+        ) : (
+          <View style={styles.field}>
+            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{t('workout.reps')}</Text>
+            <TextInput
+              value={repsValue}
+              onChangeText={onChangeReps}
+              keyboardType="number-pad"
+              placeholderTextColor={colors.textMuted}
+              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+            />
+          </View>
+        )}
 
         <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-            {`${t('workout.weight')} (${weightSymbol})`}
+            {isLest ? `${t('workout.addedWeightLabel')} (${t('workout.optional')})` : `${t('workout.weight')} (${weightSymbol})`}
           </Text>
           <View style={styles.weightRow}>
             <StepButton icon="remove" label="-2.5" colors={colors} onPress={() => onStepWeight(-2.5)} />
             <TextInput
               value={weightValue}
               onChangeText={onChangeWeight}
-              placeholder={weightPlaceholder}
+              placeholder={isLest ? '' : weightPlaceholder}
               keyboardType="decimal-pad"
               placeholderTextColor={colors.textMuted}
               style={[
@@ -126,6 +248,27 @@ export function CurrentSetCard({
             />
             <StepButton icon="add" label="+2.5" colors={colors} onPress={() => onStepWeight(2.5)} />
           </View>
+
+          {plannedDisplay != null ? (
+            <View style={styles.plannedRow}>
+              <Text style={[styles.planned, { color: colors.textMuted }]}>
+                {t('workout.plannedWeight', { weight: `${plannedDisplay} ${weightSymbol}` })}
+              </Text>
+              {deltaRounded != null ? (
+                deltaRounded === 0 ? (
+                  <Text style={[styles.delta, { color: colors.textMuted, backgroundColor: colors.surfaceAlt }]}>=</Text>
+                ) : deltaRounded > 0 ? (
+                  <Text style={[styles.delta, { color: colors.success, backgroundColor: colors.surfaceAlt }]}>
+                    {`▲ +${Math.abs(deltaRounded)}`}
+                  </Text>
+                ) : (
+                  <Text style={[styles.delta, { color: colors.accent, backgroundColor: colors.surfaceAlt }]}>
+                    {`▼ −${Math.abs(deltaRounded)}`}
+                  </Text>
+                )
+              ) : null}
+            </View>
+          ) : null}
         </View>
       </View>
 
@@ -148,6 +291,69 @@ export function CurrentSetCard({
         <StepButton icon="add" label="+15s" colors={colors} onPress={() => onStepRest(15)} />
       </View>
 
+      {/* RPE par série (C2) : masqué derrière « ＋ RPE » ; déplié = sélection 1-10. */}
+      <View style={styles.rpeBlock}>
+        {rpeOpen ? (
+          <View style={[styles.rpeOpen, { backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.rpeOpenLabel, { color: colors.textMuted }]}>{t('workout.rpeLabel')}</Text>
+            <View style={styles.rpePills}>
+              {RPE_VALUES.map((n) => {
+                const active = rpe === n;
+                return (
+                  <Pressable
+                    key={n}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => {
+                      onSetRpe(n);
+                      setRpeOpen(false);
+                    }}
+                    style={({ pressed }) => [
+                      styles.rpePill,
+                      {
+                        backgroundColor: active ? colors.accent : colors.surface,
+                        borderColor: active ? colors.accent : colors.border,
+                      },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Text style={[styles.rpePillText, { color: active ? colors.accentText : colors.textMuted }]}>{n}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : rpe != null ? (
+          <View style={styles.rpeSetRow}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setRpeOpen(true)}
+              style={({ pressed }) => [styles.rpeChip, { backgroundColor: colors.surfaceAlt }, pressed && styles.pressed]}
+            >
+              <Text style={[styles.rpeChipText, { color: colors.accent }]}>{t('workout.rpeValue', { value: rpe })}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={6}
+              onPress={() => onSetRpe(null)}
+              style={({ pressed }) => [pressed && styles.pressed]}
+            >
+              <Text style={[styles.rpeClear, { color: colors.textMuted }]}>{t('workout.rpeClear')}</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setRpeOpen(true)}
+            style={({ pressed }) => [styles.rpeAddBtn, { borderColor: colors.border }, pressed && styles.pressed]}
+          >
+            <Text style={[styles.rpeAddText, { color: colors.textMuted }]}>
+              {t('workout.rpeAdd')} <Text style={styles.rpeAddOptional}>{`(${t('workout.optional')})`}</Text>
+            </Text>
+          </Pressable>
+        )}
+      </View>
+
       <Pressable
         accessibilityRole="button"
         onPress={onValidate}
@@ -163,6 +369,16 @@ const styles = StyleSheet.create({
   card: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 12 },
   exName: { fontFamily: fontFamily.displaySemi, fontSize: 22, letterSpacing: -0.4 },
   progress: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  typeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typeScroll: { flex: 1 },
+  typeScrollContent: { gap: 6, alignItems: 'center', paddingRight: 4 },
+  chip: {
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  chipText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  warmupChip: { flexShrink: 0 },
   lastPerf: { fontFamily: fontFamily.body, fontSize: 14 },
   fields: { flexDirection: 'row', gap: 12, marginTop: 4 },
   field: { flex: 1, gap: 6 },
@@ -180,6 +396,16 @@ const styles = StyleSheet.create({
   // Padding horizontal réduit : les charges à virgule (ex. « 52.5 ») ne doivent pas
   // être tronquées dans un input étroit encadré par les deux steppers.
   weightInput: { flex: 1, paddingHorizontal: 4, minWidth: 0 },
+  plannedRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' },
+  planned: { fontFamily: fontFamily.body, fontSize: 12 },
+  delta: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 11,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
   stepBtn: {
     width: 40,
     height: 44,
@@ -202,6 +428,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   restUnit: { fontFamily: fontFamily.body, fontSize: 14 },
+  rpeBlock: { alignItems: 'flex-start' },
+  rpeAddBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 9,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  rpeAddText: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  rpeAddOptional: { fontFamily: fontFamily.body, fontSize: 12, opacity: 0.7 },
+  rpeSetRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  rpeChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9 },
+  rpeChipText: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
+  rpeClear: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  rpeOpen: { alignSelf: 'stretch', padding: 10, borderRadius: 12, gap: 8 },
+  rpeOpenLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  rpePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  rpePill: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rpePillText: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   validate: {
     minHeight: 56,
     borderRadius: 16,
