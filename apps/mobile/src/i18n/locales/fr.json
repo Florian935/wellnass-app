@@ -57,6 +57,26 @@
     "finish": "Terminer",
     "rest": "Repos {{seconds}} s",
     "skipRest": "Passer",
+    "setProgress": "Série {{current}}/{{total}}",
+    "lastTime": "La dernière fois : {{perf}}",
+    "validateSet": "Valider la série",
+    "restTitle": "Repos",
+    "restExtend": "+15 s",
+    "restRemaining": "{{seconds}} s",
+    "sessionDone": "Séance terminée ?",
+    "sessionDoneHint": "Toutes tes séries sont validées.",
+    "leave": {
+      "title": "Quitter la séance ?",
+      "continue": "Continuer la séance",
+      "pause": "Mettre en pause",
+      "abandon": "Abandonner",
+      "abandonConfirmTitle": "Abandonner la séance ?",
+      "abandonConfirmMessage": "La séance et ses séries seront supprimées.",
+      "abandonConfirm": "Abandonner"
+    },
+    "finishNoSetsTitle": "Aucune série validée",
+    "finishNoSetsMessage": "Terminer quand même ?",
+    "finishAnyway": "Terminer",
     "summary": {
       "title": "Séance terminée 💪",
       "subtitle": "Beau travail. Voici ton récap.",
@@ -65,6 +85,9 @@
       "exercises": "Exercices",
       "sets": "Séries validées",
       "volume": "Volume total",
+      "feeling": "Ressenti",
+      "note": "Note de séance",
+      "notePlaceholder": "Sensation, contexte, remarques…",
       "records": {
         "sectionTitle": "Records battus 🏆",
         "type": {

@@ -57,6 +57,26 @@
     "finish": "Finish",
     "rest": "Rest {{seconds}}s",
     "skipRest": "Skip",
+    "setProgress": "Set {{current}}/{{total}}",
+    "lastTime": "Last time: {{perf}}",
+    "validateSet": "Log set",
+    "restTitle": "Rest",
+    "restExtend": "+15s",
+    "restRemaining": "{{seconds}}s",
+    "sessionDone": "Workout done?",
+    "sessionDoneHint": "All your sets are logged.",
+    "leave": {
+      "title": "Leave the workout?",
+      "continue": "Continue workout",
+      "pause": "Pause",
+      "abandon": "Discard",
+      "abandonConfirmTitle": "Discard the workout?",
+      "abandonConfirmMessage": "The workout and its sets will be deleted.",
+      "abandonConfirm": "Discard"
+    },
+    "finishNoSetsTitle": "No set logged",
+    "finishNoSetsMessage": "Finish anyway?",
+    "finishAnyway": "Finish",
     "summary": {
       "title": "Workout done 💪",
       "subtitle": "Nice work. Here's your recap.",
@@ -65,6 +85,9 @@
       "exercises": "Exercises",
       "sets": "Sets completed",
       "volume": "Total volume",
+      "feeling": "How it felt",
+      "note": "Workout note",
+      "notePlaceholder": "Feel, context, remarks…",
       "records": {
         "sectionTitle": "Records beaten 🏆",
         "type": {
