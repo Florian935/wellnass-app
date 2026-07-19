@@ -1,0 +1,191 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1220px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:80ch;margin:0;font-size:15px;}
+  .stage{max-width:1220px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:340px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:12px;box-shadow:var(--shadow);max-width:340px;width:100%;overflow:hidden;min-height:600px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px;}
+  .topbar .x{font-size:22px;color:var(--ink);font-weight:400;width:28px;}
+  .topbar .timer{font-family:var(--mono);font-weight:700;font-size:18px;}
+  .topbar .fin{color:var(--strength);font-weight:800;font-size:15px;}
+
+  .focus{background:var(--surface);border:1px solid var(--strength);border-radius:18px;padding:16px;margin:0 4px 12px;box-shadow:0 0 0 1px var(--strength);}
+  .focus .exo{font-weight:800;font-size:19px;letter-spacing:-.02em;}
+  .focus .serie{color:var(--muted);font-weight:700;font-size:13px;margin:2px 0 10px;}
+  .last{background:var(--surface-alt);border-radius:10px;padding:7px 11px;font-size:12.5px;color:var(--ink);margin:0 0 14px;}
+  .last b{font-family:var(--mono);}
+  .fields{display:flex;gap:12px;margin:0 0 14px;}
+  .field{flex:1;text-align:center;}
+  .field .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px;}
+  .repsbox{background:var(--surface-alt);border-radius:12px;padding:12px 0;font-family:var(--mono);font-weight:700;font-size:22px;}
+  .stepper{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .stepper .b{width:38px;height:44px;border-radius:11px;background:var(--surface-alt);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--strength);}
+  .stepper .v{font-family:var(--mono);font-weight:700;font-size:20px;min-width:56px;}
+  .validate{background:var(--strength);color:#fff;border-radius:13px;text-align:center;font-weight:800;font-size:16px;padding:14px;}
+  .restlink{text-align:center;color:var(--muted);font-size:12px;margin-top:9px;}
+  .restlink u{text-decoration-style:dotted;}
+
+  .listttl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 6px 8px;}
+  .exrow{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin:0 4px 7px;}
+  .exrow.done{opacity:.6;}
+  .exrow .nm{flex:1;font-weight:700;font-size:14px;}
+  .exrow .pr{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .exrow .ok{color:var(--success);font-weight:900;}
+  .addex{text-align:center;color:var(--strength);font-weight:800;font-size:14px;margin:10px 4px 0;}
+
+  /* rest overlay */
+  .rest{position:absolute;inset:0;background:var(--strength);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;border-radius:34px;}
+  .rest .lbl{font-size:14px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;font-weight:700;}
+  .rest .cd{font-family:var(--mono);font-weight:800;font-size:82px;line-height:1;}
+  .rest .btns{display:flex;gap:12px;}
+  .rest .rb{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:12px;padding:12px 20px;font-weight:800;font-size:15px;}
+  .rest .nextup{position:absolute;bottom:26px;font-size:13px;opacity:.85;}
+
+  /* dialog */
+  .scrim{position:absolute;inset:0;background:rgba(51,41,31,.45);border-radius:34px;display:flex;align-items:flex-end;}
+  .sheet{background:var(--surface);border-top-left-radius:22px;border-top-right-radius:22px;width:100%;padding:18px 16px 26px;}
+  .sheet .st{font-weight:800;font-size:17px;margin:2px 2px 14px;}
+  .db{display:block;width:100%;text-align:center;border-radius:12px;padding:13px;font-weight:800;font-size:15px;border:1px solid transparent;margin-bottom:9px;}
+  .db.cont{background:var(--strength);color:#fff;}
+  .db.pause{background:transparent;color:var(--ink);border-color:var(--border);}
+  .db.aband{background:transparent;color:#b03a3a;border-color:#e3c4c4;}
+
+  /* summary */
+  .sumcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;margin:8px 4px 12px;}
+  .sumrow{display:flex;justify-content:space-between;padding:5px 0;}
+  .sumrow .l{color:var(--muted);font-size:14px;} .sumrow .v{font-weight:800;font-size:16px;}
+  .rec{display:flex;align-items:center;gap:10px;background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:0 4px 12px;}
+  .fb{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;margin:0 4px 12px;}
+  .fb .lab{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px;}
+  .stars{font-size:26px;letter-spacing:4px;color:var(--warn);margin-bottom:12px;}
+  .stars .off{color:var(--border);}
+  .notebox{background:var(--surface-alt);border-radius:10px;padding:10px;color:var(--muted);font-size:13px;font-style:italic;}
+
+  .h1{font-weight:800;font-size:20px;padding:0 6px;margin:0 0 12px;}
+  .notes{max-width:1220px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;} .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US Refonte-C1 · Maquette</p>
+    <h1 class="title">Séance en cours — flux guidé</h1>
+    <p class="sub">Le cœur de la refonte : une <b>carte « série en cours »</b> (dernière perf + steppers) posée sur une <b>liste repliée</b> pour la vue d'ensemble ; valider une série <b>enregistre + lance le repos plein écran + avance</b> ; garde-fous à la sortie (Continuer / Pause / Abandonner) ; résumé éditable (ressenti + note). Hors C1 : types de séries, RPE/série, planifié-réalisé (C2) ; réorg/superset/remplacer/démo/suggestion (C3). Rendu dans le design system (muscu bordeaux).</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- 1. Carte focus + liste -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">24:18</span><span class="fin">Terminer</span></div>
+        <div class="focus">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="last">La dernière fois : <b>80 kg × 8 / 8 / 7</b></div>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge</div>
+              <div class="stepper"><span class="b">−</span><span class="v">80 kg</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <div class="validate">✓ Valider la série</div>
+          <div class="restlink">Repos : <u>90 s</u> (modifiable)</div>
+        </div>
+        <div class="listttl">À suivre</div>
+        <div class="exrow done"><span class="nm">Squat</span><span class="pr">4/4</span><span class="ok">✓</span></div>
+        <div class="exrow"><span class="nm">Développé couché</span><span class="pr">1/4</span></div>
+        <div class="exrow"><span class="nm">Rowing barre</span><span class="pr">0/4</span></div>
+        <div class="exrow"><span class="nm">Gainage</span><span class="pr">0/3</span></div>
+        <div class="addex">+ Ajouter un exercice</div>
+      </div>
+      <p class="caption"><b>Carte focus</b> (série en cours) + <b>liste repliée</b> tappable pour sauter. Champs pré-remplis (plan → dernière perf → série préc.).</p>
+    </div>
+
+    <!-- 2. Repos plein écran -->
+    <div class="col">
+      <div class="phone">
+        <div class="rest">
+          <div class="lbl">Repos</div>
+          <div class="cd">1:12</div>
+          <div class="btns"><span class="rb">Passer</span><span class="rb">+15 s</span></div>
+          <div class="nextup">À suivre : Développé couché · Série 3/4</div>
+        </div>
+      </div>
+      <p class="caption"><b>Repos plein écran</b> déclenché à la validation : gros compte à rebours, <b>vibration</b> à la fin, Passer / Prolonger. On ne rate plus la fin du repos.</p>
+    </div>
+
+    <!-- 3. Dialogue de sortie -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">24:31</span><span class="fin">Terminer</span></div>
+        <div class="focus" style="opacity:.5;">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="last">La dernière fois : <b>80 kg × 8/8/7</b></div>
+          <div class="validate">✓ Valider la série</div>
+        </div>
+        <div class="scrim">
+          <div class="sheet">
+            <div class="st">Quitter la séance ?</div>
+            <span class="db cont">Continuer la séance</span>
+            <span class="db pause">Mettre en pause (reprendre plus tard)</span>
+            <span class="db aband">Abandonner</span>
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>Garde-fou ✕</b> : plus de suppression en un tap. <b>Pause</b> = on quitte sans rien perdre (« Reprendre »). <b>Abandonner</b> = 2ᵉ confirmation avant suppression.</p>
+    </div>
+
+    <!-- 4. Résumé éditable -->
+    <div class="col">
+      <div class="phone">
+        <p class="h1" style="margin-top:6px;">Séance terminée 💪</p>
+        <div class="sumcard">
+          <div class="sumrow"><span class="l">Durée</span><span class="v">48 min</span></div>
+          <div class="sumrow"><span class="l">Exercices</span><span class="v">4</span></div>
+          <div class="sumrow"><span class="l">Séries validées</span><span class="v">15</span></div>
+          <div class="sumrow"><span class="l">Volume</span><span class="v">6 240 kg</span></div>
+        </div>
+        <div class="rec"><span style="font-size:20px;">🏆</span><div><div style="font-weight:800;font-size:14px;">Développé couché</div><div style="color:var(--muted);font-size:12px;">Record 1RM estimé · 100 kg</div></div></div>
+        <div class="fb">
+          <div class="lab">Ressenti</div>
+          <div class="stars">★★★★<span class="off">★</span></div>
+          <div class="lab">Note de séance</div>
+          <div class="notebox">Épaule un peu sensible en fin de séance…</div>
+        </div>
+      </div>
+      <p class="caption"><b>Résumé éditable</b> : ressenti <b>5★</b> + note ajoutés <b>après coup</b>. (Le RPE par série viendra en C2.)</p>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions & portée (rappel spec C1)</h2>
+    <ul>
+      <li><strong>Disposition</strong> : carte « série en cours » (dernière perf + steppers − / +) + liste repliée (aperçu + saut) ; <strong>état de fin</strong> « Séance terminée ? » quand tout est validé.</li>
+      <li><strong>Valider</strong> = enregistre + <strong>repos plein écran</strong> + <strong>avance</strong> auto. Pré-remplissage : cible du plan → dernière perf → série précédente. Steppers incrément 2,5 kg (clavier possible).</li>
+      <li><strong>Repos</strong> : durée du plan sinon 90 s, plein écran + <strong>vibration (RN core)</strong> + Passer / +15 s, <strong>éditable par exercice</strong> (le temps de la séance).</li>
+      <li><strong>Garde-fous</strong> : ✕ → Continuer / Pause / Abandonner (2ᵉ confirmation) ; <strong>keep-awake</strong> ; Terminer avec avertissement si 0 série validée.</li>
+      <li><strong>Fin</strong> : résumé rendu éditable — ressenti <strong>5★</strong> + note après coup (via <code>setWorkoutFeedback</code>). <strong>Aucune migration</strong> (réutilise <code>workouts.rpe</code>/<code>notes</code>).</li>
+      <li><strong>Hors C1</strong> : types de séries / RPE par série / charge planifiée-réalisée → <strong>C2</strong> ; réorg / machine prise / superset / remplacer / note par exo / démo / suggestion → <strong>C3</strong>.</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage / Hanken / Space Mono. Muscu = bordeaux charte <code>#6b0028</code>.</em></li>
+    </ul>
+  </section>
+</div>

@@ -10,6 +10,17 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `feature/refonte-muscu-c1` — maquette US Refonte-C1
+
+**Ajouté**
+- [design/refonte-muscu-c1/refonte-muscu-c1.html](design/refonte-muscu-c1/refonte-muscu-c1.html) : maquette des
+  4 vues clés — carte « série en cours » (dernière perf + steppers) + liste repliée ; repos plein écran ; dialogue
+  de sortie Continuer/Pause/Abandonner ; résumé éditable (ressenti 5★ + note). Design system app (muscu bordeaux).
+
+**Technique / Notes**
+- **Design uniquement** (aucun code). **Validée par Florian** → spec ✅ + plan ✅ + design ✅ : feu vert
+  implémentation (subagent-driven, 6 tâches, **aucune migration**).
+
 ### 19/07/2026 — `feature/refonte-muscu-c1` — plan d'implémentation US Refonte-C1
 
 **Ajouté**

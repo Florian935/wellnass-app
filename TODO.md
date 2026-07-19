@@ -429,8 +429,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     valider = log+repos+avance, repos plein écran + vibration + éditable/exo, keep-awake, ✕ Continuer/Pause/Abandonner,
     Terminer + garde 0 série, résumé éditable (ressenti 5★ + note). **Aucune migration.** **Spec ✅ validée Florian
     + revue Approved** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md), `feature/refonte-muscu-c1`).
-    **Plan ✅ validé Florian + revue Approved** ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md)).
-    Suite : **maquette → validation finale → code**.
+    **Spec ✅ + plan ✅ + maquette ✅** validés Florian
+    ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md) · [maquette](design/refonte-muscu-c1/refonte-muscu-c1.html)).
+    → **implémentation subagent-driven en cours** (6 tâches, aucune migration).
   - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
     poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
