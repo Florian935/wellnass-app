@@ -55,7 +55,6 @@
     "addSet": "+ Set",
     "addExercise": "+ Add exercise",
     "finish": "Finish",
-    "rest": "Rest {{seconds}}s",
     "skipRest": "Skip",
     "setProgress": "Set {{current}}/{{total}}",
     "lastTime": "Last time: {{perf}}",

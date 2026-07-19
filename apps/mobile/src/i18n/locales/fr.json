@@ -55,7 +55,6 @@
     "addSet": "+ Série",
     "addExercise": "+ Ajouter un exercice",
     "finish": "Terminer",
-    "rest": "Repos {{seconds}} s",
     "skipRest": "Passer",
     "setProgress": "Série {{current}}/{{total}}",
     "lastTime": "La dernière fois : {{perf}}",
