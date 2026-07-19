@@ -41,7 +41,7 @@ function MacroChip({ label, value }: MacroChipProps) {
   );
 }
 
-export function NutritionSummaryCard({ size = 'full' }: { size?: WidgetSize }) {
+export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -59,7 +59,7 @@ export function NutritionSummaryCard({ size = 'full' }: { size?: WidgetSize }) {
   if (isLoading) return null;
 
   // ── Variante compacte (US 7.11) : kcal restantes (ou consommées) ────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     let value: string;
     if (!hasProfile) {
       value = t('home.nutrition.compactNoGoal');

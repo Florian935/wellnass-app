@@ -11,7 +11,7 @@ export * from './age';
 export * from './profile';
 export * from './settings';
 export * from './notifications';
-export * from './dashboard';
+export * from './widgets';
 export * from './exercise';
 export * from './workout';
 export * from './program';

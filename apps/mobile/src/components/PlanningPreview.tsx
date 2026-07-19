@@ -4,6 +4,7 @@ import {
   addDays,
   localDayKey,
   type ProgramSessionType,
+  type WidgetSize,
 } from '@wellness/shared';
 import {
   useUpcomingSessions,
@@ -12,8 +13,8 @@ import {
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-/** Nombre de jours affichés dans le mini-calendrier d'aperçu. */
-const PREVIEW_DAYS = 4;
+/** Le mini-calendrier couvre les 7 prochains jours (aujourd'hui inclus). */
+const PREVIEW_DAYS = 7;
 
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -29,14 +30,25 @@ function weekdayKey(date: Date): (typeof WEEKDAY_KEYS)[number] {
   return WEEKDAY_KEYS[(date.getDay() + 6) % 7]!;
 }
 
+type DayCell = {
+  key: string;
+  date: Date;
+  dayItems: PlannedSessionItem[];
+  isToday: boolean;
+};
+
 /**
- * Mini-calendrier d'aperçu des séances planifiées sur les 4 prochains jours
- * (aujourd'hui inclus), tous piliers. Une case par jour : abréviation + numéro,
- * pastille(s) colorée(s) par pilier (ou « repos »). Une ligne « prochaine séance »
- * résume le contenu à venir. Purement présentationnel (aucune navigation propre —
- * la carte parente est tappable).
+ * Mini-calendrier d'aperçu des séances planifiées sur les **7 prochains jours**
+ * (aujourd'hui inclus), tous piliers. Visuel type calendrier : une colonne par jour
+ * (initiale + numéro), pastille(s) colorée(s) par pilier, aujourd'hui mis en avant.
+ * Purement présentationnel (aucune navigation propre — la carte parente est tappable).
+ *
+ * S'adapte à la forme du widget :
+ *  - `small` : bande semaine condensée (7 initiales + pastilles) + prochaine séance ;
+ *  - `wide`  : grille 7 colonnes (initiale + numéro + pastilles) ;
+ *  - `large` : grille 7 colonnes + liste des prochaines séances.
  */
-export function PlanningPreview() {
+export function PlanningPreview({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { items } = useUpcomingSessions(PREVIEW_DAYS);
@@ -51,15 +63,59 @@ export function PlanningPreview() {
     (byDate[item.scheduledDate] ??= []).push(item);
   }
 
-  const days = Array.from({ length: PREVIEW_DAYS }, (_, i) => {
+  const days: DayCell[] = Array.from({ length: PREVIEW_DAYS }, (_, i) => {
     const date = addDays(today, i);
     const key = localDayKey(date);
     return { key, date, dayItems: byDate[key] ?? [], isToday: key === todayKey };
   });
 
-  // Prochaine séance à venir (première par date) pour la ligne de résumé.
-  const next = days.flatMap((d) => d.dayItems)[0] ?? null;
+  const upcoming = days.flatMap((d) => d.dayItems);
+  const next = upcoming[0] ?? null;
 
+  const pillarColor = (item: PlannedSessionItem) =>
+    item.pillar === 'running' ? colors.accent : STRENGTH_COLOR;
+
+  const dayInitial = (date: Date) =>
+    t(`common.weekday.${weekdayKey(date)}`).charAt(0).toUpperCase();
+
+  // ── Forme small : bande semaine condensée + prochaine séance ────────────────
+  if (size === 'small') {
+    return (
+      <View style={styles.smallContainer}>
+        <View style={styles.strip}>
+          {days.map((d) => (
+            <View key={d.key} style={styles.stripCol}>
+              <Text
+                style={[
+                  styles.stripDow,
+                  { color: d.isToday ? colors.accent : colors.textMuted },
+                ]}
+              >
+                {dayInitial(d.date)}
+              </Text>
+              <View
+                style={[
+                  styles.stripDot,
+                  {
+                    backgroundColor: d.dayItems[0]
+                      ? pillarColor(d.dayItems[0])
+                      : colors.border,
+                  },
+                ]}
+              />
+            </View>
+          ))}
+        </View>
+        <Text style={[styles.summary, { color: colors.textMuted }]} numberOfLines={2}>
+          {next
+            ? t('planning.previewNext', { session: sessionLabel(next, t) })
+            : t('planning.previewEmpty')}
+        </Text>
+      </View>
+    );
+  }
+
+  // ── Formes wide / large : grille calendrier 7 colonnes ──────────────────────
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -69,44 +125,58 @@ export function PlanningPreview() {
             style={[
               styles.cell,
               {
-                backgroundColor: colors.background,
+                backgroundColor: d.isToday ? colors.surfaceAlt : colors.background,
                 borderColor: d.isToday ? colors.accent : colors.border,
                 borderWidth: d.isToday ? 2 : 1,
               },
             ]}
           >
             <Text style={[styles.dow, { color: colors.textMuted }]}>
-              {t(`common.weekday.${weekdayKey(d.date)}`)}
+              {dayInitial(d.date)}
             </Text>
             <Text style={[styles.dom, { color: colors.text }]}>{d.date.getDate()}</Text>
-            {d.dayItems.length === 0 ? (
-              <Text style={[styles.rest, { color: colors.textMuted }]} numberOfLines={1}>
-                {t('planning.restShort')}
-              </Text>
-            ) : (
-              <View style={styles.dots}>
-                {d.dayItems.slice(0, 3).map((item) => (
-                  <View
-                    key={item.id}
-                    style={[
-                      styles.dot,
-                      {
-                        backgroundColor:
-                          item.pillar === 'running' ? colors.accent : STRENGTH_COLOR,
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-            )}
+            <View style={styles.dots}>
+              {d.dayItems.slice(0, 3).map((item) => (
+                <View
+                  key={item.id}
+                  style={[styles.dot, { backgroundColor: pillarColor(item) }]}
+                />
+              ))}
+            </View>
           </View>
         ))}
       </View>
-      <Text style={[styles.summary, { color: colors.textMuted }]} numberOfLines={1}>
-        {next
-          ? t('planning.previewNext', { session: sessionLabel(next, t) })
-          : t('planning.previewEmpty')}
-      </Text>
+
+      {size === 'large' ? (
+        <View style={styles.largeList}>
+          {upcoming.length > 0 ? (
+            upcoming.slice(0, 3).map((item) => (
+              <View key={item.id} style={styles.largeRow}>
+                <View style={[styles.largeDot, { backgroundColor: pillarColor(item) }]} />
+                <Text style={[styles.largeDay, { color: colors.textMuted }]}>
+                  {t(`common.weekday.${weekdayKey(new Date(item.scheduledDate))}`)}
+                </Text>
+                <Text
+                  style={[styles.largeName, { color: colors.text }]}
+                  numberOfLines={1}
+                >
+                  {sessionLabel(item, t)}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={[styles.summary, { color: colors.textMuted }]} numberOfLines={1}>
+              {t('planning.previewEmpty')}
+            </Text>
+          )}
+        </View>
+      ) : (
+        <Text style={[styles.summary, { color: colors.textMuted }]} numberOfLines={1}>
+          {next
+            ? t('planning.previewNext', { session: sessionLabel(next, t) })
+            : t('planning.previewEmpty')}
+        </Text>
+      )}
     </View>
   );
 }
@@ -127,25 +197,43 @@ function sessionLabel(
 
 const styles = StyleSheet.create({
   container: { gap: 8 },
-  row: { flexDirection: 'row', gap: 8 },
+  row: { flexDirection: 'row', gap: 4 },
   cell: {
     flex: 1,
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    borderRadius: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 2,
     alignItems: 'center',
-    gap: 4,
-    minHeight: 74,
+    gap: 3,
+    minHeight: 62,
   },
   dow: {
     fontFamily: fontFamily.bodySemi,
-    fontSize: 11,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
-  dom: { fontFamily: fontFamily.displaySemi, fontSize: 18 },
-  rest: { fontFamily: fontFamily.body, fontSize: 10 },
-  dots: { flexDirection: 'row', gap: 3, minHeight: 8, alignItems: 'center' },
-  dot: { width: 7, height: 7, borderRadius: 4 },
+  dom: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
+  dots: { flexDirection: 'row', gap: 2, minHeight: 6, alignItems: 'center' },
+  dot: { width: 5, height: 5, borderRadius: 3 },
   summary: { fontFamily: fontFamily.body, fontSize: 13 },
+
+  // Forme small : bande semaine.
+  smallContainer: { flex: 1, gap: 8, justifyContent: 'flex-end' },
+  strip: { flexDirection: 'row', justifyContent: 'space-between' },
+  stripCol: { alignItems: 'center', gap: 4 },
+  stripDow: { fontFamily: fontFamily.bodySemi, fontSize: 10 },
+  stripDot: { width: 6, height: 6, borderRadius: 3 },
+
+  // Forme large : liste des prochaines séances.
+  largeList: { gap: 6 },
+  largeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  largeDot: { width: 7, height: 7, borderRadius: 4, flexShrink: 0 },
+  largeDay: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    width: 34,
+  },
+  largeName: { fontFamily: fontFamily.body, fontSize: 13, flex: 1 },
 });

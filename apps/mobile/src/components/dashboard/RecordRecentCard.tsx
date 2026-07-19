@@ -53,7 +53,7 @@ function formatDateFr(iso: string): string {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
-export function RecordRecentCard({ size = 'full' }: { size?: WidgetSize }) {
+export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -84,7 +84,7 @@ export function RecordRecentCard({ size = 'full' }: { size?: WidgetSize }) {
   }
 
   // ── Variante compacte (US 7.11) : record court ─────────────────────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     return (
       <DashboardCardCompact
         icon="trophy-outline"

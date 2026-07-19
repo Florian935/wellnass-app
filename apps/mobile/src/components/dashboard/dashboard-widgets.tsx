@@ -6,7 +6,7 @@
  * disposition résolue sans connaître chaque composant individuellement.
  */
 
-import type { DashboardWidgetId, WidgetSize } from '@wellness/shared';
+import type { HomeWidgetId, WidgetSize } from '@wellness/shared';
 import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
 import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
 import { StreakCard } from '@/components/dashboard/StreakCard';
@@ -19,7 +19,7 @@ import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
-const WIDGET_COMPONENTS: Record<DashboardWidgetId, WidgetComponent> = {
+const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   'today-session': TodaySessionCard,
   'nutrition-summary': NutritionSummaryCard,
   streak: StreakCard,
@@ -32,7 +32,7 @@ const WIDGET_COMPONENTS: Record<DashboardWidgetId, WidgetComponent> = {
 };
 
 /** Rend le widget `id` à la taille demandée. */
-export function DashboardWidget({ id, size }: { id: DashboardWidgetId; size: WidgetSize }) {
+export function DashboardWidget({ id, size }: { id: HomeWidgetId; size: WidgetSize }) {
   const Component = WIDGET_COMPONENTS[id];
   return <Component size={size} />;
 }

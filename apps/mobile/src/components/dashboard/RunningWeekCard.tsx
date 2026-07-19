@@ -30,7 +30,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function RunningWeekCard({ size = 'full' }: { size?: WidgetSize }) {
+export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -42,7 +42,7 @@ export function RunningWeekCard({ size = 'full' }: { size?: WidgetSize }) {
   if (statsLoading || profileLoading) return null;
 
   // ── Variante compacte (US 7.11) : distance + séances ───────────────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     const goal = runnerProfile?.weeklyFrequency ?? null;
     const sessions =
       goal != null

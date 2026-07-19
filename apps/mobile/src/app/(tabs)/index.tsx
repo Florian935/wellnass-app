@@ -3,12 +3,11 @@ import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import type { HomeWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
-import { DashboardWidgetRow } from '@/components/dashboard/DashboardWidgetRow';
-import { SortableDashboard } from '@/components/dashboard/SortableDashboard';
-import { useDashboardLayout } from '@/data/repositories/dashboard-layout-repository';
+import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -21,13 +20,12 @@ export default function HomeScreen() {
 
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const { layout, toggleVisible, setSize, reorder } = useDashboardLayout();
 
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
 
-  // Hors édition : uniquement les widgets visibles. En édition : tous (déjà
-  // filtrés par piliers dans le layout résolu), les masqués marqués.
-  const rendered = editing ? layout.widgets : layout.widgets.filter((w) => w.visible);
+  const renderWidget = (id: WidgetId, size: WidgetSize) => (
+    <DashboardWidget id={id as HomeWidgetId} size={size} />
+  );
 
   return (
     <Screen edges={['top']}>
@@ -96,45 +94,12 @@ export default function HomeScreen() {
         // Neutralise le défilement pendant un drag actif (maquette / spec 7.2).
         scrollEnabled={!dragging}
       >
-        {rendered.length === 0 && !editing ? (
-          <Text style={[styles.empty, { color: colors.textMuted }]}>
-            {t('home.customize.empty')}
-          </Text>
-        ) : null}
-
-        {editing ? (
-          <SortableDashboard
-            items={rendered}
-            onReorder={reorder}
-            onDragActiveChange={setDragging}
-            handleAccessibilityLabel={t('home.customize.drag')}
-            renderItem={(w, handle) => (
-              <DashboardWidgetRow
-                editing
-                visible={w.visible}
-                size={w.size}
-                handle={handle}
-                onToggleVisible={() => toggleVisible(w.id)}
-                onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
-              >
-                <DashboardWidget id={w.id} size={w.size} />
-              </DashboardWidgetRow>
-            )}
-          />
-        ) : (
-          rendered.map((w) => (
-            <DashboardWidgetRow
-              key={w.id}
-              editing={false}
-              visible={w.visible}
-              size={w.size}
-              onToggleVisible={() => toggleVisible(w.id)}
-              onToggleSize={() => setSize(w.id, w.size === 'compact' ? 'full' : 'compact')}
-            >
-              <DashboardWidget id={w.id} size={w.size} />
-            </DashboardWidgetRow>
-          ))
-        )}
+        <WidgetGrid
+          screen="home"
+          editing={editing}
+          renderWidget={renderWidget}
+          onDragActiveChange={setDragging}
+        />
       </ScrollView>
     </Screen>
   );
@@ -170,5 +135,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   blocks: { gap: 14, paddingBottom: 24 },
-  empty: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20, textAlign: 'center' },
 });

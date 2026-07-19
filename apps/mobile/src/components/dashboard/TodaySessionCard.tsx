@@ -29,7 +29,7 @@ import { startWorkoutFromSession } from '@/data/repositories/workout-repository'
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function TodaySessionCard({ size = 'full' }: { size?: WidgetSize }) {
+export function TodaySessionCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -39,7 +39,7 @@ export function TodaySessionCard({ size = 'full' }: { size?: WidgetSize }) {
   if (today.isLoading) return null;
 
   // ── Variante compacte (US 7.11) : titre + nom séance / état ─────────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     const value =
       today.state === 'active-workout'
         ? t('home.today.compactActive')

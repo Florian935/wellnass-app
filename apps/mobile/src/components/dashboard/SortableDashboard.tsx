@@ -26,11 +26,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import type { DashboardWidgetId } from '@wellness/shared';
+import type { WidgetId } from '@wellness/shared';
 
 const SPACING = 14; // doit correspondre au `gap` de la liste (styles.blocks)
 
-export type SortableItem = { id: DashboardWidgetId };
+export type SortableItem = { id: WidgetId };
 
 /**
  * `renderItem` reçoit une `handle` : un noeud à insérer comme poignée de
@@ -46,7 +46,7 @@ export function SortableDashboard<T extends SortableItem>({
 }: {
   items: T[];
   renderItem: (item: T, handle: ReactNode) => ReactNode;
-  onReorder: (id: DashboardWidgetId, toIndex: number) => void;
+  onReorder: (id: WidgetId, toIndex: number) => void;
   onDragActiveChange?: (active: boolean) => void;
   /** Libellé d'accessibilité de la poignée de déplacement (i18n, fourni par l'appelant). */
   handleAccessibilityLabel: string;
@@ -54,14 +54,14 @@ export function SortableDashboard<T extends SortableItem>({
   // Hauteurs mesurées par id (mises à jour à chaque onLayout).
   const heights = useRef<Map<string, number>>(new Map());
   // Index de la ligne en cours de drag (null = aucun). Pilote le rendu du ghost.
-  const [activeId, setActiveId] = useState<DashboardWidgetId | null>(null);
+  const [activeId, setActiveId] = useState<WidgetId | null>(null);
 
   const setHeight = useCallback((id: string, h: number) => {
     heights.current.set(id, h);
   }, []);
 
   const beginDrag = useCallback(
-    (id: DashboardWidgetId) => {
+    (id: WidgetId) => {
       setActiveId(id);
       onDragActiveChange?.(true);
     },
@@ -76,7 +76,7 @@ export function SortableDashboard<T extends SortableItem>({
   }, [onDragActiveChange]);
 
   const endDrag = useCallback(
-    (id: DashboardWidgetId, translationY: number) => {
+    (id: WidgetId, translationY: number) => {
       const order = items.map((it) => it.id);
       const fromIndex = order.indexOf(id);
       if (fromIndex === -1) {
@@ -145,12 +145,12 @@ function SortableRow<T extends SortableItem>({
   renderItem,
   handleAccessibilityLabel,
 }: {
-  id: DashboardWidgetId;
+  id: WidgetId;
   item: T;
   isActive: boolean;
   onMeasure: (id: string, h: number) => void;
-  onBegin: (id: DashboardWidgetId) => void;
-  onEnd: (id: DashboardWidgetId, translationY: number) => void;
+  onBegin: (id: WidgetId) => void;
+  onEnd: (id: WidgetId, translationY: number) => void;
   onSettle: () => void;
   renderItem: (item: T, handle: ReactNode) => ReactNode;
   handleAccessibilityLabel: string;

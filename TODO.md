@@ -273,11 +273,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**US-C1 — RECETTE VALIDÉE (Florian, 19/07/2026) ✅** : écran de séance en
-flux guidé (carte série en cours + steppers + dernière perf, valider=log+repos+avance, repos plein écran repliable
-+ saisissable + vibration, keep-awake, dialogue ✕, gestion des séries en direct, résumé éditable ressenti 5★ + note)
-livré et recetté après 2 vagues de correctifs. **C1 `[x]` — reste relecture Damien.** Suite : **spec C2** (types de
-séries dont échauffement exclu, **RPE par série**, **charge planifiée vs réalisée** + migrations) puis **C3**.
+*Dernière mise à jour : 19/07/2026 (**Widgets multi-formes — CODE LIVRÉ** : moteur de widgets 3 formes
+(petit carré / rectangle / grand carré) partagé par accueil + muscu + course, grille 2 colonnes, drag +
+sélecteur de forme, layout multi-hubs sans migration SQL ; planning passé aux 7 prochains jours + visuel
+calendrier. Spec/plan/design validés Damien, tout vert. **Reste : recette device.** — **Fix repas — CODE
+LIVRÉ** : réordonnancement des repas (flèches ↑↓), section « Autres » pour les entrées orphelines, déplacer
+une entrée vers un repas (`reassignEntryMeal`), fix libellé des repas custom. **Reste : recette device.** —
+**US-C1 — RECETTE VALIDÉE (Florian, 19/07/2026) ✅** : écran de séance en flux guidé (carte série en cours +
+steppers + dernière perf, valider=log+repos+avance, repos plein écran repliable + saisissable + vibration,
+keep-awake, dialogue ✕, gestion des séries en direct, résumé éditable ressenti 5★ + note) livré et recetté après
+2 vagues de correctifs. **C1 `[x]` — reste relecture Damien.** Suite : **spec C2** (types de séries dont
+échauffement exclu, **RPE par série**, **charge planifiée vs réalisée** + migrations) puis **C3**.
 Précédemment : **US-C1 — CODE LIVRÉ (subagent-driven)** : écran de séance refondu en flux
 guidé (carte série en cours + steppers + dernière perf, valider=log+repos+avance, repos plein écran + vibration
 + éditable/exo, keep-awake, dialogue ✕ Continuer/Pause/Abandonner, gestion des séries en direct +Série/supprimer/

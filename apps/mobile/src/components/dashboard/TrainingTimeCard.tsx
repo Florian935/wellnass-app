@@ -17,7 +17,7 @@ import { useTrainingTime } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function TrainingTimeCard({ size = 'full' }: { size?: WidgetSize }) {
+export function TrainingTimeCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
@@ -37,7 +37,7 @@ export function TrainingTimeCard({ size = 'full' }: { size?: WidgetSize }) {
   const breakdown = parts.length >= 2 ? parts.join(' · ') : '';
 
   // ── Variante compacte (US 7.11) ────────────────────────────────────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     const value =
       tt.totalSeconds === 0 ? t('home.trainingTime.empty') : formatHoursMinutes(tt.totalSeconds);
     return (

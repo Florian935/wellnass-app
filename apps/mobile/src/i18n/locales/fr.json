@@ -325,7 +325,9 @@
       "calories": "Calories (kcal)",
       "loggedAt": "à {{time}}",
       "moveUp": "Monter",
-      "moveDown": "Descendre"
+      "moveDown": "Descendre",
+      "moveTo": "Déplacer vers",
+      "moveToMeal": "Déplacer vers {{meal}}"
     },
     "tabs": {
       "all": "Tous",
@@ -338,16 +340,19 @@
       "breakfast": "Petit-déjeuner",
       "lunch": "Déjeuner",
       "dinner": "Dîner",
-      "snack": "Collation"
+      "snack": "Collation",
+      "other": "Autres"
     }
   },
   "meals": {
     "manage": "Gérer les repas",
-    "hint": "Renomme, ajoute ou supprime tes repas. Laisse vide pour garder le nom par défaut.",
+    "hint": "Renomme, réordonne, ajoute ou supprime tes repas. Laisse vide pour garder le nom par défaut.",
     "mealN": "Repas {{n}}",
     "newMeal": "Nouveau repas",
     "add": "+ Ajouter un repas",
     "remove": "Supprimer",
+    "moveUp": "Monter le repas",
+    "moveDown": "Descendre le repas",
     "done": "Enregistrer"
   },
   "scan": {
@@ -463,6 +468,14 @@
       }
     }
   },
+  "widgets": {
+    "customize": {
+      "shapeSmall": "Petit carré",
+      "shapeWide": "Rectangle",
+      "shapeLarge": "Grand carré",
+      "shapeCycle": "Changer la forme (actuelle : {{shape}})"
+    }
+  },
   "home": {
     "greeting": "Bonjour 👋",
     "greetingName": "Bonjour {{name}} 👋",
@@ -473,8 +486,6 @@
       "hiddenBadge": "Masqué",
       "show": "Afficher le widget",
       "hide": "Masquer le widget",
-      "sizeCompact": "Passer en taille compacte",
-      "sizeFull": "Passer en taille normale",
       "drag": "Déplacer le widget",
       "empty": "Aucun widget affiché. Active des widgets en mode édition."
     },

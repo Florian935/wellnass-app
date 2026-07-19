@@ -36,7 +36,7 @@ function sevenDaysAgo(): string {
   return isoDay(d);
 }
 
-export function WeightCard({ size = 'full' }: { size?: WidgetSize }) {
+export function WeightCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -48,7 +48,7 @@ export function WeightCard({ size = 'full' }: { size?: WidgetSize }) {
   if (latestLoading || entriesLoading) return null;
 
   // ── Variante compacte (US 7.11) : dernière pesée ───────────────────────────
-  if (size === 'compact') {
+  if (size === 'small') {
     return (
       <DashboardCardCompact
         icon="scale-outline"

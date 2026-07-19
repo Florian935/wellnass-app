@@ -57,6 +57,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - Point recette n°3 (**charge planifiée vs réalisée par série**) = périmètre **C2** (volontairement différé) — non traité ici.
 - Offline-first ; aucune migration ; typecheck/lint/tests(746) verts ; parité i18n FR/EN.
 
+### 19/07/2026 — `feature/widgets-multiformes` — fix repas : réordonnancement + récupération des entrées orphelines
+
+> typecheck + lint + tests **verts**, parité i18n FR/EN. **Aucune migration.** Vérif runtime device non effectuée.
+
+**Ajouté**
+- **Réordonnancement des repas** ([nutrition-meals.tsx](apps/mobile/src/app/nutrition-meals.tsx)) : flèches ↑↓ par repas.
+  Le réordonnancement **conserve les clés** → aucune entrée du journal n'est orpheline (contrairement à
+  supprimer/recréer un repas, contournement qui causait la perte).
+- **Section « Autres »** ([nutrition.tsx](apps/mobile/src/app/%28tabs%29/nutrition.tsx)) : surface les entrées dont
+  le repas n'existe plus (repas supprimé / renommé avec nouvelle clé) au lieu de les perdre silencieusement.
+- **Déplacer une entrée vers un repas** : rangée « Déplacer vers » dans le détail d'une entrée + nouvelle fonction
+  `reassignEntryMeal` ([journal-repository.ts](apps/mobile/src/data/repositories/journal-repository.ts)) — voie de
+  retour des orphelines, utile aussi au quotidien.
+
+**Corrigé**
+- **Repas custom mal étiqueté (bug « deux collations »)** : un repas ajouté sans nom (clé technique `custom-<ts>`)
+  s'affichait avec sa **clé brute** comme titre → l'utilisateur « ne retrouvait pas » sa 2ᵉ collation alors que les
+  aliments y étaient. Fallback corrigé en **« Repas N »** ([nutrition.tsx](apps/mobile/src/app/%28tabs%29/nutrition.tsx)).
+
+**Technique / Notes**
+- i18n : `journal.meals.other`, `journal.detail.moveTo`/`moveToMeal`, `meals.moveUp`/`moveDown`.
+- Les entrées déjà orphelines (repas perdus avant ce correctif) réapparaissent désormais sous « Autres ».
+
+### 19/07/2026 — `feature/widgets-multiformes` — système de widgets multi-formes (accueil, muscu, course)
+
+> Spec + plan + design **validés** (Damien). typecheck + lint + tests **verts** (747 tests shared, dont le
+> nouveau socle). **Aucune migration SQL** (JSON multi-hubs rétro-compatible). Vérif runtime device non effectuée.
+
+**Ajouté**
+- **Socle partagé** ([widgets.ts](packages/shared/src/widgets.ts) + [widgets.test.ts](packages/shared/src/widgets.test.ts)) :
+  3 formes `small`/`wide`/`large`, registres par hub, layout multi-écrans `{ screens }`, migration
+  `full→wide`/`compact→small`, parseur rétro-compatible, `packWidgets` (grille 2 colonnes).
+- **Repository** `useScreenLayout(screen)` ([widget-layout-repository.ts](apps/mobile/src/data/repositories/widget-layout-repository.ts)) :
+  persistance des 3 dispositions dans la colonne existante `dashboard_layout`, sans migration SQL.
+- **WidgetGrid** ([WidgetGrid.tsx](apps/mobile/src/components/widgets/WidgetGrid.tsx)) : grille 2 colonnes en
+  affichage, 1 colonne triable en édition ; **sélecteur de forme à 3 états**
+  ([DashboardEditControls](apps/mobile/src/components/dashboard/DashboardEditControls.tsx)).
+- **Widgets muscu & course** ([strength-widgets.tsx](apps/mobile/src/components/widgets/strength-widgets.tsx),
+  [running-widgets.tsx](apps/mobile/src/components/widgets/running-widgets.tsx)) issus des `ModulePreviewCard`
+  existants, + `WidgetShell` (formes carrées) et `CustomizeButton`.
+- **Hubs muscu & course** ([strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx),
+  [running.tsx](apps/mobile/src/app/%28tabs%29/running.tsx)) : carte d'action **épinglée hors grille** + bouton
+  Personnaliser + grille de widgets.
+- **Livrables** : spec [widgets-multiformes.md](docs/specs/functional/us/widgets-multiformes.md), plan
+  [widgets-multiformes.md](docs/plans/widgets-multiformes.md), design `design/widgets-multiformes/`.
+
+**Modifié**
+- **Planning** ([PlanningPreview.tsx](apps/mobile/src/components/PlanningPreview.tsx)) : **7 prochains jours** (au
+  lieu de la semaine en cours) + visuel **calendrier** (bande semaine en `small`, grille 7 colonnes en `wide`,
+  grille + liste des prochaines séances en `large`).
+- **Accueil** ([index.tsx](apps/mobile/src/app/%28tabs%29/index.tsx)) basculé sur le nouveau moteur ; les 9 widgets
+  adaptés aux formes (`full→wide`, `compact→small`).
+- **i18n** : namespace `widgets.customize.*` (libellés de formes) ; retrait de
+  `home.customize.sizeCompact`/`sizeFull` (bascule binaire obsolète).
+
+**Supprimé**
+- `packages/shared/src/dashboard.ts` (+ test) et `apps/mobile/src/data/repositories/dashboard-layout-repository.ts`,
+  remplacés par `widgets.ts` / `widget-layout-repository.ts`.
+
 ### 19/07/2026 — `feature/refonte-muscu-c1` — implémentation US Refonte-C1 (écran de séance guidé)
 
 > Implémentation subagent-driven (9 commits `8586607`→`b369bee`), revue de code globale **sans bug bloquant**.

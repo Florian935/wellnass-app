@@ -26,7 +26,7 @@ import { useMuscleVolumeThisWeek } from '@/data/repositories/records-repository'
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function MuscleVolumeCard({ size = 'full' }: { size?: WidgetSize }) {
+export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -35,7 +35,7 @@ export function MuscleVolumeCard({ size = 'full' }: { size?: WidgetSize }) {
   if (isLoading) return null;
 
   // ── Variante compacte (US 7.11) : total kg semaine (pas de conversion) ─────
-  if (size === 'compact') {
+  if (size === 'small') {
     const total = volumes.reduce((sum, v) => sum + v.volume, 0);
     return (
       <DashboardCardCompact

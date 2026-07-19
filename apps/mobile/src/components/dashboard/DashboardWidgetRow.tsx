@@ -22,7 +22,7 @@ export function DashboardWidgetRow({
   visible,
   size,
   onToggleVisible,
-  onToggleSize,
+  onCycleSize,
   handle,
   children,
 }: {
@@ -30,8 +30,9 @@ export function DashboardWidgetRow({
   visible: boolean;
   size: WidgetSize;
   onToggleVisible: () => void;
-  onToggleSize: () => void;
-  /** Poignée de déplacement (drag), fournie par l'appelant (Tâche 5). */
+  /** Passe le widget à la forme suivante (small → wide → large → small). */
+  onCycleSize: () => void;
+  /** Poignée de déplacement (drag), fournie par l'appelant. */
   handle?: ReactNode;
   /** Le widget rendu. */
   children: ReactNode;
@@ -64,7 +65,7 @@ export function DashboardWidgetRow({
         visible={visible}
         size={size}
         onToggleVisible={onToggleVisible}
-        onToggleSize={onToggleSize}
+        onCycleSize={onCycleSize}
         handle={handle}
       />
     </View>

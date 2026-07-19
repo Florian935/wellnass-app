@@ -325,7 +325,9 @@
       "calories": "Calories (kcal)",
       "loggedAt": "at {{time}}",
       "moveUp": "Move up",
-      "moveDown": "Move down"
+      "moveDown": "Move down",
+      "moveTo": "Move to",
+      "moveToMeal": "Move to {{meal}}"
     },
     "tabs": {
       "all": "All",
@@ -338,16 +340,19 @@
       "breakfast": "Breakfast",
       "lunch": "Lunch",
       "dinner": "Dinner",
-      "snack": "Snack"
+      "snack": "Snack",
+      "other": "Other"
     }
   },
   "meals": {
     "manage": "Manage meals",
-    "hint": "Rename, add or remove your meals. Leave blank to keep the default name.",
+    "hint": "Rename, reorder, add or remove your meals. Leave blank to keep the default name.",
     "mealN": "Meal {{n}}",
     "newMeal": "New meal",
     "add": "+ Add a meal",
     "remove": "Remove",
+    "moveUp": "Move meal up",
+    "moveDown": "Move meal down",
     "done": "Save"
   },
   "scan": {
@@ -463,6 +468,14 @@
       }
     }
   },
+  "widgets": {
+    "customize": {
+      "shapeSmall": "Small square",
+      "shapeWide": "Wide",
+      "shapeLarge": "Large square",
+      "shapeCycle": "Change shape (current: {{shape}})"
+    }
+  },
   "home": {
     "greeting": "Hello 👋",
     "greetingName": "Hello {{name}} 👋",
@@ -473,8 +486,6 @@
       "hiddenBadge": "Hidden",
       "show": "Show widget",
       "hide": "Hide widget",
-      "sizeCompact": "Switch to compact size",
-      "sizeFull": "Switch to normal size",
       "drag": "Move widget",
       "empty": "No widget shown. Enable widgets in editing mode."
     },
