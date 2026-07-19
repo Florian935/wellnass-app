@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**US-A & US-B — RECETTE DEVICE VALIDÉE (Florian, 19/07/2026)** ✅ : les deux
+*Dernière mise à jour : 19/07/2026 (**US-C découpée en C1/C2/C3 — spec C1 validée** : US-C (refonte écran de
+séance) scindée en **C1** (cœur flux guidé + garde-fous) → **C2** (saisie enrichie : types de séries, RPE/série,
+charge planifiée-réalisée, migrations) → **C3** (ajustements live + suggestion progression). **Spec C1 écrite,
+revue Approved, validée Florian** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md),
+`feature/refonte-muscu-c1`) ; aucune migration (réutilise `workouts.rpe`/`notes`). Prochaine étape : **plan C1**.
+Précédemment : **US-A & US-B — RECETTE DEVICE VALIDÉE (Florian, 19/07/2026)** ✅ : les deux
 US du chantier refonte Muscu passent en `[x]` (reste relecture Damien). Aucun changement roadmap (refonte d'existant).
 Suite : **US-C** (refonte écran de séance — analyse de flux remontée à Florian, croisement des listes en cours avant
 spec) puis **US-D**. Précédemment : **US Refonte-B — CODE LIVRÉ (subagent-driven)** : 5 tâches implémentées
@@ -414,13 +419,18 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   Florian ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md)). Hook partagé `useTodaySession`
   (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » + réalignement du widget dashboard 7.4.
   **Aucune migration.** **Reste : relecture Damien.**
-- [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
-  par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise, RPE par série,
-  charge planifiée vs réalisée… Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions
-  muscu). 📋 **Analyse de flux en cours** (findings Claude + Florian) :
-  [docs/refonte-muscu/analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md) — **doc vivant,
-  Florian enrichit** ; spec rédigée une fois la liste stabilisée. ⚠️ migrations pressenties : `workout_sets.rpe`,
-  éventuellement charge planifiée.
+- [~] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — corrige le problème 4.
+  **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6**. 📋 Analyse figée (22 points) :
+  [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md). **Découpée en 3 sous-US** :
+  - [~] **C1 — Cœur : flux guidé + garde-fous** — carte série en cours (dernière perf + steppers) + liste repliée,
+    valider = log+repos+avance, repos plein écran + vibration + éditable/exo, keep-awake, ✕ Continuer/Pause/Abandonner,
+    Terminer + garde 0 série, résumé éditable (ressenti 5★ + note). **Aucune migration.** **Spec ✅ validée Florian
+    + revue Approved** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md), `feature/refonte-muscu-c1`).
+    Suite : **plan → maquette → validation → code**.
+  - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
+    poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
+  - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
+    exercice, accès démo en séance, suggestion de progression (§6.5).
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
   réutilisable (spec §4.1). Corrige le problème 5.
 

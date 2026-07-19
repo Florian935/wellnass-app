@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `feature/refonte-muscu-c1` — spec US Refonte-C1 (écran de séance : cœur du flux guidé)
+
+**Ajouté**
+- [docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md) :
+  spec de **C1** (1er des 3 sous-US d'US-C). Décisions (brainstorming Florian) : **carte « série en cours »
+  (dernière perf + steppers − / +) + liste repliée** ; **valider = log + repos + avance auto** (pré-remplissage
+  cible plan → dernière perf → série précédente) ; **repos plan/90 s plein écran + vibration + Passer/Prolonger +
+  éditable par exercice (session)** ; **keep-awake** ; **✕ → Continuer / Pause / Abandonner** (2ᵉ confirmation) ;
+  **Terminer** avec garde 0 série ; **résumé rendu éditable** (ressenti 5★ + note après coup). **Aucune migration**
+  (réutilise `workouts.rpe`/`notes`).
+
+**Technique / Notes**
+- **Spec uniquement** (aucun code). Revue de spec (subagent) **Approved** ; 4 affinages intégrés : **Vibration
+  RN core** (pas d'`expo-haptics` → pas de rebuild), plomberie du `rest_seconds` du plan (non seedé → extension
+  de requête), fonction repository dédiée `setWorkoutFeedback` pour le résumé, état de fin de séance.
+- **Découpage US-C acté** : **C1** (ce socle) → **C2** (types de séries, RPE/série, charge planifiée-réalisée,
+  migrations) → **C3** (réorg, machine prise, superset, remplacer, note par exo, démo, suggestion de progression).
+- Prochaine étape : **plan d'implémentation C1**.
+
 ### 19/07/2026 — `docs/us-c-idees-terrain` — US-C : idées UX terrain + liste stabilisée
 
 **Modifié**
