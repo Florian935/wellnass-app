@@ -4,9 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
-// Bordeaux muscu — rôle fixe hors thème (accent fort du pilier, cf. RestOverlay).
-const STRENGTH_COLOR = '#6b0028';
-
 type CurrentSetCardProps = {
   exerciseName: string;
   /** Rang de la série dans l'exercice (1-based). */
@@ -25,6 +22,8 @@ type CurrentSetCardProps = {
   restSeconds: number;
   /** Incrément (s) appliqué au repos de l'exercice via le mini stepper. */
   onStepRest: (deltaSeconds: number) => void;
+  /** Fixe la durée de repos de l'exercice (saisie manuelle en secondes). */
+  onSetRest: (seconds: number) => void;
   onValidate: () => void;
   colors: Palette;
 };
@@ -76,13 +75,14 @@ export function CurrentSetCard({
   onStepWeight,
   restSeconds,
   onStepRest,
+  onSetRest,
   onValidate,
   colors,
 }: CurrentSetCardProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: STRENGTH_COLOR }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
       <Text style={[styles.exName, { color: colors.text }]}>{exerciseName}</Text>
       <Text style={[styles.progress, { color: colors.textMuted }]}>
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
@@ -130,19 +130,30 @@ export function CurrentSetCard({
       </View>
 
       <View style={styles.restControl}>
+        <Text style={[styles.restCaption, { color: colors.textMuted }]}>{t('workout.restTitle')}</Text>
         <StepButton icon="remove" label="-15s" colors={colors} onPress={() => onStepRest(-15)} />
-        <Text style={[styles.restLabel, { color: colors.textMuted }]}>
-          {t('workout.restRemaining', { seconds: restSeconds })}
-        </Text>
+        <View style={styles.restInputWrap}>
+          <TextInput
+            value={String(restSeconds)}
+            onChangeText={(v) => {
+              const n = parseInt(v.replace(/[^0-9]/g, ''), 10);
+              onSetRest(Number.isNaN(n) ? 0 : n);
+            }}
+            keyboardType="number-pad"
+            accessibilityLabel={t('workout.restTitle')}
+            style={[styles.restInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
+          />
+          <Text style={[styles.restUnit, { color: colors.textMuted }]}>s</Text>
+        </View>
         <StepButton icon="add" label="+15s" colors={colors} onPress={() => onStepRest(15)} />
       </View>
 
       <Pressable
         accessibilityRole="button"
         onPress={onValidate}
-        style={({ pressed }) => [styles.validate, { backgroundColor: STRENGTH_COLOR }, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.validate, { backgroundColor: colors.accent }, pressed && styles.pressed]}
       >
-        <Text style={styles.validateLabel}>{t('workout.validateSet')}</Text>
+        <Text style={[styles.validateLabel, { color: colors.accentText }]}>{t('workout.validateSet')}</Text>
       </Pressable>
     </View>
   );
@@ -177,8 +188,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  restControl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 16 },
-  restLabel: { fontFamily: fontFamily.monoBold, fontSize: 16, minWidth: 64, textAlign: 'center' },
+  restControl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  restCaption: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  restInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  restInput: {
+    fontFamily: fontFamily.monoBold,
+    fontSize: 16,
+    minWidth: 56,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    textAlign: 'center',
+  },
+  restUnit: { fontFamily: fontFamily.body, fontSize: 14 },
   validate: {
     minHeight: 56,
     borderRadius: 16,
@@ -186,6 +209,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 4,
   },
-  validateLabel: { fontFamily: fontFamily.bodyBold, fontSize: 17, color: '#ffffff' },
+  validateLabel: { fontFamily: fontFamily.bodyBold, fontSize: 17 },
   pressed: { opacity: 0.8 },
 });

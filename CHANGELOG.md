@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `fix/refonte-muscu-c1-recette2` — recette C1 (2ᵉ vague, Florian)
+
+**Ajouté**
+- **Saisie manuelle du repos** : le libellé « X s » de la carte « série en cours » devient un **input**
+  éditable (en plus des − / + 15 s) ([CurrentSetCard.tsx](apps/mobile/src/components/workout/CurrentSetCard.tsx)).
+- **Chrono de repos repliable** : le repos plein écran gagne un bouton **Réduire** → **barre compacte en bas**
+  (le compte à rebours continue de tourner, visible, et laisse la séance manipulable) ; tap sur la barre pour
+  ré-agrandir ; Passer reste accessible ([RestOverlay.tsx](apps/mobile/src/components/workout/RestOverlay.tsx)).
+
+**Modifié**
+- **Couleurs** : le bordeaux `#6b0028` (perçu « alerte » + illisible en thème sombre) est remplacé par
+  **`colors.accent`** (accent standard de l'app) pour les éléments **interactifs** du flux guidé : bouton
+  **« Valider la série »**, **bordure** de la série/exercice en cours, bouton **« + Série »**. (L'écran de repos
+  plein écran garde son fond bordeaux — non signalé.)
+
+**Technique / Notes**
+- Points recette n°1 (saisie repos), n°2 (repli chrono), n°3 & 4 (couleur). Offline-first ; aucune migration ;
+  typecheck/lint/tests(746) verts ; parité i18n FR/EN (clé `workout.restCollapse` ajoutée).
+- Option ouverte : « Valider » pourrait passer en **vert** (success) si l'accent terracotta reste trop chaud — 1 ligne.
+
 ### 19/07/2026 — `fix/refonte-muscu-c1-recette` — correctifs recette C1 (Florian)
 
 **Corrigé**

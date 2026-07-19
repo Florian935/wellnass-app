@@ -121,6 +121,7 @@ export default function WorkoutScreen() {
   const [restOverride, setRestOverride] = useState<Record<string, number>>({});
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
   const [restLeft, setRestLeft] = useState(0);
+  const [restCollapsed, setRestCollapsed] = useState(false);
   // État d'édition rattaché à l'id de la série : dès que la série courante change,
   // il cesse de correspondre et l'affichage repart des valeurs pré-remplies (pas
   // besoin d'effet de resynchronisation).
@@ -204,12 +205,21 @@ export default function WorkoutScreen() {
     }));
   };
 
+  const onSetRest = (seconds: number) => {
+    if (!current) return;
+    setRestOverride((prev) => ({
+      ...prev,
+      [current.entry.exerciseId]: Math.max(0, seconds),
+    }));
+  };
+
   const onValidate = () => {
     if (!current) return;
     const parsed = Number(displayReps);
     const reps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
     void updateSet(current.set.id, { reps, weightKg: displayWeightKg, done: true });
     setRestLeft(currentRest); // évite un flash « 0 s » avant le 1er tick
+    setRestCollapsed(false); // le repos s'ouvre en plein écran
     setRestEndsAt(Date.now() + currentRest * 1000);
     setFocusOverride(null);
   };
@@ -307,6 +317,7 @@ export default function WorkoutScreen() {
             onStepWeight={(deltaKg) => applyEdit({ weightKg: Math.max(0, (displayWeightKg ?? 0) + deltaKg) })}
             restSeconds={currentRest}
             onStepRest={onStepRest}
+            onSetRest={onSetRest}
             onValidate={onValidate}
             colors={colors}
           />
@@ -335,8 +346,10 @@ export default function WorkoutScreen() {
       {restEndsAt !== null ? (
         <RestOverlay
           secondsLeft={restLeft}
+          collapsed={restCollapsed}
           onSkip={() => setRestEndsAt(null)}
           onExtend={() => setRestEndsAt((e) => (e ?? Date.now()) + 15000)}
+          onToggleCollapse={() => setRestCollapsed((c) => !c)}
         />
       ) : null}
     </SafeAreaView>

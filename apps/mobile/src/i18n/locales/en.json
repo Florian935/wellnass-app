@@ -63,6 +63,7 @@
     "validateSet": "Log set",
     "restTitle": "Rest",
     "restExtend": "+15s",
+    "restCollapse": "Minimize",
     "restRemaining": "{{seconds}}s",
     "sessionDone": "Workout done?",
     "sessionDoneHint": "All your sets are logged.",

@@ -63,6 +63,7 @@
     "validateSet": "Valider la série",
     "restTitle": "Repos",
     "restExtend": "+15 s",
+    "restCollapse": "Réduire",
     "restRemaining": "{{seconds}} s",
     "sessionDone": "Séance terminée ?",
     "sessionDoneHint": "Toutes tes séries sont validées.",

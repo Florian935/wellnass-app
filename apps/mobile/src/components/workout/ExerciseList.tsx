@@ -7,9 +7,6 @@ import type { Palette } from '@/theme/colors';
 import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
 
-// Bordeaux muscu — rôle fixe hors thème (distinction de l'exercice courant).
-const STRENGTH_COLOR = '#6b0028';
-
 type ExerciseListProps = {
   entries: WorkoutEntry[];
   currentExerciseId: string;
@@ -75,7 +72,7 @@ export function ExerciseList({
               styles.card,
               {
                 backgroundColor: colors.surface,
-                borderColor: isCurrent ? STRENGTH_COLOR : colors.border,
+                borderColor: isCurrent ? colors.accent : colors.border,
               },
               isCurrent && styles.cardCurrent,
               allDone && !isCurrent && styles.cardDone,
@@ -143,7 +140,7 @@ export function ExerciseList({
                   onPress={() => onAddSet(entry.exerciseId)}
                   style={({ pressed }) => [styles.addSetRow, pressed && styles.pressed]}
                 >
-                  <Text style={[styles.addSetLabel, { color: STRENGTH_COLOR }]}>{t('workout.addSet')}</Text>
+                  <Text style={[styles.addSetLabel, { color: colors.accent }]}>{t('workout.addSet')}</Text>
                 </Pressable>
               </View>
             ) : null}
