@@ -415,9 +415,12 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » + réalignement du widget dashboard 7.4.
   **Aucune migration.** **Reste : relecture Damien.**
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
-  par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
-  Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter
-  dans ce cadre plutôt qu'isolément.
+  par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise, RPE par série,
+  charge planifiée vs réalisée… Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions
+  muscu). 📋 **Analyse de flux en cours** (findings Claude + Florian) :
+  [docs/refonte-muscu/analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md) — **doc vivant,
+  Florian enrichit** ; spec rédigée une fois la liste stabilisée. ⚠️ migrations pressenties : `workout_sets.rpe`,
+  éventuellement charge planifiée.
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
   réutilisable (spec §4.1). Corrige le problème 5.
 

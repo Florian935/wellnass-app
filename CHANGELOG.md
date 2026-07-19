@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `docs/analyse-seance-us-c` — analyse de flux de l'écran de séance (pré-spec US-C)
+
+**Ajouté**
+- [docs/refonte-muscu/analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md) : **document
+  vivant** de findings pour la future US-C (refonte de l'écran de séance en cours). 12 points relevés par Claude
+  (dont : abandon destructif sans confirmation ⚠️, liste plate vs flux guidé, échauffement qui pollue
+  volume/records, fin de séance sans ressenti/note) + 2 compléments Florian (**RPE par série**, **charge
+  planifiée vs réalisée**). **Pas la spec** : liste en cours de croisement (Florian continue d'analyser).
+
+**Technique / Notes**
+- Suivi/analyse uniquement (aucun code). Référencé depuis la ligne US-C du [TODO.md](TODO.md). Migrations
+  pressenties pour US-C : `workout_sets.rpe`, éventuellement charge planifiée. **Spec US-C non entamée** (attente
+  liste stabilisée).
+
 ### 19/07/2026 — `docs/recette-refonte-ab` — US-A & US-B : recette device validée
 
 **Modifié**
