@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/refonte-muscu-c2` — US-C2 : saisie enrichie (CODE LIVRÉ, subagent-driven)
+
+**Ajouté**
+- **Types de séries** exposés sur l'écran de séance : sélecteur (Normale / Dropset / Échec / Durée / Poids de
+  corps) + **raccourci 🔥 échauffement en 1 tap** ([CurrentSetCard.tsx](apps/mobile/src/components/workout/CurrentSetCard.tsx)).
+  Nouvelles valeurs d'enum `dropset`/`failure` ([workout.ts](packages/shared/src/workout.ts)).
+- **Saisie adaptée au type** : durée en **m:ss** (steppers ±5 s) pour `duration` ; champ charge « Lest » optionnel
+  pour `duration`/`bodyweight`.
+- **Charge planifiée vs réalisée** : snapshot `planned_weight_kg` figé au démarrage d'une séance de programme,
+  « Prévu : X » + écart (=/▲/▼) sur la carte et dans l'historique.
+- **RPE par série** (1-10, optionnel) masqué derrière « ＋ RPE » (sélecteur déplié), affiché dans la liste et
+  l'historique. Colonne `workout_sets.rpe`.
+- **Migration cloud** appliquée (`20260719230416`) : `rpe` + `planned_weight_kg` + assouplissement `CHECK
+  set_type` sur `workout_sets` et `exercise_plans`.
+
+**Modifié**
+- **Records** : `computeWorkoutRecords` exclut désormais `duration` en plus de `warmup` (un gainage lesté ne crée
+  pas de record « charge max ») ; `bodyweight` lesté reste éligible ([records.ts](packages/shared/src/records.ts)).
+- **Résumé** : décompte de séries et d'exercices **exclut les échauffements** (+ mention « +N échauf. »)
+  ([workout-summary.tsx](apps/mobile/src/app/workout-summary.tsx)).
+- **`addSet`** ne recopie plus un échauffement (retombe sur `normal` + valeurs nulles) ;
+  **`useLastPerformance`** exclut les warmup ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)).
+- `records-repository.ts` : read dupliqué (historique détail) enrichi de `rpe`/`planned_weight_kg`.
+- Admin : `setTypeNames` complété (dropset/échec) ([fr.ts](apps/admin/src/i18n/fr.ts)).
+
+**Technique / Notes**
+- 6 commits (`2fb692f` migration, `8b70636` shared, `1a50126` repos, `5bbbe0e` écran, `cbc4600` résumé/historique).
+  typecheck racine vert, lint mobile vert (hors 4 warnings pré-existants), **765 tests** shared verts, parité i18n 0/0.
+- **Revue finale** (subagent) : aucun bloquant, aucune régression C1. Points ouverts pour la recette : (1) écart
+  prévu/réalisé affiché **en direct** sur la carte (conforme à la maquette validée, spec plus lâche) ; (2) mineur —
+  série poids de corps sans lest : taper « − » écrit `weight_kg=0` → « × 0 kg » à l'historique (cas limite) ;
+  (3) nit — pré-remplissage `lastPerf` légèrement désaligné si l'exercice intercale des échauffements (→ C3).
+- **`expo export --platform web`** échoue sur `better-sqlite3` (limitation PowerSync-sur-web pré-existante, hors C2).
+- Badges/chips sur l'accent du thème (la `Palette` n'expose pas de teintes par type) — distinction par emoji + libellé.
+- **Reste** : recette device (Florian) + relecture Damien. Superset et suggestion de progression → **C3**.
+
 ### 20/07/2026 — `feature/refonte-muscu-c2` — US-C2 : spec + plan + maquette (saisie enrichie)
 
 **Ajouté**
