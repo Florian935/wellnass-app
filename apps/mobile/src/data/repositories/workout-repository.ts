@@ -437,6 +437,17 @@ async function txInsert(
 }
 
 /**
+ * Extrait le premier entier d'une cible de reps du plan (`target_reps`), p. ex.
+ * « 8-12 » → 8, « 10 » → 10, « AMRAP » / null → null. Sert à pré-remplir le champ reps
+ * d'une séance planifiée (valeur de départ modifiable), en miroir de la charge cible.
+ */
+function parseTargetReps(target: string | null): number | null {
+  if (!target) return null;
+  const match = target.match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+/**
  * Démarre une séance à partir d'une séance planifiée d'un programme (spec §3.24) et
  * retourne l'id de la séance créée.
  *
@@ -455,9 +466,9 @@ async function txInsert(
  *     `planned_session_id` = `opts.plannedSessionId` si fourni, pour relier la séance à
  *     l'occurrence de planning dont elle découle) ;
  *  4. pour chaque plan, insère `max(1, target_sets)` séries pré-remplies :
- *     `set_type` et `weight_kg` repris du plan, `reps` laissé nul (la cible est une
- *     plage type « 8-12 », que l'utilisateur renseigne), `done=false`. L'`order_index`
- *     est séquentiel sur l'ensemble de la séance.
+ *     `set_type` et `weight_kg` repris du plan, `reps` pré-rempli depuis la cible
+ *     `target_reps` (1er entier, ex. « 8-12 » → 8 — valeur de départ modifiable),
+ *     `done=false`. L'`order_index` est séquentiel sur l'ensemble de la séance.
  */
 export async function startWorkoutFromSession(
   sessionId: string,
@@ -490,9 +501,10 @@ export async function startWorkoutFromSession(
       exercise_id: string;
       set_type: string;
       target_sets: number | null;
+      target_reps: string | null;
       target_weight_kg: number | null;
     }>(
-      `SELECT exercise_id, set_type, target_sets, target_weight_kg
+      `SELECT exercise_id, set_type, target_sets, target_reps, target_weight_kg
        FROM exercise_plans
        WHERE session_id = ? AND deleted_at IS NULL
        ORDER BY order_index`,
@@ -524,7 +536,7 @@ export async function startWorkoutFromSession(
           exercise_id: plan.exercise_id,
           order_index: orderIndex,
           set_type: plan.set_type,
-          reps: null,
+          reps: parseTargetReps(plan.target_reps),
           weight_kg: plan.target_weight_kg,
           duration_seconds: null,
           done: 0,

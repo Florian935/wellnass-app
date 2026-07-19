@@ -177,7 +177,7 @@ function MetaRow({ detail }: { detail: WorkoutDetail }) {
   if (detail.rpe != null) {
     items.push({
       label: t('history.detail.metaRpe'),
-      value: String(detail.rpe),
+      value: t('history.detail.metaRpeValue', { value: detail.rpe }),
     });
   }
 

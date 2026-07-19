@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `fix/refonte-muscu-c1-recette` — correctifs recette C1 (Florian)
+
+**Corrigé**
+- **Reps planifiées non affichées** : `startWorkoutFromSession` sème désormais `reps` depuis la cible du plan
+  (`exercise_plans.target_reps`, 1er entier — « 8-12 » → 8) en miroir de la charge cible (helper `parseTargetReps`).
+  Le champ reps d'une séance planifiée n'est plus vide.
+- **Charge à virgule tronquée** dans la carte « série en cours » : input de charge élargi (padding réduit,
+  boutons − / + 44→40) → « 52.5 » n'est plus rogné ([CurrentSetCard.tsx](apps/mobile/src/components/workout/CurrentSetCard.tsx)).
+- **Étoiles affichées « RPE » dans l'historique** : le ressenti (5★, stocké dans `workouts.rpe`) était libellé
+  « RPE » sur la liste et le détail d'historique → relabélisé **« Ressenti X / 5 »**
+  ([history/index.tsx](apps/mobile/src/app/history/index.tsx), [history/[id].tsx](apps/mobile/src/app/history/%5Bid%5D.tsx),
+  i18n FR/EN). (Le vrai **RPE par série** — échelle 1-10, distinct — viendra en C2.)
+
+**Technique / Notes**
+- Point recette n°3 (**charge planifiée vs réalisée par série**) = périmètre **C2** (volontairement différé) — non traité ici.
+- Offline-first ; aucune migration ; typecheck/lint/tests(746) verts ; parité i18n FR/EN.
+
 ### 19/07/2026 — `feature/refonte-muscu-c1` — implémentation US Refonte-C1 (écran de séance guidé)
 
 > Implémentation subagent-driven (9 commits `8586607`→`b369bee`), revue de code globale **sans bug bloquant**.

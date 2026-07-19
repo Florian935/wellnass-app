@@ -165,10 +165,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     textAlign: 'center',
   },
-  weightRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  weightInput: { flex: 1 },
+  weightRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  // Padding horizontal réduit : les charges à virgule (ex. « 52.5 ») ne doivent pas
+  // être tronquées dans un input étroit encadré par les deux steppers.
+  weightInput: { flex: 1, paddingHorizontal: 4, minWidth: 0 },
   stepBtn: {
-    width: 44,
+    width: 40,
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
