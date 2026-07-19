@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `feature/refonte-muscu-c1` — implémentation US Refonte-C1 (écran de séance guidé)
+
+> Implémentation subagent-driven (9 commits `8586607`→`b369bee`), revue de code globale **sans bug bloquant**.
+> typecheck + lint + tests **verts**, parité i18n FR/EN. **Aucune migration.**
+
+**Ajouté**
+- **Plomberie repo** ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)) : `sessionId`
+  sur la séance active, `useSessionRest` (repos du plan par exercice), `useLastPerformance` (dernière perf),
+  `setWorkoutFeedback`.
+- **Composants** : [RestOverlay](apps/mobile/src/components/workout/RestOverlay.tsx) (repos plein écran),
+  [CurrentSetCard](apps/mobile/src/components/workout/CurrentSetCard.tsx), [ExerciseList](apps/mobile/src/components/workout/ExerciseList.tsx).
+- **Écran de séance refondu** ([workout.tsx](apps/mobile/src/app/workout.tsx)) : carte « série en cours »
+  (dernière perf + steppers − / + 2,5 kg + pré-remplissage cible plan → dernière perf → série précédente),
+  **valider = log + repos + avance**, **état de fin**, **keep-awake**, dialogue ✕ **Continuer / Pause /
+  Abandonner** (2ᵉ confirmation), garde « Terminer » si 0 série. **Repos plein écran** (plan/90 s) + vibration
+  (RN core) + Passer / +15 s + **éditable par exercice** (session). **Gestion des séries en direct** (liste
+  dépliable) : **+ Série**, **supprimer**, **dé-valider** (sans relancer le repos).
+- **Résumé éditable** ([workout-summary.tsx](apps/mobile/src/app/workout-summary.tsx)) : ressenti **5★**
+  (`workouts.rpe` 1-5) + **note** via `setWorkoutFeedback`.
+
+**Supprimé**
+- Ancienne barre de repos basse + validation-toggle ; clé i18n morte `workout.rest`.
+
+**Technique / Notes**
+- Offline-first (écritures optimistes) ; `Vibration` RN core + `expo-keep-awake` déjà présent → **pas de rebuild**.
+- Revue globale : 1 point DoD (dé-validation) + 1 régression (+ Série) relevés → **traités dans C1** (incrément
+  gestion des séries, validé Florian) ; 2 mineurs (flash « 0 s » corrigé ; note persistée au `onBlur`).
+- **Reste : recette device + relecture Damien.** Suite du chantier : **C2** (types de séries, RPE/série,
+  charge planifiée-réalisée, migrations) puis **C3** (réorg, superset, remplacer, démo, suggestion).
+
 ### 19/07/2026 — `feature/refonte-muscu-c1` — maquette US Refonte-C1
 
 **Ajouté**

@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**US-C1 — plan validé** : plan d'implémentation C1 écrit (6 tâches, aucune
+*Dernière mise à jour : 19/07/2026 (**US-C1 — CODE LIVRÉ (subagent-driven)** : écran de séance refondu en flux
+guidé (carte série en cours + steppers + dernière perf, valider=log+repos+avance, repos plein écran + vibration
++ éditable/exo, keep-awake, dialogue ✕ Continuer/Pause/Abandonner, gestion des séries en direct +Série/supprimer/
+dé-valider, résumé éditable ressenti 5★ + note). 9 commits, aucune migration, revue globale sans bloquant, tout vert.
+**Reste : recette device + relecture Damien.** Suite : **C2** (types de séries, RPE/série, planifié-réalisé) puis **C3**.
+Précédemment : **US-C1 — plan validé** : plan d'implémentation C1 écrit (6 tâches, aucune
 migration), **revue Approved + validé Florian** ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md)).
 Prochaine étape : **maquette** (carte focus / repos plein écran / dialogue ✕) puis validation finale avant code.
 Précédemment : **US-C découpée en C1/C2/C3 — spec C1 validée** : US-C (refonte écran de
@@ -429,9 +434,10 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     valider = log+repos+avance, repos plein écran + vibration + éditable/exo, keep-awake, ✕ Continuer/Pause/Abandonner,
     Terminer + garde 0 série, résumé éditable (ressenti 5★ + note). **Aucune migration.** **Spec ✅ validée Florian
     + revue Approved** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md), `feature/refonte-muscu-c1`).
-    **Spec ✅ + plan ✅ + maquette ✅** validés Florian
-    ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md) · [maquette](design/refonte-muscu-c1/refonte-muscu-c1.html)).
-    → **implémentation subagent-driven en cours** (6 tâches, aucune migration).
+    **Spec ✅ + plan ✅ + maquette ✅** validés Florian. **CODE LIVRÉ** (subagent-driven, 9 commits
+    `8586607`→`b369bee`, revue globale sans bloquant ; typecheck/lint/tests verts). Inclut la **gestion des
+    séries en direct** (+ Série / supprimer / dé-valider — validée Florian, ferme le point DoD + la régression).
+    **Aucune migration.** **Reste : recette device + relecture Damien.**
   - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
     poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par

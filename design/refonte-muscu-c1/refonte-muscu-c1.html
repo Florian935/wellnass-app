@@ -110,7 +110,27 @@
         </div>
         <div class="listttl">À suivre</div>
         <div class="exrow done"><span class="nm">Squat</span><span class="pr">4/4</span><span class="ok">✓</span></div>
-        <div class="exrow"><span class="nm">Développé couché</span><span class="pr">1/4</span></div>
+        <!-- exercice courant déplié : gestion des séries en direct -->
+        <div style="background:var(--surface);border:1px solid var(--strength);border-radius:12px;padding:10px 12px;margin:0 4px 7px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="flex:1;font-weight:800;font-size:14px;">Développé couché</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted);">1/4</span>
+            <span style="font-size:12px;color:var(--muted);">▾</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;">
+            <span style="width:52px;color:var(--muted);">Série 1</span>
+            <span style="flex:1;font-family:var(--mono);">80 × 8</span>
+            <span style="color:var(--success);font-weight:900;">✓</span>
+            <span style="color:var(--muted);">⊖</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0;opacity:.6;">
+            <span style="width:52px;color:var(--muted);">Série 2</span>
+            <span style="flex:1;font-family:var(--mono);">80 × —</span>
+            <span style="color:var(--border);font-weight:900;">○</span>
+            <span style="color:var(--muted);">⊖</span>
+          </div>
+          <div style="color:var(--strength);font-weight:800;font-size:13px;padding-top:6px;">+ Série</div>
+        </div>
         <div class="exrow"><span class="nm">Rowing barre</span><span class="pr">0/4</span></div>
         <div class="exrow"><span class="nm">Gainage</span><span class="pr">0/3</span></div>
         <div class="addex">+ Ajouter un exercice</div>
@@ -180,6 +200,7 @@
     <h2>Décisions & portée (rappel spec C1)</h2>
     <ul>
       <li><strong>Disposition</strong> : carte « série en cours » (dernière perf + steppers − / +) + liste repliée (aperçu + saut) ; <strong>état de fin</strong> « Séance terminée ? » quand tout est validé.</li>
+      <li><strong>Gestion des séries en direct</strong> (liste dépliable) : <strong>+ Série</strong> / <strong>supprimer</strong> une série, et <strong>dé-valider</strong> une série (tap sur la coche, <em>sans</em> relancer le repos) pour corriger une erreur.</li>
       <li><strong>Valider</strong> = enregistre + <strong>repos plein écran</strong> + <strong>avance</strong> auto. Pré-remplissage : cible du plan → dernière perf → série précédente. Steppers incrément 2,5 kg (clavier possible).</li>
       <li><strong>Repos</strong> : durée du plan sinon 90 s, plein écran + <strong>vibration (RN core)</strong> + Passer / +15 s, <strong>éditable par exercice</strong> (le temps de la séance).</li>
       <li><strong>Garde-fous</strong> : ✕ → Continuer / Pause / Abandonner (2ᵉ confirmation) ; <strong>keep-awake</strong> ; Terminer avec avertissement si 0 série validée.</li>
