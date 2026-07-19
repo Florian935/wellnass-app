@@ -207,6 +207,7 @@ export default function WorkoutScreen() {
     const parsed = Number(displayReps);
     const reps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
     void updateSet(current.set.id, { reps, weightKg: displayWeightKg, done: true });
+    setRestLeft(currentRest); // évite un flash « 0 s » avant le 1er tick
     setRestEndsAt(Date.now() + currentRest * 1000);
     setFocusOverride(null);
   };
