@@ -3,7 +3,9 @@
 > **Document vivant — en cours d'enrichissement.** Base de findings pour la future **US-C** (refonte de
 > l'écran de séance en cours, problème 4 de l'[audit](./audit-flux.md)). **Ce n'est pas la spec** : on
 > collecte et on croise les retours (Claude + Florian) ; la spec US-C sera rédigée **une fois la liste
-> stabilisée**. Date d'ouverture : 19/07/2026. Florian continue d'analyser → d'autres points à venir.
+> stabilisée**. Date d'ouverture : 19/07/2026.
+> **MàJ 19/07/2026 : liste jugée stabilisée** (§1 Claude + §2 compléments Florian + §3 idées UX terrain, tous
+> validés Florian) → **prête à passer en spec US-C**.
 > Méthode : trace du flux réel (démarrage → suivi → fin → résumé) vs spec [musculation.md §4](../specs/functional/musculation.md).
 
 Fichiers concernés : [workout.tsx](../../apps/mobile/src/app/workout.tsx),
@@ -70,11 +72,37 @@ Fichiers concernés : [workout.tsx](../../apps/mobile/src/app/workout.tsx),
     cible en référence à côté du réalisé, et/ou **figer la charge planifiée** sur la série (snapshot) pour
     comparer prévu vs réalisé. À trancher en spec/brainstorm (affichage seul vs colonne dédiée).
 
-## 3. Suite
+## 3. Idées UX terrain — mise en situation « à la salle » (validées Florian, 19/07/2026)
 
-- Florian **continue d'analyser** le flux → ce doc s'enrichit.
-- Une fois la liste **stabilisée et croisée**, on rédige la **spec US-C** (workflow habituel : spec → plan →
-  design → validation → code). US-C **absorbe** MUSC-F4 / MUSC-F5 / MUSC-F6 du backlog (voir [TODO.md](../../TODO.md)).
+> Parcours en immersion (téléphone dans une main, entre deux séries, salle bondée). Ces 8 idées enrichissent
+> le **workflow d'une séance live** sans redite avec §1/§2. **Toutes validées par Florian.**
+
+15. **[Ergo] Focus sur l'exercice/série en cours + aperçu « à suivre ».** Mettre l'exercice courant en avant
+    (au lieu de la liste plate) et annoncer le suivant (« à suivre : développé couché »).
+16. **[Ergo] Boutons − / + avec incréments « plaque » (2,5 / 5 kg)** plutôt que clavier (mains moites, rapidité).
+    Précise le pt 4.
+17. **[Ergo] Repos = gros compte à rebours (quasi plein écran) + vibration**, lançable / prolongeable d'un tap.
+    Précise le pt 9 (on ne fixe pas l'écran à la salle).
+18. **[Métier/Ergo] Marquer une série « échauffement » en direct, en 1 tap** (sans l'avoir planifiée), auto-exclue
+    du volume/records. Angle « live » du pt 5.
+19. **[Flux] « Machine prise » : sauter un exercice et y revenir** (réordonnancement à la volée). Précise le pt 10.
+20. **[Flux] Superset / circuit** : enchaîner 2 exercices, **repos après la paire** (pas entre les deux). UX du
+    type superset (§4.3).
+21. **[Ergo] Garder l'écran actif** pendant la séance (keep-awake — existe déjà côté running, spec 2.3 ; absent
+    en muscu → l'écran se met en veille entre deux séries et on perd le fil). **[NOUVEAU vs §1/§2]**
+22. **[Flux] Suggestion de progression discrète** (« la dernière fois 80×8 → tente 82,5 ou 9 reps », surcharge
+    progressive §6.5) — **suggérée, jamais imposée**. **[NOUVEAU vs §1/§2]**
+
+## 4. Suite
+
+- **Liste stabilisée** (22 points : §1 + §2 + §3), tous validés Florian → on peut **rédiger la spec US-C**
+  (workflow habituel : spec → plan → design → validation → code). US-C **absorbe** MUSC-F4 / MUSC-F5 / MUSC-F6
+  du backlog (voir [TODO.md](../../TODO.md)).
+- ⚠️ **Ampleur** : US-C est volumineuse (flux guidé + garde-fous + types de séries + RPE/série + charge
+  planifiée/réalisée + repos configurable + réorg/superset/remplacement + pause + keep-awake + fin de séance
+  ressenti/note + suggestion de progression). À l'ouverture de la spec, **évaluer un découpage** en sous-US
+  cohérentes (ex. cœur flux guidé + garde-fous / saisie enrichie (types, RPE, planifié-réalisé) / ajustements
+  en direct / cycle de vie & fin) plutôt qu'une seule US monolithique.
 - Rappel de cadrage : US-C n'est pas « ajouter des features » mais **repenser l'écran en flux guidé** avec
   garde-fous. Migrations pressenties : `workout_sets.rpe` (pt 13), éventuellement charge planifiée (pt 14),
   `set_type` déjà présent.

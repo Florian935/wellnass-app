@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `docs/us-c-idees-terrain` — US-C : idées UX terrain + liste stabilisée
+
+**Modifié**
+- [docs/refonte-muscu/analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md) : ajout de la
+  section **§3 « Idées UX terrain » (mise en situation « à la salle »)** — 8 idées validées Florian (focus
+  exercice/série courant + aperçu « à suivre », steppers − / + incréments plaque, repos plein écran + vibration,
+  échauffement marqué en direct auto-exclu, « machine prise » sauter/revenir, superset repos après la paire,
+  keep-awake, suggestion de progression). Doc marqué **liste stabilisée** (22 points) → **prêt pour la spec US-C** ;
+  note d'ampleur ajoutée (évaluer un **découpage** de US-C en sous-US à l'ouverture de la spec).
+
+**Technique / Notes**
+- Analyse/suivi uniquement (aucun code). Prochaine étape : **brainstorm/spec US-C** (sur go Florian).
+
 ### 19/07/2026 — `docs/analyse-seance-us-c` — analyse de flux de l'écran de séance (pré-spec US-C)
 
 **Ajouté**
