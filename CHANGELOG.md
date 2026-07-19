@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `feature/refonte-muscu-c1` — plan d'implémentation US Refonte-C1
+
+**Ajouté**
+- [docs/plans/refonte-muscu-c1-seance-live-coeur.md](docs/plans/refonte-muscu-c1-seance-live-coeur.md) :
+  plan (6 tâches, aucune migration). **T1** plomberie repo (`sessionId` sur séance active, `useSessionRest`,
+  `useLastPerformance`, `setWorkoutFeedback`) ; **T2** i18n ; **T3** composant `RestOverlay` ; **T4** refonte
+  `workout.tsx` (carte focus + liste repliée + steppers + pré-remplissage cible plan → dernière perf → série
+  précédente + valider=log+repos+avance + état de fin + keep-awake + dialogue ✕ Continuer/Pause/Abandonner) ;
+  **T5** résumé éditable (ressenti 5★ + note) ; **T6** contrôle + revue. `Vibration` RN core (pas de rebuild).
+
+**Technique / Notes**
+- **Plan uniquement** (aucun code). Revue de plan (subagent) : 1 issue corrigée (règle de pré-remplissage des
+  champs explicitée — `reps` seedé `null` par le plan → pré-rempli depuis la dernière perf) + affinages (typage
+  `WorkoutDbRow.session_id`, imports `Alert`/`Vibration`, retrait clé morte `workout.rest`, `gestureEnabled` vérifié).
+- Prochaine étape : **maquette** (3 vues : carte focus, repos plein écran, dialogue ✕) puis validation avant code.
+
 ### 19/07/2026 — `feature/refonte-muscu-c1` — spec US Refonte-C1 (écran de séance : cœur du flux guidé)
 
 **Ajouté**

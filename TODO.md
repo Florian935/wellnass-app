@@ -273,7 +273,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**US-C découpée en C1/C2/C3 — spec C1 validée** : US-C (refonte écran de
+*Dernière mise à jour : 19/07/2026 (**US-C1 — plan validé** : plan d'implémentation C1 écrit (6 tâches, aucune
+migration), **revue Approved + validé Florian** ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md)).
+Prochaine étape : **maquette** (carte focus / repos plein écran / dialogue ✕) puis validation finale avant code.
+Précédemment : **US-C découpée en C1/C2/C3 — spec C1 validée** : US-C (refonte écran de
 séance) scindée en **C1** (cœur flux guidé + garde-fous) → **C2** (saisie enrichie : types de séries, RPE/série,
 charge planifiée-réalisée, migrations) → **C3** (ajustements live + suggestion progression). **Spec C1 écrite,
 revue Approved, validée Florian** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md),
@@ -426,7 +429,8 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     valider = log+repos+avance, repos plein écran + vibration + éditable/exo, keep-awake, ✕ Continuer/Pause/Abandonner,
     Terminer + garde 0 série, résumé éditable (ressenti 5★ + note). **Aucune migration.** **Spec ✅ validée Florian
     + revue Approved** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md), `feature/refonte-muscu-c1`).
-    Suite : **plan → maquette → validation → code**.
+    **Plan ✅ validé Florian + revue Approved** ([plan](docs/plans/refonte-muscu-c1-seance-live-coeur.md)).
+    Suite : **maquette → validation finale → code**.
   - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
     poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
