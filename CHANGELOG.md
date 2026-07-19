@@ -10,6 +10,16 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `docs/recette-c1-validee` — US-C1 : recette device validée
+
+**Modifié**
+- [TODO.md](TODO.md) : **US-C1** (chantier refonte Muscu) passée en `[x]` — **recette device validée par Florian
+  le 19/07/2026** ✅ (après 2 vagues de correctifs recette + fix chevron repos). Reste la **relecture Damien**.
+
+**Technique / Notes**
+- Suivi uniquement (aucun code). Pas de changement de Statut roadmap (refonte d'existant). Suite du chantier :
+  **spec C2** (types de séries + RPE par série + charge planifiée vs réalisée, avec migrations) puis **C3**.
+
 ### 19/07/2026 — `fix/refonte-muscu-c1-recette2` — recette C1 (2ᵉ vague, Florian)
 
 **Ajouté**

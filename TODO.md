@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**US-C1 — CODE LIVRÉ (subagent-driven)** : écran de séance refondu en flux
+*Dernière mise à jour : 19/07/2026 (**US-C1 — RECETTE VALIDÉE (Florian, 19/07/2026) ✅** : écran de séance en
+flux guidé (carte série en cours + steppers + dernière perf, valider=log+repos+avance, repos plein écran repliable
++ saisissable + vibration, keep-awake, dialogue ✕, gestion des séries en direct, résumé éditable ressenti 5★ + note)
+livré et recetté après 2 vagues de correctifs. **C1 `[x]` — reste relecture Damien.** Suite : **spec C2** (types de
+séries dont échauffement exclu, **RPE par série**, **charge planifiée vs réalisée** + migrations) puis **C3**.
+Précédemment : **US-C1 — CODE LIVRÉ (subagent-driven)** : écran de séance refondu en flux
 guidé (carte série en cours + steppers + dernière perf, valider=log+repos+avance, repos plein écran + vibration
 + éditable/exo, keep-awake, dialogue ✕ Continuer/Pause/Abandonner, gestion des séries en direct +Série/supprimer/
 dé-valider, résumé éditable ressenti 5★ + note). 9 commits, aucune migration, revue globale sans bloquant, tout vert.
@@ -430,14 +435,13 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 - [~] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — corrige le problème 4.
   **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6**. 📋 Analyse figée (22 points) :
   [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md). **Découpée en 3 sous-US** :
-  - [~] **C1 — Cœur : flux guidé + garde-fous** — carte série en cours (dernière perf + steppers) + liste repliée,
-    valider = log+repos+avance, repos plein écran + vibration + éditable/exo, keep-awake, ✕ Continuer/Pause/Abandonner,
-    Terminer + garde 0 série, résumé éditable (ressenti 5★ + note). **Aucune migration.** **Spec ✅ validée Florian
-    + revue Approved** ([spec](docs/specs/functional/us/refonte-muscu-c1-seance-live-coeur.md), `feature/refonte-muscu-c1`).
-    **Spec ✅ + plan ✅ + maquette ✅** validés Florian. **CODE LIVRÉ** (subagent-driven, 9 commits
-    `8586607`→`b369bee`, revue globale sans bloquant ; typecheck/lint/tests verts). Inclut la **gestion des
-    séries en direct** (+ Série / supprimer / dé-valider — validée Florian, ferme le point DoD + la régression).
-    **Aucune migration.** **Reste : recette device + relecture Damien.**
+  - [x] **C1 — Cœur : flux guidé + garde-fous** — **CODE LIVRÉ & RECETTE VALIDÉE (Florian, 19/07/2026) ✅**
+    (subagent-driven ; spec ✅ + plan ✅ + maquette ✅ ; revue globale sans bloquant). Carte série en cours
+    (dernière perf + steppers) + liste repliée, valider = log+repos+avance, repos plein écran (repliable + repos
+    éditable manuellement) + vibration, keep-awake, ✕ Continuer/Pause/Abandonner, Terminer + garde 0 série,
+    **gestion des séries en direct** (+ Série / supprimer / dé-valider), résumé éditable (ressenti 5★ + note).
+    2 vagues de correctifs recette intégrées (reps semées, charge non tronquée, « Ressenti /5 » ≠ RPE, repos
+    saisissable + repliable, couleurs accent). **Aucune migration.** **Reste : relecture Damien.**
   - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
     poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
