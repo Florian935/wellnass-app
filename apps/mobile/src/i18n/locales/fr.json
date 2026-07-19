@@ -123,7 +123,9 @@
           "estimated_1rm": "1RM estimé",
           "best_volume": "Volume série"
         }
-      }
+      },
+      "warmupCount_one": "+{{count}} échauffement",
+      "warmupCount_other": "+{{count}} échauffements"
     }
   },
   "tabs": {
@@ -854,6 +856,10 @@
       "setSuperset": "Super",
       "setDuration": "Durée",
       "setBodyweight": "PdC",
+      "setDropset": "Drop",
+      "setFailure": "Échec",
+      "setRpe": "RPE {{value}}",
+      "planned": "prévu {{weight}}",
       "repsWeight": "{{reps}} × {{weight}}",
       "repsOnly": "{{reps}} reps",
       "weightOnly": "{{weight}}",
