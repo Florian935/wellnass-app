@@ -273,7 +273,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 19/07/2026 (**Widgets multi-formes — CODE LIVRÉ** : moteur de widgets 3 formes
+*Dernière mise à jour : 20/07/2026 (**US-C2 — spec + plan + maquette VALIDÉS (Florian)** : saisie enrichie de
+l'écran de séance — types de séries (dont dropset/échec, superset→C3), **RPE/série** 1-10 optionnel masqué derrière
+« ＋ RPE », **charge planifiée vs réalisée** (snapshot `planned_weight_kg`). Spec relue (2 bloquants corrigés :
+read dupliqué records-repository, décompte séries hors échauffement), plan relu (script parité i18n ad hoc,
+addSet ne recopie plus un échauffement). Records excluent warmup **et** duration ; bodyweight lesté = record
+légitime. **🔴 migration cloud à pousser (Task 1, sur go explicite)**. Implémentation subagent-driven lancée
+sur `feature/refonte-muscu-c2`. Idée notée (IDEAS) : RIR en alternative au RPE. —
+**Widgets multi-formes — CODE LIVRÉ** : moteur de widgets 3 formes
 (petit carré / rectangle / grand carré) partagé par accueil + muscu + course, grille 2 colonnes, drag +
 sélecteur de forme, layout multi-hubs sans migration SQL ; planning passé aux 7 prochains jours + visuel
 calendrier. Spec/plan/design validés Damien, tout vert. **Reste : recette device.** — **Fix repas — CODE
@@ -448,8 +455,15 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     **gestion des séries en direct** (+ Série / supprimer / dé-valider), résumé éditable (ressenti 5★ + note).
     2 vagues de correctifs recette intégrées (reps semées, charge non tronquée, « Ressenti /5 » ≠ RPE, repos
     saisissable + repliable, couleurs accent). **Aucune migration.** **Reste : relecture Damien.**
-  - [ ] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, superset, dropset, échec, durée,
-    poids de corps), **RPE par série**, **charge planifiée vs réalisée**. ⚠️ migrations (`workout_sets.rpe`, charge planifiée).
+  - [~] **C2 — Saisie enrichie** — types de séries (échauffement auto-exclu, dropset, échec, durée,
+    poids de corps ; **superset → C3**), **RPE par série** (1-10, optionnel, masqué derrière « ＋ RPE »),
+    **charge planifiée vs réalisée** (snapshot `planned_weight_kg`). ⚠️ **migration** (`workout_sets.rpe` +
+    `planned_weight_kg` + assouplissement `CHECK set_type` sur `workout_sets`/`exercise_plans`).
+    **Spec ✅ + plan ✅ + maquette ✅ validés Florian (20/07/2026)** → implémentation subagent-driven en cours
+    (`feature/refonte-muscu-c2`). Décisions : records excluent warmup **et** duration ; bodyweight lesté = record
+    légitime. Idée notée (IDEAS) : RIR en alternative au RPE.
+    ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
+    [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
     exercice, accès démo en séance, suggestion de progression (§6.5).
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine

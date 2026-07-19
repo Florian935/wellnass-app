@@ -20,6 +20,14 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [20/07/2026] 🆕 **RIR en alternative au RPE par série (préférence utilisateur)** : US Refonte-C2 introduit
+  un **RPE par série** (échelle 1-10, optionnel). Certains pratiquants raisonnent plutôt en **RIR** (*reps in
+  reserve* : nombre de reps qu'il restait avant l'échec — 0 = échec, ~5 = très facile). Prévoir de pouvoir
+  **renseigner le RIR à la place du RPE**, idéalement via une **préférence de profil** (afficher l'intensité en
+  RPE **ou** RIR) — les deux étant liés (RIR ≈ 10 − RPE). À creuser : réglage global vs par série ; conversion/
+  stockage (garder une seule donnée en base et convertir à l'affichage ?) ; cohérence avec le futur module
+  **Powerlifting** ([[module-powerlifting]] mentionne déjà « RPE / RIR ») et les **profils enrichis**. Remonté
+  par Florian (20/07). Cible : évolution de C2 (post-livraison C2).
 - [16/07/2026] 🆕 **Générateur IA de plan de repas hebdomadaire + liste de courses (nutrition)** :
   dans le module **nutrition**, un système (piste **IA**) qui **planifie tous les repas de la semaine**
   à partir de paramètres saisis par l'utilisateur : **nombre de repas/jour**, **nombre de collations/jour**,

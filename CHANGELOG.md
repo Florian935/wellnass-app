@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/refonte-muscu-c2` — US-C2 : spec + plan + maquette (saisie enrichie)
+
+**Ajouté**
+- **Spec fonctionnelle US-C2** ([refonte-muscu-c2-saisie-enrichie.md](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md)) :
+  types de séries exposés (échauffement exclu du volume/records, durée, poids de corps, **dropset**, **échec**),
+  **RPE par série** (1-10, optionnel), **charge planifiée vs réalisée** (snapshot `planned_weight_kg`). Superset
+  renvoyé en C3. Validée Florian.
+- **Plan d'implémentation US-C2** ([refonte-muscu-c2-saisie-enrichie.md](docs/plans/refonte-muscu-c2-saisie-enrichie.md)) :
+  12 tâches, descente bas→haut (migration → shared → schema → repos → UI → i18n → vérif). Validé Florian.
+- **Maquette US-C2** ([refonte-muscu-c2.html](design/refonte-muscu-c2/refonte-muscu-c2.html)) : 5 écrans (carte
+  focus enrichie, variantes durée/poids de corps, liste à badges, résumé, historique). RPE masqué derrière « ＋ RPE ».
+- **IDEAS** : idée « RIR en alternative au RPE par série (préférence profil) » (20/07/2026).
+
+**Modifié**
+- [TODO.md](TODO.md) : **C2** passée en `[~]` (spec/plan/maquette validés, implémentation lancée) ; date de MàJ.
+
+**Technique / Notes**
+- **Décisions de cadrage** : une seule US ; charge planifiée = colonne figée `planned_weight_kg` ; RPE/série 1-10
+  distinct du ressenti global 5★ (C1) ; records excluent `warmup` **et** `duration`, `bodyweight` lesté éligible.
+- **Relectures intégrées** — spec : read de séries **dupliqué** dans `records-repository.ts` à enrichir (sinon
+  typecheck KO), décompte de séries du résumé n'excluait pas les échauffements, `useLastPerformance` doit exclure
+  warmup. Plan : pas de script npm de parité i18n (contrôle node ad hoc), `addSet` ne recopie plus un échauffement.
+- **🔴 Migration cloud** (Task 1) à pousser sur **go explicite** : `workout_sets.rpe` + `planned_weight_kg` +
+  assouplissement du `CHECK set_type` sur `workout_sets` et `exercise_plans` (ajout `dropset`/`failure`).
+- Aucun code applicatif dans ce commit (livrables de cadrage uniquement).
+
 ### 19/07/2026 — `docs/recette-c1-validee` — US-C1 : recette device validée
 
 **Modifié**
