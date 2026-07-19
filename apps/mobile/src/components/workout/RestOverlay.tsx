@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 // Bordeaux muscu — rôle fixe hors thème (identité de l'écran de repos).
@@ -35,6 +36,7 @@ function formatSecondsLeft(seconds: number, t: (key: string, options?: Record<st
  */
 export function RestOverlay({ secondsLeft, collapsed, onSkip, onExtend, onToggleCollapse }: RestOverlayProps) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const countdown = formatSecondsLeft(secondsLeft, t);
 
   if (collapsed) {
@@ -67,10 +69,10 @@ export function RestOverlay({ secondsLeft, collapsed, onSkip, onExtend, onToggle
         accessibilityRole="button"
         accessibilityLabel={t('workout.restCollapse')}
         onPress={onToggleCollapse}
-        hitSlop={8}
-        style={({ pressed }) => [styles.collapseBtn, pressed && styles.pressed]}
+        hitSlop={12}
+        style={({ pressed }) => [styles.collapseBtn, { top: insets.top + 12 }, pressed && styles.pressed]}
       >
-        <Ionicons name="chevron-down" size={28} color="#ffffff" />
+        <Ionicons name="chevron-down" size={26} color="#ffffff" />
       </Pressable>
       <View style={styles.content}>
         <Text style={styles.title}>{t('workout.restTitle')}</Text>
@@ -103,7 +105,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 10,
   },
-  collapseBtn: { position: 'absolute', top: 16, right: 16, padding: 8, zIndex: 11 },
+  // `top` est fourni en inline (safe-area) pour ne pas chevaucher la barre d'état.
+  collapseBtn: {
+    position: 'absolute',
+    right: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    zIndex: 11,
+  },
   content: {
     alignItems: 'center',
     justifyContent: 'center',
