@@ -53,6 +53,8 @@
     "weightPlaceholderMetric": "e.g. 60",
     "weightPlaceholderImperial": "e.g. 130",
     "addSet": "+ Set",
+    "removeSet": "Remove set",
+    "unvalidateSet": "Unlog set",
     "addExercise": "+ Add exercise",
     "finish": "Finish",
     "skipRest": "Skip",

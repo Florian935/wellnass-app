@@ -53,6 +53,8 @@
     "weightPlaceholderMetric": "Ex. 60",
     "weightPlaceholderImperial": "Ex. 130",
     "addSet": "+ Série",
+    "removeSet": "Supprimer la série",
+    "unvalidateSet": "Dé-valider la série",
     "addExercise": "+ Ajouter un exercice",
     "finish": "Terminer",
     "skipRest": "Passer",

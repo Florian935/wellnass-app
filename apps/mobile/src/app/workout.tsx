@@ -10,8 +10,10 @@ import { CurrentSetCard } from '@/components/workout/CurrentSetCard';
 import { ExerciseList } from '@/components/workout/ExerciseList';
 import { RestOverlay } from '@/components/workout/RestOverlay';
 import {
+  addSet,
   cancelWorkout,
   finishWorkout,
+  removeSet,
   updateSet,
   useActiveWorkout,
   useLastPerformance,
@@ -248,6 +250,18 @@ export default function WorkoutScreen() {
     router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
   };
 
+  // Gestion des séries en direct depuis la liste dépliée (C1) : dé-validation
+  // volontairement sans repos (spec §2.2 — seule la carte focus déclenche le repos).
+  const onToggleSetDone = (setId: string, currentDone: boolean) => {
+    void updateSet(setId, { done: !currentDone });
+  };
+  const onRemoveSet = (setId: string) => {
+    void removeSet(setId);
+  };
+  const onAddSet = (exerciseId: string) => {
+    void addSet(workoutId, exerciseId);
+  };
+
   const hasAnyDone = entries.some((entry) => entry.sets.some((set) => set.done));
 
   const onFinish = () => {
@@ -308,6 +322,9 @@ export default function WorkoutScreen() {
             entries={entries}
             currentExerciseId={currentExerciseId}
             onSelect={setFocusOverride}
+            onToggleSetDone={onToggleSetDone}
+            onRemoveSet={onRemoveSet}
+            onAddSet={onAddSet}
             colors={colors}
           />
         ) : null}
