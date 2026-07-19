@@ -86,6 +86,8 @@
       "sets": "Séries validées",
       "volume": "Volume total",
       "feeling": "Ressenti",
+      "starLabel_one": "{{count}} étoile",
+      "starLabel_other": "{{count}} étoiles",
       "note": "Note de séance",
       "notePlaceholder": "Sensation, contexte, remarques…",
       "records": {

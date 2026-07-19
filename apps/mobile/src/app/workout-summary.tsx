@@ -1,14 +1,17 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { computeVolume } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { TextField } from '@/components/TextField';
 import {
   getWorkoutSets,
+  setWorkoutFeedback,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import {
@@ -75,6 +78,80 @@ function RecordCard({ record }: { record: BeatenRecord }) {
           {typeLabel} · {valueLabel}
         </Text>
       </View>
+    </View>
+  );
+}
+
+/**
+ * Section "Ressenti" — 5 étoiles tappables (RPE borné 1-5) + note de séance,
+ * éditables a posteriori. Ne monte qu'une fois la séance chargée (`workout`
+ * non nul) : l'état local est initialisé une seule fois depuis `workout.rpe` /
+ * `workout.notes` (le composant est démonté/remonté via sa `key` si l'id de
+ * séance change côté parent), puis reste la source de vérité pour l'affichage
+ * pendant que l'utilisateur édite.
+ */
+function FeelingSection({
+  workoutId,
+  initialRpe,
+  initialNotes,
+}: {
+  workoutId: string;
+  initialRpe: number | null;
+  initialNotes: string | null;
+}) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const [rpe, setRpe] = useState(initialRpe);
+  const [notes, setNotes] = useState(initialNotes ?? '');
+
+  // Ressenti affiché borné 1-5 (0/absent = aucune étoile pleine) — voir spec.
+  const displayRpe = Math.min(5, Math.max(0, rpe ?? 0));
+
+  function handleRate(value: number) {
+    setRpe(value);
+    void setWorkoutFeedback(workoutId, { rpe: value });
+  }
+
+  function handleNotesBlur() {
+    const trimmed = notes.trim();
+    void setWorkoutFeedback(workoutId, { notes: trimmed.length > 0 ? notes : null });
+  }
+
+  return (
+    <View style={styles.feelingSection}>
+      <Text style={[styles.recordsSectionTitle, { color: colors.text }]}>
+        {t('workout.summary.feeling')}
+      </Text>
+      <View style={styles.starsRow}>
+        {[1, 2, 3, 4, 5].map((value) => {
+          const filled = displayRpe >= value;
+          return (
+            <Pressable
+              key={value}
+              accessibilityRole="button"
+              accessibilityLabel={t('workout.summary.starLabel', { count: value })}
+              onPress={() => handleRate(value)}
+              hitSlop={8}
+            >
+              <Ionicons
+                name={filled ? 'star' : 'star-outline'}
+                size={30}
+                color={filled ? colors.accent : colors.textMuted}
+              />
+            </Pressable>
+          );
+        })}
+      </View>
+      <TextField
+        label={t('workout.summary.note')}
+        placeholder={t('workout.summary.notePlaceholder')}
+        value={notes}
+        onChangeText={setNotes}
+        onBlur={handleNotesBlur}
+        multiline
+        numberOfLines={4}
+        style={styles.noteInput}
+      />
     </View>
   );
 }
@@ -148,6 +225,14 @@ export default function WorkoutSummaryScreen() {
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>
       )}
+      {workout ? (
+        <FeelingSection
+          key={workout.id}
+          workoutId={workout.id}
+          initialRpe={workout.rpe}
+          initialNotes={workout.notes}
+        />
+      ) : null}
       {id ? <RecordsSection workoutId={id} /> : null}
       <View style={styles.footer}>
         <Button label={t('workout.backHome')} onPress={() => router.replace('/(tabs)')} />
@@ -182,4 +267,8 @@ const styles = StyleSheet.create({
   recordBody: { flex: 1, gap: 2 },
   recordExercise: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
   recordMeta: { fontFamily: fontFamily.body, fontSize: 13 },
+  // Feeling section (ressenti + note)
+  feelingSection: { gap: 10 },
+  starsRow: { flexDirection: 'row', gap: 8 },
+  noteInput: { minHeight: 90, textAlignVertical: 'top', paddingTop: 14 },
 });

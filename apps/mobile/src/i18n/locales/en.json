@@ -86,6 +86,8 @@
       "sets": "Sets completed",
       "volume": "Total volume",
       "feeling": "How it felt",
+      "starLabel_one": "{{count}} star",
+      "starLabel_other": "{{count}} stars",
       "note": "Workout note",
       "notePlaceholder": "Feel, context, remarks…",
       "records": {
