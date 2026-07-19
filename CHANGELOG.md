@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 19/07/2026 — `docs/recette-refonte-ab` — US-A & US-B : recette device validée
+
+**Modifié**
+- [TODO.md](TODO.md) : **US-A** et **US-B** (chantier refonte Muscu) passées en `[x]` — **recette device
+  validée par Florian le 19/07/2026** ✅. Reste la **relecture Damien** sur les deux.
+
+**Technique / Notes**
+- Suivi uniquement (aucun code). Pas de changement de Statut roadmap : les deux US sont de la **refonte**
+  d'existant (hors lignes roadmap versionnées ; les items 3.x/7.4 concernés étaient déjà ✅).
+- Suite du chantier : **US-C** (refonte de l'écran de séance en cours — analyse de flux déjà remontée à Florian,
+  reconciliation des listes en cours avant la spec) puis **US-D** (templates de séance libre).
+
 ### 18/07/2026 — `feature/refonte-muscu-b` — implémentation US Refonte-B (séance du jour sur le hub)
 
 > Implémentation subagent-driven (6 commits `10f267b`→`f5c7027`), revue de code globale **sans bloquant**.

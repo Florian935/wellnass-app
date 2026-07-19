@@ -273,7 +273,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 18/07/2026 (**US Refonte-B — CODE LIVRÉ (subagent-driven)** : 5 tâches implémentées
+*Dernière mise à jour : 19/07/2026 (**US-A & US-B — RECETTE DEVICE VALIDÉE (Florian, 19/07/2026)** ✅ : les deux
+US du chantier refonte Muscu passent en `[x]` (reste relecture Damien). Aucun changement roadmap (refonte d'existant).
+Suite : **US-C** (refonte écran de séance — analyse de flux remontée à Florian, croisement des listes en cours avant
+spec) puis **US-D**. Précédemment : **US Refonte-B — CODE LIVRÉ (subagent-driven)** : 5 tâches implémentées
 (6 commits `10f267b`→`f5c7027`), revue de code globale **sans bloquant**, typecheck/lint/tests verts, parité i18n.
 Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) → hub muscu carte 3 états (Reprendre /
 Séance du jour / repli Séance libre + coche « faite » + mention « prochaine ») + widget dashboard 7.4 réaligné ;
@@ -396,25 +399,21 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 > **structurels** (déjà propagés à Running) **avant** de poursuivre la roadmap. Chaque US suit le
 > workflow **spec → plan → design → validation → code**. Ordre : A → B → C → D.
 
-- [~] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — **CODE LIVRÉ**
-  (subagent-driven, 7 commits `c0f6a07`→`c53d85a`, revue de code globale sans bloquant ; typecheck/lint/tests
-  verts). Spec ✅ + plan ✅ + maquette ✅ tous validés Florian
+- [x] **US-A — Unifier programme → planning → séance** *(structurel, socle)* — **CODE LIVRÉ & RECETTE
+  VALIDÉE (Florian, 19/07/2026) ✅** (subagent-driven, 7 commits `c0f6a07`→`c53d85a`, revue de code globale
+  sans bloquant). Spec ✅ + plan ✅ + maquette ✅ validés Florian
   ([spec](docs/specs/functional/us/refonte-muscu-a-unification-programme-planning-seance.md) ·
   [plan](docs/plans/refonte-muscu-a-unification-programme-planning-seance.md)). Livré : migration
   `planned_session_id` (**appliquée cloud** + `db:types`), démarrer une séance **depuis le calendrier** (gaté
   muscu) + occurrence marquée `done` à la fin, fusion activer/planifier sur les 2 fiches, popup de changement
-  de programme, i18n FR/EN. **Reste : recette device + relecture Damien** (passer `[x]` après recette).
-  ⚠️ Point à confirmer en recette : la « reprise » d'une séance active se fait par libellé de bouton, pas par
-  dialogue (spec §3/§7). ⚠️ **Running** : le démarrage d'une course planifiée depuis le calendrier reste
-  **différé** (option b du §7 — « Démarrer » masqué sur occurrences course).
-- [~] **US-B — Séance du jour en accès direct** *(navigation)* — raccourci « séance du jour » sur le
-  hub muscu (aujourd'hui 4-5 taps). Corrige le problème 3. **Dépend de US-A** (lien planning ↔ séance).
-  **Spec ✅ validée Florian + revue Approved**
-  ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md), `feature/refonte-muscu-b`).
-  Hook partagé `useTodaySession` (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » +
-  réalignement du widget dashboard 7.4. **Aucune migration**. **CODE LIVRÉ** (subagent-driven, 6 commits
-  `10f267b`→`f5c7027`, revue de code globale sans bloquant ; typecheck/lint/tests verts). Spec ✅ + plan ✅ +
-  maquette ✅ validés Florian. **Reste : recette device (AVEC US-A) + relecture Damien** (passer `[x]` après recette).
+  de programme, i18n FR/EN. **Reste : relecture Damien.** ⚠️ **Running** : démarrage d'une course planifiée
+  depuis le calendrier **différé** (option b du §7 — « Démarrer » masqué sur occurrences course).
+- [x] **US-B — Séance du jour en accès direct** *(navigation)* — **CODE LIVRÉ & RECETTE VALIDÉE
+  (Florian, 19/07/2026) ✅** (subagent-driven, 6 commits `10f267b`→`f5c7027`, revue de code globale sans bloquant).
+  Raccourci « séance du jour » sur le hub muscu. Corrige le problème 3. Spec ✅ + plan ✅ + maquette ✅ validés
+  Florian ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md)). Hook partagé `useTodaySession`
+  (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » + réalignement du widget dashboard 7.4.
+  **Aucune migration.** **Reste : relecture Damien.**
 - [ ] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — flux **guidé série
   par série** (vs liste plate), dernière perf, steppers charge, types de série, pause/reprise…
   Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6** (§ P1 Finitions muscu) — les traiter
