@@ -1,18 +1,19 @@
 /**
- * Grille de widgets **réordonnable par glisser-déposer aimanté à la case** (mode édition).
+ * Grille de widgets **réordonnable par glisser-déposer aimanté à la case**, avec **reflow live**
+ * (mode édition).
  *
- * Vrai quadrillage 2 colonnes : chaque widget est positionné en absolu selon sa case
- * (`col`, `row`) + empreinte (`sizeSpan`). Interaction : **appui long ~0,7 s** → le widget se
- * soulève et suit le doigt (translation) ; une **case fantôme** accent prévisualise l'emplacement
- * cible (aimanté à la grille, empreinte de la forme) ; au relâchement, `onMoveToCell(id, col, row)`
- * place le widget et **pousse** les widgets chevauchés (logique pure `moveWidgetToCell`).
+ * Vrai quadrillage 2 colonnes : chaque widget est positionné selon sa case (`col`, `row`) +
+ * empreinte (`sizeSpan`). Interaction : **appui long ~0,7 s** → le widget se soulève et suit le
+ * doigt ; pendant le déplacement, on recalcule en continu la disposition résultante
+ * (`moveWidgetToCell`, avec poussée des chevauchés) et **les autres modules glissent en temps réel**
+ * vers leur nouvelle case (animation). Une case fantôme discrète marque l'emplacement d'atterrissage.
+ * Au relâchement, `onMoveToCell(id, col, row)` persiste la disposition prévisualisée.
  *
- * La cible est calculée en JS à partir de la **position visuelle** du widget (rect d'origine +
- * translation du geste), donc WYSIWYG — pas de mesure d'origine écran nécessaire. Les callbacks
- * du geste (worklets) ne passent que des primitives via `runOnJS` (jamais d'appel JS synchrone).
+ * Cible calculée en JS depuis la position visuelle (rect d'origine + translation) → WYSIWYG. Les
+ * worklets du geste ne passent que des primitives via `runOnJS`.
  */
 
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -25,8 +26,8 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import {
   clampCol,
-  GRID_COLS,
   gridRowCount,
+  moveWidgetToCell,
   sizeSpan,
   type WidgetId,
   type WidgetLayoutEntry,
@@ -36,9 +37,12 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const LONG_PRESS_MS = 700;
+const REFLOW_MS = 180;
+
+type Rect = { left: number; top: number; width: number; height: number };
 
 /** Rect pixel d'une case (col/row + empreinte). */
-function rectOf(entry: WidgetLayoutEntry, colW: number, gap: number) {
+function rectOf(entry: WidgetLayoutEntry, colW: number, gap: number): Rect {
   const { w, h } = sizeSpan(entry.size);
   return {
     left: entry.col * (colW + gap),
@@ -69,22 +73,20 @@ export function SortableWidgetGrid({
 }) {
   const { colors } = useTheme();
   const [activeId, setActiveId] = useState<WidgetId | null>(null);
-  const [preview, setPreview] = useState<{ col: number; row: number; size: WidgetSize } | null>(null);
+  // Disposition prévisualisée pendant le drag (résultat de moveWidgetToCell), ou null au repos.
+  const [preview, setPreview] = useState<WidgetLayoutEntry[] | null>(null);
 
   const step = colW + gap;
-  const height = useMemo(() => {
-    const rows = gridRowCount(items);
-    return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
-  }, [items, colW, gap]);
 
   /** Case cible à partir de la position visuelle (rect d'origine + translation). */
   const targetCell = useCallback(
     (entry: WidgetLayoutEntry, tx: number, ty: number) => {
       const r = rectOf(entry, colW, gap);
       const { w } = sizeSpan(entry.size);
-      const col = clampCol(Math.round((r.left + tx) / step), w);
-      const row = Math.max(0, Math.round((r.top + ty) / step));
-      return { col, row };
+      return {
+        col: clampCol(Math.round((r.left + tx) / step), w),
+        row: Math.max(0, Math.round((r.top + ty) / step)),
+      };
     },
     [colW, gap, step],
   );
@@ -102,7 +104,8 @@ export function SortableWidgetGrid({
       const entry = items.find((w) => w.id === id);
       if (!entry) return;
       const { col, row } = targetCell(entry, tx, ty);
-      setPreview({ col, row, size: entry.size });
+      // Disposition résultante (avec poussée) → les autres modules s'y déplacent en live.
+      setPreview(moveWidgetToCell({ widgets: items }, id, col, row).widgets);
     },
     [items, targetCell],
   );
@@ -124,14 +127,29 @@ export function SortableWidgetGrid({
     [items, targetCell, onMoveToCell],
   );
 
+  // Positions courantes (preview pendant le drag, sinon items) indexées par id.
+  const posById = useMemo(() => {
+    const m = new Map<WidgetId, WidgetLayoutEntry>();
+    for (const e of preview ?? items) m.set(e.id, e);
+    return m;
+  }, [preview, items]);
+
+  const height = useMemo(() => {
+    const rows = gridRowCount(preview ?? items);
+    return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
+  }, [preview, items, colW, gap]);
+
+  // Case fantôme = emplacement d'atterrissage du module tiré (dans la disposition prévisualisée).
   const previewRect =
-    preview != null
-      ? rectOf({ id: 'x' as WidgetId, visible: true, size: preview.size, col: preview.col, row: preview.row }, colW, gap)
+    activeId != null && preview != null
+      ? (() => {
+          const dragged = preview.find((e) => e.id === activeId);
+          return dragged ? rectOf(dragged, colW, gap) : null;
+        })()
       : null;
 
   return (
     <View style={{ height, position: 'relative' }}>
-      {/* Case fantôme cible. */}
       {previewRect ? (
         <View
           pointerEvents="none"
@@ -143,35 +161,41 @@ export function SortableWidgetGrid({
               width: previewRect.width,
               height: previewRect.height,
               borderColor: colors.accent,
-              backgroundColor: colors.surfaceAlt,
             },
           ]}
         />
       ) : null}
 
-      {items.map((entry) => (
-        <Cell
-          key={entry.id}
-          entry={entry}
-          rect={rectOf(entry, colW, gap)}
-          isActive={activeId === entry.id}
-          onBegin={begin}
-          onUpdate={update}
-          onEnd={end}
-          onSettle={settle}
-          onToggleVisible={onToggleVisible}
-          onCycleSize={onCycleSize}
-          renderWidget={renderWidget}
-        />
-      ))}
+      {items.map((entry) => {
+        const base = rectOf(entry, colW, gap); // position de montage (absolue, d'après `items`)
+        const target = posById.get(entry.id) ?? entry;
+        const tRect = rectOf(target, colW, gap);
+        return (
+          <Cell
+            key={entry.id}
+            entry={entry}
+            base={base}
+            reflowX={tRect.left - base.left}
+            reflowY={tRect.top - base.top}
+            onBegin={begin}
+            onUpdate={update}
+            onEnd={end}
+            onSettle={settle}
+            onToggleVisible={onToggleVisible}
+            onCycleSize={onCycleSize}
+            renderWidget={renderWidget}
+          />
+        );
+      })}
     </View>
   );
 }
 
 function Cell({
   entry,
-  rect,
-  isActive,
+  base,
+  reflowX,
+  reflowY,
   onBegin,
   onUpdate,
   onEnd,
@@ -181,10 +205,11 @@ function Cell({
   renderWidget,
 }: {
   entry: WidgetLayoutEntry;
-  rect: { left: number; top: number; width: number; height: number };
-  isActive: boolean;
+  base: Rect;
+  /** Décalage (px) vers la case cible pendant un drag (reflow live des autres modules). */
+  reflowX: number;
+  reflowY: number;
   onBegin: (id: WidgetId) => void;
-  /** Reçoit la **translation** du geste (primitives) ; cible calculée côté JS. */
   onUpdate: (id: WidgetId, tx: number, ty: number) => void;
   onEnd: (id: WidgetId, tx: number, ty: number) => void;
   onSettle: () => void;
@@ -194,45 +219,65 @@ function Cell({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const tx = useSharedValue(0);
-  const ty = useSharedValue(0);
-  const dragging = useSharedValue(false);
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  const reflowXv = useSharedValue(0);
+  const reflowYv = useSharedValue(0);
+  const active = useSharedValue(false);
+
+  // Anime le module (non tiré) vers sa case cible quand la prévisualisation change.
+  // `active` n'est piloté QUE par les worklets du geste (jamais par un effet) → pas de conflit.
+  useEffect(() => {
+    reflowXv.value = withTiming(reflowX, { duration: REFLOW_MS });
+    reflowYv.value = withTiming(reflowY, { duration: REFLOW_MS });
+  }, [reflowX, reflowY, reflowXv, reflowYv]);
 
   const pan = Gesture.Pan()
     .activateAfterLongPress(LONG_PRESS_MS)
     .onStart(() => {
-      dragging.value = true;
+      active.value = true;
       runOnJS(onBegin)(entry.id);
     })
     .onUpdate((e) => {
-      tx.value = e.translationX;
-      ty.value = e.translationY;
+      dragX.value = e.translationX;
+      dragY.value = e.translationY;
       runOnJS(onUpdate)(entry.id, e.translationX, e.translationY);
     })
     .onEnd((e) => {
       runOnJS(onEnd)(entry.id, e.translationX, e.translationY);
     })
     .onFinalize(() => {
-      dragging.value = false;
-      tx.value = withTiming(0, { duration: 160 });
-      ty.value = withTiming(0, { duration: 160 });
+      active.value = false;
+      dragX.value = 0;
+      dragY.value = 0;
       runOnJS(onSettle)();
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: tx.value },
-      { translateY: ty.value },
-      { scale: dragging.value ? 1.05 : 1 },
-      { rotateZ: dragging.value ? '-2deg' : '0deg' },
-    ],
-    zIndex: dragging.value ? 20 : 1,
-    elevation: dragging.value ? 12 : 0,
-    shadowColor: '#000',
-    shadowOpacity: dragging.value ? 0.28 : 0,
-    shadowRadius: dragging.value ? 16 : 0,
-    shadowOffset: { width: 0, height: dragging.value ? 12 : 0 },
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    // Module tiré → suit le doigt ; autres → glissent vers leur case cible (reflow).
+    if (active.value) {
+      return {
+        transform: [
+          { translateX: dragX.value },
+          { translateY: dragY.value },
+          { scale: 1.05 },
+          { rotateZ: '-2deg' },
+        ],
+        zIndex: 20,
+        elevation: 12,
+        shadowColor: '#000',
+        shadowOpacity: 0.28,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 12 },
+      };
+    }
+    return {
+      transform: [{ translateX: reflowXv.value }, { translateY: reflowYv.value }],
+      zIndex: 1,
+      elevation: 0,
+      shadowOpacity: 0,
+    };
+  });
 
   const shapeIcon =
     entry.size === 'small'
@@ -247,7 +292,7 @@ function Cell({
       <Animated.View
         style={[
           styles.cell,
-          { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+          { left: base.left, top: base.top, width: base.width, height: base.height },
           styles.frame,
           { borderColor: colors.accent },
           !entry.visible && styles.hidden,
@@ -300,7 +345,13 @@ const styles = StyleSheet.create({
   frame: { borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, padding: 4 },
   fill: { flex: 1 },
   hidden: { opacity: 0.5 },
-  previewCell: { position: 'absolute', borderWidth: 2, borderStyle: 'dashed', borderRadius: 22, opacity: 0.7 },
+  previewCell: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderRadius: 22,
+    opacity: 0.55,
+  },
   chips: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 5, zIndex: 2 },
   chip: {
     width: 24,
@@ -320,6 +371,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
-
-// Réexport implicite d'une constante utile au conteneur (nombre de colonnes).
-export { GRID_COLS };

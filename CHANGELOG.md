@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — reflow live pendant le glisser-déposer
+
+> Retour Damien : voir les modules se déplacer en direct pendant le drag. typecheck + lint verts.
+> **Recette device requise.**
+
+**Modifié**
+- **Reflow live** ([SortableWidgetGrid.tsx](apps/mobile/src/components/widgets/SortableWidgetGrid.tsx)) :
+  pendant le déplacement, la disposition résultante est recalculée en continu (`moveWidgetToCell`) et
+  **les autres modules glissent (animés) vers leur nouvelle case** en temps réel — plus seulement une
+  case fantôme. Le module tiré suit le doigt ; la case d'atterrissage reste marquée discrètement.
+- `active` (état « en cours de drag ») piloté **uniquement par les worklets** du geste (onStart/onFinalize),
+  jamais par un effet → conforme à la règle reanimated (`react-hooks`), pas de conflit de valeur.
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — vrai quadrillage : placement par cases + collision
 
 > Refonte du modèle de grille (retour Damien : « vrai quadrillage », deux petits carrés
