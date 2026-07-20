@@ -106,6 +106,8 @@ export interface WorkoutRecordCandidate {
  * suivantes sont considérées :
  *  - `done === true`
  *  - `setType !== 'warmup'`
+ *  - `setType !== 'duration'` (une charge tenue en gainage ne doit pas
+ *    produire de record « charge max » ; `bodyweight` lesté reste éligible)
  *  - les valeurs numériques requises sont non-nulles
  *
  * Pour chaque (exercice, type), un seul candidat est émis — celui
@@ -131,9 +133,9 @@ export function computeWorkoutRecords(
   for (const exercise of exercises) {
     const { exerciseId } = exercise;
 
-    // Filtre des séries éligibles (done + non-warmup)
+    // Filtre des séries éligibles (done + non-warmup + non-duration)
     const validSets = exercise.sets.filter(
-      (s) => s.done === true && s.setType !== 'warmup',
+      (s) => s.done === true && s.setType !== 'warmup' && s.setType !== 'duration',
     );
 
     // --- max_weight ---

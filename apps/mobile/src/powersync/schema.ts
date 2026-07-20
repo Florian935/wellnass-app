@@ -186,6 +186,9 @@ const workout_sets = new Table({
   weight_kg: column.real,
   duration_seconds: column.integer,
   done: column.integer,
+  // US Refonte-C2 : RPE par série (1-10) + charge planifiée figée au démarrage.
+  rpe: column.integer,
+  planned_weight_kg: column.real,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

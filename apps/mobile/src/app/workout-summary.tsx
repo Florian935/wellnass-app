@@ -26,6 +26,7 @@ import { useTheme } from '@/theme/useTheme';
 type Summary = {
   exercises: number;
   doneSets: number;
+  warmupSets: number;
   volume: number;
   durationMin: number;
 };
@@ -35,19 +36,28 @@ async function buildSummary(
   durationSeconds: number | null,
 ): Promise<Summary> {
   const sets = await getWorkoutSets(workoutId);
-  const doneSets = sets.filter((s) => s.done).length;
+  // Les échauffements sont exclus du volume (déjà via computeVolume), des records
+  // et — ici — du décompte de séries et d'exercices (spec C2 §2.5). Un exercice
+  // qui n'a que des échauffements ne compte pas.
+  const doneSets = sets.filter((s) => s.done && s.setType !== 'warmup').length;
+  const warmupSets = sets.filter((s) => s.done && s.setType === 'warmup').length;
   const volume = Math.round(computeVolume(sets));
   const durationMin = Math.max(1, Math.round((durationSeconds ?? 0) / 60));
-  const exercises = new Set(sets.map((s) => s.exerciseId)).size;
-  return { exercises, doneSets, volume, durationMin };
+  const exercises = new Set(
+    sets.filter((s) => s.setType !== 'warmup').map((s) => s.exerciseId),
+  ).size;
+  return { exercises, doneSets, warmupSets, volume, durationMin };
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
       <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{label}</Text>
-      <Text style={[styles.rowValue, { color: colors.text }]}>{value}</Text>
+      <View style={styles.rowValueWrap}>
+        {hint ? <Text style={[styles.rowHint, { color: colors.textMuted }]}>{hint}</Text> : null}
+        <Text style={[styles.rowValue, { color: colors.text }]}>{value}</Text>
+      </View>
     </View>
   );
 }
@@ -219,7 +229,11 @@ export default function WorkoutSummaryScreen() {
             value={t('workout.summary.minutes', { count: summary.durationMin })}
           />
           <Row label={t('workout.summary.exercises')} value={String(summary.exercises)} />
-          <Row label={t('workout.summary.sets')} value={String(summary.doneSets)} />
+          <Row
+            label={t('workout.summary.sets')}
+            value={String(summary.doneSets)}
+            hint={summary.warmupSets > 0 ? t('workout.summary.warmupCount', { count: summary.warmupSets }) : undefined}
+          />
           <Row label={t('workout.summary.volume')} value={units.formatWeight(summary.volume)} />
         </Card>
       ) : (
@@ -244,6 +258,8 @@ export default function WorkoutSummaryScreen() {
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   rowLabel: { fontFamily: fontFamily.body, fontSize: 15 },
+  rowValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rowHint: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   rowValue: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
   empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center' },
   footer: { marginTop: 'auto' },

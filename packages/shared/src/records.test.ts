@@ -431,6 +431,31 @@ describe('computeWorkoutRecords', () => {
     const records = computeWorkoutRecords(exercises);
     expect(records).toHaveLength(0);
   });
+
+  it("n'émet aucun max_weight pour une série duration lestée (gainage lesté)", () => {
+    const exercises = [
+      {
+        exerciseId: EX1,
+        sets: [{ reps: null, weightKg: 20, setType: 'duration', done: true }],
+      },
+    ];
+    const records = computeWorkoutRecords(exercises);
+    const maxWeight = records.find((r) => r.exerciseId === EX1 && r.type === 'max_weight');
+    expect(maxWeight).toBeUndefined();
+  });
+
+  it('émet un max_weight pour une série bodyweight lestée', () => {
+    const exercises = [
+      {
+        exerciseId: EX1,
+        sets: [{ reps: 5, weightKg: 40, setType: 'bodyweight', done: true }],
+      },
+    ];
+    const records = computeWorkoutRecords(exercises);
+    const maxWeight = records.find((r) => r.exerciseId === EX1 && r.type === 'max_weight');
+    expect(maxWeight).toBeDefined();
+    expect(maxWeight?.value).toBe(40);
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import {
   useLastPerformance,
   useSessionRest,
   type WorkoutEntry,
+  type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -60,9 +61,34 @@ function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null
 }
 
 /** État d'édition local des champs de la série courante (`null` = non modifié → repli). */
-type EditState = { reps: string; weightKg: number | null };
+type EditState = { reps: string; weightKg: number | null; durationSeconds: number | null };
 
 type Units = ReturnType<typeof useUnits>;
+
+/** Formate un nombre de secondes en « m:ss » (ex. 90 → « 1:30 »). */
+function formatMmSs(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(s / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  return `${m}:${ss}`;
+}
+
+/**
+ * Parse une durée saisie en secondes, tolérant : « 90 » → 90, « 1:30 » → 90,
+ * champ vide → `null`. La partie secondes est bornée aux chiffres.
+ */
+function parseMmSs(input: string): number | null {
+  const trimmed = input.trim();
+  if (trimmed === '') return null;
+  if (trimmed.includes(':')) {
+    const [mPart = '', sPart = ''] = trimmed.split(':');
+    const m = parseInt(mPart.replace(/[^0-9]/g, ''), 10);
+    const s = parseInt(sPart.replace(/[^0-9]/g, ''), 10);
+    return (Number.isNaN(m) ? 0 : m) * 60 + (Number.isNaN(s) ? 0 : s);
+  }
+  const n = parseInt(trimmed.replace(/[^0-9]/g, ''), 10);
+  return Number.isNaN(n) ? null : n;
+}
 
 /**
  * Formate la dernière performance d'un exercice : « 80 kg × 8/8/7 » si toutes les
@@ -171,6 +197,7 @@ export default function WorkoutScreen() {
   const rang = current?.rang ?? 0;
   const prefillReps = current ? (current.set.reps ?? lastPerf[rang]?.reps ?? null) : null;
   const prefillWeightKg = current ? (current.set.weightKg ?? lastPerf[rang]?.weightKg ?? null) : null;
+  const prefillDuration = current ? current.set.durationSeconds : null;
 
   // Édition ne valant que pour la série courante (sinon on repart du pré-remplissage).
   const activeEdit = edit && edit.setId === currentSetId ? edit.state : null;
@@ -178,6 +205,8 @@ export default function WorkoutScreen() {
   // Valeurs affichées : l'édition en cours prime, sinon repli sur le pré-remplissage.
   const displayReps = activeEdit ? activeEdit.reps : prefillReps == null ? '' : String(prefillReps);
   const displayWeightKg = activeEdit ? activeEdit.weightKg : prefillWeightKg;
+  const displayDurationSeconds = activeEdit ? activeEdit.durationSeconds : prefillDuration;
+  const durationValue = formatMmSs(displayDurationSeconds ?? 0);
 
   // Matérialise l'état d'édition à partir des valeurs affichées puis applique le patch.
   const applyEdit = (patch: Partial<EditState>) => {
@@ -187,6 +216,7 @@ export default function WorkoutScreen() {
       state: {
         reps: activeEdit?.reps ?? displayReps,
         weightKg: activeEdit ? activeEdit.weightKg : displayWeightKg,
+        durationSeconds: activeEdit ? activeEdit.durationSeconds : displayDurationSeconds,
         ...patch,
       },
     });
@@ -217,7 +247,17 @@ export default function WorkoutScreen() {
     if (!current) return;
     const parsed = Number(displayReps);
     const reps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
-    void updateSet(current.set.id, { reps, weightKg: displayWeightKg, done: true });
+    // Persistance selon le type : une série à la durée enregistre `durationSeconds`
+    // (reps non pertinent → null) ; les autres enregistrent `reps` et laissent
+    // `durationSeconds` inchangé pour ne pas écraser une éventuelle valeur.
+    const patch: WorkoutSetPatch = { weightKg: displayWeightKg, done: true };
+    if (current.set.setType === 'duration') {
+      patch.reps = null;
+      patch.durationSeconds = displayDurationSeconds;
+    } else {
+      patch.reps = reps;
+    }
+    void updateSet(current.set.id, patch);
     setRestLeft(currentRest); // évite un flash « 0 s » avant le 1er tick
     setRestCollapsed(false); // le repos s'ouvre en plein écran
     setRestEndsAt(Date.now() + currentRest * 1000);
@@ -302,10 +342,13 @@ export default function WorkoutScreen() {
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
         ) : current ? (
           <CurrentSetCard
+            key={current.set.id}
             exerciseName={current.entry.exerciseName}
             currentIndex={current.rang + 1}
             totalSets={current.entry.sets.length}
             lastPerfLabel={formatLastPerf(lastPerf, units)}
+            setType={current.set.setType}
+            onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
             repsValue={displayReps}
             onChangeReps={(v) => applyEdit({ reps: v })}
             weightValue={units.weightInputValue(displayWeightKg)}
@@ -315,6 +358,12 @@ export default function WorkoutScreen() {
             )}
             onChangeWeight={(v) => applyEdit({ weightKg: units.parseWeightToKg(v) })}
             onStepWeight={(deltaKg) => applyEdit({ weightKg: Math.max(0, (displayWeightKg ?? 0) + deltaKg) })}
+            plannedWeightKg={current.set.plannedWeightKg}
+            durationValue={durationValue}
+            onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
+            onStepDuration={(d) => applyEdit({ durationSeconds: Math.max(0, (displayDurationSeconds ?? 0) + d) })}
+            rpe={current.set.rpe}
+            onSetRpe={(v) => void updateSet(current.set.id, { rpe: v })}
             restSeconds={currentRest}
             onStepRest={onStepRest}
             onSetRest={onSetRest}

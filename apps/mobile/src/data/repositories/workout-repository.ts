@@ -44,6 +44,8 @@ export type WorkoutSetItem = {
   durationSeconds: number | null;
   done: boolean;
   orderIndex: number;
+  rpe: number | null;
+  plannedWeightKg: number | null;
 };
 
 /** Regroupement des séries d'un même exercice au sein d'une séance. */
@@ -78,6 +80,7 @@ export type WorkoutSetPatch = {
   done?: boolean;
   setType?: SetType;
   durationSeconds?: number | null;
+  rpe?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -108,6 +111,8 @@ type WorkoutSetDbRow = {
   weight_kg: number | null;
   duration_seconds: number | null;
   done: number;
+  rpe: number | null;
+  planned_weight_kg: number | null;
   /** Nom résolu par COALESCE(langue courante, fr) — peut être null si aucune traduction. */
   exercise_name: string | null;
 };
@@ -132,7 +137,7 @@ const SELECT_ACTIVE_WORKOUT = `
  */
 const SELECT_SETS_FOR_WORKOUT = `
   SELECT s.id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
-         s.duration_seconds, s.done,
+         s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM workout_sets s
   LEFT JOIN exercise_translations tl  ON tl.exercise_id = s.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
@@ -164,6 +169,8 @@ function rowToSetItem(row: WorkoutSetDbRow): WorkoutSetItem {
     durationSeconds: row.duration_seconds,
     done: row.done === 1,
     orderIndex: row.order_index,
+    rpe: row.rpe,
+    plannedWeightKg: row.planned_weight_kg,
   };
 }
 
@@ -323,10 +330,10 @@ type LastPerformanceDbRow = {
 const SELECT_LAST_PERFORMANCE = `
   SELECT s.weight_kg, s.reps FROM workout_sets s
   JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
-  WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1
+  WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
     AND w.id = (
       SELECT w2.id FROM workouts w2
-      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1
+      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
       WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
       ORDER BY w2.finished_at DESC LIMIT 1
     )
@@ -540,6 +547,7 @@ export async function startWorkoutFromSession(
           weight_kg: plan.target_weight_kg,
           duration_seconds: null,
           done: 0,
+          planned_weight_kg: plan.target_weight_kg,
         });
         orderIndex += 1;
       }
@@ -652,6 +660,7 @@ export async function addExerciseToWorkout(
     weight_kg: null,
     duration_seconds: null,
     done: 0,
+    planned_weight_kg: null,
   });
 }
 
@@ -680,16 +689,28 @@ export async function addSet(
 
   const orderIndex = await nextOrderIndex(workoutId);
 
+  // Une charge d'échauffement n'est pas un point de départ réaliste pour la
+  // série suivante : si la dernière série héritée est un échauffement, on
+  // repart à zéro (type 'normal', valeurs nulles) plutôt que de la recopier.
+  const isLastWarmup = last?.set_type === 'warmup';
+  const inheritedSetType = isLastWarmup ? 'normal' : last?.set_type ?? 'normal';
+  const inheritedReps = isLastWarmup ? null : last?.reps ?? null;
+  const inheritedWeightKg = isLastWarmup ? null : last?.weight_kg ?? null;
+  const inheritedDurationSeconds = isLastWarmup
+    ? null
+    : last?.duration_seconds ?? null;
+
   await insertWithSyncFields('workout_sets', {
     workout_id: workoutId,
     user_id: currentUserId(),
     exercise_id: exerciseId,
     order_index: orderIndex,
-    set_type: last?.set_type ?? 'normal',
-    reps: last?.reps ?? null,
-    weight_kg: last?.weight_kg ?? null,
-    duration_seconds: last?.duration_seconds ?? null,
+    set_type: inheritedSetType,
+    reps: inheritedReps,
+    weight_kg: inheritedWeightKg,
+    duration_seconds: inheritedDurationSeconds,
     done: 0,
+    planned_weight_kg: null,
   });
 }
 
@@ -707,6 +728,7 @@ export async function updateSet(
   if ('done' in input) columns['done'] = input.done ? 1 : 0;
   if ('setType' in input) columns['set_type'] = input.setType;
   if ('durationSeconds' in input) columns['duration_seconds'] = input.durationSeconds;
+  if ('rpe' in input) columns['rpe'] = input.rpe;
 
   await patch('workout_sets', setId, columns);
 }

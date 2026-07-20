@@ -79,6 +79,30 @@
     "finishNoSetsTitle": "Aucune série validée",
     "finishNoSetsMessage": "Terminer quand même ?",
     "finishAnyway": "Terminer",
+    "setType": {
+      "normal": "Normale",
+      "warmup": "Échauffement",
+      "dropset": "Dropset",
+      "failure": "Échec",
+      "duration": "Durée",
+      "bodyweight": "Poids de corps"
+    },
+    "setTypeBadge": {
+      "warmup": "Éch.",
+      "dropset": "Drop",
+      "failure": "Échec",
+      "duration": "Durée",
+      "bodyweight": "PdC"
+    },
+    "warmupToggle": "Échauffement",
+    "durationLabel": "Durée",
+    "addedWeightLabel": "Lest",
+    "optional": "option.",
+    "plannedWeight": "Prévu : {{weight}}",
+    "rpeAdd": "＋ RPE série",
+    "rpeValue": "RPE {{value}}",
+    "rpeLabel": "RPE série",
+    "rpeClear": "Effacer",
     "summary": {
       "title": "Séance terminée 💪",
       "subtitle": "Beau travail. Voici ton récap.",
@@ -99,7 +123,9 @@
           "estimated_1rm": "1RM estimé",
           "best_volume": "Volume série"
         }
-      }
+      },
+      "warmupCount_one": "+{{count}} échauffement",
+      "warmupCount_other": "+{{count}} échauffements"
     }
   },
   "tabs": {
@@ -830,6 +856,10 @@
       "setSuperset": "Super",
       "setDuration": "Durée",
       "setBodyweight": "PdC",
+      "setDropset": "Drop",
+      "setFailure": "Échec",
+      "setRpe": "RPE {{value}}",
+      "planned": "prévu {{weight}}",
       "repsWeight": "{{reps}} × {{weight}}",
       "repsOnly": "{{reps}} reps",
       "weightOnly": "{{weight}}",

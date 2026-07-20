@@ -232,6 +232,12 @@ function ExerciseCard({ entry }: { entry: WorkoutEntry }) {
 // Ligne de série (numéro + type + reps × charge)
 // ---------------------------------------------------------------------------
 
+/** Formate une durée en « m:ss » (série à la durée). */
+function formatDurationMmSs(totalSeconds: number): string {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+}
+
 function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -243,27 +249,47 @@ function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
     superset: t('history.detail.setSuperset'),
     duration: t('history.detail.setDuration'),
     bodyweight: t('history.detail.setBodyweight'),
+    dropset: t('history.detail.setDropset'),
+    failure: t('history.detail.setFailure'),
   };
   const typeLabel = setTypeLabelMap[set.setType] ?? t('history.detail.setNormal');
 
   let valueLabel: string;
-  if (set.reps != null && set.weightKg != null) {
+  if (set.setType === 'duration') {
+    const duration = set.durationSeconds == null ? '—' : formatDurationMmSs(set.durationSeconds);
+    valueLabel = set.weightKg == null ? duration : `${duration} · +${units.formatWeight(set.weightKg)}`;
+  } else if (set.reps != null && set.weightKg != null) {
     valueLabel = t('history.detail.repsWeight', { reps: set.reps, weight: units.formatWeight(set.weightKg) });
   } else if (set.reps != null) {
     valueLabel = t('history.detail.repsOnly', { reps: set.reps });
   } else if (set.weightKg != null) {
     valueLabel = t('history.detail.weightOnly', { weight: units.formatWeight(set.weightKg) });
-  } else if (set.durationSeconds != null) {
-    valueLabel = `${set.durationSeconds}s`;
   } else {
     valueLabel = '—';
+  }
+
+  // Écart charge réalisée vs planifiée (flèche =/▲/▼), et RPE de la série.
+  const meta: string[] = [];
+  if (set.plannedWeightKg != null) {
+    let arrow = '=';
+    if (set.weightKg != null && set.weightKg > set.plannedWeightKg) arrow = '▲';
+    else if (set.weightKg != null && set.weightKg < set.plannedWeightKg) arrow = '▼';
+    meta.push(`${t('history.detail.planned', { weight: units.formatWeight(set.plannedWeightKg) })} ${arrow}`);
+  }
+  if (set.rpe != null) {
+    meta.push(t('history.detail.setRpe', { value: set.rpe }));
   }
 
   return (
     <View style={styles.setRow}>
       <Text style={[styles.setIndex, { color: colors.textMuted }]}>{index + 1}</Text>
       <Text style={[styles.setType, { color: colors.textMuted }]}>{typeLabel}</Text>
-      <Text style={[styles.setValue, { color: colors.text }]}>{valueLabel}</Text>
+      <View style={styles.setValueCol}>
+        <Text style={[styles.setValue, { color: colors.text }]}>{valueLabel}</Text>
+        {meta.length > 0 ? (
+          <Text style={[styles.setMeta, { color: colors.textMuted }]}>{meta.join(' · ')}</Text>
+        ) : null}
+      </View>
       {set.done ? (
         <Ionicons name="checkmark-circle" size={14} color={colors.accent} />
       ) : (
@@ -400,10 +426,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     width: 48,
   },
-  setValue: {
+  setValueCol: {
     flex: 1,
+    gap: 2,
+  },
+  setValue: {
     fontFamily: fontFamily.body,
     fontSize: 14,
+  },
+  setMeta: {
+    fontFamily: fontFamily.body,
+    fontSize: 11,
   },
   emptyText: {
     fontFamily: fontFamily.body,

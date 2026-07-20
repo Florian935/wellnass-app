@@ -187,7 +187,7 @@ const SELECT_WORKOUT_HEADER = `
  */
 const SELECT_SETS_FOR_WORKOUT = `
   SELECT s.id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
-         s.duration_seconds, s.done,
+         s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM workout_sets s
   LEFT JOIN exercise_translations tl  ON tl.exercise_id = s.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
@@ -206,6 +206,8 @@ type WorkoutSetDbRow = {
   weight_kg: number | null;
   duration_seconds: number | null;
   done: number;
+  rpe: number | null;
+  planned_weight_kg: number | null;
   exercise_name: string | null;
 };
 
@@ -238,6 +240,8 @@ function rowToSetItem(row: WorkoutSetDbRow): WorkoutSetItem {
     durationSeconds: row.duration_seconds,
     done: row.done === 1,
     orderIndex: row.order_index,
+    rpe: row.rpe,
+    plannedWeightKg: row.planned_weight_kg,
   };
 }
 
