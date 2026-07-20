@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : spec + plan + maquette (ajustements en direct)
+
+**Ajouté**
+- **Spec fonctionnelle US-C3** ([refonte-muscu-c3-ajustements-live.md](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md)) :
+  réorganiser les exercices restants + « Plus tard » (machine prise), **superset** (liaison positionnelle, repos
+  différé après la paire), remplacer un exercice (picker existant filtré), **note persistante par exercice**
+  (migration `exercise_notes`), **suggestion de progression** RPE-aware. Accès démo explicitement exclu
+  (abandonné). Validée Florian.
+- **Plan d'implémentation US-C3** ([refonte-muscu-c3-ajustements-live.md](docs/plans/refonte-muscu-c3-ajustements-live.md)) :
+  13 tâches. Deux algorithmes à risque extraits en fonctions pures testables Vitest dans `packages/shared`
+  (`computeReorderedExerciseOrder`, `computeProgressionSuggestion`). Validé Florian.
+- **Maquette US-C3** ([refonte-muscu-c3.html](design/refonte-muscu-c3/refonte-muscu-c3.html)) : 4 écrans (note +
+  suggestion sur la carte focus, liste avec réorganisation/remplacement, superset bascule sans repos, superset
+  repos après la paire).
+
+**Modifié**
+- [TODO.md](TODO.md) : **C3** passée en `[~]` (spec/plan/maquette validés, implémentation lancée) ; date de MàJ.
+
+**Technique / Notes**
+- **Décisions de cadrage** : remplacement via le picker existant (pas de système de variantes) ; réorganiser +
+  « machine prise » = un seul mécanisme (flèches ↑/↓, patron `moveEntry` nutrition) ; superset = liaison
+  positionnelle sans nouvelle colonne ; suggestion de progression RPE-aware (pas de suggestion si `failure` ou
+  RPE ≥ 8 la dernière fois).
+- **Relectures intégrées** — spec : 3 bugs réels (algorithme de réorganisation supposait des blocs `order_index`
+  contigus par exercice, faux dès `addSet` → renumérotation complète ; remplacement par un exercice déjà présent
+  aurait fusionné deux groupes → exclu du picker ; colonne `note` `NOT NULL` incohérente avec l'API → rendue
+  nullable). Plan : garde `active` à préserver dans `exercises.tsx`, annotation de type explicite de
+  `useLastPerformance` à mettre à jour, dépendance Task 8→7 inutile retirée.
+- **🔴 Migration cloud** (Task 1) à pousser sur **go explicite** : nouvelle table `exercise_notes`.
+- Aucun code applicatif dans ce commit (livrables de cadrage uniquement).
+
 ### 20/07/2026 — `dev` (doc) — Décision : GIF/vidéos de démo exercices abandonnés
 
 **Modifié**

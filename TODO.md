@@ -273,7 +273,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
+*Dernière mise à jour : 20/07/2026 (**US-C3 — spec + plan + maquette VALIDÉS (Florian)** : ajustements en
+direct — réorganiser/machine prise (↑/↓ + « Plus tard »), **superset** (liaison positionnelle, repos différé
+après la paire), remplacer un exercice (picker filtré), **note persistante par exercice** (migration
+`exercise_notes`), **suggestion de progression** RPE-aware. Relectures : algorithme de renumérotation
+`order_index` corrigé (non contigu par exercice dès `addSet`), fusion silencieuse évitée (picker exclut les
+exercices déjà présents), colonne `note` rendue nullable. 2 fonctions pures extraites vers `packages/shared`
+pour tests Vitest. Implémentation subagent-driven lancée sur `feature/refonte-muscu-c3`. 🔴 migration cloud à
+pousser sur go explicite. — **Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
 roadmap 6.1/3.18/6.3/8.3 passés ❌, MUSC-F1 clos en conséquence, C3 perd « accès démo en séance »,
 [musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)
 mis à jour. — **US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
@@ -472,9 +479,15 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     Idée notée (IDEAS) : RIR en alternative au RPE.
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
-  - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
-    exercice, suggestion de progression (§6.5). ~~Accès démo en séance~~ **retiré du périmètre** (20/07/2026 :
-    GIF/vidéos de démo abandonnés, voir MUSC-F1 plus haut).
+  - [~] **C3 — Ajustements live** — réorganiser les exercices restants (↑/↓ + « Plus tard », machine prise),
+    **superset** (liaison positionnelle, repos différé après la paire), remplacer un exercice (picker existant,
+    exclut les exercices déjà présents), **note persistante par exercice** (migration `exercise_notes`),
+    **suggestion de progression** RPE-aware (§6.5). ~~Accès démo en séance~~ **retiré du périmètre** (20/07/2026,
+    voir MUSC-F1 plus haut). **Spec ✅ + plan ✅ + maquette ✅ validés Florian (20/07/2026)** → implémentation
+    subagent-driven en cours (`feature/refonte-muscu-c3`). 2 fonctions pures testées Vitest (réorganisation,
+    suggestion). 🔴 migration cloud à pousser (Task 1, sur go explicite).
+    ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
+    [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
   réutilisable (spec §4.1). Corrige le problème 5.
 
