@@ -22,7 +22,11 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { SetType } from '@wellness/shared';
+import {
+  computeReorderedExerciseOrder,
+  type ReorderOperation,
+  type SetType,
+} from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -316,10 +320,13 @@ export function useSessionRest(sessionId: string | null): Record<string, number>
   return rest;
 }
 
-/** Ligne brute d'une série de la dernière performance (poids/reps). */
+/** Ligne brute d'une série de la dernière performance (poids/reps + contexte de suggestion). */
 type LastPerformanceDbRow = {
   weight_kg: number | null;
   reps: number | null;
+  set_type: string;
+  rpe: number | null;
+  duration_seconds: number | null;
 };
 
 /**
@@ -328,7 +335,7 @@ type LastPerformanceDbRow = {
  * de la séance la plus récente, puis filtre des séries de cette séance).
  */
 const SELECT_LAST_PERFORMANCE = `
-  SELECT s.weight_kg, s.reps FROM workout_sets s
+  SELECT s.weight_kg, s.reps, s.set_type, s.rpe, s.duration_seconds FROM workout_sets s
   JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
   WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
     AND w.id = (
@@ -347,13 +354,25 @@ const SELECT_LAST_PERFORMANCE = `
  */
 export function useLastPerformance(
   exerciseId: string,
-): { weightKg: number | null; reps: number | null }[] {
+): {
+  weightKg: number | null;
+  reps: number | null;
+  setType: SetType;
+  rpe: number | null;
+  durationSeconds: number | null;
+}[] {
   const { data } = useQuery<LastPerformanceDbRow>(SELECT_LAST_PERFORMANCE, [
     exerciseId,
     exerciseId,
   ]);
 
-  return data.map((row) => ({ weightKg: row.weight_kg, reps: row.reps }));
+  return data.map((row) => ({
+    weightKg: row.weight_kg,
+    reps: row.reps,
+    setType: row.set_type as SetType,
+    rpe: row.rpe,
+    durationSeconds: row.duration_seconds,
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -750,4 +769,188 @@ export async function getWorkoutSets(
     workoutId,
   ]);
   return rows.map(rowToSetItem);
+}
+
+// ---------------------------------------------------------------------------
+// Réorganisation des exercices (US Refonte-C3 §2.1/§4.3)
+// ---------------------------------------------------------------------------
+
+/** Ligne brute minimale pour dériver l'ordre courant des exercices d'une séance. */
+type WorkoutSetOrderDbRow = {
+  exercise_id: string;
+  done: number;
+  order_index: number;
+};
+
+/**
+ * Groupe des séries (déjà triées par `order_index`) par exercice pour dériver
+ * l'état `done` global de chaque exercice — `done = true` seulement si TOUTES
+ * ses séries sont validées. Ordre des groupes = première apparition, en miroir
+ * de `groupSetsByExercise`.
+ */
+function groupExerciseDoneState(
+  rows: WorkoutSetOrderDbRow[],
+): { exerciseId: string; done: boolean }[] {
+  const order: string[] = [];
+  const allDone = new Map<string, boolean>();
+
+  for (const row of rows) {
+    if (!allDone.has(row.exercise_id)) {
+      order.push(row.exercise_id);
+      allDone.set(row.exercise_id, true);
+    }
+    if (row.done !== 1) {
+      allDone.set(row.exercise_id, false);
+    }
+  }
+
+  return order.map((exerciseId) => ({ exerciseId, done: allDone.get(exerciseId) ?? false }));
+}
+
+/** Lit l'état courant (ordre + validation) des exercices d'une séance. */
+async function readExerciseOrderState(
+  workoutId: string,
+): Promise<{ exerciseId: string; done: boolean }[]> {
+  const rows = await powerSync.getAll<WorkoutSetOrderDbRow>(
+    `SELECT exercise_id, done, order_index FROM workout_sets
+     WHERE workout_id = ? AND deleted_at IS NULL
+     ORDER BY order_index`,
+    [workoutId],
+  );
+  return groupExerciseDoneState(rows);
+}
+
+/**
+ * Renumérote intégralement les `order_index` des séries d'une séance suivant
+ * l'ordre d'exercices fourni (`orderedExerciseIds`) : pour chaque exercice, dans
+ * l'ordre du tableau, ses séries existantes gardent leur ordre relatif mais
+ * reçoivent un `order_index` séquentiel qui continue de s'incrémenter d'un
+ * exercice à l'autre (pas de remise à zéro). Opération atomique (transaction).
+ */
+async function renumberWorkout(
+  workoutId: string,
+  orderedExerciseIds: string[],
+): Promise<void> {
+  await powerSync.writeTransaction(async (tx) => {
+    let cursor = 0;
+    for (const exerciseId of orderedExerciseIds) {
+      const setIds = await tx.getAll<{ id: string }>(
+        `SELECT id FROM workout_sets
+         WHERE workout_id = ? AND exercise_id = ? AND deleted_at IS NULL
+         ORDER BY order_index`,
+        [workoutId, exerciseId],
+      );
+      for (const { id } of setIds) {
+        await tx.execute(`UPDATE workout_sets SET order_index = ? WHERE id = ?`, [
+          cursor,
+          id,
+        ]);
+        cursor += 1;
+      }
+    }
+  });
+}
+
+/**
+ * Échange la position d'un exercice avec son voisin (`direction`) parmi les
+ * exercices non validés de la séance ; les exercices déjà validés gardent leur
+ * position absolue (voir `computeReorderedExerciseOrder`).
+ */
+export async function reorderExercise(
+  workoutId: string,
+  exerciseId: string,
+  direction: 'up' | 'down',
+): Promise<void> {
+  const exercises = await readExerciseOrderState(workoutId);
+  const operation: ReorderOperation = { type: 'swap', exerciseId, direction };
+  const orderedIds = computeReorderedExerciseOrder(exercises, operation);
+  await renumberWorkout(workoutId, orderedIds);
+}
+
+/**
+ * Envoie un exercice en fin de séance, parmi les exercices non validés ; les
+ * exercices déjà validés gardent leur position absolue.
+ */
+export async function sendExerciseToEnd(
+  workoutId: string,
+  exerciseId: string,
+): Promise<void> {
+  const exercises = await readExerciseOrderState(workoutId);
+  const operation: ReorderOperation = { type: 'toEnd', exerciseId };
+  const orderedIds = computeReorderedExerciseOrder(exercises, operation);
+  await renumberWorkout(workoutId, orderedIds);
+}
+
+// ---------------------------------------------------------------------------
+// Remplacement d'un exercice (US Refonte-C3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Remplace un exercice par un autre au sein d'une séance, mais UNIQUEMENT sur
+ * les séries pas encore validées (`done = 0`) : les séries déjà validées gardent
+ * l'exercice d'origine pour ne pas réécrire l'historique (garde métier).
+ */
+export async function replaceExercise(
+  workoutId: string,
+  exerciseId: string,
+  newExerciseId: string,
+): Promise<void> {
+  await powerSync.execute(
+    `UPDATE workout_sets SET exercise_id = ?, updated_at = ?
+     WHERE workout_id = ? AND exercise_id = ? AND done = 0 AND deleted_at IS NULL`,
+    [newExerciseId, nowUtc(), workoutId, exerciseId],
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Note par exercice (table `exercise_notes`, US Refonte-C3)
+// ---------------------------------------------------------------------------
+
+/** Ligne brute d'une note d'exercice. */
+type ExerciseNoteDbRow = {
+  note: string | null;
+};
+
+/**
+ * Note personnelle de l'utilisateur courant sur un exercice (ou `null` si
+ * aucune note), réactive aux changements de la base locale.
+ */
+export function useExerciseNote(exerciseId: string): {
+  note: string | null;
+  isLoading: boolean;
+} {
+  const { data, isLoading } = useQuery<ExerciseNoteDbRow>(
+    'SELECT note FROM exercise_notes WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1',
+    [exerciseId],
+  );
+
+  return { note: data[0]?.note ?? null, isLoading };
+}
+
+/**
+ * Écrit (ou met à jour) la note de l'utilisateur courant sur un exercice.
+ * Une note vide/blanche est normalisée en `null` (mais la ligne n'est jamais
+ * soft-deleted : `note = null` est une valeur valide en base).
+ */
+export async function setExerciseNote(
+  exerciseId: string,
+  note: string | null,
+): Promise<void> {
+  const trimmed = note?.trim();
+  const value = trimmed && trimmed.length > 0 ? trimmed : null;
+
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM exercise_notes WHERE user_id = ? AND exercise_id = ? AND deleted_at IS NULL`,
+    [currentUserId(), exerciseId],
+  );
+
+  if (existing) {
+    await patch('exercise_notes', existing.id, { note: value });
+  } else {
+    await insertWithSyncFields('exercise_notes', {
+      user_id: currentUserId(),
+      exercise_id: exerciseId,
+      note: value,
+    });
+  }
 }
