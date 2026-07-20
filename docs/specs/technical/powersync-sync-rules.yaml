@@ -23,6 +23,7 @@ bucket_definitions:
       - select * from exercises             where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_translations where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_favorites    where user_id = bucket.user_id and deleted_at is null
+      - select * from exercise_notes        where user_id = bucket.user_id and deleted_at is null
       - select * from workouts              where user_id = bucket.user_id and deleted_at is null
       - select * from workout_sets          where user_id = bucket.user_id and deleted_at is null
       - select * from programs              where owner_id = bucket.user_id and deleted_at is null

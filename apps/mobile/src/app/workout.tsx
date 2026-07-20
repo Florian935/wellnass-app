@@ -39,13 +39,23 @@ const DEFAULT_REST_SECONDS = 90;
 type CurrentSet = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number]; rang: number };
 
 /**
- * Résout la « série en cours » (machine à états de focus, C1) :
- *  - si `focusOverride` désigne un exercice ayant encore une série non validée,
- *    la 1ʳᵉ série non validée de CET exercice ;
+ * Dérogation de focus : cible un exercice (comme avant C3), et optionnellement
+ * un rang précis dans cet exercice (superset — bascule sur la série JUMELLE,
+ * pas la 1ʳᵉ série non validée de l'exercice partenaire, qui pourrait être un
+ * échauffement antérieur non lié au couple).
+ */
+type FocusOverride = { exerciseId: string; rang?: number } | null;
+
+/**
+ * Résout la « série en cours » (machine à états de focus, C1 + superset C3) :
+ *  - si `focusOverride.rang` cible une série précise (non validée) de l'exercice
+ *    désigné, cette série exactement (bascule superset) ;
+ *  - sinon, si `focusOverride` désigne un exercice ayant encore une série non
+ *    validée, la 1ʳᵉ série non validée de CET exercice ;
  *  - sinon la 1ʳᵉ série `done===false` en parcourant exercices puis séries dans l'ordre ;
  *  - `null` si toutes les séries de tous les exercices sont validées (état de fin).
  */
-function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null): CurrentSet | null {
+function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: FocusOverride): CurrentSet | null {
   const firstUndone = (entry: WorkoutEntry): CurrentSet | null => {
     for (let rang = 0; rang < entry.sets.length; rang += 1) {
       const set = entry.sets[rang];
@@ -55,9 +65,17 @@ function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null
   };
 
   if (focusOverride) {
-    const entry = entries.find((e) => e.exerciseId === focusOverride);
-    const found = entry ? firstUndone(entry) : null;
-    if (found) return found;
+    const entry = entries.find((e) => e.exerciseId === focusOverride.exerciseId);
+    if (entry) {
+      if (focusOverride.rang != null) {
+        const targetSet = entry.sets[focusOverride.rang];
+        if (targetSet && !targetSet.done) {
+          return { entry, set: targetSet, rang: focusOverride.rang };
+        }
+      }
+      const found = firstUndone(entry);
+      if (found) return found;
+    }
   }
   for (const entry of entries) {
     const found = firstUndone(entry);
@@ -179,7 +197,7 @@ export default function WorkoutScreen() {
   const elapsed = useElapsed(active?.startedAt);
   const sessionRest = useSessionRest(active?.sessionId ?? null);
 
-  const [focusOverride, setFocusOverride] = useState<string | null>(null);
+  const [focusOverride, setFocusOverride] = useState<FocusOverride>(null);
   const [restOverride, setRestOverride] = useState<Record<string, number>>({});
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
   const [restLeft, setRestLeft] = useState(0);
@@ -338,7 +356,10 @@ export default function WorkoutScreen() {
     // `updateSet` ci-dessus est encore en vol côté PowerSync.
     const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
     if (partner && !partner.set.done) {
-      setFocusOverride(partner.entry.exerciseId);
+      // Cible le RANG exact de la série jumelle (pas la 1ʳᵉ série non validée
+      // de l'exercice partenaire, qui pourrait être un échauffement antérieur
+      // sans rapport avec le couple superset).
+      setFocusOverride({ exerciseId: partner.entry.exerciseId, rang: current.rang });
       return;
     }
 
@@ -481,7 +502,7 @@ export default function WorkoutScreen() {
           <ExerciseList
             entries={entries}
             currentExerciseId={currentExerciseId}
-            onSelect={setFocusOverride}
+            onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
             onToggleSetDone={onToggleSetDone}
             onRemoveSet={onRemoveSet}
             onAddSet={onAddSet}
