@@ -273,14 +273,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**US-C3 — spec + plan + maquette VALIDÉS (Florian)** : ajustements en
-direct — réorganiser/machine prise (↑/↓ + « Plus tard »), **superset** (liaison positionnelle, repos différé
-après la paire), remplacer un exercice (picker filtré), **note persistante par exercice** (migration
-`exercise_notes`), **suggestion de progression** RPE-aware. Relectures : algorithme de renumérotation
-`order_index` corrigé (non contigu par exercice dès `addSet`), fusion silencieuse évitée (picker exclut les
-exercices déjà présents), colonne `note` rendue nullable. 2 fonctions pures extraites vers `packages/shared`
-pour tests Vitest. Implémentation subagent-driven lancée sur `feature/refonte-muscu-c3`. 🔴 migration cloud à
-pousser sur go explicite. — **Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
+*Dernière mise à jour : 20/07/2026 (**US-C3 — CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
+machine prise (↑/↓ + « Plus tard »), **superset** (liaison positionnelle, repos différé après la paire), remplacer
+un exercice (picker filtré), **note persistante par exercice** (migration `exercise_notes` appliquée),
+**suggestion de progression** RPE-aware. 8 commits, typecheck/lint/778 tests verts. **Revue finale — 2 bugs
+corrigés** : bascule superset (retombait sur la mauvaise série du partenaire) ; **🔴 sync rules PowerSync
+incomplètes** (`exercise_notes` absente de `powersync-sync-rules.yaml` — **action manuelle requise sur le
+dashboard PowerSync avant recette multi-appareils**, voir détail plus bas). Chantier refonte Muscu (A/B/C1/C2/C3)
+complet côté implémentation ; reste recette + relecture Damien sur l'ensemble. — **Décision : GIF/vidéos de démo
+exercices abandonnés** (Florian/Damien) —
 roadmap 6.1/3.18/6.3/8.3 passés ❌, MUSC-F1 clos en conséquence, C3 perd « accès démo en séance »,
 [musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)
 mis à jour. — **US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
@@ -479,13 +480,20 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     Idée notée (IDEAS) : RIR en alternative au RPE.
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
-  - [~] **C3 — Ajustements live** — réorganiser les exercices restants (↑/↓ + « Plus tard », machine prise),
-    **superset** (liaison positionnelle, repos différé après la paire), remplacer un exercice (picker existant,
-    exclut les exercices déjà présents), **note persistante par exercice** (migration `exercise_notes`),
-    **suggestion de progression** RPE-aware (§6.5). ~~Accès démo en séance~~ **retiré du périmètre** (20/07/2026,
-    voir MUSC-F1 plus haut). **Spec ✅ + plan ✅ + maquette ✅ validés Florian (20/07/2026)** → implémentation
-    subagent-driven en cours (`feature/refonte-muscu-c3`). 2 fonctions pures testées Vitest (réorganisation,
-    suggestion). 🔴 migration cloud à pousser (Task 1, sur go explicite).
+  - [~] **C3 — Ajustements live** — **CODE LIVRÉ (subagent-driven, 20/07/2026)** ; reste recette device (⚠️
+    **après déploiement manuel des sync rules PowerSync**, voir ci-dessous) + relecture Damien. Réorganiser les
+    exercices restants (↑/↓ + « Plus tard », machine prise), **superset** (liaison positionnelle, repos différé
+    après la paire), remplacer un exercice (picker existant, exclut les exercices déjà présents), **note
+    persistante par exercice** (migration `exercise_notes` appliquée), **suggestion de progression** RPE-aware
+    (§6.5). ~~Accès démo en séance~~ retiré du périmètre (voir MUSC-F1 plus haut). Spec/plan/maquette validés
+    Florian. 8 commits, typecheck/lint/778 tests verts, parité i18n. 2 fonctions pures testées Vitest
+    (`computeReorderedExerciseOrder`, `computeProgressionSuggestion`).
+    **Revue finale — 2 corrections** : (1) bug bascule superset (retombait sur la 1ʳᵉ série non validée du
+    partenaire au lieu de la série jumelle au même rang, ex. échauffement antérieur) — corrigé, retracé à la
+    main ; (2) **🔴 `exercise_notes` absente des sync rules PowerSync** (`docs/specs/technical/powersync-sync-rules.yaml`)
+    — sans cette ligne, une note n'aurait pas survécu à une resynchro complète. **Action manuelle requise avant
+    recette multi-appareils** : coller le fichier mis à jour dans le dashboard PowerSync (Settings → Sync
+    Rules) puis Deploy — non automatisable, à faire par Florian ou Damien.
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine

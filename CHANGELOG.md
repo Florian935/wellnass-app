@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : ajustements en direct (CODE LIVRÉ, subagent-driven)
+
+**Ajouté**
+- **Réorganiser les exercices restants** : flèches ↑/↓ + « Plus tard » (machine prise), limité aux exercices
+  non entièrement validés ; les exercices terminés gardent leur position absolue
+  ([ExerciseList.tsx](apps/mobile/src/components/workout/ExerciseList.tsx)).
+- **Superset** : liaison positionnelle (2 exercices adjacents, même rang, tous deux `superset`) — la validation
+  de la 1ʳᵉ série du couple bascule directement sur la série jumelle **sans repos** ; la 2ᵉ déclenche le repos
+  normalement ([workout.tsx](apps/mobile/src/app/workout.tsx)). Chip réintégré dans le sélecteur de type.
+- **Remplacer un exercice en direct** : réutilise le picker existant (`exercises.tsx`), qui exclut désormais les
+  exercices déjà présents dans la séance ; seules les séries non validées basculent.
+- **Note persistante par exercice** : nouvelle table `exercise_notes` (migration), éditable sur la carte focus,
+  visible en lecture dans la liste.
+- **Suggestion de progression** (RPE-aware) : aucune suggestion si la dernière fois comportait une série
+  `failure` ou un RPE ≥ 8 ; adaptée au type (charge+reps / reps seules / durée).
+- **Migration cloud** appliquée (`20260720121317`) : table `exercise_notes`.
+
+**Modifié**
+- `computeReorderedExerciseOrder`/`computeProgressionSuggestion` (fonctions pures, testées Vitest) ajoutées à
+  [workout.ts](packages/shared/src/workout.ts) — réorganisation (renumérotation complète de l'`order_index`,
+  correcte même après un `addSet` intercalaire) et règle de suggestion.
+- `useLastPerformance` étendu (`setType`, `rpe`, `durationSeconds`) pour nourrir la suggestion.
+- [TODO.md](TODO.md) : **C3** passée en `[~]` (code livré, reste recette + relecture Damien).
+
+**Corrigé (revue finale)**
+- **Bug bascule superset** : la bascule ciblait l'exercice partenaire mais retombait sur sa 1ʳᵉ série non
+  validée (ex. échauffement) au lieu de la série jumelle au même rang. `focusOverride` porte désormais un rang
+  optionnel — corrigé et retracé à la main.
+- **🔴 Sync rules PowerSync** : la nouvelle table `exercise_notes` était absente de
+  [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) — sans cette ligne, une note
+  n'aurait pas survécu à une resynchronisation complète (changement d'appareil, réinstallation). **Action
+  manuelle requise** : coller le fichier mis à jour dans le dashboard PowerSync (Settings → Sync Rules) puis
+  Deploy — non automatisable depuis le CLI, à faire par Florian/Damien avant la recette multi-appareils.
+
+**Technique / Notes**
+- 8 commits (cadrage + migration + shared + repository + superset + UI + câblage + correctifs de revue).
+  typecheck/lint verts, **778 tests** shared verts, parité i18n 0/0.
+- **Revue finale** (subagent) : 1 bloquant corrigé (sync rules), 1 important corrigé (bascule superset). 4
+  points mineurs/nits documentés comme limites connues acceptées (course multi-appareils sur l'upsert de note ;
+  contiguïté cosmétique après remplacement, auto-corrigée au prochain réordonnancement ; interaction dé-validation
+  manuelle + superset en cours, cas marginal ; fenêtre transitoire de chargement du picker).
+- **Reste** : recette device (Florian, **après déploiement des sync rules**) + relecture Damien. Chantier
+  refonte Muscu (US-A/B/C1/C2/C3) ainsi complet côté implémentation.
+
 ### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : spec + plan + maquette (ajustements en direct)
 
 **Ajouté**
