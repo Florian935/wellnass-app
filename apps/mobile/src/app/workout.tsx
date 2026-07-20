@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
-import { CurrentSetCard } from '@/components/workout/CurrentSetCard';
+import { CurrentSetCard, type SupersetLinkState } from '@/components/workout/CurrentSetCard';
 import { ExerciseList } from '@/components/workout/ExerciseList';
 import { RestOverlay } from '@/components/workout/RestOverlay';
 import {
@@ -108,6 +108,30 @@ function findSupersetPartner(
     const neighbor = entries[neighborIndex];
     const neighborSet = neighbor?.sets[rang];
     if (neighbor && neighborSet && neighborSet.setType === 'superset') {
+      return { entry: neighbor, set: neighborSet };
+    }
+  }
+  return null;
+}
+
+/**
+ * Cherche un exercice ADJACENT (index-1 ou index+1) ayant une série NON
+ * VALIDÉE au MÊME rang que `entries[entryIndex].sets[rang]` — condition
+ * suffisante pour proposer de LIER les deux en superset en un tap, quel que
+ * soit le type actuel des deux séries (c'est justement l'action qui va les
+ * faire passer à `superset` toutes les deux). Revu 20/07/2026 (retour
+ * Florian « pas intuitif ») : remplace le double toggle manuel du type sur
+ * chaque carte par une action unique nommant le partenaire.
+ */
+function findLinkableNeighbor(
+  entries: WorkoutEntry[],
+  entryIndex: number,
+  rang: number,
+): SupersetPartner | null {
+  for (const neighborIndex of [entryIndex - 1, entryIndex + 1]) {
+    const neighbor = entries[neighborIndex];
+    const neighborSet = neighbor?.sets[rang];
+    if (neighbor && neighborSet && !neighborSet.done) {
       return { entry: neighbor, set: neighborSet };
     }
   }
@@ -279,6 +303,34 @@ export default function WorkoutScreen() {
     if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
     return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
   })();
+
+  // Liaison superset (C3, revue 20/07/2026) : soit la série courante est déjà
+  // `superset` (cherche son partenaire réel, `orphaned` si aucun) ; soit elle
+  // ne l'est pas (cherche un voisin éligible à lier en un tap).
+  const supersetLink: SupersetLinkState = (() => {
+    if (!current) return null;
+    if (current.set.setType === 'superset') {
+      const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
+      return partner ? { status: 'linked', partnerName: partner.entry.exerciseName } : { status: 'orphaned' };
+    }
+    const neighbor = findLinkableNeighbor(entries, currentEntryIndex, current.rang);
+    return neighbor ? { status: 'linkable', partnerName: neighbor.entry.exerciseName } : null;
+  })();
+
+  const onLinkSuperset = () => {
+    if (!current) return;
+    const neighbor = findLinkableNeighbor(entries, currentEntryIndex, current.rang);
+    if (!neighbor) return;
+    void updateSet(current.set.id, { setType: 'superset' });
+    void updateSet(neighbor.set.id, { setType: 'superset' });
+  };
+
+  const onUnlinkSuperset = () => {
+    if (!current) return;
+    void updateSet(current.set.id, { setType: 'normal' });
+    const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
+    if (partner) void updateSet(partner.set.id, { setType: 'normal' });
+  };
 
   // Édition ne valant que pour la série courante (sinon on repart du pré-remplissage).
   const activeEdit = edit && edit.setId === currentSetId ? edit.state : null;
@@ -468,6 +520,9 @@ export default function WorkoutScreen() {
             note={displayNote}
             onChangeNote={onChangeNote}
             onBlurNote={onBlurNote}
+            supersetLink={supersetLink}
+            onLinkSuperset={onLinkSuperset}
+            onUnlinkSuperset={onUnlinkSuperset}
             setType={current.set.setType}
             onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
             repsValue={displayReps}

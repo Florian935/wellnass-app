@@ -108,6 +108,12 @@
     "exerciseNote": {
       "placeholder": "Note (réglage machine, position…)"
     },
+    "superset": {
+      "linkWith": "Lier en superset avec {{name}}",
+      "linked": "Superset avec {{name}}",
+      "orphaned": "Superset sans partenaire — repos normal",
+      "remove": "Retirer le superset"
+    },
     "suggestion": {
       "weightOrReps": "Essaie {{weight}} ou {{reps}} reps",
       "reps": "Essaie {{reps}} reps",

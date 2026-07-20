@@ -9,10 +9,21 @@ import { useUnits } from '@/hooks/useUnits';
 import type { Palette } from '@/theme/colors';
 
 /**
- * Types de série exposés dans le sélecteur (C2 + `superset` réintégré en C3).
- * `warmup` est traité à part (raccourci 🔥), d'où son absence ici.
+ * Types de série exposés dans le sélecteur (C2). `warmup` est traité à part
+ * (raccourci 🔥) et `superset` n'est plus un choix de ce sélecteur depuis la
+ * recette C3 (20/07/2026, retour Florian « pas intuitif ») : la liaison
+ * superset passe désormais par une action dédiée nommant le partenaire
+ * (voir bloc « Superset » plus bas), pas par un type abstrait à toggler
+ * séparément des deux côtés.
  */
-const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight', 'superset'];
+const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
+
+/** État de la liaison superset de la série courante, dérivé par le parent. */
+export type SupersetLinkState =
+  | { status: 'linkable'; partnerName: string }
+  | { status: 'linked'; partnerName: string }
+  | { status: 'orphaned' }
+  | null;
 
 /** Valeurs de RPE proposées (échelle 1-10). */
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -42,6 +53,18 @@ type CurrentSetCardProps = {
   note?: string | null;
   onChangeNote?: (value: string) => void;
   onBlurNote?: () => void;
+  /**
+   * État de la liaison superset de la série courante (C3, revu 20/07/2026) :
+   * `'linkable'` = un exercice adjacent a une série au même rang, pas encore
+   * liée → propose l'action « Lier » ; `'linked'` = déjà liée à un partenaire
+   * nommé → propose « Délier » ; `'orphaned'` = marquée superset mais plus de
+   * partenaire adjacent (ex. après une réorganisation) → repos redevenu
+   * normal, affiché explicitement plutôt que silencieusement. `null`/absente
+   * = rien à afficher (pas de voisin éligible, type non-superset).
+   */
+  supersetLink?: SupersetLinkState;
+  onLinkSuperset?: () => void;
+  onUnlinkSuperset?: () => void;
   /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
   setType: SetType;
   onSetType: (t: SetType) => void;
@@ -115,6 +138,9 @@ export function CurrentSetCard({
   note,
   onChangeNote,
   onBlurNote,
+  supersetLink,
+  onLinkSuperset,
+  onUnlinkSuperset,
   setType,
   onSetType,
   repsValue,
@@ -167,10 +193,6 @@ export function CurrentSetCard({
 
   const renderChip = (type: SetType) => {
     const active = setType === type;
-    // Chip « Superset » : bordure accent (dégagée des autres chips) tant que
-    // non sélectionnée, pour signaler visuellement sa nature de liaison,
-    // conformément à la maquette (chip.super).
-    const isSuperset = type === 'superset';
     return (
       <Pressable
         key={type}
@@ -180,17 +202,11 @@ export function CurrentSetCard({
         style={({ pressed }) => [
           styles.chip,
           { backgroundColor: active ? colors.accent : colors.surfaceAlt },
-          isSuperset && !active && { borderWidth: 1, borderColor: colors.accent },
           pressed && styles.pressed,
         ]}
       >
-        <Text
-          style={[
-            styles.chipText,
-            { color: active ? colors.accentText : isSuperset ? colors.accent : colors.textMuted },
-          ]}
-        >
-          {isSuperset ? `🔗 ${t('workout.setType.superset')}` : t(`workout.setType.${type}`)}
+        <Text style={[styles.chipText, { color: active ? colors.accentText : colors.textMuted }]}>
+          {t(`workout.setType.${type}`)}
         </Text>
       </Pressable>
     );
@@ -264,6 +280,46 @@ export function CurrentSetCard({
           </Text>
         </Pressable>
       </View>
+
+      {/* Liaison superset (C3, revue 20/07/2026) : une action nommée plutôt qu'un
+          type abstrait à toggler des deux côtés séparément. */}
+      {supersetLink?.status === 'linkable' ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onLinkSuperset}
+          style={({ pressed }) => [
+            styles.supersetBtn,
+            { borderColor: colors.accent },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
+            {`🔗 ${t('workout.superset.linkWith', { name: supersetLink.partnerName })}`}
+          </Text>
+        </Pressable>
+      ) : supersetLink?.status === 'linked' ? (
+        <View style={styles.supersetRow}>
+          <Text style={[styles.supersetLinkedText, { color: colors.accent }]}>
+            {`🔗 ${t('workout.superset.linked', { name: supersetLink.partnerName })}`}
+          </Text>
+          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+              {t('workout.superset.remove')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : supersetLink?.status === 'orphaned' ? (
+        <View style={styles.supersetRow}>
+          <Text style={[styles.supersetOrphanText, { color: colors.accent }]}>
+            {`⚠️ ${t('workout.superset.orphaned')}`}
+          </Text>
+          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+              {t('workout.superset.remove')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {lastPerfLabel ? (
         <Text style={[styles.lastPerf, { color: colors.textMuted }]}>
@@ -474,6 +530,20 @@ const styles = StyleSheet.create({
   warmupChip: { flexShrink: 0 },
   lastPerf: { fontFamily: fontFamily.body, fontSize: 14 },
   suggestion: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  supersetBtn: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginBottom: 4,
+  },
+  supersetLinkText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  supersetRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
+  supersetLinkedText: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
+  supersetOrphanText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5, flexShrink: 1 },
+  supersetUnlink: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   noteRow: {
     flexDirection: 'row',
     alignItems: 'center',
