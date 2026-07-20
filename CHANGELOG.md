@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — grille : compaction verticale (pas d'espace entre modules)
+
+> Retour Damien : pas de lignes vides — si une ligne se vide, tout remonte. 762 tests verts.
+
+**Modifié**
+- **Compaction verticale** ([widgets.ts](packages/shared/src/widgets.ts)) : remplace la poussée-vers-le-bas.
+  Après tout déplacement / redimensionnement (et au chargement), chaque widget **remonte** aussi haut que
+  possible (colonne inchangée) sans chevauchement → **aucune ligne vide** entre les modules. Le module
+  déplacé reste prioritaire (gagne le slot le plus haut de sa colonne). L'empilage vertical de deux petits
+  carrés reste possible (une ligne où une seule colonne est occupée n'est pas « vide »). Tests : invariant
+  « aucune ligne vide » + compaction précise.
+- Le **reflow live** reflète désormais la compaction en direct (les modules remontent quand une place se libère).
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — reflow live pendant le glisser-déposer
 
 > Retour Damien : voir les modules se déplacer en direct pendant le drag. typecheck + lint verts.

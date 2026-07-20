@@ -263,31 +263,29 @@ function firstFitAll(items: { id: WidgetId; visible: boolean; size: WidgetSize }
 }
 
 /**
- * Résout les chevauchements après un déplacement : le widget `movedId` est **fixe** (prioritaire),
- * tout widget qui le chevauche (ou en chevauche un autre) est **poussé vers le bas**. Les lignes ne
- * font qu'augmenter → terminaison garantie (borne de sécurité). Mutation en place du tableau fourni.
+ * **Compaction verticale** : remonte chaque widget aussi haut que possible (colonne inchangée),
+ * sans chevauchement → aucune ligne vide entre les modules. Résout aussi les collisions (un widget
+ * chevauché descend à la première ligne libre). Traite les widgets par ligne croissante ; à ligne
+ * égale, `priorityId` (le module déplacé) est placé en premier pour « gagner » le slot le plus haut.
+ * Mutation en place (seul `row` change).
  */
-function resolveCollisions(widgets: WidgetLayoutEntry[], movedId: WidgetId): void {
-  const guard = widgets.length * widgets.length + widgets.length + 20;
-  for (let k = 0; k < guard; k += 1) {
-    // `moved` toujours en tête → jamais poussé ; les autres par ligne puis colonne croissantes.
-    const ordered = [...widgets].sort((a, b) => {
-      if (a.id === movedId) return -1;
-      if (b.id === movedId) return 1;
-      return a.row - b.row || a.col - b.col;
-    });
-    let pushed = false;
-    for (let i = 0; i < ordered.length; i += 1) {
-      for (let j = i + 1; j < ordered.length; j += 1) {
-        const A = ordered[i]!;
-        const B = ordered[j]!;
-        if (rectsOverlap(entryRect(A), entryRect(B))) {
-          B.row = A.row + sizeSpan(A.size).h; // pousse B juste sous A
-          pushed = true;
-        }
-      }
+function compactVertical(widgets: WidgetLayoutEntry[], priorityId?: WidgetId): void {
+  const ordered = [...widgets].sort((a, b) => {
+    if (a.row !== b.row) return a.row - b.row;
+    if (priorityId) {
+      if (a.id === priorityId) return -1;
+      if (b.id === priorityId) return 1;
     }
-    if (!pushed) break;
+    return a.col - b.col;
+  });
+  const placed: WidgetLayoutEntry[] = [];
+  for (const it of ordered) {
+    let row = 0;
+    while (placed.some((p) => rectsOverlap({ ...entryRect(it), row }, entryRect(p)))) {
+      row += 1;
+    }
+    it.row = row;
+    placed.push(it);
   }
 }
 
@@ -392,6 +390,8 @@ export function resolveScreenLayout(
       const { col, row } = firstFreeCell(widgets, size);
       widgets.push({ id, visible: true, size, col, row });
     }
+    // Compaction : aucune ligne vide (colonnes conservées) — invariant « pas d'espace entre modules ».
+    compactVertical(widgets);
     return { widgets };
   }
 
@@ -411,9 +411,10 @@ export function resolveScreenLayout(
 // ---------------------------------------------------------------------------
 
 /**
- * Déplace le widget `id` vers la case cible (`col`, `row`) puis **résout les collisions**
- * en poussant vers le bas les widgets chevauchés (trous autorisés). Pur / immuable. La
- * colonne est bornée pour que l'empreinte tienne dans la grille. Id inconnu → inchangé.
+ * Déplace le widget `id` vers la case cible (`col`, `row`) puis **compacte verticalement**
+ * (aucune ligne vide ; les widgets chevauchés descendent, tout le reste remonte). Le module
+ * déplacé est prioritaire à ligne égale. Pur / immuable. La colonne est bornée pour que
+ * l'empreinte tienne dans la grille. Id inconnu → inchangé.
  */
 export function moveWidgetToCell(
   layout: ScreenLayout,
@@ -426,7 +427,7 @@ export function moveWidgetToCell(
   if (!moved) return { widgets };
   moved.col = clampCol(Math.round(col), sizeSpan(moved.size).w);
   moved.row = Math.max(0, Math.round(row));
-  resolveCollisions(widgets, id);
+  compactVertical(widgets, id);
   return { widgets };
 }
 

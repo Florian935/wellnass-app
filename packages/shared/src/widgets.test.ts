@@ -42,6 +42,15 @@ function assertNoOverlap(widgets: WidgetLayoutEntry[]): void {
   }
 }
 
+/** Assert : aucune ligne entièrement vide (invariant de compaction verticale). */
+function assertNoEmptyRow(widgets: WidgetLayoutEntry[]): void {
+  const rows = gridRowCount(widgets);
+  for (let r = 0; r < rows; r += 1) {
+    const covered = widgets.some((w) => w.row <= r && r < w.row + sizeSpan(w.size).h);
+    expect(covered).toBe(true);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Empreintes
 // ---------------------------------------------------------------------------
@@ -110,20 +119,16 @@ describe('resolveScreenLayout', () => {
     assertNoOverlap(r.widgets);
   });
 
-  it('conserve les positions grille stockées (bornées)', () => {
+  it('compacte le layout stocké : aucun chevauchement ni ligne vide', () => {
     const stored: ScreenLayout = {
       widgets: [
         { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
-        { id: 'weight', visible: true, size: 'small', col: 0, row: 3 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 5 },
       ],
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
-    const streak = r.widgets.find((w) => w.id === 'streak')!;
-    expect({ col: streak.col, row: streak.row }).toEqual({ col: 1, row: 3 });
-    // deux petits carrés empilables : ici même ligne, colonnes 0 et 1 → pas de chevauchement
     assertNoOverlap(r.widgets);
-    // forward-compat : les 7 autres widgets home ont été ajoutés
-    expect(r.widgets).toHaveLength(9);
+    assertNoEmptyRow(r.widgets);
   });
 
   it('borne une colonne invalide (wide en col 1 → col 0)', () => {
@@ -201,6 +206,18 @@ describe('moveWidgetToCell', () => {
     const weight = r.widgets.find((w) => w.id === 'weight')!;
     expect({ col: weight.col, row: weight.row }).toEqual({ col: 0, row: 1 });
     assertNoOverlap(r.widgets); // colonne droite laissée vide (trou autorisé)
+  });
+
+  it('compaction : une ligne vide au-dessus est supprimée (remontée)', () => {
+    const base: ScreenLayout = {
+      widgets: [
+        { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'wide', col: 0, row: 2 }, // trou en ligne 1
+      ],
+    };
+    const r = moveWidgetToCell(base, 'weight', 0, 2); // re-place → compaction
+    expect(r.widgets.find((w) => w.id === 'weight')!.row).toBe(1); // remontée en ligne 1
+    assertNoEmptyRow(r.widgets);
   });
 
   it('borne la colonne d’un wide (col 1 demandé → 0)', () => {
