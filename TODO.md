@@ -273,12 +273,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**US-C3 — recette : superset repensé (v2, lien explicite)** : suite au retour
-Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le superset passe d'une liaison
-positionnelle (adjacence) à un **lien explicite** — nouvelle table `workout_superset_pairs` (migration + sync
-rules appliquées), bouton « Lier en superset » → **dialogue de choix** parmi tous les exercices de la séance,
-valable toute la séance. Nouveau composant `SupersetPickerModal`. typecheck/lint/778 tests verts. — **US-C3 —
-CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
+*Dernière mise à jour : 21/07/2026 (**US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
+(A/B/C1/C2/C3 tous recettés ; reste relecture Damien sur l'ensemble). Superset v2 (lien explicite, dialogue de
+choix libre, `workout_superset_pairs`) validé. Merge C3 → `dev`. — **US-C3 — recette : superset repensé (v2,
+lien explicite)** : suite au retour Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le
+superset passe d'une liaison positionnelle (adjacence) à un **lien explicite** — nouvelle table
+`workout_superset_pairs` (migration + sync rules appliquées), bouton « Lier en superset » → **dialogue de
+choix** parmi tous les exercices de la séance, valable toute la séance. Nouveau composant `SupersetPickerModal`.
+typecheck/lint/778 tests verts. — **US-C3 — CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
 machine prise (↑/↓ + « Plus tard »), **superset** (liaison positionnelle, repos différé après la paire), remplacer
 un exercice (picker filtré), **note persistante par exercice** (migration `exercise_notes` appliquée),
 **suggestion de progression** RPE-aware. 8 commits, typecheck/lint/778 tests verts. **Revue finale — 2 bugs
@@ -462,8 +464,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   Florian ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md)). Hook partagé `useTodaySession`
   (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » + réalignement du widget dashboard 7.4.
   **Aucune migration.** **Reste : relecture Damien.**
-- [~] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — corrige le problème 4.
-  **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6**. 📋 Analyse figée (22 points) :
+- [x] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — **C1 + C2 + C3 tous livrés &
+  recette validée (Florian). Reste relecture Damien.** Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 /
+  MUSC-F6**. 📋 Analyse figée (22 points) :
   [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md). **Découpée en 3 sous-US** :
   - [x] **C1 — Cœur : flux guidé + garde-fous** — **CODE LIVRÉ & RECETTE VALIDÉE (Florian, 19/07/2026) ✅**
     (subagent-driven ; spec ✅ + plan ✅ + maquette ✅ ; revue globale sans bloquant). Carte série en cours
@@ -485,8 +488,8 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     Idée notée (IDEAS) : RIR en alternative au RPE.
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
-  - [~] **C3 — Ajustements live** — **CODE LIVRÉ (subagent-driven, 20/07/2026)** ; reste recette device (⚠️
-    **après déploiement manuel des sync rules PowerSync**, voir ci-dessous) + relecture Damien. Réorganiser les
+  - [x] **C3 — Ajustements live** — **CODE LIVRÉ + RECETTE VALIDÉE (Florian, 21/07/2026) ✅** ; reste relecture
+    Damien. Sync rules PowerSync déployées (2 tables C3). Réorganiser les
     exercices restants (↑/↓ + « Plus tard », machine prise), **superset** (liaison positionnelle, repos différé
     après la paire), remplacer un exercice (picker existant, exclut les exercices déjà présents), **note
     persistante par exercice** (migration `exercise_notes` appliquée), **suggestion de progression** RPE-aware
