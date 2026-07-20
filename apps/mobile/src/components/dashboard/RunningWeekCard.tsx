@@ -23,7 +23,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useRunStats } from '@/data/repositories/run-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { useUnits } from '@/hooks/useUnits';
@@ -53,10 +53,12 @@ export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
         ? t('home.runningWeek.empty')
         : `${units.formatDistance(stats.totalDistanceM / 1000)} · ${sessions}`;
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="walk-outline"
         title={t('home.runningWeek.title')}
+        onPress={() => router.push('/running-history')}
         value={value}
+        valueMuted={stats.count === 0}
       />
     );
   }
@@ -79,8 +81,8 @@ export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
       ? t('home.runningWeek.sessionsGoal', { count: stats.count, goal })
       : t('home.runningWeek.sessions', { count: stats.count });
 
-  return (
-    <DashboardCard icon="walk-outline" title={t('home.runningWeek.title')}>
+  const body = (
+    <>
       <View style={styles.statsRow}>
         <View style={styles.stat}>
           <Text style={[styles.statValue, { color: colors.text }]}>
@@ -106,6 +108,25 @@ export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
           </Text>
         </Pressable>
       </View>
+    </>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell
+        icon="walk-outline"
+        title={t('home.runningWeek.title')}
+        onPress={() => router.push('/running-history')}
+        showChevron
+      >
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="walk-outline" title={t('home.runningWeek.title')}>
+      {body}
     </DashboardCard>
   );
 }

@@ -8,11 +8,11 @@
  * Formatage : `formatHoursMinutes` (« Xh YY »), composé en JS (pas d'interpolation i18n).
  */
 
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatHoursMinutes, type WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useTrainingTime } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -36,20 +36,21 @@ export function TrainingTimeCard({ size = 'wide' }: { size?: WidgetSize }) {
   // la ligne répéterait le total (ex. total « 4h 30 » puis « muscu 4h 30 »).
   const breakdown = parts.length >= 2 ? parts.join(' · ') : '';
 
-  // ── Variante compacte (US 7.11) ────────────────────────────────────────────
+  // ── Forme petit carré : durée totale (remplit la case) ─────────────────────
   if (size === 'small') {
     const value =
       tt.totalSeconds === 0 ? t('home.trainingTime.empty') : formatHoursMinutes(tt.totalSeconds);
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="time-outline"
         title={t('home.trainingTime.title')}
         value={value}
+        valueMuted={tt.totalSeconds === 0}
       />
     );
   }
 
-  // ── État vide : aucune séance ni course cette semaine ──────────────────────
+  // ── État vide : aucune séance ni course sur 7 jours ────────────────────────
   if (tt.totalSeconds === 0) {
     return (
       <DashboardCard icon="time-outline" title={t('home.trainingTime.title')}>
@@ -61,14 +62,28 @@ export function TrainingTimeCard({ size = 'wide' }: { size?: WidgetSize }) {
   }
 
   // ── État : données présentes ───────────────────────────────────────────────
-  return (
-    <DashboardCard icon="time-outline" title={t('home.trainingTime.title')}>
+  const body = (
+    <View>
       <Text style={[styles.total, { color: colors.text }]}>
         {formatHoursMinutes(tt.totalSeconds)}
       </Text>
       {breakdown.length > 0 ? (
         <Text style={[styles.breakdown, { color: colors.textMuted }]}>{breakdown}</Text>
       ) : null}
+    </View>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell icon="time-outline" title={t('home.trainingTime.title')}>
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="time-outline" title={t('home.trainingTime.title')}>
+      {body}
     </DashboardCard>
   );
 }

@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useNutritionSummary } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -71,10 +71,16 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
       value = t('home.nutrition.compactConsumed', { kcal });
     }
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="nutrition-outline"
         title={t('home.nutrition.title')}
+        onPress={
+          hasProfile
+            ? () => router.push({ pathname: '/food-picker', params: { date: isoDay(new Date()), meal: 'breakfast' } })
+            : () => router.push('/nutrition-profile')
+        }
         value={value}
+        valueMuted={!hasProfile}
       />
     );
   }
@@ -102,8 +108,8 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
     : 0;
   const today = isoDay(new Date());
 
-  return (
-    <DashboardCard icon="nutrition-outline" title={t('home.nutrition.title')}>
+  const body = (
+    <>
       {/* Ligne calories */}
       <Text style={[styles.kcalValue, { color: colors.text }]}>
         {target != null
@@ -151,6 +157,27 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
           })
         }
       />
+    </>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell
+        icon="nutrition-outline"
+        title={t('home.nutrition.title')}
+        onPress={() =>
+          router.push({ pathname: '/food-picker', params: { date: today, meal: 'breakfast' } })
+        }
+        showChevron
+      >
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="nutrition-outline" title={t('home.nutrition.title')}>
+      {body}
     </DashboardCard>
   );
 }

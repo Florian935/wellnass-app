@@ -29,7 +29,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatPaceMMSS, type RecordDistanceKey, type WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useMostRecentRecord } from '@/data/repositories/dashboard-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -83,13 +83,15 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
     }
   }
 
-  // ── Variante compacte (US 7.11) : record court ─────────────────────────────
+  // ── Forme petit carré : record court (remplit la case) ─────────────────────
   if (size === 'small') {
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="trophy-outline"
         title={t('home.record.title')}
+        onPress={label != null ? () => router.push(route) : undefined}
         value={label ?? t('home.record.compactEmpty')}
+        valueMuted={label == null}
       />
     );
   }
@@ -106,8 +108,8 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
   }
 
   // ── État : record présent ──────────────────────────────────────────────────
-  return (
-    <DashboardCard icon="trophy-outline" title={t('home.record.title')}>
+  const body = (
+    <>
       <View style={styles.row}>
         <View style={[styles.badge, { backgroundColor: colors.surfaceAlt }]}>
           <Text style={[styles.badgeText, { color: colors.text }]}>{badge}</Text>
@@ -129,6 +131,25 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
       <Text style={[styles.date, { color: colors.textMuted }]}>
         {formatDateFr(record.achievedAt)}
       </Text>
+    </>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell
+        icon="trophy-outline"
+        title={t('home.record.title')}
+        onPress={() => router.push(route)}
+        showChevron
+      >
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="trophy-outline" title={t('home.record.title')}>
+      {body}
     </DashboardCard>
   );
 }

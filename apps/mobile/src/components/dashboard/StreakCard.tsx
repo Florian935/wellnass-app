@@ -13,7 +13,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useStreakData } from '@/data/repositories/dashboard-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -25,22 +25,24 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   if (isLoading) return null;
 
-  // ── Variante compacte (US 7.11) : « N j » ──────────────────────────────────
+  const isEmpty = current === 0;
+
+  // ── Forme petit carré : « N j » (remplit la case) ──────────────────────────
   if (size === 'small') {
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="flame-outline"
         title={t('home.streak.title')}
         value={t('home.streak.compact', { count: current })}
+        valueMuted={isEmpty}
       />
     );
   }
 
   const weekDays = t('home.streak.days', { returnObjects: true }) as string[];
-  const isEmpty = current === 0;
 
-  return (
-    <DashboardCard icon="flame-outline" title={t('home.streak.title')}>
+  const body = (
+    <>
       {/* Nombre de jours + label */}
       <View style={styles.streakTop}>
         <Text
@@ -86,6 +88,22 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
           </View>
         ))}
       </View>
+    </>
+  );
+
+  // ── Forme grand carré : même visuel, remplit la case ───────────────────────
+  if (size === 'large') {
+    return (
+      <WidgetShell icon="flame-outline" title={t('home.streak.title')}>
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  // ── Forme rectangle (défaut) ───────────────────────────────────────────────
+  return (
+    <DashboardCard icon="flame-outline" title={t('home.streak.title')}>
+      {body}
     </DashboardCard>
   );
 }

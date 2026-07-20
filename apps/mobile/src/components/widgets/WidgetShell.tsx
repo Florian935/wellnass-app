@@ -11,7 +11,7 @@
 
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -29,7 +29,8 @@ export function WidgetShell({
 }: {
   icon: IconName;
   title: string;
-  onPress: () => void;
+  /** Ouvre le module au tap. Absent → carte non tappable (ex. streak sans écran dédié). */
+  onPress?: () => void;
   /** Chiffre/étiquette clé, aligné en bas (forme `small`). */
   value?: string;
   /** Rend `value` en couleur atténuée (ex. état vide « Aucun »). */
@@ -41,18 +42,9 @@ export function WidgetShell({
   accessibilityHint?: string;
 }) {
   const { colors } = useTheme();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityHint={accessibilityHint}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { backgroundColor: colors.surface, borderColor: colors.border },
-        pressed && styles.pressed,
-      ]}
-    >
+
+  const inner = (
+    <>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons name={icon} size={18} color={colors.accent} />
@@ -60,7 +52,7 @@ export function WidgetShell({
             {title}
           </Text>
         </View>
-        {showChevron ? (
+        {showChevron && onPress ? (
           <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
         ) : null}
       </View>
@@ -75,6 +67,28 @@ export function WidgetShell({
           {value}
         </Text>
       ) : null}
+    </>
+  );
+
+  const baseStyle: ViewStyle = {
+    ...styles.card,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+  };
+
+  if (!onPress) {
+    return <View style={baseStyle}>{inner}</View>;
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={accessibilityHint}
+      onPress={onPress}
+      style={({ pressed }) => [baseStyle, pressed && styles.pressed]}
+    >
+      {inner}
     </Pressable>
   );
 }

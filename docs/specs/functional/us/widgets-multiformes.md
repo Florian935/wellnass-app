@@ -180,6 +180,28 @@ Trois dispositions à stocker (accueil / muscu / course). **Décision : Option A
 - i18n FR/EN complet ; offline-first respecté ; aucune régression sur l'accueil existant.
 - Roadmap + TODO mis à jour par `/commit`.
 
+## 8bis. Révision v2 (Damien, 20/07/2026) — retours d'usage
+
+Après une 1ʳᵉ implémentation, trois évolutions **validées sur maquette v2** (`design/widgets-multiformes/`) :
+
+1. **Édition = glisser-déposer 2D** (remplace le tri 1 colonne du MVP §2.3). **Appui long ~1 s** pour
+   attraper un module (fantôme suivant le doigt + **barre d'insertion**), dépôt libre dans la grille ;
+   deux petits carrés consécutifs se posent côte à côte. Composant `SortableWidgetGrid`
+   (`react-native-reanimated` + `gesture-handler`) : rectangles mesurés figés au démarrage → index
+   d'insertion par hit-test ; écriture unique au drop. Le tri linéaire (`SortableDashboard`) est **retiré**.
+2. **Contrôles d'édition en pastilles de coin** (œil = masquer, ◻/▭/▣ = forme) sur chaque cellule,
+   pour tenir sur un petit carré. L'ancienne barre de contrôles (`DashboardWidgetRow` /
+   `DashboardEditControls`) est **retirée**.
+3. **3 formes dessinées par module** : `small` = 1 chiffre clé + mini-indicateur · `wide` = ligne riche ·
+   `large` = chiffre + visualisation (barres / courbe / calendrier / liste). Chaque module **remplit** sa
+   forme. Détail module par module dans la maquette v2.
+
+**Stats « semaine » → fenêtre glissante 7 jours** (transverse, hors widgets mais impacte leurs valeurs) :
+toutes les stats « semaine en cours » raisonnent désormais sur les **7 derniers jours glissants**
+(aujourd'hui + 6 jours précédents ; « précédente » = J−14 à J−7), y compris les **tendances 8 semaines**
+(8 fenêtres glissantes de 7 jours). Helper partagé `localMidnightDaysAgo` / `rollingWeekStarts` /
+`ROLLING_WEEK_DAYS`. Libellés « cette semaine » → « 7 derniers jours ».
+
 ## 9. Décisions verrouillées (Damien, 19/07/2026)
 
 1. **Stockage = Option A** (§6) — JSON étendu `{ screens: { home, strength, running } }` dans la

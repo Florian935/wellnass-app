@@ -96,6 +96,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
   assouplissement du `CHECK set_type` sur `workout_sets` et `exercise_plans` (ajout `dropset`/`failure`).
 - Aucun code applicatif dans ce commit (livrables de cadrage uniquement).
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — widgets v2 : glisser-déposer en grille + 3 formes par module
+
+> typecheck + lint (0 erreur) + tests **verts**. **Aucune migration.** **Recette device requise**
+> (drag & drop reanimated + remplissage des formes non vérifiables en statique).
+
+**Ajouté**
+- **Glisser-déposer 2D** ([SortableWidgetGrid.tsx](apps/mobile/src/components/widgets/SortableWidgetGrid.tsx)) :
+  **appui long ~700 ms** → module soulevé (fantôme + tilt + ombre), **barre d'insertion** accent, dépôt libre
+  dans la grille 2 colonnes (deux petits carrés côte à côte). Rectangles mesurés figés au démarrage → index
+  d'insertion par hit-test ; écriture unique au drop. Remplace le tri 1 colonne du MVP.
+- **Pastilles de coin** d'édition (œil = masquer, ◻/▭/▣ = forme) sur chaque cellule, pour tenir sur un petit carré.
+- **3 formes par module** : les 9 widgets d'accueil ont désormais un `small` (chiffre clé qui **remplit** le carré),
+  un `wide` (carte riche) et un `large` (visuel — pastilles / graphe / valeurs — qui **remplit** le grand carré),
+  via [WidgetShell](apps/mobile/src/components/widgets/WidgetShell.tsx) (`onPress` rendu optionnel).
+
+**Modifié**
+- [WidgetGrid.tsx](apps/mobile/src/components/widgets/WidgetGrid.tsx) : mode édition branché sur `SortableWidgetGrid`.
+- Spec [widgets-multiformes.md](docs/specs/functional/us/widgets-multiformes.md) §8bis (révision v2) + maquette v2.
+
+**Supprimé**
+- `SortableDashboard`, `DashboardWidgetRow`, `DashboardEditControls`, `DashboardCardCompact` (remplacés par
+  la grille triable + `WidgetShell` ; plus référencés).
+
+**Technique / Notes**
+- Caveats assumés : `TodaySessionCard` en `large` réutilise le rendu riche `wide` (machine à états à 4 branches) ;
+  les états « vide » en `large` retombent sur la carte standard (edge cases).
+
+### 20/07/2026 — `feature/widgets-v2-dnd` — stats « semaine » → fenêtre glissante 7 jours
+
+> typecheck + lint + tests **verts** (750, dont 3 nouveaux). **Aucune migration.** Parité i18n FR/EN.
+
+**Modifié**
+- **Toutes les stats « semaine en cours » raisonnent sur les 7 derniers jours glissants** (aujourd'hui + 6 jours ;
+  « précédente » = J−14 à J−7), y compris les **tendances 8 semaines** (8 fenêtres glissantes). Remplace la
+  semaine calendaire lundi→dimanche. Concerne `useMuscleVolumeThisWeek`, `useWeeklyVolumeComparison`,
+  `useTrainingTime`, et `useTrainingNutritionCross`
+  ([records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts),
+  [dashboard-repository.ts](apps/mobile/src/data/repositories/dashboard-repository.ts)).
+- Libellés « cette semaine » → « 7 derniers jours » / « 7 j » (FR/EN).
+
+**Ajouté**
+- Helpers partagés `localMidnightDaysAgo` / `rollingWeekStarts` / `ROLLING_WEEK_DAYS`
+  ([date.ts](packages/shared/src/date.ts)) + tests ([date.test.ts](packages/shared/src/date.test.ts)).
+
 ### 19/07/2026 — `docs/recette-c1-validee` — US-C1 : recette device validée
 
 **Modifié**

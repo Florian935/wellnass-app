@@ -1,253 +1,285 @@
-<!-- Maquette US Widgets — Grille multi-formes (accueil · muscu · course). Design system Wellness. -->
+<!-- Maquette US Widgets — v2 : drag & drop en grille + design des 3 formes par module. Design system Wellness. -->
 <style>
   :root{
     --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
     --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
-    --run:#c0562f;--strength:#6b0028;
+    --run:#c0562f;--strength:#6b0028;--nutri:#5c7a3f;
     --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
     --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
   }
   *{box-sizing:border-box;}
-  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
-  .head{max-width:1240px;margin:0 auto 32px;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 72px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;}
   .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
   .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
-  .sub{color:var(--muted);max-width:82ch;margin:0;font-size:15px;}
+  .sub{color:var(--muted);max-width:80ch;margin:0 0 34px;font-size:15px;}
+  h2.sec{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:800;margin:40px 0 6px;}
+  h2.sec .n{color:var(--muted);margin-right:8px;}
+  p.lead{color:var(--muted);font-size:14.5px;max-width:80ch;margin:0 0 20px;}
 
-  /* Légende des 3 formes */
-  .forms{max-width:1240px;margin:0 auto 30px;display:flex;gap:18px;flex-wrap:wrap;}
-  .formcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;flex:1;min-width:230px;}
-  .formcard h3{margin:0 0 6px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;}
-  .formcard p{margin:0 0 12px;color:var(--muted);font-size:13px;}
-  .swatch{border:1px dashed var(--accent);border-radius:12px;background:var(--surface-alt);}
-  .sw-small{width:66px;height:66px;}
-  .sw-wide{width:140px;height:46px;}
-  .sw-large{width:110px;height:96px;}
+  /* ---- Tuile générique (rendu d'un widget) ---- */
+  .w{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px;overflow:hidden;display:flex;flex-direction:column;}
+  .w .dl{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;letter-spacing:-.01em;margin:0 0 4px;}
+  .w .dl .ic{width:13px;height:13px;border-radius:4px;background:var(--surface-alt);flex:none;}
+  .w .sub{color:var(--muted);font-size:10.5px;margin:0;}
+  .w .big{font-weight:800;font-size:20px;letter-spacing:-.02em;margin-top:auto;}
+  .w .big.sm{font-size:15px;}
+  .w .delta{display:inline-block;font-size:9.5px;font-weight:800;color:var(--success);background:rgba(92,122,63,.13);border-radius:999px;padding:1px 6px;margin-top:4px;width:fit-content;}
+  .w .cta{margin-top:8px;text-align:center;background:var(--strength);color:#fff;border-radius:9px;padding:7px;font-weight:800;font-size:11px;}
+  .w .row{display:flex;align-items:center;justify-content:space-between;font-size:10.5px;padding:1.5px 0;}
+  .w .row b{font-weight:700;}.w .row span{color:var(--muted);}
+  .w .bars{display:flex;gap:4px;align-items:flex-end;height:34px;margin-top:auto;}
+  .w .bars i{flex:1;background:var(--accent);opacity:.75;border-radius:2px;}
+  .w .spark{margin-top:auto;height:30px;border-radius:6px;background:linear-gradient(180deg,rgba(192,86,47,.16),rgba(192,86,47,0));border:1px solid var(--border);position:relative;}
+  .w .spark::after{content:"";position:absolute;left:6px;right:6px;bottom:7px;height:1px;background:var(--accent);box-shadow:0 -5px 0 -2.5px var(--accent),0 -10px 0 -4px var(--accent);}
+  .w .dots7{display:flex;gap:3px;margin-top:auto;}
+  .w .dots7 i{flex:1;height:6px;border-radius:3px;background:var(--surface-alt);}
+  .w .dots7 i.on{background:var(--accent);}
+  .w .cal{display:flex;gap:3px;margin-top:auto;}
+  .w .cal .d{flex:1;border:1px solid var(--border);border-radius:5px;text-align:center;padding:3px 0;font-size:8px;color:var(--muted);}
+  .w .cal .d b{display:block;color:var(--ink);font-size:11px;font-weight:800;}
+  .w .cal .d.td{border-color:var(--accent);border-width:1.5px;background:var(--surface-alt);}
+  .w .cal .d .p{width:4px;height:4px;border-radius:2px;background:var(--strength);margin:2px auto 0;}
+  .macro{display:flex;flex-direction:column;gap:4px;margin-top:auto;}
+  .macro .m{display:flex;align-items:center;gap:6px;font-size:9.5px;}
+  .macro .m .t{height:5px;border-radius:3px;background:var(--surface-alt);flex:1;overflow:hidden;}
+  .macro .m .t i{display:block;height:100%;background:var(--accent);}
 
-  .stage{max-width:1240px;margin:0 auto;display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
-  .col{display:flex;flex-direction:column;gap:10px;max-width:360px;width:100%;}
-  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
-  .caption b{color:var(--accent);}
-  .phone{background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:14px;box-shadow:var(--shadow);max-width:360px;width:100%;}
-  .statusbar{display:flex;justify-content:space-between;padding:6px 12px 10px;color:var(--muted);font-size:12px;font-family:var(--mono);}
-  .h1{font-weight:800;font-size:22px;letter-spacing:-.02em;padding:0 4px;margin:0 0 2px;}
-  .tag{color:var(--muted);font-size:12.5px;padding:0 4px;margin:0 0 12px;}
-  .toprow{display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin:0 0 12px;}
-  .pers{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700;}
-  .pers.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+  /* dimensions des 3 formes (dans la galerie, échelle indicative) */
+  .small{width:132px;height:132px;}
+  .wide{width:280px;height:96px;}
+  .large{width:180px;height:150px;}
 
-  /* Carte d'action épinglée (muscu/course) */
-  .action{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;margin:0 4px 14px;}
-  .action.strength{border-color:var(--strength);box-shadow:0 0 0 1px var(--strength);}
-  .action.run{border-color:var(--run);box-shadow:0 0 0 1px var(--run);}
-  .chead{display:flex;align-items:center;gap:8px;margin:0 0 8px;}
-  .chead .ic{width:16px;height:16px;border-radius:5px;flex:none;}
-  .ic.st{background:var(--strength);}.ic.rn{background:var(--run);}
-  .ctitle{font-weight:800;font-size:15px;}
-  .ctext{color:var(--muted);font-size:13px;margin:0 0 12px;}
-  .btn{display:block;width:100%;text-align:center;border-radius:12px;padding:12px;font-weight:800;font-size:14px;color:#fff;}
-  .btn.st{background:var(--strength);}.btn.rn{background:var(--run);}
-  .pin{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);float:right;}
+  /* ---- Galerie module × 3 formes ---- */
+  .mod{display:flex;gap:18px;align-items:center;padding:14px 0;border-top:1px solid var(--border);flex-wrap:wrap;}
+  .mod .name{width:150px;flex:none;}
+  .mod .name b{display:block;font-size:14px;font-weight:800;}
+  .mod .name span{font-size:11.5px;color:var(--muted);}
+  .forms3{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
+  .formcell{display:flex;flex-direction:column;gap:5px;align-items:flex-start;}
+  .formcell .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;}
 
-  /* Grille de widgets */
-  .grid{display:flex;flex-direction:column;gap:10px;padding:0 4px;}
-  .row{display:flex;gap:10px;}
-  .w{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:13px;overflow:hidden;}
-  .w.small{flex:1;aspect-ratio:1/1;display:flex;flex-direction:column;}
-  .w.wide{width:100%;}
-  .w.large{width:100%;aspect-ratio:1/.72;display:flex;flex-direction:column;}
-  .wtop{display:flex;align-items:center;gap:7px;margin:0 0 6px;}
-  .wtop .di{width:14px;height:14px;border-radius:4px;background:var(--surface-alt);flex:none;}
-  .wtop .dl{font-size:12px;font-weight:800;letter-spacing:-.01em;}
-  .wsub{color:var(--muted);font-size:11px;}
-  .wbig{font-weight:800;font-size:22px;letter-spacing:-.02em;margin-top:auto;}
-  .wbig.sm{font-size:19px;}
-  .delta{display:inline-block;font-size:10px;font-weight:800;color:var(--success);background:rgba(92,122,63,.12);border-radius:999px;padding:1px 7px;margin-top:6px;}
-  .spark{margin-top:auto;height:40px;border-radius:8px;background:linear-gradient(180deg,rgba(192,86,47,.16),rgba(192,86,47,0));border:1px solid var(--border);position:relative;}
-  .spark::after{content:"";position:absolute;left:8px;right:8px;bottom:8px;height:1px;background:var(--accent);box-shadow:0 -6px 0 -3px var(--accent),0 -12px 0 -5px var(--accent);}
-  .wrow{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:3px 0;}
-  .wrow b{font-weight:700;}.wrow span{color:var(--muted);}
-  .runline{display:flex;align-items:center;gap:7px;font-weight:800;font-size:14px;}
-  .runline .dot{color:var(--muted);font-weight:400;}
+  .hub{margin:26px 0 4px;font-size:15px;font-weight:800;color:var(--strength);}
+  .hub.run{color:var(--run);}.hub.nut{color:var(--nutri);}.hub.home{color:var(--accent);}
 
-  /* Édition : 1 colonne triable + contrôles */
-  .edit .w,.edit .wfull{border-style:dashed;border-color:var(--accent);position:relative;}
-  .ctrls{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-  .ctrl{width:30px;height:30px;border:1px solid var(--border);border-radius:9px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--muted);}
-  .ctrl.on{border-color:var(--accent);color:var(--accent);}
-  .ctrl.shape{width:auto;padding:0 10px;gap:6px;}
-  .handle{margin-left:auto;letter-spacing:2px;color:var(--muted);font-weight:900;}
-  .hiddenBadge{position:absolute;top:10px;right:12px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
-  .w.hidden{opacity:.5;}
+  /* ---- Section drag & drop ---- */
+  .dndwrap{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:30px;padding:14px;box-shadow:var(--shadow);width:330px;max-width:100%;}
+  .phone .bar{display:flex;justify-content:space-between;padding:4px 8px 12px;color:var(--muted);font-size:11px;font-family:var(--mono);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;}
+  .grid .w{border-style:dashed;border-color:var(--accent);}
+  .grid .full{grid-column:1 / -1;}
+  .grid .sq{aspect-ratio:1/1;}
+  .grid .lg{aspect-ratio:1.35/1;}
+  /* poignées d'édition en coin */
+  .chips{display:flex;gap:5px;position:absolute;top:8px;right:8px;}
+  .chip{width:22px;height:22px;border-radius:7px;background:var(--surface-alt);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);}
+  .chip.on{border-color:var(--accent);color:var(--accent);}
+  .w.rel{position:relative;}
+  /* fantôme tiré + indicateur d'insertion */
+  .ghost{position:absolute;left:96px;top:150px;width:120px;height:120px;transform:rotate(-3deg) scale(1.04);box-shadow:0 16px 30px rgba(51,41,31,.28);opacity:.96;z-index:5;border-style:solid !important;background:var(--surface);}
+  .insert{position:absolute;left:6px;top:150px;width:4px;height:120px;border-radius:3px;background:var(--accent);box-shadow:0 0 0 3px rgba(192,86,47,.18);z-index:4;}
+  .legend{max-width:330px;}
+  .legend li{font-size:13.5px;margin:0 0 8px;}
+  .legend code{font-family:var(--mono);font-size:12px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
 
-  .notes{max-width:1240px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
-  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes{margin-top:40px;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
   .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
   .notes li{font-size:14px;}
   .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
 </style>
 
-<div class="r">
-  <header class="head">
-    <p class="eyebrow">Wellness · US Widgets multi-formes · Maquette</p>
-    <h1 class="title">Des widgets en 3 formes, sur 3 hubs</h1>
-    <p class="sub">Chaque module se pose en <em>petit carré</em> (½ largeur, 2 côte à côte), <em>rectangle</em> (pleine largeur) ou <em>grand carré</em> (pleine largeur). L'utilisateur réordonne, redimensionne et masque les widgets — indépendamment sur l'accueil, la muscu et la course. En muscu/course, la carte d'action reste épinglée en tête, hors grille. Le packing 2 colonnes découle du seul ordre.</p>
-  </header>
+<div class="r"><div class="wrap">
+  <p class="eyebrow">Wellness · US Widgets · Maquette v2</p>
+  <h1 class="title">Drag & drop en grille + 3 formes par module</h1>
+  <p class="sub">Correctif des retours : (1) en édition, on <strong>attrape un module et on le dépose n'importe où dans la grille 2 colonnes</strong> — deux petits carrés se posent côte à côte ; (2) chaque module a un <strong>rendu propre à chacune de ses 3 formes</strong> (petit carré ½ largeur, rectangle pleine largeur, grand carré pleine largeur), qui remplit vraiment la surface. Rendu dans le design system de l'app.</p>
 
-  <!-- Légende des 3 formes -->
-  <section class="forms">
-    <div class="formcard">
-      <h3>🟦 Petit carré · <code>small</code></h3>
-      <p>½ largeur (2 par ligne). Version condensée : titre + 1 métrique clé.</p>
-      <div class="swatch sw-small"></div>
-    </div>
-    <div class="formcard">
-      <h3>▭ Rectangle · <code>wide</code></h3>
-      <p>Pleine largeur, bas. Version linéaire riche (= cartes actuelles).</p>
-      <div class="swatch sw-wide"></div>
-    </div>
-    <div class="formcard">
-      <h3>🟪 Grand carré · <code>large</code></h3>
-      <p>Pleine largeur, haut. Version développée : métrique + aperçu / graphe.</p>
-      <div class="swatch sw-large"></div>
-    </div>
-  </section>
-
-  <div class="stage">
-
-    <!-- ACCUEIL -->
-    <div class="col">
-      <div class="phone">
-        <div class="statusbar"><span>9:41</span><span>Accueil</span></div>
-        <div class="toprow"><span class="h1">Wellness</span><span class="pers">✎ Personnaliser</span></div>
-        <div class="grid">
-          <div class="row">
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Streak</span></div><span class="wsub">jours d'affilée</span><span class="wbig">12</span></div>
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Poids</span></div><span class="wsub">aujourd'hui</span><span class="wbig sm">74,2 kg</span><span class="delta">▼ 0,3</span></div>
-          </div>
-          <div class="w wide">
-            <div class="wtop"><span class="di"></span><span class="dl">Séance du jour</span></div>
-            <div class="wrow"><b>Legs · 6 exercices</b><span>Full body 8 sem.</span></div>
-          </div>
-          <div class="w large">
-            <div class="wtop"><span class="di"></span><span class="dl">Volume muscu · semaine</span></div>
-            <span class="wsub">tonnage cumulé</span><span class="wbig">12,4 t</span><span class="delta">▲ 8 % vs S-1</span>
-            <div class="spark"></div>
-          </div>
-          <div class="row">
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Nutrition</span></div><span class="wsub">restant</span><span class="wbig sm">840 kcal</span></div>
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Records</span></div><span class="wsub">récent</span><span class="wbig sm">Bench 80</span></div>
-          </div>
-        </div>
+  <!-- ============ SECTION A : DRAG & DROP ============ -->
+  <h2 class="sec"><span class="n">A</span>Édition — glisser-déposer dans la grille</h2>
+  <p class="lead">Appui long sur un module → il se soulève (fantôme). On le promène sur la grille ; une <strong>barre d'insertion</strong> montre où il atterrira. En le lâchant entre deux petits carrés, il se pose <strong>à côté</strong> d'eux. Les contrôles (œil = masquer, ◻ = changer de forme) passent en <strong>pastilles de coin</strong> pour tenir même sur un petit carré.</p>
+  <div class="dndwrap">
+    <div class="phone">
+      <div class="bar"><span>9:41</span><span>Accueil · édition</span></div>
+      <div class="grid">
+        <div class="w rel sq"><div class="chips"><span class="chip on">👁</span><span class="chip">◻</span></div><div class="dl"><span class="ic"></span>Streak</div><span class="sub">jours</span><span class="big">12</span></div>
+        <div class="w rel sq"><div class="chips"><span class="chip on">👁</span><span class="chip">◻</span></div><div class="dl"><span class="ic"></span>Poids</div><span class="sub">auj.</span><span class="big sm">74,2 kg</span></div>
+        <!-- indicateur + fantôme sur la 2e ligne -->
+        <div class="insert"></div>
+        <div class="w rel sq ghost"><div class="dl"><span class="ic"></span>Nutrition</div><span class="sub">restant</span><span class="big sm">840</span></div>
+        <div class="w rel sq" style="grid-column:2"><div class="chips"><span class="chip on">👁</span><span class="chip">◻</span></div><div class="dl"><span class="ic"></span>Records</div><span class="sub">récent</span><span class="big sm">Bench 80</span></div>
+        <div class="w rel full" style="height:74px"><div class="chips"><span class="chip on">👁</span><span class="chip">▭</span></div><div class="dl"><span class="ic"></span>Séance du jour</div><div class="row"><b>Legs · 6 exercices</b><span>Full body</span></div></div>
       </div>
-      <p class="caption"><b>Accueil</b> — mix des 3 formes. Deux <b>small</b> consécutifs s'apparient sur une ligne.</p>
     </div>
-
-    <!-- MUSCU -->
-    <div class="col">
-      <div class="phone">
-        <div class="statusbar"><span>9:41</span><span>Muscu</span></div>
-        <div class="toprow"><span class="h1">Muscu</span><span class="pers">✎ Personnaliser</span></div>
-        <div class="action strength">
-          <span class="pin">Épinglé</span>
-          <div class="chead"><span class="ic st"></span><span class="ctitle">Séance du jour</span></div>
-          <p class="ctext">Legs · 6 exercices · Full body 8 sem.</p>
-          <span class="btn st">Démarrer la séance</span>
-        </div>
-        <div class="grid">
-          <div class="row">
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Programmes</span></div><span class="wsub">actif</span><span class="wbig sm">Full body</span></div>
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Historique</span></div><span class="wsub">2 dernières</span><div class="wrow"><b>12/07</b><span>52 min</span></div><div class="wrow"><b>10/07</b><span>48 min</span></div></div>
-          </div>
-          <div class="w wide">
-            <div class="wtop"><span class="di"></span><span class="dl">Mon planning</span></div>
-            <div class="wrow"><b>Lun Mar Mer Jeu</b><span>4 prochains jours</span></div>
-          </div>
-          <div class="w large">
-            <div class="wtop"><span class="di"></span><span class="dl">Progression · volume semaine</span></div>
-            <span class="wsub">tonnage</span><span class="wbig">12,4 t</span><span class="delta">▲ 8 %</span>
-            <div class="spark"></div>
-          </div>
-        </div>
-      </div>
-      <p class="caption"><b>Muscu</b> — carte d'action <b>épinglée</b> hors grille ; 4 modules widgetisés.</p>
-    </div>
-
-    <!-- COURSE -->
-    <div class="col">
-      <div class="phone">
-        <div class="statusbar"><span>9:41</span><span>Course</span></div>
-        <div class="toprow"><span class="h1">Course</span><span class="pers">✎ Personnaliser</span></div>
-        <div class="action run">
-          <span class="pin">Épinglé</span>
-          <div class="chead"><span class="ic rn"></span><span class="ctitle">Prêt à courir ?</span></div>
-          <p class="ctext">Lance le suivi GPS de ta sortie.</p>
-          <span class="btn rn">Démarrer une course</span>
-        </div>
-        <div class="grid">
-          <div class="w wide">
-            <div class="wtop"><span class="di"></span><span class="dl">Historique</span></div>
-            <div class="runline">8,2 km <span class="dot">·</span> 44 min <span class="dot">·</span> 5:22 /km</div>
-          </div>
-          <div class="row">
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Programmes</span></div><span class="wsub">actif</span><span class="wbig sm">10K plan</span></div>
-            <div class="w small"><div class="wtop"><span class="di"></span><span class="dl">Planning</span></div><span class="wsub">à venir</span><span class="wbig sm">Jeu · 6 km</span></div>
-          </div>
-        </div>
-      </div>
-      <p class="caption"><b>Course</b> — masquée si le pilier running n'est pas activé (filtrage piliers).</p>
-    </div>
-
-    <!-- ÉDITION -->
-    <div class="col">
-      <div class="phone edit">
-        <div class="statusbar"><span>9:41</span><span>Édition</span></div>
-        <div class="toprow"><span class="h1">Muscu</span><span class="pers on">✓ Terminé</span></div>
-        <p class="tag" style="color:var(--accent)">Glisse pour réordonner · change la forme · masque</p>
-        <div class="grid">
-          <div class="w wfull wide">
-            <div class="wtop"><span class="di"></span><span class="dl">Programmes</span></div>
-            <div class="ctrls">
-              <span class="ctrl on">👁</span>
-              <span class="ctrl shape on">◻ Petit carré</span>
-              <span class="handle">⠿</span>
-            </div>
-          </div>
-          <div class="w wfull wide">
-            <div class="wtop"><span class="di"></span><span class="dl">Mon planning</span></div>
-            <div class="ctrls">
-              <span class="ctrl on">👁</span>
-              <span class="ctrl shape">▭ Rectangle</span>
-              <span class="handle">⠿</span>
-            </div>
-          </div>
-          <div class="w wfull wide hidden">
-            <span class="hiddenBadge">Masqué</span>
-            <div class="wtop"><span class="di"></span><span class="dl">Progression</span></div>
-            <div class="ctrls">
-              <span class="ctrl">👁</span>
-              <span class="ctrl shape">▣ Grand carré</span>
-              <span class="handle">⠿</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="caption"><b>Édition</b> — 1 colonne pour un tri simple (drag linéaire). Le sélecteur <b>cycle</b> les 3 formes. Le packing 2 colonnes ne s'applique qu'à l'affichage.</p>
-    </div>
-
+    <ul class="legend">
+      <li><b>Attraper</b> : appui long sur un module (il se soulève, léger tilt + ombre).</li>
+      <li><b>Déposer</b> : la <span style="color:var(--accent);font-weight:700">barre verticale</span> indique la position d'accueil ; ici « Nutrition » vient se poser <b>à gauche de « Records »</b> → deux petits carrés côte à côte.</li>
+      <li><b>Formes</b> : la pastille <code>◻</code> fait défiler petit carré → rectangle → grand carré. Un module en rectangle/grand carré prend toute la largeur et va sur sa propre ligne.</li>
+      <li><b>Masquer</b> : la pastille <code>👁</code> ; un module masqué reste dans la grille d'édition, grisé.</li>
+      <li>La disposition est libre : l'ordre + la forme déterminent le pavage (deux petits carrés consécutifs = même ligne).</li>
+    </ul>
   </div>
 
-  <section class="notes">
-    <h2>Règles & décisions</h2>
+  <!-- ============ SECTION B : LES 3 FORMES PAR MODULE ============ -->
+  <h2 class="sec"><span class="n">B</span>Les 3 formes, module par module</h2>
+  <p class="lead">Règle de contenu : <b>petit carré</b> = 1 chiffre clé + mini-indicateur ; <b>rectangle</b> = ligne riche (comme les cartes actuelles) ; <b>grand carré</b> = chiffre clé + visualisation (barres / courbe / calendrier / liste). Chaque module remplit sa forme.</p>
+
+  <!-- ---------- HUB ACCUEIL ---------- -->
+  <div class="hub home">🏠 Accueil</div>
+
+  <!-- Séance du jour -->
+  <div class="mod">
+    <div class="name"><b>Séance du jour</b><span>séance planifiée</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Séance</div><span class="sub">aujourd'hui</span><span class="big sm">Legs</span><span class="sub">6 exos</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Séance du jour</div><div class="row"><b>Legs · 6 exercices</b><span>Full body</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Séance du jour</div><span class="big sm">Legs</span><span class="sub">6 exercices · Full body</span><span class="cta">Démarrer la séance</span></div></div>
+    </div>
+  </div>
+  <!-- Résumé nutrition -->
+  <div class="mod">
+    <div class="name"><b>Résumé nutrition</b><span>calories & macros</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Nutrition</div><span class="sub">restant</span><span class="big">840</span><span class="sub">kcal</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Nutrition</div><div class="row"><b>840 kcal restantes</b><span>1660 / 2500</span></div><div class="macro"><div class="m">P<span class="t"><i style="width:70%"></i></span></div></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Nutrition</div><span class="big">840</span><span class="sub">kcal restantes</span><div class="macro"><div class="m">P<span class="t"><i style="width:70%"></i></span></div><div class="m">G<span class="t"><i style="width:55%"></i></span></div><div class="m">L<span class="t"><i style="width:40%"></i></span></div></div></div></div>
+    </div>
+  </div>
+  <!-- Streak -->
+  <div class="mod">
+    <div class="name"><b>Streak</b><span>régularité</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Streak</div><span class="sub">jours d'affilée</span><span class="big">12</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Streak · 12 jours</div><div class="dots7"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Streak</div><span class="big">12</span><span class="sub">jours d'affilée</span><div class="dots7"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div></div>
+    </div>
+  </div>
+  <!-- Poids -->
+  <div class="mod">
+    <div class="name"><b>Poids corporel</b><span>dernière pesée + tendance</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Poids</div><span class="sub">aujourd'hui</span><span class="big sm">74,2 kg</span><span class="delta">▼ 0,3</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Poids</div><div class="row"><b>74,2 kg</b><span>▼ 0,3 kg (7 j)</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Poids · 74,2 kg</div><span class="delta">▼ 0,3 kg (7 j)</span><div class="spark"></div></div></div>
+    </div>
+  </div>
+  <!-- Records -->
+  <div class="mod">
+    <div class="name"><b>Records récents</b><span>PR muscu / course</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Records</div><span class="sub">récent</span><span class="big sm">Bench</span><span class="sub">80 kg</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Records</div><div class="row"><b>Développé couché · 80 kg</b><span>il y a 2 j</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Records récents</div><div class="row"><b>Bench</b><span>80 kg</span></div><div class="row"><b>Squat</b><span>120 kg</span></div><div class="row"><b>5 km</b><span>24:10</span></div></div></div>
+    </div>
+  </div>
+  <!-- Volume muscu -->
+  <div class="mod">
+    <div class="name"><b>Volume muscu</b><span>tonnage semaine</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Volume</div><span class="sub">semaine</span><span class="big sm">12,4 t</span><span class="delta">▲ 8 %</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Volume semaine</div><div class="row"><b>12,4 t</b><span>▲ 8 % vs S-1</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Volume · 12,4 t</div><div class="bars"><i style="height:60%"></i><i style="height:80%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:70%"></i></div></div></div>
+    </div>
+  </div>
+  <!-- Semaine running -->
+  <div class="mod">
+    <div class="name"><b>Semaine running</b><span>distance & sorties</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Running</div><span class="sub">cette semaine</span><span class="big sm">18 km</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Semaine running</div><div class="row"><b>18 km · 3 sorties</b><span>allure 5:22</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Running · 18 km</div><div class="bars"><i style="height:40%"></i><i style="height:0%"></i><i style="height:70%"></i><i style="height:0%"></i><i style="height:100%"></i><i style="height:0%"></i><i style="height:55%"></i></div></div></div>
+    </div>
+  </div>
+  <!-- Déficit/volume -->
+  <div class="mod">
+    <div class="name"><b>Alerte déficit</b><span>calories vs entraînement</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--warn)"></span>Déficit</div><span class="sub">à surveiller</span><span class="big sm" style="color:var(--warn)">−520</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--warn)"></span>Déficit vs volume</div><span class="sub">Déficit marqué un jour de gros volume — pense aux protéines.</span></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--warn)"></span>Déficit vs volume</div><span class="sub">−520 kcal sous la cible</span><span class="sub" style="margin-top:6px">Jour à 12,4 t de volume. Un déficit trop marqué limite la récup'.</span></div></div>
+    </div>
+  </div>
+  <!-- Temps d'entraînement -->
+  <div class="mod">
+    <div class="name"><b>Temps d'entraînement</b><span>durée hebdo</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic"></span>Temps</div><span class="sub">cette semaine</span><span class="big sm">4 h 30</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic"></span>Temps d'entraînement</div><div class="row"><b>4 h 30</b><span>▲ 25 min vs S-1</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic"></span>Temps · 4 h 30</div><div class="bars"><i style="height:50%"></i><i style="height:0%"></i><i style="height:80%"></i><i style="height:30%"></i><i style="height:60%"></i><i style="height:0%"></i><i style="height:90%"></i></div></div></div>
+    </div>
+  </div>
+
+  <!-- ---------- HUB MUSCU ---------- -->
+  <div class="hub">🏋️ Muscu</div>
+  <div class="mod">
+    <div class="name"><b>Programmes</b><span>programme actif</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Programmes</div><span class="sub">actif</span><span class="big sm">Full body</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Programmes</div><div class="row"><b>Full body 8 sem.</b><span>8 semaines</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Programme actif</div><span class="big sm">Full body</span><span class="sub">8 semaines · 4 séances/sem.</span></div></div>
+    </div>
+  </div>
+  <div class="mod">
+    <div class="name"><b>Historique</b><span>dernières séances</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Historique</div><span class="sub">dernière</span><span class="big sm">12/07</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Historique</div><div class="row"><b>12/07</b><span>52 min</span></div><div class="row"><b>10/07</b><span>48 min</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Historique</div><div class="row"><b>12/07</b><span>52 min</span></div><div class="row"><b>10/07</b><span>48 min</span></div><div class="row"><b>08/07</b><span>61 min</span></div><div class="row"><b>06/07</b><span>44 min</span></div></div></div>
+    </div>
+  </div>
+  <div class="mod">
+    <div class="name"><b>Mon planning</b><span>7 prochains jours</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Planning</div><div class="dots7" style="margin:6px 0"><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i></div><span class="sub">Prochaine : Mar · Push</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Mon planning</div><div class="cal"><div class="d"><b>L</b>21</div><div class="d td"><b>M</b>22<div class="p"></div></div><div class="d"><b>M</b>23</div><div class="d"><b>J</b>24<div class="p"></div></div><div class="d"><b>V</b>25</div><div class="d"><b>S</b>26</div><div class="d"><b>D</b>27<div class="p"></div></div></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Mon planning</div><div class="cal"><div class="d"><b>L</b>21</div><div class="d td"><b>M</b>22<div class="p"></div></div><div class="d"><b>M</b>23</div><div class="d"><b>J</b>24<div class="p"></div></div><div class="d"><b>V</b>25</div><div class="d"><b>S</b>26</div><div class="d"><b>D</b>27<div class="p"></div></div></div><div class="row" style="margin-top:6px"><b>Mar · Push</b><span>Jeu · Pull</span></div></div></div>
+    </div>
+  </div>
+  <div class="mod">
+    <div class="name"><b>Progression</b><span>volume + tendance</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Progression</div><span class="sub">volume sem.</span><span class="big sm">12,4 t</span><span class="delta">▲ 8 %</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Progression</div><div class="row"><b>12,4 t</b><span>▲ 8 % vs S-1</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--strength)"></span>Progression · 12,4 t</div><div class="spark"></div></div></div>
+    </div>
+  </div>
+
+  <!-- ---------- HUB COURSE ---------- -->
+  <div class="hub run">🏃 Course</div>
+  <div class="mod">
+    <div class="name"><b>Historique</b><span>dernière course</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--run)"></span>Historique</div><span class="sub">dernière</span><span class="big sm">8,2 km</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--run)"></span>Historique</div><div class="row"><b>8,2 km · 44 min · 5:22/km</b><span>hier</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--run)"></span>Dernière course</div><span class="big sm">8,2 km</span><span class="sub">44 min · 5:22 /km</span><div class="spark"></div></div></div>
+    </div>
+  </div>
+  <div class="mod">
+    <div class="name"><b>Mes programmes</b><span>plan running actif</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--run)"></span>Programmes</div><span class="sub">actif</span><span class="big sm">10K</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--run)"></span>Mes programmes</div><div class="row"><b>Plan 10K · sem. 3</b><span>6 sem.</span></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--run)"></span>Programme actif</div><span class="big sm">Plan 10K</span><span class="sub">semaine 3 / 6 · prochaine : fractionné</span></div></div>
+    </div>
+  </div>
+  <div class="mod">
+    <div class="name"><b>Mon planning</b><span>7 prochains jours</span></div>
+    <div class="forms3">
+      <div class="formcell"><span class="lab">Petit carré</span><div class="w small"><div class="dl"><span class="ic" style="background:var(--run)"></span>Planning</div><div class="dots7" style="margin:6px 0"><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i></div><span class="sub">Prochaine : Mer · 6 km</span></div></div>
+      <div class="formcell"><span class="lab">Rectangle</span><div class="w wide"><div class="dl"><span class="ic" style="background:var(--run)"></span>Mon planning</div><div class="cal"><div class="d"><b>L</b>21</div><div class="d td"><b>M</b>22</div><div class="d"><b>M</b>23<div class="p" style="background:var(--run)"></div></div><div class="d"><b>J</b>24</div><div class="d"><b>V</b>25<div class="p" style="background:var(--run)"></div></div><div class="d"><b>S</b>26</div><div class="d"><b>D</b>27</div></div></div></div>
+      <div class="formcell"><span class="lab">Grand carré</span><div class="w large"><div class="dl"><span class="ic" style="background:var(--run)"></span>Mon planning</div><div class="cal"><div class="d"><b>L</b>21</div><div class="d td"><b>M</b>22</div><div class="d"><b>M</b>23<div class="p" style="background:var(--run)"></div></div><div class="d"><b>J</b>24</div><div class="d"><b>V</b>25<div class="p" style="background:var(--run)"></div></div><div class="d"><b>S</b>26</div><div class="d"><b>D</b>27</div></div><div class="row" style="margin-top:6px"><b>Mer · 6 km</b><span>Ven · fractionné</span></div></div></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>Décisions & implémentation</h3>
     <ul>
-      <li><b>3 formes</b> : <code>small</code> (½ largeur, ~carré), <code>wide</code> (pleine largeur, bas), <code>large</code> (pleine largeur, ~carré haut). Chaque widget adapte son contenu à sa forme.</li>
-      <li><b>Packing</b> déterministe dérivé de l'<b>ordre</b> : deux <code>small</code> consécutifs → même ligne ; <code>wide</code>/<code>large</code> → nouvelle ligne pleine largeur ; <code>small</code> isolé → colonne gauche seule.</li>
-      <li><b>Édition = 1 colonne</b>, drag <b>linéaire</b> (réutilise <code>SortableDashboard</code>) ; sélecteur de forme à <b>3 états</b> (cycle) ; œil pour masquer.</li>
-      <li><b>Carte d'action muscu/course épinglée</b> hors grille : non masquable, non redimensionnable.</li>
-      <li><b>3 dispositions indépendantes</b> stockées dans <code>user_settings.dashboard_layout</code> au format <code>{ screens:{ home, strength, running } }</code> — <b>sans migration SQL</b>, parseur rétro-compatible (ancien <code>{ widgets:[…] }</code> → <code>home</code>, <code>full→wide</code> / <code>compact→small</code>).</li>
-      <li><b>Filtrage piliers</b> conservé : un widget dont aucun pilier n'est actif est masqué (course masquée si running off).</li>
-      <li><b>À trancher sur cette maquette</b> : formes par défaut muscu/course (mix proposé ci-dessus) ; opportunité d'une forme <code>large</code> avec graphe pour Progression/Volume.</li>
+      <li><b>Drag & drop en grille</b> (remplace le tri 1 colonne) : appui long → fantôme suivant le doigt, <b>barre d'insertion</b>, dépôt libre. Deux petits carrés consécutifs = même ligne. Fondé sur <code>react-native-reanimated</code> + <code>gesture-handler</code> (hit-test des positions mesurées → index d'insertion, réordonnancement + re-pavage).</li>
+      <li><b>Contrôles d'édition en pastilles de coin</b> (œil masquer + <code>◻</code> forme) pour tenir sur un petit carré ; l'ancienne barre de contrôles disparaît.</li>
+      <li><b>3 formes par module</b> : <code>small</code> = 1 chiffre clé + mini-indicateur · <code>wide</code> = ligne riche · <code>large</code> = chiffre + visualisation (barres / courbe / calendrier / liste). Chaque module remplit sa forme.</li>
+      <li>Le modèle de données ne change pas : <b>ordre + forme</b> par hub, pavage 2 colonnes dérivé (sans migration).</li>
+      <li><b>À valider</b> avant code : l'interaction DnD (fantôme + barre d'insertion), l'emplacement des pastilles de coin, et le contenu des grands carrés (barres/courbe) module par module.</li>
     </ul>
-  </section>
-</div>
+  </div>
+</div></div>

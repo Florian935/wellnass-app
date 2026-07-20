@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { weightTrend, type WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import {
   useLatestWeight,
   useWeightEntries,
@@ -47,13 +47,15 @@ export function WeightCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   if (latestLoading || entriesLoading) return null;
 
-  // ── Variante compacte (US 7.11) : dernière pesée ───────────────────────────
+  // ── Forme petit carré : dernière pesée (remplit la case) ───────────────────
   if (size === 'small') {
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="scale-outline"
         title={t('home.weight.title')}
+        onPress={() => router.push('/nutrition-stats')}
         value={latest != null ? units.formatWeight(latest.weightKg) : t('home.weight.compactEmpty')}
+        valueMuted={latest == null}
       />
     );
   }
@@ -80,8 +82,8 @@ export function WeightCard({ size = 'wide' }: { size?: WidgetSize }) {
     trend === 'down' ? colors.success : trend === 'up' ? colors.danger : colors.textMuted;
   const trendArrow = trend === 'down' ? '▼' : trend === 'up' ? '▲' : '→';
 
-  return (
-    <DashboardCard icon="scale-outline" title={t('home.weight.title')}>
+  const body = (
+    <>
       {/* Valeur + tendance + lien */}
       <View style={styles.weightRow}>
         <View style={styles.weightVal}>
@@ -105,6 +107,25 @@ export function WeightCard({ size = 'wide' }: { size?: WidgetSize }) {
       <Text style={[styles.sub, { color: colors.textMuted }]}>
         {t('home.weight.sub')}
       </Text>
+    </>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell
+        icon="scale-outline"
+        title={t('home.weight.title')}
+        onPress={() => router.push('/nutrition-stats')}
+        showChevron
+      >
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="scale-outline" title={t('home.weight.title')}>
+      {body}
     </DashboardCard>
   );
 }

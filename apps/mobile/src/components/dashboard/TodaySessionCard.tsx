@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useTodaySession } from '@/data/repositories/dashboard-repository';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -38,7 +38,7 @@ export function TodaySessionCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   if (today.isLoading) return null;
 
-  // ── Variante compacte (US 7.11) : titre + nom séance / état ─────────────────
+  // ── Forme petit carré : nom séance / état (remplit la case) ────────────────
   if (size === 'small') {
     const value =
       today.state === 'active-workout'
@@ -47,8 +47,18 @@ export function TodaySessionCard({ size = 'wide' }: { size?: WidgetSize }) {
           ? today.session.name?.trim() ||
             t('programs.detail.sessionFallback', { index: today.session.orderIndex + 1 })
           : t('home.today.compactNone');
+    const onPress =
+      today.state === 'active-workout' || today.state === 'today-session'
+        ? () => router.push('/workout')
+        : () => router.push('/programs');
     return (
-      <DashboardCardCompact icon="calendar-outline" title={t('home.today.title')} value={value} />
+      <WidgetShell
+        icon="calendar-outline"
+        title={t('home.today.title')}
+        onPress={onPress}
+        value={value}
+        valueMuted={today.state === 'none'}
+      />
     );
   }
 

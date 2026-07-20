@@ -4,9 +4,9 @@
  * - **Affichage** : coule la disposition résolue en lignes de grille 2 colonnes via
  *   `packWidgets` (deux `small` consécutifs côte à côte ; `wide`/`large` pleine largeur ;
  *   `small` isolé → colonne gauche, droite vide). Les formes carrées imposent leur ratio.
- * - **Édition** : rend en **1 colonne** via `SortableDashboard` (drag linéaire) — le packing
- *   ne s'applique qu'à l'affichage (décision spec §2.3). Chaque widget porte le cadre pointillé
- *   + la barre de contrôles (œil / sélecteur de forme / poignée).
+ * - **Édition** : rend la **même grille 2 colonnes** avec **glisser-déposer 2D**
+ *   (`SortableWidgetGrid`) — appui long ~1 s, fantôme + barre d'insertion, dépôt libre.
+ *   Chaque cellule porte son cadre pointillé + ses pastilles de coin (œil / forme).
  *
  * Consomme `useScreenLayout(screen)` : chaque hub fournit seulement son `renderWidget`
  * (map `id → composant`) et l'état `editing`.
@@ -16,13 +16,12 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { packWidgets, type WidgetId, type WidgetScreen, type WidgetSize } from '@wellness/shared';
-import { DashboardWidgetRow } from '@/components/dashboard/DashboardWidgetRow';
-import { SortableDashboard } from '@/components/dashboard/SortableDashboard';
+import { SortableWidgetGrid } from '@/components/widgets/SortableWidgetGrid';
 import { useScreenLayout } from '@/data/repositories/widget-layout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-/** Espacement des lignes/cellules (doit correspondre au `gap` de `SortableDashboard`). */
+/** Espacement des lignes/cellules (doit correspondre au `gap` de la grille triable). */
 const SPACING = 14;
 /** Ratio largeur/hauteur du grand carré pleine largeur (pas un carré strict : trop haut sinon). */
 const LARGE_ASPECT = 1.35;
@@ -55,26 +54,16 @@ export function WidgetGrid({
     );
   }
 
-  // Édition : liste 1 colonne triable (pas de packing).
+  // Édition : grille 2 colonnes réordonnable par glisser-déposer (appui long ~1 s).
   if (editing) {
     return (
-      <SortableDashboard
+      <SortableWidgetGrid
         items={rendered}
+        renderWidget={renderWidget}
         onReorder={reorder}
+        onToggleVisible={toggleVisible}
+        onCycleSize={cycleSize}
         onDragActiveChange={onDragActiveChange}
-        handleAccessibilityLabel={t('home.customize.drag')}
-        renderItem={(w, handle) => (
-          <DashboardWidgetRow
-            editing
-            visible={w.visible}
-            size={w.size}
-            handle={handle}
-            onToggleVisible={() => toggleVisible(w.id)}
-            onCycleSize={() => cycleSize(w.id)}
-          >
-            {renderWidget(w.id, w.size)}
-          </DashboardWidgetRow>
-        )}
       />
     );
   }

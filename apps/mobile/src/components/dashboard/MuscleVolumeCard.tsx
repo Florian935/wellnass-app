@@ -20,7 +20,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { MuscleGroup, WidgetSize } from '@wellness/shared';
 import { DashboardCard } from '@/components/DashboardCard';
-import { DashboardCardCompact } from '@/components/dashboard/DashboardCardCompact';
+import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { MuscleVolumeBarChart } from '@/components/charts/MuscleVolumeBarChart';
 import { useMuscleVolumeThisWeek } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -34,13 +34,14 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   if (isLoading) return null;
 
-  // ── Variante compacte (US 7.11) : total kg semaine (pas de conversion) ─────
+  // ── Forme petit carré : total kg (pas de conversion), remplit la case ──────
   if (size === 'small') {
     const total = volumes.reduce((sum, v) => sum + v.volume, 0);
     return (
-      <DashboardCardCompact
+      <WidgetShell
         icon="barbell-outline"
         title={t('home.volumeWeek.title')}
+        onPress={() => router.push('/progress')}
         value={
           volumes.length === 0
             ? t('home.volumeWeek.compactEmpty')
@@ -48,6 +49,7 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
                 kg: new Intl.NumberFormat(i18n.language).format(Math.round(total)),
               })
         }
+        valueMuted={volumes.length === 0}
       />
     );
   }
@@ -70,8 +72,8 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
     value: v.volume,
   }));
 
-  return (
-    <DashboardCard icon="barbell-outline" title={t('home.volumeWeek.title')}>
+  const body = (
+    <>
       <MuscleVolumeBarChart data={chartData} unit="kg" />
       <View style={styles.linkRow}>
         <Pressable
@@ -84,6 +86,25 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
           </Text>
         </Pressable>
       </View>
+    </>
+  );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell
+        icon="barbell-outline"
+        title={t('home.volumeWeek.title')}
+        onPress={() => router.push('/progress')}
+        showChevron
+      >
+        {body}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <DashboardCard icon="barbell-outline" title={t('home.volumeWeek.title')}>
+      {body}
     </DashboardCard>
   );
 }

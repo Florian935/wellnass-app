@@ -273,7 +273,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
+*Dernière mise à jour : 20/07/2026 (**Widgets v2 — CODE LIVRÉ** : glisser-déposer 2D en grille (appui long
+~700 ms + fantôme + barre d'insertion + pastilles de coin), 3 formes remplissantes par module (9 widgets
+accueil + muscu/course), et **stats « semaine » → 7 jours glissants** partout (y c. tendances 8 sem.). Tout
+vert, aucune migration. **Reste : recette device.** — **Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
 roadmap 6.1/3.18/6.3/8.3 passés ❌, MUSC-F1 clos en conséquence, C3 perd « accès démo en séance »,
 [musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)
 mis à jour. — **US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
