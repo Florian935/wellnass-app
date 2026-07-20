@@ -4,7 +4,7 @@ Roadmap versionnée de référence, **adaptée aux arbitrages de cadrage du 04/0
 (voir [SYNTHESE-CADRAGE.md](../../SYNTHESE-CADRAGE.md) et les [ADR](../adr/)).
 Elle reprend la structure de la « Validation des Fonctionnalités » de Dams et applique les décisions actées (PowerSync, iOS reporté, monétisation inactive, bilingue FR+EN, gamification hors périmètre).
 
-Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, **tenu à jour à chaque livraison** — voir [`/commit`](../../.claude/commands/commit.md)) : ✅ Livré · 🟡 Partiel (socle présent, incomplet) · ⬜ À faire · ⏳ Reporté
+Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, **tenu à jour à chaque livraison** — voir [`/commit`](../../.claude/commands/commit.md)) : ✅ Livré · 🟡 Partiel (socle présent, incomplet) · ⬜ À faire · ⏳ Reporté · ❌ Abandonné (retiré du périmètre, décision produit tracée en Remarques)
 **Autonomie Claude** : 🟢 Full auto (Claude seul) · 🟡 Semi (validation humaine requise) · 🔴 Humain requis (décision, data externe, clé API…)
 
 > Les numéros (1.x compte, 2.x navigation/UX, 3.x muscu, 4.x alim, 5.x running, 6.x visualisation, 7.x dashboard, 8.x admin, 9.x technique) sont **thématiques** et stables — ils ne changent pas quand une fonctionnalité change de version. Les tâches ajoutées par les arbitrages portent un identifiant `9.x` explicite.
@@ -95,8 +95,8 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.11 | Onboarding — Récapitulatif | Résumé des choix + suggestion d'une première action. | Facile | 1h | 🟢 | ✅ | S'enrichit en V0.4 (TDEE). |
 | 1.12 | Modification du profil | Mise à jour des données utilisateur depuis les paramètres. | Facile | 2h | 🟢 | ✅ | Toute la config reste modifiable après onboarding. |
 | 3.13 | Bibliothèque d'exercices | Base fournie par l'app avec fiche complète par exercice. | Moyen | 4h | 🟡 | 🟡 | Liste + seed OK, mais `exercises.tsx` = simple picker, **pas de fiche complète**. Import par seed (V0.7). 🌐 fiches bilingues FR+EN. |
-| 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ⬜ | **Décision bloquante V0.2** : exercises-dataset ou ExerciseDB. `media_url` stocké mais **jamais rendu**. Voir [[Musculation]]. |
-| 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ⬜ | Dépend de 6.1. **Aucun affichage GIF.** |
+| 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ❌ | **Abandonné** (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée (sourcing + hébergement + import en masse). `media_url` reste stocké (colonne inoffensive, non retirée) mais ne sera **jamais rendu**. Voir [[Musculation]]. |
+| 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ❌ | **Abandonné** avec 6.1 (dont il dépendait). |
 | 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ⬜ | **Aucun composant schéma corporel.** |
 | 3.14 | Recherche d'exercices | Par nom, groupe musculaire ou matériel. | Facile | 2h | 🟢 | 🟡 | Recherche **par nom uniquement** (pas groupe ni matériel). |
 | 3.15 | Exercices favoris | Épingler les exercices préférés. | Facile | 1h | 🟢 | ✅ | `toggleFavorite` + tri favoris. |
@@ -120,7 +120,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 3.37 | Clôture automatique après 3h | Fermeture et sauvegarde automatiques. | Facile | 1h | 🟢 | ⬜ | **Aucune logique de clôture auto 3h.** |
 | 3.22 | Record personnel (1RM estimé) | Formule d'Epley : charge × (1 + reps/30). | Facile | 1h | 🟢 | ✅ | `shared/records.ts` `estimate1RM`. Motivation (arbitrage C). |
 | 2.3 | Écran actif pendant séance | Pas de mise en veille pendant un suivi actif. | Facile | 1h | 🟢 | ⬜ | `keepAwake` présent **uniquement** dans `run/active.tsx`, pas en muscu. |
-| 6.3 | Accès démo pendant la séance | Modal depuis l'écran de suivi, sans couper le chrono. | Facile | 1h | 🟢 | ⬜ | **Pas d'accès démo pendant la séance.** |
+| 6.3 | Accès démo pendant la séance | Modal depuis l'écran de suivi, sans couper le chrono. | Facile | 1h | 🟢 | ❌ | **Abandonné avec 6.1** (décision Florian/Damien, 20/07/2026) : plus de démo à afficher. Retiré du périmètre de l'US Refonte-C3. |
 
 ---
 
@@ -275,7 +275,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 8.1 | Interface web admin séparée | Back-office, sous-domaine dédié, comptes admin. | Moyen | 6h | 🟢 | ✅ | `apps/admin` (React+Vite), routes protégées. |
 | 8.9 | Système de rôles | super_admin / content_editor / moderator. | Moyen | 3h | 🟢 | ✅ | `RolesScreen` + migration `admin_user_roles`. |
 | 8.2 | Gestion exercices (CRUD) | Créer, modifier, archiver. Brouillon / publié. | Moyen | 5h | 🟢 | ✅ | `ExerciseEditScreen` (bilingue, draft/published). 🌐 champs FR+EN. |
-| 8.3 | Upload média exercice | Image ou GIF + import en masse depuis la base choisie. | Moyen | 3h | 🟢 | ⬜ | **Aucune trace** : pas de colonne image/gif, aucun bucket/Storage/upload. Lié à 6.1. |
+| 8.3 | Upload média exercice | Image ou GIF + import en masse depuis la base choisie. | Moyen | 3h | 🟢 | ❌ | **Abandonné avec 6.1** (décision Florian/Damien, 20/07/2026). Aucun bucket/Storage/upload à prévoir. |
 | 8.4 | Constructeur de programmes | Drag & drop pour composer des programmes. | Difficile | 8h | 🟢 | ✅ | `ProgramEditScreen` + `SortableList`. Sert à créer 3.1 et 5.2. |
 | 8.5 | Gestion base d'aliments | Créer, modifier, archiver. Validation des signalements. | Moyen | 4h | 🟢 | ✅ | `FoodEditScreen` + migration `admin_editorial_foods_rls`. |
 | 8.6 | Import aliments CSV | Import en masse via CSV formaté. | Moyen | 3h | 🟢 | ✅ | `FoodImportScreen` (papaparse) + `parseFoodCsv`. Import CIQUAL (+ EN). |
@@ -353,35 +353,37 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 |---|:---:|:---:|
 | ✅ Livré | 127 | ~71 % |
 | 🟡 Partiel | 12 | ~7 % |
-| ⬜ À faire | 39 | ~22 % |
+| ⬜ À faire | 35 | ~20 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
+| ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **179** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
-**Détail par version** (✅ / 🟡 / ⬜ / ⏳) :
+**Détail par version** (✅ / 🟡 / ⬜ / ⏳ / ❌) :
 
-| Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | État |
-|---|:---:|:---:|:---:|:---:|---|
-| V0.1 (17) | 16 | 0 | 1 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 13 | 5 | 14 | 0 | Cœur OK, **grosses finitions** (GIF, RPE, notes, pause…) |
-| V0.3 (21) | 14 | 2 | 5 | 0 | Quasi complet (progression auto/deload + push manquants) |
-| V0.4 (33) | 31 | 0 | 2 | 0 | Complet (2 notifs manquantes) |
-| V0.5 (33) | 25 | 3 | 5 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
-| V0.6 (19) | 19 | 0 | 0 | 0 | **100 % livré** |
-| V0.7 (10) | 8 | 0 | 1 | 1 | Complet sauf 8.3 (upload média) ; 8.7 reporté |
-| V0.8 (9) | 1 | 2 | 6 | 0 | 🔴 **Quasi vide — reste-à-faire clé du MVP1** |
-| V1.0 (1) | 0 | 0 | 1 | 0 | Publication Play Store (dépend de V0.8) |
-| V1.1 (4) | 0 | 0 | 4 | 0 | Post-lancement |
+| Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
+|---|:---:|:---:|:---:|:---:|:---:|---|
+| V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
+| V0.2 (32) | 13 | 5 | 11 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.3 (21) | 14 | 2 | 5 | 0 | 0 | Quasi complet (progression auto/deload + push manquants) |
+| V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
+| V0.5 (33) | 25 | 3 | 5 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
+| V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
+| V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
+| V0.8 (9) | 1 | 2 | 6 | 0 | 0 | 🔴 **Quasi vide — reste-à-faire clé du MVP1** |
+| V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
+| V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 
 - **~179 fonctionnalités** dans le périmètre de lancement.
 - **~477 h** de code brut, hors intégration, tests et itérations UX — prévoir une marge significative sur l'offline-first, le GPS et l'import de données.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
 
-Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Semi-auto ≈ 10 · 🔴 Humain requis ≈ 2 (9.13 PowerSync/dev build [livré], 6.1 GIF, 4.8 base d'aliments [livré]).
+Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Semi-auto ≈ 10 · 🔴 Humain requis ≈ 2 (9.13 PowerSync/dev build [livré], 4.8 base d'aliments [livré]).
 
 **Décisions bloquantes à prendre en amont de leur version** :
 - ~~avant **V0.1** → confirmer **PowerSync**~~ → **tranché & livré** (spike-001, ADR-001).
-- avant **V0.2** → source des GIF d'exercices (6.1) : exercises-dataset vs ExerciseDB — **toujours en attente** (6.1/3.18/8.3 dépendent de ce choix).
+- ~~avant **V0.2** → source des GIF d'exercices (6.1)~~ → **tranché : abandonné** (Florian/Damien, 20/07/2026) —
+  jugé trop complexe pour la valeur apportée ; 6.1/3.18/6.3/8.3 retirés du périmètre.
 - ~~avant **V0.4** → source de la base d'aliments (4.8)~~ → **tranché & livré** : CIQUAL + OpenFoodFacts.
 - ~~avant **V0.5** → fournisseur de cartes (5.17)~~ → **tranché : MapLibre + MapTiler** (ADR-006, 11/07/2026).
 - avant **V0.8** → clé OAuth Google, textes CGU / confidentialité (rédaction dès que possible, relecture juridique). **OAuth Apple n'est plus bloquant** (reporté avec iOS).

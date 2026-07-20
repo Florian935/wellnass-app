@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `dev` (doc) — Décision : GIF/vidéos de démo exercices abandonnés
+
+**Modifié**
+- [docs/roadmap/roadmap.md](docs/roadmap/roadmap.md) : nouveau statut **❌ Abandonné** ajouté à la légende ; items
+  **6.1** (GIF animé par exercice), **3.18** (affichage GIF fiche), **6.3** (accès démo pendant la séance) et
+  **8.3** (upload média admin) passés ❌ avec remarque. Récapitulatif (compteurs + détail par version + colonne ❌)
+  et décision bloquante « source des GIF » recalculés/résolus en conséquence. Autonomie Claude 🔴 ajustée (6.1 retiré).
+- [docs/specs/functional/musculation.md](docs/specs/functional/musculation.md) : §3.3 renommée « Démonstrations
+  visuelles (GIF/vidéo) — abandonné », contenu original conservé pour trace historique ; ligne « Démonstration »
+  retirée du tableau §3.1 ; mention d'accès démo en séance retirée de §3.2.
+- [docs/refonte-muscu/analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md) : point 10 —
+  « accès démo » barré, marqué abandonné, retiré du périmètre C3.
+- [TODO.md](TODO.md) : MUSC-F1 clos (❌ abandonné) ; nouveau MUSC-F1b isolant les muscles ciblés sur schéma SVG
+  (6.2, **sujet distinct**, reste ouvert) ; MUSC-F4 et la description de C3 (chantier refonte Muscu) perdent
+  « accès démo en séance ».
+
+**Technique / Notes**
+- Décision produit (Florian + Damien, échange du 19-20/07/2026), pas de code touché. Périmètre jugé trop complexe
+  (sourcing d'une base de GIF, hébergement, import en masse, upload admin) pour la valeur apportée.
+- `media_url` (colonne `exercises`) **reste en base**, inutilisée — nullable et inoffensive, aucune migration de
+  suppression jugée nécessaire. À rouvrir uniquement si le calcul valeur/effort change.
+- **6.2 (muscles ciblés sur schéma SVG) n'est PAS concerné** : c'est un schéma corporel statique, pas un média
+  animé — reste au backlog (MUSC-F1b).
+
 ### 20/07/2026 — `feature/refonte-muscu-c2` — US-C2 : saisie enrichie (CODE LIVRÉ, subagent-driven)
 
 **Ajouté**

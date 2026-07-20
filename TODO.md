@@ -273,7 +273,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
+*Dernière mise à jour : 20/07/2026 (**Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
+roadmap 6.1/3.18/6.3/8.3 passés ❌, MUSC-F1 clos en conséquence, C3 perd « accès démo en séance »,
+[musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)
+mis à jour. — **US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
 séance — types de séries (dont dropset/échec, superset→C3), **RPE/série** 1-10 masqué derrière « ＋ RPE »,
 **charge planifiée vs réalisée** (snapshot `planned_weight_kg`), résumé/historique hors échauffement. Migration
 cloud appliquée (`20260719230416`). 6 commits, typecheck/lint/765 tests verts, parité i18n, revue finale sans
@@ -381,16 +384,18 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 ### 🟠 P1 — Finitions muscu (V0.2 / V0.3)
 
-- [ ] **MUSC-F1 — Démonstration visuelle des exercices** (6.1 + 3.18 + 6.2 + 8.3) — 🔴 **décision bloquante
-  préalable** : source des GIF (exercises-dataset vs ExerciseDB). Puis : affichage GIF sur la fiche +
-  schéma muscles SVG + upload média côté admin. `media_url` déjà stocké mais jamais rendu.
+- [x] ~~**MUSC-F1 — Démonstration visuelle des exercices (GIF)** (6.1 + 3.18 + 8.3)~~ — **❌ Abandonné**
+  (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée. `media_url` reste stocké
+  (colonne inoffensive) mais ne sera jamais rendu. Voir [roadmap](docs/roadmap/roadmap.md) et
+  [musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné).
+- [ ] **MUSC-F1b — Muscles ciblés sur schéma SVG** (6.2) — sujet **distinct** (pas de média animé), reste ouvert.
 - [ ] **MUSC-F2 — Fiche exercice complète** (3.13 + 3.19 + 3.20) — remplacer le picker simple par une
   fiche détaillée (muscle principal **+ secondaires**, variantes/alternatives). ⚠️ 3.19/3.20 = **colonnes
   à ajouter** (migration).
 - [ ] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — filtre par **groupe musculaire** et
   **matériel** (aujourd'hui : nom seul).
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
-  + 2.3 écran actif en muscu + 6.3 accès démo pendant la séance).
+  + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +
   3.28 chrono de repos configurable par exercice + 3.32 remplacer un exercice en direct + 3.17 note
   persistante par exercice). ⚠️ Plusieurs modèles déjà prêts (`notes`, `rpe`, `set_type`) → surtout de l'UI.
@@ -468,7 +473,8 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
   - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
-    exercice, accès démo en séance, suggestion de progression (§6.5).
+    exercice, suggestion de progression (§6.5). ~~Accès démo en séance~~ **retiré du périmètre** (20/07/2026 :
+    GIF/vidéos de démo abandonnés, voir MUSC-F1 plus haut).
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
   réutilisable (spec §4.1). Corrige le problème 5.
 

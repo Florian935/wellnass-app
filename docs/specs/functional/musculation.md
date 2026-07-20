@@ -69,7 +69,6 @@ Un programme est un plan d'entraînement structuré sur plusieurs semaines. L'ut
 | Difficulté | 1 à 5 étoiles |
 | Type de mouvement | Poussée / Tirage / Squat / Charnière / Gainage / Isolation |
 | Mode de mesure | Charge × reps (défaut) / Durée en secondes (gainage) / Poids de corps avec lest (+ kg) ou assistance (− kg) optionnels |
-| Démonstration | GIF animé en boucle du mouvement correct (voir § 3.3) |
 | Consignes techniques | Description textuelle des points clés |
 | Variantes | Liste des exercices alternatifs (même groupe musculaire) |
 
@@ -79,20 +78,23 @@ Un programme est un plan d'entraînement structuré sur plusieurs semaines. L'ut
 - L'utilisateur peut **créer ses propres exercices** (champs libres + photo personnelle optionnelle).
 - **Recherche** par nom, muscle, matériel ; **filtrage**.
 - **Exercices favoris** (étoile).
-- La démonstration est accessible **pendant la séance** (modal depuis l'écran de suivi, **sans couper le chrono de repos**).
 - Contenu **bilingue FR + EN** (décision G).
 
-### 3.3 Source des démonstrations (GIF)
+### 3.3 Démonstrations visuelles (GIF/vidéo) — abandonné
 
-Bases open source candidates — décision à prendre avant import :
-
-| Solution | Exercices | Format | Licence |
-|---|---|---|---|
-| **exercises-dataset** | 433 + GIF + instructions FR/EN | JSON + GIF | Open source — [GitHub](https://github.com/hasaneyldrm/exercises-dataset) |
-| **free-exercise-db** | 800+ + images | JSON + images | Domaine public — [GitHub](https://github.com/yuhonas/free-exercise-db) |
-| **ExerciseDB API** | 11 000+ + GIF + muscles ciblés | API REST / self-host | Open source — [GitHub](https://github.com/ExerciseDB/exercisedb-api) |
-
-**Recommandation** : `exercises-dataset` (433 exercices avec instructions FR, suffisant pour démarrer — atout pour le bilingue FR/EN, décision G) ou `ExerciseDB` self-hosté pour le volume. Les GIF sont importés via l'admin et hébergés sur notre stockage (**pas de dépendance runtime** à un service externe). Les animations 3D (muscles en surbrillance) sont écartées (coût > gain).
+> **Décision Florian/Damien (20/07/2026) : abandonné.** L'idée d'un GIF/vidéo animé par exercice (sourcing
+> d'une base externe, import, hébergement, affichage sur la fiche, accès pendant la séance) est jugée **trop
+> complexe pour la valeur apportée** et **retirée du périmètre**. Concerne les items roadmap **6.1** (GIF par
+> exercice), **3.18** (affichage sur la fiche), **6.3** (accès démo pendant la séance) et **8.3** (upload média
+> admin) — tous marqués ❌ dans la [roadmap](../../roadmap/roadmap.md). La colonne `media_url` reste en base
+> (déjà présente, inoffensive) mais ne sera jamais renseignée ni rendue. Les **muscles ciblés sur schéma SVG**
+> (6.2) sont un sujet **distinct** (pas de média animé) et restent ouverts.
+>
+> Section conservée pour trace historique (contenu original ci-dessous, non retenu) :
+>
+> Bases open source candidates envisagées : `exercises-dataset` (433 exercices, GIF + instructions FR/EN),
+> `free-exercise-db` (800+, images), `ExerciseDB API` (11 000+, GIF + muscles ciblés). Import GIF via l'admin,
+> hébergement sur notre stockage. Options écartées avant même le choix d'une source.
 
 ### 3.4 Données de progression par exercice
 

@@ -51,7 +51,10 @@ Fichiers concernés : [workout.tsx](../../apps/mobile/src/app/workout.tsx),
 
 ### 🟡 Ajustements en direct & cycle de vie
 10. **[Flux] Manquent** (§4.3) : **réorganiser** les exercices, **remplacer** par une variante, **note par
-    exercice** persistante (§3.17), **accès démo** de l'exercice pendant la séance (§6.3).
+    exercice** persistante (§3.17). ~~Accès démo de l'exercice pendant la séance (§6.3)~~ — **abandonné**
+    (décision Florian/Damien, 20/07/2026 : GIF/vidéos de démo écartés, trop complexe pour la valeur apportée ;
+    voir [musculation.md §3.3](../specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)) ;
+    retiré du périmètre C3.
 11. **[Flux] Pas de « Pause » explicite ni de clôture auto à 3 h** (§4.4/§8). *(Nuance : quitter l'app laisse
     la séance `active` → réapparaît en « Reprendre » ; reprise de facto OK.)*
 
