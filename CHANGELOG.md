@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — fix crash : appui long sur un widget (worklet)
+
+> Crash device reproduit puis corrigé (logcat : `[Worklets] Tried to synchronously call a Remote
+> Function`). Rebuild APK release + réinstall sur appareil : OK. typecheck + lint verts.
+
+**Corrigé**
+- **Crash à l'appui long sur un module** en édition ([SortableWidgetGrid.tsx](apps/mobile/src/components/widgets/SortableWidgetGrid.tsx)) :
+  les callbacks du geste `Pan` sont des **worklets** (thread UI) ; ils appelaient des fonctions JS
+  (`toLocalX`/`toLocalY`) de façon synchrone → `Tried to synchronously call a Remote Function`. Désormais
+  le worklet ne passe que des **primitives brutes** (coordonnées absolues) via `runOnJS` ; la conversion
+  absolu → repère conteneur se fait **côté JS** dans `onUpdate`/`onEnd` du parent.
+
 ### 20/07/2026 — `dev` (doc) — Décision : GIF/vidéos de démo exercices abandonnés
 
 **Modifié**

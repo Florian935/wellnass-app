@@ -120,9 +120,23 @@ export function SortableWidgetGrid({
     [freezeRects, onDragActiveChange],
   );
 
+  // Position/mesure du conteneur pour convertir le doigt (absolu → repère local). Déclaré
+  // avant les callbacks qui l'utilisent.
+  const containerOrigin = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerRef = useRef<View>(null);
+  const onContainerLayout = useCallback(() => {
+    containerRef.current?.measureInWindow((x, y) => {
+      containerOrigin.current = { x, y };
+    });
+  }, []);
+
+  // NB : ces callbacks tournent sur le thread JS (appelés via `runOnJS` depuis le worklet du
+  // geste). La conversion absolu → local se fait ICI, jamais dans le worklet (sinon crash
+  // « Tried to synchronously call a Remote Function »).
   const updateTarget = useCallback(
-    (id: WidgetId, px: number, py: number) => {
-      setTargetIndex(computeIndex(px, py, id));
+    (id: WidgetId, absX: number, absY: number) => {
+      const { x, y } = containerOrigin.current;
+      setTargetIndex(computeIndex(absX - x, absY - y, id));
     },
     [computeIndex],
   );
@@ -134,8 +148,9 @@ export function SortableWidgetGrid({
   }, [onDragActiveChange]);
 
   const end = useCallback(
-    (id: WidgetId, px: number, py: number) => {
-      const to = computeIndex(px, py, id);
+    (id: WidgetId, absX: number, absY: number) => {
+      const { x, y } = containerOrigin.current;
+      const to = computeIndex(absX - x, absY - y, id);
       const from = items.findIndex((w) => w.id === id);
       // `to` est l'index d'insertion en excluant l'élément tiré : si on insère après sa
       // position d'origine, l'indice cible dans le tableau final reste `to` (moveWidget borne).
@@ -143,15 +158,6 @@ export function SortableWidgetGrid({
     },
     [computeIndex, items, onReorder],
   );
-
-  // Position/mesure du conteneur pour convertir le doigt (absolu) en repère local.
-  const containerOrigin = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const containerRef = useRef<View>(null);
-  const onContainerLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x, y) => {
-      containerOrigin.current = { x, y };
-    });
-  }, []);
 
   // Barre d'insertion : géométrie dérivée de l'index cible et des rectangles figés.
   const insertBar = useMemo(() => {
@@ -184,7 +190,6 @@ export function SortableWidgetGrid({
               full={row.full}
               rowIndex={rowIndex}
               isActive={activeId === cell.id}
-              origin={containerOrigin}
               onMeasure={setCellGeom}
               onBegin={begin}
               onUpdate={updateTarget}
@@ -223,7 +228,6 @@ function Cell({
   full,
   rowIndex,
   isActive,
-  origin,
   onMeasure,
   onBegin,
   onUpdate,
@@ -237,11 +241,11 @@ function Cell({
   full: boolean;
   rowIndex: number;
   isActive: boolean;
-  origin: React.RefObject<{ x: number; y: number }>;
   onMeasure: (id: string, left: number, width: number, row: number) => void;
   onBegin: (id: WidgetId) => void;
-  onUpdate: (id: WidgetId, px: number, py: number) => void;
-  onEnd: (id: WidgetId, px: number, py: number) => void;
+  /** Reçoit les coordonnées **absolues** (page) du doigt ; conversion en local côté parent. */
+  onUpdate: (id: WidgetId, absX: number, absY: number) => void;
+  onEnd: (id: WidgetId, absX: number, absY: number) => void;
   onSettle: () => void;
   onToggleVisible: (id: WidgetId) => void;
   onCycleSize: (id: WidgetId) => void;
@@ -261,10 +265,10 @@ function Cell({
     [entry.id, rowIndex, onMeasure],
   );
 
-  // Convertit un point absolu (page) en repère conteneur via l'origine mesurée.
-  const toLocalX = (absX: number) => absX - origin.current.x;
-  const toLocalY = (absY: number) => absY - origin.current.y;
-
+  // IMPORTANT : les callbacks du geste sont des *worklets* (thread UI). On n'y appelle QUE
+  // des shared values et `runOnJS` avec des primitives brutes — jamais une fonction JS
+  // synchrone (sinon crash « Tried to synchronously call a Remote Function »). La conversion
+  // absolu → repère conteneur est faite côté JS dans `onUpdate`/`onEnd` (parent).
   const pan = Gesture.Pan()
     .activateAfterLongPress(LONG_PRESS_MS)
     .onStart(() => {
@@ -274,10 +278,10 @@ function Cell({
     .onUpdate((e) => {
       tx.value = e.translationX;
       ty.value = e.translationY;
-      runOnJS(onUpdate)(entry.id, toLocalX(e.absoluteX), toLocalY(e.absoluteY));
+      runOnJS(onUpdate)(entry.id, e.absoluteX, e.absoluteY);
     })
     .onEnd((e) => {
-      runOnJS(onEnd)(entry.id, toLocalX(e.absoluteX), toLocalY(e.absoluteY));
+      runOnJS(onEnd)(entry.id, e.absoluteX, e.absoluteY);
     })
     .onFinalize(() => {
       dragging.value = false;
