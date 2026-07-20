@@ -125,3 +125,83 @@ export function computeVolume(
     return total + reps * weightKg;
   }, 0);
 }
+
+export type ReorderOperation =
+  | { type: 'swap'; exerciseId: string; direction: 'up' | 'down' }
+  | { type: 'toEnd'; exerciseId: string };
+
+/**
+ * Calcule le nouvel ordre des exercices d'une séance après une opération de
+ * réorganisation (§2.1/§4.3 US Refonte-C3). Ne réordonne QUE les exercices
+ * `done: false` entre eux ; les exercices `done: true` gardent leur position
+ * absolue (index dans le tableau retourné). Fonction pure : ne fait aucune
+ * lecture/écriture, le repository se charge de dériver l'entrée et d'écrire
+ * le résultat (renumérotation complète des `order_index`, voir workout-repository.ts).
+ */
+export function computeReorderedExerciseOrder(
+  exercises: ReadonlyArray<{ exerciseId: string; done: boolean }>,
+  operation: ReorderOperation,
+): string[] {
+  const remaining = exercises.filter((e) => !e.done).map((e) => e.exerciseId);
+
+  if (operation.type === 'swap') {
+    const index = remaining.indexOf(operation.exerciseId);
+    if (index === -1) return exercises.map((e) => e.exerciseId);
+    const target = operation.direction === 'up' ? index - 1 : index + 1;
+    if (target < 0 || target >= remaining.length) return exercises.map((e) => e.exerciseId);
+    [remaining[index], remaining[target]] = [remaining[target]!, remaining[index]!];
+  } else {
+    const index = remaining.indexOf(operation.exerciseId);
+    if (index !== -1) {
+      remaining.splice(index, 1);
+      remaining.push(operation.exerciseId);
+    }
+  }
+
+  let cursor = 0;
+  return exercises.map((e) => (e.done ? e.exerciseId : remaining[cursor++] ?? e.exerciseId));
+}
+
+export type ProgressionSuggestion =
+  | { kind: 'weightOrReps'; weightKg: number; reps: number }
+  | { kind: 'reps'; reps: number }
+  | { kind: 'duration'; durationSeconds: number }
+  | null;
+
+/**
+ * Règle de suggestion de progression discrète (§2.4/§3 US Refonte-C3), RPE-aware.
+ * `lastSets` = séries qualifiantes (non-warmup) de la dernière séance terminée où
+ * l'exercice apparaît — sert de garde-fou (échec / RPE élevé → aucune suggestion).
+ * `referenceSet` = la série de la dernière fois au même rang que la série en cours
+ * (peut être absente) — sert de base aux valeurs suggérées.
+ */
+export function computeProgressionSuggestion(
+  lastSets: ReadonlyArray<{ setType: string; rpe: number | null; done: boolean }>,
+  referenceSet:
+    | { setType: string; reps: number | null; weightKg: number | null; durationSeconds: number | null }
+    | undefined,
+  opts: { weightIncrementKg: number; durationIncrementSeconds: number },
+): ProgressionSuggestion {
+  const qualifying = lastSets.filter((s) => s.done);
+  if (qualifying.length === 0 || !referenceSet) return null;
+  if (qualifying.some((s) => s.setType === 'failure')) return null;
+
+  const rpeValues = qualifying.map((s) => s.rpe).filter((r): r is number => r != null);
+  const maxRpe = rpeValues.length > 0 ? Math.max(...rpeValues) : null;
+  if (maxRpe != null && maxRpe >= 8) return null;
+
+  if (referenceSet.setType === 'duration') {
+    if (referenceSet.durationSeconds == null) return null;
+    return { kind: 'duration', durationSeconds: referenceSet.durationSeconds + opts.durationIncrementSeconds };
+  }
+  if (referenceSet.weightKg == null) {
+    if (referenceSet.reps == null) return null;
+    return { kind: 'reps', reps: referenceSet.reps + 1 };
+  }
+  if (referenceSet.reps == null) return null;
+  return {
+    kind: 'weightOrReps',
+    weightKg: referenceSet.weightKg + opts.weightIncrementKg,
+    reps: referenceSet.reps + 1,
+  };
+}

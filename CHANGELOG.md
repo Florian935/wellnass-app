@@ -95,6 +95,110 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
   le worklet ne passe que des **primitives brutes** (coordonnées absolues) via `runOnJS` ; la conversion
   absolu → repère conteneur se fait **côté JS** dans `onUpdate`/`onEnd` du parent.
 
+### 20/07/2026 — `feature/refonte-muscu-c3` — Recette : superset repensé (lien explicite, choix libre)
+
+**Ajouté**
+- **Table `workout_superset_pairs`** (migration `20260720200254`) : liaison superset explicite par séance
+  (exercise_id_a ↔ exercise_id_b), RLS utilisateur, soft delete. Ajoutée au schéma PowerSync **et** aux sync
+  rules (bucket `user_data`) dans le même lot.
+- **`SupersetPickerModal`** ([SupersetPickerModal.tsx](apps/mobile/src/components/workout/SupersetPickerModal.tsx)) :
+  dialogue listant les autres exercices de la séance (non terminés, non déjà appariés) pour choisir librement
+  le partenaire — plus de contrainte d'adjacence.
+- Repository : `useSupersetPairs` (map bidirectionnelle), `linkSupersetPair` (un exercice = un seul partenaire,
+  rompt toute paire existante avant d'en créer une), `unlinkSupersetPair`.
+
+**Modifié**
+- **Mécanisme superset entièrement revu** (2 vagues de recette) : d'abord une action nommée « Lier avec {X} »
+  mais toujours limitée à un exercice **adjacent** (jugé « pas intuitif »), puis **lien explicite** choisi
+  librement dans un dialogue, valable pour **toute la séance**. `workout.tsx` cherche désormais le partenaire
+  via la table (`findSupersetPartnerSet`), plus par adjacence. Le chip « Superset » du sélecteur de type est
+  retiré (remplacé par l'UI dédiée sur la carte focus). `ExerciseList` affiche « 🔗 Superset avec {nom} » par
+  exercice lié.
+- i18n FR/EN : `workout.superset.{link,linked,orphaned,remove,pickerTitle,pickerEmpty}` (parité vérifiée).
+
+**Technique / Notes**
+- Migration cloud appliquée (go Florian). typecheck/lint verts, 778 tests verts, parité i18n 0/0.
+- **Limite connue** (hors demande initiale, notée) : un `exercise_plan` marqué `superset` côté admin ne crée
+  plus de paire automatique au démarrage d'une séance planifiée — seule la liaison en direct (dialogue)
+  fonctionne. `set_type='superset'` reste dans l'enum mais n'est plus le mécanisme de liaison.
+- **Rappel action manuelle** : les sync rules PowerSync (2 tables C3 : `exercise_notes` + `workout_superset_pairs`)
+  doivent être **déployées dans le dashboard PowerSync** avant recette multi-appareils.
+
+### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : ajustements en direct (CODE LIVRÉ, subagent-driven)
+
+**Ajouté**
+- **Réorganiser les exercices restants** : flèches ↑/↓ + « Plus tard » (machine prise), limité aux exercices
+  non entièrement validés ; les exercices terminés gardent leur position absolue
+  ([ExerciseList.tsx](apps/mobile/src/components/workout/ExerciseList.tsx)).
+- **Superset** : liaison positionnelle (2 exercices adjacents, même rang, tous deux `superset`) — la validation
+  de la 1ʳᵉ série du couple bascule directement sur la série jumelle **sans repos** ; la 2ᵉ déclenche le repos
+  normalement ([workout.tsx](apps/mobile/src/app/workout.tsx)). Chip réintégré dans le sélecteur de type.
+- **Remplacer un exercice en direct** : réutilise le picker existant (`exercises.tsx`), qui exclut désormais les
+  exercices déjà présents dans la séance ; seules les séries non validées basculent.
+- **Note persistante par exercice** : nouvelle table `exercise_notes` (migration), éditable sur la carte focus,
+  visible en lecture dans la liste.
+- **Suggestion de progression** (RPE-aware) : aucune suggestion si la dernière fois comportait une série
+  `failure` ou un RPE ≥ 8 ; adaptée au type (charge+reps / reps seules / durée).
+- **Migration cloud** appliquée (`20260720121317`) : table `exercise_notes`.
+
+**Modifié**
+- `computeReorderedExerciseOrder`/`computeProgressionSuggestion` (fonctions pures, testées Vitest) ajoutées à
+  [workout.ts](packages/shared/src/workout.ts) — réorganisation (renumérotation complète de l'`order_index`,
+  correcte même après un `addSet` intercalaire) et règle de suggestion.
+- `useLastPerformance` étendu (`setType`, `rpe`, `durationSeconds`) pour nourrir la suggestion.
+- [TODO.md](TODO.md) : **C3** passée en `[~]` (code livré, reste recette + relecture Damien).
+
+**Corrigé (revue finale)**
+- **Bug bascule superset** : la bascule ciblait l'exercice partenaire mais retombait sur sa 1ʳᵉ série non
+  validée (ex. échauffement) au lieu de la série jumelle au même rang. `focusOverride` porte désormais un rang
+  optionnel — corrigé et retracé à la main.
+- **🔴 Sync rules PowerSync** : la nouvelle table `exercise_notes` était absente de
+  [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) — sans cette ligne, une note
+  n'aurait pas survécu à une resynchronisation complète (changement d'appareil, réinstallation). **Action
+  manuelle requise** : coller le fichier mis à jour dans le dashboard PowerSync (Settings → Sync Rules) puis
+  Deploy — non automatisable depuis le CLI, à faire par Florian/Damien avant la recette multi-appareils.
+
+**Technique / Notes**
+- 8 commits (cadrage + migration + shared + repository + superset + UI + câblage + correctifs de revue).
+  typecheck/lint verts, **778 tests** shared verts, parité i18n 0/0.
+- **Revue finale** (subagent) : 1 bloquant corrigé (sync rules), 1 important corrigé (bascule superset). 4
+  points mineurs/nits documentés comme limites connues acceptées (course multi-appareils sur l'upsert de note ;
+  contiguïté cosmétique après remplacement, auto-corrigée au prochain réordonnancement ; interaction dé-validation
+  manuelle + superset en cours, cas marginal ; fenêtre transitoire de chargement du picker).
+- **Reste** : recette device (Florian, **après déploiement des sync rules**) + relecture Damien. Chantier
+  refonte Muscu (US-A/B/C1/C2/C3) ainsi complet côté implémentation.
+
+### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : spec + plan + maquette (ajustements en direct)
+
+**Ajouté**
+- **Spec fonctionnelle US-C3** ([refonte-muscu-c3-ajustements-live.md](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md)) :
+  réorganiser les exercices restants + « Plus tard » (machine prise), **superset** (liaison positionnelle, repos
+  différé après la paire), remplacer un exercice (picker existant filtré), **note persistante par exercice**
+  (migration `exercise_notes`), **suggestion de progression** RPE-aware. Accès démo explicitement exclu
+  (abandonné). Validée Florian.
+- **Plan d'implémentation US-C3** ([refonte-muscu-c3-ajustements-live.md](docs/plans/refonte-muscu-c3-ajustements-live.md)) :
+  13 tâches. Deux algorithmes à risque extraits en fonctions pures testables Vitest dans `packages/shared`
+  (`computeReorderedExerciseOrder`, `computeProgressionSuggestion`). Validé Florian.
+- **Maquette US-C3** ([refonte-muscu-c3.html](design/refonte-muscu-c3/refonte-muscu-c3.html)) : 4 écrans (note +
+  suggestion sur la carte focus, liste avec réorganisation/remplacement, superset bascule sans repos, superset
+  repos après la paire).
+
+**Modifié**
+- [TODO.md](TODO.md) : **C3** passée en `[~]` (spec/plan/maquette validés, implémentation lancée) ; date de MàJ.
+
+**Technique / Notes**
+- **Décisions de cadrage** : remplacement via le picker existant (pas de système de variantes) ; réorganiser +
+  « machine prise » = un seul mécanisme (flèches ↑/↓, patron `moveEntry` nutrition) ; superset = liaison
+  positionnelle sans nouvelle colonne ; suggestion de progression RPE-aware (pas de suggestion si `failure` ou
+  RPE ≥ 8 la dernière fois).
+- **Relectures intégrées** — spec : 3 bugs réels (algorithme de réorganisation supposait des blocs `order_index`
+  contigus par exercice, faux dès `addSet` → renumérotation complète ; remplacement par un exercice déjà présent
+  aurait fusionné deux groupes → exclu du picker ; colonne `note` `NOT NULL` incohérente avec l'API → rendue
+  nullable). Plan : garde `active` à préserver dans `exercises.tsx`, annotation de type explicite de
+  `useLastPerformance` à mettre à jour, dépendance Task 8→7 inutile retirée.
+- **🔴 Migration cloud** (Task 1) à pousser sur **go explicite** : nouvelle table `exercise_notes`.
+- Aucun code applicatif dans ce commit (livrables de cadrage uniquement).
+
 ### 20/07/2026 — `dev` (doc) — Décision : GIF/vidéos de démo exercices abandonnés
 
 **Modifié**

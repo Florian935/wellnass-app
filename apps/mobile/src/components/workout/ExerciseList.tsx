@@ -8,8 +8,8 @@ import type { Palette } from '@/theme/colors';
 import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
 
-/** Types de série portant un badge dans la liste (`normal`/`superset` n'en ont pas). */
-const BADGE_TYPES: SetType[] = ['warmup', 'dropset', 'failure', 'duration', 'bodyweight'];
+/** Types de série portant un badge dans la liste (`normal` n'en a pas). */
+const BADGE_TYPES: SetType[] = ['warmup', 'dropset', 'failure', 'duration', 'bodyweight', 'superset'];
 
 type ExerciseListProps = {
   entries: WorkoutEntry[];
@@ -21,6 +21,24 @@ type ExerciseListProps = {
   onRemoveSet: (setId: string) => void;
   /** Ajoute une série pré-remplie à la fin de l'exercice. */
   onAddSet: (exerciseId: string) => void;
+  /**
+   * Réorganise les exercices restants (C3, ↑/↓). Optionnelle : tant que
+   * `workout.tsx` (Task 11, hors périmètre C3-Task10) n'appelle pas encore
+   * `reorderExercise`, les actions restent masquées (voir `!allDone` ci-dessous).
+   */
+  onReorder?: (exerciseId: string, direction: 'up' | 'down') => void;
+  /** Envoie l'exercice en fin des restants (« Plus tard », machine prise). */
+  onSendLater?: (exerciseId: string) => void;
+  /** Ouvre le picker de remplacement pour cet exercice. */
+  onReplace?: (exerciseId: string) => void;
+  /** Note persistante par exercice (map exerciseId → note), affichée en lecture. */
+  exerciseNotes?: Record<string, string | null>;
+  /**
+   * Paires superset de la séance (C3, lien explicite) — map bidirectionnelle
+   * `exerciseId → exerciseId du partenaire`. Sert à afficher la liaison dans
+   * la liste (visible même replié), résolue via `entries` pour le nom.
+   */
+  supersetPairs?: Record<string, string>;
   colors: Palette;
 };
 
@@ -56,10 +74,19 @@ export function ExerciseList({
   onToggleSetDone,
   onRemoveSet,
   onAddSet,
+  onReorder,
+  onSendLater,
+  onReplace,
+  exerciseNotes,
+  supersetPairs,
   colors,
 }: ExerciseListProps) {
   const { t } = useTranslation();
   const units = useUnits();
+  // Les actions de réorganisation (flèches, « Plus tard », « Remplacer ») ne sont
+  // câblées qu'à partir de Task 11 (workout.tsx) : tant que le parent ne les
+  // fournit pas, on les masque plutôt que d'afficher des boutons inertes.
+  const actionsWired = Boolean(onReorder && onSendLater && onReplace);
   // Dépli par défaut = exercice courant ; un tap sur l'en-tête pose une
   // dérogation explicite (déplié/replié), sans effet ni resynchronisation :
   // quand le focus change, le nouvel exercice courant retombe sur le défaut
@@ -81,6 +108,11 @@ export function ExerciseList({
         const allDone = total > 0 && doneCount === total;
         const isCurrent = entry.exerciseId === currentExerciseId;
         const isExpanded = isExpandedFor(entry.exerciseId);
+        const exerciseNote = exerciseNotes?.[entry.exerciseId];
+        const partnerExerciseId = supersetPairs?.[entry.exerciseId];
+        const partnerName = partnerExerciseId
+          ? entries.find((e) => e.exerciseId === partnerExerciseId)?.exerciseName
+          : undefined;
 
         return (
           <View
@@ -117,6 +149,74 @@ export function ExerciseList({
                 />
               </View>
             </Pressable>
+
+            {/* Note d'exercice (C3) : lecture seule, visible même replié. */}
+            {exerciseNote ? (
+              <Text numberOfLines={1} style={[styles.note, { color: colors.textMuted }]}>
+                {`📝 ${exerciseNote}`}
+              </Text>
+            ) : null}
+
+            {/* Liaison superset (C3, lien explicite) : visible même replié. */}
+            {partnerName ? (
+              <Text numberOfLines={1} style={[styles.supersetTag, { color: colors.accent }]}>
+                {`🔗 ${t('workout.superset.linked', { name: partnerName })}`}
+              </Text>
+            ) : null}
+
+            {/* Réorganiser / Plus tard / Remplacer (C3) : visibles même repliées,
+                seulement tant que l'exercice n'est pas entièrement validé — un
+                exercice terminé garde sa position et n'affiche aucune action. */}
+            {!allDone && actionsWired ? (
+              <View style={[styles.actions, { borderTopColor: colors.border }]}>
+                <View style={styles.arrows}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('workout.reorder.up')}
+                    hitSlop={6}
+                    onPress={() => onReorder?.(entry.exerciseId, 'up')}
+                    style={({ pressed }) => [
+                      styles.arrowBtn,
+                      { backgroundColor: colors.surfaceAlt },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Ionicons name="chevron-up" size={14} color={colors.accent} />
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('workout.reorder.down')}
+                    hitSlop={6}
+                    onPress={() => onReorder?.(entry.exerciseId, 'down')}
+                    style={({ pressed }) => [
+                      styles.arrowBtn,
+                      { backgroundColor: colors.surfaceAlt },
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Ionicons name="chevron-down" size={14} color={colors.accent} />
+                  </Pressable>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => onSendLater?.(entry.exerciseId)}
+                  style={({ pressed }) => [
+                    styles.actBtn,
+                    { backgroundColor: colors.surfaceAlt },
+                    pressed && styles.pressed,
+                  ]}
+                >
+                  <Text style={[styles.actBtnText, { color: colors.accent }]}>{t('workout.later')}</Text>
+                </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => onReplace?.(entry.exerciseId)}
+                  style={({ pressed }) => [styles.actBtnGhost, { borderColor: colors.border }, pressed && styles.pressed]}
+                >
+                  <Text style={[styles.actBtnGhostText, { color: colors.textMuted }]}>{t('workout.replace')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
 
             {isExpanded ? (
               <View style={styles.sets}>
@@ -199,6 +299,36 @@ const styles = StyleSheet.create({
   name: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 15 },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   count: { fontFamily: fontFamily.monoBold, fontSize: 14 },
+  note: {
+    fontFamily: fontFamily.body,
+    fontStyle: 'italic',
+    fontSize: 11,
+    paddingHorizontal: 16,
+    marginTop: -6,
+    marginBottom: 6,
+  },
+  supersetTag: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 11,
+    paddingHorizontal: 16,
+    marginTop: -6,
+    marginBottom: 6,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 9,
+    borderTopWidth: 1,
+  },
+  arrows: { flexDirection: 'column', gap: 2 },
+  arrowBtn: { paddingHorizontal: 6, paddingVertical: 1, borderRadius: 5, alignItems: 'center' },
+  actBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  actBtnText: { fontFamily: fontFamily.bodyBold, fontSize: 11.5 },
+  actBtnGhost: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: 1 },
+  actBtnGhostText: { fontFamily: fontFamily.bodyBold, fontSize: 11.5 },
   sets: { paddingHorizontal: 16, paddingBottom: 12, gap: 8 },
   setRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   setLabel: { fontFamily: fontFamily.body, fontSize: 13, width: 64 },

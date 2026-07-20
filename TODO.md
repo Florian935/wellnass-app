@@ -273,10 +273,21 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**Widgets v2 — CODE LIVRÉ** : glisser-déposer 2D en grille (appui long
-~700 ms + fantôme + barre d'insertion + pastilles de coin), 3 formes remplissantes par module (9 widgets
-accueil + muscu/course), et **stats « semaine » → 7 jours glissants** partout (y c. tendances 8 sem.). Tout
-vert, aucune migration. **Reste : recette device.** — **Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
+*Dernière mise à jour : 21/07/2026 (**US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
+(A/B/C1/C2/C3 tous recettés ; reste relecture Damien sur l'ensemble). Superset v2 (lien explicite, dialogue de
+choix libre, `workout_superset_pairs`) validé. Merge C3 → `dev`. — **US-C3 — recette : superset repensé (v2,
+lien explicite)** : suite au retour Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le
+superset passe d'une liaison positionnelle (adjacence) à un **lien explicite** — nouvelle table
+`workout_superset_pairs` (migration + sync rules appliquées), bouton « Lier en superset » → **dialogue de
+choix** parmi tous les exercices de la séance, valable toute la séance. Nouveau composant `SupersetPickerModal`.
+typecheck/lint/778 tests verts. — **US-C3 — CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
+machine prise (↑/↓ + « Plus tard »), **superset**, remplacer un exercice (picker filtré), **note persistante par
+exercice** (migration `exercise_notes` appliquée), **suggestion de progression** RPE-aware. Chantier refonte
+Muscu (A/B/C1/C2/C3) complet côté implémentation ; reste relecture Damien sur l'ensemble. — **Widgets v2 — CODE
+LIVRÉ** : glisser-déposer 2D en grille (appui long ~700 ms + fantôme + barre d'insertion + pastilles de coin),
+3 formes remplissantes par module (9 widgets accueil + muscu/course), et **stats « semaine » → 7 jours
+glissants** partout (y c. tendances 8 sem.). Tout vert, aucune migration. **Reste : recette device.** —
+**Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —
 roadmap 6.1/3.18/6.3/8.3 passés ❌, MUSC-F1 clos en conséquence, C3 perd « accès démo en séance »,
 [musculation.md §3.3](docs/specs/functional/musculation.md#33-démonstrations-visuelles-gifvidéo--abandonné)
 mis à jour. — **US-C2 — CODE LIVRÉ (subagent-driven)** : saisie enrichie de l'écran de
@@ -452,8 +463,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   Florian ([spec](docs/specs/functional/us/refonte-muscu-b-seance-du-jour-hub.md)). Hook partagé `useTodaySession`
   (occurrence réelle du jour, démarrage lié) + hub 3 états + coche « faite » + réalignement du widget dashboard 7.4.
   **Aucune migration.** **Reste : relecture Damien.**
-- [~] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — corrige le problème 4.
-  **Absorbe MUSC-F4 / MUSC-F5 / MUSC-F6**. 📋 Analyse figée (22 points) :
+- [x] **US-C — Refonte du flux de l'écran de séance en cours** *(le plus gros)* — **C1 + C2 + C3 tous livrés &
+  recette validée (Florian). Reste relecture Damien.** Corrige le problème 4. **Absorbe MUSC-F4 / MUSC-F5 /
+  MUSC-F6**. 📋 Analyse figée (22 points) :
   [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md). **Découpée en 3 sous-US** :
   - [x] **C1 — Cœur : flux guidé + garde-fous** — **CODE LIVRÉ & RECETTE VALIDÉE (Florian, 19/07/2026) ✅**
     (subagent-driven ; spec ✅ + plan ✅ + maquette ✅ ; revue globale sans bloquant). Carte série en cours
@@ -475,9 +487,30 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     Idée notée (IDEAS) : RIR en alternative au RPE.
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
-  - [ ] **C3 — Ajustements live** — réorganiser, machine prise (sauter/revenir), remplacer par variante, note par
-    exercice, suggestion de progression (§6.5). ~~Accès démo en séance~~ **retiré du périmètre** (20/07/2026 :
-    GIF/vidéos de démo abandonnés, voir MUSC-F1 plus haut).
+  - [x] **C3 — Ajustements live** — **CODE LIVRÉ + RECETTE VALIDÉE (Florian, 21/07/2026) ✅** ; reste relecture
+    Damien. Sync rules PowerSync déployées (2 tables C3). Réorganiser les
+    exercices restants (↑/↓ + « Plus tard », machine prise), **superset** (liaison positionnelle, repos différé
+    après la paire), remplacer un exercice (picker existant, exclut les exercices déjà présents), **note
+    persistante par exercice** (migration `exercise_notes` appliquée), **suggestion de progression** RPE-aware
+    (§6.5). ~~Accès démo en séance~~ retiré du périmètre (voir MUSC-F1 plus haut). Spec/plan/maquette validés
+    Florian. 8 commits, typecheck/lint/778 tests verts, parité i18n. 2 fonctions pures testées Vitest
+    (`computeReorderedExerciseOrder`, `computeProgressionSuggestion`).
+    **Revue finale — 2 corrections** : (1) bug bascule superset (retombait sur la 1ʳᵉ série non validée du
+    partenaire au lieu de la série jumelle au même rang, ex. échauffement antérieur) — corrigé, retracé à la
+    main ; (2) **🔴 `exercise_notes` absente des sync rules PowerSync** (`docs/specs/technical/powersync-sync-rules.yaml`)
+    — sans cette ligne, une note n'aurait pas survécu à une resynchro complète. **Action manuelle requise avant
+    recette multi-appareils** : coller le fichier mis à jour dans le dashboard PowerSync (Settings → Sync
+    Rules) puis Deploy — non automatisable, à faire par Florian ou Damien.
+    **Recette (2 vagues, 20/07/2026)** : (1) indicateur de défilement chips ajouté [voir plus haut] ; (2)
+    **superset revu deux fois** — v1 : action nommée « Lier avec {X} » mais toujours contrainte à un exercice
+    **adjacent** (jugé « pas intuitif » / semblait ne pas marcher) ; **v2 (actuelle)** : lien **explicite**
+    (nouvelle table `workout_superset_pairs`, migration appliquée + sync rules mises à jour **dans le même
+    lot** cette fois) — bouton « Lier en superset » ouvre un **dialogue** listant tous les autres exercices de
+    la séance (plus de contrainte de position), lien valable pour **toute la séance** (tous les rangs
+    suivants). Nouveau composant `SupersetPickerModal`. Limite connue notée : un `exercise_plan` marqué
+    `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
+    ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
+    [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
   réutilisable (spec §4.1). Corrige le problème 5.
 

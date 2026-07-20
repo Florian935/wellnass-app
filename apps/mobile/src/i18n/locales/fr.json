@@ -85,14 +85,16 @@
       "dropset": "Dropset",
       "failure": "Échec",
       "duration": "Durée",
-      "bodyweight": "Poids de corps"
+      "bodyweight": "Poids de corps",
+      "superset": "Superset"
     },
     "setTypeBadge": {
       "warmup": "Éch.",
       "dropset": "Drop",
       "failure": "Échec",
       "duration": "Durée",
-      "bodyweight": "PdC"
+      "bodyweight": "PdC",
+      "superset": "Super"
     },
     "warmupToggle": "Échauffement",
     "durationLabel": "Durée",
@@ -103,6 +105,28 @@
     "rpeValue": "RPE {{value}}",
     "rpeLabel": "RPE série",
     "rpeClear": "Effacer",
+    "exerciseNote": {
+      "placeholder": "Note (réglage machine, position…)"
+    },
+    "superset": {
+      "link": "Lier en superset",
+      "linked": "Superset avec {{name}}",
+      "orphaned": "Superset sans partenaire — repos normal",
+      "remove": "Retirer le superset",
+      "pickerTitle": "Choisir le partenaire",
+      "pickerEmpty": "Aucun autre exercice disponible dans cette séance."
+    },
+    "suggestion": {
+      "weightOrReps": "Essaie {{weight}} ou {{reps}} reps",
+      "reps": "Essaie {{reps}} reps",
+      "duration": "Essaie {{duration}}"
+    },
+    "reorder": {
+      "up": "Monter",
+      "down": "Descendre"
+    },
+    "later": "Plus tard",
+    "replace": "Remplacer",
     "summary": {
       "title": "Séance terminée 💪",
       "subtitle": "Beau travail. Voici ton récap.",

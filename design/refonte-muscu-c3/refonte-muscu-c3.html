@@ -1,0 +1,225 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1320px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:82ch;margin:0;font-size:15px;}
+  .stage{max-width:1320px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:340px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:12px;box-shadow:var(--shadow);max-width:340px;width:100%;overflow:hidden;min-height:600px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px;}
+  .topbar .x{font-size:22px;color:var(--ink);font-weight:400;width:28px;}
+  .topbar .timer{font-family:var(--mono);font-weight:700;font-size:18px;}
+  .topbar .fin{color:var(--strength);font-weight:800;font-size:15px;}
+
+  .focus{background:var(--surface);border:1px solid var(--strength);border-radius:18px;padding:16px;margin:0 4px 12px;box-shadow:0 0 0 1px var(--strength);}
+  .focus .exo{font-weight:800;font-size:19px;letter-spacing:-.02em;}
+  .focus .serie{color:var(--muted);font-weight:700;font-size:13px;margin:2px 0 8px;}
+
+  /* --- C3 : note par exercice --- */
+  .noteedit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:var(--surface-alt);border-radius:10px;padding:7px 10px;margin:0 0 12px;}
+  .noteedit input,.notetext{font-family:var(--sans);font-size:12px;color:var(--ink);background:transparent;border:none;flex:1;}
+  .noteempty{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--muted);padding:6px 10px;border-radius:9px;border:1px dashed var(--border);margin:0 0 12px;}
+
+  .typerow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px;}
+  .chip{font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:9px;background:var(--surface-alt);color:var(--muted);border:1px solid transparent;white-space:nowrap;}
+  .chip.on{background:var(--strength);color:#fff;}
+  .chip.super{border:1px solid var(--accent);color:var(--accent);}
+  .chip.super.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .last{background:var(--surface-alt);border-radius:10px;padding:7px 11px;font-size:12.5px;color:var(--ink);margin:0 0 6px;}
+  .last b{font-family:var(--mono);}
+  .suggest{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--success);font-weight:700;margin:0 0 12px;padding:0 2px;}
+
+  .fields{display:flex;gap:12px;margin:0 0 12px;}
+  .field{flex:1;text-align:center;}
+  .field .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px;}
+  .repsbox{background:var(--surface-alt);border-radius:12px;padding:12px 0;font-family:var(--mono);font-weight:700;font-size:22px;}
+  .stepper{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .stepper .b{width:38px;height:44px;border-radius:11px;background:var(--surface-alt);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--strength);}
+  .stepper .v{font-family:var(--mono);font-weight:700;font-size:20px;min-width:56px;}
+  .validate{background:var(--strength);color:#fff;border-radius:13px;text-align:center;font-weight:800;font-size:16px;padding:14px;margin-top:4px;}
+  .restlink{text-align:center;color:var(--muted);font-size:12px;margin-top:9px;}
+
+  /* --- C3 : liste avec réorganisation --- */
+  .listttl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 6px 8px;}
+  .exrow{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin:0 4px 8px;}
+  .exrow.current{border-color:var(--strength);border-width:2px;}
+  .exrow.done{opacity:.55;}
+  .exhead{display:flex;align-items:center;gap:10px;}
+  .exhead .nm{flex:1;font-weight:700;font-size:14px;}
+  .exhead .pr{font-family:var(--mono);font-size:12px;color:var(--muted);}
+  .exhead .ok{color:var(--success);font-weight:900;}
+  .exnote{font-size:11px;color:var(--muted);font-style:italic;margin:4px 0 0;padding-left:2px;}
+  .exactions{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);}
+  .arrows{display:flex;flex-direction:column;gap:1px;}
+  .arrows span{font-size:13px;color:var(--strength);line-height:1;padding:2px 6px;background:var(--surface-alt);border-radius:5px;}
+  .actbtn{font-size:11.5px;font-weight:700;color:var(--strength);background:var(--surface-alt);padding:6px 10px;border-radius:8px;}
+  .actbtn.ghost{color:var(--muted);background:transparent;border:1px solid var(--border);}
+
+  /* --- C3 : superset --- */
+  .superlink{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 10px;color:var(--accent);font-weight:800;font-size:12px;}
+  .superlink .ln{flex:1;height:1px;background:var(--accent);opacity:.35;}
+  .pairnote{background:var(--surface-alt);border-radius:10px;padding:9px 11px;font-size:12px;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+
+  .rest{position:absolute;inset:0;background:var(--strength);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;border-radius:34px;padding:24px;text-align:center;}
+  .rest .lbl{font-size:14px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;font-weight:700;}
+  .rest .pairtag{font-size:12px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:20px;font-weight:700;}
+  .rest .cd{font-family:var(--mono);font-weight:800;font-size:72px;line-height:1;}
+  .rest .btns{display:flex;gap:12px;}
+  .rest .rb{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:12px;padding:12px 20px;font-weight:800;font-size:15px;}
+
+  .h1{font-weight:800;font-size:20px;padding:0 6px;margin:0 0 12px;}
+  .notes{max-width:1320px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;} .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US Refonte-C3 · Maquette</p>
+    <h1 class="title">Séance en cours — ajustements en direct</h1>
+    <p class="sub">C3 rend l'écran de séance <b>malléable en direct</b> : réorganiser les exercices restants (flèches + « Plus tard »), enchaîner un <b>superset</b> (repos différé après la paire), <b>remplacer</b> un exercice, une <b>note persistante</b> par exercice, et une <b>suggestion de progression</b> discrète. Hors périmètre : accès démo (abandonné), variantes suggérées, deload.</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- 1. Carte focus : note + suggestion -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">18:42</span><span class="fin">Terminer</span></div>
+        <div class="focus">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="noteedit">📝 <span class="notetext">Banc position 3, prise large</span></div>
+          <div class="typerow">
+            <span class="chip on">Normale</span>
+            <span class="chip">Dropset</span>
+            <span class="chip">Échec</span>
+            <span class="chip super">🔗 Superset</span>
+            <span class="chip" style="margin-left:auto;">🔥 Échauf.</span>
+          </div>
+          <div class="last">La dernière fois : <b>80 kg × 8 / 8 / 7</b></div>
+          <div class="suggest">💡 Essaie 82,5 kg ou 9 reps</div>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge</div>
+              <div class="stepper"><span class="b">−</span><span class="v">80 kg</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <span class="noteempty" style="display:none;">＋ Note</span>
+          <div class="validate">✓ Valider la série</div>
+          <div class="restlink">Repos : 90 s</div>
+        </div>
+      </div>
+      <p class="caption"><b>Note par exercice</b> (persiste d'une séance à l'autre) + <b>suggestion de progression</b> discrète (non appliquée) + chip <b>🔗 Superset</b> désormais sélectionnable.</p>
+    </div>
+
+    <!-- 2. Liste : réorganiser + Plus tard + Remplacer -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">18:42</span><span class="fin">Terminer</span></div>
+        <div class="listttl">Exercices de la séance</div>
+
+        <div class="exrow done">
+          <div class="exhead"><span class="nm">Squat</span><span class="pr">4/4</span><span class="ok">✓</span></div>
+        </div>
+
+        <div class="exrow current">
+          <div class="exhead"><span class="nm">Développé couché</span><span class="pr">1/4</span></div>
+          <div class="exnote">📝 Banc position 3, prise large</div>
+          <div class="exactions">
+            <div class="arrows"><span>▲</span><span>▼</span></div>
+            <span class="actbtn">Plus tard</span>
+            <span class="actbtn ghost">Remplacer</span>
+          </div>
+        </div>
+
+        <div class="exrow">
+          <div class="exhead"><span class="nm">Rowing barre</span><span class="pr">0/4</span></div>
+          <div class="exactions">
+            <div class="arrows"><span>▲</span><span>▼</span></div>
+            <span class="actbtn">Plus tard</span>
+            <span class="actbtn ghost">Remplacer</span>
+          </div>
+        </div>
+
+        <div class="exrow">
+          <div class="exhead"><span class="nm">Gainage</span><span class="pr">0/3</span></div>
+          <div class="exactions">
+            <div class="arrows"><span>▲</span><span>▼</span></div>
+            <span class="actbtn">Plus tard</span>
+            <span class="actbtn ghost">Remplacer</span>
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>Squat (terminé)</b> : ni flèches, ni « Plus tard », ni « Remplacer » — figé. Les <b>restants</b> peuvent être réorganisés (↑/↓), envoyés <b>« Plus tard »</b> (machine prise), ou <b>remplacés</b> (rouvre le picker, exercices déjà présents exclus).</p>
+    </div>
+
+    <!-- 3. Superset : bascule sans repos -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">24:10</span><span class="fin">Terminer</span></div>
+        <div class="listttl">Développé couché · série 2/4</div>
+        <div class="focus" style="margin-top:0;">
+          <div class="typerow"><span class="chip super on">🔗 Superset</span></div>
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge</div>
+              <div class="stepper"><span class="b">−</span><span class="v">80 kg</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <div class="validate">✓ Valider la série</div>
+        </div>
+        <div class="superlink"><span class="ln"></span>↓ pas de repos, bascule directe ↓<span class="ln"></span></div>
+        <div class="focus" style="opacity:.55;">
+          <div class="typerow"><span class="chip super on">🔗 Superset</span></div>
+          <div class="exo">Rowing barre</div>
+          <div class="serie">Série 2 / 4 · partenaire</div>
+        </div>
+      </div>
+      <p class="caption">Deux exercices <b>adjacents</b>, même rang, tous deux <b>🔗 Superset</b> → couple. Valider le <b>1ᵉʳ</b> bascule le focus <b>directement</b> sur le partenaire, <b>sans repos</b>.</p>
+    </div>
+
+    <!-- 4. Superset : repos après la paire -->
+    <div class="col">
+      <div class="phone">
+        <div class="rest">
+          <div class="pairtag">🔗 Repos après la paire</div>
+          <div class="lbl">Repos</div>
+          <div class="cd">1:30</div>
+          <div class="btns"><span class="rb">Passer</span><span class="rb">+15 s</span></div>
+        </div>
+      </div>
+      <p class="caption">Valider le <b>2ᵉ</b> exercice du couple déclenche le repos normalement — <b>le repos n'arrive qu'une fois la paire terminée</b>, jamais entre les deux.</p>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions & portée (rappel spec C3)</h2>
+    <ul>
+      <li><strong>Réorganiser + « Plus tard »</strong> : flèches ↑/↓ (même patron que le réordonnancement des repas nutrition) + raccourci « Plus tard » qui envoie l'exercice en fin des <strong>restants</strong>. Les exercices <strong>terminés</strong> gardent leur position, n'affichent ni flèches ni actions.</li>
+      <li><strong>Superset</strong> : liaison <strong>positionnelle</strong> (2 exercices adjacents, même rang, tous deux <code>superset</code>) — aucune colonne nouvelle. Repos différé après la 2ᵉ série du couple ; dégradation silencieuse si le partenaire est absent (repos normal).</li>
+      <li><strong>Remplacer</strong> : réutilise le picker existant (<code>exercises.tsx</code>), qui <strong>exclut les exercices déjà présents</strong> dans la séance. Séries non validées basculent, séries validées gardent l'exercice d'origine.</li>
+      <li><strong>Note par exercice</strong> : persiste par (utilisateur, exercice), indépendante de la séance — <strong>migration</strong> (<code>exercise_notes</code>).</li>
+      <li><strong>Suggestion de progression</strong> : RPE-aware — aucune suggestion si la dernière fois comportait une série <strong>échec</strong> ou un RPE <strong>≥ 8</strong>. Jamais appliquée automatiquement.</li>
+      <li><strong>Hors C3</strong> : accès démo (abandonné), variantes suggérées (3.20), progression automatique du plan (3.7), deload (3.8), circuits à 3+ exercices.</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage / Hanken / Space Mono. Muscu = bordeaux charte <code>#6b0028</code>.</em></li>
+    </ul>
+  </section>
+</div>
