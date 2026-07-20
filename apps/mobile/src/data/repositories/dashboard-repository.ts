@@ -32,9 +32,10 @@ import {
   estimateRunCalories,
   isTrainingDay as computeIsTrainingDay,
   localDayKey,
+  localMidnightDaysAgo,
   objectiveFromGoal,
   PILLARS,
-  startOfWeek,
+  ROLLING_WEEK_DAYS,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -780,11 +781,11 @@ export type TrainingTime = {
 };
 
 /**
- * Temps d'entraînement de la semaine ISO courante (lundi→dimanche) : muscu + course.
+ * Temps d'entraînement des **7 derniers jours glissants** : muscu + course.
  *
- * Composition : `useRunStats('week')` fournit la durée course (borne `finished_at`, même
- * découpage semaine) ; `useWorkoutHistory()` fournit les séances muscu terminées, filtrées
- * sur la même semaine (borne `finished_at`) et sommées. Gating transverse (`strength`/`running`)
+ * Composition : `useRunStats('week')` fournit la durée course (fenêtre glissante 7 jours) ;
+ * `useWorkoutHistory()` fournit les séances muscu terminées, filtrées sur la même fenêtre
+ * (borne `finished_at` ≥ J−6, jour-alignée) et sommées. Gating transverse (`strength`/`running`)
  * appliqué au retour ; hooks appelés inconditionnellement (règle des hooks).
  */
 export function useTrainingTime(): TrainingTime {
@@ -796,7 +797,7 @@ export function useTrainingTime(): TrainingTime {
   const { stats, isLoading: runLoading } = useRunStats('week');
   const { workouts, isLoading: workoutLoading } = useWorkoutHistory();
 
-  const weekStartKey = localDayKey(startOfWeek(new Date()));
+  const weekStartKey = localDayKey(localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1));
   const strengthSecondsRaw = workouts.reduce((sum, w) => {
     if (w.durationSeconds == null || w.finishedAt == null) return sum;
     const dayKey = localDayKey(new Date(w.finishedAt));

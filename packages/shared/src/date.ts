@@ -22,6 +22,33 @@ export function startOfWeek(d: Date): Date {
 }
 
 /**
+ * Nombre de jours de la fenêtre « semaine » des stats : **fenêtre glissante** de 7 jours
+ * (aujourd'hui + 6 jours précédents), et non la semaine calendaire lundi→dimanche.
+ */
+export const ROLLING_WEEK_DAYS = 7;
+
+/**
+ * Minuit local du jour situé `daysAgo` jours avant `ref` (aujourd'hui = 0, hier = 1…).
+ * Sert de borne basse, jour-alignée, aux fenêtres glissantes de stats. `ref` injectable
+ * pour tester ; converti en ISO UTC par l'appelant (`.toISOString()`) pour comparer aux
+ * timestamps stockés en UTC.
+ */
+export function localMidnightDaysAgo(daysAgo: number, ref: Date = new Date()): Date {
+  return new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - daysAgo, 0, 0, 0, 0);
+}
+
+/**
+ * Bornes basses (minuit local) des `count` fenêtres glissantes de 7 jours consécutives,
+ * la plus récente en premier : `[aujourd'hui−6, aujourd'hui−13, …]`. Pour les graphiques
+ * de tendance « par semaine » (désormais 7 jours glissants, pas de semaines calendaires).
+ */
+export function rollingWeekStarts(count: number, ref: Date = new Date()): Date[] {
+  return Array.from({ length: count }, (_, i) =>
+    localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1 + ROLLING_WEEK_DAYS * i, ref),
+  );
+}
+
+/**
  * Nombre de jours calendaires de `fromKey` à `toKey` (clés locales AAAA-MM-JJ).
  * Calcul via midi UTC → insensible aux transitions d'heure d'été (DST-safe).
  */

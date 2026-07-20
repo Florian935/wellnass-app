@@ -1,10 +1,39 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, weekdayIndex, startOfWeek, localDayKey, daysBetween } from './date';
+import {
+  addDays,
+  weekdayIndex,
+  startOfWeek,
+  localDayKey,
+  daysBetween,
+  ROLLING_WEEK_DAYS,
+  localMidnightDaysAgo,
+  rollingWeekStarts,
+} from './date';
 
 describe('localDayKey', () => {
   it("formate une Date en AAAA-MM-JJ selon l'heure locale", () => {
     expect(localDayKey(new Date(2026, 6, 11, 23, 30))).toBe('2026-07-11');
     expect(localDayKey(new Date(2026, 0, 5, 0, 1))).toBe('2026-01-05');
+  });
+});
+
+describe('localMidnightDaysAgo / rollingWeekStarts (fenêtre glissante 7 jours)', () => {
+  const ref = new Date(2026, 6, 20, 14, 30); // lundi 20/07/2026 14h30 local
+
+  it('localMidnightDaysAgo(0) = minuit local du jour de ref', () => {
+    expect(localDayKey(localMidnightDaysAgo(0, ref))).toBe('2026-07-20');
+    expect(localMidnightDaysAgo(0, ref).getHours()).toBe(0);
+  });
+
+  it('la fenêtre semaine glissante démarre à J−6 (7 jours incluant aujourd’hui)', () => {
+    expect(ROLLING_WEEK_DAYS).toBe(7);
+    const start = localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1, ref);
+    expect(localDayKey(start)).toBe('2026-07-14'); // 14→20 = 7 jours
+  });
+
+  it('rollingWeekStarts : bornes récentes→anciennes espacées de 7 jours', () => {
+    const starts = rollingWeekStarts(3, ref).map(localDayKey);
+    expect(starts).toEqual(['2026-07-14', '2026-07-07', '2026-06-30']);
   });
 });
 

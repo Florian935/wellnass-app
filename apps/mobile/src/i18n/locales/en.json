@@ -570,15 +570,15 @@
       "compactEmpty": "None"
     },
     "volumeWeek": {
-      "title": "Strength volume · week",
-      "empty": "No session this week.",
+      "title": "Strength volume · 7d",
+      "empty": "No session in 7 days.",
       "link": "Details →",
       "compactTotal": "{{kg}} kg",
       "compactEmpty": "— kg"
     },
     "runningWeek": {
-      "title": "Running · week",
-      "empty": "No run this week.",
+      "title": "Running · 7d",
+      "empty": "No run in 7 days.",
       "distance": "Distance",
       "sessions_one": "{{count}} run",
       "sessions_other": "{{count}} runs",
@@ -588,13 +588,13 @@
     },
     "deficitVolume": {
       "title": "Nutrition & load",
-      "message": "This week: intake ~{{pct}}% below your target, with high lifting volume. Make sure you eat enough to recover well."
+      "message": "Last 7 days: intake ~{{pct}}% below your target, with high lifting volume. Make sure you eat enough to recover well."
     },
     "trainingTime": {
       "title": "Training time",
       "breakdownStrength": "strength",
       "breakdownRunning": "running",
-      "empty": "No session this week"
+      "empty": "No session in 7 days"
     }
   },
   "onboarding": {
@@ -878,11 +878,11 @@
       "startWorkout": "Start a workout"
     },
     "weeklyVolume": {
-      "title": "Volume this week",
+      "title": "Volume · last 7 days",
       "chartTitle": "Volume by muscle group",
       "total": "Total",
-      "vsPrevious": "vs. last week",
-      "emptyTitle": "No volume this week",
+      "vsPrevious": "vs. previous 7 days",
+      "emptyTitle": "No volume in 7 days",
       "emptyMessage": "Complete a workout to see volume broken down by muscle group."
     },
     "balance": {

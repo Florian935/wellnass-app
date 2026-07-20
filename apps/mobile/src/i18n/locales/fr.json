@@ -570,15 +570,15 @@
       "compactEmpty": "Aucun"
     },
     "volumeWeek": {
-      "title": "Volume muscu · semaine",
-      "empty": "Aucune séance cette semaine.",
+      "title": "Volume muscu · 7 j",
+      "empty": "Aucune séance sur 7 jours.",
       "link": "Détail →",
       "compactTotal": "{{kg}} kg",
       "compactEmpty": "— kg"
     },
     "runningWeek": {
-      "title": "Course · semaine",
-      "empty": "Aucune course cette semaine.",
+      "title": "Course · 7 j",
+      "empty": "Aucune course sur 7 jours.",
       "distance": "Distance",
       "sessions_one": "{{count}} séance",
       "sessions_other": "{{count}} séances",
@@ -588,13 +588,13 @@
     },
     "deficitVolume": {
       "title": "Nutrition & charge",
-      "message": "Cette semaine : apports ~{{pct}} % sous ton objectif, avec un volume muscu élevé. Pense à manger assez pour bien récupérer."
+      "message": "Sur 7 jours : apports ~{{pct}} % sous ton objectif, avec un volume muscu élevé. Pense à manger assez pour bien récupérer."
     },
     "trainingTime": {
       "title": "Temps d'entraînement",
       "breakdownStrength": "muscu",
       "breakdownRunning": "course",
-      "empty": "Aucune séance cette semaine"
+      "empty": "Aucune séance sur 7 jours"
     }
   },
   "onboarding": {
@@ -878,11 +878,11 @@
       "startWorkout": "Démarrer une séance"
     },
     "weeklyVolume": {
-      "title": "Volume cette semaine",
+      "title": "Volume · 7 derniers jours",
       "chartTitle": "Volume par groupe musculaire",
       "total": "Total",
-      "vsPrevious": "vs. semaine précédente",
-      "emptyTitle": "Aucun volume cette semaine",
+      "vsPrevious": "vs. 7 jours précédents",
+      "emptyTitle": "Aucun volume sur 7 jours",
       "emptyMessage": "Termine une séance pour voir le volume réparti par groupe musculaire."
     },
     "balance": {

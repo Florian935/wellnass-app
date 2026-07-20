@@ -36,6 +36,9 @@ import {
   computeWeeklyTrainingNutrition,
   computeWorkoutRecords,
   localDayKey,
+  localMidnightDaysAgo,
+  rollingWeekStarts,
+  ROLLING_WEEK_DAYS,
   PILLARS,
   sessionBestEstimated1RM,
   type MuscleBalance,
@@ -308,26 +311,14 @@ function rollingWindowLowerBound(days: number): string {
 }
 
 /**
- * Borne « lundi 00:00 heure locale » de la semaine courante, convertie en ISO UTC.
- *
- * On raisonne en heure locale pour déterminer le début de semaine perçu par
- * l'utilisateur (lundi), puis on convertit en UTC pour comparer aux `finished_at`
- * (stockés en UTC). `getDay()` : dimanche = 0 → on ramène à 6 jours d'écart.
+ * Borne basse de la **fenêtre glissante « semaine »** (7 derniers jours, aujourd'hui inclus),
+ * en ISO UTC : minuit local de `aujourd'hui − 6`. Remplace l'ancienne semaine calendaire
+ * (lundi→dimanche) — décision produit : toutes les stats « semaine » raisonnent en 7 jours
+ * glissants. Jour-alignée en heure locale puis convertie en UTC pour comparer aux
+ * `finished_at` (stockés en UTC).
  */
-function startOfWeekLocalUtc(): string {
-  const now = new Date();
-  const day = now.getDay(); // 0 = dimanche … 6 = samedi (heure locale)
-  const daysSinceMonday = (day + 6) % 7;
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() - daysSinceMonday,
-    0,
-    0,
-    0,
-    0,
-  );
-  return monday.toISOString();
+function rollingWeekStartLocalUtc(): string {
+  return localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1).toISOString();
 }
 
 // ---------------------------------------------------------------------------
@@ -638,18 +629,18 @@ export function useExerciseProgression(
 }
 
 /**
- * Volume par groupe musculaire sur la semaine courante (depuis lundi 00:00 local).
+ * Volume par groupe musculaire sur les **7 derniers jours glissants** (aujourd'hui inclus).
  *
  * Joint `workout_sets` → `exercises.muscle_primary`, somme `reps × weight_kg` des
  * séries validées non-échauffement des séances terminées dont `finished_at` est
- * postérieur au lundi local (converti en ISO UTC, passé en paramètre lié), regroupe
+ * postérieur à minuit local de J−6 (converti en ISO UTC, passé en paramètre lié), regroupe
  * par `muscle_primary`.
  */
 export function useMuscleVolumeThisWeek(): {
   volumes: MuscleVolume[];
   isLoading: boolean;
 } {
-  const weekStart = startOfWeekLocalUtc();
+  const weekStart = rollingWeekStartLocalUtc();
 
   const sql = `
     SELECT e.muscle_primary AS muscle,
@@ -735,14 +726,13 @@ export function useMuscleBalance(): {
 }
 
 /**
- * Volume total (kg) de la semaine courante vs semaine précédente, réactif.
+ * Volume total (kg) des **7 derniers jours glissants** vs les 7 jours précédents, réactif.
  *
  * Mêmes filtres que `useMuscleVolumeThisWeek` (séries validées non-échauffement
  * de séances terminées), mais sans `GROUP BY muscle_primary` : une somme globale.
- * - `current`  : `finished_at >= weekStart` (lundi local courant, ISO UTC).
- * - `previous` : `finished_at` dans `[prevWeekStart, weekStart[` — la semaine
- *   calendaire précédente (lundi à lundi), `prevWeekStart` dérivé de `weekStart`
- *   moins 7 jours.
+ * - `current`  : `finished_at >= weekStart` (minuit local de J−6, ISO UTC).
+ * - `previous` : `finished_at` dans `[prevWeekStart, weekStart[` — la fenêtre de 7 jours
+ *   précédente (J−13 à J−7), `prevWeekStart` dérivé de `weekStart` moins 7 jours.
  *
  * Deux `useQuery` inconditionnels (règle des hooks) ; `isLoading` est vrai si
  * l'une des deux requêtes est encore en cours.
@@ -752,7 +742,7 @@ export function useWeeklyVolumeComparison(): {
   previous: number;
   isLoading: boolean;
 } {
-  const weekStart = startOfWeekLocalUtc();
+  const weekStart = rollingWeekStartLocalUtc();
   const prevWeekStart = new Date(
     new Date(weekStart).getTime() - 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
@@ -854,30 +844,32 @@ export function useWorkoutDetail(workoutId: string): {
 
 const CROSS_WEEKS = 8;
 
-/** 8 lundis locaux (récent → ancien) + bornes basses (ISO UTC minuit local, et dayKey). */
-function last8MondaysLocal(): { weekStarts: string[]; oldestIsoUtc: string; oldestDayKey: string } {
-  const now = new Date();
-  const daysSinceMonday = (now.getDay() + 6) % 7;
-  const weekStarts: string[] = [];
-  let oldest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday, 0, 0, 0, 0);
-  for (let i = 0; i < CROSS_WEEKS; i++) {
-    const m = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday - i * 7, 0, 0, 0, 0);
-    weekStarts.push(localDayKey(m)); // récent → ancien
-    oldest = m;
-  }
-  return { weekStarts, oldestIsoUtc: oldest.toISOString(), oldestDayKey: localDayKey(oldest) };
+/**
+ * 8 **fenêtres glissantes de 7 jours** (récent → ancien) + bornes basses (ISO UTC minuit
+ * local, et dayKey). Chaque fenêtre couvre 7 jours consécutifs ; la plus récente démarre à
+ * J−6. Remplace les 8 semaines calendaires (décision produit : stats en 7 jours glissants).
+ */
+function last8RollingWeeksLocal(): { weekStarts: string[]; oldestIsoUtc: string; oldestDayKey: string } {
+  const starts = rollingWeekStarts(CROSS_WEEKS); // récent → ancien, minuit local
+  const oldest = starts[starts.length - 1]!;
+  return {
+    weekStarts: starts.map(localDayKey),
+    oldestIsoUtc: oldest.toISOString(),
+    oldestDayKey: localDayKey(oldest),
+  };
 }
 
 /**
- * Vue croisée « charge muscu ↔ apports » sur 8 semaines calendaires (MN-03, descriptif), réactive.
- * Lecture seule. Tous les hooks sont appelés inconditionnellement (règle des hooks) ; le gating
- * (muscu ET nutrition actifs) est appliqué AU RETOUR (renvoie `[]` sinon → le composant rend `null`).
+ * Vue croisée « charge muscu ↔ apports » sur 8 **fenêtres glissantes de 7 jours** (MN-03,
+ * descriptif), réactive. Lecture seule. Tous les hooks sont appelés inconditionnellement (règle
+ * des hooks) ; le gating (muscu ET nutrition actifs) est appliqué AU RETOUR (renvoie `[]` sinon →
+ * le composant rend `null`).
  */
 export function useTrainingNutritionCross(): {
   weeks: WeeklyTrainingNutrition[];
   isLoading: boolean;
 } {
-  const { weekStarts, oldestIsoUtc, oldestDayKey } = last8MondaysLocal();
+  const { weekStarts, oldestIsoUtc, oldestDayKey } = last8RollingWeeksLocal();
   const { settings } = useSettings();
   const pillars = settings?.activePillars ?? [...PILLARS];
   const active = pillars.includes('strength') && pillars.includes('nutrition');
