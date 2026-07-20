@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ import {
 } from '@/data/repositories/exercise-repository';
 import {
   addExerciseToWorkout,
+  replaceExercise,
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -24,6 +25,7 @@ export default function ExercisesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const { replaceExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string }>();
 
   const { workout: active } = useActiveWorkout();
 
@@ -41,9 +43,19 @@ export default function ExercisesScreen() {
     return fa - fb;
   });
 
+  // Mode remplacement (US Refonte-C3) : exclut les exercices déjà présents
+  // dans la séance active, pour ne proposer que des remplacements pertinents.
+  const filteredItems = replaceExerciseId
+    ? items.filter((item) => !active?.entries.some((e) => e.exerciseId === item.id))
+    : items;
+
   const onPick = async (item: ExerciseListItem) => {
     if (active) {
-      await addExerciseToWorkout(active.id, item.id);
+      if (replaceExerciseId) {
+        await replaceExercise(active.id, replaceExerciseId, item.id);
+      } else {
+        await addExerciseToWorkout(active.id, item.id);
+      }
       router.back();
     }
   };
@@ -95,7 +107,7 @@ export default function ExercisesScreen() {
         </View>
       ) : (
         <FlatList
-          data={items}
+          data={filteredItems}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"

@@ -927,6 +927,25 @@ export function useExerciseNote(exerciseId: string): {
   return { note: data[0]?.note ?? null, isLoading };
 }
 
+/** Ligne brute pour la map complète des notes (toutes, utilisateur courant). */
+type ExerciseNoteRow = { exercise_id: string; note: string | null };
+
+/**
+ * Toutes les notes d'exercice de l'utilisateur courant, sous forme de map
+ * `exerciseId → note`. Sert à afficher la note en lecture pour CHAQUE exercice
+ * de la liste de séance sans appeler un hook par exercice (règle des hooks —
+ * le nombre d'exercices varie). La table `exercise_notes` est naturellement
+ * petite (une ligne par exercice noté, par utilisateur).
+ */
+export function useExerciseNotes(): Record<string, string | null> {
+  const { data } = useQuery<ExerciseNoteRow>(
+    'SELECT exercise_id, note FROM exercise_notes WHERE deleted_at IS NULL',
+  );
+  const map: Record<string, string | null> = {};
+  for (const row of data) map[row.exercise_id] = row.note;
+  return map;
+}
+
 /**
  * Écrit (ou met à jour) la note de l'utilisateur courant sur un exercice.
  * Une note vide/blanche est normalisée en `null` (mais la ligne n'est jamais

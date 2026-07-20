@@ -14,8 +14,13 @@ import {
   cancelWorkout,
   finishWorkout,
   removeSet,
+  reorderExercise,
+  sendExerciseToEnd,
+  setExerciseNote,
   updateSet,
   useActiveWorkout,
+  useExerciseNote,
+  useExerciseNotes,
   useLastPerformance,
   useSessionRest,
   type WorkoutEntry,
@@ -25,6 +30,7 @@ import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
+import { computeProgressionSuggestion } from '@wellness/shared';
 
 /** Repos par défaut (s) quand l'exercice n'a ni override de session ni valeur planifiée. */
 const DEFAULT_REST_SECONDS = 90;
@@ -182,6 +188,7 @@ export default function WorkoutScreen() {
   // il cesse de correspondre et l'affichage repart des valeurs pré-remplies (pas
   // besoin d'effet de resynchronisation).
   const [edit, setEdit] = useState<{ setId: string; state: EditState } | null>(null);
+  const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
@@ -190,6 +197,8 @@ export default function WorkoutScreen() {
 
   // Dernière perf de l'exercice courant (requête stable : '' → aucune ligne).
   const lastPerf = useLastPerformance(currentExerciseId);
+  const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
+  const allExerciseNotes = useExerciseNotes();
 
   // Décompte du repos : recalcule le restant chaque seconde ; à 0 → vibration + fin.
   useEffect(() => {
@@ -230,6 +239,29 @@ export default function WorkoutScreen() {
   const prefillWeightKg = current ? (current.set.weightKg ?? lastPerf[rang]?.weightKg ?? null) : null;
   const prefillDuration = current ? current.set.durationSeconds : null;
 
+  // Suggestion de progression (C3) : basée sur les séries qualifiantes de la
+  // dernière séance terminée (déjà filtrées `done=1` par `useLastPerformance`)
+  // et la série de référence au même rang.
+  const referenceSet = current ? lastPerf[rang] : undefined;
+  const suggestion = current
+    ? computeProgressionSuggestion(
+        lastPerf.map((p) => ({ setType: p.setType, rpe: p.rpe, done: true })),
+        referenceSet,
+        { weightIncrementKg: 2.5, durationIncrementSeconds: 10 },
+      )
+    : null;
+  const suggestionLabel = (() => {
+    if (!suggestion) return null;
+    if (suggestion.kind === 'weightOrReps') {
+      return t('workout.suggestion.weightOrReps', {
+        weight: `${units.weightInputValue(suggestion.weightKg)} ${units.weightSymbol}`,
+        reps: suggestion.reps,
+      });
+    }
+    if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
+    return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
+  })();
+
   // Édition ne valant que pour la série courante (sinon on repart du pré-remplissage).
   const activeEdit = edit && edit.setId === currentSetId ? edit.state : null;
 
@@ -238,6 +270,15 @@ export default function WorkoutScreen() {
   const displayWeightKg = activeEdit ? activeEdit.weightKg : prefillWeightKg;
   const displayDurationSeconds = activeEdit ? activeEdit.durationSeconds : prefillDuration;
   const durationValue = formatMmSs(displayDurationSeconds ?? 0);
+
+  // Note d'exercice (C3) : l'édition locale prime, sinon repli sur la valeur persistée.
+  const displayNote =
+    noteEdit && noteEdit.exerciseId === currentExerciseId ? noteEdit.value : currentExerciseNote ?? '';
+  const onChangeNote = (v: string) => setNoteEdit({ exerciseId: currentExerciseId, value: v });
+  const onBlurNote = () => {
+    if (!currentExerciseId) return;
+    void setExerciseNote(currentExerciseId, displayNote);
+  };
 
   // Matérialise l'état d'édition à partir des valeurs affichées puis applique le patch.
   const applyEdit = (patch: Partial<EditState>) => {
@@ -357,6 +398,15 @@ export default function WorkoutScreen() {
   const onAddSet = (exerciseId: string) => {
     void addSet(workoutId, exerciseId);
   };
+  const onReorder = (exerciseId: string, direction: 'up' | 'down') => {
+    void reorderExercise(workoutId, exerciseId, direction);
+  };
+  const onSendLater = (exerciseId: string) => {
+    void sendExerciseToEnd(workoutId, exerciseId);
+  };
+  const onReplace = (exerciseId: string) => {
+    router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } });
+  };
 
   const hasAnyDone = entries.some((entry) => entry.sets.some((set) => set.done));
 
@@ -393,6 +443,10 @@ export default function WorkoutScreen() {
             currentIndex={current.rang + 1}
             totalSets={current.entry.sets.length}
             lastPerfLabel={formatLastPerf(lastPerf, units)}
+            suggestionLabel={suggestionLabel}
+            note={displayNote}
+            onChangeNote={onChangeNote}
+            onBlurNote={onBlurNote}
             setType={current.set.setType}
             onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
             repsValue={displayReps}
@@ -431,6 +485,10 @@ export default function WorkoutScreen() {
             onToggleSetDone={onToggleSetDone}
             onRemoveSet={onRemoveSet}
             onAddSet={onAddSet}
+            onReorder={onReorder}
+            onSendLater={onSendLater}
+            onReplace={onReplace}
+            exerciseNotes={allExerciseNotes}
             colors={colors}
           />
         ) : null}
