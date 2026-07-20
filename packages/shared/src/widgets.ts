@@ -436,6 +436,17 @@ export function gridRowCount(entries: WidgetLayoutEntry[]): number {
   return entries.reduce((max, e) => Math.max(max, e.row + sizeSpan(e.size).h), 0);
 }
 
+/**
+ * Copie **compactée verticalement** d'une liste de widgets (aucune ligne vide, colonnes
+ * conservées). Pur. Utilisé par l'**affichage** pour compacter le sous-ensemble *visible* (les
+ * widgets masqués ne doivent pas laisser de trou), indépendamment des positions stockées.
+ */
+export function compactLayout(entries: WidgetLayoutEntry[]): WidgetLayoutEntry[] {
+  const copy = entries.map((e) => ({ ...e }));
+  compactVertical(copy);
+  return copy;
+}
+
 // ---------------------------------------------------------------------------
 // Parsing tolérant + rétro-compatibilité
 // ---------------------------------------------------------------------------

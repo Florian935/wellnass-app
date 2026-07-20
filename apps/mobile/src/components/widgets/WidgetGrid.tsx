@@ -15,6 +15,7 @@ import { useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  compactLayout,
   GRID_COLS,
   gridRowCount,
   sizeSpan,
@@ -97,11 +98,13 @@ export function WidgetGrid({
     );
   }
 
-  // Affichage : positions absolues dérivées de (col, row).
+  // Affichage : positions absolues dérivées de (col, row). On **recompacte les widgets
+  // visibles** pour qu'un widget masqué ne laisse pas de trou (sa case n'est pas rendue).
+  const positioned = compactLayout(rendered);
   return (
-    <View onLayout={onLayout} style={{ height: gridHeight(rendered, colW, GRID_GAP) }}>
+    <View onLayout={onLayout} style={{ height: gridHeight(positioned, colW, GRID_GAP) }}>
       {colW > 0
-        ? rendered.map((w) => {
+        ? positioned.map((w) => {
             const r = cellRect(w, colW, GRID_GAP);
             return (
               <View
