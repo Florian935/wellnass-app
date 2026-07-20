@@ -60,6 +60,36 @@ function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null
   return null;
 }
 
+/** Résultat de la recherche d'un partenaire superset : l'exercice et sa série au même rang. */
+type SupersetPartner = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number] };
+
+/**
+ * Cherche le partenaire superset de la série `entries[entryIndex].sets[rang]`
+ * (si elle est bien `setType === 'superset'`) : un exercice ADJACENT (index-1
+ * ou index+1 dans `entries`) dont la série au MÊME rang est elle aussi
+ * `setType === 'superset'`. Retourne `null` si la série n'est pas superset ou
+ * si aucun partenaire adjacent n'a de série correspondante au même rang
+ * (dégradation silencieuse — comportement standard dans ce cas).
+ */
+function findSupersetPartner(
+  entries: WorkoutEntry[],
+  entryIndex: number,
+  rang: number,
+): SupersetPartner | null {
+  const entry = entries[entryIndex];
+  const set = entry?.sets[rang];
+  if (!set || set.setType !== 'superset') return null;
+
+  for (const neighborIndex of [entryIndex - 1, entryIndex + 1]) {
+    const neighbor = entries[neighborIndex];
+    const neighborSet = neighbor?.sets[rang];
+    if (neighbor && neighborSet && neighborSet.setType === 'superset') {
+      return { entry: neighbor, set: neighborSet };
+    }
+  }
+  return null;
+}
+
 /** État d'édition local des champs de la série courante (`null` = non modifié → repli). */
 type EditState = { reps: string; weightKg: number | null; durationSeconds: number | null };
 
@@ -155,6 +185,7 @@ export default function WorkoutScreen() {
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
+  const currentEntryIndex = current ? entries.findIndex((e) => e.exerciseId === current.entry.exerciseId) : -1;
   const currentExerciseId = current?.entry.exerciseId ?? '';
 
   // Dernière perf de l'exercice courant (requête stable : '' → aucune ligne).
@@ -258,6 +289,21 @@ export default function WorkoutScreen() {
       patch.reps = reps;
     }
     void updateSet(current.set.id, patch);
+
+    // Superset (spec §2.2) : si la série validée a un partenaire adjacent au
+    // même rang pas encore validé, on bascule directement dessus SANS repos.
+    // `partner.set.done` reflète l'état de CE rendu (avant la validation en
+    // cours, qui ne porte que sur `current.set`) — donc fiable ici même si le
+    // `updateSet` ci-dessus est encore en vol côté PowerSync.
+    const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
+    if (partner && !partner.set.done) {
+      setFocusOverride(partner.entry.exerciseId);
+      return;
+    }
+
+    // Comportement standard (2ᵉ série d'un couple superset déjà validée par le
+    // partenaire ci-dessus, ou série non-superset / partenaire introuvable —
+    // dégradation silencieuse) : repos normal.
     setRestLeft(currentRest); // évite un flash « 0 s » avant le 1er tick
     setRestCollapsed(false); // le repos s'ouvre en plein écran
     setRestEndsAt(Date.now() + currentRest * 1000);
