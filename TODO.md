@@ -460,8 +460,10 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     `planned_weight_kg`). **Migration cloud appliquée** (`20260719230416` : `workout_sets.rpe` + `planned_weight_kg`
     + assouplissement `CHECK set_type` sur `workout_sets`/`exercise_plans`). Spec/plan/maquette validés Florian.
     6 commits, typecheck/lint/765 tests verts, parité i18n. Décisions : records excluent warmup **et** duration ;
-    bodyweight lesté = record légitime. Revue finale sans bloquant. Points recette : écart affiché en direct (=
-    maquette) ; poids de corps sans lest → « × 0 kg » (mineur) ; `lastPerf` désaligné si warmup intercalé (→ C3).
+    bodyweight lesté = record légitime. Revue finale sans bloquant. **Recette Florian (20/07/2026) : validée**
+    (seul point remonté — rangée de chips sans indicateur de défilement — corrigé : fondu + chevron discret).
+    Points connus non bloquants : poids de corps sans lest → « × 0 kg » (mineur) ; `lastPerf` désaligné si warmup
+    intercalé (→ C3).
     Idée notée (IDEAS) : RIR en alternative au RPE.
     ([spec](docs/specs/functional/us/refonte-muscu-c2-saisie-enrichie.md) ·
     [plan](docs/plans/refonte-muscu-c2-saisie-enrichie.md) · [maquette](design/refonte-muscu-c2/refonte-muscu-c2.html))
