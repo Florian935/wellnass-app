@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { useMenuAccent } from '@/stores/menu-accent-store';
 import { palettes, type ColorScheme, type Palette } from './colors';
 
 /**
@@ -20,7 +22,20 @@ export function useColorSchemePref(): ColorScheme {
   return preference;
 }
 
+/**
+ * Palette effective. L'**accent** est surchargé par la couleur du **menu actif**
+ * (Accueil / Muscu / Course / Alimentation, cf. `menu-accent-store`) au lieu de
+ * l'accent unique de la palette. Le reste de la palette (surfaces, texte…) est inchangé.
+ */
 export function useTheme(): { scheme: ColorScheme; colors: Palette } {
   const scheme = useColorSchemePref();
-  return { scheme, colors: palettes[scheme] };
+  const base = palettes[scheme];
+  const activeMenu = useMenuAccent((s) => s.activeMenu);
+  const menuAccent = useMenuAccent((s) => s.colors[activeMenu]);
+
+  const colors = useMemo(
+    () => (menuAccent && menuAccent !== base.accent ? { ...base, accent: menuAccent } : base),
+    [base, menuAccent],
+  );
+  return { scheme, colors };
 }

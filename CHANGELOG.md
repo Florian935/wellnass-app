@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
+
+> Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.
+> typecheck + lint verts. **Aucune migration** (préférence locale device). Recette device requise.
+
+**Ajouté**
+- **Couleur d'accent par menu** ([menu-accent-store.ts](apps/mobile/src/stores/menu-accent-store.ts)) :
+  4 couleurs (Accueil terracotta / Muscu bordeaux / Course bleu / Alimentation vert) par défaut,
+  **personnalisables** dans les réglages. Préférence **locale device** persistée (`secureStorage`),
+  non synchronisée → aucune migration.
+- **Accent dynamique** ([useTheme.ts](apps/mobile/src/theme/useTheme.ts)) : `colors.accent` prend la couleur
+  du **menu actif** (posé par chaque onglet au focus via `useMenuFocus` ; les écrans enfants héritent).
+  Tout ce qui utilise `colors.accent` (boutons, liens, pastilles…) se teinte automatiquement par onglet.
+- **Onglets** ([(tabs)/_layout.tsx](apps/mobile/src/app/%28tabs%29/_layout.tsx)) : l'onglet actif prend sa
+  propre couleur (`tabBarActiveTintColor` par écran).
+- **Réglages → « Couleurs des menus »** ([settings.tsx](apps/mobile/src/app/settings.tsx)) : choix par
+  pastilles (8 teintes) pour chaque menu + réinitialisation. i18n FR/EN.
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — grille : compaction verticale (pas d'espace entre modules)
 
 > Retour Damien : pas de lignes vides — si une ligne se vide, tout remonte. 762 tests verts.

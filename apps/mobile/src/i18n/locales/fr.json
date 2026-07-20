@@ -948,6 +948,11 @@
       "light": "Clair",
       "dark": "Sombre"
     },
+    "menuColors": {
+      "title": "Couleurs des menus",
+      "reset": "Réinitialiser les couleurs",
+      "hint": "Chaque menu (Accueil, Muscu, Course, Alimentation) a sa couleur d'accent."
+    },
     "units": {
       "title": "Unités",
       "metric": "Métrique",
