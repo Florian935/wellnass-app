@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -119,6 +120,15 @@ export function CurrentSetCard({
   // Sélecteur RPE : masqué par défaut (peu utilisé), déplié au tap sur « ＋ RPE ».
   const [rpeOpen, setRpeOpen] = useState(false);
 
+  // Indicateur « ça défile » sur la rangée de types (recette Florian, 20/07/2026) :
+  // fondu + chevron tant qu'il reste du contenu à droite, masqué en fin de scroll.
+  const [typeContainerWidth, setTypeContainerWidth] = useState(0);
+  const [typeContentWidth, setTypeContentWidth] = useState(0);
+  const [typeScrollX, setTypeScrollX] = useState(0);
+  const canScrollTypesRight =
+    typeContentWidth > typeContainerWidth + 4 &&
+    typeScrollX < typeContentWidth - typeContainerWidth - 4;
+
   // Types « au poids de corps » / « à la durée » → le champ charge devient un
   // lest optionnel (placeholder vide autorisé) ; sinon charge classique.
   const isLest = setType === 'duration' || setType === 'bodyweight';
@@ -161,17 +171,34 @@ export function CurrentSetCard({
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
       </Text>
 
-      {/* Sélecteur de type : chips scrollables + raccourci 🔥 fixé à droite. */}
+      {/* Sélecteur de type : chips scrollables (fondu + chevron tant qu'il reste du
+          contenu à droite) + raccourci 🔥 fixé à droite. */}
       <View style={styles.typeRow}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          style={styles.typeScroll}
-          contentContainerStyle={styles.typeScrollContent}
-        >
-          {TYPE_CHIPS.map(renderChip)}
-        </ScrollView>
+        <View style={styles.typeScrollWrap} onLayout={(e) => setTypeContainerWidth(e.nativeEvent.layout.width)}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            scrollEventThrottle={16}
+            onContentSizeChange={(w) => setTypeContentWidth(w)}
+            onScroll={(e) => setTypeScrollX(e.nativeEvent.contentOffset.x)}
+            style={styles.typeScroll}
+            contentContainerStyle={styles.typeScrollContent}
+          >
+            {TYPE_CHIPS.map(renderChip)}
+          </ScrollView>
+          {canScrollTypesRight ? (
+            <LinearGradient
+              pointerEvents="none"
+              colors={['transparent', colors.surface]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.typeFade}
+            >
+              <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+            </LinearGradient>
+          ) : null}
+        </View>
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ selected: warmupActive }}
@@ -370,8 +397,19 @@ const styles = StyleSheet.create({
   exName: { fontFamily: fontFamily.displaySemi, fontSize: 22, letterSpacing: -0.4 },
   progress: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   typeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typeScrollWrap: { flex: 1, position: 'relative' },
   typeScroll: { flex: 1 },
   typeScrollContent: { gap: 6, alignItems: 'center', paddingRight: 4 },
+  // Fondu + chevron indiquant que la rangée défile encore vers la droite.
+  typeFade: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   chip: {
     paddingHorizontal: 11,
     paddingVertical: 7,
