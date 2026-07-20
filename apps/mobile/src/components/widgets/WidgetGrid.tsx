@@ -1,30 +1,53 @@
 /**
- * Grille de widgets multi-formes, partagée par les 3 hubs (accueil / muscu / course).
+ * Grille de widgets multi-formes (vrai quadrillage 2 colonnes), partagée par les 3 hubs.
  *
- * - **Affichage** : coule la disposition résolue en lignes de grille 2 colonnes via
- *   `packWidgets` (deux `small` consécutifs côte à côte ; `wide`/`large` pleine largeur ;
- *   `small` isolé → colonne gauche, droite vide). Les formes carrées imposent leur ratio.
- * - **Édition** : rend la **même grille 2 colonnes** avec **glisser-déposer 2D**
- *   (`SortableWidgetGrid`) — appui long ~1 s, fantôme + barre d'insertion, dépôt libre.
- *   Chaque cellule porte son cadre pointillé + ses pastilles de coin (œil / forme).
+ * Chaque widget est **positionné par coordonnées de grille** (`col`, `row`) + empreinte dérivée
+ * de sa forme (`sizeSpan` : small 1×1, wide 2×1, large 2×2). Case unité = ½ largeur d'écran
+ * (hauteur de ligne = largeur de colonne). Placement libre (trous autorisés).
  *
- * Consomme `useScreenLayout(screen)` : chaque hub fournit seulement son `renderWidget`
- * (map `id → composant`) et l'état `editing`.
+ * - **Affichage** : widgets visibles positionnés en absolu selon leur case.
+ * - **Édition** : `SortableWidgetGrid` (glisser-déposer aimanté à la case, appui long ~0,7 s).
+ *
+ * Consomme `useScreenLayout(screen)` ; chaque hub fournit son `renderWidget`.
  */
 
-import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { packWidgets, type WidgetId, type WidgetScreen, type WidgetSize } from '@wellness/shared';
+import {
+  GRID_COLS,
+  gridRowCount,
+  sizeSpan,
+  type WidgetId,
+  type WidgetLayoutEntry,
+  type WidgetScreen,
+  type WidgetSize,
+} from '@wellness/shared';
 import { SortableWidgetGrid } from '@/components/widgets/SortableWidgetGrid';
 import { useScreenLayout } from '@/data/repositories/widget-layout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-/** Espacement des lignes/cellules (doit correspondre au `gap` de la grille triable). */
-const SPACING = 14;
-/** Ratio largeur/hauteur du grand carré pleine largeur (pas un carré strict : trop haut sinon). */
-const LARGE_ASPECT = 1.35;
+/** Gouttière entre cases (px). */
+export const GRID_GAP = 12;
+
+/** Rectangle pixel d'une case (col/row + empreinte) selon la largeur de colonne. */
+export function cellRect(entry: WidgetLayoutEntry, colW: number, gap: number) {
+  const { w, h } = sizeSpan(entry.size);
+  const cellH = colW; // case unité carrée
+  return {
+    left: entry.col * (colW + gap),
+    top: entry.row * (cellH + gap),
+    width: w * colW + (w - 1) * gap,
+    height: h * cellH + (h - 1) * gap,
+  };
+}
+
+/** Hauteur totale de la grille (px) pour une largeur de colonne donnée. */
+export function gridHeight(widgets: WidgetLayoutEntry[], colW: number, gap: number): number {
+  const rows = gridRowCount(widgets);
+  return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
+}
 
 export function WidgetGrid({
   screen,
@@ -34,17 +57,18 @@ export function WidgetGrid({
 }: {
   screen: WidgetScreen;
   editing: boolean;
-  /** Rend le widget `id` à la forme `size` (fourni par le registre du hub). */
   renderWidget: (id: WidgetId, size: WidgetSize) => ReactNode;
   onDragActiveChange?: (active: boolean) => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { layout, toggleVisible, cycleSize, reorder } = useScreenLayout(screen);
+  const { layout, toggleVisible, cycleSize, moveToCell } = useScreenLayout(screen);
+  const [width, setWidth] = useState(0);
 
-  // Hors édition : uniquement les widgets visibles. En édition : tous (déjà filtrés par
-  // piliers dans le layout résolu), les masqués marqués.
   const rendered = editing ? layout.widgets : layout.widgets.filter((w) => w.visible);
+  const colW = width > 0 ? (width - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS : 0;
+
+  const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
   if (rendered.length === 0 && !editing) {
     return (
@@ -54,55 +78,45 @@ export function WidgetGrid({
     );
   }
 
-  // Édition : grille 2 colonnes réordonnable par glisser-déposer (appui long ~1 s).
   if (editing) {
     return (
-      <SortableWidgetGrid
-        items={rendered}
-        renderWidget={renderWidget}
-        onReorder={reorder}
-        onToggleVisible={toggleVisible}
-        onCycleSize={cycleSize}
-        onDragActiveChange={onDragActiveChange}
-      />
+      <View onLayout={onLayout}>
+        {colW > 0 ? (
+          <SortableWidgetGrid
+            items={rendered}
+            colW={colW}
+            gap={GRID_GAP}
+            renderWidget={renderWidget}
+            onMoveToCell={moveToCell}
+            onToggleVisible={toggleVisible}
+            onCycleSize={cycleSize}
+            onDragActiveChange={onDragActiveChange}
+          />
+        ) : null}
+      </View>
     );
   }
 
-  // Affichage : grille 2 colonnes dérivée de l'ordre.
-  const rows = packWidgets(rendered);
-
+  // Affichage : positions absolues dérivées de (col, row).
   return (
-    <View style={styles.grid}>
-      {rows.map((row) => {
-        const key = row.cells.map((c) => c.id).join('+');
-        if (row.full) {
-          const cell = row.cells[0]!;
-          return (
-            <View key={key} style={cell.size === 'large' ? styles.largeCell : undefined}>
-              {renderWidget(cell.id, cell.size)}
-            </View>
-          );
-        }
-        // Ligne de petits carrés : 1 ou 2 cellules ½ largeur (spacer si isolé).
-        return (
-          <View key={key} style={styles.row}>
-            {row.cells.map((cell) => (
-              <View key={cell.id} style={styles.smallCell}>
-                {renderWidget(cell.id, cell.size)}
+    <View onLayout={onLayout} style={{ height: gridHeight(rendered, colW, GRID_GAP) }}>
+      {colW > 0
+        ? rendered.map((w) => {
+            const r = cellRect(w, colW, GRID_GAP);
+            return (
+              <View
+                key={w.id}
+                style={{ position: 'absolute', left: r.left, top: r.top, width: r.width, height: r.height }}
+              >
+                {renderWidget(w.id, w.size)}
               </View>
-            ))}
-            {row.cells.length === 1 ? <View style={styles.smallCell} /> : null}
-          </View>
-        );
-      })}
+            );
+          })
+        : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: { gap: SPACING },
-  row: { flexDirection: 'row', gap: SPACING },
-  smallCell: { flex: 1, aspectRatio: 1 },
-  largeCell: { width: '100%', aspectRatio: LARGE_ASPECT },
   empty: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20, textAlign: 'center' },
 });

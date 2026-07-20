@@ -140,15 +140,51 @@ function defaultSizeOf(screen: WidgetScreen, id: string): WidgetSize {
 }
 
 // ---------------------------------------------------------------------------
+// Grille — colonnes fixes & empreinte des formes
+// ---------------------------------------------------------------------------
+
+/** Nombre de colonnes de la grille (fixe). */
+export const GRID_COLS = 2;
+
+/** Empreinte d'une forme en cases de grille (largeur × hauteur). */
+export interface WidgetSpan {
+  w: number;
+  h: number;
+}
+
+/**
+ * Empreinte de chaque forme (case unité = 1 petit carré) :
+ *  - `small` = 1×1 (petit carré) ;
+ *  - `wide`  = 2×1 (rectangle pleine largeur, mi-hauteur) ;
+ *  - `large` = 2×2 (grand carré pleine largeur).
+ */
+export function sizeSpan(size: WidgetSize): WidgetSpan {
+  if (size === 'small') return { w: 1, h: 1 };
+  if (size === 'wide') return { w: 2, h: 1 };
+  return { w: 2, h: 2 };
+}
+
+/** Borne une colonne pour qu'un widget de largeur `w` tienne dans la grille. */
+export function clampCol(col: number, w: number): number {
+  return Math.max(0, Math.min(col, GRID_COLS - w));
+}
+
+// ---------------------------------------------------------------------------
 // Types de disposition
 // ---------------------------------------------------------------------------
 
-/** Entrée de disposition pour un widget (ordre + visibilité + forme). */
+/**
+ * Entrée de disposition pour un widget : **position en grille** (colonne, ligne) +
+ * visibilité + forme. Placement libre (trous autorisés) ; l'empreinte dérive de `size`.
+ */
 export interface WidgetLayoutEntry {
   id: WidgetId;
   visible: boolean;
-  order: number;
   size: WidgetSize;
+  /** Colonne 0-based (bornée pour que col + span.w ≤ GRID_COLS). */
+  col: number;
+  /** Ligne 0-based. */
+  row: number;
 }
 
 /** Disposition d'un hub. */
@@ -177,22 +213,99 @@ export function coerceSize(raw: unknown, fallback: WidgetSize): WidgetSize {
 }
 
 // ---------------------------------------------------------------------------
+// Placement en grille (logique pure)
+// ---------------------------------------------------------------------------
+
+interface GridRect {
+  col: number;
+  row: number;
+  w: number;
+  h: number;
+}
+
+/** Rectangle (cases) occupé par une entrée. */
+function entryRect(e: WidgetLayoutEntry): GridRect {
+  const s = sizeSpan(e.size);
+  return { col: e.col, row: e.row, w: s.w, h: s.h };
+}
+
+/** Vrai si deux rectangles de cases se chevauchent. */
+function rectsOverlap(a: GridRect, b: GridRect): boolean {
+  return (
+    a.col < b.col + b.w &&
+    b.col < a.col + a.w &&
+    a.row < b.row + b.h &&
+    b.row < a.row + a.h
+  );
+}
+
+/** Première case libre (ligne asc, colonne asc) pour une forme, parmi `occupied`. */
+function firstFreeCell(occupied: WidgetLayoutEntry[], size: WidgetSize): { col: number; row: number } {
+  const { w, h } = sizeSpan(size);
+  const maxRow = occupied.length * 4 + 8; // garde-fou
+  for (let row = 0; row <= maxRow; row += 1) {
+    for (let col = 0; col + w <= GRID_COLS; col += 1) {
+      const cand: GridRect = { col, row, w, h };
+      if (!occupied.some((p) => rectsOverlap(cand, entryRect(p)))) return { col, row };
+    }
+  }
+  return { col: 0, row: maxRow + 1 };
+}
+
+/** Place une liste ordonnée en grille, sans trou, par premier emplacement libre (défaut/migration). */
+function firstFitAll(items: { id: WidgetId; visible: boolean; size: WidgetSize }[]): WidgetLayoutEntry[] {
+  const placed: WidgetLayoutEntry[] = [];
+  for (const it of items) {
+    const { col, row } = firstFreeCell(placed, it.size);
+    placed.push({ id: it.id, visible: it.visible, size: it.size, col, row });
+  }
+  return placed;
+}
+
+/**
+ * Résout les chevauchements après un déplacement : le widget `movedId` est **fixe** (prioritaire),
+ * tout widget qui le chevauche (ou en chevauche un autre) est **poussé vers le bas**. Les lignes ne
+ * font qu'augmenter → terminaison garantie (borne de sécurité). Mutation en place du tableau fourni.
+ */
+function resolveCollisions(widgets: WidgetLayoutEntry[], movedId: WidgetId): void {
+  const guard = widgets.length * widgets.length + widgets.length + 20;
+  for (let k = 0; k < guard; k += 1) {
+    // `moved` toujours en tête → jamais poussé ; les autres par ligne puis colonne croissantes.
+    const ordered = [...widgets].sort((a, b) => {
+      if (a.id === movedId) return -1;
+      if (b.id === movedId) return 1;
+      return a.row - b.row || a.col - b.col;
+    });
+    let pushed = false;
+    for (let i = 0; i < ordered.length; i += 1) {
+      for (let j = i + 1; j < ordered.length; j += 1) {
+        const A = ordered[i]!;
+        const B = ordered[j]!;
+        if (rectsOverlap(entryRect(A), entryRect(B))) {
+          B.row = A.row + sizeSpan(A.size).h; // pousse B juste sous A
+          pushed = true;
+        }
+      }
+    }
+    if (!pushed) break;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Disposition par défaut
 // ---------------------------------------------------------------------------
 
 /**
- * Disposition par défaut d'un hub : tous les widgets, ordre canonique, visibles,
- * chacun à sa forme par défaut. Nouvelle instance à chaque appel (immuable côté appelant).
+ * Disposition par défaut d'un hub : tous les widgets connus, forme par défaut, placés
+ * sans trou (premier emplacement libre) dans l'ordre canonique. Nouvelle instance à chaque appel.
  */
 export function defaultScreenLayout(screen: WidgetScreen): ScreenLayout {
-  return {
-    widgets: WIDGET_REGISTRY[screen].ids.map((id, order) => ({
-      id,
-      order,
-      visible: true,
-      size: defaultSizeOf(screen, id),
-    })),
-  };
+  const items = WIDGET_REGISTRY[screen].ids.map((id) => ({
+    id,
+    visible: true,
+    size: defaultSizeOf(screen, id),
+  }));
+  return { widgets: firstFitAll(items) };
 }
 
 // ---------------------------------------------------------------------------
@@ -211,16 +324,25 @@ function isWidgetAllowed(
   return pillars.some((p) => activePillars.includes(p));
 }
 
-/** Réécrit les `order` en 0..n-1 selon l'ordre courant du tableau (immuable). */
-function recompact(widgets: WidgetLayoutEntry[]): WidgetLayoutEntry[] {
-  return widgets.map((w, order) => ({ ...w, order }));
+/** Entrée brute normalisée en interne (position grille éventuellement absente = ancien format). */
+interface RawEntry {
+  id: WidgetId;
+  visible: boolean;
+  size: WidgetSize;
+  col?: number;
+  row?: number;
+  order?: number;
 }
 
 /**
- * Résout la disposition stockée d'un hub en liste ordonnée, filtrée par piliers, prête
- * à rendre. Mêmes garanties que l'ancien `resolveDashboardLayout`, scopées au hub :
- * ignore les IDs inconnus, ajoute en fin les IDs connus manquants (forward-compat),
- * filtre par pilier, trie par `order`, recompacte.
+ * Résout la disposition stockée d'un hub en liste prête à rendre (positions en grille),
+ * filtrée par piliers :
+ *  - ignore les IDs inconnus, déduplique ;
+ *  - **filtre par pilier** ;
+ *  - si toutes les entrées portent une position grille (`col`/`row`) → les conserve
+ *    (bornées), et place les IDs connus manquants (forward-compat) dans une case libre ;
+ *  - sinon (**ancien format** ordre/`full|compact`, ou vide) → **migration** : tri par
+ *    `order` puis placement sans trou (`firstFitAll`).
  */
 export function resolveScreenLayout(
   stored: ScreenLayout | null | undefined,
@@ -231,94 +353,86 @@ export function resolveScreenLayout(
   const known = knownIds(screen);
 
   const seen = new Set<string>();
-  const entries: WidgetLayoutEntry[] = [];
+  const raw: RawEntry[] = [];
   for (const entry of base.widgets) {
     if (!entry || !known.has(entry.id) || seen.has(entry.id)) continue;
     seen.add(entry.id);
-    entries.push({
+    const col = (entry as Partial<WidgetLayoutEntry>).col;
+    const row = (entry as Partial<WidgetLayoutEntry>).row;
+    const order = (entry as { order?: unknown }).order;
+    raw.push({
       id: entry.id,
       visible: entry.visible !== false,
-      order: typeof entry.order === 'number' ? entry.order : entries.length,
       size: coerceSize(entry.size, defaultSizeOf(screen, entry.id)),
+      col: typeof col === 'number' && Number.isFinite(col) ? col : undefined,
+      row: typeof row === 'number' && Number.isFinite(row) ? row : undefined,
+      order: typeof order === 'number' && Number.isFinite(order) ? order : undefined,
     });
   }
 
-  const sorted = [...entries].sort((a, b) => a.order - b.order);
+  // Filtrage pilier AVANT placement (évite les trous laissés par des widgets de pilier inactif).
+  const filtered = raw.filter((w) => isWidgetAllowed(screen, w.id, activePillars));
+  const missing = WIDGET_REGISTRY[screen].ids.filter(
+    (id) => !seen.has(id) && isWidgetAllowed(screen, id, activePillars),
+  );
 
-  // Forward-compat : widgets connus absents → ajoutés en fin, visibles, forme par défaut.
-  for (const id of WIDGET_REGISTRY[screen].ids) {
-    if (!seen.has(id)) {
-      sorted.push({ id, visible: true, order: sorted.length, size: defaultSizeOf(screen, id) });
+  const hasGrid = filtered.length > 0 && filtered.every((w) => w.col !== undefined && w.row !== undefined);
+
+  if (hasGrid) {
+    const widgets: WidgetLayoutEntry[] = filtered.map((w) => ({
+      id: w.id,
+      visible: w.visible,
+      size: w.size,
+      col: clampCol(w.col!, sizeSpan(w.size).w),
+      row: Math.max(0, w.row!),
+    }));
+    // Forward-compat : widgets connus manquants → placés dans une case libre.
+    for (const id of missing) {
+      const size = defaultSizeOf(screen, id);
+      const { col, row } = firstFreeCell(widgets, size);
+      widgets.push({ id, visible: true, size, col, row });
     }
+    return { widgets };
   }
 
-  const filtered = sorted.filter((w) => isWidgetAllowed(screen, w.id, activePillars));
-  return { widgets: recompact(filtered) };
+  // Ancien format / vide → migration : tri par `order` (fallback ordre du tableau) puis first-fit.
+  const ordered = filtered
+    .map((w, i) => ({ w, k: w.order ?? i }))
+    .sort((a, b) => a.k - b.k)
+    .map(({ w }) => ({ id: w.id, visible: w.visible, size: w.size }));
+  for (const id of missing) {
+    ordered.push({ id, visible: true, size: defaultSizeOf(screen, id) });
+  }
+  return { widgets: firstFitAll(ordered) };
 }
 
 // ---------------------------------------------------------------------------
-// Déplacement
+// Déplacement en grille
 // ---------------------------------------------------------------------------
 
 /**
- * Déplace le widget `id` à l'index cible `toIndex` (borné à [0, n-1]) et recompacte
- * les `order`. Pur / immuable. Id inconnu → layout recompacté inchangé.
+ * Déplace le widget `id` vers la case cible (`col`, `row`) puis **résout les collisions**
+ * en poussant vers le bas les widgets chevauchés (trous autorisés). Pur / immuable. La
+ * colonne est bornée pour que l'empreinte tienne dans la grille. Id inconnu → inchangé.
  */
-export function moveWidget(
+export function moveWidgetToCell(
   layout: ScreenLayout,
   id: WidgetId,
-  toIndex: number,
+  col: number,
+  row: number,
 ): ScreenLayout {
-  const widgets = [...layout.widgets];
-  const from = widgets.findIndex((w) => w.id === id);
-  if (from === -1) {
-    return { widgets: recompact(widgets) };
-  }
-  const clamped = Math.max(0, Math.min(toIndex, widgets.length - 1));
-  const [moved] = widgets.splice(from, 1);
-  widgets.splice(clamped, 0, moved!);
-  return { widgets: recompact(widgets) };
+  const widgets = layout.widgets.map((w) => ({ ...w }));
+  const moved = widgets.find((w) => w.id === id);
+  if (!moved) return { widgets };
+  moved.col = clampCol(Math.round(col), sizeSpan(moved.size).w);
+  moved.row = Math.max(0, Math.round(row));
+  resolveCollisions(widgets, id);
+  return { widgets };
 }
 
-// ---------------------------------------------------------------------------
-// Packing de la grille 2 colonnes
-// ---------------------------------------------------------------------------
-
-/** Une ligne de la grille : 1 cellule pleine largeur, ou 1-2 petits carrés. */
-export interface WidgetRow {
-  cells: WidgetLayoutEntry[];
-  /** Vrai si la ligne occupe toute la largeur (`wide`/`large`). */
-  full: boolean;
-}
-
-/**
- * Coule une liste ordonnée de widgets en lignes de grille 2 colonnes :
- *  - deux `small` **consécutifs** → même ligne (2 cellules) ;
- *  - `wide` / `large` → ligne pleine largeur (1 cellule) ;
- *  - `small` isolé → ligne à 1 cellule (colonne gauche, droite vide).
- *
- * Déterministe : dérive du seul **ordre** (aucune position stockée).
- */
-export function packWidgets(entries: WidgetLayoutEntry[]): WidgetRow[] {
-  const rows: WidgetRow[] = [];
-  let i = 0;
-  while (i < entries.length) {
-    const e = entries[i]!;
-    if (e.size === 'small') {
-      const next = entries[i + 1];
-      if (next && next.size === 'small') {
-        rows.push({ cells: [e, next], full: false });
-        i += 2;
-      } else {
-        rows.push({ cells: [e], full: false });
-        i += 1;
-      }
-    } else {
-      rows.push({ cells: [e], full: true });
-      i += 1;
-    }
-  }
-  return rows;
+/** Nombre de lignes occupées par la disposition (hauteur de grille, pour le rendu). */
+export function gridRowCount(entries: WidgetLayoutEntry[]): number {
+  return entries.reduce((max, e) => Math.max(max, e.row + sizeSpan(e.size).h), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -330,17 +444,30 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
-/** Normalise une entrée brute en `WidgetLayoutEntry` pour un hub, ou `null` si invalide. */
-function parseEntry(raw: unknown, screen: WidgetScreen): WidgetLayoutEntry | null {
+/**
+ * Normalise une entrée brute en `WidgetLayoutEntry` pour un hub, ou `null` si invalide.
+ * Conserve la position grille (`col`/`row`) si présente, et `order` (ancien format) pour la
+ * migration ultérieure par `resolveScreenLayout`. Une entrée sans position est placée à
+ * (0,0) provisoirement — la résolution la repositionnera (first-fit) puisqu'elle n'a pas de grille.
+ */
+function parseEntry(raw: unknown, screen: WidgetScreen): WidgetLayoutEntry & { order?: number } | null {
   if (!isRecord(raw)) return null;
   const id = raw['id'];
   if (typeof id !== 'string' || !knownIds(screen).has(id)) return null;
+  const col = raw['col'];
+  const row = raw['row'];
   const order = raw['order'];
+  const hasCol = typeof col === 'number' && Number.isFinite(col);
+  const hasRow = typeof row === 'number' && Number.isFinite(row);
   return {
     id: id as WidgetId,
     visible: raw['visible'] !== false,
-    order: typeof order === 'number' && Number.isFinite(order) ? order : 0,
     size: coerceSize(raw['size'], defaultSizeOf(screen, id)),
+    // Sentinelle `NaN` si la position grille est absente (ancien format) → `resolveScreenLayout`
+    // détecte le non-fini et migre par first-fit. Jamais persisté tel quel (toujours résolu avant).
+    col: hasCol ? (col as number) : Number.NaN,
+    row: hasRow ? (row as number) : Number.NaN,
+    ...(typeof order === 'number' && Number.isFinite(order) ? { order: order as number } : {}),
   };
 }
 

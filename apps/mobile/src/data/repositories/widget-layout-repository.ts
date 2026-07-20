@@ -19,7 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   defaultScreenLayout,
-  moveWidget,
+  moveWidgetToCell,
   parseMultiScreenLayout,
   resolveScreenLayout,
   PILLARS,
@@ -78,7 +78,8 @@ export function useScreenLayout(screen: WidgetScreen): {
   toggleVisible: (id: WidgetId) => void;
   setSize: (id: WidgetId, size: WidgetSize) => void;
   cycleSize: (id: WidgetId) => void;
-  reorder: (id: WidgetId, toIndex: number) => void;
+  /** Déplace le widget vers la case (col, ligne) ; pousse les widgets chevauchés. */
+  moveToCell: (id: WidgetId, col: number, row: number) => void;
 } {
   const { settings, isLoading } = useSettings();
 
@@ -119,52 +120,40 @@ export function useScreenLayout(screen: WidgetScreen): {
     [screen, persistScreen],
   );
 
-  const setSize = useCallback(
+  // Applique une nouvelle forme puis re-résout les collisions (agrandir peut chevaucher les
+  // voisins) : on replace le widget sur sa propre case, ce qui pousse les chevauchés.
+  const applySize = useCallback(
     (id: WidgetId, size: WidgetSize) => {
       const full = fullScreenFrom(storedRawRef.current, screen);
-      persistScreen({
+      const resized: ScreenLayout = {
         widgets: full.widgets.map((w) => (w.id === id ? { ...w, size } : w)),
-      });
+      };
+      const target = resized.widgets.find((w) => w.id === id);
+      persistScreen(target ? moveWidgetToCell(resized, id, target.col, target.row) : resized);
     },
     [screen, persistScreen],
   );
+
+  const setSize = useCallback((id: WidgetId, size: WidgetSize) => applySize(id, size), [applySize]);
 
   const cycleSize = useCallback(
     (id: WidgetId) => {
       const full = fullScreenFrom(storedRawRef.current, screen);
-      persistScreen({
-        widgets: full.widgets.map((w) =>
-          w.id === id ? { ...w, size: SIZE_CYCLE[w.size] } : w,
-        ),
-      });
+      const current = full.widgets.find((w) => w.id === id);
+      if (current) applySize(id, SIZE_CYCLE[current.size]);
+    },
+    [screen, applySize],
+  );
+
+  const moveToCell = useCallback(
+    (id: WidgetId, col: number, row: number) => {
+      const full = fullScreenFrom(storedRawRef.current, screen);
+      persistScreen(moveWidgetToCell(full, id, col, row));
     },
     [screen, persistScreen],
   );
 
-  const reorder = useCallback(
-    (id: WidgetId, toIndex: number) => {
-      // Le drag manipule la vue filtrée (indices contigus des widgets affichés). On reporte
-      // le mouvement sur le layout complet en préservant la position relative des widgets
-      // filtrés parmi les widgets stockés (dérivé du MÊME `full`/ref que le déplacement).
-      const full = fullScreenFrom(storedRawRef.current, screen);
-      const visibleOrder = resolveScreenLayout(full, screen, activePillars).widgets.map(
-        (w) => w.id,
-      );
-      const targetId = visibleOrder[toIndex];
-
-      let next: ScreenLayout;
-      if (targetId == null) {
-        next = moveWidget(full, id, full.widgets.length - 1);
-      } else {
-        const fullTargetIndex = full.widgets.findIndex((w) => w.id === targetId);
-        next = moveWidget(full, id, fullTargetIndex === -1 ? toIndex : fullTargetIndex);
-      }
-      persistScreen(next);
-    },
-    [screen, activePillars, persistScreen],
-  );
-
-  return { layout, isLoading, toggleVisible, setSize, cycleSize, reorder };
+  return { layout, isLoading, toggleVisible, setSize, cycleSize, moveToCell };
 }
 
 // Repli explicite : layout par défaut d'un hub (consommé hors hook si besoin).

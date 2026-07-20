@@ -10,6 +10,35 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/widgets-v2-dnd` — vrai quadrillage : placement par cases + collision
+
+> Refonte du modèle de grille (retour Damien : « vrai quadrillage », deux petits carrés
+> empilables). Logique pure testée (761 tests). typecheck + lint verts. **Recette device requise.**
+
+**Modifié (re-architecture du moteur de widgets)**
+- **Placement par coordonnées de grille** ([widgets.ts](packages/shared/src/widgets.ts)) : chaque widget
+  porte `col`/`row` (au lieu d'un simple `order`) ; empreinte dérivée de la forme (`sizeSpan` : small
+  1×1, wide 2×1, large 2×2). **Placement libre** (trous autorisés) → on peut empiler deux petits carrés
+  dans la même colonne. `moveWidgetToCell` place puis **pousse vers le bas** les widgets chevauchés
+  (résolution de collision, cascade bornée). `defaultScreenLayout`/`resolveScreenLayout` migrent l'ancien
+  format (ordre + `full|compact`, sans grille) par premier emplacement libre (`firstFitAll`).
+- **Rendu en grille absolue** ([WidgetGrid.tsx](apps/mobile/src/components/widgets/WidgetGrid.tsx)) :
+  case unité = ½ largeur (hauteur de ligne = largeur de colonne).
+- **Drag aimanté à la case** ([SortableWidgetGrid.tsx](apps/mobile/src/components/widgets/SortableWidgetGrid.tsx)) :
+  appui long ~0,7 s, le widget suit le doigt, **case fantôme** accent en prévisualisation (aimantée,
+  empreinte de la forme) ; drop → `moveToCell`. Cible calculée en JS depuis la position visuelle
+  (translation), worklets sans appel JS synchrone.
+- Repository : `reorder(index)` → `moveToCell(col,row)` ; `setSize`/`cycleSize` re-résolvent les
+  collisions (agrandir peut chevaucher les voisins)
+  ([widget-layout-repository.ts](apps/mobile/src/data/repositories/widget-layout-repository.ts)).
+
+**Supprimé**
+- Modèle de flux `packWidgets` / `moveWidget` (ordre → pavage) remplacé par la grille par coordonnées.
+
+**Technique / Notes**
+- À surveiller en recette : une carte `wide` riche (graphe/pastilles) dans une case d'**une** unité de
+  haut peut déborder — ajuster la hauteur d'unité ou compacter le rendu `wide` si besoin.
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — fix crash : appui long sur un widget (worklet)
 
 > Crash device reproduit puis corrigé (logcat : `[Worklets] Tried to synchronously call a Remote
