@@ -9,10 +9,10 @@ import { useUnits } from '@/hooks/useUnits';
 import type { Palette } from '@/theme/colors';
 
 /**
- * Types de série exposés dans le sélecteur (C2). `warmup` est traité à part
- * (raccourci 🔥) et `superset` reste hors périmètre (→ C3), d'où leur absence ici.
+ * Types de série exposés dans le sélecteur (C2 + `superset` réintégré en C3).
+ * `warmup` est traité à part (raccourci 🔥), d'où son absence ici.
  */
-const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
+const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight', 'superset'];
 
 /** Valeurs de RPE proposées (échelle 1-10). */
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -24,6 +24,24 @@ type CurrentSetCardProps = {
   totalSets: number;
   /** Ligne « dernière fois » déjà formatée, ou `null` pour la masquer. */
   lastPerfLabel: string | null;
+  /**
+   * Ligne de suggestion de progression (C3), déjà entièrement formatée par le
+   * parent (le parent choisit le texte i18n selon `ProgressionSuggestion.kind`
+   * et formate l'unité — cette carte reste une simple présentation). `null`/
+   * absente = aucune suggestion à afficher. Optionnelle : tant que `workout.tsx`
+   * (Task 11, hors périmètre C3-Task9) ne la calcule pas encore, elle reste
+   * masquée sans casser l'appelant existant.
+   */
+  suggestionLabel?: string | null;
+  /**
+   * Note de l'exercice (C3, persistée par exercice — hors périmètre de la
+   * série). `undefined` = non câblée par le parent (champ masqué, cf. Task 11) ;
+   * `null`/`''` = câblée mais vide (champ visible, contrairement au RPE qui est
+   * masqué par défaut).
+   */
+  note?: string | null;
+  onChangeNote?: (value: string) => void;
+  onBlurNote?: () => void;
   /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
   setType: SetType;
   onSetType: (t: SetType) => void;
@@ -93,6 +111,10 @@ export function CurrentSetCard({
   currentIndex,
   totalSets,
   lastPerfLabel,
+  suggestionLabel,
+  note,
+  onChangeNote,
+  onBlurNote,
   setType,
   onSetType,
   repsValue,
@@ -145,6 +167,10 @@ export function CurrentSetCard({
 
   const renderChip = (type: SetType) => {
     const active = setType === type;
+    // Chip « Superset » : bordure accent (dégagée des autres chips) tant que
+    // non sélectionnée, pour signaler visuellement sa nature de liaison,
+    // conformément à la maquette (chip.super).
+    const isSuperset = type === 'superset';
     return (
       <Pressable
         key={type}
@@ -154,11 +180,17 @@ export function CurrentSetCard({
         style={({ pressed }) => [
           styles.chip,
           { backgroundColor: active ? colors.accent : colors.surfaceAlt },
+          isSuperset && !active && { borderWidth: 1, borderColor: colors.accent },
           pressed && styles.pressed,
         ]}
       >
-        <Text style={[styles.chipText, { color: active ? colors.accentText : colors.textMuted }]}>
-          {t(`workout.setType.${type}`)}
+        <Text
+          style={[
+            styles.chipText,
+            { color: active ? colors.accentText : isSuperset ? colors.accent : colors.textMuted },
+          ]}
+        >
+          {isSuperset ? `🔗 ${t('workout.setType.superset')}` : t(`workout.setType.${type}`)}
         </Text>
       </Pressable>
     );
@@ -170,6 +202,23 @@ export function CurrentSetCard({
       <Text style={[styles.progress, { color: colors.textMuted }]}>
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
       </Text>
+
+      {/* Note d'exercice (C3) : toujours visible dès que câblée par le parent
+          (pas de mode masqué comme le RPE — la note doit rester facile à
+          corriger, ex. réglage de machine). */}
+      {note !== undefined ? (
+        <View style={[styles.noteRow, { backgroundColor: colors.surfaceAlt }]}>
+          <Text style={styles.noteIcon}>📝</Text>
+          <TextInput
+            value={note ?? ''}
+            onChangeText={onChangeNote}
+            onBlur={onBlurNote}
+            placeholder={t('workout.exerciseNote.placeholder')}
+            placeholderTextColor={colors.textMuted}
+            style={[styles.noteInput, { color: colors.text }]}
+          />
+        </View>
+      ) : null}
 
       {/* Sélecteur de type : chips scrollables (fondu + chevron tant qu'il reste du
           contenu à droite) + raccourci 🔥 fixé à droite. */}
@@ -220,6 +269,12 @@ export function CurrentSetCard({
         <Text style={[styles.lastPerf, { color: colors.textMuted }]}>
           {t('workout.lastTime', { perf: lastPerfLabel })}
         </Text>
+      ) : null}
+
+      {/* Suggestion de progression (C3) : purement informative, jamais tappable
+          (pas de Pressable) — le texte est déjà entièrement formaté par le parent. */}
+      {suggestionLabel ? (
+        <Text style={[styles.suggestion, { color: colors.success }]}>{`💡 ${suggestionLabel}`}</Text>
       ) : null}
 
       <View style={styles.fields}>
@@ -418,6 +473,17 @@ const styles = StyleSheet.create({
   chipText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
   warmupChip: { flexShrink: 0 },
   lastPerf: { fontFamily: fontFamily.body, fontSize: 14 },
+  suggestion: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  noteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  noteIcon: { fontSize: 12 },
+  noteInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 12, padding: 0 },
   fields: { flexDirection: 'row', gap: 12, marginTop: 4 },
   field: { flex: 1, gap: 6 },
   fieldLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
