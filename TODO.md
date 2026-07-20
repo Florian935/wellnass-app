@@ -273,7 +273,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**US-C3 — CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
+*Dernière mise à jour : 20/07/2026 (**US-C3 — recette : superset repensé (v2, lien explicite)** : suite au retour
+Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le superset passe d'une liaison
+positionnelle (adjacence) à un **lien explicite** — nouvelle table `workout_superset_pairs` (migration + sync
+rules appliquées), bouton « Lier en superset » → **dialogue de choix** parmi tous les exercices de la séance,
+valable toute la séance. Nouveau composant `SupersetPickerModal`. typecheck/lint/778 tests verts. — **US-C3 —
+CODE LIVRÉ (subagent-driven)** : ajustements en direct — réorganiser/
 machine prise (↑/↓ + « Plus tard »), **superset** (liaison positionnelle, repos différé après la paire), remplacer
 un exercice (picker filtré), **note persistante par exercice** (migration `exercise_notes` appliquée),
 **suggestion de progression** RPE-aware. 8 commits, typecheck/lint/778 tests verts. **Revue finale — 2 bugs
@@ -494,6 +499,14 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     — sans cette ligne, une note n'aurait pas survécu à une resynchro complète. **Action manuelle requise avant
     recette multi-appareils** : coller le fichier mis à jour dans le dashboard PowerSync (Settings → Sync
     Rules) puis Deploy — non automatisable, à faire par Florian ou Damien.
+    **Recette (2 vagues, 20/07/2026)** : (1) indicateur de défilement chips ajouté [voir plus haut] ; (2)
+    **superset revu deux fois** — v1 : action nommée « Lier avec {X} » mais toujours contrainte à un exercice
+    **adjacent** (jugé « pas intuitif » / semblait ne pas marcher) ; **v2 (actuelle)** : lien **explicite**
+    (nouvelle table `workout_superset_pairs`, migration appliquée + sync rules mises à jour **dans le même
+    lot** cette fois) — bouton « Lier en superset » ouvre un **dialogue** listant tous les autres exercices de
+    la séance (plus de contrainte de position), lien valable pour **toute la séance** (tous les rangs
+    suivants). Nouveau composant `SupersetPickerModal`. Limite connue notée : un `exercise_plan` marqué
+    `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
 - [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine

@@ -10,6 +10,35 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 20/07/2026 — `feature/refonte-muscu-c3` — Recette : superset repensé (lien explicite, choix libre)
+
+**Ajouté**
+- **Table `workout_superset_pairs`** (migration `20260720200254`) : liaison superset explicite par séance
+  (exercise_id_a ↔ exercise_id_b), RLS utilisateur, soft delete. Ajoutée au schéma PowerSync **et** aux sync
+  rules (bucket `user_data`) dans le même lot.
+- **`SupersetPickerModal`** ([SupersetPickerModal.tsx](apps/mobile/src/components/workout/SupersetPickerModal.tsx)) :
+  dialogue listant les autres exercices de la séance (non terminés, non déjà appariés) pour choisir librement
+  le partenaire — plus de contrainte d'adjacence.
+- Repository : `useSupersetPairs` (map bidirectionnelle), `linkSupersetPair` (un exercice = un seul partenaire,
+  rompt toute paire existante avant d'en créer une), `unlinkSupersetPair`.
+
+**Modifié**
+- **Mécanisme superset entièrement revu** (2 vagues de recette) : d'abord une action nommée « Lier avec {X} »
+  mais toujours limitée à un exercice **adjacent** (jugé « pas intuitif »), puis **lien explicite** choisi
+  librement dans un dialogue, valable pour **toute la séance**. `workout.tsx` cherche désormais le partenaire
+  via la table (`findSupersetPartnerSet`), plus par adjacence. Le chip « Superset » du sélecteur de type est
+  retiré (remplacé par l'UI dédiée sur la carte focus). `ExerciseList` affiche « 🔗 Superset avec {nom} » par
+  exercice lié.
+- i18n FR/EN : `workout.superset.{link,linked,orphaned,remove,pickerTitle,pickerEmpty}` (parité vérifiée).
+
+**Technique / Notes**
+- Migration cloud appliquée (go Florian). typecheck/lint verts, 778 tests verts, parité i18n 0/0.
+- **Limite connue** (hors demande initiale, notée) : un `exercise_plan` marqué `superset` côté admin ne crée
+  plus de paire automatique au démarrage d'une séance planifiée — seule la liaison en direct (dialogue)
+  fonctionne. `set_type='superset'` reste dans l'enum mais n'est plus le mécanisme de liaison.
+- **Rappel action manuelle** : les sync rules PowerSync (2 tables C3 : `exercise_notes` + `workout_superset_pairs`)
+  doivent être **déployées dans le dashboard PowerSync** avant recette multi-appareils.
+
 ### 20/07/2026 — `feature/refonte-muscu-c3` — US-C3 : ajustements en direct (CODE LIVRÉ, subagent-driven)
 
 **Ajouté**
