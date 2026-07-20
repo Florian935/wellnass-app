@@ -13,7 +13,7 @@
  * worklets du geste ne passent que des primitives via `runOnJS`.
  */
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -75,6 +75,23 @@ export function SortableWidgetGrid({
   const [activeId, setActiveId] = useState<WidgetId | null>(null);
   // Disposition prévisualisée pendant le drag (résultat de moveWidgetToCell), ou null au repos.
   const [preview, setPreview] = useState<WidgetLayoutEntry[] | null>(null);
+  // Disposition **optimiste** appliquée dès le drop : base de rendu = position finale immédiate
+  // (pas de retour à l'état d'origine avant que la persistance ne se propage → pas de « replay »).
+  // Relâchée après un court délai, quand `items` (repository) a rattrapé.
+  const [committed, setCommitted] = useState<WidgetLayoutEntry[] | null>(null);
+  // Dernière case cible visée (throttle : on ne recalcule le preview qu'au changement de case).
+  const lastTarget = useRef<{ col: number; row: number } | null>(null);
+
+  // Layout de base courant : optimiste si présent, sinon la source (repository).
+  const layout = committed ?? items;
+
+  // Réconciliation : après le drop, on lâche l'optimiste (la persistance a eu le temps d'arriver ;
+  // `items` reflète alors la même disposition → transition transparente).
+  useEffect(() => {
+    if (!committed) return;
+    const h = setTimeout(() => setCommitted(null), 350);
+    return () => clearTimeout(h);
+  }, [committed]);
 
   const step = colW + gap;
 
@@ -93,6 +110,7 @@ export function SortableWidgetGrid({
 
   const begin = useCallback(
     (id: WidgetId) => {
+      lastTarget.current = null;
       setActiveId(id);
       onDragActiveChange?.(true);
     },
@@ -101,43 +119,52 @@ export function SortableWidgetGrid({
 
   const update = useCallback(
     (id: WidgetId, tx: number, ty: number) => {
-      const entry = items.find((w) => w.id === id);
+      const entry = layout.find((w) => w.id === id);
       if (!entry) return;
-      const { col, row } = targetCell(entry, tx, ty);
-      // Disposition résultante (avec poussée) → les autres modules s'y déplacent en live.
-      setPreview(moveWidgetToCell({ widgets: items }, id, col, row).widgets);
+      const t = targetCell(entry, tx, ty);
+      // Throttle : ne recalcule (et re-rend) que si la case cible a changé.
+      if (lastTarget.current && lastTarget.current.col === t.col && lastTarget.current.row === t.row) {
+        return;
+      }
+      lastTarget.current = t;
+      // Disposition résultante (compactée) → les autres modules s'y déplacent en live.
+      setPreview(moveWidgetToCell({ widgets: layout }, id, t.col, t.row).widgets);
     },
-    [items, targetCell],
+    [layout, targetCell],
   );
 
   const settle = useCallback(() => {
     setActiveId(null);
     setPreview(null);
+    lastTarget.current = null;
     onDragActiveChange?.(false);
   }, [onDragActiveChange]);
 
   const end = useCallback(
     (id: WidgetId, tx: number, ty: number) => {
-      const entry = items.find((w) => w.id === id);
-      if (entry) {
-        const { col, row } = targetCell(entry, tx, ty);
-        if (col !== entry.col || row !== entry.row) onMoveToCell(id, col, row);
+      const entry = layout.find((w) => w.id === id);
+      if (!entry) return;
+      const t = targetCell(entry, tx, ty);
+      if (t.col !== entry.col || t.row !== entry.row) {
+        // Applique la disposition finale en local (base immédiate) PUIS persiste.
+        setCommitted(moveWidgetToCell({ widgets: layout }, id, t.col, t.row).widgets);
+        onMoveToCell(id, t.col, t.row);
       }
     },
-    [items, targetCell, onMoveToCell],
+    [layout, targetCell, onMoveToCell],
   );
 
-  // Positions courantes (preview pendant le drag, sinon items) indexées par id.
+  // Positions courantes (preview pendant le drag, sinon le layout de base) indexées par id.
   const posById = useMemo(() => {
     const m = new Map<WidgetId, WidgetLayoutEntry>();
-    for (const e of preview ?? items) m.set(e.id, e);
+    for (const e of preview ?? layout) m.set(e.id, e);
     return m;
-  }, [preview, items]);
+  }, [preview, layout]);
 
   const height = useMemo(() => {
-    const rows = gridRowCount(preview ?? items);
+    const rows = gridRowCount(preview ?? layout);
     return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
-  }, [preview, items, colW, gap]);
+  }, [preview, layout, colW, gap]);
 
   // Case fantôme = emplacement d'atterrissage du module tiré (dans la disposition prévisualisée).
   const previewRect =
@@ -166,8 +193,8 @@ export function SortableWidgetGrid({
         />
       ) : null}
 
-      {items.map((entry) => {
-        const base = rectOf(entry, colW, gap); // position de montage (absolue, d'après `items`)
+      {layout.map((entry) => {
+        const base = rectOf(entry, colW, gap); // position de montage (absolue, d'après `layout`)
         const target = posById.get(entry.id) ?? entry;
         const tRect = rectOf(target, colW, gap);
         return (
