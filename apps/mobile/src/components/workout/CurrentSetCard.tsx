@@ -18,9 +18,14 @@ import type { Palette } from '@/theme/colors';
  */
 const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
 
-/** État de la liaison superset de la série courante, dérivé par le parent. */
+/**
+ * État de la liaison superset de la série courante, dérivé par le parent.
+ * `'linkable'` : l'exercice n'est lié à aucun partenaire pour l'instant, mais
+ * d'autres exercices sont disponibles dans la séance (choix libre via
+ * dialogue — révision 20/07/2026, remplace l'ancienne contrainte d'adjacence).
+ */
 export type SupersetLinkState =
-  | { status: 'linkable'; partnerName: string }
+  | { status: 'linkable' }
   | { status: 'linked'; partnerName: string }
   | { status: 'orphaned' }
   | null;
@@ -63,7 +68,8 @@ type CurrentSetCardProps = {
    * = rien à afficher (pas de voisin éligible, type non-superset).
    */
   supersetLink?: SupersetLinkState;
-  onLinkSuperset?: () => void;
+  /** Ouvre le dialogue de choix du partenaire (n'importe quel exercice de la séance). */
+  onRequestLinkSuperset?: () => void;
   onUnlinkSuperset?: () => void;
   /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
   setType: SetType;
@@ -139,7 +145,7 @@ export function CurrentSetCard({
   onChangeNote,
   onBlurNote,
   supersetLink,
-  onLinkSuperset,
+  onRequestLinkSuperset,
   onUnlinkSuperset,
   setType,
   onSetType,
@@ -286,7 +292,7 @@ export function CurrentSetCard({
       {supersetLink?.status === 'linkable' ? (
         <Pressable
           accessibilityRole="button"
-          onPress={onLinkSuperset}
+          onPress={onRequestLinkSuperset}
           style={({ pressed }) => [
             styles.supersetBtn,
             { borderColor: colors.accent },
@@ -294,7 +300,7 @@ export function CurrentSetCard({
           ]}
         >
           <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
-            {`🔗 ${t('workout.superset.linkWith', { name: supersetLink.partnerName })}`}
+            {`🔗 ${t('workout.superset.link')}`}
           </Text>
         </Pressable>
       ) : supersetLink?.status === 'linked' ? (

@@ -33,6 +33,12 @@ type ExerciseListProps = {
   onReplace?: (exerciseId: string) => void;
   /** Note persistante par exercice (map exerciseId → note), affichée en lecture. */
   exerciseNotes?: Record<string, string | null>;
+  /**
+   * Paires superset de la séance (C3, lien explicite) — map bidirectionnelle
+   * `exerciseId → exerciseId du partenaire`. Sert à afficher la liaison dans
+   * la liste (visible même replié), résolue via `entries` pour le nom.
+   */
+  supersetPairs?: Record<string, string>;
   colors: Palette;
 };
 
@@ -72,6 +78,7 @@ export function ExerciseList({
   onSendLater,
   onReplace,
   exerciseNotes,
+  supersetPairs,
   colors,
 }: ExerciseListProps) {
   const { t } = useTranslation();
@@ -102,6 +109,10 @@ export function ExerciseList({
         const isCurrent = entry.exerciseId === currentExerciseId;
         const isExpanded = isExpandedFor(entry.exerciseId);
         const exerciseNote = exerciseNotes?.[entry.exerciseId];
+        const partnerExerciseId = supersetPairs?.[entry.exerciseId];
+        const partnerName = partnerExerciseId
+          ? entries.find((e) => e.exerciseId === partnerExerciseId)?.exerciseName
+          : undefined;
 
         return (
           <View
@@ -143,6 +154,13 @@ export function ExerciseList({
             {exerciseNote ? (
               <Text numberOfLines={1} style={[styles.note, { color: colors.textMuted }]}>
                 {`📝 ${exerciseNote}`}
+              </Text>
+            ) : null}
+
+            {/* Liaison superset (C3, lien explicite) : visible même replié. */}
+            {partnerName ? (
+              <Text numberOfLines={1} style={[styles.supersetTag, { color: colors.accent }]}>
+                {`🔗 ${t('workout.superset.linked', { name: partnerName })}`}
               </Text>
             ) : null}
 
@@ -284,6 +302,13 @@ const styles = StyleSheet.create({
   note: {
     fontFamily: fontFamily.body,
     fontStyle: 'italic',
+    fontSize: 11,
+    paddingHorizontal: 16,
+    marginTop: -6,
+    marginBottom: 6,
+  },
+  supersetTag: {
+    fontFamily: fontFamily.bodySemi,
     fontSize: 11,
     paddingHorizontal: 16,
     marginTop: -6,

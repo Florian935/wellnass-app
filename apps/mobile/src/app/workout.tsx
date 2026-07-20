@@ -9,20 +9,24 @@ import { Button } from '@/components/Button';
 import { CurrentSetCard, type SupersetLinkState } from '@/components/workout/CurrentSetCard';
 import { ExerciseList } from '@/components/workout/ExerciseList';
 import { RestOverlay } from '@/components/workout/RestOverlay';
+import { SupersetPickerModal } from '@/components/workout/SupersetPickerModal';
 import {
   addSet,
   cancelWorkout,
   finishWorkout,
+  linkSupersetPair,
   removeSet,
   reorderExercise,
   sendExerciseToEnd,
   setExerciseNote,
+  unlinkSupersetPair,
   updateSet,
   useActiveWorkout,
   useExerciseNote,
   useExerciseNotes,
   useLastPerformance,
   useSessionRest,
+  useSupersetPairs,
   type WorkoutEntry,
   type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
@@ -88,54 +92,26 @@ function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: FocusOverride
 type SupersetPartner = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number] };
 
 /**
- * Cherche le partenaire superset de la série `entries[entryIndex].sets[rang]`
- * (si elle est bien `setType === 'superset'`) : un exercice ADJACENT (index-1
- * ou index+1 dans `entries`) dont la série au MÊME rang est elle aussi
- * `setType === 'superset'`. Retourne `null` si la série n'est pas superset ou
- * si aucun partenaire adjacent n'a de série correspondante au même rang
- * (dégradation silencieuse — comportement standard dans ce cas).
+ * Cherche la série JUMELLE (même rang) de l'exercice lié en superset à
+ * `exerciseId` — lien EXPLICITE (table `workout_superset_pairs`, carte
+ * `exerciseId → exerciseId partenaire`), plus de contrainte d'adjacence
+ * (révision recette 20/07/2026 : le mécanisme initial imposait aux 2
+ * exercices d'être voisins dans la liste, jugé trop contraignant). `null` si
+ * l'exercice n'est lié à personne, si le partenaire n'a pas de série à ce
+ * rang (progression différente), ou si le partenaire a quitté la séance
+ * (dégradation silencieuse — repos normal dans tous ces cas).
  */
-function findSupersetPartner(
+function findSupersetPartnerSet(
   entries: WorkoutEntry[],
-  entryIndex: number,
+  pairs: Record<string, string>,
+  exerciseId: string,
   rang: number,
 ): SupersetPartner | null {
-  const entry = entries[entryIndex];
-  const set = entry?.sets[rang];
-  if (!set || set.setType !== 'superset') return null;
-
-  for (const neighborIndex of [entryIndex - 1, entryIndex + 1]) {
-    const neighbor = entries[neighborIndex];
-    const neighborSet = neighbor?.sets[rang];
-    if (neighbor && neighborSet && neighborSet.setType === 'superset') {
-      return { entry: neighbor, set: neighborSet };
-    }
-  }
-  return null;
-}
-
-/**
- * Cherche un exercice ADJACENT (index-1 ou index+1) ayant une série NON
- * VALIDÉE au MÊME rang que `entries[entryIndex].sets[rang]` — condition
- * suffisante pour proposer de LIER les deux en superset en un tap, quel que
- * soit le type actuel des deux séries (c'est justement l'action qui va les
- * faire passer à `superset` toutes les deux). Revu 20/07/2026 (retour
- * Florian « pas intuitif ») : remplace le double toggle manuel du type sur
- * chaque carte par une action unique nommant le partenaire.
- */
-function findLinkableNeighbor(
-  entries: WorkoutEntry[],
-  entryIndex: number,
-  rang: number,
-): SupersetPartner | null {
-  for (const neighborIndex of [entryIndex - 1, entryIndex + 1]) {
-    const neighbor = entries[neighborIndex];
-    const neighborSet = neighbor?.sets[rang];
-    if (neighbor && neighborSet && !neighborSet.done) {
-      return { entry: neighbor, set: neighborSet };
-    }
-  }
-  return null;
+  const partnerExerciseId = pairs[exerciseId];
+  if (!partnerExerciseId) return null;
+  const partnerEntry = entries.find((e) => e.exerciseId === partnerExerciseId);
+  const partnerSet = partnerEntry?.sets[rang];
+  return partnerEntry && partnerSet ? { entry: partnerEntry, set: partnerSet } : null;
 }
 
 /** État d'édition local des champs de la série courante (`null` = non modifié → repli). */
@@ -231,16 +207,18 @@ export default function WorkoutScreen() {
   // besoin d'effet de resynchronisation).
   const [edit, setEdit] = useState<{ setId: string; state: EditState } | null>(null);
   const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
+  const [supersetPickerOpen, setSupersetPickerOpen] = useState(false);
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
-  const currentEntryIndex = current ? entries.findIndex((e) => e.exerciseId === current.entry.exerciseId) : -1;
   const currentExerciseId = current?.entry.exerciseId ?? '';
 
   // Dernière perf de l'exercice courant (requête stable : '' → aucune ligne).
   const lastPerf = useLastPerformance(currentExerciseId);
   const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
   const allExerciseNotes = useExerciseNotes();
+  // Paires superset de la séance (requête stable : '' → aucune ligne tant qu'`active` n'est pas résolu).
+  const supersetPairs = useSupersetPairs(active?.id ?? '');
 
   // Décompte du repos : recalcule le restant chaque seconde ; à 0 → vibration + fin.
   useEffect(() => {
@@ -304,32 +282,38 @@ export default function WorkoutScreen() {
     return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
   })();
 
-  // Liaison superset (C3, revue 20/07/2026) : soit la série courante est déjà
-  // `superset` (cherche son partenaire réel, `orphaned` si aucun) ; soit elle
-  // ne l'est pas (cherche un voisin éligible à lier en un tap).
+  // Liaison superset (C3, révision recette 20/07/2026 — lien explicite, choix
+  // libre du partenaire, valable pour toute la séance) : soit l'exercice
+  // courant est déjà lié à un partenaire (via `supersetPairs`), soit il ne
+  // l'est pas mais d'autres exercices restent disponibles pour le lier.
+  const partnerExerciseId = current ? supersetPairs[current.entry.exerciseId] : undefined;
+  const supersetCandidates = current
+    ? entries
+        .filter((e) => e.exerciseId !== current.entry.exerciseId)
+        .filter((e) => e.sets.some((s) => !s.done))
+        .filter((e) => !supersetPairs[e.exerciseId])
+        .map((e) => ({ exerciseId: e.exerciseId, exerciseName: e.exerciseName }))
+    : [];
+
   const supersetLink: SupersetLinkState = (() => {
     if (!current) return null;
-    if (current.set.setType === 'superset') {
-      const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
-      return partner ? { status: 'linked', partnerName: partner.entry.exerciseName } : { status: 'orphaned' };
+    if (partnerExerciseId) {
+      const partnerEntry = entries.find((e) => e.exerciseId === partnerExerciseId);
+      return partnerEntry ? { status: 'linked', partnerName: partnerEntry.exerciseName } : { status: 'orphaned' };
     }
-    const neighbor = findLinkableNeighbor(entries, currentEntryIndex, current.rang);
-    return neighbor ? { status: 'linkable', partnerName: neighbor.entry.exerciseName } : null;
+    return supersetCandidates.length > 0 ? { status: 'linkable' } : null;
   })();
 
-  const onLinkSuperset = () => {
-    if (!current) return;
-    const neighbor = findLinkableNeighbor(entries, currentEntryIndex, current.rang);
-    if (!neighbor) return;
-    void updateSet(current.set.id, { setType: 'superset' });
-    void updateSet(neighbor.set.id, { setType: 'superset' });
+  const onRequestLinkSuperset = () => setSupersetPickerOpen(true);
+
+  const onPickSupersetPartner = (partnerId: string) => {
+    if (current) void linkSupersetPair(workoutId, current.entry.exerciseId, partnerId);
+    setSupersetPickerOpen(false);
   };
 
   const onUnlinkSuperset = () => {
     if (!current) return;
-    void updateSet(current.set.id, { setType: 'normal' });
-    const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
-    if (partner) void updateSet(partner.set.id, { setType: 'normal' });
+    void unlinkSupersetPair(workoutId, current.entry.exerciseId);
   };
 
   // Édition ne valant que pour la série courante (sinon on repart du pré-remplissage).
@@ -401,12 +385,13 @@ export default function WorkoutScreen() {
     }
     void updateSet(current.set.id, patch);
 
-    // Superset (spec §2.2) : si la série validée a un partenaire adjacent au
-    // même rang pas encore validé, on bascule directement dessus SANS repos.
-    // `partner.set.done` reflète l'état de CE rendu (avant la validation en
-    // cours, qui ne porte que sur `current.set`) — donc fiable ici même si le
-    // `updateSet` ci-dessus est encore en vol côté PowerSync.
-    const partner = findSupersetPartner(entries, currentEntryIndex, current.rang);
+    // Superset (spec §2.2, lien explicite révisé 20/07/2026) : si l'exercice a
+    // un partenaire lié avec une série au même rang pas encore validée, on
+    // bascule directement dessus SANS repos. `partner.set.done` reflète l'état
+    // de CE rendu (avant la validation en cours, qui ne porte que sur
+    // `current.set`) — donc fiable ici même si le `updateSet` ci-dessus est
+    // encore en vol côté PowerSync.
+    const partner = findSupersetPartnerSet(entries, supersetPairs, current.entry.exerciseId, current.rang);
     if (partner && !partner.set.done) {
       // Cible le RANG exact de la série jumelle (pas la 1ʳᵉ série non validée
       // de l'exercice partenaire, qui pourrait être un échauffement antérieur
@@ -521,7 +506,7 @@ export default function WorkoutScreen() {
             onChangeNote={onChangeNote}
             onBlurNote={onBlurNote}
             supersetLink={supersetLink}
-            onLinkSuperset={onLinkSuperset}
+            onRequestLinkSuperset={onRequestLinkSuperset}
             onUnlinkSuperset={onUnlinkSuperset}
             setType={current.set.setType}
             onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
@@ -565,6 +550,7 @@ export default function WorkoutScreen() {
             onSendLater={onSendLater}
             onReplace={onReplace}
             exerciseNotes={allExerciseNotes}
+            supersetPairs={supersetPairs}
             colors={colors}
           />
         ) : null}
@@ -581,6 +567,14 @@ export default function WorkoutScreen() {
           onToggleCollapse={() => setRestCollapsed((c) => !c)}
         />
       ) : null}
+
+      <SupersetPickerModal
+        visible={supersetPickerOpen}
+        onClose={() => setSupersetPickerOpen(false)}
+        candidates={supersetCandidates}
+        onPick={onPickSupersetPartner}
+        colors={colors}
+      />
     </SafeAreaView>
   );
 }

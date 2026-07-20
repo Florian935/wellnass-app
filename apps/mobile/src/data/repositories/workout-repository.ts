@@ -973,3 +973,82 @@ export async function setExerciseNote(
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Liaison superset (table `workout_superset_pairs`, US Refonte-C3 révisée)
+// ---------------------------------------------------------------------------
+//
+// Révision recette (20/07/2026) : le mécanisme initial (adjacence + même rang,
+// déduit du seul `set_type`) obligeait les 2 exercices à être voisins dans la
+// liste — jugé trop contraignant par Florian. Remplacé par un lien EXPLICITE,
+// choisi librement par l'utilisateur (n'importe quel exercice de la séance),
+// valable pour toute la séance (tous les rangs suivants, pas juste la série en
+// cours). `set_type = 'superset'` (C2) n'est plus utilisé comme signal de
+// liaison — laissé en place dans l'enum, simplement inerte pour ce mécanisme.
+
+/** Ligne brute d'une paire superset. */
+type SupersetPairRow = { exercise_id_a: string; exercise_id_b: string };
+
+/**
+ * Paires superset actives de la séance, sous forme de map BIDIRECTIONNELLE
+ * `exerciseId → exerciseId du partenaire` (si A↔B, la map contient à la fois
+ * `map[A]=B` et `map[B]=A`). Au plus une paire par exercice à la fois (pas de
+ * circuits à 3+, cf. spec) — garanti par `linkSupersetPair`.
+ */
+export function useSupersetPairs(workoutId: string): Record<string, string> {
+  const { data } = useQuery<SupersetPairRow>(
+    'SELECT exercise_id_a, exercise_id_b FROM workout_superset_pairs WHERE workout_id = ? AND deleted_at IS NULL',
+    [workoutId],
+  );
+  const map: Record<string, string> = {};
+  for (const row of data) {
+    map[row.exercise_id_a] = row.exercise_id_b;
+    map[row.exercise_id_b] = row.exercise_id_a;
+  }
+  return map;
+}
+
+/**
+ * Lie deux exercices en superset pour toute la séance. Un exercice ne pouvant
+ * être lié qu'à un seul partenaire à la fois (pas de circuits), toute paire
+ * existante impliquant `exerciseIdA` OU `exerciseIdB` est d'abord rompue
+ * (soft delete) avant de créer la nouvelle paire — transaction atomique.
+ */
+export async function linkSupersetPair(
+  workoutId: string,
+  exerciseIdA: string,
+  exerciseIdB: string,
+): Promise<void> {
+  const userId = currentUserId();
+  await powerSync.writeTransaction(async (tx) => {
+    const existing = await tx.getAll<{ id: string }>(
+      `SELECT id FROM workout_superset_pairs
+       WHERE workout_id = ? AND deleted_at IS NULL
+         AND (exercise_id_a IN (?, ?) OR exercise_id_b IN (?, ?))`,
+      [workoutId, exerciseIdA, exerciseIdB, exerciseIdA, exerciseIdB],
+    );
+    const now = nowUtc();
+    for (const row of existing) {
+      await tx.execute(
+        `UPDATE workout_superset_pairs SET deleted_at = ?, updated_at = ? WHERE id = ?`,
+        [now, now, row.id],
+      );
+    }
+    await tx.execute(
+      `INSERT INTO workout_superset_pairs
+         (id, user_id, workout_id, exercise_id_a, exercise_id_b, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
+      [generateId(), userId, workoutId, exerciseIdA, exerciseIdB, now, now],
+    );
+  });
+}
+
+/** Rompt la paire superset (s'il y en a une) impliquant cet exercice, pour cette séance. */
+export async function unlinkSupersetPair(workoutId: string, exerciseId: string): Promise<void> {
+  const now = nowUtc();
+  await powerSync.execute(
+    `UPDATE workout_superset_pairs SET deleted_at = ?, updated_at = ?
+     WHERE workout_id = ? AND deleted_at IS NULL AND (exercise_id_a = ? OR exercise_id_b = ?)`,
+    [now, now, workoutId, exerciseId, exerciseId],
+  );
+}

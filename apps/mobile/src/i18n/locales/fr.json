@@ -109,10 +109,12 @@
       "placeholder": "Note (réglage machine, position…)"
     },
     "superset": {
-      "linkWith": "Lier en superset avec {{name}}",
+      "link": "Lier en superset",
       "linked": "Superset avec {{name}}",
       "orphaned": "Superset sans partenaire — repos normal",
-      "remove": "Retirer le superset"
+      "remove": "Retirer le superset",
+      "pickerTitle": "Choisir le partenaire",
+      "pickerEmpty": "Aucun autre exercice disponible dans cette séance."
     },
     "suggestion": {
       "weightOrReps": "Essaie {{weight}} ou {{reps}} reps",
