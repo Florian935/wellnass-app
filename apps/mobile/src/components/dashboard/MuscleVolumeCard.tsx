@@ -67,29 +67,17 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   // ── État : données présentes ───────────────────────────────────────────────
   // Volume en kg (pas de conversion) ; libellé du groupe musculaire traduit.
-  const chartData = volumes.map((v) => ({
-    label: t(`muscle.${v.muscle as MuscleGroup}`),
-    value: v.volume,
-  }));
+  const total = volumes.reduce((sum, v) => sum + v.volume, 0);
+  const totalLabel = t('home.volumeWeek.compactTotal', {
+    kg: new Intl.NumberFormat(i18n.language).format(Math.round(total)),
+  });
 
-  const body = (
-    <>
-      <MuscleVolumeBarChart data={chartData} unit="kg" />
-      <View style={styles.linkRow}>
-        <Pressable
-          onPress={() => router.push('/progress')}
-          hitSlop={8}
-          accessibilityRole="link"
-        >
-          <Text style={[styles.link, { color: colors.accent }]}>
-            {t('home.volumeWeek.link')}
-          </Text>
-        </Pressable>
-      </View>
-    </>
-  );
-
+  // ── Grand carré : chiffre + graphe par groupe musculaire (rempli, 2 unités de haut) ──
   if (size === 'large') {
+    const chartData = volumes.map((v) => ({
+      label: t(`muscle.${v.muscle as MuscleGroup}`),
+      value: v.volume,
+    }));
     return (
       <WidgetShell
         icon="barbell-outline"
@@ -97,20 +85,30 @@ export function MuscleVolumeCard({ size = 'wide' }: { size?: WidgetSize }) {
         onPress={() => router.push('/progress')}
         showChevron
       >
-        {body}
+        <Text style={[styles.total, { color: colors.text }]}>{totalLabel}</Text>
+        <MuscleVolumeBarChart data={chartData} unit="kg" />
       </WidgetShell>
     );
   }
 
+  // ── Rectangle : compact (total + lien), SANS graphe (tenait mal sur 1 unité) ──
   return (
     <DashboardCard icon="barbell-outline" title={t('home.volumeWeek.title')}>
-      {body}
+      <View style={styles.wideRow}>
+        <Text style={[styles.total, { color: colors.text }]}>{totalLabel}</Text>
+        <Pressable onPress={() => router.push('/progress')} hitSlop={8} accessibilityRole="link">
+          <Text style={[styles.link, { color: colors.accent }]}>
+            {t('home.volumeWeek.link')}
+          </Text>
+        </Pressable>
+      </View>
     </DashboardCard>
   );
 }
 
 const styles = StyleSheet.create({
   emptyText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
-  linkRow: { alignItems: 'flex-end' },
+  wideRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  total: { fontFamily: fontFamily.displaySemi, fontSize: 20, letterSpacing: -0.4 },
   link: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
 });

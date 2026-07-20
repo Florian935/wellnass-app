@@ -369,7 +369,7 @@ function Cell({
 
 const styles = StyleSheet.create({
   cell: { position: 'absolute' },
-  frame: { borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, padding: 4 },
+  frame: { borderWidth: 1, borderStyle: 'dashed', borderRadius: 22, padding: 4, overflow: 'hidden' },
   fill: { flex: 1 },
   hidden: { opacity: 0.5 },
   previewCell: {

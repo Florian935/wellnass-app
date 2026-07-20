@@ -45,13 +45,15 @@ type DayCell = {
  *
  * S'adapte à la forme du widget :
  *  - `small` : bande semaine condensée (7 initiales + pastilles) + prochaine séance ;
- *  - `wide`  : grille 7 colonnes (initiale + numéro + pastilles) ;
- *  - `large` : grille 7 colonnes + liste des prochaines séances.
+ *  - `wide`  : grille 7 colonnes (initiale + numéro + pastilles), 1 semaine ;
+ *  - `large` : **2 semaines** (2 rangées de 7 jours) + liste des prochaines séances.
  */
 export function PlanningPreview({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { items } = useUpcomingSessions(PREVIEW_DAYS);
+  // Grand carré = 2 semaines (14 jours) ; sinon 1 semaine (7 jours).
+  const dayCount = size === 'large' ? 2 * PREVIEW_DAYS : PREVIEW_DAYS;
+  const { items } = useUpcomingSessions(dayCount);
 
   const today = new Date();
   const todayKey = localDayKey(today);
@@ -63,11 +65,15 @@ export function PlanningPreview({ size = 'wide' }: { size?: WidgetSize }) {
     (byDate[item.scheduledDate] ??= []).push(item);
   }
 
-  const days: DayCell[] = Array.from({ length: PREVIEW_DAYS }, (_, i) => {
+  const days: DayCell[] = Array.from({ length: dayCount }, (_, i) => {
     const date = addDays(today, i);
     const key = localDayKey(date);
     return { key, date, dayItems: byDate[key] ?? [], isToday: key === todayKey };
   });
+
+  // Découpe en semaines de 7 jours (1 rangée par semaine) pour la grille calendrier.
+  const weeks: DayCell[][] = [];
+  for (let i = 0; i < days.length; i += PREVIEW_DAYS) weeks.push(days.slice(i, i + PREVIEW_DAYS));
 
   const upcoming = days.flatMap((d) => d.dayItems);
   const next = upcoming[0] ?? null;
@@ -115,37 +121,39 @@ export function PlanningPreview({ size = 'wide' }: { size?: WidgetSize }) {
     );
   }
 
-  // ── Formes wide / large : grille calendrier 7 colonnes ──────────────────────
+  // ── Formes wide / large : grille calendrier 7 colonnes (1 rangée par semaine) ──
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        {days.map((d) => (
-          <View
-            key={d.key}
-            style={[
-              styles.cell,
-              {
-                backgroundColor: d.isToday ? colors.surfaceAlt : colors.background,
-                borderColor: d.isToday ? colors.accent : colors.border,
-                borderWidth: d.isToday ? 2 : 1,
-              },
-            ]}
-          >
-            <Text style={[styles.dow, { color: colors.textMuted }]}>
-              {dayInitial(d.date)}
-            </Text>
-            <Text style={[styles.dom, { color: colors.text }]}>{d.date.getDate()}</Text>
-            <View style={styles.dots}>
-              {d.dayItems.slice(0, 3).map((item) => (
-                <View
-                  key={item.id}
-                  style={[styles.dot, { backgroundColor: pillarColor(item) }]}
-                />
-              ))}
+      {weeks.map((week, wi) => (
+        <View key={wi} style={styles.row}>
+          {week.map((d) => (
+            <View
+              key={d.key}
+              style={[
+                styles.cell,
+                {
+                  backgroundColor: d.isToday ? colors.surfaceAlt : colors.background,
+                  borderColor: d.isToday ? colors.accent : colors.border,
+                  borderWidth: d.isToday ? 2 : 1,
+                },
+              ]}
+            >
+              <Text style={[styles.dow, { color: colors.textMuted }]}>
+                {dayInitial(d.date)}
+              </Text>
+              <Text style={[styles.dom, { color: colors.text }]}>{d.date.getDate()}</Text>
+              <View style={styles.dots}>
+                {d.dayItems.slice(0, 3).map((item) => (
+                  <View
+                    key={item.id}
+                    style={[styles.dot, { backgroundColor: pillarColor(item) }]}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
-      </View>
+          ))}
+        </View>
+      ))}
 
       {size === 'large' ? (
         <View style={styles.largeList}>

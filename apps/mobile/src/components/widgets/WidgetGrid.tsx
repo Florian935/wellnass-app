@@ -109,7 +109,15 @@ export function WidgetGrid({
             return (
               <View
                 key={w.id}
-                style={{ position: 'absolute', left: r.left, top: r.top, width: r.width, height: r.height }}
+                style={{
+                  position: 'absolute',
+                  left: r.left,
+                  top: r.top,
+                  width: r.width,
+                  height: r.height,
+                  borderRadius: 22,
+                  overflow: 'hidden',
+                }}
               >
                 {renderWidget(w.id, w.size)}
               </View>
