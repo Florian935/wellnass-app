@@ -369,6 +369,16 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 ---
 
+## 🧰 Outillage agents — compatibilité Claude Code / Codex
+
+- [~] **Migration Claude Code / Codex** (`chore/compatibilite-claude-codex`, 21/07/2026) —
+  spec/design technique écrit et auto-relue
+  ([document](docs/superpowers/specs/2026-07-21-compatibilite-claude-codex-design.md)).
+  Reste avant implémentation : validation du document, plan détaillé, puis configuration du fallback
+  `CLAUDE.md` et portage du workflow `/commit` vers les deux formats Agent Skills.
+
+---
+
 ## 🗺️ Reste-à-faire MVP1 (= V1.0 complète) — backlog issu de la réconciliation roadmap (18/07/2026)
 
 > **51 items roadmap** non terminés dans le périmètre de lancement (39 ⬜ à faire + 12 🟡 partiels),

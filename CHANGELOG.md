@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `chore/compatibilite-claude-codex` — conception de la cohabitation Claude Code / Codex
+
+> Conception technique uniquement : aucune configuration d'agent ni aucun code applicatif modifié.
+> Baseline vérifiée dans un worktree isolé : typecheck et tests verts, lint sans erreur
+> (4 avertissements préexistants).
+
+**Ajouté**
+- **Spec/design de compatibilité Claude Code / Codex**
+  ([2026-07-21-compatibilite-claude-codex-design.md](docs/superpowers/specs/2026-07-21-compatibilite-claude-codex-design.md)) :
+  `CLAUDE.md` reste la source unique, Codex le charge par fallback, et les workflows partagés
+  utilisent un cœur neutre avec adaptateurs `.claude/skills` et `.agents/skills`.
+
+**Technique / Notes**
+- Le `AGENTS.md` non suivi du checkout principal n'est ni modifié ni supprimé par ce commit.
+- Aucun statut de roadmap modifié : ce chantier concerne l'outillage des agents, hors périmètre
+  fonctionnel produit.
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
 
 > Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.
