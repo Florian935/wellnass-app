@@ -87,14 +87,16 @@
       "dropset": "Drop set",
       "failure": "Failure",
       "duration": "Duration",
-      "bodyweight": "Bodyweight"
+      "bodyweight": "Bodyweight",
+      "superset": "Superset"
     },
     "setTypeBadge": {
       "warmup": "W-up",
       "dropset": "Drop",
       "failure": "Fail",
       "duration": "Time",
-      "bodyweight": "BW"
+      "bodyweight": "BW",
+      "superset": "Super"
     },
     "warmupToggle": "Warm-up",
     "durationLabel": "Duration",
@@ -105,6 +107,28 @@
     "rpeValue": "RPE {{value}}",
     "rpeLabel": "Set RPE",
     "rpeClear": "Clear",
+    "exerciseNote": {
+      "placeholder": "Note (machine setting, position…)"
+    },
+    "superset": {
+      "link": "Link as superset",
+      "linked": "Superset with {{name}}",
+      "orphaned": "Superset with no partner — normal rest",
+      "remove": "Remove superset",
+      "pickerTitle": "Choose the partner",
+      "pickerEmpty": "No other exercise available in this session."
+    },
+    "suggestion": {
+      "weightOrReps": "Try {{weight}} or {{reps}} reps",
+      "reps": "Try {{reps}} reps",
+      "duration": "Try {{duration}}"
+    },
+    "reorder": {
+      "up": "Move up",
+      "down": "Move down"
+    },
+    "later": "Later",
+    "replace": "Replace",
     "summary": {
       "title": "Workout done 💪",
       "subtitle": "Nice work. Here's your recap.",

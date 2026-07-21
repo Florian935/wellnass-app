@@ -6,18 +6,27 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
-import { CurrentSetCard } from '@/components/workout/CurrentSetCard';
+import { CurrentSetCard, type SupersetLinkState } from '@/components/workout/CurrentSetCard';
 import { ExerciseList } from '@/components/workout/ExerciseList';
 import { RestOverlay } from '@/components/workout/RestOverlay';
+import { SupersetPickerModal } from '@/components/workout/SupersetPickerModal';
 import {
   addSet,
   cancelWorkout,
   finishWorkout,
+  linkSupersetPair,
   removeSet,
+  reorderExercise,
+  sendExerciseToEnd,
+  setExerciseNote,
+  unlinkSupersetPair,
   updateSet,
   useActiveWorkout,
+  useExerciseNote,
+  useExerciseNotes,
   useLastPerformance,
   useSessionRest,
+  useSupersetPairs,
   type WorkoutEntry,
   type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
@@ -25,6 +34,7 @@ import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
+import { computeProgressionSuggestion } from '@wellness/shared';
 
 /** Repos par défaut (s) quand l'exercice n'a ni override de session ni valeur planifiée. */
 const DEFAULT_REST_SECONDS = 90;
@@ -33,13 +43,23 @@ const DEFAULT_REST_SECONDS = 90;
 type CurrentSet = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number]; rang: number };
 
 /**
- * Résout la « série en cours » (machine à états de focus, C1) :
- *  - si `focusOverride` désigne un exercice ayant encore une série non validée,
- *    la 1ʳᵉ série non validée de CET exercice ;
+ * Dérogation de focus : cible un exercice (comme avant C3), et optionnellement
+ * un rang précis dans cet exercice (superset — bascule sur la série JUMELLE,
+ * pas la 1ʳᵉ série non validée de l'exercice partenaire, qui pourrait être un
+ * échauffement antérieur non lié au couple).
+ */
+type FocusOverride = { exerciseId: string; rang?: number } | null;
+
+/**
+ * Résout la « série en cours » (machine à états de focus, C1 + superset C3) :
+ *  - si `focusOverride.rang` cible une série précise (non validée) de l'exercice
+ *    désigné, cette série exactement (bascule superset) ;
+ *  - sinon, si `focusOverride` désigne un exercice ayant encore une série non
+ *    validée, la 1ʳᵉ série non validée de CET exercice ;
  *  - sinon la 1ʳᵉ série `done===false` en parcourant exercices puis séries dans l'ordre ;
  *  - `null` si toutes les séries de tous les exercices sont validées (état de fin).
  */
-function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null): CurrentSet | null {
+function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: FocusOverride): CurrentSet | null {
   const firstUndone = (entry: WorkoutEntry): CurrentSet | null => {
     for (let rang = 0; rang < entry.sets.length; rang += 1) {
       const set = entry.sets[rang];
@@ -49,15 +69,49 @@ function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: string | null
   };
 
   if (focusOverride) {
-    const entry = entries.find((e) => e.exerciseId === focusOverride);
-    const found = entry ? firstUndone(entry) : null;
-    if (found) return found;
+    const entry = entries.find((e) => e.exerciseId === focusOverride.exerciseId);
+    if (entry) {
+      if (focusOverride.rang != null) {
+        const targetSet = entry.sets[focusOverride.rang];
+        if (targetSet && !targetSet.done) {
+          return { entry, set: targetSet, rang: focusOverride.rang };
+        }
+      }
+      const found = firstUndone(entry);
+      if (found) return found;
+    }
   }
   for (const entry of entries) {
     const found = firstUndone(entry);
     if (found) return found;
   }
   return null;
+}
+
+/** Résultat de la recherche d'un partenaire superset : l'exercice et sa série au même rang. */
+type SupersetPartner = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number] };
+
+/**
+ * Cherche la série JUMELLE (même rang) de l'exercice lié en superset à
+ * `exerciseId` — lien EXPLICITE (table `workout_superset_pairs`, carte
+ * `exerciseId → exerciseId partenaire`), plus de contrainte d'adjacence
+ * (révision recette 20/07/2026 : le mécanisme initial imposait aux 2
+ * exercices d'être voisins dans la liste, jugé trop contraignant). `null` si
+ * l'exercice n'est lié à personne, si le partenaire n'a pas de série à ce
+ * rang (progression différente), ou si le partenaire a quitté la séance
+ * (dégradation silencieuse — repos normal dans tous ces cas).
+ */
+function findSupersetPartnerSet(
+  entries: WorkoutEntry[],
+  pairs: Record<string, string>,
+  exerciseId: string,
+  rang: number,
+): SupersetPartner | null {
+  const partnerExerciseId = pairs[exerciseId];
+  if (!partnerExerciseId) return null;
+  const partnerEntry = entries.find((e) => e.exerciseId === partnerExerciseId);
+  const partnerSet = partnerEntry?.sets[rang];
+  return partnerEntry && partnerSet ? { entry: partnerEntry, set: partnerSet } : null;
 }
 
 /** État d'édition local des champs de la série courante (`null` = non modifié → repli). */
@@ -143,7 +197,7 @@ export default function WorkoutScreen() {
   const elapsed = useElapsed(active?.startedAt);
   const sessionRest = useSessionRest(active?.sessionId ?? null);
 
-  const [focusOverride, setFocusOverride] = useState<string | null>(null);
+  const [focusOverride, setFocusOverride] = useState<FocusOverride>(null);
   const [restOverride, setRestOverride] = useState<Record<string, number>>({});
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
   const [restLeft, setRestLeft] = useState(0);
@@ -152,6 +206,8 @@ export default function WorkoutScreen() {
   // il cesse de correspondre et l'affichage repart des valeurs pré-remplies (pas
   // besoin d'effet de resynchronisation).
   const [edit, setEdit] = useState<{ setId: string; state: EditState } | null>(null);
+  const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
+  const [supersetPickerOpen, setSupersetPickerOpen] = useState(false);
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
@@ -159,6 +215,10 @@ export default function WorkoutScreen() {
 
   // Dernière perf de l'exercice courant (requête stable : '' → aucune ligne).
   const lastPerf = useLastPerformance(currentExerciseId);
+  const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
+  const allExerciseNotes = useExerciseNotes();
+  // Paires superset de la séance (requête stable : '' → aucune ligne tant qu'`active` n'est pas résolu).
+  const supersetPairs = useSupersetPairs(active?.id ?? '');
 
   // Décompte du repos : recalcule le restant chaque seconde ; à 0 → vibration + fin.
   useEffect(() => {
@@ -199,6 +259,63 @@ export default function WorkoutScreen() {
   const prefillWeightKg = current ? (current.set.weightKg ?? lastPerf[rang]?.weightKg ?? null) : null;
   const prefillDuration = current ? current.set.durationSeconds : null;
 
+  // Suggestion de progression (C3) : basée sur les séries qualifiantes de la
+  // dernière séance terminée (déjà filtrées `done=1` par `useLastPerformance`)
+  // et la série de référence au même rang.
+  const referenceSet = current ? lastPerf[rang] : undefined;
+  const suggestion = current
+    ? computeProgressionSuggestion(
+        lastPerf.map((p) => ({ setType: p.setType, rpe: p.rpe, done: true })),
+        referenceSet,
+        { weightIncrementKg: 2.5, durationIncrementSeconds: 10 },
+      )
+    : null;
+  const suggestionLabel = (() => {
+    if (!suggestion) return null;
+    if (suggestion.kind === 'weightOrReps') {
+      return t('workout.suggestion.weightOrReps', {
+        weight: `${units.weightInputValue(suggestion.weightKg)} ${units.weightSymbol}`,
+        reps: suggestion.reps,
+      });
+    }
+    if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
+    return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
+  })();
+
+  // Liaison superset (C3, révision recette 20/07/2026 — lien explicite, choix
+  // libre du partenaire, valable pour toute la séance) : soit l'exercice
+  // courant est déjà lié à un partenaire (via `supersetPairs`), soit il ne
+  // l'est pas mais d'autres exercices restent disponibles pour le lier.
+  const partnerExerciseId = current ? supersetPairs[current.entry.exerciseId] : undefined;
+  const supersetCandidates = current
+    ? entries
+        .filter((e) => e.exerciseId !== current.entry.exerciseId)
+        .filter((e) => e.sets.some((s) => !s.done))
+        .filter((e) => !supersetPairs[e.exerciseId])
+        .map((e) => ({ exerciseId: e.exerciseId, exerciseName: e.exerciseName }))
+    : [];
+
+  const supersetLink: SupersetLinkState = (() => {
+    if (!current) return null;
+    if (partnerExerciseId) {
+      const partnerEntry = entries.find((e) => e.exerciseId === partnerExerciseId);
+      return partnerEntry ? { status: 'linked', partnerName: partnerEntry.exerciseName } : { status: 'orphaned' };
+    }
+    return supersetCandidates.length > 0 ? { status: 'linkable' } : null;
+  })();
+
+  const onRequestLinkSuperset = () => setSupersetPickerOpen(true);
+
+  const onPickSupersetPartner = (partnerId: string) => {
+    if (current) void linkSupersetPair(workoutId, current.entry.exerciseId, partnerId);
+    setSupersetPickerOpen(false);
+  };
+
+  const onUnlinkSuperset = () => {
+    if (!current) return;
+    void unlinkSupersetPair(workoutId, current.entry.exerciseId);
+  };
+
   // Édition ne valant que pour la série courante (sinon on repart du pré-remplissage).
   const activeEdit = edit && edit.setId === currentSetId ? edit.state : null;
 
@@ -207,6 +324,15 @@ export default function WorkoutScreen() {
   const displayWeightKg = activeEdit ? activeEdit.weightKg : prefillWeightKg;
   const displayDurationSeconds = activeEdit ? activeEdit.durationSeconds : prefillDuration;
   const durationValue = formatMmSs(displayDurationSeconds ?? 0);
+
+  // Note d'exercice (C3) : l'édition locale prime, sinon repli sur la valeur persistée.
+  const displayNote =
+    noteEdit && noteEdit.exerciseId === currentExerciseId ? noteEdit.value : currentExerciseNote ?? '';
+  const onChangeNote = (v: string) => setNoteEdit({ exerciseId: currentExerciseId, value: v });
+  const onBlurNote = () => {
+    if (!currentExerciseId) return;
+    void setExerciseNote(currentExerciseId, displayNote);
+  };
 
   // Matérialise l'état d'édition à partir des valeurs affichées puis applique le patch.
   const applyEdit = (patch: Partial<EditState>) => {
@@ -258,6 +384,25 @@ export default function WorkoutScreen() {
       patch.reps = reps;
     }
     void updateSet(current.set.id, patch);
+
+    // Superset (spec §2.2, lien explicite révisé 20/07/2026) : si l'exercice a
+    // un partenaire lié avec une série au même rang pas encore validée, on
+    // bascule directement dessus SANS repos. `partner.set.done` reflète l'état
+    // de CE rendu (avant la validation en cours, qui ne porte que sur
+    // `current.set`) — donc fiable ici même si le `updateSet` ci-dessus est
+    // encore en vol côté PowerSync.
+    const partner = findSupersetPartnerSet(entries, supersetPairs, current.entry.exerciseId, current.rang);
+    if (partner && !partner.set.done) {
+      // Cible le RANG exact de la série jumelle (pas la 1ʳᵉ série non validée
+      // de l'exercice partenaire, qui pourrait être un échauffement antérieur
+      // sans rapport avec le couple superset).
+      setFocusOverride({ exerciseId: partner.entry.exerciseId, rang: current.rang });
+      return;
+    }
+
+    // Comportement standard (2ᵉ série d'un couple superset déjà validée par le
+    // partenaire ci-dessus, ou série non-superset / partenaire introuvable —
+    // dégradation silencieuse) : repos normal.
     setRestLeft(currentRest); // évite un flash « 0 s » avant le 1er tick
     setRestCollapsed(false); // le repos s'ouvre en plein écran
     setRestEndsAt(Date.now() + currentRest * 1000);
@@ -311,6 +456,15 @@ export default function WorkoutScreen() {
   const onAddSet = (exerciseId: string) => {
     void addSet(workoutId, exerciseId);
   };
+  const onReorder = (exerciseId: string, direction: 'up' | 'down') => {
+    void reorderExercise(workoutId, exerciseId, direction);
+  };
+  const onSendLater = (exerciseId: string) => {
+    void sendExerciseToEnd(workoutId, exerciseId);
+  };
+  const onReplace = (exerciseId: string) => {
+    router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } });
+  };
 
   const hasAnyDone = entries.some((entry) => entry.sets.some((set) => set.done));
 
@@ -347,6 +501,13 @@ export default function WorkoutScreen() {
             currentIndex={current.rang + 1}
             totalSets={current.entry.sets.length}
             lastPerfLabel={formatLastPerf(lastPerf, units)}
+            suggestionLabel={suggestionLabel}
+            note={displayNote}
+            onChangeNote={onChangeNote}
+            onBlurNote={onBlurNote}
+            supersetLink={supersetLink}
+            onRequestLinkSuperset={onRequestLinkSuperset}
+            onUnlinkSuperset={onUnlinkSuperset}
             setType={current.set.setType}
             onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
             repsValue={displayReps}
@@ -381,10 +542,15 @@ export default function WorkoutScreen() {
           <ExerciseList
             entries={entries}
             currentExerciseId={currentExerciseId}
-            onSelect={setFocusOverride}
+            onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
             onToggleSetDone={onToggleSetDone}
             onRemoveSet={onRemoveSet}
             onAddSet={onAddSet}
+            onReorder={onReorder}
+            onSendLater={onSendLater}
+            onReplace={onReplace}
+            exerciseNotes={allExerciseNotes}
+            supersetPairs={supersetPairs}
             colors={colors}
           />
         ) : null}
@@ -401,6 +567,14 @@ export default function WorkoutScreen() {
           onToggleCollapse={() => setRestCollapsed((c) => !c)}
         />
       ) : null}
+
+      <SupersetPickerModal
+        visible={supersetPickerOpen}
+        onClose={() => setSupersetPickerOpen(false)}
+        candidates={supersetCandidates}
+        onPick={onPickSupersetPartner}
+        colors={colors}
+      />
     </SafeAreaView>
   );
 }

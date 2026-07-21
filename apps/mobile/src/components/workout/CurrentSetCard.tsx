@@ -10,9 +10,25 @@ import type { Palette } from '@/theme/colors';
 
 /**
  * Types de série exposés dans le sélecteur (C2). `warmup` est traité à part
- * (raccourci 🔥) et `superset` reste hors périmètre (→ C3), d'où leur absence ici.
+ * (raccourci 🔥) et `superset` n'est plus un choix de ce sélecteur depuis la
+ * recette C3 (20/07/2026, retour Florian « pas intuitif ») : la liaison
+ * superset passe désormais par une action dédiée nommant le partenaire
+ * (voir bloc « Superset » plus bas), pas par un type abstrait à toggler
+ * séparément des deux côtés.
  */
 const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
+
+/**
+ * État de la liaison superset de la série courante, dérivé par le parent.
+ * `'linkable'` : l'exercice n'est lié à aucun partenaire pour l'instant, mais
+ * d'autres exercices sont disponibles dans la séance (choix libre via
+ * dialogue — révision 20/07/2026, remplace l'ancienne contrainte d'adjacence).
+ */
+export type SupersetLinkState =
+  | { status: 'linkable' }
+  | { status: 'linked'; partnerName: string }
+  | { status: 'orphaned' }
+  | null;
 
 /** Valeurs de RPE proposées (échelle 1-10). */
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -24,6 +40,37 @@ type CurrentSetCardProps = {
   totalSets: number;
   /** Ligne « dernière fois » déjà formatée, ou `null` pour la masquer. */
   lastPerfLabel: string | null;
+  /**
+   * Ligne de suggestion de progression (C3), déjà entièrement formatée par le
+   * parent (le parent choisit le texte i18n selon `ProgressionSuggestion.kind`
+   * et formate l'unité — cette carte reste une simple présentation). `null`/
+   * absente = aucune suggestion à afficher. Optionnelle : tant que `workout.tsx`
+   * (Task 11, hors périmètre C3-Task9) ne la calcule pas encore, elle reste
+   * masquée sans casser l'appelant existant.
+   */
+  suggestionLabel?: string | null;
+  /**
+   * Note de l'exercice (C3, persistée par exercice — hors périmètre de la
+   * série). `undefined` = non câblée par le parent (champ masqué, cf. Task 11) ;
+   * `null`/`''` = câblée mais vide (champ visible, contrairement au RPE qui est
+   * masqué par défaut).
+   */
+  note?: string | null;
+  onChangeNote?: (value: string) => void;
+  onBlurNote?: () => void;
+  /**
+   * État de la liaison superset de la série courante (C3, revu 20/07/2026) :
+   * `'linkable'` = un exercice adjacent a une série au même rang, pas encore
+   * liée → propose l'action « Lier » ; `'linked'` = déjà liée à un partenaire
+   * nommé → propose « Délier » ; `'orphaned'` = marquée superset mais plus de
+   * partenaire adjacent (ex. après une réorganisation) → repos redevenu
+   * normal, affiché explicitement plutôt que silencieusement. `null`/absente
+   * = rien à afficher (pas de voisin éligible, type non-superset).
+   */
+  supersetLink?: SupersetLinkState;
+  /** Ouvre le dialogue de choix du partenaire (n'importe quel exercice de la séance). */
+  onRequestLinkSuperset?: () => void;
+  onUnlinkSuperset?: () => void;
   /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
   setType: SetType;
   onSetType: (t: SetType) => void;
@@ -93,6 +140,13 @@ export function CurrentSetCard({
   currentIndex,
   totalSets,
   lastPerfLabel,
+  suggestionLabel,
+  note,
+  onChangeNote,
+  onBlurNote,
+  supersetLink,
+  onRequestLinkSuperset,
+  onUnlinkSuperset,
   setType,
   onSetType,
   repsValue,
@@ -171,6 +225,23 @@ export function CurrentSetCard({
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
       </Text>
 
+      {/* Note d'exercice (C3) : toujours visible dès que câblée par le parent
+          (pas de mode masqué comme le RPE — la note doit rester facile à
+          corriger, ex. réglage de machine). */}
+      {note !== undefined ? (
+        <View style={[styles.noteRow, { backgroundColor: colors.surfaceAlt }]}>
+          <Text style={styles.noteIcon}>📝</Text>
+          <TextInput
+            value={note ?? ''}
+            onChangeText={onChangeNote}
+            onBlur={onBlurNote}
+            placeholder={t('workout.exerciseNote.placeholder')}
+            placeholderTextColor={colors.textMuted}
+            style={[styles.noteInput, { color: colors.text }]}
+          />
+        </View>
+      ) : null}
+
       {/* Sélecteur de type : chips scrollables (fondu + chevron tant qu'il reste du
           contenu à droite) + raccourci 🔥 fixé à droite. */}
       <View style={styles.typeRow}>
@@ -216,10 +287,56 @@ export function CurrentSetCard({
         </Pressable>
       </View>
 
+      {/* Liaison superset (C3, revue 20/07/2026) : une action nommée plutôt qu'un
+          type abstrait à toggler des deux côtés séparément. */}
+      {supersetLink?.status === 'linkable' ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onRequestLinkSuperset}
+          style={({ pressed }) => [
+            styles.supersetBtn,
+            { borderColor: colors.accent },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
+            {`🔗 ${t('workout.superset.link')}`}
+          </Text>
+        </Pressable>
+      ) : supersetLink?.status === 'linked' ? (
+        <View style={styles.supersetRow}>
+          <Text style={[styles.supersetLinkedText, { color: colors.accent }]}>
+            {`🔗 ${t('workout.superset.linked', { name: supersetLink.partnerName })}`}
+          </Text>
+          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+              {t('workout.superset.remove')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : supersetLink?.status === 'orphaned' ? (
+        <View style={styles.supersetRow}>
+          <Text style={[styles.supersetOrphanText, { color: colors.accent }]}>
+            {`⚠️ ${t('workout.superset.orphaned')}`}
+          </Text>
+          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+              {t('workout.superset.remove')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       {lastPerfLabel ? (
         <Text style={[styles.lastPerf, { color: colors.textMuted }]}>
           {t('workout.lastTime', { perf: lastPerfLabel })}
         </Text>
+      ) : null}
+
+      {/* Suggestion de progression (C3) : purement informative, jamais tappable
+          (pas de Pressable) — le texte est déjà entièrement formaté par le parent. */}
+      {suggestionLabel ? (
+        <Text style={[styles.suggestion, { color: colors.success }]}>{`💡 ${suggestionLabel}`}</Text>
       ) : null}
 
       <View style={styles.fields}>
@@ -418,6 +535,31 @@ const styles = StyleSheet.create({
   chipText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
   warmupChip: { flexShrink: 0 },
   lastPerf: { fontFamily: fontFamily.body, fontSize: 14 },
+  suggestion: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  supersetBtn: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginBottom: 4,
+  },
+  supersetLinkText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  supersetRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
+  supersetLinkedText: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
+  supersetOrphanText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5, flexShrink: 1 },
+  supersetUnlink: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  noteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  noteIcon: { fontSize: 12 },
+  noteInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 12, padding: 0 },
   fields: { flexDirection: 'row', gap: 12, marginTop: 4 },
   field: { flex: 1, gap: 6 },
   fieldLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },

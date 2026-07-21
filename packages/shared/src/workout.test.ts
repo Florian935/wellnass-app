@@ -7,6 +7,8 @@ import {
   workoutRowSchema,
   workoutSetRowSchema,
   computeVolume,
+  computeReorderedExerciseOrder,
+  computeProgressionSuggestion,
 } from './workout';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -346,5 +348,156 @@ describe('computeVolume', () => {
   it('compte reps × lest pour une série bodyweight lestée', () => {
     const sets = [{ setType: 'bodyweight', reps: 8, weightKg: 15, done: true }];
     expect(computeVolume(sets)).toBe(120);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeReorderedExerciseOrder
+// ---------------------------------------------------------------------------
+describe('computeReorderedExerciseOrder', () => {
+  it("swap 'up' : l'exercice restant remonte d'un cran parmi les restants", () => {
+    const exercises = [
+      { exerciseId: 'A', done: true },
+      { exerciseId: 'B', done: false },
+      { exerciseId: 'C', done: false },
+    ];
+    const result = computeReorderedExerciseOrder(exercises, {
+      type: 'swap',
+      exerciseId: 'C',
+      direction: 'up',
+    });
+    expect(result).toEqual(['A', 'C', 'B']);
+  });
+
+  it("swap 'down' sur le dernier restant : no-op (ordre inchangé)", () => {
+    const exercises = [
+      { exerciseId: 'A', done: true },
+      { exerciseId: 'B', done: false },
+      { exerciseId: 'C', done: false },
+    ];
+    const result = computeReorderedExerciseOrder(exercises, {
+      type: 'swap',
+      exerciseId: 'C',
+      direction: 'down',
+    });
+    expect(result).toEqual(['A', 'B', 'C']);
+  });
+
+  it('cas piégeux — exercice terminé intercalé : swap down garde la position absolue du terminé', () => {
+    const exercises = [
+      { exerciseId: 'A', done: false },
+      { exerciseId: 'B', done: true },
+      { exerciseId: 'C', done: false },
+    ];
+    const result = computeReorderedExerciseOrder(exercises, {
+      type: 'swap',
+      exerciseId: 'A',
+      direction: 'down',
+    });
+    expect(result).toEqual(['C', 'B', 'A']);
+  });
+
+  it("toEnd avec exercice terminé intercalé", () => {
+    const exercises = [
+      { exerciseId: 'A', done: false },
+      { exerciseId: 'B', done: true },
+      { exerciseId: 'C', done: false },
+      { exerciseId: 'D', done: false },
+    ];
+    const result = computeReorderedExerciseOrder(exercises, {
+      type: 'toEnd',
+      exerciseId: 'C',
+    });
+    expect(result).toEqual(['A', 'B', 'D', 'C']);
+  });
+
+  it('idempotence : toEnd sur l\'exercice déjà en dernière position des restants → inchangé', () => {
+    const exercises = [
+      { exerciseId: 'A', done: false },
+      { exerciseId: 'B', done: true },
+      { exerciseId: 'C', done: false },
+      { exerciseId: 'D', done: false },
+    ];
+    const result = computeReorderedExerciseOrder(exercises, {
+      type: 'toEnd',
+      exerciseId: 'D',
+    });
+    expect(result).toEqual(['A', 'B', 'C', 'D']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeProgressionSuggestion
+// ---------------------------------------------------------------------------
+describe('computeProgressionSuggestion', () => {
+  const OPTS = { weightIncrementKg: 2.5, durationIncrementSeconds: 10 };
+
+  it('lastSets vide → null', () => {
+    const referenceSet = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+    expect(computeProgressionSuggestion([], referenceSet, OPTS)).toBeNull();
+  });
+
+  it('une série qualifiante failure → null (même si referenceSet normal)', () => {
+    const lastSets = [{ setType: 'failure', rpe: null, done: true }];
+    const referenceSet = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toBeNull();
+  });
+
+  it('RPE max des lastSets = 9 (≥ 8) → null', () => {
+    const lastSets = [
+      { setType: 'normal', rpe: 6, done: true },
+      { setType: 'normal', rpe: 9, done: true },
+    ];
+    const referenceSet = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toBeNull();
+  });
+
+  it('RPE max = 7 → suggestion weightOrReps', () => {
+    const lastSets = [
+      { setType: 'normal', rpe: 7, done: true },
+      { setType: 'normal', rpe: 6, done: true },
+    ];
+    const referenceSet = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toEqual({
+      kind: 'weightOrReps',
+      weightKg: 82.5,
+      reps: 9,
+    });
+  });
+
+  it('toutes les lastSets ont rpe null, aucune failure → suggestion normale', () => {
+    const lastSets = [
+      { setType: 'normal', rpe: null, done: true },
+      { setType: 'normal', rpe: null, done: true },
+    ];
+    const referenceSet = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toEqual({
+      kind: 'weightOrReps',
+      weightKg: 82.5,
+      reps: 9,
+    });
+  });
+
+  it("referenceSet.setType === 'bodyweight' et weightKg null → suggestion reps seule", () => {
+    const lastSets = [{ setType: 'bodyweight', rpe: 6, done: true }];
+    const referenceSet = { setType: 'bodyweight', reps: 12, weightKg: null, durationSeconds: null };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toEqual({
+      kind: 'reps',
+      reps: 13,
+    });
+  });
+
+  it("referenceSet.setType === 'duration' → suggestion duration seule", () => {
+    const lastSets = [{ setType: 'duration', rpe: 6, done: true }];
+    const referenceSet = { setType: 'duration', reps: null, weightKg: null, durationSeconds: 60 };
+    expect(computeProgressionSuggestion(lastSets, referenceSet, OPTS)).toEqual({
+      kind: 'duration',
+      durationSeconds: 70,
+    });
+  });
+
+  it('referenceSet absent (undefined) → null', () => {
+    const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
+    expect(computeProgressionSuggestion(lastSets, undefined, OPTS)).toBeNull();
   });
 });

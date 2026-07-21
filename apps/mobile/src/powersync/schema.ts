@@ -160,6 +160,29 @@ const exercise_favorites = new Table({
   deleted_at: column.text,
 });
 
+// ── US Refonte-C3 : note persistante par (utilisateur, exercice) ──────────
+// Migration : supabase/migrations/20260720121317_refonte_muscu_c3_note_exercice.sql
+const exercise_notes = new Table({
+  user_id: column.text,
+  exercise_id: column.text,
+  note: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── US Refonte-C3 (révision recette) : liaison superset explicite ─────────
+// Migration : supabase/migrations/20260720200254_refonte_muscu_c3_superset_pairs.sql
+const workout_superset_pairs = new Table({
+  user_id: column.text,
+  workout_id: column.text,
+  exercise_id_a: column.text,
+  exercise_id_b: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 const workouts = new Table({
   user_id: column.text,
   session_id: column.text,
@@ -403,6 +426,8 @@ export const AppSchema = new Schema({
   exercises,
   exercise_translations,
   exercise_favorites,
+  exercise_notes,
+  workout_superset_pairs,
   workouts,
   workout_sets,
   programs,
