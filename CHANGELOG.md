@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : spec + plan + maquette (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (arbitrable). Corrige le problème 5 de l'audit-flux : pas de cran
+> intermédiaire entre séance libre et programme structuré. Spec (2 passages de revue), plan (2 passages de
+> revue — un oubli critique corrigé : sync rules PowerSync) et maquette validés par Florian. Aucun code
+> applicatif dans ce commit (docs uniquement, conformément au workflow obligatoire).
+
+**Ajouté**
+- **Spec** [refonte-muscu-d-templates-seance-libre.md](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) :
+  tables dédiées `workout_templates`/`workout_template_exercises` (patron repas types nutrition, **pas** de
+  réutilisation `programs`/`sessions`/`exercise_plans`) ; deux chemins de création (composer à froid **et**
+  enregistrer après coup depuis une séance libre terminée, cibles dérivées des séries **validées**
+  uniquement) ; démarrer depuis un template (pré-remplissage `planned_weight_kg`, même convention que
+  `startWorkoutFromSession`) ; gestion (éditer/dupliquer/supprimer). Liste séparée « Mes templates ». Hors
+  périmètre : templates éditoriaux débutants (reportés), export/partage, lien automatique superset.
+- **Plan** [refonte-muscu-d-templates-seance-libre.md](docs/plans/refonte-muscu-d-templates-seance-libre.md) :
+  12 tâches — migration (🔴 2 checkpoints cloud distincts : `db:push` **et** déploiement sync rules
+  PowerSync, piège identifié et corrigé pendant la revue) ; fonction pure testable Vitest
+  `deriveTemplateTargetsFromWorkoutSets` (packages/shared) ; nouveau repository
+  `workout-template-repository.ts` ; modifications connexes à `workout-repository.ts` (export
+  `parseTargetReps`, `sessionId`/`programId` sur l'historique) ; refactor `ExercisePlanEditor.tsx` →
+  composant présentation partagé `ExerciseTargetsFields.tsx` + nouveau `TemplateExerciseEditor.tsx` (5ᵉ champ
+  inédit : sélecteur de type de série, 7 valeurs) ; écrans `templates/` (composant partagé `TemplateComposer`
+  pour éviter la duplication entre édition et détail) ; intégration hub muscu (choix à blanc/template + lien
+  secondaire les jours de séance planifiée) et écran résumé (« Enregistrer comme template »).
+- **Maquette** [refonte-muscu-d.html](design/refonte-muscu-d/refonte-muscu-d.html) : 6 écrans (choix de
+  démarrage, lien secondaire, liste, composition, détail + actions, enregistrement depuis le résumé).
+
+**Technique / Notes**
+- Branche `feature/refonte-muscu-d` créée depuis `dev`.
+- Revue spec : 2 passages (❌ → ✅) — correction de la condition d'affichage du bouton « Enregistrer comme
+  template » (champs `sessionId`/`programId` manquants sur l'historique), clarification du sélecteur de type
+  de série (travail neuf, pas un refactor), ajout d'un accès template les jours de séance planifiée.
+- Revue plan : 2 passages (❌ → ✅) — ajout du 2ᵉ checkpoint sync rules PowerSync (oubli qui aurait rendu les
+  2 nouvelles tables muettes côté synchro cloud), clarification du partage des helpers de champs, extraction
+  d'un composant `TemplateComposer` partagé.
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
 
 > Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.
