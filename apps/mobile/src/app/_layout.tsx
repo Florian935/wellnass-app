@@ -19,7 +19,6 @@ import { ensureSettings, useSettings } from '@/data/repositories/settings-reposi
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
-import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
@@ -92,10 +91,9 @@ function RootNavigator() {
     }
   }, [ready]);
 
-  // Charge les préférences locales (micros suivis + couleurs de menu), une seule fois.
+  // Charge la préférence locale des micronutriments suivis (US 4.35), une seule fois.
   useEffect(() => {
     void useTrackedMicros.getState().hydrate();
-    void useMenuAccent.getState().hydrate();
   }, []);
 
   // Bootstrap : on n'initialise les réglages par défaut qu'une fois la **synchro

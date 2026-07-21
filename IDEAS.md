@@ -20,6 +20,22 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [21/07/2026] 🆕 **3 niveaux d'affichage pour la séance live : Simplifiée / Normale / Détaillée** :
+  adapter l'écran de séance en cours au niveau d'expérience de l'utilisateur, plutôt qu'un seul écran
+  avec tous les champs pour tout le monde. **Simplifiée** (débutant) = strict minimum pour ne pas
+  noyer : série / exercice / charge / répétitions / chrono de repos. **Normale** (intermédiaire) =
+  simplifiée + infos complémentaires (ex. charge planifiée vs réalisée, « dernière fois », suggestion
+  de progression). **Détaillée** (confirmé) = normale + toutes les données avancées de l'appli (RPE
+  par série, type de série, notes…). Objectif : chacun y trouve son compte — le débutant n'est pas
+  perdu, le confirmé n'est pas bridé. Remonté par Florian (21/07). Recoupe directement le **RPE par
+  série** (pt 13 de [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md), livré
+  en US-C) et l'idée **profils enrichis** (15/07 — le niveau/expérience déclaré en profil pourrait
+  piloter le niveau d'affichage par défaut, modifiable ensuite manuellement) ; à ne pas confondre avec
+  le mode « simple gratuit / avancé payant » de cette même idée — ici c'est une **ergonomie par niveau
+  d'expérience**, pas une frontière de monétisation. _À creuser :_ réglage persistant en profil vs
+  bascule rapide en tête de séance ; liste exacte des champs par niveau ; cohérence avec le module
+  **Powerlifting** (pratiquants confirmés, %1RM/RPE/RIR). _Prochaine étape :_ cadrage plus tard (spec
+  → plan → design) — candidat pour une itération future de l'écran de séance, après la refonte C3.
 - [20/07/2026] 🆕 **RIR en alternative au RPE par série (préférence utilisateur)** : US Refonte-C2 introduit
   un **RPE par série** (échelle 1-10, optionnel). Certains pratiquants raisonnent plutôt en **RIR** (*reps in
   reserve* : nombre de reps qu'il restait avant l'échec — 0 = échec, ~5 = très facile). Prévoir de pouvoir

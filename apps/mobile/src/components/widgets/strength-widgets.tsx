@@ -18,6 +18,7 @@ import { Chip, Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetF
 import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useWorkoutHistory, type WorkoutHistoryItem } from '@/data/repositories/workout-repository';
 import { useWeeklyVolumeComparison } from '@/data/repositories/records-repository';
+import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -228,6 +229,58 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
 }
 
 // ---------------------------------------------------------------------------
+// Templates — point d'entrée permanent vers « Mes templates » (US Refonte-D)
+// ---------------------------------------------------------------------------
+function StrengthTemplatesWidget({ size }: { size: WidgetSize }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const { templates } = useWorkoutTemplates();
+  const open = () => router.push('/templates');
+
+  if (size === 'small') {
+    return (
+      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('templates.title')}>
+        <Eyebrow>{t('widgets.strength.templatesEyebrow')}</Eyebrow>
+        <View style={styles.smallBottom}>
+          {templates.length > 0 ? (
+            <Metric value={t('templates.countLabel', { count: templates.length })} />
+          ) : (
+            <Metric value={t('templates.emptyList')} muted />
+          )}
+        </View>
+      </WidgetFrame>
+    );
+  }
+
+  const count = size === 'large' ? 4 : 2;
+  const preview = templates.slice(0, count);
+  const pad = size === 'large' ? 22 : 16;
+
+  return (
+    <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('templates.title')} style={styles.listCol}>
+      <Eyebrow>{t('widgets.strength.templatesEyebrow')}</Eyebrow>
+      {preview.length > 0 ? (
+        <View style={styles.list}>
+          {preview.map((tpl) => (
+            <View key={tpl.id} style={[styles.tplRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+              <Text style={[styles.tplName, { color: colors.text }]} numberOfLines={1}>
+                {tpl.name}
+              </Text>
+              <Text style={[styles.histMeta, { color: colors.textMuted }]}>
+                {t('templates.exerciseCount', { count: tpl.exerciseCount })}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('templates.emptyList')}</Text>
+      )}
+    </WidgetFrame>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Registre de rendu du hub muscu
 // ---------------------------------------------------------------------------
 export const STRENGTH_WIDGETS: Record<
@@ -238,6 +291,7 @@ export const STRENGTH_WIDGETS: Record<
   'strength-history': StrengthHistoryWidget,
   'strength-planning': StrengthPlanningWidget,
   'strength-progress': StrengthProgressWidget,
+  'strength-templates': StrengthTemplatesWidget,
 };
 
 const styles = StyleSheet.create({
@@ -261,6 +315,17 @@ const styles = StyleSheet.create({
   dateTile: { borderRadius: 11, paddingHorizontal: 10, paddingVertical: 6 },
   dateTileText: { fontFamily: fontFamily.monoBold, fontSize: 12 },
   histMeta: { fontFamily: fontFamily.body, fontSize: 12.5 },
+  tplRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  tplName: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
   smallSpark: { marginTop: 12 },
   wideRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   wideLeft: { flexShrink: 0 },

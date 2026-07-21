@@ -410,6 +410,32 @@ const body_weight_entries = new Table({
   deleted_at: column.text,
 });
 
+// ── US Refonte-D : templates de séance libre ──────────────────────────────
+// Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
+
+const workout_templates = new Table({
+  user_id: column.text,
+  name: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const workout_template_exercises = new Table({
+  template_id: column.text,
+  user_id: column.text,
+  exercise_id: column.text,
+  order_index: column.integer,
+  set_type: column.text,
+  target_sets: column.integer,
+  target_reps: column.text,
+  target_weight_kg: column.real,
+  rest_seconds: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
@@ -439,4 +465,6 @@ export const AppSchema = new Schema({
   runs,
   planned_sessions,
   running_pace_records,
+  workout_templates,
+  workout_template_exercises,
 });

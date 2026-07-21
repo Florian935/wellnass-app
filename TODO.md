@@ -273,7 +273,32 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 21/07/2026 (**Widgets multi-formes — DESIGN RICHE LIVRÉ** (`feature/widgets-v2-dnd`, demande Damien « dev la partie Widgets » d'après `design/FitTrio - Widgets.dc.html`) : les **16 widgets × 3 formes** (accueil 9 + muscu 4 + course 3) passent du rendu sobre au **langage visuel de la galerie** — primitives SVG (`RingGauge`/`Sparkline`/`MiniBars`/`HBars`/`WeekDots`), cadre `WidgetFrame` (`card`/`warn`/`panel`) + `Eyebrow`/`Chip`/`Metric`, tokens thème (`track`/`warn`/`panel`/`amber`) + `withAlpha`, hook `useRecentStrengthRecords`, 60 clés i18n FR+EN ; données branchées au fil (macros, `useMuscleBalance`, tonnage+variation, semaine running par jour, sparkline poids), dégradations gracieuses assumées (nom/tonnage séance, % semaine programme, splits/tracé course). typecheck workspace+mobile / lint 0 err / **44 tests** verts, **aucune migration** (UI pure). **Reste : recette device.** Précédemment : **US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
+*Dernière mise à jour : 22/07/2026 (**US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
+(A/B/C1/C2/C3/D) complet côté implémentation** — reste relecture Damien sur l'ensemble. — **US-D —
+correctif post-recette** : le seul accès à « Mes templates »
+passait par « Séance libre » → « Depuis un template », qui lançait direct au tap sans possibilité
+d'éditer/dupliquer/supprimer (mode normal non atteignable). Corrigé : tap sur un template ouvre toujours son
+détail ; nouveau widget « Mes templates » sur le hub muscu (accès permanent indépendant), réécrit sur les
+nouvelles primitives `WidgetFrame`/`Eyebrow`/`Metric` (voir merge avec `feature/widgets-v2-dnd` ci-dessous).
+typecheck/lint/781+44 tests verts. — **US-D — CODE LIVRÉ (subagent-driven) ✅** : templates de séance libre
+(dernière US du chantier refonte Muscu) — 12 tâches, 12 commits. Tables `workout_templates`/
+`workout_template_exercises` (migration + sync rules PowerSync appliquées, 2 checkpoints cloud). Composer à
+froid + enregistrer après coup depuis une séance terminée (dérivation testée Vitest), démarrer depuis un
+template, gérer (éditer/dupliquer/supprimer). Refactor `ExerciseTargetsFields` partagé + nouveau sélecteur de
+type de série. Choix à blanc/template sur le hub. typecheck/lint/781+44 tests verts, i18n FR/EN. **Chantier
+refonte Muscu (A/B/C1/C2/C3/D) complet côté implémentation** — reste recette device + relecture Damien sur
+l'ensemble. — **US-D — spec + plan + maquette validés (Florian) ✅** : 2 passages de revue sur la spec et sur
+le plan (dont un oubli critique corrigé au stade plan : sync rules PowerSync, 2ᵉ checkpoint cloud distinct de
+`db:push`). Branche `feature/refonte-muscu-d` créée depuis `dev`. Précédemment : **Widgets multi-formes —
+DESIGN RICHE LIVRÉ** (`feature/widgets-v2-dnd`, demande Damien « dev la partie Widgets » d'après
+`design/FitTrio - Widgets.dc.html`) : les **16 widgets × 3 formes** (accueil 9 + muscu 4 + course 3) passent
+du rendu sobre au **langage visuel de la galerie** — primitives SVG (`RingGauge`/`Sparkline`/`MiniBars`/
+`HBars`/`WeekDots`), cadre `WidgetFrame` (`card`/`warn`/`panel`) + `Eyebrow`/`Chip`/`Metric`, tokens thème
+(`track`/`warn`/`panel`/`amber`) + `withAlpha`, hook `useRecentStrengthRecords`, 60 clés i18n FR+EN ; données
+branchées au fil (macros, `useMuscleBalance`, tonnage+variation, semaine running par jour, sparkline poids),
+dégradations gracieuses assumées (nom/tonnage séance, % semaine programme, splits/tracé course). typecheck
+workspace+mobile / lint 0 err / **44 tests** verts, **aucune migration** (UI pure). **Reste : recette
+device.** Précédemment : **US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
 (A/B/C1/C2/C3 tous recettés ; reste relecture Damien sur l'ensemble). Superset v2 (lien explicite, dialogue de
 choix libre, `workout_superset_pairs`) validé. Merge C3 → `dev`. — **US-C3 — recette : superset repensé (v2,
 lien explicite)** : suite au retour Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le
@@ -511,8 +536,24 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
-- [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
-  réutilisable (spec §4.1). Corrige le problème 5.
+- [x] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — **RECETTE VALIDÉE (Florian,
+  22/07/2026) ✅** (subagent-driven, 12 tâches ; + 1 correctif post-recette : accès aux templates rendu
+  indépendant de « Séance libre », widget dédié sur le hub, cf. plus bas) ; reste relecture Damien sur
+  l'ensemble du chantier. Sauvegarder une séance libre comme routine réutilisable (spec §4.1). Corrige le
+  problème 5. Spec ✅ + plan ✅ (2 passages de
+  revue chacun) + maquette ✅ validés Florian. Tables dédiées `workout_templates`/`workout_template_exercises`
+  (patron repas types nutrition, **pas** de réutilisation `programs`) — **migration + sync rules PowerSync
+  appliquées** (2 checkpoints cloud, go explicite Florian pour chacun). Composer un template à froid **et**
+  l'enregistrer après coup depuis une séance libre terminée (cibles dérivées des séries **validées** via
+  `deriveTemplateTargetsFromWorkoutSets`, testée Vitest), démarrer depuis un template
+  (`planned_weight_kg` pré-rempli, même convention que `startWorkoutFromSession`), gérer (éditer/dupliquer/
+  supprimer). Refactor `ExercisePlanEditor` → composant présentation partagé `ExerciseTargetsFields` +
+  nouveau `TemplateExerciseEditor` (5ᵉ champ inédit : sélecteur de type de série, 7 valeurs). Choix à
+  blanc/template sur le bouton « Séance libre » du hub + lien secondaire les jours de séance planifiée.
+  typecheck/lint/781 tests (shared) + 44 tests (mobile) verts, parité i18n FR/EN stricte. **Chantier refonte
+  Muscu (A/B/C1/C2/C3/D) complet côté implémentation.**
+  ([spec](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) ·
+  [plan](docs/plans/refonte-muscu-d-templates-seance-libre.md) · [maquette](design/refonte-muscu-d/refonte-muscu-d.html))
 
 > **Note** : ces US ne sont **pas** ajoutées comme lignes de la [roadmap](docs/roadmap/roadmap.md)
 > versionnée (elles relèvent de la **refonte** de fonctionnalités existantes, pas de nouvelles features).

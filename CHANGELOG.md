@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : recette validée (Florian) ✅
+
+> Chantier refonte Muscu (A/B/C1/C2/C3/D) **complet côté implémentation** : les 5 US sont livrées et
+> recettées. Reste la relecture de Damien sur l'ensemble. Cette entrée regroupe aussi 2 fichiers documentaires
+> non liés, en attente de commit, inclus ici à la demande de Florian plutôt que d'ouvrir une branche dédiée.
+> Merge avec `dev` : intègre en parallèle le design riche des widgets (`feature/widgets-v2-dnd`, entrée
+> suivante) — le widget « Mes templates » (US-D) a été réécrit sur les nouvelles primitives `WidgetFrame`/
+> `Eyebrow`/`Metric` pour rester cohérent avec les 4 autres widgets muscu.
+
+**Technique / Notes**
+- US-D (templates de séance libre) : recette device validée après le correctif d'accès (widget dédié + fin du
+  mode sélection, voir entrée précédente). Aucun code applicatif dans ce commit.
+- `IDEAS.md` : ajout d'une idée déjà notée par Florian (21/07) — « 3 niveaux d'affichage pour la séance live
+  (Simplifiée / Normale / Détaillée) », en attente de tri, non liée à US-D.
+- `AGENTS.md.pre-codex-fallback.bak` : fichier de sauvegarde (racine), en attente, non lié à US-D.
+- **Merge `dev` → widget « Mes templates »** : réécrit sur `WidgetFrame`/`Eyebrow`/`Metric` (au lieu de
+  `WidgetShell`/`ModulePreviewCard`, abandonnés par le design riche) pour rester visuellement cohérent avec
+  les widgets Programmes/Historique/Planning/Progression du hub muscu. Nouvelle clé i18n
+  `widgets.strength.templatesEyebrow` (FR/EN). typecheck/lint/test re-vérifiés verts après réécriture.
+
 ### 21/07/2026 — `feature/widgets-v2-dnd` — widgets multi-formes au nouveau design (galerie « FitTrio · Widgets »)
 
 > Demande Damien : « dev la partie Widgets » d'après le design mis à jour
@@ -68,23 +88,119 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
   **préexistant**, sans rapport avec ce commit. Non committé : `design/.thumbnail`, `design/uploads/`
   (artefacts Claude Design hors périmètre).
 
-### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : accès aux templates indépendant de « Séance libre »
 
-> Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.
-> typecheck + lint verts. **Aucune migration** (préférence locale device). Recette device requise.
+> Retour recette (Florian) : le seul chemin vers « Mes templates » passait par le hub → « Séance libre » →
+> « Depuis un template », qui ouvrait la liste en **mode sélection** (tap = démarrage direct d'une séance) —
+> aucun moyen d'atteindre édition/duplication/suppression depuis l'app réelle (le mode normal existait dans le
+> code mais n'était jamais atteignable). typecheck/lint/781+44 tests verts.
 
 **Ajouté**
-- **Couleur d'accent par menu** ([menu-accent-store.ts](apps/mobile/src/stores/menu-accent-store.ts)) :
-  4 couleurs (Accueil terracotta / Muscu bordeaux / Course bleu / Alimentation vert) par défaut,
-  **personnalisables** dans les réglages. Préférence **locale device** persistée (`secureStorage`),
-  non synchronisée → aucune migration.
-- **Accent dynamique** ([useTheme.ts](apps/mobile/src/theme/useTheme.ts)) : `colors.accent` prend la couleur
-  du **menu actif** (posé par chaque onglet au focus via `useMenuFocus` ; les écrans enfants héritent).
-  Tout ce qui utilise `colors.accent` (boutons, liens, pastilles…) se teinte automatiquement par onglet.
-- **Onglets** ([(tabs)/_layout.tsx](apps/mobile/src/app/%28tabs%29/_layout.tsx)) : l'onglet actif prend sa
-  propre couleur (`tabBarActiveTintColor` par écran).
-- **Réglages → « Couleurs des menus »** ([settings.tsx](apps/mobile/src/app/settings.tsx)) : choix par
-  pastilles (8 teintes) pour chaque menu + réinitialisation. i18n FR/EN.
+- **Widget « Mes templates »** ([strength-widgets.tsx](apps/mobile/src/components/widgets/strength-widgets.tsx),
+  [widgets.ts](packages/shared/src/widgets.ts)) : nouvel id `strength-templates` sur le hub muscu, même patron
+  que le widget « Mes programmes » — accès permanent, indépendant du flux « Séance libre ».
+- i18n : `templates.countLabel_one`/`countLabel_other` (FR/EN).
+
+**Modifié**
+- [templates/index.tsx](apps/mobile/src/app/templates/index.tsx) : suppression du « mode sélection » — taper
+  un template ouvre désormais **toujours** son détail (Démarrer explicite + Dupliquer + Supprimer), plus de
+  lancement direct au tap.
+- [strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx) : les 2 liens vers `/templates?selectMode=1`
+  redirigent simplement vers `/templates`.
+
+### 22/07/2026 — `feature/refonte-muscu-d` — hotfix : rollback couleur d'accent par menu
+
+> Retour Damien/Florian : la couleur d'accent par menu (commit `751fa5d`) rend l'app moins
+> lisible. Rollback complet (`git revert 751fa5d`) — retour à l'accent orange unique. Conflit de
+> revert limité à ce CHANGELOG (entrées ajoutées depuis), résolu manuellement ; aucun conflit de
+> code.
+
+**Supprimé**
+- **Couleur d'accent par menu** : `menu-accent-store.ts` et `useMenuFocus.ts` supprimés ;
+  `useTheme.ts`, les onglets `(tabs)/_layout.tsx`/`index.tsx`/`nutrition.tsx`/`running.tsx`/
+  `strength.tsx`, `_layout.tsx` racine et `settings.tsx` (section « Couleurs des menus » + clés
+  i18n FR/EN) reviennent à l'état d'avant `751fa5d`.
+
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : CODE LIVRÉ (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (A/B/C1/C2/C3/D) — implémentation complète, 12 tâches (subagent-driven,
+> 11 commits `a57ebb1`→`13d60b7`, revue spec+qualité à chaque étape + revue finale globale). Reste recette
+> device + relecture Damien sur l'ensemble du chantier. typecheck/lint/781 tests (shared) + 44 tests (mobile)
+> verts, parité i18n FR/EN stricte.
+
+**Ajouté**
+- **Migration cloud** (`20260721074949_refonte_muscu_d_workout_templates`, poussée) : tables
+  `workout_templates`/`workout_template_exercises` (RLS `user_id`, soft delete), patron `meal_templates`.
+  **Sync rules PowerSync déployées** (2ᵉ checkpoint cloud distinct du `db:push` — oubli identifié et corrigé
+  dès la revue du plan, piège déjà rencontré en C3).
+- **`deriveTemplateTargetsFromWorkoutSets`** ([workout.ts](packages/shared/src/workout.ts)) : fonction pure
+  testée Vitest (6 cas) qui dérive les cibles d'un template depuis les séries **validées** d'une séance libre
+  terminée (nombre de séries, reps/charge de la dernière validée, type de la première validée).
+- **`workout-template-repository.ts`** (nouveau) : lecture réactive (`useWorkoutTemplates`/
+  `useWorkoutTemplateDetail`) + CRUD complet (créer/renommer/ajouter-modifier-retirer un exercice, dupliquer,
+  supprimer avec cascade) + `createTemplateFromWorkout` (enregistrer depuis une séance terminée) +
+  `startWorkoutFromTemplate` (démarrer une séance libre pré-remplie, `planned_weight_kg` alimenté comme
+  `startWorkoutFromSession`).
+- **Écrans `templates/`** (liste « Mes templates » avec mode sélection depuis le hub, composition partagée
+  `TemplateComposer`, détail avec Démarrer/Dupliquer/Supprimer).
+- **Hub muscu** : le bouton « Séance libre » ouvre un choix (à blanc / depuis un template) ; lien secondaire
+  « Ou depuis un template » sous la carte « Séance du jour » (jours de séance planifiée, sinon templates
+  inaccessibles ce jour-là).
+- **Écran résumé** : bouton « Enregistrer comme template » (séance libre terminée, au moins un exercice),
+  formulaire inline (nom pré-rempli depuis la date **locale**).
+- **`ExerciseTargetsFields`** ([components/exercise/](apps/mobile/src/components/exercise/ExerciseTargetsFields.tsx),
+  nouveau) : composant présentation extrait d'`ExercisePlanEditor` (programmes), réutilisé par le nouveau
+  `TemplateExerciseEditor` (templates) qui ajoute un 5ᵉ champ inédit — sélecteur de type de série (7 valeurs).
+
+**Modifié**
+- `workout-repository.ts` : `parseTargetReps` exporté (réutilisé par le nouveau repository) ;
+  `WorkoutHistoryItem`/`SELECT_HISTORY`/`rowToHistoryItem` exposent désormais `sessionId`/`programId`
+  (nécessaire pour masquer le bouton « Enregistrer comme template » sur une séance planifiée).
+
+**Technique / Notes**
+- Revues (spec compliance + qualité) à chaque tâche : corrections notables — garde `!detail` avant le footer
+  d'actions de `templates/[id].tsx`, cohérence `push`/`replace` après démarrage, clé i18n dédiée pour le
+  bouton Valider (au lieu de réutiliser le libellé du déclencheur), dérivation de date **locale** (pas un
+  slice de chaîne ISO UTC) + garde `submitting`/`try-catch` sur l'enregistrement depuis le résumé.
+- Revue finale globale (vue d'ensemble sur les 12 commits) : parcours de bout en bout vérifié cohérent
+  (créer → composer → démarrer → terminer → ré-enregistrer), aucune rupture ni régression trouvée.
+
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : spec + plan + maquette (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (arbitrable). Corrige le problème 5 de l'audit-flux : pas de cran
+> intermédiaire entre séance libre et programme structuré. Spec (2 passages de revue), plan (2 passages de
+> revue — un oubli critique corrigé : sync rules PowerSync) et maquette validés par Florian. Aucun code
+> applicatif dans ce commit (docs uniquement, conformément au workflow obligatoire).
+
+**Ajouté**
+- **Spec** [refonte-muscu-d-templates-seance-libre.md](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) :
+  tables dédiées `workout_templates`/`workout_template_exercises` (patron repas types nutrition, **pas** de
+  réutilisation `programs`/`sessions`/`exercise_plans`) ; deux chemins de création (composer à froid **et**
+  enregistrer après coup depuis une séance libre terminée, cibles dérivées des séries **validées**
+  uniquement) ; démarrer depuis un template (pré-remplissage `planned_weight_kg`, même convention que
+  `startWorkoutFromSession`) ; gestion (éditer/dupliquer/supprimer). Liste séparée « Mes templates ». Hors
+  périmètre : templates éditoriaux débutants (reportés), export/partage, lien automatique superset.
+- **Plan** [refonte-muscu-d-templates-seance-libre.md](docs/plans/refonte-muscu-d-templates-seance-libre.md) :
+  12 tâches — migration (🔴 2 checkpoints cloud distincts : `db:push` **et** déploiement sync rules
+  PowerSync, piège identifié et corrigé pendant la revue) ; fonction pure testable Vitest
+  `deriveTemplateTargetsFromWorkoutSets` (packages/shared) ; nouveau repository
+  `workout-template-repository.ts` ; modifications connexes à `workout-repository.ts` (export
+  `parseTargetReps`, `sessionId`/`programId` sur l'historique) ; refactor `ExercisePlanEditor.tsx` →
+  composant présentation partagé `ExerciseTargetsFields.tsx` + nouveau `TemplateExerciseEditor.tsx` (5ᵉ champ
+  inédit : sélecteur de type de série, 7 valeurs) ; écrans `templates/` (composant partagé `TemplateComposer`
+  pour éviter la duplication entre édition et détail) ; intégration hub muscu (choix à blanc/template + lien
+  secondaire les jours de séance planifiée) et écran résumé (« Enregistrer comme template »).
+- **Maquette** [refonte-muscu-d.html](design/refonte-muscu-d/refonte-muscu-d.html) : 6 écrans (choix de
+  démarrage, lien secondaire, liste, composition, détail + actions, enregistrement depuis le résumé).
+
+**Technique / Notes**
+- Branche `feature/refonte-muscu-d` créée depuis `dev`.
+- Revue spec : 2 passages (❌ → ✅) — correction de la condition d'affichage du bouton « Enregistrer comme
+  template » (champs `sessionId`/`programId` manquants sur l'historique), clarification du sélecteur de type
+  de série (travail neuf, pas un refactor), ajout d'un accès template les jours de séance planifiée.
+- Revue plan : 2 passages (❌ → ✅) — ajout du 2ᵉ checkpoint sync rules PowerSync (oubli qui aurait rendu les
+  2 nouvelles tables muettes côté synchro cloud), clarification du partage des helpers de champs, extraction
+  d'un composant `TemplateComposer` partagé.
 
 ### 20/07/2026 — `feature/widgets-v2-dnd` — grille : compaction verticale (pas d'espace entre modules)
 

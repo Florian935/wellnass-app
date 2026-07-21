@@ -1,0 +1,249 @@
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  .r{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1400px;margin:0 auto 32px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:86ch;margin:0;font-size:15px;}
+  .stage{max-width:1400px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:320px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:12px;box-shadow:var(--shadow);max-width:320px;width:100%;overflow:hidden;min-height:580px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px;}
+  .topbar .x{font-size:22px;color:var(--ink);font-weight:400;width:28px;}
+  .topbar .ttl{font-weight:800;font-size:15px;}
+  .topbar .fin{color:var(--strength);font-weight:800;font-size:15px;}
+
+  /* ---- Hub : carte d'action ---- */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;margin:0 4px 12px;}
+  .cardhead{display:flex;align-items:center;gap:8px;margin:0 0 6px;}
+  .cardhead .ic{font-size:16px;}
+  .cardhead .ttl{font-weight:800;font-size:15px;}
+  .cardtxt{color:var(--muted);font-size:13px;margin:0 0 12px;}
+  .btn{background:var(--strength);color:#fff;border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn.ghost{background:transparent;color:var(--strength);border:1px solid var(--strength);}
+  .sublink{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-size:12.5px;font-weight:700;margin-top:10px;}
+  .sublink .car{color:var(--strength);}
+
+  /* ---- Action sheet (choix À blanc / Depuis un template) ---- */
+  .sheetwrap{position:absolute;inset:0;background:rgba(51,41,31,.42);display:flex;align-items:flex-end;border-radius:34px;}
+  .sheet{background:var(--surface);width:100%;border-radius:20px 20px 0 0;padding:18px 16px 20px;box-shadow:0 -8px 24px rgba(51,41,31,.18);}
+  .sheet .stt{font-weight:800;font-size:15px;text-align:center;margin:0 0 14px;}
+  .sheetopt{display:flex;align-items:center;gap:10px;padding:13px 6px;border-top:1px solid var(--border);font-weight:700;font-size:14.5px;}
+  .sheetopt:first-of-type{border-top:none;}
+  .sheetopt .ic{font-size:17px;width:22px;text-align:center;}
+  .sheetopt.cancel{justify-content:center;color:var(--muted);margin-top:6px;border-top:none;font-weight:700;}
+
+  /* ---- Liste "Mes templates" ---- */
+  .listttl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:2px 6px 8px;}
+  .trow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin:0 4px 8px;}
+  .trow .nm{font-weight:700;font-size:14.5px;}
+  .trow .ct{color:var(--muted);font-size:12.5px;margin-top:2px;}
+  .trow.empty{opacity:.5;}
+  .trow .car{color:var(--strength);font-size:15px;}
+  .addbtn{width:34px;height:34px;border-radius:17px;background:var(--strength);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;}
+
+  /* ---- Composition d'un template ---- */
+  .namefield{background:var(--surface-alt);border-radius:11px;padding:10px 12px;font-weight:800;font-size:16px;margin:0 4px 14px;}
+  .exedit{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;margin:0 4px 10px;}
+  .exedithead{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;}
+  .exedithead .nm{font-weight:700;font-size:14px;}
+  .exedithead .rm{color:var(--muted);font-size:15px;}
+  .typerow{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 10px;}
+  .chip{font-size:10.5px;font-weight:700;padding:5px 8px;border-radius:8px;background:var(--surface-alt);color:var(--muted);white-space:nowrap;}
+  .chip.on{background:var(--strength);color:#fff;}
+  .targetgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .tfield .lab{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 4px;}
+  .tfield .val{background:var(--surface-alt);border-radius:9px;padding:8px 10px;font-family:var(--mono);font-weight:700;font-size:13.5px;}
+  .addexbtn{border:1px dashed var(--strength);border-radius:12px;text-align:center;color:var(--strength);font-weight:700;font-size:13.5px;padding:12px;margin:2px 4px 12px;}
+  .donebtn{background:var(--strength);color:#fff;border-radius:13px;text-align:center;font-weight:800;font-size:14.5px;padding:12px;margin:0 4px;}
+
+  /* ---- Détail template : actions ---- */
+  .detailacts{display:flex;flex-direction:column;gap:8px;margin:14px 4px 0;}
+  .actbtn{border-radius:13px;text-align:center;font-weight:800;font-size:14px;padding:12px;}
+  .actbtn.start{background:var(--strength);color:#fff;}
+  .actbtn.line{background:transparent;color:var(--ink);border:1px solid var(--border);}
+  .actbtn.danger{background:transparent;color:#b23b2e;border:1px solid #e2c9c3;}
+
+  /* ---- Résumé de séance : enregistrer comme template ---- */
+  .sumcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;margin:0 4px 14px;}
+  .sumrow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13.5px;}
+  .sumrow .lab{color:var(--muted);}
+  .sumrow .val{font-family:var(--mono);font-weight:700;}
+  .savetplbtn{border:1px solid var(--strength);color:var(--strength);border-radius:12px;text-align:center;font-weight:700;font-size:13.5px;padding:11px;margin:0 4px 10px;}
+  .saveform{background:var(--surface);border:1px solid var(--strength);border-radius:14px;padding:13px;margin:0 4px 10px;}
+  .saveform .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px;}
+  .saveform input{width:100%;background:var(--surface-alt);border-radius:9px;padding:9px 10px;font-family:var(--sans);font-weight:700;font-size:14px;color:var(--ink);border:none;margin:0 0 10px;}
+  .saveform .row{display:flex;gap:8px;}
+  .saveform .b{flex:1;text-align:center;font-weight:800;font-size:13px;border-radius:10px;padding:10px;}
+  .saveform .b.val{background:var(--strength);color:#fff;}
+  .saveform .b.cancel{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .toast{display:flex;align-items:center;gap:7px;background:var(--success);color:#fff;border-radius:11px;padding:9px 12px;font-size:12.5px;font-weight:700;margin:0 4px;}
+
+  .notes{max-width:1400px;margin:36px auto 0;padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+  .notes h2{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:0 0 12px;}
+  .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;}
+  .notes li{font-size:14px;} .notes code{font-family:var(--mono);font-size:12.5px;background:var(--surface-alt);padding:1px 6px;border-radius:6px;}
+</style>
+
+<div class="r">
+  <header class="head">
+    <p class="eyebrow">Wellness · US Refonte-D · Maquette</p>
+    <h1 class="title">Templates de séance libre</h1>
+    <p class="sub">Un cran intermédiaire entre « séance libre » et « programme structuré » : composer une routine réutilisable (nom + exercices + cibles), l'enregistrer après coup depuis une séance déjà faite, et démarrer une nouvelle séance libre pré-remplie à partir d'un template. Dernière US du chantier refonte Muscu (après A, B, C1-C3).</p>
+  </header>
+
+  <div class="stage">
+
+    <!-- 1. Hub : choix à blanc / depuis un template -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="ttl">Muscu</span><span></span></div>
+        <div class="card">
+          <div class="cardhead"><span class="ic">⚡</span><span class="ttl">Séance libre</span></div>
+          <p class="cardtxt">Démarre à vide et ajoute les exercices au fil de l'eau.</p>
+          <div class="btn">Séance libre</div>
+        </div>
+        <div class="sheetwrap">
+          <div class="sheet">
+            <p class="stt">Séance libre</p>
+            <div class="sheetopt"><span class="ic">⚡</span> À blanc</div>
+            <div class="sheetopt"><span class="ic">📋</span> Depuis un template</div>
+            <div class="sheetopt cancel">Annuler</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Le bouton <b>« Séance libre »</b> existant ouvre un choix — « À blanc » inchangé, « Depuis un template » ouvre la liste.</p>
+    </div>
+
+    <!-- 2. Hub : jour de séance planifiée + lien secondaire -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="ttl">Muscu</span><span></span></div>
+        <div class="card">
+          <div class="cardhead"><span class="ic">🏋️</span><span class="ttl">Séance du jour</span></div>
+          <p class="cardtxt">Push · 5 exercices<br>Programme : Force 5×5</p>
+          <div class="btn">Démarrer</div>
+          <div class="sublink"><span class="car">📋</span> Ou depuis un template</div>
+        </div>
+      </div>
+      <p class="caption">Les jours avec une séance planifiée (US-B), un <b>lien secondaire discret</b> garde les templates accessibles — sinon aucun accès aux templates ce jour-là.</p>
+    </div>
+
+    <!-- 3. Liste "Mes templates" -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">←</span><span class="ttl">Mes templates</span><span class="addbtn">+</span></div>
+        <div class="listttl">3 templates</div>
+        <div class="trow"><div><div class="nm">Push habituel</div><div class="ct">4 exercices</div></div><span class="car">›</span></div>
+        <div class="trow"><div><div class="nm">Full body rapide</div><div class="ct">6 exercices</div></div><span class="car">›</span></div>
+        <div class="trow empty"><div><div class="nm">Jambes (brouillon)</div><div class="ct">0 exercice</div></div><span class="car">›</span></div>
+      </div>
+      <p class="caption">Liste séparée de « Mes programmes ». Un template <b>vide</b> reste modifiable mais n'est pas sélectionnable pour démarrer une séance.</p>
+    </div>
+
+    <!-- 4. Composition d'un template -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">←</span><span class="ttl">Édition</span><span></span></div>
+        <div class="namefield">Push habituel</div>
+
+        <div class="exedit">
+          <div class="exedithead"><span class="nm">Développé couché</span><span class="rm">🗑</span></div>
+          <div class="typerow">
+            <span class="chip on">Normale</span><span class="chip">Échauf.</span><span class="chip">Superset</span>
+            <span class="chip">Durée</span><span class="chip">Poids corps</span><span class="chip">Dropset</span><span class="chip">Échec</span>
+          </div>
+          <div class="targetgrid">
+            <div class="tfield"><div class="lab">Séries</div><div class="val">4</div></div>
+            <div class="tfield"><div class="lab">Reps</div><div class="val">6-8</div></div>
+            <div class="tfield"><div class="lab">Charge</div><div class="val">80 kg</div></div>
+            <div class="tfield"><div class="lab">Repos</div><div class="val">90 s</div></div>
+          </div>
+        </div>
+
+        <div class="exedit">
+          <div class="exedithead"><span class="nm">Rowing barre</span><span class="rm">🗑</span></div>
+          <div class="typerow">
+            <span class="chip">Normale</span><span class="chip">Échauf.</span><span class="chip">Superset</span>
+            <span class="chip">Durée</span><span class="chip">Poids corps</span><span class="chip">Dropset</span><span class="chip on">Échec</span>
+          </div>
+          <div class="targetgrid">
+            <div class="tfield"><div class="lab">Séries</div><div class="val">3</div></div>
+            <div class="tfield"><div class="lab">Reps</div><div class="val">8-10</div></div>
+            <div class="tfield"><div class="lab">Charge</div><div class="val">—</div></div>
+            <div class="tfield"><div class="lab">Repos</div><div class="val">90 s</div></div>
+          </div>
+        </div>
+
+        <div class="addexbtn">＋ Ajouter un exercice</div>
+        <div class="donebtn">Terminé</div>
+      </div>
+      <p class="caption">5 champs par exercice : les 4 déjà connus (séries/reps/charge/repos, patron programmes) <b>+ un nouveau</b> sélecteur de type de série (7 valeurs, déclaratif).</p>
+    </div>
+
+    <!-- 5. Détail template : actions -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="x">←</span><span class="ttl">Push habituel</span><span></span></div>
+        <div class="namefield">Push habituel</div>
+        <div class="listttl">4 exercices</div>
+        <div class="trow"><div><div class="nm">Développé couché</div><div class="ct">4 séries · 6-8 reps · 80 kg</div></div></div>
+        <div class="trow"><div><div class="nm">Rowing barre</div><div class="ct">3 séries · 8-10 reps</div></div></div>
+        <div class="trow"><div><div class="nm">Élévations latérales</div><div class="ct">3 séries · 12-15 reps</div></div></div>
+        <div class="trow"><div><div class="nm">Gainage</div><div class="ct">3 séries · durée</div></div></div>
+        <div class="detailacts">
+          <div class="actbtn start">▶ Démarrer</div>
+          <div class="actbtn line">Dupliquer</div>
+          <div class="actbtn danger">Supprimer</div>
+        </div>
+      </div>
+      <p class="caption">Même composition que l'édition, <b>plus</b> les actions <b>Démarrer</b> (désactivée si 0 exercice), <b>Dupliquer</b>, <b>Supprimer</b> (confirmation).</p>
+    </div>
+
+    <!-- 6. Résumé de séance : enregistrer comme template -->
+    <div class="col">
+      <div class="phone">
+        <div class="topbar"><span class="ttl">Résumé de séance</span><span></span></div>
+        <div class="sumcard">
+          <div class="sumrow"><span class="lab">Durée</span><span class="val">52 min</span></div>
+          <div class="sumrow"><span class="lab">Exercices</span><span class="val">4</span></div>
+          <div class="sumrow"><span class="lab">Séries</span><span class="val">14</span></div>
+          <div class="sumrow"><span class="lab">Volume</span><span class="val">3 240 kg</span></div>
+        </div>
+
+        <div class="saveform">
+          <div class="lab">Nom du template</div>
+          <input value="Séance du 21/07" readonly>
+          <div class="row"><span class="b val">Valider</span><span class="b cancel">Annuler</span></div>
+        </div>
+        <div class="toast">✓ Template enregistré : Séance du 21/07</div>
+      </div>
+      <p class="caption">Visible seulement pour une <b>séance libre</b> (pas depuis un programme) avec au moins un exercice. Cibles dérivées des <b>séries validées</b> uniquement.</p>
+    </div>
+
+  </div>
+
+  <section class="notes">
+    <h2>Décisions & portée (rappel spec US-D)</h2>
+    <ul>
+      <li><strong>Deux chemins de création</strong> : composer à froid (écran dédié) <strong>et</strong> enregistrer après coup depuis une séance libre terminée (patron des repas types nutrition) — un template reste une simple liste d'exercices + cibles quelle que soit son origine.</li>
+      <li><strong>Modèle de données</strong> : tables dédiées <code>workout_templates</code>/<code>workout_template_exercises</code> — pas de réutilisation de <code>programs</code>/<code>sessions</code>/<code>exercise_plans</code> (pas de niveau/objectif/durée/activation/planning pour un template).</li>
+      <li><strong>Liste séparée</strong> « Mes templates », distincte de « Mes programmes ». Pas de bibliothèque éditoriale dans cette US (templates de démarrage débutant reportés).</li>
+      <li><strong>Entrée de démarrage</strong> : le bouton « Séance libre » existant ouvre un choix (à blanc / template) ; un lien secondaire garde l'accès les jours de séance planifiée.</li>
+      <li><strong>Dérivation des cibles</strong> à l'enregistrement : séries <strong>validées</strong> uniquement ; nombre de séries = compte des validées ; reps/charge = dernière série validée ; type = première série validée.</li>
+      <li><strong>Aucun lien conservé</strong> entre un template et les séances qu'il a servi à démarrer — supprimer/modifier un template n'affecte jamais l'historique.</li>
+      <li><strong>Hors périmètre</strong> : templates éditoriaux débutants (reportés), export/partage, lien automatique template → paire de superset (reste un geste en direct, C3).</li>
+      <li><em>Polices : stand-ins ici ; en app = Bricolage Grotesque / Hanken Grotesk / Space Mono. Muscu = accent bordeaux charte <code>#6b0028</code>.</em></li>
+    </ul>
+  </section>
+</div>

@@ -8,13 +8,11 @@ import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
-import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function HomeScreen() {
-  useMenuFocus('home');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { profile } = useProfile();

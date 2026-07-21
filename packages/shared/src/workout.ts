@@ -205,3 +205,62 @@ export function computeProgressionSuggestion(
     reps: referenceSet.reps + 1,
   };
 }
+
+/** Une série de séance, telle que lue depuis `workout_sets` (déjà triée par `order_index`). */
+export type WorkoutSetForTemplateDerivation = {
+  exerciseId: string;
+  setType: string;
+  reps: number | null;
+  weightKg: number | null;
+  done: boolean;
+};
+
+/** Cibles d'un exercice de template, dérivées d'une séance terminée (US Refonte-D §3). */
+export type DerivedTemplateExerciseTarget = {
+  exerciseId: string;
+  setType: string;
+  targetSets: number;
+  targetReps: string | null;
+  targetWeightKg: number | null;
+};
+
+/**
+ * Dérive les cibles d'un template à partir des séries **validées** d'une séance libre
+ * terminée (US Refonte-D §3, `createTemplateFromWorkout`). Ne considère que les séries
+ * `done: true` : une série jamais validée n'a pas été réellement faite, elle ne doit pas
+ * définir un template. Un exercice sans aucune série validée est exclu du résultat.
+ * L'ordre du résultat suit l'ordre de **première apparition** de chaque exercice dans
+ * `sets` (déjà trié par `order_index` par l'appelant).
+ */
+export function deriveTemplateTargetsFromWorkoutSets(
+  sets: ReadonlyArray<WorkoutSetForTemplateDerivation>,
+): DerivedTemplateExerciseTarget[] {
+  const order: string[] = [];
+  const byExercise = new Map<string, WorkoutSetForTemplateDerivation[]>();
+
+  for (const set of sets) {
+    if (!byExercise.has(set.exerciseId)) {
+      byExercise.set(set.exerciseId, []);
+      order.push(set.exerciseId);
+    }
+    byExercise.get(set.exerciseId)!.push(set);
+  }
+
+  const results: DerivedTemplateExerciseTarget[] = [];
+  for (const exerciseId of order) {
+    const exerciseSets = byExercise.get(exerciseId)!;
+    const doneSets = exerciseSets.filter((s) => s.done);
+    if (doneSets.length === 0) continue;
+
+    const first = doneSets[0]!;
+    const last = doneSets[doneSets.length - 1]!;
+    results.push({
+      exerciseId,
+      setType: first.setType,
+      targetSets: doneSets.length,
+      targetReps: last.reps == null ? null : String(last.reps),
+      targetWeightKg: last.weightKg,
+    });
+  }
+  return results;
+}

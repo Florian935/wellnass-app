@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { StrengthWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -11,7 +11,6 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { STRENGTH_WIDGETS } from '@/components/widgets/strength-widgets';
-import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
   startWorkout,
   startWorkoutFromSession,
@@ -22,7 +21,6 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function StrengthScreen() {
-  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -35,6 +33,17 @@ export default function StrengthScreen() {
   const onStart = async () => {
     await startWorkout();
     router.push('/workout');
+  };
+
+  const onStartFree = () => {
+    Alert.alert(t('workout.freeStart.title'), undefined, [
+      { text: t('workout.freeStart.blank'), onPress: () => void onStart() },
+      {
+        text: t('workout.freeStart.fromTemplate'),
+        onPress: () => router.push('/templates'),
+      },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
   };
 
   const onStartToday = async (sessionId: string, plannedSessionId: string) => {
@@ -106,6 +115,16 @@ export default function StrengthScreen() {
               loading={starting}
               onPress={() => onStartToday(today.session.sessionId, today.session.plannedSessionId)}
             />
+            <Pressable
+              onPress={() => router.push('/templates')}
+              style={styles.todayNoteRow}
+              hitSlop={8}
+            >
+              <Ionicons name="albums-outline" size={14} color={colors.textMuted} />
+              <Text style={[styles.todayNoteText, { color: colors.textMuted }]} numberOfLines={1}>
+                {t('workout.freeStart.fromTemplate')}
+              </Text>
+            </Pressable>
           </Card>
         ) : (
           <Card>
@@ -118,7 +137,7 @@ export default function StrengthScreen() {
             <Text style={[styles.cardText, { color: colors.textMuted }]}>
               {t('workout.freeSubtitle')}
             </Text>
-            <Button label={t('workout.startFree')} onPress={onStart} />
+            <Button label={t('workout.startFree')} onPress={onStartFree} />
             {today.state === 'none' && today.doneToday ? (
               <View style={styles.todayNoteRow}>
                 <Text style={[styles.todayNoteMark, { color: colors.success }]}>✓</Text>

@@ -40,6 +40,11 @@
     "freeTitle": "Séance libre",
     "freeSubtitle": "Ajoute tes exercices au fil de l'eau, sans programme.",
     "startFree": "Démarrer une séance libre",
+    "freeStart": {
+      "title": "Séance libre",
+      "blank": "À blanc",
+      "fromTemplate": "Depuis un template"
+    },
     "resumeTitle": "Séance en cours",
     "resume": "Reprendre la séance",
     "exerciseCount_one": "{{count}} exercice",
@@ -151,7 +156,12 @@
         }
       },
       "warmupCount_one": "+{{count}} échauffement",
-      "warmupCount_other": "+{{count}} échauffements"
+      "warmupCount_other": "+{{count}} échauffements",
+      "saveAsTemplate": "Enregistrer comme template",
+      "saveAsTemplateConfirm": "Valider",
+      "saveAsTemplateDefaultName": "Séance du {{date}}",
+      "templateNameLabel": "Nom du template",
+      "templateSaved": "Template enregistré"
     }
   },
   "tabs": {
@@ -554,7 +564,8 @@
       "recentEyebrow_other": "{{count}} dernières séances",
       "planningEyebrow": "Planning",
       "progressEyebrow": "Progression",
-      "progressTotalEyebrow": "Volume total"
+      "progressTotalEyebrow": "Volume total",
+      "templatesEyebrow": "Templates"
     },
     "running": {
       "lastRunEyebrow": "Dernière sortie",
@@ -942,6 +953,33 @@
       "done": "Terminé"
     }
   },
+  "templates": {
+    "title": "Mes templates",
+    "subtitle": "Routines réutilisables pour tes séances libres.",
+    "create": "Créer un template",
+    "createTitle": "Nouveau template",
+    "createSubtitle": "Donne un nom à ton template, puis ajoute des exercices.",
+    "name": "Nom du template",
+    "namePlaceholder": "Ex. Push habituel",
+    "done": "Terminé",
+    "editTitle": "Exercices",
+    "emptyExercises": "Aucun exercice. Ajoute un premier exercice pour composer ton template.",
+    "addExercise": "+ Ajouter un exercice",
+    "notFoundTitle": "Template introuvable",
+    "notFoundMessage": "Ce template n'existe pas ou a été supprimé.",
+    "emptyList": "Tu n'as pas encore de template. Crée-en un, ou enregistre une séance libre terminée comme template.",
+    "exerciseCount_one": "{{count}} exercice",
+    "exerciseCount_other": "{{count}} exercices",
+    "countLabel_one": "{{count}} template",
+    "countLabel_other": "{{count}} templates",
+    "start": "Démarrer",
+    "starting": "Démarrage…",
+    "duplicate": "Dupliquer",
+    "duplicating": "Duplication…",
+    "delete": "Supprimer",
+    "deleting": "Suppression…",
+    "deleteConfirm": "Cette action supprimera définitivement ce template. Continuer ?"
+  },
   "history": {
     "title": "Historique",
     "subtitle": "Tes séances terminées.",
@@ -1066,11 +1104,6 @@
       "system": "Système",
       "light": "Clair",
       "dark": "Sombre"
-    },
-    "menuColors": {
-      "title": "Couleurs des menus",
-      "reset": "Réinitialiser les couleurs",
-      "hint": "Chaque menu (Accueil, Muscu, Course, Alimentation) a sa couleur d'accent."
     },
     "units": {
       "title": "Unités",
