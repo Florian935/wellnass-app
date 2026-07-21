@@ -1,7 +1,7 @@
 # Changelog
 
 Toutes les modifications notables du projet sont consignées ici — **maintenu automatiquement
-par la commande [`/commit`](.claude/commands/commit.md)**. Chaque entrée est construite à partir
+par le workflow partagé [`commit`](docs/agent-workflows/commit.md)**. Chaque entrée est construite à partir
 de l'analyse du `git diff` du commit, pour garder une **trace complète** des modifications
 (utile aux devs et au débogage).
 
@@ -9,6 +9,17 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+
+### 21/07/2026 — `chore/compatibilite-claude-codex` — documentation des workflows multi-agents
+
+**Ajouté**
+- Guide de maintenance des workflows partagés et procédure d'ajout d'un futur skill.
+
+**Modifié**
+- `CLAUDE.md`, `CHANGELOG.md` et `TODO.md` pointent vers la source commune du workflow commit.
+
+**Technique / Notes**
+- Claude conserve `/commit` ; Codex utilise `$commit`.
 
 ### 21/07/2026 — `chore/compatibilite-claude-codex` — socle de compatibilité des agents
 

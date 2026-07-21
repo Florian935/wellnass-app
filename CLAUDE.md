@@ -82,8 +82,12 @@ Modèle de branches : `main` = branche protégée (release) · **`dev` = branche
 (cible de tout le travail courant) · `feature/*` etc. = branches de travail.
 
 ### Commits
-Utiliser la commande **`/commit`** (voir [.claude/commands/commit.md](.claude/commands/commit.md)).
-En une passe, elle :
+Utiliser le workflow partagé **commit**
+([docs/agent-workflows/commit.md](docs/agent-workflows/commit.md)) :
+- Claude Code : `/commit [sujet optionnel]` ;
+- Codex : `$commit [sujet optionnel]` ou une demande équivalente en langage naturel.
+
+En une passe, il :
 - analyse et **relit le `git diff`** (revue de code : bugs, secrets, specs, offline-first, i18n) ;
 - applique le **garde-fou confidentialité** (jamais de secrets) ;
 - tient le **[CHANGELOG.md](CHANGELOG.md)** — une entrée par commit, construite à partir du diff,

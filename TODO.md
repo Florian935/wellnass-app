@@ -1,7 +1,7 @@
 # TODO — Wellness App
 
 Suivi **vivant** des tâches. On y ajoute les US au fur et à mesure qu'elles entrent dans le
-pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vient d'être livré.
+pipeline ; le workflow partagé [`commit`](docs/agent-workflows/commit.md) coche ce qui vient d'être livré.
 
 - Légende : `[ ]` à faire · `[~]` en cours · `[x]` fait
 - Le **backlog complet** (179 US, V0.1 → V1.1) vit dans
@@ -373,7 +373,7 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 - [~] **Migration Claude Code / Codex** (`chore/compatibilite-claude-codex`, 21/07/2026) —
   fallback Codex, workflow commun, wrappers Claude/Codex et contrôle statique livrés sur la
-  branche. Reste : documentation d'usage, validation dans de nouvelles sessions et intégration.
+  branche. Documentation d'usage livrée. Reste : validation manuelle dans de nouvelles sessions Claude/Codex.
 
 ---
 
