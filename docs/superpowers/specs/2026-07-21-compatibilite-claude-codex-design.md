@@ -2,7 +2,7 @@
 
 **Date :** 21/07/2026
 
-**Statut :** conception validée oralement, document à relire avant plan d'implémentation
+**Statut :** validée par l'utilisateur le 21/07/2026
 
 **Branche cible :** `chore/compatibilite-claude-codex` depuis `dev`
 

@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `chore/compatibilite-claude-codex` — plan d'implémentation de la migration agents
+
+> Spec/design validé par l'utilisateur. Plan uniquement : aucune configuration d'agent ni aucun
+> workflow actif modifié dans cet incrément.
+
+**Ajouté**
+- **Plan d'implémentation Claude Code / Codex**
+  ([2026-07-21-compatibilite-claude-codex.md](docs/superpowers/plans/2026-07-21-compatibilite-claude-codex.md)) :
+  trois incréments testables couvrant fallback, workflow commun, adaptateurs, documentation,
+  validation croisée et intégration vers `dev`.
+
+**Modifié**
+- La spec/design porte désormais son statut de validation du 21/07/2026.
+
+**Technique / Notes**
+- Aucun statut de roadmap modifié : outillage hors périmètre fonctionnel produit.
+
 ### 21/07/2026 — `chore/compatibilite-claude-codex` — conception de la cohabitation Claude Code / Codex
 
 > Conception technique uniquement : aucune configuration d'agent ni aucun code applicatif modifié.
