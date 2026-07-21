@@ -5,8 +5,9 @@
 > chaque fois. Impossible de sauvegarder mon push habituel sans créer un programme complet. Il manque un cran
 > intermédiaire entre libre et programme structuré. »* US **arbitrable** (non bloquante pour le reste du
 > chantier), cadrée par brainstorming avec Florian le 21/07/2026. Branche : `feature/refonte-muscu-d` ·
-> **Statut : à valider (pas de code avant validation).**
-> **🔴 Migration cloud requise** (2 nouvelles tables `workout_templates` / `workout_template_exercises`).
+> **Statut : code livré (subagent-driven), reste recette device + relecture Damien.**
+> **🔴 Migration + sync rules PowerSync appliquées** (2 nouvelles tables `workout_templates` /
+> `workout_template_exercises`).
 
 ## 0. Contexte
 
@@ -309,19 +310,19 @@ Nouveau fichier, sur le patron de `meal-template-repository.ts` (lecture réacti
 
 ## 6. Definition of Done
 
-- [ ] Spec + plan + **maquette** validés (pas de code avant).
-- [ ] Migration `workout_templates`/`workout_template_exercises` créée, prévisualisée, **poussée après go**,
+- [x] Spec + plan + **maquette** validés (pas de code avant).
+- [x] Migration `workout_templates`/`workout_template_exercises` créée, prévisualisée, **poussée après go**,
   types régénérés, `MIGRATIONS.md` coché.
-- [ ] Composer un template à froid : créer, nommer, ajouter/éditer/retirer des exercices avec cibles.
-- [ ] Enregistrer une séance libre terminée comme template (bouton résumé, masqué si séance planifiée ou vide).
-- [ ] Démarrer une séance depuis un template : pré-remplissage correct (séries/reps/charge/`planned_weight_kg`).
-- [ ] Gestion : liste, édition, duplication, suppression (soft delete cascade).
-- [ ] Refactor `ExercisePlanEditor` → composant présentation partagé (4 champs), réutilisé par
+- [x] Composer un template à froid : créer, nommer, ajouter/éditer/retirer des exercices avec cibles.
+- [x] Enregistrer une séance libre terminée comme template (bouton résumé, masqué si séance planifiée ou vide).
+- [x] Démarrer une séance depuis un template : pré-remplissage correct (séries/reps/charge/`planned_weight_kg`).
+- [x] Gestion : liste, édition, duplication, suppression (soft delete cascade).
+- [x] Refactor `ExercisePlanEditor` → composant présentation partagé (4 champs), réutilisé par
   `TemplateExerciseEditor`, sans régression sur l'édition de programme ; nouveau sélecteur de type de série
   (5ᵉ champ, propre aux templates) fonctionnel.
-- [ ] Tests `shared` (si logique extraite en fonctions pures : dérivation des cibles depuis une séance) verts ;
+- [x] Tests `shared` (si logique extraite en fonctions pures : dérivation des cibles depuis une séance) verts ;
   typecheck/lint verts.
-- [ ] i18n FR+EN (parité) ; offline-first ; PR relue par les deux devs.
+- [x] i18n FR+EN (parité) ; offline-first ; PR relue par les deux devs.
 
 ## 7. Explicitement différé / hors périmètre
 

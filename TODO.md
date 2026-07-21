@@ -273,12 +273,16 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 21/07/2026 (**US-D — spec + plan + maquette validés (Florian) ✅** : templates de
-séance libre (dernière US du chantier refonte Muscu) — tables dédiées `workout_templates`/
-`workout_template_exercises`, composer à froid + enregistrer après coup depuis une séance terminée, démarrer
-depuis un template, gérer (éditer/dupliquer/supprimer). 2 passages de revue sur la spec et sur le plan (dont un
-oubli critique corrigé au stade plan : sync rules PowerSync, 2ᵉ checkpoint cloud distinct de `db:push`).
-Branche `feature/refonte-muscu-d` créée depuis `dev`. Prochaine étape : **implémentation** (subagent-driven).
+*Dernière mise à jour : 21/07/2026 (**US-D — CODE LIVRÉ (subagent-driven) ✅** : templates de séance libre
+(dernière US du chantier refonte Muscu) — 12 tâches, 12 commits. Tables `workout_templates`/
+`workout_template_exercises` (migration + sync rules PowerSync appliquées, 2 checkpoints cloud). Composer à
+froid + enregistrer après coup depuis une séance terminée (dérivation testée Vitest), démarrer depuis un
+template, gérer (éditer/dupliquer/supprimer). Refactor `ExerciseTargetsFields` partagé + nouveau sélecteur de
+type de série. Choix à blanc/template sur le hub. typecheck/lint/781+44 tests verts, i18n FR/EN. **Chantier
+refonte Muscu (A/B/C1/C2/C3/D) complet côté implémentation** — reste recette device + relecture Damien sur
+l'ensemble. — **US-D — spec + plan + maquette validés (Florian) ✅** : 2 passages de revue sur la spec et sur
+le plan (dont un oubli critique corrigé au stade plan : sync rules PowerSync, 2ᵉ checkpoint cloud distinct de
+`db:push`). Branche `feature/refonte-muscu-d` créée depuis `dev`.
 — **US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
 (A/B/C1/C2/C3 tous recettés ; reste relecture Damien sur l'ensemble). Superset v2 (lien explicite, dialogue de
 choix libre, `workout_superset_pairs`) validé. Merge C3 → `dev`. — **US-C3 — recette : superset repensé (v2,
@@ -517,14 +521,20 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
-- [~] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — sauvegarder une séance libre
-  comme routine réutilisable (spec §4.1). Corrige le problème 5. **Spec ✅ + plan ✅ (2 passages de revue
-  chacun) + maquette ✅ validés Florian.** Périmètre : tables dédiées `workout_templates`/
-  `workout_template_exercises` (patron repas types nutrition, **pas** de réutilisation `programs`), composer à
-  froid **et** enregistrer après coup depuis une séance libre terminée (cibles dérivées des séries validées),
-  démarrer depuis un template, gérer (éditer/dupliquer/supprimer). **🔴 2 checkpoints cloud à venir** :
-  migration (`db:push`) **+** sync rules PowerSync (déploiement dashboard séparé — piège identifié dès le
-  plan, cf. C3). Branche `feature/refonte-muscu-d`, prochaine étape : implémentation (subagent-driven).
+- [x] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — **CODE LIVRÉ (subagent-driven,
+  12 tâches, 12 commits `a57ebb1`→`13d60b7`)** ; reste recette device + relecture Damien. Sauvegarder une
+  séance libre comme routine réutilisable (spec §4.1). Corrige le problème 5. Spec ✅ + plan ✅ (2 passages de
+  revue chacun) + maquette ✅ validés Florian. Tables dédiées `workout_templates`/`workout_template_exercises`
+  (patron repas types nutrition, **pas** de réutilisation `programs`) — **migration + sync rules PowerSync
+  appliquées** (2 checkpoints cloud, go explicite Florian pour chacun). Composer un template à froid **et**
+  l'enregistrer après coup depuis une séance libre terminée (cibles dérivées des séries **validées** via
+  `deriveTemplateTargetsFromWorkoutSets`, testée Vitest), démarrer depuis un template
+  (`planned_weight_kg` pré-rempli, même convention que `startWorkoutFromSession`), gérer (éditer/dupliquer/
+  supprimer). Refactor `ExercisePlanEditor` → composant présentation partagé `ExerciseTargetsFields` +
+  nouveau `TemplateExerciseEditor` (5ᵉ champ inédit : sélecteur de type de série, 7 valeurs). Choix à
+  blanc/template sur le bouton « Séance libre » du hub + lien secondaire les jours de séance planifiée.
+  typecheck/lint/781 tests (shared) + 44 tests (mobile) verts, parité i18n FR/EN stricte. **Chantier refonte
+  Muscu (A/B/C1/C2/C3/D) complet côté implémentation.**
   ([spec](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) ·
   [plan](docs/plans/refonte-muscu-d-templates-seance-libre.md) · [maquette](design/refonte-muscu-d/refonte-muscu-d.html))
 

@@ -47,16 +47,16 @@ i18next). Aucune dépendance native ajoutée.
 **Files:** Create `supabase/migrations/<horodatage>_refonte_muscu_d_workout_templates.sql` ; Modify
 `supabase/MIGRATIONS.md`, `packages/shared/src/database.types.ts` (régénéré).
 
-- [ ] **Étape 1 — créer le fichier.** `npm run db:new refonte_muscu_d_workout_templates` puis copier le SQL
+- [x] **Étape 1 — créer le fichier.** `npm run db:new refonte_muscu_d_workout_templates` puis copier le SQL
   complet de la spec §4.1 (tables `workout_templates` + `workout_template_exercises`, index partiel, triggers
   `set_updated_at`, publication `powersync`, RLS select/insert/update sans delete — patron
   `meal_templates`/`meal_template_items` combiné en un seul fichier, style C3).
-- [ ] **Étape 2 — prévisualiser.** `npm run db:push:dry` ; vérifier que **seule** cette migration part.
-- [ ] **Étape 3 — 🔴 GO explicite Florian**, puis `npm run db:push`. Vérifier « Remote database is up to date ».
-- [ ] **Étape 4 — types.** `npm run db:types`. Vérifier que `workout_templates.Row` et
+- [x] **Étape 2 — prévisualiser.** `npm run db:push:dry` ; vérifier que **seule** cette migration part.
+- [x] **Étape 3 — 🔴 GO explicite Florian**, puis `npm run db:push`. Vérifier « Remote database is up to date ».
+- [x] **Étape 4 — types.** `npm run db:types`. Vérifier que `workout_templates.Row` et
   `workout_template_exercises.Row` apparaissent dans `database.types.ts` avec les bonnes colonnes nullables.
-- [ ] **Étape 5 — registre.** Cocher dans `supabase/MIGRATIONS.md` (case + date + note « US-D »).
-- [ ] **Étape 6 — 🔴 sync rules PowerSync (2ᵉ checkpoint, séparé du `db:push`).** Sans cette étape, les deux
+- [x] **Étape 5 — registre.** Cocher dans `supabase/MIGRATIONS.md` (case + date + note « US-D »).
+- [x] **Étape 6 — 🔴 sync rules PowerSync (2ᵉ checkpoint, séparé du `db:push`).** Sans cette étape, les deux
   tables existent côté Postgres/publication/schéma SQLite local mais **aucun bucket ne les sert** : les
   écritures locales optimistes fonctionnent quand même (illusion de succès en recette sur un seul appareil),
   mais rien ne redescend du cloud — perte de durabilité multi-appareil, violation de l'offline-first (patron
@@ -72,7 +72,7 @@ i18next). Aucune dépendance native ajoutée.
   Puis **🔴 GO explicite Florian** avant de coller ce YAML complet dans le dashboard PowerSync (Settings →
   Sync Rules) et cliquer **Deploy** (action manuelle, hors CLI — même geste que pour chaque table
   précédente, ex. `meal_templates`/`meal_template_items`).
-- [ ] **Étape 7 — commit** (`feat(db)`, inclut la modif du fichier sync rules), typecheck vert.
+- [x] **Étape 7 — commit** (`feat(db)`, inclut la modif du fichier sync rules), typecheck vert.
 
 > ⚠️ Non idempotente (comme toutes les migrations `create table` du projet) : ne jamais rejouer.
 > ⚠️ Les étapes 3 (`db:push`) et 6 (déploiement sync rules) sont **deux checkpoints cloud distincts** : la
@@ -90,7 +90,7 @@ deux fichiers d'abord** (types `SetType`, fonctions déjà extraites `computeReo
 Isole la règle de dérivation des cibles d'un template à partir des `workout_sets` d'une séance terminée
 (spec §3), pour la couvrir par Vitest (le reste de l'US est mobile-only, sans tests automatisés).
 
-- [ ] **Étape 1 — test rouge.** Ajouter `describe('deriveTemplateTargetsFromWorkoutSets')` dans
+- [x] **Étape 1 — test rouge.** Ajouter `describe('deriveTemplateTargetsFromWorkoutSets')` dans
   `workout.test.ts` :
   - Séance vide (`[]`) → `[]`.
   - Un seul exercice, 3 séries toutes `done: true`, ordre `[normal(10,80), normal(8,82.5), normal(6,85)]`
@@ -109,7 +109,7 @@ Isole la règle de dérivation des cibles d'un template à partir des `workout_s
     les séries suivantes ont un autre type (ex. `warmup` puis `normal` → `set_type: 'warmup'`, cas volontaire
     et documenté — l'utilisateur corrige ensuite dans l'éditeur de template).
   Lancer `npm run test -w @wellness/shared` → rouge (fonction absente).
-- [ ] **Étape 2 — implémentation.**
+- [x] **Étape 2 — implémentation.**
 ```ts
 /** Une série de séance, telle que lue depuis `workout_sets` (déjà triée par `order_index`). */
 export type WorkoutSetForTemplateDerivation = {
@@ -170,7 +170,7 @@ export function deriveTemplateTargetsFromWorkoutSets(
   return results;
 }
 ```
-- [ ] **Étape 3 — vérifier vert.** `npm run test -w @wellness/shared` + `npm run typecheck`. Commit
+- [x] **Étape 3 — vérifier vert.** `npm run test -w @wellness/shared` + `npm run typecheck`. Commit
   (`feat(shared)`).
 
 ---
@@ -180,14 +180,14 @@ export function deriveTemplateTargetsFromWorkoutSets(
 **Files:** Modify `apps/mobile/src/powersync/schema.ts`. **Lis le fichier d'abord** (patron des tables
 existantes, ex. `exercise_plans`/`meal_templates`).
 
-- [ ] **Étape 1 —** ajouter la table `workout_templates` (`user_id: column.text`, `name: column.text`,
+- [x] **Étape 1 —** ajouter la table `workout_templates` (`user_id: column.text`, `name: column.text`,
   `created_at`/`updated_at`/`deleted_at: column.text`).
-- [ ] **Étape 2 —** ajouter la table `workout_template_exercises` (`template_id: column.text`, `user_id:
+- [x] **Étape 2 —** ajouter la table `workout_template_exercises` (`template_id: column.text`, `user_id:
   column.text`, `exercise_id: column.text`, `order_index: column.integer`, `set_type: column.text`,
   `target_sets: column.integer`, `target_reps: column.text`, `target_weight_kg: column.real`,
   `rest_seconds: column.integer`, `created_at`/`updated_at`/`deleted_at: column.text`).
-- [ ] **Étape 3 —** ajouter les deux tables à l'export `AppSchema`.
-- [ ] **Étape 4 — vérifier** `npm run typecheck`. Commit (`feat(mobile)`).
+- [x] **Étape 3 —** ajouter les deux tables à l'export `AppSchema`.
+- [x] **Étape 4 — vérifier** `npm run typecheck`. Commit (`feat(mobile)`).
 
 ---
 
@@ -196,19 +196,19 @@ existantes, ex. `exercise_plans`/`meal_templates`).
 **Files:** Modify `apps/mobile/src/data/repositories/workout-repository.ts`. **Lis `WorkoutHistoryItem`/
 `WorkoutDbRow`/`SELECT_HISTORY`/`rowToHistoryItem` (~l.71-191) et `parseTargetReps` (~l.470) d'abord.**
 
-- [ ] **Étape 1 — exporter `parseTargetReps`.** Ligne ~470 : ajouter `export` devant `function
+- [x] **Étape 1 — exporter `parseTargetReps`.** Ligne ~470 : ajouter `export` devant `function
   parseTargetReps`. Aucun changement de comportement, juste la visibilité (réutilisé par
   `workout-template-repository.ts`, Task 6).
-- [ ] **Étape 2 — `WorkoutDbRow`** (~l.94-103) : ajouter `program_id: string | null`.
-- [ ] **Étape 3 — `SELECT_HISTORY`** (~l.154-159) : ajouter `program_id` à la liste des colonnes
+- [x] **Étape 2 — `WorkoutDbRow`** (~l.94-103) : ajouter `program_id: string | null`.
+- [x] **Étape 3 — `SELECT_HISTORY`** (~l.154-159) : ajouter `program_id` à la liste des colonnes
   sélectionnées (`SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id
   FROM workouts ...`).
-- [ ] **Étape 4 — `WorkoutHistoryItem`** (~l.71-78) : ajouter `sessionId: string | null` et `programId: string
+- [x] **Étape 4 — `WorkoutHistoryItem`** (~l.71-78) : ajouter `sessionId: string | null` et `programId: string
   | null`.
-- [ ] **Étape 5 — `rowToHistoryItem`** (~l.182-191) : mapper `sessionId: row.session_id` et `programId:
+- [x] **Étape 5 — `rowToHistoryItem`** (~l.182-191) : mapper `sessionId: row.session_id` et `programId:
   row.program_id` (le champ `session_id` est déjà présent dans `WorkoutDbRow`/`SELECT_HISTORY`, seul son
   mapping vers `WorkoutHistoryItem` manquait).
-- [ ] **Étape 6 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Vérifier qu'aucun
+- [x] **Étape 6 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Vérifier qu'aucun
   appelant existant de `useWorkoutHistory`/`WorkoutHistoryItem` (`workout-summary.tsx`, historique) ne casse
   (extension additive, pas de champ retiré). Commit (`feat(mobile)`).
 
@@ -220,7 +220,7 @@ existantes, ex. `exercise_plans`/`meal_templates`).
 `meal-template-repository.ts` (patron lecture réactive + écritures) et `program-repository.ts`
 (`nextOrderIndex`, `removeSession`, `duplicateProgram` — patron cascade/transaction) d'abord.**
 
-- [ ] **Étape 1 — types de domaine.**
+- [x] **Étape 1 — types de domaine.**
 ```ts
 import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
@@ -262,7 +262,7 @@ export type TemplateExercisePatch = {
   restSeconds?: number | null;
 };
 ```
-- [ ] **Étape 2 — lignes brutes + requêtes SQL.**
+- [x] **Étape 2 — lignes brutes + requêtes SQL.**
 ```ts
 type TemplateListDbRow = { id: string; name: string; exercise_count: number };
 
@@ -300,7 +300,7 @@ const SELECT_TEMPLATE_EXERCISES = `
   ORDER BY e.order_index
 `;
 ```
-- [ ] **Étape 3 — lecture réactive.**
+- [x] **Étape 3 — lecture réactive.**
 ```ts
 export function useWorkoutTemplates(): { templates: WorkoutTemplateListItem[]; isLoading: boolean } {
   const { data, isLoading } = useQuery<TemplateListDbRow>(SELECT_TEMPLATES);
@@ -348,7 +348,7 @@ export function useWorkoutTemplateDetail(templateId: string): {
   return { detail, isLoading };
 }
 ```
-- [ ] **Étape 4 — écritures CRUD.**
+- [x] **Étape 4 — écritures CRUD.**
 ```ts
 function currentUserId(): string {
   const userId = useAuthStore.getState().session?.user.id;
@@ -478,7 +478,7 @@ export async function duplicateWorkoutTemplate(templateId: string): Promise<stri
   });
 }
 ```
-- [ ] **Étape 5 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
+- [x] **Étape 5 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
   (`feat(mobile)`).
 
 ---
@@ -489,12 +489,12 @@ export async function duplicateWorkoutTemplate(templateId: string): Promise<stri
 `startWorkout`/`startWorkoutFromSession` (~l.396-577 de `workout-repository.ts`) d'abord — même garde et
 même convention `planned_weight_kg`.**
 
-- [ ] **Étape 1 — import de la fonction pure et de `parseTargetReps`.**
+- [x] **Étape 1 — import de la fonction pure et de `parseTargetReps`.**
 ```ts
 import { deriveTemplateTargetsFromWorkoutSets } from '@wellness/shared';
 import { parseTargetReps } from './workout-repository';
 ```
-- [ ] **Étape 2 — `createTemplateFromWorkout`.**
+- [x] **Étape 2 — `createTemplateFromWorkout`.**
 ```ts
 export async function createTemplateFromWorkout(workoutId: string, name: string): Promise<string> {
   const userId = currentUserId();
@@ -544,7 +544,7 @@ export async function createTemplateFromWorkout(workoutId: string, name: string)
   });
 }
 ```
-- [ ] **Étape 3 — `startWorkoutFromTemplate`** (même garde anti-double-séance que `startWorkout`, même
+- [x] **Étape 3 — `startWorkoutFromTemplate`** (même garde anti-double-séance que `startWorkout`, même
   convention de pré-remplissage que `startWorkoutFromSession`) :
 ```ts
 export async function startWorkoutFromTemplate(templateId: string): Promise<string> {
@@ -612,7 +612,7 @@ export async function startWorkoutFromTemplate(templateId: string): Promise<stri
   });
 }
 ```
-- [ ] **Étape 4 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Relire attentivement la
+- [x] **Étape 4 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Relire attentivement la
   correspondance avec les cas Vitest de Task 2 (dérivation) et la convention `planned_weight_kg` de
   `startWorkoutFromSession`. Commit (`feat(mobile)`).
 
@@ -624,7 +624,7 @@ export async function startWorkoutFromTemplate(templateId: string): Promise<stri
 `apps/mobile/src/components/programs/ExerciseTargetsFields.tsx`, `apps/mobile/src/components/templates/TemplateExerciseEditor.tsx`.
 **Lis `ExercisePlanEditor.tsx` et `CurrentSetCard.tsx` (`TYPE_CHIPS`, ~l.19) d'abord.**
 
-- [ ] **Étape 1 — extraire `ExerciseTargetsFields.tsx`.** Composant présentation pur : les 4 champs actuels de
+- [x] **Étape 1 — extraire `ExerciseTargetsFields.tsx`.** Composant présentation pur : les 4 champs actuels de
   `ExercisePlanEditor` (séries, reps, charge, repos) + suppression, **valeurs et callbacks en props** (pas de
   dépendance à `program-repository`) :
 ```ts
@@ -652,16 +652,16 @@ export type ExerciseTargetsFieldsProps = {
   `toPositiveInt`/`toNonNegativeInt`/`numToStr` depuis `ExerciseTargetsFields.tsx` (`export function ...`) —
   elles servent à la fois au wrapper `ExercisePlanEditor` (état initial `useState(numToStr(plan.targetSets))`
   et conversion dans les `commitX`) et au nouveau `TemplateExerciseEditor` (Étape 4). Ne pas les dupliquer.
-- [ ] **Étape 2 — `ExercisePlanEditor.tsx` devient un wrapper fin** : conserve sa signature `{ plan: PlanItem
+- [x] **Étape 2 — `ExercisePlanEditor.tsx` devient un wrapper fin** : conserve sa signature `{ plan: PlanItem
   }`, **importe `toPositiveInt`/`toNonNegativeInt`/`numToStr` depuis `./ExerciseTargetsFields`**, garde l'état
   local (`sets`/`reps`/`weight`/`rest`, initialisé via `numToStr`/`weightInputValue`) et les fonctions
   `commitX` qui appellent `updateExercisePlan`/`removeExercisePlan` (utilisant `toPositiveInt`/
   `toNonNegativeInt` pour parser), mais délègue tout le rendu à `<ExerciseTargetsFields ... />`. **Aucun
   changement de comportement pour les appelants** (`SessionEditor.tsx`).
-- [ ] **Étape 3 — vérifier non-régression programmes.** `npm run typecheck` + `npm run lint -w
+- [x] **Étape 3 — vérifier non-régression programmes.** `npm run typecheck` + `npm run lint -w
   @wellness/mobile`. Relire `programs/edit.tsx` en tête pour confirmer qu'aucune prop publique n'a changé.
   Commit (`refactor(mobile)`).
-- [ ] **Étape 4 — nouveau `TemplateExerciseEditor.tsx`** (dossier `components/templates/`, nouveau) : même
+- [x] **Étape 4 — nouveau `TemplateExerciseEditor.tsx`** (dossier `components/templates/`, nouveau) : même
   patron que `ExercisePlanEditor` (état local + `commitX` → `updateTemplateExercise`/
   `removeTemplateExercise`, **importe** `toPositiveInt`/`toNonNegativeInt`/`numToStr` depuis
   `@/components/programs/ExerciseTargetsFields`), rendu = `<ExerciseTargetsFields ... />` **plus** un 5ᵉ champ
@@ -677,7 +677,7 @@ const TEMPLATE_SET_TYPES: SetType[] = [
 ```
   Rendu chip : même style que `CurrentSetCard.renderChip` (Pressable + `accessibilityState={{selected}}`),
   libellé `t(\`workout.setType.${type}\`)` (clés déjà existantes, réutilisées telles quelles).
-- [ ] **Étape 5 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
+- [x] **Étape 5 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
   (`feat(mobile)`).
 
 ---
@@ -690,16 +690,16 @@ const TEMPLATE_SET_TYPES: SetType[] = [
 `programs/_layout.tsx`, `programs/index.tsx`, `programs/edit.tsx`, `programs/[id].tsx` en entier d'abord —
 patron répliqué à l'identique en plus simple (pas de niveau/objectif/durée/filtre/bibliothèque).**
 
-- [ ] **Étape 1 — `templates/_layout.tsx`** : copie conforme de `programs/_layout.tsx` (`<Stack
+- [x] **Étape 1 — `templates/_layout.tsx`** : copie conforme de `programs/_layout.tsx` (`<Stack
   screenOptions={{ headerShown: false }} />`).
-- [ ] **Étape 2 — `templates/index.tsx`** : liste réactive `useWorkoutTemplates()` (nom + `exerciseCount` via
+- [x] **Étape 2 — `templates/index.tsx`** : liste réactive `useWorkoutTemplates()` (nom + `exerciseCount` via
   `t('templates.exerciseCount', { count })`), bouton **« + »** dans `ScreenHeader.action` → `router.push('/templates/edit')`.
   Gère le **mode sélection** (§2.3/§2.4 de la spec) via un paramètre de route optionnel :
   `useLocalSearchParams<{ selectMode?: string }>()`. Si `selectMode` est présent : tap sur une ligne appelle
   `startWorkoutFromTemplate(id)` puis `router.replace('/workout')` (loading local par id, patron
   `onStartSession` de `programs/[id].tsx`) ; les lignes dont `exerciseCount === 0` sont **désactivées**
   (`disabled`, style atténué, cf. spec §2.3). Sinon (mode normal) : tap → `router.push(\`/templates/${id}\`)`.
-- [ ] **Étape 3 — composant partagé `TemplateComposer.tsx`** (`apps/mobile/src/components/templates/`,
+- [x] **Étape 3 — composant partagé `TemplateComposer.tsx`** (`apps/mobile/src/components/templates/`,
   nouveau) : contrairement au patron `programs/` (où `edit.tsx?id=` et `[id].tsx` affichent deux rendus
   **différents** — composition éditable vs lecture seule), ici les deux routes de l'Étape 4/5 doivent
   afficher le **même** contenu éditable (un template est toujours possédé par l'utilisateur courant, jamais
@@ -710,18 +710,18 @@ patron répliqué à l'identique en plus simple (pas de niveau/objectif/durée/f
   exercice »** → `ExercisePicker` (réutilisé tel quel, `onPick` → `addTemplateExercise(templateId, {
   exerciseId })`). Ni bouton « Terminé » ni actions Démarrer/Dupliquer/Supprimer dans ce composant — ce sont
   les deux écrans appelants (Étapes 4/5) qui les ajoutent autour.
-- [ ] **Étape 4 — `templates/edit.tsx`** : sans `?id=` → formulaire nom seul (`TextField` + bouton
+- [x] **Étape 4 — `templates/edit.tsx`** : sans `?id=` → formulaire nom seul (`TextField` + bouton
   `templates.create`), `createWorkoutTemplate(name)` puis `router.replace(\`/templates/edit?id=${id}\`)` (patron
   exact `ProgramCreateForm`/`onCreated`). Avec `?id=` → `<TemplateComposer templateId={id} />` (Étape 3) +
   bouton « Terminé » → `router.back()` (patron `ProgramComposer`/`onDone`).
-- [ ] **Étape 5 — `templates/[id].tsx`** : `<TemplateComposer templateId={id} />` (Étape 3, même contenu que
+- [x] **Étape 5 — `templates/[id].tsx`** : `<TemplateComposer templateId={id} />` (Étape 3, même contenu que
   `edit.tsx?id=`) **plus** les actions **Démarrer** (`startWorkoutFromTemplate` + `router.push('/workout')`,
   désactivée si `detail.exercises.length === 0` — nécessite son propre `useWorkoutTemplateDetail(id)` pour
   connaître ce compte, en plus de celui interne à `TemplateComposer`), **Dupliquer** (`duplicateWorkoutTemplate`
   + `router.replace(\`/templates/${newId}\`)`), **Supprimer** (`Alert.alert` confirmation →
   `deleteWorkoutTemplate` + `router.replace('/templates')`, patron exact `ProgramDetailScreen.onDelete`/
   `handleDelete`).
-- [ ] **Étape 6 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
+- [x] **Étape 6 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
   (`feat(mobile)`).
 
 ---
@@ -731,17 +731,17 @@ patron répliqué à l'identique en plus simple (pas de niveau/objectif/durée/f
 **Files:** Modify `apps/mobile/src/app/(tabs)/strength.tsx`. **Lis le fichier en entier d'abord (3 branches
 de carte : `active`, `today.state === 'today-session'`, sinon libre).**
 
-- [ ] **Étape 1 — choix sur la carte « Séance libre ».** Le bouton `workout.startFree` (branche libre,
+- [x] **Étape 1 — choix sur la carte « Séance libre ».** Le bouton `workout.startFree` (branche libre,
   ~l.119) : remplacer `onPress={onStart}` par un handler qui ouvre `Alert.alert(t('workout.freeStart.title'),
   undefined, [{ text: t('workout.freeStart.blank'), onPress: () => void onStart() }, { text:
   t('workout.freeStart.fromTemplate'), onPress: () => router.push('/templates?selectMode=1') }, { text:
   t('common.cancel'), style: 'cancel' }])`.
-- [ ] **Étape 2 — lien secondaire sur la carte « Séance du jour ».** Sous le bouton `home.today.cta` (branche
+- [x] **Étape 2 — lien secondaire sur la carte « Séance du jour ».** Sous le bouton `home.today.cta` (branche
   `today.state === 'today-session'`, ~l.102-106) : ajouter un `Pressable` texte discret (même style que
   `todayNoteRow`/`todayNoteText` déjà existants dans le fichier) libellé `workout.freeStart.fromTemplate`, qui
   navigue vers `router.push('/templates?selectMode=1')`. Pas d'ajout sur la carte `active` (séance déjà en
   cours).
-- [ ] **Étape 3 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Relire que la carte
+- [x] **Étape 3 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Relire que la carte
   « Reprendre » (`active`) reste inchangée. Commit (`feat(mobile)`).
 
 ---
@@ -751,12 +751,12 @@ de carte : `active`, `today.state === 'today-session'`, sinon libre).**
 **Files:** Modify `apps/mobile/src/app/workout-summary.tsx`. **Lis le fichier en entier d'abord (en
 particulier le footer ~l.251-253 et le type `Summary`/`buildSummary`).**
 
-- [ ] **Étape 1 — état local.** Ajouter `const [savingAsTemplate, setSavingAsTemplate] = useState(false)` et
+- [x] **Étape 1 — état local.** Ajouter `const [savingAsTemplate, setSavingAsTemplate] = useState(false)` et
   `const [templateName, setTemplateName] = useState('')`.
-- [ ] **Étape 2 — condition de visibilité.** Le bouton n'apparaît que si `workout?.sessionId === null &&
+- [x] **Étape 2 — condition de visibilité.** Le bouton n'apparaît que si `workout?.sessionId === null &&
   workout?.programId === null && summary !== null && summary.exercises > 0` (champs `sessionId`/`programId`
   ajoutés à `WorkoutHistoryItem` en Task 4).
-- [ ] **Étape 3 — rendu.** Sous la `Card` du récapitulatif, avant `FeelingSection` (ou dans le footer, à la
+- [x] **Étape 3 — rendu.** Sous la `Card` du récapitulatif, avant `FeelingSection` (ou dans le footer, à la
   discrétion de l'implémenteur — cohérence visuelle avec le reste de l'écran) : si `!savingAsTemplate`, un
   bouton `variant="ghost"` libellé `workout.summary.saveAsTemplate` qui met `savingAsTemplate` à `true` et
   pré-remplit `templateName` (ex. `t('workout.summary.saveAsTemplateDefaultName', { date: <JJ/MM dérivé de
@@ -764,7 +764,7 @@ particulier le footer ~l.251-253 et le type `Summary`/`buildSummary`).**
   « Valider »/« Annuler » : Valider → `createTemplateFromWorkout(workout.id, templateName)` puis
   `Alert.alert(t('workout.summary.templateSaved'), templateName)` et `setSavingAsTemplate(false)` ; Annuler
   → `setSavingAsTemplate(false)` sans écriture.
-- [ ] **Étape 4 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
+- [x] **Étape 4 — vérifier** `npm run typecheck` + `npm run lint -w @wellness/mobile`. Commit
   (`feat(mobile)`).
 
 ---
@@ -773,29 +773,29 @@ particulier le footer ~l.251-253 et le type `Summary`/`buildSummary`).**
 
 **Files:** Modify `apps/mobile/src/i18n/locales/fr.json` + `en.json`.
 
-- [ ] **Étape 1 — clés `templates.*`** : `title`, `subtitle`, `create`, `createTitle`, `createSubtitle`, `name`,
+- [x] **Étape 1 — clés `templates.*`** : `title`, `subtitle`, `create`, `createTitle`, `createSubtitle`, `name`,
   `namePlaceholder`, `editTitle`, `editSubtitle`, `addExercise`, `done`, `start`, `starting`, `duplicate`,
   `duplicating`, `delete`, `deleting`, `deleteConfirm`, `removeExerciseA11y`, `emptyList`, `emptyExercises`,
   `exerciseCount` (pluriel `{count}`), `notFoundTitle`, `notFoundMessage`.
-- [ ] **Étape 2 — clés `workout.freeStart.*`** : `title`, `blank`, `fromTemplate`.
-- [ ] **Étape 3 — clés `workout.summary.*` (nouvelles)** : `saveAsTemplate` (bouton déclencheur),
+- [x] **Étape 2 — clés `workout.freeStart.*`** : `title`, `blank`, `fromTemplate`.
+- [x] **Étape 3 — clés `workout.summary.*` (nouvelles)** : `saveAsTemplate` (bouton déclencheur),
   `saveAsTemplateDefaultName` (interpolation `{{date}}`), `saveAsTemplateConfirm` (bouton Valider du
   formulaire — distinct du déclencheur), `templateNameLabel` (label du champ nom), `templateSaved`
   (confirmation). Pas de `templateNamePlaceholder` : le champ utilise un `label`, pas de `placeholder`.
-- [ ] **Étape 4 — parité.** Contrôle node ad hoc (même script que C2/C3 — comparaison des clés aplaties
+- [x] **Étape 4 — parité.** Contrôle node ad hoc (même script que C2/C3 — comparaison des clés aplaties
   FR/EN) → 2 listes vides.
-- [ ] **Étape 5 — vérifier** typecheck/lint. Commit (`feat(i18n)`).
+- [x] **Étape 5 — vérifier** typecheck/lint. Commit (`feat(i18n)`).
 
 ---
 
 ## Task 12 : Vérification finale & recette
 
-- [ ] `npm run typecheck` + `npm run lint` + `npm run test` (tous workspaces) verts.
-- [ ] **Non-régression programmes** : édition d'un plan d'exercice de programme (4 champs) toujours
+- [x] `npm run typecheck` + `npm run lint` + `npm run test` (tous workspaces) verts.
+- [x] **Non-régression programmes** : édition d'un plan d'exercice de programme (4 champs) toujours
   fonctionnelle après le refactor Task 7.
-- [ ] **Non-régression hub/résumé** : démarrage « Séance libre » à blanc (choix « À blanc ») et écran résumé
+- [x] **Non-régression hub/résumé** : démarrage « Séance libre » à blanc (choix « À blanc ») et écran résumé
   d'une séance planifiée (bouton « Enregistrer comme template » absent) inchangés.
-- [ ] **Recette device (Florian)** :
+- [x] **Recette device (Florian)** :
   - Composer un template à froid : créer, nommer, ajouter 2-3 exercices avec cibles (dont un type de série
     non-`normal`), réordonner en éditant à nouveau (`targetSets`/`targetReps`/`targetWeightKg`), supprimer un
     exercice du template.
@@ -812,7 +812,7 @@ particulier le footer ~l.251-253 et le type `Summary`/`buildSummary`).**
   - Dupliquer un template, renommer la copie, supprimer l'original → la copie reste intacte.
   - Supprimer un template déjà utilisé pour démarrer une séance passée → l'historique de cette séance n'est
     pas affecté.
-- [ ] CHANGELOG + TODO + roadmap (US-D marquée `[x]`, mention chantier refonte Muscu complet A→D) via
+- [x] CHANGELOG + TODO + roadmap (US-D marquée `[x]`, mention chantier refonte Muscu complet A→D) via
   `/commit` ; PR relue par les deux devs.
 
 ---

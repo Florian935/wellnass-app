@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : CODE LIVRÉ (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (A/B/C1/C2/C3/D) — implémentation complète, 12 tâches (subagent-driven,
+> 11 commits `a57ebb1`→`13d60b7`, revue spec+qualité à chaque étape + revue finale globale). Reste recette
+> device + relecture Damien sur l'ensemble du chantier. typecheck/lint/781 tests (shared) + 44 tests (mobile)
+> verts, parité i18n FR/EN stricte.
+
+**Ajouté**
+- **Migration cloud** (`20260721074949_refonte_muscu_d_workout_templates`, poussée) : tables
+  `workout_templates`/`workout_template_exercises` (RLS `user_id`, soft delete), patron `meal_templates`.
+  **Sync rules PowerSync déployées** (2ᵉ checkpoint cloud distinct du `db:push` — oubli identifié et corrigé
+  dès la revue du plan, piège déjà rencontré en C3).
+- **`deriveTemplateTargetsFromWorkoutSets`** ([workout.ts](packages/shared/src/workout.ts)) : fonction pure
+  testée Vitest (6 cas) qui dérive les cibles d'un template depuis les séries **validées** d'une séance libre
+  terminée (nombre de séries, reps/charge de la dernière validée, type de la première validée).
+- **`workout-template-repository.ts`** (nouveau) : lecture réactive (`useWorkoutTemplates`/
+  `useWorkoutTemplateDetail`) + CRUD complet (créer/renommer/ajouter-modifier-retirer un exercice, dupliquer,
+  supprimer avec cascade) + `createTemplateFromWorkout` (enregistrer depuis une séance terminée) +
+  `startWorkoutFromTemplate` (démarrer une séance libre pré-remplie, `planned_weight_kg` alimenté comme
+  `startWorkoutFromSession`).
+- **Écrans `templates/`** (liste « Mes templates » avec mode sélection depuis le hub, composition partagée
+  `TemplateComposer`, détail avec Démarrer/Dupliquer/Supprimer).
+- **Hub muscu** : le bouton « Séance libre » ouvre un choix (à blanc / depuis un template) ; lien secondaire
+  « Ou depuis un template » sous la carte « Séance du jour » (jours de séance planifiée, sinon templates
+  inaccessibles ce jour-là).
+- **Écran résumé** : bouton « Enregistrer comme template » (séance libre terminée, au moins un exercice),
+  formulaire inline (nom pré-rempli depuis la date **locale**).
+- **`ExerciseTargetsFields`** ([components/exercise/](apps/mobile/src/components/exercise/ExerciseTargetsFields.tsx),
+  nouveau) : composant présentation extrait d'`ExercisePlanEditor` (programmes), réutilisé par le nouveau
+  `TemplateExerciseEditor` (templates) qui ajoute un 5ᵉ champ inédit — sélecteur de type de série (7 valeurs).
+
+**Modifié**
+- `workout-repository.ts` : `parseTargetReps` exporté (réutilisé par le nouveau repository) ;
+  `WorkoutHistoryItem`/`SELECT_HISTORY`/`rowToHistoryItem` exposent désormais `sessionId`/`programId`
+  (nécessaire pour masquer le bouton « Enregistrer comme template » sur une séance planifiée).
+
+**Technique / Notes**
+- Revues (spec compliance + qualité) à chaque tâche : corrections notables — garde `!detail` avant le footer
+  d'actions de `templates/[id].tsx`, cohérence `push`/`replace` après démarrage, clé i18n dédiée pour le
+  bouton Valider (au lieu de réutiliser le libellé du déclencheur), dérivation de date **locale** (pas un
+  slice de chaîne ISO UTC) + garde `submitting`/`try-catch` sur l'enregistrement depuis le résumé.
+- Revue finale globale (vue d'ensemble sur les 12 commits) : parcours de bout en bout vérifié cohérent
+  (créer → composer → démarrer → terminer → ré-enregistrer), aucune rupture ni régression trouvée.
+
 ### 21/07/2026 — `feature/refonte-muscu-d` — US-D : spec + plan + maquette (templates de séance libre)
 
 > Chantier refonte Muscu, dernière US (arbitrable). Corrige le problème 5 de l'audit-flux : pas de cran
