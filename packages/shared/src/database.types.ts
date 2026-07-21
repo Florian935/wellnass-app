@@ -1687,6 +1687,111 @@ export type Database = {
           },
         ]
       }
+      workout_template_exercises: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          exercise_id: string
+          id: string
+          order_index: number
+          rest_seconds: number | null
+          set_type: string
+          target_reps: string | null
+          target_sets: number | null
+          target_weight_kg: number | null
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id: string
+          id: string
+          order_index?: number
+          rest_seconds?: number | null
+          set_type?: string
+          target_reps?: string | null
+          target_sets?: number | null
+          target_weight_kg?: number | null
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id?: string
+          id?: string
+          order_index?: number
+          rest_seconds?: number | null
+          set_type?: string
+          target_reps?: string | null
+          target_sets?: number | null
+          target_weight_kg?: number | null
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_template_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_template_exercises_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "workout_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_template_exercises_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_templates: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_templates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workouts: {
         Row: {
           created_at: string

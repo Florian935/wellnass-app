@@ -51,6 +51,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260719230416_refonte_muscu_c2_saisie_enrichie` | 20/07/2026 | CLI (`npm run db:push`) — C2  |
 |   [x]   | `20260720121317_refonte_muscu_c3_note_exercice`   | 20/07/2026 | CLI (`npm run db:push`) — C3  |
 |   [x]   | `20260720200254_refonte_muscu_c3_superset_pairs`  | 20/07/2026 | CLI (`npm run db:push`) — C3 (recette) |
+|   [x]   | `20260721074949_refonte_muscu_d_workout_templates`| 21/07/2026 | CLI (`npm run db:push`) — US-D |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
