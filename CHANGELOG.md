@@ -10,6 +10,19 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : recette validée (Florian) ✅
+
+> Chantier refonte Muscu (A/B/C1/C2/C3/D) **complet côté implémentation** : les 5 US sont livrées et
+> recettées. Reste la relecture de Damien sur l'ensemble. Cette entrée regroupe aussi 2 fichiers documentaires
+> non liés, en attente de commit, inclus ici à la demande de Florian plutôt que d'ouvrir une branche dédiée.
+
+**Technique / Notes**
+- US-D (templates de séance libre) : recette device validée après le correctif d'accès (widget dédié + fin du
+  mode sélection, voir entrée précédente). Aucun code applicatif dans ce commit.
+- `IDEAS.md` : ajout d'une idée déjà notée par Florian (21/07) — « 3 niveaux d'affichage pour la séance live
+  (Simplifiée / Normale / Détaillée) », en attente de tri, non liée à US-D.
+- `AGENTS.md.pre-codex-fallback.bak` : fichier de sauvegarde (racine), en attente, non lié à US-D.
+
 ### 22/07/2026 — `feature/refonte-muscu-d` — US-D : accès aux templates indépendant de « Séance libre »
 
 > Retour recette (Florian) : le seul chemin vers « Mes templates » passait par le hub → « Séance libre » →

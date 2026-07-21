@@ -273,7 +273,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**US-D — correctif post-recette** : le seul accès à « Mes templates »
+*Dernière mise à jour : 22/07/2026 (**US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
+(A/B/C1/C2/C3/D) complet côté implémentation** — reste relecture Damien sur l'ensemble. — **US-D —
+correctif post-recette** : le seul accès à « Mes templates »
 passait par « Séance libre » → « Depuis un template », qui lançait direct au tap sans possibilité
 d'éditer/dupliquer/supprimer (mode normal non atteignable). Corrigé : tap sur un template ouvre toujours son
 détail ; nouveau widget « Mes templates » sur le hub muscu (accès permanent indépendant). typecheck/lint/
@@ -525,9 +527,11 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
-- [x] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — **CODE LIVRÉ (subagent-driven,
-  12 tâches, 12 commits `a57ebb1`→`13d60b7`)** ; reste recette device + relecture Damien. Sauvegarder une
-  séance libre comme routine réutilisable (spec §4.1). Corrige le problème 5. Spec ✅ + plan ✅ (2 passages de
+- [x] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — **RECETTE VALIDÉE (Florian,
+  22/07/2026) ✅** (subagent-driven, 12 tâches ; + 1 correctif post-recette : accès aux templates rendu
+  indépendant de « Séance libre », widget dédié sur le hub, cf. plus bas) ; reste relecture Damien sur
+  l'ensemble du chantier. Sauvegarder une séance libre comme routine réutilisable (spec §4.1). Corrige le
+  problème 5. Spec ✅ + plan ✅ (2 passages de
   revue chacun) + maquette ✅ validés Florian. Tables dédiées `workout_templates`/`workout_template_exercises`
   (patron repas types nutrition, **pas** de réutilisation `programs`) — **migration + sync rules PowerSync
   appliquées** (2 checkpoints cloud, go explicite Florian pour chacun). Composer un template à froid **et**
