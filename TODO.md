@@ -273,7 +273,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 21/07/2026 (**US-D — CODE LIVRÉ (subagent-driven) ✅** : templates de séance libre
+*Dernière mise à jour : 22/07/2026 (**US-D — correctif post-recette** : le seul accès à « Mes templates »
+passait par « Séance libre » → « Depuis un template », qui lançait direct au tap sans possibilité
+d'éditer/dupliquer/supprimer (mode normal non atteignable). Corrigé : tap sur un template ouvre toujours son
+détail ; nouveau widget « Mes templates » sur le hub muscu (accès permanent indépendant). typecheck/lint/
+781+44 tests verts. — **US-D — CODE LIVRÉ (subagent-driven) ✅** : templates de séance libre
 (dernière US du chantier refonte Muscu) — 12 tâches, 12 commits. Tables `workout_templates`/
 `workout_template_exercises` (migration + sync rules PowerSync appliquées, 2 checkpoints cloud). Composer à
 froid + enregistrer après coup depuis une séance terminée (dérivation testée Vitest), démarrer depuis un

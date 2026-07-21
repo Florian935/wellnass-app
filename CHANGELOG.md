@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : accès aux templates indépendant de « Séance libre »
+
+> Retour recette (Florian) : le seul chemin vers « Mes templates » passait par le hub → « Séance libre » →
+> « Depuis un template », qui ouvrait la liste en **mode sélection** (tap = démarrage direct d'une séance) —
+> aucun moyen d'atteindre édition/duplication/suppression depuis l'app réelle (le mode normal existait dans le
+> code mais n'était jamais atteignable). typecheck/lint/781+44 tests verts.
+
+**Ajouté**
+- **Widget « Mes templates »** ([strength-widgets.tsx](apps/mobile/src/components/widgets/strength-widgets.tsx),
+  [widgets.ts](packages/shared/src/widgets.ts)) : nouvel id `strength-templates` sur le hub muscu, même patron
+  que le widget « Mes programmes » — accès permanent, indépendant du flux « Séance libre ».
+- i18n : `templates.countLabel_one`/`countLabel_other` (FR/EN).
+
+**Modifié**
+- [templates/index.tsx](apps/mobile/src/app/templates/index.tsx) : suppression du « mode sélection » — taper
+  un template ouvre désormais **toujours** son détail (Démarrer explicite + Dupliquer + Supprimer), plus de
+  lancement direct au tap.
+- [strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx) : les 2 liens vers `/templates?selectMode=1`
+  redirigent simplement vers `/templates`.
+
 ### 22/07/2026 — `feature/refonte-muscu-d` — hotfix : rollback couleur d'accent par menu
 
 > Retour Damien/Florian : la couleur d'accent par menu (commit `751fa5d`) rend l'app moins
