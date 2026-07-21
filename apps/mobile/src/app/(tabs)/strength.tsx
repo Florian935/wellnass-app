@@ -11,7 +11,6 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { STRENGTH_WIDGETS } from '@/components/widgets/strength-widgets';
-import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
   startWorkout,
   startWorkoutFromSession,
@@ -22,7 +21,6 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function StrengthScreen() {
-  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

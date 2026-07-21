@@ -23,24 +23,10 @@ import {
 import { getAppLanguage } from '@/i18n';
 import { ensurePermissionAndChannel } from '@/lib/notifications';
 import { useAuthStore } from '@/stores/auth-store';
-import {
-  MENU_COLOR_SWATCHES,
-  MENU_KEYS,
-  useMenuAccent,
-  type MenuKey,
-} from '@/stores/menu-accent-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const THEME_OPTIONS = ['system', 'light', 'dark'] as const;
-
-/** Libellé i18n de chaque menu (réutilise onglet Accueil + noms de piliers). */
-const MENU_LABEL_KEY: Record<MenuKey, string> = {
-  home: 'tabs.home',
-  strength: 'pillars.strength',
-  running: 'pillars.running',
-  nutrition: 'pillars.nutrition',
-};
 
 /** Formate une heure entière 0-23 en `HH:00`. */
 function formatHour(hour: number): string {
@@ -102,9 +88,6 @@ export default function SettingsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { settings } = useSettings();
-  const menuColors = useMenuAccent((s) => s.colors);
-  const setMenuColor = useMenuAccent((s) => s.setColor);
-  const resetMenuColors = useMenuAccent((s) => s.reset);
   // Defaults null-safe tant que les réglages ne sont pas chargés / synchronisés.
   const activePillars = settings?.activePillars ?? [...PILLARS];
   const theme = settings?.theme ?? 'system';
@@ -192,56 +175,6 @@ export default function SettingsScreen() {
         onChange={(next: Theme) => void updateSettings({ theme: next })}
         label={(option) => t(`settings.appearance.${option}`)}
       />
-
-      {/* Couleurs des menus : un accent par onglet (Accueil / Muscu / Course / Alimentation) */}
-      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
-        {t('settings.menuColors.title')}
-      </Text>
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {MENU_KEYS.map((menu, i) => (
-          <View
-            key={menu}
-            style={[
-              styles.menuColorRow,
-              i < MENU_KEYS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
-            ]}
-          >
-            <View style={styles.menuColorHead}>
-              <View style={[styles.menuColorDot, { backgroundColor: menuColors[menu] }]} />
-              <Text style={[styles.rowLabel, { color: colors.text }]}>
-                {t(MENU_LABEL_KEY[menu])}
-              </Text>
-            </View>
-            <View style={styles.swatches}>
-              {MENU_COLOR_SWATCHES.map((sw) => {
-                const selected = menuColors[menu].toLowerCase() === sw.toLowerCase();
-                return (
-                  <Pressable
-                    key={sw}
-                    onPress={() => setMenuColor(menu, sw)}
-                    hitSlop={4}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    accessibilityLabel={`${t(MENU_LABEL_KEY[menu])} · ${sw}`}
-                    style={[
-                      styles.swatch,
-                      { backgroundColor: sw, borderColor: selected ? colors.text : 'transparent' },
-                    ]}
-                  />
-                );
-              })}
-            </View>
-          </View>
-        ))}
-      </View>
-      <View style={styles.stack}>
-        <Button
-          label={t('settings.menuColors.reset')}
-          variant="ghost"
-          onPress={() => resetMenuColors()}
-        />
-      </View>
-      <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.menuColors.hint')}</Text>
 
       {/* Unités (item 1.15) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
@@ -399,13 +332,7 @@ const styles = StyleSheet.create({
   rowDesc: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 2, lineHeight: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
   signOut: { marginTop: 12 },
-  stack: { gap: 10, marginTop: 10 },
-  // Couleurs des menus
-  menuColorRow: { paddingHorizontal: 16, paddingVertical: 14, gap: 10 },
-  menuColorHead: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  menuColorDot: { width: 16, height: 16, borderRadius: 8 },
-  swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  swatch: { width: 30, height: 30, borderRadius: 15, borderWidth: 3 },
+  stack: { gap: 10 },
   // Sélecteur d'heure (stepper JS)
   stepper: {
     flexDirection: 'row',

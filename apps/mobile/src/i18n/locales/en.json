@@ -1007,11 +1007,6 @@
       "light": "Light",
       "dark": "Dark"
     },
-    "menuColors": {
-      "title": "Menu colors",
-      "reset": "Reset colors",
-      "hint": "Each menu (Home, Strength, Running, Food) has its own accent color."
-    },
     "units": {
       "title": "Units",
       "metric": "Metric",

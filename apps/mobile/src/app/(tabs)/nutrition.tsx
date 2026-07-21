@@ -41,7 +41,6 @@ import {
 import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -70,7 +69,6 @@ const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
 };
 
 export default function NutritionScreen() {
-  useMenuFocus('nutrition');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

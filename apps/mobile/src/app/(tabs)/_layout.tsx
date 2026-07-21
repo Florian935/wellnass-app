@@ -3,7 +3,6 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { PILLARS, type Pillar } from '@wellness/shared';
 import { useSettings } from '@/data/repositories/settings-repository';
-import { useMenuAccent } from '@/stores/menu-accent-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -24,7 +23,6 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { settings } = useSettings();
-  const menuColors = useMenuAccent((s) => s.colors);
   // Tant que les réglages ne sont pas chargés, on affiche tous les piliers par défaut.
   const activePillars = settings?.activePillars ?? [...PILLARS];
 
@@ -34,7 +32,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // Chaque onglet actif prend sa propre couleur de menu (surchargé par écran ci-dessous).
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
         tabBarLabelStyle: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
@@ -44,7 +42,6 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          tabBarActiveTintColor: menuColors.home,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
         }}
       />
@@ -53,7 +50,6 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.strength'),
           href: isActive('strength') ? undefined : null,
-          tabBarActiveTintColor: menuColors.strength,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.strength} color={color} size={size} />
           ),
@@ -64,7 +60,6 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.running'),
           href: isActive('running') ? undefined : null,
-          tabBarActiveTintColor: menuColors.running,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.running} color={color} size={size} />
           ),
@@ -75,7 +70,6 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.nutrition'),
           href: isActive('nutrition') ? undefined : null,
-          tabBarActiveTintColor: menuColors.nutrition,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.nutrition} color={color} size={size} />
           ),
