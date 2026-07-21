@@ -778,8 +778,10 @@ particulier le footer ~l.251-253 et le type `Summary`/`buildSummary`).**
   `duplicating`, `delete`, `deleting`, `deleteConfirm`, `removeExerciseA11y`, `emptyList`, `emptyExercises`,
   `exerciseCount` (pluriel `{count}`), `notFoundTitle`, `notFoundMessage`.
 - [ ] **Étape 2 — clés `workout.freeStart.*`** : `title`, `blank`, `fromTemplate`.
-- [ ] **Étape 3 — clés `workout.summary.*` (nouvelles)** : `saveAsTemplate`, `saveAsTemplateDefaultName`
-  (interpolation `{{date}}`), `templateSaved`, `templateNamePlaceholder`.
+- [ ] **Étape 3 — clés `workout.summary.*` (nouvelles)** : `saveAsTemplate` (bouton déclencheur),
+  `saveAsTemplateDefaultName` (interpolation `{{date}}`), `saveAsTemplateConfirm` (bouton Valider du
+  formulaire — distinct du déclencheur), `templateNameLabel` (label du champ nom), `templateSaved`
+  (confirmation). Pas de `templateNamePlaceholder` : le champ utilise un `label`, pas de `placeholder`.
 - [ ] **Étape 4 — parité.** Contrôle node ad hoc (même script que C2/C3 — comparaison des clés aplaties
   FR/EN) → 2 listes vides.
 - [ ] **Étape 5 — vérifier** typecheck/lint. Commit (`feat(i18n)`).

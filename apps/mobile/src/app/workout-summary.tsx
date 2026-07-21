@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { computeVolume } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -18,6 +18,7 @@ import {
   useWorkoutRecords,
   type BeatenRecord,
 } from '@/data/repositories/records-repository';
+import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -200,6 +201,9 @@ export default function WorkoutSummaryScreen() {
   const durationSeconds = workout?.durationSeconds ?? null;
 
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [savingAsTemplate, setSavingAsTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [submittingTemplate, setSubmittingTemplate] = useState(false);
 
   useEffect(() => {
     if (!id || !workout) {
@@ -218,6 +222,41 @@ export default function WorkoutSummaryScreen() {
     // dont l'identité change à chaque rendu de `useWorkoutHistory`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, durationSeconds]);
+
+  const canSaveAsTemplate =
+    workout?.sessionId === null && workout?.programId === null && summary !== null && summary.exercises > 0;
+
+  function handleStartSaveAsTemplate() {
+    if (workout) {
+      // Date LOCALE (pas un slice de la chaîne ISO UTC, qui décalerait le jour
+      // affiché selon le fuseau de l'utilisateur — patron `history/index.tsx`).
+      const startedLocal = new Date(workout.startedAt);
+      const dd = String(startedLocal.getDate()).padStart(2, '0');
+      const mm = String(startedLocal.getMonth() + 1).padStart(2, '0');
+      setTemplateName(t('workout.summary.saveAsTemplateDefaultName', { date: `${dd}/${mm}` }));
+    }
+    setSavingAsTemplate(true);
+  }
+
+  async function handleConfirmSaveAsTemplate() {
+    const trimmed = templateName.trim();
+    if (!workout || trimmed === '' || submittingTemplate) return;
+    setSubmittingTemplate(true);
+    try {
+      await createTemplateFromWorkout(workout.id, trimmed);
+      Alert.alert(t('workout.summary.templateSaved'), trimmed);
+      setSavingAsTemplate(false);
+    } catch {
+      // Écriture locale (offline-first) : un échec est très improbable. On
+      // réactive le formulaire pour permettre une nouvelle tentative.
+    } finally {
+      setSubmittingTemplate(false);
+    }
+  }
+
+  function handleCancelSaveAsTemplate() {
+    setSavingAsTemplate(false);
+  }
 
   return (
     <FormScreen>
@@ -239,6 +278,43 @@ export default function WorkoutSummaryScreen() {
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>
       )}
+      {canSaveAsTemplate ? (
+        <View style={styles.saveAsTemplateSection}>
+          {savingAsTemplate ? (
+            <>
+              <TextField
+                label={t('workout.summary.templateNameLabel')}
+                value={templateName}
+                onChangeText={setTemplateName}
+              />
+              <View style={styles.saveAsTemplateActions}>
+                <View style={styles.saveAsTemplateActionFlex}>
+                  <Button
+                    variant="ghost"
+                    label={t('common.cancel')}
+                    onPress={handleCancelSaveAsTemplate}
+                    disabled={submittingTemplate}
+                  />
+                </View>
+                <View style={styles.saveAsTemplateActionFlex}>
+                  <Button
+                    label={t('workout.summary.saveAsTemplateConfirm')}
+                    onPress={() => void handleConfirmSaveAsTemplate()}
+                    loading={submittingTemplate}
+                    disabled={submittingTemplate || templateName.trim() === ''}
+                  />
+                </View>
+              </View>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              label={t('workout.summary.saveAsTemplate')}
+              onPress={handleStartSaveAsTemplate}
+            />
+          )}
+        </View>
+      ) : null}
       {workout ? (
         <FeelingSection
           key={workout.id}
@@ -263,6 +339,9 @@ const styles = StyleSheet.create({
   rowValue: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
   empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center' },
   footer: { marginTop: 'auto' },
+  saveAsTemplateSection: { gap: 10 },
+  saveAsTemplateActions: { flexDirection: 'row', gap: 10 },
+  saveAsTemplateActionFlex: { flex: 1 },
   // Records section
   recordsSection: { gap: 10 },
   recordsSectionTitle: {
