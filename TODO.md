@@ -372,9 +372,8 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 ## 🧰 Outillage agents — compatibilité Claude Code / Codex
 
 - [~] **Migration Claude Code / Codex** (`chore/compatibilite-claude-codex`, 21/07/2026) —
-  spec/design [validé](docs/superpowers/specs/2026-07-21-compatibilite-claude-codex-design.md) et
-  [plan d'implémentation](docs/superpowers/plans/2026-07-21-compatibilite-claude-codex.md) écrit puis
-  auto-relu. Reste avant implémentation : validation du plan, puis exécution des trois incréments.
+  fallback Codex, workflow commun, wrappers Claude/Codex et contrôle statique livrés sur la
+  branche. Reste : documentation d'usage, validation dans de nouvelles sessions et intégration.
 
 ---
 

@@ -10,6 +10,15 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `chore/compatibilite-claude-codex` — socle de compatibilité des agents
+
+**Ajouté**
+- Fallback Codex vers `CLAUDE.md`, validation `npm run agents:check` et skill `$commit`.
+- Workflow de commit partagé avec adaptateurs Claude moderne, Claude historique et Codex.
+
+**Technique / Notes**
+- Aucun code applicatif, aucune migration et aucun statut de roadmap modifiés.
+
 ### 21/07/2026 — `chore/compatibilite-claude-codex` — plan d'implémentation de la migration agents
 
 > Spec/design validé par l'utilisateur. Plan uniquement : aucune configuration d'agent ni aucun
