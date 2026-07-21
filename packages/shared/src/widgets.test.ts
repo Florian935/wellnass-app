@@ -73,7 +73,7 @@ describe('sizeSpan / clampCol', () => {
 describe('WIDGET_REGISTRY', () => {
   it('accueil 9, muscu 4, course 3 ; gardes pilier', () => {
     expect(HOME_WIDGET_IDS).toHaveLength(9);
-    expect(STRENGTH_WIDGET_IDS).toHaveLength(4);
+    expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
     expect(WIDGET_REGISTRY.strength.pillars['strength-programs']).toEqual(['strength']);

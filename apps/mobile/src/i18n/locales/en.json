@@ -874,6 +874,8 @@
     "emptyList": "You don't have any templates yet. Create one, or save a finished free workout as a template.",
     "exerciseCount_one": "{{count}} exercise",
     "exerciseCount_other": "{{count}} exercises",
+    "countLabel_one": "{{count}} template",
+    "countLabel_other": "{{count}} templates",
     "start": "Start",
     "starting": "Starting…",
     "duplicate": "Duplicate",

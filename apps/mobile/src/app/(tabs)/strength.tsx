@@ -40,7 +40,7 @@ export default function StrengthScreen() {
       { text: t('workout.freeStart.blank'), onPress: () => void onStart() },
       {
         text: t('workout.freeStart.fromTemplate'),
-        onPress: () => router.push('/templates?selectMode=1'),
+        onPress: () => router.push('/templates'),
       },
       { text: t('common.cancel'), style: 'cancel' },
     ]);
@@ -116,7 +116,7 @@ export default function StrengthScreen() {
               onPress={() => onStartToday(today.session.sessionId, today.session.plannedSessionId)}
             />
             <Pressable
-              onPress={() => router.push('/templates?selectMode=1')}
+              onPress={() => router.push('/templates')}
               style={styles.todayNoteRow}
               hitSlop={8}
             >

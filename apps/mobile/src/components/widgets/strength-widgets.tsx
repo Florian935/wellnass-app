@@ -20,6 +20,7 @@ import { WidgetShell } from '@/components/widgets/WidgetShell';
 import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useWorkoutHistory } from '@/data/repositories/workout-repository';
 import { useWeeklyVolumeComparison } from '@/data/repositories/records-repository';
+import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -242,6 +243,67 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
 }
 
 // ---------------------------------------------------------------------------
+// Templates — point d'entrée permanent vers « Mes templates » (US Refonte-D)
+// ---------------------------------------------------------------------------
+function StrengthTemplatesWidget({ size }: { size: WidgetSize }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const { templates } = useWorkoutTemplates();
+  const open = () => router.push('/templates');
+
+  if (size === 'small') {
+    return (
+      <WidgetShell
+        icon="albums-outline"
+        title={t('templates.title')}
+        onPress={open}
+        value={
+          templates.length > 0
+            ? t('templates.countLabel', { count: templates.length })
+            : t('templates.emptyList')
+        }
+        valueMuted={templates.length === 0}
+      />
+    );
+  }
+
+  const count = size === 'large' ? 4 : 2;
+  const preview = templates.slice(0, count);
+  const list =
+    preview.length > 0 ? (
+      <View style={styles.previewList}>
+        {preview.map((tpl) => (
+          <View key={tpl.id} style={styles.previewRow}>
+            <Text style={[styles.previewRowLabel, { color: colors.text }]} numberOfLines={1}>
+              {tpl.name}
+            </Text>
+            <Text style={[styles.previewRowMeta, { color: colors.textMuted }]}>
+              {t('templates.exerciseCount', { count: tpl.exerciseCount })}
+            </Text>
+          </View>
+        ))}
+      </View>
+    ) : (
+      <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('templates.emptyList')}</Text>
+    );
+
+  if (size === 'large') {
+    return (
+      <WidgetShell icon="albums-outline" title={t('templates.title')} onPress={open} showChevron>
+        {list}
+      </WidgetShell>
+    );
+  }
+
+  return (
+    <ModulePreviewCard icon="albums-outline" title={t('templates.title')} onPress={open}>
+      {list}
+    </ModulePreviewCard>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Registre de rendu du hub muscu
 // ---------------------------------------------------------------------------
 export const STRENGTH_WIDGETS: Record<
@@ -252,6 +314,7 @@ export const STRENGTH_WIDGETS: Record<
   'strength-history': StrengthHistoryWidget,
   'strength-planning': StrengthPlanningWidget,
   'strength-progress': StrengthProgressWidget,
+  'strength-templates': StrengthTemplatesWidget,
 };
 
 const styles = StyleSheet.create({

@@ -874,6 +874,8 @@
     "emptyList": "Tu n'as pas encore de template. Crée-en un, ou enregistre une séance libre terminée comme template.",
     "exerciseCount_one": "{{count}} exercice",
     "exerciseCount_other": "{{count}} exercices",
+    "countLabel_one": "{{count}} template",
+    "countLabel_other": "{{count}} templates",
     "start": "Démarrer",
     "starting": "Démarrage…",
     "duplicate": "Dupliquer",
