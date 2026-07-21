@@ -1,119 +1,133 @@
 /**
- * Widget 7.6 — Régularité (streak).
+ * Widget 7.6 — Régularité (streak), décliné aux 3 formes de la galerie « FitTrio · Widgets ».
  *
- * États :
- *  - `current > 0`  : grand nombre + "jours d'affilée" + 7 pastilles semaine
- *  - `current === 0`: nombre muted + texte `home.streak.empty` + 7 pastilles semaine
+ *  - `small` : eyebrow + grand nombre + 🔥 + « jours d'affilée » ;
+ *  - `wide`  : eyebrow + nombre à droite + bande de 7 jours (semaine courante) ;
+ *  - `large` : eyebrow + nombre + bande de 7 jours (grandes pastilles ✓) + bandeau semaine.
  *
- * Pastille : active → couleur accent ; isToday → contour accent (anneau).
- * Labels des jours : `home.streak.days` (tableau ["L","M","M","J","V","S","D"]).
+ * Pastille : jour actif → accent ; aujourd'hui inactif → contour accent ; futur → piste ;
+ * passé inactif → surface. Données : `useStreakData` (current + last7, semaine lun→dim).
  */
 
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
-import { DashboardCard } from '@/components/DashboardCard';
-import { WidgetShell } from '@/components/widgets/WidgetShell';
-import { useStreakData } from '@/data/repositories/dashboard-repository';
+import { WeekDots, type DayState } from '@/components/widgets/primitives';
+import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { useStreakData, type WeekDay } from '@/data/repositories/dashboard-repository';
+import { localDayKey } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { withAlpha } from '@/theme/color-utils';
+
+/** Traduit un jour `WeekDay` en état de pastille (WeekDots). */
+function dayState(day: WeekDay, todayKey: string): DayState {
+  if (day.active) return 'done';
+  if (day.isToday) return 'today';
+  return day.key > todayKey ? 'future' : 'empty';
+}
 
 export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { current, last7, isLoading } = useStreakData();
+  const { current, activeToday, last7, isLoading } = useStreakData();
 
   if (isLoading) return null;
 
   const isEmpty = current === 0;
+  const labels = t('home.streak.days', { returnObjects: true }) as string[];
+  const todayKey = localDayKey(new Date());
+  const activeCount = last7.filter((d) => d.active).length;
 
-  // ── Forme petit carré : « N j » (remplit la case) ──────────────────────────
+  const suffix = isEmpty ? t('home.streak.empty') : t('home.streak.suffix', { count: current });
+
+  // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {
     return (
-      <WidgetShell
-        icon="flame-outline"
-        title={t('home.streak.title')}
-        value={t('home.streak.compact', { count: current })}
-        valueMuted={isEmpty}
-      />
+      <WidgetFrame pad={16}>
+        <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
+        <View style={styles.smallCenter}>
+          <Text style={[styles.bigNum, { color: isEmpty ? colors.textMuted : colors.accent }]}>
+            {current}
+          </Text>
+          <Text style={styles.flame}>🔥</Text>
+        </View>
+        <Text style={[styles.smallSub, { color: colors.textMuted }]}>{suffix}</Text>
+      </WidgetFrame>
     );
   }
 
-  const weekDays = t('home.streak.days', { returnObjects: true }) as string[];
-
-  const body = (
-    <>
-      {/* Nombre de jours + label */}
-      <View style={styles.streakTop}>
-        <Text
-          style={[
-            styles.streakNum,
-            { color: isEmpty ? colors.textMuted : colors.text },
-          ]}
-        >
-          {current}
-        </Text>
-        <Text style={[styles.streakWord, { color: colors.textMuted }]}>
-          {isEmpty
-            ? t('home.streak.empty')
-            : t('home.streak.suffix', { count: current })}
-        </Text>
-      </View>
-
-      {/* 7 pastilles semaine */}
-      <View style={styles.weekRow}>
-        {last7.map((day, i) => (
-          <View key={day.key} style={styles.dayCol}>
-            <View
-              style={[
-                styles.pill,
-                { backgroundColor: day.active ? colors.accent : colors.surfaceAlt },
-                day.isToday && {
-                  shadowColor: colors.accent,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 1,
-                  shadowRadius: 0,
-                  // Anneau via borderColor (ring effect)
-                  borderWidth: 2,
-                  borderColor: colors.accent,
-                  // Si actif ET aujourd'hui : fond accent avec anneau visible via
-                  // un léger offset de couleur de fond.
-                  backgroundColor: day.active ? colors.accent : colors.surfaceAlt,
-                },
-              ]}
-            />
-            <Text style={[styles.dayLabel, { color: colors.textMuted }]}>
-              {weekDays[i] ?? ''}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </>
+  const dots = (tile: number, withCheck: boolean) => (
+    <WeekDots
+      tile={tile}
+      days={last7.map((d, i) => {
+        const state = dayState(d, todayKey);
+        return {
+          label: labels[i] ?? '',
+          state,
+          glyph: withCheck && state === 'done' ? '✓' : undefined,
+        };
+      })}
+    />
   );
 
-  // ── Forme grand carré : même visuel, remplit la case ───────────────────────
-  if (size === 'large') {
+  // ── Rectangle ────────────────────────────────────────────────────────────────
+  if (size === 'wide') {
     return (
-      <WidgetShell icon="flame-outline" title={t('home.streak.title')}>
-        {body}
-      </WidgetShell>
+      <WidgetFrame pad={18} style={styles.wideCol}>
+        <View style={styles.wideHead}>
+          <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
+          <View style={styles.wideNumRow}>
+            <Text style={[styles.inlineNum, { color: colors.accent }]}>{current}</Text>
+            <Text style={[styles.inlineSuffix, { color: colors.textMuted }]}>{suffix}</Text>
+            <Text style={styles.flameSm}>🔥</Text>
+          </View>
+        </View>
+        {dots(30, false)}
+      </WidgetFrame>
     );
   }
 
-  // ── Forme rectangle (défaut) ───────────────────────────────────────────────
+  // ── Grand carré ──────────────────────────────────────────────────────────────
   return (
-    <DashboardCard icon="flame-outline" title={t('home.streak.title')}>
-      {body}
-    </DashboardCard>
+    <WidgetFrame pad={22} style={styles.largeCol}>
+      <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
+      <View style={styles.largeTop}>
+        <Text style={[styles.largeNum, { color: colors.accent }]}>{current}</Text>
+        <Text style={[styles.largeSuffix, { color: colors.textMuted }]}>{suffix} 🔥</Text>
+      </View>
+      {dots(38, true)}
+      <View
+        style={[
+          styles.banner,
+          { backgroundColor: withAlpha(colors.accent, 0.1), borderColor: withAlpha(colors.accent, 0.28) },
+        ]}
+      >
+        <Text style={[styles.bannerTitle, { color: colors.accent }]}>
+          {activeToday
+            ? t('home.streak.bannerActive', { count: activeCount })
+            : t('home.streak.bannerIdle', { count: activeCount })}
+        </Text>
+      </View>
+    </WidgetFrame>
   );
 }
 
 const styles = StyleSheet.create({
-  streakTop: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
-  streakNum: { fontFamily: fontFamily.monoBold, fontSize: 30, letterSpacing: -0.5 },
-  streakWord: { fontFamily: fontFamily.body, fontSize: 14, flex: 1 },
-  weekRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  dayCol: { flex: 1, alignItems: 'center', gap: 6 },
-  pill: { width: 30, aspectRatio: 1, borderRadius: 9 },
-  dayLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
+  smallCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  bigNum: { fontFamily: fontFamily.displayXBold, fontSize: 52, letterSpacing: -2 },
+  flame: { fontSize: 22 },
+  smallSub: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  wideCol: { justifyContent: 'center', gap: 16 },
+  wideHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  wideNumRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  inlineNum: { fontFamily: fontFamily.displayBold, fontSize: 22 },
+  inlineSuffix: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  flameSm: { fontSize: 13 },
+  largeCol: { gap: 18 },
+  largeTop: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  largeNum: { fontFamily: fontFamily.displayXBold, fontSize: 46, letterSpacing: -1.6 },
+  largeSuffix: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
+  banner: { marginTop: 'auto', borderWidth: 1, borderRadius: 16, padding: 14 },
+  bannerTitle: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
 });

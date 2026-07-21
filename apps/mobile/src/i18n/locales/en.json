@@ -11,7 +11,9 @@
       "fri": "Fri",
       "sat": "Sat",
       "sun": "Sun"
-    }
+    },
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "sync": {
     "connected": "Synced",
@@ -434,7 +436,11 @@
       "logPlaceholderImperial": "e.g. 158",
       "save": "Save",
       "empty": "No weigh-in recorded.",
-      "trend": { "up": "trending up", "down": "trending down", "stable": "stable" }
+      "trend": {
+        "up": "trending up",
+        "down": "trending down",
+        "stable": "stable"
+      }
     },
     "weightGoal": {
       "title": "Weight goal progress",
@@ -466,10 +472,19 @@
       "title": "Protein / body weight",
       "perKgUnit": "g/kg",
       "target": "target {{min}}–{{max}} · {{objective}}",
-      "status": { "low": "too low", "in": "on target", "high": "high" },
+      "status": {
+        "low": "too low",
+        "in": "on target",
+        "high": "high"
+      },
       "noWeight": "Log your weight to see your protein-to-weight ratio.",
       "noData": "No meals logged in this period yet.",
-      "objective": { "bulk": "bulk", "cut": "cut", "maintain": "maintain", "weightloss": "weight loss" }
+      "objective": {
+        "bulk": "bulk",
+        "cut": "cut",
+        "maintain": "maintain",
+        "weightloss": "weight loss"
+      }
     },
     "cross": {
       "title": "Training load & intake (8 wk)",
@@ -483,7 +498,13 @@
         "protein": "Prot/day"
       }
     },
-    "ranges": { "4w": "4 wk", "3m": "3 mo", "1y": "1 yr", "7d": "7 d", "30d": "30 d" },
+    "ranges": {
+      "4w": "4 wk",
+      "3m": "3 mo",
+      "1y": "1 yr",
+      "7d": "7 d",
+      "30d": "30 d"
+    },
     "delta": {
       "new": "new",
       "a11y": {
@@ -500,6 +521,24 @@
       "shapeWide": "Wide",
       "shapeLarge": "Large square",
       "shapeCycle": "Change shape (current: {{shape}})"
+    },
+    "strength": {
+      "programEyebrow": "Program",
+      "programActiveEyebrow": "Active program",
+      "lastEyebrow": "Latest",
+      "recentEyebrow_one": "Last {{count}} session",
+      "recentEyebrow_other": "Last {{count}} sessions",
+      "planningEyebrow": "Schedule",
+      "progressEyebrow": "Progress",
+      "progressTotalEyebrow": "Total volume"
+    },
+    "running": {
+      "lastRunEyebrow": "Latest run",
+      "duration": "duration",
+      "recentDistances": "Recent distances",
+      "planEyebrow": "Plan",
+      "planActiveEyebrow": "Active plan",
+      "planningEyebrow": "Schedule"
     }
   },
   "home": {
@@ -529,16 +568,30 @@
       "doneToday": "Today's session done · {{name}}",
       "noneToday": "Nothing planned today",
       "compactActive": "In progress",
-      "compactNone": "None"
+      "compactNone": "None",
+      "eyebrow": "Today's session"
     },
     "streak": {
       "title": "Streak",
       "suffix_one": "day in a row",
       "suffix_other": "days in a row",
-      "days": ["M", "T", "W", "T", "F", "S", "S"],
+      "days": [
+        "M",
+        "T",
+        "W",
+        "T",
+        "F",
+        "S",
+        "S"
+      ],
       "empty": "Log an activity today to start your streak.",
       "compact_one": "{{count}} d",
-      "compact_other": "{{count}} d"
+      "compact_other": "{{count}} d",
+      "eyebrow": "Consistency",
+      "bannerActive_one": "{{count}} active day this week 💪",
+      "bannerActive_other": "{{count}} active days this week 💪",
+      "bannerIdle_one": "Get back to it: {{count}} active day this week",
+      "bannerIdle_other": "Get back to it: {{count}} active days this week"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -551,7 +604,18 @@
       "setGoalHint": "Set your calorie goal to track your daily meals.",
       "compactRemaining": "{{kcal}} kcal left",
       "compactConsumed": "{{kcal}} kcal",
-      "compactNoGoal": "No goal set"
+      "compactNoGoal": "No goal set",
+      "eyebrow": "Nutrition",
+      "remaining": "kcal left",
+      "consumedSub": "kcal eaten",
+      "todayEyebrow": "Today",
+      "consumed": "Eaten",
+      "goal": "Goal",
+      "kcalValue": "{{kcal}} kcal",
+      "sport": "Workout",
+      "ofGoal": "/ {{target}} kcal",
+      "remainingEyebrow": "Remaining",
+      "budgetPct": "{{pct}}% of budget"
     },
     "weight": {
       "title": "Body weight",
@@ -559,7 +623,10 @@
       "addFirst": "Add my first weigh-in",
       "link": "View chart →",
       "sub": "Latest weigh-in · 7-day trend",
-      "compactEmpty": "No weigh-in"
+      "compactEmpty": "No weigh-in",
+      "eyebrow": "Weight",
+      "days7": "7 d",
+      "now": "now"
     },
     "record": {
       "title": "Recent record",
@@ -567,14 +634,26 @@
       "strength": "Strength",
       "running": "Running",
       "link": "View records →",
-      "compactEmpty": "None"
+      "compactEmpty": "None",
+      "eyebrow": "Record",
+      "today": "Today",
+      "daysAgo_one": "{{count}}d ago",
+      "daysAgo_other": "{{count}}d ago",
+      "lastEyebrow": "Latest record 🏆",
+      "weekCount_one": "{{count}} record set in the last 7 days",
+      "weekCount_other": "{{count}} records set in the last 7 days"
     },
     "volumeWeek": {
       "title": "Strength volume · 7d",
       "empty": "No session in 7 days.",
       "link": "Details →",
       "compactTotal": "{{kg}} kg",
-      "compactEmpty": "— kg"
+      "compactEmpty": "— kg",
+      "eyebrow": "Volume · 7 d",
+      "unitTon": "t",
+      "vsPrev": "vs last wk",
+      "byGroupEyebrow": "Volume by group",
+      "neglected": "⚠️ {{group}} undertrained — balance it out."
     },
     "runningWeek": {
       "title": "Running · 7d",
@@ -584,17 +663,29 @@
       "sessions_other": "{{count}} runs",
       "sessionsGoal_one": "{{count}} / {{goal}} run",
       "sessionsGoal_other": "{{count}} / {{goal}} runs",
-      "link": "History →"
+      "link": "History →",
+      "eyebrow": "Running · 7 d",
+      "thisWeek": "this week",
+      "thisWeekEyebrow": "This week",
+      "sessionsLabel": "runs",
+      "avgPace": "avg pace"
     },
     "deficitVolume": {
       "title": "Nutrition & load",
-      "message": "Last 7 days: intake ~{{pct}}% below your target, with high lifting volume. Make sure you eat enough to recover well."
+      "message": "Last 7 days: intake ~{{pct}}% below your target, with high lifting volume. Make sure you eat enough to recover well.",
+      "eyebrow": "Deficit",
+      "sub": "this week",
+      "balanceEyebrow": "Energy balance",
+      "recommend": "Aim for a slight surplus on lifting days to recover well."
     },
     "trainingTime": {
       "title": "Training time",
       "breakdownStrength": "strength",
       "breakdownRunning": "running",
-      "empty": "No session in 7 days"
+      "empty": "No session in 7 days",
+      "eyebrow": "Time · 7 d",
+      "activity": "of activity",
+      "total": "total"
     }
   },
   "onboarding": {
@@ -612,7 +703,11 @@
       "subtitle": "Used for calculations (calories, progress). Everything is editable later.",
       "firstName": "First name",
       "sex": "Sex",
-      "sexes": { "female": "Female", "male": "Male", "unspecified": "Prefer not to say" },
+      "sexes": {
+        "female": "Female",
+        "male": "Male",
+        "unspecified": "Prefer not to say"
+      },
       "birthDate": "Date of birth",
       "weight": "Weight",
       "height": "Height",
@@ -959,7 +1054,11 @@
       "imperial": "Imperial",
       "hint": "Metric (kg, km) or imperial (lb, mi). Applies to all displays."
     },
-    "language": { "title": "Language", "fr": "Français", "en": "English" },
+    "language": {
+      "title": "Language",
+      "fr": "Français",
+      "en": "English"
+    },
     "notifications": {
       "title": "Notifications",
       "streakReminder": "Streak-at-risk reminder",

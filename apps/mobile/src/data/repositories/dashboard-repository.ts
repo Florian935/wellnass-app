@@ -705,6 +705,53 @@ export function useMostRecentRecord(): {
   return { record, isLoading };
 }
 
+/** Un record muscu récent (liste), nom d'exercice résolu langue → fr. */
+export type RecentStrengthRecord = {
+  type: RecordType;
+  value: number;
+  exerciseName: string;
+  achievedAt: string;
+};
+
+/** Les `limit` records muscu les plus récents (nom d'exercice résolu). Paramètres : `[lang, userId, limit]`. */
+const SELECT_RECENT_STRENGTH_RECORDS = `
+  SELECT r.type, r.value, r.achieved_at,
+         COALESCE(tl.name, tfr.name) AS exercise_name
+  FROM personal_records r
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = r.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = r.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE r.user_id = ? AND r.deleted_at IS NULL
+  ORDER BY r.achieved_at DESC
+  LIMIT ?
+`;
+
+/**
+ * Liste des `limit` derniers records muscu battus (widget Records récents, forme grand carré).
+ * Owner-scopée, noms d'exercices résolus (langue courante → fr). Pilier gardé en amont par le hub.
+ */
+export function useRecentStrengthRecords(limit = 4): {
+  records: RecentStrengthRecord[];
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+
+  const { data, isLoading } = useQuery<MostRecentRecordDbRow>(SELECT_RECENT_STRENGTH_RECORDS, [
+    lang,
+    userId,
+    limit,
+  ]);
+
+  const records: RecentStrengthRecord[] = data.map((r) => ({
+    type: r.type as RecordType,
+    value: r.value,
+    exerciseName: r.exercise_name ?? '',
+    achievedAt: r.achieved_at,
+  }));
+  return { records, isLoading };
+}
+
 // ---------------------------------------------------------------------------
 // useDeficitVolumeAlert — widget 7.9 (US 4.32)
 // ---------------------------------------------------------------------------

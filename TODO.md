@@ -273,7 +273,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 20/07/2026 (**Widgets v2 — CODE LIVRÉ** : glisser-déposer 2D en grille (appui long
+*Dernière mise à jour : 21/07/2026 (**Widgets multi-formes — DESIGN RICHE LIVRÉ** (`feature/widgets-v2-dnd`, demande Damien « dev la partie Widgets » d'après `design/FitTrio - Widgets.dc.html`) : les **16 widgets × 3 formes** (accueil 9 + muscu 4 + course 3) passent du rendu sobre au **langage visuel de la galerie** — primitives SVG (`RingGauge`/`Sparkline`/`MiniBars`/`HBars`/`WeekDots`), cadre `WidgetFrame` (`card`/`warn`/`panel`) + `Eyebrow`/`Chip`/`Metric`, tokens thème (`track`/`warn`/`panel`/`amber`) + `withAlpha`, hook `useRecentStrengthRecords`, 60 clés i18n FR+EN ; données branchées au fil (macros, `useMuscleBalance`, tonnage+variation, semaine running par jour, sparkline poids), dégradations gracieuses assumées (nom/tonnage séance, % semaine programme, splits/tracé course). typecheck workspace+mobile / lint 0 err / **44 tests** verts, **aucune migration** (UI pure). **Reste : recette device.** Précédemment : 20/07/2026 — **Widgets v2 — CODE LIVRÉ** : glisser-déposer 2D en grille (appui long
 ~700 ms + fantôme + barre d'insertion + pastilles de coin), 3 formes remplissantes par module (9 widgets
 accueil + muscu/course), et **stats « semaine » → 7 jours glissants** partout (y c. tendances 8 sem.). Tout
 vert, aucune migration. **Reste : recette device.** — **Décision : GIF/vidéos de démo exercices abandonnés** (Florian/Damien) —

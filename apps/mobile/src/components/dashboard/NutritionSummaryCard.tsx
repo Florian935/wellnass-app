@@ -1,42 +1,52 @@
 /**
- * Widget 7.5 — Résumé nutritionnel du jour.
+ * Widget 7.5 — Résumé nutritionnel du jour, décliné aux 3 formes de la galerie « FitTrio · Widgets ».
  *
- * États :
- *  - `hasProfile = true`  : ligne calories (avec ou sans objectif), barre de progression,
- *                           3 chips macro, CTA "+ Ajouter un repas" (ghost)
- *  - `hasProfile = false` : texte vide + CTA "Définir mon objectif" (primary)
+ *  - `small` : eyebrow + kcal restantes + barre de progression fine ;
+ *  - `wide`  : anneau kcal (restantes) + détail Consommé / Objectif / Sport ;
+ *  - `large` : anneau kcal (consommé/objectif) + budget restant + 3 barres macro (consommé/cible).
  *
- * Routing :
- *  - Ajouter un repas    → `/food-picker` (meal=breakfast, date=aujourd'hui)
- *  - Définir l'objectif  → `/nutrition-profile`
- *
- * i18n :
- *  - Réutilise `nutrition.macros.{protein,carbs,fat}` (déjà définis) — pas de duplication.
- *  - Nouvelles clés : `home.nutrition.{caloriesGoal, caloriesNoGoal, cta, setGoal, setGoalHint}`.
+ * Données : `useNutritionSummary` (kcal, objectif effectif, macros, bonus séance). Cibles macro
+ * calculées comme l'écran nutrition (`macroGramsFromCalories` + manuel prioritaire).
+ * États sans profil → CTA « Définir mon objectif ».
  */
 
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { WidgetSize } from '@wellness/shared';
+import {
+  defaultMacroRatios,
+  macroGramsFromCalories,
+  objectiveFromGoal,
+  type WidgetSize,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { DashboardCard } from '@/components/DashboardCard';
-import { WidgetShell } from '@/components/widgets/WidgetShell';
+import { RingGauge } from '@/components/widgets/primitives';
+import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useNutritionSummary } from '@/data/repositories/dashboard-repository';
+import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
+import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-type MacroChipProps = { label: string; value: number };
-
-function MacroChip({ label, value }: MacroChipProps) {
+/** Une barre macro (consommé / cible) avec pastille de couleur. */
+function MacroBar({ label, consumed, target, color }: { label: string; consumed: number; target: number | null; color: string }) {
   const { colors } = useTheme();
+  const pct = target && target > 0 ? Math.min(100, Math.round((consumed / target) * 100)) : 0;
   return (
-    <View style={[styles.macroChip, { backgroundColor: colors.surfaceAlt }]}>
-      <Text style={[styles.macroLabel, { color: colors.textMuted }]}>{label}</Text>
-      <Text style={[styles.macroValue, { color: colors.text }]}>{value} g</Text>
+    <View style={styles.macroRow}>
+      <View style={styles.macroHead}>
+        <Text style={[styles.macroLabel, { color: colors.textMuted }]}>{label}</Text>
+        <Text style={[styles.macroFig, { color: colors.textMuted }]}>
+          {consumed}
+          {target != null ? `/${target}` : ''} g
+        </Text>
+      </View>
+      <View style={[styles.macroTrack, { backgroundColor: colors.track }]}>
+        <View style={{ height: '100%', width: `${pct}%`, backgroundColor: color, borderRadius: 5 }} />
+      </View>
     </View>
   );
 }
@@ -45,156 +55,165 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const {
-    kcal,
-    effectiveTarget,
-    isTrainingDay,
-    trainingBonus,
-    bonusSource,
-    macros,
-    hasProfile,
-    isLoading,
-  } = useNutritionSummary();
+  const { kcal, target, effectiveTarget, trainingBonus, isTrainingDay, macros, hasProfile, isLoading } =
+    useNutritionSummary();
+  const { nutritionProfile } = useNutritionProfile();
+  const { profile } = useProfile();
 
   if (isLoading) return null;
 
-  // ── Variante compacte (US 7.11) : kcal restantes (ou consommées) ────────────
-  if (size === 'small') {
-    let value: string;
-    if (!hasProfile) {
-      value = t('home.nutrition.compactNoGoal');
-    } else if (effectiveTarget != null) {
-      value = t('home.nutrition.compactRemaining', {
-        kcal: Math.max(0, effectiveTarget - kcal),
-      });
-    } else {
-      value = t('home.nutrition.compactConsumed', { kcal });
+  const today = isoDay(new Date());
+  const openFood = () =>
+    router.push({ pathname: '/food-picker', params: { date: today, meal: 'breakfast' } });
+  const openProfile = () => router.push('/nutrition-profile');
+
+  // ── État sans profil configuré ────────────────────────────────────────────
+  if (!hasProfile) {
+    if (size === 'small') {
+      return (
+        <WidgetFrame pad={16} onPress={openProfile} accessibilityLabel={t('home.nutrition.title')}>
+          <Eyebrow>{t('home.nutrition.eyebrow')}</Eyebrow>
+          <View style={styles.smallBottom}>
+            <Metric value={t('home.nutrition.compactNoGoal')} muted />
+          </View>
+        </WidgetFrame>
+      );
     }
     return (
-      <WidgetShell
-        icon="nutrition-outline"
-        title={t('home.nutrition.title')}
-        onPress={
-          hasProfile
-            ? () => router.push({ pathname: '/food-picker', params: { date: isoDay(new Date()), meal: 'breakfast' } })
-            : () => router.push('/nutrition-profile')
-        }
-        value={value}
-        valueMuted={!hasProfile}
-      />
+      <WidgetFrame pad={18} style={styles.center}>
+        <Eyebrow>{t('home.nutrition.eyebrow')}</Eyebrow>
+        <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('home.nutrition.setGoalHint')}</Text>
+        <Button label={t('home.nutrition.setGoal')} onPress={openProfile} />
+      </WidgetFrame>
     );
   }
 
-  // ── État : profil non configuré ────────────────────────────────────────────
-  if (!hasProfile) {
+  const eff = effectiveTarget;
+  const remaining = eff != null ? Math.max(0, eff - kcal) : null;
+  const pct = eff != null && eff > 0 ? Math.min(1, kcal / eff) : 0;
+  const pctBudget = eff != null && eff > 0 ? Math.round((remaining! / eff) * 100) : 0;
+
+  // Cibles macro (mêmes règles que l'écran nutrition : manuel prioritaire, sinon ratios objectif).
+  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
+  const manualSet =
+    nutritionProfile?.manualProteinG != null ||
+    nutritionProfile?.manualCarbsG != null ||
+    nutritionProfile?.manualFatG != null;
+  const targetMacros = manualSet
+    ? {
+        protein: nutritionProfile?.manualProteinG ?? 0,
+        carbs: nutritionProfile?.manualCarbsG ?? 0,
+        fat: nutritionProfile?.manualFatG ?? 0,
+      }
+    : target != null && objective != null
+      ? macroGramsFromCalories(target, defaultMacroRatios(objective))
+      : null;
+
+  // ── Petit carré ────────────────────────────────────────────────────────────
+  if (size === 'small') {
     return (
-      <DashboardCard icon="nutrition-outline" title={t('home.nutrition.title')}>
-        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-          {t('home.nutrition.setGoalHint')}
-        </Text>
-        <Button
-          label={t('home.nutrition.setGoal')}
-          onPress={() => router.push('/nutrition-profile')}
-        />
-      </DashboardCard>
-    );
-  }
-
-  // ── État : profil configuré ────────────────────────────────────────────────
-  // Objectif effectif = base + bonus jour d'entraînement (4.7) le cas échéant.
-  const target = effectiveTarget;
-  const pct = target != null && target > 0
-    ? Math.min(100, Math.round((kcal / target) * 100))
-    : 0;
-  const today = isoDay(new Date());
-
-  const body = (
-    <>
-      {/* Ligne calories */}
-      <Text style={[styles.kcalValue, { color: colors.text }]}>
-        {target != null
-          ? t('home.nutrition.caloriesGoal', { kcal, target })
-          : t('home.nutrition.caloriesNoGoal', { kcal })}
-      </Text>
-
-      {/* Badge jour d'entraînement (4.7) — libellé adapté à l'origine du bonus (RN-02) */}
-      {isTrainingDay ? (
-        <Text style={[styles.trainingBadge, { color: colors.accent }]}>
-          {t(
-            bonusSource === 'run' ? 'home.nutrition.runDayBadge' : 'home.nutrition.trainingDayBadge',
-            { kcal: trainingBonus },
-          )}
-        </Text>
-      ) : null}
-
-      {/* Barre de progression (uniquement si objectif défini) */}
-      {target != null ? (
-        <View style={[styles.track, { backgroundColor: colors.surfaceAlt }]}>
-          <View
-            style={[
-              styles.fill,
-              { backgroundColor: colors.accent, width: `${pct}%` },
-            ]}
+      <WidgetFrame pad={16} onPress={openFood} accessibilityLabel={t('home.nutrition.title')}>
+        <Eyebrow>{t('home.nutrition.eyebrow')}</Eyebrow>
+        <View style={styles.smallBottom}>
+          <Metric
+            value={remaining != null ? String(remaining) : String(kcal)}
+            sub={remaining != null ? t('home.nutrition.remaining') : t('home.nutrition.consumedSub')}
           />
+          {eff != null ? (
+            <View style={[styles.thinTrack, { backgroundColor: colors.track }]}>
+              <View style={{ height: '100%', width: `${Math.round(pct * 100)}%`, backgroundColor: colors.accent, borderRadius: 5 }} />
+            </View>
+          ) : null}
         </View>
-      ) : null}
-
-      {/* 3 chips macro — réutilise nutrition.macros.{protein,carbs,fat} */}
-      <View style={styles.macrosRow}>
-        <MacroChip label={t('nutrition.macros.protein')} value={macros.p} />
-        <MacroChip label={t('nutrition.macros.carbs')} value={macros.g} />
-        <MacroChip label={t('nutrition.macros.fat')} value={macros.l} />
-      </View>
-
-      {/* CTA ajouter repas */}
-      <Button
-        label={t('home.nutrition.cta')}
-        variant="ghost"
-        onPress={() =>
-          router.push({
-            pathname: '/food-picker',
-            params: { date: today, meal: 'breakfast' },
-          })
-        }
-      />
-    </>
-  );
-
-  if (size === 'large') {
-    return (
-      <WidgetShell
-        icon="nutrition-outline"
-        title={t('home.nutrition.title')}
-        onPress={() =>
-          router.push({ pathname: '/food-picker', params: { date: today, meal: 'breakfast' } })
-        }
-        showChevron
-      >
-        {body}
-      </WidgetShell>
+      </WidgetFrame>
     );
   }
 
+  // ── Rectangle ────────────────────────────────────────────────────────────────
+  if (size === 'wide') {
+    return (
+      <WidgetFrame pad={18} onPress={openFood} accessibilityLabel={t('home.nutrition.title')} style={styles.wideRow}>
+        <RingGauge size={86} stroke={9} pct={pct}>
+          <Text style={[styles.ringBig, { color: colors.text }]}>{remaining ?? kcal}</Text>
+          <Text style={[styles.ringSub, { color: colors.textMuted }]}>
+            {remaining != null ? t('home.nutrition.remaining') : t('home.nutrition.consumedSub')}
+          </Text>
+        </RingGauge>
+        <View style={styles.wideList}>
+          <Eyebrow>{t('home.nutrition.todayEyebrow')}</Eyebrow>
+          <DetailRow label={t('home.nutrition.consumed')} value={String(kcal)} />
+          {eff != null ? <DetailRow label={t('home.nutrition.goal')} value={t('home.nutrition.kcalValue', { kcal: eff })} /> : null}
+          {isTrainingDay && trainingBonus > 0 ? (
+            <DetailRow label={t('home.nutrition.sport')} value={`+${trainingBonus}`} accent />
+          ) : null}
+        </View>
+      </WidgetFrame>
+    );
+  }
+
+  // ── Grand carré ──────────────────────────────────────────────────────────────
   return (
-    <DashboardCard icon="nutrition-outline" title={t('home.nutrition.title')}>
-      {body}
-    </DashboardCard>
+    <WidgetFrame pad={22} onPress={openFood} accessibilityLabel={t('home.nutrition.title')} style={styles.largeCol}>
+      <View style={styles.largeHead}>
+        <RingGauge size={104} stroke={11} pct={pct}>
+          <Text style={[styles.ringBig, { color: colors.text }]}>{kcal}</Text>
+          {eff != null ? (
+            <Text style={[styles.ringSub, { color: colors.textMuted }]}>
+              {t('home.nutrition.ofGoal', { target: eff })}
+            </Text>
+          ) : null}
+        </RingGauge>
+        <View style={styles.largeHeadRight}>
+          <Eyebrow>{t('home.nutrition.remainingEyebrow')}</Eyebrow>
+          <Text style={[styles.remainBig, { color: colors.accent }]}>{remaining ?? kcal}</Text>
+          {eff != null ? (
+            <Text style={[styles.budgetSub, { color: colors.textMuted }]}>
+              {t('home.nutrition.budgetPct', { pct: pctBudget })}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={styles.macros}>
+        <MacroBar label={t('nutrition.macros.protein')} consumed={macros.p} target={targetMacros?.protein ?? null} color={colors.accent} />
+        <MacroBar label={t('nutrition.macros.carbs')} consumed={macros.g} target={targetMacros?.carbs ?? null} color={colors.amber} />
+        <MacroBar label={t('nutrition.macros.fat')} consumed={macros.l} target={targetMacros?.fat ?? null} color={colors.chartGreen} />
+      </View>
+    </WidgetFrame>
+  );
+}
+
+/** Ligne « label ⋯ valeur » du rectangle. */
+function DetailRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.detailRow}>
+      <Text style={[styles.detailLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.detailValue, { color: accent ? colors.success : colors.text }]}>{value}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  center: { justifyContent: 'center', gap: 8 },
   emptyText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
-  kcalValue: { fontFamily: fontFamily.monoBold, fontSize: 22, letterSpacing: -0.5 },
-  trainingBadge: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: -2 },
-  track: { height: 9, borderRadius: 999, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 999 },
-  macrosRow: { flexDirection: 'row', gap: 8 },
-  macroChip: { flex: 1, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, gap: 2 },
-  macroLabel: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  macroValue: { fontFamily: fontFamily.monoBold, fontSize: 15 },
+  smallBottom: { marginTop: 'auto', gap: 8 },
+  thinTrack: { height: 7, borderRadius: 5, overflow: 'hidden' },
+  ringBig: { fontFamily: fontFamily.displayXBold, fontSize: 18, letterSpacing: -0.5 },
+  ringSub: { fontFamily: fontFamily.body, fontSize: 9 },
+  wideRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  wideList: { flex: 1, gap: 4 },
+  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
+  detailLabel: { fontFamily: fontFamily.body, fontSize: 13 },
+  detailValue: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
+  largeCol: { justifyContent: 'space-between' },
+  largeHead: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  largeHeadRight: { flex: 1 },
+  remainBig: { fontFamily: fontFamily.displayXBold, fontSize: 40, letterSpacing: -1.5 },
+  budgetSub: { fontFamily: fontFamily.body, fontSize: 12 },
+  macros: { gap: 13, marginTop: 'auto' },
+  macroRow: { gap: 5 },
+  macroHead: { flexDirection: 'row', justifyContent: 'space-between' },
+  macroLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  macroFig: { fontFamily: fontFamily.mono, fontSize: 11 },
+  macroTrack: { height: 8, borderRadius: 5, overflow: 'hidden' },
 });

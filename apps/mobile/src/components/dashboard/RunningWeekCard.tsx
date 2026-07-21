@@ -1,34 +1,47 @@
 /**
- * Widget 7.10 — Résumé running de la semaine.
+ * Widget 7.10 — Semaine running, décliné aux 3 formes de la galerie « FitTrio · Widgets ».
  *
- * Distance parcourue + nombre de séances de la semaine courante (lundi→dimanche,
- * minuit local), et objectif de séances (`weeklyFrequency`) s'il est défini.
- * Gardé par le pilier `running` en amont (cf. dashboard).
+ *  - `small` : eyebrow + distance 7 j + « cette semaine » ;
+ *  - `wide`  : 3 colonnes séparées (distance · sorties · allure moy.) ;
+ *  - `large` : distance + résumé, mini-barres par jour (km), pied durée + sorties.
  *
- * États :
- *  - `count === 0` : état vide (`home.runningWeek.empty`).
- *  - Sinon         : distance formatée + « N séances » (ou « N / objectif séances »)
- *                    + lien « Historique → ».
- *
- * Formatage :
- *  - Distance via `useUnits().formatDistance(totalDistanceM / 1000)`.
- *  - Séances : `sessionsGoal` (count / goal) si `weeklyFrequency` défini, sinon
- *    `sessions` (count seul). **Objectif de distance hebdo : différé** (spec §6).
- *
- * Routing : lien → `/running-history` (Historique).
+ * Totaux : `useRunStats('week')`. Barres par jour : `useRunHistory` (courses de la semaine
+ * lun→dim, cumul distance par jour). Distance/allure/durée formatées via `useUnits` / helpers partagés.
  */
 
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { WidgetSize } from '@wellness/shared';
-import { DashboardCard } from '@/components/DashboardCard';
-import { WidgetShell } from '@/components/widgets/WidgetShell';
-import { useRunStats } from '@/data/repositories/run-repository';
-import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { formatHoursMinutes, localDayKey, type WidgetSize } from '@wellness/shared';
+import { MiniBars } from '@/components/widgets/primitives';
+import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { useRunHistory, useRunStats } from '@/data/repositories/run-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** Cumul de distance (m) par jour de la semaine courante (lun→dim). */
+function weekDistanceByDay(runs: { finishedAt: string | null; distanceM: number | null }[]): number[] {
+  const now = new Date();
+  const dow = now.getDay(); // 0=dim
+  const offsetToMonday = (dow + 6) % 7;
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(monday.getDate() - offsetToMonday);
+  const keys = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return localDayKey(d);
+  });
+  const byDay = new Array(7).fill(0) as number[];
+  for (const r of runs) {
+    if (!r.finishedAt) continue;
+    const k = localDayKey(new Date(r.finishedAt));
+    const idx = keys.indexOf(k);
+    if (idx >= 0) byDay[idx] = (byDay[idx] ?? 0) + (r.distanceM ?? 0) / 1000;
+  }
+  return byDay;
+}
 
 export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
@@ -37,111 +50,112 @@ export function RunningWeekCard({ size = 'wide' }: { size?: WidgetSize }) {
   const units = useUnits();
 
   const { stats, isLoading: statsLoading } = useRunStats('week');
-  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
+  const { runs, isLoading: runsLoading } = useRunHistory();
 
-  if (statsLoading || profileLoading) return null;
+  if (statsLoading || runsLoading) return null;
+  const open = () => router.push('/running-history');
 
-  // ── Variante compacte (US 7.11) : distance + séances ───────────────────────
+  const isEmpty = stats.count === 0;
+  const distanceStr = units.formatDistance(stats.totalDistanceM / 1000);
+  const avgPace =
+    stats.totalDistanceM > 0 ? stats.totalDurationS / (stats.totalDistanceM / 1000) : null;
+  const paceStr = avgPace != null ? units.formatPace(Math.round(avgPace)) : '—';
+  const durationStr = formatHoursMinutes(stats.totalDurationS);
+
+  // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {
-    const goal = runnerProfile?.weeklyFrequency ?? null;
-    const sessions =
-      goal != null
-        ? t('home.runningWeek.sessionsGoal', { count: stats.count, goal })
-        : t('home.runningWeek.sessions', { count: stats.count });
-    const value =
-      stats.count === 0
-        ? t('home.runningWeek.empty')
-        : `${units.formatDistance(stats.totalDistanceM / 1000)} · ${sessions}`;
     return (
-      <WidgetShell
-        icon="walk-outline"
-        title={t('home.runningWeek.title')}
-        onPress={() => router.push('/running-history')}
-        value={value}
-        valueMuted={stats.count === 0}
-      />
-    );
-  }
-
-  // ── État : aucune course cette semaine ─────────────────────────────────────
-  if (stats.count === 0) {
-    return (
-      <DashboardCard icon="walk-outline" title={t('home.runningWeek.title')}>
-        <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-          {t('home.runningWeek.empty')}
-        </Text>
-      </DashboardCard>
-    );
-  }
-
-  // ── État : données présentes ───────────────────────────────────────────────
-  const goal = runnerProfile?.weeklyFrequency ?? null;
-  const sessionsLabel =
-    goal != null
-      ? t('home.runningWeek.sessionsGoal', { count: stats.count, goal })
-      : t('home.runningWeek.sessions', { count: stats.count });
-
-  const body = (
-    <>
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={[styles.statValue, { color: colors.text }]}>
-            {units.formatDistance(stats.totalDistanceM / 1000)}
-          </Text>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>
-            {t('home.runningWeek.distance')}
-          </Text>
+      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('home.runningWeek.title')}>
+        <Eyebrow>{t('home.runningWeek.eyebrow')}</Eyebrow>
+        <View style={styles.smallBottom}>
+          {isEmpty ? (
+            <Metric value={t('home.runningWeek.empty')} muted />
+          ) : (
+            <Metric value={distanceStr} sub={t('home.runningWeek.thisWeek')} />
+          )}
         </View>
-        <View style={styles.stat}>
-          <Text style={[styles.statValue, { color: colors.text }]}>{sessionsLabel}</Text>
-        </View>
-      </View>
-
-      <View style={styles.linkRow}>
-        <Pressable
-          onPress={() => router.push('/running-history')}
-          hitSlop={8}
-          accessibilityRole="link"
-        >
-          <Text style={[styles.link, { color: colors.accent }]}>
-            {t('home.runningWeek.link')}
-          </Text>
-        </Pressable>
-      </View>
-    </>
-  );
-
-  if (size === 'large') {
-    return (
-      <WidgetShell
-        icon="walk-outline"
-        title={t('home.runningWeek.title')}
-        onPress={() => router.push('/running-history')}
-        showChevron
-      >
-        {body}
-      </WidgetShell>
+      </WidgetFrame>
     );
   }
+
+  // ── Rectangle ────────────────────────────────────────────────────────────────
+  if (size === 'wide') {
+    if (isEmpty) {
+      return (
+        <WidgetFrame pad={18} onPress={open} accessibilityLabel={t('home.runningWeek.title')} style={styles.center}>
+          <Eyebrow>{t('home.runningWeek.eyebrow')}</Eyebrow>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('home.runningWeek.empty')}</Text>
+        </WidgetFrame>
+      );
+    }
+    return (
+      <WidgetFrame pad={18} onPress={open} accessibilityLabel={t('home.runningWeek.title')} style={styles.wideRow}>
+        <StatCol value={distanceStr} label={t('home.runningWeek.distance')} />
+        <Divider />
+        <StatCol value={String(stats.count)} label={t('home.runningWeek.sessionsLabel')} />
+        <Divider />
+        <StatCol value={paceStr} label={t('home.runningWeek.avgPace')} />
+      </WidgetFrame>
+    );
+  }
+
+  // ── Grand carré ──────────────────────────────────────────────────────────────
+  const byDay = weekDistanceByDay(runs);
+  const labels = t('home.streak.days', { returnObjects: true }) as string[];
+  const highlight = byDay.map((v, i) => (v > 0 ? i : -1)).filter((i) => i >= 0);
 
   return (
-    <DashboardCard icon="walk-outline" title={t('home.runningWeek.title')}>
-      {body}
-    </DashboardCard>
+    <WidgetFrame pad={22} onPress={open} accessibilityLabel={t('home.runningWeek.title')} style={styles.largeCol}>
+      <Eyebrow>{t('home.runningWeek.thisWeekEyebrow')}</Eyebrow>
+      <Text style={[styles.largeValue, { color: colors.text }]}>
+        {distanceStr}
+      </Text>
+      <Text style={[styles.largeSub, { color: colors.textMuted }]}>
+        {t('home.runningWeek.sessions', { count: stats.count })} · {paceStr} · {durationStr}
+      </Text>
+      <View style={styles.largeBars}>
+        <MiniBars values={byDay} height={110} highlightIndex={highlight} labels={labels} />
+      </View>
+      <View style={[styles.foot, { borderTopColor: colors.border }]}>
+        <Text style={[styles.footText, { color: colors.textMuted }]}>
+          {t('home.runningWeek.sessions', { count: stats.count })}
+        </Text>
+        <Text style={[styles.footText, { color: colors.textMuted }]}>{durationStr}</Text>
+      </View>
+    </WidgetFrame>
   );
 }
 
+function StatCol({ value, label }: { value: string; label: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.statCol}>
+      <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+        {value}
+      </Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
+    </View>
+  );
+}
+
+function Divider() {
+  const { colors } = useTheme();
+  return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
+}
+
 const styles = StyleSheet.create({
+  center: { justifyContent: 'center', gap: 6 },
   emptyText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
-  statsRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 24 },
-  stat: { gap: 2 },
-  statValue: { fontFamily: fontFamily.monoBold, fontSize: 22, letterSpacing: -0.5 },
-  statLabel: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  linkRow: { alignItems: 'flex-end' },
-  link: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
+  smallBottom: { marginTop: 'auto' },
+  wideRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statCol: { flex: 1, alignItems: 'center', gap: 2 },
+  statValue: { fontFamily: fontFamily.displayXBold, fontSize: 26, letterSpacing: -1 },
+  statLabel: { fontFamily: fontFamily.body, fontSize: 11 },
+  divider: { width: 1, alignSelf: 'stretch', marginVertical: 4 },
+  largeCol: { gap: 0 },
+  largeValue: { fontFamily: fontFamily.displayXBold, fontSize: 40, letterSpacing: -1.5, marginTop: 6 },
+  largeSub: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 2 },
+  largeBars: { flex: 1, marginVertical: 18 },
+  foot: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, paddingTop: 12, marginTop: 'auto' },
+  footText: { fontFamily: fontFamily.mono, fontSize: 11 },
 });

@@ -16,6 +16,20 @@ export type Palette = {
   accentText: string;
   success: string;
   danger: string;
+  /** Piste (fond) des barres de progression / mini-graphes. */
+  track: string;
+  /** Vert « données » (courbes, barres) — plus saturé que `success`. */
+  chartGreen: string;
+  /** Ambre « données » (barres secondaires, alertes douces). */
+  amber: string;
+  /** Surface d'alerte douce (fond) + bordure + texte (ton ambre). */
+  warn: string;
+  warnBorder: string;
+  warnText: string;
+  /** Carte inversée « panneau » (grand carré Séance du jour) : fond sombre + textes. */
+  panel: string;
+  panelText: string;
+  panelMuted: string;
 };
 
 export const palettes: Record<ColorScheme, Palette> = {
@@ -30,6 +44,15 @@ export const palettes: Record<ColorScheme, Palette> = {
     accentText: '#ffffff',
     success: '#7c8a5b',
     danger: '#b23b2e',
+    track: '#eadcc6',
+    chartGreen: '#7c8a5b',
+    amber: '#cc9544',
+    warn: '#f7ead6',
+    warnBorder: '#e9cfa0',
+    warnText: '#a97b1f',
+    panel: '#33291f',
+    panelText: '#f0e4d0',
+    panelMuted: '#c9b79a',
   },
   dark: {
     background: '#1c150e',
@@ -42,5 +65,14 @@ export const palettes: Record<ColorScheme, Palette> = {
     accentText: '#ffffff',
     success: '#a9ba7e',
     danger: '#e0524a',
+    track: '#362c22',
+    chartGreen: '#a9ba7e',
+    amber: '#e0b155',
+    warn: '#312414',
+    warnBorder: '#4a3a1e',
+    warnText: '#e0b155',
+    panel: '#241e18',
+    panelText: '#f0e4d0',
+    panelMuted: '#c9b79a',
   },
 };

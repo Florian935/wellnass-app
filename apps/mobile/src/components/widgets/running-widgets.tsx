@@ -1,21 +1,38 @@
 /**
- * Widgets du hub course (US Widgets multi-formes) — issus des `ModulePreviewCard`
- * historiques de `(tabs)/running.tsx`, déclinés aux 3 formes (voir `strength-widgets`).
- * La map `RUNNING_WIDGETS` est consommée par `WidgetGrid` via le hub course.
+ * Widgets du hub course (galerie « FitTrio · Widgets »), déclinés aux 3 formes via `WidgetFrame`
+ * + primitives : Historique, Programmes, Planning. La map `RUNNING_WIDGETS` est consommée par le hub.
+ *
+ * Le grand carré Historique remplace la carte + splits/carte GPS du design par une sparkline des
+ * distances récentes (dégradation propre tant que les splits/tracé ne sont pas branchés).
  */
 
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { RunningWidgetId, WidgetSize } from '@wellness/shared';
-import { ModulePreviewCard } from '@/components/ModulePreviewCard';
+import { formatHoursMinutes, localDayKey, type RunningWidgetId, type WidgetSize } from '@wellness/shared';
 import { PlanningPreview } from '@/components/PlanningPreview';
-import { WidgetShell } from '@/components/widgets/WidgetShell';
+import { Sparkline } from '@/components/widgets/primitives';
+import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useRunHistory } from '@/data/repositories/run-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** Date relative courte : « aujourd'hui » / « hier » / JJ/MM. */
+function relDay(iso: string | null, t: (k: string) => string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const today = localDayKey(new Date());
+  const key = localDayKey(d);
+  if (key === today) return t('common.today');
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  if (key === localDayKey(y)) return t('common.yesterday');
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+}
 
 // ---------------------------------------------------------------------------
 // Historique — dernière course (distance · durée · allure)
@@ -30,61 +47,70 @@ function RunningHistoryWidget({ size }: { size: WidgetSize }) {
   const open = () => router.push('/running-history');
 
   const distance = lastRun ? units.formatDistance((lastRun.distanceM ?? 0) / 1000) : '—';
+  const duration = lastRun?.durationSeconds != null ? formatHoursMinutes(lastRun.durationSeconds) : '—';
+  const pace = units.formatPace(lastRun?.avgPaceSPerKm ?? null);
 
   if (size === 'small') {
     return (
-      <WidgetShell
-        icon="time-outline"
-        title={t('running.history.title')}
-        onPress={open}
-        value={lastRun ? distance : t('running.history.empty')}
-        valueMuted={!lastRun}
-      />
+      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('running.history.title')}>
+        <Eyebrow>{t('widgets.running.lastRunEyebrow')}</Eyebrow>
+        <View style={styles.smallBottom}>
+          {lastRun ? (
+            <Metric value={distance} sub={`${relDay(lastRun.finishedAt, t)} · ${duration}`} />
+          ) : (
+            <Metric value={t('running.history.empty')} muted />
+          )}
+        </View>
+      </WidgetFrame>
     );
   }
 
-  const body = lastRun ? (
-    <View style={styles.runRow}>
-      <Text style={[styles.runMetric, { color: colors.text }]}>{distance}</Text>
-      <Text style={[styles.runDot, { color: colors.textMuted }]}>·</Text>
-      <Text style={[styles.runMetric, { color: colors.text }]}>
-        {lastRun.durationSeconds != null
-          ? t('history.row.durationMin', { count: Math.round(lastRun.durationSeconds / 60) })
-          : '—'}
-      </Text>
-      <Text style={[styles.runDot, { color: colors.textMuted }]}>·</Text>
-      <Text style={[styles.runMetric, { color: colors.text }]}>
-        {units.formatPace(lastRun.avgPaceSPerKm)}
-      </Text>
-    </View>
-  ) : (
-    <Text style={[styles.cardText, { color: colors.textMuted }]}>
-      {t('running.history.empty')}
-    </Text>
-  );
-
-  if (size === 'large') {
+  if (!lastRun) {
+    const pad = size === 'large' ? 22 : 18;
     return (
-      <WidgetShell
-        icon="time-outline"
-        title={t('running.history.title')}
-        onPress={open}
-        showChevron
-      >
-        {body}
-      </WidgetShell>
+      <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('running.history.title')} style={styles.center}>
+        <Eyebrow>{t('widgets.running.lastRunEyebrow')}</Eyebrow>
+        <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('running.history.empty')}</Text>
+      </WidgetFrame>
     );
   }
 
+  if (size === 'wide') {
+    return (
+      <WidgetFrame pad={18} onPress={open} accessibilityLabel={t('running.history.title')} style={styles.wideRow}>
+        <StatCol value={distance} label={t('home.runningWeek.distance')} />
+        <Divider />
+        <StatCol value={duration} label={t('widgets.running.duration')} />
+        <Divider />
+        <StatCol value={pace} label={t('home.runningWeek.avgPace')} />
+      </WidgetFrame>
+    );
+  }
+
+  // large — résumé + sparkline des distances récentes
+  const series = runs.slice(0, 10).map((r) => (r.distanceM ?? 0) / 1000).reverse();
   return (
-    <ModulePreviewCard icon="time-outline" title={t('running.history.title')} onPress={open}>
-      {body}
-    </ModulePreviewCard>
+    <WidgetFrame pad={22} onPress={open} accessibilityLabel={t('running.history.title')} style={styles.largeCol}>
+      <View style={styles.largeHead}>
+        <Text style={[styles.largeDistance, { color: colors.text }]}>{distance}</Text>
+        <Text style={[styles.metaLine, { color: colors.textMuted }]}>
+          {relDay(lastRun.finishedAt, t)} · {duration} · {pace}
+        </Text>
+      </View>
+      {series.length >= 2 ? (
+        <View style={styles.largeSpark}>
+          <Sparkline values={series} height={130} area showDot strokeWidth={3.5} />
+        </View>
+      ) : (
+        <View style={styles.largeSpark} />
+      )}
+      <Text style={[styles.footText, { color: colors.textMuted }]}>{t('widgets.running.recentDistances')}</Text>
+    </WidgetFrame>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Programmes — programme running actif
+// Programmes — plan running actif
 // ---------------------------------------------------------------------------
 function RunningProgramsWidget({ size }: { size: WidgetSize }) {
   const { t } = useTranslation();
@@ -93,77 +119,77 @@ function RunningProgramsWidget({ size }: { size: WidgetSize }) {
   const { program } = useActiveProgram('running');
   const open = () => router.push('/running-programs');
 
+  const sub = program?.durationWeeks ? t('programs.weeks', { count: program.durationWeeks }) : program?.goal ?? '';
+
   if (size === 'small') {
     return (
-      <WidgetShell
-        icon="list-outline"
-        title={t('running.program.myTitle')}
-        onPress={open}
-        value={program ? program.name : t('programs.noneActive')}
-        valueMuted={!program}
-      />
+      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('running.program.myTitle')}>
+        <Eyebrow>{t('widgets.running.planEyebrow')}</Eyebrow>
+        <View style={styles.smallBottom}>
+          {program ? (
+            <>
+              <Text style={[styles.planName, { color: colors.text }]} numberOfLines={2}>
+                {program.name}
+              </Text>
+              {sub ? <Text style={[styles.progSub, { color: colors.textMuted }]}>{sub}</Text> : null}
+            </>
+          ) : (
+            <Metric value={t('programs.noneActive')} muted />
+          )}
+        </View>
+      </WidgetFrame>
     );
   }
 
-  const activeRow = program ? (
-    <View style={styles.activeProgramRow}>
-      <View style={[styles.activeDot, { backgroundColor: colors.accent }]} />
-      <Text style={[styles.activeProgramName, { color: colors.text }]} numberOfLines={1}>
-        {program.name}
-      </Text>
-    </View>
-  ) : (
-    <Text style={[styles.cardText, { color: colors.textMuted }]}>
-      {t('programs.noneActive')}
-    </Text>
-  );
-
-  if (size === 'large') {
-    return (
-      <WidgetShell
-        icon="list-outline"
-        title={t('running.program.myTitle')}
-        onPress={open}
-        showChevron
-      >
-        {activeRow}
-      </WidgetShell>
-    );
-  }
-
+  const pad = size === 'large' ? 22 : 18;
   return (
-    <ModulePreviewCard icon="list-outline" title={t('running.program.myTitle')} onPress={open}>
-      {activeRow}
-    </ModulePreviewCard>
+    <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('running.program.myTitle')} style={styles.center}>
+      <Eyebrow>{t('widgets.running.planActiveEyebrow')}</Eyebrow>
+      {program ? (
+        <>
+          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
+            {program.name}
+          </Text>
+          {sub ? <Text style={[styles.metaLine, { color: colors.textMuted }]}>{sub}</Text> : null}
+        </>
+      ) : (
+        <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('programs.noneActive')}</Text>
+      )}
+    </WidgetFrame>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Planning — mini-calendrier 7 jours
+// Planning — mini-calendrier (réutilise PlanningPreview)
 // ---------------------------------------------------------------------------
 function RunningPlanningWidget({ size }: { size: WidgetSize }) {
   const { t } = useTranslation();
   const router = useRouter();
   const open = () => router.push('/planning');
-
-  if (size === 'wide') {
-    return (
-      <ModulePreviewCard icon="calendar-outline" title={t('planning.title')} onPress={open}>
-        <PlanningPreview size="wide" />
-      </ModulePreviewCard>
-    );
-  }
-
+  const pad = size === 'small' ? 16 : size === 'large' ? 22 : 18;
   return (
-    <WidgetShell
-      icon="calendar-outline"
-      title={t('planning.title')}
-      onPress={open}
-      showChevron={size === 'large'}
-    >
+    <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('planning.title')} style={styles.center}>
+      <Eyebrow>{t('widgets.running.planningEyebrow')}</Eyebrow>
       <PlanningPreview size={size} />
-    </WidgetShell>
+    </WidgetFrame>
   );
+}
+
+function StatCol({ value, label }: { value: string; label: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.statCol}>
+      <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+        {value}
+      </Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
+    </View>
+  );
+}
+
+function Divider() {
+  const { colors } = useTheme();
+  return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -179,11 +205,20 @@ export const RUNNING_WIDGETS: Record<
 };
 
 const styles = StyleSheet.create({
-  cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
-  activeProgramRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activeDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
-  activeProgramName: { fontFamily: fontFamily.bodySemi, fontSize: 14, flex: 1 },
-  runRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  runMetric: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
-  runDot: { fontFamily: fontFamily.body, fontSize: 15 },
+  smallBottom: { marginTop: 'auto', gap: 2 },
+  center: { justifyContent: 'center', gap: 6 },
+  metaLine: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  planName: { fontFamily: fontFamily.displayXBold, fontSize: 26, letterSpacing: -0.8, lineHeight: 28 },
+  progSub: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  title: { fontFamily: fontFamily.displayBold, fontSize: 20, letterSpacing: -0.4 },
+  wideRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statCol: { flex: 1, alignItems: 'center', gap: 2 },
+  statValue: { fontFamily: fontFamily.displayXBold, fontSize: 26, letterSpacing: -1 },
+  statLabel: { fontFamily: fontFamily.body, fontSize: 11 },
+  divider: { width: 1, alignSelf: 'stretch', marginVertical: 4 },
+  largeCol: { gap: 0 },
+  largeHead: { gap: 2 },
+  largeDistance: { fontFamily: fontFamily.displayXBold, fontSize: 34, letterSpacing: -1.2 },
+  largeSpark: { flex: 1, marginVertical: 14, justifyContent: 'center' },
+  footText: { fontFamily: fontFamily.mono, fontSize: 11, marginTop: 'auto' },
 });

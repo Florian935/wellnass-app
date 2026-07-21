@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `feature/widgets-v2-dnd` — widgets multi-formes au nouveau design (galerie « FitTrio · Widgets »)
+
+> Demande Damien : « dev la partie Widgets » d'après le design mis à jour
+> ([design/FitTrio - Widgets.dc.html](design/FitTrio%20-%20Widgets.dc.html)). Les **16 widgets ×
+> 3 formes** (petit carré / rectangle / grand carré) passent d'un rendu sobre (en-tête + 1 ligne) au
+> **langage visuel riche** de la galerie : anneaux, sparklines, mini-barres, barres par groupe,
+> bande de 7 jours, carte panneau. typecheck workspace + mobile, lint (0 erreur), **44 tests** verts.
+> Commit précédent : `751fa5d`. **Aucune migration** (UI pure). Recette device requise.
+> Périmètre choisi par Damien : **les 16 widgets d'un coup** + branchement des données au fil.
+
+**Ajouté**
+- **Primitives visuelles SVG** ([primitives.tsx](apps/mobile/src/components/widgets/primitives.tsx),
+  `react-native-svg`) : `RingGauge` (anneau de progression), `Sparkline` (courbe + zone dégradée),
+  `MiniBars` (mini-barres verticales), `HBars` (barres horizontales étiquetées), `WeekDots` (bande
+  de 7 jours). Légères, sans axes ni mesure de layout, suivent l'accent dynamique du menu actif.
+- **Cadre + blocs de widget** ([WidgetFrame.tsx](apps/mobile/src/components/widgets/WidgetFrame.tsx)) :
+  `WidgetFrame` (tons `card` / `warn` / `panel`), `Eyebrow` (sur-titre mono), `Chip` (pastille de
+  tendance), `Metric` (gros chiffre + unité + sous-libellé).
+- **Helper couleur** ([color-utils.ts](apps/mobile/src/theme/color-utils.ts)) : `withAlpha` /
+  `hexToRgb` (surfaces teintées accent, dégradés de sparkline).
+- **Tokens thème** ([colors.ts](apps/mobile/src/theme/colors.ts), light + dark) : `track`, `warn` /
+  `warnBorder` / `warnText`, `panel` / `panelText` / `panelMuted`, `chartGreen`, `amber`.
+- **Hook `useRecentStrengthRecords`** ([dashboard-repository.ts](apps/mobile/src/data/repositories/dashboard-repository.ts)) :
+  liste owner-scopée des derniers records muscu (nom d'exercice résolu langue → fr) pour le grand
+  carré Records récents.
+- **i18n** : 60 clés FR + EN (eyebrows, sous-titres, unités, bannières) dans
+  [fr.json](apps/mobile/src/i18n/locales/fr.json) / [en.json](apps/mobile/src/i18n/locales/en.json).
+- **Design source** : [design/FitTrio - Widgets.dc.html](design/FitTrio%20-%20Widgets.dc.html)
+  (maquette de référence des 16 widgets × 3 formes).
+
+**Modifié**
+- **9 widgets Accueil** (`dashboard/*.tsx`) refondus aux 3 formes : Séance du jour (carte panneau +
+  bouton démarrer/reprendre), Résumé nutrition (anneau kcal + barres macro consommé/cible), Streak
+  (bande 7 jours), Poids (sparkline + pastille de tendance), Records récents (hero + liste), Volume
+  muscu (barres par groupe + bandeau groupe délaissé), Semaine running (mini-barres par jour), Alerte
+  déficit (ton warn), Temps d'entraînement (anneau muscu/course + légende).
+- **Widgets Muscu / Course** ([strength-widgets.tsx](apps/mobile/src/components/widgets/strength-widgets.tsx),
+  [running-widgets.tsx](apps/mobile/src/components/widgets/running-widgets.tsx)) refondus aux 3 formes
+  (Programmes, Historique, Planning via `PlanningPreview` réutilisé, Progression) ; abandon de
+  `WidgetShell` / `ModulePreviewCard` / `DashboardCard` au profit de `WidgetFrame` + primitives.
+
+**Technique / Notes**
+- **Données branchées au fil** : `useNutritionSummary` + `macroGramsFromCalories` (cibles macro),
+  `useMuscleBalance` (répartition + groupe délaissé), `useWeeklyVolumeComparison` (tonnage + variation),
+  `useRunStats` / `useRunHistory` (semaine running, barres par jour), `useWeightEntries` (sparkline
+  poids sur 6 semaines).
+- **Dégradations gracieuses assumées** (données non encore branchées, pas d'invention) : % de semaine
+  et liste de séances d'un programme (`ProgramListItem` = nom/durée/niveau) ; nom de séance + tonnage
+  dans l'historique muscu (`WorkoutHistoryItem` = date/durée) ; splits/km + tracé GPS du grand carré
+  Course (remplacés par une sparkline des distances récentes) ; objectif hebdo running.
+- **Purity** : `Date.now()` déplacé hors du rendu (helpers `daysSince` / `countWithin7Days` au niveau
+  module dans RecordRecentCard) pour respecter la règle `react-hooks/purity`.
+- **StreakCard.test** : rendu adapté (nœuds texte isolés) pour garder le garde-fou « double-nombre » ;
+  le test reste vert.
+- **Non branché** : le bundling web (`expo export`) échoue sur `@powersync/op-sqlite` (module natif) —
+  **préexistant**, sans rapport avec ce commit. Non committé : `design/.thumbnail`, `design/uploads/`
+  (artefacts Claude Design hors périmètre).
+
 ### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
 
 > Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.

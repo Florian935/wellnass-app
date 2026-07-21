@@ -11,7 +11,9 @@
       "fri": "Ven",
       "sat": "Sam",
       "sun": "Dim"
-    }
+    },
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
   },
   "sync": {
     "connected": "Synchronisé",
@@ -434,7 +436,11 @@
       "logPlaceholderImperial": "Ex. 158",
       "save": "Enregistrer",
       "empty": "Aucune pesée enregistrée.",
-      "trend": { "up": "en hausse", "down": "en baisse", "stable": "stable" }
+      "trend": {
+        "up": "en hausse",
+        "down": "en baisse",
+        "stable": "stable"
+      }
     },
     "weightGoal": {
       "title": "Progression vers l'objectif",
@@ -466,10 +472,19 @@
       "title": "Apport protéique / poids",
       "perKgUnit": "g/kg",
       "target": "cible {{min}}–{{max}} · {{objective}}",
-      "status": { "low": "insuffisant", "in": "dans la cible", "high": "élevé" },
+      "status": {
+        "low": "insuffisant",
+        "in": "dans la cible",
+        "high": "élevé"
+      },
       "noWeight": "Ajoute une pesée pour voir ton ratio protéines/poids.",
       "noData": "Pas encore de repas enregistrés sur la période.",
-      "objective": { "bulk": "prise de masse", "cut": "sèche", "maintain": "maintien", "weightloss": "perte de poids" }
+      "objective": {
+        "bulk": "prise de masse",
+        "cut": "sèche",
+        "maintain": "maintien",
+        "weightloss": "perte de poids"
+      }
     },
     "cross": {
       "title": "Charge muscu & apports (8 sem)",
@@ -483,7 +498,13 @@
         "protein": "Prot/j"
       }
     },
-    "ranges": { "4w": "4 sem", "3m": "3 mois", "1y": "1 an", "7d": "7 j", "30d": "30 j" },
+    "ranges": {
+      "4w": "4 sem",
+      "3m": "3 mois",
+      "1y": "1 an",
+      "7d": "7 j",
+      "30d": "30 j"
+    },
     "delta": {
       "new": "nouveau",
       "a11y": {
@@ -500,6 +521,24 @@
       "shapeWide": "Rectangle",
       "shapeLarge": "Grand carré",
       "shapeCycle": "Changer la forme (actuelle : {{shape}})"
+    },
+    "strength": {
+      "programEyebrow": "Programme",
+      "programActiveEyebrow": "Programme actif",
+      "lastEyebrow": "Dernière",
+      "recentEyebrow_one": "{{count}} dernière séance",
+      "recentEyebrow_other": "{{count}} dernières séances",
+      "planningEyebrow": "Planning",
+      "progressEyebrow": "Progression",
+      "progressTotalEyebrow": "Volume total"
+    },
+    "running": {
+      "lastRunEyebrow": "Dernière sortie",
+      "duration": "durée",
+      "recentDistances": "Distances récentes",
+      "planEyebrow": "Plan",
+      "planActiveEyebrow": "Plan actif",
+      "planningEyebrow": "Planning"
     }
   },
   "home": {
@@ -529,16 +568,30 @@
       "doneToday": "Séance du jour faite · {{name}}",
       "noneToday": "Rien de prévu aujourd'hui",
       "compactActive": "En cours",
-      "compactNone": "Aucune"
+      "compactNone": "Aucune",
+      "eyebrow": "Séance du jour"
     },
     "streak": {
       "title": "Régularité",
       "suffix_one": "jour d'affilée",
       "suffix_other": "jours d'affilée",
-      "days": ["L", "M", "M", "J", "V", "S", "D"],
+      "days": [
+        "L",
+        "M",
+        "M",
+        "J",
+        "V",
+        "S",
+        "D"
+      ],
       "empty": "Valide une activité aujourd'hui pour lancer ta série.",
       "compact_one": "{{count}} j",
-      "compact_other": "{{count}} j"
+      "compact_other": "{{count}} j",
+      "eyebrow": "Régularité",
+      "bannerActive_one": "{{count}} jour actif cette semaine 💪",
+      "bannerActive_other": "{{count}} jours actifs cette semaine 💪",
+      "bannerIdle_one": "Reprends : {{count}} jour actif cette semaine",
+      "bannerIdle_other": "Reprends : {{count}} jours actifs cette semaine"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -551,7 +604,18 @@
       "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour.",
       "compactRemaining": "{{kcal}} kcal restantes",
       "compactConsumed": "{{kcal}} kcal",
-      "compactNoGoal": "Objectif non défini"
+      "compactNoGoal": "Objectif non défini",
+      "eyebrow": "Nutrition",
+      "remaining": "kcal restantes",
+      "consumedSub": "kcal consommées",
+      "todayEyebrow": "Aujourd'hui",
+      "consumed": "Consommé",
+      "goal": "Objectif",
+      "kcalValue": "{{kcal}} kcal",
+      "sport": "Sport",
+      "ofGoal": "/ {{target}} kcal",
+      "remainingEyebrow": "Restantes",
+      "budgetPct": "{{pct}} % du budget"
     },
     "weight": {
       "title": "Poids corporel",
@@ -559,7 +623,10 @@
       "addFirst": "Ajouter ma première pesée",
       "link": "Voir la courbe →",
       "sub": "Dernière pesée · tendance 7 jours",
-      "compactEmpty": "Aucune pesée"
+      "compactEmpty": "Aucune pesée",
+      "eyebrow": "Poids",
+      "days7": "7 j",
+      "now": "auj."
     },
     "record": {
       "title": "Record récent",
@@ -567,14 +634,26 @@
       "strength": "Muscu",
       "running": "Course",
       "link": "Voir les records →",
-      "compactEmpty": "Aucun"
+      "compactEmpty": "Aucun",
+      "eyebrow": "Record",
+      "today": "Aujourd'hui",
+      "daysAgo_one": "il y a {{count}} j",
+      "daysAgo_other": "il y a {{count}} j",
+      "lastEyebrow": "Dernier record 🏆",
+      "weekCount_one": "{{count}} record battu ces 7 jours",
+      "weekCount_other": "{{count}} records battus ces 7 jours"
     },
     "volumeWeek": {
       "title": "Volume muscu · 7 j",
       "empty": "Aucune séance sur 7 jours.",
       "link": "Détail →",
       "compactTotal": "{{kg}} kg",
-      "compactEmpty": "— kg"
+      "compactEmpty": "— kg",
+      "eyebrow": "Volume · 7 j",
+      "unitTon": "t",
+      "vsPrev": "vs S-1",
+      "byGroupEyebrow": "Volume par groupe",
+      "neglected": "⚠️ {{group}} sous-travaillé — pense à l'équilibrer."
     },
     "runningWeek": {
       "title": "Course · 7 j",
@@ -584,17 +663,29 @@
       "sessions_other": "{{count}} séances",
       "sessionsGoal_one": "{{count}} / {{goal}} séance",
       "sessionsGoal_other": "{{count}} / {{goal}} séances",
-      "link": "Historique →"
+      "link": "Historique →",
+      "eyebrow": "Running · 7 j",
+      "thisWeek": "cette semaine",
+      "thisWeekEyebrow": "Cette semaine",
+      "sessionsLabel": "sorties",
+      "avgPace": "allure moy."
     },
     "deficitVolume": {
       "title": "Nutrition & charge",
-      "message": "Sur 7 jours : apports ~{{pct}} % sous ton objectif, avec un volume muscu élevé. Pense à manger assez pour bien récupérer."
+      "message": "Sur 7 jours : apports ~{{pct}} % sous ton objectif, avec un volume muscu élevé. Pense à manger assez pour bien récupérer.",
+      "eyebrow": "Déficit",
+      "sub": "sur la semaine",
+      "balanceEyebrow": "Balance énergétique",
+      "recommend": "Vise un léger surplus les jours de muscu pour bien récupérer."
     },
     "trainingTime": {
       "title": "Temps d'entraînement",
       "breakdownStrength": "muscu",
       "breakdownRunning": "course",
-      "empty": "Aucune séance sur 7 jours"
+      "empty": "Aucune séance sur 7 jours",
+      "eyebrow": "Temps · 7 j",
+      "activity": "d'activité",
+      "total": "total"
     }
   },
   "onboarding": {
@@ -612,7 +703,11 @@
       "subtitle": "Servent aux calculs (calories, progression). Tout est modifiable ensuite.",
       "firstName": "Prénom",
       "sex": "Sexe",
-      "sexes": { "female": "Femme", "male": "Homme", "unspecified": "Non précisé" },
+      "sexes": {
+        "female": "Femme",
+        "male": "Homme",
+        "unspecified": "Non précisé"
+      },
       "birthDate": "Date de naissance",
       "weight": "Poids",
       "height": "Taille",
@@ -959,7 +1054,11 @@
       "imperial": "Impérial",
       "hint": "Métrique (kg, km) ou impérial (lb, mi). S'applique à tous les affichages."
     },
-    "language": { "title": "Langue", "fr": "Français", "en": "English" },
+    "language": {
+      "title": "Langue",
+      "fr": "Français",
+      "en": "English"
+    },
     "notifications": {
       "title": "Notifications",
       "streakReminder": "Rappel série en danger",
