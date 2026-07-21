@@ -38,6 +38,11 @@
     "freeTitle": "Free workout",
     "freeSubtitle": "Add exercises on the fly, no program needed.",
     "startFree": "Start a free workout",
+    "freeStart": {
+      "title": "Free workout",
+      "blank": "Blank",
+      "fromTemplate": "From a template"
+    },
     "resumeTitle": "Workout in progress",
     "resume": "Resume workout",
     "exerciseCount_one": "{{count}} exercise",
@@ -149,7 +154,12 @@
         }
       },
       "warmupCount_one": "+{{count}} warm-up",
-      "warmupCount_other": "+{{count}} warm-ups"
+      "warmupCount_other": "+{{count}} warm-ups",
+      "saveAsTemplate": "Save as template",
+      "saveAsTemplateConfirm": "Confirm",
+      "saveAsTemplateDefaultName": "Workout from {{date}}",
+      "templateNameLabel": "Template name",
+      "templateSaved": "Template saved"
     }
   },
   "tabs": {
@@ -846,6 +856,31 @@
       },
       "done": "Done"
     }
+  },
+  "templates": {
+    "title": "My templates",
+    "subtitle": "Reusable routines for your free workouts.",
+    "create": "Create a template",
+    "createTitle": "New template",
+    "createSubtitle": "Name your template, then add exercises.",
+    "name": "Template name",
+    "namePlaceholder": "e.g. Usual push day",
+    "done": "Done",
+    "editTitle": "Exercises",
+    "emptyExercises": "No exercises yet. Add a first exercise to build your template.",
+    "addExercise": "+ Add exercise",
+    "notFoundTitle": "Template not found",
+    "notFoundMessage": "This template doesn't exist or was deleted.",
+    "emptyList": "You don't have any templates yet. Create one, or save a finished free workout as a template.",
+    "exerciseCount_one": "{{count}} exercise",
+    "exerciseCount_other": "{{count}} exercises",
+    "start": "Start",
+    "starting": "Starting…",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating…",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "deleteConfirm": "This will permanently delete this template. Continue?"
   },
   "history": {
     "title": "History",
