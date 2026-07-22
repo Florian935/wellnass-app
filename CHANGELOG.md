@@ -10,6 +10,16 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 21/07/2026 — `chore/compatibilite-claude-codex` — validation croisée Claude Code / Codex
+
+**Validé**
+- Chargement de `CLAUDE.md` et découverte du workflow commit dans de nouvelles sessions Claude et Codex.
+- `npm run agents:check`, typecheck, lint et tests monorepo verts.
+
+**Technique / Notes**
+- `AGENTS.md` local sauvegardé sous un nom non découvert ; rollback disponible.
+- Aucun changement de roadmap, d'application ou de base de données.
+
 ### 21/07/2026 — `chore/compatibilite-claude-codex` — documentation des workflows multi-agents
 
 **Ajouté**

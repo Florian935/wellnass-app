@@ -371,9 +371,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 ## 🧰 Outillage agents — compatibilité Claude Code / Codex
 
-- [~] **Migration Claude Code / Codex** (`chore/compatibilite-claude-codex`, 21/07/2026) —
-  fallback Codex, workflow commun, wrappers Claude/Codex et contrôle statique livrés sur la
-  branche. Documentation d'usage livrée. Reste : validation manuelle dans de nouvelles sessions Claude/Codex.
+- [x] **Migration Claude Code / Codex** (`chore/compatibilite-claude-codex`, 21/07/2026) —
+  `CLAUDE.md` chargé par fallback Codex, workflow commit partagé, `/commit` Claude et
+  `$commit` Codex découverts dans de nouvelles sessions, contrôles monorepo verts.
 
 ---
 
