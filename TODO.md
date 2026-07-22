@@ -291,7 +291,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — CODE LIVRÉ (subagent-driven) ✅ → roadmap 3.14 🟡 → ✅** : filtre
+*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — RECETTE VALIDÉE À 100 % (Florian, 22/07/2026) ✅ → reste
+relecture Damien** ; roadmap 3.14 note « recette device validée ». **Nouvelle US notée : MUSC-F10 —
+Bibliothèque d'exercices en accès direct depuis le hub Muscu** (l'écran `exercises.tsx` n'est aujourd'hui
+atteignable que via « Ajouter un exercice » en séance) — à cadrer (question ouverte : comportement du tap sur un
+exercice hors séance active). — **MUSC-F3 — CODE LIVRÉ (subagent-driven) ✅ → roadmap 3.14 🟡 → ✅** : filtre
 d'exercices par **groupe musculaire + matériel** (tiroir « Filtres ») dans `ExercisePicker` **et** l'écran
 bibliothèque `exercises.tsx`, en plus de la recherche par nom. Exécution subagent-driven du plan (10 tâches,
 chacune revue spec + revue qualité ; 2 correctifs intégrés en cours : a11y des chips, raccourci Réinitialiser dans
@@ -472,9 +476,17 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 - [ ] **MUSC-F2 — Fiche exercice complète** (3.13 + 3.19 + 3.20) — remplacer le picker simple par une
   fiche détaillée (muscle principal **+ secondaires**, variantes/alternatives). ⚠️ 3.19/3.20 = **colonnes
   à ajouter** (migration).
-- [x] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — ✅ **CODE LIVRÉ (22/07/2026)** : filtre par
-  **groupe musculaire** et **matériel** (tiroir « Filtres » dans ExercisePicker + exercises.tsx). Migration cloud
-  appliquée. Reste recette device + relecture Damien.
+- [x] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — ✅ **RECETTÉ & VALIDÉ (Florian, 22/07/2026)** :
+  filtre par **groupe musculaire** et **matériel** (tiroir « Filtres » dans ExercisePicker + exercises.tsx).
+  Migration cloud appliquée. **Reste : relecture Damien.**
+
+- [ ] **MUSC-F10 — Bibliothèque d'exercices en accès direct (hub Muscu)** *(nouvelle US, demande Florian
+  22/07/2026)* — aujourd'hui l'écran bibliothèque `exercises.tsx` (parcourir/rechercher/filtrer/créer un exo
+  perso) n'est atteignable que **depuis une séance en cours** (« Ajouter un exercice »). Ajouter une **entrée
+  dédiée dans le hub Muscu** pour y accéder sans lancer de séance. ⚠️ **Question de conception** : que fait le tap
+  sur un exercice en mode « parcours » (hors séance active) ? Aujourd'hui `onPick` ne fait rien sans `active`
+  workout → il faut décider (fiche/détail exercice ? consultation seule ? favori ?). À cadrer spec → plan →
+  design → validation avant code.
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
   + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +
