@@ -108,19 +108,6 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - [strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx) : les 2 liens vers `/templates?selectMode=1`
   redirigent simplement vers `/templates`.
 
-### 22/07/2026 — `feature/refonte-muscu-d` — hotfix : rollback couleur d'accent par menu
-
-> Retour Damien/Florian : la couleur d'accent par menu (commit `751fa5d`) rend l'app moins
-> lisible. Rollback complet (`git revert 751fa5d`) — retour à l'accent orange unique. Conflit de
-> revert limité à ce CHANGELOG (entrées ajoutées depuis), résolu manuellement ; aucun conflit de
-> code.
-
-**Supprimé**
-- **Couleur d'accent par menu** : `menu-accent-store.ts` et `useMenuFocus.ts` supprimés ;
-  `useTheme.ts`, les onglets `(tabs)/_layout.tsx`/`index.tsx`/`nutrition.tsx`/`running.tsx`/
-  `strength.tsx`, `_layout.tsx` racine et `settings.tsx` (section « Couleurs des menus » + clés
-  i18n FR/EN) reviennent à l'état d'avant `751fa5d`.
-
 ### 21/07/2026 — `feature/refonte-muscu-d` — US-D : CODE LIVRÉ (templates de séance libre)
 
 > Chantier refonte Muscu, dernière US (A/B/C1/C2/C3/D) — implémentation complète, 12 tâches (subagent-driven,
@@ -201,6 +188,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - Revue plan : 2 passages (❌ → ✅) — ajout du 2ᵉ checkpoint sync rules PowerSync (oubli qui aurait rendu les
   2 nouvelles tables muettes côté synchro cloud), clarification du partage des helpers de champs, extraction
   d'un composant `TemplateComposer` partagé.
+
+### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
+
+> Demande Damien : une couleur secondaire par onglet (au lieu de l'orange unique), personnalisable.
+> typecheck + lint verts. **Aucune migration** (préférence locale device). Recette device requise.
+
+**Ajouté**
+- **Couleur d'accent par menu** ([menu-accent-store.ts](apps/mobile/src/stores/menu-accent-store.ts)) :
+  4 couleurs (Accueil terracotta / Muscu bordeaux / Course bleu / Alimentation vert) par défaut,
+  **personnalisables** dans les réglages. Préférence **locale device** persistée (`secureStorage`),
+  non synchronisée → aucune migration.
+- **Accent dynamique** ([useTheme.ts](apps/mobile/src/theme/useTheme.ts)) : `colors.accent` prend la couleur
+  du **menu actif** (posé par chaque onglet au focus via `useMenuFocus` ; les écrans enfants héritent).
+  Tout ce qui utilise `colors.accent` (boutons, liens, pastilles…) se teinte automatiquement par onglet.
+- **Onglets** ([(tabs)/_layout.tsx](apps/mobile/src/app/%28tabs%29/_layout.tsx)) : l'onglet actif prend sa
+  propre couleur (`tabBarActiveTintColor` par écran).
+- **Réglages → « Couleurs des menus »** ([settings.tsx](apps/mobile/src/app/settings.tsx)) : choix par
+  pastilles (8 teintes) pour chaque menu + réinitialisation. i18n FR/EN.
 
 ### 20/07/2026 — `feature/widgets-v2-dnd` — grille : compaction verticale (pas d'espace entre modules)
 
