@@ -50,7 +50,8 @@
     "filterDrawer": {
       "muscleSection": "Muscle group",
       "equipmentSection": "Equipment",
-      "reset": "Reset"
+      "reset": "Reset",
+      "close": "Close filters"
     }
   },
   "workout": {

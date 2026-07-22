@@ -38,7 +38,12 @@ export function ExerciseFilterDrawer({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Pressable
+        style={styles.backdrop}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel={t('exercises.filterDrawer.close')}
+      />
       <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.section, { color: colors.textMuted }]}>
@@ -49,6 +54,8 @@ export function ExerciseFilterDrawer({
               <Pressable
                 key={m}
                 onPress={() => onMusclesChange(toggle(muscles, m))}
+                accessibilityRole="button"
+                accessibilityState={{ selected: muscles.includes(m) }}
                 style={[
                   styles.chip,
                   {
@@ -72,6 +79,8 @@ export function ExerciseFilterDrawer({
               <Pressable
                 key={eq}
                 onPress={() => onEquipmentChange(toggle(equipment, eq))}
+                accessibilityRole="button"
+                accessibilityState={{ selected: equipment.includes(eq) }}
                 style={[
                   styles.chip,
                   {

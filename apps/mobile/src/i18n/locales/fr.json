@@ -50,7 +50,8 @@
     "filterDrawer": {
       "muscleSection": "Groupe musculaire",
       "equipmentSection": "Matériel",
-      "reset": "Réinitialiser"
+      "reset": "Réinitialiser",
+      "close": "Fermer les filtres"
     }
   },
   "workout": {
