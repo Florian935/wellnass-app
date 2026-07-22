@@ -80,6 +80,35 @@ const SELECT_VARIANTS = `
  * cible : si une paire porte un lien éditorial ET un lien perso, garde l'éditorial
  * (pas de suppression possible). `canRemove` = lien perso de l'utilisateur courant.
  */
+/**
+ * Réduit les lignes brutes en variantes d'affichage. Fonction **pure** (testable) :
+ *  - dédup par exercice cible ;
+ *  - **priorité éditoriale** : si une paire porte un lien éditorial ET un lien perso,
+ *    on garde l'éditorial (pas de suppression possible), quel que soit l'ordre des lignes ;
+ *  - `canRemove` = lien perso appartenant à l'utilisateur courant ;
+ *  - **omet** les cibles au nom non résolu (exo présent mais sans traduction) — pas de
+ *    ligne cliquable vide.
+ */
+export function dedupeVariants(rows: VariantDbRow[], userId: string | null): VariantItem[] {
+  const byOther = new Map<string, VariantItem>();
+  for (const row of rows) {
+    const name = row.name ?? '';
+    if (name.length === 0) continue; // cible sans nom résolu → on omet
+    const isEditorial = row.owner_id === null;
+    const existing = byOther.get(row.other_id);
+    if (existing && existing.isEditorial) continue; // priorité éditoriale
+    byOther.set(row.other_id, {
+      linkId: row.link_id,
+      otherId: row.other_id,
+      name,
+      source: (row.source as 'library' | 'custom') ?? 'library',
+      isEditorial,
+      canRemove: !isEditorial && row.owner_id === userId,
+    });
+  }
+  return [...byOther.values()];
+}
+
 export function useExerciseVariants(exerciseId: string): {
   variants: VariantItem[];
   isLoading: boolean;
@@ -92,21 +121,7 @@ export function useExerciseVariants(exerciseId: string): {
     exerciseId, exerciseId, lang, exerciseId, exerciseId,
   ]);
 
-  const byOther = new Map<string, VariantItem>();
-  for (const row of data) {
-    const isEditorial = row.owner_id === null;
-    const existing = byOther.get(row.other_id);
-    if (existing && existing.isEditorial) continue; // priorité éditoriale
-    byOther.set(row.other_id, {
-      linkId: row.link_id,
-      otherId: row.other_id,
-      name: row.name ?? '',
-      source: (row.source as 'library' | 'custom') ?? 'library',
-      isEditorial,
-      canRemove: !isEditorial && row.owner_id === userId,
-    });
-  }
-  return { variants: [...byOther.values()], isLoading };
+  return { variants: dedupeVariants(data, userId), isLoading };
 }
 
 /** Ids déjà liés à `exerciseId` (pour exclure du sélecteur). Réactif. */
