@@ -228,6 +228,17 @@ export const fr = {
       arms: 'Bras',
       core: 'Gainage',
     },
+    equipmentNames: {
+      barbell: 'Barre',
+      dumbbell: 'Haltères',
+      machine: 'Machine guidée',
+      cable: 'Poulie / câble',
+      bodyweight: 'Poids du corps',
+      kettlebell: 'Kettlebell',
+      band: 'Élastique / bande',
+      other: 'Autre',
+    },
+    equipmentEmpty: 'Non renseigné',
   },
 
   programs: {

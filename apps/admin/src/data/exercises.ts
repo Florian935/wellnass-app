@@ -1,5 +1,11 @@
 import { supabase } from '../lib/supabase';
-import { MUSCLE_GROUPS, type Database, type MuscleGroup } from '@wellness/shared';
+import {
+  MUSCLE_GROUPS,
+  EQUIPMENTS,
+  type Database,
+  type MuscleGroup,
+  type Equipment,
+} from '@wellness/shared';
 import { logAudit } from './audit';
 
 /**
@@ -19,11 +25,15 @@ export const EXERCISE_STATUSES: readonly ExerciseStatus[] = ['draft', 'published
 export { MUSCLE_GROUPS };
 export type { MuscleGroup };
 
+/** Réexport des équipements (source unique `@wellness/shared`). */
+export { EQUIPMENTS };
+export type { Equipment };
+
 /** Une ligne exercice éditorial enrichie de ses noms FR/EN (pour la liste). */
 export type AdminExerciseRow = {
   id: string;
   musclePrimary: string;
-  equipment: string | null;
+  equipment: Equipment | null;
   status: string;
   createdAt: string;
   nameFr: string | null;
@@ -34,7 +44,7 @@ export type AdminExerciseRow = {
 export type ExerciseDetail = {
   id: string;
   musclePrimary: MuscleGroup;
-  equipment: string | null;
+  equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
   nameEn: string;
@@ -46,7 +56,7 @@ export type ExerciseDetail = {
 export type ExerciseInput = {
   id?: string;
   musclePrimary: MuscleGroup;
-  equipment: string | null;
+  equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
   nameEn: string;
@@ -87,7 +97,7 @@ export async function listEditorialExercises(): Promise<{
     return {
       id: ex.id,
       musclePrimary: ex.muscle_primary,
-      equipment: ex.equipment,
+      equipment: ex.equipment as Equipment | null,
       status: ex.status,
       createdAt: ex.created_at,
       nameFr: fr?.name ?? null,
@@ -125,7 +135,7 @@ export async function getExercise(id: string): Promise<{
   const exercise: ExerciseDetail = {
     id: data.id,
     musclePrimary: data.muscle_primary as MuscleGroup,
-    equipment: data.equipment,
+    equipment: data.equipment as Equipment | null,
     status: (data.status as ExerciseStatus) ?? 'draft',
     nameFr: fr?.name ?? '',
     nameEn: en?.name ?? '',

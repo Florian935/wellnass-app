@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   MUSCLE_GROUPS,
+  EQUIPMENTS,
   getExercise,
   saveExercise,
   type ExerciseStatus,
   type MuscleGroup,
+  type Equipment,
 } from '../data/exercises';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
@@ -22,7 +24,7 @@ export function ExerciseEditScreen() {
   const isEdit = Boolean(id);
 
   const [musclePrimary, setMusclePrimary] = useState<MuscleGroup>(MUSCLE_GROUPS[0]);
-  const [equipment, setEquipment] = useState('');
+  const [equipment, setEquipment] = useState<Equipment | ''>('');
   const [status, setStatus] = useState<ExerciseStatus>('draft');
   const [nameFr, setNameFr] = useState('');
   const [nameEn, setNameEn] = useState('');
@@ -71,7 +73,7 @@ export function ExerciseEditScreen() {
     const { error } = await saveExercise({
       id,
       musclePrimary,
-      equipment: equipment.trim() ? equipment.trim() : null,
+      equipment: equipment === '' ? null : equipment,
       status,
       nameFr: fr2,
       nameEn: en2,
@@ -129,13 +131,19 @@ export function ExerciseEditScreen() {
                 <label style={styles.label} htmlFor="equipment">
                   {fr.exercises.equipmentLabel}
                 </label>
-                <input
+                <select
                   id="equipment"
-                  type="text"
                   value={equipment}
-                  onChange={(e) => setEquipment(e.target.value)}
+                  onChange={(e) => setEquipment(e.target.value as Equipment | '')}
                   style={styles.input}
-                />
+                >
+                  <option value="">{fr.exercises.equipmentEmpty}</option>
+                  {EQUIPMENTS.map((eq) => (
+                    <option key={eq} value={eq}>
+                      {fr.exercises.equipmentNames[eq]}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
