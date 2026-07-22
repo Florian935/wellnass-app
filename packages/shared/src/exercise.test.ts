@@ -9,6 +9,7 @@ import {
   exerciseRowSchema,
   exerciseTranslationRowSchema,
   resolveExerciseName,
+  normalizeSecondaryMuscles,
 } from './exercise';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -164,5 +165,51 @@ describe('resolveExerciseName', () => {
 
   it('retourne undefined pour un tableau vide', () => {
     expect(resolveExerciseName([], 'fr')).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeSecondaryMuscles
+// ---------------------------------------------------------------------------
+describe('normalizeSecondaryMuscles', () => {
+  it('conserve les groupes valides distincts du primaire', () => {
+    expect(normalizeSecondaryMuscles(['arms', 'shoulders'], 'chest')).toEqual(['arms', 'shoulders']);
+  });
+  it('déduplique', () => {
+    expect(normalizeSecondaryMuscles(['arms', 'arms'], 'chest')).toEqual(['arms']);
+  });
+  it('exclut le muscle primaire', () => {
+    expect(normalizeSecondaryMuscles(['chest', 'arms'], 'chest')).toEqual(['arms']);
+  });
+  it('filtre les valeurs inconnues', () => {
+    expect(normalizeSecondaryMuscles(['arms', 'bogus'], 'chest')).toEqual(['arms']);
+  });
+  it('renvoie [] pour une entrée non-tableau', () => {
+    expect(normalizeSecondaryMuscles('nope', 'chest')).toEqual([]);
+    expect(normalizeSecondaryMuscles(null, 'chest')).toEqual([]);
+    expect(normalizeSecondaryMuscles(undefined, 'chest')).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// exerciseRowSchema — musclesSecondary
+// ---------------------------------------------------------------------------
+describe('exerciseRowSchema — musclesSecondary', () => {
+  const base = {
+    id: '11111111-1111-1111-1111-111111111111',
+    ownerId: null,
+    createdAt: '2026-07-22T00:00:00.000Z',
+    updatedAt: '2026-07-22T00:00:00.000Z',
+    deletedAt: null,
+    source: 'library' as const,
+    musclePrimary: 'chest' as const,
+    equipment: null,
+    mediaUrl: null,
+  };
+  it('défaut [] si absent', () => {
+    expect(exerciseRowSchema.parse(base).musclesSecondary).toEqual([]);
+  });
+  it('accepte des groupes valides', () => {
+    expect(exerciseRowSchema.parse({ ...base, musclesSecondary: ['arms'] }).musclesSecondary).toEqual(['arms']);
   });
 });
