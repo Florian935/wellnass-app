@@ -291,7 +291,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — CODE LIVRÉ (subagent-driven) ✅** : section « Tes records » en
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10c-1 — CODE LIVRÉ (subagent-driven) ✅** : muscles secondaires sur
+la fiche exercice. Colonne `exercises.muscles_secondary` (jsonb `[]`, migration additive poussée sur le cloud) +
+`column.text` PowerSync ; fonction pure partagée `normalizeSecondaryMuscles` (dédup, exclut le primaire, filtre
+les invalides) testée Vitest ; **saisie admin** (multi-cases hors primaire, retrait auto au changement de
+primaire) ; **affichage fiche mobile** (mode lecture, ligne « Muscles secondaires » si non vide, libellés
+`muscle.*`). Filtre MUSC-F3 inchangé (primaire seul). 4 tâches + finitions (2 smoke tests fiche) ; revue finale
+*rien de bloquant* ; typecheck/lint verts, 796 tests shared + smoke mobile. Roadmap 3.19 🟡 → ✅.
+**Reste : recette (admin saisie + fiche affichage) + relecture Damien. F10c-2 (variantes/alternatives) reste à
+cadrer.** Branche `feature/muscf10c1-muscles-secondaires`.
+Spec : [muscf10c1-muscles-secondaires.md](docs/specs/functional/us/muscf10c1-muscles-secondaires.md). —
+**MUSC-F10b — CODE LIVRÉ (subagent-driven) ✅** : section « Tes records » en
 tuiles sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la
 progression » (pré-sélection de l'exo dans `/progress`). 6 tâches TDD, chacune revue spec + revue qualité ;
 2 correctifs (date non nulle + type partagé ; /progress dérivé sans effet) ; revue finale *prête à merger*.

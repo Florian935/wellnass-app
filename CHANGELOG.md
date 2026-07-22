@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10c1-muscles-secondaires` — MUSC-F10c-1 : muscles secondaires sur la fiche exercice (CODE LIVRÉ)
+
+> 1ᵉʳ des 2 incréments de F10c (= MUSC-F2) : **F10c-1 (muscles secondaires)** → F10c-2 (variantes, plus tard).
+> Exécution **subagent-driven** (4 tâches TDD ; revue de code finale transverse *rien de bloquant*). **Une
+> migration additive** (ajout de colonne, table déjà répliquée PowerSync → pas de changement de sync rule).
+> typecheck/lint verts, **796 tests shared + smoke fiche mobile**. Commit précédent : `6e1b713`.
+> **Reste : recette (admin saisie + fiche affichage) + relecture Damien.**
+
+**Ajouté**
+- BDD : colonne `exercises.muscles_secondary jsonb not null default '[]'` — migration
+  [20260722140518_muscf10c1_exercises_muscles_secondary.sql](supabase/migrations/20260722140518_muscf10c1_exercises_muscles_secondary.sql)
+  (poussée sur le cloud, cochée dans [MIGRATIONS.md](supabase/MIGRATIONS.md)) ; `column.text` dans le schéma
+  PowerSync ([schema.ts](apps/mobile/src/powersync/schema.ts)) ; `database.types.ts` régénéré.
+- `packages/shared` : fonction pure `normalizeSecondaryMuscles(input, primary)` (dédup, exclut le primaire, filtre
+  les valeurs invalides ; entrée non-tableau → `[]`) + `musclesSecondary` sur `exerciseRowSchema` — 7 tests Vitest
+  ([exercise.ts](packages/shared/src/exercise.ts)).
+- Admin : multi-sélecteur **« Muscles secondaires »** (cases hors muscle primaire, retrait auto au changement de
+  primaire) dans [ExerciseEditScreen.tsx](apps/admin/src/screens/ExerciseEditScreen.tsx) ; lecture/écriture de
+  `muscles_secondary` dans [data/exercises.ts](apps/admin/src/data/exercises.ts) ; libellé FR `secondaryMusclesLabel`.
+- Mobile : ligne **« Muscles secondaires »** sur la fiche (mode lecture, si non vide ; libellés `muscle.*` séparés
+  par « · ») ([exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx)) ; `musclesSecondary` porté par
+  `ExerciseDetail` (lecture via `parseJsonColumn` + `normalizeSecondaryMuscles`, **détail seulement** — liste et
+  filtre MUSC-F3 intacts) ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)).
+- i18n FR/EN : `exercises.detail.secondaryMuscles` ; réutilise `muscle.*` / `groupNames`.
+- Tests : 2 smoke tests fiche (ligne présente + libellés résolus / absente si vide).
+
+**Technique / Notes**
+- Sérialisation : écriture admin = tableau JS → `jsonb` natif (supabase-js, pas de double-encodage) ; lecture
+  mobile = `column.text` → `parseJsonColumn` → `normalizeSecondaryMuscles` (garde de forme + exclusion primaire).
+- Invariant **primaire ∉ secondaires** garanti en triple : UI admin (filtre + purge), écriture admin, lecture mobile.
+- Filtre MUSC-F3 **inchangé** (matche le muscle primaire seul — décision Florian). Schéma corporel SVG = 6.2 (séparé).
+- Roadmap : **3.19** (Muscles ciblés) 🟡 → ✅.
+
 ### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — MUSC-F10b : section records sur la fiche exercice (CODE LIVRÉ)
 
 > 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Exécution
