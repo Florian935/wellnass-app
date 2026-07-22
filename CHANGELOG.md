@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf11-modale-creation-exo` — MUSC-F11 : création d'exercice perso en modale (CODE LIVRÉ)
+
+> Finition UX (retour recette F10c, Florian). La création d'exercice perso passe de la **card inline**
+> (effet « sandwich », Segment multi-ligne, nom sans placeholder) à une **modale bottom-sheet**.
+> Exécution subagent-driven (2 tâches). **Aucune migration.** typecheck/lint verts, 62 tests mobile.
+
+**Ajouté**
+- Composant [CreateExerciseModal.tsx](apps/mobile/src/components/exercises/CreateExerciseModal.tsx) :
+  bottom-sheet (patron `ExerciseFilterDrawer`) — titre, champ **Nom** (avec placeholder), groupe
+  musculaire en `Segment` **`scrollable`**, boutons Annuler/Ajouter, `KeyboardAvoidingView`, reset à la
+  fermeture ; métier inchangé (`addCustomExercise`). Smoke test.
+- i18n FR/EN : `exercises.createTitle`, `exercises.customNamePlaceholder`.
+
+**Modifié**
+- [exercises.tsx](apps/mobile/src/app/exercises.tsx) : le bouton « Créer un exercice perso » ouvre la
+  **modale** ; suppression de la card inline (`creating`/`newName`/`newMuscle`/`onCreate`/`createBox`) et
+  des styles morts.
+
+**Technique / Notes**
+- Corrige 3 défauts de recette : effet sandwich, sélecteur de groupe qui débordait sur plusieurs lignes
+  (`scrollable`), champ nom qui paraissait vide (placeholder). Finition de la fonctionnalité 3.16
+  (Exercice personnalisé). Point 1 du retour recette (cohérence fiche biblio VS perso) = US séparée à venir.
+
 ### 22/07/2026 — `feature/muscf10c2-variantes-alternatives` — MUSC-F10c-2 : variantes / alternatives d'exercice (CODE LIVRÉ)
 
 > 2ᵉ et dernier incrément de F10c (= MUSC-F2). Exécution **subagent-driven** (5 tâches ; revue de code

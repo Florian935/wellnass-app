@@ -291,7 +291,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**Lot F10c — RECETTE VALIDÉE (Florian, 23/07/2026) ✅** : F10c-1
+*Dernière mise à jour : 23/07/2026 (**MUSC-F11 — CODE LIVRÉ (subagent-driven) ✅** : création d'exercice
+perso en **modale bottom-sheet** (retour recette F10c). Remplace la card inline (effet sandwich, Segment
+multi-ligne, nom sans placeholder) par une modale (`CreateExerciseModal`) : nom + placeholder, groupe
+`scrollable`, clavier géré. Aucune migration ; typecheck/lint verts, 62 tests mobile. **Reste : recette +
+relecture Damien.** Point 1 du retour recette (cohérence fiche biblio VS perso) = **US suivante à cadrer**.
+Branche `feature/muscf11-modale-creation-exo`. — **Lot F10c — RECETTE VALIDÉE (Florian, 23/07/2026) ✅** : F10c-1
 (muscles secondaires) + F10c-2 (variantes/alternatives) validés en recette device. Sync rules
 redéployées OK. 2 retours UX captés dans [IDEAS.md](IDEAS.md) → à cadrer en US : (1) création d'exo
 perso en **modale** (card inline mal fichue) ; (2) **cohérence** fiche exo bibliothèque VS perso. Reste :
