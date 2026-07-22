@@ -22,7 +22,8 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { MuscleGroup, Source } from '@wellness/shared';
+import type { Equipment, MuscleGroup, Source } from '@wellness/shared';
+import { buildExerciseFilterClause } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -102,13 +103,20 @@ function rowToListItem(row: ExerciseListDbRow): ExerciseListItem {
 /**
  * Exercices de la bibliothèque + personnalisés, réactifs aux changements locaux.
  * Optionnellement filtrés par `search` (recherche insensible à la casse sur le
- * nom résolu dans la langue courante).
+ * nom résolu dans la langue courante), `muscles` (groupes musculaires, OU entre
+ * eux) et `equipment` (matériel, OU entre eux) — les facettes `muscles` et
+ * `equipment` se combinent en ET entre elles (voir `buildExerciseFilterClause`).
+ * Tableau vide ou absent = facette non contraignante.
  *
  * `isLoading` ne dépend QUE de la résolution de la requête locale (voir
  * profile/settings-repository) : le contenu ne doit pas se bloquer sur une
  * synchro réseau (offline-first, ADR-001 / décision B).
  */
-export function useExercises(search?: string): {
+export function useExercises(
+  search?: string,
+  muscles?: MuscleGroup[],
+  equipment?: Equipment[],
+): {
   exercises: ExerciseListItem[];
   isLoading: boolean;
 } {
@@ -117,11 +125,14 @@ export function useExercises(search?: string): {
 
   const term = search?.trim() ?? '';
   const hasSearch = term.length > 0;
+  const { clause: filterClause, params: filterParams } = buildExerciseFilterClause(muscles, equipment);
 
   const sql = hasSearch
-    ? `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${ORDER_BY_NAME}`
-    : `${SELECT_EXERCISES} ${ORDER_BY_NAME}`;
-  const params = hasSearch ? [lang, `%${term}%`] : [lang];
+    ? `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${filterClause} ${ORDER_BY_NAME}`
+    : `${SELECT_EXERCISES} ${filterClause} ${ORDER_BY_NAME}`;
+  const params = hasSearch
+    ? [lang, `%${term}%`, ...filterParams]
+    : [lang, ...filterParams];
 
   const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, params);
 
