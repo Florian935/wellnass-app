@@ -54,6 +54,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260721074949_refonte_muscu_d_workout_templates`| 21/07/2026 | CLI (`npm run db:push`) — US-D |
 |   [x]   | `20260722080703_muscf3_equipment_check`           | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F3 |
 |   [x]   | `20260722140518_muscf10c1_exercises_muscles_secondary` | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F10c-1 |
+|   [x]   | `20260722151024_muscf10c2_exercise_variants`      | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F10c-2 (⚠ sync rules à redéployer) |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond

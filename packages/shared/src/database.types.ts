@@ -321,6 +321,58 @@ export type Database = {
           },
         ]
       }
+      exercise_variants: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          exercise_id_a: string
+          exercise_id_b: string
+          id: string
+          owner_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id_a: string
+          exercise_id_b: string
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id_a?: string
+          exercise_id_b?: string
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_variants_exercise_id_a_fkey"
+            columns: ["exercise_id_a"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_exercise_id_b_fkey"
+            columns: ["exercise_id_b"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           created_at: string

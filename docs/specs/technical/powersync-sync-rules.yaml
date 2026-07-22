@@ -24,6 +24,8 @@ bucket_definitions:
       - select * from exercise_translations where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_favorites    where user_id = bucket.user_id and deleted_at is null
       - select * from exercise_notes        where user_id = bucket.user_id and deleted_at is null
+      - select * from exercise_variants     where owner_id = bucket.user_id and deleted_at is null
+
       - select * from workouts              where user_id = bucket.user_id and deleted_at is null
       - select * from workout_sets          where user_id = bucket.user_id and deleted_at is null
       - select * from workout_superset_pairs where user_id = bucket.user_id and deleted_at is null
@@ -58,6 +60,7 @@ bucket_definitions:
       # sans le parent (brouillon non synchronisé), ses traductions ne sont de toute façon pas exploitables.
       - select * from exercises             where owner_id is null and status = 'published' and deleted_at is null
       - select * from exercise_translations where owner_id is null and deleted_at is null
+      - select * from exercise_variants     where owner_id is null and deleted_at is null
       - select * from programs              where owner_id is null and status = 'published' and deleted_at is null
       - select * from program_translations  where owner_id is null and deleted_at is null
       - select * from sessions              where owner_id is null and deleted_at is null
