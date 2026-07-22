@@ -3,10 +3,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MUSCLE_GROUPS, type MuscleGroup } from '@wellness/shared';
+import { MUSCLE_GROUPS, type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
+import { ExerciseFilterDrawer } from '@/components/programs/ExerciseFilterDrawer';
 import {
   useExercises,
   addCustomExercise,
@@ -30,11 +31,15 @@ export default function ExercisesScreen() {
   const { workout: active } = useActiveWorkout();
 
   const [query, setQuery] = useState('');
+  const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newMuscle, setNewMuscle] = useState<MuscleGroup>('chest');
 
-  const { exercises, isLoading } = useExercises(query);
+  const { exercises, isLoading } = useExercises(query, muscles, equipment);
+  const filterCount = muscles.length + equipment.length;
 
   // Trie côté JS : favoris en premier, puis ordre alphabétique déjà fourni par SQL
   const items = [...exercises].sort((a, b) => {
@@ -79,6 +84,19 @@ export default function ExercisesScreen() {
             placeholder={t('exercises.searchPlaceholder')}
           />
         </View>
+        <Pressable
+          onPress={() => setFiltersOpen(true)}
+          accessibilityRole="button"
+          style={[
+            styles.filtersButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.filtersLabel, { color: colors.text }]}>
+            {t('exercises.filters')}
+            {filterCount > 0 ? ` · ${filterCount}` : ''}
+          </Text>
+        </Pressable>
       </View>
 
       {creating ? (
@@ -111,6 +129,25 @@ export default function ExercisesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <Text style={[styles.empty, { color: colors.textMuted }]}>
+                {filterCount > 0
+                  ? t('exercises.emptyFiltered')
+                  : t('programs.edit.picker.empty')}
+              </Text>
+              {filterCount > 0 ? (
+                <Button
+                  variant="ghost"
+                  label={t('exercises.filterDrawer.reset')}
+                  onPress={() => {
+                    setMuscles([]);
+                    setEquipment([]);
+                  }}
+                />
+              ) : null}
+            </View>
+          }
           renderItem={({ item }) => (
             <Pressable
               onPress={() => void onPick(item)}
@@ -120,6 +157,7 @@ export default function ExercisesScreen() {
                 <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
                 <Text style={[styles.muscle, { color: colors.textMuted }]}>
                   {t(`muscle.${item.muscle}`)}
+                  {item.equipment ? ` · ${t(`equipment.${item.equipment}`)}` : ''}
                   {item.source === 'custom' ? ` · ${t('exercises.customBadge')}` : ''}
                 </Text>
               </View>
@@ -134,19 +172,43 @@ export default function ExercisesScreen() {
           )}
         />
       )}
+
+      <ExerciseFilterDrawer
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        muscles={muscles}
+        onMusclesChange={setMuscles}
+        equipment={equipment}
+        onEquipmentChange={setEquipment}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchRow: { paddingHorizontal: 20, paddingTop: 16 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
   searchField: { flex: 1 },
+  filtersButton: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  filtersLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   createTrigger: { paddingHorizontal: 20, paddingTop: 8 },
   createBox: { margin: 20, marginTop: 12, padding: 16, borderRadius: 16, borderWidth: 1, gap: 12 },
   createActions: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1 },
   list: { padding: 20, gap: 10 },
+  emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
+  empty: { fontFamily: fontFamily.body, fontSize: 14, textAlign: 'center' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
   row: {
     flexDirection: 'row',
