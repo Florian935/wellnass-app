@@ -291,7 +291,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10a — CODE LIVRÉ (subagent-driven) ✅** : bibliothèque d'exercices en
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — SPEC VALIDÉE (Florian) ✅** : section « Tes records » en tuiles
+sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la progression »
+(pré-sélection de l'exo dans `/progress`). Réutilise `useExerciseRecords` ; 1RM réel dérivé de `workout_sets`
+(reps=1) ; `pickOneRepMax` pur ; aucune migration, lecture seule. Spec vérifiée manuellement (revue subagent
+coupée par la limite d'usage hebdo). Branche `feature/muscf10b-records-fiche-exercice`.
+Spec : [muscf10b-records-fiche-exercice.md](docs/specs/functional/us/muscf10b-records-fiche-exercice.md).
+**Prochaine étape : plan d'implémentation.** — **MUSC-F10a — CODE LIVRÉ (subagent-driven) ✅** : bibliothèque d'exercices en
 accès direct depuis le hub Muscu + **écran fiche exercice** (`/exercises/[id]`) + gestion des exos perso
 (modifier/supprimer). 8 tâches TDD, chacune revue spec + revue qualité ; 3 correctifs intégrés (jest env central,
 throw si traduction absente, gestion d'erreur/anti-double-submit + a11y étoile) ; revue finale transverse *prête à

@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — spec : section records sur la fiche exercice (MUSC-F10b)
+
+> 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Cadrée par
+> brainstorming (Florian, maquette comparée → mise en page **tuiles**). Claims code vérifiés (colonnes
+> `workout_sets`/`workouts` pour la dérivation 1RM réel, `useExerciseRecords` renvoie `achievedAt`, `/progress`
+> en état local sans param, clés i18n `progress.records.*` FR/EN, aucune migration). Revue subagent interrompue
+> par la limite d'usage hebdomadaire → **vérification faite manuellement**. **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10b-records-fiche-exercice.md](docs/specs/functional/us/muscf10b-records-fiche-exercice.md) : spec —
+  section « Tes records » en **tuiles** sur la fiche (mode lecture) : **1RM** (réel si une série à 1 rep existe,
+  sinon estimé + badge), **charge max**, **meilleur volume**, chacun avec sa date. 1RM réel dérivé de
+  `workout_sets` (reps=1, validé, hors warmup/durée) ; fonction pure `pickOneRepMax` (réel sinon estimé). Lien
+  **« Voir la progression »** → écran Progression pré-sélectionné (extension `/progress` : param `exerciseId`).
+  Réutilise `useExerciseRecords` + `units.formatWeight` + clés `progress.records.*`. Aucune migration, lecture seule.
+
+**Technique / Notes**
+- Hors périmètre : muscles secondaires/variantes (F10c), courbes sur la fiche (lien seul), composant records
+  partagé /progress↔fiche (dette notée).
+- **Statut : spec validée (Florian) → prochaine étape plan d'implémentation** (à dérouler après réinitialisation
+  de la limite d'usage hebdomadaire si nécessaire).
+
 ### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — MUSC-F10a : bibliothèque en accès direct + fiche exercice (CODE LIVRÉ)
 
 > 1ᵉʳ des 3 incréments du chantier « fiche exercice » (F10a socle → F10b records → F10c/MUSC-F2 muscles
