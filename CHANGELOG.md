@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — MUSC-F10a : bibliothèque en accès direct + fiche exercice (CODE LIVRÉ)
+
+> 1ᵉʳ des 3 incréments du chantier « fiche exercice » (F10a socle → F10b records → F10c/MUSC-F2 muscles
+> secondaires). Exécution **subagent-driven** du plan (8 tâches ; chacune revue spec + revue qualité ; 3
+> correctifs intégrés en cours : jest env central + throw si traduction absente, a11y de l'étoile, gestion
+> d'erreur/anti-double-submit sur Enregistrer ; revue finale transverse *prête à merger*). **Aucune migration.**
+> typecheck/lint verts, **786 tests shared + 50 tests mobile** (dont 2 nouvelles suites). Commit précédent : `3f7a1dd`.
+> **Reste : recette device + relecture Damien.**
+
+**Ajouté**
+- **Entrée « Bibliothèque d'exercices »** persistante dans le hub Muscu
+  ([strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx), hors grille de widgets) → ouvre l'écran biblio
+  en **mode parcours** (`/exercises?mode=browse`).
+- **Écran fiche exercice** ([app/exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx), route
+  enregistrée dans `_layout.tsx`) : nom, groupe musculaire, matériel (si renseigné), instructions (si
+  présentes), badge « perso », favori ⭐ (a11y `accessibilityLabel`/`accessibilityState`) ; états chargement +
+  introuvable.
+- **Gestion des exos perso** sur la fiche (custom uniquement) : **Modifier** (nom + groupe + matériel via
+  `Segment` scrollable avec sentinelle « aucun » → null) et **Supprimer** (Alert de confirmation → retour biblio).
+- Repository ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)) :
+  `useExercise(id)` + type `ExerciseDetail`, `assertOwnedCustomExercise` (garde pure testée),
+  `updateCustomExercise` (transaction atomique, lève si traduction absente), `deleteCustomExercise`
+  (**soft-delete de la ligne `exercises` seule** — jamais les traductions, pour préserver le nom sur
+  l'historique/les programmes).
+- i18n FR/EN (parité) : `exercises.library` + `exercises.detail.*` (12 clés).
+- Tests : `exercise-guard.test.ts` (garde, 4 cas) + `exercise-detail-smoke.test.tsx` (écran, 2 cas).
+
+**Modifié**
+- [exercises.tsx](apps/mobile/src/app/exercises.tsx) : **mode parcours** (`mode=browse` → tap ouvre la fiche) ;
+  comportement d'ajout/remplacement en séance **strictement inchangé**.
+- [jest.setup.ts](apps/mobile/jest.setup.ts) : défauts `EXPO_PUBLIC_SUPABASE_*` (jest ne charge pas `.env`) →
+  les tests peuvent importer les vrais repos/écrans sans lever au chargement.
+
+**Technique / Notes**
+- Décisions : suppression d'exo perso **toujours autorisée** (soft-delete, pas de blocage si référencé) ;
+  références orphelines dans programmes/templates conservées (nom toujours résolu, traductions vivantes) ;
+  fiche accessible **uniquement** depuis la biblio en mode parcours (autres points d'entrée différés).
+- **Note pour F10b** (records sur la fiche) : le recalcul des records
+  ([records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts)) fait un `JOIN exercises …
+  deleted_at IS NULL` (INNER) → un exo perso soft-deleted serait exclu du recalcul futur (sans incidence F10a).
+- **Dette notée** (non bloquant) : `Pressable` étoile favori dupliqué entre `exercises.tsx` et la fiche (→ futur
+  `FavoriteStar`/`ExerciseListRow` partagé, avec MUSC-F2) — la copie de la fiche est la meilleure (a11y).
+- **Points de recette device** : navigation hub → biblio parcours → fiche (route `exercises/[id]` en modal
+  empilée) ; modifier/supprimer un exo perso ; vérifier que l'historique/les programmes affichent toujours le
+  nom d'un exo perso supprimé ; i18n FR/EN.
+- Roadmap **inchangée** : la fiche complète (3.13/3.19/3.20, muscles secondaires + variantes) relève de F10c —
+  non livré ici, donc pas de bascule de statut.
+
 ### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — plan d'implémentation (MUSC-F10a)
 
 > Suite de la spec (commit précédent `d3f4907`). Plan revu par le subagent `plan-document-reviewer` (Approved —
