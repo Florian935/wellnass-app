@@ -320,7 +320,7 @@ export function ExerciseEditScreen() {
                         <button
                           type="button"
                           style={styles.chipRemove}
-                          aria-label={`${fr.exercises.archive} ${v.nameFr ?? ''}`}
+                          aria-label={`${fr.exercises.variantsLabel}: ${v.nameFr ?? fr.exercises.noName} (✕)`}
                           onClick={() => void handleRemoveVariant(v.linkId)}
                         >
                           ✕
