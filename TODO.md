@@ -291,7 +291,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10c-2 — CODE LIVRÉ (subagent-driven) ✅** : variantes /
+*Dernière mise à jour : 23/07/2026 (**Lot F10c — RECETTE VALIDÉE (Florian, 23/07/2026) ✅** : F10c-1
+(muscles secondaires) + F10c-2 (variantes/alternatives) validés en recette device. Sync rules
+redéployées OK. 2 retours UX captés dans [IDEAS.md](IDEAS.md) → à cadrer en US : (1) création d'exo
+perso en **modale** (card inline mal fichue) ; (2) **cohérence** fiche exo bibliothèque VS perso. Reste :
+relecture Damien. — **MUSC-F10c-2 — CODE LIVRÉ (subagent-driven) ✅** : variantes /
 alternatives d'exercice. Table `exercise_variants` symétrique (canonique `a<b`, `owner_id` null=éditorial /
 non-null=perso) + RLS + `alter publication` (migration poussée) + **sync rules à REDÉPLOYER dans le dashboard
 PowerSync** (⚠️ geste humain Florian/Damien avant recette device). `canonicalPair` + schéma (shared, testés) ;

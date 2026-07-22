@@ -20,6 +20,24 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [23/07/2026] 🔍 **Création d'exercice perso → passer en modale (au lieu de la card inline)** : remonté
+  par Florian en recette F10c. Aujourd'hui, « Créer un exercice perso » (liste des exercices Muscu)
+  ouvre une **card intercalée** entre la barre de recherche et la liste → sensation « sandwich »
+  étrange. En plus : (a) le sélecteur de **groupe musculaire** n'est **pas** `scrollable` → il passe
+  **sur plusieurs lignes** (contrairement à la fiche qui l'a en `scrollable`) ; (b) le champ **nom**
+  n'a **pas de placeholder** → l'input paraît vide/invisible. _Piste :_ transformer le flux en
+  **modale / bottom-sheet** (même patron que `ExerciseFilterDrawer`), + Segment `scrollable` +
+  placeholder sur le nom. _Prochaine étape :_ cadrage US (spec → plan → design). Petite US UX.
+- [23/07/2026] 🔍 **Cohérence de la fiche exercice bibliothèque VS perso** : remonté par Florian en
+  recette F10c — la fiche « perso » paraît différente de la fiche « bibliothèque », c'est perturbant.
+  Partie **volontaire** : seuls les exos perso portent **Modifier / Supprimer** (on ne modifie pas un
+  exo éditorial). Partie **subie** : un exo perso créé sur mobile n'a **ni instructions, ni muscles
+  secondaires** (pas de saisie mobile pour ça) → sa fiche paraît « plus vide » ; l'ordre/þprésence des
+  blocs diffère donc visuellement. _Pistes à trancher :_ (1) harmoniser la structure (mêmes sections,
+  états vides explicites) ; (2) permettre d'éditer plus de champs sur un exo perso (instructions,
+  muscles secondaires) pour combler l'écart ; (3) statu quo assumé + libellés clarifiant. _Prochaine
+  étape :_ mini-brainstorming pour fixer l'état cible, puis US.
+
 - [21/07/2026] 🆕 **3 niveaux d'affichage pour la séance live : Simplifiée / Normale / Détaillée** :
   adapter l'écran de séance en cours au niveau d'expérience de l'utilisateur, plutôt qu'un seul écran
   avec tous les champs pour tout le monde. **Simplifiée** (débutant) = strict minimum pour ne pas
