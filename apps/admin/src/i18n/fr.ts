@@ -240,6 +240,11 @@ export const fr = {
     },
     equipmentEmpty: 'Non renseigné',
     secondaryMusclesLabel: 'Muscles secondaires',
+    variantsLabel: 'Variantes / alternatives',
+    variantsAdd: 'Ajouter',
+    variantsSearch: 'Rechercher un exercice à lier…',
+    variantsEmpty: 'Aucune variante liée.',
+    variantsSaveFirst: 'Enregistre l’exercice avant d’ajouter des variantes.',
   },
 
   programs: {
@@ -430,6 +435,8 @@ export const fr = {
       'exercise.update': 'Modification d’exercice',
       'exercise.archive': 'Archivage d’exercice',
       'exercise.publish': 'Publication d’exercice',
+      'exercise_variant.link': 'Liaison de variante',
+      'exercise_variant.unlink': 'Déliaison de variante',
       'program.create': 'Création de programme',
       'program.update': 'Modification de programme',
       'program.archive': 'Archivage de programme',

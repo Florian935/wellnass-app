@@ -9,6 +9,13 @@ import {
   type MuscleGroup,
   type Equipment,
 } from '../data/exercises';
+import {
+  listVariants,
+  listLinkableExercises,
+  addEditorialVariant,
+  removeEditorialVariant,
+  type EditorialVariant,
+} from '../data/exercise-variants';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -36,6 +43,16 @@ export function ExerciseEditScreen() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const [variants, setVariants] = useState<EditorialVariant[]>([]);
+  const [variantQuery, setVariantQuery] = useState('');
+  const [variantResults, setVariantResults] = useState<{ id: string; nameFr: string | null }[]>([]);
+
+  const loadVariants = useCallback(async () => {
+    if (!id) return;
+    const { variants: rows } = await listVariants(id);
+    setVariants(rows);
+  }, [id]);
+
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -59,6 +76,50 @@ export function ExerciseEditScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadVariants();
+  }, [loadVariants]);
+
+  useEffect(() => {
+    const term = variantQuery.trim();
+    if (!id || term.length < 1) {
+      setVariantResults([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const excludeIds = [id, ...variants.map((v) => v.otherId)];
+      const { rows } = await listLinkableExercises(id, excludeIds);
+      if (cancelled) return;
+      const termLower = term.toLowerCase();
+      setVariantResults(rows.filter((row) => (row.nameFr ?? '').toLowerCase().includes(termLower)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, variantQuery, variants]);
+
+  async function handleAddVariant(otherId: string) {
+    if (!id) return;
+    const { error } = await addEditorialVariant(id, otherId);
+    if (error) {
+      setFormError(fr.exercises.error);
+      return;
+    }
+    setVariantQuery('');
+    setVariantResults([]);
+    await loadVariants();
+  }
+
+  async function handleRemoveVariant(linkId: string) {
+    const { error } = await removeEditorialVariant(linkId);
+    if (error) {
+      setFormError(fr.exercises.error);
+      return;
+    }
+    await loadVariants();
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -245,6 +306,56 @@ export function ExerciseEditScreen() {
               </select>
             </div>
 
+            <div style={styles.field}>
+              <span style={styles.label}>{fr.exercises.variantsLabel}</span>
+              {isEdit && id ? (
+                <div style={styles.variantsBox}>
+                  <div style={styles.chipGroup}>
+                    {variants.length === 0 && (
+                      <span style={styles.muted}>{fr.exercises.variantsEmpty}</span>
+                    )}
+                    {variants.map((v) => (
+                      <span key={v.linkId} style={styles.chip}>
+                        {v.nameFr ?? fr.exercises.noName}
+                        <button
+                          type="button"
+                          style={styles.chipRemove}
+                          aria-label={`${fr.exercises.archive} ${v.nameFr ?? ''}`}
+                          onClick={() => void handleRemoveVariant(v.linkId)}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={variantQuery}
+                    onChange={(e) => setVariantQuery(e.target.value)}
+                    placeholder={fr.exercises.variantsSearch}
+                    style={styles.input}
+                  />
+                  {variantResults.length > 0 && (
+                    <div style={styles.variantResults}>
+                      {variantResults.map((row) => (
+                        <button
+                          key={row.id}
+                          type="button"
+                          style={styles.variantResultItem}
+                          onClick={() => void handleAddVariant(row.id)}
+                        >
+                          {row.nameFr ?? fr.exercises.noName}
+                          <span style={styles.variantAddHint}>{fr.exercises.variantsAdd}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p style={styles.muted}>{fr.exercises.variantsSaveFirst}</p>
+              )}
+            </div>
+
             <button type="submit" style={styles.primary} disabled={saving}>
               {saving ? fr.exercises.saving : fr.exercises.save}
             </button>
@@ -306,6 +417,51 @@ const styles: Record<string, React.CSSProperties> = {
   checkboxGroup: { display: 'flex', flexWrap: 'wrap', gap: 12 },
   checkboxItem: { display: 'flex', alignItems: 'center', gap: 6 },
   checkboxLabel: { fontSize: 13, color: colors.ink, fontFamily: font, cursor: 'pointer' },
+  variantsBox: { display: 'flex', flexDirection: 'column', gap: 8 },
+  chipGroup: { display: 'flex', flexWrap: 'wrap', gap: 8, minHeight: 20 },
+  chip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    background: colors.field,
+    border: `1px solid ${colors.border}`,
+    borderRadius: 999,
+    padding: '4px 6px 4px 10px',
+    fontSize: 12.5,
+    color: colors.ink,
+    fontFamily: font,
+  },
+  chipRemove: {
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 1,
+    padding: 2,
+  },
+  variantResults: {
+    display: 'flex',
+    flexDirection: 'column',
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  variantResultItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    border: 'none',
+    borderBottom: `1px solid ${colors.border}`,
+    background: '#fff',
+    padding: '8px 11px',
+    fontSize: 13,
+    color: colors.ink,
+    fontFamily: font,
+    cursor: 'pointer',
+    textAlign: 'left',
+  },
+  variantAddHint: { color: colors.accent, fontSize: 12, fontWeight: 700 },
   primary: {
     alignSelf: 'flex-start',
     border: 'none',
