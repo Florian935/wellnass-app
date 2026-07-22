@@ -136,6 +136,7 @@ const exercises = new Table({
   muscle_primary: column.text,
   equipment: column.text,
   media_url: column.text,
+  muscles_secondary: column.text, // JSON [MuscleGroup] — MUSC-F10c-1 (éditorial)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
