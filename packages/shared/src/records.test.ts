@@ -6,6 +6,7 @@ import {
   estimate1RM,
   computeWorkoutRecords,
   sessionBestEstimated1RM,
+  pickOneRepMax,
 } from './records';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -486,5 +487,26 @@ describe('sessionBestEstimated1RM', () => {
   });
   it('reps ≤ 1 → renvoie le poids (pas de bonus Epley)', () => {
     expect(sessionBestEstimated1RM([{ reps: 1, weightKg: 120 }])).toBe(120);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// pickOneRepMax
+// ---------------------------------------------------------------------------
+describe('pickOneRepMax', () => {
+  it('réel prioritaire quand présent', () => {
+    expect(
+      pickOneRepMax({ value: 100, date: '2026-07-12T10:00:00Z' }, { value: 98, date: '2026-07-05T10:00:00Z' }),
+    ).toEqual({ value: 100, date: '2026-07-12T10:00:00Z', real: true });
+  });
+  it('repli sur estimé si pas de réel', () => {
+    expect(pickOneRepMax(null, { value: 98, date: '2026-07-05T10:00:00Z' })).toEqual({
+      value: 98,
+      date: '2026-07-05T10:00:00Z',
+      real: false,
+    });
+  });
+  it('null si ni réel ni estimé', () => {
+    expect(pickOneRepMax(null, null)).toBeNull();
   });
 });
