@@ -18,6 +18,8 @@ import {
   updateCustomExercise,
   deleteCustomExercise,
 } from '@/data/repositories/exercise-repository';
+import { useExerciseFicheRecords } from '@/data/repositories/records-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -28,6 +30,14 @@ import { useTheme } from '@/theme/useTheme';
  */
 const EQUIPMENT_OPTIONS = ['none', ...EQUIPMENTS] as const;
 type EquipmentOption = (typeof EQUIPMENT_OPTIONS)[number];
+
+/** Formate un timestamp ISO en date locale JJ/MM/AAAA (zéros de tête). */
+function formatRecordDate(iso: string): string {
+  const d = new Date(iso);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
 
 /**
  * Fiche exercice (MUSC-F10a) : nom, groupe musculaire, matériel (si renseigné),
@@ -50,6 +60,12 @@ export default function ExerciseDetailScreen() {
   const router = useRouter();
 
   const { exercise, isLoading } = useExercise(exerciseId);
+
+  // Records de la fiche (F10b) — hooks appelés inconditionnellement au niveau
+  // racine (règle des hooks) avec l'`exerciseId` des params, avant tout retour
+  // anticipé (`exercise` n'est pas encore disponible ici).
+  const units = useUnits();
+  const { records, isLoading: recordsLoading } = useExerciseFicheRecords(exerciseId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -121,6 +137,36 @@ export default function ExerciseDetailScreen() {
       },
     ]);
   };
+
+  // Tuiles records : on n'inclut que les records non-nuls (mode lecture).
+  const recordTiles: { key: string; label: string; value: string; meta: string }[] = [];
+  if (records.oneRepMax) {
+    const badge = records.oneRepMax.real
+      ? t('exercises.detail.records.real')
+      : t('exercises.detail.records.estimated');
+    recordTiles.push({
+      key: 'oneRepMax',
+      label: t('exercises.detail.records.oneRepMax'),
+      value: units.formatWeight(records.oneRepMax.value),
+      meta: `${badge} · ${formatRecordDate(records.oneRepMax.date)}`,
+    });
+  }
+  if (records.maxWeight) {
+    recordTiles.push({
+      key: 'maxWeight',
+      label: t('progress.records.type.max_weight'),
+      value: units.formatWeight(records.maxWeight.value),
+      meta: formatRecordDate(records.maxWeight.date),
+    });
+  }
+  if (records.bestVolume) {
+    recordTiles.push({
+      key: 'bestVolume',
+      label: t('progress.records.type.best_volume'),
+      value: records.bestVolume.value.toFixed(0),
+      meta: formatRecordDate(records.bestVolume.date),
+    });
+  }
 
   return (
     <ScrollView
@@ -245,6 +291,57 @@ export default function ExerciseDetailScreen() {
             </View>
           ) : null}
 
+          <View style={styles.records}>
+            <Text style={[styles.recordsTitle, { color: colors.text }]}>
+              {t('exercises.detail.records.title')}
+            </Text>
+            {recordsLoading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : recordTiles.length === 0 ? (
+              <Text style={[styles.recordsEmpty, { color: colors.textMuted }]}>
+                {t('progress.records.empty')}
+              </Text>
+            ) : (
+              <>
+                <View style={styles.recordsGrid}>
+                  {recordTiles.map((tile) => (
+                    <View
+                      key={tile.key}
+                      style={[
+                        styles.recordChip,
+                        { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+                      ]}
+                    >
+                      <Text style={[styles.recordLabel, { color: colors.textMuted }]}>
+                        {tile.label}
+                      </Text>
+                      <Text style={[styles.recordValue, { color: colors.text }]}>
+                        {tile.value}
+                      </Text>
+                      <Text style={[styles.recordMeta, { color: colors.textMuted }]}>
+                        {tile.meta}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: '/progress',
+                      params: { exerciseId: exercise.id },
+                    })
+                  }
+                  accessibilityRole="button"
+                  hitSlop={8}
+                >
+                  <Text style={[styles.seeProgression, { color: colors.accent }]}>
+                    {t('exercises.detail.records.seeProgression')}
+                  </Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+
           {isCustom ? (
             <View style={styles.actions}>
               <View style={styles.flex}>
@@ -286,4 +383,23 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1 },
   notFound: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center' },
+  // Section records (F10b) — styles recopiés des record-chips de /progress
+  // (duplication assumée, dette de partage notée dans la spec §7).
+  records: { gap: 12 },
+  recordsTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
+  recordsEmpty: { fontFamily: fontFamily.body, fontSize: 14 },
+  recordsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  recordChip: {
+    flex: 1,
+    minWidth: '28%',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 4,
+    alignItems: 'center',
+  },
+  recordLabel: { fontFamily: fontFamily.body, fontSize: 12, textAlign: 'center' },
+  recordValue: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
+  recordMeta: { fontFamily: fontFamily.body, fontSize: 10, textAlign: 'center' },
+  seeProgression: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
 });
