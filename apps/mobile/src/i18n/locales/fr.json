@@ -27,6 +27,16 @@
     "arms": "Bras",
     "core": "Abdos"
   },
+  "equipment": {
+    "barbell": "Barre",
+    "dumbbell": "Haltères",
+    "machine": "Machine guidée",
+    "cable": "Poulie / câble",
+    "bodyweight": "Poids du corps",
+    "kettlebell": "Kettlebell",
+    "band": "Élastique / bande",
+    "other": "Autre"
+  },
   "exercises": {
     "title": "Exercices",
     "search": "Rechercher",
@@ -34,7 +44,14 @@
     "createCustom": "+ Créer un exercice perso",
     "customName": "Nom de l'exercice",
     "add": "Ajouter",
-    "customBadge": "perso"
+    "customBadge": "perso",
+    "filters": "Filtres",
+    "emptyFiltered": "Aucun résultat pour ces filtres.",
+    "filterDrawer": {
+      "muscleSection": "Groupe musculaire",
+      "equipmentSection": "Matériel",
+      "reset": "Réinitialiser"
+    }
   },
   "workout": {
     "freeTitle": "Séance libre",

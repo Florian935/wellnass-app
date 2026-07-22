@@ -27,6 +27,16 @@
     "arms": "Arms",
     "core": "Core"
   },
+  "equipment": {
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "machine": "Machine",
+    "cable": "Cable / pulley",
+    "bodyweight": "Bodyweight",
+    "kettlebell": "Kettlebell",
+    "band": "Resistance band",
+    "other": "Other"
+  },
   "exercises": {
     "title": "Exercises",
     "search": "Search",
@@ -34,7 +44,14 @@
     "createCustom": "+ Create custom exercise",
     "customName": "Exercise name",
     "add": "Add",
-    "customBadge": "custom"
+    "customBadge": "custom",
+    "filters": "Filters",
+    "emptyFiltered": "No results for these filters.",
+    "filterDrawer": {
+      "muscleSection": "Muscle group",
+      "equipmentSection": "Equipment",
+      "reset": "Reset"
+    }
   },
   "workout": {
     "freeTitle": "Free workout",
