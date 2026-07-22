@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf12-coherence-fiche-exo-perso` — MUSC-F12 : cohérence fiche exo perso ↔ bibliothèque (CODE LIVRÉ)
+
+> Retour recette F10c (Florian). Rend la fiche d'un exo perso cohérente avec un exo bibliothèque en
+> rendant **instructions + muscles secondaires** éditables, via une **modale d'édition bottom-sheet**
+> (remplace le formulaire inline). **Aucune migration.** typecheck/lint verts, 67 tests mobile + 800 shared.
+
+**Ajouté**
+- `EditExerciseModal` ([EditExerciseModal.tsx](apps/mobile/src/components/exercises/EditExerciseModal.tsx)) :
+  bottom-sheet (patron `CreateExerciseModal`) — nom, groupe, matériel, **muscles secondaires** (chips hors
+  primaire), **instructions** (multiligne) ; pré-remplie ; clavier géré ; réinitialisation à la fermeture.
+- Helper pur `buildCustomExerciseWrite` (muscles secondaires normalisés → JSON, instructions trim→null),
+  testé ([custom-exercise-write.test.ts](apps/mobile/src/data/repositories/__tests__/custom-exercise-write.test.ts)).
+- i18n FR/EN : `exercises.detail.instructionsPlaceholder`.
+
+**Modifié**
+- `updateCustomExercise` ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts))
+  gère désormais `musclesSecondary` + `instructions` (transaction atomique `exercises` + traduction ;
+  invariant primaire ∉ secondaires via `normalizeSecondaryMuscles`).
+- Fiche [exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx) : **retrait du formulaire d'édition
+  inline** (états `isEditing`/`edit*`, `onSave`, styles morts) ; le bouton **Modifier** ouvre la modale
+  (`key={exercise.id}`). Lecture inchangée → une fiche perso peut être aussi riche qu'une biblio.
+
+**Corrigé**
+- `EditExerciseModal` : `saving` figé après enregistrement (bouton bloqué à la réouverture) + saisies
+  annulées persistantes → `close()` réinitialise l'état depuis l'exercice (revue de code finale).
+
+**Technique / Notes**
+- Sérialisation `muscles_secondary` en `JSON.stringify` (symétrique de la lecture `parseJsonColumn`, F10c-1).
+- Aucune migration (colonne `muscles_secondary` existe ; RLS `exercises_update` autorise déjà le propriétaire).
+- Création (MUSC-F11) volontairement laissée **minimale** (nom + groupe) ; la richesse se fait à l'édition.
+
 ### 23/07/2026 — `feature/muscf11-modale-creation-exo` — MUSC-F11 : création d'exercice perso en modale (CODE LIVRÉ)
 
 > Finition UX (retour recette F10c, Florian). La création d'exercice perso passe de la **card inline**

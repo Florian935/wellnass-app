@@ -291,7 +291,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**MUSC-F11 — CODE LIVRÉ (subagent-driven) ✅** : création d'exercice
+*Dernière mise à jour : 23/07/2026 (**MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
+bibliothèque. `updateCustomExercise` gère désormais **instructions + muscles secondaires** (helper pur
+`buildCustomExerciseWrite` testé) ; nouvelle **`EditExerciseModal`** (bottom-sheet) remplace le formulaire
+d'édition inline de la fiche ; correctif revue (réinit à la fermeture : `saving` figé + saisies annulées).
+Aucune migration ; typecheck/lint verts, 67 tests mobile + 800 shared. **Reste : recette + relecture Damien.**
+Branche `feature/muscf12-coherence-fiche-exo-perso`. — **MUSC-F11 — CODE LIVRÉ (subagent-driven) ✅** : création d'exercice
 perso en **modale bottom-sheet** (retour recette F10c). Remplace la card inline (effet sandwich, Segment
 multi-ligne, nom sans placeholder) par une modale (`CreateExerciseModal`) : nom + placeholder, groupe
 `scrollable`, clavier géré. Aucune migration ; typecheck/lint verts, 62 tests mobile. **Reste : recette +
