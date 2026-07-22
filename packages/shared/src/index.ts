@@ -14,6 +14,7 @@ export * from './notifications';
 export * from './widgets';
 export * from './exercise';
 export * from './exercise-filter';
+export * from './exercise-variant';
 export * from './workout';
 export * from './program';
 export * from './nutrition';
