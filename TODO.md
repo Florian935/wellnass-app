@@ -291,7 +291,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — PLAN VALIDÉ (revue subagent Approved)** : plan en 10 tâches TDD
+*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — CODE LIVRÉ (subagent-driven) ✅ → roadmap 3.14 🟡 → ✅** : filtre
+d'exercices par **groupe musculaire + matériel** (tiroir « Filtres ») dans `ExercisePicker` **et** l'écran
+bibliothèque `exercises.tsx`, en plus de la recherche par nom. Exécution subagent-driven du plan (10 tâches,
+chacune revue spec + revue qualité ; 2 correctifs intégrés en cours : a11y des chips, raccourci Réinitialiser dans
+l'état vide filtré ; revue finale transverse *prête à merger*). `buildExerciseFilterClause` pur (5 tests) +
+`useExercises` étendu + `ExerciseFilterDrawer` partagé + enum `EQUIPMENTS` enfin branché (admin `<select>` + i18n
+mobile FR/EN + contrainte DB). **🔴 Migration `20260722080703_muscf3_equipment_check` poussée sur le cloud**
+(`db:push`, registre coché ; pas de `db:types` — contrainte seule). Seed dev enrichi (16 exercices). typecheck/lint
+verts, **786 tests**. **Reste : recette device + relecture Damien.** Dette notée (non bloquant) : duplication
+résiduelle entre les 2 écrans (→ `ExerciseListRow`/`FiltersButton` partagés avec MUSC-F2) ; `ExerciseListItem.equipment`
+encore `string|null` côté mobile. — **MUSC-F3 — PLAN VALIDÉ (revue subagent Approved)** : plan en 10 tâches TDD
 écrit ([plan](docs/plans/muscf3-recherche-multicriteres.md)) — shared → admin → i18n → repository → drawer →
 intégrations (ExercisePicker + exercises.tsx) → seed dev → migration (checkpoint cloud) → clôture.
 **Prochaine étape : implémentation** (spec + plan couvrent les 3 livrables requis avant code avec la maquette
@@ -462,8 +472,9 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 - [ ] **MUSC-F2 — Fiche exercice complète** (3.13 + 3.19 + 3.20) — remplacer le picker simple par une
   fiche détaillée (muscle principal **+ secondaires**, variantes/alternatives). ⚠️ 3.19/3.20 = **colonnes
   à ajouter** (migration).
-- [ ] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — filtre par **groupe musculaire** et
-  **matériel** (aujourd'hui : nom seul).
+- [x] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — ✅ **CODE LIVRÉ (22/07/2026)** : filtre par
+  **groupe musculaire** et **matériel** (tiroir « Filtres » dans ExercisePicker + exercises.tsx). Migration cloud
+  appliquée. Reste recette device + relecture Damien.
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
   + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +

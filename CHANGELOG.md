@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — MUSC-F3 : recherche d'exercices multi-critères (CODE LIVRÉ)
+
+> Roadmap [3.14](docs/roadmap/roadmap.md) 🟡 → ✅. Exécution **subagent-driven** du plan (10 tâches,
+> chacune passée par revue spec + revue qualité ; revue finale transverse *prête à merger*). Filtre
+> par **groupe musculaire** et **matériel** (liste contrôlée) dans les 2 surfaces de recherche
+> d'exercices, en plus de la recherche par nom. 🔴 **Migration cloud appliquée** (`db:push` sur
+> `nsxzflxsgovriwwvflxe`, registre coché). typecheck/lint verts, **786 tests** (dont 5 nouveaux).
+> **Reste : recette device + relecture Damien.** Commit précédent : `556b0a0`.
+
+**Ajouté**
+- `packages/shared` : fonction pure `buildExerciseFilterClause(muscles?, equipment?)` →
+  `{ clause, params }` (fragment SQL paramétré : **OU** intra-facette via `IN`, **ET** inter-facette),
+  5 tests Vitest ([exercise-filter.ts](packages/shared/src/exercise-filter.ts)). L'enum `EQUIPMENTS`
+  (8 valeurs, posé dès US1 mais jamais branché) est désormais **réellement consommé**.
+- Mobile : composant partagé [ExerciseFilterDrawer.tsx](apps/mobile/src/components/programs/ExerciseFilterDrawer.tsx)
+  (tiroir bas d'écran `Modal transparent`, 2 sections de chips groupe musculaire + matériel,
+  fermer = appliquer, bouton Réinitialiser, a11y `accessibilityRole`/`accessibilityState` sur les chips).
+- Mobile : bouton **« Filtres · N »** + montage du tiroir + affichage du matériel dans la ligne
+  d'exercice (`{muscle} · {matériel}`) + **état vide filtré dédié** (« Aucun résultat pour ces
+  filtres » + raccourci Réinitialiser) dans [ExercisePicker.tsx](apps/mobile/src/components/programs/ExercisePicker.tsx)
+  **et** [exercises.tsx](apps/mobile/src/app/exercises.tsx).
+- i18n mobile FR/EN (parité) : `equipment.*` (8 clés) + `exercises.filters` / `emptyFiltered` /
+  `filterDrawer.{muscleSection,equipmentSection,reset,close}`.
+- Admin : sélecteur `<select>` matériel contraint à `EQUIPMENTS` (remplace le texte libre) +
+  libellés FR `equipmentNames` ([ExerciseEditScreen.tsx](apps/admin/src/screens/ExerciseEditScreen.tsx)).
+- Migration [20260722080703_muscf3_equipment_check.sql](supabase/migrations/20260722080703_muscf3_equipment_check.sql) :
+  contrainte `CHECK` sur `exercises.equipment` (colonne déjà nullable — aucune colonne ajoutée,
+  donc pas de `db:types`). Seed dev : matériel plausible sur les 16 exercices de bibliothèque.
+
+**Modifié**
+- Mobile : `useExercises(search?, muscles?, equipment?)` — 2 paramètres optionnels câblés dans la
+  requête SQLite via `buildExerciseFilterClause` ; rétrocompatible (appelants existants inchangés,
+  `useFavorites` non touché) ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)).
+- Admin : types `equipment` resserrés à `Equipment | null` (data layer + formulaire).
+
+**Technique / Notes**
+- **Dette / suivi** (relevé en revue finale, non bloquant) : duplication résiduelle entre les 2
+  écrans (bouton Filtres, état vide, sous-titre 3 parties, styles) → candidate à un futur
+  `ExerciseListRow`/`FiltersButton` partagés (à traiter avec MUSC-F2) ; `ExerciseListItem.equipment`
+  encore typé `string | null` côté mobile (pourrait suivre la contrainte DB en `Equipment | null`).
+- **Points de recette device** : tiroir empilé sur une `Modal pageSheet` (comportement Android du
+  bouton retour / barre de statut à vérifier) ; inset bas (barre gestuelle) sous le tiroir ;
+  découvrabilité de la fermeture (croix explicite non rendue — tap-outside + geste natif + backdrop
+  labellisé en place ; §2.1 la liste comme option). Exercice perso créé sans matériel → invisible si
+  un filtre matériel est actif (conforme spec §2.3/§4.4, observation UX).
+
 ### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — plan d'implémentation : recherche d'exercices multi-critères (MUSC-F3)
 
 > Suite de la spec (commit précédent `a9a8558`). Plan revu par le subagent `plan-document-reviewer`
