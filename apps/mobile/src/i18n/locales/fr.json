@@ -59,6 +59,7 @@
       "muscle": "Groupe musculaire",
       "equipment": "Matériel",
       "instructions": "Instructions",
+      "secondaryMuscles": "Muscles secondaires",
       "edit": "Modifier",
       "delete": "Supprimer",
       "deleteConfirm": "Supprimer cet exercice ?",

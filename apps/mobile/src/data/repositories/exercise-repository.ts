@@ -23,7 +23,7 @@
 
 import { useQuery } from '@powersync/react';
 import type { Equipment, MuscleGroup, Source } from '@wellness/shared';
-import { buildExerciseFilterClause } from '@wellness/shared';
+import { buildExerciseFilterClause, normalizeSecondaryMuscles, parseJsonColumn } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -44,6 +44,7 @@ export type ExerciseListItem = {
 /** Fiche exercice : vue liste + instructions résolues (langue courante → fr). */
 export type ExerciseDetail = ExerciseListItem & {
   instructions: string | null;
+  musclesSecondary: MuscleGroup[];
 };
 
 /** Ligne brute renvoyée par SQLite pour la vue liste (colonnes résolues en SQL). */
@@ -79,7 +80,10 @@ const SELECT_EXERCISES = `
 `;
 
 /** Ligne brute de la fiche (comme la vue liste + instructions résolues). */
-type ExerciseDetailDbRow = ExerciseListDbRow & { instructions: string | null };
+type ExerciseDetailDbRow = ExerciseListDbRow & {
+  instructions: string | null;
+  muscles_secondary: string | null;
+};
 
 /**
  * Sélection d'un exercice unique pour la fiche : nom + instructions résolus
@@ -87,7 +91,7 @@ type ExerciseDetailDbRow = ExerciseListDbRow & { instructions: string | null };
  * Filtre `e.deleted_at IS NULL` : un exo supprimé → aucune ligne → « introuvable ».
  */
 const SELECT_EXERCISE_DETAIL = `
-  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url,
+  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url, e.muscles_secondary,
          COALESCE(tl.name, tfr.name) AS name,
          COALESCE(tl.instructions, tfr.instructions) AS instructions,
          (f.id IS NOT NULL) AS is_favorite
@@ -203,7 +207,14 @@ export function useExercise(id: string): {
 
   const row = data[0];
   const exercise: ExerciseDetail | null = row
-    ? { ...rowToListItem(row), instructions: row.instructions }
+    ? {
+        ...rowToListItem(row),
+        instructions: row.instructions,
+        musclesSecondary: normalizeSecondaryMuscles(
+          parseJsonColumn<unknown>(row.muscles_secondary, []),
+          row.muscle_primary as MuscleGroup,
+        ),
+      }
     : null;
 
   return { exercise, isLoading };

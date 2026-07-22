@@ -269,6 +269,17 @@ export default function ExerciseDetailScreen() {
             </Text>
           </View>
 
+          {exercise.musclesSecondary.length > 0 ? (
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: colors.textMuted }]}>
+                {t('exercises.detail.secondaryMuscles')}
+              </Text>
+              <Text style={[styles.value, { color: colors.text }]}>
+                {exercise.musclesSecondary.map((m) => t(`muscle.${m}`)).join(' · ')}
+              </Text>
+            </View>
+          ) : null}
+
           {exercise.equipment ? (
             <View style={styles.field}>
               <Text style={[styles.label, { color: colors.textMuted }]}>

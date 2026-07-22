@@ -63,6 +63,7 @@ const customExercise: ExerciseDetail = {
   mediaUrl: null,
   isFavorite: false,
   instructions: 'Garder le dos plaqué au banc.',
+  musclesSecondary: [],
 };
 
 describe('Fiche exercice — smoke test (rendu sans planter)', () => {
