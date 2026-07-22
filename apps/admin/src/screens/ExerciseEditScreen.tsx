@@ -24,6 +24,7 @@ export function ExerciseEditScreen() {
   const isEdit = Boolean(id);
 
   const [musclePrimary, setMusclePrimary] = useState<MuscleGroup>(MUSCLE_GROUPS[0]);
+  const [musclesSecondary, setMusclesSecondary] = useState<MuscleGroup[]>([]);
   const [equipment, setEquipment] = useState<Equipment | ''>('');
   const [status, setStatus] = useState<ExerciseStatus>('draft');
   const [nameFr, setNameFr] = useState('');
@@ -45,6 +46,7 @@ export function ExerciseEditScreen() {
       return;
     }
     setMusclePrimary(exercise.musclePrimary);
+    setMusclesSecondary(exercise.musclesSecondary);
     setEquipment(exercise.equipment ?? '');
     setStatus(exercise.status);
     setNameFr(exercise.nameFr);
@@ -73,6 +75,7 @@ export function ExerciseEditScreen() {
     const { error } = await saveExercise({
       id,
       musclePrimary,
+      musclesSecondary,
       equipment: equipment === '' ? null : equipment,
       status,
       nameFr: fr2,
@@ -117,7 +120,11 @@ export function ExerciseEditScreen() {
                 <select
                   id="group"
                   value={musclePrimary}
-                  onChange={(e) => setMusclePrimary(e.target.value as MuscleGroup)}
+                  onChange={(e) => {
+                    const next = e.target.value as MuscleGroup;
+                    setMusclePrimary(next);
+                    setMusclesSecondary((prev) => prev.filter((m) => m !== next));
+                  }}
                   style={styles.input}
                 >
                   {MUSCLE_GROUPS.map((g) => (
@@ -144,6 +151,29 @@ export function ExerciseEditScreen() {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div style={styles.field}>
+              <span style={styles.label}>{fr.exercises.secondaryMusclesLabel}</span>
+              <div style={styles.checkboxGroup}>
+                {MUSCLE_GROUPS.filter((g) => g !== musclePrimary).map((g) => (
+                  <div key={g} style={styles.checkboxItem}>
+                    <input
+                      id={`secondary-${g}`}
+                      type="checkbox"
+                      checked={musclesSecondary.includes(g)}
+                      onChange={(e) =>
+                        setMusclesSecondary((prev) =>
+                          e.target.checked ? [...prev, g] : prev.filter((m) => m !== g),
+                        )
+                      }
+                    />
+                    <label htmlFor={`secondary-${g}`} style={styles.checkboxLabel}>
+                      {fr.exercises.groupNames[g]}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -273,6 +303,9 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 10px',
   },
   muted: { color: colors.muted, fontSize: 13, margin: 0 },
+  checkboxGroup: { display: 'flex', flexWrap: 'wrap', gap: 12 },
+  checkboxItem: { display: 'flex', alignItems: 'center', gap: 6 },
+  checkboxLabel: { fontSize: 13, color: colors.ink, fontFamily: font, cursor: 'pointer' },
   primary: {
     alignSelf: 'flex-start',
     border: 'none',

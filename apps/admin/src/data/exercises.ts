@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import {
   MUSCLE_GROUPS,
   EQUIPMENTS,
+  normalizeSecondaryMuscles,
   type Database,
   type MuscleGroup,
   type Equipment,
@@ -44,6 +45,7 @@ export type AdminExerciseRow = {
 export type ExerciseDetail = {
   id: string;
   musclePrimary: MuscleGroup;
+  musclesSecondary: MuscleGroup[];
   equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
@@ -56,6 +58,7 @@ export type ExerciseDetail = {
 export type ExerciseInput = {
   id?: string;
   musclePrimary: MuscleGroup;
+  musclesSecondary: MuscleGroup[];
   equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
@@ -115,7 +118,9 @@ export async function getExercise(id: string): Promise<{
 }> {
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, muscle_primary, equipment, status, exercise_translations(lang, name, instructions)')
+    .select(
+      'id, muscle_primary, muscles_secondary, equipment, status, exercise_translations(lang, name, instructions)',
+    )
     .eq('id', id)
     .is('owner_id', null) // éditorial uniquement (jamais un exercice utilisateur)
     .is('deleted_at', null)
@@ -135,6 +140,7 @@ export async function getExercise(id: string): Promise<{
   const exercise: ExerciseDetail = {
     id: data.id,
     musclePrimary: data.muscle_primary as MuscleGroup,
+    musclesSecondary: normalizeSecondaryMuscles(data.muscles_secondary, data.muscle_primary as MuscleGroup),
     equipment: data.equipment as Equipment | null,
     status: (data.status as ExerciseStatus) ?? 'draft',
     nameFr: fr?.name ?? '',
@@ -163,6 +169,7 @@ export async function saveExercise(input: ExerciseInput): Promise<{
     owner_id: null,
     source: 'library',
     muscle_primary: input.musclePrimary,
+    muscles_secondary: normalizeSecondaryMuscles(input.musclesSecondary, input.musclePrimary) as Database['public']['Tables']['exercises']['Insert']['muscles_secondary'],
     equipment: input.equipment,
     status: input.status,
   };

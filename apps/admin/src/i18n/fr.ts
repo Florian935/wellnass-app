@@ -239,6 +239,7 @@ export const fr = {
       other: 'Autre',
     },
     equipmentEmpty: 'Non renseigné',
+    secondaryMusclesLabel: 'Muscles secondaires',
   },
 
   programs: {
