@@ -291,7 +291,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — CODE LIVRÉ (subagent-driven) ✅** : section « Tes records » en
+tuiles sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la
+progression » (pré-sélection de l'exo dans `/progress`). 6 tâches TDD, chacune revue spec + revue qualité ;
+2 correctifs (date non nulle + type partagé ; /progress dérivé sans effet) ; revue finale *prête à merger*.
+`pickOneRepMax` pur (shared) + `useExerciseTopSingle`/`useExerciseFicheRecords`. Aucune migration, lecture seule ;
+typecheck/lint verts, 789 tests shared + 50 tests mobile. **Reste : recette device + relecture Damien** (à
+signaler en recette : le 1RM réel prime sur l'estimé → peut différer de /progress). Roadmap inchangée. —
+**MUSC-F10b — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
 (subagent-driven)** : plan en 6 tâches TDD ([plan](docs/plans/muscf10b-records-fiche-exercice.md)) — pickOneRepMax
 (shared) → hooks records (1RM réel + composite) → i18n → /progress param exerciseId → section tuiles + lien sur la
 fiche → clôture. Aucune migration, lecture seule. — **MUSC-F10b — SPEC VALIDÉE (Florian) ✅** : section « Tes records » en tuiles
@@ -513,9 +520,12 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     soft-delete de la ligne `exercises` seule). Aucune migration. Spec + plan validés, revue finale *prête à
     merger*. **Reste : recette device + relecture Damien.**
     [plan](docs/plans/muscf10a-bibliotheque-fiche-exercice.md) · [spec](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md).
-  - [ ] **MUSC-F10b — Records sur la fiche** — 1RM réel/estimé, charge max, meilleur volume (lecture
-    `personal_records` + historique, sans migration). ⚠️ tenir compte du `JOIN exercises … deleted_at IS NULL`
-    (INNER) du recalcul des records. À cadrer après F10a.
+  - [x] **MUSC-F10b — Records sur la fiche — ✅ CODE LIVRÉ (subagent-driven, 22/07/2026)** — section « Tes
+    records » en tuiles (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la progression »
+    (pré-sélection de l'exo dans `/progress`). `pickOneRepMax` pur + `useExerciseTopSingle`/`useExerciseFicheRecords` ;
+    lecture seule, aucune migration. Spec + plan validés, revue finale *prête à merger*. **Reste : recette device +
+    relecture Damien** (signaler : 1RM réel prime sur estimé → peut différer de /progress).
+    [plan](docs/plans/muscf10b-records-fiche-exercice.md) · [spec](docs/specs/functional/us/muscf10b-records-fiche-exercice.md).
   - [ ] **MUSC-F10c (= MUSC-F2) — Fiche enrichie** — muscles principal **+ secondaires** + variantes/alternatives
     (3.13/3.19/3.20). ⚠️ migration (colonnes) + saisie admin. Remplace/absorbe MUSC-F2 ci-dessus.
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos

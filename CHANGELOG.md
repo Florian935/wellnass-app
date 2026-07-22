@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — MUSC-F10b : section records sur la fiche exercice (CODE LIVRÉ)
+
+> 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Exécution
+> **subagent-driven** (6 tâches ; chacune revue spec + revue qualité ; 2 correctifs intégrés en cours ; revue
+> finale transverse *prête à merger*). **Aucune migration**, lecture seule. typecheck/lint verts, **789 tests
+> shared + 50 tests mobile**. Commit précédent : `360c6ed`. **Reste : recette device + relecture Damien.**
+
+**Ajouté**
+- `packages/shared` : fonction pure `pickOneRepMax(real, estimated)` + type `OneRepMaxSample` (3 tests) — choisit
+  le 1RM **réel** si présent, sinon l'**estimé** ([records.ts](packages/shared/src/records.ts)).
+- Mobile : `useExerciseTopSingle(id)` (1RM réel = charge max d'une série à **1 rep** validée, hors warmup/durée,
+  jointe à une séance terminée avec `finished_at` non nul pour la date) + `useExerciseFicheRecords(id)` (composite
+  1RM/charge max/volume + dates) dans [records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts).
+- Fiche : section **« Tes records »** en tuiles (mode lecture) — 1RM (réel/estimé + badge), charge max, meilleur
+  volume, chacun label · valeur · date (JJ/MM/AAAA) ; état vide ; lien **« Voir la progression »** →
+  `/progress?exerciseId=…` ([exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx)).
+- i18n FR/EN : `exercises.detail.records.*` (title/oneRepMax/real/estimated/seeProgression) ; réutilise
+  `progress.records.type.*` + `progress.records.empty`.
+
+**Modifié**
+- [progress/index.tsx](apps/mobile/src/app/progress/index.tsx) : pré-sélection de l'exercice via le param
+  `exerciseId` (valeur dérivée `pickedExercise ?? paramExercise` — évite un `useEffect`/`setState` interdit par la
+  règle lint `react-hooks/set-state-in-effect`) ; sans param → comportement inchangé.
+
+**Technique / Notes**
+- Décisions : poids via `units.formatWeight` (métrique/impérial), volume via `toFixed(0)` (sans unité, comme
+  /progress) ; dates JJ/MM/AAAA ; le 1RM **réel prime** sur l'estimé dès qu'une série à 1 rep existe (décision
+  cadrage) → **à signaler en recette** : la fiche peut afficher un 1RM réel **inférieur** au 1RM estimé de
+  l'écran Progression (deux mesures différentes).
+- **Dette notée** (non bloquant, non aggravée) : composant records partagé /progress↔fiche différé (spec §7) ;
+  réutilisation i18n cross-namespace ; formateur de date JJ/MM/AAAA dupliqué entre écrans (candidat à un util
+  partagé, chore transverse séparé) ; smoke fiche ne couvre que l'état vide des records.
+- Roadmap **inchangée** : les records par exercice ne correspondent pas à une ligne roadmap dédiée.
+
 ### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — plan d'implémentation (MUSC-F10b)
 
 > Suite de la spec (commit précédent `57caa8b`). Plan revu par le subagent `plan-document-reviewer` (Approved —
