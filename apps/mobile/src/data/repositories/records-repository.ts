@@ -42,6 +42,7 @@ import {
   PILLARS,
   pickOneRepMax,
   sessionBestEstimated1RM,
+  type OneRepMaxSample,
   type MuscleBalance,
   type MuscleGroup,
   type RecordType,
@@ -208,7 +209,7 @@ const SELECT_SETS_FOR_WORKOUT = `
 const SELECT_EXERCISE_TOP_SINGLE = `
   SELECT s.weight_kg AS value, w.finished_at AS achieved_at
   FROM workout_sets s
-  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL AND w.finished_at IS NOT NULL
   WHERE s.exercise_id = ?
     AND s.deleted_at IS NULL
     AND s.done = 1
@@ -536,7 +537,7 @@ export function useExerciseRecords(exerciseId: string): {
  */
 export function useExerciseTopSingle(
   exerciseId: string,
-): { topSingle: { value: number; date: string } | null; isLoading: boolean } {
+): { topSingle: OneRepMaxSample | null; isLoading: boolean } {
   const { data, isLoading } = useQuery<{ value: number; achieved_at: string }>(
     SELECT_EXERCISE_TOP_SINGLE,
     [exerciseId],
