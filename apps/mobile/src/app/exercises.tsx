@@ -26,7 +26,8 @@ export default function ExercisesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { replaceExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string }>();
+  const { replaceExerciseId, mode } = useLocalSearchParams<{ replaceExerciseId?: string; mode?: string }>();
+  const browse = mode === 'browse';
 
   const { workout: active } = useActiveWorkout();
 
@@ -55,6 +56,10 @@ export default function ExercisesScreen() {
     : items;
 
   const onPick = async (item: ExerciseListItem) => {
+    if (browse) {
+      router.push(`/exercises/${item.id}`);
+      return;
+    }
     if (active) {
       if (replaceExerciseId) {
         await replaceExercise(active.id, replaceExerciseId, item.id);
