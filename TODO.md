@@ -291,7 +291,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — SPEC ÉCRITE** (recherche d'exercices multi-critères, groupe
+*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — PLAN VALIDÉ (revue subagent Approved)** : plan en 10 tâches TDD
+écrit ([plan](docs/plans/muscf3-recherche-multicriteres.md)) — shared → admin → i18n → repository → drawer →
+intégrations (ExercisePicker + exercises.tsx) → seed dev → migration (checkpoint cloud) → clôture.
+**Prochaine étape : implémentation** (spec + plan couvrent les 3 livrables requis avant code avec la maquette
+visuelle déjà comparée en brainstorming). — **MUSC-F3 — SPEC ÉCRITE** (recherche d'exercices multi-critères, groupe
 musculaire + matériel), `feature/muscf3-recherche-multicriteres` : cadrée par brainstorming (Florian, maquettes
 visuelles) une fois le chantier refonte Muscu clos côté implémentation ; choisie parmi les candidats P1 du
 backlog §🗺️ (recherche multi-critères > fiche exercice > seed programmes). UI = bouton « Filtres » + tiroir

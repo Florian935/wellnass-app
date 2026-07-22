@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — plan d'implémentation : recherche d'exercices multi-critères (MUSC-F3)
+
+> Suite de la spec (commit précédent `a9a8558`). Plan revu par le subagent `plan-document-reviewer`
+> (Approved dès la première passe — vérification croisée de chaque référence de code contre l'état
+> réel du dépôt) ; 2 ajustements mineurs appliqués suite aux recommandations (couleur de texte des
+> chips sélectionnées `colors.accentText` au lieu de `colors.background` ; précision sur l'ajout de
+> `flexDirection: 'row'` à `styles.searchRow`, absent aujourd'hui des deux écrans). **Doc seulement,
+> aucun code** — typecheck inchangé (vérifié vert).
+
+**Ajouté**
+- [muscf3-recherche-multicriteres.md](docs/plans/muscf3-recherche-multicriteres.md) : plan en 10
+  tâches TDD — (1) `buildExerciseFilterClause` pur (shared) ; (2) admin — matériel en `<select>`
+  contrôlé (réutilise `EQUIPMENTS` déjà présent, jamais branché) ; (3) i18n mobile `equipment.*` +
+  clés du tiroir ; (4) `useExercises` étendu (2 paramètres optionnels) ; (5) composant partagé
+  `ExerciseFilterDrawer` (tiroir `Modal transparent`, aucune nouvelle dépendance) ; (6-7) intégration
+  dans `ExercisePicker.tsx` et `exercises.tsx` ; (8) seed dev enrichi (16 exercices) ; (9) migration
+  (contrainte `CHECK` sur `exercises.equipment`, checkpoint cloud avec vérification préalable des
+  valeurs existantes + go explicite de Florian) ; (10) revue finale + clôture.
+
 ### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — spec : recherche d'exercices multi-critères (MUSC-F3)
 
 > Roadmap [3.14](docs/roadmap/roadmap.md) — recherche d'exercices aujourd'hui par nom seul. Cadrage par
