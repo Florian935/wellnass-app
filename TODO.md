@@ -291,7 +291,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**Couleurs des menus — CODE LIVRÉ ✅, réintroduites avec un toggle
+*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — SPEC ÉCRITE** (recherche d'exercices multi-critères, groupe
+musculaire + matériel), `feature/muscf3-recherche-multicriteres` : cadrée par brainstorming (Florian, maquettes
+visuelles) une fois le chantier refonte Muscu clos côté implémentation ; choisie parmi les candidats P1 du
+backlog §🗺️ (recherche multi-critères > fiche exercice > seed programmes). UI = bouton « Filtres » + tiroir
+(2 sections, groupe musculaire + matériel) sur `ExercisePicker` **et** `exercises.tsx` ; réutilise
+`EQUIPMENTS`/`Equipment` déjà présents dans `packages/shared` (posés dès US1, jamais branchés) ; migration prévue
+= contrainte `CHECK` sur `exercises.equipment` (colonne déjà nullable, aucune donnée à migrer). Spec :
+[muscf3-recherche-multicriteres.md](docs/specs/functional/us/muscf3-recherche-multicriteres.md).
+**Prochaine étape : plan d'implémentation.** — **Couleurs des menus — CODE LIVRÉ ✅, réintroduites avec un toggle
 on/off** (`feature/couleurs-menu-toggle`) — reste recette device. — **US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
 (A/B/C1/C2/C3/D) complet côté implémentation** — reste relecture Damien sur l'ensemble. — **US-D —
 correctif post-recette** : le seul accès à « Mes templates »

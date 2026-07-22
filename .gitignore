@@ -90,3 +90,6 @@ desktop.ini
 !.vscode/settings.json
 
 # NB : le dossier .claude/ est suivi volontairement (commandes, config projet).
+
+# --- Superpowers (brainstorming visuel, scratch local) ---
+.superpowers/

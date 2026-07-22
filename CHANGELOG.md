@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — spec : recherche d'exercices multi-critères (MUSC-F3)
+
+> Roadmap [3.14](docs/roadmap/roadmap.md) — recherche d'exercices aujourd'hui par nom seul. Cadrage par
+> brainstorming (Florian, maquettes visuelles comparées) : sélectionné comme prochaine US après la clôture
+> côté implémentation du chantier refonte Muscu (A/B/C1/C2/C3/D, reste relecture Damien). Commit précédent :
+> `685dec9`. **Doc seulement, aucun code** — typecheck/lint/781 tests inchangés (vérifiés verts).
+
+**Ajouté**
+- [muscf3-recherche-multicriteres.md](docs/specs/functional/us/muscf3-recherche-multicriteres.md) : spec
+  complète — filtre par groupe musculaire (déjà propre, enum contraint) + matériel (liste contrôlée
+  réutilisant `EQUIPMENTS`/`Equipment` posés dès US1 dans `packages/shared` mais jamais branchés nulle
+  part). UI = bouton « Filtres » + tiroir 2 sections (préféré aux chips inline permanentes et aux
+  dropdowns, pour garder la recherche par nom comme action principale). Périmètre : `ExercisePicker`
+  (composant partagé programme/template/séance) **et** `exercises.tsx` (bibliothèque autonome). Migration
+  prévue : contrainte `CHECK` sur `exercises.equipment` (colonne déjà existante et nullable, aucune donnée
+  à migrer — actuellement tout `null`). Hors périmètre : MUSC-F2 (fiche exercice complète, muscles
+  secondaires), rétro-remplissage du matériel en production.
+
+**Technique / Notes**
+- `.gitignore` : ajout de `.superpowers/` (scratch local du brainstorming visuel, maquettes non versionnées).
+- **Statut : à valider (Florian/Damien) avant tout code**, conformément au workflow spec → plan → design →
+  validation → code.
+
 ### 22/07/2026 — `feature/couleurs-menu-toggle` — couleurs des menus, réintroduites avec un réglage on/off
 
 > Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d` du
