@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { MuscleGroup, Equipment } from '@wellness/shared';
+import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import {
   useExercises,
@@ -102,11 +103,23 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
             contentContainerStyle={styles.list}
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
-              <Text style={[styles.empty, { color: colors.textMuted }]}>
-                {filterCount > 0
-                  ? t('exercises.emptyFiltered')
-                  : t('programs.edit.picker.empty')}
-              </Text>
+              <View style={styles.emptyWrap}>
+                <Text style={[styles.empty, { color: colors.textMuted }]}>
+                  {filterCount > 0
+                    ? t('exercises.emptyFiltered')
+                    : t('programs.edit.picker.empty')}
+                </Text>
+                {filterCount > 0 ? (
+                  <Button
+                    variant="ghost"
+                    label={t('exercises.filterDrawer.reset')}
+                    onPress={() => {
+                      setMuscles([]);
+                      setEquipment([]);
+                    }}
+                  />
+                ) : null}
+              </View>
             }
             renderItem={({ item }) => (
               <Pressable
@@ -173,11 +186,11 @@ const styles = StyleSheet.create({
   filtersLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
   list: { padding: 20, gap: 10 },
+  emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
   empty: {
     fontFamily: fontFamily.body,
     fontSize: 14,
     textAlign: 'center',
-    paddingVertical: 24,
   },
   row: {
     flexDirection: 'row',
