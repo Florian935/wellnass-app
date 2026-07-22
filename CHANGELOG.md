@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — plan d'implémentation (MUSC-F10a)
+
+> Suite de la spec (commit précédent `d3f4907`). Plan revu par le subagent `plan-document-reviewer` (Approved —
+> API `writeTransaction`, helpers `_sql`, forme des SELECT et symboles importés vérifiés contre le dépôt) ;
+> 1 coquille corrigée (ne pas importer `patch`, le code utilise `tx.execute` brut → sinon import inutilisé =
+> lint KO). **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10a-bibliotheque-fiche-exercice.md](docs/plans/muscf10a-bibliotheque-fiche-exercice.md) : plan en
+  8 tâches TDD — (1) `useExercise(id)` ; (2) `update/deleteCustomExercise` + garde pure testée ; (3) i18n FR/EN ;
+  (4) écran fiche lecture `app/exercises/[id].tsx` + route ; (5) gestion perso (modifier/supprimer) ; (6) mode
+  parcours dans `exercises.tsx` (tap → fiche) ; (7) entrée « Bibliothèque » dans le hub Muscu ; (8) revue finale
+  + clôture. Aucune migration ; soft-delete de la ligne `exercises` seule. Point à smoke-checker : coexistence
+  de route `exercises.tsx` + `exercises/[id].tsx` (supportée expo-router 57, sans précédent dans le repo).
+
 ### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — spec : bibliothèque en accès direct + fiche exercice (MUSC-F10a)
 
 > Nouvelle US issue du besoin remonté pendant la recette MUSC-F3 (l'écran bibliothèque n'est atteignable que

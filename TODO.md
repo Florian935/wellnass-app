@@ -291,7 +291,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10a — SPEC VALIDÉE (Florian) ✅** : chantier « fiche exercice »
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10a — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
+(subagent-driven)** : plan en 8 tâches TDD ([plan](docs/plans/muscf10a-bibliotheque-fiche-exercice.md)) — hook
+lecture → écritures+garde → i18n → écran fiche+route → gestion perso → mode parcours → entrée hub → clôture.
+Aucune migration. — **MUSC-F10a — SPEC VALIDÉE (Florian) ✅** : chantier « fiche exercice »
 découpé en 3 incréments — **F10a** (socle : entrée « Bibliothèque d'exercices » persistante dans le hub Muscu →
 biblio en mode parcours → fiche `/exercises/[id]` avec données actuelles + gestion des exos perso Modifier/
 Supprimer) → **F10b** (records sur la fiche) → **F10c = MUSC-F2** (muscles secondaires + variantes, migration +
@@ -492,8 +495,8 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   - [~] **MUSC-F10a — Socle : accès direct + fiche** — entrée persistante « Bibliothèque d'exercices » dans le hub
     Muscu → biblio en mode parcours → fiche `/exercises/[id]` (nom, groupe, matériel, instructions, favori, badge
     perso) + gestion des exos perso (Modifier/Supprimer, soft-delete de la ligne `exercises` seule). Aucune
-    migration. **Spec validée (Florian, 22/07/2026)** ([spec](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md)) →
-    **prochaine étape : plan**.
+    migration. Spec validée + **plan validé (revue subagent Approved)** →
+    [plan](docs/plans/muscf10a-bibliotheque-fiche-exercice.md) → **implémentation en cours (subagent-driven)**.
   - [ ] **MUSC-F10b — Records sur la fiche** — 1RM réel/estimé, charge max, meilleur volume (lecture
     `personal_records` + historique, sans migration). ⚠️ tenir compte du `JOIN exercises … deleted_at IS NULL`
     (INNER) du recalcul des records. À cadrer après F10a.
