@@ -103,7 +103,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 3.16 | Exercice personnalisé | Créer un exercice custom si absent de la base. | Facile | 2h | 🟢 | ✅ | `addCustomExercise`. |
 | 3.17 | Note par exercice | Champ persistant (réglage de siège, position machine), affiché en séance. | Facile | 1h | 🟢 | ⬜ | **Aucun champ note persistant par exercice.** |
 | 3.19 | Muscles ciblés | Muscle principal + secondaires sur la fiche. | Facile | 2h | 🟢 | ✅ | Primaire + **muscles secondaires** (colonne `muscles_secondary`, saisie admin, affichage fiche — MUSC-F10c-1, 22/07/2026). Schéma corporel SVG = 6.2 (séparé). |
-| 3.20 | Variantes / alternatives | Exercices similaires pour remplacer si besoin. | Facile | 2h | 🟢 | ⬜ | **Aucune notion de variantes.** |
+| 3.20 | Variantes / alternatives | Exercices similaires pour remplacer si besoin. | Facile | 2h | 🟢 | ✅ | Table `exercise_variants` symétrique ; liens **éditoriaux** (admin, biblio↔biblio) + **personnels** (mobile, toute fiche) ; section cliquable sur la fiche — MUSC-F10c-2, 22/07/2026. Remplacement en séance = 3.32 (séparé). |
 | 3.23 | Séance libre | Séance vide sans programme, exercices ajoutés au fil de l'eau. | Moyen | 3h | 🟢 | ✅ | Le parcours cœur de cette version. |
 | 3.25 | Validation de série | Reps + charge réels, valeurs pré-remplies. | Moyen | 4h | 🟢 | ✅ | `updateSet` + pré-remplissage `addSet`. |
 | 3.26 | Dernière performance affichée | "La dernière fois : 80 kg × 8 / 8 / 7" au-dessus de la saisie. | Facile | 2h | 🟢 | ⬜ | **Aucune "dernière fois : …" dans `workout.tsx`.** |
@@ -351,9 +351,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 129 | ~72 % |
+| ✅ Livré | 130 | ~73 % |
 | 🟡 Partiel | 10 | ~6 % |
-| ⬜ À faire | 35 | ~20 % |
+| ⬜ À faire | 34 | ~19 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **179** | |
@@ -364,7 +364,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 15 | 3 | 11 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; recherche multi-critères (3.14) + muscles secondaires (3.19) livrés ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.2 (32) | 16 | 3 | 10 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; recherche multi-critères (3.14) + muscles secondaires (3.19) + variantes (3.20) livrés ; GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 14 | 2 | 5 | 0 | 0 | Quasi complet (progression auto/deload + push manquants) |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 25 | 3 | 5 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
@@ -390,4 +390,4 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 ---
 
-*Dernière mise à jour : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (compteurs : 129 livré / 10 partiel). Précédemment : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+*Dernière mise à jour : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*

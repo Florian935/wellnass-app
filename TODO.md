@@ -291,7 +291,18 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10c-1 — CODE LIVRÉ (subagent-driven) ✅** : muscles secondaires sur
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10c-2 — CODE LIVRÉ (subagent-driven) ✅** : variantes /
+alternatives d'exercice. Table `exercise_variants` symétrique (canonique `a<b`, `owner_id` null=éditorial /
+non-null=perso) + RLS + `alter publication` (migration poussée) + **sync rules à REDÉPLOYER dans le dashboard
+PowerSync** (⚠️ geste humain Florian/Damien avant recette device). `canonicalPair` + schéma (shared, testés) ;
+repo mobile `useExerciseVariants`/`add`/`remove` (upsert par clé naturelle anti-bug unicité, `dedupeVariants`
+pure testée) ; **section « Variantes / alternatives » sur la fiche** (liens cliquables, ✕ perso, ajout depuis
+n'importe quelle fiche via mode `pickVariant`) ; **admin** : liens éditoriaux (biblio↔biblio). 5 tâches ;
+revue finale *rien de bloquant* ; typecheck/lint verts, 800 tests shared + 54 mobile. Roadmap 3.20 ⬜ → ✅.
+**Reste : redéploiement sync rules + recette (admin + mobile) + relecture Damien.** Branche
+`feature/muscf10c2-variantes-alternatives`.
+Spec : [muscf10c2-variantes-alternatives.md](docs/specs/functional/us/muscf10c2-variantes-alternatives.md). —
+**MUSC-F10c-1 — CODE LIVRÉ (subagent-driven) ✅** : muscles secondaires sur
 la fiche exercice. Colonne `exercises.muscles_secondary` (jsonb `[]`, migration additive poussée sur le cloud) +
 `column.text` PowerSync ; fonction pure partagée `normalizeSecondaryMuscles` (dédup, exclut le primaire, filtre
 les invalides) testée Vitest ; **saisie admin** (multi-cases hors primaire, retrait auto au changement de

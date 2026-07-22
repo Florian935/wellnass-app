@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10c2-variantes-alternatives` — MUSC-F10c-2 : variantes / alternatives d'exercice (CODE LIVRÉ)
+
+> 2ᵉ et dernier incrément de F10c (= MUSC-F2). Exécution **subagent-driven** (5 tâches ; revue de code
+> finale transverse *rien de bloquant*). **Une migration** (nouvelle table + `alter publication`) + **⚠️
+> redéploiement manuel des sync rules dans le dashboard PowerSync** (geste humain, à faire avant recette
+> device). typecheck/lint verts, **800 tests shared + 54 tests mobile**. Commit précédent : `9f68e38`.
+> **Reste : redéploiement sync rules + recette (admin éditorial, mobile perso) + relecture Damien.**
+
+**Ajouté**
+- BDD : table `exercise_variants` (liaison **symétrique** canonique `a<b`, `owner_id` null=éditorial global /
+  non-null=perso) + RLS (`is_content_editor` pour l'éditorial, `owner_id = auth.uid()` pour le perso) +
+  `alter publication powersync` — migration
+  [20260722151024_muscf10c2_exercise_variants.sql](supabase/migrations/20260722151024_muscf10c2_exercise_variants.sql)
+  (poussée sur le cloud, cochée dans [MIGRATIONS.md](supabase/MIGRATIONS.md)) ; `column.text` PowerSync ;
+  `database.types.ts` régénéré.
+- Sync rules : `exercise_variants` ajouté aux buckets `shared_content` (éditorial) et `user_data` (perso)
+  dans [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) — **à redéployer manuellement**.
+- `packages/shared` : `canonicalPair(a, b)` (tri de paire, pur) + `exerciseVariantRowSchema` — tests Vitest.
+- Mobile : repository [exercise-variant-repository.ts](apps/mobile/src/data/repositories/exercise-variant-repository.ts)
+  — `useExerciseVariants` (lecture éditorial + perso, dédup priorité éditoriale via `dedupeVariants` pure
+  testée), `addExerciseVariant`/`removeExerciseVariant` (**upsert par clé naturelle** : réactive une ligne
+  soft-deletée → anti-bug d'unicité), gardes de portée (`assertOwnsVariant`).
+- Mobile : section **« Variantes / alternatives »** sur la fiche (liens cliquables → fiche liée, ✕ sur les
+  liens perso, bouton « + Ajouter une variante ») + nouveau mode **`pickVariant`** du sélecteur d'exercices
+  (exclut soi + déjà liés ; branche traitée avant le garde séance active).
+- Admin : gestion des liens **éditoriaux** (biblio↔biblio) dans `ExerciseEditScreen` (recherche + chips
+  supprimables) via [data/exercise-variants.ts](apps/admin/src/data/exercise-variants.ts) ; journalisation
+  d'audit (`exercise_variant.link`/`unlink` ajoutés à `AUDIT_ACTIONS`).
+- i18n FR/EN : `exercises.detail.variants/variantsEmpty/addVariant/removeVariant` (mobile) + libellés admin.
+
+**Technique / Notes**
+- Symétrie : stockage canonique `a<b` (contrainte `check`) + unique `(owner_id, a, b) nulls not distinct` ;
+  lecture par extrémité (`a=self OR b=self`), résolution de « l'autre » exo (nom langue → fr).
+- Anti-bug (leçon `exercise_favorites`) : l'ajout **réactive** une ligne soft-deletée au lieu d'insérer
+  (sinon violation d'unicité au ré-ajout) — appliqué mobile **et** admin.
+- Offline-first : lecture mobile locale réactive ; écriture perso locale (UUID client, soft-delete) ; admin
+  en ligne (supabase-js).
+- **Rattrapage** : spec + plan de **F10c-1** (non commités lors de sa clôture) ajoutés au passage.
+- Roadmap : **3.20** (Variantes/alternatives) ⬜ → ✅. Remplacement en séance (3.32) reste distinct.
+
 ### 22/07/2026 — `feature/muscf10c1-muscles-secondaires` — MUSC-F10c-1 : muscles secondaires sur la fiche exercice (CODE LIVRÉ)
 
 > 1ᵉʳ des 2 incréments de F10c (= MUSC-F2) : **F10c-1 (muscles secondaires)** → F10c-2 (variantes, plus tard).
