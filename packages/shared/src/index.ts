@@ -13,6 +13,7 @@ export * from './settings';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';
+export * from './exercise-filter';
 export * from './workout';
 export * from './program';
 export * from './nutrition';
