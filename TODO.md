@@ -291,7 +291,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — SPEC VALIDÉE (Florian) ✅** : section « Tes records » en tuiles
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10b — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
+(subagent-driven)** : plan en 6 tâches TDD ([plan](docs/plans/muscf10b-records-fiche-exercice.md)) — pickOneRepMax
+(shared) → hooks records (1RM réel + composite) → i18n → /progress param exerciseId → section tuiles + lien sur la
+fiche → clôture. Aucune migration, lecture seule. — **MUSC-F10b — SPEC VALIDÉE (Florian) ✅** : section « Tes records » en tuiles
 sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la progression »
 (pré-sélection de l'exo dans `/progress`). Réutilise `useExerciseRecords` ; 1RM réel dérivé de `workout_sets`
 (reps=1) ; `pickOneRepMax` pur ; aucune migration, lecture seule. Spec vérifiée manuellement (revue subagent

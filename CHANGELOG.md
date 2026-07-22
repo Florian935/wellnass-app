@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — plan d'implémentation (MUSC-F10b)
+
+> Suite de la spec (commit précédent `57caa8b`). Plan revu par le subagent `plan-document-reviewer` (Approved —
+> colonnes SQL du 1RM réel, `useExerciseRecords`/`achievedAt`, `/progress` en état local sans param,
+> `useUnits.formatWeight`, clés i18n et export barrel de `pickOneRepMax` vérifiés contre le dépôt) ; 1 précision
+> d'import ajoutée (`useEffect` dans /progress). **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10b-records-fiche-exercice.md](docs/plans/muscf10b-records-fiche-exercice.md) : plan en 6 tâches TDD —
+  (1) `pickOneRepMax` pur (shared) ; (2) `useExerciseTopSingle` (1RM réel dérivé de `workout_sets`) +
+  `useExerciseFicheRecords` (composite) ; (3) i18n FR/EN ; (4) `/progress` param `exerciseId` (pré-sélection) ;
+  (5) section tuiles + lien « Voir la progression » sur la fiche ; (6) revue finale + clôture. Aucune migration,
+  lecture seule.
+
 ### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — spec : section records sur la fiche exercice (MUSC-F10b)
 
 > 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Cadrée par
