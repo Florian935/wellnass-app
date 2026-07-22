@@ -31,6 +31,8 @@ const exercise = {
 };
 
 describe('EditExerciseModal — smoke', () => {
+  beforeEach(() => jest.clearAllMocks());
+
   it('pré-remplit le nom et enregistre', async () => {
     const onClose = jest.fn();
     const { getByText, getByDisplayValue } = await render(
@@ -43,5 +45,19 @@ describe('EditExerciseModal — smoke', () => {
       expect.objectContaining({ name: 'Mon exo', muscle: 'chest' }),
     );
     await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+
+  it('Annuler réinitialise le formulaire (les saisies abandonnées ne persistent pas)', async () => {
+    const onClose = jest.fn();
+    const { getByText, getByDisplayValue, queryByDisplayValue } = await render(
+      <EditExerciseModal visible exercise={exercise} onClose={onClose} />,
+    );
+    await fireEvent.changeText(getByDisplayValue('Mon exo'), 'Brouillon abandonné');
+    await fireEvent.press(getByText('Annuler'));
+    expect(onClose).toHaveBeenCalled();
+    // La modale reste montée : l'état doit être revenu à la valeur d'origine.
+    expect(queryByDisplayValue('Brouillon abandonné')).toBeNull();
+    expect(getByDisplayValue('Mon exo')).toBeTruthy();
+    expect(updateCustomExercise).not.toHaveBeenCalled();
   });
 });

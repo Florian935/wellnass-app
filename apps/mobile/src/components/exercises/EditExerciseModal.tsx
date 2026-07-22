@@ -37,6 +37,24 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
 
   const canSave = name.trim().length > 0;
 
+  // La modale reste montée en permanence dans la fiche (seul `visible` bascule) : il faut
+  // réinitialiser l'état à chaque fermeture, sinon les saisies abandonnées réapparaissent et
+  // `saving` resterait figé après un enregistrement. Restaure depuis `exercise` (patron
+  // `CreateExerciseModal`).
+  const resetFromExercise = () => {
+    setName(exercise.name);
+    setMuscle(exercise.muscle);
+    setEquipment(exercise.equipment as Equipment | null);
+    setMusclesSecondary(exercise.musclesSecondary);
+    setInstructions(exercise.instructions ?? '');
+    setSaving(false);
+  };
+
+  const close = () => {
+    resetFromExercise();
+    onClose();
+  };
+
   const toggleSecondary = (m: MuscleGroup) =>
     setMusclesSecondary((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]));
 
@@ -57,6 +75,9 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
         musclesSecondary,
         instructions,
       });
+      // Succès : le formulaire reflète déjà les valeurs enregistrées (= `exercise` après
+      // synchro réactive) ; on lève seulement `saving` avant de fermer.
+      setSaving(false);
       onClose();
     } catch (e) {
       // Offline-first : écriture locale ; on garde la modale ouverte en cas d'échec improbable.
@@ -66,10 +87,10 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable
         style={styles.backdrop}
-        onPress={onClose}
+        onPress={close}
         accessibilityRole="button"
         accessibilityLabel={t('common.cancel')}
       />
@@ -147,7 +168,7 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
 
             <View style={styles.actions}>
               <View style={styles.flex}>
-                <Button label={t('common.cancel')} variant="ghost" onPress={onClose} />
+                <Button label={t('common.cancel')} variant="ghost" onPress={close} />
               </View>
               <View style={styles.flex}>
                 <Button
