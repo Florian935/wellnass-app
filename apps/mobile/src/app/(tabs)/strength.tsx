@@ -176,6 +176,22 @@ export default function StrengthScreen() {
           </Card>
         )}
 
+        {/* Entrée persistante (hors grille) : bibliothèque d'exercices en mode consultation. */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/exercises', params: { mode: 'browse' } })}
+          style={[
+            styles.libraryRow,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Ionicons name="library-outline" size={18} color={colors.accent} />
+          <Text style={[styles.libraryLabel, { color: colors.text }]} numberOfLines={1}>
+            {t('exercises.library')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+
         {/* Grille de widgets personnalisable (modules muscu). */}
         <WidgetGrid
           screen="strength"
@@ -193,6 +209,16 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  libraryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+  },
+  libraryLabel: { flex: 1, fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   todayNoteRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   todayNoteMark: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   todayNoteText: { fontFamily: fontFamily.body, fontSize: 13, flexShrink: 1 },
