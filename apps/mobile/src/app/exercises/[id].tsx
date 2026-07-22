@@ -18,6 +18,7 @@ import {
   updateCustomExercise,
   deleteCustomExercise,
 } from '@/data/repositories/exercise-repository';
+import { useExerciseVariants, removeExerciseVariant } from '@/data/repositories/exercise-variant-repository';
 import { useExerciseFicheRecords } from '@/data/repositories/records-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -66,6 +67,7 @@ export default function ExerciseDetailScreen() {
   // anticipé (`exercise` n'est pas encore disponible ici).
   const units = useUnits();
   const { records, isLoading: recordsLoading } = useExerciseFicheRecords(exerciseId);
+  const { variants, isLoading: variantsLoading } = useExerciseVariants(exerciseId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -353,6 +355,55 @@ export default function ExerciseDetailScreen() {
             )}
           </View>
 
+          <View style={styles.field}>
+            <Text style={[styles.recordsTitle, { color: colors.text }]}>
+              {t('exercises.detail.variants')}
+            </Text>
+            {variantsLoading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : variants.length === 0 ? (
+              <Text style={[styles.recordsEmpty, { color: colors.textMuted }]}>
+                {t('exercises.detail.variantsEmpty')}
+              </Text>
+            ) : (
+              variants.map((v) => (
+                <View key={v.otherId} style={styles.variantRow}>
+                  <Pressable
+                    style={styles.variantName}
+                    onPress={() => router.push(`/exercises/${v.otherId}`)}
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.value, { color: colors.text }]}>
+                      {v.name}
+                      {v.source === 'custom' ? ` · ${t('exercises.customBadge')}` : ''}
+                    </Text>
+                  </Pressable>
+                  {v.canRemove ? (
+                    <Pressable
+                      onPress={() => void removeExerciseVariant(v.linkId)}
+                      hitSlop={10}
+                      accessibilityRole="button"
+                      accessibilityLabel={t('exercises.detail.removeVariant')}
+                    >
+                      <Ionicons name="close" size={20} color={colors.textMuted} />
+                    </Pressable>
+                  ) : null}
+                </View>
+              ))
+            )}
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: '/exercises', params: { mode: 'pickVariant', forExerciseId: exercise.id } })
+              }
+              accessibilityRole="button"
+              hitSlop={8}
+            >
+              <Text style={[styles.seeProgression, { color: colors.accent }]}>
+                {t('exercises.detail.addVariant')}
+              </Text>
+            </Pressable>
+          </View>
+
           {isCustom ? (
             <View style={styles.actions}>
               <View style={styles.flex}>
@@ -413,4 +464,6 @@ const styles = StyleSheet.create({
   recordValue: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
   recordMeta: { fontFamily: fontFamily.body, fontSize: 10, textAlign: 'center' },
   seeProgression: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  variantRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  variantName: { flex: 1 },
 });

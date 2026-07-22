@@ -14,6 +14,7 @@ import {
   toggleFavorite,
   type ExerciseListItem,
 } from '@/data/repositories/exercise-repository';
+import { addExerciseVariant, useLinkedExerciseIds } from '@/data/repositories/exercise-variant-repository';
 import {
   addExerciseToWorkout,
   replaceExercise,
@@ -26,10 +27,12 @@ export default function ExercisesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { replaceExerciseId, mode } = useLocalSearchParams<{ replaceExerciseId?: string; mode?: string }>();
+  const { replaceExerciseId, mode, forExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string; mode?: string; forExerciseId?: string }>();
   const browse = mode === 'browse';
+  const pickVariant = mode === 'pickVariant';
 
   const { workout: active } = useActiveWorkout();
+  const { ids: linkedIds } = useLinkedExerciseIds(pickVariant && forExerciseId ? forExerciseId : '');
 
   const [query, setQuery] = useState('');
   const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
@@ -51,13 +54,25 @@ export default function ExercisesScreen() {
 
   // Mode remplacement (US Refonte-C3) : exclut les exercices déjà présents
   // dans la séance active, pour ne proposer que des remplacements pertinents.
-  const filteredItems = replaceExerciseId
+  let filteredItems = replaceExerciseId
     ? items.filter((item) => !active?.entries.some((e) => e.exerciseId === item.id))
     : items;
+
+  // Mode pickVariant (MUSC-F10c-2) : exclut l'exercice lui-même et ceux déjà liés.
+  if (pickVariant && forExerciseId) {
+    filteredItems = filteredItems.filter(
+      (item) => item.id !== forExerciseId && !linkedIds.has(item.id),
+    );
+  }
 
   const onPick = async (item: ExerciseListItem) => {
     if (browse) {
       router.push(`/exercises/${item.id}`);
+      return;
+    }
+    if (pickVariant && forExerciseId) {
+      await addExerciseVariant(forExerciseId, item.id);
+      router.back();
       return;
     }
     if (active) {
