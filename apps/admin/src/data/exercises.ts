@@ -164,12 +164,17 @@ export async function saveExercise(input: ExerciseInput): Promise<{
 }> {
   const id = input.id ?? crypto.randomUUID();
 
+  // `muscles_secondary` est typée `Json` en base → cast depuis `MuscleGroup[]` (assignable).
+  const musclesSecondary =
+    normalizeSecondaryMuscles(input.musclesSecondary, input.musclePrimary) as
+      Database['public']['Tables']['exercises']['Insert']['muscles_secondary'];
+
   const exerciseUpsert: Database['public']['Tables']['exercises']['Insert'] = {
     id,
     owner_id: null,
     source: 'library',
     muscle_primary: input.musclePrimary,
-    muscles_secondary: normalizeSecondaryMuscles(input.musclesSecondary, input.musclePrimary) as Database['public']['Tables']['exercises']['Insert']['muscles_secondary'],
+    muscles_secondary: musclesSecondary,
     equipment: input.equipment,
     status: input.status,
   };

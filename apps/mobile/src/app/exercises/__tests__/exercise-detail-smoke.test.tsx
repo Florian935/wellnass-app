@@ -85,4 +85,27 @@ describe('Fiche exercice — smoke test (rendu sans planter)', () => {
     const { getByText } = await render(<ExerciseDetailScreen />);
     expect(getByText('Exercice introuvable.')).toBeTruthy();
   });
+
+  it('affiche la ligne « Muscles secondaires » avec les libellés résolus (F10c-1)', async () => {
+    (useExercise as jest.Mock).mockReturnValueOnce({
+      exercise: {
+        ...customExercise,
+        source: 'library',
+        musclesSecondary: ['arms', 'shoulders'],
+      },
+      isLoading: false,
+    });
+    const { getByText } = await render(<ExerciseDetailScreen />);
+    expect(getByText('Muscles secondaires')).toBeTruthy();
+    expect(getByText('Bras · Épaules')).toBeTruthy();
+  });
+
+  it('n\'affiche pas la ligne « Muscles secondaires » quand la liste est vide', async () => {
+    (useExercise as jest.Mock).mockReturnValueOnce({
+      exercise: customExercise, // musclesSecondary: []
+      isLoading: false,
+    });
+    const { queryByText } = await render(<ExerciseDetailScreen />);
+    expect(queryByText('Muscles secondaires')).toBeNull();
+  });
 });
