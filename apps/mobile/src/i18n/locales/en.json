@@ -43,6 +43,8 @@
     "searchPlaceholder": "Exercise name…",
     "createCustom": "+ Create custom exercise",
     "customName": "Exercise name",
+    "createTitle": "Create an exercise",
+    "customNamePlaceholder": "E.g. Bench press",
     "add": "Add",
     "customBadge": "custom",
     "filters": "Filters",

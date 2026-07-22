@@ -43,6 +43,8 @@
     "searchPlaceholder": "Nom d'exercice…",
     "createCustom": "+ Créer un exercice perso",
     "customName": "Nom de l'exercice",
+    "createTitle": "Créer un exercice",
+    "customNamePlaceholder": "Ex. Développé couché",
     "add": "Ajouter",
     "customBadge": "perso",
     "filters": "Filtres",
