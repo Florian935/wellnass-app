@@ -291,7 +291,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**MUSC-F3 — RECETTE VALIDÉE À 100 % (Florian, 22/07/2026) ✅ → reste
+*Dernière mise à jour : 22/07/2026 (**MUSC-F10a — SPEC VALIDÉE (Florian) ✅** : chantier « fiche exercice »
+découpé en 3 incréments — **F10a** (socle : entrée « Bibliothèque d'exercices » persistante dans le hub Muscu →
+biblio en mode parcours → fiche `/exercises/[id]` avec données actuelles + gestion des exos perso Modifier/
+Supprimer) → **F10b** (records sur la fiche) → **F10c = MUSC-F2** (muscles secondaires + variantes, migration +
+admin). Spec F10a écrite + revue subagent (1 point bloquant corrigé : soft-delete de la ligne `exercises` seule,
+pas les traductions) + **validée Florian**. Aucune migration. Branche `feature/muscf10a-bibliotheque-fiche-exercice`.
+Spec : [muscf10a-bibliotheque-fiche-exercice.md](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md).
+**Prochaine étape : plan d'implémentation.** — **MUSC-F3 — RECETTE VALIDÉE À 100 % (Florian, 22/07/2026) ✅ → reste
 relecture Damien** ; roadmap 3.14 note « recette device validée ». **Nouvelle US notée : MUSC-F10 —
 Bibliothèque d'exercices en accès direct depuis le hub Muscu** (l'écran `exercises.tsx` n'est aujourd'hui
 atteignable que via « Ajouter un exercice » en séance) — à cadrer (question ouverte : comportement du tap sur un
@@ -480,13 +487,18 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   filtre par **groupe musculaire** et **matériel** (tiroir « Filtres » dans ExercisePicker + exercises.tsx).
   Migration cloud appliquée. **Reste : relecture Damien.**
 
-- [ ] **MUSC-F10 — Bibliothèque d'exercices en accès direct (hub Muscu)** *(nouvelle US, demande Florian
-  22/07/2026)* — aujourd'hui l'écran bibliothèque `exercises.tsx` (parcourir/rechercher/filtrer/créer un exo
-  perso) n'est atteignable que **depuis une séance en cours** (« Ajouter un exercice »). Ajouter une **entrée
-  dédiée dans le hub Muscu** pour y accéder sans lancer de séance. ⚠️ **Question de conception** : que fait le tap
-  sur un exercice en mode « parcours » (hors séance active) ? Aujourd'hui `onPick` ne fait rien sans `active`
-  workout → il faut décider (fiche/détail exercice ? consultation seule ? favori ?). À cadrer spec → plan →
-  design → validation avant code.
+- **MUSC-F10 — Fiche exercice & bibliothèque en accès direct** *(demande Florian 22/07/2026)* — découpé en
+  **3 incréments** (spec → plan → design → validation → code chacun) :
+  - [~] **MUSC-F10a — Socle : accès direct + fiche** — entrée persistante « Bibliothèque d'exercices » dans le hub
+    Muscu → biblio en mode parcours → fiche `/exercises/[id]` (nom, groupe, matériel, instructions, favori, badge
+    perso) + gestion des exos perso (Modifier/Supprimer, soft-delete de la ligne `exercises` seule). Aucune
+    migration. **Spec validée (Florian, 22/07/2026)** ([spec](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md)) →
+    **prochaine étape : plan**.
+  - [ ] **MUSC-F10b — Records sur la fiche** — 1RM réel/estimé, charge max, meilleur volume (lecture
+    `personal_records` + historique, sans migration). ⚠️ tenir compte du `JOIN exercises … deleted_at IS NULL`
+    (INNER) du recalcul des records. À cadrer après F10a.
+  - [ ] **MUSC-F10c (= MUSC-F2) — Fiche enrichie** — muscles principal **+ secondaires** + variantes/alternatives
+    (3.13/3.19/3.20). ⚠️ migration (colonnes) + saisie admin. Remplace/absorbe MUSC-F2 ci-dessus.
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
   + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +

@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — spec : bibliothèque en accès direct + fiche exercice (MUSC-F10a)
+
+> Nouvelle US issue du besoin remonté pendant la recette MUSC-F3 (l'écran bibliothèque n'est atteignable que
+> depuis une séance en cours). Cadrée par brainstorming (Florian). **1ᵉʳ des 3 incréments** du chantier « fiche
+> exercice » : **F10a** (socle) → **F10b** (records sur la fiche) → **F10c = MUSC-F2** (muscles secondaires +
+> variantes, migration + admin). Spec revue par le subagent `spec-document-reviewer` : **1 point bloquant
+> corrigé** (le soft-delete ne doit toucher que la ligne `exercises`, pas les traductions — sinon le nom se vide
+> sur les écrans d'historique/programmes qui résolvent le nom via `exercise_translations`), puis **Approved**.
+> **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10a-bibliotheque-fiche-exercice.md](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md) :
+  spec complète — entrée persistante « Bibliothèque d'exercices » dans le hub Muscu → écran biblio en **mode
+  parcours** (param de route ; tap → fiche, mode séance inchangé) → nouvel écran **fiche `/exercises/[id]`** (nom,
+  groupe, matériel, instructions, favori, badge perso) → **gestion des exos perso** (Modifier + Supprimer,
+  soft-delete **de la ligne `exercises` seule** toujours autorisé). Aucune migration. Records et muscles
+  secondaires explicitement hors périmètre (F10b/F10c).
+
+**Technique / Notes**
+- Décisions de cadrage : entrée hub non masquable ; suppression d'exo perso toujours autorisée (pas de blocage si
+  référencé) ; fiche accessible uniquement depuis la biblio en mode parcours (autres points d'entrée différés).
+- Note pour F10b consignée dans la spec : `records-repository.ts` calcule les records via un `JOIN exercises …
+  AND e.deleted_at IS NULL` (INNER) → un exo perso soft-deleted serait exclu du recalcul futur des records.
+- **Statut : spec validée (Florian) → prochaine étape plan d'implémentation.**
+
 ### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — MUSC-F3 : recherche d'exercices multi-critères (CODE LIVRÉ)
 
 > Roadmap [3.14](docs/roadmap/roadmap.md) 🟡 → ✅. Exécution **subagent-driven** du plan (10 tâches,
