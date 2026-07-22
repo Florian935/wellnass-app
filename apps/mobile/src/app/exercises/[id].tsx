@@ -52,6 +52,7 @@ export default function ExerciseDetailScreen() {
   const { exercise, isLoading } = useExercise(exerciseId);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [editName, setEditName] = useState('');
   const [editMuscle, setEditMuscle] = useState<MuscleGroup>('chest');
   const [editEquipment, setEditEquipment] = useState<Equipment | null>(null);
@@ -86,13 +87,22 @@ export default function ExerciseDetailScreen() {
   };
 
   const onSave = async () => {
-    if (!canSave) return;
-    await updateCustomExercise(exercise.id, {
-      name: editName,
-      muscle: editMuscle,
-      equipment: editEquipment,
-    });
-    setIsEditing(false);
+    if (isSaving || !canSave) return;
+    setIsSaving(true);
+    try {
+      await updateCustomExercise(exercise.id, {
+        name: editName,
+        muscle: editMuscle,
+        equipment: editEquipment,
+      });
+      setIsEditing(false);
+    } catch (e) {
+      // Échec improbable en offline-first (écriture locale) ; on garde le formulaire
+      // ouvert pour ne pas perdre la saisie, et on trace pour le debug.
+      console.warn('updateCustomExercise a échoué', e);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const onDelete = () => {
@@ -196,7 +206,8 @@ export default function ExerciseDetailScreen() {
               <Button
                 label={t('exercises.detail.save')}
                 onPress={() => void onSave()}
-                disabled={!canSave}
+                disabled={!canSave || isSaving}
+                loading={isSaving}
               />
             </View>
           </View>
