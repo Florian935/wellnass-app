@@ -61,6 +61,7 @@
       "muscle": "Groupe musculaire",
       "equipment": "Matériel",
       "instructions": "Instructions",
+      "instructionsPlaceholder": "Ex. Garder le dos plaqué au banc.",
       "secondaryMuscles": "Muscles secondaires",
       "variants": "Variantes / alternatives",
       "variantsEmpty": "Aucune variante pour l'instant",

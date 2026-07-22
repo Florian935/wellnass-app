@@ -61,6 +61,7 @@
       "muscle": "Muscle group",
       "equipment": "Equipment",
       "instructions": "Instructions",
+      "instructionsPlaceholder": "E.g. Keep your back flat on the bench.",
       "secondaryMuscles": "Secondary muscles",
       "variants": "Variants / alternatives",
       "variantsEmpty": "No variant yet",

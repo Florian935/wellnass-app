@@ -3,19 +3,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import {
-  EQUIPMENTS,
-  MUSCLE_GROUPS,
-  type Equipment,
-  type MuscleGroup,
-} from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { Segment } from '@/components/Segment';
-import { TextField } from '@/components/TextField';
+import { EditExerciseModal } from '@/components/exercises/EditExerciseModal';
 import {
   useExercise,
   toggleFavorite,
-  updateCustomExercise,
   deleteCustomExercise,
 } from '@/data/repositories/exercise-repository';
 import { useExerciseVariants, removeExerciseVariant } from '@/data/repositories/exercise-variant-repository';
@@ -23,14 +15,6 @@ import { useExerciseFicheRecords } from '@/data/repositories/records-repository'
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-
-/**
- * Options du sélecteur de matériel : sentinelle `'none'` en tête (le `Segment`
- * exige une valeur non-null) qui représente « aucun matériel » (equipment = null),
- * suivie des équipements canoniques.
- */
-const EQUIPMENT_OPTIONS = ['none', ...EQUIPMENTS] as const;
-type EquipmentOption = (typeof EQUIPMENT_OPTIONS)[number];
 
 /** Formate un timestamp ISO en date locale JJ/MM/AAAA (zéros de tête). */
 function formatRecordDate(iso: string): string {
@@ -69,11 +53,7 @@ export default function ExerciseDetailScreen() {
   const { records, isLoading: recordsLoading } = useExerciseFicheRecords(exerciseId);
   const { variants, isLoading: variantsLoading } = useExerciseVariants(exerciseId);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editMuscle, setEditMuscle] = useState<MuscleGroup>('chest');
-  const [editEquipment, setEditEquipment] = useState<Equipment | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -95,33 +75,6 @@ export default function ExerciseDetailScreen() {
   }
 
   const isCustom = exercise.source === 'custom';
-  const canSave = editName.trim().length > 0;
-
-  const onStartEdit = () => {
-    setEditName(exercise.name);
-    setEditMuscle(exercise.muscle);
-    setEditEquipment(exercise.equipment as Equipment | null);
-    setIsEditing(true);
-  };
-
-  const onSave = async () => {
-    if (isSaving || !canSave) return;
-    setIsSaving(true);
-    try {
-      await updateCustomExercise(exercise.id, {
-        name: editName,
-        muscle: editMuscle,
-        equipment: editEquipment,
-      });
-      setIsEditing(false);
-    } catch (e) {
-      // Échec improbable en offline-first (écriture locale) ; on garde le formulaire
-      // ouvert pour ne pas perdre la saisie, et on trace pour le debug.
-      console.warn('updateCustomExercise a échoué', e);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const onDelete = () => {
     Alert.alert(exercise.name, t('exercises.detail.deleteConfirm'), [
@@ -199,70 +152,7 @@ export default function ExerciseDetailScreen() {
         </Pressable>
       </View>
 
-      {isEditing ? (
-        <View style={styles.form}>
-          <Text style={[styles.editTitle, { color: colors.text }]}>
-            {t('exercises.detail.editTitle')}
-          </Text>
-
-          <TextField
-            label={t('exercises.customName')}
-            value={editName}
-            onChangeText={setEditName}
-            autoCapitalize="sentences"
-          />
-
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>
-              {t('exercises.detail.muscle')}
-            </Text>
-            <Segment
-              options={MUSCLE_GROUPS}
-              value={editMuscle}
-              onChange={setEditMuscle}
-              label={(m) => t(`muscle.${m}`)}
-              scrollable
-            />
-          </View>
-
-          <View style={styles.field}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>
-              {t('exercises.detail.equipment')}
-            </Text>
-            <Segment
-              options={EQUIPMENT_OPTIONS}
-              value={editEquipment ?? 'none'}
-              onChange={(opt: EquipmentOption) =>
-                setEditEquipment(opt === 'none' ? null : opt)
-              }
-              label={(opt) =>
-                opt === 'none' ? t('exercises.detail.equipmentNone') : t(`equipment.${opt}`)
-              }
-              scrollable
-            />
-          </View>
-
-          <View style={styles.actions}>
-            <View style={styles.flex}>
-              <Button
-                label={t('common.cancel')}
-                variant="ghost"
-                onPress={() => setIsEditing(false)}
-              />
-            </View>
-            <View style={styles.flex}>
-              <Button
-                label={t('exercises.detail.save')}
-                onPress={() => void onSave()}
-                disabled={!canSave || isSaving}
-                loading={isSaving}
-              />
-            </View>
-          </View>
-        </View>
-      ) : (
-        <>
-          <View style={styles.field}>
+      <View style={styles.field}>
             <Text style={[styles.label, { color: colors.textMuted }]}>
               {t('exercises.detail.muscle')}
             </Text>
@@ -410,7 +300,7 @@ export default function ExerciseDetailScreen() {
                 <Button
                   label={t('exercises.detail.edit')}
                   variant="ghost"
-                  onPress={onStartEdit}
+                  onPress={() => setEditOpen(true)}
                 />
               </View>
               <View style={styles.flex}>
@@ -422,8 +312,15 @@ export default function ExerciseDetailScreen() {
               </View>
             </View>
           ) : null}
-        </>
-      )}
+
+      {isCustom ? (
+        <EditExerciseModal
+          key={exercise.id}
+          visible={editOpen}
+          exercise={exercise}
+          onClose={() => setEditOpen(false)}
+        />
+      ) : null}
     </ScrollView>
   );
 }
@@ -436,8 +333,6 @@ const styles = StyleSheet.create({
   titleText: { flex: 1, gap: 4 },
   name: { fontFamily: fontFamily.displayBold, fontSize: 24, letterSpacing: -0.5 },
   badge: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  form: { gap: 16 },
-  editTitle: { fontFamily: fontFamily.displayBold, fontSize: 18, letterSpacing: -0.3 },
   field: { gap: 4 },
   label: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   value: { fontFamily: fontFamily.body, fontSize: 16 },

@@ -325,12 +325,37 @@ async function getExerciseOwnership(
 }
 
 /**
+ * Prépare les valeurs d'écriture d'un exo perso : muscles secondaires **normalisés**
+ * (dédup, exclusion du primaire, valeurs valides) sérialisés en JSON, et instructions
+ * (trim → `null` si vide). Pur → testable sans PowerSync.
+ */
+export function buildCustomExerciseWrite(input: {
+  muscle: MuscleGroup;
+  musclesSecondary: MuscleGroup[];
+  instructions: string | null;
+}): { musclesSecondaryJson: string; instructions: string | null } {
+  return {
+    musclesSecondaryJson: JSON.stringify(
+      normalizeSecondaryMuscles(input.musclesSecondary, input.muscle),
+    ),
+    instructions: input.instructions?.trim() ? input.instructions.trim() : null,
+  };
+}
+
+/**
  * Met à jour un exercice **perso** de l'utilisateur courant : groupe musculaire,
- * matériel (optionnel), et le nom (unique ligne de traduction du custom). Atomique.
+ * matériel, muscles secondaires, nom et instructions (unique ligne de traduction du
+ * custom). Atomique. Les muscles secondaires excluent toujours le primaire (normalisés).
  */
 export async function updateCustomExercise(
   id: string,
-  input: { name: string; muscle: MuscleGroup; equipment: Equipment | null },
+  input: {
+    name: string;
+    muscle: MuscleGroup;
+    equipment: Equipment | null;
+    musclesSecondary: MuscleGroup[];
+    instructions: string | null;
+  },
 ): Promise<void> {
   const userId = currentUserId();
   assertOwnedCustomExercise(await getExerciseOwnership(id), userId);
@@ -343,15 +368,16 @@ export async function updateCustomExercise(
     throw new Error("Traduction de l'exercice introuvable.");
   }
 
+  const { musclesSecondaryJson, instructions } = buildCustomExerciseWrite(input);
   const now = nowUtc();
   await powerSync.writeTransaction(async (tx) => {
     await tx.execute(
-      `UPDATE exercises SET muscle_primary = ?, equipment = ?, updated_at = ? WHERE id = ?`,
-      [input.muscle, input.equipment, now, id],
+      `UPDATE exercises SET muscle_primary = ?, equipment = ?, muscles_secondary = ?, updated_at = ? WHERE id = ?`,
+      [input.muscle, input.equipment, musclesSecondaryJson, now, id],
     );
     await tx.execute(
-      `UPDATE exercise_translations SET name = ?, updated_at = ? WHERE id = ?`,
-      [input.name.trim(), now, translation.id],
+      `UPDATE exercise_translations SET name = ?, instructions = ?, updated_at = ? WHERE id = ?`,
+      [input.name.trim(), instructions, now, translation.id],
     );
   });
 }
