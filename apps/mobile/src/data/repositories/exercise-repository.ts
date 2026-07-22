@@ -41,6 +41,11 @@ export type ExerciseListItem = {
   isFavorite: boolean;
 };
 
+/** Fiche exercice : vue liste + instructions résolues (langue courante → fr). */
+export type ExerciseDetail = ExerciseListItem & {
+  instructions: string | null;
+};
+
 /** Ligne brute renvoyée par SQLite pour la vue liste (colonnes résolues en SQL). */
 type ExerciseListDbRow = {
   id: string;
@@ -71,6 +76,27 @@ const SELECT_EXERCISES = `
   LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
   LEFT JOIN exercise_favorites f      ON f.exercise_id = e.id AND f.deleted_at IS NULL
   WHERE e.deleted_at IS NULL
+`;
+
+/** Ligne brute de la fiche (comme la vue liste + instructions résolues). */
+type ExerciseDetailDbRow = ExerciseListDbRow & { instructions: string | null };
+
+/**
+ * Sélection d'un exercice unique pour la fiche : nom + instructions résolus
+ * (langue courante → fr) + drapeau favori. `?` #1 = langue, `?` #2 = id.
+ * Filtre `e.deleted_at IS NULL` : un exo supprimé → aucune ligne → « introuvable ».
+ */
+const SELECT_EXERCISE_DETAIL = `
+  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url,
+         COALESCE(tl.name, tfr.name) AS name,
+         COALESCE(tl.instructions, tfr.instructions) AS instructions,
+         (f.id IS NOT NULL) AS is_favorite
+  FROM exercises e
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  LEFT JOIN exercise_favorites f      ON f.exercise_id = e.id AND f.deleted_at IS NULL
+  WHERE e.deleted_at IS NULL AND e.id = ?
+  LIMIT 1
 `;
 
 const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
@@ -159,6 +185,28 @@ export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: bool
   const exercises = data.map(rowToListItem);
 
   return { exercises, isLoading };
+}
+
+/**
+ * Fiche d'un exercice unique (nom + instructions résolus, drapeau favori),
+ * réactive aux changements locaux. `null` si l'id est introuvable ou supprimé.
+ * `isLoading` ne dépend QUE de la requête locale (offline-first, ADR-001).
+ */
+export function useExercise(id: string): {
+  exercise: ExerciseDetail | null;
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+  const { data, isLoading } = useQuery<ExerciseDetailDbRow>(SELECT_EXERCISE_DETAIL, [lang, id]);
+
+  const row = data[0];
+  const exercise: ExerciseDetail | null = row
+    ? { ...rowToListItem(row), instructions: row.instructions }
+    : null;
+
+  return { exercise, isLoading };
 }
 
 // ---------------------------------------------------------------------------
