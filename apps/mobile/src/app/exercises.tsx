@@ -3,14 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MUSCLE_GROUPS, type MuscleGroup, type Equipment } from '@wellness/shared';
+import { type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
+import { CreateExerciseModal } from '@/components/exercises/CreateExerciseModal';
 import { ExerciseFilterDrawer } from '@/components/programs/ExerciseFilterDrawer';
 import {
   useExercises,
-  addCustomExercise,
   toggleFavorite,
   type ExerciseListItem,
 } from '@/data/repositories/exercise-repository';
@@ -38,9 +37,7 @@ export default function ExercisesScreen() {
   const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newMuscle, setNewMuscle] = useState<MuscleGroup>('chest');
+  const [createOpen, setCreateOpen] = useState(false);
 
   const { exercises, isLoading } = useExercises(query, muscles, equipment);
   const filterCount = muscles.length + equipment.length;
@@ -85,13 +82,6 @@ export default function ExercisesScreen() {
     }
   };
 
-  const onCreate = async () => {
-    if (!newName.trim()) return;
-    await addCustomExercise(newName, newMuscle);
-    setNewName('');
-    setCreating(false);
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.searchRow}>
@@ -119,25 +109,9 @@ export default function ExercisesScreen() {
         </Pressable>
       </View>
 
-      {creating ? (
-        <View style={[styles.createBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <TextField label={t('exercises.customName')} value={newName} onChangeText={setNewName} autoCapitalize="sentences" />
-          <Segment
-            options={MUSCLE_GROUPS}
-            value={newMuscle}
-            onChange={setNewMuscle}
-            label={(m) => t(`muscle.${m}`)}
-          />
-          <View style={styles.createActions}>
-            <View style={styles.flex}><Button label={t('common.cancel')} variant="ghost" onPress={() => setCreating(false)} /></View>
-            <View style={styles.flex}><Button label={t('exercises.add')} onPress={onCreate} /></View>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.createTrigger}>
-          <Button label={t('exercises.createCustom')} variant="ghost" onPress={() => setCreating(true)} />
-        </View>
-      )}
+      <View style={styles.createTrigger}>
+        <Button label={t('exercises.createCustom')} variant="ghost" onPress={() => setCreateOpen(true)} />
+      </View>
 
       {isLoading ? (
         <View style={styles.centered}>
@@ -201,6 +175,8 @@ export default function ExercisesScreen() {
         equipment={equipment}
         onEquipmentChange={setEquipment}
       />
+
+      <CreateExerciseModal visible={createOpen} onClose={() => setCreateOpen(false)} />
     </View>
   );
 }
@@ -223,8 +199,6 @@ const styles = StyleSheet.create({
   },
   filtersLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   createTrigger: { paddingHorizontal: 20, paddingTop: 8 },
-  createBox: { margin: 20, marginTop: 12, padding: 16, borderRadius: 16, borderWidth: 1, gap: 12 },
-  createActions: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1 },
   list: { padding: 20, gap: 10 },
   emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
