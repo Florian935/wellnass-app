@@ -65,7 +65,8 @@
       "notFound": "Exercise not found.",
       "editTitle": "Edit exercise",
       "equipmentNone": "None",
-      "save": "Save"
+      "save": "Save",
+      "favorite": "Favorite"
     }
   },
   "workout": {
