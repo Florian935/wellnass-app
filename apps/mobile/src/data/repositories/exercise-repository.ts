@@ -328,6 +328,9 @@ export async function updateCustomExercise(
     `SELECT id FROM exercise_translations WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1`,
     [id],
   );
+  if (!translation) {
+    throw new Error("Traduction de l'exercice introuvable.");
+  }
 
   const now = nowUtc();
   await powerSync.writeTransaction(async (tx) => {
@@ -335,12 +338,10 @@ export async function updateCustomExercise(
       `UPDATE exercises SET muscle_primary = ?, equipment = ?, updated_at = ? WHERE id = ?`,
       [input.muscle, input.equipment, now, id],
     );
-    if (translation) {
-      await tx.execute(
-        `UPDATE exercise_translations SET name = ?, updated_at = ? WHERE id = ?`,
-        [input.name.trim(), now, translation.id],
-      );
-    }
+    await tx.execute(
+      `UPDATE exercise_translations SET name = ?, updated_at = ? WHERE id = ?`,
+      [input.name.trim(), now, translation.id],
+    );
   });
 }
 

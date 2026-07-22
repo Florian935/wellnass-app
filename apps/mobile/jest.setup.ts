@@ -6,6 +6,11 @@
  * - Fournir des valeurs par défaut cohérentes pour les hooks/contextes PowerSync.
  */
 
+// Variables d'environnement Supabase : défauts pour les tests (jest ne charge pas .env).
+// Le vrai src/lib/supabase.ts lève au chargement sans elles ; createClient reste mocké ci-dessous.
+process.env.EXPO_PUBLIC_SUPABASE_URL ??= 'http://localhost';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
+
 // ---------------------------------------------------------------------------
 // Mock @powersync/react — hooks utilisés dans les repositories et composants
 // ---------------------------------------------------------------------------
