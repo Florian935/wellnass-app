@@ -23,19 +23,21 @@ export function useColorSchemePref(): ColorScheme {
 }
 
 /**
- * Palette effective. L'**accent** est surchargé par la couleur du **menu actif**
- * (Accueil / Muscu / Course / Alimentation, cf. `menu-accent-store`) au lieu de
- * l'accent unique de la palette. Le reste de la palette (surfaces, texte…) est inchangé.
+ * Palette effective. Si le réglage « Couleurs des menus » est activé, l'**accent** est
+ * surchargé par la couleur du **menu actif** (Accueil / Muscu / Course / Alimentation, cf.
+ * `menu-accent-store`) au lieu de l'accent unique de la palette. Off (défaut) → accent
+ * unique inchangé. Le reste de la palette (surfaces, texte…) est toujours inchangé.
  */
 export function useTheme(): { scheme: ColorScheme; colors: Palette } {
   const scheme = useColorSchemePref();
   const base = palettes[scheme];
+  const menuColorsEnabled = useMenuAccent((s) => s.enabled);
   const activeMenu = useMenuAccent((s) => s.activeMenu);
   const menuAccent = useMenuAccent((s) => s.colors[activeMenu]);
 
-  const colors = useMemo(
-    () => (menuAccent && menuAccent !== base.accent ? { ...base, accent: menuAccent } : base),
-    [base, menuAccent],
-  );
+  const colors = useMemo(() => {
+    if (!menuColorsEnabled || !menuAccent || menuAccent === base.accent) return base;
+    return { ...base, accent: menuAccent };
+  }, [base, menuColorsEnabled, menuAccent]);
   return { scheme, colors };
 }

@@ -1107,8 +1107,9 @@
     },
     "menuColors": {
       "title": "Menu colors",
+      "enable": "Enable per-menu colors",
       "reset": "Reset colors",
-      "hint": "Each menu (Home, Strength, Running, Food) has its own accent color."
+      "hint": "When enabled, each menu (Home, Strength, Running, Food) can have its own accent color. Disabled, the single accent applies everywhere."
     },
     "units": {
       "title": "Units",

@@ -102,6 +102,8 @@ export default function SettingsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { settings } = useSettings();
+  const menuColorsEnabled = useMenuAccent((s) => s.enabled);
+  const setMenuColorsEnabled = useMenuAccent((s) => s.setEnabled);
   const menuColors = useMenuAccent((s) => s.colors);
   const setMenuColor = useMenuAccent((s) => s.setColor);
   const resetMenuColors = useMenuAccent((s) => s.reset);
@@ -198,49 +200,72 @@ export default function SettingsScreen() {
         {t('settings.menuColors.title')}
       </Text>
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {MENU_KEYS.map((menu, i) => (
+        <View style={styles.row}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>
+            {t('settings.menuColors.enable')}
+          </Text>
+          <Switch
+            value={menuColorsEnabled}
+            onValueChange={setMenuColorsEnabled}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.menuColors.enable')}
+          />
+        </View>
+      </View>
+      {menuColorsEnabled && (
+        <>
           <View
-            key={menu}
             style={[
-              styles.menuColorRow,
-              i < MENU_KEYS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+              styles.card,
+              { backgroundColor: colors.surface, borderColor: colors.border, marginTop: 10 },
             ]}
           >
-            <View style={styles.menuColorHead}>
-              <View style={[styles.menuColorDot, { backgroundColor: menuColors[menu] }]} />
-              <Text style={[styles.rowLabel, { color: colors.text }]}>
-                {t(MENU_LABEL_KEY[menu])}
-              </Text>
-            </View>
-            <View style={styles.swatches}>
-              {MENU_COLOR_SWATCHES.map((sw) => {
-                const selected = menuColors[menu].toLowerCase() === sw.toLowerCase();
-                return (
-                  <Pressable
-                    key={sw}
-                    onPress={() => setMenuColor(menu, sw)}
-                    hitSlop={4}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    accessibilityLabel={`${t(MENU_LABEL_KEY[menu])} · ${sw}`}
-                    style={[
-                      styles.swatch,
-                      { backgroundColor: sw, borderColor: selected ? colors.text : 'transparent' },
-                    ]}
-                  />
-                );
-              })}
-            </View>
+            {MENU_KEYS.map((menu, i) => (
+              <View
+                key={menu}
+                style={[
+                  styles.menuColorRow,
+                  i < MENU_KEYS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                ]}
+              >
+                <View style={styles.menuColorHead}>
+                  <View style={[styles.menuColorDot, { backgroundColor: menuColors[menu] }]} />
+                  <Text style={[styles.rowLabel, { color: colors.text }]}>
+                    {t(MENU_LABEL_KEY[menu])}
+                  </Text>
+                </View>
+                <View style={styles.swatches}>
+                  {MENU_COLOR_SWATCHES.map((sw) => {
+                    const selected = menuColors[menu].toLowerCase() === sw.toLowerCase();
+                    return (
+                      <Pressable
+                        key={sw}
+                        onPress={() => setMenuColor(menu, sw)}
+                        hitSlop={4}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected }}
+                        accessibilityLabel={`${t(MENU_LABEL_KEY[menu])} · ${sw}`}
+                        style={[
+                          styles.swatch,
+                          { backgroundColor: sw, borderColor: selected ? colors.text : 'transparent' },
+                        ]}
+                      />
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
-      <View style={styles.stack}>
-        <Button
-          label={t('settings.menuColors.reset')}
-          variant="ghost"
-          onPress={() => resetMenuColors()}
-        />
-      </View>
+          <View style={styles.stack}>
+            <Button
+              label={t('settings.menuColors.reset')}
+              variant="ghost"
+              onPress={() => resetMenuColors()}
+            />
+          </View>
+        </>
+      )}
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.menuColors.hint')}</Text>
 
       {/* Unités (item 1.15) */}

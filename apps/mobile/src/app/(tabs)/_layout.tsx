@@ -24,11 +24,15 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { settings } = useSettings();
+  const menuColorsEnabled = useMenuAccent((s) => s.enabled);
   const menuColors = useMenuAccent((s) => s.colors);
   // Tant que les réglages ne sont pas chargés, on affiche tous les piliers par défaut.
   const activePillars = settings?.activePillars ?? [...PILLARS];
 
   const isActive = (pillar: Pillar) => activePillars.includes(pillar);
+  // Couleurs par menu si activé (réglages), sinon accent unique pour tous les onglets.
+  const tabTint = (menu: keyof typeof menuColors) =>
+    menuColorsEnabled ? menuColors[menu] : colors.accent;
 
   return (
     <Tabs
@@ -44,7 +48,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
-          tabBarActiveTintColor: menuColors.home,
+          tabBarActiveTintColor: tabTint('home'),
           tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
         }}
       />
@@ -53,7 +57,7 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.strength'),
           href: isActive('strength') ? undefined : null,
-          tabBarActiveTintColor: menuColors.strength,
+          tabBarActiveTintColor: tabTint('strength'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.strength} color={color} size={size} />
           ),
@@ -64,7 +68,7 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.running'),
           href: isActive('running') ? undefined : null,
-          tabBarActiveTintColor: menuColors.running,
+          tabBarActiveTintColor: tabTint('running'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.running} color={color} size={size} />
           ),
@@ -75,7 +79,7 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.nutrition'),
           href: isActive('nutrition') ? undefined : null,
-          tabBarActiveTintColor: menuColors.nutrition,
+          tabBarActiveTintColor: tabTint('nutrition'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name={PILLAR_ICON.nutrition} color={color} size={size} />
           ),

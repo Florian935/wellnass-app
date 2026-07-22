@@ -10,6 +10,24 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
+>
+> Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d`, jugée peu
+> lisible) : Florian souhaite la remettre, **cette fois pilotable par un réglage**. Spec ajoutée :
+> [compte-profil-onboarding.md §4.3](docs/specs/functional/compte-profil-onboarding.md).
+>
+> - [x] Revert de `1ae20d4` (`git revert`, propre — seul conflit CHANGELOG résolu manuellement) :
+>   restaure `menu-accent-store.ts`, `useMenuFocus.ts`, `useTheme.ts`, onglets, `settings.tsx`, i18n.
+> - [x] Nouveau réglage **« Activer les couleurs par menu »** (Réglages → Apparence), **off par défaut**.
+>   Off → accent unique (orange) pour tous les onglets (comportement actuel inchangé). On → couleurs
+>   par onglet + pastilles + bouton réinitialiser (4 couleurs par défaut, pas l'orange unique).
+> - [x] `enabled` persisté en local device (`secureStorage`), même logique que les couleurs
+>   (non synchronisé, aucune migration).
+> - [x] i18n FR/EN (`settings.menuColors.enable`).
+> - [x] typecheck/lint/781 tests verts.
+> - [ ] **Recette device** (Florian/Damien) : toggle off → orange partout ; toggle on → couleurs par
+>   onglet + persistance après redémarrage app.
+>
 > ## ✅ RECETTE VALIDÉE — US NUTR-17 Régularité du journal (Stats nutrition mobile, Florian, 17/07/2026) — **RECETTÉ & VALIDÉ ✅** (plan conservé pour trace ; reste relecture Damien)
 >
 > Code **livré & mergé sur `dev`** (`feature/nutr17-regularite-journal`, `9b8b1ec`→`f6b54a1`). **100 %
@@ -273,7 +291,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 22/07/2026 (**US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
+*Dernière mise à jour : 22/07/2026 (**Couleurs des menus — CODE LIVRÉ ✅, réintroduites avec un toggle
+on/off** (`feature/couleurs-menu-toggle`) — reste recette device. — **US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
 (A/B/C1/C2/C3/D) complet côté implémentation** — reste relecture Damien sur l'ensemble. — **US-D —
 correctif post-recette** : le seul accès à « Mes templates »
 passait par « Séance libre » → « Depuis un template », qui lançait direct au tap sans possibilité

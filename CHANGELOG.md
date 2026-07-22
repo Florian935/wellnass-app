@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 22/07/2026 — `feature/couleurs-menu-toggle` — couleurs des menus, réintroduites avec un réglage on/off
+
+> Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d` du
+> 20/07, jugée peu lisible en pratique). Demande de Florian : la remettre, mais cette fois
+> **pilotable par un réglage** plutôt qu'imposée en permanence. Spec ajoutée :
+> [compte-profil-onboarding.md §4.3](docs/specs/functional/compte-profil-onboarding.md).
+> Commit précédent : `f169a4b` (revert de `1ae20d4`, conflit limité au CHANGELOG, résolu
+> manuellement). typecheck/lint/781 tests verts. Reste : recette device.
+
+**Ajouté**
+- **Réglage « Activer les couleurs par menu »** ([settings.tsx](apps/mobile/src/app/settings.tsx),
+  Réglages → Apparence) : `Switch` **off par défaut**. Off → accent unique (orange) sur tous les
+  onglets, comportement inchangé par rapport à avant ce commit. On → pastilles de couleur par
+  menu + bouton « Réinitialiser » (état restauré de `751fa5d`), visibles seulement si activé.
+- `menu-accent-store.ts` : nouveau champ `enabled` (+ `setEnabled`), persisté en local device
+  (`secureStorage`, clé `menu_accent_enabled`) au même titre que les couleurs — non synchronisé,
+  aucune migration.
+- i18n FR/EN : `settings.menuColors.enable`.
+
+**Modifié**
+- `useTheme.ts` : l'accent n'est surchargé par la couleur du menu actif que si `enabled` est vrai ;
+  sinon la palette de base (accent unique) s'applique, comme avant `751fa5d`.
+- [(tabs)/_layout.tsx](apps/mobile/src/app/%28tabs%29/_layout.tsx) : `tabBarActiveTintColor` par
+  onglet passe par un helper `tabTint()` qui retombe sur `colors.accent` quand `enabled` est faux
+  (les 4 couleurs `menuColors.*` n'étaient jusqu'ici pas gatées par le toggle — corrigé pour que
+  « off » soit vraiment un accent unique partout, y compris sur la barre d'onglets).
+
+### 22/07/2026 — `feature/couleurs-menu-toggle` — revert : rétablit la couleur d'accent par menu (751fa5d)
+
+> Annule `1ae20d4` pour repartir de la base `751fa5d` avant d'y ajouter le toggle on/off
+> (entrée suivante). `git revert 1ae20d4` propre — seul conflit sur ce CHANGELOG (entrées
+> ajoutées depuis), résolu manuellement ; aucun conflit de code.
+
+**Ajouté**
+- **Couleur d'accent par menu** (état de `751fa5d`) : `menu-accent-store.ts`, `useMenuFocus.ts`,
+  `useTheme.ts` (accent = couleur du menu actif), onglets `(tabs)/_layout.tsx`/`index.tsx`/
+  `nutrition.tsx`/`running.tsx`/`strength.tsx`, `_layout.tsx` racine, section « Couleurs des
+  menus » dans `settings.tsx` + clés i18n FR/EN.
+
 ### 22/07/2026 — `feature/refonte-muscu-d` — US-D : recette validée (Florian) ✅
 
 > Chantier refonte Muscu (A/B/C1/C2/C3/D) **complet côté implémentation** : les 5 US sont livrées et

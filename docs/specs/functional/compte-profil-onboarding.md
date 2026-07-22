@@ -117,6 +117,11 @@ Ces données sont partagées avec les piliers concernés (ex. le niveau running 
 - **Langue : FR / EN — les deux disponibles dès le lancement (décision G).** Détection de la locale système au premier lancement, **override manuel** dans les préférences, **changement à chaud** (sans redémarrage). Toute l'UI **et** le contenu éditorial (exercices, programmes) et les bases (aliments) sont bilingues.
 - **Notifications** : activables / désactivables **par type** (rappel séance, rappel repas, rappel pesée, streak en danger, nouveau record) — voir [navigation-ux.md](./navigation-ux.md) § Notifications.
 - **Thème de l'app** : clair / sombre / système.
+- **Couleurs des menus** (Réglages → Apparence) : réglage **« Activer les couleurs par menu »** (off par défaut).
+  Off → accent unique (orange) pour tous les onglets, comme aujourd'hui. On → chaque onglet (Accueil / Muscu /
+  Course / Alimentation) prend sa propre couleur, personnalisable par pastilles ; bouton « Réinitialiser » qui
+  remet les 4 couleurs par défaut (terracotta / bordeaux / bleu / vert — pas l'orange unique). Préférence locale
+  device (`secureStorage`), non synchronisée, aucune migration.
 
 ---
 

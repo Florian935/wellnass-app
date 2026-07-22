@@ -4,9 +4,10 @@ import { secureStorage } from '@/lib/secure-storage';
 /**
  * Couleur d'accent **par menu** (Accueil / Muscu / Course / Alimentation).
  *
- * Chaque onglet peut avoir sa propre couleur secondaire (au lieu de l'accent orange
- * unique). Le menu actif (`activeMenu`, posé par chaque onglet au focus) détermine
- * l'accent effectif renvoyé par `useTheme`. Les couleurs sont une **préférence locale
+ * Contrôlé par le réglage `enabled` (off par défaut → accent unique orange, comme le
+ * reste de l'app). Quand activé, chaque onglet peut avoir sa propre couleur secondaire ;
+ * le menu actif (`activeMenu`, posé par chaque onglet au focus) détermine l'accent
+ * effectif renvoyé par `useTheme`. `enabled` + les couleurs sont une **préférence locale
  * (device)**, persistée via `secureStorage` — non synchronisée, **aucune migration**
  * (promotion possible vers `user_settings` plus tard).
  */
@@ -35,6 +36,7 @@ export const MENU_COLOR_SWATCHES: readonly string[] = [
 ];
 
 const STORAGE_KEY = 'menu_accent_colors';
+const ENABLED_STORAGE_KEY = 'menu_accent_enabled';
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 /** Ne garde que les couleurs valides (#RRGGBB) pour des clés de menu connues. */
@@ -57,31 +59,51 @@ async function persist(colors: Record<MenuKey, string>): Promise<void> {
   }
 }
 
+async function persistEnabled(enabled: boolean): Promise<void> {
+  try {
+    await secureStorage.setItem(ENABLED_STORAGE_KEY, JSON.stringify(enabled));
+  } catch {
+    // Persistance best-effort : un échec ne doit pas casser l'UI.
+  }
+}
+
 type MenuAccentState = {
+  /** Couleurs par menu activées ? Off par défaut → accent unique (orange) partout. */
+  enabled: boolean;
   /** Couleur de chaque menu (défauts fusionnés avec le stockage). */
   colors: Record<MenuKey, string>;
   /** Menu actuellement affiché (piloté par le focus des onglets). */
   activeMenu: MenuKey;
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  setEnabled: (enabled: boolean) => void;
   setActiveMenu: (menu: MenuKey) => void;
   setColor: (menu: MenuKey, color: string) => void;
   reset: () => void;
 };
 
 export const useMenuAccent = create<MenuAccentState>((set, get) => ({
+  enabled: false,
   colors: { ...DEFAULT_MENU_COLORS },
   activeMenu: 'home',
   hydrated: false,
   hydrate: async () => {
     if (get().hydrated) return;
     try {
-      const raw = await secureStorage.getItem(STORAGE_KEY);
-      const stored = raw ? sanitize(JSON.parse(raw)) : {};
-      set({ colors: { ...DEFAULT_MENU_COLORS, ...stored }, hydrated: true });
+      const [rawColors, rawEnabled] = await Promise.all([
+        secureStorage.getItem(STORAGE_KEY),
+        secureStorage.getItem(ENABLED_STORAGE_KEY),
+      ]);
+      const stored = rawColors ? sanitize(JSON.parse(rawColors)) : {};
+      const enabled = rawEnabled ? JSON.parse(rawEnabled) === true : false;
+      set({ colors: { ...DEFAULT_MENU_COLORS, ...stored }, enabled, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
+  },
+  setEnabled: (enabled) => {
+    set({ enabled });
+    void persistEnabled(enabled);
   },
   setActiveMenu: (menu) => {
     if (get().activeMenu !== menu) set({ activeMenu: menu });

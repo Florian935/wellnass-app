@@ -1107,8 +1107,9 @@
     },
     "menuColors": {
       "title": "Couleurs des menus",
+      "enable": "Activer les couleurs par menu",
       "reset": "Réinitialiser les couleurs",
-      "hint": "Chaque menu (Accueil, Muscu, Course, Alimentation) a sa couleur d'accent."
+      "hint": "Une fois activé, chaque menu (Accueil, Muscu, Course, Alimentation) peut avoir sa propre couleur d'accent. Désactivé, l'accent unique s'applique partout."
     },
     "units": {
       "title": "Unités",
