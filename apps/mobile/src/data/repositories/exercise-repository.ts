@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
-import { insertWithSyncFields, softDelete } from './_sql';
+import { insertWithSyncFields, nowUtc, softDelete } from './_sql';
 
 /** Élément d'exercice tel qu'affiché dans les listes (biblio, favoris, recherche). */
 export type ExerciseListItem = {
@@ -283,4 +283,75 @@ export async function toggleFavorite(exerciseId: string): Promise<void> {
     user_id: userId,
     exercise_id: exerciseId,
   });
+}
+
+/**
+ * Garde : seules les modifications/suppressions d'un exercice **perso**
+ * (`source = 'custom'`) appartenant à l'utilisateur courant sont autorisées.
+ * Lève sinon (la RLS l'empêcherait aussi côté serveur ; garde applicative pour
+ * un échec clair et immédiat). `row` null = exercice introuvable.
+ */
+export function assertOwnedCustomExercise(
+  row: { source: string; owner_id: string | null } | null,
+  userId: string,
+): void {
+  if (!row) {
+    throw new Error('Exercice introuvable.');
+  }
+  if (row.source !== 'custom' || row.owner_id !== userId) {
+    throw new Error('Seuls tes exercices personnels peuvent être modifiés ou supprimés.');
+  }
+}
+
+/** Charge (source, owner_id) d'un exercice pour la garde. */
+async function getExerciseOwnership(
+  id: string,
+): Promise<{ source: string; owner_id: string | null } | null> {
+  return powerSync.getOptional<{ source: string; owner_id: string | null }>(
+    `SELECT source, owner_id FROM exercises WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+    [id],
+  );
+}
+
+/**
+ * Met à jour un exercice **perso** de l'utilisateur courant : groupe musculaire,
+ * matériel (optionnel), et le nom (unique ligne de traduction du custom). Atomique.
+ */
+export async function updateCustomExercise(
+  id: string,
+  input: { name: string; muscle: MuscleGroup; equipment: Equipment | null },
+): Promise<void> {
+  const userId = currentUserId();
+  assertOwnedCustomExercise(await getExerciseOwnership(id), userId);
+
+  const translation = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM exercise_translations WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1`,
+    [id],
+  );
+
+  const now = nowUtc();
+  await powerSync.writeTransaction(async (tx) => {
+    await tx.execute(
+      `UPDATE exercises SET muscle_primary = ?, equipment = ?, updated_at = ? WHERE id = ?`,
+      [input.muscle, input.equipment, now, id],
+    );
+    if (translation) {
+      await tx.execute(
+        `UPDATE exercise_translations SET name = ?, updated_at = ? WHERE id = ?`,
+        [input.name.trim(), now, translation.id],
+      );
+    }
+  });
+}
+
+/**
+ * Supprime (soft-delete) un exercice **perso** de l'utilisateur courant.
+ * ⚠️ Soft-delete de la ligne `exercises` UNIQUEMENT — jamais les traductions
+ * (sinon le nom se vide sur l'historique/les programmes, voir spec §3).
+ * Suppression toujours autorisée (pas de blocage si référencé — décision Florian).
+ */
+export async function deleteCustomExercise(id: string): Promise<void> {
+  const userId = currentUserId();
+  assertOwnedCustomExercise(await getExerciseOwnership(id), userId);
+  await softDelete('exercises', id);
 }
