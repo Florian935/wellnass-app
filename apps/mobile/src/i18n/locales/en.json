@@ -52,6 +52,20 @@
       "equipmentSection": "Equipment",
       "reset": "Reset",
       "close": "Close filters"
+    },
+    "library": "Exercise library",
+    "detail": {
+      "title": "Exercise",
+      "muscle": "Muscle group",
+      "equipment": "Equipment",
+      "instructions": "Instructions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this exercise?",
+      "notFound": "Exercise not found.",
+      "editTitle": "Edit exercise",
+      "equipmentNone": "None",
+      "save": "Save"
     }
   },
   "workout": {

@@ -52,6 +52,20 @@
       "equipmentSection": "Matériel",
       "reset": "Réinitialiser",
       "close": "Fermer les filtres"
+    },
+    "library": "Bibliothèque d'exercices",
+    "detail": {
+      "title": "Fiche exercice",
+      "muscle": "Groupe musculaire",
+      "equipment": "Matériel",
+      "instructions": "Instructions",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer cet exercice ?",
+      "notFound": "Exercice introuvable.",
+      "editTitle": "Modifier l'exercice",
+      "equipmentNone": "Aucun",
+      "save": "Enregistrer"
     }
   },
   "workout": {
