@@ -196,6 +196,16 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="exercises/[id]"
+          options={{
+            headerShown: true,
+            title: t('exercises.detail.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="nutrition-profile"
           options={{
             presentation: 'modal',
