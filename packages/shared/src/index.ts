@@ -16,6 +16,7 @@ export * from './exercise';
 export * from './exercise-filter';
 export * from './exercise-variant';
 export * from './workout';
+export * from './workout-display';
 export * from './program';
 export * from './nutrition';
 export * from './protein-target';
