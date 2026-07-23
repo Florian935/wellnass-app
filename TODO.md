@@ -20,8 +20,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >
 > - [x] **Spec** — écrite, revue subagent contre le code (**APPROUVÉ**, 5 imprécisions corrigées), **validée Florian (23/07)**.
 > - [x] **Plan d'implémentation** — écrit (9 tâches TDD), revue subagent (1 bloquant + 3 mineurs **corrigés**). [plan](docs/plans/muscf13-niveaux-affichage-seance.md).
-> - [ ] **Maquette** — 3 aperçus de niveaux (Claude Design) — prochaine étape.
-> - [ ] **Validation** des 3 livrables (Florian/Damien) avant tout code.
+> - [x] **Maquette** — [design/muscf13/muscf13.html](design/muscf13/muscf13.html) : 3 niveaux côte à côte + matrice + aperçus onboarding/Réglages.
+> - [ ] **Validation** des 3 livrables (Florian/Damien) avant tout code — **en attente**.
 > - [ ] **Code** — migration `workout_display_level` + gating `CurrentSetCard` + Réglages + étape onboarding + i18n.
 
 > ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**

@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : maquette (DESIGN)
+
+> Maquette HTML des 3 niveaux d'affichage de la carte de séance. Aucun code applicatif. Complète le 3ᵉ livrable
+> du workflow (spec ✅ + plan ✅ + design) → en attente de validation Florian/Damien avant code.
+
+**Ajouté**
+- `design/muscf13/muscf13.html` — carte « série en cours » aux 3 niveaux côte à côte (Simplifiée / Normale /
+  Détaillée) avec annotations « + xxx » du supplément par niveau, matrice de synthèse, et aperçus de l'étape
+  d'onboarding (compteur 4/4) + de l'entrée Réglages. Charte alignée sur les maquettes sœurs (refonte-muscu-c*).
+
+**Technique / Notes**
+- Commit précédent : `2c89e70`.
+- **3 livrables réunis** (spec + plan + maquette) → prochaine étape : **validation Florian/Damien**, puis
+  exécution du plan (subagent-driven).
+
 ### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : plan d'implémentation (PLAN)
 
 > Plan TDD en 9 tâches bornées pour MUSC-F13. Aucun code applicatif (plan seul ; le code ne démarre qu'après
