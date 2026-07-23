@@ -294,8 +294,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 *Dernière mise à jour : 23/07/2026 (**FIX CI — timeout Jest `edit-exercise-modal-smoke` ✅** : le 1ᵉʳ test du suite dépassait le défaut de 5 s en CI en payant le coût de démarrage à froid (transfo Babel + RN + react-i18next + safe-area) dans son corps ; cache de transformation Jest non persisté en CI + runner 2 cœurs. Fix = `testTimeout: 15000` dans `apps/mobile/jest.config.js` ; 16 suites / 67 tests verts. Précédemment : **FIX modales exo (création + édition) ✅** : retour recette Florian —
 les modales étaient tronquées en bas (boutons sous la barre de gestes, scroll non évident). Corrigé :
 **pied de page fixe** (boutons toujours visibles) + champs défilants + **safe-area** basse ; mock
-`react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. Branche
-`fix/modales-exo-tronquees`. **Reste : recette.** — **MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
+`react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. **Recette validée
+(Florian, 23/07/2026) ✅.** Branche `fix/modales-exo-tronquees`. — **MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
 bibliothèque. `updateCustomExercise` gère désormais **instructions + muscles secondaires** (helper pur
 `buildCustomExerciseWrite` testé) ; nouvelle **`EditExerciseModal`** (bottom-sheet) remplace le formulaire
 d'édition inline de la fiche ; correctif revue (réinit à la fermeture : `saving` figé + saisies annulées).
