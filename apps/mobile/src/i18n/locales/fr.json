@@ -1213,6 +1213,11 @@
       "title": "Compte",
       "signOut": "Se déconnecter"
     },
+    "dataExport": {
+      "title": "Données",
+      "subtitle": "Récupère une copie de toutes tes données au format JSON (RGPD).",
+      "button": "Exporter mes données"
+    },
     "dangerZone": {
       "title": "Zone de danger",
       "subtitle": "La suppression est définitive après 30 jours. Nécessite une connexion.",
@@ -1221,6 +1226,13 @@
     }
   },
   "account": {
+    "export": {
+      "dialogTitle": "Exporter mes données",
+      "syncWarningTitle": "Synchro en cours",
+      "syncWarningBody": "La synchronisation initiale n'est pas terminée : l'export pourrait être incomplet. Réessaie une fois terminée.",
+      "errorUnavailable": "Le partage n'est pas disponible sur cet appareil.",
+      "errorFailed": "L'export a échoué. Réessaie."
+    },
     "delete": {
       "title": "Supprimer mon compte",
       "warning": "Action irréversible. Ton compte et toutes tes données seront supprimés :",
@@ -1229,7 +1241,7 @@
       "item2": "Profils, historiques, records",
       "item3": "Exercices et aliments personnels",
       "graceInfo": "Suppression effective dans 30 jours. Tu peux annuler en te reconnectant avant le {{date}}.",
-      "exportHint": "Pense à exporter tes données au préalable (bientôt disponible).",
+      "exportHint": "Pense à exporter tes données (Réglages → Exporter mes données) au préalable.",
       "passwordLabel": "Confirme avec ton mot de passe",
       "confirm": "Supprimer définitivement",
       "cancel": "Annuler",

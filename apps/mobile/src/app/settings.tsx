@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStatus } from '@powersync/react';
 import {
@@ -23,6 +23,7 @@ import {
   updateNotificationPrefs,
 } from '@/data/repositories/notification-repository';
 import { getAppLanguage } from '@/i18n';
+import { exportUserData } from '@/lib/data-export';
 import { ensurePermissionAndChannel } from '@/lib/notifications';
 import { useAuthStore } from '@/stores/auth-store';
 import {
@@ -116,9 +117,11 @@ export default function SettingsScreen() {
   const language = settings?.language ?? getAppLanguage();
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
-  const { connected } = useStatus();
+  const userId = useAuthStore((s) => s.session?.user.id) ?? null;
+  const { connected, hasSynced } = useStatus();
   const { profile } = useProfile();
   const displayLevel = profile?.workoutDisplayLevel ?? 'normal';
+  const [exporting, setExporting] = useState(false);
 
   // Préférences de notifications (US 2.6/2.8/1.17).
   const notificationPrefs = useNotificationPrefs();
@@ -136,6 +139,26 @@ export default function SettingsScreen() {
     // redirigera automatiquement vers l'onboarding.
     await upsertProfile({ onboardingCompletedAt: null });
     router.replace('/(onboarding)/intro');
+  };
+
+  const runExport = async () => {
+    if (!userId) return;
+    setExporting(true);
+    const res = await exportUserData(userId, !!hasSynced, t);
+    setExporting(false);
+    if ('error' in res) {
+      Alert.alert(t(res.error === 'unavailable' ? 'account.export.errorUnavailable' : 'account.export.errorFailed'));
+    }
+  };
+  const onExport = () => {
+    if (!hasSynced) {
+      Alert.alert(t('account.export.syncWarningTitle'), t('account.export.syncWarningBody'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('settings.dataExport.button'), onPress: () => void runExport() },
+      ]);
+      return;
+    }
+    void runExport();
   };
 
   return (
@@ -447,6 +470,21 @@ export default function SettingsScreen() {
       {email ? <Text style={[styles.rowLabel, { color: colors.text }]}>{email}</Text> : null}
       <View style={styles.signOut}>
         <Button label={t('settings.account.signOut')} variant="ghost" onPress={() => void signOut()} />
+      </View>
+
+      {/* Export de données (US CONF-01, RGPD) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.dataExport.title')}
+      </Text>
+      <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
+        {t('settings.dataExport.subtitle')}
+      </Text>
+      <View style={styles.stack}>
+        <Button
+          label={t('settings.dataExport.button')}
+          onPress={onExport}
+          loading={exporting}
+        />
       </View>
 
       {/* Zone de danger (US CONF-02) */}

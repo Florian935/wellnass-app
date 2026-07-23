@@ -1213,6 +1213,11 @@
       "title": "Account",
       "signOut": "Sign out"
     },
+    "dataExport": {
+      "title": "Data",
+      "subtitle": "Get a copy of all your data as JSON (GDPR).",
+      "button": "Export my data"
+    },
     "dangerZone": {
       "title": "Danger zone",
       "subtitle": "Deletion is permanent after 30 days. Requires an active connection.",
@@ -1221,6 +1226,13 @@
     }
   },
   "account": {
+    "export": {
+      "dialogTitle": "Export my data",
+      "syncWarningTitle": "Sync in progress",
+      "syncWarningBody": "The initial sync isn't finished yet: the export might be incomplete. Try again once it's done.",
+      "errorUnavailable": "Sharing isn't available on this device.",
+      "errorFailed": "The export failed. Please try again."
+    },
     "delete": {
       "title": "Delete my account",
       "warning": "This action is irreversible. Your account and all your data will be deleted:",
@@ -1229,7 +1241,7 @@
       "item2": "Profiles, history, records",
       "item3": "Custom exercises and foods",
       "graceInfo": "Deletion takes effect in 30 days. You can cancel by signing back in before {{date}}.",
-      "exportHint": "Remember to export your data first (coming soon).",
+      "exportHint": "Remember to export your data first (Settings → Export my data).",
       "passwordLabel": "Confirm with your password",
       "confirm": "Delete permanently",
       "cancel": "Cancel",
