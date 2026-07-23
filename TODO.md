@@ -18,8 +18,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Spec : [conf02-suppression-compte.md](docs/specs/functional/us/conf02-suppression-compte.md).
 >
 > - [x] **Spec** — écrite, revue subagent (**2 bloquants + clarifs corrigés**), **validée Florian (23/07)**.
-> - [ ] **Plan d'implémentation** — prochaine étape.
-> - [ ] **Maquette** — flux suppression (Danger → avertissement → ré-auth) + gate de récupération.
+> - [x] **Plan d'implémentation** — écrit (7 tâches TDD), revue subagent (2 bloquants + mineurs **corrigés**). [plan](docs/plans/conf02-suppression-compte.md).
+> - [ ] **Maquette** — flux suppression (Danger → avertissement → ré-auth) + gate de récupération — prochaine étape.
 > - [ ] **Validation** des 3 livrables avant code.
 > - [ ] **Code** — migration (table + FK fix + RPC + purge_expired_accounts + pg_cron) + client (zone Danger, ré-auth, gate, disconnectAndClear) + i18n. 🔴 activation pg_cron (dashboard possible).
 

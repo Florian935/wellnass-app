@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : plan d'implémentation (PLAN)
+
+> Plan TDD en 7 tâches. Aucun code (plan seul). Revue subagent contre spec + code.
+
+**Ajouté**
+- `docs/plans/conf02-suppression-compte.md` — 7 tâches : migration serveur 🔴 (table + fix FK `acted_by` +
+  RPC + `purge_expired_accounts` résiliente + pg_cron) → route `deletion-pending` (shared) → repository
+  (query pending + RPC) → actions `auth-store` (reauth + request/cancel + `disconnectAndClear`) → détection +
+  gate dans `_layout` → écrans (zone Danger, flux, gate) + i18n → clôture. Code SQL/TS concret, checkpoint cloud.
+
+**Technique / Notes**
+- Revue de plan par sous-agent → **CORRECTIONS REQUISES**, toutes corrigées : (bloquant 1) champs
+  `deletionCheckLoading?`/`deletionPending?` de `resolveRootRoute` rendus **optionnels** (sinon typecheck
+  rouge sur toute la fenêtre Task 2→5 : tests existants + appel `_layout`) ; (bloquant 2) détection keyée sur
+  `session.user.id` + vérif unique par utilisateur (évite le flash/remontage du Stack à chaque refresh de
+  token) ; (mineurs) `request_account_deletion` race-safe (`on conflict do nothing`), import repo aliasé dans
+  le store, gate placé avant la garde anti-race.
+- Commit précédent : `97218af`.
+- **Prochaine étape** : maquette (flux + gate) → validation des 3 livrables → exécution (subagent-driven).
+
 ### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : spec « Suppression du compte » (SPEC)
 
 > Cadrage (brainstorming Florian, 23/07) de la suppression de compte (RGPD + exigence stores, roadmap 1.19) :
