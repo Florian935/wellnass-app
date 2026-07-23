@@ -3,6 +3,7 @@ import {
   WORKOUT_DISPLAY_LEVELS,
   coerceWorkoutDisplayLevel,
   workoutDisplayLevelSchema,
+  workoutFieldVisibility,
 } from './workout-display';
 
 describe('workout display level', () => {
@@ -25,5 +26,26 @@ describe('workout display level', () => {
   it('coerce une valeur connue en elle-même', () => {
     expect(coerceWorkoutDisplayLevel('simplified')).toBe('simplified');
     expect(coerceWorkoutDisplayLevel('detailed')).toBe('detailed');
+  });
+});
+
+describe('workoutFieldVisibility', () => {
+  it('simplifiée : tout le supplémentaire est masqué', () => {
+    expect(workoutFieldVisibility('simplified')).toEqual({
+      delta: false, suggestion: false, warmupShortcut: false,
+      typeSelector: false, rpe: false, note: false, superset: false,
+    });
+  });
+  it('normale : delta + suggestion + échauffement ; pas de types/rpe/note/superset', () => {
+    expect(workoutFieldVisibility('normal')).toEqual({
+      delta: true, suggestion: true, warmupShortcut: true,
+      typeSelector: false, rpe: false, note: false, superset: false,
+    });
+  });
+  it('détaillée : tout est visible', () => {
+    expect(workoutFieldVisibility('detailed')).toEqual({
+      delta: true, suggestion: true, warmupShortcut: true,
+      typeSelector: true, rpe: true, note: true, superset: true,
+    });
   });
 });
