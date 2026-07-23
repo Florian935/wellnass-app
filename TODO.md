@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🟡 EN COURS — MUSC-F13 Niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée)
+> ## ✅ RECETTE VALIDÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (Florian, 23/07/2026) — reste relecture Damien
 >
 > Promue depuis [IDEAS.md](IDEAS.md) (idée 23/07). Adapter la densité de l'écran de séance muscu au niveau de
 > l'utilisateur via 3 niveaux qui pilotent la visibilité des champs de `CurrentSetCard`. Réglage synchronisé
@@ -24,7 +24,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
 > - [x] **Code livré (subagent-driven)** — 8 commits : shared (enum/coercition/matrice pures, testées) → migration cloud `workout_display_level` (appliquée + types + schéma PowerSync) → champ profil + mapping repo (coercition NULL→normal) → gating `CurrentSetCard` par prop `level` (+ 3 smoke tests) → câblage `workout.tsx` → réglage Réglages → étape onboarding (compteur 3→4) → i18n FR/EN. Revue finale **PRÊT À MERGER** (0 bloquant). typecheck/lint/807 shared+70 mobile verts.
 > - [x] **MUSC-F13b — Vignette d'aperçu par niveau à l'onboarding** (retour Florian, 23/07) : composant décoratif `WorkoutLevelPreview` (schématique, piloté par `workoutFieldVisibility`) affiché sous chaque option. Branche `feature/muscf13b-vignette-onboarding`, 73 tests mobile verts.
-> - [ ] **Recette device** (Florian) + relecture Damien (MUSC-F13 + F13b).
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (9 sections : réglage/défaut, onboarding+vignette, matrice Simplifiée/Normale/Détaillée, nature d'exercice, changement en direct, non-destructif, i18n).
+> - [ ] **Relecture Damien** (MUSC-F13 + F13b).
 
 > ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
 >
@@ -307,7 +308,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**MUSC-F13 — SPEC VALIDÉE (Florian) ✅** : nouvelle US promue d'IDEAS —
+*Dernière mise à jour : 23/07/2026 (**MUSC-F13 (+ F13b) — RECETTE VALIDÉE À 100 % (Florian) ✅ → reste relecture Damien** :
+3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
+`CurrentSetCard`, réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
+(compteur 3→4) avec vignette d'aperçu schématique par niveau (`WorkoutLevelPreview`), entrée Réglages. Migration
+cloud appliquée ; typecheck/lint/807 shared + 73 mobile verts ; revue finale PRÊT À MERGER. Recette device
+déroulée (9 sections) et validée. Branches `feature/muscf13-niveaux-affichage-seance` + `feature/muscf13b-vignette-onboarding`.
+Précédemment : **MUSC-F13 — SPEC VALIDÉE (Florian) ✅** : nouvelle US promue d'IDEAS —
 3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
 `CurrentSetCard` ; réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
 (compteur 3→4) + entrée Réglages, périmètre Muscu. Spec écrite + revue subagent contre le code (**APPROUVÉ**,

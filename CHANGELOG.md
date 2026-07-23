@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13 (+ F13b) : recette device validée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** — les 3 niveaux d'affichage de la séance et la
+> vignette d'onboarding sont validés sur device (9 sections de recette). Reste : relecture Damien.
+
+**Technique / Notes**
+- Recette couverte : réglage + défaut Normale + persistance/synchro ; onboarding (étape 4/4 + vignette
+  schématique) ; matrice des champs par niveau (Simplifiée / Normale / Détaillée) ; nature d'exercice
+  (durée / poids de corps) jamais masquée ; changement de niveau **en direct** pendant une séance ;
+  non-destructivité (RPE/note masqués puis réaffichés intacts) ; i18n FR/EN.
+- Aucun écart remonté. Commit précédent : `abd4589`.
+
 ### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13b : vignette d'aperçu par niveau à l'onboarding
 
 > Suite MUSC-F13 (retour Florian) : l'étape d'onboarding « niveau d'affichage » montre désormais un **aperçu
