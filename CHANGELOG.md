@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `fix/modales-exo-tronquees` — CI : timeout Jest sur `edit-exercise-modal-smoke` (CORRECTIF)
+
+> Retour CI GitHub : le suite `EditExerciseModal — smoke` échouait par **timeout de 5000 ms** sur
+> son premier test. Diagnostic (débogage systématique) : pas un bug du code — le composant est
+> correct et rapide (même rendu en 30 ms au 2ᵉ test). Le 1ᵉʳ test paie tout le coût de **démarrage à
+> froid** (transformation Babel + arbre React Native + init react-i18next + safe-area) dans son corps
+> chronométré. En CI le cache de transformation Jest n'est pas persisté (seul npm est mis en cache) et
+> le runner est à 2 cœurs, donc chaque run est « à froid » : mesuré à **4114 ms** en local à froid
+> (`--no-cache`), au-delà en CI → dépassement du défaut de 5 s. 16 suites / 67 tests verts.
+
+**Corrigé**
+- [jest.config.js](apps/mobile/jest.config.js) : `testTimeout` relevé à **15000 ms**. Levier minimal
+  visant la cause (budget par défaut trop juste pour un premier rendu lourd à froid), sans masquer un
+  éventuel vrai blocage (un deadlock serait toujours détecté), et bien en deçà du plafond de 15 min du job.
+
+**Technique / Notes**
+- Pistes complémentaires non retenues (non nécessaires) : mettre en cache le dossier de cache Jest dans
+  le workflow, ou fixer `--maxWorkers`. Le relèvement du timeout suffit à fiabiliser la CI.
+
 ### 23/07/2026 — `fix/modales-exo-tronquees` — Modales exo création/édition tronquées (CORRECTIF)
 
 > Retour recette Florian : les modales de **création** (MUSC-F11) et d'**édition** (MUSC-F12) d'exercice

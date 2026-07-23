@@ -291,7 +291,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**FIX modales exo (création + édition) ✅** : retour recette Florian —
+*Dernière mise à jour : 23/07/2026 (**FIX CI — timeout Jest `edit-exercise-modal-smoke` ✅** : le 1ᵉʳ test du suite dépassait le défaut de 5 s en CI en payant le coût de démarrage à froid (transfo Babel + RN + react-i18next + safe-area) dans son corps ; cache de transformation Jest non persisté en CI + runner 2 cœurs. Fix = `testTimeout: 15000` dans `apps/mobile/jest.config.js` ; 16 suites / 67 tests verts. Précédemment : **FIX modales exo (création + édition) ✅** : retour recette Florian —
 les modales étaient tronquées en bas (boutons sous la barre de gestes, scroll non évident). Corrigé :
 **pied de page fixe** (boutons toujours visibles) + champs défilants + **safe-area** basse ; mock
 `react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. Branche
