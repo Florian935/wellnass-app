@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `fix/modales-exo-tronquees` — Modales exo création/édition tronquées (CORRECTIF)
+
+> Retour recette Florian : les modales de **création** (MUSC-F11) et d'**édition** (MUSC-F12) d'exercice
+> perso étaient tronquées en bas — boutons Annuler/Ajouter·Enregistrer sous la barre de gestes, sans
+> indice qu'il fallait scroller. typecheck/lint verts, 67 tests mobile.
+
+**Corrigé**
+- [CreateExerciseModal.tsx](apps/mobile/src/components/exercises/CreateExerciseModal.tsx) +
+  [EditExerciseModal.tsx](apps/mobile/src/components/exercises/EditExerciseModal.tsx) : les boutons
+  passent dans un **pied de page fixe** (toujours visible, séparateur), les champs défilent au-dessus
+  (`ScrollView` `flexShrink`), et la **safe-area basse** est respectée (`useSafeAreaInsets` →
+  `paddingBottom`). Plus de troncature, boutons toujours atteignables.
+
+**Technique / Notes**
+- Ajout du mock `react-native-safe-area-context` dans [jest.setup.ts](apps/mobile/jest.setup.ts)
+  (sinon `useSafeAreaInsets` lève « No safe area value available » en tests).
+
 ### 23/07/2026 — `feature/muscf12-coherence-fiche-exo-perso` — MUSC-F12 : cohérence fiche exo perso ↔ bibliothèque (CODE LIVRÉ)
 
 > Retour recette F10c (Florian). Rend la fiche d'un exo perso cohérente avec un exo bibliothèque en

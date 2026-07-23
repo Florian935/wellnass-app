@@ -291,7 +291,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
+*Dernière mise à jour : 23/07/2026 (**FIX modales exo (création + édition) ✅** : retour recette Florian —
+les modales étaient tronquées en bas (boutons sous la barre de gestes, scroll non évident). Corrigé :
+**pied de page fixe** (boutons toujours visibles) + champs défilants + **safe-area** basse ; mock
+`react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. Branche
+`fix/modales-exo-tronquees`. **Reste : recette.** — **MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
 bibliothèque. `updateCustomExercise` gère désormais **instructions + muscles secondaires** (helper pur
 `buildCustomExerciseWrite` testé) ; nouvelle **`EditExerciseModal`** (bottom-sheet) remplace le formulaire
 d'édition inline de la fiche ; correctif revue (réinit à la fermeture : `saving` figé + saisies annulées).
