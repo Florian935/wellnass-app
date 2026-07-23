@@ -94,6 +94,15 @@
   .opt .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);flex:none;}
   .opt.sel .dot{background:var(--accent);border-color:var(--accent);}
   .stepbadge{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+  /* Vignette schématique par niveau (MUSC-F13b) — barres « champs » + pastilles de suppléments */
+  .optcol{display:flex;flex-direction:column;gap:10px;}
+  .vig{border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;background:var(--surface);}
+  .vig .tbar{height:9px;width:55%;border-radius:4px;background:var(--surface-alt);}
+  .vig .vbadges{display:flex;gap:5px;flex-wrap:wrap;min-height:20px;}
+  .vig .vb{font-size:11px;font-weight:800;color:var(--accent);background:var(--surface-alt);border-radius:6px;padding:2px 6px;}
+  .vig .vfields{display:flex;gap:8px;}
+  .vig .vf{flex:1;height:16px;border-radius:6px;background:var(--surface-alt);}
+  .vig .vval{height:12px;border-radius:6px;background:var(--strength);}
 </style>
 </head>
 <body>
@@ -214,9 +223,12 @@
       <h3>Étape d'onboarding (inconditionnelle)</h3>
       <p>Insérée entre « Objectif » et le récap — le compteur passe de 3 à 4 étapes. Défaut Normale si sautée.</p>
       <div class="stepbadge">Étape 4/4</div>
-      <div class="opt"><div class="txt"><div class="l">Simplifiée</div><div class="d">L'essentiel : reps, charge, repos. Idéal pour débuter.</div></div><div class="dot"></div></div>
-      <div class="opt sel"><div class="txt"><div class="l">Normale</div><div class="d">Repères de progression : dernière fois, objectif, échauffement.</div></div><div class="dot"></div></div>
-      <div class="opt"><div class="txt"><div class="l">Détaillée</div><div class="d">Tout : types de séries, RPE, notes, superset.</div></div><div class="dot"></div></div>
+      <div class="opt"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Simplifiée</div><div class="d">L'essentiel : reps, charge, repos. Idéal pour débuter.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
+      <div class="opt sel"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Normale</div><div class="d">Repères de progression : dernière fois, objectif, échauffement.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"><span class="vb">🔥</span><span class="vb">💡</span></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
+      <div class="opt"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Détaillée</div><div class="d">Tout : types de séries, RPE, notes, superset.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"><span class="vb">🔥</span><span class="vb">💡</span><span class="vb">Types</span><span class="vb">RPE</span><span class="vb">📝</span><span class="vb">⇄</span></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
     </div>
     <div class="card">
       <h3>Réglages → Niveau d'affichage de la séance</h3>

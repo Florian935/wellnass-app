@@ -10,6 +10,28 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13b : vignette d'aperçu par niveau à l'onboarding
+
+> Suite MUSC-F13 (retour Florian) : l'étape d'onboarding « niveau d'affichage » montre désormais un **aperçu
+> visuel schématique** par niveau, pour que l'utilisateur voie « à quoi ça ressemble ». typecheck + lint +
+> 73 tests mobile (70 + 3) verts.
+
+**Ajouté**
+- `apps/mobile/src/components/workout/WorkoutLevelPreview.tsx` (+ test) : mini-illustration décorative pilotée
+  par `workoutFieldVisibility(level)` (même source de vérité que la carte) — barre de titre + rangée de
+  pastilles des suppléments visibles au niveau (🔥 💡 Types RPE 📝 ⇄) + barres « champs cœur ». Purement
+  présentationnelle, masquée à l'accessibilité (décorative). 3 smoke tests (aucune pastille en Simplifiée →
+  toutes en Détaillée).
+
+**Modifié**
+- `(onboarding)/displayLevel.tsx` : chaque option affiche la vignette sous le libellé + description.
+- `design/muscf13/muscf13.html` : aperçu onboarding mis à jour avec les vignettes schématiques.
+
+**Technique / Notes**
+- Forme retenue (brainstorm Florian) : schématique légère (Views RN, pas d'asset image) → offline, léger,
+  charte respectée. Commit précédent : `739a172`.
+- **Reste** : recette device (Florian) + relecture Damien.
+
 ### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : code livré (3 niveaux d'affichage de la séance)
 
 > Implémentation subagent-driven (8 commits `a00ae2f`→`87880df`) de MUSC-F13 : la carte « série en cours »
