@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : spec « Export des données » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07) de l'export RGPD (roadmap 1.18) : export JSON de toutes les données
+> perso, construit depuis la base locale PowerSync, hors-ligne, livré via feuille de partage. Aucune migration/
+> serveur. Aucun code (spec seule).
+
+**Ajouté**
+- `docs/specs/functional/us/conf01-export-donnees.md` — spec complète : format JSON (en-tête + section par
+  table), 28 tables exportées (filtre `user_id`/`owner_id` = user + `deleted_at IS NULL`, éditorial exclu),
+  livraison patron `gpx-export` (write cache + `Sharing.shareAsync`), entrée Réglages, helper pur shared,
+  avertissement `hasSynced`, i18n, cas limites, DoD, recette.
+
+**Technique / Notes**
+- Revue de spec par sous-agent → **CORRECTIONS REQUISES** (0 bloquant), corrigées (spec simplifiée) :
+  possession **directe** sur les 28 tables (pas de jointure indirecte) ; ajout `deleted_at IS NULL` ; limite
+  identité/e-mail (Supabase Auth) hors périmètre car non répliquée localement.
+- Complément de CONF-02 ; `account.delete.exportHint` sera mis à jour (retrait « bientôt disponible »).
+- Commit précédent : `b23ca30`. Prochaines étapes : plan → maquette → validation → code.
+
 ### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble

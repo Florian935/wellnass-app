@@ -10,6 +10,19 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🟡 EN COURS — CONF-01 Export des données (RGPD portabilité — P0 lancement)
+>
+> Roadmap [1.18](docs/roadmap/roadmap.md). Export JSON de toutes les données perso depuis la base locale
+> (hors-ligne), livré via feuille de partage. 28 tables (filtre possession + `deleted_at IS NULL`), éditorial
+> exclu. Aucune migration/serveur. Complément de CONF-02. Branche `feature/conf01-export-donnees`.
+> Spec : [conf01-export-donnees.md](docs/specs/functional/us/conf01-export-donnees.md).
+>
+> - [x] **Spec** — écrite, revue subagent (0 bloquant, corrigée/simplifiée), **validée Florian (23/07)**.
+> - [ ] **Plan d'implémentation** — prochaine étape.
+> - [ ] **Maquette** — entrée Réglages + états (chargement / avertissement synchro / erreur).
+> - [ ] **Validation** des 3 livrables avant code.
+> - [ ] **Code** — helper shared (`buildExportEnvelope`/`exportFileName`) + `data-export.ts` (lecture locale + partage) + entrée Réglages + i18n + maj `exportHint`.
+
 > ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
 > Roadmap [1.19](docs/roadmap/roadmap.md). Suppression définitive du compte + données, double confirmation
