@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : spec « Suppression du compte » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07) de la suppression de compte (RGPD + exigence stores, roadmap 1.19) :
+> délai de grâce 30 j récupérable, double confirmation (avertissement + ré-auth mot de passe), purge serveur
+> par cascade FK planifiée via pg_cron. Aucun code (spec seule ; pas de code avant validation des 3 livrables).
+
+**Ajouté**
+- `docs/specs/functional/us/conf02-suppression-compte.md` — spec complète : mécanisme serveur (table
+  `account_deletion_requests`, RPC `request/cancel_account_deletion` SECURITY DEFINER, correctif FK
+  `user_bans.acted_by` → `set null`, fonction `purge_expired_accounts()` résiliente par ligne + job pg_cron),
+  verrou applicatif + fenêtre de récupération (gate à la reconnexion, prioritaire sur onboarding),
+  parcours client (zone Danger, ré-auth `signInWithPassword`, `disconnectAndClear`), i18n, sécurité/RGPD,
+  cas limites, DoD, critères de recette.
+
+**Technique / Notes**
+- Findings clés : toutes les tables user sont `ON DELETE CASCADE` → supprimer `auth.users` purge tout ;
+  pg_cron absent (à activer, possiblement via dashboard). Purge = hard delete (droit à l'effacement).
+- Revue de spec par sous-agent → **CORRECTIONS REQUISES**, toutes corrigées : (bloquant 1) `user_bans.acted_by`
+  sans cascade + purge ensembliste tout-ou-rien → FK `set null` + purge résiliente par ligne ; (bloquant 2)
+  API de purge locale nommée (`disconnectAndClear`). + gate offline fail-open, ordre gate > onboarding,
+  `reauthenticate()` inadapté, signOut gracieux si purge à distance.
+- **🔴 Dépendance externe** : activation de `pg_cron` sur le cloud (geste dashboard possible).
+- Commit précédent : `fc5dc84`.
+- **Prochaines étapes** : plan → maquette (flux + gate) → validation → code.
+
 ### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13 (+ F13b) : recette device validée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** — les 3 niveaux d'affichage de la séance et la

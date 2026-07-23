@@ -10,6 +10,19 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🟡 EN COURS — CONF-02 Suppression du compte (RGPD, exigé par les stores — P0 lancement)
+>
+> Roadmap [1.19](docs/roadmap/roadmap.md). Suppression définitive du compte + données, double confirmation
+> (avertissement + ré-auth mot de passe), délai de grâce 30 j récupérable, purge serveur par cascade FK via
+> `pg_cron`. Branche `feature/conf02-suppression-compte`.
+> Spec : [conf02-suppression-compte.md](docs/specs/functional/us/conf02-suppression-compte.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**2 bloquants + clarifs corrigés**), **validée Florian (23/07)**.
+> - [ ] **Plan d'implémentation** — prochaine étape.
+> - [ ] **Maquette** — flux suppression (Danger → avertissement → ré-auth) + gate de récupération.
+> - [ ] **Validation** des 3 livrables avant code.
+> - [ ] **Code** — migration (table + FK fix + RPC + purge_expired_accounts + pg_cron) + client (zone Danger, ré-auth, gate, disconnectAndClear) + i18n. 🔴 activation pg_cron (dashboard possible).
+
 > ## ✅ CLÔTURÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (recette Florian + relecture Damien, 23/07/2026)
 >
 > Promue depuis [IDEAS.md](IDEAS.md) (idée 23/07). Adapter la densité de l'écran de séance muscu au niveau de
