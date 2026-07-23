@@ -18,8 +18,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Spec : [conf01-export-donnees.md](docs/specs/functional/us/conf01-export-donnees.md).
 >
 > - [x] **Spec** — écrite, revue subagent (0 bloquant, corrigée/simplifiée), **validée Florian (23/07)**.
-> - [ ] **Plan d'implémentation** — prochaine étape.
-> - [ ] **Maquette** — entrée Réglages + états (chargement / avertissement synchro / erreur).
+> - [x] **Plan d'implémentation** — écrit (4 tâches TDD), revue subagent **APPROUVÉ** (3 mineurs corrigés). [plan](docs/plans/conf01-export-donnees.md).
+> - [ ] **Maquette** — entrée Réglages + états (chargement / avertissement synchro / erreur) — prochaine étape.
 > - [ ] **Validation** des 3 livrables avant code.
 > - [ ] **Code** — helper shared (`buildExportEnvelope`/`exportFileName`) + `data-export.ts` (lecture locale + partage) + entrée Réglages + i18n + maj `exportHint`.
 

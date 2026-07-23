@@ -10,6 +10,22 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : plan d'implémentation (PLAN)
+
+> Plan TDD en 4 tâches (aucune migration/serveur). Revue subagent → **APPROUVÉ** (3 mineurs corrigés).
+
+**Ajouté**
+- `docs/plans/conf01-export-donnees.md` — 4 tâches : helper pur shared (`buildExportEnvelope`/`exportFileName`
+  + tests) → orchestration `data-export.ts` (map `EXPORT_TABLES` des 28 tables + `getAll` filtré possession +
+  `deleted_at IS NULL` → assemblage → écriture cache → `Sharing.shareAsync`) → entrée Réglages + i18n + maj
+  `exportHint` → parité/clôture. Code concret, patron `gpx-export`.
+
+**Technique / Notes**
+- Revue de plan → APPROUVÉ ; corrigés : ajout `Alert` à l'import de `settings.tsx`, réutilisation de
+  `useStatus()`/`useAuthStore` déjà importés (destructurer `hasSynced`), test `exportFileName` en date locale
+  (robuste fuseau CI). Couverture des 28 tables + colonnes de possession vérifiée exacte contre le schéma.
+- Commit précédent : `b415dee`. Prochaine étape : maquette → validation → code.
+
 ### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : spec « Export des données » (SPEC)
 
 > Cadrage (brainstorming Florian, 23/07) de l'export RGPD (roadmap 1.18) : export JSON de toutes les données
