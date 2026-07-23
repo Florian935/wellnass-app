@@ -46,4 +46,5 @@ export * from './training-nutrition';
 export * from './training-time';
 export * from './regression';
 export * from './moving-average';
+export * from './data-export';
 export type { Database, Json } from './database.types';
