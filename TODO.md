@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🟡 EN COURS — CONF-02 Suppression du compte (RGPD, exigé par les stores — P0 lancement)
+> ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
 > Roadmap [1.19](docs/roadmap/roadmap.md). Suppression définitive du compte + données, double confirmation
 > (avertissement + ré-auth mot de passe), délai de grâce 30 j récupérable, purge serveur par cascade FK via
@@ -22,7 +22,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Maquette** — [design/conf02/conf02.html](design/conf02/conf02.html) : 4 écrans (Danger → avertissement+ré-auth → confirmation → gate récupération).
 > - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
 > - [x] **Code livré (subagent-driven)** — 8 commits : migration (table + RPC + `purge_expired_accounts` + pg_cron + fix FK `acted_by`) → route `deletion-pending` (shared) → repository → actions `auth-store` (ré-auth + `disconnectAndClear`) → gate `_layout` → écrans (Danger, flux, gate) + i18n. Revue finale code-reviewer : **1 bloquant corrigé** (sortie de gate après annulation via `deletion-store` partagé). typecheck/lint/810 shared + 73 mobile verts. Roadmap 1.19 → ✅.
-> - [ ] **Recette device** (Florian) + relecture Damien. ⚠️ Recette purge J+30 : forcer `scheduled_at` passé + `select public.purge_expired_accounts();` (inclure un exercice perso utilisé + un compte admin ayant banni).
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (6 sections : zone Danger + hors-ligne ; déclenchement + ré-auth ; gate de récupération + annulation ; purge J+30 via `purge_expired_accounts()` avec exercice perso + compte admin ayant banni ; job cron planifié ; i18n). **Florian valide l'ensemble → US CLÔTURÉE.**
 > - [ ] **Code** — migration (table + FK fix + RPC + purge_expired_accounts + pg_cron) + client (zone Danger, ré-auth, gate, disconnectAndClear) + i18n. 🔴 activation pg_cron (dashboard possible).
 
 > ## ✅ CLÔTURÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (recette Florian + relecture Damien, 23/07/2026)
@@ -323,7 +323,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**MUSC-F13 (+ F13b) — RECETTE VALIDÉE À 100 % (Florian) ✅ → reste relecture Damien** :
+*Dernière mise à jour : 23/07/2026 (**CONF-02 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : suppression
+du compte (RGPD, roadmap 1.19, P0 lancement) recettée (6 sections, dont purge serveur J+30 et job pg_cron) et
+validée dans son ensemble par Florian. Roadmap 1.19 ✅. Branche `feature/conf02-suppression-compte`.
+Précédemment : **MUSC-F13 (+ F13b) — RECETTE VALIDÉE À 100 % (Florian) ✅ → reste relecture Damien** :
 3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
 `CurrentSetCard`, réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
 (compteur 3→4) avec vignette d'aperçu schématique par niveau (`WorkoutLevelPreview`), entrée Réglages. Migration

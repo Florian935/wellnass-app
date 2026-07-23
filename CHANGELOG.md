@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble
+> (recette device + revue). Aucun écart remonté.
+
+**Technique / Notes**
+- Recette couverte (6 sections) : zone Danger + désactivation hors-ligne ; déclenchement + ré-auth mot de
+  passe (mauvais mdp → aucune suppression) ; gate de récupération + annulation (données intactes) + se
+  déconnecter ; **purge serveur J+30** (`purge_expired_accounts()` : compte purgé + cascade, exercice perso
+  utilisé + compte admin ayant banni sans gel, contenu éditorial intact) ; **job pg_cron** planifié & actif ;
+  i18n FR/EN.
+- Commit précédent : `6a70089`. CONF-02 close ; V0.8 (conformité) entamée. Prochain candidat P0 : CONF-01
+  (export RGPD), complément naturel.
+
 ### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : code livré (suppression du compte, RGPD)
 
 > Implémentation subagent-driven (8 commits `2e06821`→`fc68ff7`) de la suppression de compte. Revue finale
