@@ -33,6 +33,7 @@ const profiles = new Table({
   target_weight_kg: column.real,
   start_weight_kg: column.real,
   main_goal: column.text,
+  workout_display_level: column.text,
   onboarding_completed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
