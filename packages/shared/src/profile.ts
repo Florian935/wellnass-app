@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { syncFieldsSchema, utcTimestampSchema } from './sync';
+import { workoutDisplayLevelSchema } from './workout-display';
 
 /** Sexe déclaré — optionnel, utilisé pour les calculs TDEE (nutrition). */
 export const SEXES = ['female', 'male', 'unspecified'] as const;
@@ -40,6 +41,9 @@ export const profileRowSchema = syncFieldsSchema.extend({
 
   /** Objectif principal de l'utilisateur. */
   mainGoal: goalSchema.nullable().default(null),
+
+  /** Niveau d'affichage de l'écran de séance (MUSC-F13). NULL en base → « normal » à la lecture (repo). */
+  workoutDisplayLevel: workoutDisplayLevelSchema.nullable().default(null),
 
   /** Horodatage de fin d'onboarding (null = onboarding non terminé). */
   onboardingCompletedAt: utcTimestampSchema.nullable().default(null),

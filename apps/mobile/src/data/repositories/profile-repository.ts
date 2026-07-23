@@ -15,7 +15,12 @@
  */
 
 import { useQuery } from '@powersync/react';
-import { computeWeightGoalProgress, type ProfileRow, type WeightGoalProgress } from '@wellness/shared';
+import {
+  computeWeightGoalProgress,
+  coerceWorkoutDisplayLevel,
+  type ProfileRow,
+  type WeightGoalProgress,
+} from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, nowUtc, patch } from './_sql';
@@ -38,6 +43,7 @@ export type ProfileInput = Pick<
   | 'targetWeightKg'
   | 'startWeightKg'
   | 'mainGoal'
+  | 'workoutDisplayLevel'
   | 'onboardingCompletedAt'
 >;
 
@@ -53,6 +59,7 @@ type ProfileDbRow = {
   target_weight_kg: number | null;
   start_weight_kg: number | null;
   main_goal: string | null;
+  workout_display_level: string | null;
   onboarding_completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -78,6 +85,7 @@ function rowToProfile(row: ProfileDbRow): Profile {
     targetWeightKg: row.target_weight_kg,
     startWeightKg: row.start_weight_kg,
     mainGoal: row.main_goal as Profile['mainGoal'],
+    workoutDisplayLevel: coerceWorkoutDisplayLevel(row.workout_display_level),
     onboardingCompletedAt: row.onboarding_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -96,6 +104,7 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('targetWeightKg' in input) columns['target_weight_kg'] = input.targetWeightKg;
   if ('startWeightKg' in input) columns['start_weight_kg'] = input.startWeightKg;
   if ('mainGoal' in input) columns['main_goal'] = input.mainGoal;
+  if ('workoutDisplayLevel' in input) columns['workout_display_level'] = input.workoutDisplayLevel;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;
   }
