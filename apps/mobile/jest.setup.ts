@@ -146,6 +146,16 @@ jest.mock('@/running/tracker', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Mock react-native-safe-area-context — pas de SafeAreaProvider en tests
+// (useSafeAreaInsets lèverait « No safe area value available »). On utilise le
+// mock officiel de la lib (insets à 0, providers passthrough).
+// ---------------------------------------------------------------------------
+jest.mock('react-native-safe-area-context', () => {
+  const mock = require('react-native-safe-area-context/jest/mock');
+  return mock.default ?? mock;
+});
+
+// ---------------------------------------------------------------------------
 // Mock @supabase/supabase-js — client réseau non nécessaire en tests unitaires
 // ---------------------------------------------------------------------------
 jest.mock('@supabase/supabase-js', () => ({

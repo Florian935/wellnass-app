@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EQUIPMENTS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
@@ -28,6 +29,7 @@ type EquipmentOption = (typeof EQUIPMENT_OPTIONS)[number];
 export function EditExerciseModal({ visible, onClose, exercise }: CreateExerciseModalProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState(exercise.name);
   const [muscle, setMuscle] = useState<MuscleGroup>(exercise.muscle);
   const [equipment, setEquipment] = useState<Equipment | null>(exercise.equipment as Equipment | null);
@@ -96,7 +98,11 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
       />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.content}
+            keyboardShouldPersistTaps="handled"
+          >
             <Text style={[styles.title, { color: colors.text }]}>{t('exercises.detail.editTitle')}</Text>
 
             <TextField
@@ -165,21 +171,21 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
               textAlignVertical="top"
               style={styles.multiline}
             />
-
-            <View style={styles.actions}>
-              <View style={styles.flex}>
-                <Button label={t('common.cancel')} variant="ghost" onPress={close} />
-              </View>
-              <View style={styles.flex}>
-                <Button
-                  label={t('exercises.detail.save')}
-                  onPress={() => void onSave()}
-                  disabled={!canSave || saving}
-                  loading={saving}
-                />
-              </View>
-            </View>
           </ScrollView>
+
+          <View style={[styles.footer, { borderTopColor: colors.border, paddingBottom: insets.bottom + 12 }]}>
+            <View style={styles.flex}>
+              <Button label={t('common.cancel')} variant="ghost" onPress={close} />
+            </View>
+            <View style={styles.flex}>
+              <Button
+                label={t('exercises.detail.save')}
+                onPress={() => void onSave()}
+                disabled={!canSave || saving}
+                loading={saving}
+              />
+            </View>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -194,6 +200,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     maxHeight: '85%',
   },
+  scroll: { flexShrink: 1 },
   content: { padding: 20, gap: 16 },
   title: { fontFamily: fontFamily.displayBold, fontSize: 18, letterSpacing: -0.3 },
   field: { gap: 6 },
@@ -201,6 +208,12 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7 },
   multiline: { minHeight: 96, paddingTop: 12, paddingBottom: 12 },
-  actions: { flexDirection: 'row', gap: 12 },
+  footer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   flex: { flex: 1 },
 });
