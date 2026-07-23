@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : maquette (DESIGN)
+
+> Maquette HTML du flux de suppression. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.
+
+**Ajouté**
+- `design/conf02/conf02.html` — 4 écrans : zone Danger (Réglages) → avertissement + ré-auth mot de passe →
+  confirmation « suppression programmée » (déconnexion) → gate de récupération bloquant (Annuler / Se
+  déconnecter) ; + note technique (pg_cron / cascade). Charte alignée, accent destructif rouge.
+
+**Technique / Notes**
+- Commit précédent : `aa1f331`. Prochaine étape : validation Florian/Damien → exécution (subagent-driven).
+
 ### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : plan d'implémentation (PLAN)
 
 > Plan TDD en 7 tâches. Aucun code (plan seul). Revue subagent contre spec + code.
