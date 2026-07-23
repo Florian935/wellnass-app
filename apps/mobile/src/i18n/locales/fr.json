@@ -1212,6 +1212,38 @@
     "account": {
       "title": "Compte",
       "signOut": "Se déconnecter"
+    },
+    "dangerZone": {
+      "title": "Zone de danger",
+      "subtitle": "La suppression est définitive après 30 jours. Nécessite une connexion.",
+      "delete": "Supprimer mon compte",
+      "requiresConnection": "Nécessite une connexion."
+    }
+  },
+  "account": {
+    "delete": {
+      "title": "Supprimer mon compte",
+      "warning": "Action irréversible. Ton compte et toutes tes données seront supprimés :",
+      "whatDeletedTitle": "Ce qui sera supprimé",
+      "item1": "Séances, courses, journal nutrition",
+      "item2": "Profils, historiques, records",
+      "item3": "Exercices et aliments personnels",
+      "graceInfo": "Suppression effective dans 30 jours. Tu peux annuler en te reconnectant avant le {{date}}.",
+      "exportHint": "Pense à exporter tes données au préalable (bientôt disponible).",
+      "passwordLabel": "Confirme avec ton mot de passe",
+      "confirm": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "errorWrongPassword": "Mot de passe incorrect.",
+      "scheduledTitle": "Suppression programmée",
+      "scheduledBody": "Ton compte sera supprimé le {{date}}."
+    },
+    "deletePending": {
+      "title": "Suppression en cours",
+      "scheduledFor": "Ton compte sera supprimé le {{date}}.",
+      "blocked": "Tant que la suppression est active, l'accès à l'app est bloqué.",
+      "cancel": "Annuler la suppression",
+      "signOut": "Se déconnecter",
+      "cancelError": "Échec de l'annulation. Réessaie."
     }
   },
   "running": {

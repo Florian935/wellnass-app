@@ -1212,6 +1212,38 @@
     "account": {
       "title": "Account",
       "signOut": "Sign out"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "subtitle": "Deletion is permanent after 30 days. Requires an active connection.",
+      "delete": "Delete my account",
+      "requiresConnection": "Requires an active connection."
+    }
+  },
+  "account": {
+    "delete": {
+      "title": "Delete my account",
+      "warning": "This action is irreversible. Your account and all your data will be deleted:",
+      "whatDeletedTitle": "What will be deleted",
+      "item1": "Workouts, runs, nutrition journal",
+      "item2": "Profiles, history, records",
+      "item3": "Custom exercises and foods",
+      "graceInfo": "Deletion takes effect in 30 days. You can cancel by signing back in before {{date}}.",
+      "exportHint": "Remember to export your data first (coming soon).",
+      "passwordLabel": "Confirm with your password",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel",
+      "errorWrongPassword": "Incorrect password.",
+      "scheduledTitle": "Deletion scheduled",
+      "scheduledBody": "Your account will be deleted on {{date}}."
+    },
+    "deletePending": {
+      "title": "Deletion in progress",
+      "scheduledFor": "Your account will be deleted on {{date}}.",
+      "blocked": "While the deletion is active, access to the app is blocked.",
+      "cancel": "Cancel deletion",
+      "signOut": "Sign out",
+      "cancelError": "Cancellation failed. Please try again."
     }
   },
   "running": {

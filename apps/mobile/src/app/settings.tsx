@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useStatus } from '@powersync/react';
 import {
   LOCALES,
   PILLARS,
@@ -115,6 +116,7 @@ export default function SettingsScreen() {
   const language = settings?.language ?? getAppLanguage();
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
+  const { connected } = useStatus();
   const { profile } = useProfile();
   const displayLevel = profile?.workoutDisplayLevel ?? 'normal';
 
@@ -446,6 +448,27 @@ export default function SettingsScreen() {
       <View style={styles.signOut}>
         <Button label={t('settings.account.signOut')} variant="ghost" onPress={() => void signOut()} />
       </View>
+
+      {/* Zone de danger (US CONF-02) */}
+      <View style={[styles.dangerZone, { borderColor: colors.danger, backgroundColor: colors.surface }]}>
+        <Text style={[styles.dangerTitle, { color: colors.danger }]}>
+          {t('settings.dangerZone.title')}
+        </Text>
+        <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
+          {t('settings.dangerZone.subtitle')}
+        </Text>
+        <Button
+          label={t('settings.dangerZone.delete')}
+          variant="destructive"
+          disabled={!connected}
+          onPress={() => router.push('/account-delete' as Parameters<typeof router.push>[0])}
+        />
+        {!connected ? (
+          <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
+            {t('settings.dangerZone.requiresConnection')}
+          </Text>
+        ) : null}
+      </View>
     </ScrollView>
   );
 }
@@ -472,6 +495,14 @@ const styles = StyleSheet.create({
   rowDesc: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 2, lineHeight: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
   signOut: { marginTop: 12 },
+  dangerZone: {
+    marginTop: 28,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+  },
+  dangerTitle: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   stack: { gap: 10, marginTop: 10 },
   // Couleurs des menus
   menuColorRow: { paddingHorizontal: 16, paddingVertical: 14, gap: 10 },
