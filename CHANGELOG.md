@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : plan d'implémentation (PLAN)
+
+> Plan TDD en 9 tâches bornées pour MUSC-F13. Aucun code applicatif (plan seul ; le code ne démarre qu'après
+> validation des 3 livrables spec → plan → maquette). Revue par sous-agent contre spec + code réel.
+
+**Ajouté**
+- `docs/plans/muscf13-niveaux-affichage-seance.md` — plan complet : structure des fichiers, 9 tâches
+  (shared enum/coercition → matrice de visibilité → migration cloud 🔴 → champ profil + mapping repo →
+  gating `CurrentSetCard` → câblage `workout.tsx` → réglage Réglages → étape onboarding → parité i18n/clôture),
+  code concret, commandes, points de test, checkpoint cloud.
+
+**Technique / Notes**
+- Revue de plan par sous-agent → **CORRECTIONS REQUISES** (1 bloquant + 3 mineurs), **toutes corrigées** :
+  (bloquant) réordonnancement — l'ajout du champ à `profileRowSchema` est regroupé avec le mapping
+  `rowToProfile` dans la **même tâche/commit** pour éviter un typecheck mobile rouge (TS2741) ; (mineurs)
+  `flexDirection:'row'` inline sur le sélecteur Réglages, note i18n de test rectifiée (`import '@/i18n'`, pas de
+  mock i18n dans le setup jest), coercition couverte via le test shared.
+- Commit précédent : `42b8d80`.
+- **Prochaine étape** : maquette (3 aperçus de niveaux, Claude Design) → validation Florian/Damien des 3
+  livrables → exécution du plan (subagent-driven).
+
 ### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : spec « Niveaux d'affichage de la séance » (SPEC)
 
 > Cadrage (brainstorming Florian, 23/07/2026) d'une nouvelle US promue depuis [IDEAS.md](IDEAS.md) :

@@ -19,8 +19,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > Spec : [muscf13-niveaux-affichage-seance.md](docs/specs/functional/us/muscf13-niveaux-affichage-seance.md).
 >
 > - [x] **Spec** — écrite, revue subagent contre le code (**APPROUVÉ**, 5 imprécisions corrigées), **validée Florian (23/07)**.
-> - [ ] **Plan d'implémentation** — en cours de rédaction (prochaine étape).
-> - [ ] **Maquette** — 3 aperçus de niveaux (Claude Design).
+> - [x] **Plan d'implémentation** — écrit (9 tâches TDD), revue subagent (1 bloquant + 3 mineurs **corrigés**). [plan](docs/plans/muscf13-niveaux-affichage-seance.md).
+> - [ ] **Maquette** — 3 aperçus de niveaux (Claude Design) — prochaine étape.
 > - [ ] **Validation** des 3 livrables (Florian/Damien) avant tout code.
 > - [ ] **Code** — migration `workout_display_level` + gating `CurrentSetCard` + Réglages + étape onboarding + i18n.
 
