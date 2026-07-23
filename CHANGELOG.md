@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : code livré (3 niveaux d'affichage de la séance)
+
+> Implémentation subagent-driven (8 commits `a00ae2f`→`87880df`) de MUSC-F13 : la carte « série en cours »
+> (`CurrentSetCard`) s'affiche à 3 densités selon le niveau choisi par l'utilisateur. Revue finale
+> **PRÊT À MERGER** (0 bloquant). typecheck + lint + 807 tests shared + 70 tests mobile verts.
+
+**Ajouté**
+- `packages/shared/src/workout-display.ts` (+ test) : enum `WORKOUT_DISPLAY_LEVELS`, `workoutDisplayLevelSchema`,
+  `coerceWorkoutDisplayLevel` (NULL/inconnu → `normal`), `workoutFieldVisibility(level)` (matrice pure des
+  champs supplémentaires visibles) — fonctions pures, couverture Vitest exhaustive.
+- Colonne cloud `profiles.workout_display_level` (migration `20260723100835`, appliquée + `db:types` +
+  `column.text` PowerSync ; `profiles` en `select *` → pas de redéploiement sync rules).
+- Champ `workoutDisplayLevel` dans le Zod `ProfileRow` + mapping repository (coercion dans `rowToProfile`).
+- Prop `level` sur `CurrentSetCard` : gating de delta/suggestion/🔥 (normal+) et types/RPE/note/superset
+  (détaillée) ; nature d'exercice (durée/poids de corps) jamais masquée ; consigne du plan visible partout,
+  seul le badge d'écart gaté. 3 smoke tests jest-expo (un par niveau).
+- Réglage « Niveau d'affichage de la séance » dans les Réglages (sélecteur en cartes, sélection immédiate).
+- Étape d'onboarding « niveau d'affichage » inconditionnelle (compteur 3→4, insérée entre objectif et récap).
+- i18n FR/EN : `workout.displayLevel.*`, `settings.workoutDisplayLevel.*`, `onboarding.displayLevel.*` (parité stricte).
+
+**Modifié**
+- `workout.tsx` lit `profile.workoutDisplayLevel` (via `useProfile`, défaut `normal`) et le transmet à la carte.
+
+**Technique / Notes**
+- Défaut `normal` ; masquer un champ n'efface aucune donnée (RPE/note/type persistés réapparaissent en
+  Détaillée) ; changement de niveau réactif en séance (pas de remontage — `key` sans `level`).
+- Périmètre Muscu strict : `workout-summary`, historique, `ExerciseList`, Running non touchés.
+- Commit précédent (docs) : `ae2aff6`.
+- **Point ouvert (mineur)** : l'étape d'onboarding livre libellé + description par niveau (conforme à la
+  maquette validée) ; un aperçu visuel/vignette par niveau reste à confirmer avec Florian.
+- **Reste** : recette device (Florian) + relecture Damien.
+
 ### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : maquette (DESIGN)
 
 > Maquette HTML des 3 niveaux d'affichage de la carte de séance. Aucun code applicatif. Complète le 3ᵉ livrable

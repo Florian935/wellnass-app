@@ -21,8 +21,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Spec** — écrite, revue subagent contre le code (**APPROUVÉ**, 5 imprécisions corrigées), **validée Florian (23/07)**.
 > - [x] **Plan d'implémentation** — écrit (9 tâches TDD), revue subagent (1 bloquant + 3 mineurs **corrigés**). [plan](docs/plans/muscf13-niveaux-affichage-seance.md).
 > - [x] **Maquette** — [design/muscf13/muscf13.html](design/muscf13/muscf13.html) : 3 niveaux côte à côte + matrice + aperçus onboarding/Réglages.
-> - [ ] **Validation** des 3 livrables (Florian/Damien) avant tout code — **en attente**.
-> - [ ] **Code** — migration `workout_display_level` + gating `CurrentSetCard` + Réglages + étape onboarding + i18n.
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 8 commits : shared (enum/coercition/matrice pures, testées) → migration cloud `workout_display_level` (appliquée + types + schéma PowerSync) → champ profil + mapping repo (coercition NULL→normal) → gating `CurrentSetCard` par prop `level` (+ 3 smoke tests) → câblage `workout.tsx` → réglage Réglages → étape onboarding (compteur 3→4) → i18n FR/EN. Revue finale **PRÊT À MERGER** (0 bloquant). typecheck/lint/807 shared+70 mobile verts.
+> - [ ] **Recette device** (Florian) + relecture Damien. Point ouvert : aperçu visuel par niveau à l'onboarding (label+description livrés, conforme maquette) — à confirmer.
 
 > ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
 >
