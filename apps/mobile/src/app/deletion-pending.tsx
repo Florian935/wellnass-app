@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { FormScreen } from '@/components/FormScreen';
 import { fetchPendingDeletion } from '@/data/repositories/account-deletion-repository';
 import { useAuthStore } from '@/stores/auth-store';
+import { useDeletionStore } from '@/stores/deletion-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -59,8 +60,10 @@ export default function DeletionPendingScreen() {
       setError(t('account.deletePending.cancelError'));
       return;
     }
-    // Suppression annulée côté serveur : on sort de la gate en revenant à l'app ; le
-    // routage racine re-évaluera l'état (plus de suppression pending) au prochain rendu.
+    // Suppression annulée côté serveur : réinitialiser la détection partagée (sinon le routage
+    // racine, qui voit toujours `pending`, ramènerait aussitôt sur la gate → boucle) PUIS revenir
+    // à l'app. `reset()` remet `pending=false` → le routage repasse en 'app'.
+    useDeletionStore.getState().reset();
     router.replace('/(tabs)');
   };
 
