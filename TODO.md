@@ -10,6 +10,20 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🟡 EN COURS — MUSC-F13 Niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée)
+>
+> Promue depuis [IDEAS.md](IDEAS.md) (idée 23/07). Adapter la densité de l'écran de séance muscu au niveau de
+> l'utilisateur via 3 niveaux qui pilotent la visibilité des champs de `CurrentSetCard`. Réglage synchronisé
+> `profiles.workout_display_level` (défaut `normal`) + étape d'onboarding (compteur 3→4) + entrée Réglages.
+> Périmètre Muscu. Branche `feature/muscf13-niveaux-affichage-seance`.
+> Spec : [muscf13-niveaux-affichage-seance.md](docs/specs/functional/us/muscf13-niveaux-affichage-seance.md).
+>
+> - [x] **Spec** — écrite, revue subagent contre le code (**APPROUVÉ**, 5 imprécisions corrigées), **validée Florian (23/07)**.
+> - [ ] **Plan d'implémentation** — en cours de rédaction (prochaine étape).
+> - [ ] **Maquette** — 3 aperçus de niveaux (Claude Design).
+> - [ ] **Validation** des 3 livrables (Florian/Damien) avant tout code.
+> - [ ] **Code** — migration `workout_display_level` + gating `CurrentSetCard` + Réglages + étape onboarding + i18n.
+
 > ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
 >
 > Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d`, jugée peu
@@ -291,7 +305,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**FIX CI — timeout Jest `edit-exercise-modal-smoke` ✅** : le 1ᵉʳ test du suite dépassait le défaut de 5 s en CI en payant le coût de démarrage à froid (transfo Babel + RN + react-i18next + safe-area) dans son corps ; cache de transformation Jest non persisté en CI + runner 2 cœurs. Fix = `testTimeout: 15000` dans `apps/mobile/jest.config.js` ; 16 suites / 67 tests verts. Précédemment : **FIX modales exo (création + édition) ✅** : retour recette Florian —
+*Dernière mise à jour : 23/07/2026 (**MUSC-F13 — SPEC VALIDÉE (Florian) ✅** : nouvelle US promue d'IDEAS —
+3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
+`CurrentSetCard` ; réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
+(compteur 3→4) + entrée Réglages, périmètre Muscu. Spec écrite + revue subagent contre le code (**APPROUVÉ**,
+5 imprécisions corrigées). Branche `feature/muscf13-niveaux-affichage-seance`. **Prochaine étape : plan
+d'implémentation → maquette → validation.** Précédemment : **FIX CI — timeout Jest `edit-exercise-modal-smoke` ✅** : le 1ᵉʳ test du suite dépassait le défaut de 5 s en CI en payant le coût de démarrage à froid (transfo Babel + RN + react-i18next + safe-area) dans son corps ; cache de transformation Jest non persisté en CI + runner 2 cœurs. Fix = `testTimeout: 15000` dans `apps/mobile/jest.config.js` ; 16 suites / 67 tests verts. Précédemment : **FIX modales exo (création + édition) ✅** : retour recette Florian —
 les modales étaient tronquées en bas (boutons sous la barre de gestes, scroll non évident). Corrigé :
 **pied de page fixe** (boutons toujours visibles) + champs défilants + **safe-area** basse ; mock
 `react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. **Recette validée

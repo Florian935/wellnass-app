@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : spec « Niveaux d'affichage de la séance » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07/2026) d'une nouvelle US promue depuis [IDEAS.md](IDEAS.md) :
+> adapter la densité de l'écran de séance muscu au niveau de l'utilisateur via **3 niveaux d'affichage**
+> — **Simplifiée** (débutant), **Normale** (intermédiaire/confirmé), **Détaillée** (avancé) — pilotant la
+> visibilité des champs de `CurrentSetCard`. Aucun code applicatif (spec seule ; pas de code avant
+> validation des 3 livrables spec → plan → design).
+
+**Ajouté**
+- `docs/specs/functional/us/muscf13-niveaux-affichage-seance.md` — spec fonctionnelle complète :
+  matrice des champs par niveau (§2.1), règles fines (§2.2 : nature d'exercice jamais masquée, consigne
+  vs delta, échauffement dès Normale, masquer ≠ effacer), réglage synchronisé `profiles.workout_display_level`
+  (défaut `normal`, coercition NULL→normal dans le repository), étape d'onboarding inconditionnelle
+  (compteur 3→4), entrée Réglages, migration additive, i18n FR/EN, offline, DoD + critères de recette.
+
+**Technique / Notes**
+- Décisions de cadrage : réglage **profil seulement** (pas de bascule en séance) ; « dernière fois » aux
+  3 niveaux ; RPE en Détaillée uniquement ; périmètre **Musculation**.
+- Revue de spec par sous-agent contre le code réel → **APPROUVÉ** (0 correction bloquante) ; 5 imprécisions
+  de rédaction corrigées (patron Réglages `Segment`/`Switch` + sélecteur en cartes ; chaîne `NEXT` onboarding
+  et `TOTAL_STEPS` unique ; coercition côté repository, pas Zod ; `profiles` en `select *` → pas de
+  redéploiement sync rules ; ajout de `useProfile` dans `workout.tsx` signalé).
+- Commit précédent : `399d950`.
+- **Prochaines étapes** : plan d'implémentation → maquette (3 aperçus de niveaux, Claude Design) → validation
+  Florian/Damien → code.
+
 ### 23/07/2026 — `fix/modales-exo-tronquees` — CI : timeout Jest sur `edit-exercise-modal-smoke` (CORRECTIF)
 
 > Retour CI GitHub : le suite `EditExerciseModal — smoke` échouait par **timeout de 5000 ms** sur
