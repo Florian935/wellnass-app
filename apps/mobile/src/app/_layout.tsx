@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useStatus } from '@powersync/react';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolveRootRoute } from '@wellness/shared';
 
@@ -14,6 +14,7 @@ import i18n from '@/i18n';
 // Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
 // (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
 import '@/running/tracker-task';
+import { fetchPendingDeletion } from '@/data/repositories/account-deletion-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
@@ -69,6 +70,49 @@ function RootNavigator() {
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
 
+  // Détection de la suppression de compte pending (CONF-02) : contrôle serveur (hors
+  // PowerSync) une seule fois par utilisateur. On key sur `session?.user?.id` (stable
+  // entre les refreshes de token) plutôt que sur l'objet `session` (qui est ré-émis à
+  // chaque refresh) pour ne pas re-déclencher le contrôle ni faire flasher/remonter le
+  // Stack à chaque renouvellement horaire du token.
+  const userId = session?.user?.id ?? null;
+  const [deletionState, setDeletionState] = useState<{ loading: boolean; pending: boolean }>({
+    loading: true,
+    pending: false,
+  });
+  const deletionCheckedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!userId) {
+      // Pas de setState synchrone ici : sans utilisateur, l'état pertinent est dérivé
+      // directement au rendu ci-dessous (`deletion`) — seul le ref de dédup est réinitialisé.
+      deletionCheckedFor.current = null;
+      return;
+    }
+    if (deletionCheckedFor.current === userId) {
+      return;
+    }
+    deletionCheckedFor.current = userId;
+    let cancelled = false;
+    setDeletionState({ loading: true, pending: false });
+    fetchPendingDeletion()
+      .then((r) => {
+        if (!cancelled) setDeletionState({ loading: false, pending: r != null });
+      })
+      .catch(() => {
+        // Fail-open (hors-ligne / erreur réseau) : on ne bloque pas l'accès à l'app sur
+        // un contrôle de suppression indisponible.
+        if (!cancelled) setDeletionState({ loading: false, pending: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+  // Dérivé plutôt que stocké : sans utilisateur, l'état de suppression n'a pas de sens
+  // (évite un setState synchrone superflu dans l'effet ci-dessus).
+  const deletion = userId ? deletionState : { loading: false, pending: false };
+  // TODO(conf02): signOut gracieux si compte purgé à distance (J+30) — nécessite d'identifier,
+  // côté connector PowerSync, un signal d'erreur d'auth irrécupérable (hors périmètre _layout.tsx).
+
   const fontsReady = loaded || error != null;
   // Décision de routing centralisée dans un helper pur testé (@wellness/shared) : gère l'attente
   // (splash), l'auth, l'onboarding et l'app — y compris la garde anti-race offline-first (ne pas
@@ -83,6 +127,8 @@ function RootNavigator() {
     onboardingCompletedAt: profile?.onboardingCompletedAt ?? null,
     settingsLoading,
     hasSynced: !!syncStatus.hasSynced,
+    deletionCheckLoading: deletion.loading,
+    deletionPending: deletion.pending,
   });
   const ready = route !== 'wait';
 
@@ -144,6 +190,15 @@ function RootNavigator() {
       }
       return;
     }
+    if (route === 'deletion-pending') {
+      // Cast nécessaire tant que l'écran `deletion-pending` n'existe pas encore sur le
+      // disque (Task 6) : les routes typées d'expo-router sont générées depuis les
+      // fichiers présents sous `app/`, donc absentes du type tant que le fichier n'existe pas.
+      if ((segments[0] as string) !== 'deletion-pending') {
+        router.replace('/deletion-pending' as Parameters<typeof router.replace>[0]);
+      }
+      return;
+    }
     // route === 'app'
     if (inAuth || inOnboarding) {
       router.replace('/(tabs)');
@@ -162,6 +217,18 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="deletion-pending" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen
+          name="account-delete"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('account.delete.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="settings"
           options={{
