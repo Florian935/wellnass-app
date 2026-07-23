@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🟡 EN COURS — CONF-01 Export des données (RGPD portabilité — P0 lancement)
+> ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
 > Roadmap [1.18](docs/roadmap/roadmap.md). Export JSON de toutes les données perso depuis la base locale
 > (hors-ligne), livré via feuille de partage. 28 tables (filtre possession + `deleted_at IS NULL`), éditorial
@@ -22,8 +22,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Maquette** — [design/conf01/conf01.html](design/conf01/conf01.html) : entrée Réglages → avertissement synchro → génération/partage → structure JSON.
 > - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
 > - [x] **Code livré (subagent-driven)** — 5 commits : helper pur shared → `data-export.ts` (31 tables possédées + `deleted_at IS NULL`) → entrée Réglages + i18n + maj `exportHint`. Revue finale code-reviewer : **1 point important corrigé** (traductions perso exportées → contenus perso avec leur nom). typecheck/lint/812 shared + 73 mobile verts. Roadmap 1.18 → ✅.
-> - [ ] **Recette device** (Florian) + relecture Damien.
-> - [ ] **Code** — helper shared (`buildExportEnvelope`/`exportFileName`) + `data-export.ts` (lecture locale + partage) + entrée Réglages + i18n + maj `exportHint`.
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (8 sections : export nominal + en-tête ; complétude ; contenus perso **avec leur nom** via `*_translations` ; pas d'éditorial ; soft-delete exclu ; hors-ligne ; avertissement synchro ; i18n). **Florian valide l'ensemble → US CLÔTURÉE.**
 
 > ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
@@ -338,7 +337,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**CONF-02 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : suppression
+*Dernière mise à jour : 23/07/2026 (**CONF-01 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : export RGPD
+des données perso (roadmap 1.18, P0 lancement) — JSON local hors-ligne de 31 tables possédées (dont
+traductions perso), feuille de partage, entrée Réglages. Recette 8 sections validée dans son ensemble par
+Florian. Roadmap 1.18 ✅. Branche `feature/conf01-export-donnees`. Précédemment : **CONF-02 — RECETTE VALIDÉE À
+100 % + CLÔTURÉE (Florian) ✅** : suppression
 du compte (RGPD, roadmap 1.19, P0 lancement) recettée (6 sections, dont purge serveur J+30 et job pg_cron) et
 validée dans son ensemble par Florian. Roadmap 1.19 ✅. Branche `feature/conf02-suppression-compte`.
 Précédemment : **MUSC-F13 (+ F13b) — RECETTE VALIDÉE À 100 % (Florian) ✅ → reste relecture Damien** :

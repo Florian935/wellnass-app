@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble. Aucun
+> écart remonté.
+
+**Technique / Notes**
+- Recette couverte (8 sections) : export nominal + en-tête (`exportedAt`/`userId`/`syncComplete`) ;
+  complétude (données des 3 piliers retrouvées) ; **contenus perso avec leur nom** (via `*_translations`
+  filtrées `owner_id`) ; pas d'éditorial ; soft-delete exclu ; hors-ligne ; avertissement synchro ; i18n FR/EN.
+- Commit précédent : `fd15327`. CONF-01 close. **P0 conformité : 1.18 + 1.19 livrés & clôturés** ; restent
+  CONF-03/04/05/06/07 + LANCE-01.
+
 ### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : code livré (export des données, RGPD)
 
 > Implémentation subagent-driven (5 commits `afc33c9`→`e197a46`). Revue finale code-reviewer → **1 point
