@@ -10,6 +10,17 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : maquette (DESIGN)
+
+> Maquette HTML du flux d'export. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.
+
+**Ajouté**
+- `design/conf01/conf01.html` — 4 vues : entrée Réglages (section Données) → avertissement synchro non
+  bloquant → génération locale + feuille de partage → structure du fichier JSON (en-tête + sections par table).
+
+**Technique / Notes**
+- Commit précédent : `868438b`. Prochaine étape : validation Florian/Damien → exécution (subagent-driven).
+
 ### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : plan d'implémentation (PLAN)
 
 > Plan TDD en 4 tâches (aucune migration/serveur). Revue subagent → **APPROUVÉ** (3 mineurs corrigés).

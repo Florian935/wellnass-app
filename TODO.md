@@ -19,8 +19,8 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >
 > - [x] **Spec** — écrite, revue subagent (0 bloquant, corrigée/simplifiée), **validée Florian (23/07)**.
 > - [x] **Plan d'implémentation** — écrit (4 tâches TDD), revue subagent **APPROUVÉ** (3 mineurs corrigés). [plan](docs/plans/conf01-export-donnees.md).
-> - [ ] **Maquette** — entrée Réglages + états (chargement / avertissement synchro / erreur) — prochaine étape.
-> - [ ] **Validation** des 3 livrables avant code.
+> - [x] **Maquette** — [design/conf01/conf01.html](design/conf01/conf01.html) : entrée Réglages → avertissement synchro → génération/partage → structure JSON.
+> - [ ] **Validation** des 3 livrables (Florian/Damien) — **en attente**.
 > - [ ] **Code** — helper shared (`buildExportEnvelope`/`exportFileName`) + `data-export.ts` (lecture locale + partage) + entrée Réglages + i18n + maj `exportHint`.
 
 > ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
