@@ -827,6 +827,10 @@
         "health": "General health"
       }
     },
+    "displayLevel": {
+      "title": "Display level",
+      "subtitle": "Choose how much info you see during sessions. Changeable later in settings."
+    },
     "summary": {
       "title": "All set!",
       "subtitle": "Here's your setup. You can adjust everything in settings.",

@@ -2,42 +2,42 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { GOALS, type Goal } from '@wellness/shared';
+import { WORKOUT_DISPLAY_LEVELS, type WorkoutDisplayLevel } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { upsertProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-const NEXT = '/(onboarding)/displayLevel';
+const NEXT = '/(onboarding)/summary';
 
-export default function OnboardingGoal() {
+export default function OnboardingDisplayLevel() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const [goal, setGoal] = useState<Goal | null>(null);
+  const [level, setLevel] = useState<WorkoutDisplayLevel | null>(null);
 
   const onContinue = async () => {
-    await upsertProfile({ mainGoal: goal });
+    if (level) await upsertProfile({ workoutDisplayLevel: level });
     router.push(NEXT);
   };
 
   return (
     <OnboardingScaffold
-      step={3}
-      title={t('onboarding.goal.title')}
-      subtitle={t('onboarding.goal.subtitle')}
+      step={4}
+      title={t('onboarding.displayLevel.title')}
+      subtitle={t('onboarding.displayLevel.subtitle')}
       onSkip={() => router.push(NEXT)}
       onContinue={onContinue}
     >
       <View style={styles.list}>
-        {GOALS.map((option) => {
-          const selected = goal === option;
+        {WORKOUT_DISPLAY_LEVELS.map((option) => {
+          const selected = level === option;
           return (
             <Pressable
               key={option}
               accessibilityRole="button"
               accessibilityState={{ selected }}
-              onPress={() => setGoal(option)}
+              onPress={() => setLevel(option)}
               style={[
                 styles.option,
                 {
@@ -46,9 +46,14 @@ export default function OnboardingGoal() {
                 },
               ]}
             >
-              <Text style={[styles.optionLabel, { color: colors.text }]}>
-                {t(`onboarding.goal.options.${option}`)}
-              </Text>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={[styles.optionLabel, { color: colors.text }]}>
+                  {t(`workout.displayLevel.levels.${option}.label`)}
+                </Text>
+                <Text style={[styles.optionHint, { color: colors.textMuted }]}>
+                  {t(`workout.displayLevel.levels.${option}.description`)}
+                </Text>
+              </View>
               {selected ? (
                 <View style={[styles.dot, { backgroundColor: colors.accent }]} />
               ) : (
@@ -68,11 +73,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     borderWidth: 1.5,
     borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 16,
   },
   optionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
+  optionHint: { fontFamily: fontFamily.body, fontSize: 13 },
   dot: { width: 20, height: 20, borderRadius: 10 },
 });

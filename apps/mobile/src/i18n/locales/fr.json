@@ -827,6 +827,10 @@
         "health": "Santé générale"
       }
     },
+    "displayLevel": {
+      "title": "Niveau d'affichage",
+      "subtitle": "Choisis la quantité d'infos pendant tes séances. Modifiable ensuite dans les réglages."
+    },
     "summary": {
       "title": "C'est prêt !",
       "subtitle": "Voici ta configuration. Tu peux tout ajuster dans les réglages.",
