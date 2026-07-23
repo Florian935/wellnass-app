@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## ✅ RECETTE VALIDÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (Florian, 23/07/2026) — reste relecture Damien
+> ## ✅ CLÔTURÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (recette Florian + relecture Damien, 23/07/2026)
 >
 > Promue depuis [IDEAS.md](IDEAS.md) (idée 23/07). Adapter la densité de l'écran de séance muscu au niveau de
 > l'utilisateur via 3 niveaux qui pilotent la visibilité des champs de `CurrentSetCard`. Réglage synchronisé
@@ -25,7 +25,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Code livré (subagent-driven)** — 8 commits : shared (enum/coercition/matrice pures, testées) → migration cloud `workout_display_level` (appliquée + types + schéma PowerSync) → champ profil + mapping repo (coercition NULL→normal) → gating `CurrentSetCard` par prop `level` (+ 3 smoke tests) → câblage `workout.tsx` → réglage Réglages → étape onboarding (compteur 3→4) → i18n FR/EN. Revue finale **PRÊT À MERGER** (0 bloquant). typecheck/lint/807 shared+70 mobile verts.
 > - [x] **MUSC-F13b — Vignette d'aperçu par niveau à l'onboarding** (retour Florian, 23/07) : composant décoratif `WorkoutLevelPreview` (schématique, piloté par `workoutFieldVisibility`) affiché sous chaque option. Branche `feature/muscf13b-vignette-onboarding`, 73 tests mobile verts.
 > - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (9 sections : réglage/défaut, onboarding+vignette, matrice Simplifiée/Normale/Détaillée, nature d'exercice, changement en direct, non-destructif, i18n).
-> - [ ] **Relecture Damien** (MUSC-F13 + F13b).
+> - [x] **Relecture Damien (23/07/2026) ✅ → US CLÔTURÉE.**
 
 > ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
 >
