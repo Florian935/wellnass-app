@@ -7,7 +7,7 @@
  * de la synchro initiale). Aucune I/O, aucun `Date`.
  */
 
-export type RootRoute = 'wait' | 'auth' | 'onboarding' | 'app';
+export type RootRoute = 'wait' | 'auth' | 'onboarding' | 'app' | 'deletion-pending';
 
 export function resolveRootRoute(input: {
   /** Polices chargées (ou en erreur) — prêtes à rendre. */
@@ -26,6 +26,10 @@ export function resolveRootRoute(input: {
   settingsLoading: boolean;
   /** La **synchro initiale** PowerSync est terminée (au moins un cycle depuis la création de la base). */
   hasSynced: boolean;
+  /** Le contrôle serveur d'une demande de suppression de compte est en cours (CONF-02). */
+  deletionCheckLoading?: boolean;
+  /** Une demande de suppression de compte est en attente (pending) côté serveur (CONF-02). */
+  deletionPending?: boolean;
 }): RootRoute {
   const {
     fontsReady,
@@ -36,6 +40,8 @@ export function resolveRootRoute(input: {
     onboardingCompletedAt,
     settingsLoading,
     hasSynced,
+    deletionCheckLoading,
+    deletionPending,
   } = input;
 
   // Splash tant que le socle n'est pas prêt.
@@ -43,6 +49,11 @@ export function resolveRootRoute(input: {
 
   // Sans session, on route vers l'authentification (profil/réglages non pertinents).
   if (!hasSession) return 'auth';
+
+  // Gate suppression de compte (CONF-02), prioritaire sur onboarding/app. Champs optionnels : falsy
+  // par défaut tant que le contrôleur ne les branche pas (fail-open hors-ligne géré côté _layout).
+  if (deletionCheckLoading) return 'wait';
+  if (deletionPending) return 'deletion-pending';
 
   // Session ouverte : attendre la résolution des requêtes locales (profil + réglages) pour éviter
   // tout flash / boucle de redirection.

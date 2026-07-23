@@ -55,3 +55,34 @@ describe('resolveRootRoute', () => {
     expect(resolveRootRoute(base)).toBe('app'); // après redescente du profil
   });
 });
+
+describe('resolveRootRoute — gate suppression de compte (CONF-02)', () => {
+  it('compte en suppression → deletion-pending, prioritaire sur onboarding', () => {
+    expect(
+      resolveRootRoute({
+        ...base,
+        hasSession: true,
+        hasProfile: false,
+        onboardingCompletedAt: null,
+        hasSynced: true,
+        deletionPending: true,
+      }),
+    ).toBe('deletion-pending');
+  });
+
+  it('check suppression en cours → wait', () => {
+    expect(resolveRootRoute({ ...base, hasSession: true, deletionCheckLoading: true })).toBe('wait');
+  });
+
+  it('pas de demande de suppression → route normale inchangée', () => {
+    expect(
+      resolveRootRoute({
+        ...base,
+        hasSession: true,
+        hasProfile: true,
+        onboardingCompletedAt: '2026-01-01T00:00:00Z',
+        hasSynced: true,
+      }),
+    ).toBe('app');
+  });
+});
