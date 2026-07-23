@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : code livré (export des données, RGPD)
+
+> Implémentation subagent-driven (5 commits `afc33c9`→`e197a46`). Revue finale code-reviewer → **1 point
+> important trouvé et corrigé** (traductions perso). typecheck + lint + 812 tests shared + 73 mobile verts.
+> Roadmap 1.18 → ✅. 100 % local, aucune migration.
+
+**Ajouté**
+- `packages/shared/src/data-export.ts` (+ test) : `buildExportEnvelope` (en-tête RGPD + sections) +
+  `exportFileName` (daté), purs, testés Vitest.
+- `apps/mobile/src/lib/data-export.ts` : `exportUserData(userId, syncComplete, t)` — lit **31 tables**
+  possédées (`user_id`/`owner_id` = user + `deleted_at IS NULL`) de la base locale, assemble le JSON, écrit
+  dans le cache et ouvre la feuille de partage (patron `gpx-export`). Noms de tables = constantes (pas
+  d'injection) ; `userId` paramétré.
+- Entrée Réglages « Exporter mes données » (section Données, au-dessus de la Zone de danger) : avertissement
+  non bloquant si `!hasSynced`, indicateur de chargement, gestion d'erreur ; **pas** de désactivation
+  hors-ligne (export local). i18n FR/EN (`settings.dataExport.*`, `account.export.*`).
+
+**Modifié**
+- `account.delete.exportHint` (CONF-02) : retrait de « bientôt disponible » → pointe vers Réglages → Export.
+
+**Corrigé**
+- Revue finale (important) : les **noms/instructions des contenus perso** vivent dans `*_translations`
+  (exclues en bloc) → un exercice/aliment/programme perso s'exportait **sans son nom**. Ajout des 3 tables
+  `*_translations` filtrées `owner_id = user` (l'éditorial `owner_id NULL` reste exclu). Complétude RGPD.
+
+**Technique / Notes**
+- Commit précédent (docs) : `f0ace6b`. **Reste** : recette device + relecture Damien.
+
 ### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : maquette (DESIGN)
 
 > Maquette HTML du flux d'export. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.

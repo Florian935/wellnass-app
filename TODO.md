@@ -20,7 +20,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Spec** — écrite, revue subagent (0 bloquant, corrigée/simplifiée), **validée Florian (23/07)**.
 > - [x] **Plan d'implémentation** — écrit (4 tâches TDD), revue subagent **APPROUVÉ** (3 mineurs corrigés). [plan](docs/plans/conf01-export-donnees.md).
 > - [x] **Maquette** — [design/conf01/conf01.html](design/conf01/conf01.html) : entrée Réglages → avertissement synchro → génération/partage → structure JSON.
-> - [ ] **Validation** des 3 livrables (Florian/Damien) — **en attente**.
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 5 commits : helper pur shared → `data-export.ts` (31 tables possédées + `deleted_at IS NULL`) → entrée Réglages + i18n + maj `exportHint`. Revue finale code-reviewer : **1 point important corrigé** (traductions perso exportées → contenus perso avec leur nom). typecheck/lint/812 shared + 73 mobile verts. Roadmap 1.18 → ✅.
+> - [ ] **Recette device** (Florian) + relecture Damien.
 > - [ ] **Code** — helper shared (`buildExportEnvelope`/`exportFileName`) + `data-export.ts` (lecture locale + partage) + entrée Réglages + i18n + maj `exportHint`.
 
 > ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
