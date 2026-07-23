@@ -82,11 +82,16 @@ Décisions de cadrage (brainstorming Florian, 23/07/2026) :
     `recipes`, `recipe_ingredients`, `meal_templates`, `meal_template_items`, `food_favorites`,
     `body_weight_entries`.
   - **`owner_id = <me>`** : `programs`, `sessions`, `exercise_plans`, `planned_sessions`, `exercises` (perso),
-    `exercise_variants` (perso), `foods` (perso).
+    `exercise_variants` (perso), `foods` (perso), **`exercise_translations` / `food_translations` /
+    `program_translations`** (perso — voir ci-dessous).
 - **`deleted_at IS NULL`** : ne **pas** exporter les lignes soft-deleted (données que l'utilisateur a
   supprimées) — cohérent avec ce qu'il voit dans l'app.
-- **Exclus** : contenu éditorial (`owner_id IS NULL`, réellement présent dans la base locale) et tables de
-  traduction éditoriales (`exercise_translations`, `food_translations`, `program_translations`) — non personnelles.
+- **Traductions (nom/instructions)** : les tables `*_translations` portent un `owner_id` et contiennent à la
+  fois l'éditorial (`owner_id NULL`) **et** les libellés des contenus **perso** de l'utilisateur (nom d'un
+  exercice/aliment/programme créé sur mobile). On les exporte **filtrées `owner_id = <me>`** : sinon un
+  contenu perso ressortirait **sans son nom** (complétude RGPD — 31 tables exportées, corrigé après revue).
+- **Exclus** : contenu éditorial (toute ligne `owner_id IS NULL`, réellement présent dans la base locale) —
+  non personnel.
 
 ### 2.3 Nom de fichier
 - `wellness-export-AAAA-MM-JJ.json` (date locale). Un ré-export le même jour écrase le fichier de cache

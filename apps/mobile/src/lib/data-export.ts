@@ -14,21 +14,31 @@ import * as Sharing from 'expo-sharing';
 import type { TFunction } from 'i18next';
 import { powerSync } from '@/powersync/system';
 
-/** Tables exportées + colonne de possession. Toutes ont `deleted_at` (vérifié). */
+/**
+ * Tables exportées + colonne de possession. Toutes ont `deleted_at` (vérifié).
+ *
+ * NB — tables `*_translations` : elles portent un `owner_id` et contiennent à la fois de l'éditorial
+ * (`owner_id NULL`, exclu) ET les libellés des contenus PERSO de l'utilisateur (nom/instructions d'un
+ * exercice/aliment/programme créé sur mobile → `owner_id = utilisateur`). On les exporte donc en
+ * `owner_id` : sans elles, un contenu perso ressortirait SANS son nom (complétude RGPD).
+ */
 const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'profiles', col: 'user_id' }, { table: 'user_settings', col: 'user_id' },
   { table: 'nutrition_profiles', col: 'user_id' }, { table: 'running_profiles', col: 'user_id' },
   { table: 'workouts', col: 'user_id' }, { table: 'workout_sets', col: 'user_id' },
-  { table: 'programs', col: 'owner_id' }, { table: 'sessions', col: 'owner_id' },
+  { table: 'programs', col: 'owner_id' }, { table: 'program_translations', col: 'owner_id' },
+  { table: 'sessions', col: 'owner_id' },
   { table: 'exercise_plans', col: 'owner_id' }, { table: 'personal_records', col: 'user_id' },
   { table: 'exercise_notes', col: 'user_id' }, { table: 'workout_superset_pairs', col: 'user_id' },
   { table: 'workout_templates', col: 'user_id' }, { table: 'workout_template_exercises', col: 'user_id' },
   { table: 'planned_sessions', col: 'owner_id' }, { table: 'exercise_favorites', col: 'user_id' },
-  { table: 'exercises', col: 'owner_id' }, { table: 'exercise_variants', col: 'owner_id' },
+  { table: 'exercises', col: 'owner_id' }, { table: 'exercise_translations', col: 'owner_id' },
+  { table: 'exercise_variants', col: 'owner_id' },
   { table: 'runs', col: 'user_id' }, { table: 'running_pace_records', col: 'user_id' },
   { table: 'food_entries', col: 'user_id' }, { table: 'recipes', col: 'user_id' },
   { table: 'recipe_ingredients', col: 'user_id' }, { table: 'meal_templates', col: 'user_id' },
-  { table: 'meal_template_items', col: 'user_id' }, { table: 'foods', col: 'owner_id' },
+  { table: 'meal_template_items', col: 'user_id' },
+  { table: 'foods', col: 'owner_id' }, { table: 'food_translations', col: 'owner_id' },
   { table: 'food_favorites', col: 'user_id' }, { table: 'body_weight_entries', col: 'user_id' },
 ];
 
