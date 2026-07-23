@@ -294,7 +294,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.2 | Connexion via Google | OAuth Google. | Moyen | 3h | 🟡 | ⬜ | `sign-in.tsx` = email/mdp seul ; aucun `signInWithOAuth`. Clé OAuth Google à fournir. **Conservé** (arbitrage E). |
 | 1.17 | Gestion des notifications | Activation / désactivation par type. | Facile | 2h | 🟢 | ✅ | Section Notifications de `settings.tsx`. |
 | 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | ⬜ | **Aucune trace.** Obligation RGPD. |
-| 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ⬜ | **Aucune trace** (settings n'a que `signOut`). **Exigé par les stores.** |
+| 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ✅ | **CONF-02 livré (23/07/2026).** Zone Danger + ré-auth mot de passe + délai de grâce 30 j récupérable (gate) + purge serveur `pg_cron` (cascade FK). Reste recette device + Damien. |
 | 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ⬜ | **Aucun écran FAQ/contact.** 🌐 bilingue FR+EN. |
 | 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | 6h | 🟢 | ⬜ | **Aucune trace.** Health Connect API. |
 | 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ⬜ | **Aucune trace.** **Avant la bêta** — sinon aucune mesure des testeurs. Alimente la décision gamification V3/V4. |
@@ -351,9 +351,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 130 | ~73 % |
+| ✅ Livré | 131 | ~73 % |
 | 🟡 Partiel | 10 | ~6 % |
-| ⬜ À faire | 34 | ~19 % |
+| ⬜ À faire | 33 | ~18 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **179** | |
@@ -370,7 +370,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | V0.5 (33) | 25 | 3 | 5 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (9) | 1 | 2 | 6 | 0 | 0 | 🔴 **Quasi vide — reste-à-faire clé du MVP1** |
+| V0.8 (9) | 2 | 2 | 5 | 0 | 0 | 🔴 **Reste-à-faire clé du MVP1** ; 1.19 (suppression compte, CONF-02) livré |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 
@@ -390,4 +390,4 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 ---
 
-*Dernière mise à jour : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+*Dernière mise à jour : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*

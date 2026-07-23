@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : code livré (suppression du compte, RGPD)
+
+> Implémentation subagent-driven (8 commits `2e06821`→`fc68ff7`) de la suppression de compte. Revue finale
+> code-reviewer → **1 bug bloquant trouvé et corrigé** (sortie de la gate après annulation). typecheck + lint
+> + 810 tests shared + 73 tests mobile verts. Roadmap 1.19 → ✅.
+
+**Ajouté**
+- **Migration cloud** (`20260723131921`, appliquée + `db:types` + registre) : table `account_deletion_requests`
+  (RLS select-own, index unique partiel pending) + RPC `request_/cancel_account_deletion` (SECURITY DEFINER,
+  scopées `auth.uid()`) + `purge_expired_accounts()` (résiliente par ligne) + **job pg_cron** quotidien +
+  correctif FK `user_bans.acted_by` → `on delete set null`.
+- `packages/shared` : route `'deletion-pending'` dans `resolveRootRoute` (champs `deletionCheckLoading?`/
+  `deletionPending?` optionnels, prioritaire sur onboarding) + tests.
+- `apps/mobile` : repository `account-deletion-repository` (query pending + RPC) ; actions `auth-store`
+  (`reauthenticate`, `requestAccountDeletion` avec `disconnectAndClear`, `cancelAccountDeletion`) ; store
+  partagé `deletion-store` (détection + `reset()`) ; écran `account-delete` (avertissement + ré-auth mot de
+  passe) ; écran-gate `deletion-pending` ; zone « Danger » dans les Réglages (bouton désactivé hors-ligne) ;
+  i18n FR/EN (`settings.dangerZone.*`, `account.delete.*`, `account.deletePending.*`).
+
+**Corrigé**
+- Bug bloquant (revue finale) : l'annulation depuis la gate ne réinitialisait pas la détection locale à
+  `_layout` → utilisateur piégé sur la gate. Détection déplacée dans `deletion-store` (Zustand) + `reset()` à
+  l'annulation → sortie effective.
+
+**Technique / Notes**
+- Détection keyée sur `session.user.id` (stable entre refreshes de token) ; fail-open hors-ligne ; hard delete
+  via cascade FK ; `disconnectAndClear` réservé au chemin suppression. pg_cron activé sans geste dashboard.
+- TODO restant (cas de bord, documenté) : signOut gracieux si compte purgé à distance (J+30).
+- Commit précédent (docs) : `ea0eae6`. **Reste** : recette device (Florian) + relecture Damien.
+
 ### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : maquette (DESIGN)
 
 > Maquette HTML du flux de suppression. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.

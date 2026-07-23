@@ -20,7 +20,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Spec** — écrite, revue subagent (**2 bloquants + clarifs corrigés**), **validée Florian (23/07)**.
 > - [x] **Plan d'implémentation** — écrit (7 tâches TDD), revue subagent (2 bloquants + mineurs **corrigés**). [plan](docs/plans/conf02-suppression-compte.md).
 > - [x] **Maquette** — [design/conf02/conf02.html](design/conf02/conf02.html) : 4 écrans (Danger → avertissement+ré-auth → confirmation → gate récupération).
-> - [ ] **Validation** des 3 livrables (Florian/Damien) — **en attente**.
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 8 commits : migration (table + RPC + `purge_expired_accounts` + pg_cron + fix FK `acted_by`) → route `deletion-pending` (shared) → repository → actions `auth-store` (ré-auth + `disconnectAndClear`) → gate `_layout` → écrans (Danger, flux, gate) + i18n. Revue finale code-reviewer : **1 bloquant corrigé** (sortie de gate après annulation via `deletion-store` partagé). typecheck/lint/810 shared + 73 mobile verts. Roadmap 1.19 → ✅.
+> - [ ] **Recette device** (Florian) + relecture Damien. ⚠️ Recette purge J+30 : forcer `scheduled_at` passé + `select public.purge_expired_accounts();` (inclure un exercice perso utilisé + un compte admin ayant banni).
 > - [ ] **Code** — migration (table + FK fix + RPC + purge_expired_accounts + pg_cron) + client (zone Danger, ré-auth, gate, disconnectAndClear) + i18n. 🔴 activation pg_cron (dashboard possible).
 
 > ## ✅ CLÔTURÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (recette Florian + relecture Damien, 23/07/2026)
