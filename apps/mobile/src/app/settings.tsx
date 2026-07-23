@@ -461,7 +461,7 @@ export default function SettingsScreen() {
           label={t('settings.dangerZone.delete')}
           variant="destructive"
           disabled={!connected}
-          onPress={() => router.push('/account-delete' as Parameters<typeof router.push>[0])}
+          onPress={() => router.push('/account-delete')}
         />
         {!connected ? (
           <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>

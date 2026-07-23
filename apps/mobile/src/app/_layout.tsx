@@ -191,11 +191,8 @@ function RootNavigator() {
       return;
     }
     if (route === 'deletion-pending') {
-      // Cast nécessaire tant que l'écran `deletion-pending` n'existe pas encore sur le
-      // disque (Task 6) : les routes typées d'expo-router sont générées depuis les
-      // fichiers présents sous `app/`, donc absentes du type tant que le fichier n'existe pas.
-      if ((segments[0] as string) !== 'deletion-pending') {
-        router.replace('/deletion-pending' as Parameters<typeof router.replace>[0]);
+      if (segments[0] !== 'deletion-pending') {
+        router.replace('/deletion-pending');
       }
       return;
     }
