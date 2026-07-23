@@ -210,6 +210,22 @@
       "saveAsTemplateDefaultName": "Workout from {{date}}",
       "templateNameLabel": "Template name",
       "templateSaved": "Template saved"
+    },
+    "displayLevel": {
+      "levels": {
+        "simplified": {
+          "label": "Simplified",
+          "description": "The essentials: reps, weight, rest. Great to start."
+        },
+        "normal": {
+          "label": "Standard",
+          "description": "Progress cues: last time, target, warm-up."
+        },
+        "detailed": {
+          "label": "Detailed",
+          "description": "Everything: set types, RPE, notes, supersets."
+        }
+      }
     }
   },
   "tabs": {
@@ -1169,6 +1185,10 @@
       "title": "Language",
       "fr": "Français",
       "en": "English"
+    },
+    "workoutDisplayLevel": {
+      "title": "Session display level",
+      "hint": "Choose how much information is shown during a strength session."
     },
     "notifications": {
       "title": "Notifications",

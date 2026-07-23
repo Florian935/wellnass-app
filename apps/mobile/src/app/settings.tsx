@@ -6,6 +6,7 @@ import {
   LOCALES,
   PILLARS,
   UNIT_SYSTEMS,
+  WORKOUT_DISPLAY_LEVELS,
   type Locale,
   type NotificationPrefs,
   type Pillar,
@@ -14,7 +15,7 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Segment } from '@/components/Segment';
-import { upsertProfile } from '@/data/repositories/profile-repository';
+import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
 import {
   useNotificationPrefs,
@@ -114,6 +115,8 @@ export default function SettingsScreen() {
   const language = settings?.language ?? getAppLanguage();
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
+  const { profile } = useProfile();
+  const displayLevel = profile?.workoutDisplayLevel ?? 'normal';
 
   // Préférences de notifications (US 2.6/2.8/1.17).
   const notificationPrefs = useNotificationPrefs();
@@ -290,6 +293,51 @@ export default function SettingsScreen() {
         onChange={(next: Locale) => void updateSettings({ language: next })}
         label={(option) => t(`settings.language.${option}`)}
       />
+
+      {/* Niveau d'affichage de la séance (US MUSC-F13) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.workoutDisplayLevel.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {WORKOUT_DISPLAY_LEVELS.map((lvl, i) => {
+          const selected = displayLevel === lvl;
+          return (
+            <Pressable
+              key={lvl}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              onPress={() => void upsertProfile({ workoutDisplayLevel: lvl })}
+              style={[
+                styles.menuColorRow,
+                { flexDirection: 'row', alignItems: 'center', gap: 12 },
+                i < WORKOUT_DISPLAY_LEVELS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+              ]}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[styles.rowLabel, { color: colors.text }]}>
+                  {t(`workout.displayLevel.levels.${lvl}.label`)}
+                </Text>
+                <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
+                  {t(`workout.displayLevel.levels.${lvl}.description`)}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.menuColorDot,
+                  {
+                    backgroundColor: selected ? colors.accent : 'transparent',
+                    borderColor: colors.border,
+                    borderWidth: selected ? 0 : 1.5,
+                  },
+                ]}
+              />
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {t('settings.workoutDisplayLevel.hint')}
+      </Text>
 
       {/* Notifications (US 2.6 rappel streak, 1.17 gestion par type) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

@@ -210,6 +210,22 @@
       "saveAsTemplateDefaultName": "Séance du {{date}}",
       "templateNameLabel": "Nom du template",
       "templateSaved": "Template enregistré"
+    },
+    "displayLevel": {
+      "levels": {
+        "simplified": {
+          "label": "Simplifiée",
+          "description": "L'essentiel : reps, charge, repos. Idéal pour débuter."
+        },
+        "normal": {
+          "label": "Normale",
+          "description": "Repères de progression : dernière fois, objectif, échauffement."
+        },
+        "detailed": {
+          "label": "Détaillée",
+          "description": "Tout : types de séries, RPE, notes, superset."
+        }
+      }
     }
   },
   "tabs": {
@@ -1169,6 +1185,10 @@
       "title": "Langue",
       "fr": "Français",
       "en": "English"
+    },
+    "workoutDisplayLevel": {
+      "title": "Niveau d'affichage de la séance",
+      "hint": "Choisis la quantité d'informations affichées pendant une séance de musculation."
     },
     "notifications": {
       "title": "Notifications",
