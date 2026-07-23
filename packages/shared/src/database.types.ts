@@ -39,6 +39,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          id: string
+          requested_at: string
+          scheduled_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          id?: string
+          requested_at?: string
+          scheduled_at: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          id?: string
+          requested_at?: string
+          scheduled_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -1948,9 +1983,12 @@ export type Database = {
         Returns: undefined
       }
       can_manage_users: { Args: never; Returns: boolean }
+      cancel_account_deletion: { Args: never; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      purge_expired_accounts: { Args: never; Returns: number }
+      request_account_deletion: { Args: never; Returns: string }
       unban_user: { Args: { target_user_id: string }; Returns: undefined }
     }
     Enums: {
