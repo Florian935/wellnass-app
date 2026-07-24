@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US CONF-08 — Réinitialisation du mot de passe</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--strength:#6b0028;--danger:#b3261e;--success:#5c7a3f;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1280px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1280px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:300px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:34px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:540px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:512px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .h1{font-weight:800;font-size:20px;margin-top:6px;}
+  .hsub{font-size:13px;color:var(--muted);margin-top:-6px;}
+  .field{border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;color:var(--muted);background:var(--surface);}
+  .field b{color:var(--ink);font-weight:700;letter-spacing:.18em;}
+  .btn{border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-ghost{border:1px solid var(--border);color:var(--muted);background:var(--surface);font-weight:700;font-size:14px;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .foot{font-size:13px;color:var(--muted);text-align:center;margin-top:auto;}
+  .foot a{color:var(--accent);font-weight:700;}
+  .badge{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;}
+  .ok{background:#eaf3e0;border-color:#c5dca9;color:var(--success);}
+  .ko{background:#fbeceb;border-color:#f0c8c5;color:var(--danger);}
+  .warn{background:#fdf3e3;border-color:#f0dcb4;color:#8a6a1f;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:220px;}
+  @media(max-width:700px){.arrow{display:none;}}
+  .note{max-width:1280px;margin:28px auto 0;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+  .note h3{margin:0 0 6px;font-size:14px;font-weight:800;}
+  .mail{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;box-shadow:var(--shadow);}
+  .mail .from{font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:8px;}
+  .link{color:var(--accent);text-decoration:underline;font-weight:700;word-break:break-all;}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);border-radius:4px;padding:1px 4px;}
+  .gate{border:2px dashed var(--strength);border-radius:10px;padding:8px 10px;font-size:11.5px;font-weight:700;color:var(--strength);text-align:center;background:#fff;}
+  .err{font-size:12px;color:var(--danger);font-weight:600;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US CONF-08 · Socle auth (1.6) · Prérequis bêta</p>
+    <h1 class="title">Réinitialisation du mot de passe</h1>
+    <p class="sub">Aujourd'hui le lien « mot de passe oublié » mène à une <b>page morte</b>
+      <code>localhost:3000</code> et aucun écran de saisie n'existe : <b>on ne peut pas récupérer son compte</b>.
+      On branche le <b>deep link</b> <code>wellness://password-reset</code>, on ajoute un <b>écran-gate</b>
+      « Nouveau mot de passe », puis on <b>déconnecte</b> (y compris les <b>autres appareils</b>) et on renvoie
+      vers la connexion. <span class="badge">Point clé</span> le lien ouvre une session : sans gate,
+      l'utilisateur entrerait dans l'app <b>sans jamais changer son mot de passe</b>.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Demande de lien (écran existant) -->
+    <div class="col">
+      <div class="step">1 · Demande (existant)</div>
+      <div class="caption">Écran inchangé — message neutre anti-énumération</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Mot de passe oublié</div>
+        <div class="hsub">On t'envoie un lien de réinitialisation par email.</div>
+        <div class="field">E-mail — <b class="muted" style="letter-spacing:0;font-weight:600;">marie@exemple.fr</b></div>
+        <div class="btn btn-accent">Envoyer le lien</div>
+        <div class="card ok" style="margin-top:6px;">Si un compte existe pour <b>marie@exemple.fr</b>, un lien
+          de réinitialisation vient d'être envoyé.</div>
+        <div class="spacer"></div>
+        <div class="card"><b>Seul changement côté code :</b> le mail pointe désormais vers
+          <code>wellness://password-reset</code> (et non le Site URL).</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Le mail + retour dans l'app -->
+    <div class="col">
+      <div class="step">2 · Le lien rouvre l'app</div>
+      <div class="caption">Clic depuis le téléphone → deep link</div>
+      <div class="phone"><div class="scr">
+        <div class="mail">
+          <div class="from">Wellness · Réinitialisation de mot de passe</div>
+          Bonjour,<br />
+          Clique pour choisir un nouveau mot de passe :<br /><br />
+          <span class="link">https://…supabase.co/auth/v1/verify?token=…&amp;redirect_to=wellness://password-reset</span>
+        </div>
+        <div style="text-align:center;font-size:22px;font-weight:800;color:var(--muted);">↓</div>
+        <div class="card"><code>wellness://password-reset</code><br />
+          <code>#access_token=…&amp;refresh_token=…</code></div>
+        <div class="gate">Drapeau <code>recoveryPending</code> levé<br />AVANT l'ouverture de session</div>
+        <div class="card warn"><b>Sans ce drapeau</b> → <code>hasSession</code> → l'app s'ouvre sur le
+          dashboard, ancien mot de passe toujours actif. C'est le piège de cette US.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Écran nouveau mot de passe -->
+    <div class="col">
+      <div class="step">3 · Nouveau mot de passe</div>
+      <div class="caption">Écran-gate racine — aucune sortie implicite</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Nouveau mot de passe</div>
+        <div class="hsub">Choisis un mot de passe pour ton compte.</div>
+        <div class="field">Nouveau mot de passe — <b>••••••••••</b></div>
+        <div class="field">Confirmer — <b>••••••••••</b></div>
+        <div class="btn btn-accent">Enregistrer le mot de passe</div>
+        <div class="btn btn-ghost">Annuler</div>
+        <div class="card" style="margin-top:4px;">
+          <b>Validations locales</b> (aucun réseau) :<br />
+          • &lt; 8 caractères → <span class="err">8 caractères minimum</span><br />
+          • champs différents → <span class="err">ne correspondent pas</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="card" style="background:var(--surface-alt);">
+          <b>Pas de retour arrière</b> : ni geste de balayage, ni flèche de header.
+          <b>Annuler</b> = déconnexion (l'ancien mot de passe reste valide).
+        </div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Retour connexion -->
+    <div class="col">
+      <div class="step">4 · Retour connexion</div>
+      <div class="caption">Déconnexion + autres appareils révoqués</div>
+      <div class="phone"><div class="scr">
+        <div class="card ok"><b>Mot de passe modifié.</b><br />Connecte-toi avec ton nouveau mot de passe.</div>
+        <div class="h1" style="margin-top:2px;">Content de te revoir</div>
+        <div class="hsub">Connecte-toi à ton compte.</div>
+        <div class="field">E-mail</div>
+        <div class="field">Mot de passe</div>
+        <div class="btn btn-accent">Se connecter</div>
+        <div class="spacer"></div>
+        <div class="card"><b>Séquence (l'ordre compte)</b><br />
+          1. <code>updateUser({password})</code><br />
+          2. <code>signOut({scope:'others'})</code> — révoque les autres appareils, <b>avant</b> la
+          déconnexion locale, échec non bloquant<br />
+          3. <code>signOut()</code> — <b>sans</b> purge de la base locale</div>
+        <div class="foot">Mot de passe oublié ? <a>Recommencer</a></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <!-- Variantes / cas limites -->
+  <div class="flow" style="margin-top:34px;">
+
+    <div class="col">
+      <div class="step">Variante · lien expiré</div>
+      <div class="caption">Aujourd'hui : silence total</div>
+      <div class="phone"><div class="scr">
+        <div class="card ko"><b>Ce lien de réinitialisation a expiré ou a déjà été utilisé.</b>
+          Demande un nouveau lien.</div>
+        <div class="h1" style="margin-top:2px;">Content de te revoir</div>
+        <div class="hsub">Connecte-toi à ton compte.</div>
+        <div class="field">E-mail</div>
+        <div class="field">Mot de passe</div>
+        <div class="btn btn-accent">Se connecter</div>
+        <div class="spacer"></div>
+        <div class="card"><code>#error=access_denied</code><br /><code>&amp;error_code=otp_expired</code><br />
+          → <b>aucune session</b>, pas d'écran de saisie. Le message est <b>consommé puis effacé</b>
+          (il ne réapparaît pas).</div>
+        <div class="foot">Mot de passe oublié ? <a>Nouveau lien</a></div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="step">Variante · hors-ligne</div>
+      <div class="caption">Bouton actif, erreur mappée</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Nouveau mot de passe</div>
+        <div class="hsub">Choisis un mot de passe pour ton compte.</div>
+        <div class="field">Nouveau mot de passe — <b>••••••••••</b></div>
+        <div class="field">Confirmer — <b>••••••••••</b></div>
+        <div class="btn btn-accent">Enregistrer le mot de passe</div>
+        <div class="card ko" style="margin-top:4px;">Cette action nécessite une connexion Internet.</div>
+        <div class="spacer"></div>
+        <div class="card warn"><b>On ne désactive pas le bouton.</b> Le patron
+          <code>useStatus().connected</code> (PowerSync) de CONF-02 n'est pas fiable ici : l'app vient
+          d'être ouverte par un deep link, la sync n'est pas encore connectée → il bloquerait un
+          utilisateur pourtant en ligne.</div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="step">Priorité des gates</div>
+      <div class="caption">Où s'insère <code>password-recovery</code></div>
+      <div class="phone"><div class="scr">
+        <div class="card" style="background:var(--surface-alt);"><b>resolveRootRoute</b> (helper pur testé)</div>
+        <div class="card">1. polices / auth en cours → <code>wait</code></div>
+        <div class="card">2. pas de session → <code>auth</code></div>
+        <div class="card ok">3. suppression en attente → <code>deletion-pending</code>
+          <div style="font-weight:600;margin-top:4px;">reste <b>prioritaire</b> : elle offre l'annulation</div></div>
+        <div class="gate">4. <code>recoveryPending</code> → <code>password-recovery</code></div>
+        <div class="card">5. profil / réglages en attente → <code>wait</code></div>
+        <div class="card">6. onboarding non fini → <code>onboarding</code></div>
+        <div class="card">7. sinon → <code>app</code></div>
+        <div class="spacer"></div>
+        <div class="card" style="font-size:12px;">Placé <b>avant</b> l'attente profil/réglages : l'écran n'en a
+          pas besoin, inutile de faire patienter.</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <div class="card">
+      <h3>Limite assumée</h3>
+      Le drapeau vit <b>en mémoire</b>. Si l'utilisateur <b>tue l'app</b> sur l'écran de saisie, la session
+      persiste et le lancement suivant l'amène <b>normalement dans l'app</b>, mot de passe inchangé.
+      <b>Accepté</b> : il a prouvé qu'il possède l'adresse e-mail, et un gate persistant risquerait de le
+      <b>piéger hors de son compte</b>. Il peut relancer un reset.
+    </div>
+    <div class="card">
+      <h3>Prérequis (hors code)</h3>
+      <span class="badge">Florian</span> Supabase → Authentication → URL Configuration → <b>Redirect URLs</b> :
+      ajouter <code>wellness://password-reset</code>. <b>Aucune migration</b>, <b>aucun module natif</b>
+      (pas de rebuild). Si la recette retombe sur <code>localhost:3000</code>, c'est ce réglage — pas le code.
+    </div>
+    <div class="card">
+      <h3>Hors périmètre</h3>
+      Changement de mot de passe depuis les <b>Réglages</b> (utilisateur connecté) · <b>SMTP custom</b> Supabase
+      (prérequis bêta, config) · <b>durcissement</b> de la politique de mot de passe (on mutualise ≥ 8, on ne
+      durcit pas) · comptes <b>Google</b> (pas de mot de passe local) · <b>page web de repli</b> si l'app n'est
+      pas installée.
+    </div>
+    <div class="card">
+      <h3>Non-régression à garantir</h3>
+      Le flux de <b>confirmation d'inscription</b> livré le 25/07 (<code>wellness://auth-callback</code>) reste
+      intact : ni <code>AUTH_REDIRECT_URL</code> ni <code>parseAuthTokensFromUrl</code> ne sont modifiés.
+      L'<b>inscription</b> passe sur la règle de mot de passe mutualisée en <b>iso-comportement</b> (mêmes
+      messages, même ordre).
+    </div>
+  </div>
+
+</body>
+</html>
