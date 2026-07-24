@@ -24,8 +24,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié
 >   contre le code ; 3 recommandations intégrées : mock i18n/thème du smoke test, garde `Array.isArray`).
 >   [plan](docs/plans/1.22-aide-support.md).
-> - [ ] **Maquette** — `design/1.22-aide-support/` (Claude Design) : écran d'aide (FAQ repliable + 2 actions).
-> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
+> - [x] **Maquette** — [design/1.22-aide-support/1.22-aide-support.html](design/1.22-aide-support/1.22-aide-support.html) :
+>   4 écrans (entrée Réglages → écran /help FAQ accordéon + 2 actions → mail contact corps vide → mail bug + bloc technique) + cas fallback.
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅** (spec + plan + maquette).
+> - [~] **Code (subagent-driven)** — en cours (5 tâches TDD du plan).
 > - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` avant le build.
 
 > ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
