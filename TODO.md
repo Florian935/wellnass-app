@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## ✅ CODE LIVRÉ — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — reste **dev build + recette + Damien** (24/07/2026)
+> ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
 >
 > Roadmap [1.22](docs/roadmap/roadmap.md) (V0.8). Section « Aide & support » dans les Réglages → écran `/help` :
 > **FAQ** statique embarquée (≈ 7 entrées, bilingue, hors-ligne) + **« Nous contacter »** (mail natif, corps vide) +
@@ -34,9 +34,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   Task 4 (`fd289fb`) route `_layout` + section Réglages + i18n FR/EN (parité stricte 1189 clés) →
 >   durcissement (`c2b0e1c`) `contactSupport` ne rejette jamais. Revue finale code-reviewer : **PRÊT À MERGER** (0 bloquant).
 >   typecheck/lint verts ; **812 tests shared + 80 mobile verts**. Roadmap 1.22 → ✅.
-> - [ ] **Dev build EAS requis** (modules natifs ajoutés → reload Metro insuffisant) **avant recette device**.
-> - [ ] **Recette device** (Florian) : accès offline, FAQ dépli/repli mono-ouverture, contact (corps vide), bug (bloc technique effaçable), mail indisponible → Alert, i18n EN.
-> - [ ] **Relecture Damien.**
+> - [x] **Dev build EAS** (modules natifs) réalisé par Florian.
+> - [x] **Recette device — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** (accès offline, FAQ dépli/repli mono-ouverture, contact corps vide, bug + bloc technique effaçable, i18n EN). **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
 > - [x] **Action hors-dev (Florian)** : adresse de support créée `wellnessfit.app.support@gmail.com` → `SUPPORT_EMAIL` renseigné (24/07). _Préfixe d'objet `[Wellness]` : à aligner sur le nom d'app définitif si besoin._
 
 > ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)

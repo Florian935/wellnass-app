@@ -10,6 +10,18 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
+> (Florian valide l'ensemble). Aucun écart remonté.
+
+**Technique / Notes**
+- Recette sur dev build EAS (modules natifs `expo-mail-composer`/`expo-application`) : accès offline, FAQ
+  accordéon mono-ouverture (7 Q/R), « Nous contacter » (mail natif corps vide), « Signaler un bug » (mail +
+  bloc technique effaçable), i18n FR/EN. Adresse de support réelle `wellnessfit.app.support@gmail.com`.
+- **V0.8** avance : 1.18 (CONF-01) + 1.19 (CONF-02) + **1.22** livrés & clôturés ; restent **1.2** (OAuth
+  Google), **9.9** (Health Connect), **9.10** (analytics) + finitions accessibilité (9.11/9.12).
+
 ### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : code livré (Aide & support)
 
 > Implémentation subagent-driven (5 tâches TDD `e55c775`→`fd289fb` + durcissement `c2b0e1c`), chaque tâche
