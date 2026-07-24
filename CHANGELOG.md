@@ -10,6 +10,13 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/email-confirmation-deeplink` — recette validée & fix clôturé (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien non requise.
+> Clic du lien de confirmation depuis le téléphone → l'app se rouvre, utilisateur connecté (fini la page
+> `localhost:3000`). Config Supabase faite (`wellness://auth-callback` dans les Redirect URLs).
+> Suivi séparé : reset de mot de passe (même redirection + écran dédié) et **SMTP custom** Supabase (prérequis bêta).
+
 ### 25/07/2026 — `fix/email-confirmation-deeplink` — Confirmation d'e-mail : redirection deep link (mobile)
 
 > **Fix (circuit court).** Le lien de confirmation d'e-mail (inscription e-mail/mot de passe) redirigeait vers
