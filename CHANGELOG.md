@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : spec Aide & support (cadrage + validation)
+
+> Ouverture du chantier **V0.8 (conformité & intégrations)** après clôture de CONF-01/CONF-02. Item **1.22**
+> (Aide & support), prérequis bêta. Spec écrite, revue subagent **APPROUVÉE** (0 bloquant), **validée Florian
+> (24/07)**. Aucun code applicatif (workflow : spec → plan → design → validation → code).
+
+**Ajouté**
+- `docs/specs/functional/us/1.22-aide-support.md` : spec de l'US. Section « Aide & support » (Réglages) → écran
+  `/help` = **FAQ** statique embarquée (≈ 7 entrées, bilingue FR/EN, hors-ligne) + **« Nous contacter »** (mail
+  natif, corps vide) + **« Signaler un bug »** (mail natif + bloc technique minimal, visible/effaçable).
+- Décisions de cadrage : canal = client mail natif (`expo-mail-composer`), **zéro backend/migration** ; FAQ
+  statique embarquée ; métadonnées minimales non identifiantes (pas d'UUID/logs) ; `SUPPORT_EMAIL` = placeholder
+  centralisé (à trancher avant build). Table Supabase / file de tickets / FAQ éditable = **hors périmètre**.
+- Découpage testable prévu : helper pur `formatBugReportBody` (testé) / I/O natif isolé (`collectSupportMeta`,
+  `composeAsync`) / fallback `Alert` si aucun client mail.
+
+**Technique / Notes**
+- Suivi : US 1.22 ajoutée au pipeline [TODO.md](TODO.md) (🚧 en cours). Roadmap inchangée (1.22 reste ⬜ tant
+  que le code n'est pas livré). Prochaines étapes : plan d'implémentation → maquette (Claude Design) →
+  validation des 3 livrables → code.
+
 ### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble. Aucun

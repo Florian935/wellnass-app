@@ -10,6 +10,22 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🚧 EN COURS — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — spec validée Florian (24/07/2026)
+>
+> Roadmap [1.22](docs/roadmap/roadmap.md) (V0.8). Section « Aide & support » dans les Réglages → écran `/help` :
+> **FAQ** statique embarquée (≈ 7 entrées, bilingue, hors-ligne) + **« Nous contacter »** (mail natif, corps vide) +
+> **« Signaler un bug »** (mail natif + bloc technique minimal : version app/build, OS, appareil, langue — visible
+> & effaçable). Canal = **client mail natif** (`expo-mail-composer`), zéro backend/migration. `SUPPORT_EMAIL` =
+> placeholder (à trancher avant build). Branche `feature/1.22-aide-support`.
+> Spec : [1.22-aide-support.md](docs/specs/functional/us/1.22-aide-support.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant ; 4 clarifs intégrées : accordéon
+>   mono-ouverture, chemin `support.ts`, objets mail via i18n, `contactSupport` typé), **validée Florian (24/07)**.
+> - [ ] **Plan d'implémentation** — à écrire (découpage TDD, fichiers touchés, tests).
+> - [ ] **Maquette** — `design/1.22-aide-support/` (Claude Design) : écran d'aide (FAQ repliable + 2 actions).
+> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
+> - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` avant le build.
+
 > ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
 > Roadmap [1.18](docs/roadmap/roadmap.md). Export JSON de toutes les données perso depuis la base locale
