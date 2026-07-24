@@ -5,7 +5,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
-import { AUTH_REDIRECT_URL } from '@/lib/auth-redirect';
+import { AUTH_REDIRECT_URL, PASSWORD_RESET_REDIRECT_URL } from '@/lib/auth-redirect';
 import { mapGoogleSignInError } from '@/lib/google-auth-errors';
 import { supabase } from '@/lib/supabase';
 import { powerSync } from '@/powersync/system';
@@ -38,6 +38,30 @@ type AuthState = {
   signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
+  /**
+   * Une réinitialisation de mot de passe est en cours : la session a été ouverte par un **lien de
+   * récupération** et l'utilisateur doit choisir son nouveau mot de passe avant d'entrer dans l'app
+   * (CONF-08, gate `password-recovery` de `resolveRootRoute`).
+   *
+   * ⚠️ **En mémoire uniquement.** Si l'app est tuée sur l'écran de saisie, la session (persistée)
+   * survit et le lancement suivant reprend un parcours normal, mot de passe inchangé. Comportement
+   * **assumé** (spec §2.5) : l'utilisateur a prouvé qu'il possède l'adresse e-mail, et un gate
+   * persistant risquerait de le piéger hors de son compte.
+   */
+  recoveryPending: boolean;
+  /** Code d'erreur d'un deep link refusé par Supabase (lien expiré / déjà utilisé), à afficher. */
+  deepLinkError: string | null;
+  /**
+   * Enregistre le nouveau mot de passe, puis déconnecte **tous** les appareils.
+   *
+   * Contrat d'erreur : **message Supabase brut** (comme `signIn`/`signUp`), pas une clé i18n —
+   * ne pas passer le résultat à `t()`.
+   */
+  completePasswordRecovery: (password: string) => Promise<AuthResult>;
+  /** Sort du mode récupération sans changer le mot de passe (bouton « Annuler »). */
+  clearRecovery: () => void;
+  /** Efface le message d'erreur de deep link après affichage (sinon il réapparaîtrait). */
+  clearDeepLinkError: () => void;
   /** Vérifie le mot de passe de l'utilisateur courant (ré-auth avant action sensible). */
   reauthenticate: (password: string) => Promise<AuthResult>;
   /** Programme la suppression : RPC → purge locale → signOut. Renvoie l'échéance ou une erreur. */
@@ -49,6 +73,8 @@ type AuthState = {
 export const useAuthStore = create<AuthState>(() => ({
   session: null,
   initializing: true,
+  recoveryPending: false,
+  deepLinkError: null,
   signUp: async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -102,9 +128,30 @@ export const useAuthStore = create<AuthState>(() => ({
     await supabase.auth.signOut();
   },
   resetPassword: async (email) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Sans redirectTo, Supabase retombe sur le Site URL du projet (http://localhost:3000) →
+      // page morte sur mobile. Le deep link dédié permet aussi de reconnaître le flux au retour.
+      redirectTo: PASSWORD_RESET_REDIRECT_URL,
+    });
     return { error: error?.message ?? null };
   },
+  completePasswordRecovery: async (password) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    // Échec → on reste sur l'écran, session conservée, l'utilisateur peut réessayer.
+    if (error) return { error: error.message };
+
+    useAuthStore.setState({ recoveryPending: false });
+    // `signOut()` sans argument utilise le scope **global** (défaut de @supabase/auth-js) : il révoque
+    // les refresh tokens de TOUS les appareils et efface la session locale (SIGNED_OUT émis). C'est
+    // exactement la décision de cadrage (autres appareils éjectés + retour à la connexion) en un seul
+    // appel — ne PAS passer { scope: 'local' } ici.
+    // Pas de powerSync.disconnectAndClear() : même utilisateur, on garde la base locale et les
+    // écritures en attente de synchro (contraste volontaire avec requestAccountDeletion).
+    await supabase.auth.signOut();
+    return { error: null };
+  },
+  clearRecovery: () => useAuthStore.setState({ recoveryPending: false }),
+  clearDeepLinkError: () => useAuthStore.setState({ deepLinkError: null }),
   reauthenticate: async (password) => {
     const email = useAuthStore.getState().session?.user.email;
     if (!email) return { error: 'Aucune session active.' };
@@ -138,5 +185,12 @@ void supabase.auth.getSession().then(({ data }) => {
 });
 
 supabase.auth.onAuthStateChange((_event, session) => {
+  // Filet de sécurité : toute perte de session éteint le mode récupération. Sans ça, un drapeau resté
+  // levé (déconnexion pour une autre raison, expiration) referait apparaître l'écran « nouveau mot de
+  // passe » à la prochaine connexion, alors qu'aucun lien de récupération n'a été suivi.
+  if (!session) {
+    useAuthStore.setState({ session, recoveryPending: false });
+    return;
+  }
   useAuthStore.setState({ session });
 });
