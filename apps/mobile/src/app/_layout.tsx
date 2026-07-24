@@ -14,6 +14,8 @@ import i18n from '@/i18n';
 // Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
 // (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
 import '@/running/tracker-task';
+// Configure Google Sign-In (side-effect) au chargement du JS (US 1.2).
+import '@/lib/google-signin';
 import { useDeletionStore } from '@/stores/deletion-store';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';

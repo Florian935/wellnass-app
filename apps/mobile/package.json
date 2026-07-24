@@ -29,6 +29,7 @@
     "@powersync/op-sqlite": "^0.9.13",
     "@powersync/react": "^1.10.0",
     "@powersync/react-native": "^1.35.7",
+    "@react-native-google-signin/google-signin": "^16.1.2",
     "@supabase/supabase-js": "^2.110.0",
     "@testing-library/react-native": "^14.0.1",
     "@wellness/shared": "*",

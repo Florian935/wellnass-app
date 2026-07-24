@@ -62,7 +62,8 @@
           "color": "#dd6e40"
         }
       ],
-      "expo-mail-composer"
+      "expo-mail-composer",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
