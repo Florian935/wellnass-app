@@ -5,6 +5,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
+import { AUTH_REDIRECT_URL } from '@/lib/auth-redirect';
 import { mapGoogleSignInError } from '@/lib/google-auth-errors';
 import { supabase } from '@/lib/supabase';
 import { powerSync } from '@/powersync/system';
@@ -49,7 +50,12 @@ export const useAuthStore = create<AuthState>(() => ({
   session: null,
   initializing: true,
   signUp: async (email, password) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      // Redirige le lien de confirmation vers le deep link de l'app (pas le Site URL localhost).
+      options: { emailRedirectTo: AUTH_REDIRECT_URL },
+    });
     if (error) {
       return { error: error.message, needsVerification: false };
     }

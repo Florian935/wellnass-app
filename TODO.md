@@ -905,6 +905,15 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
 
+- [~] **Confirmation d'e-mail → page morte `localhost:3000` sur mobile** — **CODE LIVRÉ (circuit court, 25/07/2026)**
+  ; remontée Florian (test e-mail neuf). Le lien de confirmation redirigeait vers le **Site URL Supabase** par
+  défaut (localhost). Fix : `emailRedirectTo = wellness://auth-callback` (deep link) + `useAuthDeepLink`
+  (`setSession` depuis le fragment) + helper pur `parseAuthTokensFromUrl` (testé). Branche
+  `fix/email-confirmation-deeplink`. typecheck/lint verts, 814 shared + 98 mobile. ⚠️ **Config Supabase** :
+  ajouter `wellness://auth-callback` aux **Redirect URLs**. **Reste : recette device** (dev build) + merge `dev`.
+  _Suivi séparé : même traitement pour le reset de mot de passe (redirige encore vers Site URL + écran « nouveau
+  mot de passe » à prévoir)._
+
 - [x] **Back-office `/users` : colonne « Piliers » = « — » pour tous les comptes** — **corrigé**
   (`fix/admin-piliers-affichage`, 17/07/2026 ; remontée Florian pendant la recette 8.8a). Le mobile
   sérialise `active_pillars` avec `JSON.stringify(...)` dans une colonne PowerSync `text`

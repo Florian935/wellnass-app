@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/email-confirmation-deeplink` — Confirmation d'e-mail : redirection deep link (mobile)
+
+> **Fix (circuit court).** Le lien de confirmation d'e-mail (inscription e-mail/mot de passe) redirigeait vers
+> le **Site URL Supabase par défaut** (`http://localhost:3000`) → page morte sur mobile. Remontée Florian
+> (test d'un e-mail neuf). La confirmation réussissait côté serveur, mais l'UX de retour dans l'app était cassée.
+
+**Corrigé**
+- `apps/mobile/src/lib/auth-redirect.ts` (+ test) : constante `AUTH_REDIRECT_URL` (`wellness://auth-callback`) +
+  `parseAuthTokensFromUrl` (**pur, testé** — extrait `access_token`/`refresh_token` du fragment, flux implicite).
+- `auth-store.signUp` : passe `options.emailRedirectTo = AUTH_REDIRECT_URL` (redirige vers le deep link de l'app,
+  plus le Site URL localhost).
+- `apps/mobile/src/hooks/useAuthDeepLink.ts` + montage dans `_layout.tsx` : au retour via
+  `wellness://auth-callback#access_token=…&refresh_token=…`, établit la session (`setSession`) → `onAuthStateChange`
+  prend le relais (l'utilisateur revient connecté dans l'app).
+
+**Technique / Notes**
+- ⚠️ **Config Supabase requise** (déploiement) : ajouter `wellness://auth-callback` dans **Authentication → URL
+  Configuration → Redirect URLs**. Site URL laissé tel quel.
+- typecheck + lint verts ; **814 shared + 98 mobile verts** (+4 tests parser). Module natif ajouté en amont
+  (Google) → recette sur dev build.
+- **Reste (hors périmètre de ce fix)** : même traitement pour le **reset de mot de passe** (`resetPasswordForEmail`
+  redirige encore vers Site URL + nécessite un écran « nouveau mot de passe ») — à cadrer séparément.
+
 ### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**.

@@ -21,6 +21,7 @@ import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
 import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
+import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
@@ -152,6 +153,9 @@ function RootNavigator() {
 
   // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
   useAppOpenedAnalytics();
+
+  // Deep links d'auth (confirmation d'e-mail…) : établit la session au retour dans l'app.
+  useAuthDeepLink();
 
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {
