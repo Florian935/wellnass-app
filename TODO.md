@@ -10,6 +10,22 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🚧 EN COURS — US 1.2 Connexion via Google (OAuth, V0.8) — spec validée Florian (24/07/2026)
+>
+> Roadmap [1.2](docs/roadmap/roadmap.md) (V0.8, conservé — arbitrage E). Sign-In **natif** Google
+> (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken`. Liaison auto par e-mail
+> vérifié (Supabase). Bouton « Continuer avec Google » sur connexion + inscription + **mention de consentement
+> par action** (CGU + confidentialité + 16+). Aucune migration. ⚠️ Module natif → **dev build** ; prérequis
+> **Google Cloud + Supabase Auth + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`** = déploiement contrôlé. Branche
+> `feature/1.2-oauth-google`. Spec : [1.2-connexion-google.md](docs/specs/functional/us/1.2-connexion-google.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée : gate onboarding
+>   `resolveRootRoute`, intégration `auth-store`, env ; 4 clarifs intégrées), **validée Florian (24/07)**.
+> - [ ] **Plan d'implémentation** — à écrire.
+> - [ ] **Maquette** — `design/1.2-oauth-google/` : boutons Google (2 écrans) + mention consentement.
+> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
+> - [ ] **Prérequis Florian** : Client IDs Google (Cloud) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build.
+
 > ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
 >
 > Roadmap [9.10](docs/roadmap/roadmap.md) (V0.8). Événements d'usage **anonymisés** dans **notre** base Supabase

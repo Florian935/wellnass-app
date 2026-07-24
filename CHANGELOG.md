@@ -10,6 +10,26 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : spec connexion via Google (cadrage + validation)
+
+> Ouverture de l'US **1.2** (OAuth Google, V0.8). Spec écrite, revue subagent **APPROUVÉE** (0 bloquant,
+> faisabilité vérifiée contre le code : gate d'onboarding `resolveRootRoute`, intégration `auth-store`, env
+> `EXPO_PUBLIC_*`), **validée Florian (24/07)**. Aucun code applicatif.
+
+**Ajouté**
+- `docs/specs/functional/us/1.2-connexion-google.md` : spec. Sign-In **natif**
+  (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken` ; liaison auto par e-mail
+  vérifié ; bouton « Continuer avec Google » sur connexion + inscription + **mention de consentement par action**
+  (CGU + confidentialité + 16+) ; helper pur de mapping d'erreurs (testé, statusCodes Google + erreurs Supabase).
+- Décisions de cadrage : natif (pas de flux web), liaison e-mail vérifié, consentement non persisté (option A),
+  bouton 2 écrans. **Hors périmètre** : OAuth Apple (iOS reporté), persistance serveur du consentement (US dédiée),
+  unlink, One Tap.
+
+**Technique / Notes**
+- Suivi : US 1.2 au pipeline [TODO.md](TODO.md) (🚧). Roadmap inchangée (1.2 reste ⬜ tant que non livré).
+  ⚠️ Module natif → **nouveau dev build** ; prérequis **Google Cloud (Client IDs Web+Android) + provider Supabase
+  + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`** = déploiement contrôlé.
+
 ### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
