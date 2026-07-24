@@ -37,7 +37,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [ ] **Dev build EAS requis** (modules natifs ajoutés → reload Metro insuffisant) **avant recette device**.
 > - [ ] **Recette device** (Florian) : accès offline, FAQ dépli/repli mono-ouverture, contact (corps vide), bug (bloc technique effaçable), mail indisponible → Alert, i18n EN.
 > - [ ] **Relecture Damien.**
-> - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` (et ajuster le préfixe d'objet `[Wellness]`) avant le build.
+> - [x] **Action hors-dev (Florian)** : adresse de support créée `wellnessfit.app.support@gmail.com` → `SUPPORT_EMAIL` renseigné (24/07). _Préfixe d'objet `[Wellness]` : à aligner sur le nom d'app définitif si besoin._
 
 > ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >

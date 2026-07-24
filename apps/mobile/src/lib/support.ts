@@ -6,8 +6,8 @@ import type { TFunction } from 'i18next';
 
 import { getAppLanguage } from '@/i18n';
 
-/** Adresse de destination du support. PLACEHOLDER — à remplacer par la vraie boîte avant le build. */
-export const SUPPORT_EMAIL = 'support@example.com';
+/** Adresse de destination du support (boîte dédiée bêta). Migrable vers support@<domaine> plus tard. */
+export const SUPPORT_EMAIL = 'wellnessfit.app.support@gmail.com';
 
 export type SupportMeta = {
   appVersion: string;
