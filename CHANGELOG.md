@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `dev` — IDEAS : salve « benchmark 4 modèles IA » (6 idées + 2 enrichissements)
+
+> **Documentation seule** (`IDEAS.md`), aucun code applicatif. Dépouillement des 4 dumps de `_inbox-ia/`
+> (Gemini, ChatGPT, Qwen-3.7-plus, Qwen-3.8-max — ~93 propositions), croisés avec l'existant : **6 idées
+> nettes** retenues + **2 enrichissements** greffés sur des lignes du 13/07. Sélection arbitrée par Florian
+> (25/07). ⚠️ **Commit fait directement sur `dev`** — dérogation explicite de Florian (doc seule, pas de
+> branche dédiée). `_inbox-ia/` reste **gitignoré** (décision Florian : les dumps bruts restent locaux).
+
+**Ajouté** — `IDEAS.md`, 7 entrées en tête de « À trier » (date `[25/07/2026]`, statut 🔍)
+- **Note de benchmark** (source + garde-fous) : trace les 4 dumps, les **2 biais à ne pas suivre**
+  (stack IA **on-device** contraire à l'archi « IA = backend » ; **synchro P2P Bluetooth** contraire à
+  PowerSync/ADR-001), les 4 idées **écartées** (correction de forme caméra temps réel, pacing électrolytes
+  HYROX…) et les **chiffres marché non vérifiés** (plan annuel ≈ 60 % des revenus fitness, essai 17-32 j
+  ≈ 42 % de conversion médiane) → à confronter aux sources avant usage RevenueCat post-V1.
+- **Détecteur de collisions + séquençage inter-séances** (signal 4/4 modèles) — cœur du différenciateur
+  d'intégration.
+- **Mode « vie réelle » / journée minimale viable** (dégradation gracieuse anti-abandon).
+- **Simulateur « What-If »** (projection avec fourchette d'incertitude).
+- **Objectif hybride unifié** (un plan, priorités explicites, arbitrage des compromis).
+- **Recommandations explicables ET contestables** — posé en **note de principe UX transverse**, pas en US.
+- **Défi composite cross-pilier** (un seul objectif exigeant les 3 piliers ; cible V3/V4 — décision C).
+
+**Modifié** — 2 greffes en sous-puce `_**Enrichissement 25/07/2026**_` (même patron que les arbitrages du 15/07)
+- « Rappels intelligents contextuels » (13/07) : rappel envoyé **au moment probable appris** (moyenne
+  glissante des heures de log, calcul 100 % local) + points durs **doze mode** Android / plafond de notifs.
+- « Bilan hebdo/mensuel automatique » (13/07) : format « **une seule décision** » ; si l'IA rédige, elle le
+  fait **à partir des chiffres affichés** (pas de narration sans données visibles).
+
+**Technique / Notes**
+- **Vérifications faites avant rédaction** (elles ont changé le texte) : le détecteur de collisions est
+  **moins net-new** qu'annoncé en analyse — **US 3.9 « Planning calendrier auto » livrée ✅** (calendrier
+  unifié muscu+running) qui **diffère explicitement** la « coordination avancée (charge/récup) » et
+  l'« alerte de chevauchement bloquante » (`docs/specs/functional/us/3.9-planning-muscu-unifie.md` §7), et
+  `docs/product/analyses-donnees.md` porte déjà **RN-17** (conflit objectifs nutrition ↔ course) et
+  **META-19** (garde-fou surentraînement ACWR). Ce qui reste neuf = **séquencer les séances entre elles**.
+  Également noté : le « chevauchement » cadré est un **conflit d'agenda**, pas physiologique. US **4.7**
+  (calories adaptées à l'entraînement) déjà ✅ → le consensus 4/4 « nutrition qui suit la séance » est couvert.
+- **Roadmap non touchée** (aucune fonctionnalité livrée/avancée — boîte de dépôt d'idées) → étape statut roadmap sautée.
+- Qualité verte malgré un diff doc : typecheck OK · **814 tests shared** OK · lint **0 erreur** (6 warnings
+  pré-existants dans des fichiers de test, sans lien avec ce commit).
+- Commit précédent : `67bcd27`.
+
 ### 25/07/2026 — `fix/email-confirmation-deeplink` — recette validée & fix clôturé (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien non requise.

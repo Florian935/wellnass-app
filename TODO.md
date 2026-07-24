@@ -421,7 +421,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 24/07/2026 (**US 1.2 Connexion via Google — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+*Dernière mise à jour : 25/07/2026 (**IDEAS — salve « benchmark 4 modèles IA » ✅ (doc seule)** : dépouillement des
+4 dumps de `_inbox-ia/` (~93 propositions ; dossier **gitignoré, local Florian** — décision 25/07) croisé avec
+l'existant → **6 idées promues** dans [IDEAS.md](IDEAS.md) (détecteur de collisions/séquençage, mode « vie réelle »,
+simulateur What-If, objectif hybride unifié, recos explicables & contestables, défi composite) + **1 note de
+benchmark** (biais IA on-device / sync P2P écartés) + **2 enrichissements** greffés (rappels contextuels → pattern
+horaire appris ; bilan hebdo → format « une seule décision »). **Aucune US n'entre dans le pipeline** à ce stade :
+les 2 candidates sérieuses (détecteur de collisions, mode « vie réelle ») attendent un **brainstorming**
+Florian/Damien avant spec. Vérifs au passage : US 3.9 ✅ diffère la « coordination avancée (charge/récup) », RN-17 et
+META-19 déjà au catalogue d'analyses → seul le **séquençage inter-séances** est neuf. Roadmap non touchée.
+Commit sur `dev` (dérogation explicite Florian).
+Précédemment : **US 1.2 Connexion via Google — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
 Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken`, branché sur `auth-store` (session
 via `onAuthStateChange`). Helper pur `mapGoogleSignInError` (clés i18n) ; action `signInWithGoogle`
 (annulation/`IN_PROGRESS` no-op, anomalie config → message) ; `GoogleButton` (logo SVG, a11y, mention consentement
