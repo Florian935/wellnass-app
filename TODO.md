@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🚧 EN COURS — US 1.2 Connexion via Google (OAuth, V0.8) — spec validée Florian (24/07/2026)
+> ## ✅ CODE LIVRÉ — US 1.2 Connexion via Google (OAuth, V0.8) — reste **prérequis Google/Supabase + dev build + recette** (24/07/2026)
 >
 > Roadmap [1.2](docs/roadmap/roadmap.md) (V0.8, conservé — arbitrage E). Sign-In **natif** Google
 > (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken`. Liaison auto par e-mail
@@ -24,8 +24,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié contre le code). [plan](docs/plans/1.2-connexion-google.md).
 > - [x] **Maquette** — [design/1.2-oauth-google/1.2-oauth-google.html](design/1.2-oauth-google/1.2-oauth-google.html) : 3 écrans (connexion + bouton/mention → sélecteur Google → résultats).
 > - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
-> - [~] **Code (subagent-driven)** — en cours (placeholder `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`).
-> - [ ] **Prérequis Florian** : Client IDs Google (Cloud) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build (guide fourni).
+> - [x] **Code livré (subagent-driven)** — 4 tâches TDD + correctifs, chacune revue conformité + qualité :
+>   Task 1 deps + config (`359670b`) → Task 2 helper pur `mapGoogleSignInError` (`72319b8`) → Task 3 action
+>   `signInWithGoogle` (`7539f2a`) → Task 4 `GoogleButton` + 2 écrans + mention + i18n + mock jest (`eeb0e91`).
+>   Correctifs : patterns d'erreur resserrés (anti faux positifs), anomalie « succès sans idToken » → message,
+>   `IN_PROGRESS` no-op, accessibilité bouton en chargement. Revue finale code-reviewer : **PRÊT À MERGER**.
+>   typecheck/lint verts ; **814 shared + 94 mobile verts** (+ mock jest global du module natif). Roadmap 1.2 → ✅.
+> - [ ] **Prérequis Florian (déploiement)** : Client IDs Google (Cloud, Web+Android/SHA‑1) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + **dev build EAS** (guide fourni). Placeholder en attendant.
+> - [ ] **Recette device** (Florian) : nouveau compte → onboarding ; reconnexion ; liaison e‑mail vérifié ; consentement ; annulation → no‑op ; offline ; i18n. **À valider visuellement** : double mention de consentement sur l'écran d'inscription (case e‑mail + mention Google).
+> - [ ] **Finalisation branche** `feature/1.2-oauth-google` (merge `dev`) — après recette.
 
 > ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
 >
@@ -414,7 +421,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 24/07/2026 (**US 9.10 Analytics produit — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+*Dernière mise à jour : 24/07/2026 (**US 1.2 Connexion via Google — CODE LIVRÉ ✅ → reste prérequis Google/Supabase +
+dev build + recette** : Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken`, branché
+sur `auth-store` (session via `onAuthStateChange`). Helper pur `mapGoogleSignInError` (clés i18n) ; action
+`signInWithGoogle` (annulation/`IN_PROGRESS` no-op, anomalie config → message) ; `GoogleButton` (logo SVG, a11y,
+mention consentement par action CGU/confidentialité/16+) sur connexion + inscription ; i18n FR/EN parité ; mock jest
+global du module natif. 4 tâches TDD subagent-driven + correctifs, revues par tâche + revue finale PRÊT À MERGER.
+typecheck/lint verts, 814 shared + 94 mobile. Roadmap 1.2 → ✅. ⚠️ Reste : prérequis Florian (Client IDs Google,
+provider Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`) + dev build + recette. Branche `feature/1.2-oauth-google`.
+Précédemment : **US 9.10 Analytics produit — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
 événements d'usage anonymisés first-party (table `analytics_events` append-only +
 RLS + FK cascade), consentement opt-out (`user_settings.analytics_enabled` défaut ON) + réglage « Statistiques
 d'usage » + mention confidentialité, service `track()` (gating + allowlist anti-PII `pillar` + non bloquant,

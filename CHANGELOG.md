@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : code livré (connexion via Google)
+
+> Implémentation subagent-driven (4 tâches TDD `359670b`→`eeb0e91` + correctifs post-revue), chaque tâche revue
+> conformité-spec **puis** qualité, + revue finale **PRÊT À MERGER** (0 bloquant). typecheck + lint verts ;
+> **814 tests shared + 94 mobile verts**. Aucune migration. Roadmap 1.2 → ✅. ⚠️ **Reste** : prérequis Google
+> Cloud/Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build + recette.
+
+**Ajouté**
+- `apps/mobile/src/lib/google-signin.ts` : `configureGoogleSignin()` (webClientId via env), side-effect importé
+  dans `_layout.tsx`. Dépendance `@react-native-google-signin/google-signin` + `.env.example`.
+- `apps/mobile/src/lib/google-auth-errors.ts` (+ test) : `mapGoogleSignInError` (**pur, testé**, statusCodes
+  Google + patterns Supabase → clés i18n, réseau prioritaire, co-occurrence anti faux positifs).
+- `apps/mobile/src/stores/auth-store.ts` : action `signInWithGoogle` (`hasPlayServices` → `signIn` → `signInWithIdToken`).
+  Annulation & `IN_PROGRESS` = no-op ; succès-sans-idToken = anomalie mappée (config) ; **contrat d'erreur = clé
+  i18n** documenté (≠ signIn/signUp). Session via `onAuthStateChange` (routing/onboarding inchangés).
+- `apps/mobile/src/components/GoogleButton.tsx` : bouton « Continuer avec Google » (logo SVG 4 couleurs guidelines,
+  `loading`/`disabled`, a11y) + **mention de consentement par action** (CGU/confidentialité/16+, liens `terms`/`privacy`).
+- Intégration `sign-in.tsx` + `sign-up.tsx` (séparateur « ou » + handler `t(res.error)`). i18n FR/EN bloc `auth.google`.
+- Test infra : mock global `@react-native-google-signin/google-signin` (`jest.setup.ts`) — débloque les suites
+  tirant `auth-store` transitivement + smoke test bouton.
+
+**Technique / Notes**
+- Consentement par action (option A, **non persisté** — la persistance serveur reste une US dédiée). Liaison auto
+  par e-mail vérifié (Supabase). **Hors périmètre** : OAuth Apple (iOS reporté), unlink, One Tap.
+- **Reste avant recette** (déploiement contrôlé, Florian) : Client IDs Google (Web+Android/SHA‑1), provider Google
+  Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, **nouveau dev build EAS**. **À valider visuellement** : double
+  mention de consentement sur l'écran d'inscription (case e‑mail + mention Google).
+
 ### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : spec connexion via Google (cadrage + validation)
 
 > Ouverture de l'US **1.2** (OAuth Google, V0.8). Spec écrite, revue subagent **APPROUVÉE** (0 bloquant,
