@@ -907,6 +907,7 @@
         "We only collect the data needed to run the app: account (email), profile and the activity data you enter.",
         "Your data is isolated per user and securely synced to the cloud. It is never sold to third parties.",
         "Health and location data are never shared without your explicit consent.",
+        "We measure app usage (screens viewed, features used) through anonymous statistics, solely to improve it; these measurements never include your health data and you can turn them off at any time from settings.",
         "You can request an export or deletion of your data at any time from settings."
       ]
     }
@@ -1216,6 +1217,11 @@
     "help": {
       "title": "Help & support",
       "button": "Open help"
+    },
+    "analytics": {
+      "title": "Usage statistics",
+      "toggle": "Allow usage statistics",
+      "subtitle": "Helps us improve the app. Anonymous data, never your health data."
     },
     "dataExport": {
       "title": "Data",

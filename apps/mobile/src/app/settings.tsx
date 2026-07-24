@@ -480,6 +480,26 @@ export default function SettingsScreen() {
         <Button label={t('settings.help.button')} variant="ghost" onPress={() => router.push('/help')} />
       </View>
 
+      {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.analytics.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>{t('settings.analytics.toggle')}</Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{t('settings.analytics.subtitle')}</Text>
+          </View>
+          <Switch
+            value={settings?.analyticsEnabled ?? true}
+            onValueChange={(next) => void updateSettings({ analyticsEnabled: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.analytics.toggle')}
+          />
+        </View>
+      </View>
+
       {/* Export de données (US CONF-01, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.dataExport.title')}

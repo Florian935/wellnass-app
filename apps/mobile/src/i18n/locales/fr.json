@@ -907,6 +907,7 @@
         "Nous collectons uniquement les données nécessaires au fonctionnement de l'application : compte (email), profil et données d'activité que tu saisis.",
         "Tes données sont isolées par utilisateur et synchronisées de façon sécurisée vers le cloud. Elles ne sont jamais vendues à des tiers.",
         "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
+        "Nous mesurons l'usage de l'application (écrans consultés, fonctionnalités utilisées) via des statistiques anonymes, uniquement pour l'améliorer ; ces mesures n'incluent jamais tes données de santé et tu peux les désactiver à tout moment depuis les paramètres.",
         "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
       ]
     }
@@ -1216,6 +1217,11 @@
     "help": {
       "title": "Aide & support",
       "button": "Consulter l'aide"
+    },
+    "analytics": {
+      "title": "Statistiques d'usage",
+      "toggle": "Autoriser les statistiques d'usage",
+      "subtitle": "Nous aide à améliorer l'application. Données anonymes, jamais tes données de santé."
     },
     "dataExport": {
       "title": "Données",
