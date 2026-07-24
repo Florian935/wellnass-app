@@ -93,3 +93,6 @@ desktop.ini
 
 # --- Superpowers (brainstorming visuel, scratch local) ---
 .superpowers/
+
+# Dumps bruts des modèles IA (brainstorming, non versionnés)
+_inbox-ia/
