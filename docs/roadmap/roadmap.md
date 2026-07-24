@@ -295,7 +295,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.17 | Gestion des notifications | Activation / désactivation par type. | Facile | 2h | 🟢 | ✅ | Section Notifications de `settings.tsx`. |
 | 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | ✅ | **CONF-01 livré (23/07/2026).** Export JSON local (hors-ligne) de toutes les données perso (31 tables possédées + traductions perso) via feuille de partage ; Réglages → « Exporter mes données ». Reste recette + Damien. |
 | 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ✅ | **CONF-02 livré (23/07/2026).** Zone Danger + ré-auth mot de passe + délai de grâce 30 j récupérable (gate) + purge serveur `pg_cron` (cascade FK). Reste recette device + Damien. |
-| 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ⬜ | **Aucun écran FAQ/contact.** 🌐 bilingue FR+EN. |
+| 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ✅ | **US 1.22 livré (24/07/2026).** Réglages → écran `/help` : FAQ statique embarquée (accordéon, 7 Q/R) + « Nous contacter » (mail natif) + « Signaler un bug » (mail + bloc technique). `expo-mail-composer`, zéro backend. `SUPPORT_EMAIL` placeholder + dev build requis avant recette. 🌐 bilingue FR+EN. Reste recette + Damien. |
 | 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | 6h | 🟢 | ⬜ | **Aucune trace.** Health Connect API. |
 | 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ⬜ | **Aucune trace.** **Avant la bêta** — sinon aucune mesure des testeurs. Alimente la décision gamification V3/V4. |
 | 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | Comportement RN par défaut, **pas de gestion explicite** (`maxFontSizeMultiplier`/`fontScale`), non vérifié. |
@@ -351,9 +351,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 132 | ~74 % |
+| ✅ Livré | 133 | ~74 % |
 | 🟡 Partiel | 10 | ~6 % |
-| ⬜ À faire | 32 | ~18 % |
+| ⬜ À faire | 31 | ~17 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **179** | |
@@ -370,7 +370,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | V0.5 (33) | 25 | 3 | 5 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (9) | 3 | 2 | 4 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (suppression, CONF-02) + 1.18 (export, CONF-01) livrés |
+| V0.8 (9) | 4 | 2 | 3 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) livrés ; restent 1.2 (OAuth Google), 9.9 (Health), 9.10 (analytics) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 
@@ -390,4 +390,4 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 ---
 
-*Dernière mise à jour : 23/07/2026 — 1.18 (export des données, CONF-01) passée ⬜ → ✅ (compteurs : 132 livré / 10 partiel / 32 à faire ; V0.8 : 3 livré). Précédemment : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+*Dernière mise à jour : 24/07/2026 — 1.22 (aide & support) passée ⬜ → ✅ (compteurs : 133 livré / 10 partiel / 31 à faire ; V0.8 : 4 livré). Reste dev build + recette + Damien. Précédemment : 23/07/2026 — 1.18 (export des données, CONF-01) passée ⬜ → ✅ (compteurs : 132 livré / 10 partiel / 32 à faire ; V0.8 : 3 livré). Précédemment : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*

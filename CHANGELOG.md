@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : code livré (Aide & support)
+
+> Implémentation subagent-driven (5 tâches TDD `e55c775`→`fd289fb` + durcissement `c2b0e1c`), chaque tâche
+> revue conformité-spec **puis** qualité. Revue finale code-reviewer → **PRÊT À MERGER** (0 bloquant).
+> typecheck + lint verts ; **812 tests shared + 80 mobile verts**. Roadmap 1.22 → ✅. Zéro backend, zéro
+> migration. ⚠️ Modules natifs ajoutés → **dev build EAS requis avant recette** (reload Metro insuffisant).
+
+**Ajouté**
+- `apps/mobile/src/lib/support.ts` (+ test) : `SUPPORT_EMAIL` (placeholder centralisé), `formatBugReportBody`
+  (helper **pur**, testé), `collectSupportMeta` (métadonnées non identifiantes, non bloquant), `contactSupport`
+  (ouvre le client mail natif via `expo-mail-composer` ; fallback `Alert` si indisponible ; **ne rejette jamais**).
+- `apps/mobile/src/components/FaqItem.tsx` : item de FAQ **contrôlé** (accessible, chevron), piloté par le parent.
+- `apps/mobile/src/app/help.tsx` (+ smoke test) : écran `/help` = FAQ **accordéon mono-ouverture** (7 Q/R via
+  `returnObjects`, garde `Array.isArray`) + section contact (« Nous contacter » / « Signaler un bug »).
+- Route modale `help` dans `_layout.tsx` (patron `account-delete`/`profile`) + section « Aide & support » dans
+  les Réglages (bouton `ghost` → `/help`).
+- i18n **FR + EN** (`settings.help.*`, objet racine `help.*` : FAQ, contact, bug, mail indisponible) — parité
+  stricte vérifiée (1189 clés de chaque côté).
+- Dépendances `expo-mail-composer` + `expo-application` (SDK 57) + config plugin `expo-mail-composer` (`app.json`).
+
+**Technique / Notes**
+- Découpage pur/I-O respecté ; signalement de bug = métadonnées **minimales** (version app/build, OS, appareil,
+  langue), **visibles et effaçables**, aucune donnée perso silencieuse (RGPD). Offline : FAQ embarquée + mail natif.
+- **Reste** : renseigner `SUPPORT_EMAIL` (adresse à créer) + ajuster le préfixe d'objet `[Wellness]` avant le
+  build ; **dev build EAS** ; **recette device** (Florian) ; **relecture Damien**.
+
 ### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : spec Aide & support (cadrage + validation)
 
 > Ouverture du chantier **V0.8 (conformité & intégrations)** après clôture de CONF-01/CONF-02. Item **1.22**

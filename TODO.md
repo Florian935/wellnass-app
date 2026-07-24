@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🚧 EN COURS — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — spec validée Florian (24/07/2026)
+> ## ✅ CODE LIVRÉ — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — reste **dev build + recette + Damien** (24/07/2026)
 >
 > Roadmap [1.22](docs/roadmap/roadmap.md) (V0.8). Section « Aide & support » dans les Réglages → écran `/help` :
 > **FAQ** statique embarquée (≈ 7 entrées, bilingue, hors-ligne) + **« Nous contacter »** (mail natif, corps vide) +
@@ -27,8 +27,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Maquette** — [design/1.22-aide-support/1.22-aide-support.html](design/1.22-aide-support/1.22-aide-support.html) :
 >   4 écrans (entrée Réglages → écran /help FAQ accordéon + 2 actions → mail contact corps vide → mail bug + bloc technique) + cas fallback.
 > - [x] **Validation** des 3 livrables — **Florian (24/07) ✅** (spec + plan + maquette).
-> - [~] **Code (subagent-driven)** — en cours (5 tâches TDD du plan).
-> - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` avant le build.
+> - [x] **Code livré (subagent-driven)** — 5 tâches TDD + 1 durcissement, chacune revue conformité + qualité :
+>   Task 1 (`e55c775`) deps `expo-mail-composer`/`expo-application` + helper pur `formatBugReportBody` (testé) →
+>   Task 2 (`b7bc1b4`) `collectSupportMeta` + `contactSupport` (mail natif + fallback `Alert`, test fallback + nominal) →
+>   Task 3 (`837792d`) composant contrôlé `FaqItem` + écran `/help` (FAQ accordéon mono-ouverture + 2 actions, smoke test toggle) →
+>   Task 4 (`fd289fb`) route `_layout` + section Réglages + i18n FR/EN (parité stricte 1189 clés) →
+>   durcissement (`c2b0e1c`) `contactSupport` ne rejette jamais. Revue finale code-reviewer : **PRÊT À MERGER** (0 bloquant).
+>   typecheck/lint verts ; **812 tests shared + 80 mobile verts**. Roadmap 1.22 → ✅.
+> - [ ] **Dev build EAS requis** (modules natifs ajoutés → reload Metro insuffisant) **avant recette device**.
+> - [ ] **Recette device** (Florian) : accès offline, FAQ dépli/repli mono-ouverture, contact (corps vide), bug (bloc technique effaçable), mail indisponible → Alert, i18n EN.
+> - [ ] **Relecture Damien.**
+> - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` (et ajuster le préfixe d'objet `[Wellness]`) avant le build.
 
 > ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
 >
@@ -357,7 +366,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 23/07/2026 (**CONF-01 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : export RGPD
+*Dernière mise à jour : 24/07/2026 (**US 1.22 Aide & support — CODE LIVRÉ ✅ → reste dev build + recette + Damien** :
+ouverture du chantier V0.8 (conformité & intégrations) après CONF-01/02. Section « Aide & support » dans les
+Réglages → écran `/help` : FAQ statique embarquée bilingue (accordéon mono-ouverture, 7 Q/R) + « Nous contacter »
+(mail natif corps vide) + « Signaler un bug » (mail natif + bloc technique minimal effaçable). Canal = client mail
+natif (`expo-mail-composer`), zéro backend/migration ; `SUPPORT_EMAIL` placeholder à renseigner avant build.
+Découpage helper pur testé / I/O natif isolé / composant contrôlé `FaqItem`. 5 tâches TDD subagent-driven + durcissement,
+revues conformité + qualité par tâche, revue finale PRÊT À MERGER. typecheck/lint verts, 812 shared + 80 mobile verts.
+Roadmap 1.22 → ✅. ⚠️ Modules natifs ajoutés → **dev build EAS requis avant recette**. Branche `feature/1.22-aide-support`.
+Précédemment : **CONF-01 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : export RGPD
 des données perso (roadmap 1.18, P0 lancement) — JSON local hors-ligne de 31 tables possédées (dont
 traductions perso), feuille de partage, entrée Réglages. Recette 8 sections validée dans son ensemble par
 Florian. Roadmap 1.18 ✅. Branche `feature/conf01-export-donnees`. Précédemment : **CONF-02 — RECETTE VALIDÉE À
