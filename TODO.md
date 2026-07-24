@@ -21,10 +21,11 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >
 > - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée : gate onboarding
 >   `resolveRootRoute`, intégration `auth-store`, env ; 4 clarifs intégrées), **validée Florian (24/07)**.
-> - [ ] **Plan d'implémentation** — à écrire.
-> - [ ] **Maquette** — `design/1.2-oauth-google/` : boutons Google (2 écrans) + mention consentement.
-> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
-> - [ ] **Prérequis Florian** : Client IDs Google (Cloud) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build.
+> - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié contre le code). [plan](docs/plans/1.2-connexion-google.md).
+> - [x] **Maquette** — [design/1.2-oauth-google/1.2-oauth-google.html](design/1.2-oauth-google/1.2-oauth-google.html) : 3 écrans (connexion + bouton/mention → sélecteur Google → résultats).
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
+> - [~] **Code (subagent-driven)** — en cours (placeholder `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`).
+> - [ ] **Prérequis Florian** : Client IDs Google (Cloud) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build (guide fourni).
 
 > ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
 >
