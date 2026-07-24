@@ -1213,6 +1213,10 @@
       "title": "Account",
       "signOut": "Sign out"
     },
+    "help": {
+      "title": "Help & support",
+      "button": "Open help"
+    },
     "dataExport": {
       "title": "Data",
       "subtitle": "Get a copy of all your data as JSON (GDPR).",
@@ -1257,6 +1261,40 @@
       "signOut": "Sign out",
       "cancelError": "Cancellation failed. Please try again."
     }
+  },
+  "help": {
+    "title": "Help & support",
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        { "q": "Does the app work offline?", "a": "Yes. Your data is saved on the device and syncs automatically as soon as a connection is available." },
+        { "q": "Is my data synced across my devices?", "a": "Yes: sign in with the same account and your data syncs in the background." },
+        { "q": "How do I enable or disable a pillar (Strength / Running / Nutrition)?", "a": "In Settings → Active pillars. Tabs for disabled pillars are hidden and reappear when you re-enable them." },
+        { "q": "How do I change the units or the language?", "a": "In Settings → Units (metric/imperial) and Language (French/English)." },
+        { "q": "How do I export my data?", "a": "In Settings → Export my data: you get a complete copy of your data as JSON." },
+        { "q": "How do I delete my account?", "a": "In Settings → Danger zone → Delete my account. A 30-day grace period lets you undo it." },
+        { "q": "Is the app free?", "a": "Yes, the app is entirely free." }
+      ]
+    },
+    "contact": {
+      "title": "Contact us",
+      "intro": "A question or a problem? Write to us and your mail app will open with a pre-filled message.",
+      "contactButton": "Contact us",
+      "bugButton": "Report a bug",
+      "subject": "[Wellness] Question / contact"
+    },
+    "bug": {
+      "subject": "[Wellness] Bug report",
+      "prompt": "Describe the problem (steps, what you expected):",
+      "techHeader": "Technical information (please keep)",
+      "appLabel": "App",
+      "buildLabel": "build",
+      "systemLabel": "System",
+      "deviceLabel": "Device",
+      "languageLabel": "Language"
+    },
+    "mailUnavailableTitle": "No mail app",
+    "mailUnavailableBody": "No mail app is configured. Write to us at: {{email}}"
   },
   "running": {
     "profile": {

@@ -227,6 +227,17 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="help"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('help.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="exercises"
           options={{
             presentation: 'modal',

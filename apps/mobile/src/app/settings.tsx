@@ -472,6 +472,14 @@ export default function SettingsScreen() {
         <Button label={t('settings.account.signOut')} variant="ghost" onPress={() => void signOut()} />
       </View>
 
+      {/* Aide & support (US 1.22) */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.help.title')}
+      </Text>
+      <View style={styles.stack}>
+        <Button label={t('settings.help.button')} variant="ghost" onPress={() => router.push('/help')} />
+      </View>
+
       {/* Export de données (US CONF-01, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.dataExport.title')}
