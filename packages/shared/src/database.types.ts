@@ -74,6 +74,47 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          event_name: string
+          id: string
+          occurred_at: string
+          platform: string | null
+          properties: string
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          event_name: string
+          id: string
+          occurred_at: string
+          platform?: string | null
+          properties?: string
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          event_name?: string
+          id?: string
+          occurred_at?: string
+          platform?: string | null
+          properties?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -1595,6 +1636,7 @@ export type Database = {
       user_settings: {
         Row: {
           active_pillars: Json
+          analytics_enabled: boolean
           created_at: string
           dashboard_layout: Json | null
           deleted_at: string | null
@@ -1608,6 +1650,7 @@ export type Database = {
         }
         Insert: {
           active_pillars?: Json
+          analytics_enabled?: boolean
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
@@ -1621,6 +1664,7 @@ export type Database = {
         }
         Update: {
           active_pillars?: Json
+          analytics_enabled?: boolean
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
