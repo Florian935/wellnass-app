@@ -71,6 +71,11 @@ describe('userSettingsRowSchema — defaults', () => {
     const row = userSettingsRowSchema.parse({ ...syncBase });
     expect(row.dashboardLayout).toBeNull();
   });
+
+  it('applique analyticsEnabled = true par défaut (opt-out)', () => {
+    const row = userSettingsRowSchema.parse({ ...syncBase });
+    expect(row.analyticsEnabled).toBe(true);
+  });
 });
 
 describe('userSettingsRowSchema — valeurs explicites', () => {
@@ -130,6 +135,11 @@ describe('userSettingsRowSchema — valeurs explicites', () => {
     const layout = { columns: 2, widgets: ['streak', 'last-workout'] };
     const row = userSettingsRowSchema.parse({ ...syncBase, dashboardLayout: layout });
     expect(row.dashboardLayout).toEqual(layout);
+  });
+
+  it('accepte analyticsEnabled = false (opt-out explicite)', () => {
+    const row = userSettingsRowSchema.parse({ ...syncBase, analyticsEnabled: false });
+    expect(row.analyticsEnabled).toBe(false);
   });
 
   it('reporte les enums du système d\'unités existant', () => {

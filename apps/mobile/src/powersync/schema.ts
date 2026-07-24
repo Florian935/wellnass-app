@@ -48,9 +48,22 @@ const user_settings = new Table({
   active_pillars: column.text,
   notifications: column.text,
   dashboard_layout: column.text,
+  analytics_enabled: column.integer, // 0/1 — consentement analytics (US 9.10)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
+});
+
+// ── US 9.10 : analytics produit (append-only, first-party) ─────────────────
+// Migration : supabase/migrations/20260724112210_analytics_events.sql
+const analytics_events = new Table({
+  user_id: column.text,
+  event_name: column.text,
+  properties: column.text, // JSON sérialisé
+  app_version: column.text,
+  platform: column.text,
+  occurred_at: column.text,
+  created_at: column.text,
 });
 
 // ── V0.4 : profil nutritionnel (une ligne par compte) ──────────────────────
@@ -452,6 +465,7 @@ const workout_template_exercises = new Table({
 export const AppSchema = new Schema({
   profiles,
   user_settings,
+  analytics_events,
   nutrition_profiles,
   foods,
   food_translations,
