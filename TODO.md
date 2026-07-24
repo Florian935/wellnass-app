@@ -21,7 +21,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >
 > - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant ; 4 clarifs intégrées : accordéon
 >   mono-ouverture, chemin `support.ts`, objets mail via i18n, `contactSupport` typé), **validée Florian (24/07)**.
-> - [ ] **Plan d'implémentation** — à écrire (découpage TDD, fichiers touchés, tests).
+> - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié
+>   contre le code ; 3 recommandations intégrées : mock i18n/thème du smoke test, garde `Array.isArray`).
+>   [plan](docs/plans/1.22-aide-support.md).
 > - [ ] **Maquette** — `design/1.22-aide-support/` (Claude Design) : écran d'aide (FAQ repliable + 2 actions).
 > - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
 > - [ ] **Action hors-dev (Florian)** : créer l'adresse mail de support → renseigner `SUPPORT_EMAIL` avant le build.
