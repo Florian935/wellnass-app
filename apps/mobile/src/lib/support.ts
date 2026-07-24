@@ -55,23 +55,23 @@ export type ContactResult = { ok: true } | { fallback: true };
  * n'est disponible → fallback `Alert` affichant l'adresse (l'utilisateur peut la recopier).
  */
 export async function contactSupport(kind: ContactKind, t: TFunction): Promise<ContactResult> {
-  const isBug = kind === 'bug';
-  const subject = t(isBug ? 'help.bug.subject' : 'help.contact.subject');
-
-  if (!(await MailComposer.isAvailableAsync())) {
+  // Fallback commun : aucune app mail (isAvailableAsync=false) OU rejet imprévu (isAvailableAsync/
+  // composeAsync). contactSupport ne rejette JAMAIS → l'appelant `void contactSupport(...)` est sûr.
+  const showFallback = (): ContactResult => {
     Alert.alert(t('help.mailUnavailableTitle'), t('help.mailUnavailableBody', { email: SUPPORT_EMAIL }));
     return { fallback: true };
-  }
+  };
 
-  // Métadonnées collectées uniquement sur le chemin nominal (pas de lecture native inutile en fallback).
-  const body = isBug ? formatBugReportBody(collectSupportMeta(), t) : undefined;
   try {
+    if (!(await MailComposer.isAvailableAsync())) return showFallback();
+
+    const isBug = kind === 'bug';
+    const subject = t(isBug ? 'help.bug.subject' : 'help.contact.subject');
+    // Métadonnées collectées uniquement sur le chemin nominal (pas de lecture native inutile en fallback).
+    const body = isBug ? formatBugReportBody(collectSupportMeta(), t) : undefined;
     await MailComposer.composeAsync({ recipients: [SUPPORT_EMAIL], subject, body });
     return { ok: true };
   } catch {
-    // composeAsync a rejeté (client mail absent/bloqué au dernier moment) : même fallback,
-    // contactSupport ne rejette jamais.
-    Alert.alert(t('help.mailUnavailableTitle'), t('help.mailUnavailableBody', { email: SUPPORT_EMAIL }));
-    return { fallback: true };
+    return showFallback();
   }
 }
