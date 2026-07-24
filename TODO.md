@@ -10,6 +10,24 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## 🚧 EN COURS — US 9.10 Analytics produit first-party (V0.8, avant bêta) — spec validée Florian (24/07/2026)
+>
+> Roadmap [9.10](docs/roadmap/roadmap.md) (V0.8). Événements d'usage **anonymisés** dans **notre** base Supabase
+> (first-party), offline-first via PowerSync. Table `analytics_events` (append-only) + RLS + FK cascade
+> (purge à la suppression de compte). Consentement **opt-out** (`user_settings.analytics_enabled` défaut ON) +
+> réglage « Statistiques d'usage » + mention politique de confidentialité. Service `track()` (gating + allowlist
+> anti-PII `pillar`, jamais bloquant) + instrumentation ~15 points (socle + adoption). Zéro service tiers, zéro
+> nouvelle infra. Branche `feature/9.10-analytics`.
+> Spec : [9.10-analytics-produit.md](docs/specs/functional/us/9.10-analytics-produit.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée contre le code ;
+>   clarifs intégrées : allowlist figée `pillar`, insert dédié append-only, accesseur consentement hors React),
+>   **validée Florian (24/07)**.
+> - [ ] **Plan d'implémentation** — à écrire (migration → PowerSync schéma/sync rules → service → instrumentation).
+> - [ ] **Maquette** — `design/9.10-analytics/` : réglage « Statistiques d'usage » + mention confidentialité.
+> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
+> - [ ] **Déploiement** : `db:push` + `db:types` + **sync rules PowerSync** (étape instance) avant recette.
+
 > ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
 >
 > Roadmap [1.22](docs/roadmap/roadmap.md) (V0.8). Section « Aide & support » dans les Réglages → écran `/help` :

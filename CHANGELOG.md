@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : spec analytics produit first-party (cadrage + validation)
+
+> Ouverture de l'US **9.10** (analytics, V0.8, avant bêta). Spec écrite, revue subagent **APPROUVÉE**
+> (0 bloquant, faisabilité vérifiée contre le code réel dont la purge cascade CONF-02), **validée Florian
+> (24/07)**. Aucun code applicatif (workflow spec → plan → design → validation → code).
+
+**Ajouté**
+- `docs/specs/functional/us/9.10-analytics-produit.md` : spec de l'US. Table `analytics_events` (append-only,
+  Supabase + RLS + FK `auth.users` cascade), consentement **opt-out** (`user_settings.analytics_enabled` défaut
+  ON) + réglage « Statistiques d'usage » + mention politique de confidentialité, service `track()` offline-first
+  (PowerSync) avec gating + **allowlist anti-PII** (`pillar`), instrumentation ~15 points (socle + adoption).
+- Décisions de cadrage : first-party (données chez nous, pas d'outil tiers/infra), opt-out, identifiant
+  `user_id` (purge cascade), écriture via PowerSync. **Hors périmètre** : dashboards/funnels, crash reporting,
+  purge locale, analytics dans l'export CONF-01.
+
+**Technique / Notes**
+- Suivi : US 9.10 ajoutée au pipeline [TODO.md](TODO.md) (🚧). Roadmap inchangée (9.10 reste ⬜ tant que le code
+  n'est pas livré). Étape déploiement notée : sync rules PowerSync (instance) + `db:push`/`db:types`.
+
 ### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
