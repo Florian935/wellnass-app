@@ -849,7 +849,9 @@
       "cta": "Se connecter",
       "forgot": "Mot de passe oublié ?",
       "noAccount": "Pas encore de compte ?",
-      "signUpLink": "Créer un compte"
+      "signUpLink": "Créer un compte",
+      "passwordResetSuccess": "Mot de passe modifié. Connecte-toi avec ton nouveau mot de passe.",
+      "resetLinkExpired": "Ce lien de réinitialisation a expiré ou a déjà été utilisé. Demande un nouveau lien."
     },
     "signUp": {
       "title": "Créer un compte",
@@ -883,6 +885,19 @@
       "subtitle": "On t'envoie un lien de réinitialisation par email.",
       "cta": "Envoyer le lien",
       "sent": "Si un compte existe pour {{email}}, un lien de réinitialisation vient d'être envoyé."
+    },
+    "newPassword": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Choisis un mot de passe pour ton compte.",
+      "field": "Nouveau mot de passe",
+      "confirmField": "Confirmer le mot de passe",
+      "cta": "Enregistrer le mot de passe",
+      "cancel": "Annuler",
+      "tooShort_one": "Le mot de passe doit faire au moins {{count}} caractère.",
+      "tooShort_other": "Le mot de passe doit faire au moins {{count}} caractères.",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "updateFailed": "Impossible d'enregistrer le mot de passe. Réessaie.",
+      "offline": "Cette action nécessite une connexion Internet."
     },
     "verify": {
       "title": "Vérifie ton email",

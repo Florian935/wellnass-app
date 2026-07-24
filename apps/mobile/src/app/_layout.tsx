@@ -67,6 +67,7 @@ function RootNavigator() {
   const { loaded, error } = useAppFonts();
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
+  const recoveryPending = useAuthStore((s) => s.recoveryPending);
   const { profile, isLoading: profileLoading } = useProfile();
   const { settings, isLoading: settingsLoading } = useSettings();
   const syncStatus = useStatus();
@@ -111,6 +112,7 @@ function RootNavigator() {
     hasSynced: !!syncStatus.hasSynced,
     deletionCheckLoading: deletionLoading,
     deletionPending: deletionPending,
+    recoveryPending,
   });
   const ready = route !== 'wait';
 
@@ -184,6 +186,12 @@ function RootNavigator() {
       }
       return;
     }
+    if (route === 'password-recovery') {
+      if (segments[0] !== 'new-password') {
+        router.replace('/new-password');
+      }
+      return;
+    }
     // route === 'app'
     if (inAuth || inOnboarding) {
       router.replace('/(tabs)');
@@ -203,6 +211,7 @@ function RootNavigator() {
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="deletion-pending" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="new-password" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen
           name="account-delete"
           options={{

@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
@@ -22,6 +22,23 @@ export default function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Retours du flux de réinitialisation (CONF-08). Les deux messages viennent du store : après un
+  // reset c'est le gate de routing qui amène ici, donc un paramètre de route serait écrasé.
+  const passwordJustReset = useAuthStore((s) => s.passwordJustReset);
+  const deepLinkError = useAuthStore((s) => s.deepLinkError);
+  const clearPasswordJustReset = useAuthStore((s) => s.clearPasswordJustReset);
+  const clearDeepLinkError = useAuthStore((s) => s.clearDeepLinkError);
+
+  // Messages consommés une fois : on les efface au démontage pour qu'ils ne réapparaissent pas au
+  // retour sur l'écran (bouton retour depuis l'inscription, par exemple).
+  useEffect(
+    () => () => {
+      if (passwordJustReset) clearPasswordJustReset();
+      if (deepLinkError) clearDeepLinkError();
+    },
+    [passwordJustReset, deepLinkError, clearPasswordJustReset, clearDeepLinkError],
+  );
 
   const onSubmit = async () => {
     setError(null);
@@ -47,6 +64,17 @@ export default function SignInScreen() {
   return (
     <FormScreen>
       <ScreenHeader title={t('auth.signIn.title')} subtitle={t('auth.signIn.subtitle')} />
+
+      {passwordJustReset ? (
+        <Text style={[styles.success, { color: colors.success }]}>
+          {t('auth.signIn.passwordResetSuccess')}
+        </Text>
+      ) : null}
+      {deepLinkError ? (
+        <Text style={[styles.error, { color: colors.danger }]}>
+          {t('auth.signIn.resetLinkExpired')}
+        </Text>
+      ) : null}
 
       <TextField
         label={t('auth.email')}
@@ -99,6 +127,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   link: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   error: { fontFamily: fontFamily.bodyMedium, fontSize: 14 },
+  success: { fontFamily: fontFamily.bodyMedium, fontSize: 15, lineHeight: 21 },
   separator: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   separatorLine: { flex: 1, height: StyleSheet.hairlineWidth },
   separatorText: { fontFamily: fontFamily.bodyMedium, fontSize: 13 },

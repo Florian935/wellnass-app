@@ -52,6 +52,15 @@ type AuthState = {
   /** Code d'erreur d'un deep link refusé par Supabase (lien expiré / déjà utilisé), à afficher. */
   deepLinkError: string | null;
   /**
+   * Le mot de passe vient d'être réinitialisé avec succès → message de confirmation à afficher sur
+   * l'écran de connexion.
+   *
+   * Porté par le **store** et non par un paramètre de route : après l'enregistrement, c'est le gate
+   * de routing racine qui redirige (perte de session), donc un `router.replace` avec paramètres
+   * lancé par l'écran serait écrasé.
+   */
+  passwordJustReset: boolean;
+  /**
    * Enregistre le nouveau mot de passe, puis déconnecte **tous** les appareils.
    *
    * Contrat d'erreur : **message Supabase brut** (comme `signIn`/`signUp`), pas une clé i18n —
@@ -62,6 +71,8 @@ type AuthState = {
   clearRecovery: () => void;
   /** Efface le message d'erreur de deep link après affichage (sinon il réapparaîtrait). */
   clearDeepLinkError: () => void;
+  /** Efface le message de succès de réinitialisation après affichage. */
+  clearPasswordJustReset: () => void;
   /** Vérifie le mot de passe de l'utilisateur courant (ré-auth avant action sensible). */
   reauthenticate: (password: string) => Promise<AuthResult>;
   /** Programme la suppression : RPC → purge locale → signOut. Renvoie l'échéance ou une erreur. */
@@ -75,6 +86,7 @@ export const useAuthStore = create<AuthState>(() => ({
   initializing: true,
   recoveryPending: false,
   deepLinkError: null,
+  passwordJustReset: false,
   signUp: async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -140,7 +152,9 @@ export const useAuthStore = create<AuthState>(() => ({
     // Échec → on reste sur l'écran, session conservée, l'utilisateur peut réessayer.
     if (error) return { error: error.message };
 
-    useAuthStore.setState({ recoveryPending: false });
+    // `passwordJustReset` est levé AVANT le signOut : c'est lui qui portera le message de succès sur
+    // l'écran de connexion, où le gate de routing nous emmène dès la perte de session.
+    useAuthStore.setState({ recoveryPending: false, passwordJustReset: true });
     // `signOut()` sans argument utilise le scope **global** (défaut de @supabase/auth-js) : il révoque
     // les refresh tokens de TOUS les appareils et efface la session locale (SIGNED_OUT émis). C'est
     // exactement la décision de cadrage (autres appareils éjectés + retour à la connexion) en un seul
@@ -152,6 +166,7 @@ export const useAuthStore = create<AuthState>(() => ({
   },
   clearRecovery: () => useAuthStore.setState({ recoveryPending: false }),
   clearDeepLinkError: () => useAuthStore.setState({ deepLinkError: null }),
+  clearPasswordJustReset: () => useAuthStore.setState({ passwordJustReset: false }),
   reauthenticate: async (password) => {
     const email = useAuthStore.getState().session?.user.email;
     if (!email) return { error: 'Aucune session active.' };

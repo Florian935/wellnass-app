@@ -849,7 +849,9 @@
       "cta": "Sign in",
       "forgot": "Forgot password?",
       "noAccount": "No account yet?",
-      "signUpLink": "Create one"
+      "signUpLink": "Create one",
+      "passwordResetSuccess": "Password updated. Sign in with your new password.",
+      "resetLinkExpired": "This reset link has expired or has already been used. Request a new one."
     },
     "signUp": {
       "title": "Create account",
@@ -883,6 +885,19 @@
       "subtitle": "We'll email you a reset link.",
       "cta": "Send link",
       "sent": "If an account exists for {{email}}, a reset link has just been sent."
+    },
+    "newPassword": {
+      "title": "New password",
+      "subtitle": "Choose a password for your account.",
+      "field": "New password",
+      "confirmField": "Confirm password",
+      "cta": "Save password",
+      "cancel": "Cancel",
+      "tooShort_one": "Password must be at least {{count}} character.",
+      "tooShort_other": "Password must be at least {{count}} characters.",
+      "mismatch": "Passwords don't match.",
+      "updateFailed": "Couldn't save your password. Please try again.",
+      "offline": "This action requires an internet connection."
     },
     "verify": {
       "title": "Verify your email",
