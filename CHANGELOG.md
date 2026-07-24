@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
+> (Florian valide l'ensemble). Sync rule PowerSync déployée sur l'instance ; événements confirmés remontés au cloud.
+
+**Corrigé**
+- Migration corrective `20260724123616_analytics_events_publication.sql` : `alter publication powersync add table
+  public.analytics_events` — oublié dans `20260724112210` (pattern standard de toute table synchronisée). Sans lui,
+  le déploiement des sync rules échouait (« table not part of publication 'powersync' »). Appliquée sur le cloud.
+
+**Technique / Notes**
+- Recette côté Supabase : lignes `analytics_events` créées (`app_opened`, `onboarding_started`, `workout_started`,
+  `workout_completed`…), `properties` = `{}` (anti-PII confirmé), `user_id` pseudonyme, `platform`/`occurred_at` OK.
+  Opt-out, offline, purge, i18n validés. Remontée cloud opérationnelle (sync rule active).
+- **Suivi non bloquant** (hors US) : dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) ;
+  test du gating `track()` ; doublon `onboarding_started` observé en dev (probable React StrictMode, à confirmer
+  hors dev) ; `app_version` à passer de `0.0.0` à une vraie version dans `app.json` avant la bêta.
+- **V0.8** : 1.18 + 1.19 + 1.22 + **9.10** livrés & clôturés ; restent **1.2** (OAuth Google) + **9.9** (Health Connect).
+
 ### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : code livré + migration déployée (analytics produit)
 
 > Implémentation subagent-driven (5 tâches TDD `3214285`→`f321a1f` + correctifs post-revue), chaque tâche revue

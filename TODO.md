@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## ✅ CODE LIVRÉ + MIGRATION DÉPLOYÉE — US 9.10 Analytics produit first-party (V0.8) — reste **sync rule PowerSync + recette** (24/07/2026)
+> ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
 >
 > Roadmap [9.10](docs/roadmap/roadmap.md) (V0.8). Événements d'usage **anonymisés** dans **notre** base Supabase
 > (first-party), offline-first via PowerSync. Table `analytics_events` (append-only) + RLS + FK cascade
@@ -36,9 +36,10 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   code-reviewer : **PRÊT À MERGER** (0 bloquant). typecheck/lint verts ; **814 shared + 83 mobile verts**. Roadmap 9.10 → ✅.
 > - [x] **Déploiement cloud** — `db:push:dry` (seule 20260724112210) → `db:push` (appliqué, listé en remote) →
 >   `db:types` (analytics_events + analytics_enabled présents) → `MIGRATIONS.md` coché (`d973807`).
-> - [ ] **Sync rule PowerSync** (Florian) : ajouter le bucket `analytics_events` (par `user_id`) sur l'instance — **sinon les événements restent locaux**.
-> - [ ] **Recette** (Florian) : événement écrit (Supabase), opt-out respecté, anti-PII, offline, purge compte, i18n. JS pur (pas de nouveau build : `expo-application` déjà dans le dev build 1.22) → reload Metro après la sync rule.
-> - [ ] **Dette légère (suivi)** : rompre la dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne au runtime) + ajouter un test du gating de `track()` (consentement OFF → no-op).
+> - [x] **Sync rule PowerSync** déployée (Florian) — bucket `analytics_events`. Correctif `alter publication powersync add table` (migration `20260724123616`, oubli de la migration initiale) appliqué avant le déploiement.
+> - [x] **Recette — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** : événements écrits en base (remontée cloud OK), `properties` = `{}` (anti-PII confirmé), opt-out, offline, purge, i18n. **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
+> - [ ] **Suivi (hors US, non bloquant)** : (a) dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) ; (b) test du gating `track()` (OFF → no-op) ; (c) doublon `onboarding_started` observé en dev (probable StrictMode, à confirmer hors dev) ; (d) renseigner une vraie `app_version` (`app.json` en `0.0.0`) avant la bêta.
 
 > ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
 >
@@ -396,14 +397,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 24/07/2026 (**US 9.10 Analytics produit — CODE LIVRÉ + MIGRATION DÉPLOYÉE ✅ → reste sync
-rule PowerSync + recette** : événements d'usage anonymisés first-party (table `analytics_events` append-only +
+*Dernière mise à jour : 24/07/2026 (**US 9.10 Analytics produit — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+événements d'usage anonymisés first-party (table `analytics_events` append-only +
 RLS + FK cascade), consentement opt-out (`user_settings.analytics_enabled` défaut ON) + réglage « Statistiques
 d'usage » + mention confidentialité, service `track()` (gating + allowlist anti-PII `pillar` + non bloquant,
 offline-first PowerSync), constante `ANALYTICS_EVENTS`, instrumentation 15 points (socle + adoption). 5 tâches
 TDD subagent-driven + correctifs, revues conformité + qualité par tâche + revue finale PRÊT À MERGER. Migration
 poussée sur le cloud (`db:push` + `db:types`, registre coché). typecheck/lint verts, 814 shared + 83 mobile.
-Roadmap 9.10 → ✅. ⚠️ Reste : sync rule PowerSync (instance) + recette. Branche `feature/9.10-analytics`.
+Roadmap 9.10 → ✅. Migration + correctif publication déployés, sync rule PowerSync déployée, **recette validée à
+100 % (Florian) → US CLÔTURÉE** (relecture Damien non requise). Branche `feature/9.10-analytics`.
 Précédemment : **US 1.22 Aide & support — CODE LIVRÉ ✅ → reste dev build + recette + Damien** :
 ouverture du chantier V0.8 (conformité & intégrations) après CONF-01/02. Section « Aide & support » dans les
 Réglages → écran `/help` : FAQ statique embarquée bilingue (accordéon mono-ouverture, 7 Q/R) + « Nous contacter »
