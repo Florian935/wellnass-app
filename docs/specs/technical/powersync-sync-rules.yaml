@@ -51,6 +51,9 @@ bucket_definitions:
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null
       - select * from planned_sessions      where owner_id = bucket.user_id and deleted_at is null
       - select * from running_pace_records  where user_id = bucket.user_id and deleted_at is null
+      # ── Analytics (US 9.10) ─────────────────────────────────────────────────
+      # append-only : PAS de deleted_at (ne pas ajouter `and deleted_at is null`).
+      - select * from analytics_events      where user_id = bucket.user_id
 
   shared_content:
     data:
