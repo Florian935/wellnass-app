@@ -7,7 +7,13 @@
  * de la synchro initiale). Aucune I/O, aucun `Date`.
  */
 
-export type RootRoute = 'wait' | 'auth' | 'onboarding' | 'app' | 'deletion-pending';
+export type RootRoute =
+  | 'wait'
+  | 'auth'
+  | 'onboarding'
+  | 'app'
+  | 'deletion-pending'
+  | 'password-recovery';
 
 export function resolveRootRoute(input: {
   /** Polices chargées (ou en erreur) — prêtes à rendre. */
@@ -30,6 +36,12 @@ export function resolveRootRoute(input: {
   deletionCheckLoading?: boolean;
   /** Une demande de suppression de compte est en attente (pending) côté serveur (CONF-02). */
   deletionPending?: boolean;
+  /**
+   * Une réinitialisation de mot de passe est en cours : la session a été ouverte par un **lien de
+   * récupération**, l'utilisateur doit choisir son nouveau mot de passe avant d'entrer dans l'app
+   * (CONF-08). Drapeau **en mémoire** côté app.
+   */
+  recoveryPending?: boolean;
 }): RootRoute {
   const {
     fontsReady,
@@ -42,6 +54,7 @@ export function resolveRootRoute(input: {
     hasSynced,
     deletionCheckLoading,
     deletionPending,
+    recoveryPending,
   } = input;
 
   // Splash tant que le socle n'est pas prêt.
@@ -54,6 +67,14 @@ export function resolveRootRoute(input: {
   // par défaut tant que le contrôleur ne les branche pas (fail-open hors-ligne géré côté _layout).
   if (deletionCheckLoading) return 'wait';
   if (deletionPending) return 'deletion-pending';
+
+  // Gate réinitialisation de mot de passe (CONF-08) : le lien de récupération ouvre une session, mais
+  // l'utilisateur doit choisir son nouveau mot de passe avant d'entrer dans l'app — sinon il entrerait
+  // avec son ancien mot de passe toujours actif.
+  // Placé APRÈS la gate de suppression (qui offre l'annulation, action plus urgente) et AVANT l'attente
+  // profil/réglages : l'écran de saisie n'a besoin ni du profil ni des réglages, inutile de faire
+  // patienter l'utilisateur derrière la synchro.
+  if (recoveryPending) return 'password-recovery';
 
   // Session ouverte : attendre la résolution des requêtes locales (profil + réglages) pour éviter
   // tout flash / boucle de redirection.
