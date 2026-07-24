@@ -8,6 +8,7 @@ export * from './json-column';
 export * from './search';
 export * from './units';
 export * from './age';
+export * from './password';
 export * from './profile';
 export * from './settings';
 export * from './notifications';

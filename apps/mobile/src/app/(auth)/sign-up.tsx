@@ -2,7 +2,13 @@ import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MIN_SIGNUP_AGE, isAtLeast, toDate } from '@wellness/shared';
+import {
+  MIN_PASSWORD_LENGTH,
+  MIN_SIGNUP_AGE,
+  isAtLeast,
+  toDate,
+  validatePasswordPair,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Checkbox } from '@/components/Checkbox';
 import { FormScreen } from '@/components/FormScreen';
@@ -12,8 +18,6 @@ import { TextField } from '@/components/TextField';
 import { useAuthStore } from '@/stores/auth-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-
-const MIN_PASSWORD_LENGTH = 8;
 
 export default function SignUpScreen() {
   const { t } = useTranslation();
@@ -45,11 +49,13 @@ export default function SignUpScreen() {
 
   const onSubmit = async () => {
     setError(null);
-    if (password.length < MIN_PASSWORD_LENGTH) {
+    // Règle mutualisée avec la réinitialisation (CONF-08) — mêmes messages, même ordre qu'avant.
+    const pwdError = validatePasswordPair(password, confirm);
+    if (pwdError === 'too-short') {
       setError(t('auth.signUp.passwordTooShort', { count: MIN_PASSWORD_LENGTH }));
       return;
     }
-    if (password !== confirm) {
+    if (pwdError === 'mismatch') {
       setError(t('auth.signUp.passwordMismatch'));
       return;
     }
