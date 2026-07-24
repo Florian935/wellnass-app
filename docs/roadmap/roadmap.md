@@ -67,7 +67,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.1 | Inscription email + mot de passe | Création de compte avec identifiants classiques. Email vérifié avant accès complet. | Facile | 2h | 🟢 | ✅ | |
 | 1.4 | Vérification email obligatoire | Lien envoyé par email, compte bloqué tant que non vérifié. | Facile | 1h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 1.5 | Session persistante | Pas de reconnexion à chaque ouverture. Token rafraîchi silencieusement. | Facile | 2h | 🟢 | ✅ | |
-| 1.6 | Récupération mot de passe | Envoi d'un lien de réinitialisation par email. | Facile | 1h | 🟢 | ✅ | Géré par Supabase Auth. |
+| 1.6 | Récupération mot de passe | Envoi d'un lien de réinitialisation par email. | Facile | 1h | 🟢 | ✅ | Envoi géré par Supabase Auth. **Complété par US CONF-08 (25/07/2026)** : l'envoi seul ne suffisait pas — le lien menait à une page morte `localhost:3000` et **aucun écran de saisie du nouveau mot de passe n'existait** (récupération impossible sur mobile). Livré : deep link `wellness://password-reset`, gate de routing `password-recovery`, écran « nouveau mot de passe », révocation de tous les appareils, gestion des liens expirés. 🔧 Prérequis : URL à déclarer dans les Redirect URLs Supabase. Reste recette device + relecture Damien. |
 | 9.5 | Authentification JWT | Token court (accès) + token long (refresh). Renouvellement silencieux. | Moyen | 4h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 9.6 | Isolation données utilisateur | Row Level Security — chaque utilisateur n'accède qu'à ses données. | Moyen | 3h | 🟢 | ✅ | |
 | 9.8 | Chiffrement tokens | Android Keystore (iOS Keychain lors du portage). Jamais en clair. | Moyen | 2h | 🟢 | ✅ | `lib/secure-storage.ts` (SecureStore/Keystore). |

@@ -10,6 +10,78 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : réinitialisation du mot de passe (code livré)
+
+> **Trou fonctionnel du socle auth (roadmap 1.6), prérequis bêta.** Le lien « mot de passe oublié » menait à
+> une page morte `localhost:3000` et **aucun écran de saisie du nouveau mot de passe n'existait** → un
+> utilisateur qui oubliait son mot de passe **ne pouvait pas récupérer son compte**. Prolonge le fix de la
+> confirmation d'inscription du 25/07 (mêmes briques, flux différent). Spec + plan + maquette **validés par
+> Florian et Damien**. 5 tâches TDD (`1091381`→`b21d1cf`). **Aucune migration, aucun module natif.**
+
+**Le piège évité (raison d'être du cadrage)**
+- Le lien de récupération renvoie **des jetons de session**, comme celui de confirmation. Ajouter simplement
+  `redirectTo` aurait donc **connecté l'utilisateur dans l'app sans jamais lui demander de nouveau mot de
+  passe**, l'ancien restant actif — le bug devenait *silencieux* au lieu d'être visible.
+- D'où : drapeau `recoveryPending` levé **avant** `setSession` + nouvel état de routing `password-recovery`
+  qui court-circuite onboarding/app. Dans l'autre ordre, `onAuthStateChange` peut produire un rendu où la
+  session existe sans le drapeau → redirection éclair vers `(tabs)`.
+
+**Ajouté**
+- `packages/shared/src/password.ts` (+ test, 8 cas) : `MIN_PASSWORD_LENGTH` + `validatePasswordPair`
+  (**pur**) — longueur avant concordance, aucune normalisation.
+- `packages/shared/src/root-route.ts` : état **`password-recovery`** + entrée **optionnelle**
+  `recoveryPending` (⇒ non-régression des appels existants), évaluée après `deletionPending` et **avant**
+  l'attente profil/réglages (l'écran n'en a pas besoin). 7 tests, priorités verrouillées.
+- `apps/mobile/src/lib/auth-redirect.ts` : `PASSWORD_RESET_REDIRECT_URL` (`wellness://password-reset`) +
+  `parseAuthDeepLink` (**pur**, 9 tests) → `tokens` (avec `isRecovery`) · `error` (lien expiré/consommé) ·
+  `null`. Discriminant = **le chemin du lien** (structurel), `type=recovery` en contrôle secondaire.
+- `apps/mobile/src/app/new-password.tsx` (+ smoke, 5 tests) : écran-gate **de niveau racine** (à côté de
+  `deletion-pending`, **pas** dans `(auth)` dont le segment entrerait en collision avec la branche
+  `route === 'auth'`), `gestureEnabled: false`, seule sortie = « Annuler » (déconnexion).
+- Store : `recoveryPending`, `deepLinkError`, `passwordJustReset`, `completePasswordRecovery`, +3 `clear*`.
+
+**Modifié**
+- `resetPassword` passe `redirectTo` (sinon Supabase retombe sur le Site URL).
+- `useAuthDeepLink` : dispatch par `kind`, no-op par défaut inchangé.
+- `_layout.tsx` : `recoveryPending` au routing + branche de redirection + `Stack.Screen`.
+- `sign-in.tsx` : messages « mot de passe modifié » / « lien expiré », effacés au démontage.
+- `sign-up.tsx` : bascule sur la règle mutualisée, **iso-comportement** (mêmes clés, même ordre).
+- i18n FR+EN : `auth.newPassword.*` + 2 clés `auth.signIn.*` — **parité 1217/1217 vérifiée par script**.
+
+**Corrigé**
+- Liens de reset **expirés / déjà utilisés** : message explicite au lieu d'un **no-op silencieux**.
+
+**Technique / Notes**
+- **Décision d'implémentation corrigée en cours de route, API vérifiée dans `@supabase/auth-js`** :
+  `signOut()` **sans argument utilise le scope `global`** (types + doc de `GoTrueClient`), qui révoque les
+  refresh tokens de *tous* les appareils **et** efface la session locale. Un seul appel remplace donc la
+  séquence `{scope:'others'}` puis `signOut()` initialement prévue au plan — pas d'ordre fragile, pas de
+  gestion d'échec non bloquant. Spec + plan mis à jour avant de coder.
+- ⚠️ **Bug préexistant repéré, NON corrigé** (consigné en [TODO.md](TODO.md) §🐞) : le bouton
+  **« Se déconnecter »** des Réglages hérite du même défaut `global` → il déconnecte l'utilisateur **de tous
+  ses appareils**. Inattendu pour une déconnexion ordinaire. Correction = changement de comportement
+  existant → décision produit + recette à part. **Ne pas toucher `completePasswordRecovery`**, où le scope
+  global est au contraire voulu.
+- **Pas de désactivation du bouton hors-ligne** (écart assumé vs CONF-02) : `useStatus().connected`
+  (PowerSync) n'est pas fiable juste après une ouverture par deep link → il bloquerait un utilisateur en
+  ligne. On laisse partir l'appel et on mappe l'échec réseau.
+- **Message de succès porté par le store** (`passwordJustReset`) et non par un paramètre de route : c'est le
+  gate qui redirige après la perte de session, un `router.replace` avec params serait écrasé.
+- **Filet de sécurité** dans `onAuthStateChange` : toute perte de session éteint `recoveryPending` (sinon un
+  drapeau resté levé referait apparaître l'écran à la prochaine connexion).
+- `accessibilityLabel` sur les 2 champs (nécessaire pour les cibler en test — RNTL v14 a retiré
+  `UNSAFE_getAllByType` — et gain a11y avant 9.11/9.12). Les `fireEvent` doivent être **awaités** (patron
+  maison, cf. `edit-exercise-modal-smoke`) sinon les états ne sont pas vidés.
+- ⚠️ **Limite assumée** (spec §2.5) : drapeau **en mémoire**. App tuée sur l'écran de saisie → le lancement
+  suivant entre normalement dans l'app, mot de passe inchangé. Accepté : l'utilisateur a prouvé qu'il
+  possède l'adresse, et un gate persistant risquerait de le **piéger hors de son compte**.
+- 🔧 **Prérequis avant recette** : `wellness://password-reset` à ajouter aux **Redirect URLs** Supabase.
+  Si la recette retombe sur `localhost:3000`, c'est **ce réglage**, pas le code.
+- typecheck + lint verts (0 erreur) ; **829 tests shared + 112 mobile** verts. Roadmap 1.6 : remarque
+  complétée (l'envoi seul ne suffisait pas). **Reste** : prérequis Supabase + recette device (9 critères) +
+  relecture Damien.
+- Commit précédent : `e377c83`.
+
 ### 25/07/2026 — `dev` — IDEAS : salve « benchmark 4 modèles IA » (6 idées + 2 enrichissements)
 
 > **Documentation seule** (`IDEAS.md`), aucun code applicatif. Dépouillement des 4 dumps de `_inbox-ia/`

@@ -421,7 +421,20 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 25/07/2026 (**IDEAS — salve « benchmark 4 modèles IA » ✅ (doc seule)** : dépouillement des
+*Dernière mise à jour : 25/07/2026 (**US CONF-08 Réinitialisation du mot de passe — CODE LIVRÉ ✅ → reste
+prérequis Supabase + recette + Damien** : le lien « mot de passe oublié » menait à une page morte
+`localhost:3000` et aucun écran de saisie n'existait → récupération de compte impossible (prérequis bêta,
+roadmap 1.6). Deep link dédié `wellness://password-reset` + drapeau `recoveryPending` levé **avant**
+`setSession` + nouvel état de routing `password-recovery` (patron du gate `deletion-pending`) → écran-gate
+racine `new-password` → `updateUser` puis `signOut()` (scope **global** par défaut = tous les appareils
+révoqués) → retour connexion avec message. Sans le drapeau, ajouter `redirectTo` aurait **connecté
+l'utilisateur dans l'app sans changer son mot de passe** : c'est le piège qu'a évité le cadrage. Règle de mot
+de passe mutualisée dans `shared` (inscription basculée en iso-comportement). Liens expirés désormais
+signalés (avant : no-op silencieux). 5 tâches TDD, aucune migration, aucun module natif ; typecheck/lint
+verts, **829 shared + 112 mobile**, parité i18n 1217/1217. Branche `fix/reset-mot-de-passe-deeplink`.
+⚠️ Bug préexistant consigné en §🐞 (non corrigé) : le « Se déconnecter » des Réglages hérite du même scope
+global → déconnecte tous les appareils.
+Précédemment : **IDEAS — salve « benchmark 4 modèles IA » ✅ (doc seule)** : dépouillement des
 4 dumps de `_inbox-ia/` (~93 propositions ; dossier **gitignoré, local Florian** — décision 25/07) croisé avec
 l'existant → **6 idées promues** dans [IDEAS.md](IDEAS.md) (détecteur de collisions/séquençage, mode « vie réelle »,
 simulateur What-If, objectif hybride unifié, recos explicables & contestables, défi composite) + **1 note de
@@ -922,8 +935,50 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   + helper pur `parseAuthTokensFromUrl` (testé). Branche `fix/email-confirmation-deeplink`. typecheck/lint verts,
   814 shared + 98 mobile. Config Supabase faite (`wellness://auth-callback` dans les Redirect URLs). Recette :
   clic du lien depuis le téléphone → app rouverte, connecté. Relecture Damien non requise.
-  _Suivi séparé : même traitement pour le reset de mot de passe (redirige encore vers Site URL + écran « nouveau
-  mot de passe » à prévoir) ; + config **SMTP custom** Supabase (service e-mail intégré rate-limité) = prérequis bêta._
+  _Suivi séparé : ~~même traitement pour le reset de mot de passe~~ → **traité par US CONF-08** (ci-dessous) ;
+  + config **SMTP custom** Supabase (service e-mail intégré rate-limité) = prérequis bêta._
+
+- [ ] **« Se déconnecter » déconnecte de TOUS les appareils (scope global)** — _repéré le 25/07/2026 en
+  vérifiant l'API pour CONF-08, **pas encore corrigé**._ `supabase.auth.signOut()` sans argument utilise le
+  scope **`global`** (défaut de `@supabase/auth-js`) : il révoque les refresh tokens de **tous** les
+  appareils. Le bouton « Se déconnecter » des Réglages
+  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts) `signOut`) hérite donc de ce comportement —
+  inattendu pour une déconnexion ordinaire (la doc de la lib le signale elle-même comme surprenant et
+  recommande `{ scope: 'local' }`). ⚠️ **Ne pas corriger à l'aveugle** : c'est un **changement de
+  comportement existant** (décision produit + recette dédiée). Pour CONF-08 le scope global est au
+  contraire **voulu** (révoquer les autres appareils après un reset) → **ne pas toucher**
+  `completePasswordRecovery`. Fix envisagé : `{ scope: 'local' }` sur le seul `signOut` des Réglages.
+
+> ## 🧪 RECETTE À FAIRE — US CONF-08 Réinitialisation du mot de passe (deep link + écran) — code livré (25/07/2026)
+>
+> Trou fonctionnel du socle auth (roadmap **1.6**), **prérequis bêta** : le lien « mot de passe oublié »
+> menait à une page morte `localhost:3000` et aucun écran de saisie n'existait → **impossible de récupérer
+> son compte**. Branche `fix/reset-mot-de-passe-deeplink`. **Aucune migration, aucun module natif** (le JS
+> passe par reload Metro ; le deep link se teste sur le dev build existant).
+> Spec : [conf08-reset-mot-de-passe.md](docs/specs/functional/us/conf08-reset-mot-de-passe.md) ·
+> Plan : [plans/conf08-reset-mot-de-passe.md](docs/plans/conf08-reset-mot-de-passe.md) ·
+> Maquette : [design/conf08-reset-mot-de-passe](design/conf08-reset-mot-de-passe/conf08-reset-mot-de-passe.html).
+>
+> - [x] **Spec + plan + maquette** — écrits et **validés par Florian et Damien (25/07/2026) ✅**.
+> - [x] **Code livré** — 5 tâches TDD (`1091381`→`b21d1cf`) : règle de mot de passe mutualisée dans
+>   `shared` (+ bascule inscription en iso-comportement) · état de routing `password-recovery` ·
+>   `parseAuthDeepLink` (récupération / confirmation / erreur) · store + hook (`redirectTo`,
+>   `recoveryPending` levé **avant** `setSession`, `completePasswordRecovery`) · écran-gate racine
+>   `new-password` + branchement + messages de connexion + i18n FR/EN.
+>   typecheck/lint verts ; **829 shared + 112 mobile verts** ; parité i18n 1217/1217.
+> - [ ] 🔧 **PRÉREQUIS FLORIAN (avant recette)** : Supabase → Authentication → URL Configuration →
+>   **Redirect URLs** → ajouter **`wellness://password-reset`**. Sans ça le `redirectTo` est ignoré et on
+>   retombe sur `localhost:3000` (= le bug d'origine, **ce n'est alors pas le code**).
+> - [ ] **Recette device** (9 critères, spec §9) : chemin nominal (lien → écran, **pas** le dashboard →
+>   nouveau mot de passe OK, ancien refusé) · **révocation d'un 2ᵉ appareil** · validations (7 caractères,
+>   non concordance) · Annuler (ancien mot de passe toujours valide) · **lien expiré** (message, pas d'écran)
+>   · app fermée **et** ouverte · hors-ligne · **non-régression confirmation d'inscription** (`auth-callback`)
+>   · **non-régression inscription** (mêmes messages).
+> - [ ] **Relecture Damien** (PR).
+>
+> ⚠️ **Limite assumée** (spec §2.5) : le drapeau vit **en mémoire**. Si l'app est **tuée** sur l'écran de
+> saisie, le lancement suivant entre normalement dans l'app, mot de passe inchangé. Accepté (l'utilisateur
+> a prouvé qu'il possède l'adresse ; un gate persistant risquerait de le piéger hors de son compte).
 
 - [x] **Back-office `/users` : colonne « Piliers » = « — » pour tous les comptes** — **corrigé**
   (`fix/admin-piliers-affichage`, 17/07/2026 ; remontée Florian pendant la recette 8.8a). Le mobile
