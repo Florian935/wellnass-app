@@ -22,6 +22,7 @@ import { deriveTemplateTargetsFromWorkoutSets, type SetType } from '@wellness/sh
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
 import { parseTargetReps } from './workout-repository';
 
@@ -445,6 +446,9 @@ export async function startWorkoutFromTemplate(templateId: string): Promise<stri
   if (existing) {
     return existing.id;
   }
+
+  // Analytics : démarrage effectif d'une nouvelle séance (pas une reprise). Fire-and-forget.
+  void track(ANALYTICS_EVENTS.workoutStarted);
 
   return powerSync.writeTransaction(async (tx) => {
     const exercises = await tx.getAll<{

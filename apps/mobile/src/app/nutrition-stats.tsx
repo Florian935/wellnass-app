@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { averageIntake, percentChange, weightTrend } from '@wellness/shared';
@@ -11,6 +11,7 @@ import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
 import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { WeightGoalCard } from '@/components/WeightGoalCard';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useDailyTotals, useJournalCompletion } from '@/data/repositories/journal-repository';
 import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
@@ -39,6 +40,11 @@ export default function NutritionStatsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
+
+  // Analytics : ouverture de l'écran de stats nutrition (une fois au montage). Fire-and-forget.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'nutrition' });
+  }, []);
 
   const { latest } = useLatestWeight();
   const [weightInput, setWeightInput] = useState('');

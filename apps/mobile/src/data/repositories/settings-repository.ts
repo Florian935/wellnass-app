@@ -28,6 +28,7 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { resolveDeviceLocale } from '@/i18n';
 import { insertWithSyncFields, patch } from './_sql';
 
@@ -224,9 +225,11 @@ export async function togglePillar(pillar: Pillar): Promise<void> {
     ? parseJsonColumn<Pillar[]>(existing.active_pillars, [...PILLARS], isPillarArray)
     : [...PILLARS];
 
-  const next = current.includes(pillar)
-    ? current.filter((p) => p !== pillar)
-    : [...current, pillar];
+  const isActivation = !current.includes(pillar);
+  const next = isActivation ? [...current, pillar] : current.filter((p) => p !== pillar);
+
+  // Analytics : uniquement à l'activation (ajout), pas au retrait. Fire-and-forget.
+  if (isActivation) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
 
   if (existing) {
     await patch('user_settings', existing.id, {

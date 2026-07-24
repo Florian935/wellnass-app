@@ -14,6 +14,8 @@
  *  - `@expo/vector-icons` → Ionicons muet (évite les assets natifs).
  *  - `@/lib/support` → `contactSupport` stubbé : évite de charger `@/i18n` +
  *    modules natifs (expo-mail-composer, expo-application, expo-device) au montage.
+ *  - `@/lib/analytics` → `track` stubbé (émet `help_opened` au montage, US 9.10) : évite
+ *    de charger la chaîne `settings-repository` → `@/i18n` + PowerSync au montage.
  */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
@@ -76,6 +78,15 @@ jest.mock('@expo/vector-icons', () => ({
 
 jest.mock('@/lib/support', () => ({
   contactSupport: jest.fn().mockResolvedValue({ ok: true }),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock @/lib/analytics — track muet (évite settings-repository → @/i18n + PowerSync)
+// ---------------------------------------------------------------------------
+
+jest.mock('@/lib/analytics', () => ({
+  track: jest.fn(),
+  ANALYTICS_EVENTS: { helpOpened: 'help_opened' },
 }));
 
 // ---------------------------------------------------------------------------

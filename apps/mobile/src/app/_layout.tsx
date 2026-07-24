@@ -18,6 +18,7 @@ import { useDeletionStore } from '@/stores/deletion-store';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
+import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
@@ -146,6 +147,9 @@ function RootNavigator() {
   // + le canal Android à l'init, puis (re)planifie/annule selon l'activité du jour
   // et les préférences — au montage, sur changement, et au retour au premier plan.
   useStreakReminderScheduler();
+
+  // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
+  useAppOpenedAnalytics();
 
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {

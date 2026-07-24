@@ -49,6 +49,7 @@ import {
   backfillRunningRecords,
   useRunningRecords,
 } from '@/data/repositories/running-record-repository';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -109,6 +110,11 @@ export default function RunningHistoryScreen() {
   // son `isLoading` pour éviter que la résolution initiale de PowerSync (runs=[]) ne
   // s'affiche comme un faux « aucune course » (0/0/0 + courbe vide + EmptyState).
   const { isLoading } = useRunHistory();
+
+  // Analytics : ouverture de l'écran de stats course (une fois au montage). Fire-and-forget.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'running' });
+  }, []);
 
   return (
     <Screen edges={['top']}>

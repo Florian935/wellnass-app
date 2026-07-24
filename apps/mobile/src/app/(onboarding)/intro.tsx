@@ -1,9 +1,11 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { FormScreen } from '@/components/FormScreen';
 import { completeOnboarding } from '@/data/repositories/profile-repository';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -12,7 +14,13 @@ export default function OnboardingIntro() {
   const { colors } = useTheme();
   const router = useRouter();
 
+  // Entrée dans l'onboarding : émis une seule fois au montage de l'écran d'intro.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.onboardingStarted);
+  }, []);
+
   const skipAll = async () => {
+    void track(ANALYTICS_EVENTS.onboardingSkipped);
     await completeOnboarding();
     router.replace('/(tabs)');
   };

@@ -8,6 +8,7 @@ import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -24,6 +25,12 @@ export default function HomeScreen() {
   const [dragging, setDragging] = useState(false);
 
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
+
+  const toggleEditing = () => {
+    // Analytics : uniquement à l'entrée en mode édition (pas à la sortie). Fire-and-forget.
+    if (!editing) void track(ANALYTICS_EVENTS.dashboardCustomized);
+    setEditing((v) => !v);
+  };
 
   const renderWidget = (id: WidgetId, size: WidgetSize) => (
     <DashboardWidget id={id as HomeWidgetId} size={size} />
@@ -51,7 +58,7 @@ export default function HomeScreen() {
             accessibilityLabel={
               editing ? t('home.customize.done') : t('home.customize.edit')
             }
-            onPress={() => setEditing((v) => !v)}
+            onPress={toggleEditing}
             hitSlop={8}
             style={StyleSheet.flatten([
               styles.persBtn,

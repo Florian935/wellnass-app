@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { FaqItem } from '@/components/FaqItem';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { contactSupport } from '@/lib/support';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -16,6 +17,12 @@ export default function HelpScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  // Analytics : ouverture de l'écran d'aide (une fois au montage). Fire-and-forget.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.helpOpened);
+  }, []);
+
   const raw = t('help.faq.items', { returnObjects: true });
   // Défense : si la clé i18n manque (dev), returnObjects renvoie la chaîne de clé → éviter le crash de .map.
   const faq = (Array.isArray(raw) ? raw : []) as { q: string; a: string }[];

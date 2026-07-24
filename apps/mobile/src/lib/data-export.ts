@@ -12,6 +12,7 @@ import { buildExportEnvelope, exportFileName } from '@wellness/shared';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import type { TFunction } from 'i18next';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { powerSync } from '@/powersync/system';
 
 /**
@@ -72,6 +73,8 @@ export async function exportUserData(
       mimeType: 'application/json',
       dialogTitle: t('account.export.dialogTitle'),
     });
+    // Analytics : export CONF-01 réussi (feuille de partage ouverte). Fire-and-forget.
+    void track(ANALYTICS_EVENTS.dataExported);
     return { ok: true };
   } catch (err) {
     console.warn('[data-export] échec:', err);

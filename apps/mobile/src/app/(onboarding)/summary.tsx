@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { PILLARS } from '@wellness/shared';
 import { completeOnboarding, useProfile } from '@/data/repositories/profile-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -31,6 +32,7 @@ export default function OnboardingSummary() {
   const activePillars = settings?.activePillars ?? [...PILLARS];
 
   const finish = async () => {
+    void track(ANALYTICS_EVENTS.onboardingCompleted);
     await completeOnboarding();
     router.replace('/(tabs)');
   };

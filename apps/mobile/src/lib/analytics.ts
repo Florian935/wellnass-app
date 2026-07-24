@@ -10,6 +10,28 @@ import { insertAnalyticsEvent } from '@/data/repositories/analytics-repository';
 // de santé/perso ni de texte libre). Toute clé absente est écartée par sanitizeProps.
 export const ALLOWED_PROP_KEYS = ['pillar'] as const;
 
+// Catalogue centralisé des noms d'événements (socle + adoption). Source unique pour éviter les
+// fautes de frappe : n'appeler track() qu'avec ANALYTICS_EVENTS.xxx.
+export const ANALYTICS_EVENTS = {
+  appOpened: 'app_opened',
+  onboardingStarted: 'onboarding_started',
+  onboardingCompleted: 'onboarding_completed',
+  onboardingSkipped: 'onboarding_skipped',
+  pillarActivated: 'pillar_activated',
+  workoutStarted: 'workout_started',
+  workoutCompleted: 'workout_completed',
+  runStarted: 'run_started',
+  runCompleted: 'run_completed',
+  foodLogged: 'food_logged',
+  statsViewed: 'stats_viewed',
+  dashboardCustomized: 'dashboard_customized',
+  dataExported: 'data_exported',
+  helpOpened: 'help_opened',
+  bugReported: 'bug_reported',
+} as const;
+
+export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
+
 export type AnalyticsEventRow = {
   id: string;
   user_id: string;
@@ -61,7 +83,10 @@ export function buildEventRow(input: {
  * Capte un événement d'usage. Respecte le consentement (no-op si OFF / pas de session),
  * assainit les propriétés (anti-PII), écrit offline-first (PowerSync). NE JETTE JAMAIS.
  */
-export async function track(eventName: string, props?: Record<string, unknown>): Promise<void> {
+export async function track(
+  eventName: AnalyticsEventName,
+  props?: Record<string, unknown>,
+): Promise<void> {
   try {
     const userId = useAuthStore.getState().session?.user.id;
     if (!userId) return;

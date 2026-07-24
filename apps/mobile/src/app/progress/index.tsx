@@ -18,7 +18,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -38,6 +38,7 @@ import { Segment } from '@/components/Segment';
 import { MuscleVolumeBarChart } from '@/components/charts/MuscleVolumeBarChart';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ExercisePicker } from '@/components/programs/ExercisePicker';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import {
   useExerciseRecords,
   useExerciseProgression,
@@ -85,6 +86,11 @@ export default function ProgressScreen() {
   const [pickedExercise, setPickedExercise] = useState<ExerciseListItem | null>(null);
   const [metric, setMetric] = useState<ProgressionMetric>('max_weight');
   const [period, setPeriod] = useState<ProgressionPeriod>('30d');
+
+  // Analytics : ouverture de l'écran de stats muscu (une fois au montage). Fire-and-forget.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'strength' });
+  }, []);
 
   // Deep-link : pré-sélection de l'exercice passé en param (ex. depuis la fiche exercice).
   // Valeur dérivée plutôt que synchronisée via un effet : un choix explicite dans le picker

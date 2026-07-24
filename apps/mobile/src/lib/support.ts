@@ -5,6 +5,7 @@ import * as MailComposer from 'expo-mail-composer';
 import type { TFunction } from 'i18next';
 
 import { getAppLanguage } from '@/i18n';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 
 /** Adresse de destination du support (boîte dédiée bêta). Migrable vers support@<domaine> plus tard. */
 export const SUPPORT_EMAIL = 'wellnessfit.app.support@gmail.com';
@@ -55,6 +56,10 @@ export type ContactResult = { ok: true } | { fallback: true };
  * n'est disponible → fallback `Alert` affichant l'adresse (l'utilisateur peut la recopier).
  */
 export async function contactSupport(kind: ContactKind, t: TFunction): Promise<ContactResult> {
+  // Analytics : action « Signaler un bug » (dès l'initiation, avant l'ouverture du client mail
+  // ou le fallback). Fire-and-forget.
+  if (kind === 'bug') void track(ANALYTICS_EVENTS.bugReported);
+
   // Fallback commun : aucune app mail (isAvailableAsync=false) OU rejet imprévu (isAvailableAsync/
   // composeAsync). contactSupport ne rejette JAMAIS → l'appelant `void contactSupport(...)` est sûr.
   const showFallback = (): ContactResult => {
