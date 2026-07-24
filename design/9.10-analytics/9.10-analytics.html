@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US 9.10 — Analytics produit first-party</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1200px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1200px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:330px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:34px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:520px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:492px;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;}
+  .row{display:flex;align-items:center;gap:12px;}
+  .rowlab{font-weight:700;font-size:14px;} .rowdesc{font-size:12px;color:var(--muted);margin-top:3px;}
+  .grow{flex:1;}
+  .toggle{width:46px;height:28px;border-radius:999px;background:var(--accent);position:relative;flex-shrink:0;}
+  .toggle::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;}
+  .toggle.off{background:var(--border);} .toggle.off::after{left:3px;right:auto;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .legal{background:var(--surface-alt);border-radius:12px;padding:13px;font-size:12.5px;line-height:1.6;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:200px;}
+  @media(max-width:700px){.arrow{display:none;}}
+  .diagram{max-width:1200px;margin:34px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  .diagram h3{margin:0 0 16px;font-size:15px;}
+  .pipe{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .node{flex:1;min-width:150px;background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;}
+  .node b{display:block;margin-bottom:4px;font-size:12px;}
+  .node.gate{border-color:var(--warn);background:#fbf1dd;}
+  .node.sink{border-color:var(--strength);}
+  .to{align-self:center;font-weight:800;color:var(--muted);font-size:20px;}
+  .code{font-family:var(--mono);font-size:11px;background:#2b2018;color:#f3e6d2;border-radius:8px;padding:8px 10px;margin-top:8px;white-space:pre;overflow:auto;}
+  .k{color:#e0a86b;} .s{color:#a8c98a;}
+  .pill{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  .note{max-width:1200px;margin:26px auto 0;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US 9.10 · V0.8 · Conformité & intégrations · Avant bêta</p>
+    <h1 class="title">Analytics produit first-party</h1>
+    <p class="sub">Capter des <b>événements d'usage anonymisés</b> dans <b>notre propre base Supabase</b>
+      (first-party), offline-first via PowerSync, pour mesurer l'usage des testeurs. Consentement <b>opt-out</b>,
+      <b>aucune donnée de santé/PII</b>, purge à la suppression de compte. Zéro service tiers, zéro nouvelle infra.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Réglage opt-out -->
+    <div class="col">
+      <div class="step">1 · Réglage (opt-out)</div>
+      <div class="caption">Réglages → « Statistiques d'usage » — activé par défaut, coupable</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Réglages</span></div>
+        <div class="sect">Aide & support</div>
+        <div class="card"><span class="rowlab">Consulter l'aide ›</span></div>
+        <div class="sect">Statistiques d'usage</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow">
+              <div class="rowlab">Autoriser les statistiques d'usage</div>
+              <div class="rowdesc">Nous aide à améliorer l'app. Données anonymes, jamais tes données de santé.</div>
+            </div>
+            <div class="toggle" title="ON par défaut"></div>
+          </div>
+        </div>
+        <div class="rowdesc">Un tap suffit à désactiver → plus aucun événement capté.</div>
+        <div class="spacer"></div>
+        <div class="card" style="border-color:var(--danger);"><span class="rowlab" style="color:var(--danger)">⚠️ Zone de danger</span></div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Mention confidentialité -->
+    <div class="col">
+      <div class="step">2 · Politique de confidentialité</div>
+      <div class="caption">Transparence : une mention dédiée</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Confidentialité</span></div>
+        <div class="legal">… Tes données de santé et d'entraînement restent privées et ne quittent jamais l'app à des fins publicitaires. …</div>
+        <div class="legal" style="border:1px solid var(--accent);">
+          <b>Statistiques d'usage.</b> Nous mesurons l'usage de l'app via des <b>événements anonymisés</b>
+          (ex. « séance terminée »), stockés dans notre propre base. <b>Aucune donnée de santé</b> n'y figure.
+          Désactivable à tout moment dans Réglages → Statistiques d'usage. Supprimé avec ton compte.
+        </div>
+        <div class="spacer"></div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Désactivé -->
+    <div class="col">
+      <div class="step">3 · Si désactivé</div>
+      <div class="caption">Opt-out respecté : <b>no-op</b> total</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Réglages</span></div>
+        <div class="sect">Statistiques d'usage</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow"><div class="rowlab">Autoriser les statistiques d'usage</div></div>
+            <div class="toggle off" title="OFF"></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="card" style="text-align:center;background:var(--surface-alt);">
+          <div style="font-size:30px;">🚫</div>
+          <div class="rowdesc"><code>track()</code> renvoie immédiatement.<br/>Aucune écriture, aucune ligne créée.</div>
+        </div>
+        <div class="spacer"></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="diagram">
+    <h3>Flux d'un événement (offline-first)</h3>
+    <div class="pipe">
+      <div class="node"><b>Action utilisateur</b>Ex. terminer une séance → <code style="font-family:var(--mono)">track('workout_completed', { pillar: 'strength' })</code></div>
+      <div class="to">→</div>
+      <div class="node gate"><b>Garde-fous</b>• consentement ON ? sinon no-op<br/>• session présente ?<br/>• <b>allowlist</b> : ne garde que <span class="pill">pillar</span>, jette le reste (anti-PII)</div>
+      <div class="to">→</div>
+      <div class="node"><b>Écriture locale</b>Insert append-only dans la base SQLite (PowerSync). Marche <b>hors-ligne</b>.</div>
+      <div class="to">→</div>
+      <div class="node sink"><b>Sync → Supabase</b>Table <code style="font-family:var(--mono)">analytics_events</code> (RLS par user)
+        <div class="code"><span class="k">event_name</span>: <span class="s">"workout_completed"</span>
+<span class="k">properties</span>: <span class="s">"{\"pillar\":\"strength\"}"</span>
+<span class="k">app_version</span>: <span class="s">"1.0.0"</span>
+<span class="k">platform</span>: <span class="s">"android"</span>
+<span class="k">occurred_at</span>: <span class="s">"…Z"</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <p class="sub"><b>Notes</b> — Identifiant = <code>user_id</code> (pseudonyme) → <b>purge en cascade</b> à la
+      suppression de compte (CONF-02). Événements du <b>socle</b> (session, onboarding, séances, course, repas) +
+      <b>adoption</b> (stats, dashboard, export, aide, bug). <b>Hors périmètre</b> : tableaux de bord/funnels (via
+      un outil BI branché sur Supabase plus tard), crash reporting, purge locale. ⚠️ La <b>sync rule PowerSync</b>
+      (bucket <code>analytics_events</code>) est une étape de déploiement sur l'instance.</p>
+  </div>
+
+</body>
+</html>

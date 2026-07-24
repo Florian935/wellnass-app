@@ -23,9 +23,12 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée contre le code ;
 >   clarifs intégrées : allowlist figée `pillar`, insert dédié append-only, accesseur consentement hors React),
 >   **validée Florian (24/07)**.
-> - [ ] **Plan d'implémentation** — à écrire (migration → PowerSync schéma/sync rules → service → instrumentation).
-> - [ ] **Maquette** — `design/9.10-analytics/` : réglage « Statistiques d'usage » + mention confidentialité.
-> - [ ] **Validation** des 3 livrables — Florian/Damien (pas de code avant validation).
+> - [x] **Plan d'implémentation** — écrit (6 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié
+>   contre le code réel). [plan](docs/plans/9.10-analytics-produit.md).
+> - [x] **Maquette** — [design/9.10-analytics/9.10-analytics.html](design/9.10-analytics/9.10-analytics.html) :
+>   réglage opt-out + mention confidentialité + flux d'événement (garde-fous → sync).
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
+> - [~] **Code (subagent-driven)** — Tasks 1→5 en cours ; Task 6 = déploiement cloud (db:push + db:types + sync rules) sous contrôle.
 > - [ ] **Déploiement** : `db:push` + `db:types` + **sync rules PowerSync** (étape instance) avant recette.
 
 > ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
