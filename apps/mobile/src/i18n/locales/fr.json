@@ -888,6 +888,23 @@
       "title": "Vérifie ton email",
       "message": "On a envoyé un lien de vérification à {{email}}. Ouvre-le, puis connecte-toi.",
       "cta": "Aller à la connexion"
+    },
+    "google": {
+      "button": "Continuer avec Google",
+      "orSeparator": "ou",
+      "consent": {
+        "prefix": "En continuant avec Google, tu acceptes les ",
+        "terms": "conditions d'utilisation",
+        "middle": " et la ",
+        "privacy": "politique de confidentialité",
+        "suffix": " et confirmes avoir 16 ans ou plus."
+      },
+      "errors": {
+        "playServices": "Google Play Services indisponible ou à mettre à jour.",
+        "offline": "Connexion internet requise pour se connecter avec Google.",
+        "linkUnverified": "Un compte existe déjà avec cet e-mail non vérifié. Vérifie ton e-mail avant de lier Google.",
+        "generic": "La connexion avec Google a échoué. Réessaie."
+      }
     }
   },
   "legal": {

@@ -6,6 +6,7 @@ import { MIN_SIGNUP_AGE, isAtLeast, toDate } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Checkbox } from '@/components/Checkbox';
 import { FormScreen } from '@/components/FormScreen';
+import { GoogleButton } from '@/components/GoogleButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
 import { useAuthStore } from '@/stores/auth-store';
@@ -19,6 +20,7 @@ export default function SignUpScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const signUp = useAuthStore((s) => s.signUp);
+  const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +31,17 @@ export default function SignUpScreen() {
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const onGooglePress = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    const res = await signInWithGoogle();
+    setGoogleLoading(false);
+    // Contrat Task 3 : res.error est une clé i18n (ou null si annulation/succès).
+    if (res.error) setError(t(res.error));
+    // Succès → onAuthStateChange redirige (comme l'e-mail).
+  };
 
   const onSubmit = async () => {
     setError(null);
@@ -155,6 +168,16 @@ export default function SignUpScreen() {
 
       <Button label={t('auth.signUp.cta')} onPress={onSubmit} loading={loading} />
 
+      <View style={styles.separator}>
+        <View style={[styles.separatorLine, { backgroundColor: colors.border }]} />
+        <Text style={[styles.separatorText, { color: colors.textMuted }]}>
+          {t('auth.google.orSeparator')}
+        </Text>
+        <View style={[styles.separatorLine, { backgroundColor: colors.border }]} />
+      </View>
+
+      <GoogleButton loading={googleLoading} onPress={onGooglePress} />
+
       <View style={styles.footer}>
         <Text style={[styles.footerText, { color: colors.textMuted }]}>
           {t('auth.signUp.hasAccount')}{' '}
@@ -175,6 +198,9 @@ const styles = StyleSheet.create({
   dateField: { flex: 1 },
   yearField: { flex: 1.4 },
   consentText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  separator: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  separatorLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  separatorText: { fontFamily: fontFamily.bodyMedium, fontSize: 13 },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 'auto' },
   footerText: { fontFamily: fontFamily.body, fontSize: 14 },
 });

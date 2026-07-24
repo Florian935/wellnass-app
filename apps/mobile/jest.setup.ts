@@ -156,6 +156,26 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Mock @react-native-google-signin/google-signin — module natif (getEnforcing
+// échoue en env jest). Importé transitivement dès qu'un test tire `auth-store`
+// (US 1.2 OAuth Google). Un test peut surcharger ce mock localement au besoin.
+// ---------------------------------------------------------------------------
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn().mockResolvedValue(true),
+    signIn: jest.fn().mockResolvedValue({ type: 'cancelled', data: null }),
+    signOut: jest.fn().mockResolvedValue(undefined),
+  },
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
+  isErrorWithCode: jest.fn(() => false),
+}));
+
+// ---------------------------------------------------------------------------
 // Mock @supabase/supabase-js — client réseau non nécessaire en tests unitaires
 // ---------------------------------------------------------------------------
 jest.mock('@supabase/supabase-js', () => ({

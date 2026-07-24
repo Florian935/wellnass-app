@@ -888,6 +888,23 @@
       "title": "Verify your email",
       "message": "We sent a verification link to {{email}}. Open it, then sign in.",
       "cta": "Go to sign in"
+    },
+    "google": {
+      "button": "Continue with Google",
+      "orSeparator": "or",
+      "consent": {
+        "prefix": "By continuing with Google, you accept the ",
+        "terms": "terms of service",
+        "middle": " and the ",
+        "privacy": "privacy policy",
+        "suffix": " and confirm you are 16 or older."
+      },
+      "errors": {
+        "playServices": "Google Play Services is unavailable or needs updating.",
+        "offline": "An internet connection is required to sign in with Google.",
+        "linkUnverified": "An account already exists with this unverified email. Verify your email before linking Google.",
+        "generic": "Google sign-in failed. Please try again."
+      }
     }
   },
   "legal": {
