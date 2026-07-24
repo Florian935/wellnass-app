@@ -58,6 +58,7 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260723100835_muscf13_workout_display_level`    | 23/07/2026 | CLI (`npm run db:push`) — MUSC-F13 (profiles `select *` → pas de redéploiement sync rules) |
 |   [x]   | `20260723131921_conf02_account_deletion`          | 23/07/2026 | CLI (`npm run db:push`) — CONF-02 (table + RPC + `purge_expired_accounts` + **pg_cron** job `purge-deleted-accounts` + fix FK `user_bans.acted_by`→set null ; hors PowerSync) |
 |   [x]   | `20260724112210_analytics_events`                 | 24/07/2026 | CLI (`npm run db:push`) — US 9.10 (table `analytics_events` append-only + RLS insert/select own + colonne `user_settings.analytics_enabled` opt-out ; FK cascade). ⚠️ **sync rule PowerSync `analytics_events` (bucket par `user_id`) à ajouter sur l'instance** avant recette |
+|   [x]   | `20260724123616_analytics_events_publication`     | 24/07/2026 | CLI (`npm run db:push`) — US 9.10 **correctif** : `alter publication powersync add table public.analytics_events` (oublié dans `20260724112210` ; sans lui le déploiement des sync rules échoue « table not part of publication »). Pattern standard des tables synchronisées |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
