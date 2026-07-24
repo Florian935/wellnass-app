@@ -1,5 +1,11 @@
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 import type { Session } from '@supabase/supabase-js';
 import { create } from 'zustand';
+import { mapGoogleSignInError } from '@/lib/google-auth-errors';
 import { supabase } from '@/lib/supabase';
 import { powerSync } from '@/powersync/system';
 import {
@@ -17,6 +23,18 @@ type AuthState = {
   initializing: boolean;
   signUp: (email: string, password: string) => Promise<SignUpResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  /**
+   * Connexion via Google (OAuth natif → idToken → Supabase `signInWithIdToken`).
+   *
+   * ⚠️ CONTRAT D'ERREUR SPÉCIFIQUE — diffère de `signIn`/`signUp` : en cas
+   * d'échec, `error` contient une **clé i18n maîtrisée** (`auth.google.errors.*`,
+   * via `mapGoogleSignInError`), et **non** le `message` brut de Supabase.
+   * L'écran appelant doit donc afficher `t(res.error)` (et non `res.error` tel quel).
+   *
+   * L'annulation par l'utilisateur (fenêtre fermée, `SIGN_IN_CANCELLED`, ou
+   * idToken absent) est un **no-op** : renvoie `{ error: null }` sans rien afficher.
+   */
+  signInWithGoogle: () => Promise<AuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<AuthResult>;
   /** Vérifie le mot de passe de l'utilisateur courant (ré-auth avant action sensible). */
@@ -41,6 +59,38 @@ export const useAuthStore = create<AuthState>(() => ({
   signIn: async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error?.message ?? null };
+  },
+  signInWithGoogle: async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      // v16.1.2 : signIn() renvoie { type: 'success', data: User } | { type: 'cancelled', data: null }.
+      // Vraie annulation utilisateur (fenêtre fermée) → no-op silencieux.
+      if (response.type !== 'success') return { error: null };
+      const idToken = response.data.idToken;
+      if (!idToken) {
+        // Succès mais pas de token = anomalie (webClientId manquant/mauvais), PAS une
+        // annulation → message d'erreur (et non un bouton mort indébogable).
+        console.warn('[auth] Google sign-in réussi sans idToken (webClientId manquant ?)'); // traçabilité (spec §2.5)
+        return { error: mapGoogleSignInError({}) }; // → clé générique auth.google.errors.generic
+      }
+      const { error } = await supabase.auth.signInWithIdToken({ provider: 'google', token: idToken });
+      if (error) {
+        console.warn('[auth] signInWithIdToken échec:', error.message); // traçabilité (spec §2.5)
+        return { error: mapGoogleSignInError(error) };
+      }
+      return { error: null };
+    } catch (err) {
+      // Annulation utilisateur (fermeture) ou double-tap (connexion déjà en cours) → no-op, pas de message.
+      if (
+        isErrorWithCode(err) &&
+        (err.code === statusCodes.SIGN_IN_CANCELLED || err.code === statusCodes.IN_PROGRESS)
+      ) {
+        return { error: null };
+      }
+      console.warn('[auth] Google Sign-In échec:', err); // traçabilité (spec §2.5)
+      return { error: mapGoogleSignInError(err) };
+    }
   },
   signOut: async () => {
     await supabase.auth.signOut();
