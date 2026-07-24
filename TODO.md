@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## ✅ CODE LIVRÉ — US 1.2 Connexion via Google (OAuth, V0.8) — reste **prérequis Google/Supabase + dev build + recette** (24/07/2026)
+> ## ✅ CLÔTURÉE — US 1.2 Connexion via Google (OAuth, V0.8) — recette validée 100 % Florian (24/07/2026)
 >
 > Roadmap [1.2](docs/roadmap/roadmap.md) (V0.8, conservé — arbitrage E). Sign-In **natif** Google
 > (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken`. Liaison auto par e-mail
@@ -30,9 +30,9 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   Correctifs : patterns d'erreur resserrés (anti faux positifs), anomalie « succès sans idToken » → message,
 >   `IN_PROGRESS` no-op, accessibilité bouton en chargement. Revue finale code-reviewer : **PRÊT À MERGER**.
 >   typecheck/lint verts ; **814 shared + 94 mobile verts** (+ mock jest global du module natif). Roadmap 1.2 → ✅.
-> - [ ] **Prérequis Florian (déploiement)** : Client IDs Google (Cloud, Web+Android/SHA‑1) + provider Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + **dev build EAS** (guide fourni). Placeholder en attendant.
-> - [ ] **Recette device** (Florian) : nouveau compte → onboarding ; reconnexion ; liaison e‑mail vérifié ; consentement ; annulation → no‑op ; offline ; i18n. **À valider visuellement** : double mention de consentement sur l'écran d'inscription (case e‑mail + mention Google).
-> - [ ] **Finalisation branche** `feature/1.2-oauth-google` (merge `dev`) — après recette.
+> - [x] **Prérequis Florian (déploiement)** : Client ID Web + client OAuth Android (Google Cloud), provider Google Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (`.env` + EAS env). Fix `runtimeVersion` fixe pour EAS bare. Quota EAS épuisé → **build local** via keystore release unique dédié (SHA‑1 enregistrée Google Cloud ; réglage `android/` local jetable, gitignoré).
+> - [x] **Recette device — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** : connexion Google OK (nouveau compte + **liaison auto** sur e‑mail vérifié `florian.martin63000@gmail.com` = même compte, données retrouvées, aucun doublon). Double mention de consentement sur l'inscription **acceptée**. **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
 
 > ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
 >
@@ -421,14 +421,14 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 24/07/2026 (**US 1.2 Connexion via Google — CODE LIVRÉ ✅ → reste prérequis Google/Supabase +
-dev build + recette** : Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken`, branché
-sur `auth-store` (session via `onAuthStateChange`). Helper pur `mapGoogleSignInError` (clés i18n) ; action
-`signInWithGoogle` (annulation/`IN_PROGRESS` no-op, anomalie config → message) ; `GoogleButton` (logo SVG, a11y,
-mention consentement par action CGU/confidentialité/16+) sur connexion + inscription ; i18n FR/EN parité ; mock jest
-global du module natif. 4 tâches TDD subagent-driven + correctifs, revues par tâche + revue finale PRÊT À MERGER.
-typecheck/lint verts, 814 shared + 94 mobile. Roadmap 1.2 → ✅. ⚠️ Reste : prérequis Florian (Client IDs Google,
-provider Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`) + dev build + recette. Branche `feature/1.2-oauth-google`.
+*Dernière mise à jour : 24/07/2026 (**US 1.2 Connexion via Google — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken`, branché sur `auth-store` (session
+via `onAuthStateChange`). Helper pur `mapGoogleSignInError` (clés i18n) ; action `signInWithGoogle`
+(annulation/`IN_PROGRESS` no-op, anomalie config → message) ; `GoogleButton` (logo SVG, a11y, mention consentement
+par action CGU/confidentialité/16+) sur connexion + inscription ; i18n FR/EN parité ; mock jest global. 4 tâches TDD
+subagent-driven + correctifs, revues par tâche + revue finale PRÊT À MERGER. typecheck/lint verts, 814 shared + 94
+mobile. Recette device validée : connexion Google OK + **liaison auto** sur e‑mail vérifié (même compte, pas de
+doublon). Roadmap 1.2 → ✅. Branche `feature/1.2-oauth-google`.
 Précédemment : **US 9.10 Analytics produit — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
 événements d'usage anonymisés first-party (table `analytics_events` append-only +
 RLS + FK cascade), consentement opt-out (`user_settings.analytics_enabled` défaut ON) + réglage « Statistiques

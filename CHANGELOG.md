@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**.
+
+**Technique / Notes**
+- Recette sur APK local (build gradle signé avec un **keystore release unique** dédié, SHA‑1 enregistrée dans
+  un client OAuth Android Google Cloud — le quota EAS gratuit étant épuisé ; réglage `android/` local jetable,
+  gitignoré). Fix `runtimeVersion` fixe (`1.0.0`) pour EAS en workflow bare (commit `db56728`).
+- **Liaison de compte confirmée** : connexion Google sur un e‑mail **déjà existant et vérifié**
+  (`florian.martin63000@gmail.com`) → Supabase rattache l'identité Google au **même** utilisateur (2 identités
+  `email` + `google` sous un seul `user_id`), **aucun doublon**, données retrouvées. Comportement voulu (option A).
+- Double mention de consentement sur l'écran d'inscription (case e‑mail + mention Google) **acceptée** en l'état.
+- **V0.8** : 1.18 + 1.19 + 1.22 + 9.10 + **1.2** livrés & clôturés ; reste **9.9 (Health Connect)** + accessibilité (9.11/9.12).
+
 ### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : code livré (connexion via Google)
 
 > Implémentation subagent-driven (4 tâches TDD `359670b`→`eeb0e91` + correctifs post-revue), chaque tâche revue
