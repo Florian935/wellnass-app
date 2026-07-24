@@ -10,7 +10,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
-> ## 🚧 EN COURS — US 9.10 Analytics produit first-party (V0.8, avant bêta) — spec validée Florian (24/07/2026)
+> ## ✅ CODE LIVRÉ + MIGRATION DÉPLOYÉE — US 9.10 Analytics produit first-party (V0.8) — reste **sync rule PowerSync + recette** (24/07/2026)
 >
 > Roadmap [9.10](docs/roadmap/roadmap.md) (V0.8). Événements d'usage **anonymisés** dans **notre** base Supabase
 > (first-party), offline-first via PowerSync. Table `analytics_events` (append-only) + RLS + FK cascade
@@ -28,8 +28,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 > - [x] **Maquette** — [design/9.10-analytics/9.10-analytics.html](design/9.10-analytics/9.10-analytics.html) :
 >   réglage opt-out + mention confidentialité + flux d'événement (garde-fous → sync).
 > - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
-> - [~] **Code (subagent-driven)** — Tasks 1→5 en cours ; Task 6 = déploiement cloud (db:push + db:types + sync rules) sous contrôle.
-> - [ ] **Déploiement** : `db:push` + `db:types` + **sync rules PowerSync** (étape instance) avant recette.
+> - [x] **Code livré (subagent-driven)** — 5 tâches TDD + correctifs, chacune revue conformité + qualité :
+>   Task 1 migration SQL (`3214285`) → Task 2 schéma PowerSync + type + mapping (`a3f0089`) → Task 3 service
+>   `track()` + helpers purs (allowlist anti-PII) + insert append-only (`05454c8`) → Task 4 réglage opt-out +
+>   mention confidentialité + i18n (`44a5aa0`) → Task 5 instrumentation 15 points + constante `ANALYTICS_EVENTS`
+>   (`f321a1f`, + fix throttle `app_opened` après login & garde idempotence `finishWorkout`). Revue finale
+>   code-reviewer : **PRÊT À MERGER** (0 bloquant). typecheck/lint verts ; **814 shared + 83 mobile verts**. Roadmap 9.10 → ✅.
+> - [x] **Déploiement cloud** — `db:push:dry` (seule 20260724112210) → `db:push` (appliqué, listé en remote) →
+>   `db:types` (analytics_events + analytics_enabled présents) → `MIGRATIONS.md` coché (`d973807`).
+> - [ ] **Sync rule PowerSync** (Florian) : ajouter le bucket `analytics_events` (par `user_id`) sur l'instance — **sinon les événements restent locaux**.
+> - [ ] **Recette** (Florian) : événement écrit (Supabase), opt-out respecté, anti-PII, offline, purge compte, i18n. JS pur (pas de nouveau build : `expo-application` déjà dans le dev build 1.22) → reload Metro après la sync rule.
+> - [ ] **Dette légère (suivi)** : rompre la dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne au runtime) + ajouter un test du gating de `track()` (consentement OFF → no-op).
 
 > ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
 >
@@ -387,7 +396,15 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 24/07/2026 (**US 1.22 Aide & support — CODE LIVRÉ ✅ → reste dev build + recette + Damien** :
+*Dernière mise à jour : 24/07/2026 (**US 9.10 Analytics produit — CODE LIVRÉ + MIGRATION DÉPLOYÉE ✅ → reste sync
+rule PowerSync + recette** : événements d'usage anonymisés first-party (table `analytics_events` append-only +
+RLS + FK cascade), consentement opt-out (`user_settings.analytics_enabled` défaut ON) + réglage « Statistiques
+d'usage » + mention confidentialité, service `track()` (gating + allowlist anti-PII `pillar` + non bloquant,
+offline-first PowerSync), constante `ANALYTICS_EVENTS`, instrumentation 15 points (socle + adoption). 5 tâches
+TDD subagent-driven + correctifs, revues conformité + qualité par tâche + revue finale PRÊT À MERGER. Migration
+poussée sur le cloud (`db:push` + `db:types`, registre coché). typecheck/lint verts, 814 shared + 83 mobile.
+Roadmap 9.10 → ✅. ⚠️ Reste : sync rule PowerSync (instance) + recette. Branche `feature/9.10-analytics`.
+Précédemment : **US 1.22 Aide & support — CODE LIVRÉ ✅ → reste dev build + recette + Damien** :
 ouverture du chantier V0.8 (conformité & intégrations) après CONF-01/02. Section « Aide & support » dans les
 Réglages → écran `/help` : FAQ statique embarquée bilingue (accordéon mono-ouverture, 7 Q/R) + « Nous contacter »
 (mail natif corps vide) + « Signaler un bug » (mail natif + bloc technique minimal effaçable). Canal = client mail

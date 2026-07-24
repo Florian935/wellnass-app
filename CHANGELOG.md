@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : code livré + migration déployée (analytics produit)
+
+> Implémentation subagent-driven (5 tâches TDD `3214285`→`f321a1f` + correctifs post-revue), chaque tâche revue
+> conformité-spec **puis** qualité, + revue finale **PRÊT À MERGER** (0 bloquant). typecheck + lint verts ;
+> **814 tests shared + 83 mobile verts**. Migration poussée sur le cloud (`db:push` + `db:types`, `d973807`).
+> Roadmap 9.10 → ✅. ⚠️ **Reste** : sync rule PowerSync (instance) + recette.
+
+**Ajouté**
+- Migration `supabase/migrations/20260724112210_analytics_events.sql` : table `analytics_events` (append-only,
+  RLS insert/select own, FK `auth.users` cascade) + colonne `user_settings.analytics_enabled` (opt-out, défaut `true`).
+- `apps/mobile/src/lib/analytics.ts` (+ test) : `sanitizeProps`/`buildEventRow` (**purs, testés**), `track()`
+  (gating consentement/session + **allowlist anti-PII** `pillar` + non bloquant, offline-first), constante
+  `ANALYTICS_EVENTS` + type `AnalyticsEventName`.
+- `apps/mobile/src/data/repositories/analytics-repository.ts` : `insertAnalyticsEvent` (insert **append-only**
+  dédié, pas de `insertWithSyncFields`).
+- Schéma PowerSync `analytics_events` + colonne `analytics_enabled` (`schema.ts`) ; type partagé
+  `UserSettings.analyticsEnabled` + mapping repository (helper `decodeAnalyticsEnabled`, accesseur `getAnalyticsEnabled`).
+- Réglage **« Statistiques d'usage »** (opt-out) dans les Réglages + mention politique de confidentialité ; i18n FR/EN.
+- Instrumentation **15 points** (socle : `app_opened` throttlé, onboarding, `pillar_activated`, workout/run
+  started/completed, `food_logged` ; adoption : `stats_viewed`, `dashboard_customized`, `data_exported`,
+  `help_opened`, `bug_reported`).
+- Correctifs post-revue : throttle `app_opened` gaté sur session (1ᵉʳ open post-login capté) ; garde
+  d'idempotence `finishWorkout` (miroir `finishRun`).
+
+**Technique / Notes**
+- Déploiement cloud : `db:push:dry` (seule `20260724112210`) → `db:push` (migration listée en `remote`) →
+  `db:types` (`analytics_events` + `analytics_enabled` présents) → `MIGRATIONS.md` coché.
+- `properties` en **text** (JSON) et non jsonb (gotcha PowerSync text→jsonb) ; purge analytics à la suppression
+  de compte par cascade FK. **Hors périmètre** : dashboards/funnels (outil BI ultérieur), crash reporting, purge locale.
+- **Reste** : **sync rule PowerSync** `analytics_events` (bucket par `user_id`, instance) + **recette** (JS pur,
+  reload Metro après la sync rule — `expo-application` déjà dans le dev build 1.22). Dette légère tracée :
+  dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) + test du gating de `track()`.
+
 ### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : spec analytics produit first-party (cadrage + validation)
 
 > Ouverture de l'US **9.10** (analytics, V0.8, avant bêta). Spec écrite, revue subagent **APPROUVÉE**
