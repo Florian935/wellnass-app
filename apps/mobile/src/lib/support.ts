@@ -1,4 +1,10 @@
+import { Alert, Platform } from 'react-native';
+import * as Application from 'expo-application';
+import * as Device from 'expo-device';
+import * as MailComposer from 'expo-mail-composer';
 import type { TFunction } from 'i18next';
+
+import { getAppLanguage } from '@/i18n';
 
 /** Adresse de destination du support. PLACEHOLDER — à remplacer par la vraie boîte avant le build. */
 export const SUPPORT_EMAIL = 'support@example.com';
@@ -27,4 +33,45 @@ export function formatBugReportBody(meta: SupportMeta, t: TFunction): string {
     `${t('help.bug.deviceLabel')} : ${meta.deviceModel}`,
     `${t('help.bug.languageLabel')} : ${meta.language}`,
   ].join('\n');
+}
+
+/** Collecte les métadonnées techniques (non identifiantes). Jamais bloquante : valeurs manquantes → « — ». */
+export function collectSupportMeta(): SupportMeta {
+  return {
+    appVersion: Application.nativeApplicationVersion ?? '—',
+    buildVersion: Application.nativeBuildVersion ?? '—',
+    osName: Device.osName ?? Platform.OS,
+    osVersion: Device.osVersion ?? String(Platform.Version),
+    deviceModel: Device.modelName ?? '—',
+    language: getAppLanguage(),
+  };
+}
+
+export type ContactKind = 'contact' | 'bug';
+export type ContactResult = { ok: true } | { fallback: true };
+
+/**
+ * Ouvre le client mail natif pré-rempli (contact ou signalement de bug). Si aucun client mail
+ * n'est disponible → fallback `Alert` affichant l'adresse (l'utilisateur peut la recopier).
+ */
+export async function contactSupport(kind: ContactKind, t: TFunction): Promise<ContactResult> {
+  const isBug = kind === 'bug';
+  const subject = t(isBug ? 'help.bug.subject' : 'help.contact.subject');
+
+  if (!(await MailComposer.isAvailableAsync())) {
+    Alert.alert(t('help.mailUnavailableTitle'), t('help.mailUnavailableBody', { email: SUPPORT_EMAIL }));
+    return { fallback: true };
+  }
+
+  // Métadonnées collectées uniquement sur le chemin nominal (pas de lecture native inutile en fallback).
+  const body = isBug ? formatBugReportBody(collectSupportMeta(), t) : undefined;
+  try {
+    await MailComposer.composeAsync({ recipients: [SUPPORT_EMAIL], subject, body });
+    return { ok: true };
+  } catch {
+    // composeAsync a rejeté (client mail absent/bloqué au dernier moment) : même fallback,
+    // contactSupport ne rejette jamais.
+    Alert.alert(t('help.mailUnavailableTitle'), t('help.mailUnavailableBody', { email: SUPPORT_EMAIL }));
+    return { fallback: true };
+  }
 }
