@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/ux01-infobulle-graphiques` — US UX-01 : infobulle de valeur au tap (code livré)
+
+> **Première idée promue depuis [IDEAS.md](IDEAS.md)** (16/07, remontée par Florian en recette MUSC-04).
+> On lisait les courbes « à la louche » sur l'axe — impossible dès que les gridlines sont espacées ou que
+> l'axe est formaté. Un tap donne désormais **date complète + valeur exacte**. Spec + plan + maquette
+> validés Florian. 6 tasks TDD. **Aucune migration, aucun module natif, aucune dépendance** → reload Metro.
+> **Levier** : les 6 surfaces graphiques passent par 2 composants mutualisés → un seul chantier les couvre.
+
+**Ajouté**
+- `packages/shared/src/chart-tooltip.ts` (+ 12 tests) : `formatTooltipValue` (**pur**) — formateur de
+  l'appelant prioritaire, sinon arrondi 1 décimale sans zéro inutile, séparateur selon la locale, pas de
+  séparateur de milliers (cohérence avec les libellés d'axe), unité omise si absente. Garde-fou : valeur
+  non finie → chaîne vide (jamais « NaN »).
+- `packages/shared/src/date.ts` : **`formatDayFull`** (+ 5 tests) — JJ/MM/AAAA acceptant **les deux formes**
+  qui circulent : clé de jour `YYYY-MM-DD` lue **littéralement** (⚠️ `new Date('2026-07-12')` parse à
+  minuit **UTC** puis `getDate()` rend en local → **la veille** dans un fuseau négatif ; piège évité et
+  testé) et timestamp ISO rendu avec les getters locaux.
+- `apps/mobile/src/components/charts/ChartTooltip.tsx` (+ 4 tests) : infobulle **partagée** par les deux
+  graphiques, présentationnelle pure, largeur bornée, `accessibilityLabel` groupé.
+
+**Modifié**
+- `ProgressLineChart` : `DataPoint.detail?` + **propagation dans `chartData`** (sans elle,
+  `pointerLabelComponent` ne voit jamais la date et l'infobulle retombe silencieusement sur l'abrégé
+  d'axe) ; `pointerConfig` (tap instantané, `persistPointer`, recalage aux bords, repère vertical).
+  `items[0]` = série **brute** : avec le lissage deux séries sont passées, on n'affiche jamais la lissée.
+- `MuscleVolumeBarChart` : `detail?` + `focusBarOnPress` + `renderTooltip` → **le même** `ChartTooltip`.
+- `progress/index.tsx`, `nutrition-stats.tsx`, `running-history/index.tsx` : `detail` renseigné sur les
+  4 surfaces datées ; `label` d'axe **inchangés**.
+- `charts-smoke.test.tsx` : mock `react-i18next` ajouté — les graphes lisent désormais la locale, ce qui
+  provoquait un avertissement à chaque rendu.
+
+**Technique / Notes**
+- **2 écarts au plan, arbitrés à l'implémentation et documentés dans la spec** :
+  **(1) fermeture par un tap ailleurs → NON implémentée (§2.4)**. `gifted-charts` garde l'index du pointeur
+  en interne sans API de remise à zéro ; le seul contournement serait un remontage par `key`, qui
+  **relancerait l'animation à chaque tap**. L'infobulle reste jusqu'au tap suivant. En revanche
+  `resetPointerOnDataChange` traite le cas important : changement de période / métrique / exercice ferme
+  l'infobulle plutôt que de pointer une donnée disparue.
+  **(2) barre tapée non repeinte (§2.2)**. `FocusedBarConfig` n'offre qu'un aplat (`color`/`opacity`), pas
+  de contour — vérifié dans les types. Repeindre écraserait les **couleurs sémantiques** de l'équilibre
+  musculaire (délaissé/équilibré/sur-représenté), que la spec protège. Le retour visuel est l'infobulle,
+  ancrée au-dessus de la barre tapée.
+- **Aucune clé i18n ajoutée** : le titre du graphique d'équilibre est déjà « Séries par groupe », donc
+  « 18 » seul est sans ambiguïté — le point laissé ouvert par la spec (§7) se résout sans code.
+- **À noter, non fait volontairement** : `formatDateFr` est **dupliqué dans 4 écrans** (`account-delete`,
+  `deletion-pending`, `history/index`, `history/[id]`) et pourrait migrer vers `formatDayFull`. Refactor
+  hors périmètre de cette US.
+- **Qualité** : typecheck, lint, tests shared et tests mobile → **exit code 0 lu sans pipe** à chaque task
+  (leçon de la CI rouge du 25/07). **846 tests shared + 116 mobile.**
+- **Roadmap : aucune ligne concernée** (finition transverse hors périmètre chiffré) → étape statut sautée.
+  `IDEAS.md` : idée du 16/07 passée en **✅ promue** et descendue dans « Archives » avec la décision.
+- **Reste** : recette device (8 critères, spec §9) — en particulier le **recalage aux deux bords** et la
+  **valeur brute** sur courbe lissée. Commit précédent : `b97556a`.
+
 ### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien **non requise**

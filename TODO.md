@@ -421,7 +421,16 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 25/07/2026 (**US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
+*Dernière mise à jour : 25/07/2026 (**US UX-01 Infobulle de valeur au tap sur les graphiques — CODE LIVRÉ ✅
+→ reste recette + Damien** : première idée promue depuis IDEAS.md (16/07). Un tap sur un point ou une barre
+affiche la **date complète + la valeur exacte** ; les **6 surfaces graphiques** sont couvertes d'un coup
+(2 composants mutualisés). `formatTooltipValue` et `formatDayFull` purs et testés dans `shared` (dont le
+piège de fuseau sur les clés `YYYY-MM-DD` : `new Date('2026-07-12')` parse en UTC puis rend la veille en
+local) ; `ChartTooltip` partagé par les deux graphiques. Valeur **brute** affichée sur les courbes lissées.
+2 limites assumées : pas de fermeture au tap ailleurs (API absente), barre tapée non repeinte (préserve les
+couleurs sémantiques). Aucune migration, aucun module natif, aucune clé i18n. 846 shared + 116 mobile.
+Branche `feature/ux01-infobulle-graphiques`.
+Précédemment : **US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
 + CLÔTURÉE (Florian) ✅** — relecture Damien non requise (go explicite). Parcours complet fonctionnel : lien →
 écran de saisie → mot de passe enregistré → retour connexion ; Redirect URL Supabase configurée.
 **2 bugs corrigés en recette, même classe de défaut** : **Expo Router résout un deep link comme un chemin de
@@ -957,6 +966,32 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   comportement existant** (décision produit + recette dédiée). Pour CONF-08 le scope global est au
   contraire **voulu** (révoquer les autres appareils après un reset) → **ne pas toucher**
   `completePasswordRecovery`. Fix envisagé : `{ scope: 'local' }` sur le seul `signOut` des Réglages.
+
+> ## 🧪 RECETTE À FAIRE — US UX-01 Infobulle de valeur au tap sur les graphiques — code livré (25/07/2026)
+>
+> **Première idée promue depuis [IDEAS.md](IDEAS.md)** (16/07, recette MUSC-04). Transverse : les **6 surfaces
+> graphiques** (2 histogrammes + 4 courbes) passent par 2 composants mutualisés → un seul chantier les couvre.
+> Branche `feature/ux01-infobulle-graphiques`. **Aucune migration, aucun module natif** → reload Metro suffit.
+> Spec : [ux01-infobulle-graphiques.md](docs/specs/functional/us/ux01-infobulle-graphiques.md) ·
+> Plan : [plans/ux01-infobulle-graphiques.md](docs/plans/ux01-infobulle-graphiques.md) ·
+> Maquette : [design/ux01-infobulle-graphiques](design/ux01-infobulle-graphiques/ux01-infobulle-graphiques.html).
+>
+> - [x] **Spec + plan + maquette** — validés **Florian (25/07/2026)** ✅.
+> - [x] **Code livré** — 6 tasks TDD : `formatTooltipValue` (pur, 12 tests) · `formatDayFull` ajouté au module
+>   date **partagé** (5 tests, piège de fuseau sur les clés `YYYY-MM-DD` évité) · `ChartTooltip` partagé
+>   (4 tests) · `pointerConfig` sur les courbes · `focusBarOnPress`/`renderTooltip` sur les histogrammes ·
+>   `detail` câblé sur les 4 surfaces datées. **846 shared + 116 mobile verts**, typecheck/lint 0
+>   (exit codes lus **sans pipe**).
+> - [ ] **Recette device** (8 critères, spec §9) : valeur cohérente avec l'axe · **recalage au 1ᵉʳ et au
+>   dernier point** (risque n°1 : débordement de carte), en clair **et** en sombre · **valeur brute** sur
+>   courbe lissée (croiser avec l'historique) · allure en `6:52` et non `412` · les 2 histogrammes, couleurs
+>   sémantiques toujours distinguables · fermeture au changement de période/métrique · nutrition (poids +
+>   apports) · **non-régression** : les 6 graphiques s'affichent comme avant au chargement.
+> - [ ] **Relecture Damien** (PR).
+>
+> ⚠️ **2 limites assumées** (constatées à l'implémentation, spec amendée) : la **fermeture par un tap
+> ailleurs** n'est pas offerte par la bibliothèque → l'infobulle reste jusqu'au tap suivant ; la **barre
+> tapée n'est pas repeinte** → cela écraserait les couleurs sémantiques de l'équilibre musculaire.
 
 > ## ✅ CLÔTURÉE — US CONF-08 Réinitialisation du mot de passe — recette validée Florian (25/07/2026)
 >
