@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US UX-01 — Infobulle de valeur au tap sur les graphiques</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--strength:#6b0028;--gold:#c9a96e;
+    --danger:#b3261e;--success:#5c7a3f;--grey:#b9ab98;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1280px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1280px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:300px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:34px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:520px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:492px;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .h1{font-weight:800;font-size:17px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;}
+  .cardt{font-size:13px;font-weight:700;margin-bottom:8px;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .badge{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);border-radius:4px;padding:1px 4px;}
+  /* graphique schématique */
+  .plot{position:relative;height:150px;border-left:1px solid var(--border);border-bottom:1px solid var(--border);margin:6px 0 2px 30px;}
+  .yl{position:absolute;left:-30px;font-size:9.5px;color:var(--muted);transform:translateY(-50%);}
+  .rule{position:absolute;left:0;right:0;border-top:1px solid var(--border);}
+  .pt{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--accent);transform:translate(-50%,50%);}
+  .pt.dim{background:var(--grey);width:5px;height:5px;}
+  .pt.on{width:11px;height:11px;box-shadow:0 0 0 3px rgba(192,86,47,.22);}
+  .strip{position:absolute;width:1px;background:var(--border);bottom:0;}
+  .xl{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);margin-left:30px;}
+  /* infobulle */
+  .tip{position:absolute;background:#fff;border:1px solid var(--border);border-radius:10px;padding:7px 9px;box-shadow:var(--shadow);transform:translate(-50%,-100%);white-space:nowrap;z-index:3;}
+  .tip .d{font-size:9.5px;color:var(--muted);font-weight:600;}
+  .tip .v{font-size:13px;font-weight:800;color:var(--ink);}
+  .tip.edge{transform:translate(-88%,-100%);}
+  .tip.edge0{transform:translate(-12%,-100%);}
+  /* barres */
+  .bars{display:flex;align-items:flex-end;gap:10px;height:132px;margin-left:30px;border-bottom:1px solid var(--border);position:relative;}
+  .bar{flex:1;border-radius:6px 6px 0 0;background:var(--strength);}
+  .bar.gold{background:var(--gold);} .bar.grey{background:var(--grey);}
+  .bar.on{outline:2px solid var(--accent);outline-offset:1px;}
+  .note{max-width:1280px;margin:28px auto 0;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}
+  .note h3{margin:0 0 6px;font-size:14px;font-weight:800;}
+  .ko{background:#fbeceb;border-color:#f0c8c5;}
+  .ok{background:#eaf3e0;border-color:#c5dca9;}
+  .warn{background:#fdf3e3;border-color:#f0dcb4;}
+  .dark{background:#221c17;border-color:#3a3129;}
+  .dark .cardt,.dark .h1{color:#f2e9dc;} .dark .muted{color:#a08f79;}
+  .dark .tip{background:#2c251e;border-color:#463b31;}
+  .dark .tip .v{color:#f2e9dc;} .dark .tip .d{color:#a08f79;}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .tbl th,.tbl td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--border);}
+  .tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US UX-01 · Transverse 3 piliers · Finition avant lancement</p>
+    <h1 class="title">Infobulle de valeur au tap</h1>
+    <p class="sub">Aujourd'hui on lit les courbes <b>« à la louche »</b> en projetant le point sur l'axe Y —
+      impossible dès que les gridlines sont espacées ou que l'axe est formaté (allure <code>M:SS</code>).
+      Un <b>tap</b> affiche désormais la <b>date complète</b> et la <b>valeur exacte</b>.
+      <span class="badge">Levier</span> tout passe par <b>2 composants mutualisés</b> → un seul chantier
+      couvre les <b>6 surfaces graphiques</b> de l'app. <b>Aucune migration, aucun module natif.</b></p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Avant -->
+    <div class="col">
+      <div class="step">1 · Aujourd'hui</div>
+      <div class="caption">Valeur illisible : on estime sur l'axe</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Progression</div>
+        <div class="card">
+          <div class="cardt">Charge max (kg)</div>
+          <div class="plot">
+            <div class="rule" style="top:0"></div><div class="rule" style="top:33%"></div>
+            <div class="rule" style="top:66%"></div>
+            <span class="yl" style="top:0">90</span><span class="yl" style="top:33%">85</span>
+            <span class="yl" style="top:66%">80</span><span class="yl" style="top:100%">75</span>
+            <div class="pt" style="left:6%;bottom:22%"></div>
+            <div class="pt" style="left:26%;bottom:36%"></div>
+            <div class="pt" style="left:46%;bottom:52%"></div>
+            <div class="pt" style="left:66%;bottom:48%"></div>
+            <div class="pt" style="left:86%;bottom:70%"></div>
+          </div>
+          <div class="xl"><span>28/06</span><span>05/07</span><span>12/07</span><span>19/07</span><span>25/07</span></div>
+        </div>
+        <div class="card ko"><b>Le point du 12/07 vaut quoi ?</b> Entre 80 et 85… On ne peut pas savoir.
+          Les points ne sont <b>pas tappables</b>.</div>
+        <div class="spacer"></div>
+        <div class="card muted" style="font-size:12px;">Remonté par Florian en recette MUSC-04 (16/07).</div>
+      </div></div>
+    </div>
+
+    <!-- 2. Après : tap -->
+    <div class="col">
+      <div class="step">2 · Au tap</div>
+      <div class="caption">Date complète + valeur exacte, persistante</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Progression</div>
+        <div class="card">
+          <div class="cardt">Charge max (kg)</div>
+          <div class="plot">
+            <div class="rule" style="top:0"></div><div class="rule" style="top:33%"></div>
+            <div class="rule" style="top:66%"></div>
+            <span class="yl" style="top:0">90</span><span class="yl" style="top:33%">85</span>
+            <span class="yl" style="top:66%">80</span><span class="yl" style="top:100%">75</span>
+            <div class="pt" style="left:6%;bottom:22%"></div>
+            <div class="pt" style="left:26%;bottom:36%"></div>
+            <div class="strip" style="left:46%;height:52%"></div>
+            <div class="pt on" style="left:46%;bottom:52%"></div>
+            <div class="tip" style="left:46%;bottom:60%">
+              <div class="d">12/07/2026</div><div class="v">82,5 kg</div>
+            </div>
+            <div class="pt" style="left:66%;bottom:48%"></div>
+            <div class="pt" style="left:86%;bottom:70%"></div>
+          </div>
+          <div class="xl"><span>28/06</span><span>05/07</span><span>12/07</span><span>19/07</span><span>25/07</span></div>
+        </div>
+        <div class="card ok"><b>Tap = l'infobulle se fixe.</b> Elle reste : on lit tranquillement, on peut
+          faire défiler. Tap sur un autre point → elle s'y déplace. Tap ailleurs → fermeture.</div>
+        <div class="spacer"></div>
+        <div class="card" style="font-size:12px;">Repère vertical discret jusqu'à l'axe + point mis en avant.
+          Tolérance de proximité : pas besoin de viser au pixel.</div>
+      </div></div>
+    </div>
+
+    <!-- 3. Bords -->
+    <div class="col">
+      <div class="step">3 · Bords du graphe</div>
+      <div class="caption">Recalage : jamais coupée, jamais de débordement</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Nutrition · Poids</div>
+        <div class="card">
+          <div class="cardt">Poids (kg)</div>
+          <div class="plot">
+            <div class="rule" style="top:0"></div><div class="rule" style="top:33%"></div>
+            <div class="rule" style="top:66%"></div>
+            <span class="yl" style="top:0">86</span><span class="yl" style="top:33%">84</span>
+            <span class="yl" style="top:66%">82</span><span class="yl" style="top:100%">80</span>
+            <div class="strip" style="left:6%;height:30%"></div>
+            <div class="pt on" style="left:6%;bottom:30%"></div>
+            <div class="tip edge0" style="left:6%;bottom:38%">
+              <div class="d">28/06/2026</div><div class="v">81,2 kg</div>
+            </div>
+            <div class="pt dim" style="left:26%;bottom:44%"></div>
+            <div class="pt dim" style="left:46%;bottom:56%"></div>
+            <div class="pt dim" style="left:66%;bottom:62%"></div>
+            <div class="pt" style="left:86%;bottom:74%"></div>
+          </div>
+          <div class="xl"><span>28/06</span><span>05/07</span><span>12/07</span><span>19/07</span><span>25/07</span></div>
+        </div>
+        <div class="card warn"><b>Premier et dernier point = le risque n°1.</b> Toute la mécanique de largeur
+          mesurée existe pour ne <b>jamais déborder</b> de la carte. L'infobulle se <b>recale vers
+          l'intérieur</b> — à vérifier explicitement en recette, aux deux bords.</div>
+        <div class="spacer"></div>
+        <div class="card" style="font-size:12px;"><code>autoAdjustPointerLabelPosition</code></div>
+      </div></div>
+    </div>
+
+    <!-- 4. Barres + thème sombre -->
+    <div class="col">
+      <div class="step">4 · Barres · thème sombre</div>
+      <div class="caption">Même infobulle, couleurs sémantiques préservées</div>
+      <div class="phone"><div class="scr dark" style="background:#221c17;">
+        <div class="h1">Équilibre musculaire</div>
+        <div class="card dark">
+          <div class="cardt">14 derniers jours (séries)</div>
+          <div class="bars">
+            <div class="bar gold" style="height:26%"></div>
+            <div class="bar" style="height:58%"></div>
+            <div class="bar on" style="height:82%">
+              <div class="tip" style="position:relative;left:50%;top:-14px;">
+                <div class="d">Dos</div><div class="v">18 séries</div>
+              </div>
+            </div>
+            <div class="bar grey" style="height:96%"></div>
+            <div class="bar" style="height:64%"></div>
+          </div>
+          <div class="xl" style="margin-left:30px;"><span>Épaules</span><span>Bras</span><span>Dos</span><span>Jambes</span><span>Pecs</span></div>
+        </div>
+        <div class="card dark" style="font-size:12px;">Barre non datée → l'en-tête est le <b>nom du groupe</b>,
+          pas une date. <b>Doré</b> = délaissé, <b>bordeaux</b> = équilibré, <b>gris</b> = sur-représenté :
+          la mise en avant est un <b>contour</b>, pour ne pas écraser ces couleurs.</div>
+        <div class="spacer"></div>
+        <div class="card dark" style="font-size:12px;">Lisible en thème clair <b>et</b> sombre (contraste AA).</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <div class="card">
+      <h3>La décision qui compte : brut, pas lissé</h3>
+      Sur les 4 courbes lissées (META-09), deux séries sont tracées : la <b>brute</b> estompée et la
+      <b>lissée</b> accentuée. L'infobulle affiche <b>toujours la valeur brute</b> — la mesure réellement
+      enregistrée. Afficher la lissée laisserait croire à une pesée ou un apport <b>qui n'a jamais existé</b>.
+    </div>
+    <div class="card">
+      <h3>Cohérence avec l'axe</h3>
+      L'infobulle réutilise le formateur de l'appelant (<code>formatYLabel</code>) : l'allure s'affiche
+      <b>6:52 /km</b>, jamais <b>412</b>. Sinon : 1 décimale max, séparateur selon la locale
+      (<b>82,5</b> en FR / <b>82.5</b> en EN), pas de <code>,0</code> inutile. Règle <b>pure et testée</b>
+      dans <code>@wellness/shared</code>, pas dans le composant.
+    </div>
+    <div class="card">
+      <h3>Les 6 surfaces couvertes</h3>
+      <table class="tbl">
+        <tr><th>Écran</th><th>Graphique</th><th>En-tête</th></tr>
+        <tr><td>Muscu · Progression</td><td>Volume hebdo</td><td>groupe</td></tr>
+        <tr><td>Muscu · Progression</td><td>Équilibre (séries)</td><td>groupe</td></tr>
+        <tr><td>Muscu · Progression</td><td>Charge max / 1RM / volume</td><td>date</td></tr>
+        <tr><td>Nutrition · Stats</td><td>Poids</td><td>date</td></tr>
+        <tr><td>Nutrition · Stats</td><td>Apports</td><td>date</td></tr>
+        <tr><td>Course · Historique</td><td>Allure</td><td>date</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Hors périmètre & repli assumé</h3>
+      <b>Hors périmètre :</b> zoom/défilement, sélection de plage, appui maintenu avec glissement (arbitré
+      contre), comparaison de deux points, nouveaux graphiques.<br />
+      <b>Seul inconnu technique :</b> la fermeture au tap <i>ailleurs</i> dépend d'une API interne de la
+      bibliothèque. Si elle n'est pas propre, le <b>repli assumé</b> est : l'infobulle reste jusqu'au tap
+      suivant — sans bricoler un remontage forcé qui relancerait l'animation.
+    </div>
+  </div>
+
+</body>
+</html>
