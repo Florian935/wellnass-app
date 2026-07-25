@@ -503,6 +503,49 @@ describe('computeProgressionSuggestion', () => {
     const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
     expect(computeProgressionSuggestion(lastSets, undefined, OPTS)).toBeNull();
   });
+
+  // Deload (spec 3.8) : 2 séances difficiles d'affilée → baisse suggérée.
+  const refWeight = { setType: 'normal', reps: 8, weightKg: 80, durationSeconds: null };
+
+  it('difficile (failure) + précédente difficile → deload −10 % (80 → 72)', () => {
+    const lastSets = [{ setType: 'failure', rpe: null, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, { ...OPTS, previousStruggled: true }),
+    ).toEqual({ kind: 'deload', weightKg: 72 });
+  });
+
+  it('difficile (RPE 9) + précédente difficile → deload', () => {
+    const lastSets = [{ setType: 'normal', rpe: 9, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, { ...OPTS, previousStruggled: true }),
+    ).toEqual({ kind: 'deload', weightKg: 72 });
+  });
+
+  it('difficile MAIS précédente OK → pas de deload (null)', () => {
+    const lastSets = [{ setType: 'failure', rpe: null, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, { ...OPTS, previousStruggled: false }),
+    ).toBeNull();
+  });
+
+  it('2 séances difficiles mais exercice au poids du corps (weightKg null) → pas de deload', () => {
+    const lastSets = [{ setType: 'bodyweight', rpe: 9, done: true }];
+    const refBw = { setType: 'bodyweight', reps: 12, weightKg: null, durationSeconds: null };
+    expect(
+      computeProgressionSuggestion(lastSets, refBw, { ...OPTS, previousStruggled: true }),
+    ).toBeNull();
+  });
+
+  it('deloadFactor personnalisé (−20 %) respecté (80 → 64)', () => {
+    const lastSets = [{ setType: 'failure', rpe: null, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, {
+        ...OPTS,
+        previousStruggled: true,
+        deloadFactor: 0.2,
+      }),
+    ).toEqual({ kind: 'deload', weightKg: 64 });
+  });
 });
 
 // ---------------------------------------------------------------------------

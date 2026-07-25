@@ -282,6 +282,11 @@ export default function WorkoutScreen() {
       });
     }
     if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
+    if (suggestion.kind === 'deload') {
+      return t('workout.suggestion.deload', {
+        weight: `${units.weightInputValue(suggestion.weightKg)} ${units.weightSymbol}`,
+      });
+    }
     return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
   })();
 

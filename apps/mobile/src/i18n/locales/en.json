@@ -174,7 +174,8 @@
     "suggestion": {
       "weightOrReps": "Try {{weight}} or {{reps}} reps",
       "reps": "Try {{reps}} reps",
-      "duration": "Try {{duration}}"
+      "duration": "Try {{duration}}",
+      "deload": "Two tough sessions in a row — you can drop to {{weight}}"
     },
     "reorder": {
       "up": "Move up",

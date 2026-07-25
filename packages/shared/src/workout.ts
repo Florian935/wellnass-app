@@ -186,7 +186,22 @@ export type ProgressionSuggestion =
   | { kind: 'weightOrReps'; weightKg: number; reps: number }
   | { kind: 'reps'; reps: number }
   | { kind: 'duration'; durationSeconds: number }
+  /**
+   * **Deload** (spec 3.8) : 2 séances difficiles d'affilée (échec ou RPE ≥ 8) sur l'exercice →
+   * proposition de **baisser la charge** (jamais imposé). `weightKg` = charge réduite suggérée.
+   */
+  | { kind: 'deload'; weightKg: number }
   | null;
+
+/** Baisse de charge par défaut d'un deload (−10 %, spec 3.8). Arrondi au pas de 0,5 kg. */
+export const DEFAULT_DELOAD_FACTOR = 0.1;
+
+/** Vrai si un ensemble de séries « qualifiantes » traduit une séance difficile (échec ou RPE ≥ 8). */
+function sessionStruggled(qualifying: ReadonlyArray<{ setType: string; rpe: number | null }>): boolean {
+  if (qualifying.some((s) => s.setType === 'failure')) return true;
+  const rpeValues = qualifying.map((s) => s.rpe).filter((r): r is number => r != null);
+  return rpeValues.length > 0 && Math.max(...rpeValues) >= 8;
+}
 
 /**
  * Règle de suggestion de progression discrète (§2.4/§3 US Refonte-C3), RPE-aware.
@@ -200,15 +215,38 @@ export function computeProgressionSuggestion(
   referenceSet:
     | { setType: string; reps: number | null; weightKg: number | null; durationSeconds: number | null }
     | undefined,
-  opts: { weightIncrementKg: number; durationIncrementSeconds: number },
+  opts: {
+    weightIncrementKg: number;
+    durationIncrementSeconds: number;
+    /**
+     * Vrai si la séance **précédant** la dernière était elle aussi difficile (échec/RPE ≥ 8). Avec la
+     * dernière séance difficile → **2 d'affilée** → suggestion de deload (spec 3.8). Défaut `false`
+     * (aucun deload : rétrocompatible tant que l'appelant ne fournit pas ce signal).
+     */
+    previousStruggled?: boolean;
+    /** Fraction de baisse du deload (défaut `DEFAULT_DELOAD_FACTOR` = −10 %). */
+    deloadFactor?: number;
+  },
 ): ProgressionSuggestion {
   const qualifying = lastSets.filter((s) => s.done);
   if (qualifying.length === 0 || !referenceSet) return null;
-  if (qualifying.some((s) => s.setType === 'failure')) return null;
 
-  const rpeValues = qualifying.map((s) => s.rpe).filter((r): r is number => r != null);
-  const maxRpe = rpeValues.length > 0 ? Math.max(...rpeValues) : null;
-  if (maxRpe != null && maxRpe >= 8) return null;
+  // Séance difficile (échec / RPE ≥ 8) → pas de progression. Si la précédente l'était AUSSI (2
+  // d'affilée) et que l'exercice est chargé → propose un **deload** (jamais imposé, spec 3.8).
+  if (sessionStruggled(qualifying)) {
+    if (
+      opts.previousStruggled &&
+      referenceSet.setType !== 'duration' &&
+      referenceSet.weightKg != null &&
+      referenceSet.weightKg > 0
+    ) {
+      const factor = opts.deloadFactor ?? DEFAULT_DELOAD_FACTOR;
+      // Arrondi au pas de 0,5 kg.
+      const reduced = Math.round(referenceSet.weightKg * (1 - factor) * 2) / 2;
+      return { kind: 'deload', weightKg: reduced };
+    }
+    return null;
+  }
 
   if (referenceSet.setType === 'duration') {
     if (referenceSet.durationSeconds == null) return null;

@@ -10,6 +10,25 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/deload-suggestion` — brique deload (gestion de stagnation, 3.8)
+
+> Dev autonome. Brique **pure + testée**, label UI prêt — **pas encore déclenchée** (voir Notes).
+> typecheck 0 · lint 0 err · shared 77 + mobile 112 tests. Aucune migration.
+
+**Ajouté**
+- **Deload dans `computeProgressionSuggestion`** ([workout.ts](packages/shared/src/workout.ts)) : nouveau kind
+  `deload` + `DEFAULT_DELOAD_FACTOR` (−10 %) + helper `sessionStruggled` (échec ou RPE ≥ 8). Règle : dernière
+  séance difficile **ET** précédente difficile (`opts.previousStruggled`) **ET** exercice chargé → propose une
+  **charge réduite** (arrondi 0,5 kg), jamais imposé. Params optionnels → **rétrocompatible**. 5 tests.
+- **Label UI** `workout.suggestion.deload` ([workout.tsx](apps/mobile/src/app/workout.tsx) + i18n FR/EN).
+
+**Technique / Notes**
+- **Pas encore déclenché** : `workout.tsx` ne passe pas `previousStruggled` (il faudrait la **séance
+  avant-dernière** de l'exercice — requête à ajouter). Sans ce signal, `deload` ne sort jamais → **aucun
+  changement de comportement** pour l'instant.
+- **Règle de coaching à valider (Florian)** : « 2 séances difficiles d'affilée » = échec **ou** RPE ≥ 8 ;
+  baisse −10 %. Seuils tunables (`deloadFactor`, critère de difficulté) — à confirmer avant câblage final.
+
 ### 25/07/2026 — `feature/run-summary-splits` — tableau de splits/km sur le résumé de course (RUN-F1, 5.26)
 
 > Dev autonome (suite de `computeKmSplits`). 100 % UI, aucune migration. typecheck 0 · lint 0 err · 112 tests.
