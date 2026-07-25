@@ -1,12 +1,20 @@
-import { buildPaceYAxis, movingAverage } from '@wellness/shared';
+import { buildPaceYAxis, formatTooltipValue, movingAverage } from '@wellness/shared';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dimensions, type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
+import { ChartTooltip } from '@/components/charts/ChartTooltip';
 import { useTheme } from '@/theme/useTheme';
 
 type DataPoint = {
   label: string;
   value: number;
+  /**
+   * Libellé riche affiché en en-tête de l'infobulle — la **date complète** (JJ/MM/AAAA). Optionnel :
+   * `label` est le libellé d'**axe**, volontairement abrégé (« 12/07 »), et seul l'appelant connaît la
+   * date réelle. Repli sur `label` si absent.
+   */
+  detail?: string;
 };
 
 /** Nombre de gridlines de l'axe Y ; on génère `NO_OF_SECTIONS + 1` libellés (bornes incluses). */
@@ -74,6 +82,7 @@ export function ProgressLineChart({
   smooth,
 }: ProgressLineChartProps) {
   const { colors } = useTheme();
+  const { i18n } = useTranslation();
   // Largeur réelle du conteneur (mesurée), pour ne jamais déborder de la carte.
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
@@ -89,9 +98,13 @@ export function ProgressLineChart({
   const outerWidth = width ?? containerWidth ?? FALLBACK_OUTER_WIDTH;
   const chartWidth = Math.max(0, outerWidth - Y_AXIS_LABEL_WIDTH - END_SPACING);
 
+  // ⚠️ `detail` DOIT être propagé ici : `pointerLabelComponent` reçoit les objets de `chartData`, pas
+  // les `DataPoint` d'origine. L'oublier ferait silencieusement retomber l'infobulle sur le libellé
+  // d'axe abrégé au lieu de la date complète.
   const chartData = data.map((point) => ({
     value: point.value,
     label: point.label,
+    detail: point.detail,
   }));
 
   // Axe Y formaté (opt-in) : on impose l'échelle À LA LIB en plus des libellés, sinon
@@ -151,6 +164,49 @@ export function ProgressLineChart({
               yAxisLabelTexts: yAxis.labels,
             }
           : {})}
+        pointerConfig={{
+          // Tap simple : ni appui long, ni geste maintenu (décision de cadrage §0).
+          activatePointersInstantlyOnTouch: true,
+          // L'infobulle reste après le relâchement, jusqu'au tap suivant.
+          persistPointer: true,
+          pointerVanishDelay: 0,
+          // Changement de série (période 7 j/30 j/tout, métrique, exercice) → l'infobulle se ferme :
+          // sinon elle pointerait une donnée qui n'existe plus.
+          resetPointerOnDataChange: true,
+          // ⚠️ REPLI ASSUMÉ (spec §2.4) : la fermeture par un tap *ailleurs* n'est pas implémentée.
+          // `gifted-charts` garde l'index du pointeur en interne et n'expose aucune API pour le
+          // réinitialiser ; le seul contournement serait de remonter le graphe via une `key`, ce qui
+          // relancerait l'animation à chaque tap. L'infobulle reste donc jusqu'au tap suivant — elle
+          // est petite et ne masque pas la lecture.
+          // Recale l'infobulle dans les bornes du graphe : indispensable au 1ᵉʳ et au dernier point,
+          // sinon on réintroduit le débordement de carte que tout le calcul de largeur évite.
+          autoAdjustPointerLabelPosition: true,
+          pointerColor: colors.accent,
+          radius: 5,
+          showPointerStrip: true,
+          pointerStripColor: colors.border,
+          pointerStripWidth: 1,
+          pointerStripUptoDataPoint: true,
+          pointerLabelWidth: 150,
+          pointerLabelComponent: (items: { value: number; label: string; detail?: string }[]) => {
+            // Avec le lissage, deux séries sont passées (`data` brute puis `data2` lissée) : l'index 0
+            // est donc la BRUTE — la mesure réellement enregistrée. On n'affiche jamais la lissée, qui
+            // laisserait croire à une pesée ou un apport qui n'a pas existé (décision de cadrage §0).
+            const point = items?.[0];
+            if (!point) return null;
+            return (
+              <ChartTooltip
+                heading={point.detail ?? point.label}
+                value={formatTooltipValue(point.value, {
+                  // Même formateur que l'axe Y : l'allure s'affiche « 6:52 », pas « 412 ».
+                  formatValue: formatYLabel,
+                  unit,
+                  locale: i18n.language,
+                })}
+              />
+            );
+          },
+        }}
         {...(smoothedData
           ? {
               data2: smoothedData,

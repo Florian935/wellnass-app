@@ -98,7 +98,8 @@ valeur/coût de cette US.
 - Tap sur ou **près** d'un point → l'infobulle apparaît **immédiatement** (pas de délai d'appui long),
   ancrée au-dessus du point, avec le point **mis en avant** et un **repère vertical** discret jusqu'à l'axe.
 - Elle **reste affichée** : on peut lire, faire défiler l'écran, revenir.
-- Tap sur un **autre** point → l'infobulle se déplace sur ce point.
+- Tap sur un **autre** point → l'infobulle se déplace sur ce point. C'est **le** geste de fermeture
+  effectif (voir §2.4).
 - **Points rapprochés** (séries 90 j) : la sélection prend le point **le plus proche** du doigt ; il n'est
   pas nécessaire de toucher le point au pixel.
 
@@ -128,7 +129,12 @@ Règles de formatage :
 
 ### 2.4 Fermeture
 
-- Tap **ailleurs dans la carte** (hors point/barre) → fermeture.
+- **Tap ailleurs dans la carte → fermeture : NON implémenté, repli assumé** (constaté à
+  l'implémentation, 25/07). `react-native-gifted-charts` garde l'index du pointeur en interne et
+  n'expose aucune API pour le réinitialiser ; le seul contournement serait de remonter le graphe via une
+  `key`, ce qui **relancerait l'animation à chaque tap**. → **L'infobulle reste jusqu'au tap suivant.**
+  Acceptable : elle est petite, bornée en largeur, et ne masque pas la lecture. À rouvrir si la
+  bibliothèque expose la remise à zéro dans une version ultérieure.
 - **Sortie de l'écran** → l'état est perdu (aucune persistance attendue).
 - **Changement de période ou de métrique** (filtres 7 j / 30 j / tout, sélecteur d'exercice) → l'infobulle
   se ferme, sinon elle pointerait une donnée qui n'existe plus.

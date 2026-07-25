@@ -32,6 +32,13 @@ jest.mock('react-native-gifted-charts', () => {
   };
 });
 
+// Les deux graphes lisent la locale active (`useTranslation().i18n.language`) pour le séparateur
+// décimal de l'infobulle (US UX-01). Sans instance i18next montée ici, react-i18next émettrait un
+// avertissement à chaque rendu : on le mocke, comme les autres smokes de l'app.
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'fr' } }),
+}));
+
 // ---------------------------------------------------------------------------
 // Mock react-native-svg — module natif
 // ---------------------------------------------------------------------------
