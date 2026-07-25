@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { averageIntake, percentChange, weightTrend } from '@wellness/shared';
+import { averageIntake, formatDayFull, percentChange, weightTrend } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
@@ -64,8 +64,17 @@ export default function NutritionStatsScreen() {
   const completion = useJournalCompletion(intakeWindowDays);
 
   const trend = weightTrend(weightEntries);
-  const weightData = weightEntries.map((e) => ({ label: shortLabel(e.logDate), value: units.toWeightValue(e.weightKg) }));
-  const intakeData = totals.map((d) => ({ label: shortLabel(d.logDate), value: d.kcal }));
+  // `label` = abrégé d'axe ; `detail` = date complète affichée dans l'infobulle (UX-01).
+  const weightData = weightEntries.map((e) => ({
+    label: shortLabel(e.logDate),
+    detail: formatDayFull(e.logDate),
+    value: units.toWeightValue(e.weightKg),
+  }));
+  const intakeData = totals.map((d) => ({
+    label: shortLabel(d.logDate),
+    detail: formatDayFull(d.logDate),
+    value: d.kcal,
+  }));
 
   const saveWeight = async () => {
     const kg = units.parseWeightToKg(weightInput);

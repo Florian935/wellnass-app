@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addDays,
+  formatDayFull,
   weekdayIndex,
   startOfWeek,
   localDayKey,
@@ -67,4 +68,32 @@ describe('daysBetween', () => {
   it('fenêtre de 30 jours', () => expect(daysBetween('2026-01-01', '2026-01-31')).toBe(30));
   it('année bissextile (fév. 2028)', () =>
     expect(daysBetween('2028-02-28', '2028-03-01')).toBe(2));
+});
+
+describe('formatDayFull', () => {
+  it('clé de jour YYYY-MM-DD → JJ/MM/AAAA', () => {
+    expect(formatDayFull('2026-07-12')).toBe('12/07/2026');
+    expect(formatDayFull('2026-01-01')).toBe('01/01/2026');
+  });
+
+  it('clé de jour : lecture littérale, aucun décalage de fuseau', () => {
+    // `new Date('2026-07-12')` = minuit UTC ; rendu en heure locale négative, ce serait le 11.
+    expect(formatDayFull('2026-07-12')).toBe('12/07/2026');
+    expect(formatDayFull('2026-03-01')).toBe('01/03/2026');
+  });
+
+  it('timestamp ISO complet → jour local de l\'événement', () => {
+    const iso = new Date(2026, 6, 12, 18, 30).toISOString();
+    expect(formatDayFull(iso)).toBe('12/07/2026');
+  });
+
+  it('entrée vide ou absente → chaîne vide', () => {
+    expect(formatDayFull('')).toBe('');
+    expect(formatDayFull(null)).toBe('');
+    expect(formatDayFull(undefined)).toBe('');
+  });
+
+  it('entrée illisible → chaîne vide (jamais « NaN/NaN/NaN »)', () => {
+    expect(formatDayFull('pas une date')).toBe('');
+  });
 });

@@ -59,3 +59,32 @@ export function daysBetween(fromKey: string, toKey: string): number {
   };
   return Math.round((toMs(toKey) - toMs(fromKey)) / 86_400_000);
 }
+
+/**
+ * Formate une date en **JJ/MM/AAAA** (convention du projet), pour l'affichage utilisateur.
+ *
+ * Accepte les **deux** formes qui circulent dans l'app, et c'est tout l'intérêt :
+ * - une **clé de jour** `YYYY-MM-DD` (journal nutrition `log_date`, `dayKey` running) → les champs sont
+ *   lus **directement dans la chaîne**. Passer par `new Date('2026-07-12')` la parserait à **minuit UTC**
+ *   puis `getDate()` la rendrait en heure locale : dans un fuseau négatif on afficherait **la veille**.
+ * - un **timestamp ISO complet** (date de séance) → parsé, puis rendu avec les getters **locaux** : la
+ *   séance s'affiche au jour où elle a eu lieu pour l'utilisateur.
+ *
+ * Renvoie une chaîne vide si l'entrée est vide ou impossible à interpréter (jamais « NaN/NaN/NaN »).
+ */
+export function formatDayFull(value: string | null | undefined): string {
+  if (!value) return '';
+
+  // Clé de jour pure (`YYYY-MM-DD`, éventuellement rien derrière) → lecture littérale, sans fuseau.
+  const dayKeyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (dayKeyMatch) {
+    const [, yyyy, mm, dd] = dayKeyMatch;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}

@@ -28,7 +28,12 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { percentChange, type MuscleGroup, type MuscleBalance } from '@wellness/shared';
+import {
+  formatDayFull,
+  percentChange,
+  type MuscleGroup,
+  type MuscleBalance,
+} from '@wellness/shared';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
 import { EmptyState } from '@/components/EmptyState';
@@ -405,6 +410,8 @@ function ExerciseSection({
 
     const chartData = points.map((p) => ({
       label: formatDateShort(p.date),
+      // `label` reste l'abrégé d'axe ; `detail` porte la date complète pour l'infobulle (UX-01).
+      detail: formatDayFull(p.date),
       value: units.toWeightValue(p.value),
     }));
 

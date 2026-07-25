@@ -26,6 +26,7 @@ import {
   formatPaceMMSS,
   localDayKey,
   paceToSystem,
+  formatDayFull,
   percentChange,
   previousPeriodTodayKey,
   RUNNING_RECORD_DISTANCES,
@@ -234,6 +235,8 @@ function PaceSection() {
   // Allure convertie vers l'unité d'affichage (secondes par km ou par mile).
   const chartData = points.map((p) => ({
     label: dayKeyToShort(p.dayKey),
+    // `label` = abrégé d'axe ; `detail` = date complète affichée dans l'infobulle (UX-01).
+    detail: formatDayFull(p.dayKey),
     value: paceToSystem(p.paceSPerKm, units.system),
   }));
   const paceUnitLabel = t('running.history.paceUnit', { unit: units.distanceSymbol });
