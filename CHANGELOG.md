@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/widgets-data-suite` — widgets Course : splits/km (grand carré Historique)
+
+> Complétion d'une des 2 données reportées. La trace GPS encode lat/lng **+ temps par point**
+> (`GpsPoint.t`) → les splits/km sont calculables. Brique pure + testée. Commit précédent : `514134b`.
+> 100 % UI + data (aucune migration). typecheck 0 · lint 0 erreur · 112 tests mobile + 85 shared.
+
+**Ajouté**
+- **`computeKmSplits(points)`** ([running.ts](packages/shared/src/running.ts), `@wellness/shared`) :
+  découpe une trace en splits par kilomètre plein (parcours haversine + filtre outliers comme
+  `totalDistance`, interpolation du temps aux bornes km, dernier km partiel ignoré). Pur, testé
+  (3 cas : < 2 points, < 1 km, numérotation + secondes positives).
+- **Grand carré Course · Historique** ([running-widgets.tsx](apps/mobile/src/components/widgets/running-widgets.tsx)) :
+  affiche les **splits/km** de la dernière course (mini-barres, km le plus rapide en accent, pied
+  « Meilleur km · M:SS ») quand une trace GPS existe ; **repli** sur la sparkline des distances
+  récentes sinon. Détail de course via `useRun(lastRun.id)` (hook inconditionnel). Clés i18n
+  `widgets.running.splitsEyebrow` / `bestKm`.
+
+**Technique / Notes**
+- Non recettable sur le device de test tel quel : la dernière course y est un ajout manuel à 0 km
+  **sans trace** → repli sparkline (déjà validé). La logique splits est couverte par les tests unitaires.
+- **Reste reporté** : semaine X/Y d'un programme (faisable via `planned_sessions.week_index`, mais
+  **non recettable** faute de programme actif sur le compte de test — à faire quand un programme existe).
+
 ### 25/07/2026 — `feature/widgets-v2-dnd` — widgets : complétion des données (volume hebdo + tonnage historique)
 
 > Suite recette device : formes riches complétées avec de vraies données au lieu de dégradations.

@@ -638,7 +638,9 @@
       "recentDistances": "Distances récentes",
       "planEyebrow": "Plan",
       "planActiveEyebrow": "Plan actif",
-      "planningEyebrow": "Planning"
+      "planningEyebrow": "Planning",
+      "splitsEyebrow": "Splits /km",
+      "bestKm": "Meilleur km · {{pace}}"
     }
   },
   "home": {

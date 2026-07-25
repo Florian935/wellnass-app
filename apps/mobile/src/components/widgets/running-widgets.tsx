@@ -9,12 +9,19 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatHoursMinutes, localDayKey, type RunningWidgetId, type WidgetSize } from '@wellness/shared';
+import {
+  computeKmSplits,
+  decodeTrack,
+  formatHoursMinutes,
+  localDayKey,
+  type RunningWidgetId,
+  type WidgetSize,
+} from '@wellness/shared';
 import { PlanningPreview } from '@/components/PlanningPreview';
-import { Sparkline } from '@/components/widgets/primitives';
+import { MiniBars, Sparkline } from '@/components/widgets/primitives';
 import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useActiveProgram } from '@/data/repositories/program-repository';
-import { useRunHistory } from '@/data/repositories/run-repository';
+import { useRun, useRunHistory } from '@/data/repositories/run-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -44,6 +51,8 @@ function RunningHistoryWidget({ size }: { size: WidgetSize }) {
   const units = useUnits();
   const { runs } = useRunHistory();
   const lastRun = runs[0] ?? null;
+  // Détail de la dernière course (pour la trace GPS → splits/km du grand carré). Hook inconditionnel.
+  const { run: lastRunDetail } = useRun(lastRun?.id);
   const open = () => router.push('/running-history');
 
   const distance = lastRun ? units.formatDistance((lastRun.distanceM ?? 0) / 1000) : '—';
@@ -87,7 +96,12 @@ function RunningHistoryWidget({ size }: { size: WidgetSize }) {
     );
   }
 
-  // large — résumé + sparkline des distances récentes
+  // large — splits/km de la dernière course si trace GPS, sinon sparkline des distances récentes.
+  const splits = lastRunDetail?.gpsTrack ? computeKmSplits(decodeTrack(lastRunDetail.gpsTrack)) : [];
+  const hasSplits = splits.length >= 2;
+  const fastestIdx = hasSplits
+    ? splits.reduce((mi, s, i) => (s.seconds < splits[mi]!.seconds ? i : mi), 0)
+    : -1;
   const series = runs.slice(0, 10).map((r) => (r.distanceM ?? 0) / 1000).reverse();
   return (
     <WidgetFrame pad={22} onPress={open} accessibilityLabel={t('running.history.title')} style={styles.largeCol}>
@@ -97,14 +111,32 @@ function RunningHistoryWidget({ size }: { size: WidgetSize }) {
           {relDay(lastRun.finishedAt, t)} · {duration} · {pace}
         </Text>
       </View>
-      {series.length >= 2 ? (
-        <View style={styles.largeSpark}>
-          <Sparkline values={series} height={130} area showDot strokeWidth={3.5} />
-        </View>
+      {hasSplits ? (
+        <>
+          <Text style={[styles.splitsEyebrow, { color: colors.textMuted }]}>
+            {t('widgets.running.splitsEyebrow')}
+          </Text>
+          <View style={styles.largeSpark}>
+            <MiniBars values={splits.map((s) => s.seconds)} height={110} highlightIndex={fastestIdx} />
+          </View>
+          <Text style={[styles.footText, { color: colors.textMuted }]}>
+            {t('widgets.running.bestKm', { pace: units.formatPace(splits[fastestIdx]!.seconds) })}
+          </Text>
+        </>
       ) : (
-        <View style={styles.largeSpark} />
+        <>
+          {series.length >= 2 ? (
+            <View style={styles.largeSpark}>
+              <Sparkline values={series} height={130} area showDot strokeWidth={3.5} />
+            </View>
+          ) : (
+            <View style={styles.largeSpark} />
+          )}
+          <Text style={[styles.footText, { color: colors.textMuted }]}>
+            {t('widgets.running.recentDistances')}
+          </Text>
+        </>
       )}
-      <Text style={[styles.footText, { color: colors.textMuted }]}>{t('widgets.running.recentDistances')}</Text>
     </WidgetFrame>
   );
 }
@@ -219,6 +251,13 @@ const styles = StyleSheet.create({
   largeCol: { gap: 0 },
   largeHead: { gap: 2 },
   largeDistance: { fontFamily: fontFamily.displayXBold, fontSize: 34, letterSpacing: -1.2 },
+  splitsEyebrow: {
+    fontFamily: fontFamily.monoBold,
+    fontSize: 10,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginTop: 14,
+  },
   largeSpark: { flex: 1, marginVertical: 14, justifyContent: 'center' },
   footText: { fontFamily: fontFamily.mono, fontSize: 11, marginTop: 'auto' },
 });
