@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/activation-programme-owner-scope` — activation d'un programme éditorial (divergence local↔cloud)
+
+> Bug remonté par Damien via la recette widgets (« il y a un programme actif mais absent du widget »).
+> **Diagnostic vérifié en SQL + dans le code** (pas une supposition) — voir Notes. 100 % UI/logique,
+> aucune migration. typecheck 0 · lint 0 erreur · 112 tests.
+
+**Corrigé**
+- **On pouvait « activer » un programme éditorial** (bibliothèque, `owner_id IS NULL`) sans le dupliquer :
+  le détail de programme affichait « Démarrer le programme » **même pour un éditorial**, ce qui appelait
+  `planProgram(editorialId)` → `is_active=1` écrit **en local** (SQLite sans RLS) puis **rejeté par la RLS
+  au sync** (interdit d'écrire `owner_id null`). Résultat : la bibliothèque affichait « Actif » alors que
+  `useActiveProgram` (owner-scopé) ne le voyait pas → widget « Aucun programme actif » + divergence local↔cloud.
+- **UI** ([programs/[id].tsx](apps/mobile/src/app/programs/%5Bid%5D.tsx),
+  [running-programs/[id].tsx](apps/mobile/src/app/running-programs/%5Bid%5D.tsx)) : le bouton
+  « Démarrer / Modifier le planning » (et, côté course, Modifier / Supprimer) est désormais **réservé aux
+  programmes possédés** (`isOwned`). Un éditorial ne propose plus que **« Dupliquer »** (recetté device).
+- **Repository (filet de sécurité)** : l'`UPDATE ... SET is_active = 1` est **owner-scopé** (`AND owner_id = ?`)
+  dans [`activateProgram`](apps/mobile/src/data/repositories/program-repository.ts) **et** dans l'activation
+  inlinée de [`planProgram`](apps/mobile/src/data/repositories/planned-session-repository.ts) — la désactivation
+  l'était déjà, pas l'activation. Un éditorial ne peut plus jamais être flaggé actif.
+
+**Technique / Notes**
+- Vérifications : seed éditorial = `is_active false` ([seed.sql:128](supabase/seed.sql#L128)) ;
+  `useActiveProgram` filtre `owner_id = user AND is_active = 1` ; `useProgramLibrary` surface `is_active`
+  (d'où le badge « Actif » trompeur). Bug **pré-existant** (hors refonte widgets ; le widget était correct).
+- **Nettoyage de donnée** : sur un device déjà touché, l'`is_active=1` fantôme reste en local jusqu'à un
+  resync (ex. réinstallation propre / `pm clear` → re-sync depuis le cloud où l'éditorial est `is_active=false`).
+
 ### 25/07/2026 — `feature/widgets-data-suite` — widgets Course : splits/km (grand carré Historique)
 
 > Complétion d'une des 2 données reportées. La trace GPS encode lat/lng **+ temps par point**

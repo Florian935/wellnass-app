@@ -18,6 +18,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   deleteProgram,
   duplicateProgram,
+  useMyPrograms,
   useProgramDetail,
   type SessionDetail,
 } from '@/data/repositories/program-repository';
@@ -40,6 +41,10 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
 
   const { detail, isLoading } = useProgramDetail(programId);
   const { runnerProfile } = useRunnerProfile();
+  const { programs: myPrograms } = useMyPrograms();
+  // Un programme éditorial (non possédé) ne peut pas être planifié/activé directement : il
+  // doit d'abord être dupliqué (sinon activation de l'éditorial → divergence local↔cloud).
+  const isOwned = myPrograms.some((p) => p.id === programId);
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -170,16 +175,22 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
 
         {/* Actions */}
         <View style={styles.actions}>
-          <Button
-            label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
-            onPress={onPlan}
-          />
+          {/* Planifier/activer réservé aux programmes POSSÉDÉS (cf. muscu) : un éditorial doit
+              d'abord être dupliqué, sinon on activait l'éditorial → divergence local↔cloud. */}
+          {isOwned ? (
+            <Button
+              label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
+              onPress={onPlan}
+            />
+          ) : null}
 
-          <Button
-            label={t('running.program.edit')}
-            variant="ghost"
-            onPress={onEdit}
-          />
+          {isOwned ? (
+            <Button
+              label={t('running.program.edit')}
+              variant="ghost"
+              onPress={onEdit}
+            />
+          ) : null}
 
           <Button
             label={duplicating ? t('programs.detail.duplicating') : t('running.program.duplicate')}
@@ -189,13 +200,15 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
             disabled={duplicating}
           />
 
-          <Button
-            label={deleting ? t('running.program.deleting') : t('running.program.delete')}
-            variant="destructive"
-            onPress={onDelete}
-            loading={deleting}
-            disabled={deleting}
-          />
+          {isOwned ? (
+            <Button
+              label={deleting ? t('running.program.deleting') : t('running.program.delete')}
+              variant="destructive"
+              onPress={onDelete}
+              loading={deleting}
+              disabled={deleting}
+            />
+          ) : null}
         </View>
       </ScrollView>
     </Screen>

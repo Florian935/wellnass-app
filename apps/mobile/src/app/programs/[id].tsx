@@ -201,10 +201,14 @@ function ProgramDetailView({ programId }: { programId: string }) {
 
         {/* Actions */}
         <View style={styles.actions}>
-          <Button
-            label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
-            onPress={onPlan}
-          />
+          {/* Planifier/activer réservé aux programmes POSSÉDÉS : un éditorial doit d'abord
+              être dupliqué (sinon on activait l'éditorial → divergence local↔cloud). */}
+          {isOwned ? (
+            <Button
+              label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
+              onPress={onPlan}
+            />
+          ) : null}
 
           {isOwned ? (
             <Button
