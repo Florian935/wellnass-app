@@ -59,9 +59,9 @@ Il faut donc **distinguer le flux récupération** et **retenir l'utilisateur** 
 - **Après validation : déconnexion + retour à l'écran de connexion** avec message de succès. L'utilisateur
   se reconnecte avec son nouveau mot de passe — ce qui le **valide immédiatement**. (Alternative « rester
   connecté » écartée : on n'aurait jamais vérifié que le nouveau mot de passe fonctionne.)
-- **Révocation des autres sessions** : oui — `signOut({ scope: 'others' })` avant la déconnexion locale.
-  Le cas d'usage réel du reset est « je crains que quelqu'un ait accès à mon compte ». Effet de bord
-  assumé : un simple oubli déconnecte aussi les autres appareils de l'utilisateur.
+- **Révocation des autres sessions** : oui. Le cas d'usage réel du reset est « je crains que quelqu'un ait
+  accès à mon compte ». Effet de bord assumé : un simple oubli déconnecte aussi les autres appareils de
+  l'utilisateur. _Mise en œuvre : un simple `signOut()` suffit — voir §2.4._
 - **URL de redirection dédiée `wellness://password-reset`** (et non la réutilisation de
   `wellness://auth-callback`) : le discriminant devient **structurel** (le chemin du deep link) au lieu de
   dépendre d'un paramètre de fragment (`type=recovery`) dont on ne veut pas faire un point de rupture. Coût :
@@ -73,15 +73,15 @@ Il faut donc **distinguer le flux récupération** et **retenir l'utilisateur** 
 - **Envoi** : `resetPassword` passe `{ redirectTo: PASSWORD_RESET_REDIRECT_URL }`.
 - **Réception** : le deep link `wellness://password-reset#access_token=…&refresh_token=…` ouvre une session
   **marquée « récupération »** (drapeau en mémoire), et **ne laisse pas** entrer dans l'app.
-- **Écran « Nouveau mot de passe »** (`(auth)/new-password`) : 2 champs (nouveau + confirmation), validation,
-  enregistrement, **Annuler** (déconnexion).
+- **Écran « Nouveau mot de passe »** (`app/password-reset.tsx`, **nom aligné sur le chemin du deep link** —
+  cf. §2.3) : 2 champs (nouveau + confirmation), validation, enregistrement, **Annuler** (déconnexion).
 - **Gate de routing** : nouvel état `password-recovery` dans `resolveRootRoute`, prioritaire sur
   onboarding/app, au même niveau que `deletion-pending`.
 - **Liens invalides / expirés** : parsing des erreurs du fragment → message explicite + invitation à
   redemander un lien (aujourd'hui : no-op silencieux).
 - **Mutualisation** de la règle de mot de passe (longueur + concordance) dans `@wellness/shared`, réutilisée
   par l'inscription **sans changement de comportement**.
-- **i18n FR + EN** ; états de chargement et d'erreur ; **connexion requise** (désactivé hors-ligne).
+- **i18n FR + EN** ; états de chargement et d'erreur ; **connexion requise** (action serveur, jamais offline).
 
 **Hors périmètre (à ne pas implémenter ici) :**
 
@@ -104,7 +104,8 @@ Il faut donc **distinguer le flux récupération** et **retenir l'utilisateur** 
   (`auth.forgot.sent` : « **Si un compte existe** pour {{email}}… ») — on ne révèle pas si l'adresse existe.
 - **Seul changement** : le mail pointe désormais vers `wellness://password-reset`.
 - Bouton **désactivé hors-ligne** + message « nécessite une connexion Internet » (patron `useStatus()`
-  déjà utilisé par CONF-02).
+  déjà utilisé par CONF-02). _Écran existant : comportement inchangé. À ne pas confondre avec l'écran de
+  saisie (§2.3), où ce patron n'est **pas** réutilisable._
 
 ### 2.2 Retour dans l'app par le lien
 

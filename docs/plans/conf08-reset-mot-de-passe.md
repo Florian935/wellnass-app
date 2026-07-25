@@ -14,8 +14,9 @@ saisit un nouveau mot de passe dans l'app, et se reconnecte avec — les autres 
 **Architecture :** URL de redirection **dédiée** `wellness://password-reset` (discriminant structurel) →
 `useAuthDeepLink` reconnaît le flux, ouvre la session **et** lève un drapeau `recoveryPending` (mémoire) →
 `resolveRootRoute` renvoie le nouvel état `password-recovery`, prioritaire sur onboarding/app → écran-gate
-racine `new-password` (patron `deletion-pending`) → `updateUser` → `signOut({scope:'others'})` → `signOut()`
-→ retour connexion avec message de succès.
+racine `password-reset` (patron `deletion-pending`, **nom aligné sur le chemin du deep link**) →
+`updateUser` → `signOut()` (scope global par défaut = tous les appareils) → retour connexion avec message
+de succès.
 
 **Tech stack :** TypeScript, RN + Expo (SDK 57), `expo-linking` + `expo-router` (déjà en place),
 `@supabase/supabase-js` (`resetPasswordForEmail` / `updateUser` / `signOut(scope)`), Zustand (`auth-store`),
