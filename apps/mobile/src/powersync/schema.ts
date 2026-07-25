@@ -33,6 +33,7 @@ const profiles = new Table({
   target_weight_kg: column.real,
   start_weight_kg: column.real,
   main_goal: column.text,
+  workout_display_level: column.text,
   onboarding_completed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
@@ -47,9 +48,22 @@ const user_settings = new Table({
   active_pillars: column.text,
   notifications: column.text,
   dashboard_layout: column.text,
+  analytics_enabled: column.integer, // 0/1 — consentement analytics (US 9.10)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
+});
+
+// ── US 9.10 : analytics produit (append-only, first-party) ─────────────────
+// Migration : supabase/migrations/20260724112210_analytics_events.sql
+const analytics_events = new Table({
+  user_id: column.text,
+  event_name: column.text,
+  properties: column.text, // JSON sérialisé
+  app_version: column.text,
+  platform: column.text,
+  occurred_at: column.text,
+  created_at: column.text,
 });
 
 // ── V0.4 : profil nutritionnel (une ligne par compte) ──────────────────────
@@ -136,6 +150,7 @@ const exercises = new Table({
   muscle_primary: column.text,
   equipment: column.text,
   media_url: column.text,
+  muscles_secondary: column.text, // JSON [MuscleGroup] — MUSC-F10c-1 (éditorial)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -166,6 +181,17 @@ const exercise_notes = new Table({
   user_id: column.text,
   exercise_id: column.text,
   note: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── MUSC-F10c-2 : variantes / alternatives (liaison symétrique) ───────────
+// Migration : supabase/migrations/20260722151024_muscf10c2_exercise_variants.sql
+const exercise_variants = new Table({
+  owner_id: column.text,
+  exercise_id_a: column.text,
+  exercise_id_b: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -410,9 +436,36 @@ const body_weight_entries = new Table({
   deleted_at: column.text,
 });
 
+// ── US Refonte-D : templates de séance libre ──────────────────────────────
+// Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
+
+const workout_templates = new Table({
+  user_id: column.text,
+  name: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+const workout_template_exercises = new Table({
+  template_id: column.text,
+  user_id: column.text,
+  exercise_id: column.text,
+  order_index: column.integer,
+  set_type: column.text,
+  target_sets: column.integer,
+  target_reps: column.text,
+  target_weight_kg: column.real,
+  rest_seconds: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 export const AppSchema = new Schema({
   profiles,
   user_settings,
+  analytics_events,
   nutrition_profiles,
   foods,
   food_translations,
@@ -427,6 +480,7 @@ export const AppSchema = new Schema({
   exercise_translations,
   exercise_favorites,
   exercise_notes,
+  exercise_variants,
   workout_superset_pairs,
   workouts,
   workout_sets,
@@ -439,4 +493,6 @@ export const AppSchema = new Schema({
   runs,
   planned_sessions,
   running_pace_records,
+  workout_templates,
+  workout_template_exercises,
 });

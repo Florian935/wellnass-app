@@ -3,7 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { SetType } from '@wellness/shared';
+import type { SetType, WorkoutDisplayLevel } from '@wellness/shared';
+import { workoutFieldVisibility } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useUnits } from '@/hooks/useUnits';
 import type { Palette } from '@/theme/colors';
@@ -99,6 +100,8 @@ type CurrentSetCardProps = {
   onSetRest: (seconds: number) => void;
   onValidate: () => void;
   colors: Palette;
+  /** Niveau d'affichage de l'utilisateur (MUSC-F13) : pilote la densité des suppléments. */
+  level: WorkoutDisplayLevel;
 };
 
 /** Petit bouton rond « − / + » réutilisé par les steppers. */
@@ -167,9 +170,11 @@ export function CurrentSetCard({
   onSetRest,
   onValidate,
   colors,
+  level,
 }: CurrentSetCardProps) {
   const { t } = useTranslation();
   const units = useUnits();
+  const vis = workoutFieldVisibility(level);
 
   // Sélecteur RPE : masqué par défaut (peu utilisé), déplié au tap sur « ＋ RPE ».
   const [rpeOpen, setRpeOpen] = useState(false);
@@ -225,10 +230,10 @@ export function CurrentSetCard({
         {t('workout.setProgress', { current: currentIndex, total: totalSets })}
       </Text>
 
-      {/* Note d'exercice (C3) : toujours visible dès que câblée par le parent
-          (pas de mode masqué comme le RPE — la note doit rester facile à
-          corriger, ex. réglage de machine). */}
-      {note !== undefined ? (
+      {/* Note d'exercice (C3) : visible dès que câblée par le parent, mais
+          gatée par le niveau d'affichage (MUSC-F13 — réservée au niveau
+          « detailed »). */}
+      {vis.note && note !== undefined ? (
         <View style={[styles.noteRow, { backgroundColor: colors.surfaceAlt }]}>
           <Text style={styles.noteIcon}>📝</Text>
           <TextInput
@@ -243,88 +248,99 @@ export function CurrentSetCard({
       ) : null}
 
       {/* Sélecteur de type : chips scrollables (fondu + chevron tant qu'il reste du
-          contenu à droite) + raccourci 🔥 fixé à droite. */}
-      <View style={styles.typeRow}>
-        <View style={styles.typeScrollWrap} onLayout={(e) => setTypeContainerWidth(e.nativeEvent.layout.width)}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            scrollEventThrottle={16}
-            onContentSizeChange={(w) => setTypeContentWidth(w)}
-            onScroll={(e) => setTypeScrollX(e.nativeEvent.contentOffset.x)}
-            style={styles.typeScroll}
-            contentContainerStyle={styles.typeScrollContent}
-          >
-            {TYPE_CHIPS.map(renderChip)}
-          </ScrollView>
-          {canScrollTypesRight ? (
-            <LinearGradient
-              pointerEvents="none"
-              colors={['transparent', colors.surface]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.typeFade}
+          contenu à droite) + raccourci 🔥 fixé à droite. Niveaux différents
+          (MUSC-F13) : le conteneur n'est rendu que si au moins un des deux est
+          visible ; chaque partie est ensuite gatée individuellement. */}
+      {vis.typeSelector || vis.warmupShortcut ? (
+        <View style={styles.typeRow}>
+          {vis.typeSelector ? (
+            <View style={styles.typeScrollWrap} onLayout={(e) => setTypeContainerWidth(e.nativeEvent.layout.width)}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                scrollEventThrottle={16}
+                onContentSizeChange={(w) => setTypeContentWidth(w)}
+                onScroll={(e) => setTypeScrollX(e.nativeEvent.contentOffset.x)}
+                style={styles.typeScroll}
+                contentContainerStyle={styles.typeScrollContent}
+              >
+                {TYPE_CHIPS.map(renderChip)}
+              </ScrollView>
+              {canScrollTypesRight ? (
+                <LinearGradient
+                  pointerEvents="none"
+                  colors={['transparent', colors.surface]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.typeFade}
+                >
+                  <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
+                </LinearGradient>
+              ) : null}
+            </View>
+          ) : null}
+          {vis.warmupShortcut ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: warmupActive }}
+              onPress={() => onSetType(warmupActive ? 'normal' : 'warmup')}
+              style={({ pressed }) => [
+                styles.chip,
+                styles.warmupChip,
+                { backgroundColor: warmupActive ? colors.accent : colors.surfaceAlt },
+                pressed && styles.pressed,
+              ]}
             >
-              <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
-            </LinearGradient>
+              <Text style={[styles.chipText, { color: warmupActive ? colors.accentText : colors.textMuted }]}>
+                {`🔥 ${t('workout.warmupToggle')}`}
+              </Text>
+            </Pressable>
           ) : null}
         </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: warmupActive }}
-          onPress={() => onSetType(warmupActive ? 'normal' : 'warmup')}
-          style={({ pressed }) => [
-            styles.chip,
-            styles.warmupChip,
-            { backgroundColor: warmupActive ? colors.accent : colors.surfaceAlt },
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.chipText, { color: warmupActive ? colors.accentText : colors.textMuted }]}>
-            {`🔥 ${t('workout.warmupToggle')}`}
-          </Text>
-        </Pressable>
-      </View>
+      ) : null}
 
       {/* Liaison superset (C3, revue 20/07/2026) : une action nommée plutôt qu'un
-          type abstrait à toggler des deux côtés séparément. */}
-      {supersetLink?.status === 'linkable' ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={onRequestLinkSuperset}
-          style={({ pressed }) => [
-            styles.supersetBtn,
-            { borderColor: colors.accent },
-            pressed && styles.pressed,
-          ]}
-        >
-          <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
-            {`🔗 ${t('workout.superset.link')}`}
-          </Text>
-        </Pressable>
-      ) : supersetLink?.status === 'linked' ? (
-        <View style={styles.supersetRow}>
-          <Text style={[styles.supersetLinkedText, { color: colors.accent }]}>
-            {`🔗 ${t('workout.superset.linked', { name: supersetLink.partnerName })}`}
-          </Text>
-          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
-            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
-              {t('workout.superset.remove')}
+          type abstrait à toggler des deux côtés séparément. Réservée au niveau
+          « detailed » (MUSC-F13). */}
+      {vis.superset ? (
+        supersetLink?.status === 'linkable' ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onRequestLinkSuperset}
+            style={({ pressed }) => [
+              styles.supersetBtn,
+              { borderColor: colors.accent },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
+              {`🔗 ${t('workout.superset.link')}`}
             </Text>
           </Pressable>
-        </View>
-      ) : supersetLink?.status === 'orphaned' ? (
-        <View style={styles.supersetRow}>
-          <Text style={[styles.supersetOrphanText, { color: colors.accent }]}>
-            {`⚠️ ${t('workout.superset.orphaned')}`}
-          </Text>
-          <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
-            <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
-              {t('workout.superset.remove')}
+        ) : supersetLink?.status === 'linked' ? (
+          <View style={styles.supersetRow}>
+            <Text style={[styles.supersetLinkedText, { color: colors.accent }]}>
+              {`🔗 ${t('workout.superset.linked', { name: supersetLink.partnerName })}`}
             </Text>
-          </Pressable>
-        </View>
+            <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+              <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+                {t('workout.superset.remove')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : supersetLink?.status === 'orphaned' ? (
+          <View style={styles.supersetRow}>
+            <Text style={[styles.supersetOrphanText, { color: colors.accent }]}>
+              {`⚠️ ${t('workout.superset.orphaned')}`}
+            </Text>
+            <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+              <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+                {t('workout.superset.remove')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null
       ) : null}
 
       {lastPerfLabel ? (
@@ -334,8 +350,9 @@ export function CurrentSetCard({
       ) : null}
 
       {/* Suggestion de progression (C3) : purement informative, jamais tappable
-          (pas de Pressable) — le texte est déjà entièrement formaté par le parent. */}
-      {suggestionLabel ? (
+          (pas de Pressable) — le texte est déjà entièrement formaté par le parent.
+          Visible à partir du niveau « normal » (MUSC-F13). */}
+      {vis.suggestion && suggestionLabel ? (
         <Text style={[styles.suggestion, { color: colors.success }]}>{`💡 ${suggestionLabel}`}</Text>
       ) : null}
 
@@ -398,7 +415,7 @@ export function CurrentSetCard({
               <Text style={[styles.planned, { color: colors.textMuted }]}>
                 {t('workout.plannedWeight', { weight: `${plannedDisplay} ${weightSymbol}` })}
               </Text>
-              {deltaRounded != null ? (
+              {vis.delta && deltaRounded != null ? (
                 deltaRounded === 0 ? (
                   <Text style={[styles.delta, { color: colors.textMuted, backgroundColor: colors.surfaceAlt }]}>=</Text>
                 ) : deltaRounded > 0 ? (
@@ -435,7 +452,9 @@ export function CurrentSetCard({
         <StepButton icon="add" label="+15s" colors={colors} onPress={() => onStepRest(15)} />
       </View>
 
-      {/* RPE par série (C2) : masqué derrière « ＋ RPE » ; déplié = sélection 1-10. */}
+      {/* RPE par série (C2) : masqué derrière « ＋ RPE » ; déplié = sélection 1-10.
+          Réservé au niveau « detailed » (MUSC-F13). */}
+      {vis.rpe ? (
       <View style={styles.rpeBlock}>
         {rpeOpen ? (
           <View style={[styles.rpeOpen, { backgroundColor: colors.surfaceAlt }]}>
@@ -497,6 +516,7 @@ export function CurrentSetCard({
           </Pressable>
         )}
       </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"

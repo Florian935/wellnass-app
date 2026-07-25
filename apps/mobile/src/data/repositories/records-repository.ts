@@ -40,7 +40,9 @@ import {
   rollingWeekStarts,
   ROLLING_WEEK_DAYS,
   PILLARS,
+  pickOneRepMax,
   sessionBestEstimated1RM,
+  type OneRepMaxSample,
   type MuscleBalance,
   type MuscleGroup,
   type RecordType,
@@ -197,6 +199,25 @@ const SELECT_SETS_FOR_WORKOUT = `
   LEFT JOIN exercise_translations tfr ON tfr.exercise_id = s.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
   WHERE s.workout_id = ? AND s.deleted_at IS NULL
   ORDER BY s.order_index
+`;
+
+/**
+ * 1RM « réel » d'un exercice : charge max d'une série réellement effectuée à
+ * 1 répétition (validée, hors échauffement/durée), + la date de la séance qui
+ * la détient. `?` = id de l'exercice. `null` si aucune telle série.
+ */
+const SELECT_EXERCISE_TOP_SINGLE = `
+  SELECT s.weight_kg AS value, w.finished_at AS achieved_at
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL AND w.finished_at IS NOT NULL
+  WHERE s.exercise_id = ?
+    AND s.deleted_at IS NULL
+    AND s.done = 1
+    AND s.reps = 1
+    AND s.weight_kg IS NOT NULL
+    AND s.set_type NOT IN ('warmup','duration')
+  ORDER BY s.weight_kg DESC, w.finished_at DESC
+  LIMIT 1
 `;
 
 /** Ligne brute d'une série (nom d'exercice résolu), pour le regroupement du détail. */
@@ -508,6 +529,57 @@ export function useExerciseRecords(exerciseId: string): {
   const records = data.map(rowToBeatenRecord);
 
   return { records, isLoading };
+}
+
+/**
+ * 1RM réel (charge max d'une série à 1 rep) d'un exercice, réactif. `null` si
+ * l'utilisateur n'a jamais validé de série à 1 rep pour cet exercice.
+ */
+export function useExerciseTopSingle(
+  exerciseId: string,
+): { topSingle: OneRepMaxSample | null; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{ value: number; achieved_at: string }>(
+    SELECT_EXERCISE_TOP_SINGLE,
+    [exerciseId],
+  );
+  const row = data[0];
+  const topSingle = row ? { value: row.value, date: row.achieved_at } : null;
+  return { topSingle, isLoading };
+}
+
+/** Vue records prête pour la fiche exercice (F10b). Chaque entrée : valeur + date ISO. */
+export type ExerciseFicheRecords = {
+  oneRepMax: { value: number; date: string; real: boolean } | null;
+  maxWeight: { value: number; date: string } | null;
+  bestVolume: { value: number; date: string } | null;
+};
+
+/**
+ * Records d'un exercice pour la fiche : 1RM (réel si dispo, sinon estimé),
+ * charge max, meilleur volume — chacun avec sa date. Compose `useExerciseRecords`
+ * (personal_records) + `useExerciseTopSingle` (1RM réel dérivé) + `pickOneRepMax`.
+ */
+export function useExerciseFicheRecords(
+  exerciseId: string,
+): { records: ExerciseFicheRecords; isLoading: boolean } {
+  const { records: best, isLoading: bestLoading } = useExerciseRecords(exerciseId);
+  const { topSingle, isLoading: singleLoading } = useExerciseTopSingle(exerciseId);
+
+  const byType = (t: RecordType) => best.find((r) => r.type === t) ?? null;
+  const maxW = byType('max_weight');
+  const est = byType('estimated_1rm');
+  const vol = byType('best_volume');
+
+  const records: ExerciseFicheRecords = {
+    oneRepMax: pickOneRepMax(
+      topSingle,
+      est ? { value: est.value, date: est.achievedAt } : null,
+    ),
+    maxWeight: maxW ? { value: maxW.value, date: maxW.achievedAt } : null,
+    bestVolume: vol ? { value: vol.value, date: vol.achievedAt } : null,
+  };
+
+  return { records, isLoading: bestLoading || singleLoading };
 }
 
 /**

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CONF-02 — Suppression du compte</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--danger-bg:#fbeae8;--danger-border:#e6b7b1;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1400px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--danger);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:92ch;margin:0;font-size:15px;}
+  .flow{max-width:1400px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:320px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .step{font-size:11px;font-weight:800;color:var(--danger);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:560px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:532px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .nav{display:flex;align-items:center;gap:10px;color:var(--ink);}
+  .nav .bk{font-size:20px;}
+  .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px;}
+  .card{background:var(--surface-alt);border-radius:12px;padding:12px;font-size:13px;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:var(--surface-alt);border-radius:12px;font-size:14px;font-weight:600;}
+  .muted{color:var(--muted);}
+  .btn{border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn-danger{background:var(--danger);color:#fff;}
+  .btn-danger-outline{border:1.5px solid var(--danger);color:var(--danger);}
+  .btn-ghost{color:var(--muted);font-weight:700;font-size:14px;text-align:center;padding:10px;}
+  .btn-strength{background:var(--strength);color:#fff;}
+  .danger-zone{border:1.5px solid var(--danger-border);background:var(--danger-bg);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+  .danger-zone .dz-t{font-weight:800;color:var(--danger);font-size:13px;}
+  .warn{background:var(--danger-bg);border:1px solid var(--danger-border);border-radius:12px;padding:12px;font-size:13px;color:var(--ink);}
+  .warn b{color:var(--danger);}
+  .list{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink);}
+  .list li{margin-bottom:3px;}
+  .field .lab{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .input{background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-family:var(--mono);color:var(--ink);font-size:15px;}
+  .grace{background:#fdf3e6;}
+  .pill{display:inline-block;font-family:var(--mono);font-weight:700;color:var(--strength);}
+  .spacer{flex:1;}
+  .hintline{font-size:11.5px;color:var(--muted);}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:220px;}
+  @media(max-width:700px){.arrow{display:none;}}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">CONF-02 · Conformité · RGPD · Exigé par les stores</p>
+    <h1 class="title">Suppression du compte</h1>
+    <p class="sub">Flux de suppression avec <b>double confirmation</b> (avertissement + ré-authentification par
+      mot de passe) et <b>délai de grâce de 30 jours récupérable</b>. À J+30, un purge serveur (cascade FK,
+      planifié par pg_cron) efface définitivement le compte et toutes les données. La suppression n'est pas
+      offline (action serveur).</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Réglages — zone Danger -->
+    <div class="col">
+      <div class="step">1 · Réglages</div>
+      <div class="caption">Zone de danger, en bas des réglages</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Réglages</span></div>
+        <div class="sect">Compte</div>
+        <div class="btn-ghost" style="background:var(--surface-alt);border-radius:12px;">Se déconnecter</div>
+        <div class="spacer"></div>
+        <div class="danger-zone">
+          <div class="dz-t">⚠️ Zone de danger</div>
+          <div class="hintline">La suppression est définitive après 30 jours. Cette action nécessite une connexion.</div>
+          <div class="btn btn-danger-outline">Supprimer mon compte</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Avertissement + ré-auth -->
+    <div class="col">
+      <div class="step">2 · Avertissement + ré-auth</div>
+      <div class="caption">Ce qui sera supprimé + <b>mot de passe</b></div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Supprimer mon compte</span></div>
+        <div class="warn">
+          <b>Action irréversible.</b> Ton compte et toutes tes données seront supprimés :
+          <ul class="list">
+            <li>Séances, courses, journal nutrition</li>
+            <li>Profils, historiques, records</li>
+            <li>Exercices &amp; aliments personnels</li>
+          </ul>
+        </div>
+        <div class="card grace">🕓 Suppression effective dans <span class="pill">30 jours</span>. Tu peux annuler en te reconnectant avant cette date.</div>
+        <div class="hintline">💡 Pense à exporter tes données au préalable <span class="muted">(bientôt disponible)</span>.</div>
+        <div class="field">
+          <div class="lab">Confirme avec ton mot de passe</div>
+          <div class="input">••••••••••</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="btn btn-danger">Supprimer définitivement</div>
+        <div class="btn-ghost">Annuler</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Confirmation / déconnexion -->
+    <div class="col">
+      <div class="step">3 · Confirmé → déconnecté</div>
+      <div class="caption">Suppression programmée</div>
+      <div class="phone"><div class="scr" style="align-items:center;justify-content:center;text-align:center;gap:18px;">
+        <div style="font-size:44px;">🗓️</div>
+        <div style="font-weight:800;font-size:19px;">Suppression programmée</div>
+        <div class="muted" style="font-size:14px;">Ton compte sera supprimé le<br><span class="pill" style="font-size:16px;">14/08/2026</span></div>
+        <div class="card" style="text-align:center;">Reconnecte-toi avant cette date pour <b>annuler</b> la suppression.</div>
+        <div class="spacer"></div>
+        <div class="btn btn-strength" style="align-self:stretch;">Retour à la connexion</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Gate de récupération -->
+    <div class="col">
+      <div class="step">4 · Reconnexion (gate)</div>
+      <div class="caption">Fenêtre de récupération — accès <b>bloqué</b></div>
+      <div class="phone"><div class="scr" style="align-items:center;justify-content:center;text-align:center;gap:16px;">
+        <div style="font-size:40px;">⏳</div>
+        <div style="font-weight:800;font-size:18px;">Suppression en cours</div>
+        <div class="muted" style="font-size:14px;">Ton compte sera supprimé le<br><span class="pill" style="font-size:16px;">14/08/2026</span></div>
+        <div class="hintline">Tant que la suppression est active, l'accès à l'app est bloqué.</div>
+        <div class="spacer"></div>
+        <div class="btn btn-strength" style="align-self:stretch;">Annuler la suppression</div>
+        <div class="btn-ghost">Se déconnecter</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="head" style="margin-top:34px;">
+    <p class="sub"><b>Note technique (hors écrans)</b> — à J+30, le job <code>pg_cron</code> quotidien appelle
+      <code>purge_expired_accounts()</code> (résiliente par ligne) qui supprime <code>auth.users</code> →
+      <b>cascade FK</b> = purge de toutes les tables de l'utilisateur. Le contenu éditorial (non possédé)
+      reste intact. « Annuler » n'est possible qu'avant l'échéance ; après, le purge a priorité.</p>
+  </div>
+
+</body>
+</html>

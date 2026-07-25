@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US 1.2 — Connexion via Google (OAuth)</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--strength:#6b0028;--danger:#b3261e;--success:#5c7a3f;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1200px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1200px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:320px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:34px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:540px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:512px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+  .h1{font-weight:800;font-size:20px;margin-top:6px;}
+  .hsub{font-size:13px;color:var(--muted);margin-top:-6px;}
+  .field{border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:13px;color:var(--muted);background:var(--surface);}
+  .btn{border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .sep{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;font-weight:700;margin:2px 0;}
+  .sep::before,.sep::after{content:"";height:1px;background:var(--border);flex:1;}
+  .gbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border:1px solid #dadce0;border-radius:13px;padding:12px;font-weight:700;font-size:14px;color:#3c4043;box-shadow:0 1px 2px rgba(0,0,0,.05);}
+  .glogo{width:18px;height:18px;flex-shrink:0;}
+  .consent{font-size:11px;color:var(--muted);line-height:1.5;text-align:center;}
+  .consent a{color:var(--accent);text-decoration:underline;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .foot{font-size:13px;color:var(--muted);text-align:center;margin-top:auto;}
+  .foot a{color:var(--accent);font-weight:700;}
+  .sheet{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);}
+  .sheet .st{font-weight:800;font-size:14px;margin-bottom:10px;}
+  .acct{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--border);font-size:13px;}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#c0562f,#6b0028);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .badge{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  .ok{background:#eaf3e0;border-color:#c5dca9;color:var(--success);}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:220px;}
+  @media(max-width:700px){.arrow{display:none;}}
+  .note{max-width:1200px;margin:28px auto 0;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US 1.2 · V0.8 · Authentification</p>
+    <h1 class="title">Connexion via Google</h1>
+    <p class="sub">Créer un compte / se connecter avec <b>Google</b>, en complément de l'e-mail/mot de passe.
+      Sign-In <b>natif</b> Android → <code>signInWithIdToken</code> (Supabase). <b>Liaison automatique par e-mail
+      vérifié</b> (un seul compte). Bouton sur les deux écrans + <b>mention de consentement par action</b>
+      (CGU + confidentialité + 16 ans).</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Écran connexion -->
+    <div class="col">
+      <div class="step">1 · Connexion</div>
+      <div class="caption">« ou » sous le bloc e-mail + bouton Google + mention</div>
+      <div class="phone"><div class="scr">
+        <div class="h1">Content de te revoir</div>
+        <div class="hsub">Connecte-toi à ton compte.</div>
+        <div class="field">E-mail</div>
+        <div class="field">Mot de passe</div>
+        <div class="btn btn-accent">Se connecter</div>
+        <div class="sep">ou</div>
+        <div class="gbtn">
+          <svg class="glogo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.6 2.4 30.1 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.1C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-3.9 6.8-9.7 6.8-17.4z"/><path fill="#FBBC05" d="M10.4 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15-5.5l-7.3-5.7c-2 1.4-4.6 2.2-7.7 2.2-6.3 0-11.7-3.7-13.6-9.9l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+          Continuer avec Google
+        </div>
+        <div class="consent">En continuant avec Google, tu acceptes les <a>conditions d'utilisation</a> et la
+          <a>politique de confidentialité</a> et confirmes avoir 16 ans ou plus.</div>
+        <div class="foot">Pas de compte ? <a>Créer un compte</a></div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Sélecteur natif Google -->
+    <div class="col">
+      <div class="step">2 · Sélecteur Google (natif)</div>
+      <div class="caption">Feuille système in-app (pas de navigateur)</div>
+      <div class="phone"><div class="scr" style="justify-content:center;background:rgba(51,41,31,.04);">
+        <div class="sheet">
+          <div class="st">Choisir un compte</div>
+          <div class="st" style="font-weight:600;font-size:12px;color:var(--muted);margin-top:-6px;">pour continuer vers WellnessFit</div>
+          <div class="acct"><span class="avatar">M</span><div><div style="font-weight:700;">Marie Durand</div><div class="muted" style="font-size:11px;">marie@gmail.com</div></div></div>
+          <div class="acct" style="border-bottom:none;"><span class="avatar" style="background:#5f6368;">+</span> Utiliser un autre compte</div>
+        </div>
+        <div class="card" style="margin-top:16px;text-align:center;">On récupère l'<code>idToken</code> → échange Supabase <code>signInWithIdToken</code>.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Résultat : nouveau vs lié -->
+    <div class="col">
+      <div class="step">3 · Après connexion</div>
+      <div class="caption">Nouveau compte → onboarding · compte lié → app</div>
+      <div class="phone"><div class="scr">
+        <div class="card ok" style="border-radius:12px;">
+          <b>Nouveau compte</b> (e-mail Google inconnu) → session ouverte → <b>gate d'onboarding</b> (comme une inscription e-mail).
+        </div>
+        <div class="card ok" style="border-radius:12px;">
+          <b>E-mail déjà connu</b> (compte e-mail/mdp, e-mail vérifié) → <b>liaison automatique</b> : même compte, données retrouvées, pas de doublon.
+        </div>
+        <div class="card">
+          <b>Cas limite</b> — e-mail existant <b>non vérifié</b> → liaison refusée → message « vérifie d'abord ton e-mail ».
+        </div>
+        <div class="spacer"></div>
+        <div class="card" style="background:var(--surface-alt);">
+          <b>Annulation</b> (ferme le sélecteur) → retour à l'écran, <b>aucune erreur</b> (no-op).
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <p class="sub"><b>Notes</b> — Bouton identique sur l'écran d'<b>inscription</b> (même « ou » + mention). Approche
+      <b>native</b> (<code>@react-native-google-signin</code>) → <b>nouveau dev build</b>. Erreurs (Play Services,
+      hors-ligne, liaison) mappées via nos propres clés i18n. <span class="badge">Prérequis</span> Client IDs Google
+      (Cloud) + provider Supabase + <code>EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID</code>. <b>Hors périmètre</b> : OAuth Apple
+      (iOS reporté), persistance serveur du consentement, délier un compte, One Tap. Logo Google = illustratif
+      (le composant respectera les guidelines Google).</p>
+  </div>
+
+</body>
+</html>

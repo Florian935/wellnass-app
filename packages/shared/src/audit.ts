@@ -15,6 +15,8 @@ export const AUDIT_ACTIONS = [
   'exercise.update',
   'exercise.archive',
   'exercise.publish',
+  'exercise_variant.link',
+  'exercise_variant.unlink',
   'program.create',
   'program.update',
   'program.archive',

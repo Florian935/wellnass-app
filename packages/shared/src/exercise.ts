@@ -42,6 +42,7 @@ export type Source = z.infer<typeof sourceSchema>;
 export const exerciseRowSchema = contentOwnerSyncFieldsSchema.extend({
   source: sourceSchema,
   musclePrimary: muscleGroupSchema,
+  musclesSecondary: z.array(muscleGroupSchema).default([]),
   equipment: equipmentSchema.nullable(),
   mediaUrl: z.string().url().nullable(),
 });
@@ -79,4 +80,20 @@ export function resolveExerciseName(
   if (fr) return fr.name;
   // Le tableau est non-vide (guard ci-dessus) — l'assertion est sûre.
   return translations[0]!.name;
+}
+
+/**
+ * Normalise une liste de muscles secondaires : ne garde que des `MuscleGroup`
+ * valides, dédupliqués et **distincts du muscle primaire** (invariant primaire ∉
+ * secondaires). Entrée non-tableau ou vide → `[]`. Utilisée à l'écriture (admin)
+ * et comme garde de forme à la lecture (mobile).
+ */
+export function normalizeSecondaryMuscles(input: unknown, primary: MuscleGroup): MuscleGroup[] {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<MuscleGroup>();
+  for (const v of input) {
+    const parsed = muscleGroupSchema.safeParse(v);
+    if (parsed.success && parsed.data !== primary) seen.add(parsed.data);
+  }
+  return [...seen];
 }

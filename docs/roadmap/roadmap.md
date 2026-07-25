@@ -67,7 +67,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.1 | Inscription email + mot de passe | Création de compte avec identifiants classiques. Email vérifié avant accès complet. | Facile | 2h | 🟢 | ✅ | |
 | 1.4 | Vérification email obligatoire | Lien envoyé par email, compte bloqué tant que non vérifié. | Facile | 1h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 1.5 | Session persistante | Pas de reconnexion à chaque ouverture. Token rafraîchi silencieusement. | Facile | 2h | 🟢 | ✅ | |
-| 1.6 | Récupération mot de passe | Envoi d'un lien de réinitialisation par email. | Facile | 1h | 🟢 | ✅ | Géré par Supabase Auth. |
+| 1.6 | Récupération mot de passe | Envoi d'un lien de réinitialisation par email. | Facile | 1h | 🟢 | ✅ | Envoi géré par Supabase Auth. **Complété par US CONF-08 (25/07/2026)** : l'envoi seul ne suffisait pas — le lien menait à une page morte `localhost:3000` et **aucun écran de saisie du nouveau mot de passe n'existait** (récupération impossible sur mobile). Livré : deep link `wellness://password-reset`, gate de routing `password-recovery`, écran « nouveau mot de passe », révocation de tous les appareils, gestion des liens expirés. **Recette validée à 100 % (Florian, 25/07/2026)** — Redirect URL Supabase configurée ; 2 bugs de deep link corrigés en recette (route à nommer d'après le chemin du lien, échappatoire depuis `auth-callback`). Relecture Damien non requise. **US clôturée.** |
 | 9.5 | Authentification JWT | Token court (accès) + token long (refresh). Renouvellement silencieux. | Moyen | 4h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 9.6 | Isolation données utilisateur | Row Level Security — chaque utilisateur n'accède qu'à ses données. | Moyen | 3h | 🟢 | ✅ | |
 | 9.8 | Chiffrement tokens | Android Keystore (iOS Keychain lors du portage). Jamais en clair. | Moyen | 2h | 🟢 | ✅ | `lib/secure-storage.ts` (SecureStore/Keystore). |
@@ -98,12 +98,12 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ❌ | **Abandonné** (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée (sourcing + hébergement + import en masse). `media_url` reste stocké (colonne inoffensive, non retirée) mais ne sera **jamais rendu**. Voir [[Musculation]]. |
 | 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ❌ | **Abandonné** avec 6.1 (dont il dépendait). |
 | 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ⬜ | **Aucun composant schéma corporel.** |
-| 3.14 | Recherche d'exercices | Par nom, groupe musculaire ou matériel. | Facile | 2h | 🟢 | 🟡 | Recherche **par nom uniquement** (pas groupe ni matériel). |
+| 3.14 | Recherche d'exercices | Par nom, groupe musculaire ou matériel. | Facile | 2h | 🟢 | ✅ | Nom + **filtre groupe musculaire & matériel** (tiroir Filtres, MUSC-F3). Recette device validée (Florian, 22/07/2026). |
 | 3.15 | Exercices favoris | Épingler les exercices préférés. | Facile | 1h | 🟢 | ✅ | `toggleFavorite` + tri favoris. |
-| 3.16 | Exercice personnalisé | Créer un exercice custom si absent de la base. | Facile | 2h | 🟢 | ✅ | `addCustomExercise`. |
+| 3.16 | Exercice personnalisé | Créer un exercice custom si absent de la base. | Facile | 2h | 🟢 | ✅ | `addCustomExercise` ; création en **modale bottom-sheet** (MUSC-F11) ; **édition enrichie** (groupe, matériel, muscles secondaires, instructions) en modale (MUSC-F12, 23/07/2026). **Recette validée (Florian, 23/07/2026).** |
 | 3.17 | Note par exercice | Champ persistant (réglage de siège, position machine), affiché en séance. | Facile | 1h | 🟢 | ⬜ | **Aucun champ note persistant par exercice.** |
-| 3.19 | Muscles ciblés | Muscle principal + secondaires sur la fiche. | Facile | 2h | 🟢 | 🟡 | `muscle_primary` seul ; **pas de muscle secondaire** (colonne absente). |
-| 3.20 | Variantes / alternatives | Exercices similaires pour remplacer si besoin. | Facile | 2h | 🟢 | ⬜ | **Aucune notion de variantes.** |
+| 3.19 | Muscles ciblés | Muscle principal + secondaires sur la fiche. | Facile | 2h | 🟢 | ✅ | Primaire + **muscles secondaires** (colonne `muscles_secondary`, saisie admin, affichage fiche — MUSC-F10c-1, 22/07/2026). **Recette validée (Florian, 23/07/2026).** Schéma corporel SVG = 6.2 (séparé). |
+| 3.20 | Variantes / alternatives | Exercices similaires pour remplacer si besoin. | Facile | 2h | 🟢 | ✅ | Table `exercise_variants` symétrique ; liens **éditoriaux** (admin, biblio↔biblio) + **personnels** (mobile, toute fiche) ; section cliquable sur la fiche — MUSC-F10c-2, 22/07/2026. **Recette validée (Florian, 23/07/2026).** Remplacement en séance = 3.32 (séparé). |
 | 3.23 | Séance libre | Séance vide sans programme, exercices ajoutés au fil de l'eau. | Moyen | 3h | 🟢 | ✅ | Le parcours cœur de cette version. |
 | 3.25 | Validation de série | Reps + charge réels, valeurs pré-remplies. | Moyen | 4h | 🟢 | ✅ | `updateSet` + pré-remplissage `addSet`. |
 | 3.26 | Dernière performance affichée | "La dernière fois : 80 kg × 8 / 8 / 7" au-dessus de la saisie. | Facile | 2h | 🟢 | ⬜ | **Aucune "dernière fois : …" dans `workout.tsx`.** |
@@ -291,13 +291,13 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
-| 1.2 | Connexion via Google | OAuth Google. | Moyen | 3h | 🟡 | ⬜ | `sign-in.tsx` = email/mdp seul ; aucun `signInWithOAuth`. Clé OAuth Google à fournir. **Conservé** (arbitrage E). |
+| 1.2 | Connexion via Google | OAuth Google. | Moyen | 3h | 🟡 | ✅ | **US 1.2 code livré (24/07/2026).** Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken` ; bouton « Continuer avec Google » (2 écrans) + mention consentement ; liaison auto e-mail vérifié. **Conservé** (arbitrage E). **Recette validée 100 % (Florian, 24/07/2026)** : connexion Google + liaison auto sur e-mail vérifié (même compte). |
 | 1.17 | Gestion des notifications | Activation / désactivation par type. | Facile | 2h | 🟢 | ✅ | Section Notifications de `settings.tsx`. |
-| 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | ⬜ | **Aucune trace.** Obligation RGPD. |
-| 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ⬜ | **Aucune trace** (settings n'a que `signOut`). **Exigé par les stores.** |
-| 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ⬜ | **Aucun écran FAQ/contact.** 🌐 bilingue FR+EN. |
+| 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | ✅ | **CONF-01 livré (23/07/2026).** Export JSON local (hors-ligne) de toutes les données perso (31 tables possédées + traductions perso) via feuille de partage ; Réglages → « Exporter mes données ». Reste recette + Damien. |
+| 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ✅ | **CONF-02 livré (23/07/2026).** Zone Danger + ré-auth mot de passe + délai de grâce 30 j récupérable (gate) + purge serveur `pg_cron` (cascade FK). Reste recette device + Damien. |
+| 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ✅ | **US 1.22 livré (24/07/2026).** Réglages → écran `/help` : FAQ statique embarquée (accordéon, 7 Q/R) + « Nous contacter » (mail natif) + « Signaler un bug » (mail + bloc technique). `expo-mail-composer`, zéro backend. `SUPPORT_EMAIL` placeholder + dev build requis avant recette. 🌐 bilingue FR+EN. Reste recette + Damien. |
 | 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | 6h | 🟢 | ⬜ | **Aucune trace.** Health Connect API. |
-| 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ⬜ | **Aucune trace.** **Avant la bêta** — sinon aucune mesure des testeurs. Alimente la décision gamification V3/V4. |
+| 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ✅ | **US 9.10 livré (24/07/2026).** Événements anonymisés dans notre base Supabase (`analytics_events` append-only + RLS + FK cascade), offline-first PowerSync. Consentement **opt-out** + réglage « Statistiques d'usage » + mention confidentialité. Service `track()` (allowlist anti-PII, non bloquant), 15 points instrumentés. Migration + sync rule PowerSync déployées ; **recette validée 100 % (Florian, 24/07/2026)**. Dashboards via outil BI = ultérieur. |
 | 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | Comportement RN par défaut, **pas de gestion explicite** (`maxFontSizeMultiplier`/`fontScale`), non vérifié. |
 | 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | 🟡 | Revue visuelle humaine, **aucune vérification outillée**. |
 
@@ -351,9 +351,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 127 | ~71 % |
-| 🟡 Partiel | 12 | ~7 % |
-| ⬜ À faire | 35 | ~20 % |
+| ✅ Livré | 135 | ~75 % |
+| 🟡 Partiel | 10 | ~6 % |
+| ⬜ À faire | 29 | ~16 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **179** | |
@@ -364,13 +364,13 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 13 | 5 | 11 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.2 (32) | 16 | 3 | 10 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; recherche multi-critères (3.14) + muscles secondaires (3.19) + variantes (3.20) livrés ; GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 14 | 2 | 5 | 0 | 0 | Quasi complet (progression auto/deload + push manquants) |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 25 | 3 | 5 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (9) | 1 | 2 | 6 | 0 | 0 | 🔴 **Quasi vide — reste-à-faire clé du MVP1** |
+| V0.8 (9) | 6 | 2 | 1 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) livrés ; reste **9.9 (Health Connect)** + finitions accessibilité (9.11/9.12 partiels) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 
@@ -390,4 +390,4 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 ---
 
-*Dernière mise à jour : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+*Dernière mise à jour : 24/07/2026 — 1.2 (connexion via Google) passée ⬜ → ✅ (compteurs : 135 livré / 10 partiel / 29 à faire ; V0.8 : 6 livré, reste 9.9). Code livré ; reste prérequis Google Cloud/Supabase + dev build + recette. Précédemment : 24/07/2026 — 9.10 (analytics produit first-party) passée ⬜ → ✅ (compteurs : 134 livré / 10 partiel / 30 à faire ; V0.8 : 5 livré). Migration déployée ; reste sync rule PowerSync + recette. Précédemment : 24/07/2026 — 1.22 (aide & support) passée ⬜ → ✅ (compteurs : 133 livré / 10 partiel / 31 à faire ; V0.8 : 4 livré). Reste dev build + recette + Damien. Précédemment : 23/07/2026 — 1.18 (export des données, CONF-01) passée ⬜ → ✅ (compteurs : 132 livré / 10 partiel / 32 à faire ; V0.8 : 3 livré). Précédemment : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*

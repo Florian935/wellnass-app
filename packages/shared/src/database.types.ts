@@ -39,6 +39,82 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null
+          id: string
+          requested_at: string
+          scheduled_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          id?: string
+          requested_at?: string
+          scheduled_at: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          id?: string
+          requested_at?: string
+          scheduled_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_deletion_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      analytics_events: {
+        Row: {
+          app_version: string | null
+          created_at: string
+          event_name: string
+          id: string
+          occurred_at: string
+          platform: string | null
+          properties: string
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          created_at?: string
+          event_name: string
+          id: string
+          occurred_at: string
+          platform?: string | null
+          properties?: string
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          created_at?: string
+          event_name?: string
+          id?: string
+          occurred_at?: string
+          platform?: string | null
+          properties?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -321,6 +397,58 @@ export type Database = {
           },
         ]
       }
+      exercise_variants: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          exercise_id_a: string
+          exercise_id_b: string
+          id: string
+          owner_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id_a: string
+          exercise_id_b: string
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id_a?: string
+          exercise_id_b?: string
+          id?: string
+          owner_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_variants_exercise_id_a_fkey"
+            columns: ["exercise_id_a"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_exercise_id_b_fkey"
+            columns: ["exercise_id_b"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_variants_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           created_at: string
@@ -329,6 +457,7 @@ export type Database = {
           id: string
           media_url: string | null
           muscle_primary: string
+          muscles_secondary: Json
           owner_id: string | null
           source: string
           status: string
@@ -341,6 +470,7 @@ export type Database = {
           id: string
           media_url?: string | null
           muscle_primary: string
+          muscles_secondary?: Json
           owner_id?: string | null
           source?: string
           status?: string
@@ -353,6 +483,7 @@ export type Database = {
           id?: string
           media_url?: string | null
           muscle_primary?: string
+          muscles_secondary?: Json
           owner_id?: string | null
           source?: string
           status?: string
@@ -921,6 +1052,7 @@ export type Database = {
           updated_at: string
           user_id: string
           weight_kg: number | null
+          workout_display_level: string | null
         }
         Insert: {
           birth_date?: string | null
@@ -937,6 +1069,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           weight_kg?: number | null
+          workout_display_level?: string | null
         }
         Update: {
           birth_date?: string | null
@@ -953,6 +1086,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+          workout_display_level?: string | null
         }
         Relationships: [
           {
@@ -1502,6 +1636,7 @@ export type Database = {
       user_settings: {
         Row: {
           active_pillars: Json
+          analytics_enabled: boolean
           created_at: string
           dashboard_layout: Json | null
           deleted_at: string | null
@@ -1515,6 +1650,7 @@ export type Database = {
         }
         Insert: {
           active_pillars?: Json
+          analytics_enabled?: boolean
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
@@ -1528,6 +1664,7 @@ export type Database = {
         }
         Update: {
           active_pillars?: Json
+          analytics_enabled?: boolean
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
@@ -1687,6 +1824,111 @@ export type Database = {
           },
         ]
       }
+      workout_template_exercises: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          exercise_id: string
+          id: string
+          order_index: number
+          rest_seconds: number | null
+          set_type: string
+          target_reps: string | null
+          target_sets: number | null
+          target_weight_kg: number | null
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id: string
+          id: string
+          order_index?: number
+          rest_seconds?: number | null
+          set_type?: string
+          target_reps?: string | null
+          target_sets?: number | null
+          target_weight_kg?: number | null
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          exercise_id?: string
+          id?: string
+          order_index?: number
+          rest_seconds?: number | null
+          set_type?: string
+          target_reps?: string | null
+          target_sets?: number | null
+          target_weight_kg?: number | null
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_template_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_template_exercises_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "workout_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_template_exercises_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workout_templates: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_templates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workouts: {
         Row: {
           created_at: string
@@ -1785,9 +2027,12 @@ export type Database = {
         Returns: undefined
       }
       can_manage_users: { Args: never; Returns: boolean }
+      cancel_account_deletion: { Args: never; Returns: undefined }
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      purge_expired_accounts: { Args: never; Returns: number }
+      request_account_deletion: { Args: never; Returns: string }
       unban_user: { Args: { target_user_id: string }; Returns: undefined }
     }
     Enums: {

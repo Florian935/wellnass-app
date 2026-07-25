@@ -65,6 +65,9 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * `null` = disposition par défaut non personnalisée.
    */
   dashboardLayout: z.unknown().nullable().default(null),
+
+  /** Consentement analytics (opt-out : true par défaut). US 9.10. */
+  analyticsEnabled: z.boolean().default(true),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

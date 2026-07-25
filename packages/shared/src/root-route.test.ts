@@ -55,3 +55,83 @@ describe('resolveRootRoute', () => {
     expect(resolveRootRoute(base)).toBe('app'); // après redescente du profil
   });
 });
+
+describe('resolveRootRoute — gate suppression de compte (CONF-02)', () => {
+  it('compte en suppression → deletion-pending, prioritaire sur onboarding', () => {
+    expect(
+      resolveRootRoute({
+        ...base,
+        hasSession: true,
+        hasProfile: false,
+        onboardingCompletedAt: null,
+        hasSynced: true,
+        deletionPending: true,
+      }),
+    ).toBe('deletion-pending');
+  });
+
+  it('check suppression en cours → wait', () => {
+    expect(resolveRootRoute({ ...base, hasSession: true, deletionCheckLoading: true })).toBe('wait');
+  });
+
+  it('pas de demande de suppression → route normale inchangée', () => {
+    expect(
+      resolveRootRoute({
+        ...base,
+        hasSession: true,
+        hasProfile: true,
+        onboardingCompletedAt: '2026-01-01T00:00:00Z',
+        hasSynced: true,
+      }),
+    ).toBe('app');
+  });
+});
+
+describe('resolveRootRoute — gate réinitialisation de mot de passe (CONF-08)', () => {
+  it('récupération en cours → password-recovery', () => {
+    expect(resolveRootRoute({ ...base, recoveryPending: true })).toBe('password-recovery');
+  });
+
+  it('prioritaire sur onboarding (profil absent ou onboarding non terminé)', () => {
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, onboardingCompletedAt: null }),
+    ).toBe('password-recovery');
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, hasProfile: false, hasSynced: true }),
+    ).toBe('password-recovery');
+  });
+
+  it("n'attend ni le profil ni les réglages (l'écran n'en a pas besoin)", () => {
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, profileLoading: true }),
+    ).toBe('password-recovery');
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, settingsLoading: true }),
+    ).toBe('password-recovery');
+  });
+
+  it('la gate de suppression reste prioritaire sur la récupération', () => {
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, deletionPending: true }),
+    ).toBe('deletion-pending');
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, deletionCheckLoading: true }),
+    ).toBe('wait');
+  });
+
+  it('sans session, la récupération ne s\'applique pas (retour auth)', () => {
+    expect(resolveRootRoute({ ...base, hasSession: false, recoveryPending: true })).toBe('auth');
+  });
+
+  it('le socle non prêt reste prioritaire (splash)', () => {
+    expect(resolveRootRoute({ ...base, recoveryPending: true, fontsReady: false })).toBe('wait');
+    expect(
+      resolveRootRoute({ ...base, recoveryPending: true, authInitializing: true }),
+    ).toBe('wait');
+  });
+
+  it('non-régression : sans recoveryPending, comportement inchangé', () => {
+    expect(resolveRootRoute({ ...base })).toBe('app');
+    expect(resolveRootRoute({ ...base, recoveryPending: false })).toBe('app');
+  });
+});

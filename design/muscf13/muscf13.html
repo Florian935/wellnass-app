@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MUSC-F13 — Niveaux d'affichage de la séance</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--gold:#c9a96e;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --radius:18px;--shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1320px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:90ch;margin:0;font-size:15px;}
+
+  /* Matrice de synthèse */
+  .matrix{max-width:1320px;margin:0 auto 34px;overflow-x:auto;}
+  table{border-collapse:collapse;font-size:13px;min-width:520px;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);}
+  th,td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);}
+  th{background:var(--surface-alt);font-weight:800;color:var(--strength);}
+  td.c{text-align:center;font-weight:800;}
+  .yes{color:var(--success);}
+  .no{color:#c9bca8;}
+
+  .stage{max-width:1320px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:340px;width:100%;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .caption b{color:var(--strength);}
+  .caption .who{display:block;font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px;}
+  .phone{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:34px;padding:12px;box-shadow:var(--shadow);max-width:340px;width:100%;overflow:hidden;min-height:520px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px;}
+  .topbar .x{font-size:22px;color:var(--ink);font-weight:400;width:28px;}
+  .topbar .timer{font-family:var(--mono);font-weight:700;font-size:18px;}
+  .topbar .fin{color:var(--strength);font-weight:800;font-size:15px;}
+
+  .focus{background:var(--surface);border:1px solid var(--strength);border-radius:18px;padding:16px;margin:0 4px 12px;box-shadow:0 0 0 1px var(--strength);}
+  .focus .exo{font-weight:800;font-size:19px;letter-spacing:-.02em;}
+  .focus .serie{color:var(--muted);font-weight:700;font-size:13px;margin:2px 0 10px;}
+
+  .noterow{display:flex;align-items:center;gap:6px;background:var(--surface-alt);border-radius:10px;padding:7px 10px;margin:0 0 12px;font-size:12px;color:var(--muted);}
+
+  .typerow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 12px;}
+  .chip{font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:9px;background:var(--surface-alt);color:var(--muted);border:1px solid transparent;white-space:nowrap;}
+  .chip.on{background:var(--strength);color:#fff;}
+  .chip.warm{margin-left:auto;background:#fff3e0;color:var(--warn);border:1px solid #f0d9b4;display:flex;align-items:center;gap:4px;}
+  .typerow.warmonly .chip.warm{margin-left:0;}
+
+  .last{background:var(--surface-alt);border-radius:10px;padding:7px 11px;font-size:12.5px;color:var(--ink);margin:0 0 10px;}
+  .last b{font-family:var(--mono);}
+  .sugg{font-size:12px;font-weight:700;color:var(--success);margin:0 0 12px;}
+
+  .fields{display:flex;gap:12px;margin:0 0 6px;}
+  .field{flex:1;text-align:center;}
+  .field .lab{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 6px;}
+  .repsbox{background:var(--surface-alt);border-radius:12px;padding:12px 0;font-family:var(--mono);font-weight:700;font-size:22px;}
+  .stepper{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .stepper .b{width:38px;height:44px;border-radius:11px;background:var(--surface-alt);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--strength);}
+  .stepper .v{font-family:var(--mono);font-weight:700;font-size:20px;min-width:56px;}
+
+  .planned{font-size:11px;color:var(--muted);margin:5px 0 12px;text-align:center;}
+  .planned b{font-family:var(--mono);color:var(--ink);}
+  .delta{font-weight:800;font-size:11px;padding:1px 6px;border-radius:6px;margin-left:4px;}
+  .delta.up{color:var(--success);background:#e7efdc;}
+
+  .restctl{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;font-size:12px;color:var(--muted);font-weight:700;}
+  .restctl .rb{width:30px;height:34px;border-radius:9px;background:var(--surface-alt);color:var(--strength);font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .restctl .rv{font-family:var(--mono);font-size:15px;color:var(--ink);}
+
+  .rpeadd{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--muted);padding:6px 10px;border-radius:9px;border:1px dashed var(--border);margin:0 0 12px;}
+  .superset{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--strength);padding:6px 10px;border-radius:9px;border:1px dashed var(--strength);margin:0 0 12px;}
+
+  .validate{background:var(--strength);color:#fff;border-radius:13px;text-align:center;font-weight:800;font-size:16px;padding:14px;}
+
+  /* pastille d'annotation « ce qui apparaît à ce niveau » */
+  .add{display:block;font-size:11px;font-weight:700;color:var(--accent);margin:-4px 4px 8px;}
+
+  /* Bloc onboarding + réglage */
+  .foot{max-width:1320px;margin:40px auto 0;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow);flex:1;min-width:300px;}
+  .card h3{margin:0 0 4px;font-size:15px;color:var(--strength);}
+  .card p{margin:0 0 14px;font-size:13px;color:var(--muted);}
+  .opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:10px;}
+  .opt.sel{border-color:var(--accent);background:#fdf4ee;}
+  .opt .txt{flex:1;}
+  .opt .l{font-weight:700;font-size:14px;}
+  .opt .d{font-size:12px;color:var(--muted);margin-top:2px;}
+  .opt .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);flex:none;}
+  .opt.sel .dot{background:var(--accent);border-color:var(--accent);}
+  .stepbadge{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+  /* Vignette schématique par niveau (MUSC-F13b) — barres « champs » + pastilles de suppléments */
+  .optcol{display:flex;flex-direction:column;gap:10px;}
+  .vig{border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:7px;background:var(--surface);}
+  .vig .tbar{height:9px;width:55%;border-radius:4px;background:var(--surface-alt);}
+  .vig .vbadges{display:flex;gap:5px;flex-wrap:wrap;min-height:20px;}
+  .vig .vb{font-size:11px;font-weight:800;color:var(--accent);background:var(--surface-alt);border-radius:6px;padding:2px 6px;}
+  .vig .vfields{display:flex;gap:8px;}
+  .vig .vf{flex:1;height:16px;border-radius:6px;background:var(--surface-alt);}
+  .vig .vval{height:12px;border-radius:6px;background:var(--strength);}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">MUSC-F13 · Musculation · Écran de séance</p>
+    <h1 class="title">Niveaux d'affichage de la séance</h1>
+    <p class="sub">La même carte « série en cours » à trois densités, selon le niveau choisi par l'utilisateur.
+      Les champs <b>cœur</b> (exercice, série, reps/charge, repos, valider), la <b>consigne du plan</b> et
+      « <b>dernière fois</b> » sont présents partout. Chaque niveau ajoute une couche. Réglage synchronisé
+      (défaut&nbsp;: Normale), choisi à l'onboarding et modifiable dans les Réglages.</p>
+  </div>
+
+  <div class="matrix">
+    <table>
+      <tr><th>Élément</th><th class="c">Simplifiée</th><th class="c">Normale</th><th class="c">Détaillée</th></tr>
+      <tr><td>Exercice · série · reps/charge · repos · valider</td><td class="c yes">●</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>Consigne du plan (« objectif 80&nbsp;kg&nbsp;×&nbsp;8 »)</td><td class="c yes">●</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>« Dernière fois »</td><td class="c yes">●</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>Écart planifié/réalisé (delta ▲/▼)</td><td class="c no">—</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>Suggestion de progression 💡</td><td class="c no">—</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>Échauffement 🔥</td><td class="c no">—</td><td class="c yes">●</td><td class="c yes">●</td></tr>
+      <tr><td>Sélecteur de types (dropset / échec…)</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">●</td></tr>
+      <tr><td>RPE par série</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">●</td></tr>
+      <tr><td>Note par exercice 📝</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">●</td></tr>
+      <tr><td>Superset</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">●</td></tr>
+    </table>
+  </div>
+
+  <div class="stage">
+
+    <!-- ─────────── SIMPLIFIÉE ─────────── -->
+    <div class="col">
+      <div class="caption"><b>Simplifiée</b><span class="who">débutant — l'essentiel, on ne noie pas</span></div>
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">12:04</span><span class="fin">Terminer</span></div>
+        <div class="focus">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="last">Dernière fois : <b>80&nbsp;kg × 8/8/7</b></div>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge (kg)</div>
+              <div class="stepper"><span class="b">−</span><span class="v">80</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <div class="planned">objectif du plan&nbsp;: <b>80&nbsp;kg × 8</b></div>
+          <div class="restctl"><span>Repos</span><span class="rb">−</span><span class="rv">90</span><span class="rb">+</span><span>s</span></div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────── NORMALE ─────────── -->
+    <div class="col">
+      <div class="caption"><b>Normale</b><span class="who">intermédiaire / confirmé — repères de progression</span></div>
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">12:04</span><span class="fin">Terminer</span></div>
+        <div class="focus">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="typerow warmonly"><span class="chip warm">🔥 Échauffement</span></div>
+          <span class="add">+ échauffement</span>
+          <div class="last">Dernière fois : <b>80&nbsp;kg × 8/8/7</b></div>
+          <div class="sugg">💡 La dernière fois 80×8 → tente 82,5&nbsp;kg ou 9 reps</div>
+          <span class="add">+ suggestion</span>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge (kg)</div>
+              <div class="stepper"><span class="b">−</span><span class="v">82.5</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <div class="planned">planifié&nbsp;: <b>80&nbsp;kg</b><span class="delta up">▲ +2.5</span></div>
+          <span class="add" style="text-align:center">+ écart planifié/réalisé</span>
+          <div class="restctl"><span>Repos</span><span class="rb">−</span><span class="rv">90</span><span class="rb">+</span><span>s</span></div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────── DÉTAILLÉE ─────────── -->
+    <div class="col">
+      <div class="caption"><b>Détaillée</b><span class="who">avancé — densité &amp; contrôle (écran actuel)</span></div>
+      <div class="phone">
+        <div class="topbar"><span class="x">✕</span><span class="timer">12:04</span><span class="fin">Terminer</span></div>
+        <div class="focus">
+          <div class="exo">Développé couché</div>
+          <div class="serie">Série 2 / 4</div>
+          <div class="noterow">📝 <span>Banc réglé cran 4 · prise medium</span></div>
+          <span class="add">+ note d'exercice</span>
+          <div class="typerow">
+            <span class="chip on">Normale</span><span class="chip">Dropset</span><span class="chip">Échec</span>
+            <span class="chip">Durée</span><span class="chip warm">🔥</span>
+          </div>
+          <span class="add">+ sélecteur de types</span>
+          <div class="superset">🔗 Lier en superset</div>
+          <span class="add">+ superset</span>
+          <div class="last">Dernière fois : <b>80&nbsp;kg × 8/8/7</b></div>
+          <div class="sugg">💡 La dernière fois 80×8 → tente 82,5&nbsp;kg ou 9 reps</div>
+          <div class="fields">
+            <div class="field"><div class="lab">Reps</div><div class="repsbox">8</div></div>
+            <div class="field"><div class="lab">Charge (kg)</div>
+              <div class="stepper"><span class="b">−</span><span class="v">82.5</span><span class="b">+</span></div>
+            </div>
+          </div>
+          <div class="planned">planifié&nbsp;: <b>80&nbsp;kg</b><span class="delta up">▲ +2.5</span></div>
+          <div class="restctl"><span>Repos</span><span class="rb">−</span><span class="rv">90</span><span class="rb">+</span><span>s</span></div>
+          <div class="rpeadd">＋ RPE (optionnel)</div>
+          <span class="add">+ RPE par série</span>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div class="card">
+      <h3>Étape d'onboarding (inconditionnelle)</h3>
+      <p>Insérée entre « Objectif » et le récap — le compteur passe de 3 à 4 étapes. Défaut Normale si sautée.</p>
+      <div class="stepbadge">Étape 4/4</div>
+      <div class="opt"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Simplifiée</div><div class="d">L'essentiel : reps, charge, repos. Idéal pour débuter.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
+      <div class="opt sel"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Normale</div><div class="d">Repères de progression : dernière fois, objectif, échauffement.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"><span class="vb">🔥</span><span class="vb">💡</span></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
+      <div class="opt"><div class="optcol"><div style="display:flex;align-items:center;gap:12px"><div class="txt" style="flex:1"><div class="l">Détaillée</div><div class="d">Tout : types de séries, RPE, notes, superset.</div></div><div class="dot"></div></div>
+        <div class="vig"><div class="tbar"></div><div class="vbadges"><span class="vb">🔥</span><span class="vb">💡</span><span class="vb">Types</span><span class="vb">RPE</span><span class="vb">📝</span><span class="vb">⇄</span></div><div class="vfields"><div class="vf"></div><div class="vf"></div></div><div class="vval"></div></div></div></div>
+    </div>
+    <div class="card">
+      <h3>Réglages → Niveau d'affichage de la séance</h3>
+      <p>Sélection immédiate, synchronisée. Modifiable à tout moment ; la carte se met à jour en direct, même pendant une séance.</p>
+      <div class="opt"><div class="txt"><div class="l">Simplifiée</div><div class="d">L'essentiel : reps, charge, repos.</div></div><div class="dot"></div></div>
+      <div class="opt sel"><div class="txt"><div class="l">Normale</div><div class="d">Repères de progression sans jargon d'intensité.</div></div><div class="dot"></div></div>
+      <div class="opt"><div class="txt"><div class="l">Détaillée</div><div class="d">Tous les champs avancés.</div></div><div class="dot"></div></div>
+    </div>
+  </div>
+
+</body>
+</html>

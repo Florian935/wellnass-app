@@ -17,8 +17,8 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -38,6 +38,7 @@ import { Segment } from '@/components/Segment';
 import { MuscleVolumeBarChart } from '@/components/charts/MuscleVolumeBarChart';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ExercisePicker } from '@/components/programs/ExercisePicker';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import {
   useExerciseRecords,
   useExerciseProgression,
@@ -47,7 +48,7 @@ import {
   type ProgressionMetric,
   type ProgressionPeriod,
 } from '@/data/repositories/records-repository';
-import type { ExerciseListItem } from '@/data/repositories/exercise-repository';
+import { useExercise, type ExerciseListItem } from '@/data/repositories/exercise-repository';
 import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -82,12 +83,24 @@ export default function ProgressScreen() {
   const router = useRouter();
 
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState<ExerciseListItem | null>(null);
+  const [pickedExercise, setPickedExercise] = useState<ExerciseListItem | null>(null);
   const [metric, setMetric] = useState<ProgressionMetric>('max_weight');
   const [period, setPeriod] = useState<ProgressionPeriod>('30d');
 
+  // Analytics : ouverture de l'écran de stats muscu (une fois au montage). Fire-and-forget.
+  useEffect(() => {
+    void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'strength' });
+  }, []);
+
+  // Deep-link : pré-sélection de l'exercice passé en param (ex. depuis la fiche exercice).
+  // Valeur dérivée plutôt que synchronisée via un effet : un choix explicite dans le picker
+  // (pickedExercise) prime toujours sur le param, sinon on retombe sur l'exercice du param.
+  const { exerciseId } = useLocalSearchParams<{ exerciseId?: string }>();
+  const { exercise: paramExercise } = useExercise(typeof exerciseId === 'string' ? exerciseId : '');
+  const selectedExercise: ExerciseListItem | null = pickedExercise ?? paramExercise;
+
   const onPickExercise = (exercise: ExerciseListItem) => {
-    setSelectedExercise(exercise);
+    setPickedExercise(exercise);
     setPickerVisible(false);
   };
 

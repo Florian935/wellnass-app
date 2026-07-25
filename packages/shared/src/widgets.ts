@@ -49,12 +49,17 @@ export const HOME_WIDGET_IDS = [
   'training-time',
 ] as const;
 
-/** Muscu : les 4 modules-aperçu du hub, widgetisés. Ordre = disposition par défaut (maquette validée). */
+/**
+ * Muscu : les 4 modules-aperçu du hub (maquette validée), **plus** `strength-templates`
+ * (US Refonte-D, 22/07/2026) — point d'entrée permanent vers « Mes templates »,
+ * indépendant du flux « Séance libre », ajouté en fin de registre.
+ */
 export const STRENGTH_WIDGET_IDS = [
   'strength-programs',
   'strength-history',
   'strength-planning',
   'strength-progress',
+  'strength-templates',
 ] as const;
 
 /** Course : les 3 modules-aperçu du hub, widgetisés. Ordre = disposition par défaut (maquette validée). */
@@ -116,6 +121,7 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'strength-history': 'small',
       'strength-planning': 'wide',
       'strength-progress': 'large',
+      'strength-templates': 'small',
     },
   },
   running: {

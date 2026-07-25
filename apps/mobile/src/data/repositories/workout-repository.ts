@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { generateId } from '@/lib/id';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
@@ -75,6 +76,8 @@ export type WorkoutHistoryItem = {
   durationSeconds: number | null;
   rpe: number | null;
   notes: string | null;
+  sessionId: string | null;
+  programId: string | null;
 };
 
 /** Champs modifiables d'une série via `updateSet`. */
@@ -100,6 +103,7 @@ type WorkoutDbRow = {
   rpe: number | null;
   notes: string | null;
   session_id: string | null;
+  program_id: string | null;
 };
 
 /**
@@ -152,7 +156,7 @@ const SELECT_SETS_FOR_WORKOUT = `
 
 /** Historique des séances terminées, plus récentes d'abord. */
 const SELECT_HISTORY = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id
+  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id
   FROM workouts
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
@@ -187,6 +191,8 @@ function rowToHistoryItem(row: WorkoutDbRow): WorkoutHistoryItem {
     durationSeconds: row.duration_seconds,
     rpe: row.rpe,
     notes: row.notes,
+    sessionId: row.session_id,
+    programId: row.program_id,
   };
 }
 
@@ -423,6 +429,9 @@ export async function startWorkout(): Promise<string> {
     return existing.id;
   }
 
+  // Analytics : démarrage effectif d'une nouvelle séance (pas une reprise). Fire-and-forget.
+  void track(ANALYTICS_EVENTS.workoutStarted);
+
   return insertWithSyncFields('workouts', {
     user_id: userId,
     session_id: null,
@@ -467,7 +476,7 @@ async function txInsert(
  * « 8-12 » → 8, « 10 » → 10, « AMRAP » / null → null. Sert à pré-remplir le champ reps
  * d'une séance planifiée (valeur de départ modifiable), en miroir de la charge cible.
  */
-function parseTargetReps(target: string | null): number | null {
+export function parseTargetReps(target: string | null): number | null {
   if (!target) return null;
   const match = target.match(/\d+/);
   return match ? Number(match[0]) : null;
@@ -511,6 +520,9 @@ export async function startWorkoutFromSession(
   if (existing) {
     return existing.id;
   }
+
+  // Analytics : démarrage effectif d'une nouvelle séance (pas une reprise). Fire-and-forget.
+  void track(ANALYTICS_EVENTS.workoutStarted);
 
   return powerSync.writeTransaction(async (tx) => {
     // 1. Programme de rattachement de la séance planifiée.
@@ -605,18 +617,26 @@ export async function finishWorkout(
   const row = await powerSync.getOptional<{
     started_at: string;
     planned_session_id: string | null;
-  }>(`SELECT started_at, planned_session_id FROM workouts WHERE id = ?`, [id]);
+    status: string;
+    deleted_at: string | null;
+  }>(
+    `SELECT started_at, planned_session_id, status, deleted_at FROM workouts WHERE id = ?`,
+    [id],
+  );
+
+  // Garde d'idempotence (miroir de `finishRun`) : on ne clôture qu'une séance **active**
+  // non supprimée. Séance introuvable / déjà `completed`/`cancelled` / supprimée → no-op
+  // (un double-tap « Terminer » ne re-stampe pas `finished_at`/durée et ne ré-émet pas
+  // `workout_completed`).
+  if (!row || row.status !== 'active' || row.deleted_at !== null) {
+    return;
+  }
 
   const finishedAt = nowUtc();
-  const durationSeconds = row
-    ? Math.max(
-        0,
-        Math.round(
-          (new Date(finishedAt).getTime() - new Date(row.started_at).getTime()) /
-            1000,
-        ),
-      )
-    : null;
+  const durationSeconds = Math.max(
+    0,
+    Math.round((new Date(finishedAt).getTime() - new Date(row.started_at).getTime()) / 1000),
+  );
 
   const columns: Record<string, unknown> = {
     status: 'completed',
@@ -628,10 +648,13 @@ export async function finishWorkout(
 
   await patch('workouts', id, columns);
 
+  // Analytics : séance terminée. Fire-and-forget.
+  void track(ANALYTICS_EVENTS.workoutCompleted);
+
   // Best-effort : marque l'occurrence planifiée liée comme faite. Ne doit jamais
   // faire échouer la clôture de la séance (offline-first : la séance est déjà
   // close localement, cette étape est une synchronisation secondaire).
-  if (row?.planned_session_id) {
+  if (row.planned_session_id) {
     try {
       await patch('planned_sessions', row.planned_session_id, {
         status: 'done',

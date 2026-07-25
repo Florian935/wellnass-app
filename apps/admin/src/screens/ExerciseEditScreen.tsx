@@ -2,11 +2,20 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   MUSCLE_GROUPS,
+  EQUIPMENTS,
   getExercise,
   saveExercise,
   type ExerciseStatus,
   type MuscleGroup,
+  type Equipment,
 } from '../data/exercises';
+import {
+  listVariants,
+  listLinkableExercises,
+  addEditorialVariant,
+  removeEditorialVariant,
+  type EditorialVariant,
+} from '../data/exercise-variants';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -22,7 +31,8 @@ export function ExerciseEditScreen() {
   const isEdit = Boolean(id);
 
   const [musclePrimary, setMusclePrimary] = useState<MuscleGroup>(MUSCLE_GROUPS[0]);
-  const [equipment, setEquipment] = useState('');
+  const [musclesSecondary, setMusclesSecondary] = useState<MuscleGroup[]>([]);
+  const [equipment, setEquipment] = useState<Equipment | ''>('');
   const [status, setStatus] = useState<ExerciseStatus>('draft');
   const [nameFr, setNameFr] = useState('');
   const [nameEn, setNameEn] = useState('');
@@ -32,6 +42,16 @@ export function ExerciseEditScreen() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [variants, setVariants] = useState<EditorialVariant[]>([]);
+  const [variantQuery, setVariantQuery] = useState('');
+  const [variantResults, setVariantResults] = useState<{ id: string; nameFr: string | null }[]>([]);
+
+  const loadVariants = useCallback(async () => {
+    if (!id) return;
+    const { variants: rows } = await listVariants(id);
+    setVariants(rows);
+  }, [id]);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -43,6 +63,7 @@ export function ExerciseEditScreen() {
       return;
     }
     setMusclePrimary(exercise.musclePrimary);
+    setMusclesSecondary(exercise.musclesSecondary);
     setEquipment(exercise.equipment ?? '');
     setStatus(exercise.status);
     setNameFr(exercise.nameFr);
@@ -55,6 +76,50 @@ export function ExerciseEditScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    void loadVariants();
+  }, [loadVariants]);
+
+  useEffect(() => {
+    const term = variantQuery.trim();
+    if (!id || term.length < 1) {
+      setVariantResults([]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const excludeIds = [id, ...variants.map((v) => v.otherId)];
+      const { rows } = await listLinkableExercises(id, excludeIds);
+      if (cancelled) return;
+      const termLower = term.toLowerCase();
+      setVariantResults(rows.filter((row) => (row.nameFr ?? '').toLowerCase().includes(termLower)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, variantQuery, variants]);
+
+  async function handleAddVariant(otherId: string) {
+    if (!id) return;
+    const { error } = await addEditorialVariant(id, otherId);
+    if (error) {
+      setFormError(fr.exercises.error);
+      return;
+    }
+    setVariantQuery('');
+    setVariantResults([]);
+    await loadVariants();
+  }
+
+  async function handleRemoveVariant(linkId: string) {
+    const { error } = await removeEditorialVariant(linkId);
+    if (error) {
+      setFormError(fr.exercises.error);
+      return;
+    }
+    await loadVariants();
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -71,7 +136,8 @@ export function ExerciseEditScreen() {
     const { error } = await saveExercise({
       id,
       musclePrimary,
-      equipment: equipment.trim() ? equipment.trim() : null,
+      musclesSecondary,
+      equipment: equipment === '' ? null : equipment,
       status,
       nameFr: fr2,
       nameEn: en2,
@@ -115,7 +181,11 @@ export function ExerciseEditScreen() {
                 <select
                   id="group"
                   value={musclePrimary}
-                  onChange={(e) => setMusclePrimary(e.target.value as MuscleGroup)}
+                  onChange={(e) => {
+                    const next = e.target.value as MuscleGroup;
+                    setMusclePrimary(next);
+                    setMusclesSecondary((prev) => prev.filter((m) => m !== next));
+                  }}
                   style={styles.input}
                 >
                   {MUSCLE_GROUPS.map((g) => (
@@ -129,13 +199,42 @@ export function ExerciseEditScreen() {
                 <label style={styles.label} htmlFor="equipment">
                   {fr.exercises.equipmentLabel}
                 </label>
-                <input
+                <select
                   id="equipment"
-                  type="text"
                   value={equipment}
-                  onChange={(e) => setEquipment(e.target.value)}
+                  onChange={(e) => setEquipment(e.target.value as Equipment | '')}
                   style={styles.input}
-                />
+                >
+                  <option value="">{fr.exercises.equipmentEmpty}</option>
+                  {EQUIPMENTS.map((eq) => (
+                    <option key={eq} value={eq}>
+                      {fr.exercises.equipmentNames[eq]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div style={styles.field}>
+              <span style={styles.label}>{fr.exercises.secondaryMusclesLabel}</span>
+              <div style={styles.checkboxGroup}>
+                {MUSCLE_GROUPS.filter((g) => g !== musclePrimary).map((g) => (
+                  <div key={g} style={styles.checkboxItem}>
+                    <input
+                      id={`secondary-${g}`}
+                      type="checkbox"
+                      checked={musclesSecondary.includes(g)}
+                      onChange={(e) =>
+                        setMusclesSecondary((prev) =>
+                          e.target.checked ? [...prev, g] : prev.filter((m) => m !== g),
+                        )
+                      }
+                    />
+                    <label htmlFor={`secondary-${g}`} style={styles.checkboxLabel}>
+                      {fr.exercises.groupNames[g]}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -207,6 +306,56 @@ export function ExerciseEditScreen() {
               </select>
             </div>
 
+            <div style={styles.field}>
+              <span style={styles.label}>{fr.exercises.variantsLabel}</span>
+              {isEdit && id ? (
+                <div style={styles.variantsBox}>
+                  <div style={styles.chipGroup}>
+                    {variants.length === 0 && (
+                      <span style={styles.muted}>{fr.exercises.variantsEmpty}</span>
+                    )}
+                    {variants.map((v) => (
+                      <span key={v.linkId} style={styles.chip}>
+                        {v.nameFr ?? fr.exercises.noName}
+                        <button
+                          type="button"
+                          style={styles.chipRemove}
+                          aria-label={`${fr.exercises.variantsLabel}: ${v.nameFr ?? fr.exercises.noName} (✕)`}
+                          onClick={() => void handleRemoveVariant(v.linkId)}
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={variantQuery}
+                    onChange={(e) => setVariantQuery(e.target.value)}
+                    placeholder={fr.exercises.variantsSearch}
+                    style={styles.input}
+                  />
+                  {variantResults.length > 0 && (
+                    <div style={styles.variantResults}>
+                      {variantResults.map((row) => (
+                        <button
+                          key={row.id}
+                          type="button"
+                          style={styles.variantResultItem}
+                          onClick={() => void handleAddVariant(row.id)}
+                        >
+                          {row.nameFr ?? fr.exercises.noName}
+                          <span style={styles.variantAddHint}>{fr.exercises.variantsAdd}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p style={styles.muted}>{fr.exercises.variantsSaveFirst}</p>
+              )}
+            </div>
+
             <button type="submit" style={styles.primary} disabled={saving}>
               {saving ? fr.exercises.saving : fr.exercises.save}
             </button>
@@ -265,6 +414,54 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 10px',
   },
   muted: { color: colors.muted, fontSize: 13, margin: 0 },
+  checkboxGroup: { display: 'flex', flexWrap: 'wrap', gap: 12 },
+  checkboxItem: { display: 'flex', alignItems: 'center', gap: 6 },
+  checkboxLabel: { fontSize: 13, color: colors.ink, fontFamily: font, cursor: 'pointer' },
+  variantsBox: { display: 'flex', flexDirection: 'column', gap: 8 },
+  chipGroup: { display: 'flex', flexWrap: 'wrap', gap: 8, minHeight: 20 },
+  chip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    background: colors.field,
+    border: `1px solid ${colors.border}`,
+    borderRadius: 999,
+    padding: '4px 6px 4px 10px',
+    fontSize: 12.5,
+    color: colors.ink,
+    fontFamily: font,
+  },
+  chipRemove: {
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 1,
+    padding: 2,
+  },
+  variantResults: {
+    display: 'flex',
+    flexDirection: 'column',
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  variantResultItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    border: 'none',
+    borderBottom: `1px solid ${colors.border}`,
+    background: '#fff',
+    padding: '8px 11px',
+    fontSize: 13,
+    color: colors.ink,
+    fontFamily: font,
+    cursor: 'pointer',
+    textAlign: 'left',
+  },
+  variantAddHint: { color: colors.accent, fontSize: 12, fontWeight: 700 },
   primary: {
     alignSelf: 'flex-start',
     border: 'none',

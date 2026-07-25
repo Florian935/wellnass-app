@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CONF-01 — Export des données (RGPD)</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--danger-bg:#fbeae8;--danger-border:#e6b7b1;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1200px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:92ch;margin:0;font-size:15px;}
+  .flow{max-width:1200px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:320px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:520px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:492px;padding:16px;display:flex;flex-direction:column;gap:14px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px;}
+  .card{background:var(--surface-alt);border-radius:12px;padding:13px;font-size:13px;}
+  .btn{border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-strength{background:var(--strength);color:#fff;}
+  .rowlab{font-weight:700;font-size:14px;}
+  .rowdesc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .muted{color:var(--muted);}
+  .spacer{flex:1;}
+  .danger-zone{border:1.5px solid var(--danger-border);background:var(--danger-bg);border-radius:14px;padding:12px;}
+  .danger-zone .dz-t{font-weight:800;color:var(--danger);font-size:13px;margin-bottom:6px;}
+  .dialog{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;}
+  .dialog .dt{font-weight:800;font-size:15px;}
+  .dialog .db{font-size:13px;color:var(--muted);}
+  .dialog .acts{display:flex;gap:10px;justify-content:flex-end;}
+  .dialog .acts .a{font-weight:700;font-size:13px;color:var(--accent);padding:6px 10px;}
+  .spinner{width:22px;height:22px;border:3px solid var(--surface-alt);border-top-color:var(--accent);border-radius:50%;display:inline-block;}
+  .json{background:#2b2018;color:#f3e6d2;border-radius:12px;padding:12px;font-family:var(--mono);font-size:10.5px;line-height:1.5;overflow:auto;white-space:pre;}
+  .k{color:#e0a86b;} .s{color:#a8c98a;} .n{color:#d98a6b;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:210px;}
+  @media(max-width:700px){.arrow{display:none;}}
+  .note{max-width:1200px;margin:32px auto 0;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">CONF-01 · Conformité · RGPD · Portabilité (art. 20)</p>
+    <h1 class="title">Export des données</h1>
+    <p class="sub">L'utilisateur récupère une copie de <b>toutes ses données personnelles</b> dans un fichier
+      <b>JSON</b> (machine-readable), construit <b>en local</b> (hors-ligne), livré via la <b>feuille de partage</b>
+      du téléphone. Aucun serveur, aucune migration.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Réglages -->
+    <div class="col">
+      <div class="step">1 · Réglages</div>
+      <div class="caption">Section « Données », au-dessus de la Zone de danger</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Réglages</span></div>
+        <div class="sect">Compte</div>
+        <div class="card">Se déconnecter</div>
+        <div class="sect">Données</div>
+        <div class="card">
+          <div class="rowlab">Exporter mes données</div>
+          <div class="rowdesc">Récupère une copie de toutes tes données au format JSON (RGPD).</div>
+        </div>
+        <div class="btn btn-accent">⬇︎ Exporter mes données</div>
+        <div class="spacer"></div>
+        <div class="danger-zone"><div class="dz-t">⚠️ Zone de danger</div><div class="rowdesc">Supprimer mon compte…</div></div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Avertissement synchro (conditionnel) -->
+    <div class="col">
+      <div class="step">2 · Si synchro en cours</div>
+      <div class="caption">Avertissement <b>non bloquant</b> (sinon on passe direct à 3)</div>
+      <div class="phone"><div class="scr" style="justify-content:center;">
+        <div class="dialog">
+          <div class="dt">Synchro en cours</div>
+          <div class="db">La synchronisation initiale n'est pas terminée : l'export pourrait être incomplet. Réessaie une fois la synchro finie.</div>
+          <div class="acts"><span class="a muted">Annuler</span><span class="a">Exporter mes données</span></div>
+        </div>
+        <div class="card" style="margin-top:16px;text-align:center;">L'en-tête portera <span style="font-family:var(--mono)">syncComplete: false</span></div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Génération + partage -->
+    <div class="col">
+      <div class="step">3 · Génération → partage</div>
+      <div class="caption">Lecture locale (28 tables) → feuille de partage OS</div>
+      <div class="phone"><div class="scr" style="align-items:center;justify-content:center;gap:16px;text-align:center;">
+        <span class="spinner"></span>
+        <div class="rowlab">Préparation de l'export…</div>
+        <div class="rowdesc">Lecture de tes données locales</div>
+        <div class="spacer"></div>
+        <div class="card" style="align-self:stretch;">
+          <div style="font-weight:700;margin-bottom:8px;">Partager « wellness-export-2026-07-23.json »</div>
+          <div class="rowdesc">Enregistrer dans Fichiers · Envoyer par mail · Drive…</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Contenu du fichier -->
+    <div class="col">
+      <div class="step">4 · Le fichier JSON</div>
+      <div class="caption">En-tête + une section par table (données possédées)</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt">wellness-export-…json</span></div>
+        <div class="json"><span class="k">"app"</span>: <span class="s">"Wellness"</span>,
+<span class="k">"formatVersion"</span>: <span class="n">1</span>,
+<span class="k">"exportedAt"</span>: <span class="s">"2026-07-23T10:00Z"</span>,
+<span class="k">"userId"</span>: <span class="s">"a1b2…"</span>,
+<span class="k">"syncComplete"</span>: <span class="n">true</span>,
+<span class="k">"data"</span>: {
+  <span class="k">"profiles"</span>: [ {…} ],
+  <span class="k">"workouts"</span>: [ {…}, {…} ],
+  <span class="k">"workout_sets"</span>: [ … ],
+  <span class="k">"runs"</span>: [ … ],
+  <span class="k">"food_entries"</span>: [ … ],
+  <span class="k">"personal_records"</span>: [ … ],
+  <span class="k">"exercises"</span>: [ <span class="muted">/* perso */</span> ],
+  <span class="muted">… 28 sections au total</span>
+}</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <p class="sub"><b>Notes</b> — Export <b>hors-ligne</b> (aucune désactivation en mode avion, contrairement à
+      la suppression). Filtre par table : <code>WHERE user_id|owner_id = &lt;moi&gt; AND deleted_at IS NULL</code>
+      → le contenu <b>éditorial</b> (bibliothèque) et les lignes supprimées sont <b>exclus</b>. L'écran de
+      suppression (CONF-02) verra sa mention d'export mise à jour (retrait de « bientôt disponible »).</p>
+  </div>
+
+</body>
+</html>

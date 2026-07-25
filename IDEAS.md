@@ -20,6 +20,170 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [25/07/2026] 🔍 **Note — benchmark « 4 modèles IA » (source de la salve du 25/07)** : les 4 dumps
+  (Gemini, ChatGPT, Qwen-3.7-plus, Qwen-3.8-max — ~93 propositions au total) ont été croisés avec ce
+  fichier le 24/07. _Les dumps bruts vivent dans `_inbox-ia/`, **dossier local non versionné** (gitignoré,
+  poste de Florian) — seule cette synthèse est partagée._ Résultat : **6 idées nettes** promues ci-dessous
+  + **2 enrichissements** greffés sur des lignes existantes (rappels contextuels, bilan hebdo) ; tout le
+  reste recoupe le cadrage ou est écarté. **Bonne nouvelle** — consensus **4/4** sur des choses **déjà cadrées**
+  chez nous : nutrition qui varie selon la séance réellement faite (§7.1-7.3 + US 4.7 ✅), suggestion
+  post-séance puisée dans le journal, moteur de corrélations sur ses propres données
+  ([[analyses-croisees-poussees]]), score de récupération sans wearable ([[score-recuperation-readiness]])
+  → le socle est bien orienté. **Deux biais à ne PAS suivre** : **(1)** Gemini et Qwen-3.7 poussent une
+  stack **IA 100 % on-device** (LLM local, pose estimation temps réel, reconnaissance d'exercice par
+  vidéo) → **contraire à notre archi** (IA = backend, connexion requise, clé jamais dans l'app, cf.
+  [ia-integration-analyse.md](docs/product/ia-integration-analyse.md)) → à lire comme **inspiration**, pas
+  comme faisabilité ; **(2)** Gemini invente une **synchro P2P Bluetooth** → **contredit PowerSync**
+  ([ADR-001](docs/adr/ADR-001-moteur-sync-offline.md)). Également **écartés** : correction de forme par
+  caméra en temps réel (ambitieux, hors cible proche), pacing électrolytes intra-effort HYROX (public trop
+  niche). **Chiffres marché à vérifier avant usage** (Qwen-3.7, sources non validées) : plan annuel ≈ 60 %
+  des revenus du secteur fitness, essai gratuit de 17-32 j = meilleure conversion médiane (~42 %), l'Europe
+  accepte des prix plus élevés → utile pour la stratégie RevenueCat **post-V1**, à confronter aux sources.
+
+- [25/07/2026] 🔍 **Détecteur de collisions + séquençage intelligent des séances** (signal le plus fort du
+  benchmark : **4/4 modèles**) : le planning ne se contente pas de **placer** les séances, il **repère les
+  combinaisons qui s'auto-sabotent** et **propose une correction** — sortie longue au lendemain d'un gros
+  soulevé de terre, fractionné la veille d'une séance jambes, déficit agressif pendant une semaine de
+  records, glucides bas avant une séance exigeante. Sortie attendue : **échange de jours** ou **version
+  allégée** de la séance — **jamais un blocage**. _Vérifié le 25/07/2026 :_ l'**US 3.9 « Planning
+  calendrier auto » est livrée** (✅) et le calendrier unifié muscu+running existe, mais elle **diffère
+  explicitement** la « **coordination avancée (charge/récup)** » et l'« alerte de chevauchement bloquante »
+  ([3.9-planning-muscu-unifie.md §7](docs/specs/functional/us/3.9-planning-muscu-unifie.md#L148-L152)) — et
+  le « chevauchement » cadré aujourd'hui est un **conflit d'agenda** (deux séances au même moment), pas un
+  **conflit physiologique**. Côté analyses, [analyses-donnees.md](docs/product/analyses-donnees.md) porte
+  déjà **RN-17** (conflit d'objectifs nutrition ↔ course) et **META-19** (garde-fou surentraînement ACWR)
+  → **briques voisines, mais rien qui séquence les séances entre elles**. → **idée neuve**, et c'est le
+  **cœur du différenciateur d'intégration**. _Points durs :_ **(1)** **moteur de règles déterministe**
+  obligatoire (l'IA explique, elle ne calcule pas) ; **(2)** **tolérance individuelle** — ne pas imposer une
+  physiologie moyenne : profil + apprentissage progressif (cf. « empreinte d'interférence personnelle »,
+  ChatGPT §21) ; **(3)** **doser le discours scientifique** — l'angle interférence AMPK/mTOR est réel mais
+  illisible pour le grand public FR, parler simple ; **(4)** **opt-in strict** (décision H : intégration
+  sans imposition) ; **(5)** **100 % offline** (règles locales, aucune dépendance réseau). _Recoupe :_
+  US 3.9, RN-17 / META-19, [[score-recuperation-readiness]], [[detection-plateau-deload]], garde-fou
+  surentraînement (13/07), [[recommandations-explicables-contestables]], [[objectif-hybride-unifie]].
+  _Prochaine étape :_ **brainstorming** (fixer le jeu de règles V1 minimal — 3-4 règles lisibles suffisent)
+  puis spec → plan → design.
+
+- [25/07/2026] 🔍 **Mode « vie réelle » / journée minimale viable (dégradation gracieuse anti-abandon)**
+  (3 modèles sur 4 ; désigné **cause n°1 d'abandon à 3-6 semaines**) : en **1 tap**, l'utilisateur déclare
+  une période dégradée (vacances, malade, bébé qui ne dort pas, déplacement sans salle) → l'app **abaisse
+  proprement tous les objectifs** vers un minimum cohérent (« cette semaine : 2 séances courtes +
+  protéines tenues »), ajuste cibles caloriques, suggestions et streak, **sans culpabiliser**, puis
+  **reprend le plan normal sans « reset »**. Deux granularités dans les dumps : la **journée** minimale
+  viable (ChatGPT §12 — séance 20 min, repas simple, footing remplacé par une marche) et la **période** de
+  maintien (Qwen-3.8 §4.5 « voyage » — 3 exercices au poids du corps + conseils resto/aéroport).
+  _Distinct du **joker / gel de streak** (13/07)_ : le joker protège **la série**, ici on ajuste **tout le
+  plan** (objectifs, macros, planning). _Points durs :_ **(1)** **ton UX** — bienveillant, jamais punitif ;
+  wording FR+EN très travaillé ; **(2)** définir le « minimum viable » **par pilier et par objectif** ;
+  **(3)** **sortie du mode** (auto à date vs manuelle) et **effet sur les analyses** (ne pas polluer les
+  tendances / les records) ; **(4)** la variante voyage demande du **contenu** (exos au poids du corps) →
+  sous-lot séparé. _Recoupe :_ joker/gel de streak et notifications de reprise (13/07),
+  [[journal-bien-etre]], [[detecteur-collisions-sequencage]] (le « réparateur de planning » de ChatGPT §6
+  est la même famille : reconstruire la suite après 2 séances manquées). _Prochaine étape :_ cadrage US
+  **après** le détecteur de collisions — les deux partagent le même moteur de règles.
+
+- [25/07/2026] 🔍 **Simulateur « What-If / Et si… »** (ChatGPT §20, Qwen-3.8 §4.1) : bac à sable de
+  progression — « si je passe à 4 séances muscu et que je réduis le running de moitié, à quoi ressemble ma
+  progression sur 12 semaines ? », « si je passe en déficit ? », « si je supprime une séance jambes ? ».
+  L'app **projette une courbe** à partir de l'historique réel de l'utilisateur, **avec une fourchette
+  d'incertitude**, et montre l'impact sur le planning, les apports et la charge. Outil de **motivation**
+  ET d'**aide à la décision** ; aucun concurrent identifié sur ce terrain. _Points durs :_ **(1)**
+  **honnêteté statistique** — afficher une fourchette + le volume de données, jamais un chiffre sec ;
+  **(2)** le chiffre doit venir d'un **moteur de simulation déterministe** (l'IA sert au plus à comprendre
+  la question en langage naturel) ; **(3)** **cold start** — quelques semaines de données minimum, prévoir
+  l'état « pas encore assez d'historique » ; **(4)** risque produit : ne rien **promettre**. _Recoupe :_
+  [[analyses-croisees-poussees]], [[objectif-hybride-unifie]], [[detection-plateau-deload]] ; candidat
+  **premium** naturel ([[principe-monetisation]] : le payant, c'est l'intelligence de croisement).
+  _Prochaine étape :_ **post-V1** (nécessite de l'historique) — à cadrer après le moteur de corrélations.
+
+- [25/07/2026] 🔍 **Objectif hybride unifié (avec arbitrage explicite des compromis)** (ChatGPT §1,
+  Qwen-3.7) : l'utilisateur pose **un seul objectif composite** — « courir un 10 km en 45 min **tout en**
+  gardant mon squat **et** en perdant 3 kg » — et l'app construit **un plan unique** où muscu, running et
+  nutrition ont des **priorités explicites** (progresser / maintenir / concéder), au lieu de juxtaposer
+  trois programmes indépendants. C'est le **pitch produit résumé en une seule feature** : « l'app qui
+  **arbitre** entre tes objectifs », pas « 3 apps en 1 ». _Vérifié le 25/07/2026 :_ les objectifs
+  existent **par pilier** (objectif/TDEE nutrition, profil coureur 5.1) et l'idée « objectifs personnels à
+  échéance » (13/07) reste **mono-objectif** ; **aucun objet « objectif transverse avec priorités »** au
+  cadrage → idée neuve. _Points durs :_ **(1)** formaliser les compromis **sans promettre l'impossible**
+  (progresser partout en même temps n'existe pas) — l'app doit savoir dire « ces trois objectifs ne
+  tiennent pas ensemble sur 12 semaines, lequel recule ? » ; **(2)** dépend du
+  [[detecteur-collisions-sequencage]] (c'est lui qui applique l'arbitrage au calendrier) et des **profils
+  enrichis** (15/07) pour les contraintes réelles ; **(3)** wording/i18n : parler compromis **sans
+  démotiver**. _Recoupe :_ profils enrichis (15/07), [[simulateur-what-if]] (tester un compromis avant de
+  s'engager), et le **mode compétition / peaking** (idée secondaire des dumps — taper, maintien
+  d'intensité, charge glucidique et reprise autour d'une échéance : à ressortir avec le
+  [[module-powerlifting]] ou une prépa course). _Prochaine étape :_ **brainstorming produit** — c'est une
+  brique de **positionnement**, pas une petite US.
+
+- [25/07/2026] 🔍 **Principe UX transverse — recommandations explicables ET contestables (note)**
+  (ChatGPT §24) : **chaque** ajustement proposé par l'app affiche **ses raisons** (« séance déplacée :
+  volume jambes d'hier + fractionné prévu demain + énergie déclarée basse »), et l'utilisateur peut
+  répondre « **cette règle ne me correspond pas** » → l'app **baisse le poids** de cette règle dans ses
+  décisions futures. Ce n'est **pas une feature isolée** mais une **règle de conception applicable à toute
+  notre couche intelligente** (suggestions, planning, nutrition adaptative, IA) : un système avec lequel on
+  **négocie**, pas une boîte noire. Directement aligné sur la **décision H** (intégration sans imposition).
+  _Points durs :_ **(1)** stocker le **poids des règles par utilisateur** → donnée offline-first à prévoir
+  au modèle (UUID client, historisée) ; **(2)** garder les règles **lisibles et traçables** → moteur
+  déterministe, pas un modèle opaque ; **(3)** **ne pas** laisser désactiver les garde-fous de **sécurité**
+  (surentraînement, blessure) ; **(4)** i18n des explications (phrases générées à partir de clés, pas de
+  texte libre en dur). _Recoupe :_ [[detecteur-collisions-sequencage]], [[analyses-croisees-poussees]],
+  [[integration-ia]], et l'**indice de confiance des données** (ChatGPT §13 — l'app montre ce qu'elle sait
+  vraiment : « nutrition fiable », « charge musculaire incertaine », et ne réclame que **la** donnée qui
+  améliorerait le plus les recos ; à noter comme corollaire). _Prochaine étape :_ à **inscrire dans les
+  bonnes pratiques** ([bonnes-pratiques.md](docs/specs/technical/bonnes-pratiques.md)) au moment de la
+  **1ʳᵉ US « suggestion »**, plutôt qu'en US isolée.
+
+- [25/07/2026] 🔍 **Défi composite cross-pilier (un seul objectif qui exige les 3 piliers)** (Gemini §2.3,
+  ChatGPT §14, Qwen-3.8 §4.6) : au lieu de trois défis séparés, **un** objectif composite — ex. « ce mois :
+  12 séances muscu **+** 60 km **+** 80 % des jours avec macros dans la cible » — avec paliers
+  (bronze/argent/or). Variante **coopérative** (ChatGPT) : un groupe ne gagne pas parce qu'un membre court
+  100 km, le score exige une **contribution équilibrée** entre entraînement, récup et nutrition, et chacun
+  choisit son pilier principal → accessible à des niveaux différents. Intérêt : **force naturellement
+  l'adoption des 3 modules**, donc l'usage du différenciateur. _Distinct de nos lignes existantes :_
+  [[defis-sponsorises-marques]] (= monétisation **par-dessus** les défis), onglet compétition (= classement
+  **social**), objectifs personnels à échéance (= **mono**-objectif non social). _Points durs :_ **(1)**
+  **calibrer la difficulté** par profil, sinon décourageant ; **(2)** un score composite ne doit récompenser
+  **ni la restriction alimentaire ni le surentraînement** → garde-fou obligatoire ; **(3)** normaliser des
+  unités hétérogènes (kg soulevés, km, g de protéines) ; **(4)** **gamification hors V1** (décision C) →
+  cible **V3/V4**, mais l'historique horodaté actuel doit rester **compatible** avec l'ajout futur.
+  _Recoupe :_ [[clubs-groupes]], [[defis-sponsorises-marques]], objectifs personnels à échéance, streak.
+  _Prochaine étape :_ **rien à cadrer maintenant** — à ressortir quand la boucle de jeu sera réévaluée
+  (V3/V4).
+
+- [23/07/2026] 🔍 **Création d'exercice perso → passer en modale (au lieu de la card inline)** : remonté
+  par Florian en recette F10c. Aujourd'hui, « Créer un exercice perso » (liste des exercices Muscu)
+  ouvre une **card intercalée** entre la barre de recherche et la liste → sensation « sandwich »
+  étrange. En plus : (a) le sélecteur de **groupe musculaire** n'est **pas** `scrollable` → il passe
+  **sur plusieurs lignes** (contrairement à la fiche qui l'a en `scrollable`) ; (b) le champ **nom**
+  n'a **pas de placeholder** → l'input paraît vide/invisible. _Piste :_ transformer le flux en
+  **modale / bottom-sheet** (même patron que `ExerciseFilterDrawer`), + Segment `scrollable` +
+  placeholder sur le nom. _Prochaine étape :_ cadrage US (spec → plan → design). Petite US UX.
+- [23/07/2026] 🔍 **Cohérence de la fiche exercice bibliothèque VS perso** : remonté par Florian en
+  recette F10c — la fiche « perso » paraît différente de la fiche « bibliothèque », c'est perturbant.
+  Partie **volontaire** : seuls les exos perso portent **Modifier / Supprimer** (on ne modifie pas un
+  exo éditorial). Partie **subie** : un exo perso créé sur mobile n'a **ni instructions, ni muscles
+  secondaires** (pas de saisie mobile pour ça) → sa fiche paraît « plus vide » ; l'ordre/þprésence des
+  blocs diffère donc visuellement. _Pistes à trancher :_ (1) harmoniser la structure (mêmes sections,
+  états vides explicites) ; (2) permettre d'éditer plus de champs sur un exo perso (instructions,
+  muscles secondaires) pour combler l'écart ; (3) statu quo assumé + libellés clarifiant. _Prochaine
+  étape :_ mini-brainstorming pour fixer l'état cible, puis US.
+
+- [21/07/2026] 🆕 **3 niveaux d'affichage pour la séance live : Simplifiée / Normale / Détaillée** :
+  adapter l'écran de séance en cours au niveau d'expérience de l'utilisateur, plutôt qu'un seul écran
+  avec tous les champs pour tout le monde. **Simplifiée** (débutant) = strict minimum pour ne pas
+  noyer : série / exercice / charge / répétitions / chrono de repos. **Normale** (intermédiaire) =
+  simplifiée + infos complémentaires (ex. charge planifiée vs réalisée, « dernière fois », suggestion
+  de progression). **Détaillée** (confirmé) = normale + toutes les données avancées de l'appli (RPE
+  par série, type de série, notes…). Objectif : chacun y trouve son compte — le débutant n'est pas
+  perdu, le confirmé n'est pas bridé. Remonté par Florian (21/07). Recoupe directement le **RPE par
+  série** (pt 13 de [analyse-seance-en-cours.md](docs/refonte-muscu/analyse-seance-en-cours.md), livré
+  en US-C) et l'idée **profils enrichis** (15/07 — le niveau/expérience déclaré en profil pourrait
+  piloter le niveau d'affichage par défaut, modifiable ensuite manuellement) ; à ne pas confondre avec
+  le mode « simple gratuit / avancé payant » de cette même idée — ici c'est une **ergonomie par niveau
+  d'expérience**, pas une frontière de monétisation. _À creuser :_ réglage persistant en profil vs
+  bascule rapide en tête de séance ; liste exacte des champs par niveau ; cohérence avec le module
+  **Powerlifting** (pratiquants confirmés, %1RM/RPE/RIR). _Prochaine étape :_ cadrage plus tard (spec
+  → plan → design) — candidat pour une itération future de l'écran de séance, après la refonte C3.
 - [20/07/2026] 🆕 **RIR en alternative au RPE par série (préférence utilisateur)** : US Refonte-C2 introduit
   un **RPE par série** (échelle 1-10, optionnel). Certains pratiquants raisonnent plutôt en **RIR** (*reps in
   reserve* : nombre de reps qu'il restait avant l'échec — 0 = échec, ~5 = très facile). Prévoir de pouvoir
@@ -365,12 +529,25 @@ Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une U
 - [13/07/2026] 🆕 **Bilan hebdo/mensuel automatique** : un récap périodique narratif (volume, sorties,
   calories, PR, tendance) poussé en notification — distinct des widgets dashboard (vue live). Digest
   qui raconte la période. S'appuie sur les agrégats déjà cadrés.
+  - _**Enrichissement 25/07/2026** (benchmark IA — ChatGPT §11, angle rétention le plus cité des 4 dumps) :_
+    adopter le format « **une seule décision** ». Le bilan ne déroule **pas** vingt graphiques : il dit ce
+    qui a **progressé**, ce qui **bloque**, et demande **une seule décision** pour la semaine à venir
+    (« maintenir le déficit », « enlever une séance », « monter les glucides autour du running »). Si l'IA
+    rédige le résumé, elle le fait **à partir des chiffres affichés à côté** — jamais de narration sans les
+    données sous-jacentes visibles. _Recoupe :_ [[recommandations-explicables-contestables]].
 - [13/07/2026] 🆕 **Rétrospective annuelle façon « Wrapped »** : récap annuel imagé et partageable
   (km parcourus, tonnage total, top exercices, records…). Fort levier d'acquisition virale ; recoupe
   [[carte-seance-partageable]].
 - [13/07/2026] 🆕 **Rappels intelligents contextuels** : notifications situées — « séance prévue
   aujourd'hui », « déjeuner non loggé », « streak en danger ce soir ». S'appuie sur le planning
   unifié déjà cadré.
+  - _**Enrichissement 25/07/2026** (benchmark IA — Gemini §2.5, Qwen-3.7 « cues événementielles ») :_
+    envoyer le rappel **au moment probable appris du comportement**, pas à heure fixe — moyenne glissante
+    des heures de log sur ~2 semaines (« tu logges ton déjeuner vers 12 h 40, ta séance vers 18 h 15 ») →
+    le rappel part dans **cette** fenêtre, avec un contenu adapté (« tu n'as pas loggé ton déj »). Calcul
+    **100 % local**, aucun serveur. _Points durs :_ survivre au **doze mode** Android (WorkManager /
+    notifications planifiées) → prévoir une **fenêtre de ~30 min** en repli ; **plafonner** le nombre de
+    notifications/jour pour ne pas devenir intrusif.
 - [13/07/2026] 🆕 **Carte de séance/course partageable en image** : export visuel (trace GPS + stats,
   ou résumé muscu) pour stories Insta/WhatsApp. _NB : le feed social est V2 ; ici c'est du partage
   sortant statique, faisable avant._

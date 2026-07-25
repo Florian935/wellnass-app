@@ -35,22 +35,22 @@
 -- -----------------------------------------------------------
 insert into public.exercises (id, owner_id, source, muscle_primary, equipment, media_url, created_at, updated_at)
 values
-  ('a1000001-0000-4000-8000-000000000001', null, 'library', 'chest',     null, null, now(), now()),
-  ('a1000002-0000-4000-8000-000000000002', null, 'library', 'chest',     null, null, now(), now()),
-  ('a1000003-0000-4000-8000-000000000003', null, 'library', 'chest',     null, null, now(), now()),
-  ('a1000004-0000-4000-8000-000000000004', null, 'library', 'back',      null, null, now(), now()),
-  ('a1000005-0000-4000-8000-000000000005', null, 'library', 'back',      null, null, now(), now()),
-  ('a1000006-0000-4000-8000-000000000006', null, 'library', 'back',      null, null, now(), now()),
-  ('a1000007-0000-4000-8000-000000000007', null, 'library', 'legs',      null, null, now(), now()),
-  ('a1000008-0000-4000-8000-000000000008', null, 'library', 'legs',      null, null, now(), now()),
-  ('a1000009-0000-4000-8000-000000000009', null, 'library', 'legs',      null, null, now(), now()),
-  ('a1000010-0000-4000-8000-000000000010', null, 'library', 'legs',      null, null, now(), now()),
-  ('a1000011-0000-4000-8000-000000000011', null, 'library', 'shoulders', null, null, now(), now()),
-  ('a1000012-0000-4000-8000-000000000012', null, 'library', 'shoulders', null, null, now(), now()),
-  ('a1000013-0000-4000-8000-000000000013', null, 'library', 'arms',      null, null, now(), now()),
-  ('a1000014-0000-4000-8000-000000000014', null, 'library', 'arms',      null, null, now(), now()),
-  ('a1000015-0000-4000-8000-000000000015', null, 'library', 'core',      null, null, now(), now()),
-  ('a1000016-0000-4000-8000-000000000016', null, 'library', 'core',      null, null, now(), now())
+  ('a1000001-0000-4000-8000-000000000001', null, 'library', 'chest',     'barbell',    null, now(), now()),
+  ('a1000002-0000-4000-8000-000000000002', null, 'library', 'chest',     'barbell',    null, now(), now()),
+  ('a1000003-0000-4000-8000-000000000003', null, 'library', 'chest',     'bodyweight', null, now(), now()),
+  ('a1000004-0000-4000-8000-000000000004', null, 'library', 'back',      'bodyweight', null, now(), now()),
+  ('a1000005-0000-4000-8000-000000000005', null, 'library', 'back',      'barbell',    null, now(), now()),
+  ('a1000006-0000-4000-8000-000000000006', null, 'library', 'back',      'cable',      null, now(), now()),
+  ('a1000007-0000-4000-8000-000000000007', null, 'library', 'legs',      'barbell',    null, now(), now()),
+  ('a1000008-0000-4000-8000-000000000008', null, 'library', 'legs',      'barbell',    null, now(), now()),
+  ('a1000009-0000-4000-8000-000000000009', null, 'library', 'legs',      'machine',    null, now(), now()),
+  ('a1000010-0000-4000-8000-000000000010', null, 'library', 'legs',      'dumbbell',   null, now(), now()),
+  ('a1000011-0000-4000-8000-000000000011', null, 'library', 'shoulders', 'barbell',    null, now(), now()),
+  ('a1000012-0000-4000-8000-000000000012', null, 'library', 'shoulders', 'dumbbell',   null, now(), now()),
+  ('a1000013-0000-4000-8000-000000000013', null, 'library', 'arms',      'dumbbell',   null, now(), now()),
+  ('a1000014-0000-4000-8000-000000000014', null, 'library', 'arms',      'dumbbell',   null, now(), now()),
+  ('a1000015-0000-4000-8000-000000000015', null, 'library', 'core',      'bodyweight', null, now(), now()),
+  ('a1000016-0000-4000-8000-000000000016', null, 'library', 'core',      'bodyweight', null, now(), now())
 on conflict (id) do nothing;
 
 -- -----------------------------------------------------------

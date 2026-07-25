@@ -9,6 +9,7 @@ import {
   computeVolume,
   computeReorderedExerciseOrder,
   computeProgressionSuggestion,
+  deriveTemplateTargetsFromWorkoutSets,
 } from './workout';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -499,5 +500,65 @@ describe('computeProgressionSuggestion', () => {
   it('referenceSet absent (undefined) → null', () => {
     const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
     expect(computeProgressionSuggestion(lastSets, undefined, OPTS)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// deriveTemplateTargetsFromWorkoutSets
+// ---------------------------------------------------------------------------
+describe('deriveTemplateTargetsFromWorkoutSets', () => {
+  it('séance vide → []', () => {
+    expect(deriveTemplateTargetsFromWorkoutSets([])).toEqual([]);
+  });
+
+  it('un seul exercice, 3 séries toutes validées → cibles dérivées de la dernière série validée', () => {
+    const sets = [
+      { exerciseId: 'A', setType: 'normal', reps: 10, weightKg: 80, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 8, weightKg: 82.5, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 6, weightKg: 85, done: true },
+    ];
+    expect(deriveTemplateTargetsFromWorkoutSets(sets)).toEqual([
+      { exerciseId: 'A', setType: 'normal', targetSets: 3, targetReps: '6', targetWeightKg: 85 },
+    ]);
+  });
+
+  it('série non-validée en dernière position : ignorée des cibles mais comptée hors targetSets', () => {
+    const sets = [
+      { exerciseId: 'A', setType: 'normal', reps: 10, weightKg: 80, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 8, weightKg: 82.5, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 6, weightKg: 85, done: false },
+    ];
+    expect(deriveTemplateTargetsFromWorkoutSets(sets)).toEqual([
+      { exerciseId: 'A', setType: 'normal', targetSets: 2, targetReps: '8', targetWeightKg: 82.5 },
+    ]);
+  });
+
+  it("exercice sans aucune série validée → exclu du résultat (pas d'entrée null/undefined)", () => {
+    const sets = [
+      { exerciseId: 'A', setType: 'normal', reps: 10, weightKg: 80, done: false },
+      { exerciseId: 'A', setType: 'normal', reps: 8, weightKg: 82.5, done: false },
+    ];
+    expect(deriveTemplateTargetsFromWorkoutSets(sets)).toEqual([]);
+  });
+
+  it('deux exercices entrelacés (A,B,A,B) → ordre de première apparition préservé, pas order_index brut', () => {
+    const sets = [
+      { exerciseId: 'A', setType: 'normal', reps: 10, weightKg: 80, done: true },
+      { exerciseId: 'B', setType: 'normal', reps: 12, weightKg: 40, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 8, weightKg: 82.5, done: true },
+      { exerciseId: 'B', setType: 'normal', reps: 10, weightKg: 42.5, done: true },
+    ];
+    const result = deriveTemplateTargetsFromWorkoutSets(sets);
+    expect(result.map((r) => r.exerciseId)).toEqual(['A', 'B']);
+  });
+
+  it("set_type du résultat = celui de la première série validée, pas la dernière (ex. warmup puis normal)", () => {
+    const sets = [
+      { exerciseId: 'A', setType: 'warmup', reps: 12, weightKg: 40, done: true },
+      { exerciseId: 'A', setType: 'normal', reps: 8, weightKg: 80, done: true },
+    ];
+    expect(deriveTemplateTargetsFromWorkoutSets(sets)).toEqual([
+      { exerciseId: 'A', setType: 'warmup', targetSets: 2, targetReps: '8', targetWeightKg: 80 },
+    ]);
   });
 });

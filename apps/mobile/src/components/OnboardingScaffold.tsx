@@ -9,7 +9,7 @@ import { completeOnboarding } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 type OnboardingScaffoldProps = {
   step: number;

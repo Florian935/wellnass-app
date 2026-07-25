@@ -84,6 +84,22 @@ export function sessionBestEstimated1RM(
   return best;
 }
 
+/** Une mesure de 1RM (valeur en kg + date ISO UTC de réalisation). */
+export type OneRepMaxSample = { value: number; date: string };
+
+/**
+ * Choisit le 1RM à afficher : le **réel** (série effectuée à 1 rep) s'il existe,
+ * sinon l'**estimé** (Epley). `real` indique la provenance. `null` si aucun.
+ */
+export function pickOneRepMax(
+  real: OneRepMaxSample | null,
+  estimated: OneRepMaxSample | null,
+): { value: number; date: string; real: boolean } | null {
+  if (real) return { value: real.value, date: real.date, real: true };
+  if (estimated) return { value: estimated.value, date: estimated.date, real: false };
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Calcul des records d'une séance
 // ---------------------------------------------------------------------------

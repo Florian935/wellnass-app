@@ -11,6 +11,7 @@ import type { Micronutrients } from '@wellness/shared';
 import { computeJournalCompletion, localDayKey, parseMicronutrients } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
 
 /** Entrée du journal telle qu'affichée. */
@@ -151,6 +152,10 @@ export async function addFoodEntry(
   mealType: string,
   snapshot: EntrySnapshot,
 ): Promise<string> {
+  // Analytics : ajout d'une entrée de repas (choke point unique — picker, scan, quick add,
+  // repas type, copie de jour/repas convergent ici). Fire-and-forget.
+  void track(ANALYTICS_EVENTS.foodLogged);
+
   return insertWithSyncFields('food_entries', {
     user_id: currentUserId(),
     log_date: date,

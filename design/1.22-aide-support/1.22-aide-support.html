@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US 1.22 — Aide & support</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--danger-bg:#fbeae8;--danger-border:#e6b7b1;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1280px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1280px;margin:24px auto 0;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:320px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:34px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:560px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:532px;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:6px;}
+  .card{background:var(--surface-alt);border-radius:12px;padding:13px;font-size:13px;}
+  .btn{border-radius:13px;text-align:center;font-weight:800;font-size:15px;padding:13px;}
+  .btn-accent{background:var(--accent);color:#fff;}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink);}
+  .rowlab{font-weight:700;font-size:14px;}
+  .rowdesc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .muted{color:var(--muted);}
+  .spacer{flex:1;}
+  /* FAQ accordéon */
+  .faq{background:var(--surface-alt);border-radius:12px;padding:12px 13px;}
+  .faq .qrow{display:flex;align-items:center;gap:10px;}
+  .faq .q{flex:1;font-weight:700;font-size:13.5px;}
+  .faq .chev{color:var(--muted);font-weight:800;}
+  .faq.open{background:#fff;border:1px solid var(--border);}
+  .faq .a{font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.55;}
+  /* Composeur mail natif */
+  .mail{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow);}
+  .mail .mh{display:flex;justify-content:space-between;align-items:center;}
+  .mail .send{color:var(--accent);font-weight:800;font-size:13px;}
+  .mail .fld{font-size:12.5px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+  .mail .fld b{color:var(--muted);font-weight:700;}
+  .mail .body{font-size:12.5px;color:var(--ink);min-height:40px;}
+  .tech{background:#2b2018;color:#f3e6d2;border-radius:10px;padding:10px;font-family:var(--mono);font-size:10.5px;line-height:1.6;white-space:pre;overflow:auto;}
+  .tech .k{color:#e0a86b;}
+  .dialog{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;}
+  .dialog .dt{font-weight:800;font-size:15px;}
+  .dialog .db{font-size:13px;color:var(--muted);}
+  .dialog .acts{display:flex;gap:10px;justify-content:flex-end;}
+  .dialog .acts .a{font-weight:700;font-size:13px;color:var(--accent);padding:6px 10px;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:230px;}
+  @media(max-width:700px){.arrow{display:none;}}
+  .note{max-width:1280px;margin:32px auto 0;}
+  .pill{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US 1.22 · V0.8 · Conformité & intégrations · Prérequis bêta</p>
+    <h1 class="title">Aide & support</h1>
+    <p class="sub">Un point d'entrée <b>« Aide & support »</b> dans les Réglages ouvre un écran avec une
+      <b>FAQ</b> embarquée (bilingue, hors-ligne) et deux actions de contact — <b>Nous contacter</b> et
+      <b>Signaler un bug</b> — qui ouvrent le <b>client mail natif</b> pré-rempli. Aucun serveur, aucune migration.
+      L'adresse de support est une <span class="pill">constante placeholder</span> à renseigner avant le build.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1. Réglages -->
+    <div class="col">
+      <div class="step">1 · Réglages</div>
+      <div class="caption">Nouvelle section « Aide & support »</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Réglages</span></div>
+        <div class="sect">Notifications</div>
+        <div class="card">Rappels · Ne pas déranger</div>
+        <div class="sect">Aide & support</div>
+        <div class="btn btn-ghost">Aide & support ›</div>
+        <div class="sect">Données</div>
+        <div class="card">Exporter mes données</div>
+        <div class="spacer"></div>
+        <div class="card" style="border:1.5px solid var(--danger-border);background:var(--danger-bg);color:var(--danger);font-weight:700;">⚠️ Zone de danger</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Écran /help -->
+    <div class="col">
+      <div class="step">2 · Écran Aide & support</div>
+      <div class="caption">FAQ en accordéon (une seule ouverte) + 2 actions</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">‹</span><span class="tt">Aide & support</span></div>
+        <div class="sect">Questions fréquentes</div>
+        <div class="faq open">
+          <div class="qrow"><span class="q">L'application fonctionne-t-elle hors connexion&nbsp;?</span><span class="chev">⌄</span></div>
+          <div class="a">Oui. Tes données sont enregistrées sur l'appareil et se synchronisent automatiquement dès qu'une connexion est disponible.</div>
+        </div>
+        <div class="faq"><div class="qrow"><span class="q">Mes données sont-elles synchronisées entre mes appareils&nbsp;?</span><span class="chev">›</span></div></div>
+        <div class="faq"><div class="qrow"><span class="q">Comment activer/désactiver un pilier&nbsp;?</span><span class="chev">›</span></div></div>
+        <div class="faq"><div class="qrow"><span class="q">Comment exporter mes données&nbsp;?</span><span class="chev">›</span></div></div>
+        <div class="faq"><div class="qrow"><span class="q">L'application est-elle gratuite&nbsp;?</span><span class="chev">›</span></div></div>
+        <div class="sect">Nous contacter</div>
+        <div class="rowdesc" style="margin-top:0;">Ton client mail s'ouvrira avec un message pré-rempli.</div>
+        <div class="btn btn-accent">Nous contacter</div>
+        <div class="btn btn-ghost">Signaler un bug</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Nous contacter → mail corps vide -->
+    <div class="col">
+      <div class="step">3a · Nous contacter</div>
+      <div class="caption">Mail natif, objet pré-rempli, <b>corps vide</b></div>
+      <div class="phone"><div class="scr" style="justify-content:center;">
+        <div class="mail">
+          <div class="mh"><span class="rowlab">Nouveau message</span><span class="send">Envoyer ▸</span></div>
+          <div class="fld"><b>À :</b> support@example.com <span class="pill">placeholder</span></div>
+          <div class="fld"><b>Objet :</b> [Wellness] Question / contact</div>
+          <div class="body muted">(corps vide — l'utilisateur écrit son message)</div>
+        </div>
+        <div class="card" style="margin-top:16px;">Aucune métadonnée ajoutée pour un simple contact.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3b. Signaler un bug → mail + bloc technique -->
+    <div class="col">
+      <div class="step">3b · Signaler un bug</div>
+      <div class="caption">Mail natif + <b>bloc technique</b> minimal, visible & effaçable</div>
+      <div class="phone"><div class="scr" style="justify-content:center;">
+        <div class="mail">
+          <div class="mh"><span class="rowlab">Nouveau message</span><span class="send">Envoyer ▸</span></div>
+          <div class="fld"><b>À :</b> support@example.com</div>
+          <div class="fld"><b>Objet :</b> [Wellness] Signalement de bug</div>
+          <div class="body">Décris le problème rencontré (étapes, ce qui était attendu) :</div>
+          <div class="tech">——— <span class="k">Informations techniques (à conserver)</span> ———
+App : 1.0.0 (build 42)
+Système : Android 14
+Appareil : Pixel 7
+Langue : fr</div>
+        </div>
+        <div class="card" style="margin-top:14px;">Pas d'UUID, pas de logs. L'utilisateur peut effacer ce bloc.</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <p class="sub"><b>Cas limite — aucun client mail configuré</b> : au lieu d'ouvrir le composeur, une
+      <b>alerte</b> affiche l'adresse de support (« Aucune application mail n'est configurée. Écris-nous à :
+      support@example.com ») pour que l'utilisateur puisse la recopier — jamais de crash ni d'écran mort.</p>
+    <p class="sub" style="margin-top:12px;"><b>Notes</b> — FAQ <b>statique embarquée</b> (i18n FR/EN), ≈ 7 entrées,
+      accordéon <b>mono-ouverture</b>. Contact = <b>client mail natif</b> (<code>expo-mail-composer</code>), zéro
+      backend. Découpage : helper <b>pur testé</b> <code>formatBugReportBody</code> + I/O natif isolé
+      (<code>collectSupportMeta</code>, <code>contactSupport</code>). <b>Hors périmètre</b> : table de tickets,
+      FAQ éditable à chaud, service tiers. <b>Modules natifs ajoutés</b> → nouveau dev build requis.</p>
+  </div>
+
+</body>
+</html>

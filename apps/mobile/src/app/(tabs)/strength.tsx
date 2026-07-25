@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { StrengthWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -35,6 +35,17 @@ export default function StrengthScreen() {
   const onStart = async () => {
     await startWorkout();
     router.push('/workout');
+  };
+
+  const onStartFree = () => {
+    Alert.alert(t('workout.freeStart.title'), undefined, [
+      { text: t('workout.freeStart.blank'), onPress: () => void onStart() },
+      {
+        text: t('workout.freeStart.fromTemplate'),
+        onPress: () => router.push('/templates'),
+      },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
   };
 
   const onStartToday = async (sessionId: string, plannedSessionId: string) => {
@@ -106,6 +117,16 @@ export default function StrengthScreen() {
               loading={starting}
               onPress={() => onStartToday(today.session.sessionId, today.session.plannedSessionId)}
             />
+            <Pressable
+              onPress={() => router.push('/templates')}
+              style={styles.todayNoteRow}
+              hitSlop={8}
+            >
+              <Ionicons name="albums-outline" size={14} color={colors.textMuted} />
+              <Text style={[styles.todayNoteText, { color: colors.textMuted }]} numberOfLines={1}>
+                {t('workout.freeStart.fromTemplate')}
+              </Text>
+            </Pressable>
           </Card>
         ) : (
           <Card>
@@ -118,7 +139,7 @@ export default function StrengthScreen() {
             <Text style={[styles.cardText, { color: colors.textMuted }]}>
               {t('workout.freeSubtitle')}
             </Text>
-            <Button label={t('workout.startFree')} onPress={onStart} />
+            <Button label={t('workout.startFree')} onPress={onStartFree} />
             {today.state === 'none' && today.doneToday ? (
               <View style={styles.todayNoteRow}>
                 <Text style={[styles.todayNoteMark, { color: colors.success }]}>✓</Text>
@@ -155,6 +176,22 @@ export default function StrengthScreen() {
           </Card>
         )}
 
+        {/* Entrée persistante (hors grille) : bibliothèque d'exercices en mode consultation. */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/exercises', params: { mode: 'browse' } })}
+          style={[
+            styles.libraryRow,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Ionicons name="library-outline" size={18} color={colors.accent} />
+          <Text style={[styles.libraryLabel, { color: colors.text }]} numberOfLines={1}>
+            {t('exercises.library')}
+          </Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+
         {/* Grille de widgets personnalisable (modules muscu). */}
         <WidgetGrid
           screen="strength"
@@ -172,6 +209,16 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   cardTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  libraryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+  },
+  libraryLabel: { flex: 1, fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   todayNoteRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
   todayNoteMark: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   todayNoteText: { fontFamily: fontFamily.body, fontSize: 13, flexShrink: 1 },

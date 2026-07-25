@@ -45,6 +45,7 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
 // ---------------------------------------------------------------------------
@@ -395,6 +396,9 @@ export async function startRun(source: RunSource): Promise<string> {
     return existing.id;
   }
 
+  // Analytics : démarrage effectif d'une nouvelle course (pas une reprise). Fire-and-forget.
+  void track(ANALYTICS_EVENTS.runStarted);
+
   return insertWithSyncFields('runs', {
     user_id: userId,
     status: 'active',
@@ -563,6 +567,9 @@ export async function finishRun(
   if (opts && 'notes' in opts) columns['notes'] = opts.notes;
 
   await patch('runs', runId, columns);
+
+  // Analytics : course terminée et enregistrée. Fire-and-forget.
+  void track(ANALYTICS_EVENTS.runCompleted);
 }
 
 /**

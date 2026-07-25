@@ -10,6 +10,154 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 - Rappel workflow (voir [CLAUDE.md](CLAUDE.md)) : **spec → plan → design → validation → code**.
   Chaque US = une branche (`feature/…`, `fix/…`, `chore/…`).
 
+> ## ✅ CLÔTURÉE — US 1.2 Connexion via Google (OAuth, V0.8) — recette validée 100 % Florian (24/07/2026)
+>
+> Roadmap [1.2](docs/roadmap/roadmap.md) (V0.8, conservé — arbitrage E). Sign-In **natif** Google
+> (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken`. Liaison auto par e-mail
+> vérifié (Supabase). Bouton « Continuer avec Google » sur connexion + inscription + **mention de consentement
+> par action** (CGU + confidentialité + 16+). Aucune migration. ⚠️ Module natif → **dev build** ; prérequis
+> **Google Cloud + Supabase Auth + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`** = déploiement contrôlé. Branche
+> `feature/1.2-oauth-google`. Spec : [1.2-connexion-google.md](docs/specs/functional/us/1.2-connexion-google.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée : gate onboarding
+>   `resolveRootRoute`, intégration `auth-store`, env ; 4 clarifs intégrées), **validée Florian (24/07)**.
+> - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié contre le code). [plan](docs/plans/1.2-connexion-google.md).
+> - [x] **Maquette** — [design/1.2-oauth-google/1.2-oauth-google.html](design/1.2-oauth-google/1.2-oauth-google.html) : 3 écrans (connexion + bouton/mention → sélecteur Google → résultats).
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 4 tâches TDD + correctifs, chacune revue conformité + qualité :
+>   Task 1 deps + config (`359670b`) → Task 2 helper pur `mapGoogleSignInError` (`72319b8`) → Task 3 action
+>   `signInWithGoogle` (`7539f2a`) → Task 4 `GoogleButton` + 2 écrans + mention + i18n + mock jest (`eeb0e91`).
+>   Correctifs : patterns d'erreur resserrés (anti faux positifs), anomalie « succès sans idToken » → message,
+>   `IN_PROGRESS` no-op, accessibilité bouton en chargement. Revue finale code-reviewer : **PRÊT À MERGER**.
+>   typecheck/lint verts ; **814 shared + 94 mobile verts** (+ mock jest global du module natif). Roadmap 1.2 → ✅.
+> - [x] **Prérequis Florian (déploiement)** : Client ID Web + client OAuth Android (Google Cloud), provider Google Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (`.env` + EAS env). Fix `runtimeVersion` fixe pour EAS bare. Quota EAS épuisé → **build local** via keystore release unique dédié (SHA‑1 enregistrée Google Cloud ; réglage `android/` local jetable, gitignoré).
+> - [x] **Recette device — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** : connexion Google OK (nouveau compte + **liaison auto** sur e‑mail vérifié `florian.martin63000@gmail.com` = même compte, données retrouvées, aucun doublon). Double mention de consentement sur l'inscription **acceptée**. **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
+
+> ## ✅ CLÔTURÉE — US 9.10 Analytics produit first-party (V0.8) — recette validée 100 % Florian (24/07/2026)
+>
+> Roadmap [9.10](docs/roadmap/roadmap.md) (V0.8). Événements d'usage **anonymisés** dans **notre** base Supabase
+> (first-party), offline-first via PowerSync. Table `analytics_events` (append-only) + RLS + FK cascade
+> (purge à la suppression de compte). Consentement **opt-out** (`user_settings.analytics_enabled` défaut ON) +
+> réglage « Statistiques d'usage » + mention politique de confidentialité. Service `track()` (gating + allowlist
+> anti-PII `pillar`, jamais bloquant) + instrumentation ~15 points (socle + adoption). Zéro service tiers, zéro
+> nouvelle infra. Branche `feature/9.10-analytics`.
+> Spec : [9.10-analytics-produit.md](docs/specs/functional/us/9.10-analytics-produit.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant, faisabilité vérifiée contre le code ;
+>   clarifs intégrées : allowlist figée `pillar`, insert dédié append-only, accesseur consentement hors React),
+>   **validée Florian (24/07)**.
+> - [x] **Plan d'implémentation** — écrit (6 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié
+>   contre le code réel). [plan](docs/plans/9.10-analytics-produit.md).
+> - [x] **Maquette** — [design/9.10-analytics/9.10-analytics.html](design/9.10-analytics/9.10-analytics.html) :
+>   réglage opt-out + mention confidentialité + flux d'événement (garde-fous → sync).
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 5 tâches TDD + correctifs, chacune revue conformité + qualité :
+>   Task 1 migration SQL (`3214285`) → Task 2 schéma PowerSync + type + mapping (`a3f0089`) → Task 3 service
+>   `track()` + helpers purs (allowlist anti-PII) + insert append-only (`05454c8`) → Task 4 réglage opt-out +
+>   mention confidentialité + i18n (`44a5aa0`) → Task 5 instrumentation 15 points + constante `ANALYTICS_EVENTS`
+>   (`f321a1f`, + fix throttle `app_opened` après login & garde idempotence `finishWorkout`). Revue finale
+>   code-reviewer : **PRÊT À MERGER** (0 bloquant). typecheck/lint verts ; **814 shared + 83 mobile verts**. Roadmap 9.10 → ✅.
+> - [x] **Déploiement cloud** — `db:push:dry` (seule 20260724112210) → `db:push` (appliqué, listé en remote) →
+>   `db:types` (analytics_events + analytics_enabled présents) → `MIGRATIONS.md` coché (`d973807`).
+> - [x] **Sync rule PowerSync** déployée (Florian) — bucket `analytics_events`. Correctif `alter publication powersync add table` (migration `20260724123616`, oubli de la migration initiale) appliqué avant le déploiement.
+> - [x] **Recette — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** : événements écrits en base (remontée cloud OK), `properties` = `{}` (anti-PII confirmé), opt-out, offline, purge, i18n. **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
+> - [ ] **Suivi (hors US, non bloquant)** : (a) dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) ; (b) test du gating `track()` (OFF → no-op) ; (c) doublon `onboarding_started` observé en dev (probable StrictMode, à confirmer hors dev) ; (d) renseigner une vraie `app_version` (`app.json` en `0.0.0`) avant la bêta.
+
+> ## ✅ CLÔTURÉE — US 1.22 Aide & support (FAQ + contact + signalement de bug, P0 bêta) — recette validée 100 % Florian (24/07/2026)
+>
+> Roadmap [1.22](docs/roadmap/roadmap.md) (V0.8). Section « Aide & support » dans les Réglages → écran `/help` :
+> **FAQ** statique embarquée (≈ 7 entrées, bilingue, hors-ligne) + **« Nous contacter »** (mail natif, corps vide) +
+> **« Signaler un bug »** (mail natif + bloc technique minimal : version app/build, OS, appareil, langue — visible
+> & effaçable). Canal = **client mail natif** (`expo-mail-composer`), zéro backend/migration. `SUPPORT_EMAIL` =
+> placeholder (à trancher avant build). Branche `feature/1.22-aide-support`.
+> Spec : [1.22-aide-support.md](docs/specs/functional/us/1.22-aide-support.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**APPROUVÉE**, 0 bloquant ; 4 clarifs intégrées : accordéon
+>   mono-ouverture, chemin `support.ts`, objets mail via i18n, `contactSupport` typé), **validée Florian (24/07)**.
+> - [x] **Plan d'implémentation** — écrit (5 tâches TDD), revue subagent **APPROUVÉE** (0 bloquant, vérifié
+>   contre le code ; 3 recommandations intégrées : mock i18n/thème du smoke test, garde `Array.isArray`).
+>   [plan](docs/plans/1.22-aide-support.md).
+> - [x] **Maquette** — [design/1.22-aide-support/1.22-aide-support.html](design/1.22-aide-support/1.22-aide-support.html) :
+>   4 écrans (entrée Réglages → écran /help FAQ accordéon + 2 actions → mail contact corps vide → mail bug + bloc technique) + cas fallback.
+> - [x] **Validation** des 3 livrables — **Florian (24/07) ✅** (spec + plan + maquette).
+> - [x] **Code livré (subagent-driven)** — 5 tâches TDD + 1 durcissement, chacune revue conformité + qualité :
+>   Task 1 (`e55c775`) deps `expo-mail-composer`/`expo-application` + helper pur `formatBugReportBody` (testé) →
+>   Task 2 (`b7bc1b4`) `collectSupportMeta` + `contactSupport` (mail natif + fallback `Alert`, test fallback + nominal) →
+>   Task 3 (`837792d`) composant contrôlé `FaqItem` + écran `/help` (FAQ accordéon mono-ouverture + 2 actions, smoke test toggle) →
+>   Task 4 (`fd289fb`) route `_layout` + section Réglages + i18n FR/EN (parité stricte 1189 clés) →
+>   durcissement (`c2b0e1c`) `contactSupport` ne rejette jamais. Revue finale code-reviewer : **PRÊT À MERGER** (0 bloquant).
+>   typecheck/lint verts ; **812 tests shared + 80 mobile verts**. Roadmap 1.22 → ✅.
+> - [x] **Dev build EAS** (modules natifs) réalisé par Florian.
+> - [x] **Recette device — VALIDÉE À 100 % (Florian, 24/07/2026) ✅** (accès offline, FAQ dépli/repli mono-ouverture, contact corps vide, bug + bloc technique effaçable, i18n EN). **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (Florian valide l'ensemble).
+> - [x] **Action hors-dev (Florian)** : adresse de support créée `wellnessfit.app.support@gmail.com` → `SUPPORT_EMAIL` renseigné (24/07). _Préfixe d'objet `[Wellness]` : à aligner sur le nom d'app définitif si besoin._
+
+> ## ✅ CLÔTURÉE — CONF-01 Export des données (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
+>
+> Roadmap [1.18](docs/roadmap/roadmap.md). Export JSON de toutes les données perso depuis la base locale
+> (hors-ligne), livré via feuille de partage. 28 tables (filtre possession + `deleted_at IS NULL`), éditorial
+> exclu. Aucune migration/serveur. Complément de CONF-02. Branche `feature/conf01-export-donnees`.
+> Spec : [conf01-export-donnees.md](docs/specs/functional/us/conf01-export-donnees.md).
+>
+> - [x] **Spec** — écrite, revue subagent (0 bloquant, corrigée/simplifiée), **validée Florian (23/07)**.
+> - [x] **Plan d'implémentation** — écrit (4 tâches TDD), revue subagent **APPROUVÉ** (3 mineurs corrigés). [plan](docs/plans/conf01-export-donnees.md).
+> - [x] **Maquette** — [design/conf01/conf01.html](design/conf01/conf01.html) : entrée Réglages → avertissement synchro → génération/partage → structure JSON.
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 5 commits : helper pur shared → `data-export.ts` (31 tables possédées + `deleted_at IS NULL`) → entrée Réglages + i18n + maj `exportHint`. Revue finale code-reviewer : **1 point important corrigé** (traductions perso exportées → contenus perso avec leur nom). typecheck/lint/812 shared + 73 mobile verts. Roadmap 1.18 → ✅.
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (8 sections : export nominal + en-tête ; complétude ; contenus perso **avec leur nom** via `*_translations` ; pas d'éditorial ; soft-delete exclu ; hors-ligne ; avertissement synchro ; i18n). **Florian valide l'ensemble → US CLÔTURÉE.**
+
+> ## ✅ CLÔTURÉE — CONF-02 Suppression du compte (RGPD, P0 lancement) — recette + validation Florian (23/07/2026)
+>
+> Roadmap [1.19](docs/roadmap/roadmap.md). Suppression définitive du compte + données, double confirmation
+> (avertissement + ré-auth mot de passe), délai de grâce 30 j récupérable, purge serveur par cascade FK via
+> `pg_cron`. Branche `feature/conf02-suppression-compte`.
+> Spec : [conf02-suppression-compte.md](docs/specs/functional/us/conf02-suppression-compte.md).
+>
+> - [x] **Spec** — écrite, revue subagent (**2 bloquants + clarifs corrigés**), **validée Florian (23/07)**.
+> - [x] **Plan d'implémentation** — écrit (7 tâches TDD), revue subagent (2 bloquants + mineurs **corrigés**). [plan](docs/plans/conf02-suppression-compte.md).
+> - [x] **Maquette** — [design/conf02/conf02.html](design/conf02/conf02.html) : 4 écrans (Danger → avertissement+ré-auth → confirmation → gate récupération).
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 8 commits : migration (table + RPC + `purge_expired_accounts` + pg_cron + fix FK `acted_by`) → route `deletion-pending` (shared) → repository → actions `auth-store` (ré-auth + `disconnectAndClear`) → gate `_layout` → écrans (Danger, flux, gate) + i18n. Revue finale code-reviewer : **1 bloquant corrigé** (sortie de gate après annulation via `deletion-store` partagé). typecheck/lint/810 shared + 73 mobile verts. Roadmap 1.19 → ✅.
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (6 sections : zone Danger + hors-ligne ; déclenchement + ré-auth ; gate de récupération + annulation ; purge J+30 via `purge_expired_accounts()` avec exercice perso + compte admin ayant banni ; job cron planifié ; i18n). **Florian valide l'ensemble → US CLÔTURÉE.**
+> - [ ] **Code** — migration (table + FK fix + RPC + purge_expired_accounts + pg_cron) + client (zone Danger, ré-auth, gate, disconnectAndClear) + i18n. 🔴 activation pg_cron (dashboard possible).
+
+> ## ✅ CLÔTURÉE — MUSC-F13 (+ F13b) Niveaux d'affichage de la séance (recette Florian + relecture Damien, 23/07/2026)
+>
+> Promue depuis [IDEAS.md](IDEAS.md) (idée 23/07). Adapter la densité de l'écran de séance muscu au niveau de
+> l'utilisateur via 3 niveaux qui pilotent la visibilité des champs de `CurrentSetCard`. Réglage synchronisé
+> `profiles.workout_display_level` (défaut `normal`) + étape d'onboarding (compteur 3→4) + entrée Réglages.
+> Périmètre Muscu. Branche `feature/muscf13-niveaux-affichage-seance`.
+> Spec : [muscf13-niveaux-affichage-seance.md](docs/specs/functional/us/muscf13-niveaux-affichage-seance.md).
+>
+> - [x] **Spec** — écrite, revue subagent contre le code (**APPROUVÉ**, 5 imprécisions corrigées), **validée Florian (23/07)**.
+> - [x] **Plan d'implémentation** — écrit (9 tâches TDD), revue subagent (1 bloquant + 3 mineurs **corrigés**). [plan](docs/plans/muscf13-niveaux-affichage-seance.md).
+> - [x] **Maquette** — [design/muscf13/muscf13.html](design/muscf13/muscf13.html) : 3 niveaux côte à côte + matrice + aperçus onboarding/Réglages.
+> - [x] **Validation** des 3 livrables — **Florian (23/07) ✅**.
+> - [x] **Code livré (subagent-driven)** — 8 commits : shared (enum/coercition/matrice pures, testées) → migration cloud `workout_display_level` (appliquée + types + schéma PowerSync) → champ profil + mapping repo (coercition NULL→normal) → gating `CurrentSetCard` par prop `level` (+ 3 smoke tests) → câblage `workout.tsx` → réglage Réglages → étape onboarding (compteur 3→4) → i18n FR/EN. Revue finale **PRÊT À MERGER** (0 bloquant). typecheck/lint/807 shared+70 mobile verts.
+> - [x] **MUSC-F13b — Vignette d'aperçu par niveau à l'onboarding** (retour Florian, 23/07) : composant décoratif `WorkoutLevelPreview` (schématique, piloté par `workoutFieldVisibility`) affiché sous chaque option. Branche `feature/muscf13b-vignette-onboarding`, 73 tests mobile verts.
+> - [x] **Recette device — RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** (9 sections : réglage/défaut, onboarding+vignette, matrice Simplifiée/Normale/Détaillée, nature d'exercice, changement en direct, non-destructif, i18n).
+> - [x] **Relecture Damien (23/07/2026) ✅ → US CLÔTURÉE.**
+
+> ## ✅ CODE LIVRÉ — Couleurs des menus, réintroduites avec un toggle on/off (`feature/couleurs-menu-toggle`, 22/07/2026) — **reste recette device (Florian/Damien)**
+>
+> Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d`, jugée peu
+> lisible) : Florian souhaite la remettre, **cette fois pilotable par un réglage**. Spec ajoutée :
+> [compte-profil-onboarding.md §4.3](docs/specs/functional/compte-profil-onboarding.md).
+>
+> - [x] Revert de `1ae20d4` (`git revert`, propre — seul conflit CHANGELOG résolu manuellement) :
+>   restaure `menu-accent-store.ts`, `useMenuFocus.ts`, `useTheme.ts`, onglets, `settings.tsx`, i18n.
+> - [x] Nouveau réglage **« Activer les couleurs par menu »** (Réglages → Apparence), **off par défaut**.
+>   Off → accent unique (orange) pour tous les onglets (comportement actuel inchangé). On → couleurs
+>   par onglet + pastilles + bouton réinitialiser (4 couleurs par défaut, pas l'orange unique).
+> - [x] `enabled` persisté en local device (`secureStorage`), même logique que les couleurs
+>   (non synchronisé, aucune migration).
+> - [x] i18n FR/EN (`settings.menuColors.enable`).
+> - [x] typecheck/lint/781 tests verts.
+> - [ ] **Recette device** (Florian/Damien) : toggle off → orange partout ; toggle on → couleurs par
+>   onglet + persistance après redémarrage app.
+>
 > ## ✅ RECETTE VALIDÉE — US NUTR-17 Régularité du journal (Stats nutrition mobile, Florian, 17/07/2026) — **RECETTÉ & VALIDÉ ✅** (plan conservé pour trace ; reste relecture Damien)
 >
 > Code **livré & mergé sur `dev`** (`feature/nutr17-regularite-journal`, `9b8b1ec`→`f6b54a1`). **100 %
@@ -273,7 +421,205 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 25/07/2026 (**Widgets — recette device (Damien) : 2 fixes de rendu** (`feature/widgets-v2-dnd`) — prise de contrôle ADB (screenshots + navigation). (1) **Trou de grille** : `DeficitVolumeAlertCard` rend `null` sans alerte (widget conditionnel) mais la grille lui réservait une cellule → trou qui masquait « Semaine running » → `WidgetGrid` reçoit un prédicat `isActive` qui exclut les widgets inactifs, câblé sur `deficit-volume` depuis l'accueil ; (2) **état vide démesuré** : `Metric muted` passe de 38 px à 20 px. typecheck 0 / lint 0 err / 44 tests verts, rebuild release revérifié sur device. Précédemment : **Widgets multi-formes — DESIGN RICHE LIVRÉ** (demande Damien « dev la partie Widgets » d'après `design/FitTrio - Widgets.dc.html`) : les **16 widgets × 3 formes** (accueil 9 + muscu 4 + course 3) passent du rendu sobre au **langage visuel de la galerie** — primitives SVG (`RingGauge`/`Sparkline`/`MiniBars`/`HBars`/`WeekDots`), cadre `WidgetFrame` (`card`/`warn`/`panel`) + `Eyebrow`/`Chip`/`Metric`, tokens thème (`track`/`warn`/`panel`/`amber`) + `withAlpha`, hook `useRecentStrengthRecords`, 60 clés i18n FR+EN ; données branchées au fil (macros, `useMuscleBalance`, tonnage+variation, semaine running par jour, sparkline poids), dégradations gracieuses assumées (nom/tonnage séance, % semaine programme, splits/tracé course). typecheck workspace+mobile / lint 0 err / **44 tests** verts, **aucune migration** (UI pure). **Reste : recette device.** Précédemment : **US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
+*Dernière mise à jour : 25/07/2026 (**Widgets — recette device (Damien) : 2 fixes de rendu** (`feature/widgets-v2-dnd`) — prise de contrôle ADB (screenshots + navigation). (1) **Trou de grille** : `DeficitVolumeAlertCard` rend `null` sans alerte (widget conditionnel) mais la grille lui réservait une cellule → trou qui masquait « Semaine running » → `WidgetGrid` reçoit un prédicat `isActive` qui exclut les widgets inactifs, câblé sur `deficit-volume` depuis l'accueil ; (2) **état vide démesuré** : `Metric muted` passe de 38 px à 20 px. typecheck 0 / lint 0 err / 44 tests verts, rebuild release revérifié sur device. Précédemment : **US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
++ CLÔTURÉE (Florian) ✅** — relecture Damien non requise (go explicite). Parcours complet fonctionnel : lien →
+écran de saisie → mot de passe enregistré → retour connexion ; Redirect URL Supabase configurée.
+**2 bugs corrigés en recette, même classe de défaut** : **Expo Router résout un deep link comme un chemin de
+route et y navigue lui-même** → (1) l'écran nommé `new-password` ne correspondait pas à
+`wellness://password-reset` → écran « Unmatched Route », sa navigation écrasant celle du gate ; renommé
+`password-reset.tsx`, contrainte « nom de fichier = chemin du lien » documentée dans le fichier, la spec et
+le plan ; (2) **blocage latent** sur `wellness://auth-callback` (confirmation livrée la veille), invisible
+pour un **nouveau** compte (branche `onboarding` qui redirige toujours) mais bloquant pour un compte **déjà
+onboardé** → échappatoire ajoutée à la branche `app`. 9 commits, aucune migration, aucun module natif.
+Précédemment (même US) : le lien « mot de passe oublié » menait à une page morte
+`localhost:3000` et aucun écran de saisie n'existait → récupération de compte impossible (prérequis bêta,
+roadmap 1.6). Deep link dédié `wellness://password-reset` + drapeau `recoveryPending` levé **avant**
+`setSession` + nouvel état de routing `password-recovery` (patron du gate `deletion-pending`) → écran-gate
+racine `new-password` → `updateUser` puis `signOut()` (scope **global** par défaut = tous les appareils
+révoqués) → retour connexion avec message. Sans le drapeau, ajouter `redirectTo` aurait **connecté
+l'utilisateur dans l'app sans changer son mot de passe** : c'est le piège qu'a évité le cadrage. Règle de mot
+de passe mutualisée dans `shared` (inscription basculée en iso-comportement). Liens expirés désormais
+signalés (avant : no-op silencieux). 5 tâches TDD, aucune migration, aucun module natif ; typecheck/lint
+verts, **829 shared + 112 mobile**, parité i18n 1217/1217. Branche `fix/reset-mot-de-passe-deeplink`.
+⚠️ Bug préexistant consigné en §🐞 (non corrigé) : le « Se déconnecter » des Réglages hérite du même scope
+global → déconnecte tous les appareils.
+Précédemment : **IDEAS — salve « benchmark 4 modèles IA » ✅ (doc seule)** : dépouillement des
+4 dumps de `_inbox-ia/` (~93 propositions ; dossier **gitignoré, local Florian** — décision 25/07) croisé avec
+l'existant → **6 idées promues** dans [IDEAS.md](IDEAS.md) (détecteur de collisions/séquençage, mode « vie réelle »,
+simulateur What-If, objectif hybride unifié, recos explicables & contestables, défi composite) + **1 note de
+benchmark** (biais IA on-device / sync P2P écartés) + **2 enrichissements** greffés (rappels contextuels → pattern
+horaire appris ; bilan hebdo → format « une seule décision »). **Aucune US n'entre dans le pipeline** à ce stade :
+les 2 candidates sérieuses (détecteur de collisions, mode « vie réelle ») attendent un **brainstorming**
+Florian/Damien avant spec. Vérifs au passage : US 3.9 ✅ diffère la « coordination avancée (charge/récup) », RN-17 et
+META-19 déjà au catalogue d'analyses → seul le **séquençage inter-séances** est neuf. Roadmap non touchée.
+Commit sur `dev` (dérogation explicite Florian).
+Précédemment : **US 1.2 Connexion via Google — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+Sign-In natif (`@react-native-google-signin`) → `supabase.auth.signInWithIdToken`, branché sur `auth-store` (session
+via `onAuthStateChange`). Helper pur `mapGoogleSignInError` (clés i18n) ; action `signInWithGoogle`
+(annulation/`IN_PROGRESS` no-op, anomalie config → message) ; `GoogleButton` (logo SVG, a11y, mention consentement
+par action CGU/confidentialité/16+) sur connexion + inscription ; i18n FR/EN parité ; mock jest global. 4 tâches TDD
+subagent-driven + correctifs, revues par tâche + revue finale PRÊT À MERGER. typecheck/lint verts, 814 shared + 94
+mobile. Recette device validée : connexion Google OK + **liaison auto** sur e‑mail vérifié (même compte, pas de
+doublon). Roadmap 1.2 → ✅. Branche `feature/1.2-oauth-google`.
+Précédemment : **US 9.10 Analytics produit — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** :
+événements d'usage anonymisés first-party (table `analytics_events` append-only +
+RLS + FK cascade), consentement opt-out (`user_settings.analytics_enabled` défaut ON) + réglage « Statistiques
+d'usage » + mention confidentialité, service `track()` (gating + allowlist anti-PII `pillar` + non bloquant,
+offline-first PowerSync), constante `ANALYTICS_EVENTS`, instrumentation 15 points (socle + adoption). 5 tâches
+TDD subagent-driven + correctifs, revues conformité + qualité par tâche + revue finale PRÊT À MERGER. Migration
+poussée sur le cloud (`db:push` + `db:types`, registre coché). typecheck/lint verts, 814 shared + 83 mobile.
+Roadmap 9.10 → ✅. Migration + correctif publication déployés, sync rule PowerSync déployée, **recette validée à
+100 % (Florian) → US CLÔTURÉE** (relecture Damien non requise). Branche `feature/9.10-analytics`.
+Précédemment : **US 1.22 Aide & support — CODE LIVRÉ ✅ → reste dev build + recette + Damien** :
+ouverture du chantier V0.8 (conformité & intégrations) après CONF-01/02. Section « Aide & support » dans les
+Réglages → écran `/help` : FAQ statique embarquée bilingue (accordéon mono-ouverture, 7 Q/R) + « Nous contacter »
+(mail natif corps vide) + « Signaler un bug » (mail natif + bloc technique minimal effaçable). Canal = client mail
+natif (`expo-mail-composer`), zéro backend/migration ; `SUPPORT_EMAIL` placeholder à renseigner avant build.
+Découpage helper pur testé / I/O natif isolé / composant contrôlé `FaqItem`. 5 tâches TDD subagent-driven + durcissement,
+revues conformité + qualité par tâche, revue finale PRÊT À MERGER. typecheck/lint verts, 812 shared + 80 mobile verts.
+Roadmap 1.22 → ✅. ⚠️ Modules natifs ajoutés → **dev build EAS requis avant recette**. Branche `feature/1.22-aide-support`.
+Précédemment : **CONF-01 — RECETTE VALIDÉE À 100 % + CLÔTURÉE (Florian) ✅** : export RGPD
+des données perso (roadmap 1.18, P0 lancement) — JSON local hors-ligne de 31 tables possédées (dont
+traductions perso), feuille de partage, entrée Réglages. Recette 8 sections validée dans son ensemble par
+Florian. Roadmap 1.18 ✅. Branche `feature/conf01-export-donnees`. Précédemment : **CONF-02 — RECETTE VALIDÉE À
+100 % + CLÔTURÉE (Florian) ✅** : suppression
+du compte (RGPD, roadmap 1.19, P0 lancement) recettée (6 sections, dont purge serveur J+30 et job pg_cron) et
+validée dans son ensemble par Florian. Roadmap 1.19 ✅. Branche `feature/conf02-suppression-compte`.
+Précédemment : **MUSC-F13 (+ F13b) — RECETTE VALIDÉE À 100 % (Florian) ✅ → reste relecture Damien** :
+3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
+`CurrentSetCard`, réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
+(compteur 3→4) avec vignette d'aperçu schématique par niveau (`WorkoutLevelPreview`), entrée Réglages. Migration
+cloud appliquée ; typecheck/lint/807 shared + 73 mobile verts ; revue finale PRÊT À MERGER. Recette device
+déroulée (9 sections) et validée. Branches `feature/muscf13-niveaux-affichage-seance` + `feature/muscf13b-vignette-onboarding`.
+Précédemment : **MUSC-F13 — SPEC VALIDÉE (Florian) ✅** : nouvelle US promue d'IDEAS —
+3 niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée) pilotant la visibilité des champs de
+`CurrentSetCard` ; réglage synchronisé `profiles.workout_display_level` (défaut `normal`), étape d'onboarding
+(compteur 3→4) + entrée Réglages, périmètre Muscu. Spec écrite + revue subagent contre le code (**APPROUVÉ**,
+5 imprécisions corrigées). Branche `feature/muscf13-niveaux-affichage-seance`. **Prochaine étape : plan
+d'implémentation → maquette → validation.** Précédemment : **FIX CI — timeout Jest `edit-exercise-modal-smoke` ✅** : le 1ᵉʳ test du suite dépassait le défaut de 5 s en CI en payant le coût de démarrage à froid (transfo Babel + RN + react-i18next + safe-area) dans son corps ; cache de transformation Jest non persisté en CI + runner 2 cœurs. Fix = `testTimeout: 15000` dans `apps/mobile/jest.config.js` ; 16 suites / 67 tests verts. Précédemment : **FIX modales exo (création + édition) ✅** : retour recette Florian —
+les modales étaient tronquées en bas (boutons sous la barre de gestes, scroll non évident). Corrigé :
+**pied de page fixe** (boutons toujours visibles) + champs défilants + **safe-area** basse ; mock
+`react-native-safe-area-context` ajouté au setup jest. 67 tests mobile verts. **Recette validée
+(Florian, 23/07/2026) ✅.** Branche `fix/modales-exo-tronquees`. — **MUSC-F12 — CODE LIVRÉ ✅** : cohérence fiche exo perso ↔
+bibliothèque. `updateCustomExercise` gère désormais **instructions + muscles secondaires** (helper pur
+`buildCustomExerciseWrite` testé) ; nouvelle **`EditExerciseModal`** (bottom-sheet) remplace le formulaire
+d'édition inline de la fiche ; correctif revue (réinit à la fermeture : `saving` figé + saisies annulées).
+Aucune migration ; typecheck/lint verts, 67 tests mobile + 800 shared. **Reste : recette + relecture Damien.**
+Branche `feature/muscf12-coherence-fiche-exo-perso`. — **MUSC-F11 — CODE LIVRÉ (subagent-driven) ✅** : création d'exercice
+perso en **modale bottom-sheet** (retour recette F10c). Remplace la card inline (effet sandwich, Segment
+multi-ligne, nom sans placeholder) par une modale (`CreateExerciseModal`) : nom + placeholder, groupe
+`scrollable`, clavier géré. Aucune migration ; typecheck/lint verts, 62 tests mobile. **Reste : recette +
+relecture Damien.** Point 1 du retour recette (cohérence fiche biblio VS perso) = **US suivante à cadrer**.
+Branche `feature/muscf11-modale-creation-exo`. — **Lot F10c — RECETTE VALIDÉE (Florian, 23/07/2026) ✅** : F10c-1
+(muscles secondaires) + F10c-2 (variantes/alternatives) validés en recette device. Sync rules
+redéployées OK. 2 retours UX captés dans [IDEAS.md](IDEAS.md) → à cadrer en US : (1) création d'exo
+perso en **modale** (card inline mal fichue) ; (2) **cohérence** fiche exo bibliothèque VS perso. Reste :
+relecture Damien. — **MUSC-F10c-2 — CODE LIVRÉ (subagent-driven) ✅** : variantes /
+alternatives d'exercice. Table `exercise_variants` symétrique (canonique `a<b`, `owner_id` null=éditorial /
+non-null=perso) + RLS + `alter publication` (migration poussée) + **sync rules à REDÉPLOYER dans le dashboard
+PowerSync** (⚠️ geste humain Florian/Damien avant recette device). `canonicalPair` + schéma (shared, testés) ;
+repo mobile `useExerciseVariants`/`add`/`remove` (upsert par clé naturelle anti-bug unicité, `dedupeVariants`
+pure testée) ; **section « Variantes / alternatives » sur la fiche** (liens cliquables, ✕ perso, ajout depuis
+n'importe quelle fiche via mode `pickVariant`) ; **admin** : liens éditoriaux (biblio↔biblio). 5 tâches ;
+revue finale *rien de bloquant* ; typecheck/lint verts, 800 tests shared + 54 mobile. Roadmap 3.20 ⬜ → ✅.
+**Reste : redéploiement sync rules + recette (admin + mobile) + relecture Damien.** Branche
+`feature/muscf10c2-variantes-alternatives`.
+Spec : [muscf10c2-variantes-alternatives.md](docs/specs/functional/us/muscf10c2-variantes-alternatives.md). —
+**MUSC-F10c-1 — CODE LIVRÉ (subagent-driven) ✅** : muscles secondaires sur
+la fiche exercice. Colonne `exercises.muscles_secondary` (jsonb `[]`, migration additive poussée sur le cloud) +
+`column.text` PowerSync ; fonction pure partagée `normalizeSecondaryMuscles` (dédup, exclut le primaire, filtre
+les invalides) testée Vitest ; **saisie admin** (multi-cases hors primaire, retrait auto au changement de
+primaire) ; **affichage fiche mobile** (mode lecture, ligne « Muscles secondaires » si non vide, libellés
+`muscle.*`). Filtre MUSC-F3 inchangé (primaire seul). 4 tâches + finitions (2 smoke tests fiche) ; revue finale
+*rien de bloquant* ; typecheck/lint verts, 796 tests shared + smoke mobile. Roadmap 3.19 🟡 → ✅.
+**Reste : recette (admin saisie + fiche affichage) + relecture Damien. F10c-2 (variantes/alternatives) reste à
+cadrer.** Branche `feature/muscf10c1-muscles-secondaires`.
+Spec : [muscf10c1-muscles-secondaires.md](docs/specs/functional/us/muscf10c1-muscles-secondaires.md). —
+**MUSC-F10b — CODE LIVRÉ (subagent-driven) ✅** : section « Tes records » en
+tuiles sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la
+progression » (pré-sélection de l'exo dans `/progress`). 6 tâches TDD, chacune revue spec + revue qualité ;
+2 correctifs (date non nulle + type partagé ; /progress dérivé sans effet) ; revue finale *prête à merger*.
+`pickOneRepMax` pur (shared) + `useExerciseTopSingle`/`useExerciseFicheRecords`. Aucune migration, lecture seule ;
+typecheck/lint verts, 789 tests shared + 50 tests mobile. **Reste : recette device + relecture Damien** (à
+signaler en recette : le 1RM réel prime sur l'estimé → peut différer de /progress). Roadmap inchangée. —
+**MUSC-F10b — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
+(subagent-driven)** : plan en 6 tâches TDD ([plan](docs/plans/muscf10b-records-fiche-exercice.md)) — pickOneRepMax
+(shared) → hooks records (1RM réel + composite) → i18n → /progress param exerciseId → section tuiles + lien sur la
+fiche → clôture. Aucune migration, lecture seule. — **MUSC-F10b — SPEC VALIDÉE (Florian) ✅** : section « Tes records » en tuiles
+sur la fiche exercice (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la progression »
+(pré-sélection de l'exo dans `/progress`). Réutilise `useExerciseRecords` ; 1RM réel dérivé de `workout_sets`
+(reps=1) ; `pickOneRepMax` pur ; aucune migration, lecture seule. Spec vérifiée manuellement (revue subagent
+coupée par la limite d'usage hebdo). Branche `feature/muscf10b-records-fiche-exercice`.
+Spec : [muscf10b-records-fiche-exercice.md](docs/specs/functional/us/muscf10b-records-fiche-exercice.md).
+**Prochaine étape : plan d'implémentation.** — **MUSC-F10a — CODE LIVRÉ (subagent-driven) ✅** : bibliothèque d'exercices en
+accès direct depuis le hub Muscu + **écran fiche exercice** (`/exercises/[id]`) + gestion des exos perso
+(modifier/supprimer). 8 tâches TDD, chacune revue spec + revue qualité ; 3 correctifs intégrés (jest env central,
+throw si traduction absente, gestion d'erreur/anti-double-submit + a11y étoile) ; revue finale transverse *prête à
+merger* (invariant critique soft-delete `exercises` seule vérifié bout en bout). Aucune migration ; typecheck/lint
+verts, 786 tests shared + 50 tests mobile. **Reste : recette device + relecture Damien.** Roadmap inchangée (fiche
+complète muscles secondaires/variantes = F10c). — **MUSC-F10a — PLAN VALIDÉ (revue subagent Approved) → implémentation lancée
+(subagent-driven)** : plan en 8 tâches TDD ([plan](docs/plans/muscf10a-bibliotheque-fiche-exercice.md)) — hook
+lecture → écritures+garde → i18n → écran fiche+route → gestion perso → mode parcours → entrée hub → clôture.
+Aucune migration. — **MUSC-F10a — SPEC VALIDÉE (Florian) ✅** : chantier « fiche exercice »
+découpé en 3 incréments — **F10a** (socle : entrée « Bibliothèque d'exercices » persistante dans le hub Muscu →
+biblio en mode parcours → fiche `/exercises/[id]` avec données actuelles + gestion des exos perso Modifier/
+Supprimer) → **F10b** (records sur la fiche) → **F10c = MUSC-F2** (muscles secondaires + variantes, migration +
+admin). Spec F10a écrite + revue subagent (1 point bloquant corrigé : soft-delete de la ligne `exercises` seule,
+pas les traductions) + **validée Florian**. Aucune migration. Branche `feature/muscf10a-bibliotheque-fiche-exercice`.
+Spec : [muscf10a-bibliotheque-fiche-exercice.md](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md).
+**Prochaine étape : plan d'implémentation.** — **MUSC-F3 — RECETTE VALIDÉE À 100 % (Florian, 22/07/2026) ✅ → reste
+relecture Damien** ; roadmap 3.14 note « recette device validée ». **Nouvelle US notée : MUSC-F10 —
+Bibliothèque d'exercices en accès direct depuis le hub Muscu** (l'écran `exercises.tsx` n'est aujourd'hui
+atteignable que via « Ajouter un exercice » en séance) — à cadrer (question ouverte : comportement du tap sur un
+exercice hors séance active). — **MUSC-F3 — CODE LIVRÉ (subagent-driven) ✅ → roadmap 3.14 🟡 → ✅** : filtre
+d'exercices par **groupe musculaire + matériel** (tiroir « Filtres ») dans `ExercisePicker` **et** l'écran
+bibliothèque `exercises.tsx`, en plus de la recherche par nom. Exécution subagent-driven du plan (10 tâches,
+chacune revue spec + revue qualité ; 2 correctifs intégrés en cours : a11y des chips, raccourci Réinitialiser dans
+l'état vide filtré ; revue finale transverse *prête à merger*). `buildExerciseFilterClause` pur (5 tests) +
+`useExercises` étendu + `ExerciseFilterDrawer` partagé + enum `EQUIPMENTS` enfin branché (admin `<select>` + i18n
+mobile FR/EN + contrainte DB). **🔴 Migration `20260722080703_muscf3_equipment_check` poussée sur le cloud**
+(`db:push`, registre coché ; pas de `db:types` — contrainte seule). Seed dev enrichi (16 exercices). typecheck/lint
+verts, **786 tests**. **Reste : recette device + relecture Damien.** Dette notée (non bloquant) : duplication
+résiduelle entre les 2 écrans (→ `ExerciseListRow`/`FiltersButton` partagés avec MUSC-F2) ; `ExerciseListItem.equipment`
+encore `string|null` côté mobile. — **MUSC-F3 — PLAN VALIDÉ (revue subagent Approved)** : plan en 10 tâches TDD
+écrit ([plan](docs/plans/muscf3-recherche-multicriteres.md)) — shared → admin → i18n → repository → drawer →
+intégrations (ExercisePicker + exercises.tsx) → seed dev → migration (checkpoint cloud) → clôture.
+**Prochaine étape : implémentation** (spec + plan couvrent les 3 livrables requis avant code avec la maquette
+visuelle déjà comparée en brainstorming). — **MUSC-F3 — SPEC ÉCRITE** (recherche d'exercices multi-critères, groupe
+musculaire + matériel), `feature/muscf3-recherche-multicriteres` : cadrée par brainstorming (Florian, maquettes
+visuelles) une fois le chantier refonte Muscu clos côté implémentation ; choisie parmi les candidats P1 du
+backlog §🗺️ (recherche multi-critères > fiche exercice > seed programmes). UI = bouton « Filtres » + tiroir
+(2 sections, groupe musculaire + matériel) sur `ExercisePicker` **et** `exercises.tsx` ; réutilise
+`EQUIPMENTS`/`Equipment` déjà présents dans `packages/shared` (posés dès US1, jamais branchés) ; migration prévue
+= contrainte `CHECK` sur `exercises.equipment` (colonne déjà nullable, aucune donnée à migrer). Spec :
+[muscf3-recherche-multicriteres.md](docs/specs/functional/us/muscf3-recherche-multicriteres.md).
+**Prochaine étape : plan d'implémentation.** — **Couleurs des menus — CODE LIVRÉ ✅, réintroduites avec un toggle
+on/off** (`feature/couleurs-menu-toggle`) — reste recette device. — **US-D — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu
+(A/B/C1/C2/C3/D) complet côté implémentation** — reste relecture Damien sur l'ensemble. — **US-D —
+correctif post-recette** : le seul accès à « Mes templates »
+passait par « Séance libre » → « Depuis un template », qui lançait direct au tap sans possibilité
+d'éditer/dupliquer/supprimer (mode normal non atteignable). Corrigé : tap sur un template ouvre toujours son
+détail ; nouveau widget « Mes templates » sur le hub muscu (accès permanent indépendant), réécrit sur les
+nouvelles primitives `WidgetFrame`/`Eyebrow`/`Metric` (voir merge avec `feature/widgets-v2-dnd` ci-dessous).
+typecheck/lint/781+44 tests verts. — **US-D — CODE LIVRÉ (subagent-driven) ✅** : templates de séance libre
+(dernière US du chantier refonte Muscu) — 12 tâches, 12 commits. Tables `workout_templates`/
+`workout_template_exercises` (migration + sync rules PowerSync appliquées, 2 checkpoints cloud). Composer à
+froid + enregistrer après coup depuis une séance terminée (dérivation testée Vitest), démarrer depuis un
+template, gérer (éditer/dupliquer/supprimer). Refactor `ExerciseTargetsFields` partagé + nouveau sélecteur de
+type de série. Choix à blanc/template sur le hub. typecheck/lint/781+44 tests verts, i18n FR/EN. **Chantier
+refonte Muscu (A/B/C1/C2/C3/D) complet côté implémentation** — reste recette device + relecture Damien sur
+l'ensemble. — **US-D — spec + plan + maquette validés (Florian) ✅** : 2 passages de revue sur la spec et sur
+le plan (dont un oubli critique corrigé au stade plan : sync rules PowerSync, 2ᵉ checkpoint cloud distinct de
+`db:push`). Branche `feature/refonte-muscu-d` créée depuis `dev`. Précédemment : **Widgets multi-formes —
+DESIGN RICHE LIVRÉ** (`feature/widgets-v2-dnd`, demande Damien « dev la partie Widgets » d'après
+`design/FitTrio - Widgets.dc.html`) : les **16 widgets × 3 formes** (accueil 9 + muscu 4 + course 3) passent
+du rendu sobre au **langage visuel de la galerie** — primitives SVG (`RingGauge`/`Sparkline`/`MiniBars`/
+`HBars`/`WeekDots`), cadre `WidgetFrame` (`card`/`warn`/`panel`) + `Eyebrow`/`Chip`/`Metric`, tokens thème
+(`track`/`warn`/`panel`/`amber`) + `withAlpha`, hook `useRecentStrengthRecords`, 60 clés i18n FR+EN ; données
+branchées au fil (macros, `useMuscleBalance`, tonnage+variation, semaine running par jour, sparkline poids),
+dégradations gracieuses assumées (nom/tonnage séance, % semaine programme, splits/tracé course). typecheck
+workspace+mobile / lint 0 err / **44 tests** verts, **aucune migration** (UI pure). **Reste : recette
+device.** Précédemment : **US-C3 — RECETTE VALIDÉE (Florian) ✅ → chantier refonte Muscu COMPLET**
 (A/B/C1/C2/C3 tous recettés ; reste relecture Damien sur l'ensemble). Superset v2 (lien explicite, dialogue de
 choix libre, `workout_superset_pairs`) validé. Merge C3 → `dev`. — **US-C3 — recette : superset repensé (v2,
 lien explicite)** : suite au retour Florian « pas intuitif + doit pouvoir choisir librement le partenaire », le
@@ -406,8 +752,26 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 - [ ] **MUSC-F2 — Fiche exercice complète** (3.13 + 3.19 + 3.20) — remplacer le picker simple par une
   fiche détaillée (muscle principal **+ secondaires**, variantes/alternatives). ⚠️ 3.19/3.20 = **colonnes
   à ajouter** (migration).
-- [ ] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — filtre par **groupe musculaire** et
-  **matériel** (aujourd'hui : nom seul).
+- [x] **MUSC-F3 — Recherche exercices multi-critères** (3.14) — ✅ **RECETTÉ & VALIDÉ (Florian, 22/07/2026)** :
+  filtre par **groupe musculaire** et **matériel** (tiroir « Filtres » dans ExercisePicker + exercises.tsx).
+  Migration cloud appliquée. **Reste : relecture Damien.**
+
+- **MUSC-F10 — Fiche exercice & bibliothèque en accès direct** *(demande Florian 22/07/2026)* — découpé en
+  **3 incréments** (spec → plan → design → validation → code chacun) :
+  - [x] **MUSC-F10a — Socle : accès direct + fiche — ✅ CODE LIVRÉ (subagent-driven, 22/07/2026)** — entrée
+    persistante « Bibliothèque d'exercices » dans le hub Muscu → biblio en mode parcours → fiche `/exercises/[id]`
+    (nom, groupe, matériel, instructions, favori, badge perso) + gestion des exos perso (Modifier/Supprimer,
+    soft-delete de la ligne `exercises` seule). Aucune migration. Spec + plan validés, revue finale *prête à
+    merger*. **Reste : recette device + relecture Damien.**
+    [plan](docs/plans/muscf10a-bibliotheque-fiche-exercice.md) · [spec](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md).
+  - [x] **MUSC-F10b — Records sur la fiche — ✅ CODE LIVRÉ (subagent-driven, 22/07/2026)** — section « Tes
+    records » en tuiles (1RM réel/estimé + charge max + meilleur volume + dates) + lien « Voir la progression »
+    (pré-sélection de l'exo dans `/progress`). `pickOneRepMax` pur + `useExerciseTopSingle`/`useExerciseFicheRecords` ;
+    lecture seule, aucune migration. Spec + plan validés, revue finale *prête à merger*. **Reste : recette device +
+    relecture Damien** (signaler : 1RM réel prime sur estimé → peut différer de /progress).
+    [plan](docs/plans/muscf10b-records-fiche-exercice.md) · [spec](docs/specs/functional/us/muscf10b-records-fiche-exercice.md).
+  - [ ] **MUSC-F10c (= MUSC-F2) — Fiche enrichie** — muscles principal **+ secondaires** + variantes/alternatives
+    (3.13/3.19/3.20). ⚠️ migration (colonnes) + saisie admin. Remplace/absorbe MUSC-F2 ci-dessus.
 - [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
   + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +
@@ -511,8 +875,24 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     `superset` côté admin ne crée plus de paire automatique au démarrage (seule la liaison en direct fonctionne).
     ([spec](docs/specs/functional/us/refonte-muscu-c3-ajustements-live.md) ·
     [plan](docs/plans/refonte-muscu-c3-ajustements-live.md) · [maquette](design/refonte-muscu-c3/refonte-muscu-c3.html))
-- [ ] **US-D — Templates de séance libre** *(arbitrable)* — sauvegarder une séance libre comme routine
-  réutilisable (spec §4.1). Corrige le problème 5.
+- [x] **US-D — Templates de séance libre** *(arbitrable, lancée 21/07/2026)* — **RECETTE VALIDÉE (Florian,
+  22/07/2026) ✅** (subagent-driven, 12 tâches ; + 1 correctif post-recette : accès aux templates rendu
+  indépendant de « Séance libre », widget dédié sur le hub, cf. plus bas) ; reste relecture Damien sur
+  l'ensemble du chantier. Sauvegarder une séance libre comme routine réutilisable (spec §4.1). Corrige le
+  problème 5. Spec ✅ + plan ✅ (2 passages de
+  revue chacun) + maquette ✅ validés Florian. Tables dédiées `workout_templates`/`workout_template_exercises`
+  (patron repas types nutrition, **pas** de réutilisation `programs`) — **migration + sync rules PowerSync
+  appliquées** (2 checkpoints cloud, go explicite Florian pour chacun). Composer un template à froid **et**
+  l'enregistrer après coup depuis une séance libre terminée (cibles dérivées des séries **validées** via
+  `deriveTemplateTargetsFromWorkoutSets`, testée Vitest), démarrer depuis un template
+  (`planned_weight_kg` pré-rempli, même convention que `startWorkoutFromSession`), gérer (éditer/dupliquer/
+  supprimer). Refactor `ExercisePlanEditor` → composant présentation partagé `ExerciseTargetsFields` +
+  nouveau `TemplateExerciseEditor` (5ᵉ champ inédit : sélecteur de type de série, 7 valeurs). Choix à
+  blanc/template sur le bouton « Séance libre » du hub + lien secondaire les jours de séance planifiée.
+  typecheck/lint/781 tests (shared) + 44 tests (mobile) verts, parité i18n FR/EN stricte. **Chantier refonte
+  Muscu (A/B/C1/C2/C3/D) complet côté implémentation.**
+  ([spec](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) ·
+  [plan](docs/plans/refonte-muscu-d-templates-seance-libre.md) · [maquette](design/refonte-muscu-d/refonte-muscu-d.html))
 
 > **Note** : ces US ne sont **pas** ajoutées comme lignes de la [roadmap](docs/roadmap/roadmap.md)
 > versionnée (elles relèvent de la **refonte** de fonctionnalités existantes, pas de nouvelles features).
@@ -556,6 +936,61 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 > Anomalies remontées hors du fil d'une US en cours. À traiter sur une branche `fix/…` dédiée
 > (jamais en piggyback d'un dev en cours). Reproduire → spec courte si besoin → corriger → PR.
+
+- [x] **Confirmation d'e-mail → page morte `localhost:3000` sur mobile** — **CORRIGÉ + RECETTE VALIDÉE 100 %
+  (Florian, 25/07/2026) ✅ → mergé sur `dev`** (circuit court) ; remontée Florian (test e-mail neuf). Le lien de
+  confirmation redirigeait vers le **Site URL Supabase** par défaut (localhost). Fix :
+  `emailRedirectTo = wellness://auth-callback` (deep link) + `useAuthDeepLink` (`setSession` depuis le fragment)
+  + helper pur `parseAuthTokensFromUrl` (testé). Branche `fix/email-confirmation-deeplink`. typecheck/lint verts,
+  814 shared + 98 mobile. Config Supabase faite (`wellness://auth-callback` dans les Redirect URLs). Recette :
+  clic du lien depuis le téléphone → app rouverte, connecté. Relecture Damien non requise.
+  _Suivi séparé : ~~même traitement pour le reset de mot de passe~~ → **traité par US CONF-08** (ci-dessous) ;
+  + config **SMTP custom** Supabase (service e-mail intégré rate-limité) = prérequis bêta._
+
+- [ ] **« Se déconnecter » déconnecte de TOUS les appareils (scope global)** — _repéré le 25/07/2026 en
+  vérifiant l'API pour CONF-08, **pas encore corrigé**._ `supabase.auth.signOut()` sans argument utilise le
+  scope **`global`** (défaut de `@supabase/auth-js`) : il révoque les refresh tokens de **tous** les
+  appareils. Le bouton « Se déconnecter » des Réglages
+  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts) `signOut`) hérite donc de ce comportement —
+  inattendu pour une déconnexion ordinaire (la doc de la lib le signale elle-même comme surprenant et
+  recommande `{ scope: 'local' }`). ⚠️ **Ne pas corriger à l'aveugle** : c'est un **changement de
+  comportement existant** (décision produit + recette dédiée). Pour CONF-08 le scope global est au
+  contraire **voulu** (révoquer les autres appareils après un reset) → **ne pas toucher**
+  `completePasswordRecovery`. Fix envisagé : `{ scope: 'local' }` sur le seul `signOut` des Réglages.
+
+> ## ✅ CLÔTURÉE — US CONF-08 Réinitialisation du mot de passe — recette validée Florian (25/07/2026)
+>
+> Trou fonctionnel du socle auth (roadmap **1.6**), **prérequis bêta** : le lien « mot de passe oublié »
+> menait à une page morte `localhost:3000` et aucun écran de saisie n'existait → **impossible de récupérer
+> son compte**. Branche `fix/reset-mot-de-passe-deeplink`. **Aucune migration, aucun module natif** (le JS
+> passe par reload Metro ; le deep link se teste sur le dev build existant).
+> Spec : [conf08-reset-mot-de-passe.md](docs/specs/functional/us/conf08-reset-mot-de-passe.md) ·
+> Plan : [plans/conf08-reset-mot-de-passe.md](docs/plans/conf08-reset-mot-de-passe.md) ·
+> Maquette : [design/conf08-reset-mot-de-passe](design/conf08-reset-mot-de-passe/conf08-reset-mot-de-passe.html).
+>
+> - [x] **Spec + plan + maquette** — écrits et **validés par Florian et Damien (25/07/2026) ✅**.
+> - [x] **Code livré** — 5 tâches TDD (`1091381`→`b21d1cf`) : règle de mot de passe mutualisée dans
+>   `shared` (+ bascule inscription en iso-comportement) · état de routing `password-recovery` ·
+>   `parseAuthDeepLink` (récupération / confirmation / erreur) · store + hook (`redirectTo`,
+>   `recoveryPending` levé **avant** `setSession`, `completePasswordRecovery`) · écran-gate racine
+>   `new-password` + branchement + messages de connexion + i18n FR/EN.
+>   typecheck/lint verts ; **829 shared + 112 mobile verts** ; parité i18n 1217/1217.
+> - [x] 🔧 **PRÉREQUIS FLORIAN — FAIT (25/07/2026)** : `wellness://password-reset` ajouté aux **Redirect
+>   URLs** Supabase.
+> - [x] **Recette device — VALIDÉE (Florian, 25/07/2026) ✅** : le parcours complet fonctionne (lien →
+>   écran de saisie → nouveau mot de passe enregistré → retour connexion). **2 bugs corrigés en recette**,
+>   même classe de défaut : (1) `wellness://password-reset` tombait sur l'écran **« Unmatched Route »**
+>   d'Expo Router — il **résout le deep link comme un chemin de route** et y navigue lui-même, or l'écran
+>   s'appelait `new-password` → sa navigation écrasait celle du gate ; renommé **`password-reset.tsx`**,
+>   contrainte « nom de fichier = chemin du lien » documentée ; (2) **blocage latent** sur
+>   `wellness://auth-callback` (confirmation, livrée la veille) : invisible pour un **nouveau** compte
+>   (branche `onboarding` qui redirige toujours) mais **bloquant** pour un compte **déjà onboardé** →
+>   échappatoire ajoutée à la branche `app`.
+> - [x] **Relecture Damien — non requise** (go explicite de Florian, 25/07/2026). **→ US CLÔTURÉE.**
+>
+> ⚠️ **Limite assumée** (spec §2.5) : le drapeau vit **en mémoire**. Si l'app est **tuée** sur l'écran de
+> saisie, le lancement suivant entre normalement dans l'app, mot de passe inchangé. Accepté (l'utilisateur
+> a prouvé qu'il possède l'adresse ; un gate persistant risquerait de le piéger hors de son compte).
 
 - [x] **Back-office `/users` : colonne « Piliers » = « — » pour tous les comptes** — **corrigé**
   (`fix/admin-piliers-affichage`, 17/07/2026 ; remontée Florian pendant la recette 8.8a). Le mobile

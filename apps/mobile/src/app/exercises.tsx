@@ -3,16 +3,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { MUSCLE_GROUPS, type MuscleGroup } from '@wellness/shared';
+import { type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
+import { CreateExerciseModal } from '@/components/exercises/CreateExerciseModal';
+import { ExerciseFilterDrawer } from '@/components/programs/ExerciseFilterDrawer';
 import {
   useExercises,
-  addCustomExercise,
   toggleFavorite,
   type ExerciseListItem,
 } from '@/data/repositories/exercise-repository';
+import { addExerciseVariant, useLinkedExerciseIds } from '@/data/repositories/exercise-variant-repository';
 import {
   addExerciseToWorkout,
   replaceExercise,
@@ -25,16 +26,21 @@ export default function ExercisesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { replaceExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string }>();
+  const { replaceExerciseId, mode, forExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string; mode?: string; forExerciseId?: string }>();
+  const browse = mode === 'browse';
+  const pickVariant = mode === 'pickVariant';
 
   const { workout: active } = useActiveWorkout();
+  const { ids: linkedIds } = useLinkedExerciseIds(pickVariant && forExerciseId ? forExerciseId : '');
 
   const [query, setQuery] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newMuscle, setNewMuscle] = useState<MuscleGroup>('chest');
+  const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
 
-  const { exercises, isLoading } = useExercises(query);
+  const { exercises, isLoading } = useExercises(query, muscles, equipment);
+  const filterCount = muscles.length + equipment.length;
 
   // Trie côté JS : favoris en premier, puis ordre alphabétique déjà fourni par SQL
   const items = [...exercises].sort((a, b) => {
@@ -45,11 +51,27 @@ export default function ExercisesScreen() {
 
   // Mode remplacement (US Refonte-C3) : exclut les exercices déjà présents
   // dans la séance active, pour ne proposer que des remplacements pertinents.
-  const filteredItems = replaceExerciseId
+  let filteredItems = replaceExerciseId
     ? items.filter((item) => !active?.entries.some((e) => e.exerciseId === item.id))
     : items;
 
+  // Mode pickVariant (MUSC-F10c-2) : exclut l'exercice lui-même et ceux déjà liés.
+  if (pickVariant && forExerciseId) {
+    filteredItems = filteredItems.filter(
+      (item) => item.id !== forExerciseId && !linkedIds.has(item.id),
+    );
+  }
+
   const onPick = async (item: ExerciseListItem) => {
+    if (browse) {
+      router.push(`/exercises/${item.id}`);
+      return;
+    }
+    if (pickVariant && forExerciseId) {
+      await addExerciseVariant(forExerciseId, item.id);
+      router.back();
+      return;
+    }
     if (active) {
       if (replaceExerciseId) {
         await replaceExercise(active.id, replaceExerciseId, item.id);
@@ -58,13 +80,6 @@ export default function ExercisesScreen() {
       }
       router.back();
     }
-  };
-
-  const onCreate = async () => {
-    if (!newName.trim()) return;
-    await addCustomExercise(newName, newMuscle);
-    setNewName('');
-    setCreating(false);
   };
 
   return (
@@ -79,27 +94,24 @@ export default function ExercisesScreen() {
             placeholder={t('exercises.searchPlaceholder')}
           />
         </View>
+        <Pressable
+          onPress={() => setFiltersOpen(true)}
+          accessibilityRole="button"
+          style={[
+            styles.filtersButton,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.filtersLabel, { color: colors.text }]}>
+            {t('exercises.filters')}
+            {filterCount > 0 ? ` · ${filterCount}` : ''}
+          </Text>
+        </Pressable>
       </View>
 
-      {creating ? (
-        <View style={[styles.createBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <TextField label={t('exercises.customName')} value={newName} onChangeText={setNewName} autoCapitalize="sentences" />
-          <Segment
-            options={MUSCLE_GROUPS}
-            value={newMuscle}
-            onChange={setNewMuscle}
-            label={(m) => t(`muscle.${m}`)}
-          />
-          <View style={styles.createActions}>
-            <View style={styles.flex}><Button label={t('common.cancel')} variant="ghost" onPress={() => setCreating(false)} /></View>
-            <View style={styles.flex}><Button label={t('exercises.add')} onPress={onCreate} /></View>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.createTrigger}>
-          <Button label={t('exercises.createCustom')} variant="ghost" onPress={() => setCreating(true)} />
-        </View>
-      )}
+      <View style={styles.createTrigger}>
+        <Button label={t('exercises.createCustom')} variant="ghost" onPress={() => setCreateOpen(true)} />
+      </View>
 
       {isLoading ? (
         <View style={styles.centered}>
@@ -111,6 +123,25 @@ export default function ExercisesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <Text style={[styles.empty, { color: colors.textMuted }]}>
+                {filterCount > 0
+                  ? t('exercises.emptyFiltered')
+                  : t('programs.edit.picker.empty')}
+              </Text>
+              {filterCount > 0 ? (
+                <Button
+                  variant="ghost"
+                  label={t('exercises.filterDrawer.reset')}
+                  onPress={() => {
+                    setMuscles([]);
+                    setEquipment([]);
+                  }}
+                />
+              ) : null}
+            </View>
+          }
           renderItem={({ item }) => (
             <Pressable
               onPress={() => void onPick(item)}
@@ -120,6 +151,7 @@ export default function ExercisesScreen() {
                 <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
                 <Text style={[styles.muscle, { color: colors.textMuted }]}>
                   {t(`muscle.${item.muscle}`)}
+                  {item.equipment ? ` · ${t(`equipment.${item.equipment}`)}` : ''}
                   {item.source === 'custom' ? ` · ${t('exercises.customBadge')}` : ''}
                 </Text>
               </View>
@@ -134,19 +166,43 @@ export default function ExercisesScreen() {
           )}
         />
       )}
+
+      <ExerciseFilterDrawer
+        visible={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        muscles={muscles}
+        onMusclesChange={setMuscles}
+        equipment={equipment}
+        onEquipmentChange={setEquipment}
+      />
+
+      <CreateExerciseModal visible={createOpen} onClose={() => setCreateOpen(false)} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  searchRow: { paddingHorizontal: 20, paddingTop: 16 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
   searchField: { flex: 1 },
+  filtersButton: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  filtersLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   createTrigger: { paddingHorizontal: 20, paddingTop: 8 },
-  createBox: { margin: 20, marginTop: 12, padding: 16, borderRadius: 16, borderWidth: 1, gap: 12 },
-  createActions: { flexDirection: 'row', gap: 12 },
   flex: { flex: 1 },
   list: { padding: 20, gap: 10 },
+  emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
+  empty: { fontFamily: fontFamily.body, fontSize: 14, textAlign: 'center' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
   row: {
     flexDirection: 'row',

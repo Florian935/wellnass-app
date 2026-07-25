@@ -14,9 +14,14 @@ import i18n from '@/i18n';
 // Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
 // (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
 import '@/running/tracker-task';
+// Configure Google Sign-In (side-effect) au chargement du JS (US 1.2).
+import '@/lib/google-signin';
+import { useDeletionStore } from '@/stores/deletion-store';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
+import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
+import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
@@ -62,12 +67,34 @@ function RootNavigator() {
   const { loaded, error } = useAppFonts();
   const session = useAuthStore((s) => s.session);
   const initializing = useAuthStore((s) => s.initializing);
+  const recoveryPending = useAuthStore((s) => s.recoveryPending);
   const { profile, isLoading: profileLoading } = useProfile();
   const { settings, isLoading: settingsLoading } = useSettings();
   const syncStatus = useStatus();
   const segments = useSegments();
   const router = useRouter();
   const theme = navTheme(scheme === 'dark' ? DarkTheme : DefaultTheme, colors);
+
+  // Détection de la suppression de compte pending (CONF-02) : contrôle serveur (hors
+  // PowerSync) une seule fois par utilisateur. On key sur `session?.user?.id` (stable
+  // entre les refreshes de token) plutôt que sur l'objet `session` (qui est ré-émis à
+  // chaque refresh) pour ne pas re-déclencher le contrôle ni faire flasher/remonter le
+  // Stack à chaque renouvellement horaire du token.
+  // Détection « suppression de compte en cours » (CONF-02) via un store partagé : l'écran-gate
+  // peut ainsi réinitialiser l'état après une annulation (sinon on resterait piégé sur la gate).
+  // Keyé sur `session.user.id` (stable entre refreshes de token) — le store dédup par utilisateur.
+  const userId = session?.user?.id ?? null;
+  const deletionLoading = useDeletionStore((s) => s.loading);
+  const deletionPending = useDeletionStore((s) => s.pending);
+  useEffect(() => {
+    if (!userId) {
+      useDeletionStore.getState().reset();
+      return;
+    }
+    useDeletionStore.getState().check(userId);
+  }, [userId]);
+  // TODO(conf02): signOut gracieux si compte purgé à distance (J+30) — nécessite d'identifier,
+  // côté connector PowerSync, un signal d'erreur d'auth irrécupérable (hors périmètre _layout.tsx).
 
   const fontsReady = loaded || error != null;
   // Décision de routing centralisée dans un helper pur testé (@wellness/shared) : gère l'attente
@@ -83,6 +110,9 @@ function RootNavigator() {
     onboardingCompletedAt: profile?.onboardingCompletedAt ?? null,
     settingsLoading,
     hasSynced: !!syncStatus.hasSynced,
+    deletionCheckLoading: deletionLoading,
+    deletionPending: deletionPending,
+    recoveryPending,
   });
   const ready = route !== 'wait';
 
@@ -123,12 +153,23 @@ function RootNavigator() {
   // et les préférences — au montage, sur changement, et au retour au premier plan.
   useStreakReminderScheduler();
 
+  // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
+  useAppOpenedAnalytics();
+
+  // Deep links d'auth (confirmation d'e-mail…) : établit la session au retour dans l'app.
+  useAuthDeepLink();
+
   // Redirige selon session + onboarding (compte-profil-onboarding §2/§3).
   useEffect(() => {
     if (route === 'wait') {
       return;
     }
-    const group = segments[0];
+    // Lu en `string` volontairement : `segments[0]` est typé par les **routes générées** par Expo
+    // Router (`.expo/types`, artefact local gitignoré, absent en CI). Or on doit comparer à
+    // `auth-callback`, un **chemin d'atterrissage de deep link sans écran** — donc jamais présent dans
+    // cette union. Sans ce typage lâche, le typecheck casse chez qui a les types générés (TS2367) tout
+    // en passant en CI : divergence à éviter.
+    const group: string | undefined = segments[0];
     const inAuth = group === '(auth)';
     const inOnboarding = group === '(onboarding)';
 
@@ -144,8 +185,31 @@ function RootNavigator() {
       }
       return;
     }
+    if (route === 'deletion-pending') {
+      if (segments[0] !== 'deletion-pending') {
+        router.replace('/deletion-pending');
+      }
+      return;
+    }
+    if (route === 'password-recovery') {
+      // Le nom de la route DOIT rester aligné sur PASSWORD_RESET_REDIRECT_URL
+      // (`wellness://password-reset`) : Expo Router résout le deep link entrant comme un chemin et
+      // navigue lui-même dessus. Un nom différent → « Unmatched Route » (sa navigation gagne la
+      // course contre celle-ci).
+      if (segments[0] !== 'password-reset') {
+        router.replace('/password-reset');
+      }
+      return;
+    }
     // route === 'app'
-    if (inAuth || inOnboarding) {
+    // Les deep links d'auth font naviguer **Expo Router lui-même** sur le chemin de l'URL reçue.
+    // `password-reset` a un écran (gate ci-dessus) ; `auth-callback` (confirmation d'inscription)
+    // n'en a pas → Expo Router affiche son écran « Unmatched Route » et, sans l'échappatoire
+    // ci-dessous, on y resterait **bloqué**. Le cas ne se voyait pas pour un **nouveau** compte
+    // (route = 'onboarding', dont la branche redirige inconditionnellement) mais piégeait un compte
+    // **déjà onboardé** qui clique un lien de confirmation.
+    const onAuthDeepLinkLanding = group === 'auth-callback';
+    if (inAuth || inOnboarding || onAuthDeepLinkLanding) {
       router.replace('/(tabs)');
     }
   }, [route, segments, router]);
@@ -162,6 +226,19 @@ function RootNavigator() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="deletion-pending" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="password-reset" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen
+          name="account-delete"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('account.delete.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="settings"
           options={{
@@ -185,11 +262,32 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
+          name="help"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('help.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
           name="exercises"
           options={{
             presentation: 'modal',
             headerShown: true,
             title: t('exercises.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="exercises/[id]"
+          options={{
+            headerShown: true,
+            title: t('exercises.detail.title'),
             headerStyle: { backgroundColor: colors.surface },
             headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
             headerTintColor: colors.accent,

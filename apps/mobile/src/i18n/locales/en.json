@@ -27,19 +27,72 @@
     "arms": "Arms",
     "core": "Core"
   },
+  "equipment": {
+    "barbell": "Barbell",
+    "dumbbell": "Dumbbell",
+    "machine": "Machine",
+    "cable": "Cable / pulley",
+    "bodyweight": "Bodyweight",
+    "kettlebell": "Kettlebell",
+    "band": "Resistance band",
+    "other": "Other"
+  },
   "exercises": {
     "title": "Exercises",
     "search": "Search",
     "searchPlaceholder": "Exercise name…",
     "createCustom": "+ Create custom exercise",
     "customName": "Exercise name",
+    "createTitle": "Create an exercise",
+    "customNamePlaceholder": "E.g. Bench press",
     "add": "Add",
-    "customBadge": "custom"
+    "customBadge": "custom",
+    "filters": "Filters",
+    "emptyFiltered": "No results for these filters.",
+    "filterDrawer": {
+      "muscleSection": "Muscle group",
+      "equipmentSection": "Equipment",
+      "reset": "Reset",
+      "close": "Close filters"
+    },
+    "library": "Exercise library",
+    "detail": {
+      "title": "Exercise",
+      "muscle": "Muscle group",
+      "equipment": "Equipment",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "E.g. Keep your back flat on the bench.",
+      "secondaryMuscles": "Secondary muscles",
+      "variants": "Variants / alternatives",
+      "variantsEmpty": "No variant yet",
+      "addVariant": "Add a variant",
+      "removeVariant": "Remove this variant",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this exercise?",
+      "notFound": "Exercise not found.",
+      "editTitle": "Edit exercise",
+      "equipmentNone": "None",
+      "save": "Save",
+      "favorite": "Favorite",
+      "records": {
+        "title": "Your records",
+        "oneRepMax": "1RM",
+        "real": "actual",
+        "estimated": "est.",
+        "seeProgression": "View progression"
+      }
+    }
   },
   "workout": {
     "freeTitle": "Free workout",
     "freeSubtitle": "Add exercises on the fly, no program needed.",
     "startFree": "Start a free workout",
+    "freeStart": {
+      "title": "Free workout",
+      "blank": "Blank",
+      "fromTemplate": "From a template"
+    },
     "resumeTitle": "Workout in progress",
     "resume": "Resume workout",
     "exerciseCount_one": "{{count}} exercise",
@@ -151,7 +204,28 @@
         }
       },
       "warmupCount_one": "+{{count}} warm-up",
-      "warmupCount_other": "+{{count}} warm-ups"
+      "warmupCount_other": "+{{count}} warm-ups",
+      "saveAsTemplate": "Save as template",
+      "saveAsTemplateConfirm": "Confirm",
+      "saveAsTemplateDefaultName": "Workout from {{date}}",
+      "templateNameLabel": "Template name",
+      "templateSaved": "Template saved"
+    },
+    "displayLevel": {
+      "levels": {
+        "simplified": {
+          "label": "Simplified",
+          "description": "The essentials: reps, weight, rest. Great to start."
+        },
+        "normal": {
+          "label": "Standard",
+          "description": "Progress cues: last time, target, warm-up."
+        },
+        "detailed": {
+          "label": "Detailed",
+          "description": "Everything: set types, RPE, notes, supersets."
+        }
+      }
     }
   },
   "tabs": {
@@ -554,7 +628,8 @@
       "recentEyebrow_other": "Last {{count}} sessions",
       "planningEyebrow": "Schedule",
       "progressEyebrow": "Progress",
-      "progressTotalEyebrow": "Total volume"
+      "progressTotalEyebrow": "Total volume",
+      "templatesEyebrow": "Templates"
     },
     "running": {
       "lastRunEyebrow": "Latest run",
@@ -752,6 +827,10 @@
         "health": "General health"
       }
     },
+    "displayLevel": {
+      "title": "Display level",
+      "subtitle": "Choose how much info you see during sessions. Changeable later in settings."
+    },
     "summary": {
       "title": "All set!",
       "subtitle": "Here's your setup. You can adjust everything in settings.",
@@ -770,7 +849,9 @@
       "cta": "Sign in",
       "forgot": "Forgot password?",
       "noAccount": "No account yet?",
-      "signUpLink": "Create one"
+      "signUpLink": "Create one",
+      "passwordResetSuccess": "Password updated. Sign in with your new password.",
+      "resetLinkExpired": "This reset link has expired or has already been used. Request a new one."
     },
     "signUp": {
       "title": "Create account",
@@ -805,10 +886,40 @@
       "cta": "Send link",
       "sent": "If an account exists for {{email}}, a reset link has just been sent."
     },
+    "newPassword": {
+      "title": "New password",
+      "subtitle": "Choose a password for your account.",
+      "field": "New password",
+      "confirmField": "Confirm password",
+      "cta": "Save password",
+      "cancel": "Cancel",
+      "tooShort_one": "Password must be at least {{count}} character.",
+      "tooShort_other": "Password must be at least {{count}} characters.",
+      "mismatch": "Passwords don't match.",
+      "updateFailed": "Couldn't save your password. Please try again.",
+      "offline": "This action requires an internet connection."
+    },
     "verify": {
       "title": "Verify your email",
       "message": "We sent a verification link to {{email}}. Open it, then sign in.",
       "cta": "Go to sign in"
+    },
+    "google": {
+      "button": "Continue with Google",
+      "orSeparator": "or",
+      "consent": {
+        "prefix": "By continuing with Google, you accept the ",
+        "terms": "terms of service",
+        "middle": " and the ",
+        "privacy": "privacy policy",
+        "suffix": " and confirm you are 16 or older."
+      },
+      "errors": {
+        "playServices": "Google Play Services is unavailable or needs updating.",
+        "offline": "An internet connection is required to sign in with Google.",
+        "linkUnverified": "An account already exists with this unverified email. Verify your email before linking Google.",
+        "generic": "Google sign-in failed. Please try again."
+      }
     }
   },
   "legal": {
@@ -828,6 +939,7 @@
         "We only collect the data needed to run the app: account (email), profile and the activity data you enter.",
         "Your data is isolated per user and securely synced to the cloud. It is never sold to third parties.",
         "Health and location data are never shared without your explicit consent.",
+        "We measure app usage (screens viewed, features used) through anonymous statistics, solely to improve it; these measurements never include your health data and you can turn them off at any time from settings.",
         "You can request an export or deletion of your data at any time from settings."
       ]
     }
@@ -941,6 +1053,33 @@
       },
       "done": "Done"
     }
+  },
+  "templates": {
+    "title": "My templates",
+    "subtitle": "Reusable routines for your free workouts.",
+    "create": "Create a template",
+    "createTitle": "New template",
+    "createSubtitle": "Name your template, then add exercises.",
+    "name": "Template name",
+    "namePlaceholder": "e.g. Usual push day",
+    "done": "Done",
+    "editTitle": "Exercises",
+    "emptyExercises": "No exercises yet. Add a first exercise to build your template.",
+    "addExercise": "+ Add exercise",
+    "notFoundTitle": "Template not found",
+    "notFoundMessage": "This template doesn't exist or was deleted.",
+    "emptyList": "You don't have any templates yet. Create one, or save a finished free workout as a template.",
+    "exerciseCount_one": "{{count}} exercise",
+    "exerciseCount_other": "{{count}} exercises",
+    "countLabel_one": "{{count}} template",
+    "countLabel_other": "{{count}} templates",
+    "start": "Start",
+    "starting": "Starting…",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating…",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "deleteConfirm": "This will permanently delete this template. Continue?"
   },
   "history": {
     "title": "History",
@@ -1069,8 +1208,9 @@
     },
     "menuColors": {
       "title": "Menu colors",
+      "enable": "Enable per-menu colors",
       "reset": "Reset colors",
-      "hint": "Each menu (Home, Strength, Running, Food) has its own accent color."
+      "hint": "When enabled, each menu (Home, Strength, Running, Food) can have its own accent color. Disabled, the single accent applies everywhere."
     },
     "units": {
       "title": "Units",
@@ -1082,6 +1222,10 @@
       "title": "Language",
       "fr": "Français",
       "en": "English"
+    },
+    "workoutDisplayLevel": {
+      "title": "Session display level",
+      "hint": "Choose how much information is shown during a strength session."
     },
     "notifications": {
       "title": "Notifications",
@@ -1101,7 +1245,94 @@
     "account": {
       "title": "Account",
       "signOut": "Sign out"
+    },
+    "help": {
+      "title": "Help & support",
+      "button": "Open help"
+    },
+    "analytics": {
+      "title": "Usage statistics",
+      "toggle": "Allow usage statistics",
+      "subtitle": "Helps us improve the app. Anonymous data, never your health data."
+    },
+    "dataExport": {
+      "title": "Data",
+      "subtitle": "Get a copy of all your data as JSON (GDPR).",
+      "button": "Export my data"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "subtitle": "Deletion is permanent after 30 days. Requires an active connection.",
+      "delete": "Delete my account",
+      "requiresConnection": "Requires an active connection."
     }
+  },
+  "account": {
+    "export": {
+      "dialogTitle": "Export my data",
+      "syncWarningTitle": "Sync in progress",
+      "syncWarningBody": "The initial sync isn't finished yet: the export might be incomplete. Try again once it's done.",
+      "errorUnavailable": "Sharing isn't available on this device.",
+      "errorFailed": "The export failed. Please try again."
+    },
+    "delete": {
+      "title": "Delete my account",
+      "warning": "This action is irreversible. Your account and all your data will be deleted:",
+      "whatDeletedTitle": "What will be deleted",
+      "item1": "Workouts, runs, nutrition journal",
+      "item2": "Profiles, history, records",
+      "item3": "Custom exercises and foods",
+      "graceInfo": "Deletion takes effect in 30 days. You can cancel by signing back in before {{date}}.",
+      "exportHint": "Remember to export your data first (Settings → Export my data).",
+      "passwordLabel": "Confirm with your password",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel",
+      "errorWrongPassword": "Incorrect password.",
+      "scheduledTitle": "Deletion scheduled",
+      "scheduledBody": "Your account will be deleted on {{date}}."
+    },
+    "deletePending": {
+      "title": "Deletion in progress",
+      "scheduledFor": "Your account will be deleted on {{date}}.",
+      "blocked": "While the deletion is active, access to the app is blocked.",
+      "cancel": "Cancel deletion",
+      "signOut": "Sign out",
+      "cancelError": "Cancellation failed. Please try again."
+    }
+  },
+  "help": {
+    "title": "Help & support",
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": [
+        { "q": "Does the app work offline?", "a": "Yes. Your data is saved on the device and syncs automatically as soon as a connection is available." },
+        { "q": "Is my data synced across my devices?", "a": "Yes: sign in with the same account and your data syncs in the background." },
+        { "q": "How do I enable or disable a pillar (Strength / Running / Nutrition)?", "a": "In Settings → Active pillars. Tabs for disabled pillars are hidden and reappear when you re-enable them." },
+        { "q": "How do I change the units or the language?", "a": "In Settings → Units (metric/imperial) and Language (French/English)." },
+        { "q": "How do I export my data?", "a": "In Settings → Export my data: you get a complete copy of your data as JSON." },
+        { "q": "How do I delete my account?", "a": "In Settings → Danger zone → Delete my account. A 30-day grace period lets you undo it." },
+        { "q": "Is the app free?", "a": "Yes, the app is entirely free." }
+      ]
+    },
+    "contact": {
+      "title": "Contact us",
+      "intro": "A question or a problem? Write to us and your mail app will open with a pre-filled message.",
+      "contactButton": "Contact us",
+      "bugButton": "Report a bug",
+      "subject": "[Wellness] Question / contact"
+    },
+    "bug": {
+      "subject": "[Wellness] Bug report",
+      "prompt": "Describe the problem (steps, what you expected):",
+      "techHeader": "Technical information (please keep)",
+      "appLabel": "App",
+      "buildLabel": "build",
+      "systemLabel": "System",
+      "deviceLabel": "Device",
+      "languageLabel": "Language"
+    },
+    "mailUnavailableTitle": "No mail app",
+    "mailUnavailableBody": "No mail app is configured. Write to us at: {{email}}"
   },
   "running": {
     "profile": {

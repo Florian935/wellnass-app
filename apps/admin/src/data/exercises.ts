@@ -1,5 +1,12 @@
 import { supabase } from '../lib/supabase';
-import { MUSCLE_GROUPS, type Database, type MuscleGroup } from '@wellness/shared';
+import {
+  MUSCLE_GROUPS,
+  EQUIPMENTS,
+  normalizeSecondaryMuscles,
+  type Database,
+  type MuscleGroup,
+  type Equipment,
+} from '@wellness/shared';
 import { logAudit } from './audit';
 
 /**
@@ -19,11 +26,15 @@ export const EXERCISE_STATUSES: readonly ExerciseStatus[] = ['draft', 'published
 export { MUSCLE_GROUPS };
 export type { MuscleGroup };
 
+/** Réexport des équipements (source unique `@wellness/shared`). */
+export { EQUIPMENTS };
+export type { Equipment };
+
 /** Une ligne exercice éditorial enrichie de ses noms FR/EN (pour la liste). */
 export type AdminExerciseRow = {
   id: string;
   musclePrimary: string;
-  equipment: string | null;
+  equipment: Equipment | null;
   status: string;
   createdAt: string;
   nameFr: string | null;
@@ -34,7 +45,8 @@ export type AdminExerciseRow = {
 export type ExerciseDetail = {
   id: string;
   musclePrimary: MuscleGroup;
-  equipment: string | null;
+  musclesSecondary: MuscleGroup[];
+  equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
   nameEn: string;
@@ -46,7 +58,8 @@ export type ExerciseDetail = {
 export type ExerciseInput = {
   id?: string;
   musclePrimary: MuscleGroup;
-  equipment: string | null;
+  musclesSecondary: MuscleGroup[];
+  equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
   nameEn: string;
@@ -87,7 +100,7 @@ export async function listEditorialExercises(): Promise<{
     return {
       id: ex.id,
       musclePrimary: ex.muscle_primary,
-      equipment: ex.equipment,
+      equipment: ex.equipment as Equipment | null,
       status: ex.status,
       createdAt: ex.created_at,
       nameFr: fr?.name ?? null,
@@ -105,7 +118,9 @@ export async function getExercise(id: string): Promise<{
 }> {
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, muscle_primary, equipment, status, exercise_translations(lang, name, instructions)')
+    .select(
+      'id, muscle_primary, muscles_secondary, equipment, status, exercise_translations(lang, name, instructions)',
+    )
     .eq('id', id)
     .is('owner_id', null) // éditorial uniquement (jamais un exercice utilisateur)
     .is('deleted_at', null)
@@ -125,7 +140,8 @@ export async function getExercise(id: string): Promise<{
   const exercise: ExerciseDetail = {
     id: data.id,
     musclePrimary: data.muscle_primary as MuscleGroup,
-    equipment: data.equipment,
+    musclesSecondary: normalizeSecondaryMuscles(data.muscles_secondary, data.muscle_primary as MuscleGroup),
+    equipment: data.equipment as Equipment | null,
     status: (data.status as ExerciseStatus) ?? 'draft',
     nameFr: fr?.name ?? '',
     nameEn: en?.name ?? '',
@@ -148,11 +164,17 @@ export async function saveExercise(input: ExerciseInput): Promise<{
 }> {
   const id = input.id ?? crypto.randomUUID();
 
+  // `muscles_secondary` est typée `Json` en base → cast depuis `MuscleGroup[]` (assignable).
+  const musclesSecondary =
+    normalizeSecondaryMuscles(input.musclesSecondary, input.musclePrimary) as
+      Database['public']['Tables']['exercises']['Insert']['muscles_secondary'];
+
   const exerciseUpsert: Database['public']['Tables']['exercises']['Insert'] = {
     id,
     owner_id: null,
     source: 'library',
     muscle_primary: input.musclePrimary,
+    muscles_secondary: musclesSecondary,
     equipment: input.equipment,
     status: input.status,
   };

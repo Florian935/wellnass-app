@@ -33,6 +33,1156 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - Non corrigés (hors bug de rendu) : « 3150 min » (donnée de recette factice), sparkline Progression à
   2 points (diagonale — pas d'historique de volume hebdo branché), carte `large` clairsemée d'un
   programme absent (cosmétique).
+### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien **non requise**
+> (go explicite de Florian). Le parcours complet fonctionne : lien « mot de passe oublié » → l'app s'ouvre
+> sur l'écran de saisie → nouveau mot de passe enregistré → retour connexion. Config Supabase faite
+> (`wellness://password-reset` dans les Redirect URLs).
+
+**Corrigé pendant la recette** — 2 bugs de la même classe, trouvés grâce au retour terrain
+- **`wellness://password-reset` → écran « Unmatched Route »** (capture fournie par Florian). Cause :
+  **Expo Router résout le deep link entrant comme un chemin de route et y navigue lui-même** ; l'écran
+  s'appelait `new-password.tsx` alors que le lien pointe sur `password-reset` → aucune route ne correspond,
+  et **cette navigation gagne la course** contre celle du gate (le drapeau et la redirection fonctionnaient,
+  ils étaient écrasés). Fix : `new-password.tsx` → **`password-reset.tsx`** (route, composant, test,
+  branchement du layout). La contrainte **« nom de fichier = chemin du deep link »** est désormais écrite en
+  tête du fichier, dans la spec (§2.3) et dans le plan — piège invisible à la relecture.
+- **Blocage latent sur `wellness://auth-callback`** (confirmation d'inscription, livrée la veille) : ce
+  chemin n'a **pas** d'écran non plus. Le bug ne s'était pas vu en recette parce qu'un **nouveau** compte
+  part sur `route = 'onboarding'`, dont la branche redirige **inconditionnellement** ; mais un compte **déjà
+  onboardé** restait **bloqué** sur « Unmatched Route », la branche `route === 'app'` ne redirigeant que
+  depuis `(auth)` et `(onboarding)`. Échappatoire ajoutée pour ce chemin d'atterrissage.
+
+**Technique / Notes**
+- Le namespace i18n reste `auth.newPassword.*` alors que la route s'appelle `password-reset` : **voulu**
+  (le namespace décrit l'écran, la route doit matcher l'URL du lien). Ne pas « harmoniser ».
+- **Reste ouvert, hors périmètre** : (a) bug préexistant du **« Se déconnecter »** en scope `global`
+  (déconnecte tous les appareils) — consigné [TODO.md](TODO.md) §🐞, correction = décision produit + recette
+  dédiée ; (b) **SMTP custom** Supabase (service intégré rate-limité) = prérequis bêta ; (c) changement de
+  mot de passe depuis les **Réglages** (utilisateur connecté) — besoin distinct non cadré.
+- 9 commits (`d33f252`→`c7dd417`). typecheck + lint verts (0 erreur) ; **829 tests shared + 112 mobile** ;
+  parité i18n 1217/1217. Aucune migration, aucun module natif. Roadmap **1.6** → remarque complétée.
+- Commit précédent : `e377c83`.
+
+### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : réinitialisation du mot de passe (code livré)
+
+> **Trou fonctionnel du socle auth (roadmap 1.6), prérequis bêta.** Le lien « mot de passe oublié » menait à
+> une page morte `localhost:3000` et **aucun écran de saisie du nouveau mot de passe n'existait** → un
+> utilisateur qui oubliait son mot de passe **ne pouvait pas récupérer son compte**. Prolonge le fix de la
+> confirmation d'inscription du 25/07 (mêmes briques, flux différent). Spec + plan + maquette **validés par
+> Florian et Damien**. 5 tâches TDD (`1091381`→`b21d1cf`). **Aucune migration, aucun module natif.**
+
+**Le piège évité (raison d'être du cadrage)**
+- Le lien de récupération renvoie **des jetons de session**, comme celui de confirmation. Ajouter simplement
+  `redirectTo` aurait donc **connecté l'utilisateur dans l'app sans jamais lui demander de nouveau mot de
+  passe**, l'ancien restant actif — le bug devenait *silencieux* au lieu d'être visible.
+- D'où : drapeau `recoveryPending` levé **avant** `setSession` + nouvel état de routing `password-recovery`
+  qui court-circuite onboarding/app. Dans l'autre ordre, `onAuthStateChange` peut produire un rendu où la
+  session existe sans le drapeau → redirection éclair vers `(tabs)`.
+
+**Ajouté**
+- `packages/shared/src/password.ts` (+ test, 8 cas) : `MIN_PASSWORD_LENGTH` + `validatePasswordPair`
+  (**pur**) — longueur avant concordance, aucune normalisation.
+- `packages/shared/src/root-route.ts` : état **`password-recovery`** + entrée **optionnelle**
+  `recoveryPending` (⇒ non-régression des appels existants), évaluée après `deletionPending` et **avant**
+  l'attente profil/réglages (l'écran n'en a pas besoin). 7 tests, priorités verrouillées.
+- `apps/mobile/src/lib/auth-redirect.ts` : `PASSWORD_RESET_REDIRECT_URL` (`wellness://password-reset`) +
+  `parseAuthDeepLink` (**pur**, 9 tests) → `tokens` (avec `isRecovery`) · `error` (lien expiré/consommé) ·
+  `null`. Discriminant = **le chemin du lien** (structurel), `type=recovery` en contrôle secondaire.
+- `apps/mobile/src/app/new-password.tsx` (+ smoke, 5 tests) : écran-gate **de niveau racine** (à côté de
+  `deletion-pending`, **pas** dans `(auth)` dont le segment entrerait en collision avec la branche
+  `route === 'auth'`), `gestureEnabled: false`, seule sortie = « Annuler » (déconnexion).
+- Store : `recoveryPending`, `deepLinkError`, `passwordJustReset`, `completePasswordRecovery`, +3 `clear*`.
+
+**Modifié**
+- `resetPassword` passe `redirectTo` (sinon Supabase retombe sur le Site URL).
+- `useAuthDeepLink` : dispatch par `kind`, no-op par défaut inchangé.
+- `_layout.tsx` : `recoveryPending` au routing + branche de redirection + `Stack.Screen`.
+- `sign-in.tsx` : messages « mot de passe modifié » / « lien expiré », effacés au démontage.
+- `sign-up.tsx` : bascule sur la règle mutualisée, **iso-comportement** (mêmes clés, même ordre).
+- i18n FR+EN : `auth.newPassword.*` + 2 clés `auth.signIn.*` — **parité 1217/1217 vérifiée par script**.
+
+**Corrigé**
+- Liens de reset **expirés / déjà utilisés** : message explicite au lieu d'un **no-op silencieux**.
+
+**Technique / Notes**
+- **Décision d'implémentation corrigée en cours de route, API vérifiée dans `@supabase/auth-js`** :
+  `signOut()` **sans argument utilise le scope `global`** (types + doc de `GoTrueClient`), qui révoque les
+  refresh tokens de *tous* les appareils **et** efface la session locale. Un seul appel remplace donc la
+  séquence `{scope:'others'}` puis `signOut()` initialement prévue au plan — pas d'ordre fragile, pas de
+  gestion d'échec non bloquant. Spec + plan mis à jour avant de coder.
+- ⚠️ **Bug préexistant repéré, NON corrigé** (consigné en [TODO.md](TODO.md) §🐞) : le bouton
+  **« Se déconnecter »** des Réglages hérite du même défaut `global` → il déconnecte l'utilisateur **de tous
+  ses appareils**. Inattendu pour une déconnexion ordinaire. Correction = changement de comportement
+  existant → décision produit + recette à part. **Ne pas toucher `completePasswordRecovery`**, où le scope
+  global est au contraire voulu.
+- **Pas de désactivation du bouton hors-ligne** (écart assumé vs CONF-02) : `useStatus().connected`
+  (PowerSync) n'est pas fiable juste après une ouverture par deep link → il bloquerait un utilisateur en
+  ligne. On laisse partir l'appel et on mappe l'échec réseau.
+- **Message de succès porté par le store** (`passwordJustReset`) et non par un paramètre de route : c'est le
+  gate qui redirige après la perte de session, un `router.replace` avec params serait écrasé.
+- **Filet de sécurité** dans `onAuthStateChange` : toute perte de session éteint `recoveryPending` (sinon un
+  drapeau resté levé referait apparaître l'écran à la prochaine connexion).
+- `accessibilityLabel` sur les 2 champs (nécessaire pour les cibler en test — RNTL v14 a retiré
+  `UNSAFE_getAllByType` — et gain a11y avant 9.11/9.12). Les `fireEvent` doivent être **awaités** (patron
+  maison, cf. `edit-exercise-modal-smoke`) sinon les états ne sont pas vidés.
+- ⚠️ **Limite assumée** (spec §2.5) : drapeau **en mémoire**. App tuée sur l'écran de saisie → le lancement
+  suivant entre normalement dans l'app, mot de passe inchangé. Accepté : l'utilisateur a prouvé qu'il
+  possède l'adresse, et un gate persistant risquerait de le **piéger hors de son compte**.
+- 🔧 **Prérequis avant recette** : `wellness://password-reset` à ajouter aux **Redirect URLs** Supabase.
+  Si la recette retombe sur `localhost:3000`, c'est **ce réglage**, pas le code.
+- typecheck + lint verts (0 erreur) ; **829 tests shared + 112 mobile** verts. Roadmap 1.6 : remarque
+  complétée (l'envoi seul ne suffisait pas). **Reste** : prérequis Supabase + recette device (9 critères) +
+  relecture Damien.
+- Commit précédent : `e377c83`.
+
+### 25/07/2026 — `dev` — IDEAS : salve « benchmark 4 modèles IA » (6 idées + 2 enrichissements)
+
+> **Documentation seule** (`IDEAS.md`), aucun code applicatif. Dépouillement des 4 dumps de `_inbox-ia/`
+> (Gemini, ChatGPT, Qwen-3.7-plus, Qwen-3.8-max — ~93 propositions), croisés avec l'existant : **6 idées
+> nettes** retenues + **2 enrichissements** greffés sur des lignes du 13/07. Sélection arbitrée par Florian
+> (25/07). ⚠️ **Commit fait directement sur `dev`** — dérogation explicite de Florian (doc seule, pas de
+> branche dédiée). `_inbox-ia/` reste **gitignoré** (décision Florian : les dumps bruts restent locaux).
+
+**Ajouté** — `IDEAS.md`, 7 entrées en tête de « À trier » (date `[25/07/2026]`, statut 🔍)
+- **Note de benchmark** (source + garde-fous) : trace les 4 dumps, les **2 biais à ne pas suivre**
+  (stack IA **on-device** contraire à l'archi « IA = backend » ; **synchro P2P Bluetooth** contraire à
+  PowerSync/ADR-001), les 4 idées **écartées** (correction de forme caméra temps réel, pacing électrolytes
+  HYROX…) et les **chiffres marché non vérifiés** (plan annuel ≈ 60 % des revenus fitness, essai 17-32 j
+  ≈ 42 % de conversion médiane) → à confronter aux sources avant usage RevenueCat post-V1.
+- **Détecteur de collisions + séquençage inter-séances** (signal 4/4 modèles) — cœur du différenciateur
+  d'intégration.
+- **Mode « vie réelle » / journée minimale viable** (dégradation gracieuse anti-abandon).
+- **Simulateur « What-If »** (projection avec fourchette d'incertitude).
+- **Objectif hybride unifié** (un plan, priorités explicites, arbitrage des compromis).
+- **Recommandations explicables ET contestables** — posé en **note de principe UX transverse**, pas en US.
+- **Défi composite cross-pilier** (un seul objectif exigeant les 3 piliers ; cible V3/V4 — décision C).
+
+**Modifié** — 2 greffes en sous-puce `_**Enrichissement 25/07/2026**_` (même patron que les arbitrages du 15/07)
+- « Rappels intelligents contextuels » (13/07) : rappel envoyé **au moment probable appris** (moyenne
+  glissante des heures de log, calcul 100 % local) + points durs **doze mode** Android / plafond de notifs.
+- « Bilan hebdo/mensuel automatique » (13/07) : format « **une seule décision** » ; si l'IA rédige, elle le
+  fait **à partir des chiffres affichés** (pas de narration sans données visibles).
+
+**Technique / Notes**
+- **Vérifications faites avant rédaction** (elles ont changé le texte) : le détecteur de collisions est
+  **moins net-new** qu'annoncé en analyse — **US 3.9 « Planning calendrier auto » livrée ✅** (calendrier
+  unifié muscu+running) qui **diffère explicitement** la « coordination avancée (charge/récup) » et
+  l'« alerte de chevauchement bloquante » (`docs/specs/functional/us/3.9-planning-muscu-unifie.md` §7), et
+  `docs/product/analyses-donnees.md` porte déjà **RN-17** (conflit objectifs nutrition ↔ course) et
+  **META-19** (garde-fou surentraînement ACWR). Ce qui reste neuf = **séquencer les séances entre elles**.
+  Également noté : le « chevauchement » cadré est un **conflit d'agenda**, pas physiologique. US **4.7**
+  (calories adaptées à l'entraînement) déjà ✅ → le consensus 4/4 « nutrition qui suit la séance » est couvert.
+- **Roadmap non touchée** (aucune fonctionnalité livrée/avancée — boîte de dépôt d'idées) → étape statut roadmap sautée.
+- Qualité verte malgré un diff doc : typecheck OK · **814 tests shared** OK · lint **0 erreur** (6 warnings
+  pré-existants dans des fichiers de test, sans lien avec ce commit).
+- Commit précédent : `67bcd27`.
+
+### 25/07/2026 — `fix/email-confirmation-deeplink` — recette validée & fix clôturé (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien non requise.
+> Clic du lien de confirmation depuis le téléphone → l'app se rouvre, utilisateur connecté (fini la page
+> `localhost:3000`). Config Supabase faite (`wellness://auth-callback` dans les Redirect URLs).
+> Suivi séparé : reset de mot de passe (même redirection + écran dédié) et **SMTP custom** Supabase (prérequis bêta).
+
+### 25/07/2026 — `fix/email-confirmation-deeplink` — Confirmation d'e-mail : redirection deep link (mobile)
+
+> **Fix (circuit court).** Le lien de confirmation d'e-mail (inscription e-mail/mot de passe) redirigeait vers
+> le **Site URL Supabase par défaut** (`http://localhost:3000`) → page morte sur mobile. Remontée Florian
+> (test d'un e-mail neuf). La confirmation réussissait côté serveur, mais l'UX de retour dans l'app était cassée.
+
+**Corrigé**
+- `apps/mobile/src/lib/auth-redirect.ts` (+ test) : constante `AUTH_REDIRECT_URL` (`wellness://auth-callback`) +
+  `parseAuthTokensFromUrl` (**pur, testé** — extrait `access_token`/`refresh_token` du fragment, flux implicite).
+- `auth-store.signUp` : passe `options.emailRedirectTo = AUTH_REDIRECT_URL` (redirige vers le deep link de l'app,
+  plus le Site URL localhost).
+- `apps/mobile/src/hooks/useAuthDeepLink.ts` + montage dans `_layout.tsx` : au retour via
+  `wellness://auth-callback#access_token=…&refresh_token=…`, établit la session (`setSession`) → `onAuthStateChange`
+  prend le relais (l'utilisateur revient connecté dans l'app).
+
+**Technique / Notes**
+- ⚠️ **Config Supabase requise** (déploiement) : ajouter `wellness://auth-callback` dans **Authentication → URL
+  Configuration → Redirect URLs**. Site URL laissé tel quel.
+- typecheck + lint verts ; **814 shared + 98 mobile verts** (+4 tests parser). Module natif ajouté en amont
+  (Google) → recette sur dev build.
+- **Reste (hors périmètre de ce fix)** : même traitement pour le **reset de mot de passe** (`resetPasswordForEmail`
+  redirige encore vers Site URL + nécessite un écran « nouveau mot de passe ») — à cadrer séparément.
+
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**.
+
+**Technique / Notes**
+- Recette sur APK local (build gradle signé avec un **keystore release unique** dédié, SHA‑1 enregistrée dans
+  un client OAuth Android Google Cloud — le quota EAS gratuit étant épuisé ; réglage `android/` local jetable,
+  gitignoré). Fix `runtimeVersion` fixe (`1.0.0`) pour EAS en workflow bare (commit `db56728`).
+- **Liaison de compte confirmée** : connexion Google sur un e‑mail **déjà existant et vérifié**
+  (`florian.martin63000@gmail.com`) → Supabase rattache l'identité Google au **même** utilisateur (2 identités
+  `email` + `google` sous un seul `user_id`), **aucun doublon**, données retrouvées. Comportement voulu (option A).
+- Double mention de consentement sur l'écran d'inscription (case e‑mail + mention Google) **acceptée** en l'état.
+- **V0.8** : 1.18 + 1.19 + 1.22 + 9.10 + **1.2** livrés & clôturés ; reste **9.9 (Health Connect)** + accessibilité (9.11/9.12).
+
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : code livré (connexion via Google)
+
+> Implémentation subagent-driven (4 tâches TDD `359670b`→`eeb0e91` + correctifs post-revue), chaque tâche revue
+> conformité-spec **puis** qualité, + revue finale **PRÊT À MERGER** (0 bloquant). typecheck + lint verts ;
+> **814 tests shared + 94 mobile verts**. Aucune migration. Roadmap 1.2 → ✅. ⚠️ **Reste** : prérequis Google
+> Cloud/Supabase + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` + dev build + recette.
+
+**Ajouté**
+- `apps/mobile/src/lib/google-signin.ts` : `configureGoogleSignin()` (webClientId via env), side-effect importé
+  dans `_layout.tsx`. Dépendance `@react-native-google-signin/google-signin` + `.env.example`.
+- `apps/mobile/src/lib/google-auth-errors.ts` (+ test) : `mapGoogleSignInError` (**pur, testé**, statusCodes
+  Google + patterns Supabase → clés i18n, réseau prioritaire, co-occurrence anti faux positifs).
+- `apps/mobile/src/stores/auth-store.ts` : action `signInWithGoogle` (`hasPlayServices` → `signIn` → `signInWithIdToken`).
+  Annulation & `IN_PROGRESS` = no-op ; succès-sans-idToken = anomalie mappée (config) ; **contrat d'erreur = clé
+  i18n** documenté (≠ signIn/signUp). Session via `onAuthStateChange` (routing/onboarding inchangés).
+- `apps/mobile/src/components/GoogleButton.tsx` : bouton « Continuer avec Google » (logo SVG 4 couleurs guidelines,
+  `loading`/`disabled`, a11y) + **mention de consentement par action** (CGU/confidentialité/16+, liens `terms`/`privacy`).
+- Intégration `sign-in.tsx` + `sign-up.tsx` (séparateur « ou » + handler `t(res.error)`). i18n FR/EN bloc `auth.google`.
+- Test infra : mock global `@react-native-google-signin/google-signin` (`jest.setup.ts`) — débloque les suites
+  tirant `auth-store` transitivement + smoke test bouton.
+
+**Technique / Notes**
+- Consentement par action (option A, **non persisté** — la persistance serveur reste une US dédiée). Liaison auto
+  par e-mail vérifié (Supabase). **Hors périmètre** : OAuth Apple (iOS reporté), unlink, One Tap.
+- **Reste avant recette** (déploiement contrôlé, Florian) : Client IDs Google (Web+Android/SHA‑1), provider Google
+  Supabase, `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, **nouveau dev build EAS**. **À valider visuellement** : double
+  mention de consentement sur l'écran d'inscription (case e‑mail + mention Google).
+
+### 24/07/2026 — `feature/1.2-oauth-google` — US 1.2 : spec connexion via Google (cadrage + validation)
+
+> Ouverture de l'US **1.2** (OAuth Google, V0.8). Spec écrite, revue subagent **APPROUVÉE** (0 bloquant,
+> faisabilité vérifiée contre le code : gate d'onboarding `resolveRootRoute`, intégration `auth-store`, env
+> `EXPO_PUBLIC_*`), **validée Florian (24/07)**. Aucun code applicatif.
+
+**Ajouté**
+- `docs/specs/functional/us/1.2-connexion-google.md` : spec. Sign-In **natif**
+  (`@react-native-google-signin/google-signin`) → `supabase.auth.signInWithIdToken` ; liaison auto par e-mail
+  vérifié ; bouton « Continuer avec Google » sur connexion + inscription + **mention de consentement par action**
+  (CGU + confidentialité + 16+) ; helper pur de mapping d'erreurs (testé, statusCodes Google + erreurs Supabase).
+- Décisions de cadrage : natif (pas de flux web), liaison e-mail vérifié, consentement non persisté (option A),
+  bouton 2 écrans. **Hors périmètre** : OAuth Apple (iOS reporté), persistance serveur du consentement (US dédiée),
+  unlink, One Tap.
+
+**Technique / Notes**
+- Suivi : US 1.2 au pipeline [TODO.md](TODO.md) (🚧). Roadmap inchangée (1.2 reste ⬜ tant que non livré).
+  ⚠️ Module natif → **nouveau dev build** ; prérequis **Google Cloud (Client IDs Web+Android) + provider Supabase
+  + `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`** = déploiement contrôlé.
+
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
+> (Florian valide l'ensemble). Sync rule PowerSync déployée sur l'instance ; événements confirmés remontés au cloud.
+
+**Corrigé**
+- Migration corrective `20260724123616_analytics_events_publication.sql` : `alter publication powersync add table
+  public.analytics_events` — oublié dans `20260724112210` (pattern standard de toute table synchronisée). Sans lui,
+  le déploiement des sync rules échouait (« table not part of publication 'powersync' »). Appliquée sur le cloud.
+
+**Technique / Notes**
+- Recette côté Supabase : lignes `analytics_events` créées (`app_opened`, `onboarding_started`, `workout_started`,
+  `workout_completed`…), `properties` = `{}` (anti-PII confirmé), `user_id` pseudonyme, `platform`/`occurred_at` OK.
+  Opt-out, offline, purge, i18n validés. Remontée cloud opérationnelle (sync rule active).
+- **Suivi non bloquant** (hors US) : dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) ;
+  test du gating `track()` ; doublon `onboarding_started` observé en dev (probable React StrictMode, à confirmer
+  hors dev) ; `app_version` à passer de `0.0.0` à une vraie version dans `app.json` avant la bêta.
+- **V0.8** : 1.18 + 1.19 + 1.22 + **9.10** livrés & clôturés ; restent **1.2** (OAuth Google) + **9.9** (Health Connect).
+
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : code livré + migration déployée (analytics produit)
+
+> Implémentation subagent-driven (5 tâches TDD `3214285`→`f321a1f` + correctifs post-revue), chaque tâche revue
+> conformité-spec **puis** qualité, + revue finale **PRÊT À MERGER** (0 bloquant). typecheck + lint verts ;
+> **814 tests shared + 83 mobile verts**. Migration poussée sur le cloud (`db:push` + `db:types`, `d973807`).
+> Roadmap 9.10 → ✅. ⚠️ **Reste** : sync rule PowerSync (instance) + recette.
+
+**Ajouté**
+- Migration `supabase/migrations/20260724112210_analytics_events.sql` : table `analytics_events` (append-only,
+  RLS insert/select own, FK `auth.users` cascade) + colonne `user_settings.analytics_enabled` (opt-out, défaut `true`).
+- `apps/mobile/src/lib/analytics.ts` (+ test) : `sanitizeProps`/`buildEventRow` (**purs, testés**), `track()`
+  (gating consentement/session + **allowlist anti-PII** `pillar` + non bloquant, offline-first), constante
+  `ANALYTICS_EVENTS` + type `AnalyticsEventName`.
+- `apps/mobile/src/data/repositories/analytics-repository.ts` : `insertAnalyticsEvent` (insert **append-only**
+  dédié, pas de `insertWithSyncFields`).
+- Schéma PowerSync `analytics_events` + colonne `analytics_enabled` (`schema.ts`) ; type partagé
+  `UserSettings.analyticsEnabled` + mapping repository (helper `decodeAnalyticsEnabled`, accesseur `getAnalyticsEnabled`).
+- Réglage **« Statistiques d'usage »** (opt-out) dans les Réglages + mention politique de confidentialité ; i18n FR/EN.
+- Instrumentation **15 points** (socle : `app_opened` throttlé, onboarding, `pillar_activated`, workout/run
+  started/completed, `food_logged` ; adoption : `stats_viewed`, `dashboard_customized`, `data_exported`,
+  `help_opened`, `bug_reported`).
+- Correctifs post-revue : throttle `app_opened` gaté sur session (1ᵉʳ open post-login capté) ; garde
+  d'idempotence `finishWorkout` (miroir `finishRun`).
+
+**Technique / Notes**
+- Déploiement cloud : `db:push:dry` (seule `20260724112210`) → `db:push` (migration listée en `remote`) →
+  `db:types` (`analytics_events` + `analytics_enabled` présents) → `MIGRATIONS.md` coché.
+- `properties` en **text** (JSON) et non jsonb (gotcha PowerSync text→jsonb) ; purge analytics à la suppression
+  de compte par cascade FK. **Hors périmètre** : dashboards/funnels (outil BI ultérieur), crash reporting, purge locale.
+- **Reste** : **sync rule PowerSync** `analytics_events` (bucket par `user_id`, instance) + **recette** (JS pur,
+  reload Metro après la sync rule — `expo-application` déjà dans le dev build 1.22). Dette légère tracée :
+  dépendance circulaire `analytics.ts ↔ settings-repository.ts` (bénigne) + test du gating de `track()`.
+
+### 24/07/2026 — `feature/9.10-analytics` — US 9.10 : spec analytics produit first-party (cadrage + validation)
+
+> Ouverture de l'US **9.10** (analytics, V0.8, avant bêta). Spec écrite, revue subagent **APPROUVÉE**
+> (0 bloquant, faisabilité vérifiée contre le code réel dont la purge cascade CONF-02), **validée Florian
+> (24/07)**. Aucun code applicatif (workflow spec → plan → design → validation → code).
+
+**Ajouté**
+- `docs/specs/functional/us/9.10-analytics-produit.md` : spec de l'US. Table `analytics_events` (append-only,
+  Supabase + RLS + FK `auth.users` cascade), consentement **opt-out** (`user_settings.analytics_enabled` défaut
+  ON) + réglage « Statistiques d'usage » + mention politique de confidentialité, service `track()` offline-first
+  (PowerSync) avec gating + **allowlist anti-PII** (`pillar`), instrumentation ~15 points (socle + adoption).
+- Décisions de cadrage : first-party (données chez nous, pas d'outil tiers/infra), opt-out, identifiant
+  `user_id` (purge cascade), écriture via PowerSync. **Hors périmètre** : dashboards/funnels, crash reporting,
+  purge locale, analytics dans l'export CONF-01.
+
+**Technique / Notes**
+- Suivi : US 9.10 ajoutée au pipeline [TODO.md](TODO.md) (🚧). Roadmap inchangée (9.10 reste ⬜ tant que le code
+  n'est pas livré). Étape déploiement notée : sync rules PowerSync (instance) + `db:push`/`db:types`.
+
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (24/07/2026) ✅ → US CLÔTURÉE.** Relecture Damien **non requise**
+> (Florian valide l'ensemble). Aucun écart remonté.
+
+**Technique / Notes**
+- Recette sur dev build EAS (modules natifs `expo-mail-composer`/`expo-application`) : accès offline, FAQ
+  accordéon mono-ouverture (7 Q/R), « Nous contacter » (mail natif corps vide), « Signaler un bug » (mail +
+  bloc technique effaçable), i18n FR/EN. Adresse de support réelle `wellnessfit.app.support@gmail.com`.
+- **V0.8** avance : 1.18 (CONF-01) + 1.19 (CONF-02) + **1.22** livrés & clôturés ; restent **1.2** (OAuth
+  Google), **9.9** (Health Connect), **9.10** (analytics) + finitions accessibilité (9.11/9.12).
+
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : code livré (Aide & support)
+
+> Implémentation subagent-driven (5 tâches TDD `e55c775`→`fd289fb` + durcissement `c2b0e1c`), chaque tâche
+> revue conformité-spec **puis** qualité. Revue finale code-reviewer → **PRÊT À MERGER** (0 bloquant).
+> typecheck + lint verts ; **812 tests shared + 80 mobile verts**. Roadmap 1.22 → ✅. Zéro backend, zéro
+> migration. ⚠️ Modules natifs ajoutés → **dev build EAS requis avant recette** (reload Metro insuffisant).
+
+**Ajouté**
+- `apps/mobile/src/lib/support.ts` (+ test) : `SUPPORT_EMAIL` (placeholder centralisé), `formatBugReportBody`
+  (helper **pur**, testé), `collectSupportMeta` (métadonnées non identifiantes, non bloquant), `contactSupport`
+  (ouvre le client mail natif via `expo-mail-composer` ; fallback `Alert` si indisponible ; **ne rejette jamais**).
+- `apps/mobile/src/components/FaqItem.tsx` : item de FAQ **contrôlé** (accessible, chevron), piloté par le parent.
+- `apps/mobile/src/app/help.tsx` (+ smoke test) : écran `/help` = FAQ **accordéon mono-ouverture** (7 Q/R via
+  `returnObjects`, garde `Array.isArray`) + section contact (« Nous contacter » / « Signaler un bug »).
+- Route modale `help` dans `_layout.tsx` (patron `account-delete`/`profile`) + section « Aide & support » dans
+  les Réglages (bouton `ghost` → `/help`).
+- i18n **FR + EN** (`settings.help.*`, objet racine `help.*` : FAQ, contact, bug, mail indisponible) — parité
+  stricte vérifiée (1189 clés de chaque côté).
+- Dépendances `expo-mail-composer` + `expo-application` (SDK 57) + config plugin `expo-mail-composer` (`app.json`).
+
+**Technique / Notes**
+- Découpage pur/I-O respecté ; signalement de bug = métadonnées **minimales** (version app/build, OS, appareil,
+  langue), **visibles et effaçables**, aucune donnée perso silencieuse (RGPD). Offline : FAQ embarquée + mail natif.
+- **Reste** : renseigner `SUPPORT_EMAIL` (adresse à créer) + ajuster le préfixe d'objet `[Wellness]` avant le
+  build ; **dev build EAS** ; **recette device** (Florian) ; **relecture Damien**.
+
+### 24/07/2026 — `feature/1.22-aide-support` — US 1.22 : spec Aide & support (cadrage + validation)
+
+> Ouverture du chantier **V0.8 (conformité & intégrations)** après clôture de CONF-01/CONF-02. Item **1.22**
+> (Aide & support), prérequis bêta. Spec écrite, revue subagent **APPROUVÉE** (0 bloquant), **validée Florian
+> (24/07)**. Aucun code applicatif (workflow : spec → plan → design → validation → code).
+
+**Ajouté**
+- `docs/specs/functional/us/1.22-aide-support.md` : spec de l'US. Section « Aide & support » (Réglages) → écran
+  `/help` = **FAQ** statique embarquée (≈ 7 entrées, bilingue FR/EN, hors-ligne) + **« Nous contacter »** (mail
+  natif, corps vide) + **« Signaler un bug »** (mail natif + bloc technique minimal, visible/effaçable).
+- Décisions de cadrage : canal = client mail natif (`expo-mail-composer`), **zéro backend/migration** ; FAQ
+  statique embarquée ; métadonnées minimales non identifiantes (pas d'UUID/logs) ; `SUPPORT_EMAIL` = placeholder
+  centralisé (à trancher avant build). Table Supabase / file de tickets / FAQ éditable = **hors périmètre**.
+- Découpage testable prévu : helper pur `formatBugReportBody` (testé) / I/O natif isolé (`collectSupportMeta`,
+  `composeAsync`) / fallback `Alert` si aucun client mail.
+
+**Technique / Notes**
+- Suivi : US 1.22 ajoutée au pipeline [TODO.md](TODO.md) (🚧 en cours). Roadmap inchangée (1.22 reste ⬜ tant
+  que le code n'est pas livré). Prochaines étapes : plan d'implémentation → maquette (Claude Design) →
+  validation des 3 livrables → code.
+
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble. Aucun
+> écart remonté.
+
+**Technique / Notes**
+- Recette couverte (8 sections) : export nominal + en-tête (`exportedAt`/`userId`/`syncComplete`) ;
+  complétude (données des 3 piliers retrouvées) ; **contenus perso avec leur nom** (via `*_translations`
+  filtrées `owner_id`) ; pas d'éditorial ; soft-delete exclu ; hors-ligne ; avertissement synchro ; i18n FR/EN.
+- Commit précédent : `fd15327`. CONF-01 close. **P0 conformité : 1.18 + 1.19 livrés & clôturés** ; restent
+  CONF-03/04/05/06/07 + LANCE-01.
+
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : code livré (export des données, RGPD)
+
+> Implémentation subagent-driven (5 commits `afc33c9`→`e197a46`). Revue finale code-reviewer → **1 point
+> important trouvé et corrigé** (traductions perso). typecheck + lint + 812 tests shared + 73 mobile verts.
+> Roadmap 1.18 → ✅. 100 % local, aucune migration.
+
+**Ajouté**
+- `packages/shared/src/data-export.ts` (+ test) : `buildExportEnvelope` (en-tête RGPD + sections) +
+  `exportFileName` (daté), purs, testés Vitest.
+- `apps/mobile/src/lib/data-export.ts` : `exportUserData(userId, syncComplete, t)` — lit **31 tables**
+  possédées (`user_id`/`owner_id` = user + `deleted_at IS NULL`) de la base locale, assemble le JSON, écrit
+  dans le cache et ouvre la feuille de partage (patron `gpx-export`). Noms de tables = constantes (pas
+  d'injection) ; `userId` paramétré.
+- Entrée Réglages « Exporter mes données » (section Données, au-dessus de la Zone de danger) : avertissement
+  non bloquant si `!hasSynced`, indicateur de chargement, gestion d'erreur ; **pas** de désactivation
+  hors-ligne (export local). i18n FR/EN (`settings.dataExport.*`, `account.export.*`).
+
+**Modifié**
+- `account.delete.exportHint` (CONF-02) : retrait de « bientôt disponible » → pointe vers Réglages → Export.
+
+**Corrigé**
+- Revue finale (important) : les **noms/instructions des contenus perso** vivent dans `*_translations`
+  (exclues en bloc) → un exercice/aliment/programme perso s'exportait **sans son nom**. Ajout des 3 tables
+  `*_translations` filtrées `owner_id = user` (l'éditorial `owner_id NULL` reste exclu). Complétude RGPD.
+
+**Technique / Notes**
+- Commit précédent (docs) : `f0ace6b`. **Reste** : recette device + relecture Damien.
+
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : maquette (DESIGN)
+
+> Maquette HTML du flux d'export. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.
+
+**Ajouté**
+- `design/conf01/conf01.html` — 4 vues : entrée Réglages (section Données) → avertissement synchro non
+  bloquant → génération locale + feuille de partage → structure du fichier JSON (en-tête + sections par table).
+
+**Technique / Notes**
+- Commit précédent : `868438b`. Prochaine étape : validation Florian/Damien → exécution (subagent-driven).
+
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : plan d'implémentation (PLAN)
+
+> Plan TDD en 4 tâches (aucune migration/serveur). Revue subagent → **APPROUVÉ** (3 mineurs corrigés).
+
+**Ajouté**
+- `docs/plans/conf01-export-donnees.md` — 4 tâches : helper pur shared (`buildExportEnvelope`/`exportFileName`
+  + tests) → orchestration `data-export.ts` (map `EXPORT_TABLES` des 28 tables + `getAll` filtré possession +
+  `deleted_at IS NULL` → assemblage → écriture cache → `Sharing.shareAsync`) → entrée Réglages + i18n + maj
+  `exportHint` → parité/clôture. Code concret, patron `gpx-export`.
+
+**Technique / Notes**
+- Revue de plan → APPROUVÉ ; corrigés : ajout `Alert` à l'import de `settings.tsx`, réutilisation de
+  `useStatus()`/`useAuthStore` déjà importés (destructurer `hasSynced`), test `exportFileName` en date locale
+  (robuste fuseau CI). Couverture des 28 tables + colonnes de possession vérifiée exacte contre le schéma.
+- Commit précédent : `b415dee`. Prochaine étape : maquette → validation → code.
+
+### 23/07/2026 — `feature/conf01-export-donnees` — CONF-01 : spec « Export des données » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07) de l'export RGPD (roadmap 1.18) : export JSON de toutes les données
+> perso, construit depuis la base locale PowerSync, hors-ligne, livré via feuille de partage. Aucune migration/
+> serveur. Aucun code (spec seule).
+
+**Ajouté**
+- `docs/specs/functional/us/conf01-export-donnees.md` — spec complète : format JSON (en-tête + section par
+  table), 28 tables exportées (filtre `user_id`/`owner_id` = user + `deleted_at IS NULL`, éditorial exclu),
+  livraison patron `gpx-export` (write cache + `Sharing.shareAsync`), entrée Réglages, helper pur shared,
+  avertissement `hasSynced`, i18n, cas limites, DoD, recette.
+
+**Technique / Notes**
+- Revue de spec par sous-agent → **CORRECTIONS REQUISES** (0 bloquant), corrigées (spec simplifiée) :
+  possession **directe** sur les 28 tables (pas de jointure indirecte) ; ajout `deleted_at IS NULL` ; limite
+  identité/e-mail (Supabase Auth) hors périmètre car non répliquée localement.
+- Complément de CONF-02 ; `account.delete.exportHint` sera mis à jour (retrait « bientôt disponible »).
+- Commit précédent : `b23ca30`. Prochaines étapes : plan → maquette → validation → code.
+
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % par Florian (23/07/2026) ✅ → US CLÔTURÉE.** Florian valide l'ensemble
+> (recette device + revue). Aucun écart remonté.
+
+**Technique / Notes**
+- Recette couverte (6 sections) : zone Danger + désactivation hors-ligne ; déclenchement + ré-auth mot de
+  passe (mauvais mdp → aucune suppression) ; gate de récupération + annulation (données intactes) + se
+  déconnecter ; **purge serveur J+30** (`purge_expired_accounts()` : compte purgé + cascade, exercice perso
+  utilisé + compte admin ayant banni sans gel, contenu éditorial intact) ; **job pg_cron** planifié & actif ;
+  i18n FR/EN.
+- Commit précédent : `6a70089`. CONF-02 close ; V0.8 (conformité) entamée. Prochain candidat P0 : CONF-01
+  (export RGPD), complément naturel.
+
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : code livré (suppression du compte, RGPD)
+
+> Implémentation subagent-driven (8 commits `2e06821`→`fc68ff7`) de la suppression de compte. Revue finale
+> code-reviewer → **1 bug bloquant trouvé et corrigé** (sortie de la gate après annulation). typecheck + lint
+> + 810 tests shared + 73 tests mobile verts. Roadmap 1.19 → ✅.
+
+**Ajouté**
+- **Migration cloud** (`20260723131921`, appliquée + `db:types` + registre) : table `account_deletion_requests`
+  (RLS select-own, index unique partiel pending) + RPC `request_/cancel_account_deletion` (SECURITY DEFINER,
+  scopées `auth.uid()`) + `purge_expired_accounts()` (résiliente par ligne) + **job pg_cron** quotidien +
+  correctif FK `user_bans.acted_by` → `on delete set null`.
+- `packages/shared` : route `'deletion-pending'` dans `resolveRootRoute` (champs `deletionCheckLoading?`/
+  `deletionPending?` optionnels, prioritaire sur onboarding) + tests.
+- `apps/mobile` : repository `account-deletion-repository` (query pending + RPC) ; actions `auth-store`
+  (`reauthenticate`, `requestAccountDeletion` avec `disconnectAndClear`, `cancelAccountDeletion`) ; store
+  partagé `deletion-store` (détection + `reset()`) ; écran `account-delete` (avertissement + ré-auth mot de
+  passe) ; écran-gate `deletion-pending` ; zone « Danger » dans les Réglages (bouton désactivé hors-ligne) ;
+  i18n FR/EN (`settings.dangerZone.*`, `account.delete.*`, `account.deletePending.*`).
+
+**Corrigé**
+- Bug bloquant (revue finale) : l'annulation depuis la gate ne réinitialisait pas la détection locale à
+  `_layout` → utilisateur piégé sur la gate. Détection déplacée dans `deletion-store` (Zustand) + `reset()` à
+  l'annulation → sortie effective.
+
+**Technique / Notes**
+- Détection keyée sur `session.user.id` (stable entre refreshes de token) ; fail-open hors-ligne ; hard delete
+  via cascade FK ; `disconnectAndClear` réservé au chemin suppression. pg_cron activé sans geste dashboard.
+- TODO restant (cas de bord, documenté) : signOut gracieux si compte purgé à distance (J+30).
+- Commit précédent (docs) : `ea0eae6`. **Reste** : recette device (Florian) + relecture Damien.
+
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : maquette (DESIGN)
+
+> Maquette HTML du flux de suppression. 3ᵉ livrable réuni (spec ✅ + plan ✅ + design) → en attente de validation.
+
+**Ajouté**
+- `design/conf02/conf02.html` — 4 écrans : zone Danger (Réglages) → avertissement + ré-auth mot de passe →
+  confirmation « suppression programmée » (déconnexion) → gate de récupération bloquant (Annuler / Se
+  déconnecter) ; + note technique (pg_cron / cascade). Charte alignée, accent destructif rouge.
+
+**Technique / Notes**
+- Commit précédent : `aa1f331`. Prochaine étape : validation Florian/Damien → exécution (subagent-driven).
+
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : plan d'implémentation (PLAN)
+
+> Plan TDD en 7 tâches. Aucun code (plan seul). Revue subagent contre spec + code.
+
+**Ajouté**
+- `docs/plans/conf02-suppression-compte.md` — 7 tâches : migration serveur 🔴 (table + fix FK `acted_by` +
+  RPC + `purge_expired_accounts` résiliente + pg_cron) → route `deletion-pending` (shared) → repository
+  (query pending + RPC) → actions `auth-store` (reauth + request/cancel + `disconnectAndClear`) → détection +
+  gate dans `_layout` → écrans (zone Danger, flux, gate) + i18n → clôture. Code SQL/TS concret, checkpoint cloud.
+
+**Technique / Notes**
+- Revue de plan par sous-agent → **CORRECTIONS REQUISES**, toutes corrigées : (bloquant 1) champs
+  `deletionCheckLoading?`/`deletionPending?` de `resolveRootRoute` rendus **optionnels** (sinon typecheck
+  rouge sur toute la fenêtre Task 2→5 : tests existants + appel `_layout`) ; (bloquant 2) détection keyée sur
+  `session.user.id` + vérif unique par utilisateur (évite le flash/remontage du Stack à chaque refresh de
+  token) ; (mineurs) `request_account_deletion` race-safe (`on conflict do nothing`), import repo aliasé dans
+  le store, gate placé avant la garde anti-race.
+- Commit précédent : `97218af`.
+- **Prochaine étape** : maquette (flux + gate) → validation des 3 livrables → exécution (subagent-driven).
+
+### 23/07/2026 — `feature/conf02-suppression-compte` — CONF-02 : spec « Suppression du compte » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07) de la suppression de compte (RGPD + exigence stores, roadmap 1.19) :
+> délai de grâce 30 j récupérable, double confirmation (avertissement + ré-auth mot de passe), purge serveur
+> par cascade FK planifiée via pg_cron. Aucun code (spec seule ; pas de code avant validation des 3 livrables).
+
+**Ajouté**
+- `docs/specs/functional/us/conf02-suppression-compte.md` — spec complète : mécanisme serveur (table
+  `account_deletion_requests`, RPC `request/cancel_account_deletion` SECURITY DEFINER, correctif FK
+  `user_bans.acted_by` → `set null`, fonction `purge_expired_accounts()` résiliente par ligne + job pg_cron),
+  verrou applicatif + fenêtre de récupération (gate à la reconnexion, prioritaire sur onboarding),
+  parcours client (zone Danger, ré-auth `signInWithPassword`, `disconnectAndClear`), i18n, sécurité/RGPD,
+  cas limites, DoD, critères de recette.
+
+**Technique / Notes**
+- Findings clés : toutes les tables user sont `ON DELETE CASCADE` → supprimer `auth.users` purge tout ;
+  pg_cron absent (à activer, possiblement via dashboard). Purge = hard delete (droit à l'effacement).
+- Revue de spec par sous-agent → **CORRECTIONS REQUISES**, toutes corrigées : (bloquant 1) `user_bans.acted_by`
+  sans cascade + purge ensembliste tout-ou-rien → FK `set null` + purge résiliente par ligne ; (bloquant 2)
+  API de purge locale nommée (`disconnectAndClear`). + gate offline fail-open, ordre gate > onboarding,
+  `reauthenticate()` inadapté, signOut gracieux si purge à distance.
+- **🔴 Dépendance externe** : activation de `pg_cron` sur le cloud (geste dashboard possible).
+- Commit précédent : `fc5dc84`.
+- **Prochaines étapes** : plan → maquette (flux + gate) → validation → code.
+
+### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13 (+ F13b) : recette device validée (RECETTE)
+
+> **RECETTÉE & VALIDÉE à 100 % (Florian, 23/07/2026) ✅** — les 3 niveaux d'affichage de la séance et la
+> vignette d'onboarding sont validés sur device (9 sections de recette). Reste : relecture Damien.
+
+**Technique / Notes**
+- Recette couverte : réglage + défaut Normale + persistance/synchro ; onboarding (étape 4/4 + vignette
+  schématique) ; matrice des champs par niveau (Simplifiée / Normale / Détaillée) ; nature d'exercice
+  (durée / poids de corps) jamais masquée ; changement de niveau **en direct** pendant une séance ;
+  non-destructivité (RPE/note masqués puis réaffichés intacts) ; i18n FR/EN.
+- Aucun écart remonté. Commit précédent : `abd4589`.
+
+### 23/07/2026 — `feature/muscf13b-vignette-onboarding` — MUSC-F13b : vignette d'aperçu par niveau à l'onboarding
+
+> Suite MUSC-F13 (retour Florian) : l'étape d'onboarding « niveau d'affichage » montre désormais un **aperçu
+> visuel schématique** par niveau, pour que l'utilisateur voie « à quoi ça ressemble ». typecheck + lint +
+> 73 tests mobile (70 + 3) verts.
+
+**Ajouté**
+- `apps/mobile/src/components/workout/WorkoutLevelPreview.tsx` (+ test) : mini-illustration décorative pilotée
+  par `workoutFieldVisibility(level)` (même source de vérité que la carte) — barre de titre + rangée de
+  pastilles des suppléments visibles au niveau (🔥 💡 Types RPE 📝 ⇄) + barres « champs cœur ». Purement
+  présentationnelle, masquée à l'accessibilité (décorative). 3 smoke tests (aucune pastille en Simplifiée →
+  toutes en Détaillée).
+
+**Modifié**
+- `(onboarding)/displayLevel.tsx` : chaque option affiche la vignette sous le libellé + description.
+- `design/muscf13/muscf13.html` : aperçu onboarding mis à jour avec les vignettes schématiques.
+
+**Technique / Notes**
+- Forme retenue (brainstorm Florian) : schématique légère (Views RN, pas d'asset image) → offline, léger,
+  charte respectée. Commit précédent : `739a172`.
+- **Reste** : recette device (Florian) + relecture Damien.
+
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : code livré (3 niveaux d'affichage de la séance)
+
+> Implémentation subagent-driven (8 commits `a00ae2f`→`87880df`) de MUSC-F13 : la carte « série en cours »
+> (`CurrentSetCard`) s'affiche à 3 densités selon le niveau choisi par l'utilisateur. Revue finale
+> **PRÊT À MERGER** (0 bloquant). typecheck + lint + 807 tests shared + 70 tests mobile verts.
+
+**Ajouté**
+- `packages/shared/src/workout-display.ts` (+ test) : enum `WORKOUT_DISPLAY_LEVELS`, `workoutDisplayLevelSchema`,
+  `coerceWorkoutDisplayLevel` (NULL/inconnu → `normal`), `workoutFieldVisibility(level)` (matrice pure des
+  champs supplémentaires visibles) — fonctions pures, couverture Vitest exhaustive.
+- Colonne cloud `profiles.workout_display_level` (migration `20260723100835`, appliquée + `db:types` +
+  `column.text` PowerSync ; `profiles` en `select *` → pas de redéploiement sync rules).
+- Champ `workoutDisplayLevel` dans le Zod `ProfileRow` + mapping repository (coercion dans `rowToProfile`).
+- Prop `level` sur `CurrentSetCard` : gating de delta/suggestion/🔥 (normal+) et types/RPE/note/superset
+  (détaillée) ; nature d'exercice (durée/poids de corps) jamais masquée ; consigne du plan visible partout,
+  seul le badge d'écart gaté. 3 smoke tests jest-expo (un par niveau).
+- Réglage « Niveau d'affichage de la séance » dans les Réglages (sélecteur en cartes, sélection immédiate).
+- Étape d'onboarding « niveau d'affichage » inconditionnelle (compteur 3→4, insérée entre objectif et récap).
+- i18n FR/EN : `workout.displayLevel.*`, `settings.workoutDisplayLevel.*`, `onboarding.displayLevel.*` (parité stricte).
+
+**Modifié**
+- `workout.tsx` lit `profile.workoutDisplayLevel` (via `useProfile`, défaut `normal`) et le transmet à la carte.
+
+**Technique / Notes**
+- Défaut `normal` ; masquer un champ n'efface aucune donnée (RPE/note/type persistés réapparaissent en
+  Détaillée) ; changement de niveau réactif en séance (pas de remontage — `key` sans `level`).
+- Périmètre Muscu strict : `workout-summary`, historique, `ExerciseList`, Running non touchés.
+- Commit précédent (docs) : `ae2aff6`.
+- **Point ouvert (mineur)** : l'étape d'onboarding livre libellé + description par niveau (conforme à la
+  maquette validée) ; un aperçu visuel/vignette par niveau reste à confirmer avec Florian.
+- **Reste** : recette device (Florian) + relecture Damien.
+
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : maquette (DESIGN)
+
+> Maquette HTML des 3 niveaux d'affichage de la carte de séance. Aucun code applicatif. Complète le 3ᵉ livrable
+> du workflow (spec ✅ + plan ✅ + design) → en attente de validation Florian/Damien avant code.
+
+**Ajouté**
+- `design/muscf13/muscf13.html` — carte « série en cours » aux 3 niveaux côte à côte (Simplifiée / Normale /
+  Détaillée) avec annotations « + xxx » du supplément par niveau, matrice de synthèse, et aperçus de l'étape
+  d'onboarding (compteur 4/4) + de l'entrée Réglages. Charte alignée sur les maquettes sœurs (refonte-muscu-c*).
+
+**Technique / Notes**
+- Commit précédent : `2c89e70`.
+- **3 livrables réunis** (spec + plan + maquette) → prochaine étape : **validation Florian/Damien**, puis
+  exécution du plan (subagent-driven).
+
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : plan d'implémentation (PLAN)
+
+> Plan TDD en 9 tâches bornées pour MUSC-F13. Aucun code applicatif (plan seul ; le code ne démarre qu'après
+> validation des 3 livrables spec → plan → maquette). Revue par sous-agent contre spec + code réel.
+
+**Ajouté**
+- `docs/plans/muscf13-niveaux-affichage-seance.md` — plan complet : structure des fichiers, 9 tâches
+  (shared enum/coercition → matrice de visibilité → migration cloud 🔴 → champ profil + mapping repo →
+  gating `CurrentSetCard` → câblage `workout.tsx` → réglage Réglages → étape onboarding → parité i18n/clôture),
+  code concret, commandes, points de test, checkpoint cloud.
+
+**Technique / Notes**
+- Revue de plan par sous-agent → **CORRECTIONS REQUISES** (1 bloquant + 3 mineurs), **toutes corrigées** :
+  (bloquant) réordonnancement — l'ajout du champ à `profileRowSchema` est regroupé avec le mapping
+  `rowToProfile` dans la **même tâche/commit** pour éviter un typecheck mobile rouge (TS2741) ; (mineurs)
+  `flexDirection:'row'` inline sur le sélecteur Réglages, note i18n de test rectifiée (`import '@/i18n'`, pas de
+  mock i18n dans le setup jest), coercition couverte via le test shared.
+- Commit précédent : `42b8d80`.
+- **Prochaine étape** : maquette (3 aperçus de niveaux, Claude Design) → validation Florian/Damien des 3
+  livrables → exécution du plan (subagent-driven).
+
+### 23/07/2026 — `feature/muscf13-niveaux-affichage-seance` — MUSC-F13 : spec « Niveaux d'affichage de la séance » (SPEC)
+
+> Cadrage (brainstorming Florian, 23/07/2026) d'une nouvelle US promue depuis [IDEAS.md](IDEAS.md) :
+> adapter la densité de l'écran de séance muscu au niveau de l'utilisateur via **3 niveaux d'affichage**
+> — **Simplifiée** (débutant), **Normale** (intermédiaire/confirmé), **Détaillée** (avancé) — pilotant la
+> visibilité des champs de `CurrentSetCard`. Aucun code applicatif (spec seule ; pas de code avant
+> validation des 3 livrables spec → plan → design).
+
+**Ajouté**
+- `docs/specs/functional/us/muscf13-niveaux-affichage-seance.md` — spec fonctionnelle complète :
+  matrice des champs par niveau (§2.1), règles fines (§2.2 : nature d'exercice jamais masquée, consigne
+  vs delta, échauffement dès Normale, masquer ≠ effacer), réglage synchronisé `profiles.workout_display_level`
+  (défaut `normal`, coercition NULL→normal dans le repository), étape d'onboarding inconditionnelle
+  (compteur 3→4), entrée Réglages, migration additive, i18n FR/EN, offline, DoD + critères de recette.
+
+**Technique / Notes**
+- Décisions de cadrage : réglage **profil seulement** (pas de bascule en séance) ; « dernière fois » aux
+  3 niveaux ; RPE en Détaillée uniquement ; périmètre **Musculation**.
+- Revue de spec par sous-agent contre le code réel → **APPROUVÉ** (0 correction bloquante) ; 5 imprécisions
+  de rédaction corrigées (patron Réglages `Segment`/`Switch` + sélecteur en cartes ; chaîne `NEXT` onboarding
+  et `TOTAL_STEPS` unique ; coercition côté repository, pas Zod ; `profiles` en `select *` → pas de
+  redéploiement sync rules ; ajout de `useProfile` dans `workout.tsx` signalé).
+- Commit précédent : `399d950`.
+- **Prochaines étapes** : plan d'implémentation → maquette (3 aperçus de niveaux, Claude Design) → validation
+  Florian/Damien → code.
+
+### 23/07/2026 — `fix/modales-exo-tronquees` — CI : timeout Jest sur `edit-exercise-modal-smoke` (CORRECTIF)
+
+> Retour CI GitHub : le suite `EditExerciseModal — smoke` échouait par **timeout de 5000 ms** sur
+> son premier test. Diagnostic (débogage systématique) : pas un bug du code — le composant est
+> correct et rapide (même rendu en 30 ms au 2ᵉ test). Le 1ᵉʳ test paie tout le coût de **démarrage à
+> froid** (transformation Babel + arbre React Native + init react-i18next + safe-area) dans son corps
+> chronométré. En CI le cache de transformation Jest n'est pas persisté (seul npm est mis en cache) et
+> le runner est à 2 cœurs, donc chaque run est « à froid » : mesuré à **4114 ms** en local à froid
+> (`--no-cache`), au-delà en CI → dépassement du défaut de 5 s. 16 suites / 67 tests verts.
+
+**Corrigé**
+- [jest.config.js](apps/mobile/jest.config.js) : `testTimeout` relevé à **15000 ms**. Levier minimal
+  visant la cause (budget par défaut trop juste pour un premier rendu lourd à froid), sans masquer un
+  éventuel vrai blocage (un deadlock serait toujours détecté), et bien en deçà du plafond de 15 min du job.
+
+**Technique / Notes**
+- Pistes complémentaires non retenues (non nécessaires) : mettre en cache le dossier de cache Jest dans
+  le workflow, ou fixer `--maxWorkers`. Le relèvement du timeout suffit à fiabiliser la CI.
+
+### 23/07/2026 — `fix/modales-exo-tronquees` — Modales exo création/édition tronquées (CORRECTIF)
+
+> Retour recette Florian : les modales de **création** (MUSC-F11) et d'**édition** (MUSC-F12) d'exercice
+> perso étaient tronquées en bas — boutons Annuler/Ajouter·Enregistrer sous la barre de gestes, sans
+> indice qu'il fallait scroller. typecheck/lint verts, 67 tests mobile.
+
+**Corrigé**
+- [CreateExerciseModal.tsx](apps/mobile/src/components/exercises/CreateExerciseModal.tsx) +
+  [EditExerciseModal.tsx](apps/mobile/src/components/exercises/EditExerciseModal.tsx) : les boutons
+  passent dans un **pied de page fixe** (toujours visible, séparateur), les champs défilent au-dessus
+  (`ScrollView` `flexShrink`), et la **safe-area basse** est respectée (`useSafeAreaInsets` →
+  `paddingBottom`). Plus de troncature, boutons toujours atteignables.
+
+**Technique / Notes**
+- Ajout du mock `react-native-safe-area-context` dans [jest.setup.ts](apps/mobile/jest.setup.ts)
+  (sinon `useSafeAreaInsets` lève « No safe area value available » en tests).
+
+### 23/07/2026 — `feature/muscf12-coherence-fiche-exo-perso` — MUSC-F12 : cohérence fiche exo perso ↔ bibliothèque (CODE LIVRÉ)
+
+> Retour recette F10c (Florian). Rend la fiche d'un exo perso cohérente avec un exo bibliothèque en
+> rendant **instructions + muscles secondaires** éditables, via une **modale d'édition bottom-sheet**
+> (remplace le formulaire inline). **Aucune migration.** typecheck/lint verts, 67 tests mobile + 800 shared.
+
+**Ajouté**
+- `EditExerciseModal` ([EditExerciseModal.tsx](apps/mobile/src/components/exercises/EditExerciseModal.tsx)) :
+  bottom-sheet (patron `CreateExerciseModal`) — nom, groupe, matériel, **muscles secondaires** (chips hors
+  primaire), **instructions** (multiligne) ; pré-remplie ; clavier géré ; réinitialisation à la fermeture.
+- Helper pur `buildCustomExerciseWrite` (muscles secondaires normalisés → JSON, instructions trim→null),
+  testé ([custom-exercise-write.test.ts](apps/mobile/src/data/repositories/__tests__/custom-exercise-write.test.ts)).
+- i18n FR/EN : `exercises.detail.instructionsPlaceholder`.
+
+**Modifié**
+- `updateCustomExercise` ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts))
+  gère désormais `musclesSecondary` + `instructions` (transaction atomique `exercises` + traduction ;
+  invariant primaire ∉ secondaires via `normalizeSecondaryMuscles`).
+- Fiche [exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx) : **retrait du formulaire d'édition
+  inline** (états `isEditing`/`edit*`, `onSave`, styles morts) ; le bouton **Modifier** ouvre la modale
+  (`key={exercise.id}`). Lecture inchangée → une fiche perso peut être aussi riche qu'une biblio.
+
+**Corrigé**
+- `EditExerciseModal` : `saving` figé après enregistrement (bouton bloqué à la réouverture) + saisies
+  annulées persistantes → `close()` réinitialise l'état depuis l'exercice (revue de code finale).
+
+**Technique / Notes**
+- Sérialisation `muscles_secondary` en `JSON.stringify` (symétrique de la lecture `parseJsonColumn`, F10c-1).
+- Aucune migration (colonne `muscles_secondary` existe ; RLS `exercises_update` autorise déjà le propriétaire).
+- Création (MUSC-F11) volontairement laissée **minimale** (nom + groupe) ; la richesse se fait à l'édition.
+
+### 23/07/2026 — `feature/muscf11-modale-creation-exo` — MUSC-F11 : création d'exercice perso en modale (CODE LIVRÉ)
+
+> Finition UX (retour recette F10c, Florian). La création d'exercice perso passe de la **card inline**
+> (effet « sandwich », Segment multi-ligne, nom sans placeholder) à une **modale bottom-sheet**.
+> Exécution subagent-driven (2 tâches). **Aucune migration.** typecheck/lint verts, 62 tests mobile.
+
+**Ajouté**
+- Composant [CreateExerciseModal.tsx](apps/mobile/src/components/exercises/CreateExerciseModal.tsx) :
+  bottom-sheet (patron `ExerciseFilterDrawer`) — titre, champ **Nom** (avec placeholder), groupe
+  musculaire en `Segment` **`scrollable`**, boutons Annuler/Ajouter, `KeyboardAvoidingView`, reset à la
+  fermeture ; métier inchangé (`addCustomExercise`). Smoke test.
+- i18n FR/EN : `exercises.createTitle`, `exercises.customNamePlaceholder`.
+
+**Modifié**
+- [exercises.tsx](apps/mobile/src/app/exercises.tsx) : le bouton « Créer un exercice perso » ouvre la
+  **modale** ; suppression de la card inline (`creating`/`newName`/`newMuscle`/`onCreate`/`createBox`) et
+  des styles morts.
+
+**Technique / Notes**
+- Corrige 3 défauts de recette : effet sandwich, sélecteur de groupe qui débordait sur plusieurs lignes
+  (`scrollable`), champ nom qui paraissait vide (placeholder). Finition de la fonctionnalité 3.16
+  (Exercice personnalisé). Point 1 du retour recette (cohérence fiche biblio VS perso) = US séparée à venir.
+
+### 22/07/2026 — `feature/muscf10c2-variantes-alternatives` — MUSC-F10c-2 : variantes / alternatives d'exercice (CODE LIVRÉ)
+
+> 2ᵉ et dernier incrément de F10c (= MUSC-F2). Exécution **subagent-driven** (5 tâches ; revue de code
+> finale transverse *rien de bloquant*). **Une migration** (nouvelle table + `alter publication`) + **⚠️
+> redéploiement manuel des sync rules dans le dashboard PowerSync** (geste humain, à faire avant recette
+> device). typecheck/lint verts, **800 tests shared + 54 tests mobile**. Commit précédent : `9f68e38`.
+> **Reste : redéploiement sync rules + recette (admin éditorial, mobile perso) + relecture Damien.**
+
+**Ajouté**
+- BDD : table `exercise_variants` (liaison **symétrique** canonique `a<b`, `owner_id` null=éditorial global /
+  non-null=perso) + RLS (`is_content_editor` pour l'éditorial, `owner_id = auth.uid()` pour le perso) +
+  `alter publication powersync` — migration
+  [20260722151024_muscf10c2_exercise_variants.sql](supabase/migrations/20260722151024_muscf10c2_exercise_variants.sql)
+  (poussée sur le cloud, cochée dans [MIGRATIONS.md](supabase/MIGRATIONS.md)) ; `column.text` PowerSync ;
+  `database.types.ts` régénéré.
+- Sync rules : `exercise_variants` ajouté aux buckets `shared_content` (éditorial) et `user_data` (perso)
+  dans [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) — **à redéployer manuellement**.
+- `packages/shared` : `canonicalPair(a, b)` (tri de paire, pur) + `exerciseVariantRowSchema` — tests Vitest.
+- Mobile : repository [exercise-variant-repository.ts](apps/mobile/src/data/repositories/exercise-variant-repository.ts)
+  — `useExerciseVariants` (lecture éditorial + perso, dédup priorité éditoriale via `dedupeVariants` pure
+  testée), `addExerciseVariant`/`removeExerciseVariant` (**upsert par clé naturelle** : réactive une ligne
+  soft-deletée → anti-bug d'unicité), gardes de portée (`assertOwnsVariant`).
+- Mobile : section **« Variantes / alternatives »** sur la fiche (liens cliquables → fiche liée, ✕ sur les
+  liens perso, bouton « + Ajouter une variante ») + nouveau mode **`pickVariant`** du sélecteur d'exercices
+  (exclut soi + déjà liés ; branche traitée avant le garde séance active).
+- Admin : gestion des liens **éditoriaux** (biblio↔biblio) dans `ExerciseEditScreen` (recherche + chips
+  supprimables) via [data/exercise-variants.ts](apps/admin/src/data/exercise-variants.ts) ; journalisation
+  d'audit (`exercise_variant.link`/`unlink` ajoutés à `AUDIT_ACTIONS`).
+- i18n FR/EN : `exercises.detail.variants/variantsEmpty/addVariant/removeVariant` (mobile) + libellés admin.
+
+**Technique / Notes**
+- Symétrie : stockage canonique `a<b` (contrainte `check`) + unique `(owner_id, a, b) nulls not distinct` ;
+  lecture par extrémité (`a=self OR b=self`), résolution de « l'autre » exo (nom langue → fr).
+- Anti-bug (leçon `exercise_favorites`) : l'ajout **réactive** une ligne soft-deletée au lieu d'insérer
+  (sinon violation d'unicité au ré-ajout) — appliqué mobile **et** admin.
+- Offline-first : lecture mobile locale réactive ; écriture perso locale (UUID client, soft-delete) ; admin
+  en ligne (supabase-js).
+- **Rattrapage** : spec + plan de **F10c-1** (non commités lors de sa clôture) ajoutés au passage.
+- Roadmap : **3.20** (Variantes/alternatives) ⬜ → ✅. Remplacement en séance (3.32) reste distinct.
+
+### 22/07/2026 — `feature/muscf10c1-muscles-secondaires` — MUSC-F10c-1 : muscles secondaires sur la fiche exercice (CODE LIVRÉ)
+
+> 1ᵉʳ des 2 incréments de F10c (= MUSC-F2) : **F10c-1 (muscles secondaires)** → F10c-2 (variantes, plus tard).
+> Exécution **subagent-driven** (4 tâches TDD ; revue de code finale transverse *rien de bloquant*). **Une
+> migration additive** (ajout de colonne, table déjà répliquée PowerSync → pas de changement de sync rule).
+> typecheck/lint verts, **796 tests shared + smoke fiche mobile**. Commit précédent : `6e1b713`.
+> **Reste : recette (admin saisie + fiche affichage) + relecture Damien.**
+
+**Ajouté**
+- BDD : colonne `exercises.muscles_secondary jsonb not null default '[]'` — migration
+  [20260722140518_muscf10c1_exercises_muscles_secondary.sql](supabase/migrations/20260722140518_muscf10c1_exercises_muscles_secondary.sql)
+  (poussée sur le cloud, cochée dans [MIGRATIONS.md](supabase/MIGRATIONS.md)) ; `column.text` dans le schéma
+  PowerSync ([schema.ts](apps/mobile/src/powersync/schema.ts)) ; `database.types.ts` régénéré.
+- `packages/shared` : fonction pure `normalizeSecondaryMuscles(input, primary)` (dédup, exclut le primaire, filtre
+  les valeurs invalides ; entrée non-tableau → `[]`) + `musclesSecondary` sur `exerciseRowSchema` — 7 tests Vitest
+  ([exercise.ts](packages/shared/src/exercise.ts)).
+- Admin : multi-sélecteur **« Muscles secondaires »** (cases hors muscle primaire, retrait auto au changement de
+  primaire) dans [ExerciseEditScreen.tsx](apps/admin/src/screens/ExerciseEditScreen.tsx) ; lecture/écriture de
+  `muscles_secondary` dans [data/exercises.ts](apps/admin/src/data/exercises.ts) ; libellé FR `secondaryMusclesLabel`.
+- Mobile : ligne **« Muscles secondaires »** sur la fiche (mode lecture, si non vide ; libellés `muscle.*` séparés
+  par « · ») ([exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx)) ; `musclesSecondary` porté par
+  `ExerciseDetail` (lecture via `parseJsonColumn` + `normalizeSecondaryMuscles`, **détail seulement** — liste et
+  filtre MUSC-F3 intacts) ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)).
+- i18n FR/EN : `exercises.detail.secondaryMuscles` ; réutilise `muscle.*` / `groupNames`.
+- Tests : 2 smoke tests fiche (ligne présente + libellés résolus / absente si vide).
+
+**Technique / Notes**
+- Sérialisation : écriture admin = tableau JS → `jsonb` natif (supabase-js, pas de double-encodage) ; lecture
+  mobile = `column.text` → `parseJsonColumn` → `normalizeSecondaryMuscles` (garde de forme + exclusion primaire).
+- Invariant **primaire ∉ secondaires** garanti en triple : UI admin (filtre + purge), écriture admin, lecture mobile.
+- Filtre MUSC-F3 **inchangé** (matche le muscle primaire seul — décision Florian). Schéma corporel SVG = 6.2 (séparé).
+- Roadmap : **3.19** (Muscles ciblés) 🟡 → ✅.
+
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — MUSC-F10b : section records sur la fiche exercice (CODE LIVRÉ)
+
+> 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Exécution
+> **subagent-driven** (6 tâches ; chacune revue spec + revue qualité ; 2 correctifs intégrés en cours ; revue
+> finale transverse *prête à merger*). **Aucune migration**, lecture seule. typecheck/lint verts, **789 tests
+> shared + 50 tests mobile**. Commit précédent : `360c6ed`. **Reste : recette device + relecture Damien.**
+
+**Ajouté**
+- `packages/shared` : fonction pure `pickOneRepMax(real, estimated)` + type `OneRepMaxSample` (3 tests) — choisit
+  le 1RM **réel** si présent, sinon l'**estimé** ([records.ts](packages/shared/src/records.ts)).
+- Mobile : `useExerciseTopSingle(id)` (1RM réel = charge max d'une série à **1 rep** validée, hors warmup/durée,
+  jointe à une séance terminée avec `finished_at` non nul pour la date) + `useExerciseFicheRecords(id)` (composite
+  1RM/charge max/volume + dates) dans [records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts).
+- Fiche : section **« Tes records »** en tuiles (mode lecture) — 1RM (réel/estimé + badge), charge max, meilleur
+  volume, chacun label · valeur · date (JJ/MM/AAAA) ; état vide ; lien **« Voir la progression »** →
+  `/progress?exerciseId=…` ([exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx)).
+- i18n FR/EN : `exercises.detail.records.*` (title/oneRepMax/real/estimated/seeProgression) ; réutilise
+  `progress.records.type.*` + `progress.records.empty`.
+
+**Modifié**
+- [progress/index.tsx](apps/mobile/src/app/progress/index.tsx) : pré-sélection de l'exercice via le param
+  `exerciseId` (valeur dérivée `pickedExercise ?? paramExercise` — évite un `useEffect`/`setState` interdit par la
+  règle lint `react-hooks/set-state-in-effect`) ; sans param → comportement inchangé.
+
+**Technique / Notes**
+- Décisions : poids via `units.formatWeight` (métrique/impérial), volume via `toFixed(0)` (sans unité, comme
+  /progress) ; dates JJ/MM/AAAA ; le 1RM **réel prime** sur l'estimé dès qu'une série à 1 rep existe (décision
+  cadrage) → **à signaler en recette** : la fiche peut afficher un 1RM réel **inférieur** au 1RM estimé de
+  l'écran Progression (deux mesures différentes).
+- **Dette notée** (non bloquant, non aggravée) : composant records partagé /progress↔fiche différé (spec §7) ;
+  réutilisation i18n cross-namespace ; formateur de date JJ/MM/AAAA dupliqué entre écrans (candidat à un util
+  partagé, chore transverse séparé) ; smoke fiche ne couvre que l'état vide des records.
+- Roadmap **inchangée** : les records par exercice ne correspondent pas à une ligne roadmap dédiée.
+
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — plan d'implémentation (MUSC-F10b)
+
+> Suite de la spec (commit précédent `57caa8b`). Plan revu par le subagent `plan-document-reviewer` (Approved —
+> colonnes SQL du 1RM réel, `useExerciseRecords`/`achievedAt`, `/progress` en état local sans param,
+> `useUnits.formatWeight`, clés i18n et export barrel de `pickOneRepMax` vérifiés contre le dépôt) ; 1 précision
+> d'import ajoutée (`useEffect` dans /progress). **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10b-records-fiche-exercice.md](docs/plans/muscf10b-records-fiche-exercice.md) : plan en 6 tâches TDD —
+  (1) `pickOneRepMax` pur (shared) ; (2) `useExerciseTopSingle` (1RM réel dérivé de `workout_sets`) +
+  `useExerciseFicheRecords` (composite) ; (3) i18n FR/EN ; (4) `/progress` param `exerciseId` (pré-sélection) ;
+  (5) section tuiles + lien « Voir la progression » sur la fiche ; (6) revue finale + clôture. Aucune migration,
+  lecture seule.
+
+### 22/07/2026 — `feature/muscf10b-records-fiche-exercice` — spec : section records sur la fiche exercice (MUSC-F10b)
+
+> 2ᵉ des 3 incréments du chantier « fiche exercice » (F10a livré → **F10b** → F10c/MUSC-F2). Cadrée par
+> brainstorming (Florian, maquette comparée → mise en page **tuiles**). Claims code vérifiés (colonnes
+> `workout_sets`/`workouts` pour la dérivation 1RM réel, `useExerciseRecords` renvoie `achievedAt`, `/progress`
+> en état local sans param, clés i18n `progress.records.*` FR/EN, aucune migration). Revue subagent interrompue
+> par la limite d'usage hebdomadaire → **vérification faite manuellement**. **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10b-records-fiche-exercice.md](docs/specs/functional/us/muscf10b-records-fiche-exercice.md) : spec —
+  section « Tes records » en **tuiles** sur la fiche (mode lecture) : **1RM** (réel si une série à 1 rep existe,
+  sinon estimé + badge), **charge max**, **meilleur volume**, chacun avec sa date. 1RM réel dérivé de
+  `workout_sets` (reps=1, validé, hors warmup/durée) ; fonction pure `pickOneRepMax` (réel sinon estimé). Lien
+  **« Voir la progression »** → écran Progression pré-sélectionné (extension `/progress` : param `exerciseId`).
+  Réutilise `useExerciseRecords` + `units.formatWeight` + clés `progress.records.*`. Aucune migration, lecture seule.
+
+**Technique / Notes**
+- Hors périmètre : muscles secondaires/variantes (F10c), courbes sur la fiche (lien seul), composant records
+  partagé /progress↔fiche (dette notée).
+- **Statut : spec validée (Florian) → prochaine étape plan d'implémentation** (à dérouler après réinitialisation
+  de la limite d'usage hebdomadaire si nécessaire).
+
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — MUSC-F10a : bibliothèque en accès direct + fiche exercice (CODE LIVRÉ)
+
+> 1ᵉʳ des 3 incréments du chantier « fiche exercice » (F10a socle → F10b records → F10c/MUSC-F2 muscles
+> secondaires). Exécution **subagent-driven** du plan (8 tâches ; chacune revue spec + revue qualité ; 3
+> correctifs intégrés en cours : jest env central + throw si traduction absente, a11y de l'étoile, gestion
+> d'erreur/anti-double-submit sur Enregistrer ; revue finale transverse *prête à merger*). **Aucune migration.**
+> typecheck/lint verts, **786 tests shared + 50 tests mobile** (dont 2 nouvelles suites). Commit précédent : `3f7a1dd`.
+> **Reste : recette device + relecture Damien.**
+
+**Ajouté**
+- **Entrée « Bibliothèque d'exercices »** persistante dans le hub Muscu
+  ([strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx), hors grille de widgets) → ouvre l'écran biblio
+  en **mode parcours** (`/exercises?mode=browse`).
+- **Écran fiche exercice** ([app/exercises/[id].tsx](apps/mobile/src/app/exercises/%5Bid%5D.tsx), route
+  enregistrée dans `_layout.tsx`) : nom, groupe musculaire, matériel (si renseigné), instructions (si
+  présentes), badge « perso », favori ⭐ (a11y `accessibilityLabel`/`accessibilityState`) ; états chargement +
+  introuvable.
+- **Gestion des exos perso** sur la fiche (custom uniquement) : **Modifier** (nom + groupe + matériel via
+  `Segment` scrollable avec sentinelle « aucun » → null) et **Supprimer** (Alert de confirmation → retour biblio).
+- Repository ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)) :
+  `useExercise(id)` + type `ExerciseDetail`, `assertOwnedCustomExercise` (garde pure testée),
+  `updateCustomExercise` (transaction atomique, lève si traduction absente), `deleteCustomExercise`
+  (**soft-delete de la ligne `exercises` seule** — jamais les traductions, pour préserver le nom sur
+  l'historique/les programmes).
+- i18n FR/EN (parité) : `exercises.library` + `exercises.detail.*` (12 clés).
+- Tests : `exercise-guard.test.ts` (garde, 4 cas) + `exercise-detail-smoke.test.tsx` (écran, 2 cas).
+
+**Modifié**
+- [exercises.tsx](apps/mobile/src/app/exercises.tsx) : **mode parcours** (`mode=browse` → tap ouvre la fiche) ;
+  comportement d'ajout/remplacement en séance **strictement inchangé**.
+- [jest.setup.ts](apps/mobile/jest.setup.ts) : défauts `EXPO_PUBLIC_SUPABASE_*` (jest ne charge pas `.env`) →
+  les tests peuvent importer les vrais repos/écrans sans lever au chargement.
+
+**Technique / Notes**
+- Décisions : suppression d'exo perso **toujours autorisée** (soft-delete, pas de blocage si référencé) ;
+  références orphelines dans programmes/templates conservées (nom toujours résolu, traductions vivantes) ;
+  fiche accessible **uniquement** depuis la biblio en mode parcours (autres points d'entrée différés).
+- **Note pour F10b** (records sur la fiche) : le recalcul des records
+  ([records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts)) fait un `JOIN exercises …
+  deleted_at IS NULL` (INNER) → un exo perso soft-deleted serait exclu du recalcul futur (sans incidence F10a).
+- **Dette notée** (non bloquant) : `Pressable` étoile favori dupliqué entre `exercises.tsx` et la fiche (→ futur
+  `FavoriteStar`/`ExerciseListRow` partagé, avec MUSC-F2) — la copie de la fiche est la meilleure (a11y).
+- **Points de recette device** : navigation hub → biblio parcours → fiche (route `exercises/[id]` en modal
+  empilée) ; modifier/supprimer un exo perso ; vérifier que l'historique/les programmes affichent toujours le
+  nom d'un exo perso supprimé ; i18n FR/EN.
+- Roadmap **inchangée** : la fiche complète (3.13/3.19/3.20, muscles secondaires + variantes) relève de F10c —
+  non livré ici, donc pas de bascule de statut.
+
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — plan d'implémentation (MUSC-F10a)
+
+> Suite de la spec (commit précédent `d3f4907`). Plan revu par le subagent `plan-document-reviewer` (Approved —
+> API `writeTransaction`, helpers `_sql`, forme des SELECT et symboles importés vérifiés contre le dépôt) ;
+> 1 coquille corrigée (ne pas importer `patch`, le code utilise `tx.execute` brut → sinon import inutilisé =
+> lint KO). **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10a-bibliotheque-fiche-exercice.md](docs/plans/muscf10a-bibliotheque-fiche-exercice.md) : plan en
+  8 tâches TDD — (1) `useExercise(id)` ; (2) `update/deleteCustomExercise` + garde pure testée ; (3) i18n FR/EN ;
+  (4) écran fiche lecture `app/exercises/[id].tsx` + route ; (5) gestion perso (modifier/supprimer) ; (6) mode
+  parcours dans `exercises.tsx` (tap → fiche) ; (7) entrée « Bibliothèque » dans le hub Muscu ; (8) revue finale
+  + clôture. Aucune migration ; soft-delete de la ligne `exercises` seule. Point à smoke-checker : coexistence
+  de route `exercises.tsx` + `exercises/[id].tsx` (supportée expo-router 57, sans précédent dans le repo).
+
+### 22/07/2026 — `feature/muscf10a-bibliotheque-fiche-exercice` — spec : bibliothèque en accès direct + fiche exercice (MUSC-F10a)
+
+> Nouvelle US issue du besoin remonté pendant la recette MUSC-F3 (l'écran bibliothèque n'est atteignable que
+> depuis une séance en cours). Cadrée par brainstorming (Florian). **1ᵉʳ des 3 incréments** du chantier « fiche
+> exercice » : **F10a** (socle) → **F10b** (records sur la fiche) → **F10c = MUSC-F2** (muscles secondaires +
+> variantes, migration + admin). Spec revue par le subagent `spec-document-reviewer` : **1 point bloquant
+> corrigé** (le soft-delete ne doit toucher que la ligne `exercises`, pas les traductions — sinon le nom se vide
+> sur les écrans d'historique/programmes qui résolvent le nom via `exercise_translations`), puis **Approved**.
+> **Doc seulement, aucun code.**
+
+**Ajouté**
+- [muscf10a-bibliotheque-fiche-exercice.md](docs/specs/functional/us/muscf10a-bibliotheque-fiche-exercice.md) :
+  spec complète — entrée persistante « Bibliothèque d'exercices » dans le hub Muscu → écran biblio en **mode
+  parcours** (param de route ; tap → fiche, mode séance inchangé) → nouvel écran **fiche `/exercises/[id]`** (nom,
+  groupe, matériel, instructions, favori, badge perso) → **gestion des exos perso** (Modifier + Supprimer,
+  soft-delete **de la ligne `exercises` seule** toujours autorisé). Aucune migration. Records et muscles
+  secondaires explicitement hors périmètre (F10b/F10c).
+
+**Technique / Notes**
+- Décisions de cadrage : entrée hub non masquable ; suppression d'exo perso toujours autorisée (pas de blocage si
+  référencé) ; fiche accessible uniquement depuis la biblio en mode parcours (autres points d'entrée différés).
+- Note pour F10b consignée dans la spec : `records-repository.ts` calcule les records via un `JOIN exercises …
+  AND e.deleted_at IS NULL` (INNER) → un exo perso soft-deleted serait exclu du recalcul futur des records.
+- **Statut : spec validée (Florian) → prochaine étape plan d'implémentation.**
+
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — MUSC-F3 : recherche d'exercices multi-critères (CODE LIVRÉ)
+
+> Roadmap [3.14](docs/roadmap/roadmap.md) 🟡 → ✅. Exécution **subagent-driven** du plan (10 tâches,
+> chacune passée par revue spec + revue qualité ; revue finale transverse *prête à merger*). Filtre
+> par **groupe musculaire** et **matériel** (liste contrôlée) dans les 2 surfaces de recherche
+> d'exercices, en plus de la recherche par nom. 🔴 **Migration cloud appliquée** (`db:push` sur
+> `nsxzflxsgovriwwvflxe`, registre coché). typecheck/lint verts, **786 tests** (dont 5 nouveaux).
+> **Reste : recette device + relecture Damien.** Commit précédent : `556b0a0`.
+
+**Ajouté**
+- `packages/shared` : fonction pure `buildExerciseFilterClause(muscles?, equipment?)` →
+  `{ clause, params }` (fragment SQL paramétré : **OU** intra-facette via `IN`, **ET** inter-facette),
+  5 tests Vitest ([exercise-filter.ts](packages/shared/src/exercise-filter.ts)). L'enum `EQUIPMENTS`
+  (8 valeurs, posé dès US1 mais jamais branché) est désormais **réellement consommé**.
+- Mobile : composant partagé [ExerciseFilterDrawer.tsx](apps/mobile/src/components/programs/ExerciseFilterDrawer.tsx)
+  (tiroir bas d'écran `Modal transparent`, 2 sections de chips groupe musculaire + matériel,
+  fermer = appliquer, bouton Réinitialiser, a11y `accessibilityRole`/`accessibilityState` sur les chips).
+- Mobile : bouton **« Filtres · N »** + montage du tiroir + affichage du matériel dans la ligne
+  d'exercice (`{muscle} · {matériel}`) + **état vide filtré dédié** (« Aucun résultat pour ces
+  filtres » + raccourci Réinitialiser) dans [ExercisePicker.tsx](apps/mobile/src/components/programs/ExercisePicker.tsx)
+  **et** [exercises.tsx](apps/mobile/src/app/exercises.tsx).
+- i18n mobile FR/EN (parité) : `equipment.*` (8 clés) + `exercises.filters` / `emptyFiltered` /
+  `filterDrawer.{muscleSection,equipmentSection,reset,close}`.
+- Admin : sélecteur `<select>` matériel contraint à `EQUIPMENTS` (remplace le texte libre) +
+  libellés FR `equipmentNames` ([ExerciseEditScreen.tsx](apps/admin/src/screens/ExerciseEditScreen.tsx)).
+- Migration [20260722080703_muscf3_equipment_check.sql](supabase/migrations/20260722080703_muscf3_equipment_check.sql) :
+  contrainte `CHECK` sur `exercises.equipment` (colonne déjà nullable — aucune colonne ajoutée,
+  donc pas de `db:types`). Seed dev : matériel plausible sur les 16 exercices de bibliothèque.
+
+**Modifié**
+- Mobile : `useExercises(search?, muscles?, equipment?)` — 2 paramètres optionnels câblés dans la
+  requête SQLite via `buildExerciseFilterClause` ; rétrocompatible (appelants existants inchangés,
+  `useFavorites` non touché) ([exercise-repository.ts](apps/mobile/src/data/repositories/exercise-repository.ts)).
+- Admin : types `equipment` resserrés à `Equipment | null` (data layer + formulaire).
+
+**Technique / Notes**
+- **Dette / suivi** (relevé en revue finale, non bloquant) : duplication résiduelle entre les 2
+  écrans (bouton Filtres, état vide, sous-titre 3 parties, styles) → candidate à un futur
+  `ExerciseListRow`/`FiltersButton` partagés (à traiter avec MUSC-F2) ; `ExerciseListItem.equipment`
+  encore typé `string | null` côté mobile (pourrait suivre la contrainte DB en `Equipment | null`).
+- **Points de recette device** : tiroir empilé sur une `Modal pageSheet` (comportement Android du
+  bouton retour / barre de statut à vérifier) ; inset bas (barre gestuelle) sous le tiroir ;
+  découvrabilité de la fermeture (croix explicite non rendue — tap-outside + geste natif + backdrop
+  labellisé en place ; §2.1 la liste comme option). Exercice perso créé sans matériel → invisible si
+  un filtre matériel est actif (conforme spec §2.3/§4.4, observation UX).
+
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — plan d'implémentation : recherche d'exercices multi-critères (MUSC-F3)
+
+> Suite de la spec (commit précédent `a9a8558`). Plan revu par le subagent `plan-document-reviewer`
+> (Approved dès la première passe — vérification croisée de chaque référence de code contre l'état
+> réel du dépôt) ; 2 ajustements mineurs appliqués suite aux recommandations (couleur de texte des
+> chips sélectionnées `colors.accentText` au lieu de `colors.background` ; précision sur l'ajout de
+> `flexDirection: 'row'` à `styles.searchRow`, absent aujourd'hui des deux écrans). **Doc seulement,
+> aucun code** — typecheck inchangé (vérifié vert).
+
+**Ajouté**
+- [muscf3-recherche-multicriteres.md](docs/plans/muscf3-recherche-multicriteres.md) : plan en 10
+  tâches TDD — (1) `buildExerciseFilterClause` pur (shared) ; (2) admin — matériel en `<select>`
+  contrôlé (réutilise `EQUIPMENTS` déjà présent, jamais branché) ; (3) i18n mobile `equipment.*` +
+  clés du tiroir ; (4) `useExercises` étendu (2 paramètres optionnels) ; (5) composant partagé
+  `ExerciseFilterDrawer` (tiroir `Modal transparent`, aucune nouvelle dépendance) ; (6-7) intégration
+  dans `ExercisePicker.tsx` et `exercises.tsx` ; (8) seed dev enrichi (16 exercices) ; (9) migration
+  (contrainte `CHECK` sur `exercises.equipment`, checkpoint cloud avec vérification préalable des
+  valeurs existantes + go explicite de Florian) ; (10) revue finale + clôture.
+
+### 22/07/2026 — `feature/muscf3-recherche-multicriteres` — spec : recherche d'exercices multi-critères (MUSC-F3)
+
+> Roadmap [3.14](docs/roadmap/roadmap.md) — recherche d'exercices aujourd'hui par nom seul. Cadrage par
+> brainstorming (Florian, maquettes visuelles comparées) : sélectionné comme prochaine US après la clôture
+> côté implémentation du chantier refonte Muscu (A/B/C1/C2/C3/D, reste relecture Damien). Commit précédent :
+> `685dec9`. **Doc seulement, aucun code** — typecheck/lint/781 tests inchangés (vérifiés verts).
+
+**Ajouté**
+- [muscf3-recherche-multicriteres.md](docs/specs/functional/us/muscf3-recherche-multicriteres.md) : spec
+  complète — filtre par groupe musculaire (déjà propre, enum contraint) + matériel (liste contrôlée
+  réutilisant `EQUIPMENTS`/`Equipment` posés dès US1 dans `packages/shared` mais jamais branchés nulle
+  part). UI = bouton « Filtres » + tiroir 2 sections (préféré aux chips inline permanentes et aux
+  dropdowns, pour garder la recherche par nom comme action principale). Périmètre : `ExercisePicker`
+  (composant partagé programme/template/séance) **et** `exercises.tsx` (bibliothèque autonome). Migration
+  prévue : contrainte `CHECK` sur `exercises.equipment` (colonne déjà existante et nullable, aucune donnée
+  à migrer — actuellement tout `null`). Hors périmètre : MUSC-F2 (fiche exercice complète, muscles
+  secondaires), rétro-remplissage du matériel en production.
+
+**Technique / Notes**
+- `.gitignore` : ajout de `.superpowers/` (scratch local du brainstorming visuel, maquettes non versionnées).
+- **Statut : à valider (Florian/Damien) avant tout code**, conformément au workflow spec → plan → design →
+  validation → code.
+
+### 22/07/2026 — `feature/couleurs-menu-toggle` — couleurs des menus, réintroduites avec un réglage on/off
+
+> Retour sur le rollback `1ae20d4` (couleur d'accent par menu, commit original `751fa5d` du
+> 20/07, jugée peu lisible en pratique). Demande de Florian : la remettre, mais cette fois
+> **pilotable par un réglage** plutôt qu'imposée en permanence. Spec ajoutée :
+> [compte-profil-onboarding.md §4.3](docs/specs/functional/compte-profil-onboarding.md).
+> Commit précédent : `f169a4b` (revert de `1ae20d4`, conflit limité au CHANGELOG, résolu
+> manuellement). typecheck/lint/781 tests verts. Reste : recette device.
+
+**Ajouté**
+- **Réglage « Activer les couleurs par menu »** ([settings.tsx](apps/mobile/src/app/settings.tsx),
+  Réglages → Apparence) : `Switch` **off par défaut**. Off → accent unique (orange) sur tous les
+  onglets, comportement inchangé par rapport à avant ce commit. On → pastilles de couleur par
+  menu + bouton « Réinitialiser » (état restauré de `751fa5d`), visibles seulement si activé.
+- `menu-accent-store.ts` : nouveau champ `enabled` (+ `setEnabled`), persisté en local device
+  (`secureStorage`, clé `menu_accent_enabled`) au même titre que les couleurs — non synchronisé,
+  aucune migration.
+- i18n FR/EN : `settings.menuColors.enable`.
+
+**Modifié**
+- `useTheme.ts` : l'accent n'est surchargé par la couleur du menu actif que si `enabled` est vrai ;
+  sinon la palette de base (accent unique) s'applique, comme avant `751fa5d`.
+- [(tabs)/_layout.tsx](apps/mobile/src/app/%28tabs%29/_layout.tsx) : `tabBarActiveTintColor` par
+  onglet passe par un helper `tabTint()` qui retombe sur `colors.accent` quand `enabled` est faux
+  (les 4 couleurs `menuColors.*` n'étaient jusqu'ici pas gatées par le toggle — corrigé pour que
+  « off » soit vraiment un accent unique partout, y compris sur la barre d'onglets).
+
+### 22/07/2026 — `feature/couleurs-menu-toggle` — revert : rétablit la couleur d'accent par menu (751fa5d)
+
+> Annule `1ae20d4` pour repartir de la base `751fa5d` avant d'y ajouter le toggle on/off
+> (entrée suivante). `git revert 1ae20d4` propre — seul conflit sur ce CHANGELOG (entrées
+> ajoutées depuis), résolu manuellement ; aucun conflit de code.
+
+**Ajouté**
+- **Couleur d'accent par menu** (état de `751fa5d`) : `menu-accent-store.ts`, `useMenuFocus.ts`,
+  `useTheme.ts` (accent = couleur du menu actif), onglets `(tabs)/_layout.tsx`/`index.tsx`/
+  `nutrition.tsx`/`running.tsx`/`strength.tsx`, `_layout.tsx` racine, section « Couleurs des
+  menus » dans `settings.tsx` + clés i18n FR/EN.
+
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : recette validée (Florian) ✅
+
+> Chantier refonte Muscu (A/B/C1/C2/C3/D) **complet côté implémentation** : les 5 US sont livrées et
+> recettées. Reste la relecture de Damien sur l'ensemble. Cette entrée regroupe aussi 2 fichiers documentaires
+> non liés, en attente de commit, inclus ici à la demande de Florian plutôt que d'ouvrir une branche dédiée.
+> Merge avec `dev` : intègre en parallèle le design riche des widgets (`feature/widgets-v2-dnd`, entrée
+> suivante) — le widget « Mes templates » (US-D) a été réécrit sur les nouvelles primitives `WidgetFrame`/
+> `Eyebrow`/`Metric` pour rester cohérent avec les 4 autres widgets muscu.
+
+**Technique / Notes**
+- US-D (templates de séance libre) : recette device validée après le correctif d'accès (widget dédié + fin du
+  mode sélection, voir entrée précédente). Aucun code applicatif dans ce commit.
+- `IDEAS.md` : ajout d'une idée déjà notée par Florian (21/07) — « 3 niveaux d'affichage pour la séance live
+  (Simplifiée / Normale / Détaillée) », en attente de tri, non liée à US-D.
+- `AGENTS.md.pre-codex-fallback.bak` : fichier de sauvegarde (racine), en attente, non lié à US-D.
+- **Merge `dev` → widget « Mes templates »** : réécrit sur `WidgetFrame`/`Eyebrow`/`Metric` (au lieu de
+  `WidgetShell`/`ModulePreviewCard`, abandonnés par le design riche) pour rester visuellement cohérent avec
+  les widgets Programmes/Historique/Planning/Progression du hub muscu. Nouvelle clé i18n
+  `widgets.strength.templatesEyebrow` (FR/EN). typecheck/lint/test re-vérifiés verts après réécriture.
 
 ### 21/07/2026 — `feature/widgets-v2-dnd` — widgets multi-formes au nouveau design (galerie « FitTrio · Widgets »)
 
@@ -91,6 +1241,107 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - **Non branché** : le bundling web (`expo export`) échoue sur `@powersync/op-sqlite` (module natif) —
   **préexistant**, sans rapport avec ce commit. Non committé : `design/.thumbnail`, `design/uploads/`
   (artefacts Claude Design hors périmètre).
+
+### 22/07/2026 — `feature/refonte-muscu-d` — US-D : accès aux templates indépendant de « Séance libre »
+
+> Retour recette (Florian) : le seul chemin vers « Mes templates » passait par le hub → « Séance libre » →
+> « Depuis un template », qui ouvrait la liste en **mode sélection** (tap = démarrage direct d'une séance) —
+> aucun moyen d'atteindre édition/duplication/suppression depuis l'app réelle (le mode normal existait dans le
+> code mais n'était jamais atteignable). typecheck/lint/781+44 tests verts.
+
+**Ajouté**
+- **Widget « Mes templates »** ([strength-widgets.tsx](apps/mobile/src/components/widgets/strength-widgets.tsx),
+  [widgets.ts](packages/shared/src/widgets.ts)) : nouvel id `strength-templates` sur le hub muscu, même patron
+  que le widget « Mes programmes » — accès permanent, indépendant du flux « Séance libre ».
+- i18n : `templates.countLabel_one`/`countLabel_other` (FR/EN).
+
+**Modifié**
+- [templates/index.tsx](apps/mobile/src/app/templates/index.tsx) : suppression du « mode sélection » — taper
+  un template ouvre désormais **toujours** son détail (Démarrer explicite + Dupliquer + Supprimer), plus de
+  lancement direct au tap.
+- [strength.tsx](apps/mobile/src/app/%28tabs%29/strength.tsx) : les 2 liens vers `/templates?selectMode=1`
+  redirigent simplement vers `/templates`.
+
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : CODE LIVRÉ (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (A/B/C1/C2/C3/D) — implémentation complète, 12 tâches (subagent-driven,
+> 11 commits `a57ebb1`→`13d60b7`, revue spec+qualité à chaque étape + revue finale globale). Reste recette
+> device + relecture Damien sur l'ensemble du chantier. typecheck/lint/781 tests (shared) + 44 tests (mobile)
+> verts, parité i18n FR/EN stricte.
+
+**Ajouté**
+- **Migration cloud** (`20260721074949_refonte_muscu_d_workout_templates`, poussée) : tables
+  `workout_templates`/`workout_template_exercises` (RLS `user_id`, soft delete), patron `meal_templates`.
+  **Sync rules PowerSync déployées** (2ᵉ checkpoint cloud distinct du `db:push` — oubli identifié et corrigé
+  dès la revue du plan, piège déjà rencontré en C3).
+- **`deriveTemplateTargetsFromWorkoutSets`** ([workout.ts](packages/shared/src/workout.ts)) : fonction pure
+  testée Vitest (6 cas) qui dérive les cibles d'un template depuis les séries **validées** d'une séance libre
+  terminée (nombre de séries, reps/charge de la dernière validée, type de la première validée).
+- **`workout-template-repository.ts`** (nouveau) : lecture réactive (`useWorkoutTemplates`/
+  `useWorkoutTemplateDetail`) + CRUD complet (créer/renommer/ajouter-modifier-retirer un exercice, dupliquer,
+  supprimer avec cascade) + `createTemplateFromWorkout` (enregistrer depuis une séance terminée) +
+  `startWorkoutFromTemplate` (démarrer une séance libre pré-remplie, `planned_weight_kg` alimenté comme
+  `startWorkoutFromSession`).
+- **Écrans `templates/`** (liste « Mes templates » avec mode sélection depuis le hub, composition partagée
+  `TemplateComposer`, détail avec Démarrer/Dupliquer/Supprimer).
+- **Hub muscu** : le bouton « Séance libre » ouvre un choix (à blanc / depuis un template) ; lien secondaire
+  « Ou depuis un template » sous la carte « Séance du jour » (jours de séance planifiée, sinon templates
+  inaccessibles ce jour-là).
+- **Écran résumé** : bouton « Enregistrer comme template » (séance libre terminée, au moins un exercice),
+  formulaire inline (nom pré-rempli depuis la date **locale**).
+- **`ExerciseTargetsFields`** ([components/exercise/](apps/mobile/src/components/exercise/ExerciseTargetsFields.tsx),
+  nouveau) : composant présentation extrait d'`ExercisePlanEditor` (programmes), réutilisé par le nouveau
+  `TemplateExerciseEditor` (templates) qui ajoute un 5ᵉ champ inédit — sélecteur de type de série (7 valeurs).
+
+**Modifié**
+- `workout-repository.ts` : `parseTargetReps` exporté (réutilisé par le nouveau repository) ;
+  `WorkoutHistoryItem`/`SELECT_HISTORY`/`rowToHistoryItem` exposent désormais `sessionId`/`programId`
+  (nécessaire pour masquer le bouton « Enregistrer comme template » sur une séance planifiée).
+
+**Technique / Notes**
+- Revues (spec compliance + qualité) à chaque tâche : corrections notables — garde `!detail` avant le footer
+  d'actions de `templates/[id].tsx`, cohérence `push`/`replace` après démarrage, clé i18n dédiée pour le
+  bouton Valider (au lieu de réutiliser le libellé du déclencheur), dérivation de date **locale** (pas un
+  slice de chaîne ISO UTC) + garde `submitting`/`try-catch` sur l'enregistrement depuis le résumé.
+- Revue finale globale (vue d'ensemble sur les 12 commits) : parcours de bout en bout vérifié cohérent
+  (créer → composer → démarrer → terminer → ré-enregistrer), aucune rupture ni régression trouvée.
+
+### 21/07/2026 — `feature/refonte-muscu-d` — US-D : spec + plan + maquette (templates de séance libre)
+
+> Chantier refonte Muscu, dernière US (arbitrable). Corrige le problème 5 de l'audit-flux : pas de cran
+> intermédiaire entre séance libre et programme structuré. Spec (2 passages de revue), plan (2 passages de
+> revue — un oubli critique corrigé : sync rules PowerSync) et maquette validés par Florian. Aucun code
+> applicatif dans ce commit (docs uniquement, conformément au workflow obligatoire).
+
+**Ajouté**
+- **Spec** [refonte-muscu-d-templates-seance-libre.md](docs/specs/functional/us/refonte-muscu-d-templates-seance-libre.md) :
+  tables dédiées `workout_templates`/`workout_template_exercises` (patron repas types nutrition, **pas** de
+  réutilisation `programs`/`sessions`/`exercise_plans`) ; deux chemins de création (composer à froid **et**
+  enregistrer après coup depuis une séance libre terminée, cibles dérivées des séries **validées**
+  uniquement) ; démarrer depuis un template (pré-remplissage `planned_weight_kg`, même convention que
+  `startWorkoutFromSession`) ; gestion (éditer/dupliquer/supprimer). Liste séparée « Mes templates ». Hors
+  périmètre : templates éditoriaux débutants (reportés), export/partage, lien automatique superset.
+- **Plan** [refonte-muscu-d-templates-seance-libre.md](docs/plans/refonte-muscu-d-templates-seance-libre.md) :
+  12 tâches — migration (🔴 2 checkpoints cloud distincts : `db:push` **et** déploiement sync rules
+  PowerSync, piège identifié et corrigé pendant la revue) ; fonction pure testable Vitest
+  `deriveTemplateTargetsFromWorkoutSets` (packages/shared) ; nouveau repository
+  `workout-template-repository.ts` ; modifications connexes à `workout-repository.ts` (export
+  `parseTargetReps`, `sessionId`/`programId` sur l'historique) ; refactor `ExercisePlanEditor.tsx` →
+  composant présentation partagé `ExerciseTargetsFields.tsx` + nouveau `TemplateExerciseEditor.tsx` (5ᵉ champ
+  inédit : sélecteur de type de série, 7 valeurs) ; écrans `templates/` (composant partagé `TemplateComposer`
+  pour éviter la duplication entre édition et détail) ; intégration hub muscu (choix à blanc/template + lien
+  secondaire les jours de séance planifiée) et écran résumé (« Enregistrer comme template »).
+- **Maquette** [refonte-muscu-d.html](design/refonte-muscu-d/refonte-muscu-d.html) : 6 écrans (choix de
+  démarrage, lien secondaire, liste, composition, détail + actions, enregistrement depuis le résumé).
+
+**Technique / Notes**
+- Branche `feature/refonte-muscu-d` créée depuis `dev`.
+- Revue spec : 2 passages (❌ → ✅) — correction de la condition d'affichage du bouton « Enregistrer comme
+  template » (champs `sessionId`/`programId` manquants sur l'historique), clarification du sélecteur de type
+  de série (travail neuf, pas un refactor), ajout d'un accès template les jours de séance planifiée.
+- Revue plan : 2 passages (❌ → ✅) — ajout du 2ᵉ checkpoint sync rules PowerSync (oubli qui aurait rendu les
+  2 nouvelles tables muettes côté synchro cloud), clarification du partage des helpers de champs, extraction
+  d'un composant `TemplateComposer` partagé.
 
 ### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
 

@@ -22,12 +22,13 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { MuscleGroup, Source } from '@wellness/shared';
+import type { Equipment, MuscleGroup, Source } from '@wellness/shared';
+import { buildExerciseFilterClause, normalizeSecondaryMuscles, parseJsonColumn } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
-import { insertWithSyncFields, softDelete } from './_sql';
+import { insertWithSyncFields, nowUtc, softDelete } from './_sql';
 
 /** Élément d'exercice tel qu'affiché dans les listes (biblio, favoris, recherche). */
 export type ExerciseListItem = {
@@ -38,6 +39,12 @@ export type ExerciseListItem = {
   equipment: string | null;
   mediaUrl: string | null;
   isFavorite: boolean;
+};
+
+/** Fiche exercice : vue liste + instructions résolues (langue courante → fr). */
+export type ExerciseDetail = ExerciseListItem & {
+  instructions: string | null;
+  musclesSecondary: MuscleGroup[];
 };
 
 /** Ligne brute renvoyée par SQLite pour la vue liste (colonnes résolues en SQL). */
@@ -72,6 +79,30 @@ const SELECT_EXERCISES = `
   WHERE e.deleted_at IS NULL
 `;
 
+/** Ligne brute de la fiche (comme la vue liste + instructions résolues). */
+type ExerciseDetailDbRow = ExerciseListDbRow & {
+  instructions: string | null;
+  muscles_secondary: string | null;
+};
+
+/**
+ * Sélection d'un exercice unique pour la fiche : nom + instructions résolus
+ * (langue courante → fr) + drapeau favori. `?` #1 = langue, `?` #2 = id.
+ * Filtre `e.deleted_at IS NULL` : un exo supprimé → aucune ligne → « introuvable ».
+ */
+const SELECT_EXERCISE_DETAIL = `
+  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url, e.muscles_secondary,
+         COALESCE(tl.name, tfr.name) AS name,
+         COALESCE(tl.instructions, tfr.instructions) AS instructions,
+         (f.id IS NOT NULL) AS is_favorite
+  FROM exercises e
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  LEFT JOIN exercise_favorites f      ON f.exercise_id = e.id AND f.deleted_at IS NULL
+  WHERE e.deleted_at IS NULL AND e.id = ?
+  LIMIT 1
+`;
+
 const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
 
 /** Clause de recherche insensible à la casse sur le nom résolu (param = `%term%`). */
@@ -102,13 +133,20 @@ function rowToListItem(row: ExerciseListDbRow): ExerciseListItem {
 /**
  * Exercices de la bibliothèque + personnalisés, réactifs aux changements locaux.
  * Optionnellement filtrés par `search` (recherche insensible à la casse sur le
- * nom résolu dans la langue courante).
+ * nom résolu dans la langue courante), `muscles` (groupes musculaires, OU entre
+ * eux) et `equipment` (matériel, OU entre eux) — les facettes `muscles` et
+ * `equipment` se combinent en ET entre elles (voir `buildExerciseFilterClause`).
+ * Tableau vide ou absent = facette non contraignante.
  *
  * `isLoading` ne dépend QUE de la résolution de la requête locale (voir
  * profile/settings-repository) : le contenu ne doit pas se bloquer sur une
  * synchro réseau (offline-first, ADR-001 / décision B).
  */
-export function useExercises(search?: string): {
+export function useExercises(
+  search?: string,
+  muscles?: MuscleGroup[],
+  equipment?: Equipment[],
+): {
   exercises: ExerciseListItem[];
   isLoading: boolean;
 } {
@@ -117,11 +155,14 @@ export function useExercises(search?: string): {
 
   const term = search?.trim() ?? '';
   const hasSearch = term.length > 0;
+  const { clause: filterClause, params: filterParams } = buildExerciseFilterClause(muscles, equipment);
 
   const sql = hasSearch
-    ? `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${ORDER_BY_NAME}`
-    : `${SELECT_EXERCISES} ${ORDER_BY_NAME}`;
-  const params = hasSearch ? [lang, `%${term}%`] : [lang];
+    ? `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${filterClause} ${ORDER_BY_NAME}`
+    : `${SELECT_EXERCISES} ${filterClause} ${ORDER_BY_NAME}`;
+  const params = hasSearch
+    ? [lang, `%${term}%`, ...filterParams]
+    : [lang, ...filterParams];
 
   const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, params);
 
@@ -148,6 +189,35 @@ export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: bool
   const exercises = data.map(rowToListItem);
 
   return { exercises, isLoading };
+}
+
+/**
+ * Fiche d'un exercice unique (nom + instructions résolus, drapeau favori),
+ * réactive aux changements locaux. `null` si l'id est introuvable ou supprimé.
+ * `isLoading` ne dépend QUE de la requête locale (offline-first, ADR-001).
+ */
+export function useExercise(id: string): {
+  exercise: ExerciseDetail | null;
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+  const { data, isLoading } = useQuery<ExerciseDetailDbRow>(SELECT_EXERCISE_DETAIL, [lang, id]);
+
+  const row = data[0];
+  const exercise: ExerciseDetail | null = row
+    ? {
+        ...rowToListItem(row),
+        instructions: row.instructions,
+        musclesSecondary: normalizeSecondaryMuscles(
+          parseJsonColumn<unknown>(row.muscles_secondary, []),
+          row.muscle_primary as MuscleGroup,
+        ),
+      }
+    : null;
+
+  return { exercise, isLoading };
 }
 
 // ---------------------------------------------------------------------------
@@ -224,4 +294,102 @@ export async function toggleFavorite(exerciseId: string): Promise<void> {
     user_id: userId,
     exercise_id: exerciseId,
   });
+}
+
+/**
+ * Garde : seules les modifications/suppressions d'un exercice **perso**
+ * (`source = 'custom'`) appartenant à l'utilisateur courant sont autorisées.
+ * Lève sinon (la RLS l'empêcherait aussi côté serveur ; garde applicative pour
+ * un échec clair et immédiat). `row` null = exercice introuvable.
+ */
+export function assertOwnedCustomExercise(
+  row: { source: string; owner_id: string | null } | null,
+  userId: string,
+): void {
+  if (!row) {
+    throw new Error('Exercice introuvable.');
+  }
+  if (row.source !== 'custom' || row.owner_id !== userId) {
+    throw new Error('Seuls tes exercices personnels peuvent être modifiés ou supprimés.');
+  }
+}
+
+/** Charge (source, owner_id) d'un exercice pour la garde. */
+async function getExerciseOwnership(
+  id: string,
+): Promise<{ source: string; owner_id: string | null } | null> {
+  return powerSync.getOptional<{ source: string; owner_id: string | null }>(
+    `SELECT source, owner_id FROM exercises WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+    [id],
+  );
+}
+
+/**
+ * Prépare les valeurs d'écriture d'un exo perso : muscles secondaires **normalisés**
+ * (dédup, exclusion du primaire, valeurs valides) sérialisés en JSON, et instructions
+ * (trim → `null` si vide). Pur → testable sans PowerSync.
+ */
+export function buildCustomExerciseWrite(input: {
+  muscle: MuscleGroup;
+  musclesSecondary: MuscleGroup[];
+  instructions: string | null;
+}): { musclesSecondaryJson: string; instructions: string | null } {
+  return {
+    musclesSecondaryJson: JSON.stringify(
+      normalizeSecondaryMuscles(input.musclesSecondary, input.muscle),
+    ),
+    instructions: input.instructions?.trim() ? input.instructions.trim() : null,
+  };
+}
+
+/**
+ * Met à jour un exercice **perso** de l'utilisateur courant : groupe musculaire,
+ * matériel, muscles secondaires, nom et instructions (unique ligne de traduction du
+ * custom). Atomique. Les muscles secondaires excluent toujours le primaire (normalisés).
+ */
+export async function updateCustomExercise(
+  id: string,
+  input: {
+    name: string;
+    muscle: MuscleGroup;
+    equipment: Equipment | null;
+    musclesSecondary: MuscleGroup[];
+    instructions: string | null;
+  },
+): Promise<void> {
+  const userId = currentUserId();
+  assertOwnedCustomExercise(await getExerciseOwnership(id), userId);
+
+  const translation = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM exercise_translations WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1`,
+    [id],
+  );
+  if (!translation) {
+    throw new Error("Traduction de l'exercice introuvable.");
+  }
+
+  const { musclesSecondaryJson, instructions } = buildCustomExerciseWrite(input);
+  const now = nowUtc();
+  await powerSync.writeTransaction(async (tx) => {
+    await tx.execute(
+      `UPDATE exercises SET muscle_primary = ?, equipment = ?, muscles_secondary = ?, updated_at = ? WHERE id = ?`,
+      [input.muscle, input.equipment, musclesSecondaryJson, now, id],
+    );
+    await tx.execute(
+      `UPDATE exercise_translations SET name = ?, instructions = ?, updated_at = ? WHERE id = ?`,
+      [input.name.trim(), instructions, now, translation.id],
+    );
+  });
+}
+
+/**
+ * Supprime (soft-delete) un exercice **perso** de l'utilisateur courant.
+ * ⚠️ Soft-delete de la ligne `exercises` UNIQUEMENT — jamais les traductions
+ * (sinon le nom se vide sur l'historique/les programmes, voir spec §3).
+ * Suppression toujours autorisée (pas de blocage si référencé — décision Florian).
+ */
+export async function deleteCustomExercise(id: string): Promise<void> {
+  const userId = currentUserId();
+  assertOwnedCustomExercise(await getExerciseOwnership(id), userId);
+  await softDelete('exercises', id);
 }

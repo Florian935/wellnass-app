@@ -6,6 +6,11 @@
  * - Fournir des valeurs par défaut cohérentes pour les hooks/contextes PowerSync.
  */
 
+// Variables d'environnement Supabase : défauts pour les tests (jest ne charge pas .env).
+// Le vrai src/lib/supabase.ts lève au chargement sans elles ; createClient reste mocké ci-dessous.
+process.env.EXPO_PUBLIC_SUPABASE_URL ??= 'http://localhost';
+process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??= 'test-anon-key';
+
 // ---------------------------------------------------------------------------
 // Mock @powersync/react — hooks utilisés dans les repositories et composants
 // ---------------------------------------------------------------------------
@@ -138,6 +143,36 @@ jest.mock('@/running/tracker', () => ({
   stopTracking: jest.fn().mockResolvedValue(undefined),
   pauseTracking: jest.fn().mockResolvedValue(undefined),
   resumeTracking: jest.fn(),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock react-native-safe-area-context — pas de SafeAreaProvider en tests
+// (useSafeAreaInsets lèverait « No safe area value available »). On utilise le
+// mock officiel de la lib (insets à 0, providers passthrough).
+// ---------------------------------------------------------------------------
+jest.mock('react-native-safe-area-context', () => {
+  const mock = require('react-native-safe-area-context/jest/mock');
+  return mock.default ?? mock;
+});
+
+// ---------------------------------------------------------------------------
+// Mock @react-native-google-signin/google-signin — module natif (getEnforcing
+// échoue en env jest). Importé transitivement dès qu'un test tire `auth-store`
+// (US 1.2 OAuth Google). Un test peut surcharger ce mock localement au besoin.
+// ---------------------------------------------------------------------------
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn().mockResolvedValue(true),
+    signIn: jest.fn().mockResolvedValue({ type: 'cancelled', data: null }),
+    signOut: jest.fn().mockResolvedValue(undefined),
+  },
+  statusCodes: {
+    SIGN_IN_CANCELLED: 'SIGN_IN_CANCELLED',
+    IN_PROGRESS: 'IN_PROGRESS',
+    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  },
+  isErrorWithCode: jest.fn(() => false),
 }));
 
 // ---------------------------------------------------------------------------

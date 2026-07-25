@@ -31,6 +31,7 @@ import {
   type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
+import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -191,6 +192,8 @@ export default function WorkoutScreen() {
   const router = useRouter();
 
   const { workout: active } = useActiveWorkout();
+  const { profile } = useProfile();
+  const displayLevel = profile?.workoutDisplayLevel ?? 'normal';
 
   // Tous les hooks sont appelés avant tout retour anticipé (règle des hooks) :
   // `active` peut être null, les dérivés retombent alors sur des valeurs neutres.
@@ -497,6 +500,7 @@ export default function WorkoutScreen() {
         ) : current ? (
           <CurrentSetCard
             key={current.set.id}
+            level={displayLevel}
             exerciseName={current.entry.exerciseName}
             currentIndex={current.rang + 1}
             totalSets={current.entry.sets.length}

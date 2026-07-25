@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { MuscleGroup, Equipment } from '@wellness/shared';
+import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import {
   useExercises,
@@ -18,6 +20,7 @@ import {
 } from '@/data/repositories/exercise-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { ExerciseFilterDrawer } from './ExerciseFilterDrawer';
 
 type ExercisePickerProps = {
   visible: boolean;
@@ -35,8 +38,12 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [query, setQuery] = useState('');
+  const [muscles, setMuscles] = useState<MuscleGroup[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const { exercises, isLoading } = useExercises(query);
+  const { exercises, isLoading } = useExercises(query, muscles, equipment);
+  const filterCount = muscles.length + equipment.length;
 
   return (
     <Modal
@@ -61,13 +68,28 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
         </View>
 
         <View style={styles.searchRow}>
-          <TextField
-            label={t('exercises.search')}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            placeholder={t('exercises.searchPlaceholder')}
-          />
+          <View style={styles.searchField}>
+            <TextField
+              label={t('exercises.search')}
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              placeholder={t('exercises.searchPlaceholder')}
+            />
+          </View>
+          <Pressable
+            onPress={() => setFiltersOpen(true)}
+            accessibilityRole="button"
+            style={[
+              styles.filtersButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.filtersLabel, { color: colors.text }]}>
+              {t('exercises.filters')}
+              {filterCount > 0 ? ` · ${filterCount}` : ''}
+            </Text>
+          </Pressable>
         </View>
 
         {isLoading ? (
@@ -81,9 +103,23 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
             contentContainerStyle={styles.list}
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
-              <Text style={[styles.empty, { color: colors.textMuted }]}>
-                {t('programs.edit.picker.empty')}
-              </Text>
+              <View style={styles.emptyWrap}>
+                <Text style={[styles.empty, { color: colors.textMuted }]}>
+                  {filterCount > 0
+                    ? t('exercises.emptyFiltered')
+                    : t('programs.edit.picker.empty')}
+                </Text>
+                {filterCount > 0 ? (
+                  <Button
+                    variant="ghost"
+                    label={t('exercises.filterDrawer.reset')}
+                    onPress={() => {
+                      setMuscles([]);
+                      setEquipment([]);
+                    }}
+                  />
+                ) : null}
+              </View>
             }
             renderItem={({ item }) => (
               <Pressable
@@ -99,6 +135,7 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
                   <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
                   <Text style={[styles.muscle, { color: colors.textMuted }]}>
                     {t(`muscle.${item.muscle}`)}
+                    {item.equipment ? ` · ${t(`equipment.${item.equipment}`)}` : ''}
                     {item.source === 'custom' ? ` · ${t('exercises.customBadge')}` : ''}
                   </Text>
                 </View>
@@ -107,6 +144,15 @@ export function ExercisePicker({ visible, onClose, onPick }: ExercisePickerProps
             )}
           />
         )}
+
+        <ExerciseFilterDrawer
+          visible={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          muscles={muscles}
+          onMusclesChange={setMuscles}
+          equipment={equipment}
+          onEquipmentChange={setEquipment}
+        />
       </SafeAreaView>
     </Modal>
   );
@@ -123,14 +169,28 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: { fontFamily: fontFamily.displaySemi, fontSize: 20, letterSpacing: -0.3 },
-  searchRow: { paddingHorizontal: 20, paddingTop: 8 },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  searchField: { flex: 1 },
+  filtersButton: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  filtersLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 },
   list: { padding: 20, gap: 10 },
+  emptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 24 },
   empty: {
     fontFamily: fontFamily.body,
     fontSize: 14,
     textAlign: 'center',
-    paddingVertical: 24,
   },
   row: {
     flexDirection: 'row',

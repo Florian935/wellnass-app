@@ -61,7 +61,9 @@
         {
           "color": "#dd6e40"
         }
-      ]
+      ],
+      "expo-mail-composer",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -74,9 +76,7 @@
       }
     },
     "owner": "wellness-appl",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/4d24d343-d9b7-4dc6-a26f-42eb8eeac689"
     }

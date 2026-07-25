@@ -8,7 +8,7 @@ import { upsertProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-const NEXT = '/(onboarding)/summary';
+const NEXT = '/(onboarding)/displayLevel';
 
 export default function OnboardingGoal() {
   const { t } = useTranslation();

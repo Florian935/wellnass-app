@@ -28,6 +28,7 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { resolveDeviceLocale } from '@/i18n';
 import { insertWithSyncFields, patch } from './_sql';
 
@@ -40,7 +41,13 @@ export type UserSettings = UserSettingsRow;
  */
 export type SettingsInput = Pick<
   UserSettingsRow,
-  'theme' | 'units' | 'language' | 'activePillars' | 'notifications' | 'dashboardLayout'
+  | 'theme'
+  | 'units'
+  | 'language'
+  | 'activePillars'
+  | 'notifications'
+  | 'dashboardLayout'
+  | 'analyticsEnabled'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -56,6 +63,8 @@ type SettingsDbRow = {
   notifications: string | null;
   /** Stockée en TEXT (JSON sérialisé) ou null. */
   dashboard_layout: string | null;
+  /** 0/1 (consentement analytics) ou null si colonne non renseignée localement. */
+  analytics_enabled: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -77,6 +86,11 @@ const SELECT_CURRENT =
 const isPillarArray = (value: unknown): value is Pillar[] =>
   Array.isArray(value) && value.every((p) => (PILLARS as readonly string[]).includes(p as string));
 
+/** Décode la colonne analytics_enabled (0/1/null) → booléen. Défaut opt-out ON (null/absent → true). */
+function decodeAnalyticsEnabled(row: SettingsDbRow | null): boolean {
+  return row?.analytics_enabled == null ? true : row.analytics_enabled === 1;
+}
+
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToSettings(row: SettingsDbRow): UserSettings {
   return {
@@ -89,6 +103,7 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     // Parse tolérant : anciennes valeurs (Record<string,boolean> ou {}) → défauts.
     notifications: parseNotificationPrefs(parseJsonColumn(row.notifications, null)),
     dashboardLayout: parseJsonColumn<unknown>(row.dashboard_layout, null),
+    analyticsEnabled: decodeAnalyticsEnabled(row),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -112,6 +127,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
       input.dashboardLayout !== null && input.dashboardLayout !== undefined
         ? JSON.stringify(input.dashboardLayout)
         : null;
+  }
+  if ('analyticsEnabled' in input) {
+    columns['analytics_enabled'] = input.analyticsEnabled ? 1 : 0;
   }
   return columns;
 }
@@ -159,6 +177,11 @@ async function getCurrentRow(): Promise<SettingsDbRow | null> {
   return powerSync.getOptional<SettingsDbRow>(SELECT_CURRENT);
 }
 
+/** Consentement analytics courant (hors contexte React). Défaut opt-out ON si non défini. */
+export async function getAnalyticsEnabled(): Promise<boolean> {
+  return decodeAnalyticsEnabled(await getCurrentRow());
+}
+
 /**
  * Met à jour les réglages de l'utilisateur courant.
  * Patch la ligne existante si elle existe, sinon insère avec `user_id` +
@@ -202,9 +225,11 @@ export async function togglePillar(pillar: Pillar): Promise<void> {
     ? parseJsonColumn<Pillar[]>(existing.active_pillars, [...PILLARS], isPillarArray)
     : [...PILLARS];
 
-  const next = current.includes(pillar)
-    ? current.filter((p) => p !== pillar)
-    : [...current, pillar];
+  const isActivation = !current.includes(pillar);
+  const next = isActivation ? [...current, pillar] : current.filter((p) => p !== pillar);
+
+  // Analytics : uniquement à l'activation (ajout), pas au retrait. Fire-and-forget.
+  if (isActivation) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
 
   if (existing) {
     await patch('user_settings', existing.id, {

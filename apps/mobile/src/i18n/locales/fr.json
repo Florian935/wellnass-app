@@ -27,19 +27,72 @@
     "arms": "Bras",
     "core": "Abdos"
   },
+  "equipment": {
+    "barbell": "Barre",
+    "dumbbell": "Haltères",
+    "machine": "Machine guidée",
+    "cable": "Poulie / câble",
+    "bodyweight": "Poids du corps",
+    "kettlebell": "Kettlebell",
+    "band": "Élastique / bande",
+    "other": "Autre"
+  },
   "exercises": {
     "title": "Exercices",
     "search": "Rechercher",
     "searchPlaceholder": "Nom d'exercice…",
     "createCustom": "+ Créer un exercice perso",
     "customName": "Nom de l'exercice",
+    "createTitle": "Créer un exercice",
+    "customNamePlaceholder": "Ex. Développé couché",
     "add": "Ajouter",
-    "customBadge": "perso"
+    "customBadge": "perso",
+    "filters": "Filtres",
+    "emptyFiltered": "Aucun résultat pour ces filtres.",
+    "filterDrawer": {
+      "muscleSection": "Groupe musculaire",
+      "equipmentSection": "Matériel",
+      "reset": "Réinitialiser",
+      "close": "Fermer les filtres"
+    },
+    "library": "Bibliothèque d'exercices",
+    "detail": {
+      "title": "Fiche exercice",
+      "muscle": "Groupe musculaire",
+      "equipment": "Matériel",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Ex. Garder le dos plaqué au banc.",
+      "secondaryMuscles": "Muscles secondaires",
+      "variants": "Variantes / alternatives",
+      "variantsEmpty": "Aucune variante pour l'instant",
+      "addVariant": "Ajouter une variante",
+      "removeVariant": "Retirer cette variante",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer cet exercice ?",
+      "notFound": "Exercice introuvable.",
+      "editTitle": "Modifier l'exercice",
+      "equipmentNone": "Aucun",
+      "save": "Enregistrer",
+      "favorite": "Favori",
+      "records": {
+        "title": "Tes records",
+        "oneRepMax": "1RM",
+        "real": "réel",
+        "estimated": "estimé",
+        "seeProgression": "Voir la progression"
+      }
+    }
   },
   "workout": {
     "freeTitle": "Séance libre",
     "freeSubtitle": "Ajoute tes exercices au fil de l'eau, sans programme.",
     "startFree": "Démarrer une séance libre",
+    "freeStart": {
+      "title": "Séance libre",
+      "blank": "À blanc",
+      "fromTemplate": "Depuis un template"
+    },
     "resumeTitle": "Séance en cours",
     "resume": "Reprendre la séance",
     "exerciseCount_one": "{{count}} exercice",
@@ -151,7 +204,28 @@
         }
       },
       "warmupCount_one": "+{{count}} échauffement",
-      "warmupCount_other": "+{{count}} échauffements"
+      "warmupCount_other": "+{{count}} échauffements",
+      "saveAsTemplate": "Enregistrer comme template",
+      "saveAsTemplateConfirm": "Valider",
+      "saveAsTemplateDefaultName": "Séance du {{date}}",
+      "templateNameLabel": "Nom du template",
+      "templateSaved": "Template enregistré"
+    },
+    "displayLevel": {
+      "levels": {
+        "simplified": {
+          "label": "Simplifiée",
+          "description": "L'essentiel : reps, charge, repos. Idéal pour débuter."
+        },
+        "normal": {
+          "label": "Normale",
+          "description": "Repères de progression : dernière fois, objectif, échauffement."
+        },
+        "detailed": {
+          "label": "Détaillée",
+          "description": "Tout : types de séries, RPE, notes, superset."
+        }
+      }
     }
   },
   "tabs": {
@@ -554,7 +628,8 @@
       "recentEyebrow_other": "{{count}} dernières séances",
       "planningEyebrow": "Planning",
       "progressEyebrow": "Progression",
-      "progressTotalEyebrow": "Volume total"
+      "progressTotalEyebrow": "Volume total",
+      "templatesEyebrow": "Templates"
     },
     "running": {
       "lastRunEyebrow": "Dernière sortie",
@@ -752,6 +827,10 @@
         "health": "Santé générale"
       }
     },
+    "displayLevel": {
+      "title": "Niveau d'affichage",
+      "subtitle": "Choisis la quantité d'infos pendant tes séances. Modifiable ensuite dans les réglages."
+    },
     "summary": {
       "title": "C'est prêt !",
       "subtitle": "Voici ta configuration. Tu peux tout ajuster dans les réglages.",
@@ -770,7 +849,9 @@
       "cta": "Se connecter",
       "forgot": "Mot de passe oublié ?",
       "noAccount": "Pas encore de compte ?",
-      "signUpLink": "Créer un compte"
+      "signUpLink": "Créer un compte",
+      "passwordResetSuccess": "Mot de passe modifié. Connecte-toi avec ton nouveau mot de passe.",
+      "resetLinkExpired": "Ce lien de réinitialisation a expiré ou a déjà été utilisé. Demande un nouveau lien."
     },
     "signUp": {
       "title": "Créer un compte",
@@ -805,10 +886,40 @@
       "cta": "Envoyer le lien",
       "sent": "Si un compte existe pour {{email}}, un lien de réinitialisation vient d'être envoyé."
     },
+    "newPassword": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Choisis un mot de passe pour ton compte.",
+      "field": "Nouveau mot de passe",
+      "confirmField": "Confirmer le mot de passe",
+      "cta": "Enregistrer le mot de passe",
+      "cancel": "Annuler",
+      "tooShort_one": "Le mot de passe doit faire au moins {{count}} caractère.",
+      "tooShort_other": "Le mot de passe doit faire au moins {{count}} caractères.",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "updateFailed": "Impossible d'enregistrer le mot de passe. Réessaie.",
+      "offline": "Cette action nécessite une connexion Internet."
+    },
     "verify": {
       "title": "Vérifie ton email",
       "message": "On a envoyé un lien de vérification à {{email}}. Ouvre-le, puis connecte-toi.",
       "cta": "Aller à la connexion"
+    },
+    "google": {
+      "button": "Continuer avec Google",
+      "orSeparator": "ou",
+      "consent": {
+        "prefix": "En continuant avec Google, tu acceptes les ",
+        "terms": "conditions d'utilisation",
+        "middle": " et la ",
+        "privacy": "politique de confidentialité",
+        "suffix": " et confirmes avoir 16 ans ou plus."
+      },
+      "errors": {
+        "playServices": "Google Play Services indisponible ou à mettre à jour.",
+        "offline": "Connexion internet requise pour se connecter avec Google.",
+        "linkUnverified": "Un compte existe déjà avec cet e-mail non vérifié. Vérifie ton e-mail avant de lier Google.",
+        "generic": "La connexion avec Google a échoué. Réessaie."
+      }
     }
   },
   "legal": {
@@ -828,6 +939,7 @@
         "Nous collectons uniquement les données nécessaires au fonctionnement de l'application : compte (email), profil et données d'activité que tu saisis.",
         "Tes données sont isolées par utilisateur et synchronisées de façon sécurisée vers le cloud. Elles ne sont jamais vendues à des tiers.",
         "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
+        "Nous mesurons l'usage de l'application (écrans consultés, fonctionnalités utilisées) via des statistiques anonymes, uniquement pour l'améliorer ; ces mesures n'incluent jamais tes données de santé et tu peux les désactiver à tout moment depuis les paramètres.",
         "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
       ]
     }
@@ -941,6 +1053,33 @@
       },
       "done": "Terminé"
     }
+  },
+  "templates": {
+    "title": "Mes templates",
+    "subtitle": "Routines réutilisables pour tes séances libres.",
+    "create": "Créer un template",
+    "createTitle": "Nouveau template",
+    "createSubtitle": "Donne un nom à ton template, puis ajoute des exercices.",
+    "name": "Nom du template",
+    "namePlaceholder": "Ex. Push habituel",
+    "done": "Terminé",
+    "editTitle": "Exercices",
+    "emptyExercises": "Aucun exercice. Ajoute un premier exercice pour composer ton template.",
+    "addExercise": "+ Ajouter un exercice",
+    "notFoundTitle": "Template introuvable",
+    "notFoundMessage": "Ce template n'existe pas ou a été supprimé.",
+    "emptyList": "Tu n'as pas encore de template. Crée-en un, ou enregistre une séance libre terminée comme template.",
+    "exerciseCount_one": "{{count}} exercice",
+    "exerciseCount_other": "{{count}} exercices",
+    "countLabel_one": "{{count}} template",
+    "countLabel_other": "{{count}} templates",
+    "start": "Démarrer",
+    "starting": "Démarrage…",
+    "duplicate": "Dupliquer",
+    "duplicating": "Duplication…",
+    "delete": "Supprimer",
+    "deleting": "Suppression…",
+    "deleteConfirm": "Cette action supprimera définitivement ce template. Continuer ?"
   },
   "history": {
     "title": "Historique",
@@ -1069,8 +1208,9 @@
     },
     "menuColors": {
       "title": "Couleurs des menus",
+      "enable": "Activer les couleurs par menu",
       "reset": "Réinitialiser les couleurs",
-      "hint": "Chaque menu (Accueil, Muscu, Course, Alimentation) a sa couleur d'accent."
+      "hint": "Une fois activé, chaque menu (Accueil, Muscu, Course, Alimentation) peut avoir sa propre couleur d'accent. Désactivé, l'accent unique s'applique partout."
     },
     "units": {
       "title": "Unités",
@@ -1082,6 +1222,10 @@
       "title": "Langue",
       "fr": "Français",
       "en": "English"
+    },
+    "workoutDisplayLevel": {
+      "title": "Niveau d'affichage de la séance",
+      "hint": "Choisis la quantité d'informations affichées pendant une séance de musculation."
     },
     "notifications": {
       "title": "Notifications",
@@ -1101,7 +1245,94 @@
     "account": {
       "title": "Compte",
       "signOut": "Se déconnecter"
+    },
+    "help": {
+      "title": "Aide & support",
+      "button": "Consulter l'aide"
+    },
+    "analytics": {
+      "title": "Statistiques d'usage",
+      "toggle": "Autoriser les statistiques d'usage",
+      "subtitle": "Nous aide à améliorer l'application. Données anonymes, jamais tes données de santé."
+    },
+    "dataExport": {
+      "title": "Données",
+      "subtitle": "Récupère une copie de toutes tes données au format JSON (RGPD).",
+      "button": "Exporter mes données"
+    },
+    "dangerZone": {
+      "title": "Zone de danger",
+      "subtitle": "La suppression est définitive après 30 jours. Nécessite une connexion.",
+      "delete": "Supprimer mon compte",
+      "requiresConnection": "Nécessite une connexion."
     }
+  },
+  "account": {
+    "export": {
+      "dialogTitle": "Exporter mes données",
+      "syncWarningTitle": "Synchro en cours",
+      "syncWarningBody": "La synchronisation initiale n'est pas terminée : l'export pourrait être incomplet. Réessaie une fois terminée.",
+      "errorUnavailable": "Le partage n'est pas disponible sur cet appareil.",
+      "errorFailed": "L'export a échoué. Réessaie."
+    },
+    "delete": {
+      "title": "Supprimer mon compte",
+      "warning": "Action irréversible. Ton compte et toutes tes données seront supprimés :",
+      "whatDeletedTitle": "Ce qui sera supprimé",
+      "item1": "Séances, courses, journal nutrition",
+      "item2": "Profils, historiques, records",
+      "item3": "Exercices et aliments personnels",
+      "graceInfo": "Suppression effective dans 30 jours. Tu peux annuler en te reconnectant avant le {{date}}.",
+      "exportHint": "Pense à exporter tes données (Réglages → Exporter mes données) au préalable.",
+      "passwordLabel": "Confirme avec ton mot de passe",
+      "confirm": "Supprimer définitivement",
+      "cancel": "Annuler",
+      "errorWrongPassword": "Mot de passe incorrect.",
+      "scheduledTitle": "Suppression programmée",
+      "scheduledBody": "Ton compte sera supprimé le {{date}}."
+    },
+    "deletePending": {
+      "title": "Suppression en cours",
+      "scheduledFor": "Ton compte sera supprimé le {{date}}.",
+      "blocked": "Tant que la suppression est active, l'accès à l'app est bloqué.",
+      "cancel": "Annuler la suppression",
+      "signOut": "Se déconnecter",
+      "cancelError": "Échec de l'annulation. Réessaie."
+    }
+  },
+  "help": {
+    "title": "Aide & support",
+    "faq": {
+      "title": "Questions fréquentes",
+      "items": [
+        { "q": "L'application fonctionne-t-elle hors connexion ?", "a": "Oui. Tes données sont enregistrées sur l'appareil et se synchronisent automatiquement dès qu'une connexion est disponible." },
+        { "q": "Mes données sont-elles synchronisées entre mes appareils ?", "a": "Oui : connecte-toi avec le même compte, tes données se synchronisent en arrière-plan." },
+        { "q": "Comment activer ou désactiver un pilier (Muscu / Course / Nutrition) ?", "a": "Dans Réglages → Piliers actifs. Les onglets des piliers désactivés sont masqués et réapparaissent à la réactivation." },
+        { "q": "Comment changer les unités ou la langue ?", "a": "Dans Réglages → Unités (métrique/impérial) et Langue (français/anglais)." },
+        { "q": "Comment exporter mes données ?", "a": "Dans Réglages → Exporter mes données : tu récupères une copie complète de tes données au format JSON." },
+        { "q": "Comment supprimer mon compte ?", "a": "Dans Réglages → Zone de danger → Supprimer mon compte. Un délai de grâce de 30 jours permet de revenir en arrière." },
+        { "q": "L'application est-elle gratuite ?", "a": "Oui, l'application est entièrement gratuite." }
+      ]
+    },
+    "contact": {
+      "title": "Nous contacter",
+      "intro": "Une question ou un problème ? Écris-nous, ton client mail s'ouvrira avec un message pré-rempli.",
+      "contactButton": "Nous contacter",
+      "bugButton": "Signaler un bug",
+      "subject": "[Wellness] Question / contact"
+    },
+    "bug": {
+      "subject": "[Wellness] Signalement de bug",
+      "prompt": "Décris le problème rencontré (étapes, ce qui était attendu) :",
+      "techHeader": "Informations techniques (à conserver)",
+      "appLabel": "App",
+      "buildLabel": "build",
+      "systemLabel": "Système",
+      "deviceLabel": "Appareil",
+      "languageLabel": "Langue"
+    },
+    "mailUnavailableTitle": "Aucune application mail",
+    "mailUnavailableBody": "Aucune application mail n'est configurée. Écris-nous à : {{email}}"
   },
   "running": {
     "profile": {

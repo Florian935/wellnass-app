@@ -51,6 +51,14 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260719230416_refonte_muscu_c2_saisie_enrichie` | 20/07/2026 | CLI (`npm run db:push`) — C2  |
 |   [x]   | `20260720121317_refonte_muscu_c3_note_exercice`   | 20/07/2026 | CLI (`npm run db:push`) — C3  |
 |   [x]   | `20260720200254_refonte_muscu_c3_superset_pairs`  | 20/07/2026 | CLI (`npm run db:push`) — C3 (recette) |
+|   [x]   | `20260721074949_refonte_muscu_d_workout_templates`| 21/07/2026 | CLI (`npm run db:push`) — US-D |
+|   [x]   | `20260722080703_muscf3_equipment_check`           | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F3 |
+|   [x]   | `20260722140518_muscf10c1_exercises_muscles_secondary` | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F10c-1 |
+|   [x]   | `20260722151024_muscf10c2_exercise_variants`      | 22/07/2026 | CLI (`npm run db:push`) — MUSC-F10c-2 (⚠ sync rules à redéployer) |
+|   [x]   | `20260723100835_muscf13_workout_display_level`    | 23/07/2026 | CLI (`npm run db:push`) — MUSC-F13 (profiles `select *` → pas de redéploiement sync rules) |
+|   [x]   | `20260723131921_conf02_account_deletion`          | 23/07/2026 | CLI (`npm run db:push`) — CONF-02 (table + RPC + `purge_expired_accounts` + **pg_cron** job `purge-deleted-accounts` + fix FK `user_bans.acted_by`→set null ; hors PowerSync) |
+|   [x]   | `20260724112210_analytics_events`                 | 24/07/2026 | CLI (`npm run db:push`) — US 9.10 (table `analytics_events` append-only + RLS insert/select own + colonne `user_settings.analytics_enabled` opt-out ; FK cascade). ⚠️ **sync rule PowerSync `analytics_events` (bucket par `user_id`) à ajouter sur l'instance** avant recette |
+|   [x]   | `20260724123616_analytics_events_publication`     | 24/07/2026 | CLI (`npm run db:push`) — US 9.10 **correctif** : `alter publication powersync add table public.analytics_events` (oublié dans `20260724112210` ; sans lui le déploiement des sync rules échoue « table not part of publication »). Pattern standard des tables synchronisées |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
