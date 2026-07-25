@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/auto-close-seance-perimee` — clôture automatique d'une séance périmée (3.37)
+
+> Dev autonome (Damien : « lance des corrections ou dev en autonomie »). Comble un **vrai trou** du
+> backlog muscu (le reste de MUSC-F4/F5/F7 était déjà livré par le chantier refonte muscu, cases restées
+> `[ ]`). 100 % logique, aucune migration. typecheck 0 · lint 0 err · shared 72 + mobile 112 tests.
+
+**Ajouté**
+- **Clôture auto d'une séance « zombie »** (spec 3.37) : une séance oubliée restait `active` **à vie** →
+  le widget « Séance du jour » proposait « Reprendre » indéfiniment et bloquait un nouveau départ. Désormais,
+  au **démarrage de l'app** (après la synchro initiale), une séance active depuis **plus de 3 h**
+  (`WORKOUT_AUTO_CLOSE_SECONDS`) est **terminée automatiquement**.
+- Brique pure **`isWorkoutStale(startedAt, nowMs, maxSeconds?)`** + constante `WORKOUT_AUTO_CLOSE_SECONDS`
+  ([workout.ts](packages/shared/src/workout.ts)), testées (seuil strict, seuil custom, date invalide → faux).
+- **`autoCloseStaleWorkout()`** ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)) :
+  best-effort, idempotent (délègue à `finishWorkout`). Câblée une fois via un effet gaté `hasSynced` dans
+  [_layout.tsx](apps/mobile/src/app/_layout.tsx).
+- `finishWorkout` accepte un **`finishedAt` optionnel** : la clôture auto date la fin à la **dernière
+  activité réelle** (dernier `updated_at` des séries, sinon `started_at`) → **durée non gonflée** jusqu'à
+  « maintenant » (sinon stats/records/widgets de temps faussés).
+
+**Technique / Notes**
+- **Non recetté device** : impossible de fabriquer une séance vieille de 3 h à la demande ; logique
+  couverte par tests unitaires + typecheck. À vérifier device par Damien (ou en abaissant le seuil en test).
+- **Choix de design à confirmer** (Damien) : (1) seuil = **3 h** ; (2) une séance périmée **vide** (aucune
+  série) est clôturée en `completed` avec **durée 0** (pas de discard) ; (3) l'occurrence planifiée liée est
+  marquée `done` (comportement `finishWorkout` standard).
+
 ### 25/07/2026 — `fix/signout-scope-local` — « Se déconnecter » ne déconnecte plus tous les appareils
 
 > Bug connu (repéré le 25/07 en vérifiant l'API pour CONF-08). 100 % logique, aucune migration.

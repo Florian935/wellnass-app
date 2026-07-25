@@ -3,6 +3,8 @@ import {
   SET_TYPES,
   setTypeSchema,
   WORKOUT_STATUSES,
+  WORKOUT_AUTO_CLOSE_SECONDS,
+  isWorkoutStale,
   workoutStatusSchema,
   workoutRowSchema,
   workoutSetRowSchema,
@@ -560,5 +562,30 @@ describe('deriveTemplateTargetsFromWorkoutSets', () => {
     expect(deriveTemplateTargetsFromWorkoutSets(sets)).toEqual([
       { exerciseId: 'A', setType: 'warmup', targetSets: 2, targetReps: '8', targetWeightKg: 80 },
     ]);
+  });
+});
+
+describe('isWorkoutStale', () => {
+  const start = '2026-07-25T10:00:00.000Z';
+  const startMs = new Date(start).getTime();
+
+  it('faux avant le seuil (3 h)', () => {
+    expect(isWorkoutStale(start, startMs + (WORKOUT_AUTO_CLOSE_SECONDS - 1) * 1000)).toBe(false);
+  });
+  it('faux pile au seuil (strictement supérieur)', () => {
+    expect(isWorkoutStale(start, startMs + WORKOUT_AUTO_CLOSE_SECONDS * 1000)).toBe(false);
+  });
+  it('vrai après le seuil', () => {
+    expect(isWorkoutStale(start, startMs + (WORKOUT_AUTO_CLOSE_SECONDS + 1) * 1000)).toBe(true);
+  });
+  it('seuil personnalisé respecté', () => {
+    expect(isWorkoutStale(start, startMs + 61_000, 60)).toBe(true);
+    expect(isWorkoutStale(start, startMs + 59_000, 60)).toBe(false);
+  });
+  it('date invalide → faux (jamais de clôture à l\'aveugle)', () => {
+    expect(isWorkoutStale('pas-une-date', Date.now())).toBe(false);
+  });
+  it('WORKOUT_AUTO_CLOSE_SECONDS vaut 3 h', () => {
+    expect(WORKOUT_AUTO_CLOSE_SECONDS).toBe(10_800);
   });
 });

@@ -36,6 +36,26 @@ export const workoutStatusSchema = z.enum(WORKOUT_STATUSES);
 export type WorkoutStatus = z.infer<typeof workoutStatusSchema>;
 
 /**
+ * Délai (secondes) au-delà duquel une séance encore `active` est considérée **périmée**
+ * (oubliée / abandonnée) et clôturée automatiquement (spec 3.37 / US Muscu). 3 heures.
+ */
+export const WORKOUT_AUTO_CLOSE_SECONDS = 3 * 60 * 60;
+
+/**
+ * Vrai si une séance démarrée à `startedAtIso` est **périmée** à l'instant `nowMs`
+ * (écoulé > `maxSeconds`). Pur / testable. Date invalide → `false` (jamais de clôture à l'aveugle).
+ */
+export function isWorkoutStale(
+  startedAtIso: string,
+  nowMs: number,
+  maxSeconds: number = WORKOUT_AUTO_CLOSE_SECONDS,
+): boolean {
+  const started = new Date(startedAtIso).getTime();
+  if (Number.isNaN(started)) return false;
+  return (nowMs - started) / 1000 > maxSeconds;
+}
+
+/**
  * Ligne séance (table `workouts`).
  * Étend `syncFieldsSchema` (id + userId + timestamps + soft delete).
  */
