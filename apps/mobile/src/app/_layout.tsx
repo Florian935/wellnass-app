@@ -164,7 +164,12 @@ function RootNavigator() {
     if (route === 'wait') {
       return;
     }
-    const group = segments[0];
+    // Lu en `string` volontairement : `segments[0]` est typé par les **routes générées** par Expo
+    // Router (`.expo/types`, artefact local gitignoré, absent en CI). Or on doit comparer à
+    // `auth-callback`, un **chemin d'atterrissage de deep link sans écran** — donc jamais présent dans
+    // cette union. Sans ce typage lâche, le typecheck casse chez qui a les types générés (TS2367) tout
+    // en passant en CI : divergence à éviter.
+    const group: string | undefined = segments[0];
     const inAuth = group === '(auth)';
     const inOnboarding = group === '(onboarding)';
 

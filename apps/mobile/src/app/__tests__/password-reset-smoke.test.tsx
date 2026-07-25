@@ -13,7 +13,9 @@ import PasswordResetScreen from '../password-reset';
 
 // Préfixe `mock` obligatoire : les factories jest.mock sont hoistées et ne peuvent référencer que
 // des variables ainsi nommées.
-const mockCompletePasswordRecovery = jest.fn(async () => ({ error: null }));
+// Paramètre typé (et non `...unknown[]`) : un spread vers une fonction sans paramètre déclaré est
+// rejeté par tsc (TS2556) — invisible côté Jest, qui ne typecheck pas.
+const mockCompletePasswordRecovery = jest.fn(async (_password: string) => ({ error: null }));
 const mockClearRecovery = jest.fn();
 const mockSignOut = jest.fn(async () => undefined);
 
@@ -35,7 +37,7 @@ jest.mock('@/theme/useTheme', () => ({
 jest.mock('@/stores/auth-store', () => ({
   useAuthStore: (selector: (s: unknown) => unknown) =>
     selector({
-      completePasswordRecovery: (...args: unknown[]) => mockCompletePasswordRecovery(...args),
+      completePasswordRecovery: (password: string) => mockCompletePasswordRecovery(password),
       clearRecovery: () => mockClearRecovery(),
       signOut: () => mockSignOut(),
     }),
