@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/signout-scope-local` — « Se déconnecter » ne déconnecte plus tous les appareils
+
+> Bug connu (repéré le 25/07 en vérifiant l'API pour CONF-08). 100 % logique, aucune migration.
+> typecheck 0 · lint 0 erreur · 112 tests.
+
+**Corrigé**
+- **Déconnexion ordinaire (bouton Réglages)** : `supabase.auth.signOut()` sans argument utilise le scope
+  **`global`** (défaut de `@supabase/auth-js`) → révoquait les refresh tokens de **tous** les appareils.
+  Passé en **`{ scope: 'local' }`** dans le seul `signOut` du store
+  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts)) → ne déconnecte que l'appareil courant.
+
+**Technique / Notes**
+- **Non modifiés** (scope global voulu) : `completePasswordRecovery` (révoquer les autres appareils après
+  un reset MDP — documenté) et le `signOut` de la suppression de compte.
+- **Recette** : à faire **sur 2 appareils** (déconnecter A ne doit pas déconnecter B) — non vérifiable sur
+  un seul device (recetter y déconnecterait la session). Fix vérifié en code.
+
 ### 25/07/2026 — `fix/activation-programme-owner-scope` — activation d'un programme éditorial (divergence local↔cloud)
 
 > Bug remonté par Damien via la recette widgets (« il y a un programme actif mais absent du widget »).

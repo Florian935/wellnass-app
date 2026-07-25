@@ -137,7 +137,12 @@ export const useAuthStore = create<AuthState>(() => ({
     }
   },
   signOut: async () => {
-    await supabase.auth.signOut();
+    // Déconnexion ordinaire (bouton Réglages) = **scope local** : ne révoque que la session de CET
+    // appareil. Sans argument, `@supabase/auth-js` utilise le scope `global` (défaut) qui déconnecte
+    // TOUS les appareils de l'utilisateur — inattendu pour un simple logout (la doc de la lib le
+    // recommande elle-même). Le scope global reste voulu ailleurs : reset MDP (`completePasswordRecovery`)
+    // et suppression de compte — non modifiés.
+    await supabase.auth.signOut({ scope: 'local' });
   },
   resetPassword: async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
