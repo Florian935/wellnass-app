@@ -105,10 +105,13 @@ valeur/coût de cette US.
 
 ### 2.2 Tap sur une barre (histogrammes)
 
-- Même infobulle, même contenu, même persistance. La barre tapée est **mise en avant** (teinte accentuée) ;
-  les autres restent dans leur couleur.
-- Les couleurs sémantiques existantes de l'équilibre musculaire (délaissé = doré, équilibré = bordeaux,
-  sur-représenté = grisé) **restent lisibles** : la mise en avant ne doit pas les écraser.
+- Même infobulle, même contenu, même persistance.
+- **Pas de surcharge de couleur sur la barre tapée** (arbitré à l'implémentation, 25/07). Les couleurs de
+  l'équilibre musculaire portent du **sens** (délaissé = doré, équilibré = bordeaux, sur-représenté =
+  grisé) et `FocusedBarConfig` de la bibliothèque n'offre qu'un **aplat** (`color`, `opacity`,
+  `gradientColor`) — aucun contour. Repeindre la barre focalisée écraserait donc la sémantique. Le
+  **retour visuel est l'infobulle elle-même**, ancrée au-dessus de la barre tapée, ce qui identifie déjà
+  sans ambiguïté la barre sélectionnée.
 
 ### 2.3 Contenu de l'infobulle
 

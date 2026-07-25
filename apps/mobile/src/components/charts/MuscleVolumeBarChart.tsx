@@ -1,12 +1,20 @@
+import { formatTooltipValue } from '@wellness/shared';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dimensions, type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
+import { ChartTooltip } from '@/components/charts/ChartTooltip';
 import { useTheme } from '@/theme/useTheme';
 
 type DataPoint = {
   label: string;
   value: number;
   color?: string;
+  /**
+   * Libellé riche affiché en en-tête de l'infobulle (date complète JJ/MM/AAAA). Optionnel : sur les
+   * histogrammes musculaires, `label` est déjà le bon en-tête (nom du groupe), donc laissé vide.
+   */
+  detail?: string;
 };
 
 type MuscleVolumeBarChartProps = {
@@ -35,6 +43,7 @@ const FALLBACK_OUTER_WIDTH = Dimensions.get('window').width - 2 * (20 + 18);
  */
 export function MuscleVolumeBarChart({ data, title, unit, width }: MuscleVolumeBarChartProps) {
   const { colors } = useTheme();
+  const { i18n } = useTranslation();
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
   if (data.length === 0) return null;
@@ -47,9 +56,11 @@ export function MuscleVolumeBarChart({ data, title, unit, width }: MuscleVolumeB
   const outerWidth = width ?? containerWidth ?? FALLBACK_OUTER_WIDTH;
   const chartWidth = Math.max(0, outerWidth - Y_AXIS_LABEL_WIDTH - END_SPACING);
 
+  // `detail` propagé pour que `renderTooltip` y ait accès (même écueil que la courbe).
   const chartData = data.map((point) => ({
     value: point.value,
     label: point.label,
+    detail: point.detail,
     frontColor: point.color ?? colors.accent,
     topLabelTextStyle: { color: colors.textMuted, fontSize: 10 },
   }));
@@ -75,6 +86,20 @@ export function MuscleVolumeBarChart({ data, title, unit, width }: MuscleVolumeB
         yAxisTextStyle={{ color: colors.textMuted, fontSize: 11 }}
         backgroundColor={colors.surface}
         noOfSections={4}
+        // Tap sur une barre → infobulle persistante (US UX-01), même composant que la courbe.
+        //
+        // ⚠️ Volontairement SANS `focusedBarConfig` : l'équilibre musculaire code du **sens** dans la
+        // couleur de chaque barre (délaissé = doré, équilibré = bordeaux, sur-représenté = grisé), et
+        // `FocusedBarConfig` n'offre qu'un aplat (`color`/`opacity`/`gradientColor`) — pas de contour.
+        // Repeindre la barre focalisée écraserait donc la sémantique, ce que la spec interdit
+        // explicitement. Le retour visuel est l'infobulle, ancrée au-dessus de la barre tapée.
+        focusBarOnPress
+        renderTooltip={(item: { value: number; label: string; detail?: string }) => (
+          <ChartTooltip
+            heading={item.detail ?? item.label}
+            value={formatTooltipValue(item.value, { unit, locale: i18n.language })}
+          />
+        )}
         isAnimated
       />
     </View>
