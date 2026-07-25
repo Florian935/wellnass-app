@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : recette validée & US clôturée (RECETTE)
+
+> **RECETTÉE & VALIDÉE par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien **non requise**
+> (go explicite de Florian). Le parcours complet fonctionne : lien « mot de passe oublié » → l'app s'ouvre
+> sur l'écran de saisie → nouveau mot de passe enregistré → retour connexion. Config Supabase faite
+> (`wellness://password-reset` dans les Redirect URLs).
+
+**Corrigé pendant la recette** — 2 bugs de la même classe, trouvés grâce au retour terrain
+- **`wellness://password-reset` → écran « Unmatched Route »** (capture fournie par Florian). Cause :
+  **Expo Router résout le deep link entrant comme un chemin de route et y navigue lui-même** ; l'écran
+  s'appelait `new-password.tsx` alors que le lien pointe sur `password-reset` → aucune route ne correspond,
+  et **cette navigation gagne la course** contre celle du gate (le drapeau et la redirection fonctionnaient,
+  ils étaient écrasés). Fix : `new-password.tsx` → **`password-reset.tsx`** (route, composant, test,
+  branchement du layout). La contrainte **« nom de fichier = chemin du deep link »** est désormais écrite en
+  tête du fichier, dans la spec (§2.3) et dans le plan — piège invisible à la relecture.
+- **Blocage latent sur `wellness://auth-callback`** (confirmation d'inscription, livrée la veille) : ce
+  chemin n'a **pas** d'écran non plus. Le bug ne s'était pas vu en recette parce qu'un **nouveau** compte
+  part sur `route = 'onboarding'`, dont la branche redirige **inconditionnellement** ; mais un compte **déjà
+  onboardé** restait **bloqué** sur « Unmatched Route », la branche `route === 'app'` ne redirigeant que
+  depuis `(auth)` et `(onboarding)`. Échappatoire ajoutée pour ce chemin d'atterrissage.
+
+**Technique / Notes**
+- Le namespace i18n reste `auth.newPassword.*` alors que la route s'appelle `password-reset` : **voulu**
+  (le namespace décrit l'écran, la route doit matcher l'URL du lien). Ne pas « harmoniser ».
+- **Reste ouvert, hors périmètre** : (a) bug préexistant du **« Se déconnecter »** en scope `global`
+  (déconnecte tous les appareils) — consigné [TODO.md](TODO.md) §🐞, correction = décision produit + recette
+  dédiée ; (b) **SMTP custom** Supabase (service intégré rate-limité) = prérequis bêta ; (c) changement de
+  mot de passe depuis les **Réglages** (utilisateur connecté) — besoin distinct non cadré.
+- 9 commits (`d33f252`→`c7dd417`). typecheck + lint verts (0 erreur) ; **829 tests shared + 112 mobile** ;
+  parité i18n 1217/1217. Aucune migration, aucun module natif. Roadmap **1.6** → remarque complétée.
+- Commit précédent : `e377c83`.
+
 ### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : réinitialisation du mot de passe (code livré)
 
 > **Trou fonctionnel du socle auth (roadmap 1.6), prérequis bêta.** Le lien « mot de passe oublié » menait à

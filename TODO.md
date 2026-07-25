@@ -421,8 +421,17 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 25/07/2026 (**US CONF-08 Réinitialisation du mot de passe — CODE LIVRÉ ✅ → reste
-prérequis Supabase + recette + Damien** : le lien « mot de passe oublié » menait à une page morte
+*Dernière mise à jour : 25/07/2026 (**US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
++ CLÔTURÉE (Florian) ✅** — relecture Damien non requise (go explicite). Parcours complet fonctionnel : lien →
+écran de saisie → mot de passe enregistré → retour connexion ; Redirect URL Supabase configurée.
+**2 bugs corrigés en recette, même classe de défaut** : **Expo Router résout un deep link comme un chemin de
+route et y navigue lui-même** → (1) l'écran nommé `new-password` ne correspondait pas à
+`wellness://password-reset` → écran « Unmatched Route », sa navigation écrasant celle du gate ; renommé
+`password-reset.tsx`, contrainte « nom de fichier = chemin du lien » documentée dans le fichier, la spec et
+le plan ; (2) **blocage latent** sur `wellness://auth-callback` (confirmation livrée la veille), invisible
+pour un **nouveau** compte (branche `onboarding` qui redirige toujours) mais bloquant pour un compte **déjà
+onboardé** → échappatoire ajoutée à la branche `app`. 9 commits, aucune migration, aucun module natif.
+Précédemment (même US) : le lien « mot de passe oublié » menait à une page morte
 `localhost:3000` et aucun écran de saisie n'existait → récupération de compte impossible (prérequis bêta,
 roadmap 1.6). Deep link dédié `wellness://password-reset` + drapeau `recoveryPending` levé **avant**
 `setSession` + nouvel état de routing `password-recovery` (patron du gate `deletion-pending`) → écran-gate
@@ -949,7 +958,7 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   contraire **voulu** (révoquer les autres appareils après un reset) → **ne pas toucher**
   `completePasswordRecovery`. Fix envisagé : `{ scope: 'local' }` sur le seul `signOut` des Réglages.
 
-> ## 🧪 RECETTE À FAIRE — US CONF-08 Réinitialisation du mot de passe (deep link + écran) — code livré (25/07/2026)
+> ## ✅ CLÔTURÉE — US CONF-08 Réinitialisation du mot de passe — recette validée Florian (25/07/2026)
 >
 > Trou fonctionnel du socle auth (roadmap **1.6**), **prérequis bêta** : le lien « mot de passe oublié »
 > menait à une page morte `localhost:3000` et aucun écran de saisie n'existait → **impossible de récupérer
@@ -966,15 +975,18 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 >   `recoveryPending` levé **avant** `setSession`, `completePasswordRecovery`) · écran-gate racine
 >   `new-password` + branchement + messages de connexion + i18n FR/EN.
 >   typecheck/lint verts ; **829 shared + 112 mobile verts** ; parité i18n 1217/1217.
-> - [ ] 🔧 **PRÉREQUIS FLORIAN (avant recette)** : Supabase → Authentication → URL Configuration →
->   **Redirect URLs** → ajouter **`wellness://password-reset`**. Sans ça le `redirectTo` est ignoré et on
->   retombe sur `localhost:3000` (= le bug d'origine, **ce n'est alors pas le code**).
-> - [ ] **Recette device** (9 critères, spec §9) : chemin nominal (lien → écran, **pas** le dashboard →
->   nouveau mot de passe OK, ancien refusé) · **révocation d'un 2ᵉ appareil** · validations (7 caractères,
->   non concordance) · Annuler (ancien mot de passe toujours valide) · **lien expiré** (message, pas d'écran)
->   · app fermée **et** ouverte · hors-ligne · **non-régression confirmation d'inscription** (`auth-callback`)
->   · **non-régression inscription** (mêmes messages).
-> - [ ] **Relecture Damien** (PR).
+> - [x] 🔧 **PRÉREQUIS FLORIAN — FAIT (25/07/2026)** : `wellness://password-reset` ajouté aux **Redirect
+>   URLs** Supabase.
+> - [x] **Recette device — VALIDÉE (Florian, 25/07/2026) ✅** : le parcours complet fonctionne (lien →
+>   écran de saisie → nouveau mot de passe enregistré → retour connexion). **2 bugs corrigés en recette**,
+>   même classe de défaut : (1) `wellness://password-reset` tombait sur l'écran **« Unmatched Route »**
+>   d'Expo Router — il **résout le deep link comme un chemin de route** et y navigue lui-même, or l'écran
+>   s'appelait `new-password` → sa navigation écrasait celle du gate ; renommé **`password-reset.tsx`**,
+>   contrainte « nom de fichier = chemin du lien » documentée ; (2) **blocage latent** sur
+>   `wellness://auth-callback` (confirmation, livrée la veille) : invisible pour un **nouveau** compte
+>   (branche `onboarding` qui redirige toujours) mais **bloquant** pour un compte **déjà onboardé** →
+>   échappatoire ajoutée à la branche `app`.
+> - [x] **Relecture Damien — non requise** (go explicite de Florian, 25/07/2026). **→ US CLÔTURÉE.**
 >
 > ⚠️ **Limite assumée** (spec §2.5) : le drapeau vit **en mémoire**. Si l'app est **tuée** sur l'écran de
 > saisie, le lancement suivant entre normalement dans l'app, mot de passe inchangé. Accepté (l'utilisateur
