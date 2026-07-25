@@ -1447,7 +1447,9 @@
       "rpeValue": "Effort perçu : {{value}} / 10",
       "notes": "Note (facultatif)",
       "notesPlaceholder": "Comment s'est passée cette course ?",
-      "done": "Terminé"
+      "done": "Terminé",
+      "splits": "Splits par km",
+      "splitKm": "Km {{km}}"
     },
     "export": {
       "cta": "Exporter (GPX)",

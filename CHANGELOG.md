@@ -10,6 +10,21 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/run-summary-splits` — tableau de splits/km sur le résumé de course (RUN-F1, 5.26)
+
+> Dev autonome (suite de `computeKmSplits`). 100 % UI, aucune migration. typecheck 0 · lint 0 err · 112 tests.
+
+**Ajouté**
+- **Splits par km** sur l'écran résumé de course ([run/summary.tsx](apps/mobile/src/app/run/summary.tsx)) :
+  décode la trace (déjà fait pour la carte) → `computeKmSplits` → tableau (Km N · barre relative · allure
+  M:SS), **km le plus rapide en accent**. Affiché seulement pour une course GPS avec trace ≥ 1 km plein
+  (rien sinon). Clés i18n `running.summary.splits` / `splitKm`.
+
+**Technique / Notes**
+- Allure des splits en **M:SS par km** (`formatPaceMMSS`, pas de conversion d'unité) — splits toujours
+  par km même en réglage impérial (standard coach ; à confirmer si on veut du /mile).
+- **5.32 dénivelé cumulé** reste **non faisable** : la trace encode lat/lng/t **sans altitude**.
+
 ### 25/07/2026 — `feature/auto-close-seance-perimee` — clôture automatique d'une séance périmée (3.37)
 
 > Dev autonome (Damien : « lance des corrections ou dev en autonomie »). Comble un **vrai trou** du

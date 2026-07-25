@@ -1447,7 +1447,9 @@
       "rpeValue": "Perceived effort: {{value}} / 10",
       "notes": "Note (optional)",
       "notesPlaceholder": "How did this run go?",
-      "done": "Done"
+      "done": "Done",
+      "splits": "Splits per km",
+      "splitKm": "Km {{km}}"
     },
     "export": {
       "cta": "Export (GPX)",
