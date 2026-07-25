@@ -78,6 +78,8 @@ export type WorkoutHistoryItem = {
   notes: string | null;
   sessionId: string | null;
   programId: string | null;
+  /** Tonnage total (Σ reps × poids, séries validées non-échauffement), en kg. 0 si aucune. */
+  volumeKg: number;
 };
 
 /** Champs modifiables d'une série via `updateSet`. */
@@ -104,6 +106,8 @@ type WorkoutDbRow = {
   notes: string | null;
   session_id: string | null;
   program_id: string | null;
+  /** Tonnage total de la séance (correlated subquery de `SELECT_HISTORY`) ; absent des autres requêtes. */
+  volume_kg?: number | null;
 };
 
 /**
@@ -156,7 +160,11 @@ const SELECT_SETS_FOR_WORKOUT = `
 
 /** Historique des séances terminées, plus récentes d'abord. */
 const SELECT_HISTORY = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id
+  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id,
+         (SELECT COALESCE(SUM(ws.reps * ws.weight_kg), 0)
+            FROM workout_sets ws
+           WHERE ws.workout_id = workouts.id AND ws.deleted_at IS NULL
+             AND ws.done = 1 AND ws.set_type <> 'warmup') AS volume_kg
   FROM workouts
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
@@ -193,6 +201,7 @@ function rowToHistoryItem(row: WorkoutDbRow): WorkoutHistoryItem {
     notes: row.notes,
     sessionId: row.session_id,
     programId: row.program_id,
+    volumeKg: row.volume_kg ?? 0,
   };
 }
 

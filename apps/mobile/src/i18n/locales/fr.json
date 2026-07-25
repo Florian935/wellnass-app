@@ -629,7 +629,8 @@
       "planningEyebrow": "Planning",
       "progressEyebrow": "Progression",
       "progressTotalEyebrow": "Volume total",
-      "templatesEyebrow": "Templates"
+      "templatesEyebrow": "Templates",
+      "tonnage": "{{value}} t"
     },
     "running": {
       "lastRunEyebrow": "Dernière sortie",
@@ -1305,13 +1306,34 @@
     "faq": {
       "title": "Questions fréquentes",
       "items": [
-        { "q": "L'application fonctionne-t-elle hors connexion ?", "a": "Oui. Tes données sont enregistrées sur l'appareil et se synchronisent automatiquement dès qu'une connexion est disponible." },
-        { "q": "Mes données sont-elles synchronisées entre mes appareils ?", "a": "Oui : connecte-toi avec le même compte, tes données se synchronisent en arrière-plan." },
-        { "q": "Comment activer ou désactiver un pilier (Muscu / Course / Nutrition) ?", "a": "Dans Réglages → Piliers actifs. Les onglets des piliers désactivés sont masqués et réapparaissent à la réactivation." },
-        { "q": "Comment changer les unités ou la langue ?", "a": "Dans Réglages → Unités (métrique/impérial) et Langue (français/anglais)." },
-        { "q": "Comment exporter mes données ?", "a": "Dans Réglages → Exporter mes données : tu récupères une copie complète de tes données au format JSON." },
-        { "q": "Comment supprimer mon compte ?", "a": "Dans Réglages → Zone de danger → Supprimer mon compte. Un délai de grâce de 30 jours permet de revenir en arrière." },
-        { "q": "L'application est-elle gratuite ?", "a": "Oui, l'application est entièrement gratuite." }
+        {
+          "q": "L'application fonctionne-t-elle hors connexion ?",
+          "a": "Oui. Tes données sont enregistrées sur l'appareil et se synchronisent automatiquement dès qu'une connexion est disponible."
+        },
+        {
+          "q": "Mes données sont-elles synchronisées entre mes appareils ?",
+          "a": "Oui : connecte-toi avec le même compte, tes données se synchronisent en arrière-plan."
+        },
+        {
+          "q": "Comment activer ou désactiver un pilier (Muscu / Course / Nutrition) ?",
+          "a": "Dans Réglages → Piliers actifs. Les onglets des piliers désactivés sont masqués et réapparaissent à la réactivation."
+        },
+        {
+          "q": "Comment changer les unités ou la langue ?",
+          "a": "Dans Réglages → Unités (métrique/impérial) et Langue (français/anglais)."
+        },
+        {
+          "q": "Comment exporter mes données ?",
+          "a": "Dans Réglages → Exporter mes données : tu récupères une copie complète de tes données au format JSON."
+        },
+        {
+          "q": "Comment supprimer mon compte ?",
+          "a": "Dans Réglages → Zone de danger → Supprimer mon compte. Un délai de grâce de 30 jours permet de revenir en arrière."
+        },
+        {
+          "q": "L'application est-elle gratuite ?",
+          "a": "Oui, l'application est entièrement gratuite."
+        }
       ]
     },
     "contact": {

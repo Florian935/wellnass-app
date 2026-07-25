@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/widgets-v2-dnd` — widgets : complétion des données (volume hebdo + tonnage historique)
+
+> Suite recette device : formes riches complétées avec de vraies données au lieu de dégradations.
+> Recetté sur device (sparkline Progression multi-points + tonnage par séance affichés). Commit
+> précédent : `0b9c124`. 100 % UI + data (aucune migration). typecheck 0 · lint 0 erreur · 112 tests verts.
+
+**Ajouté**
+- **`useWeeklyVolumeSeries(weeks)`** ([records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts)) :
+  série de tonnage hebdomadaire (8 semaines glissantes, bucketing par `finished_at`, module-level pur pour
+  la règle `react-hooks/purity`) → la **sparkline Progression** (widget muscu) devient une vraie courbe
+  multi-points au lieu d'une diagonale à 2 points.
+- **Tonnage par séance** dans l'historique : `SELECT_HISTORY` calcule `volume_kg` (correlated subquery
+  Σ reps × poids, non-échauffement), exposé via `WorkoutHistoryItem.volumeKg`
+  ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)) ; le widget
+  **Historique muscu** (formes `wide`/`large`) affiche le tonnage par séance (« 4,3 t »). Clé i18n
+  `widgets.strength.tonnage`.
+
+**Technique / Notes**
+- Test `history-smoke` : fixtures `WorkoutHistoryItem` complétées de `volumeKg`.
+- **Reportés** (non branchés) : **splits/km** du grand carré Course (la trace GPS est encodée dans
+  `runs.gps_track`, aucune table de points → décodage + géométrie lourds/risqués ; la sparkline des
+  distances récentes reste) ; **semaine X/Y** d'un programme (faisable via `planned_sessions.week_index`
+  mais chaînage plus lourd — à faire en suivi si besoin).
+
 ### 25/07/2026 — `feature/widgets-v2-dnd` — fix widgets : trou de grille (widget conditionnel) + état vide démesuré
 
 > Recette **sur device** (prise de contrôle ADB : screenshots + navigation accueil/muscu/course/édition).
