@@ -20,6 +20,12 @@ function isNetworkError(message: string): boolean {
  * réinitialisation**. L'utilisateur doit choisir son nouveau mot de passe avant d'accéder à l'app —
  * sinon il entrerait avec son ancien mot de passe toujours actif.
  *
+ * ⚠️ **Le nom de ce fichier fait partie du contrat** : il doit correspondre au chemin de
+ * `PASSWORD_RESET_REDIRECT_URL` (`wellness://password-reset` → `password-reset.tsx`). Expo Router
+ * résout le deep link entrant comme un **chemin de route** et y navigue lui-même ; si aucune route ne
+ * correspond, on tombe sur son écran « Unmatched Route » — sa navigation gagne la course contre celle
+ * du gate. Renommer l'un sans l'autre casse le flux.
+ *
  * Aucune sortie implicite (pas de geste de retour, voir `gestureEnabled: false` dans `_layout.tsx`) :
  * la seule échappatoire est « Annuler », qui déconnecte.
  *
@@ -27,7 +33,7 @@ function isNetworkError(message: string): boolean {
  * ici — l'app vient d'être ouverte par un deep link, la synchro n'est pas encore connectée, et on
  * bloquerait un utilisateur pourtant en ligne. On laisse partir l'appel et on mappe l'échec réseau.
  */
-export default function NewPasswordScreen() {
+export default function PasswordResetScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const completePasswordRecovery = useAuthStore((s) => s.completePasswordRecovery);

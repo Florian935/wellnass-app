@@ -129,9 +129,19 @@ Il faut donc **distinguer le flux récupération** et **retenir l'utilisateur** 
 - Aucun retour arrière implicite : **pas de geste de balayage**, **pas de flèche de header**
   (`gestureEnabled: false`, `headerShown: false` — même traitement que `deletion-pending`). La seule sortie
   est le bouton **« Annuler »**, qui **déconnecte** et renvoie à la connexion.
-- **Écran de niveau racine** (`app/new-password.tsx`, à côté de `deletion-pending.tsx`), **pas** dans le
+- **Écran de niveau racine** (`app/password-reset.tsx`, à côté de `deletion-pending.tsx`), **pas** dans le
   groupe `(auth)` : c'est un **écran-gate**, exactement comme `deletion-pending`. Le mettre dans `(auth)`
   ferait entrer en collision son segment avec la branche `route === 'auth'` du routeur racine.
+- ⚠️ **Le nom du fichier fait partie du contrat** (constaté en recette du 25/07) : il **doit** correspondre
+  au chemin de `PASSWORD_RESET_REDIRECT_URL` (`wellness://password-reset` → `password-reset.tsx`).
+  **Expo Router résout le deep link entrant comme un chemin de route et y navigue lui-même** ; si aucune
+  route ne correspond, il affiche son écran **« Unmatched Route »**, et cette navigation **gagne la course**
+  contre celle du gate. Renommer l'un sans l'autre casse le flux.
+- **Corollaire — échappatoire pour les chemins d'atterrissage sans écran** : `wellness://auth-callback`
+  (confirmation d'inscription) n'a **pas** d'écran. La branche `route === 'onboarding'` redirige
+  inconditionnellement, ce qui masquait le problème pour un **nouveau** compte (cas recetté le 25/07) ;
+  mais un compte **déjà onboardé** (`route === 'app'`) restait **bloqué** sur « Unmatched Route ». La
+  branche `app` doit donc aussi rediriger depuis ces chemins d'atterrissage.
 - Hors-ligne : **on ne désactive pas le bouton**. Le patron `useStatus().connected` de CONF-02 n'est **pas**
   réutilisable ici : l'app vient d'être ouverte par un deep link et la connexion PowerSync n'est pas encore
   établie → `connected` serait `false` à tort et **bloquerait un utilisateur en ligne**. On laisse donc
@@ -191,8 +201,8 @@ Site URL restent inchangés.
 | `apps/mobile/src/lib/auth-redirect.ts` (+ test) | **modifié, pur** | `PASSWORD_RESET_REDIRECT_URL = 'wellness://password-reset'` ; `parseAuthDeepLink(url)` qui renvoie un objet discriminé : `{ kind: 'tokens', tokens, isRecovery }`, `{ kind: 'error', code }` ou `null`. `parseAuthTokensFromUrl` **conservée** (utilisée par la confirmation, déjà recettée). |
 | `apps/mobile/src/stores/auth-store.ts` | modifié | `resetPassword` → `{ redirectTo: PASSWORD_RESET_REDIRECT_URL }` ; nouvelle action `completePasswordRecovery(password)` (séquence §2.4) ; drapeau `recoveryPending` + `clearRecovery()`. |
 | `apps/mobile/src/hooks/useAuthDeepLink.ts` | modifié | Route selon le `kind` : `tokens` → `setSession` (+ `recoveryPending = true` si récupération) ; `error` → expose le code d'erreur pour l'écran de connexion ; `null` → no-op (inchangé). |
-| `apps/mobile/src/app/new-password.tsx` | **nouveau** | Écran §2.3 **de niveau racine** (à côté de `deletion-pending.tsx`), sur `FormScreen` + `TextField` + `Button` + `ScreenHeader` (composants existants). |
-| `apps/mobile/src/app/_layout.tsx` | modifié | Passe `recoveryPending` à `resolveRootRoute` ; branche `route === 'password-recovery'` → `router.replace('/new-password')` (patron `deletion-pending`, l. 181-186) ; déclaration `Stack.Screen` avec `headerShown: false, gestureEnabled: false`. |
+| `apps/mobile/src/app/password-reset.tsx` | **nouveau** | Écran §2.3 **de niveau racine** (nom aligné sur le chemin du deep link — cf. §2.3) (à côté de `deletion-pending.tsx`), sur `FormScreen` + `TextField` + `Button` + `ScreenHeader` (composants existants). |
+| `apps/mobile/src/app/_layout.tsx` | modifié | Passe `recoveryPending` à `resolveRootRoute` ; branche `route === 'password-recovery'` → `router.replace('/password-reset')` (patron `deletion-pending`, l. 181-186) ; déclaration `Stack.Screen` avec `headerShown: false, gestureEnabled: false`. |
 | `apps/mobile/src/app/(auth)/sign-in.tsx` | modifié | Affiche le message de succès après reset **et** le message d'erreur « lien expiré » (§2.2). |
 | `apps/mobile/src/app/(auth)/sign-up.tsx` | modifié | Bascule sur `validatePasswordPair` — **iso-comportement**, constante locale supprimée. |
 

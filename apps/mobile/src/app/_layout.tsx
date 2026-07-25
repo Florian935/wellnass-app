@@ -187,13 +187,24 @@ function RootNavigator() {
       return;
     }
     if (route === 'password-recovery') {
-      if (segments[0] !== 'new-password') {
-        router.replace('/new-password');
+      // Le nom de la route DOIT rester aligné sur PASSWORD_RESET_REDIRECT_URL
+      // (`wellness://password-reset`) : Expo Router résout le deep link entrant comme un chemin et
+      // navigue lui-même dessus. Un nom différent → « Unmatched Route » (sa navigation gagne la
+      // course contre celle-ci).
+      if (segments[0] !== 'password-reset') {
+        router.replace('/password-reset');
       }
       return;
     }
     // route === 'app'
-    if (inAuth || inOnboarding) {
+    // Les deep links d'auth font naviguer **Expo Router lui-même** sur le chemin de l'URL reçue.
+    // `password-reset` a un écran (gate ci-dessus) ; `auth-callback` (confirmation d'inscription)
+    // n'en a pas → Expo Router affiche son écran « Unmatched Route » et, sans l'échappatoire
+    // ci-dessous, on y resterait **bloqué**. Le cas ne se voyait pas pour un **nouveau** compte
+    // (route = 'onboarding', dont la branche redirige inconditionnellement) mais piégeait un compte
+    // **déjà onboardé** qui clique un lien de confirmation.
+    const onAuthDeepLinkLanding = group === 'auth-callback';
+    if (inAuth || inOnboarding || onAuthDeepLinkLanding) {
       router.replace('/(tabs)');
     }
   }, [route, segments, router]);
@@ -211,7 +222,7 @@ function RootNavigator() {
         <Stack.Screen name="(onboarding)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="deletion-pending" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name="new-password" options={{ headerShown: false, gestureEnabled: false }} />
+        <Stack.Screen name="password-reset" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen
           name="account-delete"
           options={{

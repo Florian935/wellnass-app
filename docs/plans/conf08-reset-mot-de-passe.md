@@ -32,7 +32,7 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
 
 **Créer :**
 - `packages/shared/src/password.ts` (+ `password.test.ts`) — `MIN_PASSWORD_LENGTH` + `validatePasswordPair` (**pur, testé**).
-- `apps/mobile/src/app/new-password.tsx` — écran-gate « Nouveau mot de passe » (**racine**, à côté de `deletion-pending.tsx`).
+- `apps/mobile/src/app/password-reset.tsx` — écran-gate « Nouveau mot de passe » (**racine**, à côté de `deletion-pending.tsx`).
 
 **Modifier :**
 - `packages/shared/src/index.ts` — export du nouveau module.
@@ -349,7 +349,7 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
 
 ## Task 5 : Écran « Nouveau mot de passe » + branchement du gate + messages + i18n
 
-**Files:** `apps/mobile/src/app/new-password.tsx`, `apps/mobile/src/app/_layout.tsx`,
+**Files:** `apps/mobile/src/app/password-reset.tsx`, `apps/mobile/src/app/_layout.tsx`,
 `apps/mobile/src/app/(auth)/sign-in.tsx`, `apps/mobile/src/i18n/locales/{fr,en}.json`
 
 - [ ] **Step 1 : i18n** — ajouter dans `fr.json` **et** `en.json` (parité stricte) :
@@ -357,7 +357,7 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
     (avec `{{count}}`), `mismatch`, `updateFailed`, `offline` ;
   - `auth.signIn.passwordResetSuccess` — « Mot de passe modifié. Connecte-toi avec ton nouveau mot de passe. » ;
   - `auth.signIn.resetLinkExpired` — « Ce lien de réinitialisation a expiré ou a déjà été utilisé. Demande un nouveau lien. ».
-- [ ] **Step 2 : écran** `apps/mobile/src/app/new-password.tsx` — reprendre la structure de
+- [ ] **Step 2 : écran** `apps/mobile/src/app/password-reset.tsx` — reprendre la structure de
   `forgot-password.tsx` (`FormScreen` + `ScreenHeader` + `TextField` + `Button`) :
   - 2 `TextField` `secureTextEntry`, `autoComplete="new-password"`, `textContentType="newPassword"` ;
   - validation via `validatePasswordPair` → `tooShort` (avec `count: MIN_PASSWORD_LENGTH`) / `mismatch`,
@@ -375,15 +375,15 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
      (l. 181-186) :
      ```ts
      if (route === 'password-recovery') {
-       if (segments[0] !== 'new-password') {
-         router.replace('/new-password');
+       if (segments[0] !== 'password-reset') {
+         router.replace('/password-reset');
        }
        return;
      }
      ```
   4. déclarer l'écran dans le `Stack` racine, à côté de `deletion-pending` :
      ```tsx
-     <Stack.Screen name="new-password" options={{ headerShown: false, gestureEnabled: false }} />
+     <Stack.Screen name="password-reset" options={{ headerShown: false, gestureEnabled: false }} />
      ```
 - [ ] **Step 4 : `sign-in.tsx`** — afficher les deux messages :
   - succès : lire le paramètre de route (`useLocalSearchParams`) → bandeau de succès (couleur
@@ -391,7 +391,7 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
   - lien expiré : lire `deepLinkError` du store → message d'erreur + **`clearDeepLinkError()`** après
     affichage (sinon il réapparaîtrait à chaque retour sur l'écran).
 - [ ] **Step 5 : smoke test mobile** (optionnel mais recommandé) —
-  `apps/mobile/src/app/__tests__/new-password-smoke.test.tsx` : rendu de l'écran + un cas de validation
+  `apps/mobile/src/app/__tests__/password-reset-smoke.test.tsx` : rendu de l'écran + un cas de validation
   locale (mot de passe trop court → message, **aucun** appel au store). Suivre le patron des smokes
   existants (mocks PowerSync/safe-area déjà en place dans le setup jest).
 - [ ] **Step 6 : vérifier** `npm run typecheck` + `npm run lint` + `npm run test` (shared + mobile).
@@ -444,6 +444,11 @@ puis clôture. Chaque task est **livrable et vérifiable seule**.
 - **Ordre de levée du drapeau** : `recoveryPending = true` **avant** `setSession`. Dans l'autre sens,
   `onAuthStateChange` peut déclencher un rendu où la session existe mais pas le drapeau → redirection
   éclair vers `(tabs)`.
+- **⚠️ Nom de route = chemin du deep link** (bug de recette du 25/07) : Expo Router navigue lui-même sur le
+  chemin de l'URL reçue. L'écran **doit** donc s'appeler `password-reset.tsx` pour
+  `wellness://password-reset`, sinon → écran « Unmatched Route ». Corollaire : la branche `route === 'app'`
+  doit offrir une échappatoire depuis `auth-callback` (chemin sans écran), sinon un compte déjà onboardé qui
+  clique un lien de confirmation reste bloqué.
 - **Bug préexistant repéré, hors périmètre** : le `signOut()` du bouton « Se déconnecter » des Réglages
   utilise lui aussi le scope `global` par défaut → il déconnecte l'utilisateur **de tous ses appareils**.
   Inattendu pour une déconnexion ordinaire. **Ne pas le corriger dans cette US** (changement de

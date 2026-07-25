@@ -1,5 +1,5 @@
 /**
- * new-password-smoke.test.tsx — écran-gate « nouveau mot de passe » (US CONF-08).
+ * password-reset-smoke.test.tsx — écran-gate « nouveau mot de passe » (US CONF-08).
  *
  * Couvre le rendu et les **validations locales** (qui ne doivent déclencher aucun appel réseau).
  * Le parcours réel (deep link → session de récupération → updateUser → signOut global) est couvert
@@ -9,7 +9,7 @@
  * pour de vrai (helper pur).
  */
 import { fireEvent, render } from '@testing-library/react-native';
-import NewPasswordScreen from '../new-password';
+import PasswordResetScreen from '../password-reset';
 
 // Préfixe `mock` obligatoire : les factories jest.mock sont hoistées et ne peuvent référencer que
 // des variables ainsi nommées.
@@ -49,7 +49,7 @@ describe('Écran nouveau mot de passe (CONF-08)', () => {
   });
 
   it('rend les deux champs, le bouton d\'enregistrement et Annuler', async () => {
-    const { getByText } = await render(<NewPasswordScreen />);
+    const { getByText } = await render(<PasswordResetScreen />);
     expect(getByText('auth.newPassword.title')).toBeTruthy();
     expect(getByText('auth.newPassword.field')).toBeTruthy();
     expect(getByText('auth.newPassword.confirmField')).toBeTruthy();
@@ -58,7 +58,7 @@ describe('Écran nouveau mot de passe (CONF-08)', () => {
   });
 
   it('mot de passe trop court → message, aucun appel au store', async () => {
-    const { getByText, getByLabelText } = await render(<NewPasswordScreen />);
+    const { getByText, getByLabelText } = await render(<PasswordResetScreen />);
     await fireEvent.changeText(getByLabelText('auth.newPassword.field'), 'court');
     await fireEvent.changeText(getByLabelText('auth.newPassword.confirmField'), 'court');
     await fireEvent.press(getByText('auth.newPassword.cta'));
@@ -70,7 +70,7 @@ describe('Écran nouveau mot de passe (CONF-08)', () => {
   });
 
   it('mots de passe non concordants → message, aucun appel au store', async () => {
-    const { getByText, getByLabelText } = await render(<NewPasswordScreen />);
+    const { getByText, getByLabelText } = await render(<PasswordResetScreen />);
     await fireEvent.changeText(getByLabelText('auth.newPassword.field'), 'motdepasse1');
     await fireEvent.changeText(getByLabelText('auth.newPassword.confirmField'), 'motdepasse2');
     await fireEvent.press(getByText('auth.newPassword.cta'));
@@ -80,7 +80,7 @@ describe('Écran nouveau mot de passe (CONF-08)', () => {
   });
 
   it('couple valide → appelle le store avec le nouveau mot de passe', async () => {
-    const { getByText, getByLabelText } = await render(<NewPasswordScreen />);
+    const { getByText, getByLabelText } = await render(<PasswordResetScreen />);
     await fireEvent.changeText(getByLabelText('auth.newPassword.field'), 'motdepasse1');
     await fireEvent.changeText(getByLabelText('auth.newPassword.confirmField'), 'motdepasse1');
     await fireEvent.press(getByText('auth.newPassword.cta'));
@@ -89,7 +89,7 @@ describe('Écran nouveau mot de passe (CONF-08)', () => {
   });
 
   it('Annuler → sort du mode récupération puis déconnecte', async () => {
-    const { getByText } = await render(<NewPasswordScreen />);
+    const { getByText } = await render(<PasswordResetScreen />);
     await fireEvent.press(getByText('auth.newPassword.cancel'));
 
     expect(mockClearRecovery).toHaveBeenCalled();
