@@ -129,7 +129,14 @@ export function Metric({
   const { colors } = useTheme();
   return (
     <View>
-      <Text style={[styles.metricValue, { color: color ?? (muted ? colors.textMuted : colors.text) }]}>
+      <Text
+        style={[
+          styles.metricValue,
+          // États vides (muted) = texte, pas un chiffre héro → police modeste pour éviter le « Aucune » démesuré.
+          muted && styles.metricValueMuted,
+          { color: color ?? (muted ? colors.textMuted : colors.text) },
+        ]}
+      >
         {value}
         {unit ? <Text style={[styles.metricUnit, { color: colors.textMuted }]}> {unit}</Text> : null}
       </Text>
@@ -150,6 +157,7 @@ const styles = StyleSheet.create({
   chip: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
   chipText: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
   metricValue: { fontFamily: fontFamily.displayXBold, fontSize: 38, letterSpacing: -1.4 },
+  metricValueMuted: { fontFamily: fontFamily.displaySemi, fontSize: 20, letterSpacing: -0.3 },
   metricUnit: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: 0 },
   metricSub: { fontFamily: fontFamily.bodySemi, fontSize: 12.5, marginTop: 4 },
 });

@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 25/07/2026 — `feature/widgets-v2-dnd` — fix widgets : trou de grille (widget conditionnel) + état vide démesuré
+
+> Recette **sur device** (prise de contrôle ADB : screenshots + navigation accueil/muscu/course/édition).
+> Deux bugs de rendu corrigés, revérifiés sur le Pixel après rebuild release. Commit précédent : `dcce386`.
+> 100 % UI, aucune migration. typecheck 0 · lint 0 erreur · 44 tests verts.
+
+**Corrigé**
+- **Trou dans la grille de widgets** (le « module qui ne s'affiche pas » remonté par Damien) :
+  `DeficitVolumeAlertCard` rend `null` tant que l'alerte n'est pas déclenchée (widget conditionnel,
+  spec 4.32), mais la grille en positions absolues lui **réservait quand même une cellule** → un trou
+  qui décalait/masquait les widgets suivants (Semaine running). `WidgetGrid` reçoit un prédicat
+  **`isActive`** ([WidgetGrid.tsx](apps/mobile/src/components/widgets/WidgetGrid.tsx)) qui **exclut les
+  widgets inactifs** de la grille (affichage ET édition) ; l'accueil
+  ([index.tsx](apps/mobile/src/app/%28tabs%29/index.tsx)) le câble sur `deficit-volume` via
+  `useDeficitVolumeAlert().show`. Le widget réapparaît à sa place quand l'alerte se déclenche.
+- **État vide démesuré** : les libellés d'état vide (« Aucune », « Aucun programme actif »…) passaient
+  par le gros chiffre héro (38 px) de `Metric`. `Metric` en mode `muted` utilise désormais une police
+  modeste (20 px, [WidgetFrame.tsx](apps/mobile/src/components/widgets/WidgetFrame.tsx)).
+
+**Technique / Notes**
+- Non corrigés (hors bug de rendu) : « 3150 min » (donnée de recette factice), sparkline Progression à
+  2 points (diagonale — pas d'historique de volume hebdo branché), carte `large` clairsemée d'un
+  programme absent (cosmétique).
+
 ### 21/07/2026 — `feature/widgets-v2-dnd` — widgets multi-formes au nouveau design (galerie « FitTrio · Widgets »)
 
 > Demande Damien : « dev la partie Widgets » d'après le design mis à jour

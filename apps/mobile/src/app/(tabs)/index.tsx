@@ -9,6 +9,7 @@ import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { useDeficitVolumeAlert } from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -22,6 +23,11 @@ export default function HomeScreen() {
 
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
+
+  // Alerte déficit = widget **conditionnel** : rendu `null` tant qu'elle n'est pas déclenchée.
+  // On l'exclut de la grille dans ce cas (sinon elle réserve une cellule vide → trou).
+  const deficitActive = useDeficitVolumeAlert().show;
+  const isWidgetActive = (id: WidgetId) => (id === 'deficit-volume' ? deficitActive : true);
 
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
 
@@ -101,6 +107,7 @@ export default function HomeScreen() {
           editing={editing}
           renderWidget={renderWidget}
           onDragActiveChange={setDragging}
+          isActive={isWidgetActive}
         />
       </ScrollView>
     </Screen>
