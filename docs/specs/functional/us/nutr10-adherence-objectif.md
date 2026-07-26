@@ -1,3 +1,12 @@
+---
+id: NUTR-10
+titre: "Adhérence à l'objectif calorique"
+roadmap: []
+catalogue: [NUTR-10]
+etape: close
+branche: feature/nutr10-adherence-objectif
+maj: 16/07/2026
+---
 # US NUTR-10 — Adhérence à l'objectif calorique
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 16/07/2026). Branche :

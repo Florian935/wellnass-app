@@ -1,3 +1,12 @@
+---
+id: MUSC-F10b
+titre: "Section « records » sur la fiche exercice"
+roadmap: []
+catalogue: []
+etape: close
+branche: feature/muscf10b-records-fiche-exercice
+maj: 22/07/2026
+---
 # US MUSC-F10b — Section « records » sur la fiche exercice
 
 > **2ᵉ des 3 incréments** du chantier « fiche exercice » : F10a (socle, livré) → **F10b** (records sur la fiche) →

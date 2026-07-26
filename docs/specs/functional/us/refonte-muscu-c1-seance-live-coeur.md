@@ -1,3 +1,12 @@
+---
+id: REFONTE-C1
+titre: "Écran de séance en cours : cœur du flux guidé + garde-fous"
+roadmap: [3.46, 3.36]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-c1
+maj: 19/07/2026
+---
 # US Refonte-C1 — Écran de séance en cours : cœur du flux guidé + garde-fous
 
 > **Chantier refonte Muscu**, US-C **découpée en 3 sous-US** (C1 → C2 → C3). **C1 = le socle** : rendre

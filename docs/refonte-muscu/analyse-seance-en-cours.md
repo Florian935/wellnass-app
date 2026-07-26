@@ -100,7 +100,7 @@ Fichiers concernés : [workout.tsx](../../apps/mobile/src/app/workout.tsx),
 
 - **Liste stabilisée** (22 points : §1 + §2 + §3), tous validés Florian → on peut **rédiger la spec US-C**
   (workflow habituel : spec → plan → design → validation → code). US-C **absorbe** MUSC-F4 / MUSC-F5 / MUSC-F6
-  du backlog (voir [TODO.md](../../TODO.md)).
+  du backlog (voir [BACKLOG.md](../../BACKLOG.md)).
 - ⚠️ **Ampleur** : US-C est volumineuse (flux guidé + garde-fous + types de séries + RPE/série + charge
   planifiée/réalisée + repos configurable + réorg/superset/remplacement + pause + keep-awake + fin de séance
   ressenti/note + suggestion de progression). À l'ouverture de la spec, **évaluer un découpage** en sous-US

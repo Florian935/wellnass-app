@@ -1,3 +1,12 @@
+---
+id: NUTR-11
+titre: "Progression vers l'objectif de poids"
+roadmap: []
+catalogue: [NUTR-11]
+etape: close
+branche: feature/nutr11-progression-poids
+maj: 16/07/2026
+---
 # US NUTR-11 — Progression vers l'objectif de poids
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 16/07/2026). Branche :

@@ -1,3 +1,12 @@
+---
+id: MUSC-F13
+titre: "Niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée)"
+roadmap: [3.43]
+catalogue: []
+etape: close
+branche: feature/muscf13-niveaux-affichage-seance
+maj: 23/07/2026
+---
 # US MUSC-F13 — Niveaux d'affichage de la séance (Simplifiée / Normale / Détaillée)
 
 > **Adapter la densité de l'écran de séance en cours au niveau de l'utilisateur** : trois niveaux

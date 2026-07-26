@@ -4,12 +4,26 @@ Guidage pour Claude Code (claude.ai/code) sur ce dépôt.
 
 ## État du projet
 
-**Cadrage terminé, scaffolding du monorepo posé.** Les deux cadrages initiaux (Florian et
-Damien) ont été **fusionnés** en une base documentaire unique sous [`docs/`](docs/). La stack et
-les grandes décisions sont figées (voir ci-dessous). Le **monorepo npm workspaces** est
-initialisé (`apps/mobile` Expo, `apps/admin` stub, `packages/shared`) ; l'app mobile bundle et
-le typecheck passe. **Restent à poser** : dev build Expo (EAS), Supabase, intégration PowerSync
-(voir [TODO.md](TODO.md)).
+👉 **Ne devine pas où on en est : lance [`/etat`](.claude/commands/etat.md)** (ou lis
+[ETAT.md](ETAT.md), qu'il régénère). C'est la **première chose à faire dans une session**.
+
+En résumé, au 26/07/2026 : **l'app est quasi complète**. Les 3 piliers (Musculation, Running,
+Nutrition) sont fonctionnels, l'app tourne **offline avec synchro cloud réelle** (PowerSync +
+Supabase), le **back-office** existe (15 écrans), le dev build EAS et le build local Android
+fonctionnent. Il reste **3 items bloquants** avant publication : Health Connect (9.9),
+accessibilité (9.11/9.12) et la publication Play Store (9.2).
+
+### Où se trouve quoi
+
+| Besoin | Fichier | Nature |
+|---|---|---|
+| **Où on en est, maintenant** | [ETAT.md](ETAT.md) | 🤖 **généré** — ne jamais éditer à la main |
+| **Ce qu'il reste à faire** | [BACKLOG.md](BACKLOG.md) | candidats priorisés P0/P1/P2, **sans spec encore** |
+| **État d'une US précise** | le **front-matter** de sa [spec](docs/specs/functional/us/) | source de vérité par US |
+| **Le périmètre complet** | [roadmap](docs/roadmap/roadmap.md) | ~194 fonctionnalités, colonne Statut |
+| **Les analyses de données** | [catalogue](docs/product/analyses-donnees.md) | 2ᵉ backlog, 220 items |
+| **Les idées non cadrées** | [IDEAS.md](IDEAS.md) | boîte de dépôt, avant tout cadrage |
+| **L'historique** | [CHANGELOG.md](CHANGELOG.md) · [docs/journal/](docs/journal/) | trace par commit + archives gelées |
 
 ### Sources de vérité (à lire avant toute décision produit ou archi)
 - [SYNTHESE-CADRAGE.md](SYNTHESE-CADRAGE.md) — journal des 8 arbitrages tranchés le 04/07/2026.
@@ -90,35 +104,51 @@ En une passe, elle :
 - applique le **garde-fou confidentialité** (jamais de secrets) ;
 - tient le **[CHANGELOG.md](CHANGELOG.md)** — une entrée par commit, construite à partir du diff,
   pour garder la **trace complète** des modifications (traçabilité devs / débogage) ;
-- **met à jour le [TODO.md](TODO.md)** — étape **obligatoire** à chaque commit & push : cocher
-  (`[x]`) tout ce qui vient d'être livré, mettre à jour l'état (`[~]` en cours) et la date de
-  « Dernière mise à jour » ;
+- **fait avancer le `etape:` du front-matter** de la spec d'US concernée — c'est **la** source de
+  vérité de l'avancement d'une US ;
 - **met à jour le statut de la [roadmap](docs/roadmap/roadmap.md)** — étape **obligatoire** dès
-  qu'un commit livre (ou fait avancer) une fonctionnalité de la roadmap : passer la colonne
-  **Statut** de la ligne concernée à ✅ Livré / 🟡 Partiel selon le réel du code (voir la légende
-  et le [Récapitulatif](docs/roadmap/roadmap.md#récapitulatif) — pense à ajuster les compteurs
-  livré/partiel/à faire). Ainsi la roadmap reflète **en permanence** où on en est. Si le commit ne
-  touche aucune fonctionnalité de la roadmap (doc, outillage, fix hors périmètre), sauter cette étape ;
+  qu'un commit livre (ou fait avancer) une fonctionnalité : passer la colonne **Statut** à
+  ✅ Livré / 🟡 Partiel selon le réel du code, ajuster les compteurs du
+  [Récapitulatif](docs/roadmap/roadmap.md#récapitulatif), et ajouter une entrée courte au journal
+  des réconciliations. **Si la fonctionnalité n'a pas de ligne, la créer** dans la section
+  « Hors périmètre de cadrage » — ne jamais laisser du livré invisible ;
+- **régénère [ETAT.md](ETAT.md)** (`node scripts/etat.mjs`) ;
 - crée un **commit conventionnel** en français ;
 - **pousse la branche sur `dev` distant** (fast-forward/merge puis `git push origin dev`).
 
-### Suivi — TODO.md & roadmap
-[TODO.md](TODO.md) à la racine est le **suivi vivant** de tout ce qui reste à faire. On y
-ajoute les US au fur et à mesure qu'elles entrent dans le pipeline ; `/commit` coche ce qui
-vient d'être livré.
+### Suivi de l'avancement — le modèle en 4 niveaux
 
-La [roadmap](docs/roadmap/roadmap.md) est la **source de vérité de l'avancement produit** : sa
-colonne **Statut** (✅ Livré · 🟡 Partiel · ⬜ À faire · ⏳ Reporté) reflète l'état réel du code,
-**maintenue à jour par `/commit`** (voir ci-dessus). Deux niveaux complémentaires : le TODO suit
-les US **actives** (grain fin, court terme) ; la roadmap donne la **photo d'ensemble** des ~179
-fonctionnalités du périmètre de lancement (**MVP1 = V1.0 complète**). Réconciliation de référence
-faite le 18/07/2026.
+Refondu le **26/07/2026** : l'ancien `TODO.md` était devenu un journal append-only de 1592 lignes,
+illisible, et la roadmap ignorait 15 fonctionnalités pourtant livrées. Le principe qui remplace
+tout ça : **chaque information a un seul endroit, et cet endroit se remplace au lieu de grossir.**
+
+1. **[ETAT.md](ETAT.md)** — *où on en est, maintenant*. 🤖 **Généré** par `node scripts/etat.mjs`
+   (skill [`/etat`](.claude/commands/etat.md)). **Ne jamais l'éditer à la main** : si une ligne est
+   fausse, la source est fausse. C'est le premier fichier à lire dans une session.
+2. **Le front-matter de chaque [spec d'US](docs/specs/functional/us/)** — *l'état d'une US*.
+   Champ `etape:` ∈ `spec` `plan` `design` `validation` `code` `recette` `relecture` `close`,
+   plus `id`, `titre`, `roadmap:`, `catalogue:`, `branche`, `maj`. C'est ce que le générateur lit.
+3. **[BACKLOG.md](BACKLOG.md)** — *ce qu'il reste à faire*. Une ligne par candidat **sans spec
+   encore**, priorisé P0 (bloquant lancement) / P1 (finition visible) / P2 (confort). Dès qu'un
+   candidat entre dans le pipeline via [`/us`](.claude/commands/us.md), il quitte le backlog.
+4. **[roadmap](docs/roadmap/roadmap.md)** — *la photo d'ensemble du périmètre* (~194 fonctionnalités,
+   **MVP1 = V1.0 complète**). Colonne Statut ✅ 🟡 ⬜ ⏳ ❌. Audit périodique par
+   [`/reconcilier`](.claude/commands/reconcilier.md).
+
+À côté : le **[catalogue d'analyses](docs/product/analyses-donnees.md)** (2ᵉ backlog, 220 items,
+source de vérité des US META/MN/MR/NUTR/RN — ne pas les dupliquer dans la roadmap), le
+**[CHANGELOG](CHANGELOG.md)** (historique par commit, a vocation à grossir), et
+**[docs/journal/](docs/journal/)** (archives gelées).
+
+> **La règle qui compte** : un fichier de suivi qui ne fait que grossir a cessé d'être un tableau
+> de bord. Si tu ajoutes sans jamais retirer, tu es en train de recréer l'ancien TODO.
 
 ### Idées — IDEAS.md
 [IDEAS.md](IDEAS.md) à la racine est la **boîte de dépôt** des idées brutes captées au fil de
 l'eau, **avant** tout cadrage. Ce n'est pas le pipeline : on y note vite, on relit
-régulièrement pour trier. Une idée retenue devient une US (spec → plan → design → validation)
-et rejoint la roadmap + le TODO ; l'idée est alors archivée dans IDEAS.md avec la décision.
+régulièrement pour trier. Une idée retenue devient une US via [`/us`](.claude/commands/us.md)
+(spec → plan → design → validation) et rejoint la roadmap ; l'idée est alors archivée dans
+IDEAS.md avec la décision.
 
 ### Migrations base de données (OBLIGATOIRE)
 
@@ -166,26 +196,43 @@ Cycle **sans Docker** :
 ## Structure de la documentation
 
 ```
-/TODO.md                    → suivi vivant des tâches (coché par /commit)
+/ETAT.md                    → 🤖 GÉNÉRÉ — où on en est (scripts/etat.mjs, skill /etat). NE PAS ÉDITER
+/BACKLOG.md                 → reste-à-faire priorisé P0/P1/P2 (candidats sans spec)
 /IDEAS.md                   → boîte de dépôt des idées brutes à trier (avant cadrage en US)
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /supabase/MIGRATIONS.md     → registre coché des migrations poussées sur le cloud
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
+/scripts/etat.mjs           → générateur de ETAT.md (`node scripts/etat.mjs [--check]`)
 /design                     → maquettes par fonctionnalité (exportées de Claude Design)
 /apps
-  /mobile                   → app Expo (React Native, Expo Router, Zustand, i18n)
-  /admin                    → back-office web (stub, V0.7)
+  /mobile                   → app Expo (React Native, Expo Router, Zustand, i18n) — 3 piliers livrés
+  /admin                    → back-office web React+Vite (15 écrans : exercices, programmes,
+                              aliments, import CSV, utilisateurs, rôles, audit)
 /packages
-  /shared                   → types + schémas Zod partagés (+ database.types générés)
-/supabase                   → config locale, migrations, seed (stack Docker via CLI)
+  /shared                   → types + schémas Zod + briques pures testées (+ database.types générés)
+/supabase                   → config, migrations (44), seed. ⚠️ seed.sql n'est joué que par
+                              `db:reset` (Docker) — non utilisé aujourd'hui, voir BACKLOG
 /docs
-  /product                  → vision, prd, personas, metriques-succes
+  /journal                  → 🧊 archives gelées du suivi (ancien TODO.md)
+  /product                  → vision, prd, personas, metriques-succes, analyses-donnees (catalogue),
+                              ia-integration-analyse
   /specs
-    /functional             → compte-profil-onboarding, navigation-ux, musculation, running, alimentation, administration
-    /technical              → architecture, offline-sync, modele-donnees, i18n, bonnes-pratiques, spike-001-powersync, runbook-provisioning-spike
-  /adr                      → ADR-001 (sync) … ADR-005 (gamification)
-  /roadmap                  → roadmap.md (V0.1 → V1.1)
+    /functional             → specs par pilier + /us : 74 specs d'US (front-matter = état de l'US)
+    /technical              → architecture, offline-sync, modele-donnees, i18n, bonnes-pratiques,
+                              powersync-sync-rules.yaml, dev-build-android-local, environnement-dev-local
+  /plans                    → 72 plans d'implémentation (1 par US)
+  /adr                      → ADR-001 (sync) … ADR-007 (surfaçage des analyses)
+  /roadmap                  → roadmap.md (V0.1 → V1.1 + hors cadrage)
 ```
+
+### Skills du dépôt (`.claude/commands/`)
+
+| Skill | Quand |
+|---|---|
+| [`/etat`](.claude/commands/etat.md) | **Début de session** — régénère ETAT.md et dit où on en est. |
+| [`/us`](.claude/commands/us.md) | Démarrer une US : branche + spec + plan + maquette + front-matter. S'arrête à la validation. |
+| [`/commit`](.claude/commands/commit.md) | Commiter : revue de diff, CHANGELOG, front-matter, roadmap, ETAT, push sur `dev`. |
+| [`/reconcilier`](.claude/commands/reconcilier.md) | Mensuel / avant jalon — audite l'écart code ↔ documentation. |
 
 ## Commandes
 
@@ -196,8 +243,9 @@ Cycle **sans Docker** :
 | `npm install` | Installe toutes les dépendances (hoistées à la racine). |
 | `npm run typecheck` | `tsc --noEmit` sur tous les workspaces. |
 | `npm run lint` | Lint des workspaces qui l'exposent (`expo lint` + eslint-config-expo côté mobile). |
-| `npm run test` | Tests des workspaces (**Vitest** sur `packages/shared`). |
+| `npm run test` | Tests des workspaces : **Vitest** sur `packages/shared` (~860) + **Jest** sur `apps/mobile` (~116). ⚠️ **lire le code de sortie sans pipe** — un `\| tail` en aval renvoie 0 même si un test échoue. |
 | `npm run mobile` | Raccourci → démarre le serveur de dev Expo de `apps/mobile`. |
+| `node scripts/etat.mjs` | Régénère [ETAT.md](ETAT.md). `--check` = échoue si le fichier est périmé. |
 
 **App mobile** (`apps/mobile`, package `@wellness/mobile`) :
 
@@ -223,20 +271,26 @@ chez les devs) ; les commandes `db:start`/`db:stop`/`db:reset` visent une stack 
 | `npm run db:start` / `db:stop` | Démarre / arrête la stack Supabase locale. | oui |
 | `npm run db:reset` | Recrée la base **locale** + rejoue les migrations + `seed.sql`. | oui |
 
-> **Structure** : `apps/mobile` (Expo Router, state Zustand, i18n i18next FR/EN),
-> `apps/admin` (stub back-office, V0.7), `packages/shared` (types + schémas Zod partagés).
-> Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
+> **Structure** : `apps/mobile` (Expo Router, Zustand, i18n i18next FR/EN, PowerSync),
+> `apps/admin` (back-office React+Vite, 15 écrans), `packages/shared` (types, schémas Zod, briques
+> pures testées). Config Metro monorepo dans [apps/mobile/metro.config.js](apps/mobile/metro.config.js).
 > **CI** : GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) exécute
 > typecheck + lint + tests sur chaque PR vers `dev`/`main`.
-> **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) + `eas init` faits (`projectId`,
-> `updates`, `expo-dev-client`/`expo-updates`) ; il reste à lancer le **premier build**
-> (`npm run build:dev`).
-> **Supabase** : projet **cloud provisionné** (`nsxzflxsgovriwwvflxe`), migrations appliquées et
-> suivies dans [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md). Dev directement sur le cloud (pas
-> de base locale — Docker non installé). Client typé mobile
-> ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts), Auth). Schéma métier enrichi au fil des US.
-> **Pas encore câblés** : tests **mobile** (jest-expo — viendront avec la 1ʳᵉ feature),
-> **PowerSync** (SQLite local + sync) — à ajouter avec les US correspondantes.
+> **EAS** : profils de build ([eas.json](apps/mobile/eas.json)) opérationnels. Le **build local
+> Android** (`gradlew assembleRelease`) est documenté dans
+> [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) et
+> [environnement-dev-local.md](docs/specs/technical/environnement-dev-local.md) — utile quand le
+> quota EAS est épuisé.
+> **Supabase** : projet **cloud** (`nsxzflxsgovriwwvflxe`), 44 migrations appliquées et suivies dans
+> [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md). Dev directement sur le cloud (pas de base
+> locale — Docker non installé). Client typé mobile
+> ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts), Auth).
+> **PowerSync** : intégré et opérationnel (SQLite local + synchro bidirectionnelle,
+> [powersync/system.ts](apps/mobile/src/powersync/system.ts)). ⚠️ **Les sync rules ne sont pas
+> versionnées côté outil** : après une migration qui ajoute une table synchronisée, coller
+> [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
+> PowerSync et déployer — **étape manuelle, déjà oubliée une fois** (une note d'exercice n'aurait
+> pas survécu à une resynchro).
 
 ## Langue
 

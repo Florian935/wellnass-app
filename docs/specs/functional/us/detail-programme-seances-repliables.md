@@ -1,3 +1,12 @@
+---
+id: UX-PROG-01
+titre: "Détail programme : séances repliables (expansion inline)"
+roadmap: []
+catalogue: []
+etape: close
+branche: feature/detail-programme-seances-repliables
+maj: 13/07/2026
+---
 # US — Détail programme : séances repliables (expansion inline)
 
 _Spec fonctionnelle. Statut : à valider (brainstorming du 13/07/2026). Branche cible :

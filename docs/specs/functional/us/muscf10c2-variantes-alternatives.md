@@ -1,3 +1,12 @@
+---
+id: MUSC-F10c2
+titre: "Variantes / alternatives d'exercice"
+roadmap: [3.20]
+catalogue: []
+etape: close
+branche: feature/muscf10c2-variantes-alternatives
+maj: 22/07/2026
+---
 # US MUSC-F10c-2 — Variantes / alternatives d'exercice
 
 > **Second et dernier incrément** de F10c (= MUSC-F2) : F10c-1 (muscles secondaires, livré) →

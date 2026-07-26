@@ -1,3 +1,12 @@
+---
+id: REFONTE-B
+titre: "Séance du jour en accès direct sur le hub muscu"
+roadmap: [3.45]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-b
+maj: 18/07/2026
+---
 # US Refonte-B — Séance du jour en accès direct sur le hub muscu
 
 > **Chantier refonte Muscu**, US-B. Corrige le **problème 3** de l'[audit des flux](../../../refonte-muscu/audit-flux.md) :

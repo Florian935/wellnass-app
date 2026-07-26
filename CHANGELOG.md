@@ -10,6 +10,100 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 26/07/2026 — `docs/refonte-suivi-avancement` — Refonte du suivi d'avancement (ETAT généré, backlog, front-matter, réconciliation roadmap)
+
+> **Pourquoi.** Audit demandé par Florian : les fichiers de suivi avaient dérivé du code. Trois
+> constats. (1) `CLAUDE.md` et `README.md` décrivaient encore le projet du **05/07** — « scaffolding
+> posé », « admin stub », « PowerSync reste à poser » — alors que `CLAUDE.md` est chargé à **chaque
+> session**. (2) `TODO.md` (1592 lignes) était devenu un journal append-only : reste-à-faire à partir
+> de la ligne 728, section « En cours » ne contenant **que des `[x]`**, et un unique paragraphe
+> ligne 424 chaîné par « Précédemment : … » à l'infini. (3) La roadmap ignorait **15 fonctionnalités
+> livrées** (refonte muscu, widgets multi-formes, micronutriments…), donc son « 143/179 »
+> **sous-estimait** le travail réel.
+>
+> **Le principe retenu** : chaque information a un seul endroit, et cet endroit **se remplace au lieu
+> de grossir**. Un fichier de suivi qui ne fait que croître a cessé d'être un tableau de bord.
+> Aucune ligne de code applicatif touchée.
+
+**Ajouté**
+
+- **`ETAT.md`** — tableau de bord « où on en est », **généré** : cap (% MVP1 + jauge), US en cours
+  avec leur étape, P0/P1/P2 restants, santé du dépôt, alertes, derniers commits.
+  **Ne se modifie jamais à la main.**
+- **`scripts/etat.mjs`** — le générateur. Lit le front-matter des specs, `BACKLOG.md`, les compteurs
+  de la roadmap, le registre des migrations et git. Option `--check` (sort en 1 si périmé) qui ne
+  compare que la **partie stable** du document — comparer la section git produirait un échec
+  permanent. Embarque un **contrôle arithmétique** : recompte les statuts de la roadmap et alerte si
+  le récapitulatif diverge.
+- **`BACKLOG.md`** — reste-à-faire priorisé P0 (3, bloquant lancement) / P1 (8) / P2 (2), une ligne
+  par candidat **sans spec encore**, avec son **point dur**. Plus une section dette technique et une
+  section reporté/abandonné pour la trace.
+- **Front-matter YAML sur les 74 specs d'US** — `id`, `titre`, `roadmap`, `catalogue`, `etape`
+  (`spec`→`plan`→`design`→`validation`→`code`→`recette`→`relecture`→`close`), `branche`, `maj`.
+  L'avancement d'une US vit désormais **dans sa spec**, ce qui rend `ETAT.md` générable.
+- **3 skills** : `/etat` (début de session), `/us` (démarrer une US jusqu'à la validation, sans code),
+  `/reconcilier` (audit à charge code ↔ documentation).
+- **`docs/journal/`** + son README — dossier des archives gelées.
+- **Roadmap § « Hors périmètre de cadrage — livré en cours de route »** : 15 fonctionnalités
+  numérotées (1.23 langue · 3.43→3.50 refonte muscu, records fiche, séances repliables, suppression ·
+  4.33→4.36 micros et saisie langage naturel · 6.4 infobulle · 7.13 widgets multi-formes).
+- **Roadmap § « Journal des réconciliations »** — entrées courtes (3 lignes max) en remplacement du
+  paragraphe monolithique.
+
+**Corrigé**
+
+- **6 lignes de roadmap périmées**, toutes dans le sens « livré mais affiché à faire », héritées de
+  la refonte muscu jamais réconciliée : **3.13** (fiche exercice `/exercises/[id]`), **3.27**
+  (sélecteur de type de série `TYPE_CHIPS`), **3.28** (repos configurable par exercice via
+  `restOverride`/`sessionRest`), **3.32** (`replaceExercise`) 🟡⬜ → ✅ ; **3.7** (suggestion de
+  progression câblée) et **3.8** (brique deload livrée non déclenchée) ⬜ → 🟡.
+- **Erreur de comptage préexistante** débusquée par le nouveau contrôle arithmétique : l'item **5.2**
+  (bibliothèque de programmes de course, catalogue **vide**) était compté **livré** depuis la
+  réconciliation du 18/07 alors qu'il est 🟡. V0.5 passe de 26/3/4 à **25/4/4**.
+- **Collision de numérotation `4.5`** : l'US « saisie de repas par liste (langage naturel) » portait
+  le même numéro que « Modification manuelle des macros ». Le numéro qui fait foi devient **4.36**
+  (le nom de fichier reste `4.5-saisie-langage-naturel.md` pour ne pas casser une cinquantaine de liens).
+- **`CLAUDE.md`** — section « État du projet » réécrite (renvoi vers `/etat`), tableau « où se trouve
+  quoi », modèle de suivi en 4 niveaux, arborescence à jour, table des skills, note sur les **sync
+  rules PowerSync non versionnées** (étape manuelle déjà oubliée une fois).
+- **`README.md`** — supprimé « le code applicatif n'est pas encore initialisé » (930 commits plus tôt).
+- **`apps/mobile/README.md`** — « la mise en place EAS reste à faire » remplacé par le renvoi au
+  build local Android.
+- **Liens morts vers `TODO.md`** dans les documents vivants (`IDEAS.md`, `docs/refonte-muscu/*`).
+  Ceux des plans et specs clôturés sont **laissés tels quels** : ce sont des archives d'un moment.
+- **`/commit`** — étapes 7-8 réorientées (front-matter + roadmap + régénération d'`ETAT.md`),
+  obligation de **créer la ligne de roadmap si elle manque**, avertissement sur la lecture du code de
+  sortie sans pipe, `Co-Authored-By` corrigé en Opus 5.
+- **`widgets-multiformes.md`** — l'en-tête annonçait encore « à valider (pas de code avant
+  validation) » alors que les 16 widgets sont livrés.
+- **Bug du générateur** trouvé en testant son propre garde-fou : la jauge plantait
+  (`RangeError: Invalid count value`) dès que le pourcentage dépassait 100 à cause d'un compteur
+  incohérent. Bornée — une roadmap fausse produit une **alerte**, pas une exception.
+
+**Supprimé**
+
+- **`TODO.md`** de la racine → archivé en `docs/journal/todo-archive-2026-07.md` avec une bannière
+  « archive gelée » et une table de renvoi. Contenu **intégralement conservé** (l'historique détaillé
+  vit de toute façon dans ce CHANGELOG).
+
+**Technique / Notes**
+
+- Périmètre roadmap : **179 → 194** fonctionnalités ; avancement **79 % → 83 %** (161 livré /
+  11 partiel / 17 à faire / 1 reporté / 4 abandonné). Récapitulatif, détail par version et comptage
+  réel **vérifiés cohérents par script**.
+- Les **US d'analyse** (META/MN/MR/NUTR/RN) restent suivies dans
+  `docs/product/analyses-donnees.md` — délibérément **non dupliquées** dans la roadmap.
+- Statuts des front-matter reconstruits depuis l'archive TODO : **73 `close`**, 1 `validation`
+  (CONTENU-01, en attente d'arbitrage sur la méthode de seed).
+- Qualité : `typecheck` 0 · `lint` 0 erreur · **860 tests shared + 116 mobile verts** (exit 0 lu
+  **sans pipe**). Les 2 échecs mobile constatés en cours d'audit étaient des **timeouts de 15 s**
+  liés à la charge machine, non reproduits — consignés au backlog.
+- Dette relevée au passage (dans `BACKLOG.md`) : `supabase/seed.sql` **inatteignable** sans Docker
+  (les 16 exercices de bibliothèque sont arrivés sur le cloud par un chemin non tracé) ; `main`
+  **937 commits** derrière `dev`, sans tag ni release.
+- À faire hors dev : **prévenir Damien**, dont le workflow change (front-matter au lieu du TODO,
+  `/us` pour démarrer une US).
+
 ### 26/07/2026 — `feature/ux01-infobulle-graphiques` — clés de build : Client ID Google versionné, clé MapTiler écartée du dépôt
 
 > Commit précédent : `d8cd84c`, qui laissait `eas.json` en attente d'arbitrage. **Le dépôt GitHub est

@@ -1,3 +1,12 @@
+---
+id: META-08
+titre: "Tendance générique par régression linéaire (pente + R²)"
+roadmap: []
+catalogue: [META-08]
+etape: close
+branche: feature/meta08-tendance-regression-lineaire
+maj: 18/07/2026
+---
 # US META-08 — Tendance générique par régression linéaire (pente + R²)
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 18/07/2026). Branche :

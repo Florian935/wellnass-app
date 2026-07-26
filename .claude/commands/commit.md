@@ -1,7 +1,7 @@
 ---
-description: Analyse et relit le diff, met à jour CHANGELOG + TODO + statut roadmap, commit propre et sûr, puis push sur dev
+description: Analyse et relit le diff, met à jour CHANGELOG + front-matter US + roadmap + ETAT, commit propre et sûr, puis push sur dev
 argument-hint: [sujet de commit optionnel]
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(git checkout:*), Bash(git merge:*), Bash(git fetch:*), Bash(git push:*), Bash(git log:*), Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Read, Edit, Write, Task, Skill
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git add:*), Bash(git commit:*), Bash(git rev-parse:*), Bash(git branch:*), Bash(git checkout:*), Bash(git merge:*), Bash(git fetch:*), Bash(git push:*), Bash(git log:*), Bash(npm:*), Bash(npx:*), Bash(pnpm:*), Bash(node scripts/etat.mjs:*), Read, Edit, Write, Task, Skill
 ---
 
 Tu prépares et réalises un commit propre pour ce dépôt (Wellness App — RN/Expo + Supabase).
@@ -29,10 +29,12 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    (`feature/…`, `fix/…`, `chore/…`, `docs/…`, `refactor/…`) avant de committer — on ne
    commit jamais directement sur `main` ni `dev`.
 
-4. **Qualité** (si le scaffolding existe, c.-à-d. un `package.json` est présent) : lance
-   lint + typecheck + tests selon les scripts définis (ex. `npm run lint`, `npm run typecheck`,
-   `npm test`). Si l'un échoue, **stoppe** et rapporte l'échec (pas de commit sur du rouge).
-   Tant que le scaffolding n'est pas initialisé, saute cette étape.
+4. **Qualité** : lance `npm run lint`, `npm run typecheck`, `npm run test`. Si l'un échoue,
+   **stoppe** et rapporte l'échec (pas de commit sur du rouge).
+
+   ⚠️ **Lis le code de sortie sans pipe.** `npm run test | tail -20` renvoie le code de sortie de
+   `tail`, donc **toujours 0** : un test rouge passe alors inaperçu. Lance la commande nue, ou
+   redirige vers un fichier puis lis-le. Le piège s'est déjà refermé sur nous.
 
 5. **Revue de code** : relis le diff de façon critique avant de committer — bugs, régressions,
    secrets oubliés, incohérences avec les specs (`docs/specs/`) et les bonnes pratiques
@@ -51,26 +53,39 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
    hash. L'entrée est identifiée par date + branche + sujet ; le hash court du **commit précédent**
    peut être renseigné au passage. **Ne fais jamais de `--amend` juste pour insérer un hash.**
 
-7. **TODO** : mets à jour [`TODO.md`](../../TODO.md) — coche `[x]` ce qui est désormais fait,
-   passe en `[~]` ce qui est en cours, ajoute les nouvelles tâches apparues, et actualise la
-   date de « Dernière mise à jour ».
+7. **Front-matter de l'US** : si le commit fait avancer une US, ouvre sa spec dans
+   [`docs/specs/functional/us/`](../../docs/specs/functional/us/) et **fais avancer le champ
+   `etape`** (`spec` → `plan` → `design` → `validation` → `code` → `recette` → `relecture` →
+   `close`) + la date `maj`. C'est **la** source de vérité de l'avancement d'une US — pas un
+   commentaire dans un fichier de suivi. Si l'US vient d'être clôturée, retire aussi son entrée de
+   [`BACKLOG.md`](../../BACKLOG.md) le cas échéant.
 
 8. **Roadmap — statut** (obligatoire si le commit touche une fonctionnalité de la roadmap) :
    ouvre [`docs/roadmap/roadmap.md`](../../docs/roadmap/roadmap.md) et **mets à jour la colonne
    Statut** de la/les ligne(s) concernée(s) selon le **réel du code** livré par ce commit :
    ✅ Livré (fonctionnalité complète et vérifiée) · 🟡 Partiel (socle présent mais incomplet —
    précise le manque en Remarques) · ⏳ Reporté. Repère la ligne par son **numéro thématique**
-   (ex. `3.34`, `1.18`) grâce au diff/à la spec de l'US. **Actualise aussi le [Récapitulatif]**
-   (compteurs Livré / Partiel / À faire + tableau « Détail par version » + date de « Dernière mise
-   à jour » du fichier). Si le commit ne touche **aucune** fonctionnalité de la roadmap
-   (doc, outillage, fix hors périmètre roadmap), **saute cette étape** et signale-le brièvement.
+   (ex. `3.34`, `1.18`), donné par le champ `roadmap:` du front-matter de l'US.
+   **Actualise aussi le [Récapitulatif]** (compteurs Livré / Partiel / À faire + tableau
+   « Détail par version ») et ajoute **une entrée de 3 lignes maximum** au « Journal des
+   réconciliations » — le détail va dans le CHANGELOG, pas là.
+
+   ⚠️ Si la fonctionnalité livrée **n'a aucune ligne de roadmap**, ne saute pas l'étape :
+   **crée-la** dans la section « Hors périmètre de cadrage » avec un numéro thématique libre.
+   C'est ce qui manquait avant le 26/07/2026, et 15 fonctionnalités livrées étaient devenues
+   invisibles. Si le commit ne touche vraiment aucune fonctionnalité (doc, outillage), saute
+   l'étape et signale-le brièvement.
+
+8 bis. **État** : lance `node scripts/etat.mjs` pour régénérer [`ETAT.md`](../../ETAT.md), et
+   **stage le fichier régénéré**. Ne l'édite jamais à la main. Signale toute alerte remontée par
+   le script (spec sans front-matter, migration non poussée).
 
 9. **Message de commit** : format conventionnel `type(scope): sujet` **en français**
    (`feat`, `fix`, `docs`, `refactor`, `test`, `chore`). Si `$ARGUMENTS` est non vide,
    utilise-le comme base du sujet. Ajoute un corps concis si utile.
    Termine **toujours** le message par :
 
-   `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
+   `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
 
 10. **Commit** : `git add` uniquement les fichiers pertinents (jamais les sensibles), puis
     `git commit`. Affiche ensuite le hash du commit et un `git status` final propre.

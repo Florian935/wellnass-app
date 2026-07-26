@@ -1,3 +1,12 @@
+---
+id: REFONTE-D
+titre: "Templates de séance libre"
+roadmap: [3.47]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-d
+maj: 21/07/2026
+---
 # US Refonte-D — Templates de séance libre
 
 > **Chantier refonte Muscu**, dernière US (**A** ✅ → **B** ✅ → **C1/C2/C3** ✅ → **D**). Corrige le

@@ -1,3 +1,12 @@
+---
+id: RN-01
+titre: "Dépense calorique d'une course → objectif calorique du jour"
+roadmap: []
+catalogue: [RN-01, RN-02]
+etape: close
+branche: feature/rn01-depense-course-objectif
+maj: 15/07/2026
+---
 # US RN-01/RN-02 — Dépense calorique d'une course → objectif calorique du jour
 
 _Spec fonctionnelle. Statut : validée (brainstorming du 15/07/2026, Florian). Branche :

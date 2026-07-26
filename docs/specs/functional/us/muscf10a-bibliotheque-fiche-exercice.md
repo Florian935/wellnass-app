@@ -1,3 +1,12 @@
+---
+id: MUSC-F10a
+titre: "Bibliothèque d'exercices en accès direct + fiche exercice (socle)"
+roadmap: [3.13]
+catalogue: []
+etape: close
+branche: feature/muscf10a-bibliotheque-fiche-exercice
+maj: 22/07/2026
+---
 # US MUSC-F10a — Bibliothèque d'exercices en accès direct + fiche exercice (socle)
 
 > Nouvelle US (demande Florian, 22/07/2026), **1ᵉʳ des 3 incréments** du chantier « fiche exercice » :

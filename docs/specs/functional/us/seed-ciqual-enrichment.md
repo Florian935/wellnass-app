@@ -1,3 +1,12 @@
+---
+id: 4.8b
+titre: "Enrichissement du seed avec les données CIQUAL (micros + sous-macros)"
+roadmap: [4.8]
+catalogue: []
+etape: close
+branche: feature/seed-ciqual-enrichment
+maj: 14/07/2026
+---
 # Spec — Enrichissement du seed avec les données CIQUAL (micros + sous-macros)
 
 > **Statut** : ✅ livré (14/07/2026). Prérequis produit du **panel nutritionnel étendu** (US livrée).

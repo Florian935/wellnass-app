@@ -1,3 +1,12 @@
+---
+id: MUSC-F3
+titre: "Recherche d'exercices multi-critères (groupe musculaire + matériel)"
+roadmap: [3.14]
+catalogue: []
+etape: close
+branche: feature/muscf3-recherche-multicriteres
+maj: 22/07/2026
+---
 # US MUSC-F3 — Recherche d'exercices multi-critères (groupe musculaire + matériel)
 
 > Roadmap [3.14](../../../roadmap/roadmap.md) — *« Recherche d'exercices : par nom, groupe musculaire ou

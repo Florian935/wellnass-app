@@ -4,7 +4,7 @@ Roadmap versionnée de référence, **adaptée aux arbitrages de cadrage du 04/0
 (voir [SYNTHESE-CADRAGE.md](../../SYNTHESE-CADRAGE.md) et les [ADR](../adr/)).
 Elle reprend la structure de la « Validation des Fonctionnalités » de Dams et applique les décisions actées (PowerSync, iOS reporté, monétisation inactive, bilingue FR+EN, gamification hors périmètre).
 
-Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, **tenu à jour à chaque livraison** — voir [`/commit`](../../.claude/commands/commit.md)) : ✅ Livré · 🟡 Partiel (socle présent, incomplet) · ⬜ À faire · ⏳ Reporté · ❌ Abandonné (retiré du périmètre, décision produit tracée en Remarques)
+Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, **tenu à jour à chaque livraison** — voir [`/commit`](../../.claude/commands/commit.md) et [`/reconcilier`](../../.claude/commands/reconcilier.md)) : ✅ Livré · 🟡 Partiel (socle présent, incomplet) · ⬜ À faire · ⏳ Reporté · ❌ Abandonné (retiré du périmètre, décision produit tracée en Remarques)
 **Autonomie Claude** : 🟢 Full auto (Claude seul) · 🟡 Semi (validation humaine requise) · 🔴 Humain requis (décision, data externe, clé API…)
 
 > Les numéros (1.x compte, 2.x navigation/UX, 3.x muscu, 4.x alim, 5.x running, 6.x visualisation, 7.x dashboard, 8.x admin, 9.x technique) sont **thématiques** et stables — ils ne changent pas quand une fonctionnalité change de version. Les tâches ajoutées par les arbitrages portent un identifiant `9.x` explicite.
@@ -39,8 +39,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | **V0.8** | Bêta — conformité & intégrations | Play interne : OAuth Google, RGPD, Health, analytics | 9 | ~26h |
 | **V1.0** | Lancement store | Publication Play Store (Android) | 1 | — |
 | **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
+| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… | 15 | *non estimé* |
 | **Ultérieur — iOS** | Portage iOS (hors lancement) | App Store + OAuth Apple | 2 | — |
-| | | **Total (périmètre de lancement)** | **179** | **~477h** |
+| | | **Total (périmètre de lancement)** | **194** | **~477h** |
 
 **Logique d'ordonnancement** :
 - **Muscu d'abord** : cœur de valeur, zéro dépendance externe (pas de GPS, pas de clé API) — on valide vite le produit.
@@ -51,7 +52,13 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 - **Admin après les piliers** : pendant le dev, le contenu (exercices, programmes) est injecté par scripts de seed ; l'admin V0.7 industrialise avant la bêta.
 - **Conformité et intégrations juste avant la bêta** : OAuth Google, export/suppression RGPD et analytics doivent exister avant d'ouvrir à de vrais testeurs.
 
-> **📊 État réel au 18/07/2026 (réconciliation code ↔ roadmap)** : les **3 piliers sont fonctionnels**, l'app tourne offline avec synchro cloud réelle, le back-office existe. **V0.6 = 100 % livrée.** Le principal reste-à-faire du lancement (MVP1 = V1.0) est **V0.8 (conformité & intégrations : RGPD, OAuth Google, support, analytics, Health) — quasi vide**, plus des **finitions muscu (V0.2 : GIF, RPE, notes de séance, pause, dernière perf…)** et **running (V0.5 : splits/km, dénivelé, séances guidées vocales)**. Voir le [Récapitulatif](#récapitulatif) pour le décompte livré / partiel / à faire.
+> **📊 État réel au 26/07/2026** : les **3 piliers sont fonctionnels**, l'app tourne offline avec synchro
+> cloud réelle, le back-office existe, la refonte muscu et les widgets multi-formes sont livrés.
+> **V0.6 et V0.7 sont bouclées** ; V0.2/V0.3/V0.4/V0.5 sont complètes à quelques finitions près.
+> Le reste-à-faire du lancement (MVP1 = V1.0) tient en **3 items P0** : **9.9 Health Connect**,
+> **accessibilité (9.11/9.12)** et **9.2 publication Play Store**.
+> **L'état courant se lit dans [ETAT.md](../../ETAT.md)** (généré) ; le reste-à-faire détaillé dans
+> [BACKLOG.md](../../BACKLOG.md). Cette roadmap donne la **photo d'ensemble du périmètre**.
 
 ---
 
@@ -94,7 +101,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 1.9 | Onboarding — Objectif principal | Masse / sèche / performance / santé. **Skippable.** | Facile | 2h | 🟢 | ✅ | |
 | 1.11 | Onboarding — Récapitulatif | Résumé des choix + suggestion d'une première action. | Facile | 1h | 🟢 | ✅ | S'enrichit en V0.4 (TDEE). |
 | 1.12 | Modification du profil | Mise à jour des données utilisateur depuis les paramètres. | Facile | 2h | 🟢 | ✅ | Toute la config reste modifiable après onboarding. |
-| 3.13 | Bibliothèque d'exercices | Base fournie par l'app avec fiche complète par exercice. | Moyen | 4h | 🟡 | 🟡 | Liste + seed OK, mais `exercises.tsx` = simple picker, **pas de fiche complète**. Import par seed (V0.7). 🌐 fiches bilingues FR+EN. |
+| 3.13 | Bibliothèque d'exercices | Base fournie par l'app avec fiche complète par exercice. | Moyen | 4h | 🟡 | ✅ | Fiche complète `/exercises/[id]` (nom, groupe, matériel, instructions, muscles secondaires, variantes, records) + accès direct depuis le hub muscu — MUSC-F10a/b (22/07/2026). 🌐 fiches bilingues FR+EN. |
 | 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ❌ | **Abandonné** (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée (sourcing + hébergement + import en masse). `media_url` reste stocké (colonne inoffensive, non retirée) mais ne sera **jamais rendu**. Voir [[Musculation]]. |
 | 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ❌ | **Abandonné** avec 6.1 (dont il dépendait). |
 | 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ⬜ | **Aucun composant schéma corporel.** |
@@ -107,12 +114,12 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 3.23 | Séance libre | Séance vide sans programme, exercices ajoutés au fil de l'eau. | Moyen | 3h | 🟢 | ✅ | Le parcours cœur de cette version. |
 | 3.25 | Validation de série | Reps + charge réels, valeurs pré-remplies. | Moyen | 4h | 🟢 | ✅ | `updateSet` + pré-remplissage `addSet`. |
 | 3.26 | Dernière performance affichée | "La dernière fois : 80 kg × 8 / 8 / 7" au-dessus de la saisie. | Facile | 2h | 🟢 | ✅ | `useLastPerformance` + `lastPerfLabel` (« dernière fois ») au-dessus de la saisie (`workout.tsx`). |
-| 3.27 | Types de séries avancés | Échauffement, superset, durée (gainage), poids de corps ± lest. | Moyen | 4h | 🟢 | 🟡 | Modèle OK (`set_type` + `duration_seconds`) mais **aucune UI** pour changer le type en séance libre. |
-| 3.28 | Chrono de repos automatique | Déclenché après chaque série validée. Configurable par exercice. | Facile | 2h | 🟢 | 🟡 | Repos auto présent mais **`REST_SECONDS = 90` fixe**, non configurable par exercice. |
+| 3.27 | Types de séries avancés | Échauffement, superset, durée (gainage), poids de corps ± lest. | Moyen | 4h | 🟢 | ✅ | Sélecteur de type en séance (`TYPE_CHIPS` dans `CurrentSetCard` : normal / dropset / échec / durée / poids de corps + raccourci échauffement) — Refonte-C2 ; superset par liaison explicite (`workout_superset_pairs`) — Refonte-C3. |
+| 3.28 | Chrono de repos automatique | Déclenché après chaque série validée. Configurable par exercice. | Facile | 2h | 🟢 | ✅ | Repos auto **par exercice** : cible du plan (`sessionRest`) puis surcharge en séance (`restOverride`, ± en direct), repli 90 s (`workout.tsx`). |
 | 3.29 | Alerte vibration fin de repos | Vibration + signal visuel. | Facile | 1h | 🟢 | ✅ | `Vibration.vibrate()` à 0 s du repos (`workout.tsx`). |
 | 3.30 | Ajouter / supprimer une série | En cours de séance. | Facile | 1h | 🟢 | ✅ | `addSet` / `removeSet`. |
 | 3.31 | Modifier charge / reps en direct | Sans quitter l'écran. | Facile | 1h | 🟢 | ✅ | `updateSet` en direct. |
-| 3.32 | Remplacer un exercice en direct | Choisir une variante en séance. | Moyen | 3h | 🟢 | ⬜ | **Pas de remplacement d'exercice en séance.** |
+| 3.32 | Remplacer un exercice en direct | Choisir une variante en séance. | Moyen | 3h | 🟢 | ✅ | `replaceExercise` + action « Remplacer » sur l'exercice courant (picker existant, exclut les exercices déjà présents) — Refonte-C3. |
 | 3.33 | Note de séance | Champ texte libre. | Facile | 1h | 🟢 | ✅ | Note de séance collectée au résumé (`workout-summary.tsx` → `setWorkoutFeedback`). |
 | 3.34 | Ressenti global | RPE 1-10 ou 5 étoiles en fin de séance. | Facile | 1h | 🟢 | ✅ | RPE de séance saisi au résumé (`RpeSelector` → `setWorkoutFeedback`). |
 | 3.35 | Résumé fin de séance | Durée, volume, séries validées, records battus. | Moyen | 3h | 🟢 | ✅ | `workout-summary.tsx`. |
@@ -141,8 +148,8 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 | 3.10 | Décalage de séance | Glisser-déposer vers un autre jour. | Moyen | 3h | 🟢 | 🟡 | `reschedulePlannedSession` par action, **pas de glisser-déposer**. |
 | 3.11 | Gestion séance manquée | Reporter ou sauter. | Facile | 2h | 🟢 | ✅ | `skip` + `reschedule` + `useMissedSessions`. |
 | 3.24 | Plan de séance avant démarrage | Récap des exercices prévus avec cibles. | Facile | 2h | 🟢 | ✅ | `programs/[id].tsx`. |
-| 3.7 | Progression automatique | Charge cible +X d'une semaine à l'autre (si ≥ 80 % complété). | Moyen | 3h | 🟢 | ⬜ | **Aucune logique de progression automatique de charge.** |
-| 3.8 | Deload / gestion de stagnation | Échec 2 semaines de suite → proposition −10 %. Jamais imposé. | Moyen | 3h | 🟢 | ⬜ | **Aucune logique de deload/stagnation.** |
+| 3.7 | Progression automatique | Charge cible +X d'une semaine à l'autre (si ≥ 80 % complété). | Moyen | 3h | 🟢 | 🟡 | Suggestion de progression **par exercice** en séance (`computeProgressionSuggestion`, RPE-aware, jamais imposée) — Refonte-C3. **Manque la progression au niveau du programme** (cible de charge recalculée d'une semaine à l'autre). Voir MUSC-F7 au [backlog](../../BACKLOG.md). |
+| 3.8 | Deload / gestion de stagnation | Échec 2 semaines de suite → proposition −10 %. Jamais imposé. | Moyen | 3h | 🟢 | 🟡 | Brique pure livrée et testée (`computeProgressionSuggestion` kind `deload`, −10 %) mais **non câblée** : il manque le signal `previousStruggled` (séance avant-dernière) et la validation de la règle. Voir MUSC-F7 au [backlog](../../BACKLOG.md). |
 | 3.38 | Historique des séances | Liste chronologique filtrable. | Moyen | 3h | 🟢 | ✅ | `history/index.tsx`. Journal horodaté = base future couche jeu (arbitrage C). |
 | 3.39 | Courbes charge / volume | Évolution par exercice sur différentes périodes. | Moyen | 4h | 🟢 | ✅ | `progress/index.tsx` + `ProgressLineChart`. |
 | 3.21 | Courbe de progression par exercice | Charge max / volume sur 30 / 90 j / 1 an. | Moyen | 4h | 🟢 | ✅ | + 1RM estimé + période « tout » (MUSC-04). |
@@ -328,6 +335,40 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 
 ---
 
+## Hors périmètre de cadrage — livré en cours de route
+
+*Fonctionnalités **nées après le cadrage du 04/07/2026** et déjà livrées. Elles n'existaient dans
+aucune version parce qu'elles n'avaient pas été anticipées : refonte de flux, demandes de Damien ou
+de Florian en cours de route, trous fonctionnels révélés à l'usage. **Numérotées ici** pour que la
+roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous-estime le travail réel.*
+
+| # | Fonctionnalité | Description | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|---|
+| 1.23 | Sélecteur de langue | Bascule FR / EN depuis les Réglages. | 🟢 | ✅ | La langue était figée à la création du compte (suivait la locale OS). `Segment` FR/EN dans les Réglages. |
+| 3.43 | Niveaux d'affichage de la séance | Simplifiée / Normale / Détaillée — l'écran de séance s'adapte au besoin. | 🟢 | ✅ | MUSC-F13. Colonne `profiles.workout_display_level`. |
+| 3.44 | Unification programme → planning → séance | Un seul flux : activer un programme le planifie, démarrer depuis le calendrier marque l'occurrence `done`. | 🟢 | ✅ | Refonte-A (socle). Migration `planned_session_id`. Corrige un défaut structurel propagé au running. |
+| 3.45 | Séance du jour en accès direct | Raccourci « séance du jour » sur le hub muscu (hook partagé `useTodaySession`). | 🟢 | ✅ | Refonte-B. |
+| 3.46 | Écran de séance : flux guidé + garde-fous | Carte « série en cours » + liste repliée, valider = log + repos + avance, repos plein écran, garde 0 série, résumé éditable. | 🟢 | ✅ | Refonte-C1. Le plus gros chantier de la refonte muscu. |
+| 3.47 | Templates de séance libre | Enregistrer une séance libre comme routine réutilisable, à froid ou après coup. | 🟢 | ✅ | Refonte-D. Tables `workout_templates` / `workout_template_exercises`. |
+| 3.48 | Records sur la fiche exercice | Tuiles 1RM réel/estimé, charge max, meilleur volume + lien vers la progression. | 🟢 | ✅ | MUSC-F10b. Lecture seule. |
+| 3.49 | Détail de programme : séances repliables | Expansion inline des séances sur la fiche programme. | 🟢 | ✅ | |
+| 3.50 | Suppression de programmes & de séances | Supprimer un programme (muscu possédé + course) et une séance depuis l'app. | 🟢 | ✅ | Soft delete + cascade `planned_sessions`, confirmation destructive. |
+| 4.33 | Micronutriments | Panel de micronutriments sur la base d'aliments et le journal (colonne JSON, snapshot par entrée). | 🟢 | ✅ | Étendu ensuite aux AG détaillés + vitamines/minéraux complets (10 → 31). Mapping OpenFoodFacts avec normalisation d'unité. |
+| 4.34 | Détail d'une entrée de repas | Écran de détail complet d'une entrée journalisée. | 🟢 | ✅ | |
+| 4.35 | Suivi de micronutriments | Récapitulatif des micros suivis sur la journée. | 🟢 | ✅ | Sélection des micros suivis (`tracked-micros`). |
+| 4.36 | Saisie de repas par liste | Saisie en **langage naturel** (« 100 g de riz, 2 œufs ») → analyse → revue éditable → confirmation. | 🟢 | ✅ | ⚠️ Cette US porte historiquement le n° « 4.5 » dans son nom de fichier — **collision** avec 4.5 « Modification manuelle des macros ». Le numéro qui fait foi est **4.36**. Anti-friction majeur. |
+| 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
+| 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
+
+> **Ne figurent pas dans ce tableau, volontairement** :
+> - les **US d'analyse** (META-06/08/09, MN-03/06, MR-06, NUTR-10/11/17, RN-01/02, MUSC-04/05) —
+>   elles sont suivies dans le [catalogue d'analyses](../product/analyses-donnees.md), leur source de
+>   vérité, pour ne pas dupliquer un backlog dans l'autre ;
+> - les **corrections de bugs** cadrées en US (`fix-*`) — elles vivent dans le
+>   [CHANGELOG](../../CHANGELOG.md), pas dans un plan de versions.
+
+---
+
 ## Ultérieur — iOS (hors périmètre de lancement)
 
 *Sorti du lancement par l'[ADR-004](../adr/ADR-004-plateforme-lancement.md) (Android d'abord). Traité une fois le produit stabilisé sur Android. Le code restant cross-platform, il s'agit d'un portage, pas d'une réécriture.*
@@ -347,36 +388,44 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 18/07/2026, *
 > **9.3** SQLite maison → PowerSync (8 h → 6 h) · **9.7** conflits délégués à PowerSync (6 h → 3 h) · **2.12** sync arrière-plan via PowerSync (6 h → 3 h) ·
 > **− 1.3** OAuth Apple (−3 h) et **− 9.1** App iOS déplacés en « Ultérieur — iOS » (hors décompte de lancement).
 
-**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 18/07/2026)** :
+**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 26/07/2026)** :
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 143 | ~79 % |
+| ✅ Livré | 161 | ~83 % |
 | 🟡 Partiel | 11 | ~6 % |
-| ⬜ À faire | 20 | ~11 % |
+| ⬜ À faire | 17 | ~9 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **179** | |
+| **Total périmètre de lancement** | **194** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
+
+> **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
+> « [Hors périmètre de cadrage — livré en cours de route](#hors-périmètre-de-cadrage--livré-en-cours-de-route) »
+> ont été intégrées au décompte. Elles étaient livrées mais invisibles, ce qui faisait **sous-estimer**
+> l'avancement. Les 10 US d'analyse (suivies au [catalogue](../product/analyses-donnees.md)) et les
+> correctifs restent hors décompte.
 
 **Détail par version** (✅ / 🟡 / ⬜ / ⏳ / ❌) :
 
 | Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 23 | 4 | 2 | 0 | 3 | Cœur OK, **grosses finitions** (RPE, notes, pause…) ; recherche multi-critères (3.14) + muscles secondaires (3.19) + variantes (3.20) livrés ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 14 | 2 | 5 | 0 | 0 | Quasi complet (progression auto/deload + push manquants) |
+| V0.2 (32) | 27 | 1 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu. Reste 🟡 3.36 (fenêtre de reprise à réconcilier) et ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.3 (21) | 14 | 4 | 3 | 0 | 0 | Reste les **3 push** (3.42, 2.4, 2.7) ; progression auto (3.7) et deload (3.8) partiels — briques livrées, non câblées |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
-| V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** |
+| V0.5 (33) | 25 | 4 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.2 (catalogue vide), 5.9, 5.24, 5.25 |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 6 | 2 | 1 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) livrés ; reste **9.9 (Health Connect)** + finitions accessibilité (9.11/9.12 partiels) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
+| Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
 
-- **~179 fonctionnalités** dans le périmètre de lancement.
-- **~477 h** de code brut, hors intégration, tests et itérations UX — prévoir une marge significative sur l'offline-first, le GPS et l'import de données.
+- **~194 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 15 nées en cours de route).
+- **~477 h** de code brut estimées au cadrage, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 15 items hors cadrage.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
+- **+ ~10 US d'analyse** suivies au [catalogue](../product/analyses-donnees.md), hors décompte.
 
 Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Semi-auto ≈ 10 · 🔴 Humain requis ≈ 2 (9.13 PowerSync/dev build [livré], 4.8 base d'aliments [livré]).
 
@@ -390,4 +439,38 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 ---
 
-*Dernière mise à jour : 25/07/2026 — **réconciliation code ↔ roadmap (finitions muscu/course)** : 8 items marqués ⬜ mais **déjà livrés** (par le chantier refonte muscu, non réconciliés) ou **livrés ce jour** passés ✅ — **3.17** (note/exo), **3.26** (dernière perf), **3.29** (vibration fin repos), **3.33** (note séance), **3.34** (RPE ressenti), **2.3** (écran actif muscu), **3.37** (clôture auto 3 h, `feature/auto-close-seance-perimee`), **5.26** (tableau splits/km, `feature/run-summary-splits`) ; **3.36** (pause) ⬜ → 🟡 (pause=quitter, pas de fenêtre 4 h explicite ; seuils 3 h/4 h à réconcilier avec 3.37). Compteurs : **143 livré / 11 partiel / 20 à faire** (V0.2 : 23/4/2 ; V0.5 : 26/3/4). Preuves code vérifiées. Précédemment : 24/07/2026 — 1.2 (connexion via Google) passée ⬜ → ✅ (compteurs : 135 livré / 10 partiel / 29 à faire ; V0.8 : 6 livré, reste 9.9). Code livré ; reste prérequis Google Cloud/Supabase + dev build + recette. Précédemment : 24/07/2026 — 9.10 (analytics produit first-party) passée ⬜ → ✅ (compteurs : 134 livré / 10 partiel / 30 à faire ; V0.8 : 5 livré). Migration déployée ; reste sync rule PowerSync + recette. Précédemment : 24/07/2026 — 1.22 (aide & support) passée ⬜ → ✅ (compteurs : 133 livré / 10 partiel / 31 à faire ; V0.8 : 4 livré). Reste dev build + recette + Damien. Précédemment : 23/07/2026 — 1.18 (export des données, CONF-01) passée ⬜ → ✅ (compteurs : 132 livré / 10 partiel / 32 à faire ; V0.8 : 3 livré). Précédemment : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+## Journal des réconciliations
+
+> Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
+> détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
+> descendent dans [docs/journal/](../journal/).
+
+**26/07/2026 — réconciliation de fond (refonte du suivi d'avancement)**
+6 lignes périmées corrigées : **3.13 / 3.27 / 3.28 / 3.32** 🟡⬜ → ✅ (livrées par la refonte muscu, jamais
+réconciliées), **3.7 / 3.8** ⬜ → 🟡 (briques livrées non câblées). Création de la section
+« Hors périmètre de cadrage » : **15 fonctionnalités livrées mais absentes de la roadmap** y sont
+intégrées, dont la collision de numéro **4.5 → 4.36** (saisie en langage naturel).
+Compteurs : **161 livré / 11 partiel / 17 à faire sur 194** (V0.2 : 27/1/1 · V0.3 : 14/4/3 ·
+V0.5 : 25/4/4 — l'item **5.2** était compté livré à tort depuis le 18/07, son catalogue est vide).
+Comptage désormais **vérifié par script** (somme des colonnes = total, par section et au global).
+
+**25/07/2026 — finitions muscu / course**
+8 items ⬜ → ✅ : 3.17, 3.26, 3.29, 3.33, 3.34, 2.3, 3.37 (clôture auto 3 h), 5.26 (splits/km).
+3.36 (pause) ⬜ → 🟡. Compteurs de l'époque : 143 / 11 / 20 sur 179.
+
+**23–24/07/2026 — V0.8 conformité**
+1.18 (CONF-01 export), 1.19 (CONF-02 suppression), 1.22 (aide & support), 9.10 (analytics),
+1.2 (OAuth Google) passées ⬜ → ✅.
+
+**22/07/2026 — fiche exercice**
+3.14 (recherche multi-critères), 3.19 (muscles secondaires), 3.20 (variantes) 🟡⬜ → ✅.
+
+**18/07/2026 — première réconciliation code ↔ roadmap**
+Colonne Statut renseignée sur l'ensemble du périmètre. Structure adaptée aux arbitrages de cadrage
+(PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).
+
+<details><summary>Détail brut des réconciliations antérieures (conservé pour trace)</summary>
+
+*25/07/2026 — **réconciliation code ↔ roadmap (finitions muscu/course)** : 8 items marqués ⬜ mais **déjà livrés** (par le chantier refonte muscu, non réconciliés) ou **livrés ce jour** passés ✅ — **3.17** (note/exo), **3.26** (dernière perf), **3.29** (vibration fin repos), **3.33** (note séance), **3.34** (RPE ressenti), **2.3** (écran actif muscu), **3.37** (clôture auto 3 h, `feature/auto-close-seance-perimee`), **5.26** (tableau splits/km, `feature/run-summary-splits`) ; **3.36** (pause) ⬜ → 🟡 (pause=quitter, pas de fenêtre 4 h explicite ; seuils 3 h/4 h à réconcilier avec 3.37). Compteurs : **143 livré / 11 partiel / 20 à faire** (V0.2 : 23/4/2 ; V0.5 : 26/3/4). Preuves code vérifiées. Précédemment : 24/07/2026 — 1.2 (connexion via Google) passée ⬜ → ✅ (compteurs : 135 livré / 10 partiel / 29 à faire ; V0.8 : 6 livré, reste 9.9). Code livré ; reste prérequis Google Cloud/Supabase + dev build + recette. Précédemment : 24/07/2026 — 9.10 (analytics produit first-party) passée ⬜ → ✅ (compteurs : 134 livré / 10 partiel / 30 à faire ; V0.8 : 5 livré). Migration déployée ; reste sync rule PowerSync + recette. Précédemment : 24/07/2026 — 1.22 (aide & support) passée ⬜ → ✅ (compteurs : 133 livré / 10 partiel / 31 à faire ; V0.8 : 4 livré). Reste dev build + recette + Damien. Précédemment : 23/07/2026 — 1.18 (export des données, CONF-01) passée ⬜ → ✅ (compteurs : 132 livré / 10 partiel / 32 à faire ; V0.8 : 3 livré). Précédemment : 23/07/2026 — 1.19 (suppression du compte, CONF-02) passée ⬜ → ✅ (compteurs : 131 livré / 10 partiel / 33 à faire ; V0.8 : 2 livré). Précédemment : 22/07/2026 — 3.20 (variantes / alternatives, MUSC-F10c-2) passée ⬜ → ✅ (compteurs : 130 livré / 10 partiel / 34 à faire). Précédemment : 22/07/2026 — 3.19 (muscles ciblés : primaire + secondaires, MUSC-F10c-1) passée 🟡 → ✅ (129 livré / 10 partiel). Antérieurement : 22/07/2026 — 3.14 (recherche d'exercices multi-critères, MUSC-F3) passée 🟡 → ✅ (128 livré / 11 partiel). Antérieurement : 18/07/2026 — colonne Statut renseignée par réconciliation code ↔ roadmap (avancement réel). Structure adaptée aux arbitrages de cadrage (PowerSync, Android d'abord, RevenueCat inactif, bilingue FR+EN, gamification V3/V4).*
+
+</details>

@@ -1,3 +1,12 @@
+---
+id: MUSC-F11
+titre: "Création d'exercice perso en modale (bottom-sheet)"
+roadmap: [3.16]
+catalogue: []
+etape: close
+branche: feature/muscf11-modale-creation-exo
+maj: 23/07/2026
+---
 # US MUSC-F11 — Création d'exercice perso en modale (bottom-sheet)
 
 > Retour recette F10c (Florian, 23/07/2026, [IDEAS.md](../../../../IDEAS.md)). US **UX** bornée.

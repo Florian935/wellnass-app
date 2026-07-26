@@ -1,3 +1,12 @@
+---
+id: MUSC-F10c1
+titre: "Muscles secondaires sur la fiche exercice"
+roadmap: [3.19]
+catalogue: []
+etape: close
+branche: feature/muscf10c1-muscles-secondaires
+maj: 22/07/2026
+---
 # US MUSC-F10c-1 — Muscles secondaires sur la fiche exercice
 
 > **Premier des 2 incréments** de F10c (= MUSC-F2) : **F10c-1 (muscles secondaires)** →

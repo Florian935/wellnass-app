@@ -1,3 +1,12 @@
+---
+id: REFONTE-C2
+titre: "Écran de séance : saisie enrichie (types de séries, RPE par série, charge planifiée vs réalisée)"
+roadmap: [3.27]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-c2
+maj: 20/07/2026
+---
 # US Refonte-C2 — Écran de séance : saisie enrichie (types de séries, RPE par série, charge planifiée vs réalisée)
 
 > **Chantier refonte Muscu**, US-C **découpée en 3 sous-US** (C1 ✅ → **C2** → C3). **C2 = enrichir la saisie**

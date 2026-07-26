@@ -1,3 +1,12 @@
+---
+id: FIX-ONBOARD-01
+titre: "Onboarding redemandé après réinstallation (race offline-first de la gate de routing)"
+roadmap: []
+catalogue: []
+etape: close
+branche: fix/onboarding-rejeu-connexion
+maj: 16/07/2026
+---
 # Fix — Onboarding redemandé après réinstallation (race offline-first de la gate de routing)
 
 _Spec courte de correctif. Statut : validée (Florian, 16/07/2026). Branche : `fix/onboarding-rejeu-connexion`

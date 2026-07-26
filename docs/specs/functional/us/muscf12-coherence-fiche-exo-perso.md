@@ -1,3 +1,12 @@
+---
+id: MUSC-F12
+titre: "Cohérence de la fiche exercice (perso ↔ bibliothèque)"
+roadmap: [3.16]
+catalogue: []
+etape: close
+branche: feature/muscf12-coherence-fiche-exo-perso
+maj: 23/07/2026
+---
 # US MUSC-F12 — Cohérence de la fiche exercice (perso ↔ bibliothèque)
 
 > Retour recette F10c (Florian, 23/07/2026, [IDEAS.md](../../../../IDEAS.md)). Fait suite à MUSC-F11

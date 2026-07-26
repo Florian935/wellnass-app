@@ -1,3 +1,12 @@
+---
+id: PROG-DEL-01
+titre: "Suppression de programmes & de séances (muscu + course)"
+roadmap: []
+catalogue: []
+etape: close
+branche: feature/suppression-programmes-seances
+maj: 13/07/2026
+---
 # US — Suppression de programmes & de séances (muscu + course)
 
 > Permettre à l'utilisateur de **supprimer un programme** (muscu ou course) et une **séance** depuis l'app,

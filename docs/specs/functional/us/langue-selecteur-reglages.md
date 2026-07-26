@@ -1,3 +1,12 @@
+---
+id: I18N-01
+titre: "Sélecteur de langue dans les Réglages"
+roadmap: []
+catalogue: []
+etape: close
+branche: feature/langue-selecteur-reglages
+maj: 16/07/2026
+---
 # US — Sélecteur de langue dans les Réglages
 
 _Spec fonctionnelle. Statut : validée (design du 16/07/2026, Florian). Branche :

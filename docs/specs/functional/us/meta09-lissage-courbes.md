@@ -1,3 +1,12 @@
+---
+id: META-09
+titre: "Lissage des courbes par moyenne mobile"
+roadmap: []
+catalogue: [META-09]
+etape: close
+branche: feature/meta09-lissage-courbes
+maj: 18/07/2026
+---
 # US META-09 — Lissage des courbes par moyenne mobile
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 18/07/2026). Branche :

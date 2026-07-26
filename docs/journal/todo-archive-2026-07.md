@@ -1,3 +1,22 @@
+> # 🧊 ARCHIVE GELÉE — ne plus modifier
+>
+> Ce fichier était le `TODO.md` de la racine, du **05/07/2026 au 26/07/2026**. Il a été archivé le
+> **26/07/2026** lors de la refonte du suivi d'avancement : devenu un journal append-only de
+> 1592 lignes, il n'était plus lisible (le reste-à-faire commençait ligne 728, la section
+> « En cours » ne contenait que des tâches terminées).
+>
+> **Il est conservé pour la trace uniquement.** Le suivi vit désormais dans :
+>
+> | Besoin | Fichier |
+> |---|---|
+> | Où on en est, maintenant | [ETAT.md](../../ETAT.md) *(généré)* |
+> | Ce qu'il reste à faire | [BACKLOG.md](../../BACKLOG.md) |
+> | État d'une US précise | le front-matter de sa [spec](../specs/functional/us/) |
+> | Le périmètre complet | [roadmap](../roadmap/roadmap.md) |
+> | L'historique détaillé | [CHANGELOG.md](../../CHANGELOG.md) |
+
+---
+
 # TODO — Wellness App
 
 Suivi **vivant** des tâches. On y ajoute les US au fur et à mesure qu'elles entrent dans le

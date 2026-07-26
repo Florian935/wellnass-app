@@ -1,3 +1,12 @@
+---
+id: META-06
+titre: "Comparaison période N vs N-1 (delta)"
+roadmap: []
+catalogue: [META-06]
+etape: close
+branche: feature/meta06-comparaison-periode
+maj: 15/07/2026
+---
 # US META-06 — Comparaison période N vs N-1 (delta)
 
 _Spec fonctionnelle. Statut : validée (brainstorming Florian, 15/07/2026). Branche :

@@ -1,7 +1,7 @@
 # Audit des flux — Pilier Musculation
 
 > **Source de vérité du chantier « Refonte Muscu ».** Diagnostic figé — il ne bouge plus ;
-> les décisions et l'avancement vivent dans [TODO.md](../../TODO.md) (§ Chantier refonte Muscu).
+> le chantier est **terminé** (US-A/B/C1/C2/C3/D livrées) — voir le [CHANGELOG](../../CHANGELOG.md) et les specs `refonte-muscu-*`.
 > Date : 18/07/2026 · Établi par Claude, **problèmes validés par Florian** (liste identique de son côté).
 > Méthode : trace des flux de bout en bout, **spec vs code réel** (lecture des écrans + repository).
 
@@ -119,5 +119,5 @@ C est indépendant mais volumineux ; D est arbitrable.
 
 Chaque US suit le **workflow obligatoire** (voir [CLAUDE.md](../../CLAUDE.md)) :
 **spec → plan → design → validation (Florian/Damien) → branche → code**. On ne rédige la spec détaillée
-d'une US qu'au moment de l'attaquer. Le suivi actif est dans [TODO.md](../../TODO.md)
+d'une US qu'au moment de l'attaquer. Le suivi actif est dans [ETAT.md](../../ETAT.md)
 (§ Chantier refonte Muscu).

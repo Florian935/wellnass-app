@@ -1,3 +1,12 @@
+---
+id: MUSC-04
+titre: "Courbe : métrique 1RM estimé + période « tout »"
+roadmap: [3.21]
+catalogue: [MUSC-04]
+etape: close
+branche: feature/musc04-courbe-1rm-periode-tout
+maj: 15/07/2026
+---
 # US MUSC-04 (clôture) — Courbe : métrique 1RM estimé + période « tout »
 
 _Spec fonctionnelle. Statut : validée (brainstorming Florian, 15/07/2026). Branche :

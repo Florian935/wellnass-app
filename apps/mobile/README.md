@@ -22,8 +22,11 @@ npx expo export --platform web    # bundle web (smoke-test)
 npm run typecheck                 # tsc --noEmit
 ```
 
-> ⚠️ **Dev build requis** (pas Expo Go) dès l'intégration de **PowerSync** (module natif).
-> La mise en place EAS reste à faire (voir [TODO.md](../../TODO.md)).
+> ⚠️ **Dev build requis** (pas Expo Go) : PowerSync et plusieurs autres modules natifs sont
+> intégrés. EAS est opérationnel ; le **build local Android** (`gradlew assembleRelease`) est
+> documenté dans [dev-build-android-local.md](../../docs/specs/technical/dev-build-android-local.md)
+> et [environnement-dev-local.md](../../docs/specs/technical/environnement-dev-local.md) — utile
+> quand le quota EAS est épuisé.
 
 ## Builds (EAS)
 

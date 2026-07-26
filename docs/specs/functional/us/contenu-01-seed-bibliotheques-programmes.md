@@ -1,3 +1,12 @@
+---
+id: CONTENU-01
+titre: "Seed des bibliothèques de programmes (muscu + course)"
+roadmap: [3.1, 5.2]
+catalogue: []
+etape: validation
+branche: docs/contenu-01-spec
+maj: 25/07/2026
+---
 # US CONTENU-01 — Seed des bibliothèques de programmes (muscu + course)
 
 > Backlog MVP1 (P1 — contenu éditorial). Rédigée par le fil autonome (25/07/2026) **pour validation

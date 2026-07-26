@@ -1,3 +1,12 @@
+---
+id: MR-06
+titre: "Widget « Temps d'entraînement » (dashboard)"
+roadmap: []
+catalogue: [MR-06]
+etape: close
+branche: feature/mr06-temps-entrainement
+maj: 16/07/2026
+---
 # US MR-06 — Widget « Temps d'entraînement » (dashboard)
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 16/07/2026). Branche :

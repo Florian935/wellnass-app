@@ -1,3 +1,12 @@
+---
+id: 4.33b
+titre: "Panel nutritionnel étendu (AG détaillés + vitamines/minéraux complets)"
+roadmap: [4.33]
+catalogue: []
+etape: close
+branche: feature/panel-nutritionnel-etendu
+maj: 14/07/2026
+---
 # Spec — Panel nutritionnel étendu (AG détaillés + vitamines/minéraux complets)
 
 > **Statut** : ✅ **spec validée par Florian (14/07/2026)** — reste **plan → maquette → validation → code**.

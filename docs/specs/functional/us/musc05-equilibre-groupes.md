@@ -1,3 +1,12 @@
+---
+id: MUSC-05
+titre: "Équilibre musculaire par groupe (14 j)"
+roadmap: [3.40, 3.41]
+catalogue: [MUSC-05]
+etape: close
+branche: feature/musc05-equilibre-groupes
+maj: 15/07/2026
+---
 # US MUSC-05 — Équilibre musculaire par groupe (14 j)
 
 _Spec fonctionnelle. Statut : validée (brainstorming Florian, 15/07/2026). Branche :

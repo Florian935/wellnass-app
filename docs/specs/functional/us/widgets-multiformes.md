@@ -1,3 +1,12 @@
+---
+id: WIDGETS-01
+titre: "Grille multi-formes (accueil · muscu · course)"
+roadmap: [7.13]
+catalogue: []
+etape: close
+branche: feature/widgets-multiformes
+maj: 19/07/2026
+---
 # US Widgets — Grille multi-formes (accueil · muscu · course)
 
 > **Chantier Widgets modulaires.** Généralise le système de personnalisation du dashboard
@@ -5,7 +14,8 @@
 > accueil, muscu, course. Chaque module devient un widget que l'utilisateur peut poser en
 > **3 formes** (petit carré demi-largeur, rectangle pleine largeur, grand carré pleine largeur),
 > réordonner et masquer.
-> Branche : `feature/widgets-multiformes` · Date : 19/07/2026 · **Statut : à valider (pas de code avant validation).**
+> Branche : `feature/widgets-multiformes` · Date : 19/07/2026 · **Statut : livré** (16 widgets × 3 formes,
+> réordonnancement, masquage — recette device Damien). Le statut fait foi dans le front-matter ci-dessus.
 > **Migration : aucune migration SQL** (Option A §6 verrouillée — JSON étendu, rétro-compatible).
 
 ## 0. Contexte

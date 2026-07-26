@@ -1,3 +1,12 @@
+---
+id: REFONTE-A
+titre: "Unifier programme → planning → séance (muscu + running)"
+roadmap: [3.44]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-a
+maj: 18/07/2026
+---
 # US Refonte-A — Unifier programme → planning → séance (muscu + running)
 
 > **Chantier refonte Muscu**, US-A (socle). Reprend ce que l'US [3.9](./3.9-planning-muscu-unifie.md)

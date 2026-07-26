@@ -1,3 +1,12 @@
+---
+id: MN-06
+titre: "Apport protéique par kg de poids de corps (vs cible par objectif)"
+roadmap: []
+catalogue: [MN-06]
+etape: close
+branche: feature/mn06-proteines-par-kg
+maj: 16/07/2026
+---
 # US MN-06 — Apport protéique par kg de poids de corps (vs cible par objectif)
 
 _Spec fonctionnelle. Statut : **validée (Florian, 16/07/2026) — code livré**. Branche :

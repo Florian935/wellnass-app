@@ -1,3 +1,12 @@
+---
+id: CONF-01
+titre: "Export des données (RGPD, portabilité)"
+roadmap: [1.18]
+catalogue: []
+etape: close
+branche: feature/conf01-export-donnees
+maj: 23/07/2026
+---
 # US CONF-01 — Export des données (RGPD, portabilité)
 
 > Permettre à l'utilisateur d'**exporter toutes ses données personnelles** dans un fichier **JSON**

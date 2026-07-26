@@ -1,3 +1,12 @@
+---
+id: CONF-02
+titre: "Suppression du compte (RGPD, exigé par les stores)"
+roadmap: [1.19]
+catalogue: []
+etape: close
+branche: feature/conf02-suppression-compte
+maj: 23/07/2026
+---
 # US CONF-02 — Suppression du compte (RGPD, exigé par les stores)
 
 > Permettre à l'utilisateur de **supprimer définitivement son compte et toutes ses données** depuis

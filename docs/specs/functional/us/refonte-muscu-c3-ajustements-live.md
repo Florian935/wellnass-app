@@ -1,3 +1,12 @@
+---
+id: REFONTE-C3
+titre: "Écran de séance : ajustements en direct"
+roadmap: [3.32, 3.17, 3.28]
+catalogue: []
+etape: close
+branche: feature/refonte-muscu-c3
+maj: 20/07/2026
+---
 # US Refonte-C3 — Écran de séance : ajustements en direct
 
 > **Chantier refonte Muscu**, US-C **découpée en 3 sous-US** (C1 ✅ → C2 ✅ → **C3**). **C3 = les ajustements

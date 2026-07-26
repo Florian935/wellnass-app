@@ -1,3 +1,12 @@
+---
+id: CONF-08
+titre: "Réinitialisation du mot de passe (deep link + écran « nouveau mot de passe »)"
+roadmap: [1.6]
+catalogue: []
+etape: close
+branche: fix/reset-mot-de-passe-deeplink
+maj: 25/07/2026
+---
 # US CONF-08 — Réinitialisation du mot de passe (deep link + écran « nouveau mot de passe »)
 
 > Rendre la **récupération de compte réellement utilisable sur mobile** : le lien « mot de passe oublié »

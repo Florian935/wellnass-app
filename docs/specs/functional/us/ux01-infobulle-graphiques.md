@@ -1,3 +1,12 @@
+---
+id: UX-01
+titre: "Infobulle de valeur au tap sur les graphiques (transverse)"
+roadmap: [6.4]
+catalogue: []
+etape: close
+branche: feature/ux01-infobulle-graphiques
+maj: 25/07/2026
+---
 # US UX-01 — Infobulle de valeur au tap sur les graphiques (transverse)
 
 > Pouvoir **taper un point ou une barre** d'un graphique pour lire sa **valeur exacte** et **sa date**,

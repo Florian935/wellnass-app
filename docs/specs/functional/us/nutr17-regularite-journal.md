@@ -1,3 +1,12 @@
+---
+id: NUTR-17
+titre: "Régularité du journal (taux de complétion)"
+roadmap: []
+catalogue: [NUTR-17]
+etape: close
+branche: feature/nutr17-regularite-journal
+maj: 16/07/2026
+---
 # US NUTR-17 — Régularité du journal (taux de complétion)
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 16/07/2026). Branche :

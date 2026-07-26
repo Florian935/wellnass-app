@@ -1,3 +1,12 @@
+---
+id: FIX-JOURNAL-01
+titre: "Édition/suppression découvrable d'une entrée de repas"
+roadmap: []
+catalogue: []
+etape: close
+branche: fix/journal-entree-swipe-edition
+maj: 16/07/2026
+---
 # FIX — Édition/suppression découvrable d'une entrée de repas
 
 _Spec fonctionnelle. Statut : en validation (brainstorming Florian, 16/07/2026). Branche :

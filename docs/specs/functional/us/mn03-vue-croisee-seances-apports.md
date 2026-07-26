@@ -1,3 +1,12 @@
+---
+id: MN-03
+titre: "Vue croisée « charge muscu & apports » (8 semaines)"
+roadmap: []
+catalogue: [MN-03]
+etape: close
+branche: feature/mn03-vue-croisee-seances-apports
+maj: 16/07/2026
+---
 # US MN-03 — Vue croisée « charge muscu & apports » (8 semaines)
 
 _Spec fonctionnelle. Statut : **validée (Florian, 16/07/2026) — code livré**. Branche :
