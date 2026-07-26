@@ -64,6 +64,182 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 - **Reste** : recette device (8 critères, spec §9) — en particulier le **recalage aux deux bords** et la
   **valeur brute** sur courbe lissée. Commit précédent : `b97556a`.
 
+### 25/07/2026 — `feature/deload-suggestion` — brique deload (gestion de stagnation, 3.8)
+
+> Dev autonome. Brique **pure + testée**, label UI prêt — **pas encore déclenchée** (voir Notes).
+> typecheck 0 · lint 0 err · shared 77 + mobile 112 tests. Aucune migration.
+
+**Ajouté**
+- **Deload dans `computeProgressionSuggestion`** ([workout.ts](packages/shared/src/workout.ts)) : nouveau kind
+  `deload` + `DEFAULT_DELOAD_FACTOR` (−10 %) + helper `sessionStruggled` (échec ou RPE ≥ 8). Règle : dernière
+  séance difficile **ET** précédente difficile (`opts.previousStruggled`) **ET** exercice chargé → propose une
+  **charge réduite** (arrondi 0,5 kg), jamais imposé. Params optionnels → **rétrocompatible**. 5 tests.
+- **Label UI** `workout.suggestion.deload` ([workout.tsx](apps/mobile/src/app/workout.tsx) + i18n FR/EN).
+
+**Technique / Notes**
+- **Pas encore déclenché** : `workout.tsx` ne passe pas `previousStruggled` (il faudrait la **séance
+  avant-dernière** de l'exercice — requête à ajouter). Sans ce signal, `deload` ne sort jamais → **aucun
+  changement de comportement** pour l'instant.
+- **Règle de coaching à valider (Florian)** : « 2 séances difficiles d'affilée » = échec **ou** RPE ≥ 8 ;
+  baisse −10 %. Seuils tunables (`deloadFactor`, critère de difficulté) — à confirmer avant câblage final.
+
+### 25/07/2026 — `feature/run-summary-splits` — tableau de splits/km sur le résumé de course (RUN-F1, 5.26)
+
+> Dev autonome (suite de `computeKmSplits`). 100 % UI, aucune migration. typecheck 0 · lint 0 err · 112 tests.
+
+**Ajouté**
+- **Splits par km** sur l'écran résumé de course ([run/summary.tsx](apps/mobile/src/app/run/summary.tsx)) :
+  décode la trace (déjà fait pour la carte) → `computeKmSplits` → tableau (Km N · barre relative · allure
+  M:SS), **km le plus rapide en accent**. Affiché seulement pour une course GPS avec trace ≥ 1 km plein
+  (rien sinon). Clés i18n `running.summary.splits` / `splitKm`.
+
+**Technique / Notes**
+- Allure des splits en **M:SS par km** (`formatPaceMMSS`, pas de conversion d'unité) — splits toujours
+  par km même en réglage impérial (standard coach ; à confirmer si on veut du /mile).
+- **5.32 dénivelé cumulé** reste **non faisable** : la trace encode lat/lng/t **sans altitude**.
+
+### 25/07/2026 — `feature/auto-close-seance-perimee` — clôture automatique d'une séance périmée (3.37)
+
+> Dev autonome (Damien : « lance des corrections ou dev en autonomie »). Comble un **vrai trou** du
+> backlog muscu (le reste de MUSC-F4/F5/F7 était déjà livré par le chantier refonte muscu, cases restées
+> `[ ]`). 100 % logique, aucune migration. typecheck 0 · lint 0 err · shared 72 + mobile 112 tests.
+
+**Ajouté**
+- **Clôture auto d'une séance « zombie »** (spec 3.37) : une séance oubliée restait `active` **à vie** →
+  le widget « Séance du jour » proposait « Reprendre » indéfiniment et bloquait un nouveau départ. Désormais,
+  au **démarrage de l'app** (après la synchro initiale), une séance active depuis **plus de 3 h**
+  (`WORKOUT_AUTO_CLOSE_SECONDS`) est **terminée automatiquement**.
+- Brique pure **`isWorkoutStale(startedAt, nowMs, maxSeconds?)`** + constante `WORKOUT_AUTO_CLOSE_SECONDS`
+  ([workout.ts](packages/shared/src/workout.ts)), testées (seuil strict, seuil custom, date invalide → faux).
+- **`autoCloseStaleWorkout()`** ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)) :
+  best-effort, idempotent (délègue à `finishWorkout`). Câblée une fois via un effet gaté `hasSynced` dans
+  [_layout.tsx](apps/mobile/src/app/_layout.tsx).
+- `finishWorkout` accepte un **`finishedAt` optionnel** : la clôture auto date la fin à la **dernière
+  activité réelle** (dernier `updated_at` des séries, sinon `started_at`) → **durée non gonflée** jusqu'à
+  « maintenant » (sinon stats/records/widgets de temps faussés).
+
+**Technique / Notes**
+- **Non recetté device** : impossible de fabriquer une séance vieille de 3 h à la demande ; logique
+  couverte par tests unitaires + typecheck. À vérifier device par Damien (ou en abaissant le seuil en test).
+- **Choix de design à confirmer** (Damien) : (1) seuil = **3 h** ; (2) une séance périmée **vide** (aucune
+  série) est clôturée en `completed` avec **durée 0** (pas de discard) ; (3) l'occurrence planifiée liée est
+  marquée `done` (comportement `finishWorkout` standard).
+
+### 25/07/2026 — `fix/signout-scope-local` — « Se déconnecter » ne déconnecte plus tous les appareils
+
+> Bug connu (repéré le 25/07 en vérifiant l'API pour CONF-08). 100 % logique, aucune migration.
+> typecheck 0 · lint 0 erreur · 112 tests.
+
+**Corrigé**
+- **Déconnexion ordinaire (bouton Réglages)** : `supabase.auth.signOut()` sans argument utilise le scope
+  **`global`** (défaut de `@supabase/auth-js`) → révoquait les refresh tokens de **tous** les appareils.
+  Passé en **`{ scope: 'local' }`** dans le seul `signOut` du store
+  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts)) → ne déconnecte que l'appareil courant.
+
+**Technique / Notes**
+- **Non modifiés** (scope global voulu) : `completePasswordRecovery` (révoquer les autres appareils après
+  un reset MDP — documenté) et le `signOut` de la suppression de compte.
+- **Recette** : à faire **sur 2 appareils** (déconnecter A ne doit pas déconnecter B) — non vérifiable sur
+  un seul device (recetter y déconnecterait la session). Fix vérifié en code.
+
+### 25/07/2026 — `fix/activation-programme-owner-scope` — activation d'un programme éditorial (divergence local↔cloud)
+
+> Bug remonté par Damien via la recette widgets (« il y a un programme actif mais absent du widget »).
+> **Diagnostic vérifié en SQL + dans le code** (pas une supposition) — voir Notes. 100 % UI/logique,
+> aucune migration. typecheck 0 · lint 0 erreur · 112 tests.
+
+**Corrigé**
+- **On pouvait « activer » un programme éditorial** (bibliothèque, `owner_id IS NULL`) sans le dupliquer :
+  le détail de programme affichait « Démarrer le programme » **même pour un éditorial**, ce qui appelait
+  `planProgram(editorialId)` → `is_active=1` écrit **en local** (SQLite sans RLS) puis **rejeté par la RLS
+  au sync** (interdit d'écrire `owner_id null`). Résultat : la bibliothèque affichait « Actif » alors que
+  `useActiveProgram` (owner-scopé) ne le voyait pas → widget « Aucun programme actif » + divergence local↔cloud.
+- **UI** ([programs/[id].tsx](apps/mobile/src/app/programs/%5Bid%5D.tsx),
+  [running-programs/[id].tsx](apps/mobile/src/app/running-programs/%5Bid%5D.tsx)) : le bouton
+  « Démarrer / Modifier le planning » (et, côté course, Modifier / Supprimer) est désormais **réservé aux
+  programmes possédés** (`isOwned`). Un éditorial ne propose plus que **« Dupliquer »** (recetté device).
+- **Repository (filet de sécurité)** : l'`UPDATE ... SET is_active = 1` est **owner-scopé** (`AND owner_id = ?`)
+  dans [`activateProgram`](apps/mobile/src/data/repositories/program-repository.ts) **et** dans l'activation
+  inlinée de [`planProgram`](apps/mobile/src/data/repositories/planned-session-repository.ts) — la désactivation
+  l'était déjà, pas l'activation. Un éditorial ne peut plus jamais être flaggé actif.
+
+**Technique / Notes**
+- Vérifications : seed éditorial = `is_active false` ([seed.sql:128](supabase/seed.sql#L128)) ;
+  `useActiveProgram` filtre `owner_id = user AND is_active = 1` ; `useProgramLibrary` surface `is_active`
+  (d'où le badge « Actif » trompeur). Bug **pré-existant** (hors refonte widgets ; le widget était correct).
+- **Nettoyage de donnée** : sur un device déjà touché, l'`is_active=1` fantôme reste en local jusqu'à un
+  resync (ex. réinstallation propre / `pm clear` → re-sync depuis le cloud où l'éditorial est `is_active=false`).
+
+### 25/07/2026 — `feature/widgets-data-suite` — widgets Course : splits/km (grand carré Historique)
+
+> Complétion d'une des 2 données reportées. La trace GPS encode lat/lng **+ temps par point**
+> (`GpsPoint.t`) → les splits/km sont calculables. Brique pure + testée. Commit précédent : `514134b`.
+> 100 % UI + data (aucune migration). typecheck 0 · lint 0 erreur · 112 tests mobile + 85 shared.
+
+**Ajouté**
+- **`computeKmSplits(points)`** ([running.ts](packages/shared/src/running.ts), `@wellness/shared`) :
+  découpe une trace en splits par kilomètre plein (parcours haversine + filtre outliers comme
+  `totalDistance`, interpolation du temps aux bornes km, dernier km partiel ignoré). Pur, testé
+  (3 cas : < 2 points, < 1 km, numérotation + secondes positives).
+- **Grand carré Course · Historique** ([running-widgets.tsx](apps/mobile/src/components/widgets/running-widgets.tsx)) :
+  affiche les **splits/km** de la dernière course (mini-barres, km le plus rapide en accent, pied
+  « Meilleur km · M:SS ») quand une trace GPS existe ; **repli** sur la sparkline des distances
+  récentes sinon. Détail de course via `useRun(lastRun.id)` (hook inconditionnel). Clés i18n
+  `widgets.running.splitsEyebrow` / `bestKm`.
+
+**Technique / Notes**
+- Non recettable sur le device de test tel quel : la dernière course y est un ajout manuel à 0 km
+  **sans trace** → repli sparkline (déjà validé). La logique splits est couverte par les tests unitaires.
+- **Reste reporté** : semaine X/Y d'un programme (faisable via `planned_sessions.week_index`, mais
+  **non recettable** faute de programme actif sur le compte de test — à faire quand un programme existe).
+
+### 25/07/2026 — `feature/widgets-v2-dnd` — widgets : complétion des données (volume hebdo + tonnage historique)
+
+> Suite recette device : formes riches complétées avec de vraies données au lieu de dégradations.
+> Recetté sur device (sparkline Progression multi-points + tonnage par séance affichés). Commit
+> précédent : `0b9c124`. 100 % UI + data (aucune migration). typecheck 0 · lint 0 erreur · 112 tests verts.
+
+**Ajouté**
+- **`useWeeklyVolumeSeries(weeks)`** ([records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts)) :
+  série de tonnage hebdomadaire (8 semaines glissantes, bucketing par `finished_at`, module-level pur pour
+  la règle `react-hooks/purity`) → la **sparkline Progression** (widget muscu) devient une vraie courbe
+  multi-points au lieu d'une diagonale à 2 points.
+- **Tonnage par séance** dans l'historique : `SELECT_HISTORY` calcule `volume_kg` (correlated subquery
+  Σ reps × poids, non-échauffement), exposé via `WorkoutHistoryItem.volumeKg`
+  ([workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts)) ; le widget
+  **Historique muscu** (formes `wide`/`large`) affiche le tonnage par séance (« 4,3 t »). Clé i18n
+  `widgets.strength.tonnage`.
+
+**Technique / Notes**
+- Test `history-smoke` : fixtures `WorkoutHistoryItem` complétées de `volumeKg`.
+- **Reportés** (non branchés) : **splits/km** du grand carré Course (la trace GPS est encodée dans
+  `runs.gps_track`, aucune table de points → décodage + géométrie lourds/risqués ; la sparkline des
+  distances récentes reste) ; **semaine X/Y** d'un programme (faisable via `planned_sessions.week_index`
+  mais chaînage plus lourd — à faire en suivi si besoin).
+
+### 25/07/2026 — `feature/widgets-v2-dnd` — fix widgets : trou de grille (widget conditionnel) + état vide démesuré
+
+> Recette **sur device** (prise de contrôle ADB : screenshots + navigation accueil/muscu/course/édition).
+> Deux bugs de rendu corrigés, revérifiés sur le Pixel après rebuild release. Commit précédent : `dcce386`.
+> 100 % UI, aucune migration. typecheck 0 · lint 0 erreur · 44 tests verts.
+
+**Corrigé**
+- **Trou dans la grille de widgets** (le « module qui ne s'affiche pas » remonté par Damien) :
+  `DeficitVolumeAlertCard` rend `null` tant que l'alerte n'est pas déclenchée (widget conditionnel,
+  spec 4.32), mais la grille en positions absolues lui **réservait quand même une cellule** → un trou
+  qui décalait/masquait les widgets suivants (Semaine running). `WidgetGrid` reçoit un prédicat
+  **`isActive`** ([WidgetGrid.tsx](apps/mobile/src/components/widgets/WidgetGrid.tsx)) qui **exclut les
+  widgets inactifs** de la grille (affichage ET édition) ; l'accueil
+  ([index.tsx](apps/mobile/src/app/%28tabs%29/index.tsx)) le câble sur `deficit-volume` via
+  `useDeficitVolumeAlert().show`. Le widget réapparaît à sa place quand l'alerte se déclenche.
+- **État vide démesuré** : les libellés d'état vide (« Aucune », « Aucun programme actif »…) passaient
+  par le gros chiffre héro (38 px) de `Metric`. `Metric` en mode `muted` utilise désormais une police
+  modeste (20 px, [WidgetFrame.tsx](apps/mobile/src/components/widgets/WidgetFrame.tsx)).
+
+**Technique / Notes**
+- Non corrigés (hors bug de rendu) : « 3150 min » (donnée de recette factice), sparkline Progression à
+  2 points (diagonale — pas d'historique de volume hebdo branché), carte `large` clairsemée d'un
+  programme absent (cosmétique).
 ### 25/07/2026 — `fix/reset-mot-de-passe-deeplink` — US CONF-08 : recette validée & US clôturée (RECETTE)
 
 > **RECETTÉE & VALIDÉE par Florian (25/07/2026) ✅ → mergé sur `dev`.** Relecture Damien **non requise**

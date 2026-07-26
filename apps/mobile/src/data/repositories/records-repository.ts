@@ -860,6 +860,55 @@ export function useWeeklyVolumeComparison(): {
 }
 
 /**
+ * Range des séries dans des seaux de 7 jours (seau 0 = semaine courante) et renvoie le
+ * **tonnage par semaine**, la plus ancienne d'abord. Pur / module-level (calcule `now` hors rendu).
+ */
+function bucketWeeklyVolume(
+  rows: { finished_at: string | null; reps: number | null; weight_kg: number | null }[],
+  weeks: number,
+): number[] {
+  const buckets = new Array(Math.max(1, weeks)).fill(0) as number[];
+  const now = Date.now();
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+  for (const r of rows) {
+    if (!r.finished_at) continue;
+    const t = new Date(r.finished_at).getTime();
+    if (Number.isNaN(t)) continue;
+    const wi = Math.floor((now - t) / WEEK_MS); // 0 = semaine courante
+    const idx = buckets.length - 1 - wi;
+    if (idx < 0 || idx >= buckets.length) continue;
+    buckets[idx] = (buckets[idx] ?? 0) + (r.reps ?? 0) * (r.weight_kg ?? 0);
+  }
+  return buckets;
+}
+
+/**
+ * Série de **tonnage hebdomadaire** (kg) sur les `weeks` dernières semaines glissantes, la plus
+ * ancienne d'abord — pour la sparkline de progression (widget muscu). Mêmes filtres que les
+ * autres calculs de volume (séries validées non-échauffement de séances terminées).
+ */
+export function useWeeklyVolumeSeries(weeks = 8): { series: number[]; isLoading: boolean } {
+  const since = rollingWindowLowerBound(weeks * 7);
+  const sql = `
+    SELECT w.finished_at AS finished_at, s.reps AS reps, s.weight_kg AS weight_kg
+    FROM workout_sets s
+    JOIN workouts w ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    WHERE s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+      AND w.finished_at >= ?
+  `;
+  const { data, isLoading } = useQuery<{
+    finished_at: string | null;
+    reps: number | null;
+    weight_kg: number | null;
+  }>(sql, [since]);
+
+  return { series: bucketWeeklyVolume(data, weeks), isLoading };
+}
+
+/**
  * Détail complet d'une séance terminée (entête + séries regroupées par exercice +
  * volume calculé), réactif. Les noms d'exercice sont résolus dans la langue
  * applicative. Deux requêtes toujours appelées (règle des hooks) : quand

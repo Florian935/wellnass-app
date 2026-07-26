@@ -55,18 +55,28 @@ export function WidgetGrid({
   editing,
   renderWidget,
   onDragActiveChange,
+  isActive,
 }: {
   screen: WidgetScreen;
   editing: boolean;
   renderWidget: (id: WidgetId, size: WidgetSize) => ReactNode;
   onDragActiveChange?: (active: boolean) => void;
+  /**
+   * Prédicat d'**activité** d'un widget conditionnel (défaut : toujours actif). Un widget inactif
+   * (ex. `deficit-volume` sans alerte, qui rendrait `null`) est **exclu de la grille** au lieu de
+   * réserver une cellule vide (sinon : un « trou » dans la disposition). Appliqué en affichage ET
+   * en édition — un widget absent n'a pas à être positionné/déplacé ; il réapparaît quand il redevient actif.
+   */
+  isActive?: (id: WidgetId) => boolean;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { layout, toggleVisible, cycleSize, moveToCell } = useScreenLayout(screen);
   const [width, setWidth] = useState(0);
 
-  const rendered = editing ? layout.widgets : layout.widgets.filter((w) => w.visible);
+  const rendered = (editing ? layout.widgets : layout.widgets.filter((w) => w.visible)).filter(
+    (w) => (isActive ? isActive(w.id) : true),
+  );
   const colW = width > 0 ? (width - GRID_GAP * (GRID_COLS - 1)) / GRID_COLS : 0;
 
   const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);

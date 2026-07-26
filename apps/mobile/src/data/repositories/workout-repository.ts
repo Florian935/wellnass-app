@@ -24,6 +24,7 @@
 import { useQuery } from '@powersync/react';
 import {
   computeReorderedExerciseOrder,
+  isWorkoutStale,
   type ReorderOperation,
   type SetType,
 } from '@wellness/shared';
@@ -78,6 +79,8 @@ export type WorkoutHistoryItem = {
   notes: string | null;
   sessionId: string | null;
   programId: string | null;
+  /** Tonnage total (Σ reps × poids, séries validées non-échauffement), en kg. 0 si aucune. */
+  volumeKg: number;
 };
 
 /** Champs modifiables d'une série via `updateSet`. */
@@ -104,6 +107,8 @@ type WorkoutDbRow = {
   notes: string | null;
   session_id: string | null;
   program_id: string | null;
+  /** Tonnage total de la séance (correlated subquery de `SELECT_HISTORY`) ; absent des autres requêtes. */
+  volume_kg?: number | null;
 };
 
 /**
@@ -156,7 +161,11 @@ const SELECT_SETS_FOR_WORKOUT = `
 
 /** Historique des séances terminées, plus récentes d'abord. */
 const SELECT_HISTORY = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id
+  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id,
+         (SELECT COALESCE(SUM(ws.reps * ws.weight_kg), 0)
+            FROM workout_sets ws
+           WHERE ws.workout_id = workouts.id AND ws.deleted_at IS NULL
+             AND ws.done = 1 AND ws.set_type <> 'warmup') AS volume_kg
   FROM workouts
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
@@ -193,6 +202,7 @@ function rowToHistoryItem(row: WorkoutDbRow): WorkoutHistoryItem {
     notes: row.notes,
     sessionId: row.session_id,
     programId: row.program_id,
+    volumeKg: row.volume_kg ?? 0,
   };
 }
 
@@ -612,7 +622,16 @@ export async function cancelWorkout(id: string): Promise<void> {
  */
 export async function finishWorkout(
   id: string,
-  opts?: { rpe?: number | null; notes?: string | null },
+  opts?: {
+    rpe?: number | null;
+    notes?: string | null;
+    /**
+     * Instant de clôture (ISO UTC) — défaut `nowUtc()`. Surchargé par la **clôture
+     * automatique** d'une séance périmée, qui passe l'horodatage de la **dernière activité
+     * réelle** pour ne pas gonfler la durée jusqu'à « maintenant » (cf. `autoCloseStaleWorkout`).
+     */
+    finishedAt?: string;
+  },
 ): Promise<void> {
   const row = await powerSync.getOptional<{
     started_at: string;
@@ -632,7 +651,7 @@ export async function finishWorkout(
     return;
   }
 
-  const finishedAt = nowUtc();
+  const finishedAt = opts?.finishedAt ?? nowUtc();
   const durationSeconds = Math.max(
     0,
     Math.round((new Date(finishedAt).getTime() - new Date(row.started_at).getTime()) / 1000),
@@ -663,6 +682,34 @@ export async function finishWorkout(
     } catch (error) {
       console.warn("Échec du marquage de l'occurrence planifiée (ignoré, best-effort) :", error);
     }
+  }
+}
+
+/**
+ * Clôture automatique d'une séance **périmée** (spec 3.37) : si une séance est encore `active`
+ * depuis plus de `WORKOUT_AUTO_CLOSE_SECONDS` (3 h), on la termine — mais en datant la fin à la
+ * **dernière activité réelle** (dernier `updated_at` de ses séries non supprimées, sinon `started_at`)
+ * pour ne pas enregistrer une durée gonflée jusqu'à « maintenant » (sinon les stats/records/widgets de
+ * temps seraient faussés). Idempotent (délègue à `finishWorkout`), best-effort (jamais bloquant).
+ * Appelée **une fois au démarrage de l'app** — évite les séances « zombie » qui restent actives à vie
+ * (le widget « Séance du jour » afficherait « Reprendre » indéfiniment et bloquerait un nouveau départ).
+ */
+export async function autoCloseStaleWorkout(): Promise<void> {
+  try {
+    const active = await powerSync.getOptional<{ id: string; started_at: string }>(
+      `SELECT id, started_at FROM workouts
+       WHERE status = 'active' AND deleted_at IS NULL
+       ORDER BY started_at DESC LIMIT 1`,
+    );
+    if (!active || !isWorkoutStale(active.started_at, Date.now())) return;
+
+    const lastAct = await powerSync.getOptional<{ ts: string | null }>(
+      `SELECT MAX(updated_at) AS ts FROM workout_sets WHERE workout_id = ? AND deleted_at IS NULL`,
+      [active.id],
+    );
+    await finishWorkout(active.id, { finishedAt: lastAct?.ts ?? active.started_at });
+  } catch (error) {
+    console.warn('Clôture auto de séance périmée ignorée (best-effort) :', error);
   }
 }
 

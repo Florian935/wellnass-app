@@ -164,6 +164,46 @@ export function totalDistance(points: ReadonlyArray<GpsPoint>): number {
   return total;
 }
 
+/** Un split : le kilometre plein `km` (1, 2, 3…) et sa duree en secondes. */
+export interface KmSplit {
+  km: number;
+  seconds: number;
+}
+
+/**
+ * Decoupe une trace en splits par kilometre PLEIN. Parcourt les points en cumulant la
+ * distance (haversine, memes filtres outliers que `totalDistance`) ; a chaque franchissement
+ * d'une borne km, interpole le temps de passage (proportion du segment) et pousse la duree
+ * ecoulee depuis la borne precedente. Le dernier km partiel est ignore. Pur / testable.
+ */
+export function computeKmSplits(points: ReadonlyArray<GpsPoint>): KmSplit[] {
+  if (points.length < 2) return [];
+  const splits: KmSplit[] = [];
+  let cumDist = 0;
+  let nextBoundary = 1000; // prochaine borne km, en metres
+  let lastBoundaryTime = points[0]!.t; // temps au depart (borne 0)
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1]!;
+    const curr = points[i]!;
+    const dt = curr.t - prev.t;
+    if (dt <= 0) continue;
+    const dist = haversineMeters(prev, curr);
+    if (dist / dt > MAX_PLAUSIBLE_SPEED_MS) continue; // glitch GPS
+    const segStart = cumDist;
+    const segEnd = cumDist + dist;
+    while (segEnd >= nextBoundary) {
+      // fraction du segment ou la borne est atteinte (segStart = distance au debut du segment)
+      const frac = dist > 0 ? (nextBoundary - segStart) / dist : 0;
+      const boundaryTime = prev.t + frac * dt;
+      splits.push({ km: nextBoundary / 1000, seconds: boundaryTime - lastBoundaryTime });
+      lastBoundaryTime = boundaryTime;
+      nextBoundary += 1000;
+    }
+    cumDist = segEnd;
+  }
+  return splits;
+}
+
 // ---------------------------------------------------------------------------
 // Vitesse lissee (auto-pause) — Volet B
 // ---------------------------------------------------------------------------

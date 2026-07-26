@@ -415,9 +415,12 @@ export async function planProgram(
          AND deleted_at IS NULL`,
       [now, ownerId, target.pillar, programId],
     );
+    // **Owner-scopé** : on n'active que les programmes possédés (jamais un éditorial,
+    // owner_id null — cf. `activateProgram`). Filet de sécurité contre la divergence
+    // local↔cloud ; l'UI empêche par ailleurs de planifier un programme non possédé.
     await tx.execute(
-      `UPDATE programs SET is_active = 1, updated_at = ? WHERE id = ?`,
-      [now, programId],
+      `UPDATE programs SET is_active = 1, updated_at = ? WHERE id = ? AND owner_id = ?`,
+      [now, programId, ownerId],
     );
 
     return generated.length;

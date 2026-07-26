@@ -421,7 +421,7 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 25/07/2026 (**US UX-01 Infobulle de valeur au tap sur les graphiques — CODE LIVRÉ ✅
+*Dernière mise à jour : 26/07/2026 (**US UX-01 Infobulle de valeur au tap sur les graphiques — CODE LIVRÉ ✅
 → reste recette + Damien** : première idée promue depuis IDEAS.md (16/07). Un tap sur un point ou une barre
 affiche la **date complète + la valeur exacte** ; les **6 surfaces graphiques** sont couvertes d'un coup
 (2 composants mutualisés). `formatTooltipValue` et `formatDayFull` purs et testés dans `shared` (dont le
@@ -430,7 +430,8 @@ local) ; `ChartTooltip` partagé par les deux graphiques. Valeur **brute** affic
 2 limites assumées : pas de fermeture au tap ailleurs (API absente), barre tapée non repeinte (préserve les
 couleurs sémantiques). Aucune migration, aucun module natif, aucune clé i18n. 846 shared + 116 mobile.
 Branche `feature/ux01-infobulle-graphiques`.
-Précédemment : **US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
+**Branche synchronisée avec `dev`** le 26/07 (merge de 12 commits) pour permettre une **recette groupée** UX-01 + les livraisons de `dev`.
+Précédemment : **Brique deload (3.8)** (`feature/deload-suggestion`) : `computeProgressionSuggestion` gagne un kind `deload` (2 séances difficiles d'affilée + exercice chargé → charge −10 %, jamais imposé), pur + 5 tests, label UI prêt. **Non déclenché** (manque `previousStruggled` = séance avant-dernière + validation règle Florian). typecheck 0 / lint 0 / shared 77 + mobile 112. Précédemment : **Tableau splits/km résumé course (RUN-F1 / 5.26)** (`feature/run-summary-splits`) : décodage trace → `computeKmSplits` → tableau (Km N · barre · allure M:SS, km le plus rapide en accent) sur `run/summary.tsx`, si course GPS avec trace ≥ 1 km. 5.32 dénivelé bloqué (trace sans altitude). typecheck 0 / lint 0 / 112 tests. Précédemment : **Clôture auto séance périmée (3.37)** (`feature/auto-close-seance-perimee`) : une séance oubliée restait `active` à vie (widget « Séance du jour » → « Reprendre » indéfini, bloquait un nouveau départ). `isWorkoutStale` (pur, testé) + `autoCloseStaleWorkout()` au démarrage (gaté `hasSynced`), durée **plafonnée à la dernière activité réelle** (`finishWorkout` accepte `finishedAt`). typecheck 0 / lint 0 / shared 72 + mobile 112. Non recetté device (impossible de fabriquer une séance de 3 h) — logique testée ; choix de design (seuil 3 h, vide→durée 0, occurrence liée→done) à confirmer. NB : en vérifiant le backlog, **MUSC-F4/F5/F7 sont déjà livrés** (refonte muscu) — cases réconciliées. Précédemment : **Spec CONTENU-01 draftée** (`docs/contenu-01-spec`) : cadre le seed des bibliothèques de programmes (muscu 3.1 + course 5.2, catalogues vides) — méthode (migration idempotente recommandée, cf. précédent CIQUAL, vs constructeur admin), catalogue de départ proposé (3 muscu + 3 course, FR+EN), décisions ouvertes pour Damien/Florian. **À valider avant code.** Précédemment : **Hygiène backlog P0** (`docs/todo-backlog-p0-hygiene`) : 5 items P0 clôturés (CONF-01→05, recette Florian) étaient restés cochés `[ ]` dans le backlog « Reste-à-faire MVP1 » → corrigés ; titre P0 mis à jour (reste CONF-06 Health Connect, CONF-07 Accessibilité, LANCE-01 Play Store). Précédemment : **Fix — « Se déconnecter » scope local** (`fix/signout-scope-local`) : le logout des Réglages passait en scope `global` (défaut Supabase) → déconnectait tous les appareils ; passé en `{ scope: 'local' }` (reset MDP + suppression compte gardent le global, voulu). typecheck 0 / lint 0 err / 112 tests. Reste recette 2-appareils. Précédemment : **Fix — activation d'un programme éditorial (divergence local↔cloud)** (`fix/activation-programme-owner-scope`, remonté Damien pendant la recette widgets) : le détail de programme affichait « Démarrer le programme » **même sur un éditorial** → `planProgram(editorialId)` écrivait `is_active=1` en local (rejeté par la RLS au sync) → biblio « Actif » mais `useActiveProgram` (owner-scopé) ne le voit pas → widget « Aucun programme actif » + divergence. Fix : bouton Démarrer/planifier **réservé aux programmes possédés** (`isOwned`, muscu + course ; éditorial → seulement « Dupliquer », recetté device) + `UPDATE is_active=1` **owner-scopé** dans `activateProgram` ET `planProgram` (filet de sécurité). Bug **pré-existant** (le widget était correct). Diagnostic vérifié en SQL (seed éditorial `is_active false`) + code. typecheck 0 / lint 0 err / 112 tests. Nettoyage donnée : l'`is_active=1` fantôme reste en local jusqu'à un resync. Précédemment : **Widgets Course — splits/km** (`feature/widgets-data-suite`) : la trace GPS encode lat/lng **+ temps par point** → brique pure testée `computeKmSplits` (shared) + grand carré Course·Historique affiche les splits/km (mini-barres, km le plus rapide en accent, « Meilleur km · M:SS »), repli sparkline distances sinon (`useRun` pour le détail). typecheck 0 / lint 0 err / 112 tests mobile + 85 shared. Non recettable device tel quel (dernière course = ajout manuel 0 km sans trace → repli) ; logique couverte par tests unitaires. **Reste reporté** : semaine X/Y programme (faisable via `planned_sessions.week_index` mais **non recettable** faute de programme actif sur le compte de test). Précédemment : **Widgets — complétion données (Damien)** (`feature/widgets-v2-dnd`) : formes riches complétées — `useWeeklyVolumeSeries` (tonnage 8 semaines → sparkline Progression multi-points) + tonnage par séance dans l'historique muscu (`volume_kg` en subquery, `WorkoutHistoryItem.volumeKg`, clé i18n `widgets.strength.tonnage`). Recetté device (Progression + tonnage OK). typecheck 0 / lint 0 err / 112 tests. Précédemment : **Widgets — recette device (Damien) : 2 fixes de rendu** — prise de contrôle ADB (screenshots + navigation). (1) **Trou de grille** : `DeficitVolumeAlertCard` rend `null` sans alerte (widget conditionnel) mais la grille lui réservait une cellule → trou qui masquait « Semaine running » → `WidgetGrid` reçoit un prédicat `isActive` qui exclut les widgets inactifs, câblé sur `deficit-volume` depuis l'accueil ; (2) **état vide démesuré** : `Metric muted` passe de 38 px à 20 px. typecheck 0 / lint 0 err / 44 tests verts, rebuild release revérifié sur device. Précédemment : **US CONF-08 Réinitialisation du mot de passe — RECETTE VALIDÉE À 100 %
 + CLÔTURÉE (Florian) ✅** — relecture Damien non requise (go explicite). Parcours complet fonctionnel : lien →
 écran de saisie → mot de passe enregistré → retour connexion ; Redirect URL Supabase configurée.
 **2 bugs corrigés en recette, même classe de défaut** : **Expo Router résout un deep link comme un chemin de
@@ -732,17 +733,20 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 > Les # entre parenthèses renvoient à la [roadmap](docs/roadmap/roadmap.md). Priorité : **P0** =
 > bloquant pour lancer / ouvrir la bêta ; **P1** = finitions produit visibles ; **P2** = confort / optionnel.
 
-### 🔴 P0 — Conformité & lancement (V0.8 → V1.0) — *bloquant MVP1, quasi rien n'existe*
+### 🔴 P0 — Conformité & lancement (V0.8 → V1.0) — *bloquant MVP1*
 
-- [ ] **CONF-01 — Export des données (RGPD)** (1.18) — écran Réglages → export JSON/CSV de toutes les
+> **Point au 25/07/2026** : 5/8 clôturés (CONF-01→05, recette Florian) ; **reste : CONF-06 (Health
+> Connect), CONF-07 (Accessibilité), LANCE-01 (Publication Play Store)**.
+
+- [x] **CONF-01 — Export des données (RGPD)** (1.18) — ✅ **CLÔTURÉE** (recette Florian 23/07/2026, cf. en-tête) — — écran Réglages → export JSON/CSV de toutes les
   données perso de l'utilisateur. Obligation RGPD.
-- [ ] **CONF-02 — Suppression du compte** (1.19) — double confirmation + délai de grâce 30 j + purge
+- [x] **CONF-02 — Suppression du compte** (1.19) — ✅ **CLÔTURÉE** (recette Florian 23/07/2026, cf. en-tête) — — double confirmation + délai de grâce 30 j + purge
   (RPC serveur). **Exigé par les stores.**
-- [ ] **CONF-03 — Aide & support** (1.22) — écran FAQ + formulaire de contact / signalement de bug.
+- [x] **CONF-03 — Aide & support** (1.22) — ✅ **CLÔTURÉE** (US 1.22, recette Florian 24/07/2026) — — écran FAQ + formulaire de contact / signalement de bug.
   🌐 bilingue FR+EN.
-- [ ] **CONF-04 — Connexion via Google (OAuth)** (1.2) — provider Google (Supabase Auth) sur `sign-in`.
+- [x] **CONF-04 — Connexion via Google (OAuth)** (1.2) — ✅ **CLÔTURÉE** (US 1.2, recette Florian 24/07/2026) — — provider Google (Supabase Auth) sur `sign-in`.
   🔴 **clé OAuth Google à fournir** (décision/ressource humaine).
-- [ ] **CONF-05 — Analytics produit first-party** (9.10) — instrumentation d'événements anonymisés
+- [x] **CONF-05 — Analytics produit first-party** (9.10) — ✅ **CLÔTURÉE** (US 9.10, recette Florian 24/07/2026) — — instrumentation d'événements anonymisés
   (instance auto-hébergée). 🔴 **décision outil** (PostHog auto-hébergé ?). Nécessaire avant d'ouvrir
   la bêta (sinon aucune mesure des testeurs).
 - [ ] **CONF-06 — Health Connect** (9.9) — écriture des séances + lecture du poids (Android).
@@ -781,21 +785,20 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
     [plan](docs/plans/muscf10b-records-fiche-exercice.md) · [spec](docs/specs/functional/us/muscf10b-records-fiche-exercice.md).
   - [ ] **MUSC-F10c (= MUSC-F2) — Fiche enrichie** — muscles principal **+ secondaires** + variantes/alternatives
     (3.13/3.19/3.20). ⚠️ migration (colonnes) + saisie admin. Remplace/absorbe MUSC-F2 ci-dessus.
-- [ ] **MUSC-F4 — Séance : feedback & confort** (3.26 dernière perf affichée + 3.29 vibration fin de repos
+- [x] **MUSC-F4 — Séance : feedback & confort** — ✅ **DÉJÀ LIVRÉ** (chantier refonte muscu) : `useLastPerformance`/`lastPerfLabel` (3.26), `Vibration.vibrate()` fin de repos (3.29), `useKeepAwake()` (2.3). (3.26 dernière perf affichée + 3.29 vibration fin de repos
   + 2.3 écran actif en muscu). ~~6.3 accès démo pendant la séance~~ — ❌ abandonné avec MUSC-F1.
 - [ ] **MUSC-F5 — Séance : saisie enrichie** (3.33 note de séance + 3.34 RPE + 3.27 UI types de séries +
   3.28 chrono de repos configurable par exercice + 3.32 remplacer un exercice en direct + 3.17 note
   persistante par exercice). ⚠️ Plusieurs modèles déjà prêts (`notes`, `rpe`, `set_type`) → surtout de l'UI.
-- [ ] **MUSC-F6 — Séance : cycle de vie** (3.36 pause/reprise sous 4 h + 3.37 clôture automatique après 3 h).
-- [ ] **MUSC-F7 — Progression assistée** (3.7 progression automatique de charge + 3.8 deload/gestion de
-  stagnation). Suggéré, jamais imposé.
+- [~] **MUSC-F6 — Séance : cycle de vie** — **3.37 clôture auto après 3 h FAIT** (`feature/auto-close-seance-perimee`, `isWorkoutStale` + `autoCloseStaleWorkout` au démarrage, durée plafonnée) ; **3.36 pause/reprise** partiel (option « pause » à la sortie). (3.36 pause/reprise sous 4 h + 3.37 clôture automatique après 3 h).
+- [~] **MUSC-F7 — Progression assistée** — **3.8 deload : brique pure + tests livrés** (`feature/deload-suggestion`, `computeProgressionSuggestion` kind `deload`, non câblé : manque le signal `previousStruggled` = séance avant-dernière + validation règle Florian) ; **3.7 progression auto de charge** (niveau programme) reste ⬜.
 - [ ] **MUSC-F8 — Notifications push muscu** (3.42 + 2.7 nouveau record + 2.4 rappel de séance planifiée).
   ⚠️ L'infra notif existe (streak) → à étendre.
 - [ ] **MUSC-F9 — Décalage de séance en glisser-déposer** (3.10) — aujourd'hui report par action seulement.
 
 ### 🟠 P1 — Finitions running (V0.5)
 
-- [ ] **RUN-F1 — Splits & dénivelé** (5.26 tableau pace par km + 5.32 dénivelé cumulé — nécessite l'altitude GPS).
+- [~] **RUN-F1 — Splits & dénivelé** — **5.26 tableau pace/km FAIT** (`feature/run-summary-splits`, `computeKmSplits` + tableau sur le résumé de course, km le plus rapide en accent) ; **5.32 dénivelé** bloqué (trace GPS sans altitude).
 - [ ] **RUN-F2 — Séances guidées vocales** (5.18 guidage fractionné vocal + 5.19 annonces audio par km +
   5.9 blocs rapide/récup structurés + 5.23 prolonger/raccourcir vs cible) — **brancher les séances guidées
   sur le tracker actif** (aujourd'hui déconnectées). Dépend de `expo-speech`.
@@ -803,7 +806,7 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 
 ### 🟠 P1 — Contenu éditorial
 
-- [ ] **CONTENU-01 — Seed des bibliothèques de programmes** (3.1 muscu + 5.2 course) — catalogues
+- [~] **CONTENU-01 — Seed des bibliothèques de programmes** (3.1 muscu + 5.2 course) — **SPEC DRAFTÉE** (`docs/contenu-01-spec`, à valider : méthode migration idempotente vs constructeur admin + catalogue de départ) → [spec](docs/specs/functional/us/contenu-01-seed-bibliotheques-programmes.md). Catalogues
   aujourd'hui **vides** ; à peupler via le constructeur admin (8.4, déjà livré). 🌐 bilingue FR+EN.
 
 ### 🟢 P2 — Confort & optionnel
@@ -956,16 +959,11 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   _Suivi séparé : ~~même traitement pour le reset de mot de passe~~ → **traité par US CONF-08** (ci-dessous) ;
   + config **SMTP custom** Supabase (service e-mail intégré rate-limité) = prérequis bêta._
 
-- [ ] **« Se déconnecter » déconnecte de TOUS les appareils (scope global)** — _repéré le 25/07/2026 en
-  vérifiant l'API pour CONF-08, **pas encore corrigé**._ `supabase.auth.signOut()` sans argument utilise le
-  scope **`global`** (défaut de `@supabase/auth-js`) : il révoque les refresh tokens de **tous** les
-  appareils. Le bouton « Se déconnecter » des Réglages
-  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts) `signOut`) hérite donc de ce comportement —
-  inattendu pour une déconnexion ordinaire (la doc de la lib le signale elle-même comme surprenant et
-  recommande `{ scope: 'local' }`). ⚠️ **Ne pas corriger à l'aveugle** : c'est un **changement de
-  comportement existant** (décision produit + recette dédiée). Pour CONF-08 le scope global est au
-  contraire **voulu** (révoquer les autres appareils après un reset) → **ne pas toucher**
-  `completePasswordRecovery`. Fix envisagé : `{ scope: 'local' }` sur le seul `signOut` des Réglages.
+- [x] **« Se déconnecter » déconnecte de TOUS les appareils (scope global)** — **CORRIGÉ** (`fix/signout-scope-local`,
+  25/07/2026) : `{ scope: 'local' }` sur le seul `signOut` des Réglages
+  ([auth-store.ts](apps/mobile/src/stores/auth-store.ts)). `completePasswordRecovery` (reset MDP) et la
+  suppression de compte gardent le scope global (voulu). typecheck 0 / lint 0 err / 112 tests.
+  **Reste : recette à 2 appareils** (déconnecter A ne doit pas déconnecter B) — non vérifiable sur un seul device.
 
 > ## 🧪 RECETTE À FAIRE — US UX-01 Infobulle de valeur au tap sur les graphiques — code livré (25/07/2026)
 >

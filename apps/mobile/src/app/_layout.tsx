@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useStatus } from '@powersync/react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { resolveRootRoute } from '@wellness/shared';
 
@@ -18,6 +18,7 @@ import '@/running/tracker-task';
 import '@/lib/google-signin';
 import { useDeletionStore } from '@/stores/deletion-store';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { autoCloseStaleWorkout } from '@/data/repositories/workout-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
 import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
@@ -137,6 +138,17 @@ function RootNavigator() {
       void ensureSettings();
     }
   }, [session, syncStatus.hasSynced, settingsLoading, settings]);
+
+  // Clôture auto d'une séance périmée (spec 3.37) — une seule fois par lancement, après la
+  // synchro initiale (`hasSynced`) pour raisonner sur l'état réel (pas une ligne locale non
+  // synchronisée). Best-effort côté repository (jamais bloquant).
+  const staleWorkoutCheckedRef = useRef(false);
+  useEffect(() => {
+    if (session && syncStatus.hasSynced && !staleWorkoutCheckedRef.current) {
+      staleWorkoutCheckedRef.current = true;
+      void autoCloseStaleWorkout();
+    }
+  }, [session, syncStatus.hasSynced]);
 
   // Applique la langue persistée dans les réglages à i18next (la préférence
   // utilisateur synchronisée prime sur la locale de l'appareil).

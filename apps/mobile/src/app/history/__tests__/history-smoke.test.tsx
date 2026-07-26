@@ -116,6 +116,7 @@ describe('Historique séances — smoke test (rendu sans planter)', () => {
         notes: null,
         sessionId: null,
         programId: null,
+        volumeKg: 0,
       },
       {
         id: 'w2',
@@ -126,6 +127,7 @@ describe('Historique séances — smoke test (rendu sans planter)', () => {
         notes: 'Bonne séance',
         sessionId: null,
         programId: null,
+        volumeKg: 0,
       },
     ];
     (useWorkoutHistory as jest.Mock).mockReturnValueOnce({
@@ -149,6 +151,7 @@ describe('Historique séances — smoke test (rendu sans planter)', () => {
         notes: null,
         sessionId: null,
         programId: null,
+        volumeKg: 0,
       },
     ];
     (useWorkoutHistory as jest.Mock).mockReturnValueOnce({

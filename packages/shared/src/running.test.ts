@@ -6,6 +6,7 @@ import {
   runSourceSchema,
   haversineMeters,
   totalDistance,
+  computeKmSplits,
   averagePace,
   instantPace,
   encodeSegment,
@@ -699,5 +700,33 @@ describe('estimateRunCalories', () => {
   });
   it('NET_KCAL_PER_KG_KM vaut 1.0', () => {
     expect(NET_KCAL_PER_KG_KM).toBe(1.0);
+  });
+});
+
+describe('computeKmSplits', () => {
+  const M_PER_DEG = 111_320;
+  // Trace ~ `segments` × 100 m le long de l'equateur (lat=0), 30 s par pas de 100 m.
+  const track = (segments: number) =>
+    Array.from({ length: segments + 1 }, (_, k) => ({
+      lat: 0,
+      lng: (k * 100) / M_PER_DEG,
+      t: k * 30,
+    }));
+
+  it('renvoie [] avec moins de 2 points', () => {
+    expect(computeKmSplits([])).toEqual([]);
+    expect(computeKmSplits([{ lat: 0, lng: 0, t: 0 }])).toEqual([]);
+  });
+
+  it('aucun split si la trace fait moins d\'un km', () => {
+    expect(computeKmSplits(track(5))).toEqual([]); // ~500 m
+  });
+
+  it('numerote les km pleins, ignore le dernier partiel, secondes positives', () => {
+    const pts = track(25); // ~2,5 km
+    const splits = computeKmSplits(pts);
+    expect(splits.map((s) => s.km)).toEqual([1, 2]);
+    expect(splits.length).toBe(Math.floor(totalDistance(pts) / 1000));
+    for (const s of splits) expect(s.seconds).toBeGreaterThan(0);
   });
 });

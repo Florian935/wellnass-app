@@ -17,7 +17,7 @@ import { Sparkline } from '@/components/widgets/primitives';
 import { Chip, Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useWorkoutHistory, type WorkoutHistoryItem } from '@/data/repositories/workout-repository';
-import { useWeeklyVolumeComparison } from '@/data/repositories/records-repository';
+import { useWeeklyVolumeComparison, useWeeklyVolumeSeries } from '@/data/repositories/records-repository';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -87,7 +87,7 @@ function StrengthProgramsWidget({ size }: { size: WidgetSize }) {
 // Historique — dernières séances
 // ---------------------------------------------------------------------------
 function StrengthHistoryWidget({ size }: { size: WidgetSize }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const { workouts } = useWorkoutHistory();
@@ -95,6 +95,16 @@ function StrengthHistoryWidget({ size }: { size: WidgetSize }) {
 
   const durationLabel = (s: number | null | undefined) =>
     s != null ? t('history.row.durationMin', { count: Math.round(s / 60) }) : '—';
+  // Tonnage en tonnes (1 décimale, séparateur localisé) ; vide si aucun.
+  const tonLabel = (kg: number) =>
+    kg > 0
+      ? t('widgets.strength.tonnage', {
+          value: new Intl.NumberFormat(i18n.language, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).format(kg / 1000),
+        })
+      : null;
 
   if (size === 'small') {
     const last = workouts[0] ?? null;
@@ -127,6 +137,9 @@ function StrengthHistoryWidget({ size }: { size: WidgetSize }) {
                 <Text style={[styles.dateTileText, { color: colors.accent }]}>{formatDayMonth(w.startedAt)}</Text>
               </View>
               <Text style={[styles.histMeta, { color: colors.textMuted }]}>{durationLabel(w.durationSeconds)}</Text>
+              {tonLabel(w.volumeKg) ? (
+                <Text style={[styles.histTon, { color: colors.text }]}>{tonLabel(w.volumeKg)}</Text>
+              ) : null}
             </View>
           ))}
         </View>
@@ -162,6 +175,8 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
   const router = useRouter();
   const units = useUnits();
   const { current, previous } = useWeeklyVolumeComparison();
+  // Série de tonnage sur 8 semaines glissantes → sparkline multi-points (au lieu d'une diagonale 2 points).
+  const { series } = useWeeklyVolumeSeries(8);
   const open = () => router.push('/progress');
 
   const hasVolume = current > 0;
@@ -169,13 +184,13 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
   const change = previous > 0 ? percentChange(current, previous) : null;
   const deltaLabel =
     change?.pct != null ? `${change.pct >= 0 ? '▲ +' : '▼ '}${Math.abs(change.pct)} %` : null;
-  const series = previous > 0 && current > 0 ? [previous, current] : [];
+  const hasSeries = series.some((v) => v > 0);
 
   if (size === 'small') {
     return (
       <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('progress.title')}>
         <Eyebrow>{t('widgets.strength.progressEyebrow')}</Eyebrow>
-        {series.length >= 2 ? (
+        {hasSeries ? (
           <View style={styles.smallSpark}>
             <Sparkline values={series} height={38} />
           </View>
@@ -199,7 +214,7 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
             </Text>
           ) : null}
         </View>
-        {series.length >= 2 ? (
+        {hasSeries ? (
           <View style={styles.wideSpark}>
             <Sparkline values={series} height={80} showDot />
           </View>
@@ -217,7 +232,7 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
       </View>
       <Text style={[styles.progLargeValue, { color: colors.text }]}>{volumeStr}</Text>
       <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('progress.weeklyVolume.title')}</Text>
-      {series.length >= 2 ? (
+      {hasSeries ? (
         <View style={styles.progLargeSpark}>
           <Sparkline values={series} height={130} area showDot strokeWidth={3.5} />
         </View>
@@ -314,7 +329,8 @@ const styles = StyleSheet.create({
   },
   dateTile: { borderRadius: 11, paddingHorizontal: 10, paddingVertical: 6 },
   dateTileText: { fontFamily: fontFamily.monoBold, fontSize: 12 },
-  histMeta: { fontFamily: fontFamily.body, fontSize: 12.5 },
+  histMeta: { fontFamily: fontFamily.body, fontSize: 12.5, flex: 1 },
+  histTon: { fontFamily: fontFamily.monoBold, fontSize: 13 },
   tplRow: {
     flexDirection: 'row',
     alignItems: 'center',

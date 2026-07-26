@@ -1,5 +1,7 @@
 import {
+  computeKmSplits,
   decodeTrack,
+  formatPaceMMSS,
   isValidCoord,
   RUNNING_RECORD_DISTANCES,
   simplifyTrack,
@@ -223,6 +225,17 @@ export default function RunSummaryScreen() {
     [points],
   );
 
+  // Splits par km plein (course GPS avec trace ≥ 1 km) : durée de chaque km + km le plus rapide.
+  const splits = useMemo(() => computeKmSplits(points), [points]);
+  const fastestSplitKm = useMemo(() => {
+    if (splits.length === 0) return null;
+    return splits.reduce((best, s) => (s.seconds < best.seconds ? s : best), splits[0]!).km;
+  }, [splits]);
+  const slowestSplitSeconds = useMemo(
+    () => (splits.length > 0 ? Math.max(...splits.map((s) => s.seconds)) : 0),
+    [splits],
+  );
+
   // État de l'export GPX (bouton en chargement pendant la génération/partage).
   const [isExporting, setIsExporting] = useState(false);
 
@@ -432,6 +445,42 @@ export default function RunSummaryScreen() {
         />
       </Card>
 
+      {/* Splits par km (course GPS avec trace ≥ 1 km plein) — km le plus rapide en accent */}
+      {splits.length > 0 ? (
+        <Card>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {t('running.summary.splits')}
+          </Text>
+          {splits.map((s) => {
+            const isFastest = s.km === fastestSplitKm;
+            const barPct =
+              slowestSplitSeconds > 0 ? (s.seconds / slowestSplitSeconds) * 100 : 0;
+            return (
+              <View key={s.km} style={styles.splitRow}>
+                <Text style={[styles.splitKm, { color: colors.textMuted }]}>
+                  {t('running.summary.splitKm', { km: s.km })}
+                </Text>
+                <View style={[styles.splitBarTrack, { backgroundColor: colors.surfaceAlt }]}>
+                  <View
+                    style={{
+                      height: '100%',
+                      width: `${barPct}%`,
+                      backgroundColor: isFastest ? colors.accent : colors.border,
+                      borderRadius: 4,
+                    }}
+                  />
+                </View>
+                <Text
+                  style={[styles.splitPace, { color: isFastest ? colors.accent : colors.text }]}
+                >
+                  {formatPaceMMSS(s.seconds, '—')}
+                </Text>
+              </View>
+            );
+          })}
+        </Card>
+      ) : null}
+
       {/* Export GPX (course GPS terminée avec trace ≥ 2 points valides) */}
       {canExport ? (
         <Button
@@ -518,6 +567,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 4,
   },
+  // Splits par km
+  splitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 5 },
+  splitKm: { fontFamily: fontFamily.body, fontSize: 13, width: 52 },
+  splitBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
+  splitPace: { fontFamily: fontFamily.monoBold, fontSize: 14, width: 64, textAlign: 'right' },
   // Distance manuelle
   manualDistanceRow: {
     flexDirection: 'row',

@@ -815,10 +815,13 @@ export async function activateProgram(programId: string): Promise<void> {
       [now, userId, target.pillar, programId],
     );
 
-    // Active la cible.
+    // Active la cible — **owner-scopé** : on ne peut activer qu'un programme POSSÉDÉ.
+    // Sans ce filtre, activer un programme éditorial (owner_id null) écrivait `is_active=1`
+    // en local (rejeté par la RLS au sync → divergence) alors que `useActiveProgram`
+    // (owner-scopé) ne le voyait pas. Un éditorial doit d'abord être dupliqué.
     await tx.execute(
-      `UPDATE programs SET is_active = 1, updated_at = ? WHERE id = ?`,
-      [now, programId],
+      `UPDATE programs SET is_active = 1, updated_at = ? WHERE id = ? AND owner_id = ?`,
+      [now, programId, userId],
     );
   });
 }
