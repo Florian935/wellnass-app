@@ -95,6 +95,38 @@ npm run typecheck ; npm run test             # contrôle de santé
 Compléter ensuite dans `apps/mobile/.env` les deux clés laissées vides par l'exemple :
 `EXPO_PUBLIC_MAPTILER_KEY` (carte running) et `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (OAuth Google).
 Sans elles, la carte et la connexion Google ne fonctionnent pas ; le reste de l'app tourne.
+`.env` est gitignoré : c'est le bon endroit pour ces valeurs en local.
+
+### ⚠️ Le dépôt GitHub est public — quoi peut aller dans `eas.json`
+
+`apps/mobile/eas.json` est **versionné**. Toute valeur qui y figure est publiée sur
+`github.com/Florian935/wellnass-app`, donc moissonnable par des robots.
+
+| Valeur | Dans `eas.json` ? | Pourquoi |
+|---|:---:|---|
+| `EXPO_PUBLIC_SUPABASE_URL` | ✅ oui | Simple URL de projet. |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | ✅ oui | Publique **par conception** — la sécurité repose sur la RLS, pas sur le secret de la clé. |
+| `EXPO_PUBLIC_POWERSYNC_URL` | ✅ oui | Simple URL d'instance. |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | ✅ oui | Un client ID OAuth est un **identifiant public**, documenté comme non secret par Google. |
+| `EXPO_PUBLIC_MAPTILER_KEY` | ❌ **non** | Clé à **quota facturable**, sans équivalent de la RLS pour la protéger. |
+
+La clé MapTiler se déclare donc en **variable d'environnement EAS**, jamais dans le dépôt :
+
+```powershell
+npm i -g eas-cli          # attendu en global (cf. apps/mobile/README.md)
+eas env:create --name EXPO_PUBLIC_MAPTILER_KEY --value "<ta-clé>" --environment preview --visibility sensitive
+eas env:create --name EXPO_PUBLIC_MAPTILER_KEY --value "<ta-clé>" --environment production --visibility sensitive
+eas env:list              # vérification
+```
+
+> Nuance à connaître : une variable `EXPO_PUBLIC_*` est **inlinée dans le bundle** au moment du
+> build. La clé est donc de toute façon extractible de l'APK — la sortir du dépôt ne la rend pas
+> secrète, mais évite qu'elle soit *trivialement* trouvable par un scan de GitHub. Le vrai filet de
+> sécurité complémentaire est de **restreindre la clé côté compte MapTiler**.
+
+**Si un secret réel est committé par erreur** (`service_role`, mot de passe DB, keystore) : le
+retirer du dépôt ne suffit pas, il reste dans l'historique — il faut le **révoquer et le
+régénérer**.
 
 ## 4. Builder l'APK en local
 

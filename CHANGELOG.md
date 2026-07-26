@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 26/07/2026 — `feature/ux01-infobulle-graphiques` — clés de build : Client ID Google versionné, clé MapTiler écartée du dépôt
+
+> Commit précédent : `d8cd84c`, qui laissait `eas.json` en attente d'arbitrage. **Le dépôt GitHub est
+> public** (`github.com/Florian935/wellnass-app`) : tout ce qui entre dans `eas.json` est publié.
+> Vérifié avant décision : la clé MapTiler **n'était présente dans aucun commit de l'historique**
+> (`git log -S`) — elle n'a donc jamais été exposée et **aucune révocation n'est nécessaire**.
+
+**Modifié**
+- `apps/mobile/eas.json` (profil `preview`) — ajout de `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` seul.
+  Un client ID OAuth est un **identifiant public** (documenté comme non secret par Google) et il est
+  nécessaire au build. `EXPO_PUBLIC_MAPTILER_KEY` **volontairement non versionnée** : clé à quota
+  facturable, sans équivalent de la RLS pour la protéger → passe par une variable d'environnement EAS.
+- `docs/specs/technical/environnement-dev-local.md` — nouvelle section « Le dépôt GitHub est public » :
+  tableau de ce qui peut/ne peut pas figurer dans `eas.json` (avec la justification par valeur),
+  commandes `eas env:create` pour la clé MapTiler (`preview` + `production`), et rappel qu'un secret
+  réellement committé doit être **révoqué**, le retirer du dépôt ne suffisant pas.
+
+**Technique / Notes**
+- **Action requise côté Florian** : `eas env:create` pour `EXPO_PUBLIC_MAPTILER_KEY` sur `preview` et
+  `production`, sinon la carte running sera muette dans les builds EAS. En local, `.env` (gitignoré)
+  contient déjà la valeur, le dev n'est pas impacté.
+- **Visibilité du dépôt non modifiée** — décision de présence publique laissée à Florian. À noter que
+  l'anon key Supabase déjà versionnée est acceptable **par conception** (protection par RLS).
+- Nuance assumée : `EXPO_PUBLIC_*` est inlinée dans le bundle, donc extractible de l'APK. Sortir la
+  clé du dépôt évite le moissonnage automatique de GitHub, pas l'extraction ciblée ; le complément
+  est de restreindre la clé côté compte MapTiler.
+- Aucun code applicatif touché. `eas.json` revalidé comme JSON strict.
+
 ### 26/07/2026 — `feature/ux01-infobulle-graphiques` — US UX-01 clôturée · workflow allégé · environnement de dev local
 
 > Commit précédent : `77088f9`. **Aucun code applicatif touché** — clôture d'US, règle de workflow
