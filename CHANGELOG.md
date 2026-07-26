@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 26/07/2026 — `feature/ux01-infobulle-graphiques` — US UX-01 clôturée · workflow allégé · environnement de dev local
+
+> Commit précédent : `77088f9`. **Aucun code applicatif touché** — clôture d'US, règle de workflow
+> et documentation. Recette UX-01 **validée par Florian** (8 critères, spec §9) → US close sans
+> relecture croisée, conformément à la nouvelle règle ci-dessous.
+
+**Ajouté**
+- `docs/specs/technical/environnement-dev-local.md` — mise en place d'un poste Windows de zéro :
+  versions de référence (JDK **Temurin 17** obligatoire, Android SDK Platform **36**, Build-Tools
+  **36.0.0**, NDK **27.1.12297006** — épinglé par RN dans `react-native/gradle/libs.versions.toml`,
+  CMake 3.22.1), installation **sans droits admin** (archives ZIP dans le profil utilisateur),
+  variables d'environnement, démarrage du dépôt, **build APK local**, dépannage, émulateur optionnel.
+
+**Modifié**
+- `CLAUDE.md` — **la relecture croisée par l'autre dev n'est plus requise pour clôturer une US.**
+  Une seule validation (Florian **ou** Damien) suffit. Étape 6 « Clôture » ajoutée au workflow
+  obligatoire ; puce « relecture des PR par les deux devs » de la méthode de travail réécrite.
+  La relecture reste possible à la demande, jamais bloquante.
+- `TODO.md` — US **UX-01** : bloc passé de « 🧪 RECETTE À FAIRE » à « ✅ CLÔTURÉE », recette device
+  cochée (Florian, 26/07/2026), ligne « Relecture Damien » cochée comme non requise ; ligne
+  « Dernière mise à jour » actualisée.
+
+**Technique / Notes**
+- **Roadmap non modifiée** : UX-01 est une idée promue depuis `IDEAS.md`, sans ligne dans
+  `docs/roadmap/roadmap.md` (aucun numéro thématique) → étape roadmap sans objet.
+- ⚠️ **`apps/mobile/eas.json` volontairement NON committé.** La modification présente dans l'arbre
+  de travail ajoute `EXPO_PUBLIC_MAPTILER_KEY` et `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` au profil
+  `preview`. **Le dépôt GitHub est public** : une clé MapTiler en clair y serait moissonnée par des
+  robots (quota/facturation). Décision laissée à Florian — voir les options dans le rapport de
+  commit. Le Client ID Google est public par nature, il ne pose pas de problème.
+- **`package-lock.json` restauré** (`git restore`) : le `npm install` du nouveau poste Windows
+  **retirait** `@emnapi/core` et `@emnapi/runtime` (dépendances optionnelles dépendantes de la
+  plateforme). Committer cette dérive risquait de casser l'installation sur le poste de Damien.
+- **Rappel** : `apps/mobile/android/` (généré par `expo prebuild`), `.env` et `local.properties`
+  sont gitignorés — aucun artefact natif ni secret dans ce commit.
+- Qualité : **typecheck 0** · **lint 0 erreur** (6 avertissements préexistants sur des fichiers de
+  test : imports `require()`, `View` non utilisé) · **860 tests verts**.
+
 ### 25/07/2026 — `feature/ux01-infobulle-graphiques` — US UX-01 : infobulle de valeur au tap (code livré)
 
 > **Première idée promue depuis [IDEAS.md](IDEAS.md)** (16/07, remontée par Florian en recette MUSC-04).

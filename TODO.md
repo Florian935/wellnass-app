@@ -421,8 +421,13 @@ pipeline ; la commande [`/commit`](.claude/commands/commit.md) coche ce qui vien
 >   ✅/⚠️). Pour recetter **sur device sans quota EAS** : APK autonome (mode B) →
 >   [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) §4.
 
-*Dernière mise à jour : 26/07/2026 (**US UX-01 Infobulle de valeur au tap sur les graphiques — CODE LIVRÉ ✅
-→ reste recette + Damien** : première idée promue depuis IDEAS.md (16/07). Un tap sur un point ou une barre
+*Dernière mise à jour : 26/07/2026 (**US UX-01 Infobulle de valeur au tap sur les graphiques — RECETTE
+VALIDÉE À 100 % + CLÔTURÉE (Florian, 26/07/2026) ✅** — relecture Damien non requise : **nouvelle règle
+actée dans [CLAUDE.md](CLAUDE.md)**, une seule validation (Florian ou Damien) suffit désormais à clôturer
+une US, la relecture croisée n'est plus bloquante. Ajout de
+[environnement-dev-local.md](docs/specs/technical/environnement-dev-local.md) (mise en place d'un poste
+Windows de zéro : JDK 17, Android SDK 36, NDK 27, build APK local, dépannage). Première idée promue depuis
+IDEAS.md (16/07). Un tap sur un point ou une barre
 affiche la **date complète + la valeur exacte** ; les **6 surfaces graphiques** sont couvertes d'un coup
 (2 composants mutualisés). `formatTooltipValue` et `formatDayFull` purs et testés dans `shared` (dont le
 piège de fuseau sur les clés `YYYY-MM-DD` : `new Date('2026-07-12')` parse en UTC puis rend la veille en
@@ -965,7 +970,7 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
   suppression de compte gardent le scope global (voulu). typecheck 0 / lint 0 err / 112 tests.
   **Reste : recette à 2 appareils** (déconnecter A ne doit pas déconnecter B) — non vérifiable sur un seul device.
 
-> ## 🧪 RECETTE À FAIRE — US UX-01 Infobulle de valeur au tap sur les graphiques — code livré (25/07/2026)
+> ## ✅ CLÔTURÉE — US UX-01 Infobulle de valeur au tap sur les graphiques — recette validée Florian (26/07/2026)
 >
 > **Première idée promue depuis [IDEAS.md](IDEAS.md)** (16/07, recette MUSC-04). Transverse : les **6 surfaces
 > graphiques** (2 histogrammes + 4 courbes) passent par 2 composants mutualisés → un seul chantier les couvre.
@@ -980,12 +985,13 @@ CONTENU-01, NUTR-F1, SOCLE-01) à cadrer spec→plan→design→validation avant
 >   (4 tests) · `pointerConfig` sur les courbes · `focusBarOnPress`/`renderTooltip` sur les histogrammes ·
 >   `detail` câblé sur les 4 surfaces datées. **846 shared + 116 mobile verts**, typecheck/lint 0
 >   (exit codes lus **sans pipe**).
-> - [ ] **Recette device** (8 critères, spec §9) : valeur cohérente avec l'axe · **recalage au 1ᵉʳ et au
->   dernier point** (risque n°1 : débordement de carte), en clair **et** en sombre · **valeur brute** sur
->   courbe lissée (croiser avec l'historique) · allure en `6:52` et non `412` · les 2 histogrammes, couleurs
->   sémantiques toujours distinguables · fermeture au changement de période/métrique · nutrition (poids +
->   apports) · **non-régression** : les 6 graphiques s'affichent comme avant au chargement.
-> - [ ] **Relecture Damien** (PR).
+> - [x] **Recette device — VALIDÉE (Florian, 26/07/2026) ✅** (8 critères, spec §9) : valeur cohérente avec
+>   l'axe · **recalage au 1ᵉʳ et au dernier point** (risque n°1 : débordement de carte), en clair **et** en
+>   sombre · **valeur brute** sur courbe lissée (croiser avec l'historique) · allure en `6:52` et non `412` ·
+>   les 2 histogrammes, couleurs sémantiques toujours distinguables · fermeture au changement de
+>   période/métrique · nutrition (poids + apports) · **non-régression** : les 6 graphiques s'affichent comme
+>   avant au chargement. **→ US CLÔTURÉE.**
+> - [x] **Relecture Damien — non requise** (une seule validation suffit, cf. [CLAUDE.md](CLAUDE.md) §workflow).
 >
 > ⚠️ **2 limites assumées** (constatées à l'implémentation, spec amendée) : la **fermeture par un tap
 > ailleurs** n'est pas offerte par la bibliothèque → l'infobulle reste jusqu'au tap suivant ; la **barre

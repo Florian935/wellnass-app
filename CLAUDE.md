@@ -71,7 +71,9 @@ ordre.** Toute nouvelle fonctionnalité / user story suit ce parcours :
 4. **Validation** — les 3 livrables ci-dessus sont **validés par Damien ou Florian**.
    **Pas de code tant que ce n'est pas validé.**
 5. **Implémentation** — seulement après validation, sur une branche dédiée (voir ci-dessous),
-   par incréments bornés, PR relue par les deux devs.
+   par incréments bornés.
+6. **Clôture** — **la recette validée par Florian ou Damien suffit à clôturer l'US.** La relecture
+   croisée par l'autre dev **n'est pas requise** : elle reste possible à la demande, jamais bloquante.
 
 ### Branches
 Chaque US = **une nouvelle branche** créée depuis `dev`, préfixée par type :
@@ -158,7 +160,8 @@ Cycle **sans Docker** :
 - Travailler par **incréments bornés** (une fonctionnalité de la roadmap = une user story + tests + PR).
 - Respecter la **Definition of Done** et les standards de
   [docs/specs/technical/bonnes-pratiques.md](docs/specs/technical/bonnes-pratiques.md).
-- Découpage fin, relecture des PR par les deux devs.
+- Découpage fin. **Une seule validation suffit** (Florian ou Damien) : pas de relecture croisée
+  obligatoire pour clôturer.
 
 ## Structure de la documentation
 
