@@ -12,6 +12,7 @@ export * from './chart-tooltip';
 export * from './password';
 export * from './profile';
 export * from './settings';
+export * from './health-connect';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';

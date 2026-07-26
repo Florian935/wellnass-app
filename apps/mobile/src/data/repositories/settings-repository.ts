@@ -48,6 +48,7 @@ export type SettingsInput = Pick<
   | 'notifications'
   | 'dashboardLayout'
   | 'analyticsEnabled'
+  | 'healthConnectEnabled'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -65,6 +66,8 @@ type SettingsDbRow = {
   dashboard_layout: string | null;
   /** 0/1 (consentement analytics) ou null si colonne non renseignée localement. */
   analytics_enabled: number | null;
+  /** 0/1 (opt-in Health Connect) ou null si colonne non renseignée localement. */
+  health_connect_enabled: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -91,6 +94,15 @@ function decodeAnalyticsEnabled(row: SettingsDbRow | null): boolean {
   return row?.analytics_enabled == null ? true : row.analytics_enabled === 1;
 }
 
+/**
+ * Décode la colonne health_connect_enabled (0/1/null) → booléen. Défaut **opt-in OFF**
+ * (null/absent → false) : à l'inverse d'`analytics_enabled`, l'absence de valeur ne vaut jamais
+ * consentement — il s'agit de donnée de santé (US CONF-06).
+ */
+function decodeHealthConnectEnabled(row: SettingsDbRow | null): boolean {
+  return row?.health_connect_enabled === 1;
+}
+
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToSettings(row: SettingsDbRow): UserSettings {
   return {
@@ -104,6 +116,7 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     notifications: parseNotificationPrefs(parseJsonColumn(row.notifications, null)),
     dashboardLayout: parseJsonColumn<unknown>(row.dashboard_layout, null),
     analyticsEnabled: decodeAnalyticsEnabled(row),
+    healthConnectEnabled: decodeHealthConnectEnabled(row),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -130,6 +143,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('analyticsEnabled' in input) {
     columns['analytics_enabled'] = input.analyticsEnabled ? 1 : 0;
+  }
+  if ('healthConnectEnabled' in input) {
+    columns['health_connect_enabled'] = input.healthConnectEnabled ? 1 : 0;
   }
   return columns;
 }
@@ -180,6 +196,14 @@ async function getCurrentRow(): Promise<SettingsDbRow | null> {
 /** Consentement analytics courant (hors contexte React). Défaut opt-out ON si non défini. */
 export async function getAnalyticsEnabled(): Promise<boolean> {
   return decodeAnalyticsEnabled(await getCurrentRow());
+}
+
+/**
+ * Opt-in Health Connect courant (hors contexte React) — lu par le service `health-connect.ts`,
+ * qui s'exécute depuis les repositories, en dehors de tout composant. Défaut **OFF**.
+ */
+export async function getHealthConnectEnabled(): Promise<boolean> {
+  return decodeHealthConnectEnabled(await getCurrentRow());
 }
 
 /**

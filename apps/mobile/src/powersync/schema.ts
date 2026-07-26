@@ -49,6 +49,7 @@ const user_settings = new Table({
   notifications: column.text,
   dashboard_layout: column.text,
   analytics_enabled: column.integer, // 0/1 — consentement analytics (US 9.10)
+  health_connect_enabled: column.integer, // 0/1 — opt-in Health Connect (US CONF-06)
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

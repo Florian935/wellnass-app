@@ -10,6 +10,124 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 27/07/2026 — `feature/conf06-health-connect` — US CONF-06 : Health Connect (écriture des séances, lecture du poids)
+
+> **Quoi.** L'app cesse d'être un silo : les séances de musculation et les courses terminées sont
+> **écrites** dans Health Connect (le hub santé d'Android), et le poids mesuré par une balance
+> connectée est **relu** pour alimenter le suivi de poids. Roadmap **9.9**, dernier P0 fonctionnel
+> avant lancement. Consentement **opt-in** (donnée de santé). L'échange est **local à l'appareil** :
+> aucune donnée de santé ne transite par nos serveurs du fait de cette US — seul un booléen de
+> réglage part vers Supabase.
+>
+> **Étape atteinte : `recette`.** Le code est livré et les contrôles sont verts, mais **rien n'a
+> encore tourné sur un device** : nouveau module natif → dev build obligatoire. Statut roadmap
+> **🟡 Partiel** jusqu'à la recette (14 critères, spec §11).
+
+**Ajouté**
+
+- **`packages/shared/src/health-connect.ts`** — briques **pures**, sans dépendance native (donc
+  testables sous Vitest, sans device) : `buildWorkoutSessionRecord`, `buildRunRecords`,
+  `localDateOfInstant`, `selectWeightEntriesToImport`, `shouldImportWeight`. **41 tests**
+  (`health-connect.test.ts`) couvrant les cas limites : durée ≤ 0, horodatage illisible, course sans
+  distance, plusieurs pesées le même jour, poids aberrants, fuseau du record (les 3 formes), record
+  sans poids, `updated_at` illisible.
+- **`apps/mobile/src/lib/health-connect.ts`** — adaptateur d'I/O, seule frontière avec le natif.
+  `getAvailability`, `getState`, `hasPermissions`, `requestPermissions`, `pushWorkout`, `pushRun`,
+  `pushRecent`, `importWeight`, `importWeightIfDue`, `openSettings`, `openProviderInstall`.
+- **`apps/mobile/src/components/HealthConnectSection.tsx`** — section Réglages, 6 états
+  (`unsupported` / `provider_missing` / `provider_update_required` / `off` / `permissions_missing` /
+  `ready`), retour d'action **inline** (pas d'`Alert` modale).
+- **`apps/mobile/src/hooks/useHealthConnectWeightImport.ts`** — import de poids au premier plan,
+  throttlé 6 h, gardé sur `session && hasSynced`.
+- **`apps/mobile/plugins/withHealthConnect.js`** — config plugin **maison** (voir Technique-Notes).
+- **Migration** `20260726202133_health_connect_enabled` — `user_settings.health_connect_enabled`
+  (`boolean not null default false`). Poussée sur le cloud le 27/07/2026, types régénérés, registre coché.
+- **`docs/specs/technical/health-connect-play-declaration.md`** — procédure de déclaration Google
+  Play avec les justifications des 3 permissions, prêtes à coller.
+- Spec, plan et maquette de l'US (`docs/specs/functional/us/`, `docs/plans/`, `design/`).
+
+**Modifié**
+
+- **`finishWorkout`** / **`finishRun`** — un `void pushWorkout(...)` / `void pushRun(...)` en
+  fire-and-forget, à côté du `void track(...)` existant. **Aucun `await`** dans le chemin de clôture.
+- **`user_settings`** — colonne dans le schéma PowerSync (`integer` 0/1), `healthConnectEnabled` dans
+  `userSettingsRowSchema` (défaut `false`), mapping + `getHealthConnectEnabled()` dans le repository.
+- **i18n FR/EN** — `settings.healthConnect.*` (22 clés, pluriels `_one`/`_other`), paragraphe Health
+  Connect dans `legal.privacy.body`, `account.delete.healthConnectHint`.
+- **`app.json`** — 3 permissions santé dans `android.permissions`, plugin maison,
+  `expo-build-properties` (`minSdkVersion: 26`).
+- **`BACKLOG.md`** — **LANCE-00** créé (compte développeur Play, non démarré) + chaîne des prérequis
+  hors-code remise dans l'ordre des dépendances (~3 semaines de délais externes **en série**).
+
+**Supprimé**
+
+- Dépendance **`expo-health-connect`** (voir Technique-Notes).
+
+**Technique-Notes** (points d'attention pour le débogage)
+
+- **`insertRecords` refuse les lots hétérogènes et jette sur une liste vide** (v3.5.3 : « All records
+  must have the same type »). D'où : **un appel par `recordType`**, chacun gardé par `length > 0`, et
+  `buildRunRecords` qui renvoie `{ sessions, distances }` séparés plutôt qu'un tableau mélangé. Une
+  course sans distance produit un lot `Distance` vide → aucun appel.
+- **Idempotence par `clientRecordId`** (`workout-<uuid>` / `run-<uuid>` / `run-dist-<uuid>`) +
+  `clientRecordVersion` dérivée d'`updated_at`. C'est le mécanisme natif de Health Connect :
+  réinsérer un id connu **met à jour** au lieu de dupliquer. Conséquence : **aucune table de suivi
+  des exports** côté app, et le rattrapage 30 jours est rejouable sans risque.
+- **Plugin maison plutôt que `expo-health-connect`.** Cette dépendance n'apportait que 20 lignes de
+  Kotlin (l'appel `setPermissionDelegate`) et 2 entrées de manifest, sans publication depuis le
+  **31/07/2024**, avec un `build.gradle` figeant `compileSdkVersion` 34 et
+  `com.facebook.react:react-native:+`. Reproduite dans `plugins/withHealthConnect.js` :
+  `withAndroidManifest` (intent-filter + `activity-alias`) et `withMainActivity` (import + appel après
+  `super.onCreate`). **Idempotent** (vérifié : prebuild rejoué sans `--clean` → 1 seule occurrence de
+  chaque) et **échoue bruyamment** si `super.onCreate(...)` devient introuvable — un prebuild rouge
+  vaut mieux qu'une build où la demande de permissions plante en recette.
+- ⚠️ **Ne jamais ajouter `react-native-health-connect` aux `plugins` d'`app.json`** : son
+  `app.plugin.js` pousse le même intent-filter **sans garde d'idempotence** → doublon dans le manifest.
+- **Les 3 permissions santé ne sont posées par aucun plugin** (ni celui de la lib, ni
+  `expo-health-connect`) : elles vivent dans `android.permissions` d'`app.json`. Piège vérifié.
+- **`MainActivity` doit enregistrer le délégué** avant que l'activité passe à `RESUMED`
+  (`registerForActivityResult`), d'où l'insertion juste après `super.onCreate`.
+- **Titre de séance** : `workouts` n'a **pas** de colonne `name` — il vient de `sessions.name` par
+  `LEFT JOIN` sur `session_id`, absent pour une séance libre ou issue d'un template → repli sur le
+  libellé i18n. Les **notes de séance ne sont jamais exportées** (minimisation, vérifié par un test).
+- **Conflit de poids : l'app gagne toujours.** L'import ne comble que les jours **absents**
+  localement, jamais d'écrasement. La requête des jours connus ignore volontairement `deleted_at`,
+  sinon une pesée supprimée serait ressuscitée à chaque import.
+- **Aucun curseur de lecture** : fenêtre glissante de 30 jours relue intégralement (Health Connect
+  est local à l'appareil ; un curseur synchronisé entre appareils serait faux). Seul l'horodatage du
+  dernier import est persisté (`expo-secure-store`), pour le throttle **et** l'affichage.
+- **Filtrage de nos propres records côté client** (`metadata.dataOrigin`) : l'API ne propose qu'un
+  filtre d'origine *inclusif*, pas d'exclusion.
+- **Pas de suppression de record** : l'app ne permet pas de supprimer une séance *terminée*
+  (`cancelWorkout`/`cancelRun` ne portent que sur une activité active, jamais écrite). Point ouvert
+  assumé, documenté dans la spec §2.6.
+- **Sync rules PowerSync : aucun redéploiement attendu** — `user_settings` est en `select *`. À
+  confirmer en recette (critère 8) ; si la colonne ne remonte pas, redéployer pour forcer la re-sync.
+- **`expo export --platform web` échoue toujours** sur `better-sqlite3` — **pré-existant**
+  (limitation PowerSync-sur-web), sans rapport avec cette US.
+- Contrôles : `lint` 0 erreur, `typecheck` 0 erreur, **1018 tests verts** (902 shared + 116 mobile),
+  codes de sortie lus **sans pipe**.
+
+**Corrigé avant commit — issu de la revue de diff**
+
+- 🐛 **`zoneOffset` mal typé → toutes les pesées auraient été datées en UTC.** La brique n'acceptait
+  que `string | number`, alors que la bibliothèque renvoie **un objet** `{ id, totalSeconds }`
+  (vérifié : `ZoneOffset` dans `base.types.d.ts`, `zoneOffsetToJsMap` côté Kotlin). Aucune branche ne
+  matchait, l'offset retombait à 0 : à UTC+2, une pesée entre 00 h et 02 h locales était datée de la
+  **veille** — et, décalée d'un jour, elle échappait à la garde « l'app gagne toujours », créant un
+  doublon avec la saisie manuelle. La forme objet est désormais traitée en premier, et le **repli**
+  (quand `zoneOffset` est `null`, cas courant) est le **fuseau de l'appareil**, pas UTC — cohérent
+  avec le reste de l'app. Injecté en paramètre pour rester pur et testable. Les tests d'origine
+  ne couvraient que les formes que la bibliothèque **n'émet jamais**, d'où la fausse confiance.
+- **Le rattrapage n'est plus tout-ou-rien** : si `insertRecords` refuse un lot (un seul record
+  aberrant suffit), `insertBatch` **retente record par record** au lieu de tout perdre.
+- **« N activités synchronisées » comptait des records, pas des activités** : une course avec
+  distance en produit 2, donc 3 courses annonçaient « 6 activités ». `pushRecent` renvoie désormais
+  le nombre de **sessions** écrites.
+- Ligne vide qui cassait le tableau de `supabase/MIGRATIONS.md` ; en-tête de la spec resté sur
+  « à valider » ; commentaire inexact sur Metro (il *résout* le module, l'import paresseux évite son
+  *évaluation*).
+
 ### 26/07/2026 — `docs/refonte-suivi-avancement` — Refonte du suivi d'avancement (ETAT généré, backlog, front-matter, réconciliation roadmap)
 
 > **Pourquoi.** Audit demandé par Florian : les fichiers de suivi avaient dérivé du code. Trois

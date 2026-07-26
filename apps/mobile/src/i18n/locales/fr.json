@@ -944,6 +944,7 @@
         "Tes données sont isolées par utilisateur et synchronisées de façon sécurisée vers le cloud. Elles ne sont jamais vendues à des tiers.",
         "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
         "Nous mesurons l'usage de l'application (écrans consultés, fonctionnalités utilisées) via des statistiques anonymes, uniquement pour l'améliorer ; ces mesures n'incluent jamais tes données de santé et tu peux les désactiver à tout moment depuis les paramètres.",
+        "Si tu actives Health Connect, tes séances et tes courses sont écrites dans le hub santé d'Android et ton poids y est relu. Cet échange a lieu uniquement sur ton téléphone : ces données ne transitent pas par nos serveurs de ce fait. Tu peux désactiver la synchronisation dans les paramètres, et révoquer l'accès à tout moment depuis Health Connect.",
         "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
       ]
     }
@@ -1254,6 +1255,28 @@
       "title": "Aide & support",
       "button": "Consulter l'aide"
     },
+    "healthConnect": {
+      "title": "Health Connect",
+      "toggle": "Synchroniser avec Health Connect",
+      "subtitle": "Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu. Tout reste sur ton téléphone.",
+      "providerMissing": "Health Connect n'est pas installé sur cet appareil.",
+      "install": "Installer Health Connect",
+      "updateRequired": "Health Connect doit être mis à jour.",
+      "update": "Mettre à jour Health Connect",
+      "permissionsMissing": "Autorise l'accès pour lancer la synchronisation.",
+      "grant": "Autoriser l'accès",
+      "denied": "Accès refusé. Tu peux l'autoriser à tout moment depuis les réglages de Health Connect.",
+      "importWeight": "Importer le poids maintenant",
+      "imported_one": "{{count}} pesée importée",
+      "imported_other": "{{count}} pesées importées",
+      "pushed_one": "{{count}} activité synchronisée",
+      "pushed_other": "{{count}} activités synchronisées",
+      "lastImport": "Dernier import : {{date}}",
+      "openSettings": "Ouvrir les réglages Health Connect",
+      "disableHint": "Désactiver arrête la synchronisation. Les données déjà envoyées restent dans Health Connect ; supprime-les depuis Health Connect si tu le souhaites.",
+      "defaultWorkoutTitle": "Séance de musculation",
+      "defaultRunTitle": "Course"
+    },
     "analytics": {
       "title": "Statistiques d'usage",
       "toggle": "Autoriser les statistiques d'usage",
@@ -1288,6 +1311,7 @@
       "item3": "Exercices et aliments personnels",
       "graceInfo": "Suppression effective dans 30 jours. Tu peux annuler en te reconnectant avant le {{date}}.",
       "exportHint": "Pense à exporter tes données (Réglages → Exporter mes données) au préalable.",
+      "healthConnectHint": "Les séances et courses déjà envoyées à Health Connect y restent : supprime-les depuis Health Connect si tu le souhaites.",
       "passwordLabel": "Confirme avec ton mot de passe",
       "confirm": "Supprimer définitivement",
       "cancel": "Annuler",

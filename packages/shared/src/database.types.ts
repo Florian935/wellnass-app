@@ -1640,6 +1640,7 @@ export type Database = {
           created_at: string
           dashboard_layout: Json | null
           deleted_at: string | null
+          health_connect_enabled: boolean
           id: string
           language: string
           notifications: Json
@@ -1654,6 +1655,7 @@ export type Database = {
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
+          health_connect_enabled?: boolean
           id: string
           language?: string
           notifications?: Json
@@ -1668,6 +1670,7 @@ export type Database = {
           created_at?: string
           dashboard_layout?: Json | null
           deleted_at?: string | null
+          health_connect_enabled?: boolean
           id?: string
           language?: string
           notifications?: Json

@@ -91,6 +91,10 @@ export default function AccountDeleteScreen() {
         </Text>
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('account.delete.exportHint')}</Text>
+      {/* US CONF-06 : la purge Supabase ne touche pas Health Connect (hors de notre périmètre). */}
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {t('account.delete.healthConnectHint')}
+      </Text>
 
       <TextField
         label={t('account.delete.passwordLabel')}

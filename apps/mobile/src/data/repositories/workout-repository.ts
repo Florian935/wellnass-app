@@ -31,8 +31,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { getAppLanguage } from '@/i18n';
+import i18n, { getAppLanguage } from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
+import { pushWorkout } from '@/lib/health-connect';
 import { generateId } from '@/lib/id';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
@@ -669,6 +670,11 @@ export async function finishWorkout(
 
   // Analytics : séance terminée. Fire-and-forget.
   void track(ANALYTICS_EVENTS.workoutCompleted);
+
+  // Health Connect (US CONF-06) : écrit la séance dans le hub santé d'Android. Fire-and-forget,
+  // comme `track` — le service est no-op si l'opt-in est OFF, les permissions absentes ou la
+  // plateforme non Android, et il ne jette jamais : la clôture ne doit dépendre de rien de tout ça.
+  void pushWorkout(id, i18n.t('settings.healthConnect.defaultWorkoutTitle'));
 
   // Best-effort : marque l'occurrence planifiée liée comme faite. Ne doit jamais
   // faire échouer la clôture de la séance (offline-first : la séance est déjà

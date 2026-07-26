@@ -76,6 +76,11 @@ describe('userSettingsRowSchema — defaults', () => {
     const row = userSettingsRowSchema.parse({ ...syncBase });
     expect(row.analyticsEnabled).toBe(true);
   });
+
+  it('applique healthConnectEnabled = false par défaut (opt-in — donnée de santé)', () => {
+    const row = userSettingsRowSchema.parse({ ...syncBase });
+    expect(row.healthConnectEnabled).toBe(false);
+  });
 });
 
 describe('userSettingsRowSchema — valeurs explicites', () => {

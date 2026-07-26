@@ -15,6 +15,7 @@ import {
   type UnitSystem,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { Segment } from '@/components/Segment';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
@@ -479,6 +480,9 @@ export default function SettingsScreen() {
       <View style={styles.stack}>
         <Button label={t('settings.help.button')} variant="ghost" onPress={() => router.push('/help')} />
       </View>
+
+      {/* Health Connect — opt-in (US CONF-06, donnée de santé) */}
+      <HealthConnectSection enabled={settings?.healthConnectEnabled ?? false} />
 
       {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

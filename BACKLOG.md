@@ -16,13 +16,28 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
-| **CONF-06 — Health Connect** | 9.9 | Écriture des séances + lecture du poids (Android). | Module natif → dev build ; API Health Connect à cadrer. |
 | **CONF-07 — Accessibilité** | 9.11, 9.12 | Dynamic Type explicite (`maxFontSizeMultiplier` / `fontScale`) + audit contraste WCAG AA. | Revue visuelle humaine, non outillée à ce jour. |
-| **LANCE-01 — Publication Play Store** | 9.2 | Build AAB prod (EAS) + fiche Play + soumission review. | 🔴 Compte Google Play + délai de review. Dépend de tout le P0. |
+| **LANCE-00 — Compte développeur Google Play** | 9.2 | Créer le compte développeur (25 $, une fois), puis la fiche d'application dans la Play Console. | 🔴 **Rien de la chaîne de publication ne peut démarrer sans lui** — ni la fiche, ni la déclaration santé, ni la soumission. Vérification d'identité Google : compter plusieurs jours. **Non démarré au 27/07/2026.** |
+| **LANCE-01 — Publication Play Store** | 9.2 | Build AAB prod (EAS) + fiche Play + soumission review. | 🔴 Dépend de **LANCE-00** + de tout le P0 + du délai de review. |
 
-> **Prérequis hors-code du lancement** : textes CGU / politique de confidentialité (relecture
-> juridique), SMTP custom Supabase (le service e-mail intégré est rate-limité), `app_version`
-> réelle dans `app.json` (aujourd'hui `0.0.0`).
+> **CONF-06 — Health Connect** (9.9) est **entré dans le pipeline** le 26/07/2026 →
+> [spec](docs/specs/functional/us/conf06-health-connect.md) · [plan](docs/plans/conf06-health-connect.md).
+> Code livré le 27/07/2026 ; reste la recette device et la déclaration Play (ci-dessous).
+
+> **Prérequis hors-code du lancement**, dans l'ordre des dépendances :
+> 1. **Compte développeur Play + fiche d'app** (LANCE-00) — **préalable à tout le reste**.
+> 2. **Politique de confidentialité publiée à une URL publique** (pas seulement le texte in-app) —
+>    exigée par la fiche Play **et** par Health Connect ; suppose la relecture juridique des
+>    textes CGU / confidentialité.
+> 3. **Déclaration Google Play « Health apps »** pour Health Connect : formulaire + justification
+>    des 3 types de données. ~7 j d'instruction + 5-7 j ouvrés de propagation. Procédure et textes
+>    prêts à coller : [health-connect-play-declaration.md](docs/specs/technical/health-connect-play-declaration.md).
+> 4. SMTP custom Supabase (le service e-mail intégré est rate-limité).
+> 5. `app_version` réelle dans `app.json` (aujourd'hui `0.0.0`).
+>
+> ⚠️ Les points 1 → 3 s'enchaînent **en série** et sont tous à délai externe : environ **3 semaines**
+> entre « je crée le compte » et « Health Connect fonctionne en production ». À démarrer bien avant
+> d'avoir fini le code, sinon ils deviennent le chemin critique du lancement.
 
 ---
 

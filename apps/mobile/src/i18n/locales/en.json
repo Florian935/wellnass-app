@@ -944,6 +944,7 @@
         "Your data is isolated per user and securely synced to the cloud. It is never sold to third parties.",
         "Health and location data are never shared without your explicit consent.",
         "We measure app usage (screens viewed, features used) through anonymous statistics, solely to improve it; these measurements never include your health data and you can turn them off at any time from settings.",
+        "If you enable Health Connect, your workouts and runs are written to Android's health hub and your weight is read back from it. This exchange happens only on your phone: that data does not pass through our servers as a result. You can turn syncing off in settings, and revoke access at any time from Health Connect.",
         "You can request an export or deletion of your data at any time from settings."
       ]
     }
@@ -1254,6 +1255,28 @@
       "title": "Help & support",
       "button": "Open help"
     },
+    "healthConnect": {
+      "title": "Health Connect",
+      "toggle": "Sync with Health Connect",
+      "subtitle": "Your workouts and runs are added to Android's health hub, and your weight is read back from it. Everything stays on your phone.",
+      "providerMissing": "Health Connect isn't installed on this device.",
+      "install": "Install Health Connect",
+      "updateRequired": "Health Connect needs an update.",
+      "update": "Update Health Connect",
+      "permissionsMissing": "Allow access to start syncing.",
+      "grant": "Allow access",
+      "denied": "Access denied. You can allow it any time from Health Connect settings.",
+      "importWeight": "Import weight now",
+      "imported_one": "{{count}} weight entry imported",
+      "imported_other": "{{count}} weight entries imported",
+      "pushed_one": "{{count}} activity synced",
+      "pushed_other": "{{count}} activities synced",
+      "lastImport": "Last import: {{date}}",
+      "openSettings": "Open Health Connect settings",
+      "disableHint": "Turning this off stops syncing. Data already sent stays in Health Connect — delete it there if you want.",
+      "defaultWorkoutTitle": "Strength workout",
+      "defaultRunTitle": "Run"
+    },
     "analytics": {
       "title": "Usage statistics",
       "toggle": "Allow usage statistics",
@@ -1288,6 +1311,7 @@
       "item3": "Custom exercises and foods",
       "graceInfo": "Deletion takes effect in 30 days. You can cancel by signing back in before {{date}}.",
       "exportHint": "Remember to export your data first (Settings → Export my data).",
+      "healthConnectHint": "Workouts and runs already sent to Health Connect stay there: delete them from Health Connect if you want.",
       "passwordLabel": "Confirm with your password",
       "confirm": "Delete permanently",
       "cancel": "Cancel",

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US CONF-06 — Health Connect</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--run:#2f6f8f;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1240px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1240px;margin:24px auto 0;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:300px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:48px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:540px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:512px;padding:16px;display:flex;flex-direction:column;gap:11px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;}
+  .card.tight{padding:0;overflow:hidden;}
+  .card.tight .row{padding:12px 13px;}
+  .card.tight .row + .row{border-top:1px solid var(--border);}
+  .row{display:flex;align-items:center;gap:12px;}
+  .rowlab{font-weight:700;font-size:14px;} .rowdesc{font-size:12px;color:var(--muted);margin-top:3px;}
+  .grow{flex:1;min-width:0;}
+  .toggle{width:46px;height:28px;border-radius:999px;background:var(--accent);position:relative;flex-shrink:0;}
+  .toggle::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;}
+  .toggle.off{background:var(--border);} .toggle.off::after{left:3px;right:auto;}
+  .btn{border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;text-align:center;background:var(--surface-alt);}
+  .btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .btn.ghost{background:transparent;}
+  .banner{border:1px solid var(--warn);background:#fbf1dd;border-radius:12px;padding:11px 12px;font-size:12.5px;line-height:1.5;}
+  .banner.bad{border-color:var(--danger);background:#fbeae8;}
+  .banner.ok{border-color:var(--success);background:#eef4e6;}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .sysdlg{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);}
+  .sysdlg .h{font-weight:800;font-size:14px;margin-bottom:8px;}
+  .perm{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:7px 0;border-top:1px solid var(--border);}
+  .chk{width:18px;height:18px;border-radius:4px;background:var(--accent);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:210px;}
+  @media(max-width:760px){.arrow{display:none;}}
+  .diagram{max-width:1240px;margin:34px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  .diagram h3{margin:0 0 6px;font-size:15px;}
+  .diagram p.lead{margin:0 0 16px;font-size:13px;color:var(--muted);}
+  .pipe{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .pipe + .pipe{margin-top:14px;}
+  .node{flex:1;min-width:145px;background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;}
+  .node b{display:block;margin-bottom:4px;font-size:12px;}
+  .node.gate{border-color:var(--warn);background:#fbf1dd;}
+  .node.sink{border-color:var(--strength);}
+  .node.src{border-color:var(--run);}
+  .to{align-self:center;font-weight:800;color:var(--muted);font-size:20px;}
+  .code{font-family:var(--mono);font-size:11px;background:#2b2018;color:#f3e6d2;border-radius:8px;padding:9px 11px;margin-top:8px;white-space:pre;overflow:auto;}
+  .k{color:#e0a86b;} .s{color:#a8c98a;} .c{color:#8f8272;}
+  .pill{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  .pill.warn{border-color:var(--warn);color:var(--warn);background:#fbf1dd;}
+  .states{max-width:1240px;margin:34px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  td code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);padding:1px 5px;border-radius:4px;}
+  .note{max-width:1240px;margin:26px auto 0;font-size:13px;color:var(--muted);line-height:1.65;}
+  .note b{color:var(--ink);}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US CONF-06 · Roadmap 9.9 · V0.8 · P0 bloquant lancement</p>
+    <h1 class="title">Health Connect — séances écrites, poids relu</h1>
+    <p class="sub">Brancher l'app sur le <b>hub santé d'Android</b> : les séances de musculation et les
+      courses terminées y sont <b>écrites</b> ; le poids d'une balance connectée y est <b>relu</b>.
+      Consentement <b>opt-in</b> (donnée de santé), tout reste <b>local à l'appareil</b> — rien ne passe par
+      nos serveurs. Idempotent par <code>clientRecordId</code>, donc aucun doublon possible.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1 · OFF par défaut -->
+    <div class="col">
+      <div class="step">1 · État initial</div>
+      <div class="caption">Réglages → section Health Connect. <b>OFF par défaut</b> : aucune permission demandée, aucune écriture.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">←</span><span class="tt">Réglages</span></div>
+        <div class="sect">Health Connect</div>
+        <div class="card tight">
+          <div class="row">
+            <div class="grow">
+              <div class="rowlab">Synchroniser avec Health&nbsp;Connect</div>
+              <div class="rowdesc">Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu. Tout reste sur ton téléphone.</div>
+            </div>
+            <div class="toggle off"></div>
+          </div>
+        </div>
+        <div class="hint">Désactiver arrête la synchronisation. Les données déjà envoyées restent dans Health Connect — supprime-les depuis Health Connect si tu le souhaites.</div>
+        <div class="sect">Statistiques d'usage</div>
+        <div class="card tight">
+          <div class="row">
+            <div class="grow"><div class="rowlab muted">Autoriser les statistiques d'usage</div></div>
+            <div class="toggle"></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint"><span class="pill">opt-in</span> Donnée de santé → jamais activé par défaut, contrairement aux statistiques d'usage (opt-out).</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2 · Permissions -->
+    <div class="col">
+      <div class="step">2 · Permissions</div>
+      <div class="caption">Le tap sur l'interrupteur est le <b>seul</b> déclencheur de la demande système. 3 permissions, pas une de plus.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt muted">Health Connect</span></div>
+        <div class="sysdlg">
+          <div class="h">Autoriser Wellness à accéder à&nbsp;?</div>
+          <div class="perm"><span class="chk">✓</span><div><b>Écrire</b> — Exercice</div></div>
+          <div class="perm"><span class="chk">✓</span><div><b>Écrire</b> — Distance</div></div>
+          <div class="perm"><span class="chk">✓</span><div><b>Lire</b> — Poids</div></div>
+          <div class="hint" style="margin-top:10px">Wellness explique pourquoi dans sa politique de confidentialité →</div>
+          <div class="row" style="gap:8px;margin-top:11px">
+            <div class="btn ghost grow">Refuser</div>
+            <div class="btn primary grow">Autoriser</div>
+          </div>
+        </div>
+        <div class="banner" style="margin-top:6px">Écran système. L'app <b>ne demande jamais</b> ces permissions d'elle-même : uniquement sur ce tap.</div>
+        <div class="spacer"></div>
+        <div class="hint"><b>Refus →</b> l'interrupteur reste OFF + message « Accès refusé. Tu peux l'autoriser à tout moment depuis les réglages de Health Connect. »</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3 · Prêt -->
+    <div class="col">
+      <div class="step">3 · Actif</div>
+      <div class="caption">Accord → rattrapage des <b>30 derniers jours</b> + import du poids, immédiatement. L'activation a un effet visible.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">←</span><span class="tt">Réglages</span></div>
+        <div class="sect">Health Connect</div>
+        <div class="card tight">
+          <div class="row">
+            <div class="grow">
+              <div class="rowlab">Synchroniser avec Health&nbsp;Connect</div>
+              <div class="rowdesc">Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu.</div>
+            </div>
+            <div class="toggle"></div>
+          </div>
+          <div class="row">
+            <div class="grow"><div class="rowlab">Dernier import : 26/07/2026 08:12</div></div>
+          </div>
+        </div>
+        <div class="banner ok">✓ 14 activités synchronisées · 3 pesées importées</div>
+        <div class="btn ghost">Importer le poids maintenant</div>
+        <div class="btn ghost">Ouvrir les réglages Health Connect</div>
+        <div class="spacer"></div>
+        <div class="hint">Ensuite, c'est automatique : chaque séance et chaque course terminée part vers Health Connect ; le poids est relu au retour dans l'app (au plus une fois toutes les 6 h).</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4 · États dégradés -->
+    <div class="col">
+      <div class="step">4 · États dégradés</div>
+      <div class="caption">Chaque situation a un message et une action. Jamais d'écran muet, jamais de plantage.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">←</span><span class="tt">Réglages</span></div>
+        <div class="sect">Health Connect</div>
+
+        <div class="banner bad">Health Connect n'est pas installé sur cet appareil.</div>
+        <div class="btn">Installer Health Connect</div>
+
+        <div class="banner" style="margin-top:4px">Health Connect doit être mis à jour.</div>
+        <div class="btn">Mettre à jour Health Connect</div>
+
+        <div class="banner" style="margin-top:4px">Autorise l'accès pour lancer la synchronisation.</div>
+        <div class="btn primary">Autoriser l'accès</div>
+
+        <div class="spacer"></div>
+        <div class="hint"><b>Hors Android</b> → la section n'est pas affichée du tout.<br>
+          <b>Permissions révoquées</b> depuis le système → retour à l'état ci-dessus, sans redemande automatique.<br>
+          <b>Permissions partielles</b> → chaque sens fonctionne seul (les séances partent, l'import est sauté).</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <!-- Diagrammes de flux -->
+  <div class="diagram">
+    <h3>Flux d'écriture — séance et course terminées</h3>
+    <p class="lead">Greffé en fin de <code>finishWorkout()</code> / <code>finishRun()</code>, en fire-and-forget, exactement comme l'appel <code>track()</code> existant : un échec Health Connect ne peut pas faire échouer une clôture de séance.</p>
+    <div class="pipe">
+      <div class="node src"><b>Clôture</b>L'utilisateur termine sa séance / sa course. <code>patch()</code> local d'abord — la vérité, c'est la base locale.</div>
+      <div class="to">→</div>
+      <div class="node gate"><b>Garde (4 conditions)</b>Android · Health Connect disponible · réglage ON · permissions accordées. Sinon <b>no-op silencieux</b>.</div>
+      <div class="to">→</div>
+      <div class="node"><b>Brique pure (testée)</b><code>buildWorkoutSessionRecord</code> / <code>buildRunRecords</code> dans <code>packages/shared</code>. Zéro dépendance native → testable sans device.</div>
+      <div class="to">→</div>
+      <div class="node sink"><b>Health Connect</b><code>insertRecords()</code>, <b>un appel par type de record</b> (l'API refuse les lots mélangés et les listes vides). Base <b>locale</b> : fonctionne hors-ligne, par construction.</div>
+    </div>
+    <div class="code"><span class="c">// Idempotence native : réécrire la même activité MET À JOUR le record, ne le duplique pas.</span>
+metadata: { <span class="k">clientRecordId</span>: <span class="s">`workout-${id}`</span>, <span class="k">clientRecordVersion</span>: <span class="s">Date.parse(updated_at)</span> }
+<span class="c">// → le rattrapage 30 jours peut être relancé autant de fois que voulu. Aucun état à conserver.</span>
+
+<span class="c">// Contrainte de l'API : un seul type de record par appel, et jamais de liste vide.</span>
+<span class="k">await</span> insertRecords(sessions)   <span class="c">// 1 lot</span>
+<span class="k">if</span> (distances.length) <span class="k">await</span> insertRecords(distances)  <span class="c">// 2e lot, gardé</span></div>
+    <div class="hint" style="margin-top:12px">Ce qui part : type d'exercice, début, fin, durée, distance (course). <b>Ce qui ne part pas : les notes de séance</b> — texte libre personnel, exclu par principe de minimisation (vérifié par un test). Le titre vient de <code>sessions.name</code> par jointure ; une séance libre n'en a pas → libellé i18n par défaut.</div>
+  </div>
+
+  <div class="diagram">
+    <h3>Flux de lecture — poids d'une balance connectée</h3>
+    <p class="lead">Fenêtre glissante de 30 jours relue à chaque fois : <b>aucun curseur à persister</b>, donc aucun état à faire dériver. Health Connect étant local à l'appareil, un curseur synchronisé entre appareils serait de toute façon faux.</p>
+    <div class="pipe">
+      <div class="node src"><b>Déclencheur</b>Activation du réglage · retour dans l'app (throttlé 6 h) · bouton « Importer maintenant ».</div>
+      <div class="to">→</div>
+      <div class="node"><b>Lecture</b><code>readRecords('Weight', 30 j)</code> → pesées brutes, plusieurs possibles le même jour.</div>
+      <div class="to">→</div>
+      <div class="node gate"><b>Brique pure (testée)</b><code>selectWeightEntriesToImport</code> : 1 pesée / jour (la plus récente), poids invraisemblables écartés, <b>jours déjà saisis exclus</b>, date dérivée du fuseau <b>du record</b>.</div>
+      <div class="to">→</div>
+      <div class="node sink"><b>Journal de poids</b><code>logWeight(date, kg)</code> → <code>body_weight_entries</code>, puis PowerSync. Rien d'autre à faire : l'export RGPD les couvre déjà.</div>
+    </div>
+    <div class="hint" style="margin-top:12px"><b>Règle de conflit — l'app gagne toujours.</b> Un poids saisi dans l'app n'est <b>jamais</b> écrasé par une pesée Health Connect du même jour : l'import ne fait que <b>combler les jours vides</b>. Prévisible, testable, sans arbitrage d'horodatages hétérogènes.</div>
+  </div>
+
+  <!-- Tableau des états -->
+  <div class="states">
+    <h3 style="margin:0 0 6px;font-size:15px">Les 6 états de la section — un seul affiché à la fois</h3>
+    <p class="lead" style="margin:0 0 14px">Deux niveaux : la <b>disponibilité</b> du fournisseur d'abord, puis le croisement <b>réglage × permissions</b>.</p>
+    <table>
+      <thead><tr><th style="width:190px">État</th><th style="width:290px">Condition</th><th>Ce que voit l'utilisateur</th></tr></thead>
+      <tbody>
+        <tr><td><code>unsupported</code></td><td>Plateforme ≠ Android</td><td>Section <b>non affichée</b></td></tr>
+        <tr><td><code>provider_missing</code></td><td>Health Connect absent (Android ≤ 13 sans l'app)</td><td>Message + « Installer Health Connect » (fiche Play Store)</td></tr>
+        <tr><td><code>provider_update_required</code></td><td>Health Connect présent mais trop ancien</td><td>Message + « Mettre à jour Health Connect »</td></tr>
+        <tr><td><code>off</code></td><td>Disponible, <b>réglage OFF</b> — cas par défaut de tout compte neuf</td><td>Section affichée, interrupteur OFF, explication, aucune permission demandée <span class="pill">écran 1</span></td></tr>
+        <tr><td><code>permissions_missing</code></td><td>Disponible, réglage ON, permissions non accordées</td><td>Bandeau + « Autoriser l'accès »</td></tr>
+        <tr><td><code>ready</code></td><td>Disponible, réglage ON + permissions accordées</td><td>Interrupteur ON, date du dernier import, « Importer le poids maintenant »</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <p><span class="pill warn">⚠️ prérequis Google Play</span> Publier une app qui utilise Health Connect exige
+    une <b>déclaration préalable</b> dans la Play Console (formulaire « Health apps », justification de chacun
+    des 3 types de données, politique de confidentialité publiée, écran de justification des permissions).
+    Délai cumulé d'environ <b>deux semaines</b> : à lancer <b>dès la validation de cette US</b>, en parallèle du
+    code. Une build de <b>développement</b> fonctionne sans cette déclaration — seule la <b>publication</b>
+    (LANCE-01) est bloquée.</p>
+    <p><b>Ce qui reste hors périmètre :</b> lire les activités enregistrées par d'autres apps (dédoublonnage
+    non trivial) · écrire le poids vers Health Connect · pas, sommeil, fréquence cardiaque, calories
+    (chaque type alourdit la déclaration Play) · trace GPS dans le record (dépend de RUN-F1b) · Apple Health
+    (portage iOS, 9.1) · synchro en tâche de fond.</p>
+    <p><b>Point ouvert assumé :</b> aucune suppression de record n'est livrée — l'app ne permet pas aujourd'hui
+    de supprimer une séance <i>terminée</i>, donc il n'y a rien à quoi la raccrocher. Une activité envoyée se
+    supprime depuis Health Connect. Le jour où l'historique deviendra supprimable, le
+    <code>clientRecordId</code> rend la suppression immédiate à écrire.</p>
+    <p style="margin-bottom:0"><b>Livrables liés</b> — spec : <code>docs/specs/functional/us/conf06-health-connect.md</code> ·
+    plan : <code>docs/plans/conf06-health-connect.md</code> · maquette : ce fichier.</p>
+  </div>
+</body>
+</html>

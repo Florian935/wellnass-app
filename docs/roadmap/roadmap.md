@@ -303,7 +303,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 1.18 | Export des données | JSON ou CSV (obligation RGPD). | Moyen | 4h | 🟢 | ✅ | **CONF-01 livré (23/07/2026).** Export JSON local (hors-ligne) de toutes les données perso (31 tables possédées + traductions perso) via feuille de partage ; Réglages → « Exporter mes données ». Reste recette + Damien. |
 | 1.19 | Suppression du compte | Confirmation double + délai de grâce 30 jours. | Moyen | 3h | 🟢 | ✅ | **CONF-02 livré (23/07/2026).** Zone Danger + ré-auth mot de passe + délai de grâce 30 j récupérable (gate) + purge serveur `pg_cron` (cascade FK). Reste recette device + Damien. |
 | 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ✅ | **US 1.22 livré (24/07/2026).** Réglages → écran `/help` : FAQ statique embarquée (accordéon, 7 Q/R) + « Nous contacter » (mail natif) + « Signaler un bug » (mail + bloc technique). `expo-mail-composer`, zéro backend. `SUPPORT_EMAIL` placeholder + dev build requis avant recette. 🌐 bilingue FR+EN. Reste recette + Damien. |
-| 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | 6h | 🟢 | ⬜ | **Aucune trace.** Health Connect API. |
+| 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | ~16h (réel — 6h sous-estimait : module natif + plugin + déclaration Play) | 🟢 | 🟡 | **Code livré 27/07/2026** (US CONF-06) : écriture séances/courses + lecture poids, opt-in, plugin Expo maison. Reste : **recette device** (dev build requis) et **déclaration Google Play** (bloque la prod, pas le dev). |
 | 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ✅ | **US 9.10 livré (24/07/2026).** Événements anonymisés dans notre base Supabase (`analytics_events` append-only + RLS + FK cascade), offline-first PowerSync. Consentement **opt-out** + réglage « Statistiques d'usage » + mention confidentialité. Service `track()` (allowlist anti-PII, non bloquant), 15 points instrumentés. Migration + sync rule PowerSync déployées ; **recette validée 100 % (Florian, 24/07/2026)**. Dashboards via outil BI = ultérieur. |
 | 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | Comportement RN par défaut, **pas de gestion explicite** (`maxFontSizeMultiplier`/`fontScale`), non vérifié. |
 | 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | 🟡 | Revue visuelle humaine, **aucune vérification outillée**. |
@@ -393,8 +393,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 161 | ~83 % |
-| 🟡 Partiel | 11 | ~6 % |
-| ⬜ À faire | 17 | ~9 % |
+| 🟡 Partiel | 12 | ~6 % |
+| ⬜ À faire | 16 | ~8 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **194** | |
@@ -417,7 +417,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.5 (33) | 25 | 4 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.2 (catalogue vide), 5.9, 5.24, 5.25 |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (9) | 6 | 2 | 1 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) livrés ; reste **9.9 (Health Connect)** + finitions accessibilité (9.11/9.12 partiels) |
+| V0.8 (9) | 6 | 3 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) livrés ; **9.9 (Health Connect) code livré 27/07 → recette device + déclaration Play** ; restent les finitions accessibilité (9.11/9.12 partiels) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -444,6 +444,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**27/07/2026 — CONF-06 : Health Connect (9.9) ⬜ → 🟡**
+Code livré (écriture séances/courses, lecture poids, opt-in) ; reste la **recette device** et la
+**déclaration Google Play**. Estimation corrigée : 6 h → ~16 h réelles. Compteurs : **161 / 12 / 16**
+(V0.8 : 6/3/0). LANCE-00 (compte développeur Play, non créé) ajouté en P0 au backlog.
 
 **26/07/2026 — réconciliation de fond (refonte du suivi d'avancement)**
 6 lignes périmées corrigées : **3.13 / 3.27 / 3.28 / 3.32** 🟡⬜ → ✅ (livrées par la refonte muscu, jamais

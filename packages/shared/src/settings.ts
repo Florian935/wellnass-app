@@ -68,6 +68,16 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
 
   /** Consentement analytics (opt-out : true par défaut). US 9.10. */
   analyticsEnabled: z.boolean().default(true),
+
+  /**
+   * Synchronisation Health Connect (US CONF-06). **Opt-in : false par défaut** — donnée de santé,
+   * consentement explicite requis (contrairement à `analyticsEnabled`, opt-out).
+   *
+   * Exprime une **intention synchronisée** entre appareils ; les permissions Health Connect, elles,
+   * restent **locales à l'appareil**. Réglage ON sans permission = aucune écriture, et aucune
+   * demande de permission automatique.
+   */
+  healthConnectEnabled: z.boolean().default(false),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;
