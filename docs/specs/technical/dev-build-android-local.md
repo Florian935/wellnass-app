@@ -133,6 +133,39 @@ cd apps\mobile\android
   ```
 - Cet APK est **autonome** : le JS est bundlé dedans, aucun besoin de Metro ni du câble ensuite.
 
+### ⚠️ Piège monorepo : une modification dans `packages/shared` ne rebundle pas
+
+**Symptôme** : `BUILD SUCCESSFUL`, mais l'APK garde sa date précédente et le correctif est absent de
+l'app. Constaté le **28/07/2026** en recette de CONF-06 : deux itérations perdues à tester un APK qui
+ne contenait pas le correctif.
+
+**Cause** : la tâche Gradle qui produit le bundle JS ne déclare comme entrées que les sources de
+`apps/mobile`. Metro, lui, résout `@wellness/shared` vers `packages/shared/src` — mais Gradle l'ignore.
+Si les seules modifications depuis le dernier build sont dans `packages/shared` (ou tout autre
+workspace), la tâche se déclare **up-to-date** et l'ancien bundle est réemballé tel quel.
+
+**Contrôle** — le bundle contient-il vraiment ta modification ? Cherche une chaîne que tu viens
+d'ajouter (une clé i18n, un nom de fonction) :
+```bash
+grep -c "maNouvelleCle" apps/mobile/android/app/build/generated/assets/react/release/index.android.bundle
+```
+⚠️ Cherche une chaîne **sans accent** : Metro échappe les caractères non-ASCII (`activités`), donc
+« activités » ne matchera pas.
+
+**Correctif** — supprimer l'output force la seule tâche concernée à se réexécuter (bien plus rapide
+qu'un `clean`) :
+```bash
+rm -f apps/mobile/android/app/build/generated/assets/react/release/index.android.bundle \
+      apps/mobile/android/app/build/intermediates/assets/release/mergeReleaseAssets/index.android.bundle
+cd apps/mobile/android && ./gradlew assembleRelease
+```
+(Adapter `release` → `debug` pour un dev build.) `--rerun-tasks` marche aussi, mais rejoue **tout**,
+compilation native comprise.
+
+> **Le mode A ne connaît pas ce problème** : Metro sert le JS à chaud, `r` dans le terminal recharge, et
+> un changement dans `packages/shared` est pris en compte immédiatement. C'est la raison de fond de
+> préférer le mode A en recette — le mode B est fait pour **distribuer** un APK, pas pour itérer.
+
 ### Installer sur le téléphone (sans fil)
 1. Transférer `app-release.apk` sur le tél : mail à soi-même, Google Drive/OneDrive, Teams, ou
    copie via clé USB.

@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { updateSettings } from '@/data/repositories/settings-repository';
 import {
   DEFAULT_WINDOW_DAYS,
+  getLastSyncReport,
   getLastWeightImportAt,
   getState,
   importWeight,
@@ -14,6 +15,7 @@ import {
   pushRecent,
   requestPermissions,
   type HealthConnectState,
+  type SyncReport,
 } from '@/lib/health-connect';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -39,6 +41,8 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
   const [view, setView] = useState<{
     state: HealthConnectState;
     lastImportAt: string | null;
+    /** Compte rendu de la dernière tentative — affiché tel quel en cas d'échec (diagnostic). */
+    report: SyncReport | null;
   } | null>(null);
   const [busy, setBusy] = useState(false);
   /** Message de résultat inline (« N activités synchronisées ») — pas d'alerte modale. */
@@ -46,7 +50,11 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
   const [denied, setDenied] = useState(false);
 
   const refresh = useCallback(async () => {
-    setView({ state: await getState(), lastImportAt: await getLastWeightImportAt() });
+    setView({
+      state: await getState(),
+      lastImportAt: await getLastWeightImportAt(),
+      report: getLastSyncReport(),
+    });
   }, []);
 
   // État recalculé au montage, quand le réglage change, et au retour au premier plan : les
@@ -55,7 +63,11 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const next = { state: await getState(), lastImportAt: await getLastWeightImportAt() };
+      const next = {
+        state: await getState(),
+        lastImportAt: await getLastWeightImportAt(),
+        report: getLastSyncReport(),
+      };
       if (!cancelled) setView(next);
     };
     void load();
@@ -114,10 +126,24 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
     await refresh();
   };
 
+  /**
+   * Renvoi manuel des activités des 30 derniers jours. Sûr à répéter (dédup par `clientRecordId`),
+   * et c'est le geste qui permet à l'utilisateur de rattraper une séance qui n'aurait pas été
+   * envoyée — par exemple si Health Connect était indisponible à la clôture.
+   */
+  const runPush = async () => {
+    setBusy(true);
+    setFeedback(null);
+    const pushed = await pushRecent(DEFAULT_WINDOW_DAYS, titles);
+    setFeedback(t('settings.healthConnect.pushed', { count: pushed }));
+    setBusy(false);
+    await refresh();
+  };
+
   // Tant que l'état n'est pas connu, ou hors Android : on n'affiche rien (pas de section fantôme).
   if (view === null || view.state === 'unsupported') return null;
 
-  const { state, lastImportAt } = view;
+  const { state, lastImportAt, report } = view;
 
   const formattedLastImport =
     lastImportAt !== null
@@ -220,11 +246,33 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
           {state === 'ready' ? (
             <View style={styles.stack}>
               <Button
+                label={t('settings.healthConnect.syncNow')}
+                variant="ghost"
+                loading={busy}
+                onPress={() => void runPush()}
+              />
+              <Button
                 label={t('settings.healthConnect.importWeight')}
                 variant="ghost"
                 loading={busy}
                 onPress={() => void runImport()}
               />
+            </View>
+          ) : null}
+
+          {/*
+            Compte rendu de la dernière tentative, affiché **uniquement en cas d'échec**. Message
+            technique non traduit : c'est un outil de diagnostic (sans lui, une panne d'écriture est
+            invisible — l'app semble fonctionner alors que rien n'est envoyé).
+          */}
+          {report?.error ? (
+            <View style={[styles.banner, { backgroundColor: colors.surfaceAlt, borderColor: colors.danger }]}>
+              <Text style={[styles.bannerText, { color: colors.text }]}>
+                {t('settings.healthConnect.lastAttemptFailed', {
+                  kind: report.kind,
+                  reason: report.error,
+                })}
+              </Text>
             </View>
           ) : null}
 

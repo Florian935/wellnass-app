@@ -78,10 +78,32 @@ export type RemoteWeightRecord = {
   metadata?: { dataOrigin?: string };
 };
 
-/** Millisecondes d'un instant ISO, ou `null` s'il est illisible. */
-function msOf(iso: string): number | null {
-  const ms = Date.parse(iso);
-  return Number.isFinite(ms) ? ms : null;
+/**
+ * Normalise un horodatage en **ISO-8601 strict UTC** (`2026-07-24T12:39:10.931Z`).
+ *
+ * ⚠️ Indispensable côté Health Connect : la base locale (PowerSync, valeurs venues de Postgres)
+ * stocke `2026-07-24 12:39:10.931Z` — avec un **espace** au lieu du `T`. JavaScript tolère cette
+ * forme (d'où tout le reste de l'app qui fonctionne avec `new Date(row.finished_at)`), mais le
+ * `Instant.parse()` de Java la **refuse** : `could not be parsed at index 10`. Passer la chaîne
+ * brute dans un record faisait échouer chaque écriture, silencieusement.
+ *
+ * Renvoie `null` si la valeur est inexploitable.
+ */
+export function toIsoInstant(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  let candidate = trimmed.includes('T') ? trimmed : trimmed.replace(' ', 'T');
+  // Convention du projet : tous les timestamps sont en UTC. Sans marqueur de fuseau, JS
+  // interpréterait la valeur en heure **locale** → décalage silencieux selon l'appareil.
+  if (!/(Z|[+-]\d{2}:?\d{2})$/.test(candidate)) candidate += 'Z';
+  const ms = Date.parse(candidate);
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+}
+
+/** Millisecondes d'un instant, tolérant sur le format d'entrée (cf. `toIsoInstant`). */
+function msOf(value: string): number | null {
+  const iso = toIsoInstant(value);
+  return iso === null ? null : Date.parse(iso);
 }
 
 /**
@@ -108,14 +130,22 @@ function metadataFor(
 }
 
 /**
- * Valide l'intervalle d'une activité. Health Connect **refuse** `endTime <= startTime` ; on écarte
- * donc en amont, plutôt que de laisser l'écriture échouer côté natif.
+ * Valide **et normalise** l'intervalle d'une activité. Deux raisons de passer par ici :
+ * - Health Connect **refuse** `endTime <= startTime` — on écarte en amont plutôt que de laisser
+ *   l'écriture échouer côté natif ;
+ * - les bornes doivent être en **ISO strict** (cf. `toIsoInstant`), sinon `Instant.parse` rejette.
+ *
+ * Renvoie `null` si l'activité n'est pas exportable.
  */
-function validInterval(startedAt: string, finishedAt: string | null): boolean {
-  if (!finishedAt) return false;
-  const start = msOf(startedAt);
-  const end = msOf(finishedAt);
-  return start !== null && end !== null && end > start;
+function normalizedInterval(
+  startedAt: string,
+  finishedAt: string | null,
+): { startTime: string; endTime: string } | null {
+  const startTime = toIsoInstant(startedAt);
+  const endTime = toIsoInstant(finishedAt);
+  if (startTime === null || endTime === null) return null;
+  if (Date.parse(endTime) <= Date.parse(startTime)) return null;
+  return { startTime, endTime };
 }
 
 /**
@@ -139,14 +169,15 @@ export function buildWorkoutSessionRecord(input: {
   defaultTitle?: string;
   backfill?: boolean;
 }): ExerciseSessionRecordInput | null {
-  if (!validInterval(input.startedAt, input.finishedAt)) return null;
+  const interval = normalizedInterval(input.startedAt, input.finishedAt);
+  if (interval === null) return null;
 
   const title = input.sessionName?.trim() || input.defaultTitle?.trim() || undefined;
 
   return {
     recordType: 'ExerciseSession',
-    startTime: input.startedAt,
-    endTime: input.finishedAt!,
+    startTime: interval.startTime,
+    endTime: interval.endTime,
     exerciseType: EXERCISE_TYPE_STRENGTH_TRAINING,
     ...(title ? { title } : {}),
     // `notes` volontairement absent : cf. spec §2.3 (minimisation).
@@ -174,10 +205,10 @@ export function buildRunRecords(input: {
   defaultTitle?: string;
   backfill?: boolean;
 }): { sessions: ExerciseSessionRecordInput[]; distances: DistanceRecordInput[] } | null {
-  if (!validInterval(input.startedAt, input.finishedAt)) return null;
+  const interval = normalizedInterval(input.startedAt, input.finishedAt);
+  if (interval === null) return null;
 
-  const startTime = input.startedAt;
-  const endTime = input.finishedAt!;
+  const { startTime, endTime } = interval;
   // Une course saisie à la main n'a rien été « enregistré activement », et le rattrapage rejoue du passé.
   const manualEntry = input.backfill === true || input.source === 'manual';
   const title = input.defaultTitle?.trim() || undefined;

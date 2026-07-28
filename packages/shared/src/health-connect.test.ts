@@ -9,6 +9,7 @@ import {
   localDateOfInstant,
   selectWeightEntriesToImport,
   shouldImportWeight,
+  toIsoInstant,
 } from './health-connect';
 
 /** Séance nominale : 1 h de muscu, terminée, avec un nom de séance et des notes. */
@@ -30,7 +31,52 @@ const RUN = {
   source: 'gps',
 } as const;
 
+describe('toIsoInstant', () => {
+  // Régression device (28/07/2026) : Health Connect rejetait CHAQUE écriture avec
+  // « Text '2026-07-24 12:39:10.931Z' could not be parsed at index 10 » — l'index 10 est l'espace.
+  // La base locale (PowerSync ← Postgres) stocke ce format ; `Instant.parse` (Java) exige le « T ».
+  it('convertit le format de la base locale (espace) en ISO strict', () => {
+    expect(toIsoInstant('2026-07-24 12:39:10.931Z')).toBe('2026-07-24T12:39:10.931Z');
+  });
+
+  it('laisse passer un ISO déjà strict', () => {
+    expect(toIsoInstant('2026-07-24T12:39:10.931Z')).toBe('2026-07-24T12:39:10.931Z');
+  });
+
+  it('complète un horodatage sans marqueur de fuseau en UTC (convention du projet)', () => {
+    // Sans le « Z », JS interpréterait la valeur en heure locale → décalage selon l'appareil.
+    expect(toIsoInstant('2026-07-24 12:39:10')).toBe('2026-07-24T12:39:10.000Z');
+  });
+
+  it('accepte un décalage explicite et le ramène en UTC', () => {
+    expect(toIsoInstant('2026-07-24T14:39:10+02:00')).toBe('2026-07-24T12:39:10.000Z');
+  });
+
+  it('renvoie null sur une valeur vide ou illisible', () => {
+    expect(toIsoInstant(null)).toBeNull();
+    expect(toIsoInstant(undefined)).toBeNull();
+    expect(toIsoInstant('')).toBeNull();
+    expect(toIsoInstant('pas une date')).toBeNull();
+  });
+});
+
 describe('buildWorkoutSessionRecord', () => {
+  // Le cas qui a fait échouer la recette : les horodatages du record doivent TOUJOURS sortir en
+  // ISO strict, quel que soit le format d'entrée.
+  it('normalise les horodatages de la base locale dans le record', () => {
+    const record = buildWorkoutSessionRecord({
+      ...WORKOUT,
+      startedAt: '2026-07-24 12:39:10.931Z',
+      finishedAt: '2026-07-24 13:39:10.931Z',
+      updatedAt: '2026-07-24 13:39:15.000Z',
+    });
+    expect(record).not.toBeNull();
+    expect(record!.startTime).toBe('2026-07-24T12:39:10.931Z');
+    expect(record!.endTime).toBe('2026-07-24T13:39:10.931Z');
+    // La version dérive aussi d'un horodatage de la base : elle doit rester un nombre valide.
+    expect(record!.metadata?.clientRecordVersion).toBe(Date.parse('2026-07-24T13:39:15.000Z'));
+  });
+
   it('construit un ExerciseSession de musculation borné par started_at / finished_at', () => {
     const record = buildWorkoutSessionRecord(WORKOUT);
     expect(record).not.toBeNull();
@@ -107,6 +153,18 @@ describe('buildWorkoutSessionRecord', () => {
 });
 
 describe('buildRunRecords', () => {
+  it('normalise les horodatages de la base locale dans les deux types de record', () => {
+    const out = buildRunRecords({
+      ...RUN,
+      startedAt: '2026-07-21 06:00:00.000Z',
+      finishedAt: '2026-07-21 06:30:00.000Z',
+    });
+    expect(out!.sessions[0]!.startTime).toBe('2026-07-21T06:00:00.000Z');
+    expect(out!.sessions[0]!.endTime).toBe('2026-07-21T06:30:00.000Z');
+    expect(out!.distances[0]!.startTime).toBe('2026-07-21T06:00:00.000Z');
+    expect(out!.distances[0]!.endTime).toBe('2026-07-21T06:30:00.000Z');
+  });
+
   it('sépare les lots par type de record (insertRecords refuse les lots hétérogènes)', () => {
     const out = buildRunRecords(RUN);
     expect(out).not.toBeNull();

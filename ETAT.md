@@ -1,4 +1,4 @@
-# État du projet — 27/07/2026
+# État du projet — 28/07/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 161 livré · 12 partiel · 16 à faire (sur 194)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **84 %** — 162 livré · 11 partiel · 16 à faire (sur 194)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -16,7 +16,6 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
-| **CONF-06** — Health Connect — écriture des séances, lecture du poids (Android) | `recette` | `feature/conf06-health-connect` | [9.9] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `validation` | `docs/contenu-01-spec` | [3.1, 5.2] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -40,8 +39,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/conf06-health-connect` (modifications non commitées) |
-| Commits | 941 · `main` a **938** commits de retard sur `dev` |
-| Specs d'US | 75 au total — 73 clôturées, 2 en cours |
+| Commits | 942 · `main` a **939** commits de retard sur `dev` |
+| Specs d'US | 75 au total — 74 clôturées, 1 en cours |
 | Migrations | 45/45 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -51,11 +50,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `c682993` feat(health-connect): écriture des séances/courses et lecture du poids (US CONF-06, 9.9)
 - `d54f05b` docs(suivi): refonte du suivi d'avancement — ETAT genere, BACKLOG, front-matter, roadmap reconciliee
 - `09899ca` chore(eas): versionne le Client ID Google, écarte la clé MapTiler du dépôt public
 - `d8cd84c` docs(ux01): clôture US UX-01 + relecture croisée non requise + doc environnement de dev local
 - `77088f9` merge: intègre origin/dev (12 commits) dans feature/ux01-infobulle-graphiques
-- `a1ea008` feat(workout): brique deload / gestion de stagnation (3.8, non cablee)
 
 ---
 

@@ -3,9 +3,9 @@ id: CONF-06
 titre: "Health Connect — écriture des séances, lecture du poids (Android)"
 roadmap: [9.9]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/conf06-health-connect
-maj: 27/07/2026
+maj: 28/07/2026
 ---
 # US CONF-06 — Health Connect (écriture des séances, lecture du poids)
 
@@ -14,7 +14,9 @@ maj: 27/07/2026
 > balance connectée pour alimenter le suivi de poids. Roadmap
 > [9.9](../../../roadmap/roadmap.md) (V0.8, **P0 bloquant lancement**).
 > Branche : `feature/conf06-health-connect` · Validée le 27/07/2026 ·
-> **Statut : code livré, en attente de recette device** (`etape: recette`).
+> **Statut : ✅ clôturée — recette device validée par Florian le 28/07/2026** (`etape: close`).
+> Reste hors périmètre de l'US : la déclaration Google Play (§9), qui conditionne la **publication**
+> et non le fonctionnement.
 > **1 migration** (1 colonne de réglage, poussée le 27/07/2026) · **1 module natif** → **dev build**
 > obligatoire pour recetter ·
 > ⚠️ **déclaration Google Play préalable** avec délai de review (voir §9) — impacte LANCE-01.
@@ -87,7 +89,12 @@ Contexte technique (vérifié dans le dépôt) :
 - **Briques pures testées** (`packages/shared`) : conversion séance → record Health Connect,
   conversion course → records, et sélection des pesées à importer (diff local ↔ Health Connect).
 - **Écran de réglages** : section « Health Connect » (état, interrupteur, bouton de permission,
-  bouton d'import du poids, lien vers les réglages Health Connect du système).
+  bouton d'import du poids, **bouton de renvoi des activités récentes**, lien vers les réglages
+  Health Connect du système, et **compte rendu de la dernière tentative en cas d'échec**).
+  > Ajouts du 28/07/2026, décidés en recette : sans retour visible, un échec d'écriture est
+  > indiscernable d'un succès (les erreurs partaient dans un `console.warn` illisible sur un APK de
+  > production, et un lot vide ne produisait aucune erreur). Le renvoi manuel sert aussi
+  > l'utilisateur : il rattrape une séance non partie, sans avoir à basculer le réglage.
 - **Câblage** : écriture à la clôture d'une séance / d'une course (best-effort, non bloquante).
 - **Import du poids** : à l'activation, puis à chaque ouverture de l'app (throttlé), puis à la demande.
 - **i18n FR + EN** complet + **mention Health Connect** dans la politique de confidentialité.
@@ -318,6 +325,8 @@ passe globale **CONF-07** (9.11/9.12), qui reste l'US de référence pour l'acce
 | Course sans distance (`distance_m` nul) | `ExerciseSession` seul, **aucun appel** pour le lot `Distance` (l'API jette sur une liste vide) |
 | Rattrapage sans aucune activité sur 30 jours | Aucun appel d'écriture, message « 0 activité synchronisée » |
 | Séance de durée nulle ou négative | Écartée par la brique pure (Health Connect refuse `endTime <= startTime`) |
+| **Horodatage au format de la base locale** (`2026-07-24 12:39:10.931Z`, espace au lieu du `T`) | **Normalisé en ISO strict** avant écriture. Java (`Instant.parse`) refuse l'espace là où JS l'accepte : sans normalisation, **toute** écriture échoue (`could not be parsed at index 10`) — constaté en recette le 28/07/2026 |
+| Horodatage sans marqueur de fuseau | Complété en UTC (convention du projet). Sans cela, JS l'interpréterait en heure locale → décalage selon l'appareil |
 | Pesée Health Connect un jour déjà saisi dans l'app | **Non importée** (l'app gagne, décision 6) |
 | Plusieurs pesées le même jour dans Health Connect | La plus récente du jour est retenue |
 | Poids hors bornes plausibles (≤ 0 ou > 500 kg) | Écarté par la brique pure (`weight_kg > 0` en base) |

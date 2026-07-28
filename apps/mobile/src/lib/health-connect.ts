@@ -82,6 +82,57 @@ async function nativeModule() {
 }
 
 /**
+ * Compte rendu de la dernière tentative de synchronisation, **y compris les abandons silencieux**.
+ *
+ * Sans lui, un échec d'écriture est indiscernable d'un succès : les erreurs partent dans un
+ * `console.warn` invisible sur un APK de production, et un lot vide (aucun record construit) ne
+ * produit même pas d'erreur. C'est exactement ce qui a rendu la première recette impossible à
+ * diagnostiquer. La section Réglages affiche ce compte rendu.
+ */
+export type SyncReport = {
+  /** Instant de la tentative (ISO UTC). */
+  at: string;
+  /** Ce qui était tenté. */
+  kind: 'workout' | 'run' | 'backfill' | 'weight';
+  /** Nombre d'éléments réellement écrits / importés. */
+  written: number;
+  /**
+   * `null` en cas de succès. Sinon, message court **technique** (non traduit) : c'est un outil de
+   * diagnostic, pas un texte produit.
+   */
+  error: string | null;
+};
+
+/**
+ * Révision du service, incrémentée à la main à chaque correctif livré en recette.
+ *
+ * Elle est préfixée aux messages d'erreur pour lever une ambiguïté rencontrée le 28/07/2026 : deux
+ * versions de l'app produisaient un message identique, et rien ne permettait de savoir si l'APK
+ * installé contenait bien le correctif (l'UI est la même, `app.json` garde `version: 0.0.0`).
+ * Une erreur sans `rev` = APK antérieur au 28/07/2026.
+ */
+export const SERVICE_REV = 'r3';
+
+let lastReport: SyncReport | null = null;
+
+/** Dernier compte rendu de synchronisation (ou `null` si aucune tentative depuis le lancement). */
+export function getLastSyncReport(): SyncReport | null {
+  return lastReport;
+}
+
+function report(kind: SyncReport['kind'], written: number, error: string | null): void {
+  const stamped = error === null ? null : `[${SERVICE_REV}] ${error}`;
+  lastReport = { at: new Date().toISOString(), kind, written, error: stamped };
+  if (stamped !== null) console.warn(`[health-connect] ${kind} : ${stamped}`);
+}
+
+/** Message court à partir d'une exception, pour le compte rendu. */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+/**
  * Disponibilité du fournisseur. Ne demande aucune permission et n'initialise rien de lourd :
  * appelable librement depuis l'UI.
  */
@@ -149,22 +200,35 @@ export async function getState(): Promise<HealthConnectState> {
 }
 
 /**
- * Garde commune à toute écriture / lecture : plateforme, `initialize()`, disponibilité, opt-in,
- * permissions. Renvoie le module natif si tout est réuni, `null` sinon (→ no-op silencieux).
+ * Garde commune à toute écriture / lecture : plateforme, opt-in, disponibilité, `initialize()`,
+ * permissions.
+ *
+ * Renvoie le module natif, ou la **raison** de l'abandon — jamais un `null` muet : un abandon
+ * silencieux est ce qui rend une panne indiagnosticable côté recette.
  */
-async function ready() {
-  if (Platform.OS !== 'android') return null;
+async function ready(): Promise<
+  { native: Awaited<ReturnType<typeof nativeModule>>; reason?: undefined } | { native: null; reason: string }
+> {
+  if (Platform.OS !== 'android') return { native: null, reason: 'plateforme non Android' };
   try {
-    if (!(await getHealthConnectEnabled())) return null;
+    if (!(await getHealthConnectEnabled())) {
+      return { native: null, reason: 'synchronisation désactivée (opt-in OFF)' };
+    }
     const native = await nativeModule();
-    if ((await native.getSdkStatus(HEALTH_CONNECT_PACKAGE)) !== SDK_AVAILABLE) return null;
+    const status = await native.getSdkStatus(HEALTH_CONNECT_PACKAGE);
+    if (status !== SDK_AVAILABLE) {
+      return { native: null, reason: `Health Connect indisponible (getSdkStatus = ${status})` };
+    }
     // `initialize()` est indispensable : sans lui, tous les appels suivants échouent.
-    if (!(await native.initialize(HEALTH_CONNECT_PACKAGE))) return null;
-    if (!(await hasPermissions())) return null;
-    return native;
+    if (!(await native.initialize(HEALTH_CONNECT_PACKAGE))) {
+      return { native: null, reason: 'initialize() a renvoyé false' };
+    }
+    if (!(await hasPermissions())) {
+      return { native: null, reason: 'permissions non accordées' };
+    }
+    return { native };
   } catch (error) {
-    console.warn('[health-connect] initialisation impossible :', error);
-    return null;
+    return { native: null, reason: `initialisation impossible : ${errorMessage(error)}` };
   }
 }
 
@@ -182,24 +246,25 @@ async function ready() {
 async function insertBatch(
   native: Awaited<ReturnType<typeof nativeModule>>,
   records: readonly (ExerciseSessionRecordInput | DistanceRecordInput)[],
-): Promise<number> {
-  if (records.length === 0) return 0;
+): Promise<{ written: number; error: string | null }> {
+  if (records.length === 0) return { written: 0, error: null };
   try {
     await native.insertRecords(records as Parameters<typeof native.insertRecords>[0]);
-    return records.length;
+    return { written: records.length, error: null };
   } catch (error) {
-    console.warn('[health-connect] insertRecords a échoué sur le lot, reprise unitaire :', error);
-    if (records.length === 1) return 0;
+    if (records.length === 1) return { written: 0, error: errorMessage(error) };
+    // Reprise unitaire : un seul record fautif ne doit pas faire perdre tout le lot.
     let written = 0;
+    let firstError: string | null = null;
     for (const record of records) {
       try {
         await native.insertRecords([record] as Parameters<typeof native.insertRecords>[0]);
         written += 1;
       } catch (itemError) {
-        console.warn('[health-connect] record refusé :', itemError);
+        firstError = firstError ?? errorMessage(itemError);
       }
     }
-    return written;
+    return { written, error: written === records.length ? null : firstError };
   }
 }
 
@@ -242,11 +307,17 @@ const SELECT_RUN = `
  * `defaultTitle` est le libellé i18n de repli (ce module ne dépend pas d'i18next).
  */
 export async function pushWorkout(workoutId: string, defaultTitle?: string): Promise<void> {
-  const native = await ready();
-  if (!native) return;
+  const { native, reason } = await ready();
+  if (!native) {
+    report('workout', 0, reason);
+    return;
+  }
   try {
     const row = await powerSync.getOptional<WorkoutRow>(SELECT_WORKOUT, [workoutId]);
-    if (!row) return;
+    if (!row) {
+      report('workout', 0, `séance ${workoutId} introuvable ou non terminée en base locale`);
+      return;
+    }
     const record = buildWorkoutSessionRecord({
       id: row.id,
       startedAt: row.started_at,
@@ -255,20 +326,34 @@ export async function pushWorkout(workoutId: string, defaultTitle?: string): Pro
       sessionName: row.session_name,
       defaultTitle,
     });
-    if (!record) return;
-    await insertBatch(native, [record]);
+    if (!record) {
+      report(
+        'workout',
+        0,
+        `record non constructible (started_at=${row.started_at}, finished_at=${row.finished_at})`,
+      );
+      return;
+    }
+    const { written, error } = await insertBatch(native, [record]);
+    report('workout', written, error);
   } catch (error) {
-    console.warn('[health-connect] pushWorkout a échoué :', error);
+    report('workout', 0, errorMessage(error));
   }
 }
 
 /** Écrit une course terminée (session + distance, en deux appels). Fire-and-forget. */
 export async function pushRun(runId: string, defaultTitle?: string): Promise<void> {
-  const native = await ready();
-  if (!native) return;
+  const { native, reason } = await ready();
+  if (!native) {
+    report('run', 0, reason);
+    return;
+  }
   try {
     const row = await powerSync.getOptional<RunRow>(SELECT_RUN, [runId]);
-    if (!row) return;
+    if (!row) {
+      report('run', 0, `course ${runId} introuvable ou non terminée en base locale`);
+      return;
+    }
     const records = buildRunRecords({
       id: row.id,
       startedAt: row.started_at,
@@ -278,11 +363,19 @@ export async function pushRun(runId: string, defaultTitle?: string): Promise<voi
       source: row.source,
       defaultTitle,
     });
-    if (!records) return;
-    await insertBatch(native, records.sessions);
-    await insertBatch(native, records.distances);
+    if (!records) {
+      report(
+        'run',
+        0,
+        `records non constructibles (started_at=${row.started_at}, finished_at=${row.finished_at})`,
+      );
+      return;
+    }
+    const session = await insertBatch(native, records.sessions);
+    const distance = await insertBatch(native, records.distances);
+    report('run', session.written, session.error ?? distance.error);
   } catch (error) {
-    console.warn('[health-connect] pushRun a échoué :', error);
+    report('run', 0, errorMessage(error));
   }
 }
 
@@ -298,8 +391,11 @@ export async function pushRecent(
   days = DEFAULT_WINDOW_DAYS,
   titles?: { workout?: string; run?: string },
 ): Promise<number> {
-  const native = await ready();
-  if (!native) return 0;
+  const { native, reason } = await ready();
+  if (!native) {
+    report('backfill', 0, reason);
+    return 0;
+  }
   try {
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
 
@@ -351,11 +447,22 @@ export async function pushRecent(
     }
 
     // Le compte rendu ne porte que sur les sessions ; les distances les accompagnent.
-    const activities = await insertBatch(native, sessions);
-    await insertBatch(native, distances);
-    return activities;
+    const session = await insertBatch(native, sessions);
+    const distance = await insertBatch(native, distances);
+    report(
+      'backfill',
+      session.written,
+      session.error ??
+        distance.error ??
+        // Cas piégeux : aucun record à écrire. Ce n'est pas une erreur, mais le silence complet
+        // est trompeur en recette — on dit ce qu'on a trouvé.
+        (sessions.length === 0
+          ? `aucune activité terminée trouvée sur ${days} jours (${workouts.length} séance(s), ${runs.length} course(s) en base)`
+          : null),
+    );
+    return session.written;
   } catch (error) {
-    console.warn('[health-connect] pushRecent a échoué :', error);
+    report('backfill', 0, errorMessage(error));
     return 0;
   }
 }
@@ -370,8 +477,11 @@ export async function pushRecent(
  * Renvoie le nombre de pesées créées.
  */
 export async function importWeight(days = DEFAULT_WINDOW_DAYS): Promise<number> {
-  const native = await ready();
-  if (!native) return 0;
+  const { native, reason } = await ready();
+  if (!native) {
+    report('weight', 0, reason);
+    return 0;
+  }
   try {
     const now = Date.now();
     const result = await native.readRecords('Weight', {
@@ -399,9 +509,15 @@ export async function importWeight(days = DEFAULT_WINDOW_DAYS): Promise<number> 
     }
 
     await setLastWeightImportAt(new Date(now).toISOString());
+    report(
+      'weight',
+      toImport.length,
+      // Idem : distinguer « rien de neuf » de « rien lu du tout ».
+      result.records.length === 0 ? `aucune pesée lue sur ${days} jours` : null,
+    );
     return toImport.length;
   } catch (error) {
-    console.warn('[health-connect] importWeight a échoué :', error);
+    report('weight', 0, errorMessage(error));
     return 0;
   }
 }

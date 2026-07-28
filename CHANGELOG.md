@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `feature/conf06-health-connect` — CONF-06 : correctif de format d'horodatage + retour visible d'erreur (recette validée)
+
+> **Recette device validée par Florian le 28/07/2026.** L'US CONF-06 passe en `close`, la roadmap
+> **9.9** en ✅. Précédent commit : `c682993`.
+>
+> **Le bug qui bloquait tout.** Aucune séance n'arrivait dans Health Connect, sans le moindre
+> message. Cause : nos horodatages en base locale valent `2026-07-24 12:39:10.931Z` — un **espace**
+> là où l'ISO-8601 met un `T` (format Postgres propagé tel quel par PowerSync dans SQLite).
+> JavaScript tolère cette forme, d'où tout le reste de l'app qui fonctionne depuis des mois avec
+> `new Date(row.finished_at)` ; le `Instant.parse()` de **Java la refuse** :
+> `Text '…' could not be parsed at index 10` (index 10 = l'espace). Passée brute dans un record, la
+> valeur faisait rejeter **chaque** écriture.
+
+**Corrigé**
+
+- **`toIsoInstant()`** (`packages/shared/src/health-connect.ts`) : normalise tout horodatage en ISO
+  strict UTC avant écriture. Applique aussi le `Z` quand le fuseau manque — sans quoi JS
+  interpréterait la valeur en heure **locale** et décalerait l'activité selon l'appareil.
+  Utilisée pour les bornes de séance, de course, de distance, et pour `clientRecordVersion`.
+- `normalizedInterval()` remplace `validInterval()` : valide **et** normalise en un seul endroit,
+  pour qu'aucun chemin ne puisse produire un record aux bornes brutes.
+- **7 tests de régression** sur le format réel de la base (48 tests au total sur les briques pures).
+
+**Ajouté**
+
+- **Compte rendu de synchronisation visible** (`SyncReport`, `getLastSyncReport()`) : le service
+  mémorise le résultat de sa dernière tentative — succès, échec **ou raison de l'abandon** — et la
+  section Réglages l'affiche en rouge si elle a échoué. `ready()` ne renvoie plus un `null` muet mais
+  la cause exacte (`opt-in OFF`, `permissions non accordées`, `getSdkStatus = N`…).
+- **Bouton « Renvoyer mes activités récentes »** : relance le rattrapage 30 jours à la demande. Sert
+  au diagnostic **et** à l'utilisateur (rattraper une séance non partie sans basculer le réglage).
+- **`SERVICE_REV`** (`r3`), préfixée aux messages d'erreur : permet de savoir quelle version du code
+  a produit une erreur. Deux APK indiscernables (même UI, `version: 0.0.0`) avaient coûté trois
+  allers-retours de recette à confondre « le correctif ne marche pas » et « le correctif n'est pas là ».
+- i18n FR/EN : `settings.healthConnect.{syncNow, lastAttemptFailed}`.
+
+**Technique-Notes**
+
+- ⚠️ **Piège monorepo documenté** dans
+  [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) : une modification
+  dans `packages/shared` **ne réinvalide pas** le bundle Gradle. La tâche de bundling ne déclare comme
+  entrées que les sources d'`apps/mobile` ; Metro résout `@wellness/shared`, Gradle l'ignore. Résultat :
+  `BUILD SUCCESSFUL`, APK inchangé, correctif absent. Contrôle (`grep` d'une clé **sans accent** dans
+  le bundle — Metro échappe les non-ASCII) et correctif ciblé (supprimer l'output du bundle plutôt
+  qu'un `clean`) consignés. **Deux itérations de recette perdues dessus.**
+- **Leçon de test, deux fois de suite sur cette US** : les cas couverts décrivaient le format de la
+  **documentation**, pas celui que le **système produit** — `zoneOffset` (objet, pas chaîne) puis les
+  horodatages (espace, pas `T`). Une couverture verte qui ne protégeait rien. Les tests de régression
+  sont désormais écrits à partir des valeurs réellement observées sur device.
+- Le silence sur erreur était un **défaut de conception**, pas seulement une gêne de débogage : un
+  `console.warn` est illisible sur un APK de production, et un lot vide ne produit aucune erreur du
+  tout. C'est ce qui a rendu la première recette impossible à diagnostiquer.
+- Contrôles : `lint` 0 erreur, `typecheck` 0 erreur, **1025 tests verts** (909 shared + 116 mobile),
+  codes de sortie lus **sans pipe**.
+
+**Reste hors de cette US** : la **déclaration Google Play « Health apps »** et le **compte
+développeur** (LANCE-00) — ils conditionnent la publication, pas le fonctionnement. Health Connect
+marche en dev build sans eux.
+
 ### 27/07/2026 — `feature/conf06-health-connect` — US CONF-06 : Health Connect (écriture des séances, lecture du poids)
 
 > **Quoi.** L'app cesse d'être un silo : les séances de musculation et les courses terminées sont
