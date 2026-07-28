@@ -1,7 +1,7 @@
 ---
 id: PROG-DEL-01
 titre: "Suppression de programmes & de séances (muscu + course)"
-roadmap: []
+roadmap: [3.50]
 catalogue: []
 etape: close
 branche: feature/suppression-programmes-seances

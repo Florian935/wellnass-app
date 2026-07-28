@@ -425,8 +425,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [13/07/2026] 🆕 **[Adoption] Aperçu web d'une séance/course partagée** : le destinataire du lien
   voit un aperçu web soigné → incitation à installer. Entonnoir d'acquisition ; s'appuie sur
   [[carte-seance-partageable]] et la web app V2.
-- [13/07/2026] 🆕 **[Adoption] Parcours « 7 jours pour démarrer »** : mini-programme d'activation
-  guidé pour les nouveaux, tous piliers, pour atteindre vite le « aha moment ».
 
 - [13/07/2026] 🆕 **[Monétisation] Analyses avancées & corrélations en premium** : le moteur
   [[analyses-croisees-poussees]] comme cœur de l'offre payante. Le gratuit montre les données, le
@@ -463,9 +461,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [13/07/2026] 🆕 **Journal blessures/douleurs & courbatures** : noter une zone sensible → l'app évite
   de programmer ce groupe ou alerte. Complète la récup ; lié à [[substitution-exercices]] et
   [[analyses-croisees-poussees]].
-- [13/07/2026] 🆕 **Widget écran d'accueil Android** : les widgets 7.x cadrés sont *in-app* ; un vrai
-  widget home-screen (séance du jour, streak, calories restantes) est un gap. _Chevauchement partiel
-  avec le dashboard._
 - [13/07/2026] 🆕 **Commandes / annonces vocales pendant la séance** : mains occupées — « série
   validée », « prochain exercice ». Étend à la muscu les annonces audio running déjà prévues.
 - [13/07/2026] 🆕 **Langues supplémentaires (ES, DE…)** : extension naturelle post-FR/EN ; l'archi
@@ -513,6 +508,24 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [10/07/2026] ✅ Export GPX des sorties → promue en US 5.xx.
 - [10/07/2026] ❌ Intégration montres Garmin → hors périmètre V1, revoir en V2.
 -->
+
+### 28/07/2026 (bis) — 2 idées promues : 2ᵉ salve, séquencée APRÈS V0.9
+
+**Contexte** : le code restant en avance sur le cahier des charges, une 2ᵉ salve de 5 candidats a été
+retenue le même jour — 3 viennent du [catalogue d'analyses](docs/product/analyses-donnees.md)
+(RUN-14, NUTR-16, MUSC-09), 2 d'ici. **Arbitrage Florian : elles passent après les 13 items restants
+de V0.9** — c'est un choix de capacité, V0.9 (~57 h) occupant déjà la fenêtre des délais Google.
+Détail et points durs : [BACKLOG.md](BACKLOG.md), section « Après V0.9 — 2ᵉ salve d'enrichissements ».
+
+- [13/07/2026] ✅ **Widget écran d'accueil Android** → retenu, **après V0.9**. Vrai gap : les widgets
+  7.x sont *in-app*. Séance du jour / streak / kcal restantes sur l'écran d'accueil = rétention
+  passive **dès le J1, sans historique**. Point dur assumé : **c'est du natif** (AppWidget/Glance +
+  pont vers la base locale), React Native ne rend pas de widget — mais le plugin Expo maison écrit
+  pour Health Connect (9.9) prouve que le savoir-faire existe. Le plus cher des 5.
+- [13/07/2026] ✅ **[Adoption] Parcours « 7 jours pour démarrer »** → retenu, **après V0.9**. Retenu
+  précisément parce que c'est la **seule** feature de rétention qui fonctionne le jour du lancement :
+  contrairement au bilan hebdo, aux souvenirs ou au wrapped, elle n'exige **aucun historique**.
+  Surtout du contenu FR+EN. Distinct de l'onboarding 1.7-1.9 : **activation**, pas inscription.
 
 ### 28/07/2026 — 18 idées tranchées : création de la version V0.9 (avant lancement)
 

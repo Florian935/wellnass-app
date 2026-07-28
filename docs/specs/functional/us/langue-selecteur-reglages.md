@@ -1,7 +1,7 @@
 ---
 id: I18N-01
 titre: "Sélecteur de langue dans les Réglages"
-roadmap: []
+roadmap: [1.23]
 catalogue: []
 etape: close
 branche: feature/langue-selecteur-reglages

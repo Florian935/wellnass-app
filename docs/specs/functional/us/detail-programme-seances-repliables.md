@@ -1,7 +1,7 @@
 ---
 id: UX-PROG-01
 titre: "Détail programme : séances repliables (expansion inline)"
-roadmap: []
+roadmap: [3.49]
 catalogue: []
 etape: close
 branche: feature/detail-programme-seances-repliables

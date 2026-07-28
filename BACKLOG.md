@@ -116,6 +116,31 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 ---
 
+## 🔵 Après V0.9 — 2ᵉ salve d'enrichissements *(arbitrage Florian, 28/07/2026)*
+
+> **Séquencement explicite : ces candidats passent APRÈS les 13 items restants de V0.9.** Le code
+> reste en avance sur le cahier des charges, mais V0.9 (~57 h) occupe déjà toute la fenêtre des
+> délais externes de Google : cette salve est un **choix de capacité**, pas un manque de périmètre.
+> Aucune ligne de roadmap n'est créée tant qu'un candidat n'entre pas dans le pipeline via
+> [`/us`](.claude/commands/us.md).
+>
+> **Filtre appliqué** (identique à V0.9) : offline-first, aucune dépendance backend/IA, hors
+> gamification (arbitrage C), hors social (V2), hors paiement (arbitrage D).
+
+| Candidat | Source | Contenu | Point dur |
+|---|---|---|---|
+| **RUN-14 — Prédiction de temps de course (Riegel)** | [catalogue](docs/product/analyses-donnees.md) RUN-14 | `T2 = T1×(D2/D1)^1,06` depuis un record récent → 10 km / semi / marathon, + allure cible. | Formule pure sur `running_pace_records`, **aucune donnée nouvelle** → effort très faible. Point dur = **honnêteté** : afficher le record source et ne rien promettre ; l'exposant dérape sur marathon pour un coureur peu entraîné (prévoir une réserve explicite). |
+| **NUTR-16 — Répartition calorique par repas** | [catalogue](docs/product/analyses-donnees.md) NUTR-16 | Part des kcal/macros par repas (petit-déj / déj / dîner / collations). | `meal_type` est **déjà en base**, aucun agrégat par repas n'existe → migration inutile. Point dur : les **repas personnalisés** (`nutrition_profiles.meals`) rendent les libellés variables → pas de liste de repas figée dans le calcul. |
+| **MUSC-09 — PR par plage de reps** | [catalogue](docs/product/analyses-donnees.md) MUSC-09 | Meilleure charge par tranche de reps (1/3/5/8/10/12+), courbe charge↔reps. | ⚠️ **Aucune ligne roadmap** — le lien vers 6.3 était erroné (6.3 = accès démo pendant la séance, ❌ abandonné). Une ligne « Hors périmètre de cadrage » est à créer à l'entrée en pipeline. Données déjà là ; définir les buckets et l'état vide des plages non travaillées. |
+| **Widget écran d'accueil Android** | [IDEAS.md](IDEAS.md) 13/07 | Séance du jour / streak / kcal restantes **sur l'écran d'accueil** — les widgets 7.x sont *in-app*. | 🔴 **Le plus cher du lot, et c'est du natif** : React Native ne rend pas de widget → AppWidget/Glance + pont vers la base locale. Atténuation : le plugin Expo maison écrit pour Health Connect prouve que le savoir-faire est là. Rétention passive dès le J1, sans historique. |
+| **Parcours « 7 jours pour démarrer »** | [IDEAS.md](IDEAS.md) 13/07 | Mini-programme d'activation guidé, tous piliers, pour atteindre vite le « aha moment ». | La **seule** feature de rétention qui fonctionne le jour du lancement : contrairement au bilan hebdo, aux souvenirs ou au wrapped, elle n'exige **aucun historique**. Surtout du **contenu FR+EN** + un écran de progression. À ne pas confondre avec l'onboarding (1.7-1.9) : activation, pas inscription. |
+
+> **Écarté de cette salve à la réconciliation du 28/07/2026** : **RUN-10 — splits par km** était le
+> candidat n°1 proposé… et il est **livré depuis le 25/07** (`computeKmSplits` + tableau sur le résumé
+> de course, roadmap 5.26 ✅). Le catalogue le donnait ⏳. C'est la raison d'être de `/reconcilier`.
+
+---
+
 ## 🧹 Dette & suivi technique
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
@@ -152,4 +177,5 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 ---
 
 *Tenu à jour par [`/commit`](.claude/commands/commit.md) et [`/etat`](.claude/commands/etat.md).
-Dernière révision : 28/07/2026 (élargissement V0.9 — 14 idées promues depuis [IDEAS.md](IDEAS.md) ; PAS-01 clôturé).*
+Dernière révision : 28/07/2026 (réconciliation — 2ᵉ salve séquencée après V0.9 ; élargissement V0.9 :
+14 idées promues depuis [IDEAS.md](IDEAS.md) ; PAS-01 clôturé).*

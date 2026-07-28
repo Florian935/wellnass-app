@@ -10,6 +10,76 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `docs/reconciliation-catalogue-analyses` — réconciliation : le catalogue d'analyses avait dérivé, pas la roadmap
+
+> Audit [`/reconcilier`](.claude/commands/reconcilier.md) mené **à charge** (on suppose la doc fausse
+> jusqu'à preuve dans le code). Verdict : la **roadmap est juste**, le **catalogue d'analyses** ne
+> l'était pas — il annonçait comme restant à faire des analyses livrées depuis plusieurs jours.
+> **Documentation seule : aucun fichier applicatif touché.** Commit précédent : `c1bcc49`.
+
+**Corrigé**
+
+- `docs/product/analyses-donnees.md` — **4 lignes fausses** remises au réel du code :
+  - **RUN-10** « Tableau des allures par km (splits) » ⏳ → ✅ — **livré depuis le 25/07/2026** :
+    `computeKmSplits` ([packages/shared/src/running.ts:179](packages/shared/src/running.ts#L179)),
+    tableau sur [apps/mobile/src/app/run/summary.tsx:229](apps/mobile/src/app/run/summary.tsx#L229)
+    + reprise dans un widget course. Roadmap 5.26 était, elle, correctement à ✅.
+  - **RUN-05** « Courbe & tendance d'allure (30/90 j) » 🟡 → ✅ — `usePaceTrend` + `ProgressLineChart`
+    dans [running-history/index.tsx:233](apps/mobile/src/app/running-history/index.tsx#L233).
+    Reste noté comme différé : le découpage **par type de séance** (les courses libres n'ont pas de
+    `session_type`).
+  - **MUSC-06** « Alerte de déséquilibre musculaire » ⏳ → ✅ — livrée **avec MUSC-05**
+    (`useMuscleBalance` + alerte groupes délaissés) ; roadmap 3.41 était déjà à ✅.
+  - **MN-13** « Ratio g/kg protéines vs cible » 🆕 → ✅ — **absorbée par MN-06** (livrée) : doublon de
+    formulation, pas une analyse distincte.
+- `docs/product/analyses-donnees.md` — **MUSC-09 pointait une US abandonnée** : le lien « US liée 6.3 »
+  était erroné (roadmap 6.3 = « accès démo pendant la séance », ❌ abandonné avec les GIF le
+  20/07/2026). MUSC-09 n'a donc **aucune ligne roadmap** — signalé dans la table, à créer en « Hors
+  périmètre de cadrage » si l'item entre en pipeline.
+- `docs/product/analyses-donnees.md` — **« Pistes de priorisation » assainies** : sur les 3 candidats
+  qu'elle donnait encore à démarrer, **2 étaient déjà réglés** (pistes 3 et 10 barrées). **Seule la
+  piste 12 (META-19, garde-fou ACWR) reste ouverte.**
+- **Front-matter : `roadmap:` vide sur 4 US livrées** alors que leur ligne existe — le lien US↔roadmap
+  lu par `scripts/etat.mjs` était cassé : `langue-selecteur-reglages` → **1.23**,
+  `muscf10b-records-fiche-exercice` → **3.48**, `detail-programme-seances-repliables` → **3.49**,
+  `suppression-programmes-seances` → **3.50**.
+
+**Ajouté**
+
+- `BACKLOG.md` — section **« Après V0.9 — 2ᵉ salve d'enrichissements »** : 5 candidats avec leur point
+  dur, **explicitement séquencés après les 13 items restants de V0.9** (arbitrage Florian) — RUN-14
+  (prédiction Riegel), NUTR-16 (répartition calorique par repas), MUSC-09 (PR par plage de reps),
+  widget écran d'accueil Android, parcours « 7 jours pour démarrer ».
+- `IDEAS.md` — les **2 idées promues** de cette salve descendent en Archives avec la décision (widget
+  écran d'accueil, parcours « 7 jours ») ; les 3 autres candidats viennent du catalogue.
+- `docs/roadmap/roadmap.md` — entrée au « Journal des réconciliations ».
+
+**Technique / Notes**
+
+- ⚠️ **Le catalogue d'analyses n'est pas une source de vérité sur l'état du code.** C'est un backlog
+  de 220 lignes tenu à la main, et il dérive : 4 lignes fausses en 10 jours. **Vérifier
+  `packages/shared/src` avant de démarrer une ligne** — une note en ce sens est ajoutée dans le
+  fichier. Le piège s'est refermé pendant cette session même : « splits par km » a été proposé comme
+  candidat n°1 à développer alors qu'il est livré depuis 3 jours.
+- **Aucun compteur de roadmap ne change** (163 / 11 / 29 sur 208) : les 4 corrections portent sur le
+  catalogue, explicitement **hors décompte** du périmètre de lancement. Vérifié au passage : les 12
+  versions somment bien à 208 et chaque colonne s'additionne.
+- **Roadmap vérifiée à charge sur ses 40 lignes ⬜/🟡 : zéro faux.** Preuve du contraire cherchée et
+  non trouvée pour aucun `expo-speech` (5.18/5.19), altitude (5.32), météo/terrain (5.24), schéma
+  corporel (6.2), `maxFontSizeMultiplier` (9.11), glisser-déposer (3.10), notifications autres que
+  `scheduleStreakReminder` (1.14/2.4/2.5/2.7/3.42), table mensurations/check-in/joker/objectifs
+  (3.51/1.24/7.14/7.15).
+- **47 migrations / 47 cases cochées** dans le registre ; `c1bcc49` (PAS-01) bien présent sur
+  `origin/dev` ; aucun candidat déjà livré dans le backlog.
+- Utile pour PARTAGE-01 (7.17) : `expo-sharing` est **déjà** au projet (data-export, export GPX) —
+  seule la **capture d'image** reste à écrire.
+- Les **12 specs qui gardent `roadmap: []` sont intentionnelles** : 10 US d'analyse (suivies au
+  catalogue, hors décompte) + 2 correctifs. Ne pas les « corriger ».
+- Qualité : `npm run test` **vert** (50 fichiers Vitest + 28 suites Jest / 129 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur (6 avertissements préexistants dans
+  `charts-smoke.test.tsx`, non touché). Les 2 échecs par timeout notés au backlog **ne se sont pas
+  reproduits** sur cette machine.
+
 ### 28/07/2026 — `feature/pas01-pas-quotidiens` — PAS-01 : pas quotidiens lus dans Health Connect, comptés dans la série (recette validée)
 
 > **Recette device validée par Florian le 28/07/2026** sur APK release local (`r4`). L'US PAS-01

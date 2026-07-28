@@ -70,10 +70,10 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | MUSC-03 | ✅ | 1RM estimé (Epley) | Force max théorique 1 rép : charge×(1+reps/30). Dénominateur commun inter-séries. | `workout_sets`, `estimate1RM()` (records.ts) | stat | par série/séance | Normaliser la performance pour suivre la force réelle. | 3.22 |
 | MUSC-04 | ✅ | Courbe de progression charge & volume par exercice | Écran `/progress` : courbe temporelle **charge max / volume / 1RM estimé (meilleur par séance)** par exercice, 4 périodes (30 j / 90 j / 1 an / **tout**). Métrique 1RM réutilise `estimate1RM`/`sessionBestEstimated1RM` (shared). | `workout_sets` agrégés, `personal_records` | courbe | 30/90 j/1 an/tout | Tendance long terme d'un mouvement, valider la surcharge. | **3.21 / 6.2 (livrée · recette device OK 16/07/2026)** |
 | MUSC-05 | ✅ | Équilibre par groupe musculaire (14 j) | Section `/progress` : barres **par nombre de séries** (échauffements exclus) colorées selon le classement (délaissé/équilibré/sur-représenté) vs cible uniforme 1/6, + **alerte douce** listant les groupes délaissés. `computeMuscleBalance` (shared) + `useMuscleBalance` (14 j glissants). Ratio pousser/tirer reporté à MUSC-11. | `workout_sets` × `exercises.musclePrimary` | widget | 14 j glissant | Vérifier un stimulus suffisant et équilibré par groupe. | **3.40 / 6.4 / 7.9 (livrée · recette device OK 16/07/2026)** |
-| MUSC-06 | ⏳ | Alerte de déséquilibre musculaire | Détecte un groupe très sous-sollicité sur 14 j et invite à rééquilibrer. | `workout_sets` + `exercises.musclePrimary` | alerte | glissant 14 j | Prévenir déséquilibres posturaux et risque de blessure. | 3.41 |
+| MUSC-06 | ✅ | Alerte de déséquilibre musculaire | **Livrée avec MUSC-05** : l'alerte douce listant les groupes délaissés est rendue dans la section équilibre de `/progress` (`useMuscleBalance`, 14 j glissants). | `workout_sets` + `exercises.musclePrimary` | alerte | glissant 14 j | Prévenir déséquilibres posturaux et risque de blessure. | **3.41 (livrée)** |
 | MUSC-07 | ⏳ | Surcharge progressive assistée | Suggère la prochaine charge/reps depuis les dernières perfs (et RPE). Suggérée, jamais imposée. | `workout_sets` récents, `workouts.rpe` | insight | séance suivante | Guider la progression sans calcul mental (sans imposition). | 3.7 / 6.5 |
 | MUSC-08 | ⏳ | Détection de stagnation & deload | Échec (<80 % reps) 2 sem. consécutives → propose −10 %. Extension : plateau du 1RM estimé sur N sem. | `workout_sets` vs cibles, historique 1RM | alerte | 2 sem. / 4-6 sem. | Sortir d'un plateau, prévenir surmenage et abandon. | 3.8 |
-| MUSC-09 | ⏳ | PR par plage de reps | Meilleure charge par tranche de reps (1/3/5/8/10/12+), courbe charge↔reps. | `workout_sets` groupés par bucket de reps | tableau | cumul | Suivre la force sur tout le spectre, pas que le 1RM. | 6.3 |
+| MUSC-09 | 🆕 | PR par plage de reps | Meilleure charge par tranche de reps (1/3/5/8/10/12+), courbe charge↔reps. | `workout_sets` groupés par bucket de reps | tableau | cumul | Suivre la force sur tout le spectre, pas que le 1RM. | — ⚠️ **aucune ligne roadmap** : le lien vers 6.3 était erroné (6.3 = « accès démo pendant la séance », ❌ abandonné avec les GIF). Une ligne « Hors périmètre de cadrage » est à créer si l'item est retenu |
 | MUSC-10 | ⏳ | Notification de nouveau record | Push + célébration quand un candidat dépasse le record historique. | candidats vs `personal_records` | alerte | temps réel | Renforcement positif immédiat (arbitrage C). | 3.42 / 2.7 |
 | MUSC-11 | 🆕 | Ratio pousser / tirer | Rapport de volume (ou séries) poussée/tirage sur fenêtre glissante ; ~1 = équilibre sain. | `workout_sets` × type de mouvement (à matérialiser) | stat | glissant 7/14 j | Prévenir déséquilibres épaule/posture (excès de poussée). | — |
 | MUSC-12 | 🆕 | Densité d'entraînement (volume/temps) | Volume total ÷ durée effective (kg·reps/min). | `computeVolume` + `workouts.durationSeconds` | stat | par séance, tendance | Mesurer les gains de capacité de travail. | — |
@@ -112,12 +112,12 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | RUN-02 | ✅ | Temps total de course par période | Durée cumulée h-min-s ; complète la distance (séances au temps/sans GPS). | `runs.durationSeconds`, `formatDurationHms` | stat | sem/mois/cumul | Suivre la charge en temps, y compris tapis/manuel. | 5.28 |
 | RUN-03 | ✅ | Records par distance (meilleur segment glissant) | Meilleur temps 1/5/10 km/semi/marathon comme meilleur segment interne à une sortie. | `gpsTrack` → `computeRunRecords`, `running_pace_records` | badge | événementiel | Célébrer les progressions sur distances de référence. | 5.30 |
 | RUN-04 | ✅ | MAJ auto de l'allure de référence 5 km | L'allure de réf. du profil se recale à chaque record 5 km. | `running_pace_records` → `running_profiles.ref_5k_pace` | insight | événementiel | Garder les cibles calibrées sur la forme réelle. | 5.31 |
-| RUN-05 | 🟡 | Courbe & tendance d'allure moyenne (30/90 j) | Courbe d'allure + verdict (amélioration/stable/régression) par comparaison des 2 moitiés. | `runs.avgPaceSPerKm`, `paceTrendPoints`/`paceTrend` | courbe | glissant 30/90 j | Voir la progression au-delà de la variabilité d'une séance. | 5.29 |
+| RUN-05 | ✅ | Courbe & tendance d'allure moyenne (30/90 j) | **Livrée** : courbe + verdict rendus dans `running-history` (`usePaceTrend` → `ProgressLineChart`, sélecteur de fenêtre 30/90 j). Découpage **par type de séance** toujours différé (les courses libres n'ont pas de `session_type`). | `runs.avgPaceSPerKm`, `paceTrendPoints`/`paceTrend` | courbe | glissant 30/90 j | Voir la progression au-delà de la variabilité d'une séance. | **5.29 (livrée)** |
 | RUN-06 | ✅ | Allure instantanée & moyenne en course | Allure dernière minute glissante + moyenne depuis le départ, en temps réel. | trace GPS live, `instantPace`/`averagePace` | widget | temps réel | Piloter l'effort en direct, rester dans la zone cible. | 5.15 |
 | RUN-07 | ⏳ | Séances par type de course | Décompte par type (endurance/fractionné/longue/récup/libre). | `runs` + type de séance (`planned_sessions`) | stat | sem/mois/cumul | Vérifier l'équilibre du plan (endurance vs intensité). | 5.28 |
 | RUN-08 | 🆕 | Répartition & polarisation de l'entraînement | Part du volume en faible vs haute intensité (idéal ~80/20). | `runs` × type/zone d'allure | insight | sem/bloc 4 sem | Éviter la zone grise et prévenir le surmenage. | — |
 | RUN-09 | ⏳ | Dénivelé cumulé +/- | Dénivelé positif/négatif par sortie et période. **Altitude non capturée aujourd'hui** (à ajouter au modèle GPS). | altitude par point GPS (à ajouter) | stat | sortie + sem/mois | Contextualiser l'allure (lente en côte ≠ régression). | 5.32 |
-| RUN-10 | ⏳ | Tableau des allures par km (splits) | Découpage km par km avec allure de chaque km. | `gpsTrack` + `cumulativeDistances` (segmentation à coder) | tableau | par sortie | Analyser la gestion d'effort, repérer les km trop rapides/lents. | 5.26 |
+| RUN-10 | ✅ | Tableau des allures par km (splits) | **Livrée le 25/07/2026** : `computeKmSplits` (shared, pure) + tableau splits/km sur le résumé de course, km le plus rapide en accent ; également repris dans un widget course. Les sorties **sans trace GPS** (tapis, saisie manuelle) n'ont pas de splits. | `gpsTrack` + `cumulativeDistances` → `computeKmSplits` | tableau | par sortie | Analyser la gestion d'effort, repérer les km trop rapides/lents. | **5.26 (livrée)** |
 | RUN-11 | 🆕 | Negative split (gestion d'effort) | Allure 2ᵉ moitié vs 1ʳᵉ : negative/even/positive split. | `gpsTrack` → splits mi-course | insight | par sortie | Éduquer à gérer sa fin de course. | — |
 | RUN-12 | 🆕 | Progression du volume hebdo & règle des 10 % | Volume vs semaine précédente, alerte si hausse >~10 %. | `aggregateRunStats(week)` sur semaines successives | alerte | sem vs sem-1 | Prévenir la surcharge (en analyse rétrospective, pas qu'en construction de plan). | 5.10 |
 | RUN-13 | 🆕 | Régularité / assiduité (fréquence vs visée) | Sorties/sem vs fréquence hebdo visée, taux de respect. | `runs` vs `running_profiles.weekly_frequency` | score | glissant 4/8 sem | Renforcer la constance, moteur principal de progrès. | — |
@@ -214,7 +214,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | MN-10 | 🆕 | Apport protéique fractionné sur la journée | Répartition des protéines entre repas (3-4 prises de 0,3-0,4 g/kg), surtout jours muscu. | `food_entries` par mealType, `nutrition_profiles.meals`, poids | insight | par jour | Optimiser la stimulation de la synthèse protéique. | — |
 | MN-11 | 🆕 | Corrélation apports ↔ records de force | Met en regard les PR et le contexte nutritionnel des jours/semaines précédents. | `personal_records.achievedAt`, `food_entries` amont | courbe | événementiel + amont | Identifier le carburant qui favorise les pics de performance. | — |
 | MN-12 | 🆕 | Prise de masse propre vs grasse | Vitesse de prise de poids × progression de force (× mensurations) → qualité du gain. | `body_weight_entries`, `personal_records`, volume ; mensurations (à ajouter) | insight | 4-8 sem glissantes | Maximiser le ratio muscle/gras en prise de masse. | — |
-| MN-13 | 🆕 | Ratio g/kg protéines vs cible par objectif | Jauge protéines (g/kg) vs cible dérivée de l'objectif (bulk/cut/maintain). | `food_entries.proteinG`, `body_weight_entries`, objectif | widget | jour + moyenne 7 j | Lisible d'un coup d'œil selon le but. | — |
+| MN-13 | ✅ | Ratio g/kg protéines vs cible par objectif | **Absorbée par MN-06 (livrée)** : même calcul, même fourchette cible par objectif — c'était un doublon de formulation (« jauge » vs « carte »), pas une analyse distincte. Aucun reste-à-faire. | `food_entries.proteinG`, `body_weight_entries`, objectif | widget | jour + moyenne 7 j | Lisible d'un coup d'œil selon le but. | **cf. MN-06** |
 | MN-14 | 🆕 | Glucides péri-séance (repas Pré-/Post-workout) | Exploite les repas custom pré/post pour mesurer les glucides autour de la séance. | `nutrition_profiles.meals`, `food_entries`, `isTrainingDay` | insight | jour de séance | Assurer énergie et récupération autour de l'entraînement. | — |
 | MN-15 | 🆕 | Disponibilité énergétique jours de fort volume | Jours de très fort volume muscu + apports faibles (sous BMR/cible) — plus fin que l'alerte hebdo. | `computeVolume` jour, `food_entries` jour, `basalMetabolicRate` | alerte | par jour | Éviter les journées lourdes sous-alimentées. | — |
 | MN-16 | 🆕 | Adhérence macros : jours de muscu vs repos | Taux d'atteinte (±10 %) jour de séance vs repos ; révèle des dérives comportementales. | `food_entries` vs cibles, `isTrainingDay` | stat | 30 j segmentée | Aligner le comportement alimentaire au calendrier. | §7.2 |
@@ -345,15 +345,23 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
 > **MàJ 18/07/2026** — plusieurs de ces pistes sont désormais **livrées** (voir ✅ dans les tables) :
 > **1 (MUSC-04)**, **2 (MUSC-05)**, **6 (META-06)**, **11 (RN-01/RN-02)** recettées device ; **4
 > (NUTR-10)**, **5 (NUTR-17)**, **9 (MR-06)**, **7 (META-08)** et **8 (META-09)** livrées (reste recette) — ainsi que
-> **MN-02 (4.32)**, hors liste. Conservées ci-dessous **barrées** pour la trace ; les candidats encore à
-> démarrer sont les autres (**3 (RUN-05)**, **10 (MN-13)**, **12 (META-19)**).
+> **MN-02 (4.32)**, hors liste. Conservées ci-dessous **barrées** pour la trace.
+>
+> ⚠️ **MàJ 28/07/2026 (réconciliation)** — cette liste avait dérivé : **sur les 3 candidats qu'elle
+> annonçait encore à démarrer, 2 étaient déjà réglés.** **3 (RUN-05)** est **livrée** (courbe + verdict
+> rendus dans `running-history`) et **10 (MN-13)** est **absorbée par MN-06** (doublon de formulation).
+> **Seule 12 (META-19) reste ouverte.** Corrigé aussi : **RUN-10** (splits par km) était ⏳ alors que
+> livré depuis le 25/07, et **MUSC-06** ⏳ alors que livrée avec MUSC-05. Leçon : ce catalogue n'est
+> **pas** une source de vérité sur l'état du code — vérifier `packages/shared/src` avant de démarrer
+> une ligne, et repasser [`/reconcilier`](../../.claude/commands/reconcilier.md) dessus régulièrement.
 
 1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.
 2. ~~**MUSC-05 — Volume par groupe musculaire / semaine**~~ ✅ **livrée + recette OK** (équilibre 14 j).
    Widget muscle-volume éclaté par groupe + alerte de déséquilibre.
-3. **RUN-05 — Courbe & tendance d'allure (30/90 j)** (🟡). `paceTrend` existe ; il ne reste qu'à
-   l'exposer proprement en courbe. Effort faible.
+3. ~~**RUN-05 — Courbe & tendance d'allure (30/90 j)**~~ ✅ **livrée** (constaté le 28/07/2026) :
+   `usePaceTrend` + `ProgressLineChart` dans `running-history`, sélecteur 30/90 j. Seul le découpage
+   **par type de séance** reste différé (les courses libres n'ont pas de `session_type`).
 4. ~~**NUTR-10 — Adhérence à l'objectif : jours dans la cible**~~ ✅ **livrée** (reste recette). Carte
    Stats nutrition (pct + N/M jours, 7/30 j), marge % configurable, objectif effectif par jour.
 5. ~~**NUTR-17 — Régularité du journal (taux de complétion)**~~ ✅ **livrée** (reste recette). Carte
@@ -369,8 +377,9 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
    accentué) activée sur poids, kcal, allure et progression muscu.
 9. ~~**MR-06 — Volume horaire total d'entraînement**~~ ✅ **livré** (reste recette). Widget `training-time`
    (semaine ISO, muscu+course + ventilation, gating transverse) ; première stat inter-piliers en temps.
-10. **MN-13 — Ratio g/kg protéines vs cible par objectif** (🆕). `proteinG` + `body_weight_entries`
-    déjà présents ; repère à très forte valeur pour le pratiquant de muscu, en une jauge.
+10. ~~**MN-13 — Ratio g/kg protéines vs cible par objectif**~~ ✅ **absorbée par MN-06** (constaté le
+    28/07/2026) : même calcul et même fourchette cible par objectif, déjà livrés. Doublon de
+    formulation, pas une analyse distincte.
 11. ~~**RN-01 — Dépense calorique estimée d'une course**~~ ✅ **livrée + recette OK** (avec RN-02).
     Brique de base qui débloque la famille course↔nutrition (RN-04 restante) ; données déjà stockées.
 12. **META-19 — Garde-fou surentraînement (ACWR)** (🆕). Standard de préparation physique,

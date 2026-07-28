@@ -490,6 +490,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
 
+**28/07/2026 — audit `/reconcilier` : le catalogue d'analyses avait dérivé, pas la roadmap**
+Roadmap **juste sur ses 40 lignes ⬜/🟡** (preuve cherchée à charge), compteurs et 47 migrations OK.
+En revanche 4 lignes fausses au [catalogue](../product/analyses-donnees.md) — **RUN-10** (splits/km) et
+**RUN-05** livrées, **MUSC-06** livrée avec MUSC-05, **MN-13** absorbée par MN-06 — + `roadmap:` vide
+sur 4 specs livrées (1.23, 3.48, 3.49, 3.50). 2ᵉ salve de 5 candidats inscrite au backlog, après V0.9.
+
 **28/07/2026 — PAS-01 : pas quotidiens (9.15) ⬜ → ✅**
 Cadrée, codée et recettée le même jour : lecture par **agrégation** Health Connect (jamais la somme
 des records), table `daily_steps` synchronisée, objectif de pas, widget 3 formes, historique, et

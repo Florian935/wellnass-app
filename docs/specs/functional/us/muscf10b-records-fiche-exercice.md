@@ -1,7 +1,7 @@
 ---
 id: MUSC-F10b
 titre: "Section « records » sur la fiche exercice"
-roadmap: []
+roadmap: [3.48]
 catalogue: []
 etape: close
 branche: feature/muscf10b-records-fiche-exercice
