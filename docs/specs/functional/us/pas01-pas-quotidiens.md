@@ -3,7 +3,7 @@ id: PAS-01
 titre: "Pas quotidiens — lecture Health Connect, objectif et streak"
 roadmap: [9.15]
 catalogue: []
-etape: code
+etape: close
 branche: feature/pas01-pas-quotidiens
 maj: 28/07/2026
 ---
@@ -13,12 +13,16 @@ maj: 28/07/2026
 > (**synchronisée**), l'afficher (widget + historique), permettre de fixer un **objectif quotidien**,
 > et faire **compter les pas dans le streak**. Roadmap
 > [9.15](../../../roadmap/roadmap.md#v09--enrichissements-avant-lancement) (V0.9).
-> Branche : `feature/pas01-pas-quotidiens` · **Statut : spec + plan + maquette en attente de
-> validation par Florian ou Damien** (`etape: validation`) — aucun code avant.
-> Extension de [CONF-06](conf06-health-connect.md) : le module natif, le plugin Expo maison, l'opt-in
-> et le dev build existent déjà. **1 migration** (1 table + 1 colonne) · **1 sync rule PowerSync à
-> déployer à la main** · ⚠️ **1 type de données de plus dans la déclaration Google Play**
-> (`READ_STEPS`) et **une politique de confidentialité à corriger** (§7) — voir §9.
+> Branche : `feature/pas01-pas-quotidiens` · Spec, plan et maquette validés par Florian le
+> 28/07/2026 · **Statut : ✅ clôturée — recette device validée par Florian le 28/07/2026**
+> (`etape: close`), sur APK release local (révision de service `r4`). La relecture croisée n'était
+> pas requise (voir [CLAUDE.md](../../../../CLAUDE.md)).
+> Extension de [CONF-06](conf06-health-connect.md) : le module natif, le plugin Expo maison et
+> l'opt-in existaient déjà. **2 migrations** (table + colonne, puis publication `powersync`) ·
+> **sync rule `daily_steps`** à déployer dans le dashboard PowerSync — prérequis des critères
+> multi-appareils et réinstallation de la recette · reste **hors périmètre de l'US** : la
+> **déclaration Google Play** étendue à `READ_STEPS` (§9), prérequis de la *publication* et non du
+> fonctionnement.
 
 ## 0. Contexte
 
@@ -218,10 +222,16 @@ la série reprend sa valeur réelle. Aucune donnée n'est perdue, seul l'afficha
 ### 2.6 Fraîcheur — limite assumée
 
 Aucune lecture en arrière-plan : le total affiché est celui du **dernier import**, donc au plus 1 h
-d'ancienneté **en usage actif**, et arbitrairement ancien si l'app n'est pas ouverte. Le widget
-affiche l'heure du dernier import quand il date de plus de 2 h, pour ne pas laisser croire à un
-temps réel qui n'existe pas. Passer au temps réel demanderait
-`READ_HEALTH_DATA_IN_BACKGROUND` + WorkManager → **US séparée**, à ne pas glisser ici.
+d'ancienneté **en usage actif**, et arbitrairement ancien si l'app n'est pas ouverte. L'heure du
+dernier import est affichée dans la **section Réglages** (« Dernier import des pas : … »).
+
+> **Décision d'implémentation (28/07/2026)** : le cadrage prévoyait aussi d'afficher cet horodatage
+> **sur le widget** au-delà de 2 h. Écarté : le curseur vit dans `expo-secure-store` (lecture
+> **asynchrone**), l'afficher obligerait chaque widget à porter un état de chargement pour une
+> information de diagnostic. Elle reste disponible, à un endroit, dans les Réglages.
+
+Passer au temps réel demanderait `READ_HEALTH_DATA_IN_BACKGROUND` + WorkManager → **US séparée**, à
+ne pas glisser ici.
 
 ## 3. Architecture
 

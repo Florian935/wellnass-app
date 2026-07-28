@@ -46,22 +46,31 @@ export function computeStreak(
   return { current: count, activeToday };
 }
 
-/** Représente l'activité d'un jour sur les 3 piliers. */
+/**
+ * Représente l'activité d'un jour sur les 3 piliers, **plus les pas** (US PAS-01).
+ *
+ * `steps` n'est pas « l'utilisateur a fait des pas » mais « **l'objectif de pas est atteint** » : le
+ * téléphone compte des pas tous les jours, donc la première lecture rendrait la série inbrisable et
+ * vide de sens. La décision se prend chez l'appelant, via `isGoalReached()`.
+ */
 export type DayActivity = {
   day: string;
   strength: boolean;
   running: boolean;
   nutrition: boolean;
+  /** Objectif de pas atteint ce jour-là (US PAS-01). Optionnel : absent = non atteint. */
+  steps?: boolean;
 };
 
 /**
  * Extrait l'ensemble des clés de jours actifs depuis une liste d'activités.
- * Un jour est actif si au moins un pilier (strength, running ou nutrition) est vrai.
+ * Un jour est actif si au moins une dimension est vraie : musculation, course, nutrition
+ * ou **objectif de pas atteint**.
  */
 export function activeDayKeys(activities: DayActivity[]): Set<string> {
   const result = new Set<string>();
   for (const a of activities) {
-    if (a.strength || a.running || a.nutrition) {
+    if (a.strength || a.running || a.nutrition || a.steps === true) {
       result.add(a.day);
     }
   }

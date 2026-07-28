@@ -6,9 +6,11 @@ import { Button } from '@/components/Button';
 import { updateSettings } from '@/data/repositories/settings-repository';
 import {
   DEFAULT_WINDOW_DAYS,
+  getLastStepsImportAt,
   getLastSyncReport,
   getLastWeightImportAt,
   getState,
+  importSteps,
   importWeight,
   openProviderInstall,
   openSettings,
@@ -41,6 +43,8 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
   const [view, setView] = useState<{
     state: HealthConnectState;
     lastImportAt: string | null;
+    /** Dernier import des pas (US PAS-01) — curseur distinct de celui du poids. */
+    lastStepsImportAt: string | null;
     /** Compte rendu de la dernière tentative — affiché tel quel en cas d'échec (diagnostic). */
     report: SyncReport | null;
   } | null>(null);
@@ -53,6 +57,7 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
     setView({
       state: await getState(),
       lastImportAt: await getLastWeightImportAt(),
+      lastStepsImportAt: await getLastStepsImportAt(),
       report: getLastSyncReport(),
     });
   }, []);
@@ -66,6 +71,7 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
       const next = {
         state: await getState(),
         lastImportAt: await getLastWeightImportAt(),
+        lastStepsImportAt: await getLastStepsImportAt(),
         report: getLastSyncReport(),
       };
       if (!cancelled) setView(next);
@@ -101,8 +107,13 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
     await updateSettings({ healthConnectEnabled: true });
     const pushed = await pushRecent(DEFAULT_WINDOW_DAYS, titles);
     const imported = await importWeight(DEFAULT_WINDOW_DAYS);
+    const stepDays = await importSteps(DEFAULT_WINDOW_DAYS);
     setFeedback(
-      `${t('settings.healthConnect.pushed', { count: pushed })} · ${t('settings.healthConnect.imported', { count: imported })}`,
+      [
+        t('settings.healthConnect.pushed', { count: pushed }),
+        t('settings.healthConnect.imported', { count: imported }),
+        t('settings.healthConnect.stepsImported', { count: stepDays }),
+      ].join(' · '),
     );
     setBusy(false);
     await refresh();
@@ -126,6 +137,15 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
     await refresh();
   };
 
+  const runStepsImport = async () => {
+    setBusy(true);
+    setFeedback(null);
+    const days = await importSteps(DEFAULT_WINDOW_DAYS);
+    setFeedback(t('settings.healthConnect.stepsImported', { count: days }));
+    setBusy(false);
+    await refresh();
+  };
+
   /**
    * Renvoi manuel des activités des 30 derniers jours. Sûr à répéter (dédup par `clientRecordId`),
    * et c'est le geste qui permet à l'utilisateur de rattraper une séance qui n'aurait pas été
@@ -143,15 +163,18 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
   // Tant que l'état n'est pas connu, ou hors Android : on n'affiche rien (pas de section fantôme).
   if (view === null || view.state === 'unsupported') return null;
 
-  const { state, lastImportAt, report } = view;
+  const { state, lastImportAt, lastStepsImportAt, report } = view;
 
-  const formattedLastImport =
-    lastImportAt !== null
-      ? new Date(lastImportAt).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
+  const formatStamp = (iso: string | null): string | null =>
+    iso !== null
+      ? new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
           dateStyle: 'short',
           timeStyle: 'short',
         })
       : null;
+
+  const formattedLastImport = formatStamp(lastImportAt);
+  const formattedLastStepsImport = formatStamp(lastStepsImportAt);
 
   return (
     <>
@@ -210,6 +233,13 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
                 </Text>
               </View>
             ) : null}
+            {state === 'ready' && formattedLastStepsImport !== null ? (
+              <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                <Text style={[styles.rowDesc, { color: colors.textMuted, marginTop: 0 }]}>
+                  {t('settings.healthConnect.lastStepsImport', { date: formattedLastStepsImport })}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           {denied ? (
@@ -256,6 +286,12 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
                 variant="ghost"
                 loading={busy}
                 onPress={() => void runImport()}
+              />
+              <Button
+                label={t('settings.healthConnect.importSteps')}
+                variant="ghost"
+                loading={busy}
+                onPress={() => void runStepsImport()}
               />
             </View>
           ) : null}

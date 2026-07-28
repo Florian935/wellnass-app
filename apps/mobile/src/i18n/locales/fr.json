@@ -944,7 +944,7 @@
         "Tes données sont isolées par utilisateur et synchronisées de façon sécurisée vers le cloud. Elles ne sont jamais vendues à des tiers.",
         "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
         "Nous mesurons l'usage de l'application (écrans consultés, fonctionnalités utilisées) via des statistiques anonymes, uniquement pour l'améliorer ; ces mesures n'incluent jamais tes données de santé et tu peux les désactiver à tout moment depuis les paramètres.",
-        "Si tu actives Health Connect, tes séances et tes courses sont écrites dans le hub santé d'Android et ton poids y est relu. Cet échange a lieu uniquement sur ton téléphone : ces données ne transitent pas par nos serveurs de ce fait. Tu peux désactiver la synchronisation dans les paramètres, et révoquer l'accès à tout moment depuis Health Connect.",
+        "Si tu actives Health Connect, tes séances et tes courses sont écrites dans le hub santé d'Android et ton poids y est relu : cet échange a lieu uniquement sur ton téléphone. Tes pas quotidiens, en revanche, sont lus dans Health Connect puis **enregistrés sur ton compte** (un total par jour, jamais le détail de tes déplacements) afin d'alimenter ton objectif de pas, ton historique et ta série sur tous tes appareils. Ces données de santé sont conservées tant que ton compte existe, ne sont jamais partagées avec des tiers, sont incluses dans l'export de tes données et supprimées avec ton compte. Tu peux désactiver la synchronisation dans les paramètres, et révoquer l'accès à tout moment depuis Health Connect.",
         "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
       ]
     }
@@ -1258,7 +1258,7 @@
     "healthConnect": {
       "title": "Health Connect",
       "toggle": "Synchroniser avec Health Connect",
-      "subtitle": "Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu. Tout reste sur ton téléphone.",
+      "subtitle": "Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu. Tes pas quotidiens sont enregistrés sur ton compte pour te suivre d'un appareil à l'autre.",
       "providerMissing": "Health Connect n'est pas installé sur cet appareil.",
       "install": "Installer Health Connect",
       "updateRequired": "Health Connect doit être mis à jour.",
@@ -1277,7 +1277,11 @@
       "openSettings": "Ouvrir les réglages Health Connect",
       "disableHint": "Désactiver arrête la synchronisation. Les données déjà envoyées restent dans Health Connect ; supprime-les depuis Health Connect si tu le souhaites.",
       "defaultWorkoutTitle": "Séance de musculation",
-      "defaultRunTitle": "Course"
+      "defaultRunTitle": "Course",
+      "importSteps": "Importer les pas maintenant",
+      "stepsImported_one": "{{count}} jour de pas importé",
+      "stepsImported_other": "{{count}} jours de pas importés",
+      "lastStepsImport": "Dernier import des pas : {{date}}"
     },
     "analytics": {
       "title": "Statistiques d'usage",
@@ -1635,5 +1639,29 @@
       "title": "Ta série est en danger 🔥",
       "body": "Fais une activité aujourd'hui pour garder ta série."
     }
+  },
+  "steps": {
+    "title": "Pas",
+    "unit": "pas",
+    "goal": "Objectif",
+    "goalReached": "Objectif atteint",
+    "goalNotReached": "objectif non atteint",
+    "goalProgress": "{{steps}} / {{goal}} pas",
+    "goalHint": "Entre {{min}} et {{max}} pas.",
+    "goalDecrease": "Diminuer l'objectif de pas",
+    "goalIncrease": "Augmenter l'objectif de pas",
+    "goalValueA11y": "Objectif : {{goal}} pas par jour",
+    "a11yProgress": "{{steps}} pas sur {{goal}}, {{status}}",
+    "average": "Moyenne",
+    "bestDay": "Meilleur jour",
+    "daysReached_one": "{{count}} jour d'objectif atteint",
+    "daysReached_other": "{{count}} jours d'objectif atteint",
+    "daysReachedShort": "Objectifs atteints",
+    "historyRange": "{{count}} derniers jours",
+    "empty": "Aucun pas enregistré pour l'instant. Porte ton téléphone sur toi, ou connecte une montre à Health Connect.",
+    "enableCta": "Active Health Connect pour compter tes pas",
+    "permissionCta": "Autorise l'accès aux pas",
+    "unsupported": "Le comptage des pas nécessite Health Connect.",
+    "countsForStreak": "Atteindre ton objectif de pas garde ta série active, même sans séance."
   }
 }

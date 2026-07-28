@@ -61,6 +61,9 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 |   [x]   | `20260724123616_analytics_events_publication`     | 24/07/2026 | CLI (`npm run db:push`) — US 9.10 **correctif** : `alter publication powersync add table public.analytics_events` (oublié dans `20260724112210` ; sans lui le déploiement des sync rules échoue « table not part of publication »). Pattern standard des tables synchronisées |
 |   [x]   | `20260726202133_health_connect_enabled`           | 27/07/2026 | CLI (`npm run db:push`) — US CONF-06 (`user_settings.health_connect_enabled boolean not null default false`, **opt-in** : donnée de santé). Types régénérés (`db:types`). `user_settings` étant en `select *` dans les sync rules, **aucun redéploiement PowerSync attendu** — à confirmer en recette (critère 8) |
 
+|   [x]   | `20260728132424_pas01_daily_steps`                | 28/07/2026 | CLI (`npm run db:push`) — US PAS-01 (table `daily_steps` + index unique partiel `(user_id, log_date)` + RLS own + colonne `profiles.daily_step_goal`). Types régénérés (`db:types`). ⚠️ **sync rule PowerSync `daily_steps` à déployer sur l'instance** avant recette |
+|   [x]   | `20260728132601_pas01_daily_steps_publication`     | 28/07/2026 | CLI (`npm run db:push`) — US PAS-01 **complément** : `alter publication powersync add table public.daily_steps` (gardé par `pg_publication_tables`). Même pattern que `20260724123616` pour `analytics_events` : sans lui, le déploiement des sync rules échoue « table not part of publication » |
+
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond
 > désormais « Remote database is up to date ». À partir d'ici, toute nouvelle migration passe par

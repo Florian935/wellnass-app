@@ -944,7 +944,7 @@
         "Your data is isolated per user and securely synced to the cloud. It is never sold to third parties.",
         "Health and location data are never shared without your explicit consent.",
         "We measure app usage (screens viewed, features used) through anonymous statistics, solely to improve it; these measurements never include your health data and you can turn them off at any time from settings.",
-        "If you enable Health Connect, your workouts and runs are written to Android's health hub and your weight is read back from it. This exchange happens only on your phone: that data does not pass through our servers as a result. You can turn syncing off in settings, and revoke access at any time from Health Connect.",
+        "If you enable Health Connect, your workouts and runs are written to Android's health hub and your weight is read back from it: that exchange happens only on your phone. Your daily steps, however, are read from Health Connect and then **saved to your account** (one total per day, never the detail of your movements) to power your step goal, your history and your streak across all your devices. This health data is kept for as long as your account exists, is never shared with third parties, is included in your data export and is deleted with your account. You can turn syncing off in settings, and revoke access at any time from Health Connect.",
         "You can request an export or deletion of your data at any time from settings."
       ]
     }
@@ -1258,7 +1258,7 @@
     "healthConnect": {
       "title": "Health Connect",
       "toggle": "Sync with Health Connect",
-      "subtitle": "Your workouts and runs are added to Android's health hub, and your weight is read back from it. Everything stays on your phone.",
+      "subtitle": "Your workouts and runs are added to Android's health hub, and your weight is read back from it. Your daily steps are saved to your account so they follow you across devices.",
       "providerMissing": "Health Connect isn't installed on this device.",
       "install": "Install Health Connect",
       "updateRequired": "Health Connect needs an update.",
@@ -1277,7 +1277,11 @@
       "openSettings": "Open Health Connect settings",
       "disableHint": "Turning this off stops syncing. Data already sent stays in Health Connect — delete it there if you want.",
       "defaultWorkoutTitle": "Strength workout",
-      "defaultRunTitle": "Run"
+      "defaultRunTitle": "Run",
+      "importSteps": "Import steps now",
+      "stepsImported_one": "{{count}} day of steps imported",
+      "stepsImported_other": "{{count}} days of steps imported",
+      "lastStepsImport": "Last step import: {{date}}"
     },
     "analytics": {
       "title": "Usage statistics",
@@ -1635,5 +1639,29 @@
       "title": "Your streak is at risk 🔥",
       "body": "Do an activity today to keep your streak going."
     }
+  },
+  "steps": {
+    "title": "Steps",
+    "unit": "steps",
+    "goal": "Goal",
+    "goalReached": "Goal reached",
+    "goalNotReached": "goal not reached",
+    "goalProgress": "{{steps}} / {{goal}} steps",
+    "goalHint": "Between {{min}} and {{max}} steps.",
+    "goalDecrease": "Decrease step goal",
+    "goalIncrease": "Increase step goal",
+    "goalValueA11y": "Goal: {{goal}} steps per day",
+    "a11yProgress": "{{steps}} steps out of {{goal}}, {{status}}",
+    "average": "Average",
+    "bestDay": "Best day",
+    "daysReached_one": "{{count}} day goal reached",
+    "daysReached_other": "{{count}} days goal reached",
+    "daysReachedShort": "Goals reached",
+    "historyRange": "Last {{count}} days",
+    "empty": "No steps recorded yet. Carry your phone with you, or connect a watch to Health Connect.",
+    "enableCta": "Turn on Health Connect to count your steps",
+    "permissionCta": "Allow access to steps",
+    "unsupported": "Step counting requires Health Connect.",
+    "countsForStreak": "Reaching your step goal keeps your streak alive, even without a workout."
   }
 }

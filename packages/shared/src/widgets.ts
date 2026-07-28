@@ -47,6 +47,9 @@ export const HOME_WIDGET_IDS = [
   'running-week',
   'deficit-volume',
   'training-time',
+  // US PAS-01 — ajouté en fin de registre : `resolveScreenLayout` complète les layouts déjà
+  // stockés avec les IDs manquants, donc aucune migration de `dashboard_layout` n'est nécessaire.
+  'steps',
 ] as const;
 
 /**
@@ -110,6 +113,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'running-week': ['running'],
       'deficit-volume': ['strength', 'nutrition'],
       'training-time': ['strength', 'running'],
+      // Transverse comme `streak` : la marche n'appartient à aucun pilier, et un utilisateur
+      // « nutrition seule » doit pouvoir suivre ses pas (US PAS-01).
+      steps: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

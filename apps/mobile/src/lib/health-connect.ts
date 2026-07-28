@@ -23,15 +23,19 @@ import {
   buildRunRecords,
   buildWorkoutSessionRecord,
   selectWeightEntriesToImport,
+  shouldImportSteps,
   shouldImportWeight,
+  toDailySteps,
   type DistanceRecordInput,
   type ExerciseSessionRecordInput,
   type RemoteWeightRecord,
+  type StepsBucket,
 } from '@wellness/shared';
 
 import { powerSync } from '@/powersync/system';
 import { getHealthConnectEnabled } from '@/data/repositories/settings-repository';
 import { logWeight } from '@/data/repositories/bodyweight-repository';
+import { upsertDailySteps } from '@/data/repositories/daily-steps-repository';
 
 /** Package du fournisseur Health Connect (app système sur Android 14+, APK Play Store avant). */
 export const HEALTH_CONNECT_PACKAGE = 'com.google.android.apps.healthdata';
@@ -42,17 +46,37 @@ const OWN_PACKAGE = 'com.wellness.app';
 /** Clé du curseur local du dernier import de poids (jamais synchronisé : Health Connect est local). */
 const LAST_WEIGHT_IMPORT_KEY = 'healthConnect.lastWeightImportAt';
 
+/** Idem pour les pas (US PAS-01) — curseur distinct, throttle distinct. */
+const LAST_STEPS_IMPORT_KEY = 'healthConnect.lastStepsImportAt';
+
 /** Fenêtre par défaut, en jours, pour le rattrapage et la lecture du poids. */
 export const DEFAULT_WINDOW_DAYS = 30;
 
 /** Throttle de l'import automatique de poids au retour au premier plan. */
 export const WEIGHT_IMPORT_THROTTLE_HOURS = 6;
 
-/** Les 3 permissions demandées — et pas une de plus (minimisation, déclaration Play). */
+/**
+ * Throttle de l'import des pas — **1 h**, six fois plus court que pour le poids (US PAS-01).
+ *
+ * Une pesée est un événement quotidien ; un compteur de pas **évolue toute la journée**. Un widget
+ * qui affiche 2 000 pas quand le téléphone en compte 7 000 est perçu comme cassé, pas comme « pas
+ * encore rafraîchi ».
+ */
+export const STEPS_IMPORT_THROTTLE_HOURS = 1;
+
+/**
+ * Les 4 permissions demandées — et pas une de plus (minimisation, déclaration Play).
+ *
+ * ⚠️ `Steps` (US PAS-01) est arrivée **après** CONF-06 : `hasPermissions()` étant un ET logique sur
+ * cette liste, tous les comptes déjà autorisés repassent en état `permissions_missing` jusqu'à ce
+ * qu'ils accordent la lecture des pas. C'est attendu — et sans conséquence sur l'écriture des
+ * séances, les permissions étant indépendantes côté système.
+ */
 const PERMISSIONS = [
   { accessType: 'write', recordType: 'ExerciseSession' },
   { accessType: 'write', recordType: 'Distance' },
   { accessType: 'read', recordType: 'Weight' },
+  { accessType: 'read', recordType: 'Steps' },
 ] as const;
 
 /** Disponibilité du fournisseur — niveau 1 de l'état affiché (spec §2.1). */
@@ -93,7 +117,7 @@ export type SyncReport = {
   /** Instant de la tentative (ISO UTC). */
   at: string;
   /** Ce qui était tenté. */
-  kind: 'workout' | 'run' | 'backfill' | 'weight';
+  kind: 'workout' | 'run' | 'backfill' | 'weight' | 'steps';
   /** Nombre d'éléments réellement écrits / importés. */
   written: number;
   /**
@@ -111,7 +135,7 @@ export type SyncReport = {
  * installé contenait bien le correctif (l'UI est la même, `app.json` garde `version: 0.0.0`).
  * Une erreur sans `rev` = APK antérieur au 28/07/2026.
  */
-export const SERVICE_REV = 'r3';
+export const SERVICE_REV = 'r4';
 
 let lastReport: SyncReport | null = null;
 
@@ -151,7 +175,7 @@ export async function getAvailability(): Promise<HealthConnectAvailability> {
   }
 }
 
-/** Les 3 permissions sont-elles **déjà** accordées ? (Ne déclenche aucune demande.) */
+/** Les 4 permissions sont-elles **déjà** accordées ? (Ne déclenche aucune demande.) */
 export async function hasPermissions(): Promise<boolean> {
   if (Platform.OS !== 'android') return false;
   try {
@@ -548,6 +572,83 @@ export async function importWeightIfDue(): Promise<number> {
   const last = await getLastWeightImportAt();
   if (!shouldImportWeight(last, Date.now(), WEIGHT_IMPORT_THROTTLE_HOURS)) return 0;
   return importWeight();
+}
+
+/**
+ * Importe les **pas quotidiens** des `days` derniers jours (US PAS-01).
+ *
+ * ⚠️ Passe par l'**API d'agrégation** (`aggregateGroupByPeriod`, bucket d'un jour) et **jamais** par
+ * `readRecords('Steps')` : Health Connect reçoit des pas de plusieurs sources (téléphone, montre,
+ * Google Fit) sur des plages qui **se chevauchent**. Sommer les records gonflerait le total ;
+ * l'agrégation, elle, déduplique — c'est le cœur de la correction de cette US.
+ *
+ * Le total du jour courant est relu à chaque passage : la fenêtre est réécrite, pas complétée
+ * (règle du max côté `upsertDailySteps`, donc un total ne redescend jamais).
+ *
+ * Renvoie le nombre de jours écrits (créés ou mis à jour).
+ */
+export async function importSteps(days = DEFAULT_WINDOW_DAYS): Promise<number> {
+  const { native, reason } = await ready();
+  if (!native) {
+    report('steps', 0, reason);
+    return 0;
+  }
+  try {
+    const now = Date.now();
+    const buckets = (await native.aggregateGroupByPeriod({
+      recordType: 'Steps',
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: new Date(now - days * 86_400_000).toISOString(),
+        endTime: new Date(now).toISOString(),
+      },
+      timeRangeSlicer: { period: 'DAYS', length: 1 },
+    })) as unknown as StepsBucket[];
+
+    const rows = toDailySteps(buckets);
+    const written = await upsertDailySteps(rows);
+
+    await setLastStepsImportAt(new Date(now).toISOString());
+    report(
+      'steps',
+      written,
+      // Distinguer « rien de neuf » de « rien lu du tout » : sans ce message, une panne de lecture
+      // est indiscernable d'une journée sans marche (leçon de recette de CONF-06).
+      rows.length === 0 ? `aucun pas lu sur ${days} jours` : null,
+    );
+    return written;
+  } catch (error) {
+    report('steps', 0, errorMessage(error));
+    return 0;
+  }
+}
+
+/** Horodatage du dernier import de pas (affiché dans les Réglages + base du throttle). */
+export async function getLastStepsImportAt(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(LAST_STEPS_IMPORT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+async function setLastStepsImportAt(iso: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(LAST_STEPS_IMPORT_KEY, iso);
+  } catch (error) {
+    console.warn('[health-connect] écriture du curseur d’import des pas impossible :', error);
+  }
+}
+
+/**
+ * Import des pas automatique, throttlé (retour au premier plan). Ne fait rien si la fenêtre n'est
+ * pas écoulée. Renvoie le nombre de jours écrits.
+ */
+export async function importStepsIfDue(): Promise<number> {
+  if (Platform.OS !== 'android') return 0;
+  const last = await getLastStepsImportAt();
+  if (!shouldImportSteps(last, Date.now(), STEPS_IMPORT_THROTTLE_HOURS)) return 0;
+  return importSteps();
 }
 
 /** Ouvre les réglages Health Connect du système (pour revoir ou révoquer les accès). */

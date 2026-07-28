@@ -71,8 +71,8 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 9, muscu 4, course 3 ; gardes pilier', () => {
-    expect(HOME_WIDGET_IDS).toHaveLength(9);
+  it('accueil 10, muscu 4, course 3 ; gardes pilier', () => {
+    expect(HOME_WIDGET_IDS).toHaveLength(10);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -95,7 +95,7 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    expect(layout.widgets).toHaveLength(9);
+    expect(layout.widgets).toHaveLength(10);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -115,7 +115,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(9);
+    expect(r.widgets).toHaveLength(10);
     assertNoOverlap(r.widgets);
   });
 
@@ -129,6 +129,20 @@ describe('resolveScreenLayout', () => {
     const r = resolveScreenLayout(stored, 'home', [...all]);
     assertNoOverlap(r.widgets);
     assertNoEmptyRow(r.widgets);
+  });
+
+  it('complète un layout stocké avec un widget ajouté au registre (US PAS-01, sans migration)', () => {
+    // Layout d'un utilisateur d'avant PAS-01 : il ne connaît pas `steps`. Il doit apparaître
+    // quand même, sinon il faudrait migrer `user_settings.dashboard_layout` de tout le monde.
+    const stored: ScreenLayout = {
+      widgets: [
+        { id: 'today-session', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'streak', visible: true, size: 'small', col: 0, row: 1 },
+      ],
+    };
+    const r = resolveScreenLayout(stored, 'home', [...all]);
+    expect(r.widgets.map((w) => w.id)).toContain('steps');
+    assertNoOverlap(r.widgets);
   });
 
   it('borne une colonne invalide (wide en col 1 → col 0)', () => {

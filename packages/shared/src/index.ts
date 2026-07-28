@@ -13,6 +13,7 @@ export * from './password';
 export * from './profile';
 export * from './settings';
 export * from './health-connect';
+export * from './steps';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';

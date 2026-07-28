@@ -45,6 +45,12 @@ export const profileRowSchema = syncFieldsSchema.extend({
   /** Niveau d'affichage de l'écran de séance (MUSC-F13). NULL en base → « normal » à la lecture (repo). */
   workoutDisplayLevel: workoutDisplayLevelSchema.nullable().default(null),
 
+  /**
+   * Objectif de pas quotidien (US PAS-01). NULL en base pour les comptes antérieurs à la migration
+   * → ramené au défaut (`DEFAULT_STEP_GOAL`) à la lecture, comme `workoutDisplayLevel`.
+   */
+  dailyStepGoal: z.number().int().positive().nullable().default(null),
+
   /** Horodatage de fin d'onboarding (null = onboarding non terminé). */
   onboardingCompletedAt: utcTimestampSchema.nullable().default(null),
 });

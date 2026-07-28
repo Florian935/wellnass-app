@@ -10,6 +10,90 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `feature/pas01-pas-quotidiens` — PAS-01 : pas quotidiens lus dans Health Connect, comptés dans la série (recette validée)
+
+> **Recette device validée par Florian le 28/07/2026** sur APK release local (`r4`). L'US PAS-01
+> passe en `close`, la roadmap **9.15** en ✅. Livrables d'amont (spec, plan, maquette) et création
+> de la version **V0.9** : commit précédent `73f91a8`.
+>
+> **Ce que ça apporte** : le total de pas du jour est lu dans Health Connect (jamais recalculé),
+> stocké **sur le compte** donc synchronisé et présent après réinstallation, affiché en widget et en
+> historique 30 jours, avec un objectif quotidien réglable — et **atteindre cet objectif rend la
+> journée active dans le streak**, même sans séance ni repas loggé. Cas d'usage d'origine : le
+> **tapis de marche**, où le compteur de pas (accéléromètre) compte alors que le GPS ne voit rien.
+
+**Ajouté**
+- `packages/shared/src/steps.ts` (+ `steps.test.ts`, **28 tests**) — briques pures : `toDailySteps`,
+  `mergeDailySteps` (règle du max), `isGoalReached`, `stepsActiveDays`, `shouldImportSteps`,
+  `normalizeStepGoal`, `averageSteps`, `bestSteps`, et les constantes `DEFAULT_STEP_GOAL` (8 000),
+  `MIN/MAX_STEP_GOAL`, `MAX_PLAUSIBLE_STEPS` (200 000).
+- `apps/mobile/src/data/repositories/daily-steps-repository.ts` — `useDailySteps`, `useStepGoal`,
+  `useTodaySteps`, `upsertDailySteps` (+ `__tests__/daily-steps-write.test.ts`, 5 tests).
+- `apps/mobile/src/components/dashboard/StepsCard.tsx` — widget 3 formes (small / wide / large)
+  (+ `__tests__/StepsCard.test.tsx`, 8 tests couvrant les **5 états** de la spec §2.4).
+- `apps/mobile/src/app/steps.tsx` — écran d'historique : histogramme 30 j, moyenne / objectifs
+  atteints / meilleur jour, réglage de l'objectif (1 000 → 50 000 par pas de 500).
+- `apps/mobile/src/hooks/useHealthConnectState.ts` — état Health Connect partagé par le widget, l'écran
+  et les Réglages (évite un widget « prêt » face à des Réglages « autorisation manquante »).
+- `apps/mobile/src/hooks/useHealthConnectImports.ts` — remplace `useHealthConnectWeightImport`
+  (**supprimé**) : deux imports indépendants, poids (6 h) et pas (1 h).
+- **2 migrations** : `20260728132424_pas01_daily_steps` (table `daily_steps` + index unique partiel
+  `(user_id, log_date)` + RLS own + `profiles.daily_step_goal`) et
+  `20260728132601_pas01_daily_steps_publication` (`alter publication powersync add table`).
+- `android.permission.health.READ_STEPS` dans `app.json` — **4ᵉ** permission santé.
+
+**Modifié**
+- `health-connect.ts` : `importSteps()` / `importStepsIfDue()`, `PERMISSIONS` (3 → 4),
+  `SyncReport.kind` (+ `'steps'`), `STEPS_IMPORT_THROTTLE_HOURS = 1`, `SERVICE_REV` `r3` → `r4`.
+- `streak.ts` : `DayActivity` gagne `steps?: boolean` ; `activeDayKeys()` intègre la 4ᵉ dimension.
+  `dashboard-repository.useStreakData` l'alimente via `stepsActiveDays(rows, goal)`.
+- `widgets.ts` : `'steps'` au registre accueil (`pillars: 'always'`, `defaultSize: 'wide'`).
+- `profile.ts` / `profile-repository.ts` : `dailyStepGoal` (NULL → 8 000 à la lecture).
+- `HealthConnectSection.tsx` : bouton « Importer les pas maintenant », date du dernier import des pas.
+- `Button.tsx` : prop `accessibilityLabel` — les boutons « − » / « + » de l'objectif n'annonçaient
+  rien au lecteur d'écran.
+- `data-export.ts` : `daily_steps` ajoutée à l'export RGPD (CONF-01).
+- **i18n FR + EN** : section `steps.*` + `settings.healthConnect.importSteps` / `stepsImported` /
+  `lastStepsImport`.
+
+**Technique / Notes**
+- ⚠️ **Deux pièges évités, tous deux déjà tombés sur ce projet.** (1) La lecture passe par
+  `aggregateGroupByPeriod` (bucket `DAYS`) et **jamais** par `readRecords('Steps')` : Health Connect
+  reçoit des pas de plusieurs sources (téléphone, montre, Google Fit) sur des plages qui **se
+  chevauchent**, les sommer gonflerait le total. (2) La 2ᵉ migration (`alter publication`) reproduit
+  la correction du 24/07 sur `analytics_events` : sans elle, le déploiement des sync rules échoue
+  « table not part of publication ».
+- **Date d'un bucket lue littéralement.** Côté natif, `startTime` vient de
+  `LocalDateTime.toString()` → `"2026-07-27T00:00"`, **sans fuseau et sans les secondes**. Toute
+  conversion via `new Date()` l'interpréterait comme un instant UTC et daterait les pas **de la
+  veille** à l'est de Greenwich. `dayKeyOfBucket` lit donc les 10 premiers caractères, avec repli sur
+  `localDateOfInstant` si l'API renvoyait un jour un instant. 2 tests verrouillent le comportement.
+- **Jour actif = objectif atteint**, jamais « au moins un pas » : sinon le téléphone dans la poche
+  rendrait la série inbrisable et vide de sens (décision produit, spec §2.5).
+- **Confidentialité : le périmètre change.** CONF-06 pouvait affirmer que rien ne quittait
+  l'appareil ; les pas, eux, **partent sur nos serveurs**. La phrase `settings.healthConnect.subtitle`
+  (« Tout reste sur ton téléphone. ») était devenue **fausse** → réécrite, et `legal.privacy.body`
+  nomme désormais les pas comme donnée de santé conservée, exportable et supprimée avec le compte.
+  Conséquence Play : la section « Sécurité des données » doit déclarer une donnée de santé
+  **transmise** (doc mise à jour).
+- **Utilisateurs CONF-06 : effet attendu.** `hasPermissions()` étant un ET logique sur les 4
+  permissions, tout compte déjà autorisé repasse en `permissions_missing` jusqu'à ce qu'il accorde
+  la lecture des pas. L'écriture des séances continue de fonctionner (permissions indépendantes).
+- **Limite assumée** : aucune lecture en arrière-plan. Un objectif atteint sans ouvrir l'app
+  n'apparaît qu'au prochain import — la série se **répare rétroactivement**, mais le rappel de 20 h
+  peut partir pour rien. Le temps réel exigerait `READ_HEALTH_DATA_IN_BACKGROUND` + WorkManager → US
+  séparée. L'horodatage de fraîcheur **sur le widget**, prévu au cadrage, a été écarté (curseur en
+  `expo-secure-store`, donc lecture asynchrone) : il reste dans les Réglages ; spec §2.6 réalignée.
+- **Points relevés en revue et corrigés avant commit** : formatage des milliers forcé en `fr-FR`
+  quelle que soit la langue (→ suit `i18n.language`) ; export `getStepGoal()` mort-né (retiré) ;
+  3 clés i18n sans usage (retirées) ; commentaire de `_layout.tsx` devenu faux (ne mentionnait que
+  les pesées) ; test du widget rendu déterministe (`mockReturnValue` au lieu de `…Once`, qui
+  dépendait du nombre de rendus).
+- **Reste hors code** : ⚠️ **sync rule `daily_steps` à déployer dans le dashboard PowerSync**
+  (sinon la table ne descend jamais, sans erreur), et déclaration Play à étendre avant LANCE-00.
+- Qualité : `npm run lint`, `npm run typecheck`, `npm run test` verts — **940 tests Vitest + 129 Jest**,
+  codes de sortie lus sans pipe.
+
 ### 28/07/2026 — `feature/conf06-health-connect` — CONF-06 : correctif de format d'horodatage + retour visible d'erreur (recette validée)
 
 > **Recette device validée par Florian le 28/07/2026.** L'US CONF-06 passe en `close`, la roadmap

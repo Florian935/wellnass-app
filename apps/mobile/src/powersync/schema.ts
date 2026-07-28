@@ -437,6 +437,19 @@ const body_weight_entries = new Table({
   deleted_at: column.text,
 });
 
+// ── US PAS-01 : pas quotidiens lus dans Health Connect ─────────────────────
+// Migrations : supabase/migrations/20260728132424_pas01_daily_steps.sql
+//              + 20260728132601_pas01_daily_steps_publication.sql
+const daily_steps = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  steps: column.integer,
+  source: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -477,6 +490,7 @@ export const AppSchema = new Schema({
   meal_templates,
   meal_template_items,
   body_weight_entries,
+  daily_steps,
   exercises,
   exercise_translations,
   exercise_favorites,

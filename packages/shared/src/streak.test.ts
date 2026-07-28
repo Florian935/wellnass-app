@@ -42,4 +42,19 @@ describe('activeDayKeys', () => {
     ];
     expect(activeDayKeys(acts)).toEqual(new Set(['2026-07-10', '2026-07-11']));
   });
+
+  it('les pas seuls rendent un jour actif quand l’objectif est atteint (US PAS-01)', () => {
+    const acts: DayActivity[] = [
+      { day: '2026-07-10', strength: false, running: false, nutrition: false, steps: true },
+      { day: '2026-07-11', strength: false, running: false, nutrition: false, steps: false },
+    ];
+    expect(activeDayKeys(acts)).toEqual(new Set(['2026-07-10']));
+  });
+
+  it('`steps` absent se comporte comme non atteint (non-régression)', () => {
+    const acts: DayActivity[] = [
+      { day: '2026-07-10', strength: false, running: false, nutrition: false },
+    ];
+    expect(activeDayKeys(acts)).toEqual(new Set());
+  });
 });

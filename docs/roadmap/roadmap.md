@@ -339,7 +339,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 7.17 | Carte de séance / course partageable | Export image (trace GPS + stats, ou résumé muscu) pour les stories Instagram / WhatsApp. | Moyen | 4h | 🟢 | ⬜ | **PARTAGE-01**. **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le jour du lancement. |
 | 7.18 | Réagencement du dashboard découvrable | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Facile | 2h | 🟢 | ⬜ | **UX-04**. Remonté en recette (16/07/2026) : bouton en bas à gauche trop petit et peu explicite, drag qui demande trop de précision. Corrige la découvrabilité de 7.13 (widgets multi-formes). |
 | 8.11 | Archivage sûr du contenu éditorial | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | Moyen | 4h | 🟢 | ⬜ | **ADMIN-01**. ⚠️ **Risque d'intégrité, pas du confort** : l'archivage (8.2) est **à sens unique et sans garde-fou** ; archiver un exercice déjà référencé par des `workout_sets` / `exercise_plans` le retire des bases locales (règle de sync `deleted_at IS NULL`) → **le nom disparaît de l'historique des utilisateurs**. À corriger **avant** d'avoir de vrais utilisateurs. |
-| 9.15 | Pas quotidiens (lecture Health Connect) | Lire le total de pas par jour via Health Connect, objectif de pas quotidien, widget + historique. Les pas comptent dans le streak. | Moyen | 8h | 🟢 | ⬜ | **PAS-01** — spec en cours (branche `feature/pas01-pas-quotidiens`), estimation portée de 5 h à 8 h au cadrage : table + migration + sync rule + streak + widget + i18n. **Sommeil écarté** (décision Florian, 28/07/2026) : aucune valeur avant les analyses croisées, qui sont post-V1 → l'ajouter plus tard imposera une **re-déclaration Play**, coût accepté. Décisions actées : données **synchronisées dans le cloud** (donc politique de confidentialité et « Sécurité des données » Play à revoir — voir la spec §7) et **pas comptés dans le streak**. ⚠️ 1 type de données en plus (`READ_STEPS`) à justifier dans le **même** formulaire que CONF-06 → à figer avant LANCE-00. |
+| 9.15 | Pas quotidiens (lecture Health Connect) | Lire le total de pas par jour via Health Connect, objectif de pas quotidien, widget + historique. Les pas comptent dans le streak. | Moyen | 8h | 🟢 | ✅ | **PAS-01 — livré et recetté le 28/07/2026** (recette device Florian, APK release local `r4`). Lecture par **agrégation** Health Connect (jamais la somme des records), table `daily_steps` synchronisée, objectif de pas, widget 3 formes, écran d'historique, **pas comptés dans la série** (jour actif = objectif atteint). Reste la **déclaration Play** étendue à `READ_STEPS` — prérequis de LANCE-00, sans effet en dev build. **Sommeil écarté** (décision Florian, 28/07/2026) : aucune valeur avant les analyses croisées, qui sont post-V1 → l'ajouter plus tard imposera une **re-déclaration Play**, coût accepté. Décisions actées : données **synchronisées dans le cloud** (donc politique de confidentialité et « Sécurité des données » Play à revoir — voir la spec §7) et **pas comptés dans le streak**. ⚠️ 1 type de données en plus (`READ_STEPS`) à justifier dans le **même** formulaire que CONF-06 → à figer avant LANCE-00. |
 
 ---
 
@@ -425,9 +425,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 162 | ~78 % |
+| ✅ Livré | 163 | ~78 % |
 | 🟡 Partiel | 11 | ~5 % |
-| ⬜ À faire | 30 | ~14 % |
+| ⬜ À faire | 29 | ~14 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -457,7 +457,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 0 | 0 | 14 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google |
+| V0.9 (14) | 1 | 0 | 13 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -489,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**28/07/2026 — PAS-01 : pas quotidiens (9.15) ⬜ → ✅**
+Cadrée, codée et recettée le même jour : lecture par **agrégation** Health Connect (jamais la somme
+des records), table `daily_steps` synchronisée, objectif de pas, widget 3 formes, historique, et
+**les pas comptent dans la série** (jour actif = objectif atteint). Compteurs : **163 / 11 / 29**
+(V0.9 : 1/0/13). 2 migrations, dont une pour la publication `powersync` — l'oubli du 24/07.
 
 **28/07/2026 — création de V0.9 : élargissement du périmètre de lancement (+14)**
 Le code étant en avance sur le cahier des charges et les prérequis Play étant à délai externe (~3 s.),

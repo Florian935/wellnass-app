@@ -22,7 +22,7 @@ import { autoCloseStaleWorkout } from '@/data/repositories/workout-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
 import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
-import { useHealthConnectWeightImport } from '@/hooks/useHealthConnectWeightImport';
+import { useHealthConnectImports } from '@/hooks/useHealthConnectImports';
 import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
@@ -169,10 +169,11 @@ function RootNavigator() {
   // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
   useAppOpenedAnalytics();
 
-  // Health Connect (US CONF-06) : importe les pesées d'une balance connectée, throttlé 6 h.
+  // Health Connect : importe les pesées d'une balance connectée (US CONF-06, throttle 6 h) **et**
+  // les pas quotidiens (US PAS-01, throttle 1 h — un compteur de pas évolue toute la journée).
   // Gardé sur `hasSynced` — comme la clôture auto de séance — pour lire le réglage réel et non
   // une ligne locale non encore synchronisée.
-  useHealthConnectWeightImport(!!session && !!syncStatus.hasSynced);
+  useHealthConnectImports(!!session && !!syncStatus.hasSynced);
 
   // Deep links d'auth (confirmation d'e-mail…) : établit la session au retour dans l'app.
   useAuthDeepLink();

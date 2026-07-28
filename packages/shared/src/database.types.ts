@@ -189,6 +189,47 @@ export type Database = {
           },
         ]
       }
+      daily_steps: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          log_date: string
+          source: string
+          steps: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          log_date: string
+          source?: string
+          steps: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          log_date?: string
+          source?: string
+          steps?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_steps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_favorites: {
         Row: {
           created_at: string
@@ -1040,6 +1081,7 @@ export type Database = {
         Row: {
           birth_date: string | null
           created_at: string
+          daily_step_goal: number | null
           deleted_at: string | null
           first_name: string | null
           height_cm: number | null
@@ -1057,6 +1099,7 @@ export type Database = {
         Insert: {
           birth_date?: string | null
           created_at?: string
+          daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
           height_cm?: number | null
@@ -1074,6 +1117,7 @@ export type Database = {
         Update: {
           birth_date?: string | null
           created_at?: string
+          daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
           height_cm?: number | null

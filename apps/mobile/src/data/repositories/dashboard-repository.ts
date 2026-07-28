@@ -36,6 +36,7 @@ import {
   objectiveFromGoal,
   PILLARS,
   ROLLING_WEEK_DAYS,
+  stepsActiveDays,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -50,6 +51,7 @@ import { useNutritionProfile } from './nutrition-repository';
 import { useProfile } from './profile-repository';
 import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
+import { useDailySteps, useStepGoal } from './daily-steps-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
@@ -484,10 +486,16 @@ export type StreakData = {
  *
  * @param windowDays - Fenêtre d'analyse en jours (défaut : 30).
  *
- * Un jour est actif si au moins un pilier a été pratiqué :
+ * Un jour est actif si au moins une dimension a été remplie :
  *  - Musculation : séance terminée (`finishedAt != null`).
  *  - Running : course terminée (`finishedAt != null`).
  *  - Nutrition : au moins 1 kcal journalisé.
+ *  - **Pas (US PAS-01) : objectif de pas quotidien atteint** — et non « au moins un pas », sinon le
+ *    téléphone dans la poche rendrait la série inbrisable et vide de sens.
+ *
+ * ⚠️ Les pas n'étant lus qu'au premier plan (aucune lecture en arrière-plan), un jour où l'objectif
+ * a été atteint sans ouvrir l'app n'apparaît actif qu'**au prochain import** : la série se répare
+ * alors rétroactivement. Limite assumée, cf. spec PAS-01 §2.5-2.6.
  *
  * `last7` représente la semaine ISO courante (lundi → dimanche). Les jours futurs
  * de la semaine en cours sont inclus mais seront inévitablement inactifs.
@@ -502,8 +510,11 @@ export function useStreakData(windowDays = 30): StreakData {
   const sinceKey = localDayKey(sinceDate);
 
   const { totals, isLoading: totalsLoading } = useDailyTotals(sinceKey);
+  const { rows: stepRows, isLoading: stepsLoading } = useDailySteps(sinceKey);
+  const { goal: stepGoal, isLoading: goalLoading } = useStepGoal();
 
-  const isLoading = workoutsLoading || runsLoading || totalsLoading;
+  const isLoading =
+    workoutsLoading || runsLoading || totalsLoading || stepsLoading || goalLoading;
 
   const today = new Date();
   const todayKey = localDayKey(today);
@@ -541,6 +552,11 @@ export function useStreakData(windowDays = 30): StreakData {
       }
     }
 
+    // US PAS-01 : seul l'objectif atteint compte (cf. `isGoalReached`, brique pure testée).
+    for (const day of stepsActiveDays(stepRows, stepGoal)) {
+      touch(day).steps = true;
+    }
+
     const activities = [...map.values()];
     const activeDays = activeDayKeys(activities);
     const streak = computeStreak(activeDays, todayKey);
@@ -564,7 +580,7 @@ export function useStreakData(windowDays = 30): StreakData {
     });
 
     return { streak, last7 };
-  }, [workouts, runs, totals, todayKey]);
+  }, [workouts, runs, totals, stepRows, stepGoal, todayKey]);
 
   return {
     current: streak.current,

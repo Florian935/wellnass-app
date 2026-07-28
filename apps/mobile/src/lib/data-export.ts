@@ -41,6 +41,8 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'meal_template_items', col: 'user_id' },
   { table: 'foods', col: 'owner_id' }, { table: 'food_translations', col: 'owner_id' },
   { table: 'food_favorites', col: 'user_id' }, { table: 'body_weight_entries', col: 'user_id' },
+  // US PAS-01 — donnée de santé conservée sur nos serveurs : elle doit être exportable (RGPD).
+  { table: 'daily_steps', col: 'user_id' },
 ];
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };

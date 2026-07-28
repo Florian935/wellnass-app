@@ -44,6 +44,7 @@ export type ProfileInput = Pick<
   | 'startWeightKg'
   | 'mainGoal'
   | 'workoutDisplayLevel'
+  | 'dailyStepGoal'
   | 'onboardingCompletedAt'
 >;
 
@@ -60,6 +61,7 @@ type ProfileDbRow = {
   start_weight_kg: number | null;
   main_goal: string | null;
   workout_display_level: string | null;
+  daily_step_goal: number | null;
   onboarding_completed_at: string | null;
   created_at: string;
   updated_at: string;
@@ -86,6 +88,7 @@ function rowToProfile(row: ProfileDbRow): Profile {
     startWeightKg: row.start_weight_kg,
     mainGoal: row.main_goal as Profile['mainGoal'],
     workoutDisplayLevel: coerceWorkoutDisplayLevel(row.workout_display_level),
+    dailyStepGoal: row.daily_step_goal,
     onboardingCompletedAt: row.onboarding_completed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -105,6 +108,7 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('startWeightKg' in input) columns['start_weight_kg'] = input.startWeightKg;
   if ('mainGoal' in input) columns['main_goal'] = input.mainGoal;
   if ('workoutDisplayLevel' in input) columns['workout_display_level'] = input.workoutDisplayLevel;
+  if ('dailyStepGoal' in input) columns['daily_step_goal'] = input.dailyStepGoal;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;
   }

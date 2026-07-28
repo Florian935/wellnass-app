@@ -24,7 +24,8 @@
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.health.WRITE_EXERCISE",
         "android.permission.health.WRITE_DISTANCE",
-        "android.permission.health.READ_WEIGHT"
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_STEPS"
       ]
     },
     "web": {

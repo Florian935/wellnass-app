@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **78 %** — 162 livré · 11 partiel · 30 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **78 %** — 163 livré · 11 partiel · 29 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -16,7 +16,6 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
-| **PAS-01** — Pas quotidiens — lecture Health Connect, objectif et streak | `code` | `feature/pas01-pas-quotidiens` | [9.15] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `validation` | `docs/contenu-01-spec` | [3.1, 5.2] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -40,9 +39,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/pas01-pas-quotidiens` (modifications non commitées) |
-| Commits | 943 · `main` a **940** commits de retard sur `dev` |
-| Specs d'US | 76 au total — 74 clôturées, 2 en cours |
-| Migrations | 45/45 poussées sur le cloud |
+| Commits | 944 · `main` a **940** commits de retard sur `dev` |
+| Specs d'US | 76 au total — 75 clôturées, 1 en cours |
+| Migrations | 47/47 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -51,11 +50,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `73f91a8` docs(pas01): livrables d'amont validés — pas quotidiens (US PAS-01, 9.15)
 - `aea2ab1` fix(health-connect): normalise les horodatages et rend les échecs visibles (US CONF-06 close, 9.9)
 - `c682993` feat(health-connect): écriture des séances/courses et lecture du poids (US CONF-06, 9.9)
 - `d54f05b` docs(suivi): refonte du suivi d'avancement — ETAT genere, BACKLOG, front-matter, roadmap reconciliee
 - `09899ca` chore(eas): versionne le Client ID Google, écarte la clé MapTiler du dépôt public
-- `d8cd84c` docs(ux01): clôture US UX-01 + relecture croisée non requise + doc environnement de dev local
 
 ---
 

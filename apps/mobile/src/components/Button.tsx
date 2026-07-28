@@ -8,6 +8,11 @@ type ButtonProps = {
   variant?: 'primary' | 'ghost' | 'destructive';
   loading?: boolean;
   disabled?: boolean;
+  /**
+   * Nom accessible, quand le `label` ne suffit pas : un bouton dont le libellé est un glyphe
+   * (« − », « + ») n'annonce rien d'exploitable au lecteur d'écran (US PAS-01).
+   */
+  accessibilityLabel?: string;
 };
 
 export function Button({
@@ -16,6 +21,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   disabled = false,
+  accessibilityLabel,
 }: ButtonProps) {
   const { colors } = useTheme();
   const isPrimary = variant === 'primary';
@@ -31,6 +37,7 @@ export function Button({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
