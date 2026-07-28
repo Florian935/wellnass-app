@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `feature/bien01-checkin-bien-etre` — BIEN-01 : livrables d'amont (spec, plan, maquette)
+
+> Entrée dans le pipeline de l'US **BIEN-01** (roadmap **1.24**, V0.9, P1, ~5 h) via
+> [`/us`](.claude/commands/us.md). **Aucune ligne de code applicatif** — `etape: validation`, en
+> attente du feu vert de Florian ou Damien. Commit précédent : `575599c`.
+
+**Ajouté**
+
+- `docs/specs/functional/us/bien01-checkin-bien-etre.md` — spec fonctionnelle : périmètre, modèle de
+  données `daily_wellbeing`, comportement offline, i18n, accessibilité, RGPD, 10 cas limites, DoD et
+  11 critères de recette device. **7 décisions de cadrage (D1→D7)** à arbitrer avant code, chacune
+  avec sa recommandation.
+- `docs/plans/bien01-checkin-bien-etre.md` — plan en 7 tâches TDD, fichiers touchés (8 créés,
+  10 modifiés), ordre de build justifié, tests prévus, 8 risques avec parade.
+- `design/bien01-checkin-bien-etre/bien01-checkin-bien-etre.html` — maquette : parcours en 4 écrans
+  (widget vide → check-in → widget rempli → historique), 3 formes du widget, échelles 1-5 avec les
+  15 libellés, et 4 cartouches (décisions, accessibilité, pièges, hors périmètre).
+
+**Technique / Notes**
+
+- **Pourquoi BIEN-01 avant les 5 autres US de rétention de V0.9** : c'est la seule dont la valeur
+  **dépend du temps**. La donnée est **historisée** — un jour non collecté est perdu définitivement,
+  donc la livrer en dernier, c'est lancer avec une table vide. C'est aussi la **source transverse**
+  désignée par le catalogue comme prérequis de TRI-03, TRI-12, TRI-18, MR-23, MUSC-23 (tous post-V1).
+- **Décision la plus structurante — D5 : le check-in ne compte PAS dans la série.** Trois taps sur
+  des pictogrammes ne sont pas de l'activité ; l'y inclure permettrait de tenir un streak sans rien
+  faire et le dévaloriserait (arbitrage C : pas de boucle de jeu). PAS-01 a fait compter les pas
+  parce que marcher *est* une activité. Conséquence de plan : `streak.ts` **n'est pas touché**.
+- **Ce n'est pas un 4ᵉ pilier** : aucune entrée dans `active_pillars`, aucun onglet, widget en
+  `'always'` comme `streak` et `steps`. Ajouté en **fin** de `HOME_WIDGET_IDS` → `resolveScreenLayout`
+  complète les layouts stockés, donc **aucune migration de `dashboard_layout`** (précédent PAS-01).
+- **Aucune colonne poids** dans la nouvelle table : le poids reste dans `body_weight_entries` et le
+  check-in **met à jour** la pesée du jour au lieu d'en créer une seconde.
+- ⚠️ **Deux migrations attendues**, comme PAS-01 : la table **puis** `alter publication powersync`.
+  Et la **sync rule reste à déployer à la main** sur l'instance — panne silencieuse si oubliée
+  (déjà arrivé le 24/07), d'où sa présence en DoD **et** en critère de recette.
+- **RGPD** : `daily_wellbeing` devra être ajoutée à la liste **explicite** de tables de
+  `data-export.ts` (une table absente = donnée non exportable). La suppression de compte est couverte
+  par la cascade FK (`purge_expired_accounts()` fait `delete from auth.users`), à vérifier en recette.
+  La politique de confidentialité doit mentionner humeur / énergie / stress **avant** la relecture
+  juridique, qui est sur le chemin critique de LANCE-00. La déclaration Health Connect reste
+  **inchangée** (aucune lecture/écriture HC ici).
+- Relecture de la spec faite **en direct** plutôt que déléguée à un agent (consigne de session : pas
+  d'agent non demandé). Deux points resserrés à cette relecture : ajout de **D7** (feuille vs écran)
+  et correction d'un cas limite qui parlait de « 7 jours » là où la fenêtre D4 s'arrête à J-6.
+
 ### 28/07/2026 — `docs/reconciliation-catalogue-analyses` — CONTENU-01 : méthode de seed tranchée
 
 > Arbitrage Florian du 28/07/2026 sur la **décision structurante** de CONTENU-01, qui bloquait l'US à
