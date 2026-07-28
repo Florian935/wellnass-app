@@ -1663,5 +1663,65 @@
     "permissionCta": "Allow access to steps",
     "unsupported": "Step counting requires Health Connect.",
     "countsForStreak": "Reaching your step goal keeps your streak alive, even without a workout."
+  },
+  "wellbeing": {
+    "title": "Wellbeing",
+    "checkinCta": "Do my check-in",
+    "checkinPrompt": "How are you doing today?",
+    "checkinHint": "Mood, energy, stress — 10 seconds.",
+    "checkinDone": "Check-in done",
+    "checkinTitle": "My check-in",
+    "historyTitle": "My wellbeing",
+    "save": "Save",
+    "optional": "optional",
+    "reversedScale": "reversed scale",
+    "partialHint": "Nothing is required: a single indicator is enough.",
+    "weightLabel": "Weight",
+    "weightHint": "Today's weigh-in",
+    "weightSeeCurve": "See weight chart",
+    "notLogged": "not logged",
+    "journal": "Journal",
+    "averageOver_one": "{{value}} over {{count}} day",
+    "averageOver_other": "{{value}} over {{count}} days",
+    "emptyToday": "No check-in yet today.",
+    "emptyHistory": "No check-in recorded yet. The first one takes 10 seconds.",
+    "notEnoughForCurve": "At least two logged days are needed to show a trend.",
+    "outOfWindow": "This day can no longer be edited: entry stays open for 7 days.",
+    "saveError": "The check-in could not be saved. Please try again.",
+    "indicators": {
+      "mood": "Mood",
+      "energy": "Energy",
+      "stress": "Stress"
+    },
+    "levels": {
+      "mood": {
+        "1": "Very low",
+        "2": "Low",
+        "3": "Neutral",
+        "4": "Good",
+        "5": "Great"
+      },
+      "energy": {
+        "1": "Drained",
+        "2": "Low",
+        "3": "Average",
+        "4": "Good",
+        "5": "Peak"
+      },
+      "stress": {
+        "1": "Very calm",
+        "2": "Calm",
+        "3": "Moderate",
+        "4": "High",
+        "5": "Very high"
+      }
+    },
+    "a11yLevel": "{{indicator}}: {{level}} out of 5, {{label}}",
+    "a11ySelected": "selected",
+    "a11yOpenCheckin": "Open my wellbeing check-in",
+    "a11yIndicatorTab": "Show chart: {{indicator}}",
+    "closeSheet": "Close check-in",
+    "windowAll": "All",
+    "windowDays": "{{count}} d"
   }
 }

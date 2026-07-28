@@ -3,16 +3,16 @@ id: BIEN-01
 titre: "Check-in quotidien & journal de bien-être"
 roadmap: [1.24]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/bien01-checkin-bien-etre
 maj: 28/07/2026
 ---
 
 # US BIEN-01 — Check-in quotidien & journal de bien-être
 
-> **Spec fonctionnelle — à valider par Florian ou Damien.** Aucune ligne de code applicatif avant
-> validation ([CLAUDE.md](../../../../CLAUDE.md#workflow-obligatoire-par-fonctionnalité-primordial)).
-> Roadmap **1.24** (V0.9, P1, ~5 h), aujourd'hui ⬜.
+> **Spec fonctionnelle — ✅ validée par Florian le 28/07/2026** (livrables spec + plan + maquette,
+> et arbitrage des 7 décisions §1). Implémentation en cours.
+> Roadmap **1.24** (V0.9, P1, ~5 h).
 >
 > **Pourquoi celle-ci en premier** parmi les 6 US de rétention de V0.9 : c'est la seule dont la
 > valeur **dépend du temps**. Le check-in produit une donnée **historisée** — chaque jour non
@@ -43,10 +43,12 @@ check-in *est* la saisie du journal. Il n'y a pas deux écrans à construire.
 | Export RGPD | [data-export.ts:29-45](../../../../apps/mobile/src/lib/data-export.ts#L29) — liste **explicite** de tables | ⚠️ La nouvelle table doit y être ajoutée |
 | Suppression de compte | `purge_expired_accounts()` → `delete from auth.users`, **cascade FK** | Rien à faire **si** la FK porte `on delete cascade` |
 
-## 1. Décisions de cadrage à trancher
+## 1. Décisions de cadrage — ✅ TRANCHÉES le 28/07/2026
 
-Ces points sont de la **mécanique produit**, pas de la technique. Ils doivent être arbitrés avant
-le code. Ma recommandation est indiquée pour chacun.
+> ✅ **Validation Florian, 28/07/2026 : les 3 livrables sont validés et les 7 décisions sont
+> arbitrées conformément aux recommandations ci-dessous.** Elles sont donc à lire comme des
+> **règles**, plus comme des propositions. Les deux conséquences de code à ne pas perdre de vue :
+> **D5** → `streak.ts` n'est pas touché ; **D7** → la saisie est une **feuille**, pas un écran poussé.
 
 | # | Question | Recommandation | Pourquoi |
 |---|---|---|---|

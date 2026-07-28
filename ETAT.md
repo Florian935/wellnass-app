@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **78 %** — 163 livré · 11 partiel · 29 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **78 %** — 163 livré · 12 partiel · 28 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -16,7 +16,7 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
-| **BIEN-01** — Check-in quotidien & journal de bien-être | `validation` | `feature/bien01-checkin-bien-etre` | [1.24] |
+| **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `validation` | `docs/contenu-01-spec` | [3.1, 5.2] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -40,9 +40,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/bien01-checkin-bien-etre` (modifications non commitées) |
-| Commits | 947 · `main` a **944** commits de retard sur `dev` |
+| Commits | 948 · `main` a **945** commits de retard sur `dev` |
 | Specs d'US | 77 au total — 75 clôturées, 2 en cours |
-| Migrations | 47/47 poussées sur le cloud |
+| Migrations | 49/49 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -51,11 +51,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5131cd0` docs(bien01): spec, plan et maquette du check-in bien-être (US BIEN-01, 1.24)
 - `575599c` docs(contenu-01): méthode de seed tranchée — migration SQL idempotente (US CONTENU-01, 3.1/5.2)
 - `67076ec` docs(suivi): réconciliation — le catalogue d'analyses avait dérivé, pas la roadmap
 - `c1bcc49` feat(pas01): pas quotidiens lus dans Health Connect, comptés dans la série (US PAS-01 close, 9.15)
 - `73f91a8` docs(pas01): livrables d'amont validés — pas quotidiens (US PAS-01, 9.15)
-- `aea2ab1` fix(health-connect): normalise les horodatages et rend les échecs visibles (US CONF-06 close, 9.9)
 
 ---
 

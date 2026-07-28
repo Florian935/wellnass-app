@@ -50,6 +50,8 @@ export const HOME_WIDGET_IDS = [
   // US PAS-01 — ajouté en fin de registre : `resolveScreenLayout` complète les layouts déjà
   // stockés avec les IDs manquants, donc aucune migration de `dashboard_layout` n'est nécessaire.
   'steps',
+  // US BIEN-01 — même raison, même place : en fin de registre.
+  'wellbeing',
 ] as const;
 
 /**
@@ -116,6 +118,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // Transverse comme `streak` : la marche n'appartient à aucun pilier, et un utilisateur
       // « nutrition seule » doit pouvoir suivre ses pas (US PAS-01).
       steps: 'always',
+      // Transverse aussi (US BIEN-01) : le bien-être est une 4ᵉ dimension, **pas** un 4ᵉ pilier
+      // activable — aucune entrée dans `active_pillars`, donc jamais filtré.
+      wellbeing: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

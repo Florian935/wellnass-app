@@ -63,6 +63,8 @@ poussée avec succès, **cocher sa case** et renseigner la date.
 
 |   [x]   | `20260728132424_pas01_daily_steps`                | 28/07/2026 | CLI (`npm run db:push`) — US PAS-01 (table `daily_steps` + index unique partiel `(user_id, log_date)` + RLS own + colonne `profiles.daily_step_goal`). Types régénérés (`db:types`). ⚠️ **sync rule PowerSync `daily_steps` à déployer sur l'instance** avant recette |
 |   [x]   | `20260728132601_pas01_daily_steps_publication`     | 28/07/2026 | CLI (`npm run db:push`) — US PAS-01 **complément** : `alter publication powersync add table public.daily_steps` (gardé par `pg_publication_tables`). Même pattern que `20260724123616` pour `analytics_events` : sans lui, le déploiement des sync rules échoue « table not part of publication » |
+|   [x]   | `20260728185757_bien01_daily_wellbeing`            | 28/07/2026 | CLI (`npm run db:push`) — US BIEN-01 (table `daily_wellbeing` : `mood` / `energy` / `stress` en 1-5 **nullables** — saisie partielle acceptée, décision D3 — + index unique partiel `(user_id, log_date)` + index de lecture + RLS own sans `delete`). **Aucune colonne poids** : il reste dans `body_weight_entries`. Types régénérés (`db:types`). ⚠️ **sync rule PowerSync `daily_wellbeing` à déployer sur l'instance** avant recette |
+|   [x]   | `20260728185759_bien01_daily_wellbeing_publication` | 28/07/2026 | CLI (`npm run db:push`) — US BIEN-01 **complément** : `alter publication powersync add table public.daily_wellbeing` (gardé par `pg_publication_tables`). Même pattern que `20260728132601` |
 
 > **14/07/2026 — historique réconcilié.** Les 10 migrations des 12–13/07, jouées à la main dans la
 > console, ont été marquées `applied` via `supabase migration repair`. `npm run db:push:dry` répond

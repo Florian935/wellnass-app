@@ -450,6 +450,22 @@ const daily_steps = new Table({
   deleted_at: column.text,
 });
 
+// ── US BIEN-01 : check-in quotidien de bien-être ───────────────────────────
+// Migrations : supabase/migrations/20260728185757_bien01_daily_wellbeing.sql
+//              + 20260728185759_bien01_daily_wellbeing_publication.sql
+// Les 3 indicateurs sont nullables : la saisie partielle est acceptée (décision D3). Le poids
+// n'est PAS ici — il reste dans `body_weight_entries`.
+const daily_wellbeing = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  mood: column.integer,
+  energy: column.integer,
+  stress: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -491,6 +507,7 @@ export const AppSchema = new Schema({
   meal_template_items,
   body_weight_entries,
   daily_steps,
+  daily_wellbeing,
   exercises,
   exercise_translations,
   exercise_favorites,

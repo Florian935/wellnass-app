@@ -1663,5 +1663,65 @@
     "permissionCta": "Autorise l'accès aux pas",
     "unsupported": "Le comptage des pas nécessite Health Connect.",
     "countsForStreak": "Atteindre ton objectif de pas garde ta série active, même sans séance."
+  },
+  "wellbeing": {
+    "title": "Bien-être",
+    "checkinCta": "Faire mon check-in",
+    "checkinPrompt": "Comment ça va, aujourd'hui ?",
+    "checkinHint": "Humeur, énergie, stress — 10 secondes.",
+    "checkinDone": "Check-in fait",
+    "checkinTitle": "Mon check-in",
+    "historyTitle": "Mon bien-être",
+    "save": "Enregistrer",
+    "optional": "optionnel",
+    "reversedScale": "échelle inversée",
+    "partialHint": "Aucun champ n'est obligatoire : un seul indicateur suffit.",
+    "weightLabel": "Poids",
+    "weightHint": "Pesée du jour",
+    "weightSeeCurve": "Voir la courbe de poids",
+    "notLogged": "non renseigné",
+    "journal": "Journal",
+    "averageOver_one": "{{value}} sur {{count}} jour",
+    "averageOver_other": "{{value}} sur {{count}} jours",
+    "emptyToday": "Pas encore de check-in aujourd'hui.",
+    "emptyHistory": "Aucun check-in enregistré pour l'instant. Le premier prend 10 secondes.",
+    "notEnoughForCurve": "Il faut au moins deux jours renseignés pour tracer une tendance.",
+    "outOfWindow": "Ce jour n'est plus modifiable : la saisie reste ouverte 7 jours.",
+    "saveError": "Le check-in n'a pas pu être enregistré. Réessaie.",
+    "indicators": {
+      "mood": "Humeur",
+      "energy": "Énergie",
+      "stress": "Stress"
+    },
+    "levels": {
+      "mood": {
+        "1": "Très maussade",
+        "2": "Maussade",
+        "3": "Neutre",
+        "4": "Bonne",
+        "5": "Excellente"
+      },
+      "energy": {
+        "1": "Épuisé",
+        "2": "Basse",
+        "3": "Moyenne",
+        "4": "Bonne",
+        "5": "Au top"
+      },
+      "stress": {
+        "1": "Très calme",
+        "2": "Calme",
+        "3": "Modéré",
+        "4": "Élevé",
+        "5": "Très élevé"
+      }
+    },
+    "a11yLevel": "{{indicator}} : {{level}} sur 5, {{label}}",
+    "a11ySelected": "sélectionné",
+    "a11yOpenCheckin": "Ouvrir mon check-in de bien-être",
+    "a11yIndicatorTab": "Afficher la courbe : {{indicator}}",
+    "closeSheet": "Fermer le check-in",
+    "windowAll": "Tout",
+    "windowDays": "{{count}} j"
   }
 }

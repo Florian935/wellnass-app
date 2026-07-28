@@ -54,16 +54,16 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 > (simulateur what-if, rétrospective annuelle) ou une base d'utilisateurs (board de suggestions,
 > compétition) est resté hors périmètre.
 >
-> **Ordre conseillé** : **PAS-01 est livré et clôturé le 28/07/2026** (roadmap 9.15 ✅) ; reste
+> **Ordre conseillé** : **PAS-01 est livré et clôturé le 28/07/2026** (roadmap 9.15 ✅) et
+> **BIEN-01 est en recette** (1.24 🟡, sortie du backlog — voir [ETAT.md](ETAT.md)). Reste
 > **ADMIN-01**, l'autre item du chemin critique du lancement, puis les 3 UX de recette (rapides,
-> visibles), puis la rétention.
+> visibles), puis le reste de la rétention.
 
 ### Enrichissements V0.9 — rétention & valeur produit
 
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
 | **ADMIN-01 — Archivage sûr du contenu éditorial** | 8.11 | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | 🔴 **Intégrité de données, pas du confort** : archiver un exercice déjà référencé par des `workout_sets` / `exercise_plans` le retire des bases locales (sync `deleted_at IS NULL`) → **le nom disparaît de l'historique des utilisateurs**, sans retour arrière possible dans l'admin. À traiter **avant** d'avoir de vrais utilisateurs. |
-| **BIEN-01 — Check-in quotidien & journal de bien-être** | 1.24 | Humeur / énergie / stress en ~10 s (+ poids), historique et courbes. 🌐 FR+EN. | Nouvelle table offline-first historisée (UUID client, UTC, soft delete) + **sync rule PowerSync à déployer à la main**. Doser le rituel : 10 s, sinon il est abandonné en 3 jours. |
 | **MESUR-01 — Mensurations corporelles** | 3.51 | Tour de taille, poitrine, bras, cuisses… historisées + courbes. | Fait descendre **E8** de la [spec muscu §5](docs/specs/functional/musculation.md) — cadrée mais **jamais descendue en US**, donc **aucun modèle de données**. Réutilise l'infra courbes du poids (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = post-V1). |
 | **STREAK-01 — Joker / gel de streak** | 7.14 | 1 joker/mois protège la série sur un jour manqué. | Décider la règle exacte (recharge, rétroactivité, effet sur les stats) **avant** de coder : c'est de la mécanique produit, pas de la technique. **Gratuit en V1** (arbitrage D). Ne pas glisser vers une boucle de jeu (arbitrage C). |
 | **OBJ-01 — Objectifs personnels à échéance** | 7.15 | « 50 km ce mois », « +5 kg au développé en 8 semaines » — anneau de progression, jalons, célébration. | **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). Le calcul de progression doit se brancher sur les agrégats existants, pas en créer de nouveaux. |

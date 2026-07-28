@@ -71,8 +71,8 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 10, muscu 4, course 3 ; gardes pilier', () => {
-    expect(HOME_WIDGET_IDS).toHaveLength(10);
+  it('accueil 11, muscu 5, course 3 ; gardes pilier', () => {
+    expect(HOME_WIDGET_IDS).toHaveLength(11);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -95,7 +95,7 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    expect(layout.widgets).toHaveLength(10);
+    expect(layout.widgets).toHaveLength(11);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -115,7 +115,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(10);
+    expect(r.widgets).toHaveLength(11);
     assertNoOverlap(r.widgets);
   });
 
@@ -142,7 +142,22 @@ describe('resolveScreenLayout', () => {
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).toContain('steps');
+    expect(r.widgets.map((w) => w.id)).toContain('wellbeing');
     assertNoOverlap(r.widgets);
+  });
+
+  it('garde `wellbeing` visible pour un utilisateur « nutrition seule » (US BIEN-01)', () => {
+    // Le bien-être est une 4ᵉ dimension **transverse**, pas un 4ᵉ pilier activable : il ne doit
+    // jamais être filtré par `active_pillars`, exactement comme `streak` et `steps`.
+    const r = resolveScreenLayout(null, 'home', ['nutrition']);
+    const ids = r.widgets.map((w) => w.id);
+
+    expect(ids).toContain('wellbeing');
+    expect(ids).toContain('streak');
+    expect(ids).toContain('steps');
+    // Contrôle négatif : les widgets gardés par un pilier inactif, eux, disparaissent bien.
+    expect(ids).not.toContain('muscle-volume');
+    expect(ids).not.toContain('running-week');
   });
 
   it('borne une colonne invalide (wide en col 1 → col 0)', () => {

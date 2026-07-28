@@ -10,6 +10,77 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `feature/bien01-checkin-bien-etre` — BIEN-01 : check-in de bien-être (code livré, roadmap 1.24 ⬜ → 🟡)
+
+> Les 3 livrables d'amont ont été **validés par Florian** le 28/07/2026, avec arbitrage des
+> **7 décisions D1→D7** conformément aux recommandations de la spec. Code livré derrière.
+> **🟡 et non ✅** : la sync rule PowerSync reste à déployer à la main et la recette device n'a pas
+> eu lieu. Commit précédent : `5131cd0`.
+
+**Ajouté**
+
+- `supabase/migrations/20260728185757_bien01_daily_wellbeing.sql` — table `daily_wellbeing` :
+  `mood` / `energy` / `stress` en 1-5, **nullables et indépendants** (décision D3), index unique
+  **partiel** `(user_id, log_date) where deleted_at is null`, index de lecture
+  `(user_id, log_date desc)`, RLS `select`/`insert`/`update` sur `auth.uid()` **sans politique
+  `delete`** (soft delete), FK `on delete cascade`. **Aucune colonne poids.**
+- `supabase/migrations/20260728185759_bien01_daily_wellbeing_publication.sql` —
+  `alter publication powersync add table`, gardé par `pg_publication_tables`.
+- `packages/shared/src/wellbeing.ts` + `.test.ts` — briques **pures** (21 tests) : bornes d'échelle,
+  `isEmptyCheckin`, `canEditDay` (fenêtre J-6 → J), `wellbeingSeries` (**trous conservés**),
+  `wellbeingAverages` (**jours renseignés seulement**).
+- `apps/mobile/src/data/repositories/daily-wellbeing-repository.ts` + test d'écriture (7 tests) :
+  `saveWellbeing` **met à jour** la ligne du jour au lieu de créer un doublon, refuse un check-in
+  vide, lève hors fenêtre.
+- `apps/mobile/src/components/wellbeing/WellbeingScale.tsx` — l'échelle 1-5 partagée + les
+  pictogrammes, `accessibilityRole="radio"`, `hitSlop`, `maxFontSizeMultiplier`.
+- `apps/mobile/src/components/wellbeing/WellbeingCheckinSheet.tsx` — la feuille (décision D7).
+- `apps/mobile/src/components/dashboard/WellbeingCard.tsx` + smoke test (6 tests) — widget 3 formes.
+- `apps/mobile/src/app/wellbeing.tsx` — historique : sélecteur d'indicateur, courbe lissée, journal.
+
+**Modifié**
+
+- `packages/shared/src/widgets.ts` — `wellbeing` **en fin** de `HOME_WIDGET_IDS` et `pillars: 'always'`
+  → aucune migration de `dashboard_layout` (précédent PAS-01). Test ajouté : le widget reste visible
+  avec `active_pillars = ['nutrition']` seul, alors que `muscle-volume` et `running-week` disparaissent.
+- `packages/shared/src/widgets.test.ts` — compteurs de widgets d'accueil 10 → **11**.
+- `apps/mobile/src/powersync/schema.ts`, `docs/specs/technical/powersync-sync-rules.yaml`,
+  `supabase/MIGRATIONS.md` (2 lignes cochées), `packages/shared/src/database.types.ts` (régénéré),
+  `apps/mobile/src/i18n/locales/{fr,en}.json` (namespace `wellbeing`, **15 libellés de niveaux** par
+  langue), `apps/mobile/src/lib/data-export.ts` (table ajoutée à l'export RGPD).
+
+**Technique / Notes**
+
+- **D5 — le check-in ne compte PAS dans la série.** Trois taps sur des pictogrammes ne sont pas de
+  l'activité ; l'y inclure permettrait de tenir un streak sans rien faire et le dévaloriserait
+  (arbitrage C). Conséquence tenue : **`streak.ts` n'est pas touché**.
+- **Ce n'est pas un 4ᵉ pilier** : aucune entrée dans `active_pillars`, aucun onglet, widget `'always'`.
+- **Le poids n'est jamais dupliqué** : la feuille délègue à `logWeight()`, qui met déjà à jour la
+  pesée du jour. Une pesée inchangée n'est même pas réécrite (`weightChanged`).
+- **Un jour non renseigné est un trou, jamais un zéro** — règle posée dans la brique pure et testée,
+  pas dans le composant. Le widget affiche un tiret par indicateur manquant (testé : 2 tirets quand
+  seule l'énergie est saisie), et la courbe omet le jour.
+- **Point de conception refait après lint** : la première version pré-remplissait le formulaire dans
+  un `useEffect` → **erreur** `react-hooks` (setState synchrone dans un effet, cascades de rendus,
+  refusé par le React Compiler). Corrigé en montant le formulaire à l'ouverture avec une `key`
+  (l'état initial vient des props) et en dérivant le poids affiché d'un état « non touché » plutôt
+  que d'un effet. Aucun effet de réamorçage ne subsiste.
+- **Types de routes Expo Router** : `.expo/types/router.d.ts` est **généré et gitignoré**, et
+  `expo export` ne le régénère pas — seul le serveur de dev le fait. Il a fallu démarrer
+  `npx expo start` pour que `/wellbeing` devienne typé, sinon `router.push('/wellbeing')` échoue au
+  typecheck. À savoir pour toute future US qui ajoute un écran.
+- **RGPD** : table ajoutée à la liste explicite de `data-export.ts`. La suppression de compte est
+  couverte par la **cascade FK** (`purge_expired_accounts()` fait `delete from auth.users`) — vérifié
+  dans la migration CONF-02, aucune modification nécessaire. La **politique de confidentialité doit
+  mentionner humeur / énergie / stress** avant la relecture juridique (chemin critique LANCE-00). La
+  déclaration Health Connect reste **inchangée** : rien n'est lu ni écrit de ce côté.
+- ⚠️ **Reste à faire avant ✅** : déployer la **sync rule** `daily_wellbeing` sur l'instance PowerSync
+  (sans quoi les données restent locales, sans aucune erreur visible), puis la **recette device**
+  (11 critères, dont le chronomètre à 10 s et la vérification que la série ne bouge pas).
+- Qualité : `npm run test` **vert** (51 fichiers Vitest + 30 suites Jest / 142 tests, dont 34
+  nouveaux), `npm run typecheck` vert, `npm run lint` **0 erreur** (6 avertissements préexistants
+  dans `charts-smoke.test.tsx`, non touché).
+
 ### 28/07/2026 — `feature/bien01-checkin-bien-etre` — BIEN-01 : livrables d'amont (spec, plan, maquette)
 
 > Entrée dans le pipeline de l'US **BIEN-01** (roadmap **1.24**, V0.9, P1, ~5 h) via

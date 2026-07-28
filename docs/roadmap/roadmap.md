@@ -326,7 +326,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
-| 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | ⬜ | **BIEN-01**. **4ᵉ dimension légère** cohérente avec le nom du produit, et boucle d'habitude quotidienne. Nouvelle table offline-first historisée ; alimentera les corrélations récup ↔ perfs (post-V1). |
+| 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | 🟡 | **BIEN-01 — code livré le 28/07/2026** : table `daily_wellbeing` (2 migrations poussées), briques pures testées, repository, feuille de check-in, widget transverse 3 formes, écran d'historique, i18n FR+EN, export RGPD. **4ᵉ dimension légère**, pas un 4ᵉ pilier (widget `'always'`). 🟡 et non ✅ pour deux raisons : **la sync rule PowerSync reste à déployer à la main** sur l'instance, et **la recette device n'a pas eu lieu**. Alimentera les corrélations récup ↔ perfs (post-V1). |
 | 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | ⬜ | **MESUR-01**. Fait enfin descendre **E8** de la [spec muscu §5](../specs/functional/musculation.md) — décrite au cadrage mais **jamais descendue en US**, donc sans modèle de données. Réutilise l'infra courbes du poids (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = sous-lot post-V1). |
 | 3.52 | Suggestion de substitution d'exercice | Matériel pris ou zone douloureuse → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | ⬜ | **MUSC-F14**. Le **remplacement en direct existe déjà** (3.32) ; ce qui manque, c'est la **suggestion**. Sélection déterministe sur le groupe musculaire, aucun appel externe. |
 | 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ⬜ | **UX-02**. Remonté en **recette F10c** : la card « sandwich » entre la recherche et la liste, le sélecteur de groupe musculaire sur plusieurs lignes, le champ nom qui paraît vide. |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 163 | ~78 % |
-| 🟡 Partiel | 11 | ~5 % |
-| ⬜ À faire | 29 | ~14 % |
+| 🟡 Partiel | 12 | ~6 % |
+| ⬜ À faire | 28 | ~13 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -457,7 +457,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 1 | 0 | 13 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) |
+| V0.9 (14) | 1 | 1 | 12 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -489,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**28/07/2026 — BIEN-01 : check-in de bien-être (1.24) ⬜ → 🟡**
+Code livré : table `daily_wellbeing` (2 migrations), briques pures testées, feuille de check-in en
+~10 s, widget **transverse** (`'always'` — 4ᵉ dimension, pas 4ᵉ pilier), historique, i18n FR+EN,
+export RGPD. **Le check-in ne compte pas dans la série** (décision D5). Compteurs : **163 / 12 / 28**
+(V0.9 : 1/1/12). 🟡 : sync rule PowerSync à déployer à la main + recette device à faire.
 
 **28/07/2026 — audit `/reconcilier` : le catalogue d'analyses avait dérivé, pas la roadmap**
 Roadmap **juste sur ses 40 lignes ⬜/🟡** (preuve cherchée à charge), compteurs et 47 migrations OK.

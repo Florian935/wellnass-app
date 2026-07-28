@@ -230,6 +230,50 @@ export type Database = {
           },
         ]
       }
+      daily_wellbeing: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          energy: number | null
+          id: string
+          log_date: string
+          mood: number | null
+          stress: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          energy?: number | null
+          id: string
+          log_date: string
+          mood?: number | null
+          stress?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          energy?: number | null
+          id?: string
+          log_date?: string
+          mood?: number | null
+          stress?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_wellbeing_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_favorites: {
         Row: {
           created_at: string
