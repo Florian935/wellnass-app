@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US PAS-01 — Pas quotidiens</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--run:#2f6f8f;--steps:#4a7a5c;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);min-height:100%;line-height:1.5;}
+  .head{max-width:1240px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1240px;margin:24px auto 0;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:300px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:60px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:540px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:512px;padding:16px;display:flex;flex-direction:column;gap:11px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;}
+  .card.alt{background:var(--surface-alt);}
+  .card.tight{padding:0;overflow:hidden;}
+  .card.tight .row{padding:12px 13px;}
+  .card.tight .row + .row{border-top:1px solid var(--border);}
+  .row{display:flex;align-items:center;gap:12px;}
+  .rowlab{font-weight:700;font-size:14px;} .rowdesc{font-size:12px;color:var(--muted);margin-top:3px;}
+  .grow{flex:1;min-width:0;}
+  .toggle{width:46px;height:28px;border-radius:999px;background:var(--accent);position:relative;flex-shrink:0;}
+  .toggle::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;}
+  .toggle.off{background:var(--border);} .toggle.off::after{left:3px;right:auto;}
+  .btn{border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;text-align:center;background:var(--surface-alt);}
+  .btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .btn.ghost{background:transparent;}
+  .btn.sm{padding:7px 10px;font-size:12.5px;border-radius:10px;}
+  .banner{border:1px solid var(--warn);background:#fbf1dd;border-radius:12px;padding:11px 12px;font-size:12.5px;line-height:1.5;}
+  .banner.bad{border-color:var(--danger);background:#fbeae8;}
+  .banner.ok{border-color:var(--success);background:#eef4e6;}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:230px;}
+  @media(max-width:760px){.arrow{display:none;}}
+
+  /* — widget pas — */
+  .wg{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;}
+  .wg .wgh{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:9px;}
+  .big{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.1;}
+  .unit{font-size:12px;font-weight:700;color:var(--muted);margin-left:5px;}
+  .bar{height:9px;border-radius:999px;background:var(--surface-alt);overflow:hidden;margin-top:9px;border:1px solid var(--border);}
+  .bar > i{display:block;height:100%;background:var(--steps);}
+  .bar.done > i{background:var(--success);}
+  .ring{width:74px;height:74px;border-radius:50%;flex-shrink:0;
+        background:conic-gradient(var(--steps) 0 78%,var(--surface-alt) 78% 100%);
+        display:flex;align-items:center;justify-content:center;position:relative;}
+  .ring.done{background:conic-gradient(var(--success) 0 100%,var(--success) 0);}
+  .ring::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--surface);}
+  .ring span{position:relative;font-size:13.5px;font-weight:800;}
+  .dots{display:flex;gap:5px;margin-top:10px;}
+  .dot{flex:1;height:26px;border-radius:7px;background:var(--surface-alt);border:1px solid var(--border);display:flex;align-items:flex-end;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);padding-bottom:2px;}
+  .dot.on{background:#e4eddc;border-color:var(--success);color:var(--success);}
+  .dot.on::before{content:"✓";position:absolute;margin-bottom:11px;font-size:9px;}
+  .dot.today{border-width:2px;border-color:var(--steps);}
+  .hist{display:flex;align-items:flex-end;gap:3px;height:96px;margin-top:8px;}
+  .hist i{flex:1;background:var(--steps);border-radius:3px 3px 0 0;display:block;opacity:.55;}
+  .hist i.done{background:var(--success);opacity:1;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 2px,transparent 2px 4px);}
+  .stat3{display:flex;gap:8px;margin-top:10px;}
+  .stat3 > div{flex:1;background:var(--surface-alt);border:1px solid var(--border);border-radius:11px;padding:9px;text-align:center;}
+  .stat3 b{display:block;font-size:16px;} .stat3 span{font-size:10.5px;color:var(--muted);font-weight:700;}
+  .goalpick{display:flex;align-items:center;gap:10px;margin-top:9px;}
+  .goalpick .v{font-size:19px;font-weight:800;min-width:74px;text-align:center;}
+  .stepbtn{width:38px;height:38px;border-radius:11px;border:1px solid var(--border);background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;flex-shrink:0;}
+
+  .diagram{max-width:1240px;margin:34px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  .diagram h3{margin:0 0 6px;font-size:15px;}
+  .diagram p.lead{margin:0 0 16px;font-size:13px;color:var(--muted);}
+  .pipe{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+  .pipe + .pipe{margin-top:14px;}
+  .node{flex:1;min-width:145px;background:var(--surface-alt);border:1px solid var(--border);border-radius:12px;padding:12px;font-size:12.5px;}
+  .node b{display:block;margin-bottom:4px;font-size:12px;}
+  .node.gate{border-color:var(--warn);background:#fbf1dd;}
+  .node.sink{border-color:var(--strength);}
+  .node.src{border-color:var(--run);}
+  .node.warn{border-color:var(--danger);background:#fbeae8;}
+  .to{align-self:center;font-weight:800;color:var(--muted);font-size:20px;}
+  .code{font-family:var(--mono);font-size:11px;background:#2b2018;color:#f3e6d2;border-radius:8px;padding:9px 11px;margin-top:8px;white-space:pre;overflow:auto;}
+  .k{color:#e0a86b;} .s{color:#a8c98a;} .c{color:#8f8272;}
+  .pill{display:inline-block;background:var(--surface-alt);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--muted);}
+  .pill.warn{border-color:var(--warn);color:var(--warn);background:#fbf1dd;}
+  .pill.ok{border-color:var(--success);color:var(--success);background:#eef4e6;}
+  .states{max-width:1240px;margin:34px auto 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  td code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);padding:1px 5px;border-radius:4px;}
+  .note{max-width:1240px;margin:26px auto 0;font-size:13px;color:var(--muted);line-height:1.65;}
+  .note b{color:var(--ink);}
+  .shapes{max-width:1240px;margin:34px auto 0;display:flex;gap:18px;flex-wrap:wrap;}
+  .shapes > div{flex:1;min-width:250px;}
+  .shapes .lbl{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:8px;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <p class="eyebrow">US PAS-01 · Roadmap 9.15 · V0.9 · extension de CONF-06</p>
+    <h1 class="title">Pas quotidiens — lus dans Health Connect, comptés dans la série</h1>
+    <p class="sub">Le total de pas du jour est <b>lu</b> dans Health Connect (jamais recalculé : le compteur
+      Android s'appuie sur l'<b>accéléromètre</b>, donc il compte sur un tapis de marche là où le GPS ne voit
+      rien), <b>stocké sur le compte</b> — donc synchronisé et présent après réinstallation — et
+      <b>atteindre son objectif rend la journée active</b> dans le streak. Aucune écriture vers Health
+      Connect ; lecture au premier plan seulement.</p>
+  </div>
+
+  <div class="flow">
+
+    <!-- 1 · opt-in OFF -->
+    <div class="col">
+      <div class="step">1 · Opt-in OFF</div>
+      <div class="caption">Le widget existe mais <b>ne mendie pas</b> : un état clair, une action. Aucune permission demandée d'elle-même.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt">Accueil</span></div>
+        <div class="wg">
+          <div class="wgh"><span>Pas</span><span class="pill">inactif</span></div>
+          <div class="row" style="gap:11px">
+            <div class="ring" style="background:var(--surface-alt)"><span class="muted">—</span></div>
+            <div class="grow">
+              <div class="rowdesc" style="margin:0 0 9px">Active Health Connect pour compter tes pas.</div>
+              <div class="btn primary sm">Activer Health Connect</div>
+            </div>
+          </div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Série</span><span>7 j</span></div>
+          <div class="dots">
+            <div class="dot on">L</div><div class="dot on">M</div><div class="dot on">M</div>
+            <div class="dot on">J</div><div class="dot on">V</div><div class="dot today">S</div><div class="dot">D</div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint"><span class="pill">rappel</span> Opt-in <b>OFF par défaut</b> (donnée de santé) — hérité de CONF-06, rien ne change ici.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2 · permission -->
+    <div class="col">
+      <div class="step">2 · Permission</div>
+      <div class="caption">4ᵉ type de données. ⚠️ Les utilisateurs <b>déjà</b> autorisés (CONF-06) repassent par cet écran — c'est le cas n°1 à recetter.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt muted">Health Connect</span></div>
+        <div class="card">
+          <div class="rowlab" style="margin-bottom:9px">Autoriser Wellness à accéder à ?</div>
+          <div class="hint" style="border-top:1px solid var(--border);padding-top:7px"><b>Écrire</b> — Exercice <span class="pill ok">déjà</span></div>
+          <div class="hint" style="border-top:1px solid var(--border);padding-top:7px"><b>Écrire</b> — Distance <span class="pill ok">déjà</span></div>
+          <div class="hint" style="border-top:1px solid var(--border);padding-top:7px"><b>Lire</b> — Poids <span class="pill ok">déjà</span></div>
+          <div class="hint" style="border-top:1px solid var(--border);padding-top:7px"><b>Lire</b> — Pas <span class="pill warn">nouveau</span></div>
+          <div class="row" style="gap:8px;margin-top:11px">
+            <div class="btn ghost grow">Refuser</div>
+            <div class="btn primary grow">Autoriser</div>
+          </div>
+        </div>
+        <div class="banner">Refus → <b>les séances continuent de partir</b> : les permissions sont indépendantes côté système. Seuls les pas sont sautés.</div>
+        <div class="spacer"></div>
+        <div class="hint">Une permission de manifest ne s'ajoute pas à chaud → <b>nouveau dev build</b> obligatoire.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3 · nominal -->
+    <div class="col">
+      <div class="step">3 · Nominal</div>
+      <div class="caption">Forme <b>wide</b> (défaut) : total, objectif, progression, 7 derniers jours. Tap → historique.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt">Accueil</span></div>
+        <div class="wg">
+          <div class="wgh"><span>Pas</span><span class="muted">Objectif 8 000</span></div>
+          <div class="row" style="align-items:flex-end">
+            <div class="grow"><span class="big">6 240</span><span class="unit">pas</span></div>
+            <div class="hint" style="font-weight:700">78 %</div>
+          </div>
+          <div class="bar"><i style="width:78%"></i></div>
+          <div class="dots">
+            <div class="dot on">L</div><div class="dot on">M</div><div class="dot">M</div>
+            <div class="dot on">J</div><div class="dot on">V</div><div class="dot today">S</div><div class="dot">D</div>
+          </div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Série</span><span>7 j</span></div>
+          <div class="hint">Aujourd'hui : <b>pas encore actif</b> — 1 760 pas avant que la journée compte.</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint"><span class="pill">fraîcheur</span> Mis à jour à 14:05. Lecture au premier plan, throttle <b>1 h</b> — pas de temps réel, et le widget le dit.</div>
+      </div></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4 · objectif atteint -->
+    <div class="col">
+      <div class="step">4 · Objectif atteint</div>
+      <div class="caption">La journée devient <b>active</b> sans séance ni repas loggé : c'est tout l'intérêt de la décision « les pas comptent ».</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt">Accueil</span></div>
+        <div class="wg">
+          <div class="wgh"><span>Pas</span><span class="pill ok">objectif atteint</span></div>
+          <div class="row" style="align-items:flex-end">
+            <div class="grow"><span class="big">8 420</span><span class="unit">pas</span></div>
+            <div class="hint" style="font-weight:700;color:var(--success)">105 %</div>
+          </div>
+          <div class="bar done"><i style="width:100%"></i></div>
+          <div class="dots">
+            <div class="dot on">L</div><div class="dot on">M</div><div class="dot">M</div>
+            <div class="dot on">J</div><div class="dot on">V</div><div class="dot on today">S</div><div class="dot">D</div>
+          </div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Série</span><span style="color:var(--success)">8 j</span></div>
+          <div class="hint">Journée active <b>grâce aux pas</b> — aucune séance, aucun repas enregistré.</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint"><span class="pill warn">règle</span> Actif = <b>objectif atteint</b>, jamais « au moins un pas » — sinon la série ne se casserait plus jamais et ne voudrait plus rien dire.</div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <!-- ── Les 3 formes du widget ────────────────────────────────────────── -->
+  <div class="shapes">
+    <div>
+      <div class="lbl">Forme small (½ largeur)</div>
+      <div class="card alt" style="padding:10px">
+        <div class="wg">
+          <div class="wgh"><span>Pas</span></div>
+          <div class="row" style="gap:10px">
+            <div class="ring"><span>78 %</span></div>
+            <div class="grow"><span class="big" style="font-size:21px">6 240</span><div class="hint">/ 8 000</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Forme wide (défaut)</div>
+      <div class="card alt" style="padding:10px">
+        <div class="wg">
+          <div class="wgh"><span>Pas</span><span class="muted">Objectif 8 000</span></div>
+          <div class="row" style="align-items:flex-end"><div class="grow"><span class="big">6 240</span><span class="unit">pas</span></div><div class="hint" style="font-weight:700">78 %</div></div>
+          <div class="bar"><i style="width:78%"></i></div>
+          <div class="dots"><div class="dot on">L</div><div class="dot on">M</div><div class="dot">M</div><div class="dot on">J</div><div class="dot on">V</div><div class="dot today">S</div><div class="dot">D</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Forme large (grand carré)</div>
+      <div class="card alt" style="padding:10px">
+        <div class="wg">
+          <div class="wgh"><span>Pas · 7 derniers jours</span><span class="muted">moy. 7 180</span></div>
+          <div class="row" style="align-items:flex-end"><div class="grow"><span class="big">6 240</span><span class="unit">pas</span></div><div class="hint" style="font-weight:700">78 %</div></div>
+          <div class="bar"><i style="width:78%"></i></div>
+          <div class="hist" style="height:70px">
+            <i class="done" style="height:88%"></i><i class="done" style="height:96%"></i><i style="height:54%"></i>
+            <i class="done" style="height:100%"></i><i class="done" style="height:91%"></i><i style="height:78%"></i><i style="height:12%"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Écran historique + objectif ───────────────────────────────────── -->
+  <div class="flow" style="margin-top:34px">
+    <div class="col">
+      <div class="step">5 · Écran d'historique</div>
+      <div class="caption">30 jours. Les barres « objectif atteint » se distinguent par la <b>trame</b>, pas seulement par la couleur (accessibilité).</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">←</span><span class="tt">Pas</span></div>
+        <div class="card">
+          <div class="wgh"><span>30 derniers jours</span><span class="muted">tap = valeur</span></div>
+          <div class="hist">
+            <i style="height:42%"></i><i class="done" style="height:88%"></i><i class="done" style="height:95%"></i><i style="height:31%"></i>
+            <i class="done" style="height:100%"></i><i style="height:64%"></i><i style="height:12%"></i><i class="done" style="height:86%"></i>
+            <i class="done" style="height:92%"></i><i style="height:58%"></i><i class="done" style="height:99%"></i><i style="height:44%"></i>
+            <i class="done" style="height:90%"></i><i style="height:22%"></i><i class="done" style="height:97%"></i><i style="height:71%"></i>
+            <i class="done" style="height:84%"></i><i class="done" style="height:93%"></i><i style="height:38%"></i><i style="height:66%"></i>
+            <i class="done" style="height:89%"></i><i style="height:52%"></i><i class="done" style="height:96%"></i><i style="height:78%"></i>
+          </div>
+          <div class="hint" style="margin-top:7px">L'infobulle au tap vient d'<b>UX-01</b> : composant de graphique réutilisé, rien à écrire.</div>
+        </div>
+        <div class="stat3">
+          <div><b>7 180</b><span>moyenne</span></div>
+          <div><b>12 « j</b><span>objectif</span></div>
+          <div><b>11 402</b><span>meilleur</span></div>
+        </div>
+        <div class="sect">Objectif quotidien</div>
+        <div class="card">
+          <div class="goalpick">
+            <div class="stepbtn">−</div>
+            <div class="v grow">8 000</div>
+            <div class="stepbtn">+</div>
+          </div>
+          <div class="hint" style="margin-top:8px">1 000 → 50 000, par pas de 500. <b>Défaut 8 000</b> : « 10 000 » est un slogan publicitaire des années 1960, et un objectif inatteignable produirait un échec quotidien — d'autant qu'il commande la série.</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint">Modifiable aussi depuis le profil.</div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="step">6 · États non nominaux</div>
+      <div class="caption">Aucun écran muet : chaque situation a son texte et son action. Les 5 états du §2.4 de la spec.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="tt">Pas — états</span></div>
+        <div class="wg">
+          <div class="wgh"><span>Permission manquante</span></div>
+          <div class="hint" style="margin-bottom:8px">Autoriser l'accès aux pas</div>
+          <div class="btn primary sm">Autoriser l'accès</div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Aucune donnée</span></div>
+          <div class="hint">Aucun pas enregistré pour l'instant. Porte ton téléphone sur toi, ou connecte une montre à Health Connect.</div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Health Connect absent</span></div>
+          <div class="hint" style="margin-bottom:8px">Le comptage des pas nécessite Health Connect.</div>
+          <div class="btn sm">Installer Health Connect</div>
+        </div>
+        <div class="wg">
+          <div class="wgh"><span>Opt-in coupé</span></div>
+          <div class="hint">L'historique <b>reste consultable</b> (donnée du compte) ; seul l'import s'arrête.</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="hint"><span class="pill">masqué</span> Hors Android : widget absent, écran inaccessible.</div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <div class="step">7 · Réglages</div>
+      <div class="caption">Pas de nouvelle section : la section Health Connect existante gagne les pas — et sa phrase d'accroche <b>doit changer</b>.</div>
+      <div class="phone"><div class="scr">
+        <div class="nav"><span class="bk">←</span><span class="tt">Réglages</span></div>
+        <div class="sect">Health Connect</div>
+        <div class="card tight">
+          <div class="row">
+            <div class="grow">
+              <div class="rowlab">Synchroniser avec Health&nbsp;Connect</div>
+              <div class="rowdesc">Tes séances et tes courses sont ajoutées au hub santé d'Android ; ton poids y est relu. <b>Tes pas sont enregistrés sur ton compte</b> pour te suivre d'un appareil à l'autre.</div>
+            </div>
+            <div class="toggle"></div>
+          </div>
+          <div class="row"><div class="grow"><div class="rowlab">Importer le poids maintenant</div><div class="rowdesc">Dernier import : aujourd'hui 08:12</div></div></div>
+          <div class="row"><div class="grow"><div class="rowlab">Importer les pas maintenant</div><div class="rowdesc">Dernier import : aujourd'hui 14:05</div></div></div>
+        </div>
+        <div class="banner bad">⚠️ Ancien texte : « <b>Tout reste sur ton téléphone.</b> » → devient <b>faux</b> dès que les pas montent dans le cloud. Correction obligatoire (spec §7).</div>
+        <div class="spacer"></div>
+        <div class="hint">Compte rendu du dernier échec affiché ici (mécanisme <code>SyncReport</code> de CONF-06, <code>kind: 'steps'</code>).</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ── Pipeline ──────────────────────────────────────────────────────── -->
+  <div class="diagram">
+    <h3>Chemin de la donnée</h3>
+    <p class="lead">Une seule lecture, quatre gardes, et un point manuel qui casse tout s'il est oublié.</p>
+
+    <div class="pipe">
+      <div class="node src"><b>Capteur / montre</b>Compteur de pas Android (accéléromètre) ou montre connectée → écrit dans Health Connect.</div>
+      <div class="to">→</div>
+      <div class="node gate"><b>ready()</b>Android ? · opt-in ON ? · Health Connect dispo ? · <code>initialize()</code> · 4 permissions ?<div class="hint" style="margin-top:6px">Abandon = <b>raison explicite</b>, jamais un null muet.</div></div>
+      <div class="to">→</div>
+      <div class="node"><b>aggregateGroupByPeriod</b>bucket <code>DAYS</code> → un total <b>dédoublonné</b> par jour<div class="code"><span class="c">// jamais la somme des records :</span>
+<span class="c">// 2 sources qui se chevauchent</span>
+<span class="c">// = total gonflé</span>
+{ recordType: <span class="s">'Steps'</span>,
+  timeRangeSlicer:
+    { period: <span class="s">'DAYS'</span>, length: <span class="k">1</span> } }</div></div>
+    </div>
+
+    <div class="pipe">
+      <div class="node"><b>toDailySteps()</b><i>pur, testé</i> — date locale issue du <code>startTime</code> du bucket, zéros ignorés, aberrations écartées.</div>
+      <div class="to">→</div>
+      <div class="node"><b>mergeDailySteps()</b><i>pur, testé</i> — règle du <b>max</b> : un total ne redescend jamais, et une tablette peu portée n'écrase pas le téléphone.</div>
+      <div class="to">→</div>
+      <div class="node sink"><b>daily_steps</b>1 ligne / (user, jour) · index unique partiel · RLS <code>user_id = auth.uid()</code> · soft delete.</div>
+      <div class="to">→</div>
+      <div class="node warn"><b>⚠️ Sync rule PowerSync</b>À coller <b>à la main</b> dans le dashboard. Oubliée = rien ne descend, <b>aucune erreur</b>.</div>
+    </div>
+
+    <div class="pipe">
+      <div class="node"><b>Widget + écran</b>3 formes · histogramme 30 j · objectif réglable.</div>
+      <div class="to">→</div>
+      <div class="node"><b>Streak</b><code>DayActivity.steps</code> = <code>isGoalReached()</code> → 4ᵉ dimension de <code>activeDayKeys()</code>.</div>
+      <div class="to">→</div>
+      <div class="node gate"><b>Limite assumée</b>Pas de lecture en arrière-plan → le rappel de 20 h peut partir alors que l'objectif est atteint. Le streak se <b>répare rétroactivement</b> au prochain import.</div>
+    </div>
+  </div>
+
+  <!-- ── Tableau des états ─────────────────────────────────────────────── -->
+  <div class="states">
+    <h3 style="margin:0 0 12px;font-size:15px">États du widget — un texte et une action pour chacun</h3>
+    <table>
+      <thead><tr><th style="width:20%">État</th><th style="width:26%">Condition</th><th>Ce que voit l'utilisateur</th></tr></thead>
+      <tbody>
+        <tr><td><code>unsupported</code></td><td>Plateforme ≠ Android, ou Health Connect absent</td><td>Widget <b>masqué</b> (ou message « nécessite Health Connect » + installer). Écran inaccessible.</td></tr>
+        <tr><td><code>off</code></td><td>Opt-in Health Connect OFF</td><td>« Active Health Connect pour compter tes pas » + bouton vers les Réglages. Aucune permission demandée.</td></tr>
+        <tr><td><code>permissions_missing</code></td><td>Opt-in ON, <code>READ_STEPS</code> refusée — <b>cas de tous les utilisateurs CONF-06</b></td><td>« Autoriser l'accès aux pas ». Les séances continuent de partir normalement.</td></tr>
+        <tr><td><code>empty</code></td><td>Autorisé, aucun bucket sur 30 j</td><td>« Aucun pas enregistré pour l'instant… » — aucun zéro fabriqué, aucune moyenne fausse.</td></tr>
+        <tr><td><code>ready</code></td><td>Données présentes</td><td>Total, objectif, progression, pastilles ; heure du dernier import si &gt; 2 h.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>À valider avec cette maquette (Florian ou Damien)</b> — quatre points de produit, pas de technique :<br>
+    <b>1.</b> <b>Objectif par défaut 8 000</b> plutôt que 10 000 (il commande la série : un défaut inatteignable
+    fabrique un échec quotidien).<br>
+    <b>2.</b> <b>Jour actif = objectif atteint</b>, pas « au moins un pas » — sinon la série devient
+    inbrisable et perd son sens.<br>
+    <b>3.</b> Le widget est <b>transverse</b> (<code>pillars: 'always'</code>, comme la série) : la marche
+    n'appartient à aucun des 3 piliers, un utilisateur « nutrition seule » y a droit aussi.<br>
+    <b>4.</b> La <b>phrase d'accroche des Réglages change</b> (« Tout reste sur ton téléphone » devient faux)
+    et la politique de confidentialité doit nommer les pas comme donnée de santé conservée sur nos serveurs.<br>
+    <br>
+    <b>Note d'honnêteté sur cette maquette</b> : elle a été <b>écrite directement dans le dépôt</b>, dans le
+    style des maquettes existantes, et non exportée de Claude Design — l'outil n'était pas accessible depuis
+    cette session. Le rendu est fidèle à la charte du projet et suffit à la validation ; à réimporter dans
+    Claude Design si vous voulez l'y retravailler.
+  </div>
+</body>
+</html>

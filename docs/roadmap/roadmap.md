@@ -37,11 +37,12 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | **V0.6** | Dashboard, streak & sync cloud (PowerSync) | Accueil personnalisable, régularité, multi-appareils | 19 | ~55h |
 | **V0.7** | Admin & contenu | Back-office + création du contenu éditorial | 10 | ~41h |
 | **V0.8** | Bêta — conformité & intégrations | Play interne : OAuth Google, RGPD, Health, analytics | 9 | ~26h |
+| **V0.9** | Enrichissements avant lancement *(ajoutée le 28/07/2026)* | Rétention (check-in, objectifs, bilan, joker de streak), mensurations, pas quotidiens, finitions UX de recette | 14 | ~57h |
 | **V1.0** | Lancement store | Publication Play Store (Android) | 1 | — |
 | **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
 | **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… | 15 | *non estimé* |
 | **Ultérieur — iOS** | Portage iOS (hors lancement) | App Store + OAuth Apple | 2 | — |
-| | | **Total (périmètre de lancement)** | **194** | **~477h** |
+| | | **Total (périmètre de lancement)** | **208** | **~534h** |
 
 **Logique d'ordonnancement** :
 - **Muscu d'abord** : cœur de valeur, zéro dépendance externe (pas de GPS, pas de clé API) — on valide vite le produit.
@@ -52,11 +53,13 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 - **Admin après les piliers** : pendant le dev, le contenu (exercices, programmes) est injecté par scripts de seed ; l'admin V0.7 industrialise avant la bêta.
 - **Conformité et intégrations juste avant la bêta** : OAuth Google, export/suppression RGPD et analytics doivent exister avant d'ouvrir à de vrais testeurs.
 
-> **📊 État réel au 26/07/2026** : les **3 piliers sont fonctionnels**, l'app tourne offline avec synchro
+> **📊 État réel au 28/07/2026** : les **3 piliers sont fonctionnels**, l'app tourne offline avec synchro
 > cloud réelle, le back-office existe, la refonte muscu et les widgets multi-formes sont livrés.
-> **V0.6 et V0.7 sont bouclées** ; V0.2/V0.3/V0.4/V0.5 sont complètes à quelques finitions près.
-> Le reste-à-faire du lancement (MVP1 = V1.0) tient en **3 items P0** : **9.9 Health Connect**,
-> **accessibilité (9.11/9.12)** et **9.2 publication Play Store**.
+> **V0.6 et V0.7 sont bouclées** ; V0.2/V0.3/V0.4/V0.5 sont complètes à quelques finitions près ;
+> **9.9 Health Connect est livré et recetté**. Le reste-à-faire bloquant tient en **2 items** :
+> **accessibilité (9.11/9.12)** et **9.2 publication Play Store** (compte développeur + review).
+> Le cahier des charges étant en avance sur le calendrier de publication, la version **V0.9** a été
+> créée le 28/07/2026 pour enrichir le produit pendant les délais externes de Google.
 > **L'état courant se lit dans [ETAT.md](../../ETAT.md)** (généré) ; le reste-à-faire détaillé dans
 > [BACKLOG.md](../../BACKLOG.md). Cette roadmap donne la **photo d'ensemble du périmètre**.
 
@@ -310,13 +313,43 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 
 ---
 
+## V0.9 — Enrichissements avant lancement
+
+*Ajoutée le **28/07/2026**. Le code a **pris de l'avance sur le cahier des charges** : le périmètre
+fonctionnel du cadrage est bouclé à quelques finitions près, alors que les prérequis de publication
+(compte développeur Play, déclaration « Health apps », relecture juridique) sont **à délai externe —
+environ 3 semaines**. Cette version occupe cette fenêtre avec des fonctionnalités **retenues depuis
+[IDEAS.md](../../IDEAS.md)** plutôt que d'attendre Google. **Critères de sélection** : offline-first,
+aucune dépendance backend/IA, hors gamification (arbitrage C), hors social (V2), hors paiement
+(arbitrage D), et réutilisation d'une infra déjà livrée. Tout ce qui demande un moteur de règles, de
+l'historique long ou une base d'utilisateurs est resté en post-V1.*
+
+| # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
+|---|---|---|:---:|:---:|:---:|:---:|---|
+| 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | ⬜ | **BIEN-01**. **4ᵉ dimension légère** cohérente avec le nom du produit, et boucle d'habitude quotidienne. Nouvelle table offline-first historisée ; alimentera les corrélations récup ↔ perfs (post-V1). |
+| 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | ⬜ | **MESUR-01**. Fait enfin descendre **E8** de la [spec muscu §5](../specs/functional/musculation.md) — décrite au cadrage mais **jamais descendue en US**, donc sans modèle de données. Réutilise l'infra courbes du poids (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = sous-lot post-V1). |
+| 3.52 | Suggestion de substitution d'exercice | Matériel pris ou zone douloureuse → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | ⬜ | **MUSC-F14**. Le **remplacement en direct existe déjà** (3.32) ; ce qui manque, c'est la **suggestion**. Sélection déterministe sur le groupe musculaire, aucun appel externe. |
+| 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ⬜ | **UX-02**. Remonté en **recette F10c** : la card « sandwich » entre la recherche et la liste, le sélecteur de groupe musculaire sur plusieurs lignes, le champ nom qui paraît vide. |
+| 3.54 | Cohérence fiche exercice perso / bibliothèque | Mêmes sections et états vides explicites ; édition des instructions et muscles secondaires sur un exo perso. | Moyen | 3h | 🟢 | ⬜ | **UX-03**. Recette F10c : un exo perso créé sur mobile n'a **ni instructions ni muscles secondaires** (pas de saisie) → sa fiche paraît « plus vide », l'écart est **subi**, pas voulu. Modifier/Supprimer réservés au perso restent **volontaires**. |
+| 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR ≈ 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | ⬜ | **UX-05**. Évolution du RPE par série (3.34) : beaucoup de pratiquants raisonnent en *reps in reserve*. Conversion à l'affichage, pas en base. |
+| 4.37 | Substitution d'aliments pour combler un macro | « il te manque 20 g de protéines → ajoute X » : suggestions puisées dans la base et les aliments récents. | Moyen | 4h | 🟢 | ⬜ | **NUTR-F2**. **Calcul local déterministe, pas d'IA** — s'appuie sur le socle macros/TDEE et le journal du jour, déjà livrés. Rend le journal *actionnable* au lieu de constatif. |
+| 7.14 | Joker / gel de streak | 1 joker par mois protège la série sur un jour manqué, sans remettre le compteur à zéro. | Moyen | 3h | 🟢 | ⬜ | **STREAK-01**. Levier de rétention le plus éprouvé du marché (Duolingo) : enlève la frustration qui fait abandonner. **Reste gratuit en V1** (arbitrage D) ; la frontière premium se rediscutera post-V1. Étend le streak (V0.6), **n'ouvre pas** la boucle de jeu (arbitrage C). |
+| 7.15 | Objectifs personnels à échéance | « 50 km ce mois », « +5 kg au développé d'ici 8 semaines » — anneau de progression, jalons, célébration. | Moyen | 6h | 🟢 | ⬜ | **OBJ-01**. **Non social** (les défis entre amis restent V2) et **mono-objectif** : l'objectif hybride transverse à arbitrage de compromis reste post-V1. Lit les agrégats existants. |
+| 7.16 | Bilan hebdomadaire automatique | Récap poussé en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine à venir. | Moyen | 5h | 🟢 | ⬜ | **BILAN-01**. Format « une seule décision » plutôt que vingt graphiques. **Aucune narration sans les chiffres affichés à côté** — texte assemblé à partir de clés i18n et d'agrégats calculés localement, pas d'IA. Réutilise l'infra notifications (streak, DND). |
+| 7.17 | Carte de séance / course partageable | Export image (trace GPS + stats, ou résumé muscu) pour les stories Instagram / WhatsApp. | Moyen | 4h | 🟢 | ⬜ | **PARTAGE-01**. **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le jour du lancement. |
+| 7.18 | Réagencement du dashboard découvrable | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Facile | 2h | 🟢 | ⬜ | **UX-04**. Remonté en recette (16/07/2026) : bouton en bas à gauche trop petit et peu explicite, drag qui demande trop de précision. Corrige la découvrabilité de 7.13 (widgets multi-formes). |
+| 8.11 | Archivage sûr du contenu éditorial | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | Moyen | 4h | 🟢 | ⬜ | **ADMIN-01**. ⚠️ **Risque d'intégrité, pas du confort** : l'archivage (8.2) est **à sens unique et sans garde-fou** ; archiver un exercice déjà référencé par des `workout_sets` / `exercise_plans` le retire des bases locales (règle de sync `deleted_at IS NULL`) → **le nom disparaît de l'historique des utilisateurs**. À corriger **avant** d'avoir de vrais utilisateurs. |
+| 9.15 | Pas quotidiens (lecture Health Connect) | Lire le total de pas par jour via Health Connect, objectif de pas quotidien, widget + historique. Les pas comptent dans le streak. | Moyen | 8h | 🟢 | ⬜ | **PAS-01** — spec en cours (branche `feature/pas01-pas-quotidiens`), estimation portée de 5 h à 8 h au cadrage : table + migration + sync rule + streak + widget + i18n. **Sommeil écarté** (décision Florian, 28/07/2026) : aucune valeur avant les analyses croisées, qui sont post-V1 → l'ajouter plus tard imposera une **re-déclaration Play**, coût accepté. Décisions actées : données **synchronisées dans le cloud** (donc politique de confidentialité et « Sécurité des données » Play à revoir — voir la spec §7) et **pas comptés dans le streak**. ⚠️ 1 type de données en plus (`READ_STEPS`) à justifier dans le **même** formulaire que CONF-06 → à figer avant LANCE-00. |
+
+---
+
 ## V1.0 — Lancement store
 
 *Objectif : publication publique **sur Android**. Le gros du travail est de la validation (review Google), pas du code. **iOS reporté** (arbitrage E). **= MVP1 complet.***
 
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
-| 9.2 | App Android | Publication Play Store via Expo EAS Build. | Difficile | — | 🟡 | ⬜ | Compte Google Play + review. **Plateforme de lancement** (arbitrage E). Dépend de V0.8. |
+| 9.2 | App Android | Publication Play Store via Expo EAS Build. | Difficile | — | 🟡 | ⬜ | Compte Google Play + review. **Plateforme de lancement** (arbitrage E). Dépend de V0.8 **et de V0.9** (décision du 28/07/2026 : on enrichit pendant les délais externes de Google). Seuls **9.15** (types de données Health) et **8.11** (intégrité des références) sont sur le chemin critique — le reste de V0.9 peut être coupé sans bloquer la soumission. |
 
 ---
 
@@ -388,16 +421,16 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 > **9.3** SQLite maison → PowerSync (8 h → 6 h) · **9.7** conflits délégués à PowerSync (6 h → 3 h) · **2.12** sync arrière-plan via PowerSync (6 h → 3 h) ·
 > **− 1.3** OAuth Apple (−3 h) et **− 9.1** App iOS déplacés en « Ultérieur — iOS » (hors décompte de lancement).
 
-**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 26/07/2026)** :
+**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 28/07/2026)** :
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 162 | ~84 % |
-| 🟡 Partiel | 11 | ~6 % |
-| ⬜ À faire | 16 | ~8 % |
+| ✅ Livré | 162 | ~78 % |
+| 🟡 Partiel | 11 | ~5 % |
+| ⬜ À faire | 30 | ~14 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **194** | |
+| **Total périmètre de lancement** | **208** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
@@ -405,6 +438,12 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 > ont été intégrées au décompte. Elles étaient livrées mais invisibles, ce qui faisait **sous-estimer**
 > l'avancement. Les 10 US d'analyse (suivies au [catalogue](../product/analyses-donnees.md)) et les
 > correctifs restent hors décompte.
+>
+> **Puis de 194 à 208** le 28/07/2026 : création de la version **[V0.9](#v09--enrichissements-avant-lancement)**
+> (14 fonctionnalités, ~57 h) — décision d'**élargir le périmètre de lancement** puisque le code a pris
+> de l'avance sur le cahier des charges et que les prérequis Play sont à délai externe. Le pourcentage
+> d'avancement **baisse mécaniquement de 84 % à 78 %** sans qu'une ligne de code ne régresse : c'est le
+> dénominateur qui grandit, volontairement.
 
 **Détail par version** (✅ / 🟡 / ⬜ / ⏳ / ❌) :
 
@@ -418,12 +457,13 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8) |
+| V0.9 (14) | 0 | 0 | 14 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google |
+| V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
 
-- **~194 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 15 nées en cours de route).
-- **~477 h** de code brut estimées au cadrage, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 15 items hors cadrage.
+- **~208 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 15 nées en cours de route + 14 de V0.9).
+- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 15 items hors cadrage.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
 - **+ ~10 US d'analyse** suivies au [catalogue](../product/analyses-donnees.md), hors décompte.
 
@@ -436,6 +476,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 - ~~avant **V0.4** → source de la base d'aliments (4.8)~~ → **tranché & livré** : CIQUAL + OpenFoodFacts.
 - ~~avant **V0.5** → fournisseur de cartes (5.17)~~ → **tranché : MapLibre + MapTiler** (ADR-006, 11/07/2026).
 - avant **V0.8** → clé OAuth Google, textes CGU / confidentialité (rédaction dès que possible, relecture juridique). **OAuth Apple n'est plus bloquant** (reporté avec iOS).
+- ~~avant **LANCE-00** → quels types de données Health Connect déclarer ?~~ → **tranché (Florian, 28/07/2026)** :
+  on ajoute les **pas** (`READ_STEPS`), on **écarte le sommeil**. La déclaration Play doit donc porter
+  **4 types** (`WRITE_EXERCISE`, `WRITE_DISTANCE`, `READ_WEIGHT`, `READ_STEPS`) et, les pas étant
+  **synchronisés dans le cloud**, la section « Sécurité des données » doit déclarer une **donnée de santé
+  transmise hors de l'appareil** — ce que CONF-06 n'avait pas à déclarer.
 
 ---
 
@@ -444,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**28/07/2026 — création de V0.9 : élargissement du périmètre de lancement (+14)**
+Le code étant en avance sur le cahier des charges et les prérequis Play étant à délai externe (~3 s.),
+14 idées d'[IDEAS.md](../../IDEAS.md) sont promues avant le lancement : 1.24, 3.51→3.55, 4.37,
+7.14→7.18, 8.11, 9.15. Compteurs : **162 / 11 / 30 sur 208** (V0.9 : 0/0/14) — le % passe de 84 à 78 %
+parce que le dénominateur grandit, pas parce que quelque chose a régressé.
 
 **28/07/2026 — CONF-06 : Health Connect (9.9) 🟡 → ✅**
 Recette device validée par Florian. Deux correctifs trouvés en recette : format d'horodatage

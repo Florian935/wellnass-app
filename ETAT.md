@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **84 %** — 162 livré · 11 partiel · 16 à faire (sur 194)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **78 %** — 162 livré · 11 partiel · 30 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -16,6 +16,7 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
+| **PAS-01** — Pas quotidiens — lecture Health Connect, objectif et streak | `code` | `feature/pas01-pas-quotidiens` | [9.15] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `validation` | `docs/contenu-01-spec` | [3.1, 5.2] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -24,11 +25,11 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (8) · P2 confort (2)</summary>
+<details><summary>P1 finitions (18) · P2 confort (5)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — ADMIN-01 — Archivage sûr du contenu éditorial · BIEN-01 — Check-in quotidien & journal de bien-être · MESUR-01 — Mensurations corporelles · STREAK-01 — Joker / gel de streak · OBJ-01 — Objectifs personnels à échéance · BILAN-01 — Bilan hebdomadaire automatique · NUTR-F2 — Substitution d'aliments pour combler un macro · UX-02 — Création d'exercice perso en modale · UX-03 — Cohérence fiche exercice perso / bibliothèque · UX-04 — Réagencement du dashboard découvrable · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
-**P2** — NUTR-F1 — Rappels programmés nutrition · SOCLE-01 — RevenueCat câblé inactif
+**P2** — NUTR-F1 — Rappels programmés nutrition · PARTAGE-01 — Carte de séance / course partageable · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
 
 </details>
 
@@ -38,9 +39,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/conf06-health-connect` (modifications non commitées) |
-| Commits | 942 · `main` a **939** commits de retard sur `dev` |
-| Specs d'US | 75 au total — 74 clôturées, 1 en cours |
+| Branche courante | `feature/pas01-pas-quotidiens` (modifications non commitées) |
+| Commits | 943 · `main` a **940** commits de retard sur `dev` |
+| Specs d'US | 76 au total — 74 clôturées, 2 en cours |
 | Migrations | 45/45 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -50,11 +51,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `aea2ab1` fix(health-connect): normalise les horodatages et rend les échecs visibles (US CONF-06 close, 9.9)
 - `c682993` feat(health-connect): écriture des séances/courses et lecture du poids (US CONF-06, 9.9)
 - `d54f05b` docs(suivi): refonte du suivi d'avancement — ETAT genere, BACKLOG, front-matter, roadmap reconciliee
 - `09899ca` chore(eas): versionne le Client ID Google, écarte la clé MapTiler du dépôt public
 - `d8cd84c` docs(ux01): clôture US UX-01 + relecture croisée non requise + doc environnement de dev local
-- `77088f9` merge: intègre origin/dev (12 commits) dans feature/ux01-infobulle-graphiques
 
 ---
 

@@ -152,24 +152,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   _Prochaine étape :_ **rien à cadrer maintenant** — à ressortir quand la boucle de jeu sera réévaluée
   (V3/V4).
 
-- [23/07/2026] 🔍 **Création d'exercice perso → passer en modale (au lieu de la card inline)** : remonté
-  par Florian en recette F10c. Aujourd'hui, « Créer un exercice perso » (liste des exercices Muscu)
-  ouvre une **card intercalée** entre la barre de recherche et la liste → sensation « sandwich »
-  étrange. En plus : (a) le sélecteur de **groupe musculaire** n'est **pas** `scrollable` → il passe
-  **sur plusieurs lignes** (contrairement à la fiche qui l'a en `scrollable`) ; (b) le champ **nom**
-  n'a **pas de placeholder** → l'input paraît vide/invisible. _Piste :_ transformer le flux en
-  **modale / bottom-sheet** (même patron que `ExerciseFilterDrawer`), + Segment `scrollable` +
-  placeholder sur le nom. _Prochaine étape :_ cadrage US (spec → plan → design). Petite US UX.
-- [23/07/2026] 🔍 **Cohérence de la fiche exercice bibliothèque VS perso** : remonté par Florian en
-  recette F10c — la fiche « perso » paraît différente de la fiche « bibliothèque », c'est perturbant.
-  Partie **volontaire** : seuls les exos perso portent **Modifier / Supprimer** (on ne modifie pas un
-  exo éditorial). Partie **subie** : un exo perso créé sur mobile n'a **ni instructions, ni muscles
-  secondaires** (pas de saisie mobile pour ça) → sa fiche paraît « plus vide » ; l'ordre/þprésence des
-  blocs diffère donc visuellement. _Pistes à trancher :_ (1) harmoniser la structure (mêmes sections,
-  états vides explicites) ; (2) permettre d'éditer plus de champs sur un exo perso (instructions,
-  muscles secondaires) pour combler l'écart ; (3) statu quo assumé + libellés clarifiant. _Prochaine
-  étape :_ mini-brainstorming pour fixer l'état cible, puis US.
-
 - [21/07/2026] 🆕 **3 niveaux d'affichage pour la séance live : Simplifiée / Normale / Détaillée** :
   adapter l'écran de séance en cours au niveau d'expérience de l'utilisateur, plutôt qu'un seul écran
   avec tous les champs pour tout le monde. **Simplifiée** (débutant) = strict minimum pour ne pas
@@ -186,14 +168,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   bascule rapide en tête de séance ; liste exacte des champs par niveau ; cohérence avec le module
   **Powerlifting** (pratiquants confirmés, %1RM/RPE/RIR). _Prochaine étape :_ cadrage plus tard (spec
   → plan → design) — candidat pour une itération future de l'écran de séance, après la refonte C3.
-- [20/07/2026] 🆕 **RIR en alternative au RPE par série (préférence utilisateur)** : US Refonte-C2 introduit
-  un **RPE par série** (échelle 1-10, optionnel). Certains pratiquants raisonnent plutôt en **RIR** (*reps in
-  reserve* : nombre de reps qu'il restait avant l'échec — 0 = échec, ~5 = très facile). Prévoir de pouvoir
-  **renseigner le RIR à la place du RPE**, idéalement via une **préférence de profil** (afficher l'intensité en
-  RPE **ou** RIR) — les deux étant liés (RIR ≈ 10 − RPE). À creuser : réglage global vs par série ; conversion/
-  stockage (garder une seule donnée en base et convertir à l'affichage ?) ; cohérence avec le futur module
-  **Powerlifting** ([[module-powerlifting]] mentionne déjà « RPE / RIR ») et les **profils enrichis**. Remonté
-  par Florian (20/07). Cible : évolution de C2 (post-livraison C2).
 - [16/07/2026] 🆕 **Générateur IA de plan de repas hebdomadaire + liste de courses (nutrition)** :
   dans le module **nutrition**, un système (piste **IA**) qui **planifie tous les repas de la semaine**
   à partir de paramètres saisis par l'utilisateur : **nombre de repas/jour**, **nombre de collations/jour**,
@@ -244,15 +218,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   [[donnees-sommeil-pas]] et l'intégration Health Connect (US 9.9). _Prochaine étape :_ cadrage plus tard
   (décision Florian, 16/07) — trancher A/B, puis spec → plan → design.
 
-- [16/07/2026] 🆕 **Poignée de réagencement du dashboard trop petite / peu parlante (UX)** : sur le
-  **dashboard d'accueil**, le mode « personnaliser / réagencer les cards » se déclenche via un **bouton en
-  bas à gauche** qui est **trop petit, pas assez explicite**, et le **drag-and-drop demande trop de
-  précision** pour attraper la poignée. Remonté par Florian en recette (16/07). Pistes à instruire :
-  poignée de glissement **plus grande et plus visible** (icône ⠿ / libellé), **zone de préhension
-  élargie** (hitSlop), mode réagencement plus **découvrable** (ex. appui long sur une card, ou bouton
-  « Personnaliser » clair en haut), **retour visuel** pendant le drag (ombre/placeholder). _À creuser :_
-  ergonomie tactile (taille de cible ≥ 48 dp), accessibilité, cohérence avec la maquette du dashboard.
-
 - [15/07/2026] 🔍 **SaaS coach (web, hors app mobile) — wedge = import IA de fichiers Excel/Sheets** :
   concrétise et prolonge [[module-coach-coache]] + [[offre-payante-coach]] (12/07). Idée : une
   **application web séparée** (pas dans l'app mobile), payante (B2B, le **coach paie**, l'athlète reste
@@ -302,17 +267,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   exacte des réglages par pilier ; comment le mode avancé nourrit concrètement les suggestions IA ;
   où placer le curseur gratuit/payant sans frustrer l'adoption.
 
-- [15/07/2026] 🆕 **Podométrie — suivi des pas au quotidien** : compter les **pas** de l'utilisateur
-  tout au long de la journée, en **arrière-plan**, **sans avoir à lancer une course** à chaque fois
-  (ce serait relou de démarrer une séance running juste pour compter ses pas quotidiens). **Doit
-  passer par l'accéléromètre du téléphone, pas par le GPS** : cas d'usage clé = marcher sur un **tapis
-  de marche** (walking pad) pendant le travail — le GPS ne bouge pas, donc pas, allure et distance ne
-  seraient pas comptés ; l'accéléromètre, lui, détecte le mouvement. À creuser : capteur/API pas natif
-  (Android step counter / Health Connect côté Android, `expo-sensors`/pédomètre) vs comptage maison
-  sur l'accéléromètre ; objectif de pas quotidien + streak/pastilles ; distinct du pilier Running (pas
-  = activité de fond, pas une séance) mais peut nourrir les analyses transverses (dépense, régularité).
-  Recoupe potentiellement l'intégration santé (Health Connect, US 9.9).
-
 - [15/07/2026] 🆕 **Board de suggestions utilisateurs + votes (feature request board)** : un endroit
   dans l'app (emplacement à définir) où les utilisateurs **soumettent** des idées d'amélioration ou de
   nouvelles fonctionnalités, et où les **autres utilisateurs votent** (upvote) pour celles qu'ils
@@ -355,18 +309,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   données de carence (le journal ne couvre pas tout). Séparer **le moteur de reco** (valeur produit, peut
   rester neutre/gratuit) de la **couche partenariale** (monétisation par-dessus). Cible **post-V1** (après
   micros consolidés + activation paiement).
-- [13/07/2026] 🔍 **Mensurations corporelles + historisation (tour de taille, poitrine, bras, cuisses…)** :
-  saisie de mensurations avec **courbes d'évolution** dans le temps, à côté du poids de corps.
-  _Vérifié le 13/07/2026 : **partiellement cadré mais non planifié**. La spec muscu §5 « Mesures
-  corporelles & photos (E8) » ([musculation.md:182-187](docs/specs/functional/musculation.md#L182-L187))
-  décrit déjà des « mesures corporelles optionnelles » + « courbes d'évolution du poids ET des mesures » +
-  photos de progression (galerie privée RLS). MAIS E8 **n'est descendue en aucune US** dans la
-  [roadmap](docs/roadmap/roadmap.md) : pas de version cible, **pas de modèle de données** (seul le poids
-  de corps existe via `bodyweight`). → à promouvoir en US._ Piste data : table `body_measurements`
-  (offline-first, historisée, une ligne par mesure/date), réutilise l'infra courbes du poids (4.30) et le
-  hook `useUnits()` (cm/in). Recoupe les « analyses des coachés (mensurations) » de [[module-coach-coache]]
-  et le check-in [[journal-bien-etre]]. Photos de progression = sous-lot distinct (Storage privé).
-
 - [13/07/2026] 🆕 **Télémétrie d'usage comportementale (enrichir le plan analytics)** : compléter le
   cadrage analytics existant avec des métriques d'**usage**, pas seulement de résultat métier.
   _Vérifié le 13/07/2026 : l'**outil** (PostHog auto-hébergé US 9.10, V0.8 + Sentry) et un **doc de
@@ -461,19 +403,12 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   Ne JAMAIS faire payer ce qui doit rester gratuit : export RGPD, synchro multi-appareils de base,
   offline. _Cadre les idées M1→M8 ci-dessous._
 
-- [13/07/2026] 🆕 **[Rétention] Joker / gel de streak (façon Duolingo)** : un « streak freeze » qui
-  protège la série un jour manqué — enlève la frustration qui fait abandonner. Levier de rétention
-  très prouvé. Bon candidat premium (gratuit = 1 joker/mois, payant = plus).
 - [13/07/2026] 🆕 **[Rétention] Notifications de reprise (win-back)** : après X jours d'inactivité,
   « ça fait 5 jours, on reprend en douceur ? » avec une séance courte proposée.
-- [13/07/2026] 🆕 **[Rétention] Objectifs personnels à échéance + jalons** : « courir 50 km ce mois »,
-  « +5 kg au développé d'ici 8 semaines » — anneau de progression + célébration. Non social
-  (contrairement aux défis V2).
-- [13/07/2026] 🆕 **[Rétention] Check-in quotidien léger (rituel)** : 10 s le matin
-  (humeur/énergie/poids) pour créer la boucle d'habitude. Alimente [[journal-bien-etre]] et les
-  corrélations [[analyses-croisees-poussees]].
 - [13/07/2026] 🆕 **[Rétention] « Il y a 1 an » / souvenirs** : rappel d'une perf ou séance passée à
-  la même date. Rétention émotionnelle, peu coûteux.
+  la même date. Rétention émotionnelle, peu coûteux. _Écartée de **V0.9** (28/07/2026) : au lancement,
+  aucun utilisateur n'a d'historique — la fonctionnalité n'aurait littéralement rien à raconter. À
+  ressortir après ~1 an d'usage réel, avec la [[retrospective-annuelle-wrapped]]._
 - [13/07/2026] 🆕 **[Rétention] Garde-fou surentraînement / rappel de repos** : détecte l'accumulation
   et suggère un jour off — éviter la blessure = éviter l'abandon. Recoupe [[detection-plateau-deload]]
   et [[journal-blessures]].
@@ -516,50 +451,15 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [13/07/2026] 🆕 **[Monétisation] Accès anticipé aux nouveautés** : les abonnés testent les features
   en avant-première. Renforce le sentiment d'appartenance.
 
-- [13/07/2026] 🆕 **Bilan hebdo/mensuel automatique** : un récap périodique narratif (volume, sorties,
-  calories, PR, tendance) poussé en notification — distinct des widgets dashboard (vue live). Digest
-  qui raconte la période. S'appuie sur les agrégats déjà cadrés.
-  - _**Enrichissement 25/07/2026** (benchmark IA — ChatGPT §11, angle rétention le plus cité des 4 dumps) :_
-    adopter le format « **une seule décision** ». Le bilan ne déroule **pas** vingt graphiques : il dit ce
-    qui a **progressé**, ce qui **bloque**, et demande **une seule décision** pour la semaine à venir
-    (« maintenir le déficit », « enlever une séance », « monter les glucides autour du running »). Si l'IA
-    rédige le résumé, elle le fait **à partir des chiffres affichés à côté** — jamais de narration sans les
-    données sous-jacentes visibles. _Recoupe :_ [[recommandations-explicables-contestables]].
 - [13/07/2026] 🆕 **Rétrospective annuelle façon « Wrapped »** : récap annuel imagé et partageable
   (km parcourus, tonnage total, top exercices, records…). Fort levier d'acquisition virale ; recoupe
   [[carte-seance-partageable]].
-- [13/07/2026] 🆕 **Rappels intelligents contextuels** : notifications situées — « séance prévue
-  aujourd'hui », « déjeuner non loggé », « streak en danger ce soir ». S'appuie sur le planning
-  unifié déjà cadré.
-  - _**Enrichissement 25/07/2026** (benchmark IA — Gemini §2.5, Qwen-3.7 « cues événementielles ») :_
-    envoyer le rappel **au moment probable appris du comportement**, pas à heure fixe — moyenne glissante
-    des heures de log sur ~2 semaines (« tu logges ton déjeuner vers 12 h 40, ta séance vers 18 h 15 ») →
-    le rappel part dans **cette** fenêtre, avec un contenu adapté (« tu n'as pas loggé ton déj »). Calcul
-    **100 % local**, aucun serveur. _Points durs :_ survivre au **doze mode** Android (WorkManager /
-    notifications planifiées) → prévoir une **fenêtre de ~30 min** en repli ; **plafonner** le nombre de
-    notifications/jour pour ne pas devenir intrusif.
-- [13/07/2026] 🆕 **Carte de séance/course partageable en image** : export visuel (trace GPS + stats,
-  ou résumé muscu) pour stories Insta/WhatsApp. _NB : le feed social est V2 ; ici c'est du partage
-  sortant statique, faisable avant._
 - [13/07/2026] 🆕 **Programme de parrainage** : code d'invitation + récompense. Utile quand la
   monétisation s'activera (lié à [[offre-payante-coach]] / RevenueCat câblé).
 - [13/07/2026] 🆕 **Reconnaissance de repas par photo** : sous-cas concret de [[integration-ia]] —
   photo de l'assiette → estimation des aliments/macros. Recoupe [[nutrition-recettes-healthy]].
-- [13/07/2026] 🆕 **Suggestions de substitution d'aliments** : « il te manque 20 g de protéines
-  aujourd'hui → ajoute X ». Complète le socle calories/macros cadré (TDEE, journal).
 - [13/07/2026] 🆕 **Suivi du jeûne intermittent / fenêtre alimentaire** : timer + historique de la
   fenêtre repas. Public fitness demandeur ; non couvert par le cadrage nutrition.
-- [13/07/2026] 🆕 **Substitution d'exercices (matériel indispo / blessure)** : « banc pris → variante
-  haltères ». Améliore le logging live muscu ; lié à [[journal-blessures]].
-- [13/07/2026] 🆕 **Détection de plateau + suggestion de deload proactive** : au-delà de la surcharge
-  progressive déjà cadrée, détecter la stagnation d'un exercice et proposer un deload. Recoupe
-  [[analyses-croisees-poussees]].
-- [13/07/2026] 🆕 **Météo avant une sortie planifiée** : aujourd'hui la météo n'est qu'un champ
-  post-séance ; l'afficher **en amont** d'une sortie prévue aide à planifier. Lié aux rappels
-  contextuels.
-- [13/07/2026] 🆕 **Journal de bien-être / humeur / énergie** : mini-suivi quotidien (humeur, énergie,
-  stress) — potentielle **4ᵉ dimension légère** cohérente avec le nom « wellness ». Nourrit
-  directement [[analyses-croisees-poussees]] (corrélation récup ↔ perfs).
 - [13/07/2026] 🆕 **Journal blessures/douleurs & courbatures** : noter une zone sensible → l'app évite
   de programmer ce groupe ou alerte. Complète la récup ; lié à [[substitution-exercices]] et
   [[analyses-croisees-poussees]].
@@ -570,15 +470,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   validée », « prochain exercice ». Étend à la muscu les annonces audio running déjà prévues.
 - [13/07/2026] 🆕 **Langues supplémentaires (ES, DE…)** : extension naturelle post-FR/EN ; l'archi
   i18n (i18next) est déjà en place.
-- [13/07/2026] 🆕 **Archivage sûr du contenu éditorial (désarchiver + garde-fou d'usage)** : suite au
-  CRUD exercices (US 8.2), l'archivage = soft-delete **à sens unique** (pas de « désarchiver » dans
-  l'admin) et **sans garde-fou**. Or archiver un exercice **déjà utilisé** dans des séances
-  d'utilisateurs (`workout_sets`/`exercise_plans` le référencent) le retire de leur base locale
-  (sync `deleted_at IS NULL`) → **référence orpheline** : le nom disparaît de leur historique.
-  Pistes : (a) écran des **archivés** + **restauration** (`deleted_at → null`) ; (b) **garde-fou** qui
-  compte les usages (`workout_sets`/`exercise_plans` référençant l'exercice) et **prévient/empêche**
-  l'archivage d'un exercice populaire ; (c) généraliser aux autres contenus éditoriaux (aliments,
-  programmes). Transverse aux lots CRUD admin (8.2→8.5). _Noté le 13/07/2026._
 - [13/07/2026] 🆕 **Moteur d'analyses croisées poussées (corrélations)** : au-delà du socle de
   croisement déjà cadré, un vrai moteur qui met les données en relation — tendance des PR selon le
   volume/intensité, surplus vs déficit calorique corrélé à l'évolution des perfs, impact des pas
@@ -592,11 +483,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 **Intégration de l'IA** dans le produit (thème transverse à préciser).
 - [12/07/2026] 🆕 **Nutrition — suggestion de recettes healthy** : l'utilisateur renseigne les
   ingrédients qu'il a, l'app propose des recettes saines correspondantes (piste IA à évaluer).
-- [12/07/2026] 🆕 **Données sommeil & pas (podométrie/steps)** : indicateur + saisie/import.
-  _Vérifié le 12/07/2026 : non couvert par le cadrage actuel. Health Connect (US 9.9, V1) se
-  limite à l'écriture des séances + lecture du poids ; les wearables V2 (zones FC, hydratation)
-  ne nomment ni le sommeil ni les pas. → idée neuve à instruire. Piste : source de vérité via
-  Health Connect (Android) / Apple Health (iOS ultérieur) plutôt que saisie manuelle._
 - [12/07/2026] 🆕 **Gamification ludique via équivalences parlantes** : streak/indicateurs qui
   traduisent les perfs en repères concrets — ex. « Tu as couru X km ce mois-ci, soit la distance
   Paris–Marseille » ou « Tu as soulevé X tonnes cette séance, soit l'équivalent d'un Boeing ».
@@ -627,6 +513,88 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [10/07/2026] ✅ Export GPX des sorties → promue en US 5.xx.
 - [10/07/2026] ❌ Intégration montres Garmin → hors périmètre V1, revoir en V2.
 -->
+
+### 28/07/2026 — 18 idées tranchées : création de la version V0.9 (avant lancement)
+
+**Contexte de la décision** : le code a **pris de l'avance sur le cahier des charges** (périmètre
+fonctionnel du cadrage bouclé à quelques finitions près) alors que les prérequis de publication
+— compte développeur Play, déclaration « Health apps », relecture juridique — sont à **délai externe
+d'environ 3 semaines**. Plutôt que d'attendre Google, on **élargit le périmètre de lancement** :
+**14 idées promues** dans la nouvelle version
+**[V0.9](docs/roadmap/roadmap.md#v09--enrichissements-avant-lancement)** (~54 h) et **4 absorbées** par
+des candidats déjà au backlog. Points durs et ordre conseillé : [BACKLOG.md](BACKLOG.md).
+
+**Filtre appliqué** — retenu si : offline-first, aucune dépendance backend/IA, hors gamification
+(arbitrage C), hors social (V2), hors paiement (arbitrage D), infra déjà livrée réutilisable. Écarté
+si : moteur de règles à concevoir, historique long nécessaire, ou base d'utilisateurs requise.
+
+*Promues (14) :*
+
+- [13/07/2026] ✅ **Journal de bien-être + check-in quotidien léger** → **BIEN-01** (roadmap **1.24**).
+  Les deux idées n'en faisaient qu'une : le check-in (humeur / énergie / stress en ~10 s le matin) **est**
+  la saisie du journal. 4ᵉ dimension légère cohérente avec le nom du produit. Nouvelle table
+  offline-first historisée + **sync rule PowerSync à déployer à la main**. Nourrira les corrélations
+  récup ↔ perfs ([[analyses-croisees-poussees]], post-V1).
+- [13/07/2026] ✅ **Mensurations corporelles + historisation** → **MESUR-01** (roadmap **3.51**). Fait
+  enfin descendre **E8** de la [spec muscu §5](docs/specs/functional/musculation.md) — cadrée au
+  04/07 mais jamais descendue en US, donc **sans modèle de données**. Réutilise l'infra courbes du poids
+  (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = sous-lot post-V1).
+- [15/07/2026] + [12/07/2026] ✅ **Podométrie / données sommeil & pas** → **PAS-01** (roadmap **9.15**).
+  Fusionnées : une seule source de vérité, **Health Connect**, dont le module natif et le plugin Expo
+  maison sont livrés depuis 9.9 → coût **marginal**. Le compteur de pas Android s'appuie sur
+  l'**accéléromètre**, donc il compte sur un **tapis de marche** là où le GPS ne verrait rien — ce qui
+  était le cas d'usage d'origine. ⚠️ **Sur le chemin critique** : ces 2 types de données doivent être
+  justifiés dans la **même** déclaration Play que CONF-06, sinon second aller-retour de ~2 semaines.
+- [13/07/2026] ✅ **Joker / gel de streak** → **STREAK-01** (roadmap **7.14**). **Gratuit en V1**
+  (arbitrage D) ; la piste premium se rediscutera post-V1. Étend le streak (V0.6) **sans** ouvrir la
+  boucle de jeu (arbitrage C). La règle exacte (recharge, rétroactivité, effet sur les stats) est de la
+  mécanique produit à trancher avant de coder.
+- [13/07/2026] ✅ **Objectifs personnels à échéance + jalons** → **OBJ-01** (roadmap **7.15**). Retenue
+  **mono-objectif et non sociale** : l'[[objectif-hybride-unifie]] à arbitrage de compromis et les défis
+  entre amis restent hors V1.
+- [13/07/2026] ✅ **Bilan hebdo/mensuel automatique** (+ son enrichissement du 25/07) → **BILAN-01**
+  (roadmap **7.16**). Le format « **une seule décision** » est conservé tel quel, mais **sans IA** :
+  texte assemblé depuis des clés i18n et des agrégats calculés localement. La règle
+  « **aucune narration sans les chiffres affichés à côté** » devient une contrainte de spec.
+- [13/07/2026] ✅ **Carte de séance/course partageable en image** → **PARTAGE-01** (roadmap **7.17**,
+  priorité **P2**). Partage sortant statique, **zéro backend** — le feed social reste V2. Levier
+  d'acquisition disponible dès le jour du lancement, à remonter en P1 si le calendrier le permet.
+- [13/07/2026] ✅ **Suggestions de substitution d'aliments** → **NUTR-F2** (roadmap **4.37**). Sélection
+  **déterministe** sur l'écart de macro, pas d'IA. Rend le journal *actionnable* au lieu de constatif.
+- [13/07/2026] ✅ **Substitution d'exercices (matériel indispo / blessure)** → **MUSC-F14** (roadmap
+  **3.52**, priorité **P2**). Constat à la vérification : le **remplacement en direct existe déjà**
+  (3.32) ; il ne manquait que la **suggestion** d'alternatives du même groupe musculaire.
+- [13/07/2026] ✅ **Archivage sûr du contenu éditorial** → **ADMIN-01** (roadmap **8.11**). Reclassée
+  **risque d'intégrité de données**, pas confort : archiver un exercice déjà référencé le retire des
+  bases locales (sync `deleted_at IS NULL`) → le nom disparaît de l'historique des utilisateurs, sans
+  retour arrière dans l'admin. À corriger **avant** d'avoir de vrais utilisateurs.
+- [23/07/2026] ✅ **Création d'exercice perso → modale** → **UX-02** (roadmap **3.53**). Recette F10c :
+  bottom-sheet (patron `ExerciseFilterDrawer`) + segment `scrollable` + placeholder sur le nom.
+- [23/07/2026] ✅ **Cohérence fiche exercice bibliothèque VS perso** → **UX-03** (roadmap **3.54**).
+  Recette F10c. L'écart **subi** (pas d'instructions ni de muscles secondaires sur un exo perso créé
+  sur mobile) est ce qu'on corrige ; l'écart **volontaire** (Modifier/Supprimer réservés au perso) reste.
+- [16/07/2026] ✅ **Poignée de réagencement du dashboard trop petite** → **UX-04** (roadmap **7.18**).
+  Recette du 16/07 : poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le
+  glissement. Corrige la découvrabilité de 7.13.
+- [20/07/2026] ✅ **RIR en alternative au RPE par série** → **UX-05** (roadmap **3.55**, priorité **P2**).
+  Préférence de profil ; **une seule donnée en base**, conversion à l'affichage (RIR ≈ 10 − RPE).
+
+*Absorbées par des candidats existants (4) — pas d'US dédiée :*
+
+- [13/07/2026] ✅ **Rappels intelligents contextuels** (+ enrichissement « heure apprise » du 25/07) →
+  absorbée par **NUTR-F1** (1.14, 2.5) et **MUSC-F8** (3.42, 2.7, 2.4) : même infra de notifications.
+  La note d'implémentation (moyenne glissante des heures de log sur ~2 semaines, calcul 100 % local,
+  fenêtre de repli de ~30 min pour le doze mode, plafond de notifications/jour) est reportée sur NUTR-F1.
+- [13/07/2026] ✅ **Météo avant une sortie planifiée** → absorbée par **RUN-F3** (5.24, 5.25) : même
+  source de données que la météo post-séance, il s'agit de l'afficher en amont.
+- [13/07/2026] ✅ **Détection de plateau + deload proactif** → absorbée par **MUSC-F7** (3.7, 3.8) :
+  c'est le même déclencheur que le deload déjà codé mais non câblé, à étendre à la stagnation sur
+  N séances.
+
+*Écartée de V0.9 mais gardée au tri :* « **Il y a 1 an » / souvenirs** — sans historique, la
+fonctionnalité n'a rien à raconter au lancement.
+
+---
 
 - [16/07/2026] ✅ **Infobulle de donnée au tap sur les graphiques** → **promue en US UX-01** (cadrée et
   implémentée le 25/07/2026). Les **6 surfaces** de l'app répondent au tap : date complète + valeur exacte,

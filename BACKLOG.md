@@ -17,7 +17,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
 | **CONF-07 — Accessibilité** | 9.11, 9.12 | Dynamic Type explicite (`maxFontSizeMultiplier` / `fontScale`) + audit contraste WCAG AA. | Revue visuelle humaine, non outillée à ce jour. |
-| **LANCE-00 — Compte développeur Google Play** | 9.2 | Créer le compte développeur (25 $, une fois), puis la fiche d'application dans la Play Console. | 🔴 **Rien de la chaîne de publication ne peut démarrer sans lui** — ni la fiche, ni la déclaration santé, ni la soumission. Vérification d'identité Google : compter plusieurs jours. **Non démarré au 27/07/2026.** |
+| **LANCE-00 — Compte développeur Google Play** | 9.2 | Créer le compte développeur (25 $, une fois), puis la fiche d'application dans la Play Console. | 🔴 **Rien de la chaîne de publication ne peut démarrer sans lui** — ni la fiche, ni la déclaration santé, ni la soumission. Vérification d'identité Google : compter plusieurs jours. **Non démarré au 27/07/2026.** ⚠️ **La déclaration santé doit porter 4 types de données** (`WRITE_EXERCISE`, `WRITE_DISTANCE`, `READ_WEIGHT` de CONF-06 **+ `READ_STEPS`** de PAS-01, tranché le 28/07/2026) et déclarer, en « Sécurité des données », une **donnée de santé transmise hors de l'appareil** (les pas sont synchronisés). |
 | **LANCE-01 — Publication Play Store** | 9.2 | Build AAB prod (EAS) + fiche Play + soumission review. | 🔴 Dépend de **LANCE-00** + de tout le P0 + du délai de review. |
 
 > **CONF-06 — Health Connect** (9.9) est **entré dans le pipeline** le 26/07/2026 →
@@ -43,12 +43,47 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 ## 🟠 P1 — Finitions produit
 
+> **Élargissement du 28/07/2026.** Le code est **en avance sur le cahier des charges** alors que les
+> prérequis de publication (compte Play, déclaration santé, relecture juridique) sont à **délai externe
+> d'environ 3 semaines**. Décision : occuper cette fenêtre plutôt que d'attendre Google → **14 idées
+> promues depuis [IDEAS.md](IDEAS.md)** et regroupées dans la nouvelle version
+> **[V0.9](docs/roadmap/roadmap.md#v09--enrichissements-avant-lancement)** (~54 h).
+> **Filtre appliqué** : offline-first, aucune dépendance backend/IA, hors gamification (arbitrage C),
+> hors social (V2), hors paiement (arbitrage D), et réutilisation d'une infra déjà livrée. Tout ce qui
+> exige un moteur de règles (détecteur de collisions, mode « vie réelle »), de l'historique long
+> (simulateur what-if, rétrospective annuelle) ou une base d'utilisateurs (board de suggestions,
+> compétition) est resté hors périmètre.
+>
+> **Ordre conseillé** : ADMIN-01 et PAS-01 d'abord (les seuls sur le chemin critique du lancement),
+> puis les 3 UX de recette (rapides, visibles), puis la rétention.
+
+### Enrichissements V0.9 — rétention & valeur produit
+
+| Candidat | # | Contenu | Point dur |
+|---|---|---|---|
+| **ADMIN-01 — Archivage sûr du contenu éditorial** | 8.11 | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | 🔴 **Intégrité de données, pas du confort** : archiver un exercice déjà référencé par des `workout_sets` / `exercise_plans` le retire des bases locales (sync `deleted_at IS NULL`) → **le nom disparaît de l'historique des utilisateurs**, sans retour arrière possible dans l'admin. À traiter **avant** d'avoir de vrais utilisateurs. |
+| **PAS-01 — Pas quotidiens** | 9.15 | Total de pas par jour lu dans Health Connect, objectif quotidien, widget + historique, **comptés dans le streak**. | 🚧 **Entrée dans le pipeline le 28/07/2026** → [spec](docs/specs/functional/us/pas01-pas-quotidiens.md) · [plan](docs/plans/pas01-pas-quotidiens.md). **Sommeil écarté**. ⚠️ **Sur le chemin critique** : `READ_STEPS` à justifier dans la **même** déclaration Play que CONF-06 (voir LANCE-00), et les pas partant **dans le cloud**, la « Sécurité des données » Play + la politique de confidentialité changent de contenu. |
+| **BIEN-01 — Check-in quotidien & journal de bien-être** | 1.24 | Humeur / énergie / stress en ~10 s (+ poids), historique et courbes. 🌐 FR+EN. | Nouvelle table offline-first historisée (UUID client, UTC, soft delete) + **sync rule PowerSync à déployer à la main**. Doser le rituel : 10 s, sinon il est abandonné en 3 jours. |
+| **MESUR-01 — Mensurations corporelles** | 3.51 | Tour de taille, poitrine, bras, cuisses… historisées + courbes. | Fait descendre **E8** de la [spec muscu §5](docs/specs/functional/musculation.md) — cadrée mais **jamais descendue en US**, donc **aucun modèle de données**. Réutilise l'infra courbes du poids (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = post-V1). |
+| **STREAK-01 — Joker / gel de streak** | 7.14 | 1 joker/mois protège la série sur un jour manqué. | Décider la règle exacte (recharge, rétroactivité, effet sur les stats) **avant** de coder : c'est de la mécanique produit, pas de la technique. **Gratuit en V1** (arbitrage D). Ne pas glisser vers une boucle de jeu (arbitrage C). |
+| **OBJ-01 — Objectifs personnels à échéance** | 7.15 | « 50 km ce mois », « +5 kg au développé en 8 semaines » — anneau de progression, jalons, célébration. | **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). Le calcul de progression doit se brancher sur les agrégats existants, pas en créer de nouveaux. |
+| **BILAN-01 — Bilan hebdomadaire automatique** | 7.16 | Récap en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine. | Règle non négociable : **aucune narration sans les chiffres affichés à côté**. Texte assemblé depuis des clés i18n (pas de texte libre), agrégats calculés localement, **pas d'IA**. Survivre au doze mode Android. |
+| **NUTR-F2 — Substitution d'aliments pour combler un macro** | 4.37 | « il te manque 20 g de protéines → ajoute X », depuis la base et les aliments récents. | Sélection **déterministe** (score sur l'écart de macro), pas d'IA. Rend le journal actionnable au lieu de constatif. Attention à ne pas suggérer des quantités absurdes. |
+
+### Finitions UX remontées en recette
+
+| Candidat | # | Contenu | Point dur |
+|---|---|---|---|
+| **UX-02 — Création d'exercice perso en modale** | 3.53 | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée + segment `scrollable` + placeholder sur le nom. | Aucun — recette F10c, effet visible immédiat. |
+| **UX-03 — Cohérence fiche exercice perso / bibliothèque** | 3.54 | Mêmes sections + états vides explicites ; édition des instructions et muscles secondaires d'un exo perso. | Trancher l'état cible : harmoniser la structure **et/ou** ouvrir plus de champs à l'édition. L'écart Modifier/Supprimer reste **volontaire**. |
+| **UX-04 — Réagencement du dashboard découvrable** | 7.18 | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Aucun — recette du 16/07. Corrige la découvrabilité de 7.13. |
+
 ### Musculation
 
 | Candidat | # | Contenu | État |
 |---|---|---|---|
-| **MUSC-F7 — Progression assistée** | 3.7, 3.8 | Progression auto de charge au niveau programme + câblage du deload. | 🟡 La brique pure `computeProgressionSuggestion` (kind `deload`) est **livrée et testée mais non déclenchée** : il manque le signal `previousStruggled` (séance avant-dernière) et la validation de la règle par Florian. |
-| **MUSC-F8 — Notifications push muscu** | 3.42, 2.7, 2.4 | Push nouveau record + rappel de séance planifiée. | ⬜ L'infra notif existe (streak, DND) → à étendre. |
+| **MUSC-F7 — Progression assistée** | 3.7, 3.8 | Progression auto de charge au niveau programme + câblage du deload. | 🟡 La brique pure `computeProgressionSuggestion` (kind `deload`) est **livrée et testée mais non déclenchée** : il manque le signal `previousStruggled` (séance avant-dernière) et la validation de la règle par Florian. **Absorbe** l'idée « détection de plateau + deload proactif » : c'est le même déclencheur, à étendre à la stagnation sur N séances. |
+| **MUSC-F8 — Notifications push muscu** | 3.42, 2.7, 2.4 | Push nouveau record + rappel de séance planifiée. | ⬜ L'infra notif existe (streak, DND) → à étendre. **Absorbe** l'idée « rappels contextuels » côté muscu (séance prévue aujourd'hui, streak en danger ce soir) — voir la note d'heure apprise sur NUTR-F1. |
 | **MUSC-F9 — Décalage en glisser-déposer** | 3.10 | Déplacer une séance planifiée au doigt. | ⬜ Aujourd'hui report par action seulement. Aucune lib DnD sur le planning. |
 | **MUSC-F1b — Muscles ciblés sur schéma SVG** | 6.2 | Corps humain SVG avec muscles travaillés en évidence. | ⬜ Sujet **distinct** des GIF abandonnés (6.1) — reste ouvert. |
 | **MUSC-F6 — Fenêtre de reprise de séance** | 3.36 | Réconcilier les seuils : la spec dit 4 h, la clôture auto (3.37) borne à 3 h. | 🟡 Décision produit à trancher avant code. |
@@ -58,7 +93,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 | Candidat | # | Contenu | État |
 |---|---|---|---|
 | **RUN-F2 — Séances guidées vocales** | 5.18, 5.19, 5.9, 5.23 | Annonces audio par km + guidage fractionné + blocs rapide/récup structurés + cible prolonger/raccourcir. | ⬜ Les séances guidées sont **déconnectées du tracker actif** — c'est le vrai chantier. Dépend de `expo-speech` (absent). |
-| **RUN-F3 — Résumé de course enrichi** | 5.24, 5.25 | Météo / terrain + comparaison à l'objectif. | ⬜ |
+| **RUN-F3 — Résumé de course enrichi** | 5.24, 5.25 | Météo / terrain + comparaison à l'objectif. | ⬜ **Absorbe** l'idée « météo **avant** une sortie planifiée » : aujourd'hui la météo n'est qu'un champ post-séance ; l'afficher en amont d'une sortie prévue aide à planifier — même source de données. |
 | **RUN-F1b — Dénivelé cumulé** | 5.32 | Dénivelé positif par semaine / mois. | ⛔ **Bloqué** : la trace GPS ne capte pas l'altitude (`GpsPoint = {lat,lng,t}`). Nécessite de modifier le tracker R1, étendre le codec, et **les courses déjà enregistrées resteront sans dénivelé**. |
 
 ### Contenu
@@ -73,7 +108,10 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 | Candidat | # | Contenu | État |
 |---|---|---|---|
-| **NUTR-F1 — Rappels programmés nutrition** | 1.14, 2.5 | Rappel de pesée + rappel de repas. | ⬜ Étend l'infra notif existante. |
+| **NUTR-F1 — Rappels programmés nutrition** | 1.14, 2.5 | Rappel de pesée + rappel de repas. | ⬜ Étend l'infra notif existante. **Absorbe** l'idée « rappels contextuels » : viser l'**heure apprise** du comportement (moyenne glissante des heures de log sur ~2 semaines, calcul 100 % local) plutôt qu'une heure fixe, avec une fenêtre de repli de ~30 min pour le doze mode et un plafond de notifications/jour. |
+| **PARTAGE-01 — Carte de séance / course partageable** | 7.17 | Export image (trace GPS + stats, ou résumé muscu) pour les stories. | ⬜ **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le lancement → à remonter en P1 si le calendrier le permet. |
+| **MUSC-F14 — Suggestion de substitution d'exercice** | 3.52 | Matériel pris ou zone douloureuse → alternatives du même groupe musculaire. | ⬜ Le **remplacement en direct existe déjà** (3.32) ; il ne manque que la **suggestion**. |
+| **UX-05 — RPE ou RIR au choix** | 3.55 | Préférence de profil : intensité en RPE ou en RIR (RIR ≈ 10 − RPE). | ⬜ Évolution du RPE par série (3.34). Une seule donnée en base, conversion à l'affichage. |
 | **SOCLE-01 — RevenueCat câblé inactif** | 9.14 | Entitlements posés, aucun paywall (app gratuite en V1). | ⬜ Optionnel — posé tôt, évite une refonte ([ADR-003](docs/adr/ADR-003-monetisation.md)). |
 
 ---
@@ -114,4 +152,4 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 ---
 
 *Tenu à jour par [`/commit`](.claude/commands/commit.md) et [`/etat`](.claude/commands/etat.md).
-Dernière révision : 26/07/2026.*
+Dernière révision : 28/07/2026 (élargissement V0.9 — 14 idées promues depuis [IDEAS.md](IDEAS.md)).*
