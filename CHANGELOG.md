@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `docs/reconciliation-catalogue-analyses` — CONTENU-01 : méthode de seed tranchée
+
+> Arbitrage Florian du 28/07/2026 sur la **décision structurante** de CONTENU-01, qui bloquait l'US à
+> l'étape `validation`. Documentation seule. Commit précédent : `67076ec`.
+
+**Modifié**
+
+- `docs/specs/functional/us/contenu-01-seed-bibliotheques-programmes.md` — §2 « méthode de seed »
+  passe de *(à trancher)* à **tranchée : Option A, migration SQL idempotente** (patron du seed CIQUAL),
+  le constructeur admin **8.4 restant le pipeline d'entretien/enrichissement**, pas celui du seed
+  initial. Contraintes d'implémentation consignées : **UUID déterministes**,
+  `on conflict (id) do nothing`, **FR + EN obligatoires** dans `program_translations`, et migration à
+  **cocher dans le registre** après `npm run db:push`. Décision ouverte n°1 (§7) rayée ; `maj` → 28/07/2026.
+- `BACKLOG.md` — ligne CONTENU-01 : le reste-à-trancher n'est plus la méthode mais le **contenu**
+  (nombre de programmes par pilier, qui fournit séances/exos/reps) — **travail de coach, pas de dev**.
+
+**Technique / Notes**
+
+- `etape:` **reste à `validation`** : la méthode est tranchée, mais les décisions de **contenu** (§7.2
+  à §7.4) ne le sont pas, et la DoD exige « méthode **+ catalogue** validés » avant code.
+- Qualité non rejouée : le diff ne touche que deux fichiers Markdown et **aucun fichier applicatif
+  n'a changé** depuis la passe verte du commit `67076ec` (Vitest 50 fichiers, Jest 28 suites /
+  129 tests, typecheck, lint 0 erreur).
+
 ### 28/07/2026 — `docs/reconciliation-catalogue-analyses` — réconciliation : le catalogue d'analyses avait dérivé, pas la roadmap
 
 > Audit [`/reconcilier`](.claude/commands/reconcilier.md) mené **à charge** (on suppose la doc fausse

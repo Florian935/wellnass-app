@@ -39,7 +39,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `docs/reconciliation-catalogue-analyses` (modifications non commitées) |
-| Commits | 945 · `main` a **942** commits de retard sur `dev` |
+| Commits | 946 · `main` a **943** commits de retard sur `dev` |
 | Specs d'US | 76 au total — 75 clôturées, 1 en cours |
 | Migrations | 47/47 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -50,11 +50,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `67076ec` docs(suivi): réconciliation — le catalogue d'analyses avait dérivé, pas la roadmap
 - `c1bcc49` feat(pas01): pas quotidiens lus dans Health Connect, comptés dans la série (US PAS-01 close, 9.15)
 - `73f91a8` docs(pas01): livrables d'amont validés — pas quotidiens (US PAS-01, 9.15)
 - `aea2ab1` fix(health-connect): normalise les horodatages et rend les échecs visibles (US CONF-06 close, 9.9)
 - `c682993` feat(health-connect): écriture des séances/courses et lecture du poids (US CONF-06, 9.9)
-- `d54f05b` docs(suivi): refonte du suivi d'avancement — ETAT genere, BACKLOG, front-matter, roadmap reconciliee
 
 ---
 

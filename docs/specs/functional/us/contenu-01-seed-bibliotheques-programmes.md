@@ -5,7 +5,7 @@ roadmap: [3.1, 5.2]
 catalogue: []
 etape: validation
 branche: docs/contenu-01-spec
-maj: 25/07/2026
+maj: 28/07/2026
 ---
 # US CONTENU-01 — Seed des bibliothèques de programmes (muscu + course)
 
@@ -34,7 +34,15 @@ pour la bêta : sans catalogue, la promesse « programmes pré-conçus » est vi
 Peupler les deux bibliothèques éditoriales d'un **catalogue de départ crédible**, **bilingue FR+EN**, prêt à
 être **dupliqué** par l'utilisateur, offline-first (répliqué par PowerSync comme le placeholder actuel).
 
-## 2. Décision structurante — méthode de seed *(à trancher)*
+## 2. Décision structurante — méthode de seed *(TRANCHÉE le 28/07/2026)*
+
+> ✅ **Arbitrage Florian, 28/07/2026 : Option A — migration SQL idempotente.** Le catalogue de
+> lancement passe par un fichier de migration versionné (patron du seed CIQUAL), donc tracé dans le
+> dépôt, rejouable sans doublon et identique sur toute base future. L'**Option B** (constructeur admin
+> 8.4) reste le pipeline d'**entretien et d'enrichissement** ultérieur, pas celui du seed initial.
+> Conséquences à respecter à l'implémentation : **UUID déterministes**, `on conflict (id) do nothing`,
+> contenu **FR + EN obligatoire** dans `program_translations`, et **cocher la migration** dans
+> [supabase/MIGRATIONS.md](../../../../supabase/MIGRATIONS.md) après `npm run db:push`.
 
 Deux voies, non exclusives :
 
@@ -44,7 +52,8 @@ Deux voies, non exclusives :
 | **B — Constructeur admin (8.4, livré)** | Saisie manuelle des programmes dans le back-office web. | Ergonomique pour créer/ajuster le contenu ; c'est le **pipeline cible** à terme. | Non versionné (données cloud only), non reproductible, pas de trace PR, risque d'écart entre environnements. |
 
 **Recommandation** : **Option A pour le catalogue de lancement** (traçable, reproductible, aligné sur le
-précédent CIQUAL), puis **Option B** comme pipeline d'entretien/enrichissement continu. À confirmer.
+précédent CIQUAL), puis **Option B** comme pipeline d'entretien/enrichissement continu.
+→ **Retenue telle quelle** (Florian, 28/07/2026, voir l'encadré ci-dessus).
 
 ## 3. Modèle de données (rappel, inchangé — aucune migration de schéma)
 
@@ -93,7 +102,8 @@ Squat, etc. — présents). Tout exercice manquant du catalogue muscu devra êtr
 
 ## 7. Décisions ouvertes à trancher (Damien/Florian)
 
-1. **Méthode** : Option A (migration) pour le lancement ? (recommandé)
+1. ~~**Méthode** : Option A (migration) pour le lancement ?~~ → ✅ **tranchée le 28/07/2026 (Florian) :
+   Option A**, migration SQL idempotente. Voir §2.
 2. **Catalogue** : liste ci-dessus validée / ajustée ? Combien de programmes au lancement (MVP = 2-3/pilier ?) ?
 3. **Contenu détaillé** : qui fournit les séances/exos/reps (Florian coach) ? Format d'entrée (tableur → SQL ?).
 4. **Exercices manquants** : lister les exos référencés absents du seed → à ajouter d'abord.

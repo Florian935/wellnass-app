@@ -100,7 +100,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 | Candidat | # | Contenu | État |
 |---|---|---|---|
-| **CONTENU-01 — Seed des bibliothèques de programmes** | 3.1, 5.2 | Catalogues muscu + course, aujourd'hui **vides**. 🌐 FR+EN. | 🟡 **Spec draftée, en attente d'arbitrage** → [spec](docs/specs/functional/us/contenu-01-seed-bibliotheques-programmes.md). À trancher : migration idempotente (précédent CIQUAL) **vs** saisie via le constructeur admin (8.4, livré). |
+| **CONTENU-01 — Seed des bibliothèques de programmes** | 3.1, 5.2 | Catalogues muscu + course, aujourd'hui **vides**. 🌐 FR+EN. | 🟡 **Méthode tranchée le 28/07/2026 (Florian) : migration SQL idempotente** (patron CIQUAL), le constructeur admin 8.4 restant le pipeline d'entretien → [spec §2](docs/specs/functional/us/contenu-01-seed-bibliotheques-programmes.md). **Reste à trancher : le contenu** — nombre de programmes par pilier au lancement, et qui fournit séances/exos/reps. C'est du travail de coach, pas de dev. |
 
 ---
 
