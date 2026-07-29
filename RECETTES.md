@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **29/07/2026** — 11 US en attente.
+> Dernière mise à jour : **29/07/2026** — 12 US en attente.
 
 ---
 
@@ -244,7 +244,28 @@ tu ne vois pas le bouton, vérifie ce réglage d'abord.
 
 ---
 
-## 11. UX-LOT-01 — Lot de finitions
+## 11. MUSC-F14 — Suggestion de substitution d'exercice
+
+📄 [spec](docs/specs/functional/us/muscf14-substitution-exercice.md) · roadmap 3.52 · **📱 device**
+✅ aucune sync rule · ✅ recettable sur **l'APK actuel**
+
+- [ ] 1. En séance, « Remplacer » sur un exercice : une section **Suggestions** apparaît au-dessus de
+      la liste, avec **au plus 4** propositions.
+- [ ] 2. Toutes travaillent le **même groupe musculaire** (sauf variante déclarée).
+- [ ] 3. Une **variante déclarée** apparaît **en premier**, marquée « Variante ».
+- [ ] 4. Les autres portent leur **matériel** en justification (« Machine guidée »).
+- [ ] 5. Taper une suggestion **remplace** l'exercice, comme depuis la liste complète.
+- [ ] 6. Un exercice **déjà dans la séance** n'est jamais suggéré.
+- [ ] 7. Exercice sans alternative du même groupe : **aucune section** (et non une section vide).
+- [ ] 8. **Aucune mention de douleur, blessure ou articulation** nulle part — c'est volontaire.
+
+🟠 **Une décision t'attend** : l'éditeur de programme n'a **pas de parcours « remplacer »**, donc les
+suggestions n'y ont pas de source. Soit on ajoute le remplacement dans l'éditeur (US à part), soit on
+en reste là — voir [spec §0.2](docs/specs/functional/us/muscf14-substitution-exercice.md).
+
+---
+
+## 12. UX-LOT-01 — Lot de finitions
 
 📄 [spec](docs/specs/functional/us/uxlot01-finitions-recette.md) · roadmap 3.53, 3.54, 7.18 ·
 **📱 device**
@@ -264,8 +285,8 @@ tu ne vois pas le bouton, vérifie ce réglage d'abord.
 
 ## Comment procéder
 
-**Huit US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01,
-BILAN-01, UX-05
+**Neuf US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01,
+OBJ-01, BILAN-01, UX-05, MUSC-F14
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code.

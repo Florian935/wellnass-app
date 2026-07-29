@@ -7,12 +7,14 @@ import { type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { CreateExerciseModal } from '@/components/exercises/CreateExerciseModal';
+import { SubstitutionSection } from '@/components/exercises/SubstitutionSection';
 import { ExerciseFilterDrawer } from '@/components/programs/ExerciseFilterDrawer';
 import {
+  useExercise,
   useExercises,
   toggleFavorite,
-  type ExerciseListItem,
 } from '@/data/repositories/exercise-repository';
+import { useSubstitutions } from '@/data/repositories/exercise-substitution-repository';
 import { addExerciseVariant, useLinkedExerciseIds } from '@/data/repositories/exercise-variant-repository';
 import {
   addExerciseToWorkout,
@@ -42,6 +44,23 @@ export default function ExercisesScreen() {
   const { exercises, isLoading } = useExercises(query, muscles, equipment);
   const filterCount = muscles.length + equipment.length;
 
+  // US MUSC-F14 — suggestions de substitution, uniquement en mode remplacement : ailleurs il n'y a
+  // pas d'exercice « source », donc rien à suggérer.
+  const { exercise: replaced } = useExercise(replaceExerciseId ?? '');
+  const { substitutions } = useSubstitutions(
+    replaceExerciseId && replaced
+      ? {
+          id: replaced.id,
+          name: replaced.name,
+          muscle: replaced.muscle,
+          equipment: replaced.equipment,
+          musclesSecondary: replaced.musclesSecondary,
+        }
+      : null,
+    // Ce qui est déjà dans la séance n'est pas une substitution : c'est déjà là.
+    active?.entries.map((e) => e.exerciseId) ?? [],
+  );
+
   // Trie côté JS : favoris en premier, puis ordre alphabétique déjà fourni par SQL
   const items = [...exercises].sort((a, b) => {
     const fa = a.isFavorite ? 0 : 1;
@@ -62,7 +81,9 @@ export default function ExercisesScreen() {
     );
   }
 
-  const onPick = async (item: ExerciseListItem) => {
+  // Ne dépend que de l'`id` : la section « Suggestions » (MUSC-F14) peut l'appeler sans fabriquer
+  // un faux `ExerciseListItem` avec des champs inventés.
+  const onPick = async (item: { id: string }) => {
     if (browse) {
       router.push(`/exercises/${item.id}`);
       return;
@@ -123,6 +144,14 @@ export default function ExercisesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            // Ne s'affiche qu'en mode remplacement, et seulement s'il y a des suggestions
+            // pertinentes — le composant rend `null` sinon.
+            <SubstitutionSection
+              substitutions={substitutions}
+              onPick={(item) => void onPick(item)}
+            />
+          }
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <Text style={[styles.empty, { color: colors.textMuted }]}>

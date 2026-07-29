@@ -328,7 +328,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 |---|---|---|:---:|:---:|:---:|:---:|---|
 | 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | 🟡 | **BIEN-01 — code livré le 28/07/2026** : table `daily_wellbeing` (2 migrations poussées), briques pures testées, repository, feuille de check-in, widget transverse 3 formes, écran d'historique, i18n FR+EN, export RGPD. **4ᵉ dimension légère**, pas un 4ᵉ pilier (widget `'always'`). 🟡 et non ✅ pour deux raisons : **la sync rule PowerSync reste à déployer à la main** sur l'instance, et **la recette device n'a pas eu lieu**. Alimentera les corrélations récup ↔ perfs (post-V1). |
 | 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | 🟡 | **MESUR-01 — code livré le 29/07/2026.** Fait enfin descendre **E8** de la spec muscu §5, cadrée le 04/07 et jamais dotée d'un modèle de données. Table `body_measurements` **normalisée** (une ligne par jour ET par mesure, décision D1 : la liste des mesures a vocation à bouger, une table large coûterait une migration par ajout et serait majoritairement `NULL`) — 6 mesures, stockage **toujours en cm**, feuille de saisie pré-remplie, historique avec courbe par mesure et delta. Entrée depuis **Progression** (pas de widget : une mesure mensuelle ne mérite pas une place sur un écran quotidien). 🟡 : **sync rule à déployer à la main** + recette device. |
-| 3.52 | Suggestion de substitution d'exercice | Matériel pris ou zone douloureuse → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | ⬜ | **MUSC-F14**. Le **remplacement en direct existe déjà** (3.32) ; ce qui manque, c'est la **suggestion**. Sélection déterministe sur le groupe musculaire, aucun appel externe. |
+| 3.52 | Suggestion de substitution d'exercice | Matériel pris → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | 🟡 | **MUSC-F14** livré (séance), recette device à faire. ⚠️ Le motif **« zone douloureuse » a été retiré** : sans information articulaire ni schéma de mouvement en base, y répondre serait un **conseil de santé inventé**. Suggestions **neutres**, au plus 4. Une **variante déclarée** (MUSC-F10c-2) prime toujours sur un score calculé. Tri déterministe. Exercices archivés jamais suggérés. **Aucune migration.** ⚠️ L'éditeur de programme n'a **pas de parcours de remplacement** : décision attendue (spec §0.2). |
 | 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ✅ | **UX-02 — constaté déjà livré le 29/07/2026** par `12bd3a1` (« feat(muscf11) »), avant même que la ligne ne soit créée : `CreateExerciseModal.tsx` est une modale bottom-sheet avec placeholder et segment `scrollable`. Les 3 points, ligne pour ligne. ✅ par **réconciliation**, sans commit de code. |
 | 3.54 | Cohérence fiche exercice perso / bibliothèque | Mêmes sections et états vides explicites ; édition des instructions et muscles secondaires sur un exo perso. | Moyen | 3h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** L'édition des instructions et muscles secondaires **existait déjà** (`EditExerciseModal` + `updateCustomExercise`) ; livré ici : les 3 sections de la fiche sont **toujours rendues**, avec « Non renseigné » au lieu de disparaître — un exo perso n'avait pas la même structure de fiche qu'un exo de bibliothèque. L'écart **volontaire** Modifier/Supprimer est préservé. |
 | 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR = 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | 🟡 | **UX-05** livré, recette device à faire. Porte sur le **RPE par série uniquement** : le ressenti de séance (5 étoiles) et le ressenti de course sont inchangés — « répétitions en réserve » n'a aucun sens pour eux. **Inversion pure 0→9** et non plage restreinte 0-4, pour que la bascule soit **réversible sans perte** (les RPE 1-5 resteraient sinon inaffichables). Le RIR n'est **jamais stocké** ; `null` reste `null`, jamais « RIR 10 ». **Aucune sync rule.** |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 168 | ~81 % |
-| 🟡 Partiel | 18 | ~9 % |
-| ⬜ À faire | 17 | ~8 % |
+| 🟡 Partiel | 19 | ~9 % |
+| ⬜ À faire | 16 | ~8 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — MUSC-F14 : substitution d'exercice (3.52) ⬜ → 🟡**
+Motif « zone douloureuse » **retiré** : sans donnée articulaire, y répondre serait un conseil de santé
+inventé. Suggestions neutres, variantes déclarées prioritaires sur le calcul. L'éditeur de programme
+n'ayant **pas de remplacement**, seule la séance est couverte. 19 tests. Compteurs : **168 / 19 / 16**.
 
 **29/07/2026 — UX-05 : intensité en RPE ou RIR (3.55) ⬜ → 🟡**
 Portée réduite au **RPE par série** après inventaire : le ressenti de séance est sur 5 étoiles et le

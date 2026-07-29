@@ -1861,6 +1861,11 @@
     },
     "seeAll": "See my review"
   },
+  "substitution": {
+    "title": "Suggestions",
+    "reasonVariant": "Variation",
+    "hint": "Same muscle group. You decide what works today."
+  },
   "intensity": {
     "rpe": {
       "short": "RPE",

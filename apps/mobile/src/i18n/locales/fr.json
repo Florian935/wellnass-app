@@ -1861,6 +1861,11 @@
     },
     "seeAll": "Voir mon bilan"
   },
+  "substitution": {
+    "title": "Suggestions",
+    "reasonVariant": "Variante",
+    "hint": "Même groupe musculaire. À toi de juger ce qui convient aujourd'hui."
+  },
   "intensity": {
     "rpe": {
       "short": "RPE",

@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/muscf14-substitution-exercice` — MUSC-F14 : substitution d'exercice (3.52 🟡)
+
+3 décisions arbitrées par Florian, **2 dérivées**. Deux limites ont été énoncées **avant** de coder, et
+ce sont elles qui définissent réellement ce lot.
+
+#### Le motif « zone douloureuse » a été retiré, et ce n'est pas un raccourci
+
+Le backlog demandait de suggérer une alternative en cas de « matériel pris **ou zone douloureuse** ».
+Le premier motif est traitable ; le second ne l'est pas.
+
+Nous n'avons en base **ni information articulaire, ni schéma de mouvement** (poussée / tirage,
+dominance hanche ou genou). Rien ne permet d'affirmer qu'un exercice « ménage l'épaule ». Y répondre
+aurait produit un **conseil de santé sans fondement**, présenté comme fiable — la première
+fonctionnalité de l'app à affirmer ce qu'elle ne sait pas, sur le sujet où l'erreur blesse.
+
+Les suggestions sont donc **neutres** : même groupe musculaire, et rien de plus. La justification
+affichée reste **factuelle et vérifiable** — « Variante » ou le matériel. **Un test vérifie qu'aucun
+vocabulaire de douleur, de blessure ou d'articulation n'apparaît dans le rendu.**
+
+#### L'éditeur de programme : la demande ne pouvait pas être honorée telle quelle
+
+Florian avait demandé les suggestions **en séance et dans l'éditeur de programme**. Vérification faite,
+`SessionEditor` **n'expose que « ajouter » et « retirer »** — aucun parcours de remplacement, donc
+**aucun exercice source** à partir duquel suggérer.
+
+Livré : **la séance seule**, là où le remplacement existe. La spec §0.2 pose les deux suites possibles
+(ajouter le remplacement dans l'éditeur — une US en soi — ou en rester là) ; **le composant et le hook
+sont déjà génériques**, donc la première option ne demanderait pas de code de suggestion supplémentaire.
+
+#### Le classement
+
+- `packages/shared/src/exercise-substitution.ts` (**13 tests**) : une **variante déclarée** prime
+  toujours sur une suggestion calculée. C'est une donnée saisie par un **humain** (éditeur ou
+  utilisateur) — elle vaut mieux que n'importe quel score, et elle est retenue **même si son groupe
+  musculaire diffère** : si quelqu'un a lié deux exercices, on ne remet pas cette information en cause.
+- Score : variante (1000) > même groupe (100) > matériel différent (20) > muscles secondaires communs
+  (5 chacun). Le bonus « matériel différent » est ce qui répond au cas réel « la machine est occupée ».
+- **Tri déterministe** : à score égal, l'ordre alphabétique tranche. Sans cela l'ordre dépendrait de
+  celui des candidats en entrée, et un même résultat s'afficherait différemment d'une fois à l'autre —
+  ce qui se lit comme un bug. Un test le vérifie en inversant la liste d'entrée.
+- **Aucune suggestion pertinente → aucune section.** Pas de bloc vide, pas de suggestion forcée.
+
+#### Application
+
+- `exercise-substitution-repository.ts` : requête dédiée, bornée au groupe musculaire de la source —
+  `useExercises` ne remonte pas `muscles_secondary`, et l'alourdir aurait touché tous les écrans de
+  sélection. Les exercices **archivés sont exclus** : nuance avec ADMIN-01, où afficher le **nom** d'un
+  exercice archivé est nécessaire, mais le **proposer** ne l'est pas.
+- `SubstitutionSection` (**6 tests**) : un seul composant, prêt pour les deux surfaces.
+- `onPick` de l'écran d'exercices a été **resserré à `{ id: string }`** — c'est tout ce qu'il utilisait
+  réellement. La section n'a donc pas à fabriquer un faux `ExerciseListItem` avec des champs inventés.
+
+#### Qualité
+
+`npm run typecheck` 0 erreur · `npm run lint` 0 erreur (8 warnings préexistants) ·
+`npm run test` **1305 verts** (1126 Vitest + 179 Jest), dont **19 pour MUSC-F14**.
+**Aucune migration, aucune table, aucune sync rule.**
+
+🟠 **Décision attendue de Florian** : que faire pour l'éditeur de programme (spec §0.2).
+
 ### 29/07/2026 — `feature/ux05-rpe-ou-rir` — UX-05 : intensité en RPE ou en RIR (3.55 🟡)
 
 3 décisions arbitrées par Florian, **2 dérivées**. L'inventaire préalable a **réduit le périmètre**, et
