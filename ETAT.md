@@ -47,23 +47,21 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/obj01-objectifs` (modifications non commitées) |
-| Commits | 957 · `main` a **954** commits de retard sur `dev` |
+| Branche courante | `feature/obj01-objectifs` (propre) |
+| Commits | 958 · `main` a **955** commits de retard sur `dev` |
 | Specs d'US | 83 au total — 75 clôturées, 8 en cours |
 | Migrations | 57/57 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
-### ⚠️ Alertes
-
-- ⚠️ Working tree : modifications non commitées
+✅ Aucune alerte.
 
 ## 🕒 Derniers commits
 
+- `9d2b87c` feat(obj01): objectifs à échéance livrés + registre des recettes (US OBJ-01, 7.15)
 - `67b171f` feat(obj01): cadrage et cœur de calcul des objectifs à échéance (US OBJ-01 partielle, 7.15)
 - `fcee5ca` feat(streak01): joker de série — gel d'un jour manqué isolé (US STREAK-01, 7.14)
 - `34abbde` feat(nutrf2): suggestion d'aliments pour combler un macro (US NUTR-F2, 4.37)
 - `9704ece` feat(mesur01): mensurations corporelles — 6 mesures historisées, courbes et deltas (US MESUR-01, 3.51)
-- `1d59fa7` feat(uxlot01): finitions de recette — états vides, cibles 48 dp, affordance de glissement (3.53/3.54/7.18)
 
 ---
 
