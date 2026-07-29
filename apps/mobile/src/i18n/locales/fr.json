@@ -1768,6 +1768,59 @@
     "a11yKindTab": "Afficher la courbe : {{kind}}",
     "closeSheet": "Fermer la saisie"
   },
+  "goals": {
+    "title": "Objectifs",
+    "cta": "Nouvel objectif",
+    "sectionActive": "En cours",
+    "sectionFinished": "Terminés",
+    "empty": "Aucun objectif pour l'instant. Une échéance transforme une intention en engagement.",
+    "kinds": {
+      "run_distance": "Distance de course",
+      "exercise_1rm": "Force sur un exercice"
+    },
+    "kindHints": {
+      "run_distance": "Cumul de tes courses jusqu'à l'échéance.",
+      "exercise_1rm": "Progression de ton 1RM estimé, à partir d'aujourd'hui."
+    },
+    "form": {
+      "title": "Nouvel objectif",
+      "kind": "Type d'objectif",
+      "exercise": "Exercice visé",
+      "pickExercise": "Choisir",
+      "targetDistance": "Distance à cumuler",
+      "target1rm": "1RM à atteindre",
+      "deadline": "Échéance",
+      "startValue": "Ton 1RM actuel : {{value}}. C'est le point de départ, il est figé à la création.",
+      "noStartValue": "Aucune série enregistrée sur cet exercice : l'objectif partira de zéro.",
+      "submit": "Créer l'objectif",
+      "close": "Fermer le formulaire"
+    },
+    "weeks": "{{count}} semaines",
+    "progress": "{{current}} sur {{target}}",
+    "remaining_one": "Plus que {{count}} jour",
+    "remaining_other": "Plus que {{count}} jours",
+    "lastDay": "Dernier jour",
+    "deadlineOn": "Échéance le {{date}}",
+    "status": {
+      "achieved": "Atteint",
+      "missed": "Non atteint"
+    },
+    "unavailable": "Progression non calculable : l'exercice visé n'est plus disponible.",
+    "errors": {
+      "limitReached": "Tu suis déjà {{count}} objectifs. Supprimes-en un avant d'en ajouter.",
+      "invalidTarget": "Indique une cible supérieure à zéro.",
+      "targetBelowStart": "Cible déjà atteinte : ton 1RM est de {{start}}. Vise plus haut.",
+      "deadlineBeforeStart": "L'échéance doit être postérieure à aujourd'hui.",
+      "missingExercise": "Choisis l'exercice visé.",
+      "createFailed": "L'objectif n'a pas pu être créé. Réessaie."
+    },
+    "delete": "Supprimer",
+    "deleteConfirmTitle": "Supprimer cet objectif ?",
+    "deleteConfirmBody": "Il disparaîtra de la liste, verdict compris. Cette action ne s'annule pas.",
+    "a11yRing": "{{pct}} pour cent : {{current}} sur {{target}}",
+    "widgetEmpty": "Aucun objectif en cours.",
+    "seeAll": "Voir tous mes objectifs"
+  },
   "suggestion": {
     "title": "Combler un macro",
     "missing_one": "Il te manque {{count}} g de {{macro}}",

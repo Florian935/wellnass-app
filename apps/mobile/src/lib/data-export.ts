@@ -49,6 +49,9 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'body_measurements', col: 'user_id' },
   // US STREAK-01 — jokers de série consommés.
   { table: 'streak_jokers', col: 'user_id' },
+  // US OBJ-01 — objectifs à échéance. Seuls la cible et le point de départ sont stockés : la
+  // progression est dérivée, donc absente de l'export par construction (elle se recalcule).
+  { table: 'personal_goals', col: 'user_id' },
 ];
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };

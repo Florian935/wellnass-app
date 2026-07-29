@@ -142,6 +142,14 @@ const tableauOuvertes = ouvertes.length
     ].join('\n')
   : '_Aucune US en cours. Le pipeline est vide — piocher dans [BACKLOG.md](BACKLOG.md)._';
 
+// Les US à `recette` attendent une validation **humaine** : c'est la seule étape que le pipeline ne
+// peut pas franchir seul, donc celle qui se perd le plus facilement d'une session à l'autre.
+const enRecette = ouvertes.filter((s) => s.etape === 'recette');
+const renvoiRecettes = enRecette.length
+  ? `\n⏳ **${enRecette.length} US ${enRecette.length > 1 ? 'attendent' : 'attend'} une recette humaine** ` +
+    `(${enRecette.map((s) => s.id).join(', ')}) — critères cochables dans [RECETTES.md](RECETTES.md).\n`
+  : '';
+
 const liste = (arr) => (arr.length ? arr.map((x) => `- ${x}`).join('\n') : '- _(vide)_');
 
 const alertes = [];
@@ -172,7 +180,7 @@ avant de pouvoir publier.
 ## 🔨 En cours
 
 ${tableauOuvertes}
-
+${renvoiRecettes}
 ## ➡️ Prochain — P0 bloquant (${p0.length})
 
 ${liste(p0)}

@@ -3,7 +3,7 @@ id: OBJ-01
 titre: "Objectifs personnels à échéance"
 roadmap: [7.15]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/obj01-objectifs
 maj: 29/07/2026
 ---
@@ -17,10 +17,13 @@ maj: 29/07/2026
 >
 > **Vérifié avant d'écrire** : rien n'existe (aucune table, aucun écran).
 >
-> ⚠️ **État au 29/07/2026 — US NON LIVRÉE, partiellement implémentée.** Sont faits : ce cadrage et la
-> **brique de progression pure** (`goals.ts`, 21 tests) qui encode toutes les règles du §5. Restent :
-> les 2 migrations, le repository, l'écran liste/création, le widget et l'i18n. La roadmap 7.15 reste
-> donc **⬜**, pas 🟡 : rien n'est utilisable par un utilisateur à ce stade.
+> ✅ **État au 29/07/2026 — implémentation complète, recette device à faire.** Livrés : les
+> 2 migrations, la brique pure (`goals.ts`, 21 tests), le repository, l'écran liste/création, le
+> widget d'accueil (5 tests) et l'i18n FR+EN. Roadmap 7.15 → 🟡 jusqu'à la recette.
+>
+> ⚠️ **Bloquant avant recette : la sync rule `personal_goals` doit être déployée à la main** dans le
+> dashboard PowerSync (voir [RECETTES.md](../../../../RECETTES.md)). Sans elle les objectifs restent
+> locaux — sans erreur visible. Le calcul, lui, fonctionne hors ligne par construction (D5).
 
 ## 0. La contrainte structurante
 
@@ -157,14 +160,18 @@ directe de D5. ⚠️ Sync rule manuelle après la migration.
 
 ## 10. Definition of Done
 
-- [ ] 2 migrations poussées + cochées au registre + `db:types`.
-- [ ] **Sync rule déployée à la main** (bucket `user_data`).
-- [ ] Table dans `powersync/schema.ts` et dans l'**export RGPD**.
-- [ ] Brique de progression **pure et testée** pour les 2 types, verdict compris.
-- [ ] Écran liste + création, anneaux avec jalons visuels.
-- [ ] i18n FR + EN.
-- [ ] `npm run lint`, `npm run typecheck`, `npm run test` verts.
-- [ ] Roadmap 7.15 → ✅ (ou 🟡 si la recette device reste à faire).
+- [x] 2 migrations poussées + cochées au registre + `db:types`.
+- [ ] **Sync rule déployée à la main** (bucket `user_data`) — ⚠️ à faire par Florian.
+- [x] Table dans `powersync/schema.ts` et dans l'**export RGPD**.
+- [x] Brique de progression **pure et testée** pour les 2 types, verdict compris (21 tests).
+- [x] Écran liste + création, anneaux avec jalons visuels (`RingGauge` étendu d'une prop
+      `milestones`, plutôt qu'un second composant d'anneau).
+- [x] Widget d'accueil aux 3 formes (5 tests) — gardé par `['strength','running']`, **pas**
+      `'always'` : un utilisateur « nutrition seule » ne pourrait créer aucun des 2 types.
+- [x] i18n FR + EN, aucune chaîne en dur.
+- [x] `npm run lint` (0 erreur), `npm run typecheck` (0 erreur), `npm run test` (1193) verts.
+- [x] Roadmap 7.15 → 🟡 (recette device à faire).
+- [ ] Recette device (11 critères ci-dessous).
 
 ## 11. Critères d'acceptation (recette device)
 

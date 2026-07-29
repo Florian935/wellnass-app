@@ -17,6 +17,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import Svg, {
   Circle,
   Defs,
+  Line,
   LinearGradient,
   Polygon,
   Polyline,
@@ -43,6 +44,7 @@ export function RingGauge({
   pct,
   color,
   trackColor,
+  milestones,
   children,
 }: {
   /** Diamètre en px. */
@@ -55,6 +57,14 @@ export function RingGauge({
   color?: string;
   /** Couleur de la piste (défaut : `track`). */
   trackColor?: string;
+  /**
+   * Repères visuels sur l'anneau, en fractions 0–1 (US OBJ-01 : 25 / 50 / 75 %).
+   *
+   * Dessinés en **couleur de fond**, donc lus comme des *encoches* qui découpent l'anneau : le
+   * repère reste visible que la portion soit remplie ou non. Ce sont des **repères, pas des
+   * récompenses** — aucune célébration n'y est attachée (arbitrage C, pas de gamification en V1).
+   */
+  milestones?: readonly number[];
   /** Contenu centré (chiffre + libellé). */
   children?: ReactNode;
 }) {
@@ -87,6 +97,23 @@ export function RingGauge({
           strokeDashoffset={c * (1 - arc)}
           transform={`rotate(-90 ${center} ${center})`}
         />
+        {(milestones ?? []).map((m) => {
+          // L'arc démarre à 12 h et tourne dans le sens horaire, comme le `rotate(-90)` ci-dessus.
+          const theta = (-90 + 360 * m) * (Math.PI / 180);
+          const inner = r - stroke / 2;
+          const outer = r + stroke / 2;
+          return (
+            <Line
+              key={`ms-${m}`}
+              x1={center + inner * Math.cos(theta)}
+              y1={center + inner * Math.sin(theta)}
+              x2={center + outer * Math.cos(theta)}
+              y2={center + outer * Math.sin(theta)}
+              stroke={colors.background}
+              strokeWidth={2}
+            />
+          );
+        })}
       </Svg>
       {children != null ? (
         <View style={[StyleSheet.absoluteFill, styles.ringCenter]}>{children}</View>

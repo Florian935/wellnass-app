@@ -334,7 +334,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR ≈ 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | ⬜ | **UX-05**. Évolution du RPE par série (3.34) : beaucoup de pratiquants raisonnent en *reps in reserve*. Conversion à l'affichage, pas en base. |
 | 4.37 | Substitution d'aliments pour combler un macro | « il te manque 20 g de protéines → ajoute X » : suggestions puisées dans la base et les aliments récents. | Moyen | 4h | 🟢 | 🟡 | **NUTR-F2 — code livré le 29/07/2026.** Score **déterministe, sans IA** : densité du macro **pour 100 kcal** (trier sur les g/100 g désignerait les aliments les plus caloriques), macro choisi sur l'écart **relatif** (en absolu les glucides gagneraient toujours), quantité arrondie à 5 g et **bornée 10–400 g** — hors bornes l'aliment est **écarté**, pas tronqué. Carte conditionnelle sous le journal, ajout en un tap. 18 tests. 🟡 : vivier limité aux **aliments récents** (le repli sur la base demande un pré-filtrage SQL, voir spec §2) + recette device. |
 | 7.14 | Joker / gel de streak | 1 joker par mois protège la série sur un jour manqué, sans remettre le compteur à zéro. | Moyen | 3h | 🟢 | 🟡 | **STREAK-01 — code livré le 29/07/2026**, après arbitrage des 4 décisions produit par Florian. **Manuel et rétroactif** : l'app détecte la rupture à l'ouverture et propose le joker en annonçant les jours sauvés — un joker automatique rendrait la série sourdement inbrisable. 1 par mois calendaire · **un seul jour isolé** (deux jours d'affilée = interruption réelle) · fenêtre de 7 jours · **n'affecte QUE la série**, jamais l'adhérence ni le journal. Table `streak_jokers`, 18 tests. 🟡 : **sync rule à déployer** + recette device. |
-| 7.15 | Objectifs personnels à échéance | « 50 km ce mois », « +5 kg au développé d'ici 8 semaines » — anneau de progression, jalons, célébration. | Moyen | 6h | 🟢 | ⬜ | **OBJ-01**. **Non social** (les défis entre amis restent V2) et **mono-objectif** : l'objectif hybride transverse à arbitrage de compromis reste post-V1. Lit les agrégats existants. |
+| 7.15 | Objectifs personnels à échéance | « 50 km ce mois », « +5 kg au développé d'ici 8 semaines » — anneau de progression, jalons, célébration. | Moyen | 6h | 🟢 | 🟡 | **OBJ-01** livré, recette device à faire. **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). 2 types au lancement : cumul de course + 1RM sur un exercice, choisis pour être les **cas durs** (un départ à zéro, un départ à valeur existante). **Ni statut ni progression stockés** : fonctions pures de la fenêtre `[début, échéance]` — aucun cron, verdict stable, calcul hors ligne. **Jalons visuels seuls** (25/50/75 %), aucune célébration : arbitrage C respecté. ⚠️ sync rule `personal_goals` à déployer. |
 | 7.16 | Bilan hebdomadaire automatique | Récap poussé en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine à venir. | Moyen | 5h | 🟢 | ⬜ | **BILAN-01**. Format « une seule décision » plutôt que vingt graphiques. **Aucune narration sans les chiffres affichés à côté** — texte assemblé à partir de clés i18n et d'agrégats calculés localement, pas d'IA. Réutilise l'infra notifications (streak, DND). |
 | 7.17 | Carte de séance / course partageable | Export image (trace GPS + stats, ou résumé muscu) pour les stories Instagram / WhatsApp. | Moyen | 4h | 🟢 | ⬜ | **PARTAGE-01**. **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le jour du lancement. |
 | 7.18 | Réagencement du dashboard découvrable | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Facile | 2h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** ⚠️ Diagnostic initial **faux sur 2 points** : l'appui long (`activateAfterLongPress(700)`) et le retour visuel existaient déjà. Les vrais défauts, corrigés ici : les chips faisaient **36 dp effectifs** (24 + hitSlop 6) au lieu de 48 (CONF-07), et **aucune affordance** n'indiquait le geste. Ajout d'une poignée `pointerEvents="none"` (elle signale sans réduire la zone de préhension, qui reste toute la carte) + indice « appui long » dans le bandeau. |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 168 | ~81 % |
-| 🟡 Partiel | 14 | ~7 % |
-| ⬜ À faire | 21 | ~10 % |
+| 🟡 Partiel | 15 | ~7 % |
+| ⬜ À faire | 20 | ~10 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — OBJ-01 : objectifs à échéance (7.15) ⬜ → 🟡**
+Ni statut ni progression stockés : fonctions pures de la fenêtre `[début, échéance]` — donc aucun
+cron à faire tourner, un verdict qu'aucune activité ultérieure ne peut réécrire, et un calcul qui
+marche hors ligne. 2 types choisis pour être les cas durs. 26 tests. Compteurs : **168 / 15 / 20**.
 
 **29/07/2026 — STREAK-01 : joker de série (7.14) ⬜ → 🟡**
 4 décisions produit arbitrées avant tout code. Manuel et rétroactif (un joker automatique

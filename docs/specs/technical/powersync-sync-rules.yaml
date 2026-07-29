@@ -54,6 +54,9 @@ bucket_definitions:
       - select * from body_measurements     where user_id = bucket.user_id and deleted_at is null
       # US STREAK-01 : jokers de série (une ligne par jour manqué couvert).
       - select * from streak_jokers         where user_id = bucket.user_id and deleted_at is null
+      # US OBJ-01 : objectifs à échéance. Ni statut ni progression stockés — tout est dérivé de la
+      # fenêtre [start_date, deadline] côté client, donc le calcul marche hors ligne.
+      - select * from personal_goals        where user_id = bucket.user_id and deleted_at is null
       # ── Running ───────────────────────────────────────────────────────────
       - select * from running_profiles      where user_id = bucket.user_id and deleted_at is null
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null

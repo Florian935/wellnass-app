@@ -29,7 +29,7 @@ export const MAX_ACTIVE_GOALS = 3;
 export const GOAL_MILESTONES = [0.25, 0.5, 0.75] as const;
 
 /** Un objectif tel qu'il est stocké. */
-export type Goal = {
+export type PersonalGoal = {
   id: string;
   kind: GoalKind;
   /** Mètres pour `run_distance`, kilogrammes pour `exercise_1rm`. */
@@ -75,12 +75,12 @@ function within(day: string, from: string, to: string): boolean {
  * C'est ce plafond qui rend le verdict **stable** : après l'échéance, la fenêtre ne bouge plus, donc
  * plus aucune activité ultérieure ne peut la modifier.
  */
-export function goalWindowEnd(goal: Goal, todayKey: string): string {
+export function goalWindowEnd(goal: PersonalGoal, todayKey: string): string {
   return todayKey < goal.deadline ? todayKey : goal.deadline;
 }
 
 /** Vrai si l'objectif court encore. L'échéance est **incluse** : il se clôt le lendemain. */
-export function isGoalActive(goal: Goal, todayKey: string): boolean {
+export function isGoalActive(goal: PersonalGoal, todayKey: string): boolean {
   return todayKey <= goal.deadline;
 }
 
@@ -89,7 +89,7 @@ export function isGoalActive(goal: Goal, todayKey: string): boolean {
  *
  * Un cumul part de zéro par construction — d'où l'inutilité d'une valeur de départ (D6).
  */
-function runDistanceProgress(goal: Goal, runs: ReadonlyArray<GoalRun>, end: string): number {
+function runDistanceProgress(goal: PersonalGoal, runs: ReadonlyArray<GoalRun>, end: string): number {
   return runs
     .filter((run) => within(run.dayKey, goal.startDate, end))
     .reduce((sum, run) => sum + run.distanceM, 0);
@@ -103,7 +103,7 @@ function runDistanceProgress(goal: Goal, runs: ReadonlyArray<GoalRun>, end: stri
  * qu'afficher 0 %, qui se lirait comme un échec.
  */
 function exercise1rmProgress(
-  goal: Goal,
+  goal: PersonalGoal,
   lifts: ReadonlyArray<GoalLift>,
   end: string,
 ): number | null {
@@ -126,7 +126,7 @@ function exercise1rmProgress(
  * n'interdit pas de continuer à accumuler, et clore l'objectif priverait l'utilisateur de la suite.
  */
 export function computeGoalProgress(params: {
-  goal: Goal;
+  goal: PersonalGoal;
   runs?: ReadonlyArray<GoalRun>;
   lifts?: ReadonlyArray<GoalLift>;
   todayKey: string;

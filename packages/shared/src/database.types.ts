@@ -1031,6 +1031,63 @@ export type Database = {
           },
         ]
       }
+      personal_goals: {
+        Row: {
+          created_at: string
+          deadline: string
+          deleted_at: string | null
+          exercise_id: string | null
+          id: string
+          kind: string
+          start_date: string
+          start_value: number | null
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline: string
+          deleted_at?: string | null
+          exercise_id?: string | null
+          id: string
+          kind: string
+          start_date: string
+          start_value?: number | null
+          target_value: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string
+          deleted_at?: string | null
+          exercise_id?: string | null
+          id?: string
+          kind?: string
+          start_date?: string
+          start_value?: number | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_goals_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_records: {
         Row: {
           achieved_at: string

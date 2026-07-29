@@ -1768,6 +1768,59 @@
     "a11yKindTab": "Show chart: {{kind}}",
     "closeSheet": "Close entry form"
   },
+  "goals": {
+    "title": "Goals",
+    "cta": "New goal",
+    "sectionActive": "In progress",
+    "sectionFinished": "Finished",
+    "empty": "No goals yet. A deadline turns an intention into a commitment.",
+    "kinds": {
+      "run_distance": "Running distance",
+      "exercise_1rm": "Strength on an exercise"
+    },
+    "kindHints": {
+      "run_distance": "Total of your runs until the deadline.",
+      "exercise_1rm": "Progress of your estimated 1RM, starting today."
+    },
+    "form": {
+      "title": "New goal",
+      "kind": "Goal type",
+      "exercise": "Target exercise",
+      "pickExercise": "Choose",
+      "targetDistance": "Distance to cover",
+      "target1rm": "1RM to reach",
+      "deadline": "Deadline",
+      "startValue": "Your current 1RM: {{value}}. That's the starting point, frozen at creation.",
+      "noStartValue": "No sets recorded for this exercise: the goal will start from zero.",
+      "submit": "Create goal",
+      "close": "Close the form"
+    },
+    "weeks": "{{count}} weeks",
+    "progress": "{{current}} of {{target}}",
+    "remaining_one": "{{count}} day left",
+    "remaining_other": "{{count}} days left",
+    "lastDay": "Last day",
+    "deadlineOn": "Due on {{date}}",
+    "status": {
+      "achieved": "Achieved",
+      "missed": "Not achieved"
+    },
+    "unavailable": "Progress can't be computed: the target exercise is no longer available.",
+    "errors": {
+      "limitReached": "You're already tracking {{count}} goals. Remove one before adding another.",
+      "invalidTarget": "Enter a target greater than zero.",
+      "targetBelowStart": "Target already reached: your 1RM is {{start}}. Aim higher.",
+      "deadlineBeforeStart": "The deadline must be later than today.",
+      "missingExercise": "Choose the target exercise.",
+      "createFailed": "The goal couldn't be created. Try again."
+    },
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete this goal?",
+    "deleteConfirmBody": "It will disappear from the list, verdict included. This can't be undone.",
+    "a11yRing": "{{pct}} percent: {{current}} of {{target}}",
+    "widgetEmpty": "No goal in progress.",
+    "seeAll": "See all my goals"
+  },
   "suggestion": {
     "title": "Fill a macro",
     "missing_one": "You're {{count}} g of {{macro}} short",

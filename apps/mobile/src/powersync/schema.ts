@@ -495,6 +495,26 @@ const body_measurements = new Table({
   deleted_at: column.text,
 });
 
+// ── US OBJ-01 : objectifs personnels à échéance ────────────────────────────
+// Migrations : supabase/migrations/20260729131013_obj01_personal_goals.sql
+//              + 20260729131107_obj01_personal_goals_publication.sql
+// **Ni `status` ni `progress`** (décision D5) : les deux sont dérivés de la fenêtre
+// `[start_date, deadline]` par `computeGoalProgress` (@wellness/shared). Conséquence directe : tout
+// le calcul est local, donc l'écran fonctionne hors ligne sans rien devoir écrire.
+// `target_value` / `start_value` en `real` : les colonnes Postgres sont `numeric(10,2)`.
+const personal_goals = new Table({
+  user_id: column.text,
+  kind: column.text,
+  target_value: column.real,
+  start_value: column.real,
+  exercise_id: column.text,
+  start_date: column.text,
+  deadline: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -539,6 +559,7 @@ export const AppSchema = new Schema({
   daily_wellbeing,
   body_measurements,
   streak_jokers,
+  personal_goals,
   exercises,
   exercise_translations,
   exercise_favorites,

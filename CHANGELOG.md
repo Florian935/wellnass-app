@@ -10,6 +10,76 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/obj01-objectifs` — OBJ-01 : objectifs à échéance (fin du lot) + registre de recettes
+
+**Deux choses dans ce commit** : la fin d'OBJ-01 (l'increment précédent s'arrêtait au cadrage et à la
+brique de calcul) et un **registre de recettes** né d'un vrai besoin — la recette est la seule étape
+que je ne peux pas franchir, donc la seule dont l'information mourait avec la session.
+
+#### `RECETTES.md` (nouveau) — le suivi qui manquait
+
+Les critères cochables des 8 US bloquées à `etape: recette`, avec le **prérequis bloquant** en tête
+(le déploiement des sync rules), le support de chaque recette (📱 device / 🌐 navigateur) et l'ordre
+dans lequel s'y prendre — six US se recettent sur **un seul APK**, mais seulement après le
+déploiement, sinon trois d'entre elles échouent pour une raison qui n'a rien à voir avec leur code.
+
+Il obéit à la règle du dépôt : **une section disparaît dès que l'US est clôturée**. Un fichier de
+suivi qui ne fait que grossir a cessé d'être un tableau de bord.
+
+- `scripts/etat.mjs` : renvoi **calculé** vers `RECETTES.md` sous le tableau des US en cours, avec le
+  compte et la liste des US concernées. Généré, donc il se met à jour — et disparaîtra tout seul
+  quand plus aucune US ne sera en recette.
+- `CLAUDE.md` : entrée dans « Où se trouve quoi » et dans la structure de la documentation.
+
+#### OBJ-01 — base de données
+
+- `20260729131013_obj01_personal_goals` : table `personal_goals`. **Ni `status` ni `progress`** —
+  les deux sont dérivés (D5), et les stocker aurait demandé un **écrivain** à déclencher, or une app
+  mobile hors ligne n'offre aucun moment fiable pour clôturer les objectifs échus.
+  `check` sur `kind` plutôt qu'un enum : un type d'objectif de plus (volume, poids, pas) ne demandera
+  pas de migration de données. `exercise_id` en `on delete set null` **et non cascade** : un exercice
+  supprimé rend l'objectif non calculable, il ne l'efface pas.
+- `20260729131107_..._publication` : `alter publication powersync add table`, gardé par
+  `pg_publication_tables`.
+- Registre coché (55 → 57), types régénérés, `powersync-sync-rules.yaml` complété.
+
+#### OBJ-01 — application
+
+- `goal-repository.ts` : lecture des objectifs + assemblage des sources d'activité. Les timestamps
+  sont convertis en jour **local** en JS (`localDayKey`) et non par `date()` en SQLite, qui donnerait
+  le jour **UTC** — une course de 23 h le 31 juillet basculerait au 1ᵉʳ août et sortirait de la
+  fenêtre. Les jointures de traduction **ne filtrent pas `deleted_at`** : même correctif qu'ADMIN-01,
+  un exercice archivé doit continuer d'afficher son nom. Le plafond de 3 est **relu à l'écriture**,
+  pas repris de l'affichage (un autre appareil peut avoir créé un objectif entre-temps).
+- `app/goals.tsx` + `GoalCard` + `GoalFormSheet` : liste (en cours / terminés avec verdict) et
+  création. L'échéance se choisit **en semaines** (4/8/12), pas dans un calendrier : un objectif se
+  pense en durée d'engagement. Le 1RM de départ est **calculé et montré avant validation** — sans ce
+  repère, « 105 kg » ne dit pas s'il s'agit d'un pas ou d'un bond.
+- `RingGauge` : prop `milestones` plutôt qu'un second composant d'anneau. Les repères sont dessinés
+  en couleur de **fond**, donc lus comme des encoches visibles que la portion soit remplie ou non.
+- `GoalsCard` (widget, 3 formes, 5 tests) : ordonné par **urgence** et non par avancement — un
+  objectif à 90 % avec trois semaines devant lui est moins pressant qu'un à 40 % qui se joue demain.
+  Gardé par `['strength','running']` et **pas** `'always'` : les 2 types portent sur la course et la
+  force, un utilisateur « nutrition seule » n'aurait qu'un vide permanent.
+- Export RGPD, `powersync/schema.ts`, route dans `_layout.tsx`, i18n FR+EN (namespace `goals`).
+
+#### Correction d'une affirmation fausse
+
+**Le typecheck que j'ai annoncé vert au commit `67b171f` ne l'était pas.** `goals.ts` exportait un
+type `Goal` déjà exporté par `profile.ts` (l'objectif de profil : muscle / perte de poids / …), ce
+qui cassait `packages/shared/src/index.ts`. Renommé en **`PersonalGoal`**, qui colle au nom de la
+table. J'avais lancé la commande depuis un sous-répertoire : npm ne couvrait alors qu'un workspace.
+
+#### Qualité
+
+`npm run typecheck` 0 erreur · `npm run lint` 0 erreur (6 warnings préexistants) ·
+`npm run test` **1193 verts** (1043 Vitest + 150 Jest), dont 26 pour OBJ-01. Trois tests de
+`widgets.test.ts` attendaient 11 widgets d'accueil : passés à 12, plus une assertion qui verrouille
+la garde pilier de `goals` — c'est le choix non évident du lot.
+
+⚠️ **Reste à faire par Florian** : déployer la sync rule (`personal_goals` est le **4ᵉ** changement
+en attente dans le même collage) puis la recette device, 11 critères.
+
 ### 29/07/2026 — `feature/obj01-objectifs` — OBJ-01 : cadrage + cœur de calcul (US **non livrée**)
 
 > ⚠️ **Increment partiel, assumé et annoncé.** Sont livrés : le cadrage (4 décisions arbitrées par

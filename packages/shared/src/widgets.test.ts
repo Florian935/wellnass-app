@@ -71,12 +71,20 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 11, muscu 5, course 3 ; gardes pilier', () => {
-    expect(HOME_WIDGET_IDS).toHaveLength(11);
+  it('accueil 12, muscu 5, course 3 ; gardes pilier', () => {
+    expect(HOME_WIDGET_IDS).toHaveLength(12);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
     expect(WIDGET_REGISTRY.strength.pillars['strength-programs']).toEqual(['strength']);
+  });
+
+  it('garde les objectifs (OBJ-01) derrière muscu OU course, et non « always »', () => {
+    // Les 2 types d'objectif portent sur la course et la force : un utilisateur « nutrition seule »
+    // ne pourrait en créer aucun, le widget serait un vide permanent. Contrairement à `steps` et
+    // `wellbeing`, qui sont eux réellement transverses.
+    expect(WIDGET_REGISTRY.home.pillars['goals']).toEqual(['strength', 'running']);
+    expect(WIDGET_REGISTRY.home.pillars['wellbeing']).toBe('always');
   });
 });
 
@@ -95,7 +103,7 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    expect(layout.widgets).toHaveLength(11);
+    expect(layout.widgets).toHaveLength(12);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -115,7 +123,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(11);
+    expect(r.widgets).toHaveLength(12);
     assertNoOverlap(r.widgets);
   });
 

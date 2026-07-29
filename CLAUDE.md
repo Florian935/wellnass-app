@@ -19,6 +19,7 @@ accessibilité (9.11/9.12) et la publication Play Store (9.2).
 |---|---|---|
 | **Où on en est, maintenant** | [ETAT.md](ETAT.md) | 🤖 **généré** — ne jamais éditer à la main |
 | **Ce qu'il reste à faire** | [BACKLOG.md](BACKLOG.md) | candidats priorisés P0/P1/P2, **sans spec encore** |
+| **Ce qui attend une recette humaine** | [RECETTES.md](RECETTES.md) | critères cochables des US à `etape: recette` |
 | **État d'une US précise** | le **front-matter** de sa [spec](docs/specs/functional/us/) | source de vérité par US |
 | **Le périmètre complet** | [roadmap](docs/roadmap/roadmap.md) | ~194 fonctionnalités, colonne Statut |
 | **Les analyses de données** | [catalogue](docs/product/analyses-donnees.md) | 2ᵉ backlog, 220 items |
@@ -135,7 +136,12 @@ tout ça : **chaque information a un seul endroit, et cet endroit se remplace au
    **MVP1 = V1.0 complète**). Colonne Statut ✅ 🟡 ⬜ ⏳ ❌. Audit périodique par
    [`/reconcilier`](.claude/commands/reconcilier.md).
 
-À côté : le **[catalogue d'analyses](docs/product/analyses-donnees.md)** (2ᵉ backlog, 220 items,
+À côté : **[RECETTES.md](RECETTES.md)** — les critères cochables des US bloquées à `etape: recette`.
+La recette est la **seule étape qu'un agent ne peut pas franchir** : sans ce fichier, la liste de ce
+qu'il reste à vérifier sur device meurt avec la session qui l'a produite. Il obéit à la même règle
+que les autres : **une section disparaît dès que l'US est clôturée**.
+
+Puis le **[catalogue d'analyses](docs/product/analyses-donnees.md)** (2ᵉ backlog, 220 items,
 source de vérité des US META/MN/MR/NUTR/RN — ne pas les dupliquer dans la roadmap), le
 **[CHANGELOG](CHANGELOG.md)** (historique par commit, a vocation à grossir), et
 **[docs/journal/](docs/journal/)** (archives gelées).
@@ -198,6 +204,8 @@ Cycle **sans Docker** :
 ```
 /ETAT.md                    → 🤖 GÉNÉRÉ — où on en est (scripts/etat.mjs, skill /etat). NE PAS ÉDITER
 /BACKLOG.md                 → reste-à-faire priorisé P0/P1/P2 (candidats sans spec)
+/RECETTES.md                → recettes humaines en attente (cochables). Se VIDE : une section
+                              disparaît dès que l'US est clôturée
 /IDEAS.md                   → boîte de dépôt des idées brutes à trier (avant cadrage en US)
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /supabase/MIGRATIONS.md     → registre coché des migrations poussées sur le cloud

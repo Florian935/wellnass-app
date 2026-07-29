@@ -401,6 +401,18 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US OBJ-01 — objectifs à échéance. Ouvert depuis le widget d'accueil. */}
+        <Stack.Screen
+          name="goals"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('goals.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         {/* US BIEN-01 — historique du check-in de bien-être. */}
         <Stack.Screen
           name="wellbeing"

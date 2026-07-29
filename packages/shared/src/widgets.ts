@@ -52,6 +52,8 @@ export const HOME_WIDGET_IDS = [
   'steps',
   // US BIEN-01 — même raison, même place : en fin de registre.
   'wellbeing',
+  // US OBJ-01 — même raison, même place : en fin de registre.
+  'goals',
 ] as const;
 
 /**
@@ -121,6 +123,11 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // Transverse aussi (US BIEN-01) : le bien-être est une 4ᵉ dimension, **pas** un 4ᵉ pilier
       // activable — aucune entrée dans `active_pillars`, donc jamais filtré.
       wellbeing: 'always',
+      // US OBJ-01 : **pas** `'always'`, contrairement à `steps` et `wellbeing`. Les 2 types
+      // d'objectif au lancement portent sur la course et la force ; un utilisateur « nutrition
+      // seule » n'en créerait aucun, le widget serait un vide permanent. Même garde que
+      // `record-recent` et `training-time`.
+      goals: ['strength', 'running'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

@@ -8,10 +8,10 @@ import {
   goalWindowEnd,
   isGoalActive,
   validateGoalTarget,
-  type Goal,
+  type PersonalGoal,
 } from './goals';
 
-const runGoal: Goal = {
+const runGoal: PersonalGoal = {
   id: 'g1',
   kind: 'run_distance',
   targetValue: 50_000, // 50 km
@@ -21,7 +21,7 @@ const runGoal: Goal = {
   deadline: '2026-07-31',
 };
 
-const liftGoal: Goal = {
+const liftGoal: PersonalGoal = {
   id: 'g2',
   kind: 'exercise_1rm',
   targetValue: 105, // +5 kg sur un départ à 100
@@ -153,14 +153,14 @@ describe('objectif de force sur un exercice', () => {
 
   it('rend la progression NON CALCULABLE si l’exercice a été supprimé', () => {
     // `exercise_id` passe à NULL (on delete set null) : afficher 0 % se lirait comme un échec.
-    const orphan: Goal = { ...liftGoal, exerciseId: null };
+    const orphan: PersonalGoal = { ...liftGoal, exerciseId: null };
     const p = computeGoalProgress({ goal: orphan, lifts, todayKey: '2026-07-25' });
     expect(p.unavailable).toBe(true);
     expect(p.ratio).toBeNull();
   });
 
   it('refuse de diviser par un écart nul ou négatif', () => {
-    const absurde: Goal = { ...liftGoal, targetValue: 100 }; // cible = départ
+    const absurde: PersonalGoal = { ...liftGoal, targetValue: 100 }; // cible = départ
     const p = computeGoalProgress({ goal: absurde, lifts, todayKey: '2026-07-25' });
     expect(p.unavailable).toBe(true);
   });

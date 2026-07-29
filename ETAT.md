@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 14 partiel · 21 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 15 partiel · 20 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -21,9 +21,11 @@ avant de pouvoir publier.
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
+| **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **OBJ-01** — Objectifs personnels à échéance | `code` | `feature/obj01-objectifs` | [7.15] |
+
+⏳ **8 US attendent une recette humaine** (ADMIN-01, BIEN-01, CONTENU-01, MESUR-01, NUTR-F2, OBJ-01, STREAK-01, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -46,9 +48,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/obj01-objectifs` (modifications non commitées) |
-| Commits | 956 · `main` a **953** commits de retard sur `dev` |
+| Commits | 957 · `main` a **954** commits de retard sur `dev` |
 | Specs d'US | 83 au total — 75 clôturées, 8 en cours |
-| Migrations | 55/55 poussées sur le cloud |
+| Migrations | 57/57 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -57,11 +59,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `67b171f` feat(obj01): cadrage et cœur de calcul des objectifs à échéance (US OBJ-01 partielle, 7.15)
 - `fcee5ca` feat(streak01): joker de série — gel d'un jour manqué isolé (US STREAK-01, 7.14)
 - `34abbde` feat(nutrf2): suggestion d'aliments pour combler un macro (US NUTR-F2, 4.37)
 - `9704ece` feat(mesur01): mensurations corporelles — 6 mesures historisées, courbes et deltas (US MESUR-01, 3.51)
 - `1d59fa7` feat(uxlot01): finitions de recette — états vides, cibles 48 dp, affordance de glissement (3.53/3.54/7.18)
-- `911922b` feat(admin01): archivage sûr du contenu éditorial — décomptes, restauration, historique préservé (US ADMIN-01, 8.11)
 
 ---
 
