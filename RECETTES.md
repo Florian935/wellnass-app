@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **29/07/2026** — 10 US en attente.
+> Dernière mise à jour : **29/07/2026** — 11 US en attente.
 
 ---
 
@@ -222,7 +222,29 @@ désactiver/réactiver la préférence ne casse rien.
 
 ---
 
-## 10. UX-LOT-01 — Lot de finitions
+## 10. UX-05 — Intensité en RPE ou en RIR
+
+📄 [spec](docs/specs/functional/us/ux05-rpe-ou-rir.md) · roadmap 3.55 · **📱 device**
+✅ aucune sync rule · ✅ recettable sur **l'APK actuel** (aucune dépendance native ajoutée)
+
+- [ ] 1. Réglages → **Échelle d'intensité** : les 2 choix, avec l'aide de l'échelle active.
+- [ ] 2. En mode **RPE** : la saisie par série propose **1 → 10**, l'affichage dit « RPE 8 ».
+- [ ] 3. En mode **RIR** : la saisie propose **0 → 9**, l'affichage dit « RIR 2 » pour la même série.
+- [ ] 4. **Le test qui compte** : saisir une série à RPE 8, basculer en RIR → « RIR 2 ». Rebasculer en
+      RPE → « RPE 8 ». **Aucune donnée n'a bougé.**
+- [ ] 5. Une série **sans** intensité reste sans intensité dans les deux modes (pas de « RIR 10 »).
+- [ ] 6. L'historique détaillé d'une séance affiche l'échelle choisie.
+- [ ] 7. Le **ressenti de séance** (5 étoiles) et le **ressenti de course** sont **inchangés** — c'est
+      volontaire, à vérifier explicitement.
+- [ ] 8. En **EN** : « RIR » et son aide sont en anglais.
+- [ ] 9. Mode avion : le changement s'applique tout de suite, et remonte au retour du réseau.
+
+⚠️ La saisie du RPE/RIR par série n'apparaît qu'au niveau d'affichage **« detailed »** (MUSC-F13) : si
+tu ne vois pas le bouton, vérifie ce réglage d'abord.
+
+---
+
+## 11. UX-LOT-01 — Lot de finitions
 
 📄 [spec](docs/specs/functional/us/uxlot01-finitions-recette.md) · roadmap 3.53, 3.54, 7.18 ·
 **📱 device**
@@ -242,7 +264,8 @@ désactiver/réactiver la préférence ne casse rien.
 
 ## Comment procéder
 
-**Sept US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01, BILAN-01
+**Huit US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01,
+BILAN-01, UX-05
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code.

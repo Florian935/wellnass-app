@@ -4,10 +4,12 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 're
 import { useTranslation } from 'react-i18next';
 import { useStatus } from '@powersync/react';
 import {
+  INTENSITY_SCALES,
   LOCALES,
   PILLARS,
   UNIT_SYSTEMS,
   WORKOUT_DISPLAY_LEVELS,
+  type IntensityScale,
   type Locale,
   type NotificationPrefs,
   type Pillar,
@@ -115,6 +117,7 @@ export default function SettingsScreen() {
   const activePillars = settings?.activePillars ?? [...PILLARS];
   const theme = settings?.theme ?? 'system';
   const units = settings?.units ?? 'metric';
+  const intensityScale = settings?.intensityScale ?? 'rpe';
   const language = settings?.language ?? getAppLanguage();
   const email = useAuthStore((s) => s.session?.user.email);
   const signOut = useAuthStore((s) => s.signOut);
@@ -308,6 +311,26 @@ export default function SettingsScreen() {
         label={(option) => t(`settings.units.${option}`)}
       />
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.units.hint')}</Text>
+
+      {/* Échelle d'intensité — RPE ou RIR (US UX-05). Placé juste après les unités, et c'est
+          délibéré : c'est la même nature de réglage — une donnée unique en base, deux façons de
+          l'afficher. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('intensity.settingsLabel')}
+      </Text>
+      <Segment
+        options={[...INTENSITY_SCALES]}
+        value={intensityScale}
+        onChange={(next: IntensityScale) => void updateSettings({ intensityScale: next })}
+        label={(option) => t(`intensity.${option}.short`)}
+      />
+      {/* Le rappel de ce que signifie l'échelle ACTIVE : « RIR » seul ne dit rien à qui hésite. */}
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {t(`intensity.${intensityScale}.hint`)}
+      </Text>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {t('intensity.settingsHint')}
+      </Text>
 
       {/* Langue (FR/EN) — correction bug « aucun sélecteur de langue » */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

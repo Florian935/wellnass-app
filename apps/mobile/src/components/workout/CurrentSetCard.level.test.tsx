@@ -102,9 +102,13 @@ describe('CurrentSetCard — niveaux d’affichage (MUSC-F13)', () => {
       />,
     );
 
-    // Le libellé RPE est suivi d'un <Text> imbriqué « (option.) » : match par
-    // motif plutôt qu'égalité stricte pour ne pas dépendre de la composition interne.
-    expect(queryByText(new RegExp(fr.workout.rpeAdd))).toBeTruthy();
+    // US UX-05 : le libellé est désormais paramétré par l'échelle choisie (`{{scale}}`). On vérifie
+    // donc le rendu attendu **avec l'échelle par défaut** — ce qui teste au passage le repli sur
+    // « RPE » quand les réglages ne sont pas encore chargés.
+    // Le libellé est suivi d'un <Text> imbriqué « (option.) » : match par motif plutôt qu'égalité
+    // stricte, pour ne pas dépendre de la composition interne.
+    const expectedRpeAdd = fr.workout.rpeAdd.replace('{{scale}}', fr.intensity.rpe.short);
+    expect(queryByText(new RegExp(expectedRpeAdd))).toBeTruthy();
     expect(queryByPlaceholderText(fr.workout.exerciseNote.placeholder)).toBeTruthy();
     expect(queryByText(fr.workout.setType.dropset)).toBeTruthy();
     expect(queryByText(`🔥 ${fr.workout.warmupToggle}`)).toBeTruthy();

@@ -7,6 +7,7 @@ import type { SetType, WorkoutDisplayLevel } from '@wellness/shared';
 import { workoutFieldVisibility } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useUnits } from '@/hooks/useUnits';
+import { useIntensity } from '@/hooks/useIntensity';
 import type { Palette } from '@/theme/colors';
 
 /**
@@ -32,8 +33,6 @@ export type SupersetLinkState =
   | null;
 
 /** Valeurs de RPE proposées (échelle 1-10). */
-const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
-
 type CurrentSetCardProps = {
   exerciseName: string;
   /** Rang de la série dans l'exercice (1-based). */
@@ -174,6 +173,8 @@ export function CurrentSetCard({
 }: CurrentSetCardProps) {
   const { t } = useTranslation();
   const units = useUnits();
+  // US UX-05 : échelle d'intensité choisie (RPE ou RIR) + conversions. La valeur STOCKÉE reste le RPE.
+  const intensity = useIntensity();
   const vis = workoutFieldVisibility(level);
 
   // Sélecteur RPE : masqué par défaut (peu utilisé), déplié au tap sur « ＋ RPE ».
@@ -458,17 +459,26 @@ export function CurrentSetCard({
       <View style={styles.rpeBlock}>
         {rpeOpen ? (
           <View style={[styles.rpeOpen, { backgroundColor: colors.surfaceAlt }]}>
-            <Text style={[styles.rpeOpenLabel, { color: colors.textMuted }]}>{t('workout.rpeLabel')}</Text>
+            <Text style={[styles.rpeOpenLabel, { color: colors.textMuted }]}>
+              {t('workout.rpeLabel', { scale: intensity.label })}
+            </Text>
             <View style={styles.rpePills}>
-              {RPE_VALUES.map((n) => {
-                const active = rpe === n;
+              {/* US UX-05 : les valeurs sont celles de l'ÉCHELLE CHOISIE (RPE 1→10 ou RIR 0→9),
+                  et la sélection est reconvertie en RPE avant d'être stockée. La donnée en base ne
+                  change jamais de nature. */}
+              {intensity.choices.map((n) => {
+                const active = intensity.toDisplay(rpe) === n;
                 return (
                   <Pressable
                     key={n}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
+                    accessibilityLabel={t('intensity.a11yChoice', {
+                      scale: intensity.label,
+                      value: n,
+                    })}
                     onPress={() => {
-                      onSetRpe(n);
+                      onSetRpe(intensity.toStored(n));
                       setRpeOpen(false);
                     }}
                     style={({ pressed }) => [
@@ -493,7 +503,9 @@ export function CurrentSetCard({
               onPress={() => setRpeOpen(true)}
               style={({ pressed }) => [styles.rpeChip, { backgroundColor: colors.surfaceAlt }, pressed && styles.pressed]}
             >
-              <Text style={[styles.rpeChipText, { color: colors.accent }]}>{t('workout.rpeValue', { value: rpe })}</Text>
+              <Text style={[styles.rpeChipText, { color: colors.accent }]}>
+                {intensity.format(rpe)}
+              </Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -511,7 +523,8 @@ export function CurrentSetCard({
             style={({ pressed }) => [styles.rpeAddBtn, { borderColor: colors.border }, pressed && styles.pressed]}
           >
             <Text style={[styles.rpeAddText, { color: colors.textMuted }]}>
-              {t('workout.rpeAdd')} <Text style={styles.rpeAddOptional}>{`(${t('workout.optional')})`}</Text>
+              {t('workout.rpeAdd', { scale: intensity.label })}{' '}
+              <Text style={styles.rpeAddOptional}>{`(${t('workout.optional')})`}</Text>
             </Text>
           </Pressable>
         )}

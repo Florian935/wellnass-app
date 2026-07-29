@@ -19,6 +19,7 @@ import {
 } from '@/data/repositories/records-repository';
 import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
+import { useIntensity } from '@/hooks/useIntensity';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 // ---------------------------------------------------------------------------
@@ -242,6 +243,7 @@ function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
+  const intensity = useIntensity();
 
   const setTypeLabelMap: Record<string, string> = {
     normal: t('history.detail.setNormal'),
@@ -276,8 +278,10 @@ function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
     else if (set.weightKg != null && set.weightKg < set.plannedWeightKg) arrow = '▼';
     meta.push(`${t('history.detail.planned', { weight: units.formatWeight(set.plannedWeightKg) })} ${arrow}`);
   }
-  if (set.rpe != null) {
-    meta.push(t('history.detail.setRpe', { value: set.rpe }));
+  // US UX-05 : affiché dans l'échelle choisie (RPE ou RIR). La donnée stockée reste le RPE.
+  const intensityLabel = intensity.format(set.rpe);
+  if (intensityLabel !== null) {
+    meta.push(intensityLabel);
   }
 
   return (

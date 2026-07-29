@@ -1863,6 +1863,7 @@ export type Database = {
           deleted_at: string | null
           health_connect_enabled: boolean
           id: string
+          intensity_scale: string
           language: string
           notifications: Json
           theme: string
@@ -1878,6 +1879,7 @@ export type Database = {
           deleted_at?: string | null
           health_connect_enabled?: boolean
           id: string
+          intensity_scale?: string
           language?: string
           notifications?: Json
           theme?: string
@@ -1893,6 +1895,7 @@ export type Database = {
           deleted_at?: string | null
           health_connect_enabled?: boolean
           id?: string
+          intensity_scale?: string
           language?: string
           notifications?: Json
           theme?: string

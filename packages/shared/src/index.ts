@@ -22,6 +22,7 @@ export * from './streak-joker';
 export * from './goals';
 export * from './weekly-review';
 export * from './share-card';
+export * from './intensity';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';

@@ -24,6 +24,7 @@ import {
   PILLARS,
   defaultNotificationPrefs,
   parseJsonColumn,
+  parseIntensityScale,
   parseNotificationPrefs,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
@@ -43,6 +44,7 @@ export type SettingsInput = Pick<
   UserSettingsRow,
   | 'theme'
   | 'units'
+  | 'intensityScale'
   | 'language'
   | 'activePillars'
   | 'notifications'
@@ -57,6 +59,8 @@ type SettingsDbRow = {
   user_id: string;
   theme: string;
   units: string;
+  /** Échelle d'intensité affichée (US UX-05). Absente des lignes anciennes → parse tolérant. */
+  intensity_scale: string | null;
   language: string;
   /** Stockée en TEXT (JSON sérialisé). */
   active_pillars: string | null;
@@ -110,6 +114,8 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     userId: row.user_id,
     theme: row.theme as UserSettings['theme'],
     units: row.units as UserSettings['units'],
+    // Parse tolérant : les lignes locales antérieures à la migration n'ont pas la colonne.
+    intensityScale: parseIntensityScale(row.intensity_scale),
     language: row.language as UserSettings['language'],
     activePillars: parseJsonColumn<Pillar[]>(row.active_pillars, [...PILLARS], isPillarArray),
     // Parse tolérant : anciennes valeurs (Record<string,boolean> ou {}) → défauts.
@@ -128,6 +134,7 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   const columns: Record<string, unknown> = {};
   if ('theme' in input) columns['theme'] = input.theme;
   if ('units' in input) columns['units'] = input.units;
+  if ('intensityScale' in input) columns['intensity_scale'] = input.intensityScale;
   if ('language' in input) columns['language'] = input.language;
   if ('activePillars' in input) {
     columns['active_pillars'] = JSON.stringify(input.activePillars);

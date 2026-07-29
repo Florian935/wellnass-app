@@ -157,9 +157,9 @@
     "addedWeightLabel": "Lest",
     "optional": "option.",
     "plannedWeight": "Prévu : {{weight}}",
-    "rpeAdd": "＋ RPE série",
-    "rpeValue": "RPE {{value}}",
-    "rpeLabel": "RPE série",
+    "rpeAdd": "＋ {{scale}} série",
+    "rpeValue": "{{scale}} {{value}}",
+    "rpeLabel": "{{scale}} série",
     "rpeClear": "Effacer",
     "exerciseNote": {
       "placeholder": "Note (réglage machine, position…)"
@@ -1130,7 +1130,7 @@
       "setBodyweight": "PdC",
       "setDropset": "Drop",
       "setFailure": "Échec",
-      "setRpe": "RPE {{value}}",
+      "setRpe": "{{scale}} {{value}}",
       "planned": "prévu {{weight}}",
       "repsWeight": "{{reps}} × {{weight}}",
       "repsOnly": "{{reps}} reps",
@@ -1860,6 +1860,21 @@
       "hour": "Heure du bilan"
     },
     "seeAll": "Voir mon bilan"
+  },
+  "intensity": {
+    "rpe": {
+      "short": "RPE",
+      "name": "RPE — effort perçu",
+      "hint": "1 = très facile, 10 = plus aucune répétition possible."
+    },
+    "rir": {
+      "short": "RIR",
+      "name": "RIR — répétitions en réserve",
+      "hint": "0 = plus aucune répétition possible, 9 = très loin de l'échec."
+    },
+    "settingsLabel": "Échelle d'intensité",
+    "settingsHint": "Le RIR est l'inverse du RPE (RIR = 10 − RPE). Rien n'est converti en base : tes séries déjà enregistrées se relisent simplement dans l'autre échelle.",
+    "a11yChoice": "{{scale}} {{value}}"
   },
   "share": {
     "previewTitle": "Aperçu",

@@ -44,6 +44,9 @@ const user_settings = new Table({
   user_id: column.text,
   theme: column.text,
   units: column.text,
+  // US UX-05 — échelle d'intensité AFFICHÉE ('rpe' | 'rir'). La donnée reste `workout_sets.rpe` :
+  // le RIR est calculé à l'affichage, jamais stocké.
+  intensity_scale: column.text,
   language: column.text,
   active_pillars: column.text,
   notifications: column.text,

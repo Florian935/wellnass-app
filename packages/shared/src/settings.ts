@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { localeSchema, PILLARS, pillarSchema } from './pillar';
 import { unitSystemSchema } from './units';
+import { INTENSITY_SCALES } from './intensity';
 import { syncFieldsSchema } from './sync';
 import { defaultNotificationPrefs } from './notifications';
 
@@ -26,6 +27,9 @@ export const notificationPrefsSchema = z.object({
  */
 export const THEMES = ['light', 'dark', 'system'] as const;
 export const themeSchema = z.enum(THEMES);
+
+/** Échelle d'intensité affichée (US UX-05) — `rpe` par défaut, la seule qui existait avant. */
+export const intensityScaleSchema = z.enum(INTENSITY_SCALES);
 export type Theme = z.infer<typeof themeSchema>;
 
 /**
@@ -42,6 +46,15 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * Stockage toujours en métrique (SI) ; conversion à l'affichage.
    */
   units: unitSystemSchema.default('metric'),
+
+  /**
+   * Échelle d'intensité **affichée** pour les séries de musculation (US UX-05).
+   *
+   * Même patron que `units` juste au-dessus : la donnée stockée reste `workout_sets.rpe`, et le RIR
+   * (`10 − RPE`) est calculé **à l'affichage**. Basculer d'une échelle à l'autre ne convertit donc
+   * rien en base et ne perd aucune donnée.
+   */
+  intensityScale: intensityScaleSchema.default('rpe'),
 
   /** Langue de l'interface. */
   language: localeSchema.default('fr'),

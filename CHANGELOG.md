@@ -10,6 +10,80 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/ux05-rpe-ou-rir` — UX-05 : intensité en RPE ou en RIR (3.55 🟡)
+
+3 décisions arbitrées par Florian, **2 dérivées**. L'inventaire préalable a **réduit le périmètre**, et
+c'est le point le plus utile de cette US.
+
+#### Ce que l'inventaire a révélé
+
+Le RPE existait à **trois endroits, avec deux échelles** : par série (`workout_sets.rpe`, 1-10), en
+ressenti de séance (`workouts.rpe`, affiché en **5 étoiles** bornées 1-5) et en ressenti de course
+(`runs.rpe`, 1-10).
+
+Or « RIR » signifie **répétitions en réserve**. Cela n'a de sens que pour une **série de musculation** :
+sur une sortie de 10 km c'est absurde, et sur le ressenti de séance la formule `10 − RPE` serait
+**arithmétiquement fausse** puisque l'échelle y est 1-5. D'où le périmètre retenu : **le RPE par série
+uniquement**, les deux autres explicitement inchangés.
+
+#### Le choix qui protège les données existantes
+
+**Inversion pure `RIR 0 → 9`**, et non la plage réellement utilisée `0-4`. La plage restreinte aurait
+rendu **inaffichables les RPE de 1 à 5 déjà saisis**, et repasser en mode RPE ne les aurait pas
+retrouvés. Ici la bascule est **réversible et sans perte** — un test le vérifie sur les 10 valeurs, en
+composant `toDisplay` puis `toStored`.
+
+- `packages/shared/src/intensity.ts` (**14 tests**) : `toDisplayIntensity` / `fromDisplayIntensity`
+  (réciproques exactes), `intensityChoices` (ordre de lecture propre à chaque échelle),
+  `parseIntensityScale` (tolérant → `rpe`).
+- **`null` reste `null`.** La conversion naïve `10 - (rpe ?? 0)` aurait transformé une intensité **non
+  saisie** en « RIR 10 », c'est-à-dire en information inventée. Verrouillé deux fois : dans la brique,
+  et au niveau du composant.
+- **Ordre de lecture** : RPE 1 → 10 (l'effort croît vers la droite), RIR 0 → 9 (la réserve croît, donc
+  l'effort décroît). Chaque échelle se lit comme l'utilisateur la pense ; afficher le RIR en 9 → 0
+  « pour garder l'ordre du RPE » aurait été déroutant.
+
+#### Base de données : 1 migration, 0 sync rule
+
+`user_settings.intensity_scale text not null default 'rpe'` + `check in ('rpe','rir')`.
+**Le RIR n'est jamais stocké** : `workout_sets.rpe` reste la seule vérité. C'est le patron exact de
+`user_settings.units` (« stockage toujours en SI, conversion à l'affichage »), et c'est pour cette
+raison que la préférence vit **juste à côté** d'elle.
+
+`user_settings` étant déjà publiée et lue en `select *`, **aucune sync rule à redéployer** — précédent
+vérifié (`health_connect_enabled`). Et **une seule migration**, sans complément de publication.
+
+#### Surfaces
+
+- `hooks/useIntensity.ts` : pendant de `useUnits`, pour que trois écrans ne réinventent pas `10 - rpe`.
+- `CurrentSetCard` : les pastilles proposent les valeurs de l'échelle choisie, et la sélection est
+  **reconvertie en RPE** avant stockage. `RPE_VALUES`, devenu mort, a été retiré.
+- `history/[id].tsx` : la série affiche l'échelle choisie.
+- `settings.tsx` : le réglage, placé juste après les unités — même nature de choix. L'aide affichée est
+  celle de l'échelle **active** : « RIR » seul ne dit rien à qui hésite.
+- **4 clés i18n existantes sont désormais paramétrées** par `{{scale}}` (`workout.rpeAdd`,
+  `workout.rpeValue`, `workout.rpeLabel`, `history.detail.setRpe`).
+
+#### Un test qui verrouillait l'ancien comportement
+
+`CurrentSetCard.level.test.tsx` comparait au littéral `fr.workout.rpeAdd`, devenu « ＋ {{scale}} série ».
+Mis au nouveau contrat en interpolant l'échelle par défaut — ce qui **teste au passage le repli sur
+« RPE »** quand les réglages ne sont pas encore chargés. Plus un nouveau fichier de 6 tests qui
+verrouille la bascule elle-même.
+
+#### Qualité
+
+`npm run typecheck` 0 erreur · `npm run lint` 0 erreur · `npm run test` **1286 verts**
+(1113 Vitest + 173 Jest), dont **20 pour UX-05**.
+
+> **Correction d'un chiffre annoncé au commit précédent** : j'avais écrit « 6 warnings préexistants »
+> pour PARTAGE-01 ; il y en avait **8**, les 2 derniers venant du fichier de test que j'avais créé
+> après avoir lancé le lint. Ce sont des `require()` dans des mocks Jest — patron imposé par le
+> hoisting de Babel, déjà toléré dans `charts-smoke.test.tsx`. Le « 0 erreur » était exact.
+
+⚠️ **Reste à faire par Florian** : la recette device, 9 critères. **Recettable sur l'APK actuel** —
+aucune dépendance native ajoutée, contrairement à PARTAGE-01.
+
 ### 29/07/2026 — `feature/partage01-carte-partageable` — PARTAGE-01 : carte partageable (7.17 🟡)
 
 Fait descendre **META-41** du catalogue. 4 décisions arbitrées par Florian, **3 dérivées**. Périmètre

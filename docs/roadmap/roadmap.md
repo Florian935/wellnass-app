@@ -331,7 +331,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 3.52 | Suggestion de substitution d'exercice | Matériel pris ou zone douloureuse → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | ⬜ | **MUSC-F14**. Le **remplacement en direct existe déjà** (3.32) ; ce qui manque, c'est la **suggestion**. Sélection déterministe sur le groupe musculaire, aucun appel externe. |
 | 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ✅ | **UX-02 — constaté déjà livré le 29/07/2026** par `12bd3a1` (« feat(muscf11) »), avant même que la ligne ne soit créée : `CreateExerciseModal.tsx` est une modale bottom-sheet avec placeholder et segment `scrollable`. Les 3 points, ligne pour ligne. ✅ par **réconciliation**, sans commit de code. |
 | 3.54 | Cohérence fiche exercice perso / bibliothèque | Mêmes sections et états vides explicites ; édition des instructions et muscles secondaires sur un exo perso. | Moyen | 3h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** L'édition des instructions et muscles secondaires **existait déjà** (`EditExerciseModal` + `updateCustomExercise`) ; livré ici : les 3 sections de la fiche sont **toujours rendues**, avec « Non renseigné » au lieu de disparaître — un exo perso n'avait pas la même structure de fiche qu'un exo de bibliothèque. L'écart **volontaire** Modifier/Supprimer est préservé. |
-| 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR ≈ 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | ⬜ | **UX-05**. Évolution du RPE par série (3.34) : beaucoup de pratiquants raisonnent en *reps in reserve*. Conversion à l'affichage, pas en base. |
+| 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR = 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | 🟡 | **UX-05** livré, recette device à faire. Porte sur le **RPE par série uniquement** : le ressenti de séance (5 étoiles) et le ressenti de course sont inchangés — « répétitions en réserve » n'a aucun sens pour eux. **Inversion pure 0→9** et non plage restreinte 0-4, pour que la bascule soit **réversible sans perte** (les RPE 1-5 resteraient sinon inaffichables). Le RIR n'est **jamais stocké** ; `null` reste `null`, jamais « RIR 10 ». **Aucune sync rule.** |
 | 4.37 | Substitution d'aliments pour combler un macro | « il te manque 20 g de protéines → ajoute X » : suggestions puisées dans la base et les aliments récents. | Moyen | 4h | 🟢 | 🟡 | **NUTR-F2 — code livré le 29/07/2026.** Score **déterministe, sans IA** : densité du macro **pour 100 kcal** (trier sur les g/100 g désignerait les aliments les plus caloriques), macro choisi sur l'écart **relatif** (en absolu les glucides gagneraient toujours), quantité arrondie à 5 g et **bornée 10–400 g** — hors bornes l'aliment est **écarté**, pas tronqué. Carte conditionnelle sous le journal, ajout en un tap. 18 tests. 🟡 : vivier limité aux **aliments récents** (le repli sur la base demande un pré-filtrage SQL, voir spec §2) + recette device. |
 | 7.14 | Joker / gel de streak | 1 joker par mois protège la série sur un jour manqué, sans remettre le compteur à zéro. | Moyen | 3h | 🟢 | 🟡 | **STREAK-01 — code livré le 29/07/2026**, après arbitrage des 4 décisions produit par Florian. **Manuel et rétroactif** : l'app détecte la rupture à l'ouverture et propose le joker en annonçant les jours sauvés — un joker automatique rendrait la série sourdement inbrisable. 1 par mois calendaire · **un seul jour isolé** (deux jours d'affilée = interruption réelle) · fenêtre de 7 jours · **n'affecte QUE la série**, jamais l'adhérence ni le journal. Table `streak_jokers`, 18 tests. 🟡 : **sync rule à déployer** + recette device. |
 | 7.15 | Objectifs personnels à échéance | « 50 km ce mois », « +5 kg au développé d'ici 8 semaines » — anneau de progression, jalons, célébration. | Moyen | 6h | 🟢 | 🟡 | **OBJ-01** livré, recette device à faire. **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). 2 types au lancement : cumul de course + 1RM sur un exercice, choisis pour être les **cas durs** (un départ à zéro, un départ à valeur existante). **Ni statut ni progression stockés** : fonctions pures de la fenêtre `[début, échéance]` — aucun cron, verdict stable, calcul hors ligne. **Jalons visuels seuls** (25/50/75 %), aucune célébration : arbitrage C respecté. ⚠️ sync rule `personal_goals` à déployer. |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 168 | ~81 % |
-| 🟡 Partiel | 17 | ~8 % |
-| ⬜ À faire | 18 | ~9 % |
+| 🟡 Partiel | 18 | ~9 % |
+| ⬜ À faire | 17 | ~8 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — UX-05 : intensité en RPE ou RIR (3.55) ⬜ → 🟡**
+Portée réduite au **RPE par série** après inventaire : le ressenti de séance est sur 5 étoiles et le
+RIR n'a aucun sens sur une course. Inversion pure 0→9 pour que la bascule soit réversible sans perte.
+**1 migration, 0 sync rule.** 20 tests. Compteurs : **168 / 18 / 17**.
 
 **29/07/2026 — PARTAGE-01 : carte partageable (7.17) ⬜ → 🟡**
 Tracé **redessiné en SVG** plutôt que capturé : une vue MapLibre native ressort noire d'un

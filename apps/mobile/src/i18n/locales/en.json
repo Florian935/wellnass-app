@@ -157,9 +157,9 @@
     "addedWeightLabel": "Added",
     "optional": "opt.",
     "plannedWeight": "Planned: {{weight}}",
-    "rpeAdd": "＋ Set RPE",
-    "rpeValue": "RPE {{value}}",
-    "rpeLabel": "Set RPE",
+    "rpeAdd": "＋ Set {{scale}}",
+    "rpeValue": "{{scale}} {{value}}",
+    "rpeLabel": "Set {{scale}}",
     "rpeClear": "Clear",
     "exerciseNote": {
       "placeholder": "Note (machine setting, position…)"
@@ -1130,7 +1130,7 @@
       "setBodyweight": "BW",
       "setDropset": "Drop",
       "setFailure": "Fail",
-      "setRpe": "RPE {{value}}",
+      "setRpe": "{{scale}} {{value}}",
       "planned": "planned {{weight}}",
       "repsWeight": "{{reps}} × {{weight}}",
       "repsOnly": "{{reps}} reps",
@@ -1860,6 +1860,21 @@
       "hour": "Review time"
     },
     "seeAll": "See my review"
+  },
+  "intensity": {
+    "rpe": {
+      "short": "RPE",
+      "name": "RPE — rate of perceived exertion",
+      "hint": "1 = very easy, 10 = no rep left in the tank."
+    },
+    "rir": {
+      "short": "RIR",
+      "name": "RIR — reps in reserve",
+      "hint": "0 = no rep left in the tank, 9 = far from failure."
+    },
+    "settingsLabel": "Intensity scale",
+    "settingsHint": "RIR is the inverse of RPE (RIR = 10 − RPE). Nothing is converted in the database: your recorded sets simply read in the other scale.",
+    "a11yChoice": "{{scale}} {{value}}"
   },
   "share": {
     "previewTitle": "Preview",
