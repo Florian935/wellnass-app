@@ -10,6 +10,58 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 28/07/2026 — `feature/admin01-archivage-sur` — ADMIN-01 : livrables d'amont (spec, plan, maquette)
+
+> Entrée dans le pipeline de l'US **ADMIN-01** (roadmap **8.11**, V0.9, P1, ~4 h) via
+> [`/us`](.claude/commands/us.md). **Aucune ligne de code applicatif** — `etape: validation`, en
+> attente du feu vert de Florian ou Damien. Commit précédent : `45579cb`.
+> Enchaînée pendant que BIEN-01 attend sa recette device : ADMIN-01 est du **back-office web**, donc
+> sa recette se fait au navigateur et ne réclame pas d'APK.
+
+**Ajouté**
+
+- `docs/specs/functional/us/admin01-archivage-sur.md` — spec : la chaîne de défaillance vérifiée dans
+  le code, périmètre, **7 décisions (D1→D7)**, comportement, 8 cas limites, DoD, 8 critères de recette.
+- `docs/plans/admin01-archivage-sur.md` — plan en 5 tâches, fichiers touchés, ordre justifié, 7 risques.
+- `design/admin01-archivage-sur/admin01-archivage-sur.html` — maquette **format écran large** (c'est du
+  web, pas du mobile) : dialogue de confirmation avec décomptes (cas « 128 usages » et cas « zéro »),
+  filtre archivés, ligne restaurable, et 4 cartouches d'analyse.
+
+**Technique / Notes**
+
+- **Le diagnostic est plus précis que ce que disait le backlog.** Le backlog annonçait « le nom
+  disparaît de l'historique ». La chaîne exacte, vérifiée : `archiveExercise` pose `deleted_at`
+  ([exercises.ts:272](apps/admin/src/data/exercises.ts#L272)) → la sync rule filtre
+  `deleted_at is null` → la ligne quitte les bases locales → et comme `workout_sets` ne porte **que**
+  `exercise_id`, le `LEFT JOIN` de l'historique retombe sur son repli ultime : **la chaîne vide**
+  ([workout-repository.ts:225](apps/mobile/src/data/repositories/workout-repository.ts#L225)). Donc
+  pas un message d'erreur ni « exercice archivé » — **du vide**, sans rien pour le signaler.
+- **D2 est la décision qui décide de la forme du lot** : ne plus retirer le contenu éditorial archivé
+  des appareils (retirer `deleted_at is null` de `shared_content`) et déplacer le masquage dans l'app,
+  côté listes de **sélection**. C'est le seul choix qui répare la cause. L'alternative
+  (dénormaliser le nom dans `workout_sets`) est écartée : migration + remplissage rétroactif, et
+  surtout elle **fige** le nom, donc une correction d'orthographe ne remonterait plus jamais.
+- 🐛 **Bug silencieux trouvé au cadrage (D7)** : l'import CSV fait
+  `upsert(..., { onConflict: 'import_key' })` ([foods.ts:323](apps/admin/src/data/foods.ts#L323)) et
+  `import_key` **est unique** (seul index unique concerné du schéma). Ré-importer un CSV contenant un
+  aliment archivé **met donc à jour une ligne que personne ne voit**, sans remettre `deleted_at` à
+  null, et le rapport annonce un succès. Il faut réactiver **et** le compter dans le rapport.
+- **D3 vérifiée, pas supposée** : `grep` sur tous les `create unique index` du schéma → aucun ne porte
+  sur un nom (les seuls sont `running_pace_records`, `user_roles`, `foods.import_key`,
+  `exercise_notes`, `exercise_variants`, `account_deletion_pending`, `daily_steps`, `daily_wellbeing`).
+  Restaurer = remettre `deleted_at` à null, rien de plus ; une gestion de conflit de nom serait du
+  code mort.
+- **Le risque n'est pas dans l'admin, il est dans l'app** : après le changement de sync rule, toute
+  requête de sélection oubliée proposerait un contenu archivé. Le plan impose un **recensement écrit**,
+  requête par requête, plutôt qu'une relecture rapide.
+- **Question à lever en tâche 1, avant toute UI** : la RLS admin autorise-t-elle le décompte
+  inter-utilisateurs (`count(*)` sur les `workout_sets` d'autrui) ? Si non, il faut une fonction
+  `security definer` réservée aux admins — donc une **migration**, à découvrir au début et pas à la fin.
+- **Précédent réutilisable** : « désarchiver » n'est pas un patron nouveau — `addEditorialVariant`
+  remet déjà `deleted_at: null` ([exercise-variants.ts:126](apps/admin/src/data/exercise-variants.ts#L126)).
+- Qualité non rejouée : diff **documentation seule**, aucun fichier applicatif touché depuis la passe
+  verte de `45579cb`.
+
 ### 28/07/2026 — `feature/bien01-checkin-bien-etre` — BIEN-01 : check-in de bien-être (code livré, roadmap 1.24 ⬜ → 🟡)
 
 > Les 3 livrables d'amont ont été **validés par Florian** le 28/07/2026, avec arbitrage des

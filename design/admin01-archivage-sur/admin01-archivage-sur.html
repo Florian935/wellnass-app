@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US ADMIN-01 — Archivage sûr du contenu éditorial</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --danger:#b3261e;--archived:#8a7a66;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0 0 30px;font-size:15px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin:36px 0 12px;}
+  .caption{font-size:12.5px;color:var(--muted);margin:9px 0 0;}
+  .caption b{color:var(--ink);}
+
+  /* — fenêtre navigateur — */
+  .win{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+  .chrome{background:var(--surface-alt);border-bottom:1px solid var(--border);padding:9px 14px;display:flex;align-items:center;gap:8px;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--border);}
+  .url{margin-left:10px;font-family:var(--mono);font-size:11.5px;color:var(--muted);}
+  .body{padding:18px 20px;}
+
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .search{flex:1;min-width:180px;border:1px solid var(--border);border-radius:9px;padding:8px 11px;font-size:13px;color:var(--muted);background:var(--surface);}
+  .segs{display:flex;border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+  .seg{padding:8px 13px;font-size:12.5px;font-weight:700;color:var(--muted);background:var(--surface);border-right:1px solid var(--border);}
+  .seg:last-child{border-right:none;}
+  .seg.on{background:var(--accent);color:var(--accent-text);}
+  .newseg{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,86,47,.14);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--border);font-weight:800;}
+  td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr.arch td{color:var(--archived);background:#faf4ea;}
+  .name{font-weight:700;}
+  .meta{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .pill{display:inline-block;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);}
+  .pill.pub{border-color:var(--success);color:var(--success);}
+  .pill.arch{border-color:var(--archived);color:var(--archived);background:#f2e9dc;}
+  .act{display:flex;gap:7px;justify-content:flex-end;}
+  .btn{border:1px solid var(--border);border-radius:9px;padding:6px 11px;font-size:12px;font-weight:700;background:var(--surface-alt);white-space:nowrap;}
+  .btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .btn.ghost{background:transparent;}
+  .btn.danger{border-color:var(--danger);color:var(--danger);background:transparent;}
+
+  /* — dialogue — */
+  .modal{max-width:520px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:22px;}
+  .modal h3{margin:0 0 6px;font-size:17px;}
+  .modal .lead{font-size:13.5px;color:var(--muted);margin:0 0 14px;}
+  .usage{border:1px solid var(--warn);background:#fbf1dd;border-radius:11px;padding:13px;margin-bottom:14px;}
+  .usage .u-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--warn);margin-bottom:9px;}
+  .urow{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;}
+  .urow b{font-family:var(--mono);}
+  .usage.none{border-color:var(--success);background:#eef4e6;}
+  .usage.none .u-title{color:var(--success);}
+  .modal .foot{display:flex;gap:9px;justify-content:flex-end;margin-top:4px;}
+
+  .grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));align-items:start;}
+  .notes{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));margin-top:16px;}
+  .note{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:17px 19px;box-shadow:var(--shadow);}
+  .note h3{margin:0 0 9px;font-size:14px;}
+  .note ul{margin:0;padding-left:18px;font-size:13px;}
+  .note li{margin-bottom:7px;}
+  .note.bad{border-color:var(--danger);}
+  .note.bad h3{color:var(--danger);}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);padding:1px 5px;border-radius:5px;}
+  .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;margin-top:10px;}
+  .step{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:8px 11px;font-weight:700;}
+  .step.bad{border-color:var(--danger);color:var(--danger);}
+  .arrow{color:var(--muted);font-weight:800;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">US ADMIN-01 · roadmap 8.11 · V0.9 · back-office</p>
+  <h1 class="title">Archivage sûr du contenu éditorial</h1>
+  <p class="sub">Aujourd'hui, archiver un exercice est une <b>porte à sens unique</b> qui efface son nom de l'historique de tous les utilisateurs. Cette US ajoute trois choses : <b>savoir</b> ce qu'on casse avant d'archiver, <b>revenir en arrière</b>, et surtout <b>arrêter de casser l'historique</b>. Recette <b>navigateur</b>, aucun APK requis.</p>
+
+  <div class="note bad">
+    <h3>La chaîne de défaillance actuelle</h3>
+    <div class="flow">
+      <span class="step">Admin archive « Développé couché »</span>
+      <span class="arrow">→</span>
+      <span class="step"><code>deleted_at = now</code></span>
+      <span class="arrow">→</span>
+      <span class="step">sync rule filtre <code>deleted_at is null</code></span>
+      <span class="arrow">→</span>
+      <span class="step">la ligne quitte les appareils</span>
+      <span class="arrow">→</span>
+      <span class="step bad">l'historique affiche un nom VIDE</span>
+    </div>
+    <ul style="margin-top:12px">
+      <li><code>workout_sets</code> ne porte que <code>exercise_id</code> — <b>aucun nom dénormalisé</b>.</li>
+      <li>Le repli du mobile est la <b>chaîne vide</b> (<code>workout-repository.ts:225</code>) : pas de message, pas d'erreur, <b>du vide</b>.</li>
+      <li>Et <b>aucune restauration n'existe</b> côté admin : le contenu archivé disparaît de l'admin lui-même.</li>
+    </ul>
+  </div>
+
+  <h2>1 · Archiver — on ne le fait plus en aveugle (D1)</h2>
+  <div class="grid2">
+    <div>
+      <div class="modal">
+        <h3>Archiver « Développé couché » ?</h3>
+        <p class="lead">Le contenu sera retiré des listes de sélection. Il restera visible dans l'historique des utilisateurs.</p>
+        <div class="usage">
+          <div class="u-title">Ce contenu est utilisé</div>
+          <div class="urow"><span>Séries réalisées</span><b>128</b></div>
+          <div class="urow"><span>Programmes qui le planifient</span><b>3</b></div>
+          <div class="urow"><span>Records personnels</span><b>7</b></div>
+          <div class="urow"><span>Liens de variante</span><b>2</b></div>
+        </div>
+        <div class="foot">
+          <span class="btn ghost">Annuler</span>
+          <span class="btn primary">Archiver</span>
+        </div>
+      </div>
+      <p class="caption">Autorisé, mais <b>jamais sans le chiffre</b>. Interdire l'archivage dès qu'un utilisateur a touché le contenu serait inapplicable — la faute n'est pas d'archiver, c'est d'archiver sans savoir.</p>
+    </div>
+    <div>
+      <div class="modal">
+        <h3>Archiver « Tirage nuque » ?</h3>
+        <p class="lead">Le contenu sera retiré des listes de sélection.</p>
+        <div class="usage none">
+          <div class="u-title">Aucun usage</div>
+          <div class="urow"><span>Ce contenu n'est référencé nulle part.</span><b>0</b></div>
+        </div>
+        <div class="foot">
+          <span class="btn ghost">Annuler</span>
+          <span class="btn primary">Archiver</span>
+        </div>
+      </div>
+      <p class="caption">Le cas <b>zéro</b> mérite son propre message : c'est l'information qui permet d'archiver sans hésiter. Une liste vide ne dit pas la même chose que « aucun usage ».</p>
+    </div>
+  </div>
+
+  <h2>2 · Voir et restaurer les archivés (D6 : un filtre, pas un écran de plus)</h2>
+  <div class="win">
+    <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">admin.wellness.app/exercices</span></div>
+    <div class="body">
+      <div class="toolbar">
+        <div class="search">Rechercher un exercice…</div>
+        <div class="segs"><span class="seg">Tous groupes</span><span class="seg on">Pectoraux</span></div>
+        <div class="segs newseg"><span class="seg">Actifs</span><span class="seg on">Archivés</span><span class="seg">Tous</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Nom</th><th>Groupe</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          <tr class="arch">
+            <td><div class="name">Développé couché haltères</div><div class="meta">Archivé le 24/07/2026 · 128 séries · 3 programmes</div></td>
+            <td>Pectoraux</td>
+            <td><span class="pill arch">Archivé</span></td>
+            <td><div class="act"><span class="btn">Restaurer</span></div></td>
+          </tr>
+          <tr class="arch">
+            <td><div class="name">Écarté à la poulie vis-à-vis</div><div class="meta">Archivé le 12/07/2026 · aucun usage</div></td>
+            <td>Pectoraux</td>
+            <td><span class="pill arch">Archivé</span></td>
+            <td><div class="act"><span class="btn">Restaurer</span></div></td>
+          </tr>
+          <tr>
+            <td><div class="name">Développé incliné</div><div class="meta">Publié · 64 séries</div></td>
+            <td>Pectoraux</td>
+            <td><span class="pill pub">Publié</span></td>
+            <td><div class="act"><span class="btn ghost">Modifier</span><span class="btn danger">Archiver</span></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="caption">Filtre à 3 valeurs, <b>« Actifs » par défaut</b> — l'usage courant ne change pas. Une ligne archivée porte sa date, et n'a qu'une action. Même patron dans les 3 écrans (Exercices, Programmes, Aliments). <b>Restaurer ne touche pas <code>status</code></b> (D5) : le contenu retrouve l'état qu'il avait, un brouillon ne se republie pas par accident.</p>
+
+  <h2>3 · Le correctif qui compte (D2)</h2>
+  <div class="notes">
+    <div class="note">
+      <h3>Ce qui change dans la sync rule</h3>
+      <ul>
+        <li><code>shared_content</code> cesse de filtrer <code>deleted_at is null</code> sur les tables éditoriales.</li>
+        <li>Le contenu archivé <b>reste sur les appareils</b> → l'historique résout son nom, <b>même hors ligne</b>.</li>
+        <li>Le masquage passe <b>dans l'app</b>, là où il relève de l'usage : les listes de <b>sélection</b> ajoutent <code>deleted_at IS NULL</code>, les résolutions de <b>nom</b> non.</li>
+        <li>⚠️ Sync rule à <b>redéployer à la main</b> sur l'instance PowerSync.</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Pourquoi pas dénormaliser le nom</h3>
+      <ul>
+        <li>Il faudrait une migration <b>et</b> un remplissage rétroactif de <code>workout_sets</code> et <code>food_entries</code>.</li>
+        <li>Surtout : ça <b>fige</b> le nom. Une faute d'orthographe corrigée ou une traduction améliorée ne remonterait plus jamais dans l'historique.</li>
+        <li>Ça règle le symptôme en créant une <b>seconde vérité</b>.</li>
+      </ul>
+    </div>
+    <div class="note bad">
+      <h3>🐛 Trouvé au cadrage — l'import CSV (D7)</h3>
+      <ul>
+        <li>L'import fait <code>upsert(..., { onConflict: 'import_key' })</code> et <code>import_key</code> <b>est unique</b>.</li>
+        <li>Ré-importer un CSV contenant un aliment archivé <b>met à jour la ligne sans remettre <code>deleted_at</code> à null</b>.</li>
+        <li>Résultat : l'aliment reste invisible partout, et le rapport annonce un <b>succès</b>. L'admin croit avoir réimporté, il n'en est rien.</li>
+        <li>→ L'import doit <b>réactiver</b> et l'annoncer : « 4 aliments archivés réactivés ».</li>
+      </ul>
+    </div>
+    <div class="note">
+      <h3>Où est le vrai risque</h3>
+      <ul>
+        <li><b>Pas dans l'admin</b> : l'archivage n'est pas réécrit, on ajoute le décompte devant et la restauration à côté.</li>
+        <li><b>Dans l'app</b> : après le changement de sync rule, toute requête de sélection oubliée proposerait un contenu archivé.</li>
+        <li>Parade : recensement <b>écrit</b> et traitement <b>requête par requête</b>, pas une relecture rapide.</li>
+        <li>Et une vérification préalable : la <b>RLS admin</b> autorise-t-elle le décompte inter-utilisateurs ? Sinon, fonction <code>security definer</code> → migration.</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# État du projet — 28/07/2026
+# État du projet — 29/07/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -17,6 +17,7 @@ avant de pouvoir publier.
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
+| **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `validation` | `feature/admin01-archivage-sur` | [8.11] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `validation` | `docs/contenu-01-spec` | [3.1, 5.2] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -25,9 +26,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (17) · P2 confort (5)</summary>
+<details><summary>P1 finitions (16) · P2 confort (5)</summary>
 
-**P1** — ADMIN-01 — Archivage sûr du contenu éditorial · MESUR-01 — Mensurations corporelles · STREAK-01 — Joker / gel de streak · OBJ-01 — Objectifs personnels à échéance · BILAN-01 — Bilan hebdomadaire automatique · NUTR-F2 — Substitution d'aliments pour combler un macro · UX-02 — Création d'exercice perso en modale · UX-03 — Cohérence fiche exercice perso / bibliothèque · UX-04 — Réagencement du dashboard découvrable · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — MESUR-01 — Mensurations corporelles · STREAK-01 — Joker / gel de streak · OBJ-01 — Objectifs personnels à échéance · BILAN-01 — Bilan hebdomadaire automatique · NUTR-F2 — Substitution d'aliments pour combler un macro · UX-02 — Création d'exercice perso en modale · UX-03 — Cohérence fiche exercice perso / bibliothèque · UX-04 — Réagencement du dashboard découvrable · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
 **P2** — NUTR-F1 — Rappels programmés nutrition · PARTAGE-01 — Carte de séance / course partageable · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
 
@@ -39,9 +40,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/bien01-checkin-bien-etre` (modifications non commitées) |
-| Commits | 948 · `main` a **945** commits de retard sur `dev` |
-| Specs d'US | 77 au total — 75 clôturées, 2 en cours |
+| Branche courante | `feature/admin01-archivage-sur` (modifications non commitées) |
+| Commits | 949 · `main` a **946** commits de retard sur `dev` |
+| Specs d'US | 78 au total — 75 clôturées, 3 en cours |
 | Migrations | 49/49 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -51,11 +52,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `45579cb` feat(bien01): check-in quotidien de bien-être — humeur, énergie, stress (US BIEN-01, 1.24)
 - `5131cd0` docs(bien01): spec, plan et maquette du check-in bien-être (US BIEN-01, 1.24)
 - `575599c` docs(contenu-01): méthode de seed tranchée — migration SQL idempotente (US CONTENU-01, 3.1/5.2)
 - `67076ec` docs(suivi): réconciliation — le catalogue d'analyses avait dérivé, pas la roadmap
 - `c1bcc49` feat(pas01): pas quotidiens lus dans Health Connect, comptés dans la série (US PAS-01 close, 9.15)
-- `73f91a8` docs(pas01): livrables d'amont validés — pas quotidiens (US PAS-01, 9.15)
 
 ---
 
