@@ -466,6 +466,19 @@ const daily_wellbeing = new Table({
   deleted_at: column.text,
 });
 
+// ── US STREAK-01 : jokers de série ────────────────────────────────────────
+// Migrations : supabase/migrations/20260729095446_streak01_jokers.sql
+//              + 20260729095705_streak01_jokers_publication.sql
+// `log_date` = le jour manqué que le joker couvre. Un joker protège la SÉRIE et rien d'autre :
+// aucune activité n'est écrite ailleurs (décision D3).
+const streak_jokers = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US MESUR-01 : mensurations corporelles ─────────────────────────────────
 // Migrations : supabase/migrations/20260729091950_mesur01_body_measurements.sql
 //              + 20260729091953_mesur01_body_measurements_publication.sql
@@ -525,6 +538,7 @@ export const AppSchema = new Schema({
   daily_steps,
   daily_wellbeing,
   body_measurements,
+  streak_jokers,
   exercises,
   exercise_translations,
   exercise_favorites,

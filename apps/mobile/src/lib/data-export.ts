@@ -47,6 +47,8 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'daily_wellbeing', col: 'user_id' },
   // US MESUR-01 — mensurations corporelles : donnée personnelle historisée, donc exportable.
   { table: 'body_measurements', col: 'user_id' },
+  // US STREAK-01 — jokers de série consommés.
+  { table: 'streak_jokers', col: 'user_id' },
 ];
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };

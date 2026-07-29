@@ -26,7 +26,8 @@ import {
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
-  computeStreak,
+  computeStreakWithJokers,
+  findRestorableGap,
   computeTrainingTime,
   dayCalorieBonus,
   estimateRunCalories,
@@ -41,6 +42,7 @@ import {
   tdee,
   trainingDayCalories,
   type DayActivity,
+  type RestorableGap,
   type DeficitVolumeAlert,
   type Pillar,
   type RecordDistanceKey,
@@ -52,6 +54,7 @@ import { useProfile } from './profile-repository';
 import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
 import { useDailySteps, useStepGoal } from './daily-steps-repository';
+import { useJokerDays } from './streak-joker-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
@@ -478,6 +481,14 @@ export type StreakData = {
    * actif/inactif et marqueur "aujourd'hui". Pour les pastilles du widget.
    */
   last7: WeekDay[];
+  /**
+   * US STREAK-01 — trou rattrapable par un joker, ou `null` (le cas courant).
+   *
+   * Non nul seulement si un **seul** jour a été manqué, dans les 7 derniers jours, et qu'un joker
+   * reste disponible ce mois-ci. `streakIfUsed` porte l'enjeu à annoncer : sans ce chiffre, la
+   * proposition n'a pas de sens.
+   */
+  restorableGap: RestorableGap | null;
   isLoading: boolean;
 };
 
@@ -512,14 +523,21 @@ export function useStreakData(windowDays = 30): StreakData {
   const { totals, isLoading: totalsLoading } = useDailyTotals(sinceKey);
   const { rows: stepRows, isLoading: stepsLoading } = useDailySteps(sinceKey);
   const { goal: stepGoal, isLoading: goalLoading } = useStepGoal();
+  // US STREAK-01 — les jours couverts par un joker comptent dans la série, et **seulement** là.
+  const { days: jokerDayList, isLoading: jokersLoading } = useJokerDays();
 
   const isLoading =
-    workoutsLoading || runsLoading || totalsLoading || stepsLoading || goalLoading;
+    workoutsLoading ||
+    runsLoading ||
+    totalsLoading ||
+    stepsLoading ||
+    goalLoading ||
+    jokersLoading;
 
   const today = new Date();
   const todayKey = localDayKey(today);
 
-  const { streak, last7 } = useMemo(() => {
+  const { streak, last7, restorableGap } = useMemo(() => {
     // Construire la map des activités par jour
     const map = new Map<string, DayActivity>();
 
@@ -559,7 +577,11 @@ export function useStreakData(windowDays = 30): StreakData {
 
     const activities = [...map.values()];
     const activeDays = activeDayKeys(activities);
-    const streak = computeStreak(activeDays, todayKey);
+    const jokerDays = new Set(jokerDayList);
+    const streak = computeStreakWithJokers(activeDays, jokerDays, todayKey);
+    // Trou rattrapable : un seul jour manqué, récent, avec un joker encore disponible. `null` la
+    // plupart du temps — c'est ce qui fait qu'on ne propose rien quand il n'y a rien à réparer.
+    const restorableGap = findRestorableGap({ activeDays, jokerDays, todayKey });
 
     // Semaine courante lundi → dimanche (heure locale)
     const todayObj = new Date(todayKey + 'T00:00:00');
@@ -579,13 +601,14 @@ export function useStreakData(windowDays = 30): StreakData {
       };
     });
 
-    return { streak, last7 };
-  }, [workouts, runs, totals, stepRows, stepGoal, todayKey]);
+    return { streak, last7, restorableGap };
+  }, [workouts, runs, totals, stepRows, stepGoal, jokerDayList, todayKey]);
 
   return {
     current: streak.current,
     activeToday: streak.activeToday,
     last7,
+    restorableGap,
     isLoading,
   };
 }

@@ -696,7 +696,14 @@
       "bannerActive_one": "{{count}} active day this week 💪",
       "bannerActive_other": "{{count}} active days this week 💪",
       "bannerIdle_one": "Get back to it: {{count}} active day this week",
-      "bannerIdle_other": "Get back to it: {{count}} active days this week"
+      "bannerIdle_other": "Get back to it: {{count}} active days this week",
+      "jokerTitle": "Streak at risk",
+      "jokerOffer_one": "You logged nothing on {{date}}. Use your joker to save your {{count}}-day streak?",
+      "jokerOffer_other": "You logged nothing on {{date}}. Use your joker to save your {{count}}-day streak?",
+      "jokerUse": "Use my joker",
+      "jokerRule": "1 joker per month. It freezes a single missed day — never two in a row.",
+      "jokerError": "The joker could not be used. Please try again.",
+      "jokerA11y": "Use my joker to save a {{count}}-day streak"
     },
     "nutrition": {
       "title": "Nutrition",

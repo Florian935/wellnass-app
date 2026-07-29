@@ -696,7 +696,14 @@
       "bannerActive_one": "{{count}} jour actif cette semaine 💪",
       "bannerActive_other": "{{count}} jours actifs cette semaine 💪",
       "bannerIdle_one": "Reprends : {{count}} jour actif cette semaine",
-      "bannerIdle_other": "Reprends : {{count}} jours actifs cette semaine"
+      "bannerIdle_other": "Reprends : {{count}} jours actifs cette semaine",
+      "jokerTitle": "Série en danger",
+      "jokerOffer_one": "Le {{date}} tu n'as rien enregistré. Utiliser ton joker pour sauver ta série de {{count}} jour ?",
+      "jokerOffer_other": "Le {{date}} tu n'as rien enregistré. Utiliser ton joker pour sauver ta série de {{count}} jours ?",
+      "jokerUse": "Utiliser mon joker",
+      "jokerRule": "1 joker par mois. Il gèle un jour manqué isolé — pas deux d'affilée.",
+      "jokerError": "Le joker n'a pas pu être utilisé. Réessaie.",
+      "jokerA11y": "Utiliser mon joker pour sauver une série de {{count}} jours"
     },
     "nutrition": {
       "title": "Nutrition",

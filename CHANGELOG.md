@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/streak01-joker` — STREAK-01 : joker de série (7.14 ⬜ → 🟡)
+
+> **4 décisions produit arbitrées par Florian avant tout code** — c'était la demande du backlog, et
+> c'est bien de la mécanique produit, pas de la technique. Commit précédent : `34abbde`.
+
+**Ajouté**
+
+- 2 migrations : table `streak_jokers` (une ligne par jour manqué couvert, index unique partiel, RLS
+  own sans `delete`) + `alter publication powersync`.
+- `packages/shared/src/streak-joker.ts` + `.test.ts` (**18 tests, verts d'emblée**) :
+  `computeStreakWithJokers`, `findRestorableGap`, `jokersRemaining`.
+- `apps/mobile/src/data/repositories/streak-joker-repository.ts` — `consumeJoker` **relit le quota**
+  au moment du tap plutôt que de reprendre celui de l'affichage : entre les deux, le mois peut avoir
+  changé ou un autre appareil avoir consommé le joker.
+- Proposition dans le widget de série, i18n FR + EN, table ajoutée à l'export RGPD.
+
+**Technique / Notes**
+
+- **D1 — manuel et rétroactif à l'ouverture.** L'app détecte la rupture et propose le joker en
+  annonçant **les jours sauvés**. Un joker automatique rendrait la série sourdement inbrisable — la
+  même erreur que si le check-in de BIEN-01 comptait dans la série. Et le rétroactif est ce qui rend
+  le manuel viable : on manque sa journée **parce qu'on n'a pas ouvert l'app**, donc exiger l'action
+  le jour même l'aurait rendue inopérante.
+- **D3 — un joker protège le compteur, il ne fabrique pas d'activité.** Le repository n'écrit **que**
+  dans `streak_jokers` : l'adhérence, la complétion du journal et les corrélations post-V1 continuent
+  de voir un jour vide, parce qu'il l'est. Un test vérifie même que `activeToday` reste **faux** quand
+  seul un joker couvre aujourd'hui. Falsifier la donnée pour sauver un affichage aurait été le pire
+  des choix.
+- **D4 — le garde-fou des jokers consécutifs est dans le CALCUL, pas seulement à la consommation.** Si
+  la base contenait deux jokers d'affilée (anomalie, import, bug futur), la série **s'arrête** au
+  second plutôt que de propager une valeur fausse. Testé.
+- **Deux règles déjà décidées par le code**, documentées en §0 de la spec pour éviter de les
+  re-débattre : ce qui rend un jour actif, et la tolérance existante du jour courant (une journée
+  commencée n'est pas une journée manquée) — le joker ne concerne donc que les jours **révolus**.
+- **Un test existant a cassé, et c'était utile** : les mocks de `StreakCard.test.tsx` ne connaissaient
+  pas le nouveau champ `restorableGap`, qui valait donc `undefined` — et mon `=== null` ne le couvrait
+  pas. Corrigé des deux côtés : le widget teste `== null` (une proposition optionnelle ne doit pas
+  faire planter un widget si l'appelant omet le champ) **et** les mocks ont été complétés.
+- ⚠️ **Écart repéré et corrigé avant commit** : j'avais ajouté deux clés i18n que le widget n'affichait
+  pas. `jokerNoneLeft` était de toute façon inatteignable — `findRestorableGap` renvoie `null` aussi
+  bien quand il n'y a pas de trou que quand il n'y a plus de joker, donc le widget ne peut pas
+  distinguer les deux cas. Clé **supprimée**, et `jokerRule` est désormais **affichée dans la
+  proposition** : la règle est expliquée au seul moment où elle compte. Spec §3, §6 et critère 3 mis
+  au réel.
+- ⚠️ **Reste à faire avant ✅** : déployer la **sync rule** (bucket `user_data`) et la recette device.
+- Qualité : `npm run test` **vert** (55 fichiers Vitest + 31 suites Jest / 150 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur, 0 avertissement nouveau.
+
 ### 29/07/2026 — `feature/nutrf2-substitution-aliments` — NUTR-F2 : suggestion pour combler un macro (4.37 ⬜ → 🟡)
 
 > Validée par Florian le 29/07/2026, mes recommandations valant arbitrage des 7 décisions. Rend le

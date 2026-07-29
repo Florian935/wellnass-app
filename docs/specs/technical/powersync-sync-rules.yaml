@@ -52,6 +52,8 @@ bucket_definitions:
       - select * from daily_wellbeing       where user_id = bucket.user_id and deleted_at is null
       # US MESUR-01 : mensurations corporelles (modèle normalisé — une ligne par jour ET par mesure).
       - select * from body_measurements     where user_id = bucket.user_id and deleted_at is null
+      # US STREAK-01 : jokers de série (une ligne par jour manqué couvert).
+      - select * from streak_jokers         where user_id = bucket.user_id and deleted_at is null
       # ── Running ───────────────────────────────────────────────────────────
       - select * from running_profiles      where user_id = bucket.user_id and deleted_at is null
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null

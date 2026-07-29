@@ -333,7 +333,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 3.54 | Cohérence fiche exercice perso / bibliothèque | Mêmes sections et états vides explicites ; édition des instructions et muscles secondaires sur un exo perso. | Moyen | 3h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** L'édition des instructions et muscles secondaires **existait déjà** (`EditExerciseModal` + `updateCustomExercise`) ; livré ici : les 3 sections de la fiche sont **toujours rendues**, avec « Non renseigné » au lieu de disparaître — un exo perso n'avait pas la même structure de fiche qu'un exo de bibliothèque. L'écart **volontaire** Modifier/Supprimer est préservé. |
 | 3.55 | RPE ou RIR au choix | Préférence de profil : afficher l'intensité en RPE **ou** en RIR (RIR ≈ 10 − RPE), une seule donnée stockée. | Facile | 2h | 🟢 | ⬜ | **UX-05**. Évolution du RPE par série (3.34) : beaucoup de pratiquants raisonnent en *reps in reserve*. Conversion à l'affichage, pas en base. |
 | 4.37 | Substitution d'aliments pour combler un macro | « il te manque 20 g de protéines → ajoute X » : suggestions puisées dans la base et les aliments récents. | Moyen | 4h | 🟢 | 🟡 | **NUTR-F2 — code livré le 29/07/2026.** Score **déterministe, sans IA** : densité du macro **pour 100 kcal** (trier sur les g/100 g désignerait les aliments les plus caloriques), macro choisi sur l'écart **relatif** (en absolu les glucides gagneraient toujours), quantité arrondie à 5 g et **bornée 10–400 g** — hors bornes l'aliment est **écarté**, pas tronqué. Carte conditionnelle sous le journal, ajout en un tap. 18 tests. 🟡 : vivier limité aux **aliments récents** (le repli sur la base demande un pré-filtrage SQL, voir spec §2) + recette device. |
-| 7.14 | Joker / gel de streak | 1 joker par mois protège la série sur un jour manqué, sans remettre le compteur à zéro. | Moyen | 3h | 🟢 | ⬜ | **STREAK-01**. Levier de rétention le plus éprouvé du marché (Duolingo) : enlève la frustration qui fait abandonner. **Reste gratuit en V1** (arbitrage D) ; la frontière premium se rediscutera post-V1. Étend le streak (V0.6), **n'ouvre pas** la boucle de jeu (arbitrage C). |
+| 7.14 | Joker / gel de streak | 1 joker par mois protège la série sur un jour manqué, sans remettre le compteur à zéro. | Moyen | 3h | 🟢 | 🟡 | **STREAK-01 — code livré le 29/07/2026**, après arbitrage des 4 décisions produit par Florian. **Manuel et rétroactif** : l'app détecte la rupture à l'ouverture et propose le joker en annonçant les jours sauvés — un joker automatique rendrait la série sourdement inbrisable. 1 par mois calendaire · **un seul jour isolé** (deux jours d'affilée = interruption réelle) · fenêtre de 7 jours · **n'affecte QUE la série**, jamais l'adhérence ni le journal. Table `streak_jokers`, 18 tests. 🟡 : **sync rule à déployer** + recette device. |
 | 7.15 | Objectifs personnels à échéance | « 50 km ce mois », « +5 kg au développé d'ici 8 semaines » — anneau de progression, jalons, célébration. | Moyen | 6h | 🟢 | ⬜ | **OBJ-01**. **Non social** (les défis entre amis restent V2) et **mono-objectif** : l'objectif hybride transverse à arbitrage de compromis reste post-V1. Lit les agrégats existants. |
 | 7.16 | Bilan hebdomadaire automatique | Récap poussé en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine à venir. | Moyen | 5h | 🟢 | ⬜ | **BILAN-01**. Format « une seule décision » plutôt que vingt graphiques. **Aucune narration sans les chiffres affichés à côté** — texte assemblé à partir de clés i18n et d'agrégats calculés localement, pas d'IA. Réutilise l'infra notifications (streak, DND). |
 | 7.17 | Carte de séance / course partageable | Export image (trace GPS + stats, ou résumé muscu) pour les stories Instagram / WhatsApp. | Moyen | 4h | 🟢 | ⬜ | **PARTAGE-01**. **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le jour du lancement. |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 168 | ~81 % |
-| 🟡 Partiel | 13 | ~6 % |
-| ⬜ À faire | 22 | ~11 % |
+| 🟡 Partiel | 14 | ~7 % |
+| ⬜ À faire | 21 | ~10 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -457,7 +457,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 4 | 4 | 6 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
+| V0.9 (14) | 4 | 5 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -489,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — STREAK-01 : joker de série (7.14) ⬜ → 🟡**
+4 décisions produit arbitrées avant tout code. Manuel et rétroactif (un joker automatique
+dévaloriserait la série), 1 par mois, **un seul jour isolé**, et surtout : il protège **le compteur
+sans fabriquer d'activité** — l'adhérence et le journal voient toujours un jour vide. 18 tests.
+Compteurs : **168 / 14 / 21**.
 
 **29/07/2026 — NUTR-F2 : suggestion pour combler un macro (4.37) ⬜ → 🟡**
 Score déterministe (18 tests) : densité **pour 100 kcal** et non pour 100 g, macro sur l'écart

@@ -33,6 +33,8 @@ jest.mock('@/data/repositories/dashboard-repository', () => ({
     current: 0,
     activeToday: false,
     last7: [],
+    // US STREAK-01 : pas de trou rattrapable par défaut — le cas courant.
+    restorableGap: null,
     isLoading: false,
   })),
   useTodaySession: jest.fn(),
@@ -141,6 +143,7 @@ describe('StreakCard — smoke test', () => {
       current: 5,
       activeToday: true,
       last7: LAST7_FIXTURE,
+      restorableGap: null,
       isLoading: false,
     });
 
@@ -177,6 +180,7 @@ describe('StreakCard — smoke test', () => {
       current: 0,
       activeToday: false,
       last7: LAST7_FIXTURE,
+      restorableGap: null,
       isLoading: false,
     });
 

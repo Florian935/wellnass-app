@@ -9,12 +9,14 @@
  * passé inactif → surface. Données : `useStreakData` (current + last7, semaine lun→dim).
  */
 
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { WidgetSize } from '@wellness/shared';
+import { formatDayFull, type WidgetSize } from '@wellness/shared';
 import { WeekDots, type DayState } from '@/components/widgets/primitives';
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useStreakData, type WeekDay } from '@/data/repositories/dashboard-repository';
+import { consumeJoker } from '@/data/repositories/streak-joker-repository';
 import { localDayKey } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -30,7 +32,9 @@ function dayState(day: WeekDay, todayKey: string): DayState {
 export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { current, activeToday, last7, isLoading } = useStreakData();
+  const { current, activeToday, last7, restorableGap, isLoading } = useStreakData();
+  const [jokerBusy, setJokerBusy] = useState(false);
+  const [jokerError, setJokerError] = useState(false);
 
   if (isLoading) return null;
 
@@ -56,6 +60,64 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
       </WidgetFrame>
     );
   }
+
+  /**
+   * US STREAK-01 — proposition de joker.
+   *
+   * `restorableGap` est `null` la plupart du temps : rien ne s'affiche quand il n'y a rien à réparer,
+   * quand le trou fait deux jours (interruption réelle), ou quand le joker du mois est déjà consommé.
+   * On annonce **le nombre de jours sauvés** — sans ce chiffre la proposition n'aurait pas d'enjeu.
+   */
+  // `== null` et non `=== null` : un appelant (ou un mock) qui omet le champ ne doit pas faire
+  // planter le widget — la proposition est optionnelle par nature.
+  const jokerOffer =
+    restorableGap == null ? null : (
+      <Pressable
+        onPress={async () => {
+          setJokerBusy(true);
+          setJokerError(false);
+          try {
+            await consumeJoker(restorableGap.day);
+          } catch {
+            setJokerError(true);
+          } finally {
+            setJokerBusy(false);
+          }
+        }}
+        disabled={jokerBusy}
+        accessibilityRole="button"
+        accessibilityLabel={t('home.streak.jokerA11y', { count: restorableGap.streakIfUsed })}
+        style={[
+          styles.joker,
+          {
+            backgroundColor: withAlpha(colors.warnText, 0.09),
+            borderColor: withAlpha(colors.warnText, 0.3),
+          },
+        ]}
+      >
+        <Text style={[styles.jokerTitle, { color: colors.warnText }]} maxFontSizeMultiplier={1.3}>
+          {t('home.streak.jokerTitle')}
+        </Text>
+        <Text style={[styles.jokerBody, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
+          {t('home.streak.jokerOffer', {
+            count: restorableGap.streakIfUsed,
+            date: formatDayFull(restorableGap.day),
+          })}
+        </Text>
+        <Text style={[styles.jokerCta, { color: colors.accent }]} maxFontSizeMultiplier={1.3}>
+          {t('home.streak.jokerUse')}
+        </Text>
+        {/* La règle est expliquée là où l'action est offerte : c'est le seul moment où elle compte. */}
+        <Text style={[styles.jokerRule, { color: colors.textMuted }]} maxFontSizeMultiplier={1.3}>
+          {t('home.streak.jokerRule')}
+        </Text>
+        {jokerError && (
+          <Text style={[styles.jokerBody, { color: colors.danger }]} accessibilityRole="alert">
+            {t('home.streak.jokerError')}
+          </Text>
+        )}
+      </Pressable>
+    );
 
   const dots = (tile: number, withCheck: boolean) => (
     <WeekDots
@@ -84,6 +146,7 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
           </View>
         </View>
         {dots(30, false)}
+        {jokerOffer}
       </WidgetFrame>
     );
   }
@@ -97,6 +160,7 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
         <Text style={[styles.largeSuffix, { color: colors.textMuted }]}>{suffix} 🔥</Text>
       </View>
       {dots(38, true)}
+      {jokerOffer}
       <View
         style={[
           styles.banner,
@@ -129,5 +193,16 @@ const styles = StyleSheet.create({
   largeNum: { fontFamily: fontFamily.displayXBold, fontSize: 46, letterSpacing: -1.6 },
   largeSuffix: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
   banner: { marginTop: 'auto', borderWidth: 1, borderRadius: 16, padding: 14 },
+  // Proposition de joker : cible confortable (>= 48 dp) et sens porté par le TEXTE, pas la couleur.
+  joker: { borderWidth: 1, borderRadius: 14, padding: 13, gap: 4, minHeight: 48 },
+  jokerTitle: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  jokerBody: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  jokerCta: { fontFamily: fontFamily.bodySemi, fontSize: 13, marginTop: 2 },
+  jokerRule: { fontFamily: fontFamily.body, fontSize: 11.5, lineHeight: 16, marginTop: 2 },
   bannerTitle: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
 });

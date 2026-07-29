@@ -56,7 +56,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 >
 > **Ordre conseillé.** Déjà sortis du backlog : **PAS-01** clôturé le 28/07 (9.15 ✅), **BIEN-01** et
 > **ADMIN-01** en recette (1.24 et 8.11 🟡 — voir [ETAT.md](ETAT.md)). Reste, dans cet ordre : les
-> **STREAK-01**, puis **OBJ-01** et **BILAN-01** — les 3 UX de recette, **MESUR-01** et **NUTR-F2**
+> **OBJ-01** puis **BILAN-01** — les 3 UX de recette, **MESUR-01**, **NUTR-F2** et **STREAK-01**
 > sont livrées (29/07). Et
 > **CONF-07 en dernier** des chantiers de code, délibérément : un balayage d'accessibilité refait
 > après chaque nouvel écran serait du travail perdu.
@@ -65,7 +65,6 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
-| **STREAK-01 — Joker / gel de streak** | 7.14 | 1 joker/mois protège la série sur un jour manqué. | Décider la règle exacte (recharge, rétroactivité, effet sur les stats) **avant** de coder : c'est de la mécanique produit, pas de la technique. **Gratuit en V1** (arbitrage D). Ne pas glisser vers une boucle de jeu (arbitrage C). |
 | **OBJ-01 — Objectifs personnels à échéance** | 7.15 | « 50 km ce mois », « +5 kg au développé en 8 semaines » — anneau de progression, jalons, célébration. | **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). Le calcul de progression doit se brancher sur les agrégats existants, pas en créer de nouveaux. |
 | **BILAN-01 — Bilan hebdomadaire automatique** | 7.16 | Récap en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine. | Règle non négociable : **aucune narration sans les chiffres affichés à côté**. Texte assemblé depuis des clés i18n (pas de texte libre), agrégats calculés localement, **pas d'IA**. Survivre au doze mode Android. |
 
