@@ -96,3 +96,11 @@ desktop.ini
 
 # Dumps bruts des modèles IA (brainstorming, non versionnés)
 _inbox-ia/
+
+# --- Claude Design : artefacts locaux de l'outil ---
+# Les maquettes de design/<fonctionnalité>/ sont bien versionnées — c'est l'étape 3 du workflow
+# obligatoire. Mais l'outil dépose à côté un cache de vignette et les fichiers glissés dans
+# l'éditeur : ils ne décrivent aucune maquette, dépendent du poste, et polluaient `git status`.
+# `**` couvre aussi la racine de design/ (il matche zéro dossier intermédiaire).
+design/**/.thumbnail
+design/**/uploads/

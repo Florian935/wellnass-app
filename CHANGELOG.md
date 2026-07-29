@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `chore/gitignore-artefacts-design` — artefacts locaux de Claude Design ignorés
+
+Commit précédent : `936ec81`.
+
+#### Modifié
+
+- [.gitignore](.gitignore) : ajout de `design/**/.thumbnail` et `design/**/uploads/`. L'outil de
+  maquettage dépose un cache de vignette et les fichiers glissés dans l'éditeur à côté des
+  maquettes ; ils dépendent du poste et polluaient `git status` depuis le 20/07/2026.
+  **Les maquettes de `design/<fonctionnalité>/` restent versionnées** — c'est l'étape 3 du workflow
+  obligatoire ; vérifié par `git check-ignore` sur un fichier de maquette.
+
+#### Technique / Notes
+
+- `design/**/uploads/` couvre **aussi** la racine de `design/` : un `**` de gitignore matche zéro
+  dossier intermédiaire. Les lignes non préfixées étaient donc redondantes et ont été retirées.
+- Aucune fonctionnalité touchée → pas de mise à jour de statut de roadmap.
+
 ### 30/07/2026 — `fix/passe-device-30-07` — 5 correctifs issus de la passe device + plan de test
 
 Commit précédent : `ecee20e`.
