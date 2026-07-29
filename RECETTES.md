@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **29/07/2026** — 9 US en attente.
+> Dernière mise à jour : **29/07/2026** — 10 US en attente.
 
 ---
 
@@ -201,7 +201,28 @@ désactiver/réactiver la préférence ne casse rien.
 
 ---
 
-## 9. UX-LOT-01 — Lot de finitions
+## 9. PARTAGE-01 — Carte de séance / course partageable
+
+📄 [spec](docs/specs/functional/us/partage01-carte-partageable.md) · roadmap 7.17 · **📱 device**
+✅ aucune sync rule · 🔴 **NÉCESSITE UN SECOND BUILD** — voir l'encadré en bas de page.
+
+- [ ] 1. Résumé d'une course GPS → « Partager » ouvre un aperçu **avec le tracé**.
+- [ ] 2. Le tracé **ressemble au parcours réel** (comparer à la carte de l'écran de résumé) : ni
+      miroir, ni écrasé, ni étiré. C'est le critère le plus important de cette US.
+- [ ] 3. Second appui → feuille de partage, et l'image envoyée est **carrée et lisible**.
+- [ ] 4. Course **sans GPS** (distance saisie à la main) : carte sans tracé, chiffres présents.
+- [ ] 5. Résumé d'une séance muscu : carte avec exercices, séries, tonnage.
+- [ ] 6. Séance **avec** record → le record apparaît ; séance **sans** record → **pas** de section vide.
+- [ ] 7. En réglage **impérial** : miles / livres sur l'image.
+- [ ] 8. Le nom de l'app est visible **sans dominer** l'image.
+- [ ] 9. **Aucune donnée de santé** sur la carte : ni poids de corps, ni mensuration, ni bien-être.
+- [ ] 10. En **EN** : les libellés imprimés **sur l'image** sont en anglais.
+- [ ] 11. Mode avion : génération et partage fonctionnent (le tracé ne dépend d'aucune tuile).
+- [ ] 12. TalkBack annonce le contenu chiffré de l'aperçu.
+
+---
+
+## 10. UX-LOT-01 — Lot de finitions
 
 📄 [spec](docs/specs/functional/us/uxlot01-finitions-recette.md) · roadmap 3.53, 3.54, 7.18 ·
 **📱 device**
@@ -227,6 +248,22 @@ déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pou
 rien à voir avec leur code.
 
 **ADMIN-01 se recette au navigateur**, indépendamment du build.
+
+### 🔴 PARTAGE-01 exige un SECOND build — à savoir avant de planifier
+
+`react-native-view-shot` est une **dépendance native** : le dev client **et** l'APK doivent être
+reconstruits pour que la capture d'image existe. **PARTAGE-01 ne peut donc pas être recettée sur
+l'APK des autres US.**
+
+Deux façons de s'organiser, au choix :
+
+1. **Recetter les 9 autres d'abord** sur l'APK actuel, puis reconstruire pour PARTAGE-01 seule.
+   C'est le plus sûr : tu ne remets pas en jeu ce qui est déjà validé.
+2. **Reconstruire tout de suite** et recetter les 10 d'un coup. Un seul build, mais le nouvel APK
+   embarque une dépendance native de plus — si quelque chose d'inattendu apparaît, il faudra
+   distinguer ce qui vient du code des US de ce qui vient du build.
+
+Je recommande la **1** : on ne mélange pas une validation en cours avec un changement d'infrastructure.
 
 **Quand une US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

@@ -108,7 +108,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 | Candidat | # | Contenu | État |
 |---|---|---|---|
 | **NUTR-F1 — Rappels programmés nutrition** | 1.14, 2.5 | Rappel de pesée + rappel de repas. | ⬜ Étend l'infra notif existante. **Absorbe** l'idée « rappels contextuels » : viser l'**heure apprise** du comportement (moyenne glissante des heures de log sur ~2 semaines, calcul 100 % local) plutôt qu'une heure fixe, avec une fenêtre de repli de ~30 min pour le doze mode et un plafond de notifications/jour. |
-| **PARTAGE-01 — Carte de séance / course partageable** | 7.17 | Export image (trace GPS + stats, ou résumé muscu) pour les stories. | ⬜ **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le lancement → à remonter en P1 si le calendrier le permet. |
+| ~~**PARTAGE-01**~~ | 7.17 | — | ✅ **Livré le 29/07/2026** (course **et** muscu), en recette → [RECETTES.md](RECETTES.md). ⚠️ exige un **second build** : `react-native-view-shot` est une dépendance native. |
 | **MUSC-F14 — Suggestion de substitution d'exercice** | 3.52 | Matériel pris ou zone douloureuse → alternatives du même groupe musculaire. | ⬜ Le **remplacement en direct existe déjà** (3.32) ; il ne manque que la **suggestion**. |
 | **UX-05 — RPE ou RIR au choix** | 3.55 | Préférence de profil : intensité en RPE ou en RIR (RIR ≈ 10 − RPE). | ⬜ Évolution du RPE par série (3.34). Une seule donnée en base, conversion à l'affichage. |
 | **SOCLE-01 — RevenueCat câblé inactif** | 9.14 | Entitlements posés, aucun paywall (app gratuite en V1). | ⬜ Optionnel — posé tôt, évite une refonte ([ADR-003](docs/adr/ADR-003-monetisation.md)). |

@@ -1861,6 +1861,30 @@
     },
     "seeAll": "Voir mon bilan"
   },
+  "share": {
+    "previewTitle": "Aperçu",
+    "cta": "Partager",
+    "close": "Fermer l'aperçu",
+    "dialogTitle": "Partager ma carte",
+    "errorUnavailable": "Le partage n'est pas disponible sur cet appareil.",
+    "errorFailed": "L'image n'a pas pu être générée. Réessaie.",
+    "run": {
+      "title": "Course",
+      "distance": "Distance",
+      "duration": "Durée",
+      "pace": "Allure",
+      "a11y": "Course du {{date}}, {{distance}} en {{duration}}"
+    },
+    "workout": {
+      "title": "Séance",
+      "volume": "Tonnage",
+      "exercises": "Exercices",
+      "sets": "Séries",
+      "duration": "Durée",
+      "records": "Records battus",
+      "a11y": "Séance du {{date}}, {{exercises}} exercices, {{sets}} séries, {{volume}}"
+    }
+  },
   "suggestion": {
     "title": "Combler un macro",
     "missing_one": "Il te manque {{count}} g de {{macro}}",

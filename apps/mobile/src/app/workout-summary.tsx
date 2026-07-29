@@ -3,11 +3,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { computeVolume } from '@wellness/shared';
+import { computeVolume, formatDayFull } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import { TextField } from '@/components/TextField';
 import {
   getWorkoutSets,
@@ -204,6 +205,12 @@ export default function WorkoutSummaryScreen() {
   const [savingAsTemplate, setSavingAsTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [submittingTemplate, setSubmittingTemplate] = useState(false);
+  // US PARTAGE-01 : aperçu de la carte partageable.
+  const [shareOpen, setShareOpen] = useState(false);
+
+  // Records de la séance, pour les porter sur la carte. `RecordsSection` fait le même appel — les
+  // deux requêtes sont locales et identiques, donc PowerSync sert la même donnée.
+  const { records } = useWorkoutRecords(id ?? '');
 
   useEffect(() => {
     if (!id || !workout) {
@@ -324,9 +331,49 @@ export default function WorkoutSummaryScreen() {
         />
       ) : null}
       {id ? <RecordsSection workoutId={id} /> : null}
+
+      {/* Carte partageable (US PARTAGE-01) — seulement quand il y a quelque chose à montrer :
+          une séance sans exercice ne produirait qu'une carte vide. */}
+      {summary !== null && summary.exercises > 0 && workout !== null ? (
+        <Button variant="ghost" label={t('share.cta')} onPress={() => setShareOpen(true)} />
+      ) : null}
+
       <View style={styles.footer}>
         <Button label={t('workout.backHome')} onPress={() => router.replace('/(tabs)')} />
       </View>
+
+      {summary !== null && workout !== null ? (
+        <ShareCardSheet
+          visible={shareOpen}
+          onClose={() => setShareOpen(false)}
+          data={{
+            kind: 'workout',
+            startedAtMs: Date.parse(workout.startedAt),
+            stats: {
+              exercises: summary.exercises,
+              sets: summary.doneSets,
+              volume: units.formatWeight(summary.volume),
+              duration: t('workout.summary.minutes', { count: summary.durationMin }),
+            },
+            // Un libellé par record, déjà résolu et traduit : la carte ne fait aucune mise en forme
+            // métier, elle affiche des chaînes.
+            records: records.map(
+              (record) =>
+                `${record.exerciseName} · ${
+                  record.type === 'best_volume'
+                    ? String(record.value)
+                    : units.formatWeight(record.value)
+                }`,
+            ),
+          }}
+          accessibilityLabel={t('share.workout.a11y', {
+            date: formatDayFull(workout.startedAt),
+            exercises: summary.exercises,
+            sets: summary.doneSets,
+            volume: units.formatWeight(summary.volume),
+          })}
+        />
+      ) : null}
     </FormScreen>
   );
 }

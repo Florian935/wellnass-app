@@ -10,6 +10,73 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/partage01-carte-partageable` — PARTAGE-01 : carte partageable (7.17 🟡)
+
+Fait descendre **META-41** du catalogue. 4 décisions arbitrées par Florian, **3 dérivées**. Périmètre
+élargi à sa demande : **les deux cartes** (course **et** muscu) dès le premier lot, contre ma
+recommandation de commencer par la course. Arbitrage assumé — deux mises en page au lieu d'une.
+
+#### Le piège évité : ne pas capturer la carte
+
+`RouteMap` repose sur **MapLibre natif**, et capturer une vue native de carte avec `captureRef` donne
+en pratique une image **noire ou vide**. Le tracé est donc **reprojeté en polyligne SVG** à partir des
+points GPS. Ce détour rapporte deux choses qui n'étaient pas l'intention de départ : la carte
+fonctionne **sans clé MapTiler** et **hors ligne**, là où l'écran de résumé a besoin des deux.
+
+#### Ce qui sépare un tracé d'un gribouillis
+
+- `packages/shared/src/share-card.ts` (**21 tests**) : `projectTrack` applique une **échelle uniforme**
+  sur les deux axes et corrige la longitude par `cos(latitude)`. Sans la première, un parcours de 2 km
+  sur 100 m serait étiré pour remplir le carré — illisible **et faux**. Sans la seconde, tous les
+  tracés paraîtraient étirés horizontalement, d'autant plus qu'on s'éloigne de l'équateur. **Deux
+  tests dédiés** verrouillent ces deux propriétés.
+- L'axe Y est **inversé** (la latitude monte vers le nord, `y` descend en SVG) : sans ça, le tracé
+  serait un miroir vertical du parcours réel. Testé aussi.
+- Cas dégénérés : tracé vide → `[]` ; point unique ou **points tous confondus** (GPS bloqué) → centre
+  de la boîte. **Aucun `NaN`** ne peut sortir de la projection, y compris sur un tracé purement
+  horizontal ou vertical.
+- `sampleTrack` borne à 400 points en **conservant le premier et le dernier**. On ne réutilise pas
+  `simplifyTrack` (Douglas-Peucker) : son critère est une tolérance **en mètres**, donc il ne garantit
+  aucune borne sur la taille du `path` SVG.
+
+#### Une seule vue pour l'aperçu et la capture
+
+`ShareCard` est dimensionnée **proportionnellement à `size`** : dessinée à ~320 dp elle sert d'aperçu,
+capturée à 1080 px elle donne l'image partagée. Une seule mise en page à maintenir, et ce que
+l'utilisateur voit **est** ce qu'il envoie.
+
+- `ShareCardSheet` : aperçu puis partage (D4). Une image part sur un réseau **public** — un tracé
+  illisible ou un chiffre tronqué ne doit pas se découvrir après publication.
+- `lib/share-card-export.ts` : capture → copie sous un nom lisible et daté → feuille de partage. Même
+  contrat d'erreurs typées que `gpx-export`. Si le renommage échoue, on partage le fichier temporaire
+  **plutôt que de perdre l'image** — le nom est un confort, pas une condition.
+- Branché dans les **2** écrans de résumé. Côté course, le bouton apparaît sur **toute** course
+  terminée, y compris manuelle : sans tracé la carte affiche ses chiffres seuls, ce qui reste
+  partageable. C'est la différence avec l'export GPX, qui exige une trace.
+
+#### Ce que la carte ne montrera jamais (D7)
+
+Ni poids de corps, ni mensuration, ni indicateur de bien-être : ce sont des données de santé, et une
+image partie sur un réseau public ne se rattrape pas. **Un test fige cette intention** — si quelqu'un
+ajoute le poids à la carte un jour, il échoue.
+
+Les 7 tests de `ShareCard` couvrent aussi : une séance sans record n'affiche **pas** de section vide,
+les records sont bornés à 3 (au-delà la carte devient une liste), et une course sans tracé rend quand
+même sa carte.
+
+#### ⚠️ Le coût caché : un second build
+
+`react-native-view-shot` (5.1.0, version **alignée SDK 57** vérifiée par `expo install --check`) est
+une **dépendance native**. Le dev client et l'APK doivent être reconstruits : **PARTAGE-01 ne peut pas
+être recettée sur l'APK des 9 autres US.** Ce coût n'apparaissait pas dans l'estimation de 4 h ; il est
+documenté dans la spec §0.2 et dans [RECETTES.md](RECETTES.md), avec les deux façons de s'organiser.
+
+#### Qualité
+
+`npm run typecheck` 0 erreur · `npm run lint` 0 erreur (6 warnings préexistants) ·
+`npm run test` **1260 verts** (1099 Vitest + 161 Jest), dont **28 pour PARTAGE-01**.
+**Aucune migration, aucune table, aucune sync rule.**
+
 ### 29/07/2026 — `feature/bilan01-bilan-hebdo` — BILAN-01 : bilan hebdomadaire automatique (7.16 🟡)
 
 Fait descendre **MR-22**, **TRI-07** et **NUTR-18** du catalogue d'analyses. 4 décisions arbitrées par

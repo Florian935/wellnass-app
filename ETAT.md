@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 16 partiel · 19 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 17 partiel · 18 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -23,10 +23,11 @@ avant de pouvoir publier.
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
+| **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **9 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, NUTR-F2, OBJ-01, STREAK-01, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **10 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -34,11 +35,11 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (8) · P2 confort (5)</summary>
+<details><summary>P1 finitions (8) · P2 confort (4)</summary>
 
 **P1** — MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
-**P2** — NUTR-F1 — Rappels programmés nutrition · PARTAGE-01 — Carte de séance / course partageable · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
+**P2** — NUTR-F1 — Rappels programmés nutrition · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
 
 </details>
 
@@ -48,9 +49,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/bilan01-bilan-hebdo` (modifications non commitées) |
-| Commits | 959 · `main` a **956** commits de retard sur `dev` |
-| Specs d'US | 84 au total — 75 clôturées, 9 en cours |
+| Branche courante | `feature/partage01-carte-partageable` (modifications non commitées) |
+| Commits | 960 · `main` a **957** commits de retard sur `dev` |
+| Specs d'US | 85 au total — 75 clôturées, 10 en cours |
 | Migrations | 57/57 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -60,11 +61,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `debbf86` feat(bilan01): bilan hebdomadaire automatique — une seule décision, adossée aux chiffres (US BILAN-01, 7.16)
 - `7c997a7` chore(etat): régénère ETAT.md après le merge d'OBJ-01
 - `9d2b87c` feat(obj01): objectifs à échéance livrés + registre des recettes (US OBJ-01, 7.15)
 - `67b171f` feat(obj01): cadrage et cœur de calcul des objectifs à échéance (US OBJ-01 partielle, 7.15)
 - `fcee5ca` feat(streak01): joker de série — gel d'un jour manqué isolé (US STREAK-01, 7.14)
-- `34abbde` feat(nutrf2): suggestion d'aliments pour combler un macro (US NUTR-F2, 4.37)
 
 ---
 

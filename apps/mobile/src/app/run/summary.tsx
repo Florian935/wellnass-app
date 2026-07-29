@@ -1,6 +1,7 @@
 import {
   computeKmSplits,
   decodeTrack,
+  formatDayFull,
   formatPaceMMSS,
   isValidCoord,
   RUNNING_RECORD_DISTANCES,
@@ -24,6 +25,7 @@ import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { RouteMap } from '@/components/running/RouteMap';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import {
   setManualRunDistance,
   setRunFeedback,
@@ -210,6 +212,9 @@ export default function RunSummaryScreen() {
   const [notes, setNotes] = useState<string>(run?.notes ?? '');
   // Distance manuelle saisie (texte libre ; dans l'unité d'affichage courante)
   const [manualDistanceText, setManualDistanceText] = useState<string>('');
+
+  // US PARTAGE-01 : aperçu de la carte partageable.
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Décodage + simplification de la trace GPS pour la carte du parcours.
   const points = useMemo(
@@ -491,6 +496,17 @@ export default function RunSummaryScreen() {
         />
       ) : null}
 
+      {/* Carte partageable (US PARTAGE-01) — proposée sur toute course TERMINÉE, y compris manuelle :
+          sans tracé exploitable la carte s'affiche avec ses chiffres seuls, ce qui reste partageable.
+          C'est la différence avec l'export GPX, qui exige une trace. */}
+      {run.status === 'completed' ? (
+        <Button
+          label={t('share.cta')}
+          variant="ghost"
+          onPress={() => setShareOpen(true)}
+        />
+      ) : null}
+
       {/* Ressenti : RPE */}
       <Card>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -534,6 +550,29 @@ export default function RunSummaryScreen() {
       <View style={styles.footer}>
         <Button label={t('running.summary.done')} onPress={onDone} />
       </View>
+
+      {/* US PARTAGE-01 — aperçu, puis partage (décision D4 : on voit ce qu'on envoie). */}
+      <ShareCardSheet
+        visible={shareOpen}
+        onClose={() => setShareOpen(false)}
+        data={{
+          kind: 'run',
+          // Le tracé BRUT : `projectTrack` fait sa propre réduction par échantillonnage. Passer
+          // `simplified` (Douglas-Peucker à 5 m) reviendrait à simplifier deux fois.
+          points,
+          startedAtMs: Date.parse(run.startedAt),
+          stats: {
+            distance: units.formatDistance(distanceKm),
+            duration: durationDisplay,
+            pace: units.formatPace(run.avgPaceSPerKm),
+          },
+        }}
+        accessibilityLabel={t('share.run.a11y', {
+          date: formatDayFull(run.startedAt),
+          distance: units.formatDistance(distanceKm),
+          duration: durationDisplay,
+        })}
+      />
     </FormScreen>
   );
 }

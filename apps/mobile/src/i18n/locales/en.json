@@ -1861,6 +1861,30 @@
     },
     "seeAll": "See my review"
   },
+  "share": {
+    "previewTitle": "Preview",
+    "cta": "Share",
+    "close": "Close preview",
+    "dialogTitle": "Share my card",
+    "errorUnavailable": "Sharing isn't available on this device.",
+    "errorFailed": "The image couldn't be generated. Try again.",
+    "run": {
+      "title": "Run",
+      "distance": "Distance",
+      "duration": "Time",
+      "pace": "Pace",
+      "a11y": "Run on {{date}}, {{distance}} in {{duration}}"
+    },
+    "workout": {
+      "title": "Workout",
+      "volume": "Tonnage",
+      "exercises": "Exercises",
+      "sets": "Sets",
+      "duration": "Time",
+      "records": "Records broken",
+      "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}"
+    }
+  },
   "suggestion": {
     "title": "Fill a macro",
     "missing_one": "You're {{count}} g of {{macro}} short",
