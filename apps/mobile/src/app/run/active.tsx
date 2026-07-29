@@ -86,11 +86,16 @@ export default function RunActiveScreen() {
     );
   }
 
-  // Plus de course active (terminée / annulée ailleurs) : retour au démarrage.
+  // Plus de course active (terminée / annulée ailleurs) : on explique **avant** de proposer la
+  // sortie. Un bouton « Retour » seul au milieu d'un écran vide laisse croire à un plantage —
+  // constaté le 30/07/2026 en passe device, seul écran de l'app sans état vide rédigé.
   if (!active) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <View style={styles.centered}>
+          <Text style={[styles.endedText, { color: colors.textMuted }]}>
+            {t('running.active.ended')}
+          </Text>
           <Button label={t('common.back')} onPress={() => router.replace('/run')} />
         </View>
       </SafeAreaView>
@@ -243,7 +248,8 @@ export default function RunActiveScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 20 },
+  endedText: { fontFamily: fontFamily.body, fontSize: 16, lineHeight: 22, textAlign: 'center' },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',

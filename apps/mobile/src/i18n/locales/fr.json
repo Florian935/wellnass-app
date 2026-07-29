@@ -1464,6 +1464,7 @@
       "avgPace": "Allure moyenne",
       "instantPace": "Allure instantanée",
       "noData": "—",
+      "ended": "Aucune course en cours. Elle a été terminée ou annulée.",
       "gpsActive": "GPS actif",
       "gpsSearching": "Recherche du signal GPS…",
       "gpsManual": "Mode sans GPS",

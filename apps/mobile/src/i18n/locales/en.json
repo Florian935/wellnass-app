@@ -1464,6 +1464,7 @@
       "avgPace": "Average pace",
       "instantPace": "Current pace",
       "noData": "—",
+      "ended": "No run in progress. It was finished or cancelled.",
       "gpsActive": "GPS active",
       "gpsSearching": "Searching for GPS signal…",
       "gpsManual": "No-GPS mode",

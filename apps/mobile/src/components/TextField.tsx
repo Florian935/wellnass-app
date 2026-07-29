@@ -13,6 +13,11 @@ export function TextField({ label, style, ...inputProps }: TextFieldProps) {
       <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
       <TextInput
         placeholderTextColor={colors.textMuted}
+        // Le label n'est qu'un `Text` voisin : rien ne le relie au champ pour TalkBack, qui annonce
+        // donc « champ de saisie » sans dire lequel. On le reprend comme libellé par défaut — placé
+        // **avant** le spread, un `accessibilityLabel` explicite de l'appelant le remplace.
+        // Constaté le 30/07/2026 en passe device (11 champs muets, dont 8 sur « Créer un aliment »).
+        accessibilityLabel={label}
         style={[
           styles.input,
           { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text },

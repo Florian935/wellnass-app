@@ -32,6 +32,7 @@ export default function GoalsScreen() {
   const [formOpen, setFormOpen] = useState(false);
 
   const atCap = active.length >= MAX_ACTIVE_GOALS;
+  const isEmpty = !isLoading && active.length === 0 && finished.length === 0;
 
   const confirmDelete = (id: string) => {
     Alert.alert(t('goals.deleteConfirmTitle'), t('goals.deleteConfirmBody'), [
@@ -49,14 +50,21 @@ export default function GoalsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader title={t('goals.title')} />
 
-        <Button label={t('goals.cta')} onPress={() => setFormOpen(true)} disabled={atCap} />
+        {/*
+          Un seul appel à l'action à la fois : quand la liste est vide, c'est l'`EmptyState` qui le
+          porte. Afficher les deux annonçait « Nouvel objectif » deux fois de suite — et TalkBack
+          lisait deux fois la même action (constaté le 30/07/2026 en passe device).
+        */}
+        {!isEmpty && (
+          <Button label={t('goals.cta')} onPress={() => setFormOpen(true)} disabled={atCap} />
+        )}
         {atCap && (
           <Text style={[styles.capNotice, { color: colors.textMuted }]}>
             {t('goals.errors.limitReached', { count: MAX_ACTIVE_GOALS })}
           </Text>
         )}
 
-        {!isLoading && active.length === 0 && finished.length === 0 ? (
+        {isEmpty ? (
           <EmptyState
             icon="flag-outline"
             title={t('goals.title')}

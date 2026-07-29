@@ -560,6 +560,11 @@ En revanche 4 lignes fausses au [catalogue](../product/analyses-donnees.md) — 
 **RUN-05** livrées, **MUSC-06** livrée avec MUSC-05, **MN-13** absorbée par MN-06 — + `roadmap:` vide
 sur 4 specs livrées (1.23, 3.48, 3.49, 3.50). 2ᵉ salve de 5 candidats inscrite au backlog, après V0.9.
 
+**30/07/2026 — passe device sur 41 écrans : 5 correctifs, aucun statut modifié**
+Défauts d'affichage et d'accessibilité sur 9.9 (bandeau d'erreur alors que Health Connect est juste
+désactivé), 7.15, 1.24, 5.12 et 9.11/9.12. Tous rendaient — donc invisibles de la CI. Inventaire des
+73 écrans créé : [plan-de-test.md](../plan-de-test.md). Compteurs inchangés.
+
 **30/07/2026 — PAS-01 (9.15) : correctif d'en-tête post-clôture, statut ✅ inchangé**
 La route `steps` était absente de `_layout.tsx` : aucun en-tête de navigation, titre de page sous la
 barre d'état. Trouvé en passe adb sur device, invisible du typecheck et des tests. Compteurs inchangés.

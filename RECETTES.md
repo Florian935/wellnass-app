@@ -74,11 +74,12 @@ l'historique. Nom vide = sync rule pas déployée.
 - [ ] 10. À grande taille de police système, aucun libellé tronqué.
 - [ ] 11. L'export RGPD contient les lignes de bien-être.
 
-> 🔎 **Constat, passe automatisée du 30/07/2026 (adb).** L'écran `wellness://wellbeing` n'offre
-> **aucune action** pour lancer un check-in : état vide + texte, sans bouton. Mensurations
-> (« Prendre mes mesures ») et Objectifs (« Nouvel objectif ») en ont un. Si le check-in ne se lance
-> que depuis le widget d'accueil, c'est un choix défendable — mais alors l'écran atteint par un lien
-> direct est un cul-de-sac. **À trancher**, ce n'est pas couvert par les critères ci-dessus.
+> ✅ **Constat corrigé le 30/07/2026.** L'état vide de `wellness://wellbeing` n'offrait **aucune
+> action** pour lancer un check-in (celui-ci ne s'ouvrait qu'en tapant un jour du journal — donc
+> jamais quand le journal est vide) : cul-de-sac atteint par lien direct ou par le widget d'accueil.
+> Bouton « Faire mon check-in » ajouté, sur le patron de « Prendre mes mesures » (MESUR-01).
+> **À vérifier en recette** : le bouton ouvre bien le check-in du **jour**, et disparaît dès qu'un
+> premier check-in existe (le journal reprend alors la main).
 
 ---
 
@@ -177,11 +178,12 @@ l'historique. Nom vide = sync rule pas déployée.
       **absent** si seul le pilier nutrition est activé.
 - [ ] 11. L'export RGPD contient les objectifs.
 
-> 🔎 **Constat, passe automatisée du 30/07/2026 (adb).** L'écran vide affiche **deux fois** l'action
-> « Nouvel objectif » : le bouton principal en haut **et** le CTA de l'état vide. Confirmé dans l'arbre
-> d'accessibilité (`content-desc="Nouvel objectif"` × 2) — un utilisateur TalkBack entend donc la même
-> action deux fois. À trancher : garder le CTA de l'état vide et retirer le bouton du haut tant que la
-> liste est vide, ou l'inverse.
+> ✅ **Constat corrigé le 30/07/2026.** L'état vide affichait **deux fois** l'action « Nouvel
+> objectif » (bouton du haut **et** CTA de l'`EmptyState`) — confirmé dans l'arbre d'accessibilité,
+> `content-desc="Nouvel objectif"` × 2, donc annoncé deux fois par TalkBack. Le bouton du haut est
+> désormais masqué tant que la liste est vide : c'est l'`EmptyState` qui porte l'action.
+> **À vérifier en recette** : une seule action visible sur l'état vide, et le bouton du haut
+> réapparaît dès le premier objectif créé.
 
 ---
 

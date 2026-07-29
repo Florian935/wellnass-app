@@ -29,6 +29,7 @@ import {
   type WellbeingLevel,
 } from '@wellness/shared';
 
+import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -89,11 +90,24 @@ export default function WellbeingScreen() {
         <ScreenHeader title={t('wellbeing.historyTitle')} />
 
         {entries.length === 0 ? (
-          <Card>
-            <Text style={[styles.empty, { color: colors.textMuted }]}>
-              {t('wellbeing.emptyHistory')}
-            </Text>
-          </Card>
+          <>
+            {/*
+              Le check-in s'ouvre normalement en tapant un jour du journal. Sans aucun jour
+              enregistré, il n'y avait donc **aucun** moyen de le lancer depuis cet écran : un
+              cul-de-sac atteint par un lien direct ou par le widget d'accueil (constaté le
+              30/07/2026 en passe device). Même patron que « Prendre mes mesures » côté MESUR-01.
+            */}
+            <Button
+              label={t('wellbeing.checkinCta')}
+              accessibilityLabel={t('wellbeing.a11yOpenCheckin')}
+              onPress={() => setEditingDay(todayKey)}
+            />
+            <Card>
+              <Text style={[styles.empty, { color: colors.textMuted }]}>
+                {t('wellbeing.emptyHistory')}
+              </Text>
+            </Card>
+          </>
         ) : (
           <>
             {/* Sélecteur d'indicateur — une courbe à la fois */}

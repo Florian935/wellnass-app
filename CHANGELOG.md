@@ -10,6 +10,87 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/passe-device-30-07` — 5 correctifs issus de la passe device + plan de test
+
+Commit précédent : `ecee20e`.
+
+Tous les défauts de ce lot ont été trouvés par une **passe adb automatisée sur 41 écrans**
+(37 routes atteintes par deep link + 4 onglets), en 3 campagnes : nominal, police 1,5×, mode avion.
+Aucun n'était détectable par la CI — ils rendent tous, ils rendent mal.
+
+#### Ajouté
+
+- **[docs/plan-de-test.md](docs/plan-de-test.md)** — inventaire des **73 écrans** (58 mobile +
+  15 back-office) et des fonctionnalités attendues dans chacun, **303 cases à cocher**. Construit
+  depuis le code réel (arborescence des routes, déclarations de `_layout.tsx`, docblocks, clés i18n
+  effectivement utilisées) : chaque case correspond à quelque chose qui existe. Le §1 regroupe les
+  8 contrôles transverses (offline, i18n, police, TalkBack, thèmes, états vides, sortie, chargement)
+  plutôt que de les répéter 58 fois. **Distinct de [RECETTES.md](RECETTES.md)** : celui-ci est
+  permanent et stable, RECETTES.md est temporaire et rétrécit.
+- **[health-connect-inactive.test.ts](apps/mobile/src/lib/__tests__/health-connect-inactive.test.ts)**
+  — 3 cas de non-régression qui verrouillent **les deux côtés** de la frontière : abandon normal →
+  aucun compte rendu, échec réel → compte rendu bien présent.
+- Clé i18n `running.active.ended` (FR + EN).
+
+#### Corrigé
+
+- 🔴 **Les Réglages affichaient une erreur alors que Health Connect était simplement désactivé.**
+  `ready()` renvoyait une `reason` pour l'opt-in sur OFF exactement comme pour une vraie panne, et
+  l'UI en fait un bandeau bordé `danger` : tout utilisateur n'ayant rien activé lisait
+  « Dernière tentative (steps) en échec : [r4] synchronisation désactivée (opt-in OFF) » —
+  **l'état normal de l'app présenté comme un échec**. `ready()` marque désormais les abandons
+  normaux (plateforme, opt-in) d'un `inactive: true` que les **5** appelants (`pushWorkout`,
+  `pushRun`, `pushRecent`, `importWeight`, `importSteps`) ne rapportent plus.
+  → [health-connect.ts](apps/mobile/src/lib/health-connect.ts).
+  ⚠️ CONF-06 est clôturée (9.9 ✅) et Health Connect est sur le chemin critique de la déclaration Play.
+- 🟠 **`run/active` sans course active : écran vide avec un « Retour » seul**, sans un mot
+  d'explication — **seul écran sur 41** à violer la convention maison « jamais d'écran vide ».
+  → [run/active.tsx](apps/mobile/src/app/run/active.tsx).
+- 🟠 **11 champs de saisie muets pour TalkBack.** Le `label` de `TextField` n'était qu'un `Text`
+  voisin, jamais relié au champ : TalkBack annonçait « champ de saisie » sans dire lequel. Le label
+  devient le `accessibilityLabel` par défaut — **placé avant le spread**, un `accessibilityLabel`
+  explicite de l'appelant le remplace toujours. **Un point de code, 27 écrans couverts.**
+  → [TextField.tsx](apps/mobile/src/components/TextField.tsx).
+- 🟠 **OBJ-01 — « Nouvel objectif » annoncé deux fois** sur l'état vide (bouton du haut + CTA de
+  l'`EmptyState`, `content-desc` en double). Le bouton du haut est masqué tant que la liste est vide.
+  → [goals.tsx](apps/mobile/src/app/goals.tsx).
+- 🟠 **BIEN-01 — l'état vide du bien-être était un cul-de-sac.** Le check-in ne s'ouvrait qu'en
+  tapant un jour du journal, donc jamais quand le journal est vide. Bouton « Faire mon check-in »
+  ajouté (clés i18n existantes réutilisées). → [wellbeing.tsx](apps/mobile/src/app/wellbeing.tsx).
+- 🟢 **`planning/plan` en état « programme introuvable » était sans issue** (pile `planning`,
+  `headerShown: false`, donc aucun retour natif). Bouton « Retour » ajouté.
+  → [planning/plan.tsx](apps/mobile/src/app/planning/plan.tsx).
+
+#### Technique / Notes
+
+- **Le premier jet du test passait pour la mauvaise raison.** Sous Jest, `Platform.OS` vaut `ios` :
+  `ready()` sortait dès la garde de plateforme sans **jamais** évaluer l'opt-in. C'est le second cas
+  du test qui l'a démasqué. Il faut `Object.defineProperty(Platform, 'OS', { value: 'android' })` —
+  commenté dans le fichier. À retenir pour tout test futur touchant ce module.
+- **Piège de méthode de la passe** : `uiautomator dump` ne capture que le **viewport visible**. À
+  1,5×, le contenu descend et des libellés « disparaissent » du dump sans être tronqués. La première
+  comparaison a produit une quinzaine de fausses troncatures, écartées après vérification à l'écran
+  (`running-profile`, `food-custom`). Documenté dans [docs/plan-de-test.md](docs/plan-de-test.md).
+- **Non corrigé, délibérément** : le widget planning du hub Muscu annonce une séance de **course**.
+  Ce n'est pas un bug de filtre — les requêtes de `planned-session-repository.ts` portent la mention
+  explicite « TOUS piliers » et l'US 3.9 s'appelle « planning muscu **unifié** ». Le corriger
+  défairait une décision d'architecture. Entrée ouverte dans [BACKLOG.md](BACKLOG.md).
+- **`SERVICE_REV = 'r4'` et les messages techniques non traduits sont conservés** : leur raison
+  d'être (savoir quel APK tourne quand `app.json` reste en `0.0.0`) tient toujours, et ils
+  n'apparaissent plus que sur un **échec réel**, où un message technique est à sa place.
+- **OBJ-01 et BIEN-01 restent `etape: recette`** : ces correctifs lèvent deux constats de recette,
+  ils ne remplacent pas la validation humaine. Notes mises à jour dans [RECETTES.md](RECETTES.md)
+  avec ce qu'il reste à vérifier.
+- **Correction d'un rapport erroné en cours de session** : un `npm run test` avait été lancé depuis
+  `apps/mobile` (répertoire courant PowerShell persistant) et n'exécutait donc que Jest, sans Vitest.
+  Relancé depuis la racine. **Leçon** : vérifier `> @wellness/shared` **et** `> @wellness/mobile`
+  dans la sortie avant de conclure au vert.
+- Qualité (depuis la racine, codes de sortie lus sans pipe) : `lint` **0** (8 warnings préexistants)
+  · `typecheck` **0** · `test` **0** — **1 126 Vitest + 182 Jest** (37 suites).
+- **Chaque correctif est vérifié sur device**, chiffres avant/après : bandeau HC absent · message
+  d'état vide présent · CTA « Nouvel objectif » 2 → **1** · champs muets de food-custom 8 → **0** ·
+  boutons « Retour » présents sur `run/active` et `planning/plan`.
+
 ### 30/07/2026 — `fix/pas01-entete-ecran-pas` — en-tête de l'écran « Pas » + constats de recette (9.15)
 
 Commit précédent : `7459258`.

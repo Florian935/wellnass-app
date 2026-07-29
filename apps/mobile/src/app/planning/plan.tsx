@@ -132,6 +132,8 @@ function PlanView({ programId }: { programId: string }) {
     );
   }
 
+  // Cet écran n'a pas d'en-tête de navigation (pile `planning`, `headerShown: false`) : sans bouton
+  // explicite, l'état « programme introuvable » est un cul-de-sac. Constaté le 30/07/2026.
   if (!detail) {
     return (
       <Screen edges={['top']}>
@@ -139,6 +141,9 @@ function PlanView({ programId }: { programId: string }) {
         <Text style={[styles.notFound, { color: colors.textMuted }]}>
           {t('programs.detail.notFoundMessage')}
         </Text>
+        <View style={styles.notFoundAction}>
+          <Button label={t('common.back')} onPress={() => router.back()} />
+        </View>
       </Screen>
     );
   }
@@ -428,4 +433,5 @@ const styles = StyleSheet.create({
   dayPillText: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   actions: { gap: 10, marginTop: 8 },
   notFound: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  notFoundAction: { marginTop: 20, alignItems: 'flex-start' },
 });

@@ -150,6 +150,38 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       navigation, donc le titre de page se dessinait sous la barre d'état. Vérifié sur device.
       **Leçon** : un écran ajouté sans sa déclaration de route n'échoue ni au typecheck ni aux tests
       — seul un œil sur l'écran le voit.
+### Constats de la passe device automatisée du 30/07/2026
+
+Passe adb sur 41 écrans (37 routes + 4 onglets), en 3 campagnes : nominal, police 1,5×, mode avion.
+Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md).
+
+- [ ] 🟠 **Réglages affiche une erreur rouge alors que Health Connect est simplement désactivé.**
+      Bandeau bordé `danger` : « Dernière tentative (steps) en échec : **[r4] synchronisation
+      désactivée (opt-in OFF)** ». Un opt-in sur OFF n'est pas une panne — c'est l'état par défaut de
+      tout utilisateur qui n'a rien activé. Deux problèmes distincts : (a) l'état normal est présenté
+      comme un échec ; (b) la raison interpolée est une **chaîne de diagnostic non traduite** portant
+      le tag de build `SERVICE_REV = 'r4'` — délibéré et commenté dans
+      [HealthConnectSection.tsx](apps/mobile/src/components/HealthConnectSection.tsx#L299), mais un
+      utilisateur **anglophone** lit alors du français technique. ⚠️ CONF-06 est clôturée (9.9 ✅) et
+      Health Connect est sur le chemin critique de la déclaration Play.
+      → Ne pas traiter `opt-in OFF` comme une erreur ; réserver le bandeau aux échecs réels.
+- [ ] 🟠 **`run/active` sans course active : écran vide avec un bouton « Retour » seul**, sans aucun
+      message. C'est le seul écran de l'app à violer la convention « jamais d'écran vide : un message
+      qui explique » — les 40 autres ont un état vide rédigé.
+- [ ] 🟢 **`planning/plan` sans programme valide est un cul-de-sac** : « Ce programme n'existe pas ou
+      a été supprimé. » sans bouton retour ni CTA.
+- [ ] 🟢 **Champs de saisie sans libellé d'accessibilité.** 8 sur
+      [food-custom](apps/mobile/src/app/food-custom.tsx), 1 sur profile, recipe-edit et
+      account-delete : cliquables, sans `text` ni `content-desc`, ils s'appuient sur le libellé
+      visuel adjacent. À reprendre avec CONF-07.
+- [ ] 🟠 **Décision produit — le widget planning du hub Muscu annonce une séance de course.**
+      Constaté : « Prochaine : Fractionné (VMA) » sous l'en-tête *Musculation*, à côté de « Aucun
+      programme actif ». Ce n'est **pas un bug de filtre** : les requêtes de
+      [planned-session-repository.ts](apps/mobile/src/data/repositories/planned-session-repository.ts#L100)
+      sont explicitement « TOUS piliers » (planning unifié, US 3.9) et `StrengthPlanningWidget` rend
+      `PlanningPreview` sans filtre. **À trancher** : est-ce le comportement voulu, ou le widget d'un
+      pilier doit-il se limiter à son pilier ?
+
 - [ ] **`supabase/seed.sql` est inatteignable** — il n'est joué que par `db:reset`, qui exige Docker
       (que personne n'a). Les 16 exercices de bibliothèque sont donc arrivés sur le cloud par un
       chemin non tracé. → Les basculer en **migration idempotente** (comme le seed CIQUAL), ou

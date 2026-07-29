@@ -231,12 +231,19 @@ export async function getState(): Promise<HealthConnectState> {
  * silencieux est ce qui rend une panne indiagnosticable côté recette.
  */
 async function ready(): Promise<
-  { native: Awaited<ReturnType<typeof nativeModule>>; reason?: undefined } | { native: null; reason: string }
+  | { native: Awaited<ReturnType<typeof nativeModule>>; reason?: undefined; inactive?: undefined }
+  | { native: null; reason: string; inactive?: boolean }
 > {
-  if (Platform.OS !== 'android') return { native: null, reason: 'plateforme non Android' };
+  // `inactive: true` = la fonctionnalité n'est **pas censée** tourner ici (plateforme, opt-in sur
+  // OFF). Ce n'est pas une panne : l'appelant ne doit produire aucun compte rendu d'erreur, sinon
+  // l'utilisateur qui n'a rien activé voit un bandeau rouge décrivant l'état normal de l'app.
+  // Constaté le 30/07/2026 en passe device — cf. docs/plan-de-test.md.
+  if (Platform.OS !== 'android') {
+    return { native: null, reason: 'plateforme non Android', inactive: true };
+  }
   try {
     if (!(await getHealthConnectEnabled())) {
-      return { native: null, reason: 'synchronisation désactivée (opt-in OFF)' };
+      return { native: null, reason: 'synchronisation désactivée (opt-in OFF)', inactive: true };
     }
     const native = await nativeModule();
     const status = await native.getSdkStatus(HEALTH_CONNECT_PACKAGE);
@@ -331,9 +338,9 @@ const SELECT_RUN = `
  * `defaultTitle` est le libellé i18n de repli (ce module ne dépend pas d'i18next).
  */
 export async function pushWorkout(workoutId: string, defaultTitle?: string): Promise<void> {
-  const { native, reason } = await ready();
+  const { native, reason, inactive } = await ready();
   if (!native) {
-    report('workout', 0, reason);
+    if (!inactive) report('workout', 0, reason);
     return;
   }
   try {
@@ -367,9 +374,9 @@ export async function pushWorkout(workoutId: string, defaultTitle?: string): Pro
 
 /** Écrit une course terminée (session + distance, en deux appels). Fire-and-forget. */
 export async function pushRun(runId: string, defaultTitle?: string): Promise<void> {
-  const { native, reason } = await ready();
+  const { native, reason, inactive } = await ready();
   if (!native) {
-    report('run', 0, reason);
+    if (!inactive) report('run', 0, reason);
     return;
   }
   try {
@@ -415,9 +422,9 @@ export async function pushRecent(
   days = DEFAULT_WINDOW_DAYS,
   titles?: { workout?: string; run?: string },
 ): Promise<number> {
-  const { native, reason } = await ready();
+  const { native, reason, inactive } = await ready();
   if (!native) {
-    report('backfill', 0, reason);
+    if (!inactive) report('backfill', 0, reason);
     return 0;
   }
   try {
@@ -501,9 +508,9 @@ export async function pushRecent(
  * Renvoie le nombre de pesées créées.
  */
 export async function importWeight(days = DEFAULT_WINDOW_DAYS): Promise<number> {
-  const { native, reason } = await ready();
+  const { native, reason, inactive } = await ready();
   if (!native) {
-    report('weight', 0, reason);
+    if (!inactive) report('weight', 0, reason);
     return 0;
   }
   try {
@@ -588,9 +595,9 @@ export async function importWeightIfDue(): Promise<number> {
  * Renvoie le nombre de jours écrits (créés ou mis à jour).
  */
 export async function importSteps(days = DEFAULT_WINDOW_DAYS): Promise<number> {
-  const { native, reason } = await ready();
+  const { native, reason, inactive } = await ready();
   if (!native) {
-    report('steps', 0, reason);
+    if (!inactive) report('steps', 0, reason);
     return 0;
   }
   try {
