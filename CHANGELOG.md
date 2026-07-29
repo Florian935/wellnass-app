@@ -10,6 +10,58 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/uxlot01-finitions-recette` — UX-LOT-01 : les 3 finitions de recette (3.53, 3.54, 7.18 → ✅)
+
+> Un seul lot pour trois correctifs de recette de même nature. Commit précédent : `911922b`.
+> **L'inventaire du code, fait avant d'écrire la spec, a évité de développer du déjà-livré** — et a
+> montré qu'un des trois diagnostics du backlog était faux.
+
+**Constaté avant de coder**
+
+- **UX-02 (3.53) était DÉJÀ LIVRÉ** par `12bd3a1` (« feat(muscf11): modale bottom-sheet de création
+  d'exercice perso »), et même avant que la ligne de roadmap n'existe. `CreateExerciseModal.tsx` est
+  un `Modal` bottom-sheet, avec `placeholder` sur le nom et segment `scrollable` : **les 3 points du
+  backlog, ligne pour ligne**. → ✅ par réconciliation, **zéro ligne de code**.
+- **UX-03 (3.54) était à moitié livré** : l'édition des instructions et muscles secondaires existait
+  déjà (`EditExerciseModal` + `updateCustomExercise`). Seuls les états vides restaient.
+- **UX-04 (7.18) : diagnostic faux sur 2 des 3 points.** L'appui long existait
+  (`activateAfterLongPress(700)`) et le retour visuel aussi (échelle + ombre). Il n'y avait d'ailleurs
+  **aucune poignée** : le geste est porté par toute la carte.
+
+**Corrigé**
+
+- `apps/mobile/src/app/exercises/[id].tsx` — les sections **Muscles secondaires**, **Matériel** et
+  **Instructions** sont désormais **toujours rendues**, avec « Non renseigné » au lieu de disparaître.
+  Un exo perso créé sur mobile n'ayant ni l'un ni l'autre, sa fiche n'avait pas la même structure que
+  celle d'un exo de bibliothèque — et l'absence de section se lisait comme un bug.
+- `SortableWidgetGrid.tsx` — les deux chips passent de `hitSlop={6}` à `{12}` → **48 dp** de cible
+  effective (24 de visuel + 12 de chaque côté), le minimum de CONF-07. Le visuel est inchangé : la
+  grille est dense, agrandir les icônes déséquilibrerait les cartes.
+- `SortableWidgetGrid.tsx` — **poignée visible** (`reorder-two-outline`) en `pointerEvents="none"` :
+  elle **signale** le geste sans le capter, donc la zone de préhension reste **toute la carte**. Une
+  poignée réellement interactive aurait au contraire réduit cette zone à 48 dp.
+- `(tabs)/index.tsx` — le bandeau du mode édition annonce le geste : « Appui long sur un widget pour
+  le déplacer ». Un geste qu'on ne découvre pas n'existe pas.
+
+**Modifié**
+
+- `exercise-detail-smoke.test.tsx` — un test **verrouillait l'ancien comportement** (« n'affiche pas
+  la ligne quand la liste est vide »), c'est-à-dire précisément le défaut remonté en recette. Mis au
+  nouveau contrat, et enrichi : il vérifie aussi que l'état vide **ne remplace pas** du contenu réel.
+- `i18n/locales/{fr,en}.json` — `exercises.detail.notSet`, `home.customize.dragHint`.
+- Roadmap 3.53 / 3.54 / 7.18 → ✅, compteurs **168 / 11 / 24**, V0.9 4/2/8.
+
+**Technique / Notes**
+
+- **Le lot était annoncé à ~7 h ; le travail réel a été d'une fraction.** Ce qui a coûté, c'est de
+  lire le code avant d'écrire — et c'est ce qui a évité de re-livrer UX-02.
+- **Aucune migration, aucune sync rule** : trois changements de présentation.
+- Ma première version du test assertait 3 états vides ; le fixture en a **1** (il porte du matériel
+  et des instructions). Corrigé : l'assertion vérifie maintenant les deux faces, l'état vide **et**
+  les valeurs réelles.
+- Qualité : `npm run test` **vert** (52 fichiers Vitest + 30 suites Jest / 142 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur.
+
 ### 29/07/2026 — `feature/admin01-archivage-sur` — ADMIN-01 : archivage sûr du contenu éditorial (8.11 ⬜ → 🟡)
 
 > Validé par Florian le 29/07/2026 avec arbitrage des 7 décisions. **🟡 et non ✅** : la sync rule doit

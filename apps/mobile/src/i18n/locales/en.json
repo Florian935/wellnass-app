@@ -81,7 +81,8 @@
         "real": "actual",
         "estimated": "est.",
         "seeProgression": "View progression"
-      }
+      },
+      "notSet": "Not set"
     }
   },
   "workout": {
@@ -655,7 +656,8 @@
       "show": "Show widget",
       "hide": "Hide widget",
       "drag": "Move widget",
-      "empty": "No widget shown. Enable widgets in editing mode."
+      "empty": "No widget shown. Enable widgets in editing mode.",
+      "dragHint": "Press and hold a widget to move it"
     },
     "today": {
       "title": "Today's session",

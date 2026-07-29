@@ -333,7 +333,10 @@ function Cell({
         <View style={styles.chips}>
           <Pressable
             onPress={() => onToggleVisible(entry.id)}
-            hitSlop={6}
+            // US UX-04 : 24 dp de visuel + 12 de hitSlop de chaque côté = **48 dp** de cible
+            // tactile, le minimum de CONF-07. Le visuel reste petit (la grille est dense) ;
+            // c'est la zone tapable qui grandit.
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={entry.visible ? t('home.customize.hide') : t('home.customize.show')}
             style={[styles.chip, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
@@ -346,7 +349,8 @@ function Cell({
           </Pressable>
           <Pressable
             onPress={() => onCycleSize(entry.id)}
-            hitSlop={6}
+            // Idem : 48 dp de cible effective (US UX-04).
+            hitSlop={12}
             accessibilityRole="button"
             accessibilityLabel={t('widgets.customize.shapeCycle', {
               shape: t(`widgets.customize.${shapeKey}`),
@@ -355,6 +359,14 @@ function Cell({
           >
             <Ionicons name={shapeIcon} size={14} color={colors.accent} />
           </Pressable>
+        </View>
+
+        {/* US UX-04 — affordance de déplacement. Le glissement existait déjà (appui long de 700 ms
+            sur la carte) mais **rien ne l'indiquait** : c'était un geste invisible. Cette poignée
+            ne capte aucun tap (`pointerEvents none`) — elle signale, le geste reste porté par toute
+            la carte, ce qui garde une zone de préhension très large. */}
+        <View pointerEvents="none" style={styles.dragHandle}>
+          <Ionicons name="reorder-two-outline" size={18} color={colors.textMuted} />
         </View>
 
         {!entry.visible ? (
@@ -380,6 +392,8 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   chips: { position: 'absolute', top: 8, right: 8, flexDirection: 'row', gap: 5, zIndex: 2 },
+  // Poignée purement indicative, en bas à droite pour ne pas concurrencer les chips du haut.
+  dragHandle: { position: 'absolute', bottom: 6, right: 8, opacity: 0.55, zIndex: 2 },
   chip: {
     width: 24,
     height: 24,

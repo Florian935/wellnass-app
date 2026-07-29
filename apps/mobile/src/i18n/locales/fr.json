@@ -81,7 +81,8 @@
         "real": "réel",
         "estimated": "estimé",
         "seeProgression": "Voir la progression"
-      }
+      },
+      "notSet": "Non renseigné"
     }
   },
   "workout": {
@@ -655,7 +656,8 @@
       "show": "Afficher le widget",
       "hide": "Masquer le widget",
       "drag": "Déplacer le widget",
-      "empty": "Aucun widget affiché. Active des widgets en mode édition."
+      "empty": "Aucun widget affiché. Active des widgets en mode édition.",
+      "dragHint": "Appui long sur un widget pour le déplacer"
     },
     "today": {
       "title": "Séance du jour",

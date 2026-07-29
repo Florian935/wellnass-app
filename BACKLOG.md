@@ -56,8 +56,8 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 >
 > **Ordre conseillé.** Déjà sortis du backlog : **PAS-01** clôturé le 28/07 (9.15 ✅), **BIEN-01** et
 > **ADMIN-01** en recette (1.24 et 8.11 🟡 — voir [ETAT.md](ETAT.md)). Reste, dans cet ordre : les
-> **3 UX de recette** (rapides, visibles, aucune décision à prendre), puis **MESUR-01** (donnée
-> historisée → coût de retard), puis **NUTR-F2**, **STREAK-01**, **OBJ-01**, **BILAN-01**. Et
+> **MESUR-01** (donnée historisée → coût de retard), puis **NUTR-F2**, **STREAK-01**, **OBJ-01**,
+> **BILAN-01** — les 3 UX de recette sont livrées (29/07). Et
 > **CONF-07 en dernier** des chantiers de code, délibérément : un balayage d'accessibilité refait
 > après chaque nouvel écran serait du travail perdu.
 
@@ -73,11 +73,9 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 ### Finitions UX remontées en recette
 
-| Candidat | # | Contenu | Point dur |
-|---|---|---|---|
-| **UX-02 — Création d'exercice perso en modale** | 3.53 | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée + segment `scrollable` + placeholder sur le nom. | Aucun — recette F10c, effet visible immédiat. |
-| **UX-03 — Cohérence fiche exercice perso / bibliothèque** | 3.54 | Mêmes sections + états vides explicites ; édition des instructions et muscles secondaires d'un exo perso. | Trancher l'état cible : harmoniser la structure **et/ou** ouvrir plus de champs à l'édition. L'écart Modifier/Supprimer reste **volontaire**. |
-| **UX-04 — Réagencement du dashboard découvrable** | 7.18 | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Aucun — recette du 16/07. Corrige la découvrabilité de 7.13. |
+> ✅ **Lot livré le 29/07/2026** (UX-LOT-01, roadmap 3.53 / 3.54 / 7.18 → ✅). UX-02 était en fait
+> **déjà livré** depuis `12bd3a1`, et le diagnostic d'UX-04 était faux sur 2 points — voir la
+> [spec](docs/specs/functional/us/uxlot01-finitions-recette.md) §0.
 
 ### Musculation
 

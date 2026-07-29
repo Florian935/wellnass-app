@@ -100,12 +100,23 @@ describe('Fiche exercice — smoke test (rendu sans planter)', () => {
     expect(getByText('Bras · Épaules')).toBeTruthy();
   });
 
-  it('n\'affiche pas la ligne « Muscles secondaires » quand la liste est vide', async () => {
+  // US UX-03 — **contrat inversé volontairement.** Ce test vérifiait auparavant que la section
+  // disparaissait quand la liste était vide. C'était précisément le défaut remonté en recette : un
+  // exercice perso créé sur mobile n'a ni muscles secondaires ni instructions, donc sa fiche avait
+  // une structure différente de celle d'un exercice de bibliothèque, et l'absence de section se
+  // lisait comme un bug. La section est désormais toujours rendue, avec un état vide explicite.
+  it('affiche la section « Muscles secondaires » avec un état vide explicite (UX-03)', async () => {
     (useExercise as jest.Mock).mockReturnValueOnce({
       exercise: customExercise, // musclesSecondary: []
       isLoading: false,
     });
-    const { queryByText } = await render(<ExerciseDetailScreen />);
-    expect(queryByText('Muscles secondaires')).toBeNull();
+    const { getByText, getAllByText } = await render(<ExerciseDetailScreen />);
+
+    expect(getByText('Muscles secondaires')).toBeTruthy();
+    // Seuls les muscles secondaires sont vides dans ce fixture : un seul état vide, et les deux
+    // autres sections affichent bien leur valeur — l'état vide ne remplace pas du contenu réel.
+    expect(getAllByText('Non renseigné')).toHaveLength(1);
+    expect(getByText('Haltères')).toBeTruthy();
+    expect(getByText('Garder le dos plaqué au banc.')).toBeTruthy();
   });
 });

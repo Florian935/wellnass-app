@@ -161,38 +161,55 @@ export default function ExerciseDetailScreen() {
             </Text>
           </View>
 
-          {exercise.musclesSecondary.length > 0 ? (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.textMuted }]}>
-                {t('exercises.detail.secondaryMuscles')}
-              </Text>
-              <Text style={[styles.value, { color: colors.text }]}>
-                {exercise.musclesSecondary.map((m) => t(`muscle.${m}`)).join(' · ')}
-              </Text>
-            </View>
-          ) : null}
+          {/* US UX-03 — la section est TOUJOURS rendue, avec un état vide explicite plutôt que
+              masquée. Un exercice perso créé sur mobile n'a ni muscles secondaires ni
+              instructions : faire disparaître les sections donnait deux fiches de structure
+              différente selon l'origine de l'exercice, et laissait croire à un bug. */}
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
+              {t('exercises.detail.secondaryMuscles')}
+            </Text>
+            <Text
+              style={[
+                styles.value,
+                { color: exercise.musclesSecondary.length > 0 ? colors.text : colors.textMuted },
+              ]}
+            >
+              {exercise.musclesSecondary.length > 0
+                ? exercise.musclesSecondary.map((m) => t(`muscle.${m}`)).join(' · ')
+                : t('exercises.detail.notSet')}
+            </Text>
+          </View>
 
-          {exercise.equipment ? (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.textMuted }]}>
-                {t('exercises.detail.equipment')}
-              </Text>
-              <Text style={[styles.value, { color: colors.text }]}>
-                {t(`equipment.${exercise.equipment}`)}
-              </Text>
-            </View>
-          ) : null}
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
+              {t('exercises.detail.equipment')}
+            </Text>
+            <Text
+              style={[
+                styles.value,
+                { color: exercise.equipment ? colors.text : colors.textMuted },
+              ]}
+            >
+              {exercise.equipment
+                ? t(`equipment.${exercise.equipment}`)
+                : t('exercises.detail.notSet')}
+            </Text>
+          </View>
 
-          {exercise.instructions ? (
-            <View style={styles.field}>
-              <Text style={[styles.label, { color: colors.textMuted }]}>
-                {t('exercises.detail.instructions')}
-              </Text>
-              <Text style={[styles.instructions, { color: colors.text }]}>
-                {exercise.instructions}
-              </Text>
-            </View>
-          ) : null}
+          <View style={styles.field}>
+            <Text style={[styles.label, { color: colors.textMuted }]}>
+              {t('exercises.detail.instructions')}
+            </Text>
+            <Text
+              style={[
+                styles.instructions,
+                { color: exercise.instructions ? colors.text : colors.textMuted },
+              ]}
+            >
+              {exercise.instructions ?? t('exercises.detail.notSet')}
+            </Text>
+          </View>
 
           <View style={styles.records}>
             <Text style={[styles.recordsTitle, { color: colors.text }]}>

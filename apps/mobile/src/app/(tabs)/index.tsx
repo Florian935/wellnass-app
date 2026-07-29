@@ -49,9 +49,16 @@ export default function HomeScreen() {
           <Text style={[styles.hello, { color: colors.textMuted }]}>{greeting}</Text>
           <Text style={[styles.title, { color: colors.text }]}>{t('common.appName')}</Text>
           {editing ? (
-            <Text style={[styles.hello, { color: colors.accent }]}>
-              {t('home.customize.editHint')}
-            </Text>
+            // US UX-04 : le mode édition annonce désormais **comment** déplacer un widget. Le geste
+            // (appui long) existait déjà mais restait invisible : personne ne le découvrait.
+            <>
+              <Text style={[styles.hello, { color: colors.accent }]}>
+                {t('home.customize.editHint')}
+              </Text>
+              <Text style={[styles.hello, { color: colors.textMuted }]} maxFontSizeMultiplier={1.4}>
+                {t('home.customize.dragHint')}
+              </Text>
+            </>
           ) : (
             <SyncStatus />
           )}
