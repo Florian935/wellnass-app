@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 15 partiel · 20 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 16 partiel · 19 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -18,6 +18,7 @@ avant de pouvoir publier.
 |---|---|---|---|
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
+| **BILAN-01** — Bilan hebdomadaire automatique | `recette` | `feature/bilan01-bilan-hebdo` | [7.16] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
@@ -25,7 +26,7 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **8 US attendent une recette humaine** (ADMIN-01, BIEN-01, CONTENU-01, MESUR-01, NUTR-F2, OBJ-01, STREAK-01, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **9 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, NUTR-F2, OBJ-01, STREAK-01, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -33,9 +34,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (9) · P2 confort (5)</summary>
+<details><summary>P1 finitions (8) · P2 confort (5)</summary>
 
-**P1** — BILAN-01 — Bilan hebdomadaire automatique · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
 **P2** — NUTR-F1 — Rappels programmés nutrition · PARTAGE-01 — Carte de séance / course partageable · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
 
@@ -47,21 +48,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/obj01-objectifs` (propre) |
-| Commits | 958 · `main` a **955** commits de retard sur `dev` |
-| Specs d'US | 83 au total — 75 clôturées, 8 en cours |
+| Branche courante | `feature/bilan01-bilan-hebdo` (modifications non commitées) |
+| Commits | 959 · `main` a **956** commits de retard sur `dev` |
+| Specs d'US | 84 au total — 75 clôturées, 9 en cours |
 | Migrations | 57/57 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
-✅ Aucune alerte.
+### ⚠️ Alertes
+
+- ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `7c997a7` chore(etat): régénère ETAT.md après le merge d'OBJ-01
 - `9d2b87c` feat(obj01): objectifs à échéance livrés + registre des recettes (US OBJ-01, 7.15)
 - `67b171f` feat(obj01): cadrage et cœur de calcul des objectifs à échéance (US OBJ-01 partielle, 7.15)
 - `fcee5ca` feat(streak01): joker de série — gel d'un jour manqué isolé (US STREAK-01, 7.14)
 - `34abbde` feat(nutrf2): suggestion d'aliments pour combler un macro (US NUTR-F2, 4.37)
-- `9704ece` feat(mesur01): mensurations corporelles — 6 mesures historisées, courbes et deltas (US MESUR-01, 3.51)
 
 ---
 

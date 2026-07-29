@@ -71,8 +71,8 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 12, muscu 5, course 3 ; gardes pilier', () => {
-    expect(HOME_WIDGET_IDS).toHaveLength(12);
+  it('accueil 13, muscu 5, course 3 ; gardes pilier', () => {
+    expect(HOME_WIDGET_IDS).toHaveLength(13);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -85,6 +85,12 @@ describe('WIDGET_REGISTRY', () => {
     // `wellbeing`, qui sont eux réellement transverses.
     expect(WIDGET_REGISTRY.home.pillars['goals']).toEqual(['strength', 'running']);
     expect(WIDGET_REGISTRY.home.pillars['wellbeing']).toBe('always');
+  });
+
+  it('garde le bilan (BILAN-01) en transverse, lui — il agrège ce qui existe', () => {
+    // La distinction avec `goals` est le point : un objectif de course n'a aucun sens sans le pilier
+    // course, alors qu'un bilan « nutrition seule » a du contenu (jours journalisés, adhérence).
+    expect(WIDGET_REGISTRY.home.pillars['review']).toBe('always');
   });
 });
 
@@ -103,7 +109,7 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    expect(layout.widgets).toHaveLength(12);
+    expect(layout.widgets).toHaveLength(13);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -123,7 +129,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(12);
+    expect(r.widgets).toHaveLength(13);
     assertNoOverlap(r.widgets);
   });
 

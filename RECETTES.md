@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **29/07/2026** — 8 US en attente.
+> Dernière mise à jour : **29/07/2026** — 9 US en attente.
 
 ---
 
@@ -173,7 +173,35 @@ l'historique. Nom vide = sync rule pas déployée.
 
 ---
 
-## 8. UX-LOT-01 — Lot de finitions
+## 8. BILAN-01 — Bilan hebdomadaire automatique
+
+📄 [spec](docs/specs/functional/us/bilan01-bilan-hebdo.md) · roadmap 7.16 · **📱 device**
+✅ **aucune sync rule à déployer** pour celle-ci — rien n'est stocké.
+
+- [ ] 1. L'écran affiche les chiffres **de la semaine close** (lundi→dimanche précédents), avec ses
+      dates, et la comparaison à la semaine d'avant.
+- [ ] 2. **Une seule** décision est affichée, et les chiffres qui la justifient sont **à côté**.
+- [ ] 3. Ajouter une séance dans la semaine close puis rouvrir : les chiffres suivent (tout est
+      recalculé à l'affichage).
+- [ ] 4. Semaine vide : **aucune notification**, mais l'écran s'ouvre sur un message de reprise.
+- [ ] 5. Première semaine d'utilisation : **aucune comparaison** affichée (pas de « +100 % »).
+- [ ] 6. Pilier nutrition désactivé : aucun chiffre nutritionnel, ni dans l'écran ni dans la décision.
+- [ ] 7. Désactiver « Bilan hebdomadaire » dans les réglages : plus de notification, écran toujours
+      accessible.
+- [ ] 8. Régler l'heure du bilan **dans** la fenêtre Ne pas déranger (ex. 23 h) : **aucune
+      notification**. C'est le comportement attendu, pas un bug — à vérifier explicitement.
+- [ ] 9. Le widget d'accueil montre la décision **et** des chiffres, et ouvre l'écran.
+- [ ] 10. Les variations sont lisibles **sans la couleur** (texte « en hausse de 12 % »).
+- [ ] 11. Mode avion : tout fonctionne à l'identique.
+- [ ] 12. TalkBack lit la décision puis ses chiffres.
+
+⏳ **Le test qui demande de la patience** : la notification part **le lundi** à l'heure réglée. Pour
+ne pas attendre, règle l'heure du bilan sur l'heure suivante un lundi — ou vérifie au moins que
+désactiver/réactiver la préférence ne casse rien.
+
+---
+
+## 9. UX-LOT-01 — Lot de finitions
 
 📄 [spec](docs/specs/functional/us/uxlot01-finitions-recette.md) · roadmap 3.53, 3.54, 7.18 ·
 **📱 device**
@@ -193,7 +221,7 @@ l'historique. Nom vide = sync rule pas déployée.
 
 ## Comment procéder
 
-**Six US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01
+**Sept US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01, BILAN-01
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code.

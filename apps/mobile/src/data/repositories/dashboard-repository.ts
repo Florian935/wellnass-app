@@ -920,11 +920,29 @@ export type GoalAdherence = {
  * Hooks appelés inconditionnellement.
  */
 export function useGoalAdherence(windowDays: number): GoalAdherence {
+  return useGoalAdherenceForRange(daysAgo(windowDays), null);
+}
+
+/**
+ * Même calcul, sur une **fenêtre explicite** `[fromKey, toKey]` (bornes incluses ; `toKey = null`
+ * signifie « jusqu'à aujourd'hui »).
+ *
+ * Extrait pour le bilan hebdomadaire (US BILAN-01, décision D6) : le bilan porte sur une **semaine
+ * ISO close**, et une adhérence mesurée sur 7 jours glissants afficherait, sous un titre « semaine du
+ * 20 au 26 juillet », un chiffre portant sur une autre période. Le corps est inchangé — seule la
+ * borne est devenue un paramètre, plutôt que d'être dérivée d'un nombre de jours.
+ */
+export function useGoalAdherenceForRange(
+  fromKey: string,
+  toKey: string | null,
+): GoalAdherence {
   const { nutritionProfile, isLoading: nutriLoading } = useNutritionProfile();
   const { profile, isLoading: profileLoading } = useProfile();
   const { latest, isLoading: weightLoading } = useLatestWeight();
   const { settings } = useSettings();
-  const { totals, isLoading: totalsLoading } = useDailyTotals(daysAgo(windowDays));
+  const { totals: allTotals, isLoading: totalsLoading } = useDailyTotals(fromKey);
+  // Borne haute : sans elle, un bilan de la semaine close inclurait les jours de la semaine en cours.
+  const totals = toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey);
   const { workouts, isLoading: wLoading } = useWorkoutHistory();
   const { runs, isLoading: rLoading } = useRunHistory();
 

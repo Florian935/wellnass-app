@@ -20,7 +20,10 @@ import { useDeletionStore } from '@/stores/deletion-store';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { autoCloseStaleWorkout } from '@/data/repositories/workout-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
-import { useStreakReminderScheduler } from '@/data/repositories/notification-repository';
+import {
+  useStreakReminderScheduler,
+  useWeeklyReviewScheduler,
+} from '@/data/repositories/notification-repository';
 import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
 import { useHealthConnectImports } from '@/hooks/useHealthConnectImports';
 import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
@@ -165,6 +168,11 @@ function RootNavigator() {
   // + le canal Android à l'init, puis (re)planifie/annule selon l'activité du jour
   // et les préférences — au montage, sur changement, et au retour au premier plan.
   useStreakReminderScheduler();
+
+  // Notifications (US BILAN-01) : monte le rendez-vous hebdomadaire du bilan (lundi, récurrent côté
+  // OS). Réévalué à chaque ouverture parce que la décision D4 interdit de notifier une semaine vide,
+  // et que le contenu d'une semaine ne peut pas être connu à l'avance.
+  useWeeklyReviewScheduler();
 
   // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
   useAppOpenedAnalytics();
@@ -396,6 +404,18 @@ function RootNavigator() {
             presentation: 'modal',
             headerShown: true,
             title: t('measurements.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        {/* US BILAN-01 — bilan hebdomadaire. Ouvert depuis le widget ou la notification. */}
+        <Stack.Screen
+          name="review"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('review.title'),
             headerStyle: { backgroundColor: colors.surface },
             headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
             headerTintColor: colors.accent,

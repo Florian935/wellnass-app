@@ -27,15 +27,19 @@ export interface NotificationPrefs {
   dndEndHour: number;
   /** Plafond de notifications planifiées par jour (défaut `3`). */
   maxPerDay: number;
+  /** Bilan hebdomadaire activé (défaut `true`) — US BILAN-01. */
+  weeklyReview: boolean;
+  /** Heure du bilan hebdomadaire, 0-23 (défaut `9`). Le jour est fixé au **lundi**. */
+  weeklyReviewHour: number;
 }
 
 /**
  * Valeurs par défaut des préférences de notifications.
  *
- * Note : `reminderHour = 20` est **volontairement hors** de la fenêtre DND par
- * défaut `[22, 7)` — sinon le rappel serait systématiquement supprimé par le
- * filtre DND. Toute modification des défauts doit préserver cet invariant
- * (`!isWithinDnd(reminderHour, defaults)`).
+ * Note : `reminderHour = 20` **et** `weeklyReviewHour = 9` sont **volontairement hors**
+ * de la fenêtre DND par défaut `[22, 7)` — sinon ces notifications seraient
+ * systématiquement supprimées par le filtre DND. Toute modification des défauts
+ * doit préserver cet invariant, qui est **testé**.
  */
 export function defaultNotificationPrefs(): NotificationPrefs {
   return {
@@ -45,6 +49,10 @@ export function defaultNotificationPrefs(): NotificationPrefs {
     dndStartHour: 22,
     dndEndHour: 7,
     maxPerDay: 3,
+    // Lundi 9 h : la semaine résumée est **close** (donc le bilan est définitif) et la décision
+    // arrive au début de la semaine où elle s'applique — pas la veille au soir (BILAN-01, D5).
+    weeklyReview: true,
+    weeklyReviewHour: 9,
   };
 }
 
@@ -87,6 +95,8 @@ export function parseNotificationPrefs(raw: unknown): NotificationPrefs {
     dndStartHour: clampHour(obj['dndStartHour'], d.dndStartHour),
     dndEndHour: clampHour(obj['dndEndHour'], d.dndEndHour),
     maxPerDay,
+    weeklyReview: boolOr(obj['weeklyReview'], d.weeklyReview),
+    weeklyReviewHour: clampHour(obj['weeklyReviewHour'], d.weeklyReviewHour),
   };
 }
 
@@ -141,4 +151,40 @@ export function shouldScheduleStreakReminder(input: StreakReminderInput): boolea
 /** Vrai s'il reste de la place sous le plafond quotidien (`< maxPerDay`). */
 export function canScheduleMore(countToday: number, prefs: NotificationPrefs): boolean {
   return countToday < prefs.maxPerDay;
+}
+
+/**
+ * Jour du bilan hebdomadaire au format `expo-notifications` : **lundi**.
+ *
+ * ⚠️ La convention du SDK 57 est `1 = dimanche` … `7 = samedi` — donc lundi vaut **2**, et non 1
+ * comme le voudrait l'intuition (ni 0 comme `weekdayIndex` côté projet). Constante nommée pour que
+ * l'erreur ne puisse pas se glisser dans un appel.
+ */
+export const WEEKLY_REVIEW_WEEKDAY = 2;
+
+/** Arguments de la règle de planification du bilan hebdomadaire (BILAN-01). */
+export interface WeeklyReviewScheduleInput {
+  /** Bilan activé (`prefs.weeklyReview`). */
+  enabled: boolean;
+  /** Y a-t-il quelque chose à dire ? Faux si la semaine close est vide (décision D4). */
+  hasContent: boolean;
+  /** Préférences (heure visée + filtre DND). */
+  prefs: NotificationPrefs;
+}
+
+/**
+ * Décide s'il faut maintenir le rendez-vous hebdomadaire du bilan.
+ *
+ * Vrai **uniquement si** : activé ET la semaine close a quelque chose à dire ET l'heure visée n'est
+ * pas en DND.
+ *
+ * La condition `hasContent` est ce qui implémente la décision D4 : **pas de notification pour une
+ * semaine vide.** Une notification qui dit « tu n'as rien fait » est punitive, et c'est le genre de
+ * message qui fait désinstaller. Comme le contenu ne peut pas être connu à l'avance, l'appelant
+ * réévalue cette règle **à chaque ouverture de l'app** et annule le rendez-vous si elle devient
+ * fausse.
+ */
+export function shouldScheduleWeeklyReview(input: WeeklyReviewScheduleInput): boolean {
+  const { enabled, hasContent, prefs } = input;
+  return enabled && hasContent && !isWithinDnd(prefs.weeklyReviewHour, prefs);
 }

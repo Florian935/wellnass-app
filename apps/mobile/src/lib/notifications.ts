@@ -14,7 +14,9 @@
  *  - `setNotificationChannelAsync('reminders', { importance, … })` (canal Android)
  *  - `getPermissionsAsync` / `requestPermissionsAsync` (retour `{ granted }`)
  *  - `scheduleNotificationAsync({ identifier, content, trigger })` avec un
- *    trigger `SchedulableTriggerInputTypes.DATE` (`{ type, date }`)
+ *    trigger `SchedulableTriggerInputTypes.DATE` (`{ type, date }`) ou
+ *    `SchedulableTriggerInputTypes.WEEKLY` (`{ type, weekday, hour, minute }`,
+ *    **récurrent** — `weekday` 1 = dimanche ; Android)
  *  - `cancelScheduledNotificationAsync(identifier)` (identifiant stable → idempotence)
  *  - `setNotificationHandler` (affichage au premier plan)
  */
@@ -31,6 +33,12 @@ export const REMINDERS_CHANNEL_ID = 'reminders';
  * (idempotence : re-planifier remplace l'existant).
  */
 export const STREAK_REMINDER_ID = 'streak-danger-reminder';
+
+/**
+ * Identifiant stable du bilan hebdomadaire (US BILAN-01). Même raison que ci-dessus : re-planifier
+ * remplace, donc il n'y a jamais deux bilans en attente.
+ */
+export const WEEKLY_REVIEW_ID = 'weekly-review';
 
 /** Contenu i18n d'une notification (résolu par l'appelant via i18next). */
 export interface StreakReminderContent {
@@ -117,6 +125,55 @@ export async function scheduleStreakReminder(
 export async function cancelStreakReminder(): Promise<void> {
   try {
     await Notifications.cancelScheduledNotificationAsync(STREAK_REMINDER_ID);
+  } catch {
+    // no-op : rien à annuler / module indisponible.
+  }
+}
+
+/**
+ * (Re)planifie le **bilan hebdomadaire** (US BILAN-01) sur un rendez-vous récurrent.
+ *
+ * Trigger `WEEKLY` (`{ type, weekday, hour, minute }`) et non `DATE` : l'OS répète le rendez-vous
+ * tout seul, donc **rien à mémoriser** — ni « dernière semaine notifiée », ni re-planification
+ * hebdomadaire à la main.
+ *
+ * ⚠️ `weekday` suit la convention du SDK : **1 = dimanche**, donc lundi vaut 2. La valeur vient de
+ * `WEEKLY_REVIEW_WEEKDAY` (@wellness/shared) pour que la confusion ne puisse pas se glisser ici.
+ *
+ * ⚠️ Le contenu est **volontairement non chiffré** (décision D1) : les chiffres sont calculés à
+ * l'ouverture de l'écran. C'est ce qui rend la notification insensible au doze mode Android — même
+ * livrée six heures plus tard, elle reste exacte, parce qu'elle n'affirme aucun nombre.
+ *
+ * `WEEKLY` est documenté côté Android dans le SDK 57 ; sur iOS il faudrait un
+ * `CalendarNotificationTrigger` — hors périmètre (décision E, Android d'abord). Sur une plateforme
+ * qui ne le gère pas, l'appel échoue en silence : l'écran et le widget restent la voie d'accès.
+ */
+export async function scheduleWeeklyReview(
+  weekday: number,
+  hour: number,
+  content: StreakReminderContent,
+): Promise<void> {
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: WEEKLY_REVIEW_ID,
+      content: { title: content.title, body: content.body },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
+        weekday,
+        hour,
+        minute: 0,
+        channelId: REMINDERS_CHANNEL_ID,
+      },
+    });
+  } catch {
+    // no-op : permission refusée / trigger non supporté (iOS) / module indisponible.
+  }
+}
+
+/** Annule le bilan hebdomadaire en attente. Idempotent, ne lève jamais. */
+export async function cancelWeeklyReview(): Promise<void> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(WEEKLY_REVIEW_ID);
   } catch {
     // no-op : rien à annuler / module indisponible.
   }

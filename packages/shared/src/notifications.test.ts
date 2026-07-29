@@ -5,6 +5,8 @@ import {
   isWithinDnd,
   shouldScheduleStreakReminder,
   canScheduleMore,
+  shouldScheduleWeeklyReview,
+  WEEKLY_REVIEW_WEEKDAY,
   type NotificationPrefs,
 } from './notifications';
 
@@ -19,12 +21,21 @@ describe('defaultNotificationPrefs', () => {
       dndStartHour: 22,
       dndEndHour: 7,
       maxPerDay: 3,
+      weeklyReview: true,
+      weeklyReviewHour: 9,
     });
   });
 
   it('place reminderHour HORS de la fenêtre DND par défaut (invariant)', () => {
     const d = defaultNotificationPrefs();
     expect(isWithinDnd(d.reminderHour, d)).toBe(false);
+  });
+
+  it('place weeklyReviewHour HORS de la fenêtre DND par défaut (invariant, BILAN-01)', () => {
+    // Sans cet invariant, le bilan serait planifié puis systématiquement supprimé par le filtre DND
+    // — une fonctionnalité muette, sans aucune erreur visible.
+    const d = defaultNotificationPrefs();
+    expect(isWithinDnd(d.weeklyReviewHour, d)).toBe(false);
   });
 
   it('retourne un nouvel objet à chaque appel (pas de partage de référence)', () => {
@@ -72,7 +83,23 @@ describe('parseNotificationPrefs — champs partiels et bornes', () => {
       dndStartHour: 22,
       dndEndHour: 7,
       maxPerDay: 3,
+      weeklyReview: true,
+      weeklyReviewHour: 9,
     });
+  });
+
+  it('lit les 2 champs du bilan hebdo, et sinon retombe sur leurs défauts', () => {
+    // Le point qui compte : les réglages DÉJÀ enregistrés par les utilisateurs ne contiennent pas
+    // ces champs. Ils doivent continuer de fonctionner sans aucune migration (BILAN-01, D7).
+    expect(parseNotificationPrefs({ weeklyReview: false, weeklyReviewHour: 18 })).toMatchObject({
+      weeklyReview: false,
+      weeklyReviewHour: 18,
+    });
+    expect(parseNotificationPrefs({ streakDanger: true })).toMatchObject({
+      weeklyReview: true,
+      weeklyReviewHour: 9,
+    });
+    expect(parseNotificationPrefs({ weeklyReviewHour: 99 }).weeklyReviewHour).toBe(9);
   });
 
   it('borne une heure négative sur le défaut', () => {
@@ -240,5 +267,44 @@ describe('canScheduleMore', () => {
   it('false une fois le plafond atteint', () => {
     expect(canScheduleMore(3, prefs)).toBe(false);
     expect(canScheduleMore(4, prefs)).toBe(false);
+  });
+});
+
+// ─── shouldScheduleWeeklyReview (BILAN-01) ───────────────────────────────────
+
+describe('shouldScheduleWeeklyReview', () => {
+  const prefs = defaultNotificationPrefs(); // weeklyReview true, 9 h, DND [22,7)
+
+  it('planifie quand c’est activé et qu’il y a quelque chose à dire', () => {
+    expect(shouldScheduleWeeklyReview({ enabled: true, hasContent: true, prefs })).toBe(true);
+  });
+
+  it('NE planifie PAS pour une semaine vide — pas de « tu n’as rien fait »', () => {
+    // Décision D4 : une notification punitive fait désinstaller. Le silence respecte l'utilisateur.
+    expect(shouldScheduleWeeklyReview({ enabled: true, hasContent: false, prefs })).toBe(false);
+  });
+
+  it('ne planifie pas si la préférence est désactivée', () => {
+    expect(shouldScheduleWeeklyReview({ enabled: false, hasContent: true, prefs })).toBe(false);
+  });
+
+  it('ne planifie pas si l’heure visée tombe en DND', () => {
+    // Cas réel : l'utilisateur règle son bilan à 23 h et garde le DND par défaut [22,7).
+    const nightly: NotificationPrefs = { ...prefs, weeklyReviewHour: 23 };
+    expect(shouldScheduleWeeklyReview({ enabled: true, hasContent: true, prefs: nightly })).toBe(
+      false,
+    );
+  });
+
+  it('planifie à 23 h si le DND est désactivé', () => {
+    const nightly: NotificationPrefs = { ...prefs, weeklyReviewHour: 23, dndEnabled: false };
+    expect(shouldScheduleWeeklyReview({ enabled: true, hasContent: true, prefs: nightly })).toBe(
+      true,
+    );
+  });
+
+  it('lundi vaut 2 dans la convention du SDK (1 = dimanche), pas 1', () => {
+    // La confusion la plus probable de tout le lot : 1 = dimanche côté expo-notifications.
+    expect(WEEKLY_REVIEW_WEEKDAY).toBe(2);
   });
 });

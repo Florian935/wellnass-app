@@ -54,6 +54,8 @@ export const HOME_WIDGET_IDS = [
   'wellbeing',
   // US OBJ-01 — même raison, même place : en fin de registre.
   'goals',
+  // US BILAN-01 — idem.
+  'review',
 ] as const;
 
 /**
@@ -128,6 +130,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // seule » n'en créerait aucun, le widget serait un vide permanent. Même garde que
       // `record-recent` et `training-time`.
       goals: ['strength', 'running'],
+      // US BILAN-01 : transverse, contrairement à `goals` juste au-dessus. Le bilan **agrège ce qui
+      // existe** — un utilisateur « nutrition seule » y trouve ses jours journalisés et son
+      // adhérence, donc la carte a du contenu quel que soit le pilier activé.
+      review: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

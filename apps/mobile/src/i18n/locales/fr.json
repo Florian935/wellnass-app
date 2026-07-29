@@ -1821,6 +1821,46 @@
     "widgetEmpty": "Aucun objectif en cours.",
     "seeAll": "Voir tous mes objectifs"
   },
+  "review": {
+    "title": "Bilan de la semaine",
+    "period": "Du {{start}} au {{end}}",
+    "empty": "Rien à résumer pour cette semaine. Une séance de 30 minutes suffit à relancer.",
+    "decisionTitle": "Ta décision pour la semaine",
+    "sectionNumbers": "Les chiffres",
+    "blocks": {
+      "workouts": "Séances",
+      "tonnage": "Tonnage",
+      "runs": "Sorties",
+      "distance": "Distance",
+      "loggedDays": "Jours journalisés",
+      "daysInTarget": "Jours dans la cible",
+      "activeDays": "Jours actifs",
+      "records": "Records battus"
+    },
+    "changeUp": "en hausse de {{pct}} %",
+    "changeDown": "en baisse de {{pct}} %",
+    "changeFlat": "stable",
+    "noComparison": "Première semaine : rien à comparer.",
+    "decisions": {
+      "goal_behind": "Ton objectif « {{subject}} » a pris du retard : {{progressPct}} % de progression pour {{elapsedPct}} % du temps écoulé. Cette semaine, replace-le en priorité.",
+      "consistency_drop": "Ta régularité a décroché : {{activeDays}} jours actifs cette semaine contre {{previousActiveDays}} la précédente. Vise trois jours, pas la performance.",
+      "muscle_imbalance": "Tu délaisses un groupe musculaire : {{subject}}. Ajoute-lui une séance cette semaine — c'est ce déséquilibre qui finit par blesser.",
+      "volume_drop": "Ton volume a baissé de {{dropPct}} % ({{workouts}} séances). Une seule séance de plus suffit à inverser la tendance.",
+      "nutrition_drift": "Ton alimentation s'écarte de la cible : {{daysInTarget}} jours dans la fourchette sur {{loggedDays}} journalisés. Choisis un seul repas à ajuster.",
+      "all_good": "Semaine solide : {{activeDays}} jours actifs, {{workouts}} séances, {{runs}} sorties. Reproduis-la — c'est la constance qui paye."
+    },
+    "a11yDecision": "Décision de la semaine",
+    "notification": {
+      "title": "Ton bilan de la semaine",
+      "body": "Il est prêt. Une seule décision à prendre."
+    },
+    "prefs": {
+      "label": "Bilan hebdomadaire",
+      "hint": "Un récap chaque lundi, avec une seule décision pour la semaine.",
+      "hour": "Heure du bilan"
+    },
+    "seeAll": "Voir mon bilan"
+  },
   "suggestion": {
     "title": "Combler un macro",
     "missing_one": "Il te manque {{count}} g de {{macro}}",

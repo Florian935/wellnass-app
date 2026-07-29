@@ -54,19 +54,22 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 > (simulateur what-if, rétrospective annuelle) ou une base d'utilisateurs (board de suggestions,
 > compétition) est resté hors périmètre.
 >
-> **Ordre conseillé.** Déjà sortis du backlog : **PAS-01** clôturé le 28/07 (9.15 ✅), **BIEN-01** et
-> **ADMIN-01** en recette (1.24 et 8.11 🟡 — voir [ETAT.md](ETAT.md)). Reste, dans cet ordre : les
-> **OBJ-01** puis **BILAN-01** — les 3 UX de recette, **MESUR-01**, **NUTR-F2** et **STREAK-01**
-> sont livrées (29/07). Et
-> **CONF-07 en dernier** des chantiers de code, délibérément : un balayage d'accessibilité refait
-> après chaque nouvel écran serait du travail perdu.
+> **Ordre conseillé.** Sortis du backlog : **PAS-01** clôturé le 28/07 (9.15 ✅) ; **BIEN-01**,
+> **ADMIN-01**, **CONTENU-01**, **UX-LOT-01**, **MESUR-01**, **NUTR-F2**, **STREAK-01**, **OBJ-01** et
+> **BILAN-01** livrées et **en recette** (voir [RECETTES.md](RECETTES.md)).
+>
+> **Il ne reste donc plus aucun candidat de la salve V0.9.** La suite : les **P2** ci-dessous, puis
+> **CONF-07 en dernier** des chantiers de code, délibérément — un balayage d'accessibilité refait après
+> chaque nouvel écran serait du travail perdu.
 
 ### Enrichissements V0.9 — rétention & valeur produit
 
-| Candidat | # | Contenu | Point dur |
-|---|---|---|---|
-| **OBJ-01 — Objectifs personnels à échéance** | 7.15 | « 50 km ce mois », « +5 kg au développé en 8 semaines » — anneau de progression, jalons, célébration. | **Non social** et **mono-objectif** (l'objectif hybride à arbitrage de compromis reste post-V1). Le calcul de progression doit se brancher sur les agrégats existants, pas en créer de nouveaux. |
-| **BILAN-01 — Bilan hebdomadaire automatique** | 7.16 | Récap en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine. | Règle non négociable : **aucune narration sans les chiffres affichés à côté**. Texte assemblé depuis des clés i18n (pas de texte libre), agrégats calculés localement, **pas d'IA**. Survivre au doze mode Android. |
+> ✅ **Les deux candidats de rétention sont livrés le 29/07/2026** : **OBJ-01** (7.15 🟡) et
+> **BILAN-01** (7.16 🟡), tous deux en recette — voir [RECETTES.md](RECETTES.md).
+>
+> La contradiction du doze mode annoncée ici a été résolue en **ne mettant aucun chiffre dans la
+> notification** : tout est recalculé à l'ouverture, donc une notification livrée six heures en retard
+> reste exacte. **Cette section est vide, et c'est normal** — elle disparaîtra à la clôture des deux US.
 
 ### Finitions UX remontées en recette
 

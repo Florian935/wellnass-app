@@ -10,6 +10,89 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/bilan01-bilan-hebdo` — BILAN-01 : bilan hebdomadaire automatique (7.16 🟡)
+
+Fait descendre **MR-22**, **TRI-07** et **NUTR-18** du catalogue d'analyses. 4 décisions arbitrées par
+Florian, **3 dérivées** tranchées et signalées comme telles dans la spec.
+
+#### La contradiction que le backlog ne disait pas
+
+Le récap est calculé **localement**, donc seulement quand l'app tourne — mais la notification doit
+partir app fermée. Résolution (D1) : **la notification ne contient aucun chiffre**, tout est recalculé
+à l'ouverture de l'écran. Conséquence directe et voulue : le **doze mode Android**, annoncé comme le
+point dur de l'US, devient **sans conséquence**. Une notification livrée six heures en retard reste
+exacte, parce qu'elle n'affirme aucun nombre.
+
+#### « Aucune narration sans les chiffres » — imposé par le type, pas par la discipline
+
+`ReviewDecision.metrics` **n'est pas optionnel**. Un signal qui ne transporte pas les chiffres qui le
+justifient ne compile pas. Un test le vérifie sur les 6 signaux d'un coup.
+
+- `packages/shared/src/weekly-review.ts` (**26 tests**) : `lastClosedWeek`, `previousWeek`,
+  `isEmptyWeek`, `buildWeeklyReview`. La décision est choisie par **règles ordonnées** (D2), la
+  première qui déclenche gagne : objectif en retard → régularité → déséquilibre musculaire → volume →
+  adhérence nutrition → rien à signaler. Déterministe, testable, et surtout **explicable**.
+- L'ordre est justifié dans la spec §3.3, rang par rang. La nutrition est **en dernier** délibérément :
+  on ne veut pas ouvrir chaque semaine sur l'alimentation.
+- Un objectif dont la progression est **non calculable** est ignoré : un retard indéterminable n'est
+  pas un retard, et l'annoncer serait une accusation sans preuve.
+- Pas de semaine précédente → **aucune comparaison**. Un « +100 % » depuis zéro serait une flatterie
+  mensongère au premier usage.
+
+#### La semaine, et pourquoi elle est close (D5)
+
+Le bilan porte sur la dernière semaine ISO **close** (lundi→dimanche). Il est donc **définitif** — même
+raisonnement que le verdict d'OBJ-01. Consulté un **dimanche**, il montre encore la semaine d'avant :
+résumer une semaine non terminée serait faux. Un test verrouille ce cas.
+
+#### Un défaut que j'ai introduit puis corrigé à la source (D6)
+
+J'avais d'abord branché l'adhérence nutrition sur `useGoalAdherence(7)` — une fenêtre **glissante**,
+alors que tout le reste porte sur la semaine ISO. Sous un titre « semaine du 20 au 26 juillet »,
+un chiffre d'une autre période : exactement la narration non adossée aux chiffres que l'US interdit.
+Corrigé en extrayant **`useGoalAdherenceForRange(from, to)`** de `useGoalAdherence`, qui n'en est plus
+qu'un wrapper — **API existante inchangée**, aucun appelant touché.
+
+- `weekly-review-repository.ts` : toutes les requêtes sont bornées sur la **même** fenêtre. Les
+  timestamps sont convertis en jours **locaux** (`localDayKey`), jamais par `date()` en SQLite qui
+  donnerait le jour UTC.
+- ⚠️ **Les jokers de série ne comptent pas** comme jours actifs : un joker protège le compteur de
+  série **et rien d'autre** (STREAK-01, D3). Le bilan doit voir la semaine telle qu'elle a été vécue,
+  sinon il féliciterait pour un jour où rien n'a eu lieu.
+
+#### Notification, préférences — et zéro migration (D7)
+
+- Déclencheur **`WEEKLY` récurrent** côté OS (`weekday` **2 = lundi** — la convention du SDK 57 est
+  `1 = dimanche`, constante nommée `WEEKLY_REVIEW_WEEKDAY` pour que l'erreur ne puisse pas se glisser
+  dans un appel). Récurrent, donc **rien à mémoriser** : ni « dernière semaine notifiée », ni
+  re-planification à la main.
+- Révisé **à chaque ouverture** : la décision D4 interdit de notifier une semaine vide, et le contenu
+  ne peut pas être connu à l'avance. Limite assumée et documentée dans la spec.
+- **2 préférences** (`weeklyReview`, `weeklyReviewHour` défaut 9 h) dans `user_settings.notifications`
+  — colonne JSON déjà synchronisée, parseur déjà tolérant : **aucune migration, aucune sync rule**.
+  Les réglages déjà enregistrés continuent de fonctionner, et un test le vérifie.
+- Invariant **testé** : 9 h reste **hors** de la fenêtre DND par défaut `[22, 7)`. Sans lui, le bilan
+  serait planifié puis systématiquement supprimé par le filtre — une fonctionnalité muette, sans
+  aucune erreur visible.
+
+#### Surfaces
+
+- `app/review.tsx` : la **décision d'abord** (c'est ce qui sert à agir), puis « Les chiffres » qui la
+  rendent vérifiable. Les variations sont annoncées **en mots** (« en hausse de 12 % »), jamais par la
+  seule couleur. La ligne « jours dans la cible » est **omise** quand aucune cible n'est définie —
+  jamais affichée à 0.
+- `ReviewCard` (widget, 3 formes, **6 tests**) : gardé `'always'`, contrairement à `goals` — le bilan
+  **agrège ce qui existe**, donc un utilisateur « nutrition seule » y trouve du contenu. Un test
+  verrouille cette distinction.
+
+#### Qualité
+
+`npm run typecheck` 0 erreur · `npm run lint` 0 erreur (6 warnings préexistants) ·
+`npm run test` **1239 verts** (1078 Vitest + 161 Jest), dont **32 pour BILAN-01**. Les compteurs de
+`widgets.test.ts` passent à 13 widgets d'accueil.
+
+⚠️ **Reste à faire par Florian** : la recette device, 12 critères. **Aucune sync rule pour cette US.**
+
 ### 29/07/2026 — `feature/obj01-objectifs` — OBJ-01 : objectifs à échéance (fin du lot) + registre de recettes
 
 **Deux choses dans ce commit** : la fin d'OBJ-01 (l'increment précédent s'arrêtait au cadrage et à la

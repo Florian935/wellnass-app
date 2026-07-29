@@ -1821,6 +1821,46 @@
     "widgetEmpty": "No goal in progress.",
     "seeAll": "See all my goals"
   },
+  "review": {
+    "title": "Weekly review",
+    "period": "{{start}} to {{end}}",
+    "empty": "Nothing to sum up for this week. A 30-minute session is enough to restart.",
+    "decisionTitle": "Your call for the week",
+    "sectionNumbers": "The numbers",
+    "blocks": {
+      "workouts": "Workouts",
+      "tonnage": "Tonnage",
+      "runs": "Runs",
+      "distance": "Distance",
+      "loggedDays": "Logged days",
+      "daysInTarget": "Days on target",
+      "activeDays": "Active days",
+      "records": "Records broken"
+    },
+    "changeUp": "up {{pct}}%",
+    "changeDown": "down {{pct}}%",
+    "changeFlat": "unchanged",
+    "noComparison": "First week: nothing to compare yet.",
+    "decisions": {
+      "goal_behind": "Your goal “{{subject}}” has fallen behind: {{progressPct}}% progress for {{elapsedPct}}% of the time elapsed. Make it your priority this week.",
+      "consistency_drop": "Your consistency slipped: {{activeDays}} active days this week against {{previousActiveDays}} the week before. Aim for three days, not performance.",
+      "muscle_imbalance": "You're neglecting a muscle group: {{subject}}. Give it one session this week — it's this imbalance that eventually causes injury.",
+      "volume_drop": "Your volume dropped {{dropPct}}% ({{workouts}} sessions). One extra session is enough to turn it around.",
+      "nutrition_drift": "Your intake is drifting from target: {{daysInTarget}} days in range out of {{loggedDays}} logged. Pick a single meal to adjust.",
+      "all_good": "Solid week: {{activeDays}} active days, {{workouts}} workouts, {{runs}} runs. Do it again — consistency is what pays."
+    },
+    "a11yDecision": "Call of the week",
+    "notification": {
+      "title": "Your weekly review",
+      "body": "It's ready. One single call to make."
+    },
+    "prefs": {
+      "label": "Weekly review",
+      "hint": "A recap every Monday, with one single call for the week.",
+      "hour": "Review time"
+    },
+    "seeAll": "See my review"
+  },
   "suggestion": {
     "title": "Fill a macro",
     "missing_one": "You're {{count}} g of {{macro}} short",

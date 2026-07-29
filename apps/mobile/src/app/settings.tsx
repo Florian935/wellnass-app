@@ -411,6 +411,34 @@ export default function SettingsScreen() {
             disabled={!notificationPrefs.streakDanger}
           />
         </View>
+        {/* Bilan hebdomadaire (US BILAN-01) — même carte : c'est aussi un rappel programmé. */}
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('review.prefs.label')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('review.prefs.hint')}
+            </Text>
+          </View>
+          <Switch
+            value={notificationPrefs.weeklyReview}
+            onValueChange={(next) => patchNotifications({ weeklyReview: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('review.prefs.label')}
+          />
+        </View>
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>{t('review.prefs.hour')}</Text>
+          </View>
+          <HourStepper
+            value={notificationPrefs.weeklyReviewHour}
+            onChange={(next) => patchNotifications({ weeklyReviewHour: next })}
+            disabled={!notificationPrefs.weeklyReview}
+          />
+        </View>
       </View>
 
       {/* Ne pas déranger (US 2.8) */}
