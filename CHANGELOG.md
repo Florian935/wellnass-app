@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/obj01-objectifs` — OBJ-01 : cadrage + cœur de calcul (US **non livrée**)
+
+> ⚠️ **Increment partiel, assumé et annoncé.** Sont livrés : le cadrage (4 décisions arbitrées par
+> Florian + 2 dérivées) et la **brique de progression pure**, 21 tests. Restent les 2 migrations, le
+> repository, l'écran, le widget et l'i18n. **Roadmap 7.15 reste ⬜** — rien n'est utilisable par un
+> utilisateur, donc la marquer 🟡 serait mentir. Commit précédent : `fcee5ca`.
+
+**Ajouté**
+
+- `docs/specs/functional/us/obj01-objectifs.md` — spec complète, 6 décisions, 9 cas limites,
+  11 critères de recette.
+- `packages/shared/src/goals.ts` + `.test.ts` (**21 tests**) — `computeGoalProgress`,
+  `goalWindowEnd`, `isGoalActive`, `canCreateGoal`, `validateGoalTarget`.
+
+**Technique / Notes**
+
+- **D5, la décision qui structure tout : rien n'est stocké de la progression ni du statut.** Les deux
+  sont des **fonctions pures de la fenêtre `[start_date, deadline]`**. Trois bénéfices : aucun travail
+  de fond à déclencher (pas de cron, personne à réveiller pour clôturer les objectifs échus) ; un
+  **verdict stable**, puisqu'un record battu deux mois plus tard tombe hors fenêtre et ne peut pas
+  réussir rétroactivement un objectif passé ; et **ça marche hors ligne**. Un test vérifie
+  explicitement qu'un verdict passé ne change pas quand on court davantage ensuite.
+- **D1 — deux types, choisis pour être les cas durs** : un **cumul** qui part de zéro (`run_distance`)
+  et un **record** qui part d'une valeur existante (`exercise_1rm`). Valider l'architecture sur ces
+  deux formes de progression, c'est la valider ; un seul type l'aurait mal dimensionnée.
+- **D6 — valeur de départ figée** pour l'objectif de force : « +5 kg au développé » n'a de sens que
+  par rapport au 1RM du jour de création. Même patron que `start_weight_kg` (NUTR-11). Conséquence
+  testée : un 1RM antérieur à la fenêtre **ne compte pas**, sinon l'objectif serait atteint dès sa
+  création.
+- **Trois règles fines que les tests verrouillent** : la progression ne **régresse jamais** sous le
+  départ (une mauvaise séance ne fait pas reculer l'objectif) ; le statut reste **`active` même à
+  100 %** avant l'échéance (atteindre sa cible en avance n'interdit pas de continuer) ; et un exercice
+  supprimé rend la progression **non calculable** plutôt que « 0 % », qui se lirait comme un échec.
+- `validateGoalTarget` **refuse une cible de force déjà atteinte** : un objectif qui ne demande aucun
+  effort n'est pas un objectif, et l'anneau afficherait 100 % immédiatement.
+- **Ce qui reste à faire**, dans l'ordre : 2 migrations (table `personal_goals` + publication, spec §4)
+  → repository → écran liste/création avec anneaux et jalons visuels → widget → i18n. Le modèle est
+  déjà conçu pour accueillir les types différés (volume, poids, pas) **sans migration** grâce au
+  `check` sur `kind`.
+- Qualité : `npm run test` **vert** (56 fichiers Vitest + 31 suites Jest / 150 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur.
+
 ### 29/07/2026 — `feature/streak01-joker` — STREAK-01 : joker de série (7.14 ⬜ → 🟡)
 
 > **4 décisions produit arbitrées par Florian avant tout code** — c'était la demande du backlog, et

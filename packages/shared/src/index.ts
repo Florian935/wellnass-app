@@ -19,6 +19,7 @@ export * from './editorial-usage';
 export * from './measurements';
 export * from './macro-suggestion';
 export * from './streak-joker';
+export * from './goals';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';
