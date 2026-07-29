@@ -143,7 +143,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.4 | Création programme custom | Composer son propre programme de A à Z. | Moyen | 5h | 🟢 | ✅ | `createProgram` + `programs/edit.tsx`. Le custom valide le modèle de données. |
 | 3.5 | Semaine type | Groupes musculaires par jour, base du planning. | Moyen | 3h | 🟢 | ✅ | `sessions` + affectation jour. |
 | 3.6 | Composition de séance | Exercices + séries / reps / charge / repos. | Moyen | 4h | 🟢 | ✅ | `exercise_plans` + `SessionEditor`. |
-| 3.1 | Bibliothèque de programmes | Catalogue pré-conçu (PPL, Full Body, 5×5…). | Moyen | 4h | 🟡 | 🟡 | Écran + filtres OK mais **aucun seed de programmes** (catalogue vide). 🌐 bilingues FR+EN. |
+| 3.1 | Bibliothèque de programmes | Catalogue pré-conçu (PPL, Full Body, 5×5…). | Moyen | 4h | 🟡 | ✅ | **CONTENU-01, 29/07/2026** : 3 programmes publiés, bilingues FR+EN — Full Body Débutant (seed initial), **Push / Pull / Legs** et **Half Body haut/bas** (migration idempotente `20260729075443`). 35 exercices planifiés au total, tous issus des 16 de la bibliothèque. |
 | 3.2 | Filtres bibliothèque | Objectif, niveau, durée, équipement. | Facile | 2h | 🟢 | ✅ | `useProgramLibrary(filters)`. |
 | 3.3 | Dupliquer un programme | Copier pour personnaliser sans toucher l'original. | Facile | 1h | 🟢 | ✅ | `duplicateProgram`. |
 | 3.12 | Un programme actif à la fois | Activer un programme désactive le précédent (historique conservé). | Facile | 1h | 🟢 | ✅ | `activateProgram` (un actif par pilier). |
@@ -233,7 +233,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 5.11 | Récupération active | Allure de réf. + 90 s/km ou plus, 20-30 min. | Facile | 1h | 🟢 | ✅ | `sessionTargetPace('recuperation')`. |
 | 5.18 | Guidage fractionné vocal | Annonce vocale + vibration à chaque changement de bloc. | Moyen | 4h | 🟢 | ⬜ | **Aucune trace** (dépend de blocs + Speech, absents). |
 | 5.4 | Création programme custom | Plan de course semaine par semaine. | Moyen | 4h | 🟢 | ✅ | `running-programs/edit.tsx`. |
-| 5.2 | Bibliothèque programmes de course | "5 km en 8 semaines", "Prépa semi"… | Moyen | 4h | 🟡 | 🟡 | Écran + filtres OK, **contenu seed à vérifier**. 🌐 bilingues FR+EN. |
+| 5.2 | Bibliothèque programmes de course | "5 km en 8 semaines", "Prépa semi"… | Moyen | 4h | 🟡 | ✅ | **Contenu vérifié en base le 29/07/2026** (CONTENU-01) : 3 programmes publiés et bilingues — 10 km/8 sem, Prépa semi-marathon, Reprise en douceur — séances typées avec distances cibles. Le 🟡 précédent supposait le catalogue vide : il ne l'était pas. |
 | 5.3 | Filtres bibliothèque | Objectif distance, niveau, durée. | Facile | 1h | 🟢 | ✅ | Filtres objectif/niveau/durée. |
 | 5.5 | Planning calendrier running | Séances placées automatiquement. | Moyen | 3h | 🟢 | ✅ | `planning/index.tsx`. |
 | 5.6 | Coordination muscu + running | Alerte si deux séances le même jour. | Facile | 2h | 🟢 | ✅ | Badge `multipleSameDay`. Intégration inter-piliers. |
@@ -425,8 +425,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 163 | ~78 % |
-| 🟡 Partiel | 12 | ~6 % |
+| ✅ Livré | 165 | ~79 % |
+| 🟡 Partiel | 10 | ~5 % |
 | ⬜ À faire | 28 | ~13 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -451,9 +451,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 27 | 1 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu. Reste 🟡 3.36 (fenêtre de reprise à réconcilier) et ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 14 | 4 | 3 | 0 | 0 | Reste les **3 push** (3.42, 2.4, 2.7) ; progression auto (3.7) et deload (3.8) partiels — briques livrées, non câblées |
+| V0.3 (21) | 15 | 3 | 3 | 0 | 0 | Reste les **3 push** (3.42, 2.4, 2.7) ; progression auto (3.7) et deload (3.8) partiels — briques livrées, non câblées. **3.1 → ✅** (bibliothèque de programmes muscu seedée, 29/07) |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
-| V0.5 (33) | 25 | 4 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.2 (catalogue vide), 5.9, 5.24, 5.25 |
+| V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — CONTENU-01 : bibliothèques de programmes (3.1, 5.2) 🟡 → ✅**
+L'inventaire du cloud a démenti la spec : la **course n'était pas vide** (3 programmes complets), et
+**2 programmes de test étaient publiés**, donc visibles dans l'app. Migration idempotente : test
+dépubliés + 2 programmes muscu bilingues (PPL, Half Body). Compteurs : **165 / 10 / 28**.
 
 **28/07/2026 — BIEN-01 : check-in de bien-être (1.24) ⬜ → 🟡**
 Code livré : table `daily_wellbeing` (2 migrations), briques pures testées, feuille de check-in en

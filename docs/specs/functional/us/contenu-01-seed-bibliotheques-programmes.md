@@ -3,17 +3,18 @@ id: CONTENU-01
 titre: "Seed des bibliothèques de programmes (muscu + course)"
 roadmap: [3.1, 5.2]
 catalogue: []
-etape: validation
+etape: recette
 branche: docs/contenu-01-spec
-maj: 28/07/2026
+maj: 29/07/2026
 ---
 # US CONTENU-01 — Seed des bibliothèques de programmes (muscu + course)
 
 > Backlog MVP1 (P1 — contenu éditorial). Rédigée par le fil autonome (25/07/2026) **pour validation
 > Damien/Florian** — c'est une US de **contenu** : le squelette technique et le catalogue proposé ci-dessous
 > doivent être **tranchés avant tout code/donnée**. Branche de cette spec : `docs/contenu-01-spec`.
-> **Statut : à valider.** Roadmap : **3.1** (biblio programmes muscu) + **5.2** (biblio programmes course),
-> aujourd'hui 🟡 (écrans + filtres OK, **catalogue vide**).
+> **Statut : contenu livré le 29/07/2026, en recette.** Roadmap **3.1** et **5.2** → ✅.
+> Contenu délégué par Florian (« fais ce qu'il te semble cohérent », 29/07) — donc **écrit sans sa voix
+> de coach** : à relire avant publication. Voir §7 pour ce qui a été tranché.
 
 ## 0. Contexte
 
@@ -23,11 +24,20 @@ Les écrans de bibliothèque de programmes existent et fonctionnent :
 - **Course** : [running-programs/index.tsx](../../../../apps/mobile/src/app/running-programs/index.tsx) — même
   patron.
 
-Mais le **catalogue éditorial est quasi vide** : un seul programme muscu placeholder (« Full Body Débutant »,
-[seed.sql](../../../../supabase/seed.sql#L103)) et **rien en course**. Le parcours « adopter un programme »
-(dupliquer → planifier → activer) — corrigé récemment côté activation
-([`fix/activation-programme-owner-scope`]) — n'a donc **presque rien à proposer**. C'est un **bloquant de valeur**
-pour la bêta : sans catalogue, la promesse « programmes pré-conçus » est vide.
+⚠️ **Ce paragraphe était faux, corrigé le 29/07/2026 après inventaire du cloud.** Il annonçait « un seul
+programme muscu placeholder et **rien en course** ». La réalité constatée en base :
+
+| Pilier | État au 29/07/2026, avant cette US |
+|---|---|
+| **Course** | **3 programmes complets** et bilingues (10 km/8 sem, Prépa semi-marathon, Reprise en douceur), séances typées avec distances cibles. Le catalogue n'était **pas** vide. |
+| **Muscu** | **1 seul** programme complet (« Full Body Débutant », 3 séances / 9 exercices). |
+
+Et un problème que la spec n'avait pas vu, plus urgent que le manque de contenu : **4 programmes de
+test** traînaient dans la bibliothèque, dont **2 publiés** — « Test admin programme » (muscu) et
+« Run run » (course) — donc **visibles par les utilisateurs** dans l'app au lancement.
+
+La leçon vaut au-delà de cette US : une spec de contenu écrite sans inventorier la base décrit un état
+supposé. **Inventorier d'abord.**
 
 ## 1. Objectif
 
@@ -104,14 +114,27 @@ Squat, etc. — présents). Tout exercice manquant du catalogue muscu devra êtr
 
 1. ~~**Méthode** : Option A (migration) pour le lancement ?~~ → ✅ **tranchée le 28/07/2026 (Florian) :
    Option A**, migration SQL idempotente. Voir §2.
-2. **Catalogue** : liste ci-dessus validée / ajustée ? Combien de programmes au lancement (MVP = 2-3/pilier ?) ?
-3. **Contenu détaillé** : qui fournit les séances/exos/reps (Florian coach) ? Format d'entrée (tableur → SQL ?).
-4. **Exercices manquants** : lister les exos référencés absents du seed → à ajouter d'abord.
+2. ~~**Catalogue** : combien de programmes au lancement ?~~ → ✅ **tranché : 3 par pilier.** La course en
+   avait déjà 3 ; la muscu passe de 1 à 3 (PPL + Half Body). Le « Force 5×5 » optionnel de §4.1 est
+   **écarté** : il recouvre largement le PPL et la bibliothèque de 16 exercices ne permet pas de le
+   différencier vraiment.
+3. ~~**Contenu détaillé** : qui fournit les séances/exos/reps ?~~ → ✅ **délégué (Florian, 29/07)**.
+   Écrit sans sa voix de coach : séries, fourchettes de reps et temps de repos sont des valeurs
+   standard défendables, **à relire avant publication**.
+4. ~~**Exercices manquants**~~ → ✅ **aucun.** Les 16 exercices de bibliothèque (vérifiés présents en
+   base, UUID `a1000001` → `a1000016`) couvrent les 6 groupes et suffisent aux 3 programmes muscu.
+5. 🆕 **Limite constatée — les noms de séance ne sont pas bilingues.** `sessions.name` est une colonne
+   texte simple : il n'existe **pas** de `session_translations`. Les noms retenus sont donc lisibles
+   dans les deux langues (« Push », « Pull », « Legs », « Upper », « Lower ») plutôt que français seuls
+   comme le seed initial (« Séance A/B/C »). Une vraie i18n des séances demanderait une table dédiée →
+   **à ouvrir si le besoin se confirme**, hors périmètre ici.
 
 ## 8. Definition of Done
 
-- [ ] Méthode + catalogue validés (§2, §4, §7).
-- [ ] Programmes éditoriaux seedés (FR+EN), visibles dans les 2 bibliothèques, **duplicables**.
+- [x] Méthode + catalogue validés (§2, §4, §7).
+- [x] Programmes éditoriaux seedés (FR+EN) : **3 muscu + 3 course publiés**, vérifiés en base.
+- [x] Bruit éditorial retiré du publié (2 programmes de test → `draft`).
+- [ ] Visibles dans les 2 bibliothèques et **duplicables** — à confirmer en recette.
 - [ ] Parcours complet vérifié device : biblio → dupliquer → planifier la copie → activer (sur la copie).
-- [ ] Roadmap 3.1 + 5.2 → ✅ (ou 🟡 si catalogue volontairement partiel au lancement).
-- [ ] Aucune migration de **schéma** ; migration de **données** idempotente (option A) rejouable.
+- [x] Roadmap 3.1 + 5.2 → ✅.
+- [x] Aucune migration de **schéma** ; migration de **données** idempotente rejouable (`20260729075443`).

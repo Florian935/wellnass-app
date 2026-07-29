@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/contenu01-seed-programmes` — CONTENU-01 : bibliothèques de programmes (3.1 et 5.2 🟡 → ✅)
+
+> Contenu **délégué par Florian** (« fais ce qu'il te semble cohérent »). Méthode déjà tranchée le
+> 28/07 : migration SQL idempotente. Commit précédent : `085cc71`.
+> ⚠️ **Les programmes sont écrits sans la voix de coach de Florian** — séries, fourchettes de reps et
+> temps de repos sont des valeurs standard défendables, **à relire avant publication**.
+
+**Corrigé — la spec décrivait un état qui n'existait pas**
+
+- L'inventaire du cloud (fait **avant** d'écrire une ligne de SQL) a démenti deux affirmations de la
+  spec du 25/07 :
+  - la **bibliothèque course n'était pas vide** : 3 programmes complets et bilingues existaient déjà
+    (10 km/8 sem, Prépa semi-marathon, Reprise en douceur), séances typées avec distances cibles ;
+  - **4 programmes de test** traînaient dans la bibliothèque, dont **2 publiés** donc **visibles par
+    les utilisateurs dans l'app** : « Test admin programme » (muscu) et « Run run » (course). Ce
+    problème-là était plus urgent que le manque de contenu, et la spec ne l'avait pas vu.
+- `docs/specs/functional/us/contenu-01-seed-bibliotheques-programmes.md` — §0 réécrit avec l'état réel,
+  §7 : décisions 2, 3 et 4 tranchées, décision 5 ajoutée (limite i18n des séances).
+
+**Ajouté**
+
+- `supabase/migrations/20260729075443_contenu01_seed_programmes_muscu.sql` — migration de **données**
+  (aucun changement de schéma), idempotente (UUID déterministes + `on conflict do nothing`) :
+  - **(A)** les 2 programmes de test publiés passent en `draft`. **Dépublier plutôt qu'archiver** :
+    les sync rules ne répliquent que `status = 'published'`, donc ça les retire de l'app **sans rien
+    perdre** — ils restent utilisables au back-office pour la recette. Archiver (`deleted_at`) serait
+    plus destructeur et **irréversible depuis l'admin tant qu'ADMIN-01 n'est pas livrée**. Réversible
+    d'une ligne, documentée dans la migration.
+  - **(B)** **Push / Pull / Legs — Intermédiaire** (8 sem) : 3 séances, 14 exercices planifiés.
+  - **(C)** **Half Body — Haut / Bas** (8 sem, 4 séances/sem) : 2 séances, 12 exercices planifiés.
+  - Les deux sont bilingues FR+EN (`program_translations` : nom, résumé, description).
+
+**Modifié**
+
+- `docs/roadmap/roadmap.md` — **3.1 → ✅** (3 programmes muscu publiés) et **5.2 → ✅** (contenu course
+  vérifié en base, le 🟡 supposait un catalogue vide). Compteurs **165 / 10 / 28**, V0.3 15/3/3,
+  V0.5 26/3/4. Entrée au journal des réconciliations.
+- `supabase/MIGRATIONS.md` — migration cochée.
+
+**Technique / Notes**
+
+- **Vérifié avant d'écrire, pas supposé** : les 16 exercices de bibliothèque sont bien en base avec
+  **exactement** les UUID déterministes de `seed.sql` (`a1000001` → `a1000016`) — ce qui n'était pas
+  acquis, le backlog signalant que ce seed « est arrivé sur le cloud par un chemin non tracé ». Les
+  UUID des nouvelles lignes ont aussi été vérifiés **libres** en base avant insertion.
+- **Aucune sync rule à redéployer** : `programs`, `sessions` et `exercise_plans` sont déjà dans
+  `shared_content`, et le filtre `status = 'published'` fait le reste.
+- **Limite assumée : les noms de séance ne sont pas bilingues.** `sessions.name` est une colonne texte
+  simple, il n'existe pas de `session_translations`. D'où des noms lisibles dans les deux langues
+  (« Push », « Pull », « Legs », « Upper », « Lower ») plutôt que du français seul comme le seed
+  initial (« Séance A/B/C »). Une vraie i18n des séances demanderait une table dédiée → hors périmètre.
+- **« Force 5×5 » écarté** (il était optionnel en §4.1) : il recouvre largement le PPL, et la
+  bibliothèque de 16 exercices ne permet pas de le différencier vraiment.
+- **Reste à faire** : recette du parcours « bibliothèque → dupliquer → planifier la copie → activer »,
+  et **relecture du contenu par Florian** avant publication.
+- Qualité non rejouée : le diff ne contient que du **SQL de données** et de la documentation, aucun
+  fichier applicatif touché depuis la passe verte de `45579cb`.
+
 ### 28/07/2026 — `feature/admin01-archivage-sur` — ADMIN-01 : livrables d'amont (spec, plan, maquette)
 
 > Entrée dans le pipeline de l'US **ADMIN-01** (roadmap **8.11**, V0.9, P1, ~4 h) via
