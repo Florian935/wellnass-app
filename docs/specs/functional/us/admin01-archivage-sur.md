@@ -3,15 +3,15 @@ id: ADMIN-01
 titre: "Archivage sûr du contenu éditorial (back-office)"
 roadmap: [8.11]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/admin01-archivage-sur
-maj: 28/07/2026
+maj: 29/07/2026
 ---
 
 # US ADMIN-01 — Archivage sûr du contenu éditorial
 
-> **Spec fonctionnelle — à valider par Florian ou Damien.** Aucune ligne de code applicatif avant
-> validation. Roadmap **8.11** (V0.9, P1, ~4 h), aujourd'hui ⬜.
+> **Spec fonctionnelle — ✅ validée par Florian le 29/07/2026**, avec arbitrage des 7 décisions §1
+> conformément aux recommandations. Implémentation en cours. Roadmap **8.11** (V0.9, P1, ~4 h).
 >
 > ⚠️ **Ce n'est pas du confort, c'est un risque d'intégrité de données**, et il faut le corriger
 > **avant** d'avoir de vrais utilisateurs. Après, le mal est fait et irréparable : on ne peut pas
@@ -56,12 +56,17 @@ avec pour repli ultime **la chaîne vide**
 | Journal d'audit | `logAudit({ action, targetTable, targetId, targetLabel })` | Archivage **et** restauration doivent y laisser une trace |
 | Filtres de liste | `statusFilter` / `groupFilter` sur [ExercisesScreen](../../../../apps/admin/src/screens/ExercisesScreen.tsx) | Le filtre « archivés » suit le même patron |
 
-## 1. Décisions de cadrage à trancher
+## 1. Décisions de cadrage — ✅ TRANCHÉES le 29/07/2026
 
-Ma recommandation est indiquée pour chacune. **D2 est la plus importante** : c'est elle qui décide si
-on corrige vraiment le problème ou si on se contente d'un garde-fou.
+> ✅ **Validation Florian, 29/07/2026 : les 3 livrables sont validés et les 7 décisions arbitrées
+> conformément aux recommandations ci-dessous.** À lire comme des règles, plus comme des propositions.
+>
+> ⚠️ **Constaté à l'implémentation** : la RLS ne permet **pas** à un admin de compter les données des
+> autres utilisateurs (`workout_sets_select` est `user_id = auth.uid()`, sans bypass). Le décompte de
+> D1 impose donc une **migration** : une fonction `security definer` réservée aux admins. C'était la
+> question que le plan demandait de lever en premier — réponse : oui, migration nécessaire.
 
-| # | Question | Recommandation | Pourquoi |
+| # | Question | Décision retenue | Pourquoi |
 |---|---|---|---|
 | **D1** | Interdire l'archivage d'un contenu référencé, ou l'autoriser en avertissant ? | **Autoriser, mais jamais en aveugle** : compter les usages et les afficher dans la confirmation (« 128 séries et 3 programmes utilisent cet exercice ») | Interdire bloquerait le retrait d'un contenu obsolète dès qu'**un** utilisateur l'a touché — inapplicable en pratique. La vraie faute n'est pas d'archiver, c'est d'archiver **sans savoir** |
 | **D2** | Comment garder l'historique lisible après archivage ? | **Ne plus retirer le contenu éditorial archivé des appareils** : la sync rule `shared_content` cesse de filtrer `deleted_at is null` pour les tables éditoriales, et **c'est l'app qui masque** les contenus archivés dans les listes de sélection, tout en continuant à résoudre leur nom dans l'historique | C'est le seul choix qui répare la cause. L'alternative — dénormaliser le nom dans `workout_sets` — demande une migration, un remplissage rétroactif et **fige un nom qui ne suivra plus les corrections d'orthographe ni les traductions**. Voir §4, c'est le cœur de l'US |
@@ -127,6 +132,33 @@ compte à privilège admin (RLS), pas par la session d'un utilisateur. À instru
   archivé **n'apparaît pas**. Un contenu retiré du catalogue ne doit plus être choisissable.
 - **Programme déjà adopté** par un utilisateur : sa copie lui appartient (`owner_id = user`) et n'est
   pas concernée par l'archivage de l'éditorial.
+
+## 4bis. Deux corrections au diagnostic, constatées à l'implémentation (29/07/2026)
+
+**1. Le journal alimentaire n'est PAS affecté.** `food_entries` stocke le nom de l'aliment en
+**instantané** ([journal-repository.ts:49](../../../../apps/mobile/src/data/repositories/journal-repository.ts#L49)) :
+il survit donc déjà à l'archivage. La §0 généralisait à tort « aucun nom dénormalisé » — c'est vrai
+de `workout_sets`, faux de `food_entries`. **Seuls l'historique muscu et les records** perdaient le nom.
+
+**2. Le risque que le plan redoutait n'existait pas, et le vrai correctif est ailleurs.** Le plan
+craignait qu'après le changement de sync rule, du contenu archivé apparaisse dans les listes de
+sélection. Vérification faite requête par requête : **toutes** les lectures de sélection filtrent
+**déjà** `deleted_at IS NULL` sur le parent éditorial (`SELECT_EXERCISES`, `SELECT_FOODS`,
+`SELECT_PROGRAM_BASE`…). Rien à ajouter de ce côté.
+
+En revanche les **jointures de traduction** filtraient elles aussi `deleted_at` — et comme archiver un
+exercice soft-delete ses traductions, le nom restait introuvable **même en répliquant** la ligne
+archivée. Le correctif réel tient donc en trois points ciblés :
+
+| # | Changement | Pourquoi |
+|---|---|---|
+| a | `shared_content` : plus de filtre `deleted_at` sur `exercises` et `exercise_translations` | pour que la ligne archivée **existe** encore en local |
+| b | `SELECT_SETS_FOR_WORKOUT` : les jointures de traduction ne filtrent plus `deleted_at` | pour que le nom soit **résolu** dans l'historique |
+| c | Résolution de nom des records : ni `e.deleted_at` ni les traductions ne sont filtrés | même raison, sur la surface records |
+
+Les autres tables de `shared_content` (`programs`, `sessions`, `exercise_plans`, `foods`,
+`food_translations`, `exercise_variants`) **gardent** leur filtre : aucune surface d'historique n'en
+dépend pour résoudre un libellé, donc répliquer leurs lignes mortes n'apporterait rien.
 
 ## 4. Le point technique qui décide de tout (D2)
 

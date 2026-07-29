@@ -73,6 +73,35 @@ export const fr = {
     },
   },
 
+  /** US ADMIN-01 — archivage sûr : portée de liste, décomptes d'usage, restauration. */
+  archive: {
+    scopeActive: 'Actifs',
+    scopeArchived: 'Archivés',
+    scopeAll: 'Tous',
+    archivedOn: 'Archivé le',
+    restore: 'Restaurer',
+    restoreConfirm: 'Restaurer ce contenu ? Il redeviendra visible dans la liste active, avec le statut qu’il avait avant archivage.',
+    restoreError: 'La restauration a échoué. Réessaie.',
+    checking: 'Vérification des usages…',
+    // Décomptes affichés avant archivage. Le cas « aucun usage » a son propre message : une liste
+    // vide ne dit pas la même chose que « ce contenu n’est référencé nulle part ».
+    usageNone: 'Ce contenu n’est référencé nulle part.',
+    usageIntro: 'Ce contenu est utilisé :',
+    usageUnavailable: '⚠️ Impossible de vérifier les usages (erreur réseau ou droits insuffisants). Archiver maintenant se ferait à l’aveugle.',
+    usageConfirm: 'Archiver quand même ?',
+    usageLabels: {
+      workout_sets: 'séries réalisées',
+      exercise_plans: 'exercices planifiés dans des programmes',
+      personal_records: 'records personnels',
+      exercise_variants: 'liens de variante',
+      sessions: 'séances du programme',
+      planned_sessions: 'séances planifiées par des utilisateurs',
+      food_entries: 'entrées de journal alimentaire',
+      recipe_ingredients: 'ingrédients de recette',
+      meal_template_items: 'lignes de modèle de repas',
+    } as Record<string, string>,
+  },
+
   foods: {
     navTitle: 'Aliments',
     importTitle: 'Import d’aliments (CSV)',
@@ -91,6 +120,9 @@ export const fr = {
     reportTitle: 'Import terminé',
     createdSuffix: 'créé(s)',
     updatedSuffix: 'mis à jour',
+    // US ADMIN-01 (D7) : un import qui ressuscite un aliment archivé doit le DIRE — sinon il
+    // ressemble à un simple « mis à jour » alors qu'il vient de le remettre en circulation.
+    reactivatedSuffix: 'aliments archivés réactivés',
     importError: 'L’import a échoué. Réessaie (l’opération est idempotente).',
     reset: 'Nouvel import',
     noValid: 'Aucune ligne valide à importer.',
@@ -434,16 +466,19 @@ export const fr = {
       'exercise.create': 'Création d’exercice',
       'exercise.update': 'Modification d’exercice',
       'exercise.archive': 'Archivage d’exercice',
+      'exercise.restore': 'Restauration d’exercice',
       'exercise.publish': 'Publication d’exercice',
       'exercise_variant.link': 'Liaison de variante',
       'exercise_variant.unlink': 'Déliaison de variante',
       'program.create': 'Création de programme',
       'program.update': 'Modification de programme',
       'program.archive': 'Archivage de programme',
+      'program.restore': 'Restauration de programme',
       'program.publish': 'Publication de programme',
       'food.create': 'Création d’aliment',
       'food.update': 'Modification d’aliment',
       'food.archive': 'Archivage d’aliment',
+      'food.restore': 'Restauration d’aliment',
       'food.import': 'Import d’aliments',
       'user.ban': 'Bannissement d’utilisateur',
       'user.unban': 'Débannissement d’utilisateur',

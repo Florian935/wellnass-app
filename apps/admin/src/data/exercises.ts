@@ -30,6 +30,27 @@ export type { MuscleGroup };
 export { EQUIPMENTS };
 export type { Equipment };
 
+
+/**
+ * Portée de lecture d'une liste éditoriale (US ADMIN-01).
+ *
+ * `'active'` par défaut partout : l'usage courant de l'admin ne change pas. `'archived'` est ce qui
+ * rendait l'archivage réversible — avant cette US, une ligne archivée disparaissait de l'admin
+ * lui-même et personne ne pouvait revenir en arrière.
+ */
+export type EditorialScope = 'active' | 'archived' | 'all';
+
+/** Applique la portée à une requête (helper partagé par les 3 listes éditoriales). */
+function applyScope<T>(query: T, scope: EditorialScope): T {
+  const q = query as unknown as {
+    is: (c: string, v: null) => unknown;
+    not: (c: string, op: string, v: null) => unknown;
+  };
+  if (scope === 'active') return q.is('deleted_at', null) as T;
+  if (scope === 'archived') return q.not('deleted_at', 'is', null) as T;
+  return query; // 'all'
+}
+
 /** Une ligne exercice éditorial enrichie de ses noms FR/EN (pour la liste). */
 export type AdminExerciseRow = {
   id: string;
@@ -39,6 +60,8 @@ export type AdminExerciseRow = {
   createdAt: string;
   nameFr: string | null;
   nameEn: string | null;
+  /** Non nul si la ligne est archivée (US ADMIN-01) — l'UI affiche « Archivé le … ». */
+  deletedAt: string | null;
 };
 
 /** Détail d'un exercice (formulaire d'édition) : ligne + 2 traductions. */
@@ -78,16 +101,19 @@ type TranslationRow = {
  * traductions FR/EN jointes, triés du plus récent au plus ancien. L'admin les
  * voit tous (brouillons compris) via la RLS `is_admin()`.
  */
-export async function listEditorialExercises(): Promise<{
+export async function listEditorialExercises(scope: EditorialScope = 'active'): Promise<{
   rows: AdminExerciseRow[];
   error: unknown;
 }> {
-  const { data, error } = await supabase
-    .from('exercises')
-    .select('id, muscle_primary, equipment, status, created_at, exercise_translations(lang, name)')
-    .is('owner_id', null)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
+  const { data, error } = await applyScope(
+    supabase
+      .from('exercises')
+      .select(
+        'id, muscle_primary, equipment, status, created_at, deleted_at, exercise_translations(lang, name)',
+      )
+      .is('owner_id', null),
+    scope,
+  ).order('created_at', { ascending: false });
 
   if (error) {
     return { rows: [], error };
@@ -105,6 +131,7 @@ export async function listEditorialExercises(): Promise<{
       createdAt: ex.created_at,
       nameFr: fr?.name ?? null,
       nameEn: en?.name ?? null,
+      deletedAt: ex.deleted_at ?? null,
     };
   });
 
@@ -287,6 +314,48 @@ export async function archiveExercise(
 
   await logAudit({
     action: 'exercise.archive',
+    targetTable: 'exercises',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
+}
+
+/**
+ * Restaure un exercice éditorial archivé (`deleted_at → null`), lui et ses traductions.
+ *
+ * **Miroir de `archiveExercise`.** Deux points volontaires :
+ *  - `status` n'est **jamais** touché : archivé (`deleted_at`) et publié (`status`) sont deux notions
+ *    distinctes, et les mélanger republierait un brouillon par accident ;
+ *  - `.not('deleted_at', 'is', null)` → idempotence : un rejeu ne réécrit pas des lignes déjà vivantes.
+ */
+export async function restoreExercise(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
+  const { error: exError } = await supabase
+    .from('exercises')
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (exError) {
+    return { error: exError };
+  }
+
+  const { error: trError } = await supabase
+    .from('exercise_translations')
+    .update({ deleted_at: null })
+    .eq('exercise_id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (trError) {
+    return { error: trError };
+  }
+
+  await logAudit({
+    action: 'exercise.restore',
     targetTable: 'exercises',
     targetId: id,
     targetLabel: opts?.label ?? null,

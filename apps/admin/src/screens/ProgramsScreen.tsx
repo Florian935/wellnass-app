@@ -5,11 +5,15 @@ import {
   PROGRAM_STATUSES,
   archiveProgram,
   listEditorialPrograms,
+  restoreProgram,
   setStatus,
   type AdminProgramRow,
   type PillarBuilder,
   type ProgramStatus,
 } from '../data/programs';
+import type { EditorialScope } from '../data/exercises';
+import { fetchUsageSummary } from '../data/usage-counts';
+import { archiveConfirmMessage } from '../lib/archive-confirm';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -44,14 +48,16 @@ export function ProgramsScreen() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const [busyId, setBusyId] = useState<string | null>(null);
+  // US ADMIN-01 : 'active' par défaut → l'usage courant ne change pas.
+  const [scope, setScope] = useState<EditorialScope>('active');
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const { rows: fetched, error: err } = await listEditorialPrograms();
+    const { rows: fetched, error: err } = await listEditorialPrograms(scope);
     setRows(fetched);
     setError(Boolean(err));
     setLoading(false);
-  }, []);
+  }, [scope]);
 
   useEffect(() => {
     void reload();
@@ -93,9 +99,27 @@ export function ProgramsScreen() {
   }
 
   async function handleArchive(row: AdminProgramRow) {
-    if (!window.confirm(fr.programs.archiveConfirm)) return;
+    // Décompte AVANT confirmation (US ADMIN-01) : on n'archive plus en aveugle.
+    setBusyId(row.id);
+    const usage = await fetchUsageSummary('program', row.id);
+    setBusyId(null);
+
+    if (!window.confirm(archiveConfirmMessage(fr.programs.archiveConfirm, usage))) return;
+
     setBusyId(row.id);
     const { error: err } = await archiveProgram(row.id, { label: row.nameFr ?? undefined });
+    setBusyId(null);
+    if (err) {
+      setError(true);
+      return;
+    }
+    await reload();
+  }
+
+  async function handleRestore(row: AdminProgramRow) {
+    if (!window.confirm(fr.archive.restoreConfirm)) return;
+    setBusyId(row.id);
+    const { error: err } = await restoreProgram(row.id, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);
@@ -146,6 +170,16 @@ export function ProgramsScreen() {
               </option>
             ))}
           </select>
+          <select
+            value={scope}
+            onChange={(e) => setScope(e.target.value as EditorialScope)}
+            style={styles.input}
+            aria-label={fr.archive.scopeArchived}
+          >
+            <option value="active">{fr.archive.scopeActive}</option>
+            <option value="archived">{fr.archive.scopeArchived}</option>
+            <option value="all">{fr.archive.scopeAll}</option>
+          </select>
         </div>
 
         {showCreated && (
@@ -187,8 +221,15 @@ export function ProgramsScreen() {
               </thead>
               <tbody>
                 {filtered.map((r) => (
-                  <tr key={r.id}>
-                    <td style={styles.td}>{r.nameFr ?? fr.programs.noName}</td>
+                  <tr key={r.id} style={r.deletedAt ? styles.archivedRow : undefined}>
+                    <td style={styles.td}>
+                      {r.nameFr ?? fr.programs.noName}
+                      {r.deletedAt && (
+                        <div style={styles.archivedNote}>
+                          {fr.archive.archivedOn} {formatDate(r.deletedAt)}
+                        </div>
+                      )}
+                    </td>
                     <td style={styles.td}>{pillarLabel(r.pillar)}</td>
                     <td style={styles.td}>{levelLabel(r.level)}</td>
                     <td style={styles.td}>
@@ -205,29 +246,42 @@ export function ProgramsScreen() {
                     </td>
                     <td style={styles.td}>{formatDate(r.createdAt)}</td>
                     <td style={{ ...styles.td, ...styles.actionsCell }}>
-                      <button
-                        type="button"
-                        style={styles.action}
-                        onClick={() => navigate(`/programs/${r.id}`)}
-                      >
-                        {fr.programs.edit}
-                      </button>
-                      <button
-                        type="button"
-                        style={styles.action}
-                        disabled={busyId === r.id}
-                        onClick={() => handleToggleStatus(r)}
-                      >
-                        {r.status === 'published' ? fr.programs.unpublish : fr.programs.publish}
-                      </button>
-                      <button
-                        type="button"
-                        style={styles.danger}
-                        disabled={busyId === r.id}
-                        onClick={() => handleArchive(r)}
-                      >
-                        {fr.programs.archive}
-                      </button>
+                      {r.deletedAt ? (
+                        <button
+                          type="button"
+                          style={styles.action}
+                          disabled={busyId === r.id}
+                          onClick={() => handleRestore(r)}
+                        >
+                          {fr.archive.restore}
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            style={styles.action}
+                            onClick={() => navigate(`/programs/${r.id}`)}
+                          >
+                            {fr.programs.edit}
+                          </button>
+                          <button
+                            type="button"
+                            style={styles.action}
+                            disabled={busyId === r.id}
+                            onClick={() => handleToggleStatus(r)}
+                          >
+                            {r.status === 'published' ? fr.programs.unpublish : fr.programs.publish}
+                          </button>
+                          <button
+                            type="button"
+                            style={styles.danger}
+                            disabled={busyId === r.id}
+                            onClick={() => handleArchive(r)}
+                          >
+                            {fr.programs.archive}
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -266,6 +320,8 @@ function formatDate(iso: string): string {
 const { colors, radius, font } = theme;
 
 const styles: Record<string, React.CSSProperties> = {
+  archivedRow: { opacity: 0.72, background: '#faf4ea' },
+  archivedNote: { fontSize: 11.5, color: theme.colors.muted, marginTop: 2 },
   wrap: { display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 960 },
   panel: {
     background: colors.panel,

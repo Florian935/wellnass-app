@@ -65,8 +65,14 @@ bucket_definitions:
       # exercises : filtre status='published' (US 8.2) — les brouillons éditoriaux ne descendent jamais
       # au mobile (même pattern que `programs`). exercise_translations n'a PAS besoin de filtre status :
       # sans le parent (brouillon non synchronisé), ses traductions ne sont de toute façon pas exploitables.
-      - select * from exercises             where owner_id is null and status = 'published' and deleted_at is null
-      - select * from exercise_translations where owner_id is null and deleted_at is null
+      # ⚠️ US ADMIN-01 — PAS de filtre `deleted_at` sur ces deux tables, et c'est volontaire.
+      # `workout_sets` ne porte que `exercise_id` : si un exercice archivé quitte la base locale,
+      # l'historique des utilisateurs affiche un nom VIDE (spec ADMIN-01 §0). On réplique donc les
+      # lignes archivées pour que le nom reste résoluble, et c'est **l'app** qui masque l'archivé
+      # dans les listes de sélection (elle filtre déjà `e.deleted_at IS NULL` partout où il faut).
+      # `status = 'published'` reste : un brouillon éditorial ne descend jamais au mobile.
+      - select * from exercises             where owner_id is null and status = 'published'
+      - select * from exercise_translations where owner_id is null
       - select * from exercise_variants     where owner_id is null and deleted_at is null
       - select * from programs              where owner_id is null and status = 'published' and deleted_at is null
       - select * from program_translations  where owner_id is null and deleted_at is null

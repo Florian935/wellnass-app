@@ -9,6 +9,7 @@ import {
   parseMicronutrients,
 } from '@wellness/shared';
 import { logAudit } from './audit';
+import type { EditorialScope } from './exercises';
 
 /**
  * Couche data de l'import d'aliments éditoriaux (US 8.6). Requêtes Supabase via supabase-js
@@ -21,7 +22,18 @@ type FoodInsert = Database['public']['Tables']['foods']['Insert'];
 type FoodUpdate = Database['public']['Tables']['foods']['Update'];
 type FoodTranslationInsert = Database['public']['Tables']['food_translations']['Insert'];
 
-export type ImportResult = { created: number; updated: number };
+export type ImportResult = {
+  created: number;
+  updated: number;
+  /**
+   * US ADMIN-01 (décision D7) — aliments **archivés** que l'import a remis en service.
+   *
+   * Sans ce compteur, le cas passait en silence : `import_key` est **unique**, donc l'upsert mettait
+   * à jour la ligne archivée sans remettre `deleted_at` à null. L'aliment restait invisible partout
+   * et le rapport d'import annonçait un succès — l'admin croyait avoir réimporté, il n'en était rien.
+   */
+  reactivated: number;
+};
 
 /** Une ligne aliment éditorial pour la liste d'administration (US 8.5). */
 export type AdminFoodRow = {
@@ -32,6 +44,8 @@ export type AdminFoodRow = {
   createdAt: string;
   nameFr: string | null;
   nameEn: string | null;
+  /** Non nul si l'aliment est archivé (US ADMIN-01). */
+  deletedAt: string | null;
 };
 
 /** Détail d'un aliment éditorial pour le formulaire d'édition (ligne + noms FR/EN). */
@@ -71,16 +85,24 @@ function pickNames(translations: FoodTranslation[] | null): {
  * Liste des aliments éditoriaux (`owner_id IS NULL`, non archivés) + noms FR/EN,
  * triés du plus récent au plus ancien. La RLS `select` les rend lisibles par tous.
  */
-export async function listEditorialFoods(): Promise<{
+export async function listEditorialFoods(
+  scope: EditorialScope = 'active',
+): Promise<{
   rows: AdminFoodRow[];
   error: unknown;
 }> {
-  const { data, error } = await supabase
+  const base = supabase
     .from('foods')
-    .select('id, category, kcal_per_100g, import_key, created_at, food_translations(lang, name)')
-    .is('owner_id', null)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
+    .select(
+      'id, category, kcal_per_100g, import_key, created_at, deleted_at, food_translations(lang, name)',
+    )
+    .is('owner_id', null);
+  const { data, error } = await (scope === 'active'
+    ? base.is('deleted_at', null)
+    : scope === 'archived'
+      ? base.not('deleted_at', 'is', null)
+      : base
+  ).order('created_at', { ascending: false });
 
   if (error) return { rows: [], error };
 
@@ -94,6 +116,7 @@ export async function listEditorialFoods(): Promise<{
       createdAt: f.created_at,
       nameFr,
       nameEn,
+      deletedAt: f.deleted_at ?? null,
     };
   });
   return { rows, error: null };
@@ -242,6 +265,40 @@ export async function archiveFood(
   return { error: null };
 }
 
+/**
+ * Restaure un aliment éditorial archivé (`deleted_at → null`), lui et ses traductions.
+ * Miroir de `archiveFood` ; `status` non concerné (les aliments n'en ont pas). Idempotent.
+ */
+export async function restoreFood(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
+  const { error: fErr } = await supabase
+    .from('foods')
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (fErr) return { error: fErr };
+
+  const { error: tErr } = await supabase
+    .from('food_translations')
+    .update({ deleted_at: null })
+    .eq('food_id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (tErr) return { error: tErr };
+
+  await logAudit({
+    action: 'food.restore',
+    targetTable: 'foods',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
+}
+
 /** Ordre des colonnes du CSV (= contrat, cf. spec §3). */
 const CSV_COLUMNS = [
   'import_key',
@@ -288,24 +345,33 @@ export async function importFoods(records: FoodImportRecord[]): Promise<ImportRe
       targetId: null,
       details: { count: 0, created: 0, updated: 0 },
     });
-    return { created: 0, updated: 0 };
+    return { created: 0, updated: 0, reactivated: 0 };
   }
   const keys = records.map((r) => r.importKey);
 
   // Quelles clés existent déjà (éditorial) → distinguer créés / mis à jour dans le rapport.
+  // `deleted_at` est lu ici pour distinguer trois cas et non deux : créé / mis à jour / **réactivé**
+  // (US ADMIN-01, D7). Sans lui, un aliment archivé était rapporté comme « mis à jour » alors qu'il
+  // restait invisible.
   const { data: existing, error: exErr } = await supabase
     .from('foods')
-    .select('import_key')
+    .select('import_key, deleted_at')
     .is('owner_id', null)
     .in('import_key', keys);
   if (exErr) throw exErr;
   const known = new Set((existing ?? []).map((r) => r.import_key));
+  const archived = new Set(
+    (existing ?? []).filter((r) => r.deleted_at != null).map((r) => r.import_key),
+  );
 
   const foodRows: FoodInsert[] = records.map((r) => ({
     id: crypto.randomUUID(),
     owner_id: null,
     source: 'library',
     import_key: r.importKey,
+    // Un aliment importé est vivant par définition : cette colonne **ressuscite** une ligne
+    // archivée au lieu de la mettre à jour dans l'ombre (US ADMIN-01, D7).
+    deleted_at: null,
     category: r.category,
     kcal_per_100g: r.kcalPer100g,
     protein_per_100g: r.proteinPer100g,
@@ -343,8 +409,10 @@ export async function importFoods(records: FoodImportRecord[]): Promise<ImportRe
 
   let created = 0;
   let updated = 0;
+  let reactivated = 0;
   for (const k of new Set(keys)) {
-    if (known.has(k)) updated += 1;
+    if (archived.has(k)) reactivated += 1;
+    else if (known.has(k)) updated += 1;
     else created += 1;
   }
 
@@ -352,8 +420,8 @@ export async function importFoods(records: FoodImportRecord[]): Promise<ImportRe
     action: 'food.import',
     targetTable: 'foods',
     targetId: null,
-    details: { count: created + updated, created, updated },
+    details: { count: created + updated + reactivated, created, updated, reactivated },
   });
 
-  return { created, updated };
+  return { created, updated, reactivated };
 }

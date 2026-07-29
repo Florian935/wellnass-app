@@ -146,6 +146,12 @@ export function FoodImportScreen() {
           <p>
             <strong>{report.created}</strong> {fr.foods.createdSuffix} ·{' '}
             <strong>{report.updated}</strong> {fr.foods.updatedSuffix}
+            {report.reactivated > 0 && (
+              <>
+                {' · '}
+                <strong>{report.reactivated}</strong> {fr.foods.reactivatedSuffix}
+              </>
+            )}
           </p>
           <button type="button" style={styles.linkBtn} onClick={reset}>
             {fr.foods.reset}

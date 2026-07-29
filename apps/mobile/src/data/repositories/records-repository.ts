@@ -421,11 +421,13 @@ export async function evaluateWorkoutRecords(
   // Résolution du nom d'exercice (langue courante → fr) pour les records battus.
   for (const exerciseId of byExercise.keys()) {
     const row = await powerSync.getOptional<{ name: string | null }>(
+      // US ADMIN-01 : ni `e.deleted_at` ni les traductions ne sont filtrés — un record est un fait
+      // passé, son libellé doit survivre à l'archivage de l'exercice au catalogue.
       `SELECT COALESCE(tl.name, tfr.name) AS name
        FROM exercises e
-       LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?      AND tl.deleted_at IS NULL
-       LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-       WHERE e.id = ? AND e.deleted_at IS NULL
+       LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?
+       LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr'
+       WHERE e.id = ?
        LIMIT 1`,
       [lang, exerciseId],
     );

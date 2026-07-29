@@ -148,14 +148,21 @@ const SELECT_ACTIVE_WORKOUT = `
  * Premier `?` = langue courante ; second `?` = id de la séance.
  * Tri par `order_index` : garantit l'ordre des séries et l'ordre de première
  * apparition des exercices lors du regroupement en JS.
+ *
+ * ⚠️ **US ADMIN-01 — les jointures de traduction ne filtrent PAS `deleted_at`, volontairement.**
+ * Archiver un exercice côté back-office soft-delete aussi ses traductions ; les filtrer ici ferait
+ * afficher une **ligne d'historique sans nom** (le repli de `groupSetsByExercise` est la chaîne
+ * vide). L'utilisateur perdrait le nom du mouvement qu'il a réellement soulevé. Une séance passée
+ * est un fait : son libellé doit survivre au retrait du catalogue.
+ * Les **listes de sélection**, elles, continuent de filtrer (cf. `SELECT_EXERCISES`).
  */
 const SELECT_SETS_FOR_WORKOUT = `
   SELECT s.id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
          s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM workout_sets s
-  LEFT JOIN exercise_translations tl  ON tl.exercise_id = s.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
-  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = s.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = s.exercise_id AND tl.lang = ?
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = s.exercise_id AND tfr.lang = 'fr'
   WHERE s.workout_id = ? AND s.deleted_at IS NULL
   ORDER BY s.order_index
 `;

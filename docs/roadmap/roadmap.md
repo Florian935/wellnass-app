@@ -338,7 +338,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 7.16 | Bilan hebdomadaire automatique | Récap poussé en notification : ce qui progresse, ce qui bloque, **une seule décision** pour la semaine à venir. | Moyen | 5h | 🟢 | ⬜ | **BILAN-01**. Format « une seule décision » plutôt que vingt graphiques. **Aucune narration sans les chiffres affichés à côté** — texte assemblé à partir de clés i18n et d'agrégats calculés localement, pas d'IA. Réutilise l'infra notifications (streak, DND). |
 | 7.17 | Carte de séance / course partageable | Export image (trace GPS + stats, ou résumé muscu) pour les stories Instagram / WhatsApp. | Moyen | 4h | 🟢 | ⬜ | **PARTAGE-01**. **Partage sortant statique, zéro backend** — le feed social reste V2. Levier d'acquisition disponible dès le jour du lancement. |
 | 7.18 | Réagencement du dashboard découvrable | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Facile | 2h | 🟢 | ⬜ | **UX-04**. Remonté en recette (16/07/2026) : bouton en bas à gauche trop petit et peu explicite, drag qui demande trop de précision. Corrige la découvrabilité de 7.13 (widgets multi-formes). |
-| 8.11 | Archivage sûr du contenu éditorial | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | Moyen | 4h | 🟢 | ⬜ | **ADMIN-01**. ⚠️ **Risque d'intégrité, pas du confort** : l'archivage (8.2) est **à sens unique et sans garde-fou** ; archiver un exercice déjà référencé par des `workout_sets` / `exercise_plans` le retire des bases locales (règle de sync `deleted_at IS NULL`) → **le nom disparaît de l'historique des utilisateurs**. À corriger **avant** d'avoir de vrais utilisateurs. |
+| 8.11 | Archivage sûr du contenu éditorial | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | Moyen | 4h | 🟢 | 🟡 | **ADMIN-01 — code livré le 29/07/2026** : fonction SQL `editorial_usage_counts` (security definer, admins — la RLS interdit à un admin de compter les données des autres), décompte affiché avant archivage (3 types), filtre actifs/archivés/tous et **restauration en cascade miroir** dans les 3 écrans, audit `*.restore`, import CSV qui **réactive** un aliment archivé au lieu de le mettre à jour dans l'ombre. Correctif de fond : `shared_content` ne retire plus `exercises`/`exercise_translations` archivés des appareils, et l'historique muscu + les records résolvent le nom sans filtrer `deleted_at`. 🟡 : **sync rule à redéployer à la main** + recette navigateur à faire. |
 | 9.15 | Pas quotidiens (lecture Health Connect) | Lire le total de pas par jour via Health Connect, objectif de pas quotidien, widget + historique. Les pas comptent dans le streak. | Moyen | 8h | 🟢 | ✅ | **PAS-01 — livré et recetté le 28/07/2026** (recette device Florian, APK release local `r4`). Lecture par **agrégation** Health Connect (jamais la somme des records), table `daily_steps` synchronisée, objectif de pas, widget 3 formes, écran d'historique, **pas comptés dans la série** (jour actif = objectif atteint). Reste la **déclaration Play** étendue à `READ_STEPS` — prérequis de LANCE-00, sans effet en dev build. **Sommeil écarté** (décision Florian, 28/07/2026) : aucune valeur avant les analyses croisées, qui sont post-V1 → l'ajouter plus tard imposera une **re-déclaration Play**, coût accepté. Décisions actées : données **synchronisées dans le cloud** (donc politique de confidentialité et « Sécurité des données » Play à revoir — voir la spec §7) et **pas comptés dans le streak**. ⚠️ 1 type de données en plus (`READ_STEPS`) à justifier dans le **même** formulaire que CONF-06 → à figer avant LANCE-00. |
 
 ---
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 165 | ~79 % |
-| 🟡 Partiel | 10 | ~5 % |
-| ⬜ À faire | 28 | ~13 % |
+| 🟡 Partiel | 11 | ~5 % |
+| ⬜ À faire | 27 | ~13 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -457,7 +457,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 1 | 1 | 12 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
+| V0.9 (14) | 1 | 2 | 11 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -489,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — ADMIN-01 : archivage sûr du contenu éditorial (8.11) ⬜ → 🟡**
+Décompte des usages avant archivage (fonction `security definer` — la RLS interdisait le comptage
+inter-utilisateurs), restauration en cascade dans les 3 écrans, import CSV corrigé. Le vrai correctif
+était ailleurs que prévu : les sélections filtraient déjà, mais les **jointures de traduction** aussi.
+Compteurs : **165 / 11 / 27**. 🟡 : sync rule à redéployer + recette navigateur.
 
 **29/07/2026 — CONTENU-01 : bibliothèques de programmes (3.1, 5.2) 🟡 → ✅**
 L'inventaire du cloud a démenti la spec : la **course n'était pas vide** (3 programmes complets), et

@@ -2119,6 +2119,10 @@ export type Database = {
       }
       can_manage_users: { Args: never; Returns: boolean }
       cancel_account_deletion: { Args: never; Returns: undefined }
+      editorial_usage_counts: {
+        Args: { p_id: string; p_kind: string }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }

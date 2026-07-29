@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/admin01-archivage-sur` — ADMIN-01 : archivage sûr du contenu éditorial (8.11 ⬜ → 🟡)
+
+> Validé par Florian le 29/07/2026 avec arbitrage des 7 décisions. **🟡 et non ✅** : la sync rule doit
+> être redéployée à la main et la recette navigateur n'a pas eu lieu. Commit précédent : `44e567f`.
+
+**Ajouté**
+
+- `supabase/migrations/20260729080925_admin01_editorial_usage_counts.sql` — fonction
+  `editorial_usage_counts(kind, id)`, `security definer`, `search_path` figé, **réservée aux admins**
+  (`is_admin()` en première ligne, `grant execute` à `authenticated` seulement — un appel anonyme
+  reçoit bien un 401, vérifié). Renvoie un `jsonb` de compteurs de références **vivantes**.
+- `packages/shared/src/editorial-usage.ts` + `.test.ts` (7 tests) — `summarizeUsage`, pure.
+- `apps/admin/src/data/usage-counts.ts` — appel RPC ; en cas d'échec renvoie `USAGE_UNAVAILABLE`.
+- `apps/admin/src/lib/archive-confirm.ts` — message de confirmation, 3 cas distincts.
+- `restoreExercise`, `restoreProgram` (cascade **miroir** : entête → enfants), `restoreFood`, chacune
+  idempotente (`.not('deleted_at', 'is', null)`) et **sans toucher `status`** (D5).
+- Actions d'audit `exercise.restore`, `program.restore`, `food.restore` + libellés FR.
+- `EditorialScope` (`active` | `archived` | `all`) sur les 3 listes éditoriales, `active` par défaut.
+
+**Corrigé**
+
+- 🐛 **Import CSV (D7)** : la requête d'existence ne filtrait pas `deleted_at` et l'upsert ne
+  réinitialisait pas la colonne → ré-importer un aliment archivé **mettait à jour une ligne que
+  personne ne voyait**, en annonçant un succès. Désormais l'import **réactive** (`deleted_at: null`
+  dans le payload) et **le compte** (`ImportResult.reactivated`, affiché dans le rapport).
+- **Historique muscu et records** : les jointures de traduction ne filtrent plus `deleted_at`, et la
+  résolution de nom des records ne filtre plus `e.deleted_at`. C'est **le** correctif de l'US.
+
+**Technique / Notes**
+
+- **La question que le plan demandait de lever en premier avait bien une réponse coûteuse** : la RLS
+  ne permet **pas** à un admin de compter les données des autres (`workout_sets_select` vaut
+  `user_id = auth.uid()`, aucun bypass). Sans la fonction SQL, l'écran aurait affiché **les séries de
+  l'admin lui-même** — un décompte faux est pire que pas de décompte, il donne confiance.
+- **Deux corrections au diagnostic de la spec, constatées à l'implémentation** (consignées en §4bis) :
+  1. **le journal alimentaire n'était pas affecté** — `food_entries` stocke le nom en **instantané**
+     ([journal-repository.ts:49](apps/mobile/src/data/repositories/journal-repository.ts#L49)). La §0
+     généralisait à tort « aucun nom dénormalisé » : vrai de `workout_sets`, faux de `food_entries` ;
+  2. **le risque redouté n'existait pas et le vrai correctif était ailleurs.** Le plan craignait que
+     du contenu archivé apparaisse dans les listes de sélection après le changement de sync rule.
+     Audit requête par requête : **toutes** les sélections filtrent **déjà** `deleted_at IS NULL`.
+     Ce qui bloquait, c'étaient les **jointures de traduction**, qui filtraient aussi — donc le nom
+     restait introuvable *même* en répliquant la ligne archivée.
+- **Périmètre de la sync rule volontairement minimal** : seuls `exercises` et `exercise_translations`
+  perdent le filtre `deleted_at`. `programs`, `sessions`, `exercise_plans`, `foods`,
+  `food_translations` et `exercise_variants` **gardent** le leur — aucune surface d'historique n'en
+  dépend pour résoudre un libellé. `status = 'published'` est conservé : un brouillon ne descend jamais.
+- **Deux écarts au plan, assumés** : (1) les tests de la logique pure sont dans `packages/shared` et
+  non `apps/admin`, qui **n'a ni script de test ni tests** — y installer Vitest était hors périmètre ;
+  (2) pas de composant `ArchiveConfirmDialog` : le back-office confirme partout avec `window.confirm`,
+  on garde ce patron et on y injecte les décomptes. La valeur de l'US n'est pas la forme du dialogue.
+- **Le back-office est francophone uniquement** (un seul `i18n/fr.ts`, aucun sélecteur de langue) : la
+  DoD demandait « i18n FR + EN côté admin », ce qui n'a pas de sens ici. Créer un `en.ts` aurait été du
+  périmètre en plus, sans consommateur. La règle FR+EN vaut pour l'app utilisateur.
+- ⚠️ **Reste à faire avant ✅** : **redéployer la sync rule** (sans quoi les exercices archivés quittent
+  toujours les appareils et l'historique reste cassé), puis la **recette navigateur** (6 critères) et
+  les 2 critères device (nom conservé dans l'historique, absent de la sélection).
+- Qualité : `npm run test` **vert** (52 fichiers Vitest + 30 suites Jest / 142 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur (6 avertissements préexistants).
+
 ### 29/07/2026 — `feature/contenu01-seed-programmes` — CONTENU-01 : bibliothèques de programmes (3.1 et 5.2 🟡 → ✅)
 
 > Contenu **délégué par Florian** (« fais ce qu'il te semble cohérent »). Méthode déjà tranchée le

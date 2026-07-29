@@ -5,10 +5,14 @@ import {
   EXERCISE_STATUSES,
   archiveExercise,
   listEditorialExercises,
+  restoreExercise,
   setStatus,
   type AdminExerciseRow,
+  type EditorialScope,
   type ExerciseStatus,
 } from '../data/exercises';
+import { fetchUsageSummary } from '../data/usage-counts';
+import { archiveConfirmMessage } from '../lib/archive-confirm';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
@@ -31,16 +35,18 @@ export function ExercisesScreen() {
   const [search, setSearch] = useState('');
   const [groupFilter, setGroupFilter] = useState<GroupFilter>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  // US ADMIN-01 : 'active' par défaut → l'usage courant de l'admin ne change pas.
+  const [scope, setScope] = useState<EditorialScope>('active');
 
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
-    const { rows: fetched, error: err } = await listEditorialExercises();
+    const { rows: fetched, error: err } = await listEditorialExercises(scope);
     setRows(fetched);
     setError(Boolean(err));
     setLoading(false);
-  }, []);
+  }, [scope]);
 
   useEffect(() => {
     void reload();
@@ -72,9 +78,28 @@ export function ExercisesScreen() {
   }
 
   async function handleArchive(row: AdminExerciseRow) {
-    if (!window.confirm(fr.exercises.archiveConfirm)) return;
+    // On compte AVANT de demander confirmation : archiver en aveugle est précisément ce que
+    // cette US corrige (spec §0 — le nom disparaît de l'historique des utilisateurs).
+    setBusyId(row.id);
+    const usage = await fetchUsageSummary('exercise', row.id);
+    setBusyId(null);
+
+    if (!window.confirm(archiveConfirmMessage(fr.exercises.archiveConfirm, usage))) return;
+
     setBusyId(row.id);
     const { error: err } = await archiveExercise(row.id, { label: row.nameFr ?? undefined });
+    setBusyId(null);
+    if (err) {
+      setError(true);
+      return;
+    }
+    await reload();
+  }
+
+  async function handleRestore(row: AdminExerciseRow) {
+    if (!window.confirm(fr.archive.restoreConfirm)) return;
+    setBusyId(row.id);
+    const { error: err } = await restoreExercise(row.id, { label: row.nameFr ?? undefined });
     setBusyId(null);
     if (err) {
       setError(true);
@@ -125,6 +150,16 @@ export function ExercisesScreen() {
               </option>
             ))}
           </select>
+          <select
+            value={scope}
+            onChange={(e) => setScope(e.target.value as EditorialScope)}
+            style={styles.input}
+            aria-label={fr.archive.scopeActive}
+          >
+            <option value="active">{fr.archive.scopeActive}</option>
+            <option value="archived">{fr.archive.scopeArchived}</option>
+            <option value="all">{fr.archive.scopeAll}</option>
+          </select>
         </div>
 
         {error && (
@@ -151,8 +186,15 @@ export function ExercisesScreen() {
               </thead>
               <tbody>
                 {filtered.map((r) => (
-                  <tr key={r.id}>
-                    <td style={styles.td}>{r.nameFr ?? fr.exercises.noName}</td>
+                  <tr key={r.id} style={r.deletedAt ? styles.archivedRow : undefined}>
+                    <td style={styles.td}>
+                      {r.nameFr ?? fr.exercises.noName}
+                      {r.deletedAt && (
+                        <div style={styles.archivedNote}>
+                          {fr.archive.archivedOn} {formatDate(r.deletedAt)}
+                        </div>
+                      )}
+                    </td>
                     <td style={styles.td}>{groupLabel(r.musclePrimary)}</td>
                     <td style={styles.td}>
                       <span
@@ -168,29 +210,46 @@ export function ExercisesScreen() {
                     </td>
                     <td style={styles.td}>{formatDate(r.createdAt)}</td>
                     <td style={{ ...styles.td, ...styles.actionsCell }}>
-                      <button
-                        type="button"
-                        style={styles.action}
-                        onClick={() => navigate(`/exercises/${r.id}`)}
-                      >
-                        {fr.exercises.edit}
-                      </button>
-                      <button
-                        type="button"
-                        style={styles.action}
-                        disabled={busyId === r.id}
-                        onClick={() => handleToggleStatus(r)}
-                      >
-                        {r.status === 'published' ? fr.exercises.unpublish : fr.exercises.publish}
-                      </button>
-                      <button
-                        type="button"
-                        style={styles.danger}
-                        disabled={busyId === r.id}
-                        onClick={() => handleArchive(r)}
-                      >
-                        {fr.exercises.archive}
-                      </button>
+                      {/* Une ligne archivée n'a qu'une action : la remettre en service. Publier ou
+                          éditer un contenu invisible n'aurait pas de sens. */}
+                      {r.deletedAt ? (
+                        <button
+                          type="button"
+                          style={styles.action}
+                          disabled={busyId === r.id}
+                          onClick={() => handleRestore(r)}
+                        >
+                          {fr.archive.restore}
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            style={styles.action}
+                            onClick={() => navigate(`/exercises/${r.id}`)}
+                          >
+                            {fr.exercises.edit}
+                          </button>
+                          <button
+                            type="button"
+                            style={styles.action}
+                            disabled={busyId === r.id}
+                            onClick={() => handleToggleStatus(r)}
+                          >
+                            {r.status === 'published'
+                              ? fr.exercises.unpublish
+                              : fr.exercises.publish}
+                          </button>
+                          <button
+                            type="button"
+                            style={styles.danger}
+                            disabled={busyId === r.id}
+                            onClick={() => handleArchive(r)}
+                          >
+                            {fr.exercises.archive}
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -221,6 +280,10 @@ function formatDate(iso: string): string {
 const { colors, radius, font } = theme;
 
 const styles: Record<string, React.CSSProperties> = {
+  // US ADMIN-01 : une ligne archivée doit se distinguer d'un coup d'œil, sans dépendre
+  // uniquement de la couleur — d'où la mention textuelle « Archivé le … » à côté du nom.
+  archivedRow: { opacity: 0.72, background: '#faf4ea' },
+  archivedNote: { fontSize: 11.5, color: theme.colors.muted, marginTop: 2 },
   wrap: { display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 960 },
   panel: {
     background: colors.panel,

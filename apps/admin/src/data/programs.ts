@@ -11,6 +11,7 @@ import {
   type SetType,
 } from '@wellness/shared';
 import { logAudit } from './audit';
+import type { EditorialScope } from './exercises';
 
 /**
  * Couche data des programmes éditoriaux (US 8.4 — constructeur de programmes du
@@ -49,6 +50,8 @@ export type AdminProgramRow = {
   createdAt: string;
   nameFr: string | null;
   nameEn: string | null;
+  /** Non nul si le programme est archivé (US ADMIN-01). */
+  deletedAt: string | null;
 };
 
 /** Un exercice planifié au sein d'une séance (nom FR résolu pour l'affichage). */
@@ -212,18 +215,24 @@ async function nextPlanOrderIndex(
  * (brouillons compris) est lisible via la RLS `select` des programmes (`owner_id is
  * null`) ; côté mobile, seuls les publiés descendent (filtre des sync rules).
  */
-export async function listEditorialPrograms(): Promise<{
+export async function listEditorialPrograms(scope: EditorialScope = 'active'): Promise<{
   rows: AdminProgramRow[];
   error: unknown;
 }> {
-  const { data, error } = await supabase
+  // La portée ne s'applique qu'au **programme** : ses traductions sont filtrées séparément par
+  // `pickName`, qui écarte déjà les traductions soft-deletées.
+  const base = supabase
     .from('programs')
     .select(
-      'id, pillar, status, level, goal, duration_weeks, created_at, program_translations(lang, name, deleted_at)',
+      'id, pillar, status, level, goal, duration_weeks, created_at, deleted_at, program_translations(lang, name, deleted_at)',
     )
-    .is('owner_id', null)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false });
+    .is('owner_id', null);
+  const { data, error } = await (scope === 'active'
+    ? base.is('deleted_at', null)
+    : scope === 'archived'
+      ? base.not('deleted_at', 'is', null)
+      : base
+  ).order('created_at', { ascending: false });
 
   if (error) {
     return { rows: [], error };
@@ -238,6 +247,7 @@ export async function listEditorialPrograms(): Promise<{
       level: p.level,
       goal: p.goal,
       durationWeeks: p.duration_weeks,
+      deletedAt: p.deleted_at ?? null,
       createdAt: p.created_at,
       nameFr: nameForLang(translations, 'fr'),
       nameEn: nameForLang(translations, 'en'),
@@ -631,6 +641,91 @@ export async function archiveProgram(
 
   await logAudit({
     action: 'program.archive',
+    targetTable: 'programs',
+    targetId: id,
+    targetLabel: opts?.label ?? null,
+  });
+
+  return { error: null };
+}
+
+/**
+ * Restaure un programme éditorial archivé, **en miroir exact de `archiveProgram`** : de l'entête
+ * vers le plus fin (programme → traductions → séances → plans d'exercice).
+ *
+ * L'ordre inverse est volontaire et se justifie de la même façon que celui de l'archivage : à
+ * l'archivage on descend (fin → entête) pour ne jamais laisser d'enfant vivant sous un parent mort ;
+ * à la restauration on remonte (entête → fin) pour ne jamais laisser d'enfant vivant sous un parent
+ * encore archivé. Un arrêt en cours de route laisse donc toujours un état lisible, et l'UI doit
+ * **retenter** (le rejeu ne touche que les lignes encore archivées).
+ *
+ * `status` n'est **jamais** modifié : un programme restauré retrouve l'état (`draft`/`published`)
+ * qu'il avait avant archivage.
+ */
+export async function restoreProgram(
+  id: string,
+  opts?: { label?: string },
+): Promise<{ error: unknown }> {
+  // 1. Entête programme.
+  const { error: programError } = await supabase
+    .from('programs')
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (programError) {
+    return { error: programError };
+  }
+
+  // 2. Traductions.
+  const { error: trError } = await supabase
+    .from('program_translations')
+    .update({ deleted_at: null })
+    .eq('program_id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (trError) {
+    return { error: trError };
+  }
+
+  // 3. Séances. Relues APRÈS restauration de l'entête, sans filtre sur `deleted_at` : on veut les
+  //    séances du programme quel que soit leur état, pour pouvoir ressusciter celles qui étaient
+  //    archivées et laisser les autres tranquilles.
+  const { data: sessionRows, error: sessionsError } = await supabase
+    .from('sessions')
+    .select('id')
+    .eq('program_id', id)
+    .is('owner_id', null);
+  if (sessionsError) {
+    return { error: sessionsError };
+  }
+
+  const { error: sessError } = await supabase
+    .from('sessions')
+    .update({ deleted_at: null })
+    .eq('program_id', id)
+    .is('owner_id', null)
+    .not('deleted_at', 'is', null);
+  if (sessError) {
+    return { error: sessError };
+  }
+
+  // 4. Plans d'exercice de ces séances.
+  const sessionIds = (sessionRows ?? []).map((s) => s.id);
+  if (sessionIds.length > 0) {
+    const { error: plansError } = await supabase
+      .from('exercise_plans')
+      .update({ deleted_at: null })
+      .in('session_id', sessionIds)
+      .is('owner_id', null)
+      .not('deleted_at', 'is', null);
+    if (plansError) {
+      return { error: plansError };
+    }
+  }
+
+  await logAudit({
+    action: 'program.restore',
     targetTable: 'programs',
     targetId: id,
     targetLabel: opts?.label ?? null,
