@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/pas01-entete-ecran-pas` — en-tête de l'écran « Pas » + constats de recette (9.15)
+
+Commit précédent : `7459258`.
+
+#### Corrigé
+
+- **L'écran « Pas » n'avait pas d'en-tête de navigation.** La route `steps` était **absente** de
+  [_layout.tsx](apps/mobile/src/app/_layout.tsx) — contrairement à ses quatre sœurs `measurements`,
+  `review`, `goals` et `wellbeing`, toutes déclarées avec un `Stack.Screen`. Sans cette déclaration,
+  Expo Router ne pose ni barre d'en-tête ni bouton retour : le titre de page remontait sous la barre
+  d'état, à l'emplacement attendu du retour, et se superposait au bouton flottant du dev client.
+  Ajout d'un `Stack.Screen name="steps"` **aligné mot pour mot** sur ses sœurs (`presentation: 'modal'`,
+  `headerShown: true`, `title: t('steps.title')`, mêmes couleurs et typo).
+  → 1 fichier : [apps/mobile/src/app/_layout.tsx](apps/mobile/src/app/_layout.tsx) (+14).
+
+#### Modifié — suivi
+
+- [RECETTES.md](RECETTES.md) : prérequis **sync rules PowerSync coché** (déployées le 29/07/2026) ;
+  l'encadré « PARTAGE-01 exige un second build » est remplacé — le dev build du 29/07 est postérieur
+  à PARTAGE-01 et embarque bien `react-native-view-shot` 5.1.0 (vérifié dans le
+  `debugRuntimeClasspath`), donc **les 10 US device se recettent sur le même APK**, et non 9 + un
+  rebuild. Ajout du piège `prebuild --clean` (ci-dessous).
+- [RECETTES.md](RECETTES.md) : 2 constats consignés sous leurs US, **tous deux des décisions produit
+  non tranchées**, pas des bugs — OBJ-01 affiche **deux fois** l'action « Nouvel objectif » sur l'état
+  vide (confirmé dans l'arbre d'accessibilité : `content-desc` en double, donc annoncé 2× par
+  TalkBack) ; BIEN-01 expose un écran d'historique **sans aucune action** pour lancer un check-in,
+  là où Mensurations et Objectifs en ont une.
+- [BACKLOG.md](BACKLOG.md) : entrée de dette ouverte puis cochée dans la même passe (le défaut a été
+  corrigé aussitôt trouvé).
+
+#### Technique / Notes
+
+- **Le piège qui a coûté un build.** `apps/mobile/android/` n'est pas versionné (CNG) : après un
+  `git pull` qui touche `app.json` ou un plugin natif, le dossier reste tel quel. Ici il datait
+  d'avant l'ajout d'`expo-build-properties` et gardait `minSdkVersion 24`, alors que
+  `androidx.health.connect:connect-client` en exige **26** → `Manifest merger failed`.
+  Correctif : `npx expo prebuild --platform android --clean`, qui réécrit
+  `android.minSdkVersion=26` dans `android/gradle.properties`. Documenté dans
+  [RECETTES.md](RECETTES.md).
+- **Ce bug ne pouvait pas être attrapé par la CI** : une route non déclarée ne casse ni le typecheck
+  ni un test — l'écran rend, il rend mal. Seul un regard sur l'écran le voit. C'est l'argument le
+  plus concret en faveur des recettes device.
+- **Méthode de la passe** : pilotage adb (deep links `wellness://<route>`, `screencap`,
+  `uiautomator dump`, `settings put system font_scale`). Vérifié au passage — les labels
+  d'accessibilité de PAS-01 et BILAN-01 portent unités et deltas **en texte**
+  (« Jours actifs : 3 / 7, en baisse de 57 % »), ce qui satisfait les critères « lisible sans la
+  couleur » ; et le contenu reflue sans troncature à 1,5×. `font_scale` remis à 1.0.
+- **Non vérifié, et à ne pas croire acquis** : l'activité réelle des sync rules. Les 5 nouvelles
+  tables sont bien dans le schéma PowerSync local, mais **toutes vides** — et une table vide ne
+  produit aucune ligne d'oplog, donc leur absence des buckets ne prouve rien. Le test décisif reste
+  celui de [RECETTES.md](RECETTES.md) : archiver un exercice et vérifier que l'historique garde son nom.
+- `package-lock.json` : churn de métadonnées `npm` uniquement (52 lignes `"peer": true` déplacées),
+  **aucun changement de version ni de paquet** — sous-produit du `npm install` d'après-pull.
+- PAS-01 reste `etape: close` et 9.15 reste ✅ : correctif cosmétique post-clôture, aucun périmètre
+  fonctionnel ajouté ni retiré.
+- Qualité : `npm run lint` **0 erreur** (8 warnings préexistants, fichiers de test) ·
+  `npm run typecheck` **0** · `npm run test` **0** — 1 126 Vitest + 179 Jest. Codes de sortie lus
+  sans pipe.
+
 ### 29/07/2026 — `feature/muscf14-substitution-exercice` — MUSC-F14 : substitution d'exercice (3.52 🟡)
 
 3 décisions arbitrées par Florian, **2 dérivées**. Deux limites ont été énoncées **avant** de coder, et

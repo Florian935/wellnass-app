@@ -433,6 +433,20 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US PAS-01 — historique des pas quotidiens. Ouvert depuis le widget d'accueil.
+            La route était absente de ce layout : sans en-tête de navigation, le titre de page se
+            dessinait sous la barre d'état, à l'emplacement du bouton retour. */}
+        <Stack.Screen
+          name="steps"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('steps.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         {/* US BIEN-01 — historique du check-in de bien-être. */}
         <Stack.Screen
           name="wellbeing"

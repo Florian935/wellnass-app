@@ -1,4 +1,4 @@
-# État du projet — 29/07/2026
+# État du projet — 30/07/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -51,8 +51,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf14-substitution-exercice` (modifications non commitées) |
-| Commits | 962 · `main` a **959** commits de retard sur `dev` |
+| Branche courante | `fix/pas01-entete-ecran-pas` (modifications non commitées) |
+| Commits | 963 · `main` a **960** commits de retard sur `dev` |
 | Specs d'US | 87 au total — 75 clôturées, 12 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -63,11 +63,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `7459258` feat(muscf14): suggestion de substitution d'exercice en séance (US MUSC-F14, 3.52)
 - `94885bf` feat(ux05): intensité affichée en RPE ou en RIR, au choix (US UX-05, 3.55)
 - `06a7d62` feat(partage01): carte de séance / course partageable en image (US PARTAGE-01, 7.17)
 - `debbf86` feat(bilan01): bilan hebdomadaire automatique — une seule décision, adossée aux chiffres (US BILAN-01, 7.16)
 - `7c997a7` chore(etat): régénère ETAT.md après le merge d'OBJ-01
-- `9d2b87c` feat(obj01): objectifs à échéance livrés + registre des recettes (US OBJ-01, 7.15)
 
 ---
 

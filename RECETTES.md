@@ -17,7 +17,7 @@
 
 ## ⛔ Prérequis bloquant — à faire AVANT les recettes device
 
-- [ ] **Déployer les sync rules PowerSync.** Coller
+- [x] **Déployer les sync rules PowerSync** — fait le 29/07/2026 (Damien). Coller
       [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
       PowerSync → Settings → Sync Rules → **Deploy**.
 
@@ -73,6 +73,12 @@ l'historique. Nom vide = sync rule pas déployée.
 - [ ] 9. Le widget est visible pour un utilisateur n'ayant activé que la **nutrition**.
 - [ ] 10. À grande taille de police système, aucun libellé tronqué.
 - [ ] 11. L'export RGPD contient les lignes de bien-être.
+
+> 🔎 **Constat, passe automatisée du 30/07/2026 (adb).** L'écran `wellness://wellbeing` n'offre
+> **aucune action** pour lancer un check-in : état vide + texte, sans bouton. Mensurations
+> (« Prendre mes mesures ») et Objectifs (« Nouvel objectif ») en ont un. Si le check-in ne se lance
+> que depuis le widget d'accueil, c'est un choix défendable — mais alors l'écran atteint par un lien
+> direct est un cul-de-sac. **À trancher**, ce n'est pas couvert par les critères ci-dessus.
 
 ---
 
@@ -171,6 +177,12 @@ l'historique. Nom vide = sync rule pas déployée.
       **absent** si seul le pilier nutrition est activé.
 - [ ] 11. L'export RGPD contient les objectifs.
 
+> 🔎 **Constat, passe automatisée du 30/07/2026 (adb).** L'écran vide affiche **deux fois** l'action
+> « Nouvel objectif » : le bouton principal en haut **et** le CTA de l'état vide. Confirmé dans l'arbre
+> d'accessibilité (`content-desc="Nouvel objectif"` × 2) — un utilisateur TalkBack entend donc la même
+> action deux fois. À trancher : garder le CTA de l'état vide et retirer le bouton du haut tant que la
+> liste est vide, ou l'inverse.
+
 ---
 
 ## 8. BILAN-01 — Bilan hebdomadaire automatique
@@ -204,7 +216,7 @@ désactiver/réactiver la préférence ne casse rien.
 ## 9. PARTAGE-01 — Carte de séance / course partageable
 
 📄 [spec](docs/specs/functional/us/partage01-carte-partageable.md) · roadmap 7.17 · **📱 device**
-✅ aucune sync rule · 🔴 **NÉCESSITE UN SECOND BUILD** — voir l'encadré en bas de page.
+✅ aucune sync rule · ✅ **recettable sur l'APK du 29/07/2026** — voir l'encadré en bas de page.
 
 - [ ] 1. Résumé d'une course GPS → « Partager » ouvre un aperçu **avec le tracé**.
 - [ ] 2. Le tracé **ressemble au parcours réel** (comparer à la carte de l'écran de résumé) : ni
@@ -285,29 +297,26 @@ en reste là — voir [spec §0.2](docs/specs/functional/us/muscf14-substitution
 
 ## Comment procéder
 
-**Neuf US se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01,
-OBJ-01, BILAN-01, UX-05, MUSC-F14
+**Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
+UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01**
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
-rien à voir avec leur code.
+rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).
 
 **ADMIN-01 se recette au navigateur**, indépendamment du build.
 
-### 🔴 PARTAGE-01 exige un SECOND build — à savoir avant de planifier
+### ✅ Le second build pour PARTAGE-01 est fait (29/07/2026)
 
-`react-native-view-shot` est une **dépendance native** : le dev client **et** l'APK doivent être
-reconstruits pour que la capture d'image existe. **PARTAGE-01 ne peut donc pas être recettée sur
-l'APK des autres US.**
+`react-native-view-shot` (5.1.0) est une **dépendance native** : l'APK devait être reconstruit pour
+que la capture d'image existe. C'est le cas — le dev build du **29/07/2026** est postérieur à
+PARTAGE-01 et embarque le module (vérifié : `project :react-native-view-shot` présent dans le
+`debugRuntimeClasspath`). **PARTAGE-01 se recette donc avec les neuf autres, sur le même APK.**
 
-Deux façons de s'organiser, au choix :
-
-1. **Recetter les 9 autres d'abord** sur l'APK actuel, puis reconstruire pour PARTAGE-01 seule.
-   C'est le plus sûr : tu ne remets pas en jeu ce qui est déjà validé.
-2. **Reconstruire tout de suite** et recetter les 10 d'un coup. Un seul build, mais le nouvel APK
-   embarque une dépendance native de plus — si quelque chose d'inattendu apparaît, il faudra
-   distinguer ce qui vient du code des US de ce qui vient du build.
-
-Je recommande la **1** : on ne mélange pas une validation en cours avec un changement d'infrastructure.
+> ⚠️ **Piège rencontré ce jour-là, à retenir.** Le dossier `apps/mobile/android/` n'est pas
+> versionné : après un `git pull` qui touche `app.json` ou un plugin natif, il reste tel quel et le
+> build échoue sur une incohérence héritée (ici `minSdkVersion 24` contre les 26 exigés par
+> `androidx.health.connect`, alors que `expo-build-properties` déclarait bien 26). Le réflexe :
+> `npx expo prebuild --platform android --clean` avant de rebuilder.
 
 **Quand une US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

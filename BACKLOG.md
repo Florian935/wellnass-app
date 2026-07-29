@@ -144,6 +144,12 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
+- [x] ~~**PAS-01 — l'en-tête de l'écran « Pas » est cassé**~~ — constaté puis **corrigé le
+      30/07/2026** (`fix/pas01-entete-ecran-pas`). La route `steps` était **absente** de
+      [_layout.tsx](apps/mobile/src/app/_layout.tsx) : sans `Stack.Screen`, aucun en-tête de
+      navigation, donc le titre de page se dessinait sous la barre d'état. Vérifié sur device.
+      **Leçon** : un écran ajouté sans sa déclaration de route n'échoue ni au typecheck ni aux tests
+      — seul un œil sur l'écran le voit.
 - [ ] **`supabase/seed.sql` est inatteignable** — il n'est joué que par `db:reset`, qui exige Docker
       (que personne n'a). Les 16 exercices de bibliothèque sont donc arrivés sur le cloud par un
       chemin non tracé. → Les basculer en **migration idempotente** (comme le seed CIQUAL), ou
