@@ -15,6 +15,8 @@ import {
   kgToLb,
   kmToMi,
   cmToFtIn,
+  cmToIn,
+  inToCm,
   paceToSystem,
   formatPaceMMSS,
   parseWeightToKg as parseWeightToKgPure,
@@ -62,6 +64,37 @@ export function useUnits() {
         if (km == null) return '—';
         const v = system === 'imperial' ? kmToMi(km) : km;
         return nf2.format(v);
+      },
+      /**
+       * Circonférence corporelle (US MESUR-01) : cm ou **pouces décimaux**.
+       *
+       * ⚠️ **Ne pas utiliser `formatHeight` pour ça** : il rend l'impérial en pieds-pouces, ce qui
+       * est juste pour une taille humaine et absurde pour un tour de bras — 35 cm s'afficherait
+       * « 1 ft 1.8 in » au lieu de **13,8 in**.
+       */
+      formatCircumference: (cm: number | null | undefined): string => {
+        if (cm == null) return '—';
+        return system === 'imperial'
+          ? `${nf1.format(cmToIn(cm))} in`
+          : `${nf1.format(cm)} cm`;
+      },
+      /** Valeur convertie sans symbole, pour pré-remplir un champ de saisie (US MESUR-01). */
+      toCircumferenceValue: (cm: number): number =>
+        system === 'imperial' ? Math.round(cmToIn(cm) * 10) / 10 : cm,
+      /** Symbole de circonférence, pour un placeholder ou un suffixe de champ. */
+      circumferenceSymbol: system === 'imperial' ? 'in' : 'cm',
+      /**
+       * Saisie utilisateur → centimètres. Accepte la **virgule** comme séparateur décimal (clavier
+       * français) autant que le point. Renvoie `null` si ce n'est pas un nombre exploitable.
+       */
+      parseCircumferenceToCm: (text: string): number | null => {
+        const normalized = text.trim().replace(',', '.');
+        if (normalized === '') return null;
+        const parsed = Number(normalized);
+        if (!Number.isFinite(parsed) || parsed <= 0) return null;
+        // Arrondi au dixième : la colonne est `numeric(5,1)`, inutile de transporter plus de précision.
+        const cm = system === 'imperial' ? inToCm(parsed) : parsed;
+        return Math.round(cm * 10) / 10;
       },
       formatHeight: (cm: number | null | undefined): string => {
         if (cm == null) return '—';

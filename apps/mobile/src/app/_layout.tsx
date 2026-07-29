@@ -389,6 +389,30 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US MESUR-01 — mensurations. Ouvert depuis Progression (muscu). */}
+        <Stack.Screen
+          name="measurements"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('measurements.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        {/* US BIEN-01 — historique du check-in de bien-être. */}
+        <Stack.Screen
+          name="wellbeing"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('wellbeing.historyTitle'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="nutrition-stats"
           options={{

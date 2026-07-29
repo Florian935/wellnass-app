@@ -45,6 +45,8 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'daily_steps', col: 'user_id' },
   // US BIEN-01 — indicateurs subjectifs (humeur / énergie / stress), synchronisés : même exigence.
   { table: 'daily_wellbeing', col: 'user_id' },
+  // US MESUR-01 — mensurations corporelles : donnée personnelle historisée, donc exportable.
+  { table: 'body_measurements', col: 'user_id' },
 ];
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };

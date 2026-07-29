@@ -22,6 +22,23 @@ export function lbToKg(lb: number): number {
   return lb / LB_PER_KG;
 }
 
+/**
+ * Circonférences corporelles : centimètres ↔ pouces (US MESUR-01).
+ *
+ * ⚠️ **Ne pas confondre avec `cmToFtIn`**, qui sert à la **taille** d'une personne et rend des
+ * pieds-pouces. Un tour de bras de 35 cm vaut **13,8 in**, pas « 1 ft 1,8 in » : une circonférence
+ * s'exprime en pouces décimaux.
+ *
+ * Le stockage reste **toujours en centimètres** — convertir au stockage ferait dériver l'historique
+ * à chaque bascule du réglage d'unités.
+ */
+export function cmToIn(cm: number): number {
+  return cm / CM_PER_IN;
+}
+export function inToCm(inches: number): number {
+  return inches * CM_PER_IN;
+}
+
 /** Distance : kilomètres ↔ miles. */
 export function kmToMi(km: number): number {
   return km * MI_PER_KM;

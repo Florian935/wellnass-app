@@ -327,7 +327,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
 | 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | 🟡 | **BIEN-01 — code livré le 28/07/2026** : table `daily_wellbeing` (2 migrations poussées), briques pures testées, repository, feuille de check-in, widget transverse 3 formes, écran d'historique, i18n FR+EN, export RGPD. **4ᵉ dimension légère**, pas un 4ᵉ pilier (widget `'always'`). 🟡 et non ✅ pour deux raisons : **la sync rule PowerSync reste à déployer à la main** sur l'instance, et **la recette device n'a pas eu lieu**. Alimentera les corrélations récup ↔ perfs (post-V1). |
-| 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | ⬜ | **MESUR-01**. Fait enfin descendre **E8** de la [spec muscu §5](../specs/functional/musculation.md) — décrite au cadrage mais **jamais descendue en US**, donc sans modèle de données. Réutilise l'infra courbes du poids (4.30) et `useUnits()` (cm/in). **Photos de progression exclues** (Storage privé = sous-lot post-V1). |
+| 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | 🟡 | **MESUR-01 — code livré le 29/07/2026.** Fait enfin descendre **E8** de la spec muscu §5, cadrée le 04/07 et jamais dotée d'un modèle de données. Table `body_measurements` **normalisée** (une ligne par jour ET par mesure, décision D1 : la liste des mesures a vocation à bouger, une table large coûterait une migration par ajout et serait majoritairement `NULL`) — 6 mesures, stockage **toujours en cm**, feuille de saisie pré-remplie, historique avec courbe par mesure et delta. Entrée depuis **Progression** (pas de widget : une mesure mensuelle ne mérite pas une place sur un écran quotidien). 🟡 : **sync rule à déployer à la main** + recette device. |
 | 3.52 | Suggestion de substitution d'exercice | Matériel pris ou zone douloureuse → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | ⬜ | **MUSC-F14**. Le **remplacement en direct existe déjà** (3.32) ; ce qui manque, c'est la **suggestion**. Sélection déterministe sur le groupe musculaire, aucun appel externe. |
 | 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ✅ | **UX-02 — constaté déjà livré le 29/07/2026** par `12bd3a1` (« feat(muscf11) »), avant même que la ligne ne soit créée : `CreateExerciseModal.tsx` est une modale bottom-sheet avec placeholder et segment `scrollable`. Les 3 points, ligne pour ligne. ✅ par **réconciliation**, sans commit de code. |
 | 3.54 | Cohérence fiche exercice perso / bibliothèque | Mêmes sections et états vides explicites ; édition des instructions et muscles secondaires sur un exo perso. | Moyen | 3h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** L'édition des instructions et muscles secondaires **existait déjà** (`EditExerciseModal` + `updateCustomExercise`) ; livré ici : les 3 sections de la fiche sont **toujours rendues**, avec « Non renseigné » au lieu de disparaître — un exo perso n'avait pas la même structure de fiche qu'un exo de bibliothèque. L'écart **volontaire** Modifier/Supprimer est préservé. |
@@ -426,8 +426,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 168 | ~81 % |
-| 🟡 Partiel | 11 | ~5 % |
-| ⬜ À faire | 24 | ~12 % |
+| 🟡 Partiel | 12 | ~6 % |
+| ⬜ À faire | 23 | ~11 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -457,7 +457,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 4 | 2 | 8 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
+| V0.9 (14) | 4 | 3 | 7 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**29/07/2026 — MESUR-01 : mensurations corporelles (3.51) ⬜ → 🟡**
+E8 enfin descendue de la spec muscu, 25 jours après son cadrage. Modèle **normalisé** (D1) : ajouter
+une mesure — ou gauche/droite — ne coûtera aucune migration. Stockage toujours en cm, la bascule
+d'unité étant un fait d'affichage. Compteurs : **168 / 12 / 23**. 🟡 : sync rule + recette device.
 
 **29/07/2026 — UX-LOT-01 : les 3 finitions de recette (3.53, 3.54, 7.18) ⬜ → ✅**
 Inventaire du code avant d'écrire : **3.53 était déjà livré** (`12bd3a1`), l'édition de 3.54 aussi, et

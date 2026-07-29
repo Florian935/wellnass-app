@@ -151,6 +151,47 @@ export type Database = {
         }
         Relationships: []
       }
+      body_measurements: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          kind: string
+          log_date: string
+          updated_at: string
+          user_id: string
+          value_cm: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          kind: string
+          log_date: string
+          updated_at?: string
+          user_id: string
+          value_cm: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind?: string
+          log_date?: string
+          updated_at?: string
+          user_id?: string
+          value_cm?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       body_weight_entries: {
         Row: {
           created_at: string

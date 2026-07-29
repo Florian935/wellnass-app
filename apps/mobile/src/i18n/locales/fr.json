@@ -1725,5 +1725,40 @@
     "closeSheet": "Fermer le check-in",
     "windowAll": "Tout",
     "windowDays": "{{count}} j"
+  },
+  "measurements": {
+    "title": "Mensurations",
+    "entryTitle": "Mensurations",
+    "cta": "Prendre mes mesures",
+    "sheetTitle": "Mes mesures",
+    "date": "Date",
+    "save": "Enregistrer",
+    "entries": "Relevés",
+    "seeWeightCurve": "Voir la courbe de poids",
+    "optionalHint": "Tous les champs sont optionnels. Vider un champ retire cette mesure de la date choisie.",
+    "prefillHint": "Pré-rempli avec ton dernier relevé.",
+    "emptyHistory": "Aucune mesure enregistrée. La première prend deux minutes.",
+    "emptyToday": "Pas encore de mesure.",
+    "notEnoughForCurve": "Il faut au moins deux relevés pour tracer une tendance.",
+    "noDelta": "Premier relevé",
+    "saveError": "Les mesures n'ont pas pu être enregistrées. Réessaie.",
+    "invalidValue": "Valeur invalide : vérifie la saisie.",
+    "windowThreeMonths": "3 mois",
+    "windowYear": "1 an",
+    "windowAll": "Tout",
+    "kinds": {
+      "waist": "Tour de taille",
+      "chest": "Poitrine",
+      "hips": "Hanches",
+      "arm": "Bras",
+      "thigh": "Cuisse",
+      "calf": "Mollet"
+    },
+    "a11yField": "{{kind}}, en {{unit}}",
+    "a11yDeltaDown": "en baisse de {{value}}",
+    "a11yDeltaUp": "en hausse de {{value}}",
+    "a11yDeltaFlat": "stable",
+    "a11yKindTab": "Afficher la courbe : {{kind}}",
+    "closeSheet": "Fermer la saisie"
   }
 }

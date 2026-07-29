@@ -1725,5 +1725,40 @@
     "closeSheet": "Close check-in",
     "windowAll": "All",
     "windowDays": "{{count}} d"
+  },
+  "measurements": {
+    "title": "Measurements",
+    "entryTitle": "Measurements",
+    "cta": "Take my measurements",
+    "sheetTitle": "My measurements",
+    "date": "Date",
+    "save": "Save",
+    "entries": "Entries",
+    "seeWeightCurve": "See weight chart",
+    "optionalHint": "Every field is optional. Clearing a field removes that measurement for the chosen date.",
+    "prefillHint": "Pre-filled with your latest entry.",
+    "emptyHistory": "No measurement recorded yet. The first one takes two minutes.",
+    "emptyToday": "No measurement yet.",
+    "notEnoughForCurve": "At least two entries are needed to show a trend.",
+    "noDelta": "First entry",
+    "saveError": "Measurements could not be saved. Please try again.",
+    "invalidValue": "Invalid value: please check your entry.",
+    "windowThreeMonths": "3 months",
+    "windowYear": "1 year",
+    "windowAll": "All",
+    "kinds": {
+      "waist": "Waist",
+      "chest": "Chest",
+      "hips": "Hips",
+      "arm": "Arm",
+      "thigh": "Thigh",
+      "calf": "Calf"
+    },
+    "a11yField": "{{kind}}, in {{unit}}",
+    "a11yDeltaDown": "down by {{value}}",
+    "a11yDeltaUp": "up by {{value}}",
+    "a11yDeltaFlat": "unchanged",
+    "a11yKindTab": "Show chart: {{kind}}",
+    "closeSheet": "Close entry form"
   }
 }

@@ -50,6 +50,8 @@ bucket_definitions:
       - select * from daily_steps           where user_id = bucket.user_id and deleted_at is null
       # US BIEN-01 : check-in de bien-être (humeur / énergie / stress, une ligne par jour).
       - select * from daily_wellbeing       where user_id = bucket.user_id and deleted_at is null
+      # US MESUR-01 : mensurations corporelles (modèle normalisé — une ligne par jour ET par mesure).
+      - select * from body_measurements     where user_id = bucket.user_id and deleted_at is null
       # ── Running ───────────────────────────────────────────────────────────
       - select * from running_profiles      where user_id = bucket.user_id and deleted_at is null
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null

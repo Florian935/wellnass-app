@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>US MESUR-01 — Mensurations corporelles</title>
+<style>
+  :root{
+    --bg:#f7eede;--surface:#fffaf2;--surface-alt:#f3ddd0;--border:#ece0cd;
+    --ink:#33291f;--muted:#96856f;--accent:#c0562f;--accent-text:#fff;--success:#5c7a3f;--warn:#b5761f;
+    --strength:#6b0028;--danger:#b3261e;--mes:#2f6f8f;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:"Space Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(51,41,31,.06),0 8px 24px rgba(51,41,31,.06);
+  }
+  *{box-sizing:border-box;}
+  body{font-family:var(--sans);color:var(--ink);margin:0;padding:40px 24px 64px;background:radial-gradient(120% 80% at 100% 0%,#fbf3e6 0%,var(--bg) 55%);line-height:1.5;}
+  .head{max-width:1240px;margin:0 auto 28px;}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  .title{font-weight:800;font-size:clamp(26px,4vw,38px);letter-spacing:-.02em;margin:0 0 10px;}
+  .sub{color:var(--muted);max-width:94ch;margin:0;font-size:15px;}
+  .flow{max-width:1240px;margin:24px auto 0;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+  .col{display:flex;flex-direction:column;gap:10px;max-width:300px;width:100%;}
+  .step{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+  .caption{font-size:12.5px;color:var(--muted);text-align:center;font-weight:600;min-height:72px;}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:32px;padding:14px;box-shadow:var(--shadow);min-height:560px;}
+  .scr{background:var(--surface);border-radius:20px;height:100%;min-height:532px;padding:16px;display:flex;flex-direction:column;gap:11px;}
+  .nav{display:flex;align-items:center;gap:10px;}
+  .nav .bk{font-size:20px;} .nav .tt{font-weight:800;font-size:16px;}
+  .sect{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:4px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px;}
+  .btn{border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;font-weight:700;text-align:center;background:var(--surface-alt);}
+  .btn.primary{background:var(--accent);color:var(--accent-text);border-color:var(--accent);}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;}
+  .muted{color:var(--muted);} .spacer{flex:1;}
+  .arrow{align-self:center;color:var(--muted);font-size:26px;font-weight:800;padding-top:240px;}
+  @media(max-width:760px){.arrow{display:none;}}
+
+  /* champs de saisie */
+  .fr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);}
+  .fr:first-of-type{border-top:none;}
+  .fr .lab{font-weight:700;font-size:13.5px;flex:1;}
+  .fr .inp{border:1px solid var(--border);border-radius:10px;padding:7px 10px;min-width:86px;text-align:right;font-weight:800;font-size:14px;background:var(--surface);}
+  .fr .inp.empty{color:var(--muted);font-weight:600;}
+  .fr .d{font-size:11.5px;font-weight:800;min-width:44px;text-align:right;}
+  .d.down{color:var(--success);} .d.up{color:var(--warn);} .d.none{color:var(--muted);}
+  .datefield{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--surface-alt);}
+
+  /* courbe */
+  .chart{height:110px;border:1px solid var(--border);border-radius:12px;background:var(--surface-alt);overflow:hidden;margin-top:9px;}
+  .chart svg{display:block;width:100%;height:100%;}
+  .segs{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap;}
+  .seg{flex:1;min-width:60px;text-align:center;font-size:11.5px;font-weight:700;padding:8px 4px;border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--muted);}
+  .seg.on{background:var(--mes);border-color:var(--mes);color:#fff;}
+  .hrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);}
+  .hrow .dt{font-size:12px;font-weight:700;width:78px;flex-shrink:0;}
+  .hrow .v{font-size:13px;font-weight:800;}
+  .hrow .dd{margin-left:auto;font-size:12px;font-weight:800;}
+
+  .notes{max-width:1240px;margin:44px auto 0;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));}
+  .note{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);}
+  .note h3{margin:0 0 10px;font-size:14px;}
+  .note ul{margin:0;padding-left:18px;font-size:13px;}
+  .note li{margin-bottom:7px;}
+  .tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .tbl th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px 6px 0;border-bottom:1px solid var(--border);}
+  .tbl td{padding:6px 8px 6px 0;border-bottom:1px solid var(--border);vertical-align:top;}
+  .tbl td:first-child{font-weight:800;white-space:nowrap;}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--surface-alt);padding:1px 5px;border-radius:5px;}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <p class="eyebrow">US MESUR-01 · roadmap 3.51 · V0.9</p>
+  <h1 class="title">Mensurations corporelles</h1>
+  <p class="sub">Six mesures historisées, une courbe par mesure, cm ou pouces. Fait descendre <b>E8</b> de la spec muscu, cadrée le 04/07 en quatre lignes et jamais passée en US. <b>Photos de progression exclues</b> — Storage privé + RLS + quota + RGPD en font un lot à part. Le poids reste chez lui (<code>body_weight_entries</code>), on y renvoie.</p>
+</div>
+
+<div class="flow">
+
+  <!-- 1 — point d'entrée -->
+  <div class="col">
+    <div class="step">1 · Progression (muscu)</div>
+    <div class="phone"><div class="scr">
+      <div class="nav"><span class="tt">Progression</span></div>
+      <div class="sect">Volume hebdomadaire</div>
+      <div class="card"><div class="chart" style="height:70px"><svg viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"><polyline points="10,52 60,44 110,46 160,32 210,36 260,22 290,26" fill="none" stroke="#6b0028" stroke-width="2.5"/></svg></div></div>
+      <div class="sect">Équilibre musculaire</div>
+      <div class="card"><div class="hint">Barres par groupe…</div></div>
+      <div class="sect">Mensurations</div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="font-weight:800;font-size:15px">82,0 <span class="muted" style="font-size:12px">cm</span></div>
+            <div class="hint">Tour de taille · 12/07/2026</div>
+          </div>
+          <span class="d down" style="font-size:13px">−1,5</span>
+        </div>
+        <div class="btn primary" style="margin-top:10px">Prendre mes mesures</div>
+      </div>
+      <div class="hint spacer">Point d'entrée ici plutôt qu'un widget d'accueil (décision D5) : une mesure <b>mensuelle</b> ne mérite pas une place permanente sur un écran quotidien.</div>
+    </div></div>
+    <div class="caption">E8 est un epic <b>muscu</b> : l'entrée vit sur Progression, à côté du volume et de l'équilibre. Un lien renvoie vers la courbe de poids existante (4.30) au lieu de la dupliquer.</div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <!-- 2 — saisie -->
+  <div class="col">
+    <div class="step">2 · La saisie</div>
+    <div class="phone"><div class="scr">
+      <div class="nav"><span class="bk">‹</span><span class="tt">Mes mesures</span></div>
+      <div class="datefield"><span style="font-weight:700;font-size:13.5px">Date</span><span style="font-weight:800">12/07/2026</span></div>
+
+      <div class="card" style="padding:4px 13px">
+        <div class="fr"><span class="lab">Tour de taille</span><span class="inp">82,0</span><span class="d down">−1,5</span></div>
+        <div class="fr"><span class="lab">Poitrine</span><span class="inp">104,0</span><span class="d up">+0,5</span></div>
+        <div class="fr"><span class="lab">Hanches</span><span class="inp">98,0</span><span class="d none">—</span></div>
+        <div class="fr"><span class="lab">Bras</span><span class="inp">35,5</span><span class="d up">+0,5</span></div>
+        <div class="fr"><span class="lab">Cuisse</span><span class="inp">58,0</span><span class="d none">—</span></div>
+        <div class="fr"><span class="lab">Mollet</span><span class="inp empty">cm</span><span class="d none">—</span></div>
+      </div>
+
+      <div class="btn primary">Enregistrer</div>
+      <div class="hint">Tous les champs sont optionnels. Chacun est pré-rempli avec ton dernier relevé — vider un champ retire cette mesure de cette date.</div>
+      <div class="hint spacer"><b>Stockage toujours en cm.</b> En impérial, l'affichage passe en <b>pouces</b> (32,3 in) — jamais en pieds-pouces.</div>
+    </div></div>
+    <div class="caption">Pré-remplissage par le dernier relevé : on mesure rarement du premier coup, et l'écart se voit <b>en direct</b>. Le delta est en <b>texte</b>, jamais porté par la seule couleur.</div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <!-- 3 — historique -->
+  <div class="col">
+    <div class="step">3 · Historique</div>
+    <div class="phone"><div class="scr">
+      <div class="nav"><span class="bk">‹</span><span class="tt">Mensurations</span></div>
+
+      <div class="segs">
+        <div class="seg on">Taille</div><div class="seg">Poitrine</div><div class="seg">Hanches</div>
+      </div>
+      <div class="segs" style="margin-top:5px">
+        <div class="seg">Bras</div><div class="seg">Cuisse</div><div class="seg">Mollet</div>
+      </div>
+
+      <div class="chart">
+        <svg viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="0" y1="28" x2="300" y2="28" stroke="#ece0cd"/><line x1="0" y1="55" x2="300" y2="55" stroke="#ece0cd"/><line x1="0" y1="82" x2="300" y2="82" stroke="#ece0cd"/>
+          <polyline points="14,24 60,32 106,30 152,46 198,54 244,62 288,70" fill="none" stroke="#2f6f8f" stroke-width="1.6" opacity=".38"/>
+          <polyline points="14,26 60,30 106,34 152,44 198,54 244,63 288,69" fill="none" stroke="#2f6f8f" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="244" cy="63" r="3.5" fill="#2f6f8f"/>
+        </svg>
+      </div>
+      <div class="segs"><div class="seg on">3 mois</div><div class="seg">1 an</div><div class="seg">Tout</div></div>
+
+      <div class="sect">Relevés</div>
+      <div>
+        <div class="hrow"><span class="dt">12/07/2026</span><span class="v">82,0 cm</span><span class="dd d down">−1,5</span></div>
+        <div class="hrow"><span class="dt">14/06/2026</span><span class="v">83,5 cm</span><span class="dd d down">−1,0</span></div>
+        <div class="hrow"><span class="dt">10/05/2026</span><span class="v">84,5 cm</span><span class="dd d none">—</span></div>
+      </div>
+      <div class="hint spacer">Le premier relevé n'a <b>pas</b> de delta : « — », et non « 0 ». Il n'y a rien à comparer.</div>
+    </div></div>
+    <div class="caption">Une courbe à la fois — six superposées sont illisibles sur un téléphone. Trait estompé = brut, plein = lissé ; l'infobulle donne la <b>valeur brute</b> (règle UX-01).</div>
+  </div>
+
+</div>
+
+<div class="notes">
+
+  <div class="note">
+    <h3>Les 6 décisions</h3>
+    <table class="tbl">
+      <tr><th>#</th><th>Question</th><th>Retenu</th></tr>
+      <tr><td>D1</td><td>Modèle de table</td><td><b>Normalisé</b> (1 ligne / mesure)</td></tr>
+      <tr><td>D2</td><td>Quelles mesures</td><td>6 : taille, poitrine, hanches, bras, cuisse, mollet</td></tr>
+      <tr><td>D3</td><td>Gauche / droite</td><td>Non — ajoutable sans migration grâce à D1</td></tr>
+      <tr><td>D4</td><td>Fenêtre d'édition</td><td><b>Libre</b> (divergence assumée avec BIEN-01)</td></tr>
+      <tr><td>D5</td><td>Widget d'accueil</td><td>Non — entrée sur Progression</td></tr>
+      <tr><td>D6</td><td>Relevé partiel</td><td>Oui, mesures indépendantes</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <h3>D1 — pourquoi normalisé, alors que BIEN-01 est large</h3>
+    <ul>
+      <li>La liste des mesures <b>a vocation à bouger</b> : la spec E8 dit elle-même « etc. ». En large, <b>chaque ajout = une migration</b>.</li>
+      <li>Une table large serait majoritairement <code>NULL</code> : personne ne mesure les six.</li>
+      <li>« Une courbe par mesure » devient une <b>requête naturelle</b> au lieu d'un dépliage de colonnes.</li>
+      <li>BIEN-01 est large <b>parce que</b> ses 3 indicateurs sont figés par la roadmap. Ici, non — d'où la divergence.</li>
+      <li>Bonus : gauche/droite (D3) devient ajoutable <b>sans toucher la base</b>.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h3>D4 — pourquoi PAS de fenêtre, contrairement à BIEN-01</h3>
+    <ul>
+      <li>BIEN-01 borne à J-6 parce que réécrire un ressenti <b>subjectif</b> trois semaines plus tard le <b>fabrique</b>.</li>
+      <li>Un tour de taille est une mesure <b>objective</b>, relevée au mètre. La saisir en retard depuis une note est légitime.</li>
+      <li>Interdire serait un garde-fou <b>sans objet</b> — et empêcherait de rattraper un historique papier.</li>
+      <li>Seule limite conservée : <b>jamais dans le futur</b>.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h3>Les pièges repérés</h3>
+    <ul>
+      <li>⚠️ <code>formatHeight()</code> <b>ne convient pas</b> : il rend l'impérial en pieds-pouces → un bras de 35 cm s'afficherait « 1 ft 1,8 in » au lieu de <b>13,8 in</b>. Helpers dédiés, et <code>cmToIn</code> n'existe pas encore.</li>
+      <li>⚠️ <b>Stockage toujours en cm</b> : convertir au stockage ferait dériver l'historique à chaque bascule de réglage.</li>
+      <li>⚠️ <b>Sync rule à déployer à la main</b> après la migration (bucket <code>user_data</code>). Oubliée = tout marche en local, rien ne remonte, <b>aucune erreur</b>.</li>
+      <li>Delta du premier relevé = <code>null</code>, pas <code>0</code> : « pas de comparaison » n'est pas « pas de changement ».</li>
+      <li>Table à ajouter à l'<b>export RGPD</b> — la liste y est explicite.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

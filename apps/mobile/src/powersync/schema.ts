@@ -466,6 +466,22 @@ const daily_wellbeing = new Table({
   deleted_at: column.text,
 });
 
+// ── US MESUR-01 : mensurations corporelles ─────────────────────────────────
+// Migrations : supabase/migrations/20260729091950_mesur01_body_measurements.sql
+//              + 20260729091953_mesur01_body_measurements_publication.sql
+// Modèle **normalisé** (décision D1) : une ligne par (jour, type de mesure). `value_cm` est en
+// `real` côté local — la colonne Postgres est `numeric(5,1)`, non représentable en integer.
+// Le poids n'est PAS ici : il reste dans `body_weight_entries`.
+const body_measurements = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  kind: column.text,
+  value_cm: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -508,6 +524,7 @@ export const AppSchema = new Schema({
   body_weight_entries,
   daily_steps,
   daily_wellbeing,
+  body_measurements,
   exercises,
   exercise_translations,
   exercise_favorites,

@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 11 partiel · 24 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 12 partiel · 23 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -19,6 +19,7 @@ avant de pouvoir publier.
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
+| **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
 ## ➡️ Prochain — P0 bloquant (3)
@@ -27,9 +28,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (13) · P2 confort (5)</summary>
+<details><summary>P1 finitions (12) · P2 confort (5)</summary>
 
-**P1** — MESUR-01 — Mensurations corporelles · STREAK-01 — Joker / gel de streak · OBJ-01 — Objectifs personnels à échéance · BILAN-01 — Bilan hebdomadaire automatique · NUTR-F2 — Substitution d'aliments pour combler un macro · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — STREAK-01 — Joker / gel de streak · OBJ-01 — Objectifs personnels à échéance · BILAN-01 — Bilan hebdomadaire automatique · NUTR-F2 — Substitution d'aliments pour combler un macro · MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
 **P2** — NUTR-F1 — Rappels programmés nutrition · PARTAGE-01 — Carte de séance / course partageable · MUSC-F14 — Suggestion de substitution d'exercice · UX-05 — RPE ou RIR au choix · SOCLE-01 — RevenueCat câblé inactif
 
@@ -41,10 +42,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/uxlot01-finitions-recette` (modifications non commitées) |
-| Commits | 952 · `main` a **949** commits de retard sur `dev` |
-| Specs d'US | 79 au total — 75 clôturées, 4 en cours |
-| Migrations | 51/51 poussées sur le cloud |
+| Branche courante | `feature/mesur01-mensurations` (modifications non commitées) |
+| Commits | 953 · `main` a **950** commits de retard sur `dev` |
+| Specs d'US | 80 au total — 75 clôturées, 5 en cours |
+| Migrations | 53/53 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -53,11 +54,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `1d59fa7` feat(uxlot01): finitions de recette — états vides, cibles 48 dp, affordance de glissement (3.53/3.54/7.18)
 - `911922b` feat(admin01): archivage sûr du contenu éditorial — décomptes, restauration, historique préservé (US ADMIN-01, 8.11)
 - `44e567f` feat(contenu01): 3 programmes muscu publiés et bibliothèque nettoyée (US CONTENU-01, 3.1/5.2)
 - `085cc71` docs(admin01): spec, plan et maquette de l'archivage sûr (US ADMIN-01, 8.11)
 - `45579cb` feat(bien01): check-in quotidien de bien-être — humeur, énergie, stress (US BIEN-01, 1.24)
-- `5131cd0` docs(bien01): spec, plan et maquette du check-in bien-être (US BIEN-01, 1.24)
 
 ---
 

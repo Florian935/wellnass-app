@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/mesur01-mensurations` — MESUR-01 : mensurations corporelles (3.51 ⬜ → 🟡)
+
+> Validée par Florian le 29/07/2026, mes recommandations valant arbitrage des 6 décisions.
+> Fait enfin descendre **E8** de la spec muscu §5, cadrée le 04/07 et jamais dotée d'un modèle de
+> données — 25 jours d'écart. **🟡 et non ✅** : sync rule à redéployer + recette device.
+> Commit précédent : `1d59fa7`.
+
+**Ajouté**
+
+- `supabase/migrations/20260729091950_mesur01_body_measurements.sql` — table **normalisée** : une
+  ligne par `(user_id, log_date, kind)`, `kind` contraint par `check` (pas un enum : remplacer un
+  check est trivial, faire évoluer un enum ne l'est pas), `value_cm numeric(5,1)` borné 1–300 cm
+  (écarte la virgule oubliée sans juger la morphologie de personne), index unique **partiel**, index
+  de lecture `(user_id, kind, log_date desc)`, RLS own sans `delete`.
+- `supabase/migrations/20260729091953_..._publication.sql` — `alter publication powersync`.
+- `packages/shared/src/units.ts` — **`cmToIn` / `inToCm`**, qui n'existaient pas.
+- `packages/shared/src/measurements.ts` + `.test.ts` (**16 tests**) — les 6 mesures, bornes,
+  `measurementSeries` (trous conservés), `latestByKind`, `measurementDeltas`.
+- `apps/mobile/src/data/repositories/body-measurement-repository.ts` + test (**8 tests**).
+- `apps/mobile/src/components/measurements/MeasurementSheet.tsx` — feuille pré-remplie.
+- `apps/mobile/src/app/measurements.tsx` — historique : sélecteur de mesure, courbe, relevés + delta.
+- `apps/mobile/src/hooks/useUnits.ts` — `formatCircumference`, `toCircumferenceValue`,
+  `parseCircumferenceToCm` (accepte la **virgule** décimale).
+
+**Modifié**
+
+- `progress/index.tsx` — point d'entrée (décision D5 : pas de widget, une mesure **mensuelle** ne
+  mérite pas une place permanente sur un écran quotidien ; et E8 est un epic muscu).
+- `_layout.tsx` — écran `measurements` enregistré… **et `wellbeing` aussi**, qui avait été oublié à
+  la livraison de BIEN-01 : l'écran fonctionnait mais sans en-tête ni titre configurés.
+- `powersync/schema.ts`, `powersync-sync-rules.yaml` (bucket `user_data`), `MIGRATIONS.md` (2 lignes),
+  `data-export.ts` (export RGPD), `database.types.ts`, i18n `{fr,en}` (namespace `measurements`,
+  26 clés dont les 6 libellés de mesure), roadmap 3.51 → 🟡 (**168 / 12 / 23**).
+
+**Technique / Notes**
+
+- **D1, la décision structurante : modèle normalisé, à l'inverse de BIEN-01.** La liste des mesures a
+  vocation à bouger (la spec E8 dit « etc. ») ; en table large, chaque ajout coûterait une migration
+  pour des colonnes majoritairement `NULL`. BIEN-01 est large **parce que** ses 3 indicateurs sont
+  figés par la roadmap. Bénéfice acquis : ajouter gauche/droite (D3, écarté en V1) ne coûtera **aucune
+  migration**.
+- **`formatHeight` ne convenait pas** : il rend l'impérial en pieds-pouces, donc un tour de bras de
+  35 cm se serait affiché « 1 ft 1,8 in » au lieu de **13,8 in**. D'où des helpers dédiés aux
+  circonférences, avec un test d'**aller-retour** de conversion — une conversion asymétrique ferait
+  dériver l'historique à chaque bascule de réglage.
+- **Stockage toujours en cm.** La bascule métrique/impérial est un fait d'affichage ; convertir au
+  stockage réécrirait l'historique.
+- **Delta du premier relevé = `null`, pas `0`** — « rien à comparer » n'est pas « aucun changement ».
+  Testé explicitement, y compris le cas d'une valeur réellement stable (delta `0` légitime).
+- **D4 : pas de fenêtre de rattrapage, contrairement à BIEN-01.** Un tour de taille est une mesure
+  *objective* qu'on saisit légitimement en retard ; borner serait un garde-fou sans objet.
+- ⚠️ **Écart assumé entre spec et code, corrigé dans la spec** : §3.1 annonçait une date modifiable.
+  La feuille n'expose **pas** de sélecteur de date — seule la saisie du jour est possible. Le
+  repository accepte pourtant toute date passée (testé) : il ne manque que le contrôle d'UI. Ajouter
+  un sélecteur mal testé sur une saisie de 6 champs en fin de lot coûterait plus qu'il n'apporte.
+  Spec §3.1 et critère de recette 8 mis au réel.
+- ⚠️ **Reste à faire avant ✅** : déployer la **sync rule** (bucket `user_data`) et la recette device
+  (12 critères, dont la bascule d'unités **sans altérer l'historique**).
+- Qualité : `npm run test` **vert** (53 fichiers Vitest + 31 suites Jest / 150 tests, **24 nouveaux**),
+  `npm run typecheck` vert, `npm run lint` 0 erreur.
+
 ### 29/07/2026 — `feature/uxlot01-finitions-recette` — UX-LOT-01 : les 3 finitions de recette (3.53, 3.54, 7.18 → ✅)
 
 > Un seul lot pour trois correctifs de recette de même nature. Commit précédent : `911922b`.

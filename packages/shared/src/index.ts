@@ -16,6 +16,7 @@ export * from './health-connect';
 export * from './steps';
 export * from './wellbeing';
 export * from './editorial-usage';
+export * from './measurements';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';

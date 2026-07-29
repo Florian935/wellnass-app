@@ -141,6 +141,34 @@ export default function ProgressScreen() {
         <MuscleBalanceSection onStartWorkout={() => router.push('/workout')} />
 
         {/* ---------------------------------------------------------------- */}
+        {/* US MESUR-01 — entrée vers les mensurations.                       */}
+        {/* Ici plutôt qu'en widget d'accueil (décision D5) : une mesure       */}
+        {/* mensuelle ne mérite pas une place permanente sur un écran         */}
+        {/* quotidien, et E8 est un epic muscu — c'est donc sur Progression   */}
+        {/* qu'un pratiquant suit l'évolution de son corps.                    */}
+        {/* ---------------------------------------------------------------- */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('measurements.entryTitle')}
+        </Text>
+        <Pressable
+          onPress={() => router.push('/measurements')}
+          accessibilityRole="button"
+          accessibilityLabel={t('measurements.cta')}
+          style={[
+            styles.exerciseSelector,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.exerciseSelectorInner}>
+            <Ionicons name="body-outline" size={20} color={colors.accent} />
+            <Text style={[styles.measurementsCta, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
+              {t('measurements.cta')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+
+        {/* ---------------------------------------------------------------- */}
         {/* Section 2 — Par exercice                                          */}
         {/* ---------------------------------------------------------------- */}
         <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
@@ -505,6 +533,7 @@ function ExerciseSection({
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  measurementsCta: { fontFamily: fontFamily.bodySemi, fontSize: 15, flex: 1 },
   scroll: {
     paddingBottom: 32,
   },
