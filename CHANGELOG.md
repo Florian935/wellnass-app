@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 29/07/2026 — `feature/nutrf2-substitution-aliments` — NUTR-F2 : suggestion pour combler un macro (4.37 ⬜ → 🟡)
+
+> Validée par Florian le 29/07/2026, mes recommandations valant arbitrage des 7 décisions. Rend le
+> journal nutrition **actionnable** au lieu de constatif. Commit précédent : `9704ece`.
+> **Aucune migration, aucune sync rule** — que du calcul local.
+
+**Ajouté**
+
+- `packages/shared/src/macro-suggestion.ts` + `.test.ts` (**18 tests**) — `macroGaps`,
+  `pickMacroToFill`, `suggestFoodsForMacro`. **Déterministe, sans IA** : une suggestion d'aliment doit
+  être reproductible, explicable et fonctionner hors ligne.
+- `apps/mobile/src/components/nutrition/MacroSuggestionCard.tsx` — carte conditionnelle, sélecteur de
+  macro, ajout au journal en un tap.
+- i18n `suggestion` FR + EN.
+
+**Modifié**
+
+- `(tabs)/nutrition.tsx` — carte montée sous les repas, **jour courant seulement** (suggérer un ajout
+  à une journée passée n'a pas de sens).
+- Roadmap 4.37 → 🟡, compteurs **168 / 13 / 22**.
+
+**Technique / Notes**
+
+- **Les trois règles qui font la différence entre un conseil et un gadget**, chacune corrigeant une
+  façon naturelle de se tromper :
+  1. **tri sur la densité du macro POUR 100 KCAL**, pas pour 100 g. Un tri sur les g/100 g désignerait
+     mécaniquement les aliments les plus caloriques ; on cherche l'aliment *efficace*. Le test qui
+     verrouille ça : les **amandes**, les plus riches en protéines pour 100 g des trois candidats,
+     doivent finir **dernières** ;
+  2. **macro choisi sur l'écart RELATIF**, pas absolu — en absolu les glucides gagneraient presque
+     toujours, leur cible en grammes étant la plus élevée ;
+  3. **quantité hors bornes → aliment ÉCARTÉ**, pas tronqué. « 900 g de brocoli » et « 8 g de whey »
+     sont arithmétiquement justes et culinairement absurdes. C'était le risque n°1 nommé par le
+     backlog ; il est testé aux deux bornes.
+- Un candidat est aussi écarté si son apport calorique à la quantité proposée **dépasse le budget
+  restant** : combler un macro en faisant exploser les calories n'est pas un conseil imparfait, c'est
+  un mauvais conseil. Et la carte ne s'affiche pas du tout si le budget est déjà épuisé (D6).
+- **Deux erreurs dans mes propres tests, révélées par leur exécution** : j'avais supposé que le
+  fromage blanc 0 % battait le blanc de poulet en efficacité protéique (faux : 5,9 kcal par gramme de
+  protéine contre 5,3), et mes deux valeurs du test de départage par récence étaient inversées. Le
+  code était juste, les attentes non — corrigées, avec les calculs explicités en commentaire.
+- ⚠️ **Réduction assumée : le vivier est limité aux aliments récents (40).** La spec prévoyait
+  « récents **puis la base** ». Scorer la base côté client obligerait à charger l'intégralité de CIQUAL
+  en mémoire **à chaque rendu** de l'onglet — un vrai problème de performance pour un gain marginal,
+  les récents étant de toute façon le vivier le plus utile (on mange ce qu'on a chez soi). Un repli
+  propre demande un **pré-filtrage SQL**. Spec §2 et §D4 mises au réel, et un critère de recette
+  ajouté pour mesurer si les récents suffisent.
+- ⚠️ **Limite affichée, pas masquée** : la suggestion **ne tient pas compte du régime ni des allergènes
+  déclarés**. `nutrition_profiles` les porte, mais **aucun aliment n'est étiqueté** en base pour les
+  recouper. La carte le dit explicitement — les ignorer en silence serait un faux service.
+- **Hors périmètre clarifié** : le titre de la roadmap dit « substitution » mais son contenu décrit un
+  **ajout** pour combler un manque. Remplacer une entrée déjà journalisée suppose de choisir laquelle
+  retirer : autre geste, autre US.
+- Qualité : `npm run test` **vert** (54 fichiers Vitest + 31 suites Jest / 150 tests),
+  `npm run typecheck` vert, `npm run lint` 0 erreur — et **0 avertissement nouveau** (2 introduits
+  puis corrigés : `ReadonlyArray<T>` → `readonly T[]`, la convention du dépôt).
+
 ### 29/07/2026 — `feature/mesur01-mensurations` — MESUR-01 : mensurations corporelles (3.51 ⬜ → 🟡)
 
 > Validée par Florian le 29/07/2026, mes recommandations valant arbitrage des 6 décisions.

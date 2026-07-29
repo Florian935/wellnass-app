@@ -1760,5 +1760,27 @@
     "a11yDeltaFlat": "unchanged",
     "a11yKindTab": "Show chart: {{kind}}",
     "closeSheet": "Close entry form"
+  },
+  "suggestion": {
+    "title": "Fill a macro",
+    "missing_one": "You're {{count}} g of {{macro}} short",
+    "missing_other": "You're {{count}} g of {{macro}} short",
+    "add": "Add",
+    "quantity": "{{grams}} g · {{kcal}} kcal",
+    "noCandidate": "No food in your database fills this gap in a reasonable amount. Try another macro, or add the food manually.",
+    "dietDisclaimer": "Does not account for your declared diet or allergens.",
+    "macros": {
+      "protein": "protein",
+      "carbs": "carbs",
+      "fat": "fat"
+    },
+    "macrosShort": {
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat"
+    },
+    "a11yAdd": "Add {{grams}} grams of {{name}}, {{kcal}} kilocalories",
+    "a11yMacroTab": "Fill {{macro}}",
+    "addError": "Could not add. Please try again."
   }
 }

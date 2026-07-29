@@ -1760,5 +1760,27 @@
     "a11yDeltaFlat": "stable",
     "a11yKindTab": "Afficher la courbe : {{kind}}",
     "closeSheet": "Fermer la saisie"
+  },
+  "suggestion": {
+    "title": "Combler un macro",
+    "missing_one": "Il te manque {{count}} g de {{macro}}",
+    "missing_other": "Il te manque {{count}} g de {{macro}}",
+    "add": "Ajouter",
+    "quantity": "{{grams}} g · {{kcal}} kcal",
+    "noCandidate": "Aucun aliment de ta base ne comble cet écart dans une quantité raisonnable. Essaie un autre macro, ou ajoute l'aliment à la main.",
+    "dietDisclaimer": "Ne tient pas compte de ton régime ni de tes allergènes déclarés.",
+    "macros": {
+      "protein": "protéines",
+      "carbs": "glucides",
+      "fat": "lipides"
+    },
+    "macrosShort": {
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "fat": "Lipides"
+    },
+    "a11yAdd": "Ajouter {{grams}} grammes de {{name}}, {{kcal}} kilocalories",
+    "a11yMacroTab": "Combler les {{macro}}",
+    "addError": "L'ajout a échoué. Réessaie."
   }
 }

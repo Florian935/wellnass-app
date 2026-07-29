@@ -42,6 +42,8 @@ import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
+import { useRecentFoods } from '@/data/repositories/food-repository';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -144,6 +146,28 @@ export default function NutritionScreen() {
         day: 'numeric',
         month: 'short',
       });
+
+  // US NUTR-F2 — vivier de suggestion : les **aliments récents** (décision D4 — on mange ce qu'on a
+  // chez soi, et suggérer un aliment jamais consommé reste un conseil théorique).
+  //
+  // ⚠️ Réduction assumée par rapport à la spec, qui prévoyait « récents **puis la base** » : scorer la
+  // base côté client obligerait à charger l'intégralité de CIQUAL en mémoire à chaque rendu de
+  // l'onglet. Un repli sur la base demande un **pré-filtrage SQL** (les N aliments les plus denses
+  // pour le macro visé) — voir la spec §2.
+  const { foods: recentFoods } = useRecentFoods(40);
+  const recentIds = useMemo(() => recentFoods.map((f) => f.id), [recentFoods]);
+  const suggestionCandidates = useMemo(
+    () =>
+      recentFoods.map((f) => ({
+        id: f.id,
+        name: f.name,
+        kcalPer100g: f.kcalPer100g,
+        proteinPer100g: f.proteinPer100g,
+        carbsPer100g: f.carbsPer100g,
+        fatPer100g: f.fatPer100g,
+      })),
+    [recentFoods],
+  );
 
   const consumedMacros: Record<MacroKey, number> = {
     protein: totals.proteinG,
@@ -314,6 +338,22 @@ export default function NutritionScreen() {
             onEditEntry={onEditEntry}
           />
         ))}
+
+        {/* US NUTR-F2 — suggestion pour combler un macro. La carte se rend `null` d'elle-même s'il
+            n'y a pas d'objectif, pas d'écart significatif, ou plus de budget calorique (D6). Placée
+            sous les repas : le conseil doit apparaître là où le manque se voit. Jour courant
+            seulement — suggérer d'ajouter un aliment à une journée passée n'a pas de sens. */}
+        {isToday ? (
+          <MacroSuggestionCard
+            day={day}
+            mealType={mealList[0]?.key ?? 'snack'}
+            consumed={consumedMacros}
+            targets={targetMacros}
+            kcalRemaining={remaining}
+            candidates={suggestionCandidates}
+            recentIds={recentIds}
+          />
+        ) : null}
 
         {/* Section « Autres » : entrées dont le repas n'existe plus (récupération). Pas
             d'ajout direct — on les déplace vers un vrai repas depuis leur détail. */}

@@ -17,6 +17,7 @@ export * from './steps';
 export * from './wellbeing';
 export * from './editorial-usage';
 export * from './measurements';
+export * from './macro-suggestion';
 export * from './notifications';
 export * from './widgets';
 export * from './exercise';
