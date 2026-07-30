@@ -9,7 +9,7 @@
 
 **MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 174 livré · 20 partiel · 10 à faire (sur 210)
 
-Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
+Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
 
 ## 🔨 En cours
@@ -30,12 +30,12 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 
 ⏳ **14 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
-## ➡️ Prochain — P0 bloquant (3)
+## ➡️ Prochain — P0 bloquant (2)
 
-- CONF-07 — Accessibilité
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
@@ -53,9 +53,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/refonte-nutrition` (modifications non commitées) |
-| Commits | 975 · `main` a **972** commits de retard sur `dev` |
-| Specs d'US | 89 au total — 75 clôturées, 14 en cours |
+| Branche courante | `fix/conf07-accessibilite` (modifications non commitées) |
+| Commits | 976 · `main` a **973** commits de retard sur `dev` |
+| Specs d'US | 90 au total — 75 clôturées, 15 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -65,11 +65,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `cf17e5c` feat(partage01): carte de partage — charte alignée sur le thème sombre
 - `56ea41d` merge: intègre origin/dev dans la refonte nutrition
 - `e3abfa3` feat(nutrition): refonte visuelle du journal alimentaire
 - `5fda5e3` feat(muscf8): notifications muscu — push de record agrégé, célébration animée, rappel de séance (US MUSC-F8, 3.42/2.7/2.4)
 - `0710b73` docs(recettes): signale que les surfaces « aujourd'hui » ont changé et exigent un build release
-- `e3fe754` fix(dates): 19 lectures d'horloge gelées par React Compiler (release uniquement)
 
 ---
 

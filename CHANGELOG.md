@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/conf07-accessibilite` — CONF-07 cadrée (spec + plan + maquette)
+
+Commit précédent : `cf17e5c`. Roadmap **9.11 / 9.12**. **Aucun code applicatif** — l'US s'arrête à
+`etape: validation`, 2 décisions de charte en attente.
+
+#### Ajouté
+
+- [spec](docs/specs/functional/us/conf07-accessibilite.md) · [plan](docs/plans/conf07-accessibilite.md)
+  · [maquette](design/conf07-accessibilite/conf07-accessibilite.html) (comparatif avant/après).
+
+#### Corrigé
+
+- ⚠️ **Affirmation fausse rectifiée dans la roadmap 9.12** (et au CHANGELOG du 30/07 matin) : « le
+  clair passe désormais AA sur texte **et** composants ». **Faux.** La 1ʳᵉ passe
+  (`fix/theme-contraste-et-flash`) n'avait mesuré que **3 paires texte/fond**. Un audit exhaustif —
+  toutes les paires réellement employées, seuil choisi d'après l'**usage constaté dans le code** et
+  non d'après le nom du token — trouve **5 non-conformités restantes**.
+
+  | Rôle | Thème | Mesuré | Seuil | Pourquoi ce seuil |
+  |---|---|---|---|---|
+  | `accentText` / `accent` | sombre | **3,29** | 4,5 | libellé de **chaque bouton plein**, mode par défaut |
+  | `warnText` / `warn` | clair | **3,19** | 4,5 | c'est du texte (DeficitVolumeAlertCard, StreakCard, GoalCard) |
+  | `success` / `background` | clair | **3,23** | 4,5 | employé **comme texte** (sign-in, steps, WeightGoalCard) |
+  | `amber` / `background` | clair | **2,29** | 3,0 | couleur de **donnée** — échoue **même au seuil abaissé** |
+  | `accent` / `surface` | sombre | **4,45** | 4,5 | à 0,05 du seuil |
+
+#### Technique / Notes
+
+- **Valeurs correctives calculées**, pas choisies à l'œil : recherche de l'assombrissement **minimal**
+  en HSL franchissant le seuil, teinte et saturation **conservées** (règle R1, héritée de la 1ʳᵉ passe).
+  → `success` `#66714b` (4,53) · `warnText` `#8a6419` (4,52) · `amber` `#b47f31` (3,03) ·
+  `accentText` sombre `#1c150e` (5,48).
+- **`success` et `chartGreen` divergent désormais** alors qu'ils partagent `#7c8a5b`. `success` est du
+  texte (4,5) et descend ; `chartGreen` ne peint que des courbes (3,0) et **ne bouge pas** — les
+  assombrir tous les deux noircirait les graphes pour un gain nul. Ce sont déjà deux tokens distincts.
+- **Dynamic Type (9.11) : la conclusion est de ne *rien* poser.** Les 41 écrans à 1,5× ne montrent
+  aucune troncature. Poser des `maxFontSizeMultiplier` en masse *dégraderait* l'accessibilité (brider
+  l'agrandissement) pour cocher une case.
+- 🔴 **2 décisions de charte pour Damien / Florian** (spec §4) : **D1** — le libellé des boutons pleins
+  passe du blanc au brun foncé en sombre, changement très visible, d'où la maquette ; **D2** — l'écart
+  de 0,05 sur `accent`/`surface`, recommandation **écart assumé et documenté**.
+- **Le vrai livrable durable est le garde-fou** : le plan prévoit d'ancrer l'audit dans un test qui
+  échoue si une paire repasse sous son seuil. La 1ʳᵉ passe a échoué **parce que rien ne mesurait** —
+  d'où un ordre de build inversé, test rouge **avant** correctif.
+
 ### 30/07/2026 — `feature/refonte-nutrition` — carte de partage : charte alignée sur le thème sombre
 
 Commit précédent : `56ea41d`. US **PARTAGE-01** (roadmap **7.17**), reste à `etape: recette`.

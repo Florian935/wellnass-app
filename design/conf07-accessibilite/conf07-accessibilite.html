@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CONF-07 — Accessibilité : avant / après</title>
+<style>
+  :root{
+    --l-bg:#f7eede; --l-surf:#fffaf2; --l-surfalt:#f3ddd0; --l-border:#ece0cd;
+    --l-borderStrong:#90897d; --l-text:#33291f; --l-muted:#786a59; --l-accent:#b14f2b;
+    --l-warnbg:#f7ead6; --l-warnborder:#e9cfa0;
+    --d-bg:#1c150e; --d-surf:#30271e; --d-text:#f4ecdd; --d-muted:#c9b79a; --d-accent:#dd6e40;
+
+    /* avant */
+    --old-success:#7c8a5b; --old-warnText:#a97b1f; --old-amber:#cc9544; --old-accentText:#ffffff;
+    /* après */
+    --new-success:#66714b; --new-warnText:#8a6419; --new-amber:#b47f31; --new-accentText:#1c150e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:#33291f;
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px}
+  .sub{color:#6a5d4d;margin:0 0 28px}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:20px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;margin:0 0 18px;font-size:14px;max-width:70ch}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.pair{grid-template-columns:1fr}}
+  .col>.tag{font-size:11px;letter-spacing:.10em;text-transform:uppercase;font-weight:700;
+            margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .tag .dot{width:9px;height:9px;border-radius:50%}
+  .bad .dot{background:#b23b2e} .good .dot{background:#4c7a34}
+  .bad{color:#8f2f24} .good{color:#3d6229}
+
+  .phone{border-radius:20px;padding:18px;border:1px solid var(--l-border);
+         background:var(--l-bg);color:var(--l-text)}
+  .phone.dark{background:var(--d-bg);color:var(--d-text);border-color:#3a2e22}
+  .card{background:var(--l-surf);border:1px solid var(--l-border);border-radius:14px;
+        padding:14px;margin-bottom:12px}
+  .dark .card{background:var(--d-surf);border-color:#3a2e22}
+  .lbl{font-size:12px;color:var(--l-muted);margin-bottom:3px}
+  .dark .lbl{color:var(--d-muted)}
+
+  .btn{display:block;width:100%;text-align:center;padding:14px;border-radius:12px;
+       background:var(--d-accent);font-weight:700;font-size:16px;border:0;margin-bottom:10px}
+  .alert{border-radius:12px;padding:12px 14px;background:var(--l-warnbg);
+         border:1px solid var(--l-warnborder)}
+  .alert .t{font-weight:700;margin-bottom:2px}
+  .bar{height:12px;border-radius:6px;background:#eadcc6;overflow:hidden;margin:6px 0 2px}
+  .bar>span{display:block;height:100%}
+  .ratio{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+         padding:4px 8px;border-radius:6px;display:inline-block;margin-top:10px}
+  .r-bad{background:#f3d5d1;color:#8f2f24} .r-good{background:#dbe8d0;color:#3d6229}
+  .note{background:#fff8ea;border-left:3px solid var(--l-accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:16px;font-size:14px;max-width:78ch}
+  table{border-collapse:collapse;width:100%;margin-top:14px;font-size:14px;background:#fffaf2;
+        border-radius:10px;overflow:hidden}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #ece0cd}
+  th{background:#f3ddd0;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+  code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:#f3ddd0;
+       padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>CONF-07 — Accessibilité</h1>
+<p class="sub">Cinq non-conformités WCAG AA restantes, avant / après. Mesures calculées sur la
+palette, pas estimées à l'œil. <strong>La section 1 est la décision à trancher.</strong></p>
+
+<h2>1. 🔴 Décision D1 — libellé des boutons pleins, thème sombre</h2>
+<p class="why">C'est <strong>le</strong> changement visible de cette US : il touche chaque bouton
+principal de l'app, dans le mode par défaut. Le blanc sur terracotta ne donne que 3,29 — sous le
+seuil de 4,5. Assombrir le terracotta changerait la couleur signature du produit ; on préfère donc
+changer le texte. <strong>À voir avant d'acter.</strong></p>
+<div class="pair">
+  <div class="col"><div class="tag bad"><span class="dot"></span>Avant — blanc</div>
+    <div class="phone dark">
+      <button class="btn" style="color:var(--old-accentText)">Démarrer la séance</button>
+      <button class="btn" style="color:var(--old-accentText)">Enregistrer</button>
+      <span class="ratio r-bad">blanc / accent = 3,29 ✗ (min 4,5)</span>
+    </div></div>
+  <div class="col"><div class="tag good"><span class="dot"></span>Après — brun foncé</div>
+    <div class="phone dark">
+      <button class="btn" style="color:var(--new-accentText)">Démarrer la séance</button>
+      <button class="btn" style="color:var(--new-accentText)">Enregistrer</button>
+      <span class="ratio r-good">#1c150e / accent = 5,48 ✓</span>
+    </div></div>
+</div>
+
+<h2>2. Thème clair — texte d'alerte (<code>warnText</code>)</h2>
+<p class="why">Titre, message et bandeau des cartes d'alerte du dashboard : carte déficit/volume,
+joker de série, objectif indisponible.</p>
+<div class="pair">
+  <div class="col"><div class="tag bad"><span class="dot"></span>Avant <code>#a97b1f</code></div>
+    <div class="phone"><div class="alert" style="color:var(--old-warnText)">
+      <div class="t">Déficit calorique marqué</div>
+      <div>Ton volume d'entraînement est en hausse alors que l'apport baisse.</div></div>
+      <span class="ratio r-bad">3,19 ✗ (min 4,5)</span></div></div>
+  <div class="col"><div class="tag good"><span class="dot"></span>Après <code>#8a6419</code></div>
+    <div class="phone"><div class="alert" style="color:var(--new-warnText)">
+      <div class="t">Déficit calorique marqué</div>
+      <div>Ton volume d'entraînement est en hausse alors que l'apport baisse.</div></div>
+      <span class="ratio r-good">4,52 ✓</span></div></div>
+</div>
+
+<h2>3. Thème clair — texte de succès (<code>success</code>)</h2>
+<p class="why">« Objectif atteint », confirmation de création de compte, suggestion de progression.
+<strong>Attention</strong> : <code>chartGreen</code> partage la même valeur mais ne bouge
+<em>pas</em> — il ne peint que des courbes, où le seuil est 3,0 et déjà tenu.</p>
+<div class="pair">
+  <div class="col"><div class="tag bad"><span class="dot"></span>Avant <code>#7c8a5b</code></div>
+    <div class="phone"><div class="card">
+      <div class="lbl">Pas aujourd'hui</div>
+      <div style="font-size:24px;font-weight:700">10 482</div>
+      <div style="color:var(--old-success);font-weight:600">✓ Objectif atteint</div></div>
+      <span class="ratio r-bad">3,23 ✗ (min 4,5)</span></div></div>
+  <div class="col"><div class="tag good"><span class="dot"></span>Après <code>#66714b</code></div>
+    <div class="phone"><div class="card">
+      <div class="lbl">Pas aujourd'hui</div>
+      <div style="font-size:24px;font-weight:700">10 482</div>
+      <div style="color:var(--new-success);font-weight:600">✓ Objectif atteint</div></div>
+      <span class="ratio r-good">4,53 ✓</span></div></div>
+</div>
+
+<h2>4. Thème clair — ambre de données (<code>amber</code>)</h2>
+<p class="why">Barre des glucides et grille de couverture des micronutriments. C'est la plus nette
+des cinq : elle échoue <strong>même au seuil abaissé de 3,0</strong> réservé aux éléments non
+textuels.</p>
+<div class="pair">
+  <div class="col"><div class="tag bad"><span class="dot"></span>Avant <code>#cc9544</code></div>
+    <div class="phone"><div class="card">
+      <div class="lbl">Glucides</div>
+      <div class="bar"><span style="width:68%;background:var(--old-amber)"></span></div>
+      <div class="lbl">184 g / 270 g</div></div>
+      <span class="ratio r-bad">2,29 ✗ (min 3,0)</span></div></div>
+  <div class="col"><div class="tag good"><span class="dot"></span>Après <code>#b47f31</code></div>
+    <div class="phone"><div class="card">
+      <div class="lbl">Glucides</div>
+      <div class="bar"><span style="width:68%;background:var(--new-amber)"></span></div>
+      <div class="lbl">184 g / 270 g</div></div>
+      <span class="ratio r-good">3,03 ✓</span></div></div>
+</div>
+
+<h2>5. Récapitulatif</h2>
+<table>
+  <tr><th>Rôle</th><th>Thème</th><th>Avant</th><th>Après</th><th>Ratio</th><th>Seuil</th></tr>
+  <tr><td><code>accentText</code></td><td>sombre</td><td>#ffffff</td><td><strong>#1c150e</strong></td><td>3,29 → 5,48</td><td>4,5</td></tr>
+  <tr><td><code>warnText</code></td><td>clair</td><td>#a97b1f</td><td><strong>#8a6419</strong></td><td>3,19 → 4,52</td><td>4,5</td></tr>
+  <tr><td><code>success</code></td><td>clair</td><td>#7c8a5b</td><td><strong>#66714b</strong></td><td>3,23 → 4,53</td><td>4,5</td></tr>
+  <tr><td><code>amber</code></td><td>clair</td><td>#cc9544</td><td><strong>#b47f31</strong></td><td>2,29 → 3,03</td><td>3,0</td></tr>
+  <tr><td><code>accent</code>/<code>surface</code></td><td>sombre</td><td colspan="2">décision D2 — écart de 0,05</td><td>4,45</td><td>4,5</td></tr>
+</table>
+
+<div class="note">
+  <strong>Trois choses à retenir avant de valider.</strong><br>
+  1. Tous les correctifs sont de purs <strong>assombrissements en HSL</strong> : teinte et saturation
+  inchangées, l'identité chaude est préservée.<br>
+  2. <code>chartGreen</code> ne bouge pas et diverge désormais de <code>success</code> —
+  <em>c'est voulu</em>, assombrir les deux noircirait les graphes sans aucun gain.<br>
+  3. <strong>D2</strong> (<code>accent</code>/<code>surface</code> sombre à 4,45, soit 0,05 sous le
+  seuil) : recommandation = <strong>écart assumé et documenté</strong>. Le corriger coûterait soit la
+  couleur signature, soit toutes les cartes.
+</div>
+
+</div></body></html>
