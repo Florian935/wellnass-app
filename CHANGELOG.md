@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/theme-contraste-et-flash` — contraste WCAG du thème clair (9.12)
+
+Commit précédent : `1cdaf11`.
+
+#### Corrigé
+
+- 🔴 **Trois non-conformités WCAG AA en thème clair**, mesurées sur la palette (le sombre passait,
+  sur ces paires-là). Teinte et saturation conservées → l'identité chaude est intacte.
+  → [colors.ts](apps/mobile/src/theme/colors.ts).
+
+  | Rôle | Avant | Après | / fond | Seuil |
+  |---|---|---|---|---|
+  | `textMuted` | `#96856f` | `#786a59` | 3,10 → **4,55** | 4,5 |
+  | `accent` | `#c0562f` | `#b14f2b` | 3,95 → **4,53** | 4,5 |
+  | `borderStrong` *(nouveau)* | — | `#90897d` | 1,13 → **3,01** | 3,0 |
+
+  Effet de bord favorable : le blanc sur `accent` passe de 4,55 à **5,22** en clair.
+
+- 🟠 **Les champs de saisie n'avaient aucune limite perceptible**, dans les **deux** thèmes
+  (`border` / fond = 1,13 en clair, 1,37 en sombre — loin des 3,0 exigés par WCAG 1.4.11 pour un
+  composant d'interface). Flagrant en clair, où un champ vide se confondait avec la page.
+
+#### Ajouté
+
+- Token **`borderStrong`** dans `Palette` (clair `#90897d`, sombre `#797169`), appliqué aux **trois**
+  endroits où le trait *est* la limite du composant : [TextField](apps/mobile/src/components/TextField.tsx)
+  (27 écrans), la variante **contour** de [Button](apps/mobile/src/components/Button.tsx) — où le trait
+  est la seule délimitation — et les champs de
+  [ExerciseTargetsFields](apps/mobile/src/components/exercise/ExerciseTargetsFields.tsx).
+- [docs/plan-de-test.md](docs/plan-de-test.md) : §0 bis complété du tableau de contraste et de la
+  méthode pour refaire la mesure **sans device** ; §0 ter ajouté — évaluation « quels écrans ont
+  besoin d'une maquette » (voir Notes).
+
+#### Technique / Notes
+
+- **`border` n'a volontairement PAS été monté à 3:1.** Cerner toutes les cartes d'un trait lourd pour
+  un gain d'accessibilité nul aurait été le mauvais arbitrage : WCAG 1.4.11 vise les **limites de
+  composants**, pas les séparateurs décoratifs. D'où un token distinct plutôt qu'un durcissement
+  global. `Card`, `CollapsibleCard` et `ChartTooltip` gardent `border`.
+- ⚠️ **Correction d'une affirmation antérieure.** Le CHANGELOG du 30/07 disait « le thème sombre
+  passe partout » : **c'est faux**. L'audit initial ne mesurait que les paires texte/fond. Le **blanc
+  sur `accent` en sombre donne 3,29** (< 4,5) — soit le libellé de **chaque bouton plein**, dans le
+  mode par défaut de l'app. **Non corrigé ici** : assombrir `#dd6e40` changerait la couleur signature
+  du produit. Le correctif propre est de passer `accentText` en brun foncé (`#1c150e` → **5,48**) ;
+  c'est un choix de charte, laissé à Damien/Florian. Également ouvert : `accent`/`surface` en sombre
+  à 4,45, à 0,05 du seuil.
+- **Évaluation des maquettes** (§0 ter du plan de test) : 33 maquettes pour 58 écrans, mais la
+  conclusion est de **ne pas rétro-maquetter** les écrans livrés qui réutilisent le système de
+  composants (nutrition, onboarding, auth, exercises, history, progress). **Une seule vraie lacune :
+  `ShareCard`** (PARTAGE-01) — seul composant à ne pas utiliser `useTheme`, à fixer ses couleurs en
+  dur, à dessiner en `react-native-svg`, et **le seul visuel qui sort de l'app**. À maquetter même
+  après coup. À maquetter **avant** de coder : MUSC-F1b (schéma SVG), widget écran d'accueil Android,
+  MUSC-F9 (design d'interaction).
+- **Règle de process à trancher** : 8 US récentes sont passées à `code` sans maquette et sans
+  dispense documentée. Proposition — maquette **obligatoire si l'US introduit une primitive visuelle
+  nouvelle ou sort du système de design**, explicitement dispensable sinon.
+- Qualité (racine, codes de sortie lus sans pipe) : `lint` **0** (8 warnings préexistants) ·
+  `typecheck` **0** · `test` **0** — 1 126 Vitest + 182 Jest.
+- Vérifié sur device en thème clair : les champs de « Créer un aliment » ont désormais une limite
+  nette, les libellés secondaires sont lisibles.
+
 ### 30/07/2026 — `chore/gitignore-artefacts-design` — artefacts locaux de Claude Design ignorés
 
 Commit précédent : `936ec81`.

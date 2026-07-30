@@ -308,8 +308,8 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ✅ | **US 1.22 livré (24/07/2026).** Réglages → écran `/help` : FAQ statique embarquée (accordéon, 7 Q/R) + « Nous contacter » (mail natif) + « Signaler un bug » (mail + bloc technique). `expo-mail-composer`, zéro backend. `SUPPORT_EMAIL` placeholder + dev build requis avant recette. 🌐 bilingue FR+EN. Reste recette + Damien. |
 | 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | ~20h (réel — 6h sous-estimait : module natif + plugin Expo maison + 2 correctifs de recette) | 🟢 | ✅ | **Livré et recetté sur device le 28/07/2026** (US CONF-06) : écriture séances/courses, lecture du poids, opt-in, plugin Expo maison. La **déclaration Google Play** reste requise pour la **publication** (LANCE-00/01) — sans effet sur le fonctionnement en dev build. |
 | 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ✅ | **US 9.10 livré (24/07/2026).** Événements anonymisés dans notre base Supabase (`analytics_events` append-only + RLS + FK cascade), offline-first PowerSync. Consentement **opt-out** + réglage « Statistiques d'usage » + mention confidentialité. Service `track()` (allowlist anti-PII, non bloquant), 15 points instrumentés. Migration + sync rule PowerSync déployées ; **recette validée 100 % (Florian, 24/07/2026)**. Dashboards via outil BI = ultérieur. |
-| 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | Comportement RN par défaut, **pas de gestion explicite** (`maxFontSizeMultiplier`/`fontScale`), non vérifié. |
-| 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | 🟡 | Revue visuelle humaine, **aucune vérification outillée**. |
+| 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | **Vérifié le 30/07/2026** : 41 écrans capturés à `font_scale` 1,5×, **aucune troncature** — le comportement RN par défaut suffit. Reste 🟡 tant que la gestion explicite (`maxFontSizeMultiplier` là où c'est utile) n'est pas posée, mais **plus rien de bloquant n'a été trouvé**. |
+| 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | 🟡 | **Outillé et corrigé en partie le 30/07/2026.** Les ratios se calculent depuis la palette : 3 non-conformités trouvées **en thème clair** (`textMuted` 3,10 · `accent` 3,95 · limite de champ 1,13), toutes corrigées — le clair passe désormais AA sur texte **et** composants. **Reste ouvert : le thème sombre**, où le blanc sur `accent` donne **3,29** (< 4,5) sur *chaque* bouton plein. Correctif = choix de charte (passer `accentText` en brun foncé → 5,48), non tranché. |
 
 ---
 
@@ -559,6 +559,11 @@ Roadmap **juste sur ses 40 lignes ⬜/🟡** (preuve cherchée à charge), compt
 En revanche 4 lignes fausses au [catalogue](../product/analyses-donnees.md) — **RUN-10** (splits/km) et
 **RUN-05** livrées, **MUSC-06** livrée avec MUSC-05, **MN-13** absorbée par MN-06 — + `roadmap:` vide
 sur 4 specs livrées (1.23, 3.48, 3.49, 3.50). 2ᵉ salve de 5 candidats inscrite au backlog, après V0.9.
+
+**30/07/2026 — accessibilité (9.11 / 9.12) : audit outillé, contraste du thème clair corrigé**
+Les ratios WCAG se calculent depuis la palette : 3 non-conformités en clair, toutes corrigées ;
+Dynamic Type vérifié sans défaut sur 41 écrans. Les deux lignes **restent 🟡** — il demeure le blanc
+sur accent en thème sombre (3,29), qui est un choix de charte. Compteurs inchangés.
 
 **30/07/2026 — passe device sur 41 écrans : 5 correctifs, aucun statut modifié**
 Défauts d'affichage et d'accessibilité sur 9.9 (bandeau d'erreur alors que Health Connect est juste

@@ -51,8 +51,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/gitignore-artefacts-design` (modifications non commitées) |
-| Commits | 965 · `main` a **962** commits de retard sur `dev` |
+| Branche courante | `fix/theme-contraste-et-flash` (modifications non commitées) |
+| Commits | 966 · `main` a **963** commits de retard sur `dev` |
 | Specs d'US | 87 au total — 75 clôturées, 12 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -63,11 +63,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
 - `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
 - `ecee20e` fix(pas01): en-tête de navigation manquant sur l'écran des pas (9.15)
 - `7459258` feat(muscf14): suggestion de substitution d'exercice en séance (US MUSC-F14, 3.52)
 - `94885bf` feat(ux05): intensité affichée en RPE ou en RIR, au choix (US UX-05, 3.55)
-- `06a7d62` feat(partage01): carte de séance / course partageable en image (US PARTAGE-01, 7.17)
 
 ---
 

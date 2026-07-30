@@ -77,7 +77,9 @@ export function ExerciseTargetsFields({
 
   const fieldStyle = [
     styles.input,
-    { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
+    // Champ de saisie → `borderStrong` (3:1), comme `TextField`. Le `border` du conteneur
+    // ci-dessous reste décoratif, lui.
+    { backgroundColor: colors.background, borderColor: colors.borderStrong, color: colors.text },
   ];
 
   return (

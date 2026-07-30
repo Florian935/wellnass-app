@@ -45,7 +45,10 @@ export function Button({
         styles.button,
         isSolid
           ? { backgroundColor: solidColor }
-          : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
+          : // Variante contour : le trait est la **seule** chose qui délimite le bouton, donc
+            // `borderStrong` (3:1) et non `border`. Sans lui, un bouton secondaire n'a pas de
+            // limite perceptible.
+            { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.borderStrong },
         (pressed || isDisabled) && { opacity: isDisabled ? 0.5 : 0.85 },
       ]}
     >

@@ -20,7 +20,10 @@ export function TextField({ label, style, ...inputProps }: TextFieldProps) {
         accessibilityLabel={label}
         style={[
           styles.input,
-          { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text },
+          // `borderStrong` et non `border` : la limite d'un champ de saisie doit être perceptible
+          // (WCAG 1.4.11, 3:1). Avec `border`, un champ vide se confondait avec la page — flagrant
+          // en thème clair, où tout est pâle.
+          { backgroundColor: colors.surface, borderColor: colors.borderStrong, color: colors.text },
           style,
         ]}
         {...inputProps}

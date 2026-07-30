@@ -34,6 +34,31 @@ Passe pilotée en adb sur **41 écrans** (37 routes atteintes par deep link `wel
 | Zone de danger hors ligne | Suppression de compte bloquée, « Nécessite une connexion. » |
 | **Police 1,5×** | **Aucune troncature** sur aucun écran — uniquement du reflux attendu |
 | **i18n FR/EN** | **1451 clés de chaque côté, zéro manquante** dans un sens ou l'autre |
+| **Thème clair** (37 écrans) | Structure intacte, **zéro libellé perdu** — mais **3 non-conformités de contraste** mesurées, voir ci-dessous |
+
+### Contraste — mesuré, plus deviné
+
+Le §1 demandait une « revue visuelle » du contraste. Elle n'était pas outillée ; elle l'est
+maintenant : les ratios WCAG se **calculent** depuis la palette de
+[colors.ts](../apps/mobile/src/theme/colors.ts), sans juger à l'œil.
+
+| Paire | Clair | Sombre | Seuil AA |
+|---|---|---|---|
+| `text` / fond | 12,34 ✅ | 15,38 ✅ | 4,5 |
+| `textMuted` / fond | **3,10** ❌ | 9,22 ✅ | 4,5 |
+| `textMuted` / surface | **3,44** ❌ | 7,47 ✅ | 4,5 |
+| `accent` / fond | **3,95** ❌ | 5,48 ✅ | 4,5 |
+| `surface` / fond *(limite d'un champ)* | **1,11** ❌ | **1,23** ❌ | 3,0 |
+| `border` / fond | **1,13** ❌ | **1,37** ❌ | 3,0 |
+
+**Le thème sombre passe partout ; le clair échoue sur tout le texte secondaire.** Et les **champs de
+saisie n'ont de limite perceptible dans aucun des deux thèmes** — visible surtout en clair, où un
+champ vide se confond avec la page.
+
+Conséquence pour CONF-07 : le correctif est **central** (la palette), pas écran par écran.
+
+> Comment refaire la mesure : lire les 8 couleurs de chaque thème dans `colors.ts` et appliquer la
+> formule de luminance relative WCAG. Aucun device nécessaire — c'est du calcul sur la palette.
 
 ⚠️ **Piège de méthode, à connaître avant de refaire la passe** : `uiautomator dump` ne capture que
 le **viewport visible**. À 1,5×, le contenu descend et des libellés « disparaissent » du dump alors
@@ -49,6 +74,63 @@ Health Connect est simplement désactivé, et l'écran vide de `run/active`.
 (création d'objectif, de mensuration, de séance), la bascule FR/EN **dans l'app** (vérifiée
 statiquement à la place), la sortie vocale réelle de TalkBack, les gestes (swipe, glisser-déposer),
 la caméra, le GPS, et les scénarios à horloge longue.
+
+---
+
+## 0 ter. Maquettes — ce qui en a besoin, et ce qui n'en a pas besoin
+
+Évalué le 30/07/2026 : **33 maquettes** dans [design/](../design/) face aux **58 écrans** mobile.
+La question n'est pas « quels écrans n'ont pas de maquette » (la majorité), mais **où une maquette
+change encore quelque chose**.
+
+**Le critère retenu** : une maquette sert à *décider* d'un visuel **avant** de le coder. Pour un
+écran déjà livré et qui réutilise le système de composants, elle ne décide plus rien — le code est
+devenu la référence. En produire une serait de la documentation rétroactive, pas du design.
+
+### ❌ Ne pas rétro-maquetter — la majorité des écrans sans maquette
+
+Aucune maquette pour le **pilier Nutrition** (9 écrans), l'**onboarding** (6), la plupart des écrans
+d'**authentification**, `exercises`, `history`, `progress`, `profile`. Tous livrés, fonctionnels, et
+bâtis sur les mêmes composants (`Card`, `Screen`, `ScreenHeader`, `TextField`, `Button`,
+`EmptyState`). Une maquette produite aujourd'hui décrirait ce qui existe.
+
+### ✅ Une seule vraie lacune : la carte partageable (PARTAGE-01)
+
+[ShareCard.tsx](../apps/mobile/src/components/share/ShareCard.tsx) est le **seul** composant du lot
+récent à sortir du système de design :
+
+- il **n'utilise pas `useTheme`** et fixe ses propres couleurs en dur (`#6b0028` bordeaux,
+  `#c9a96e` doré) ;
+- il dessine en **`react-native-svg`**, primitive qu'aucun autre écran n'emploie ainsi ;
+- et surtout c'est le seul visuel qui **sort de l'app** : l'image part sur Instagram ou WhatsApp et
+  représente le produit publiquement.
+
+Un visuel de marque, hors charte, sans référence validée : c'est exactement ce que l'étape 3 du
+workflow existe pour éviter. **À maquetter, même après coup.**
+
+### ⚠️ À maquetter *avant* de coder — travaux non démarrés
+
+- **MUSC-F1b — muscles ciblés sur schéma SVG** (6.2) : corps humain en SVG, zones mises en évidence.
+  Nouveau langage visuel complet, aucun précédent dans l'app.
+- **Widget écran d'accueil Android** (2ᵉ salve) : surface hors de l'app, contraintes de taille
+  imposées par Android. Ne se dessine pas dans le navigateur.
+- **MUSC-F9 — décalage en glisser-déposer** (3.10) : design d'**interaction** (états de survol, cible
+  de dépôt, retour d'annulation) — ce qu'aucune capture d'écran ne décide.
+
+### 📋 Observation de process, à trancher
+
+**8 US récentes sont passées à `code` sans aucune maquette** : OBJ-01, BILAN-01, PARTAGE-01,
+STREAK-01, UX-05, MUSC-F14, NUTR-F2, UX-LOT-01. Leurs specs n'y font même pas référence, et aucune
+ne documente une dispense.
+
+Pour 7 d'entre elles c'était défendable — elles réutilisent le système de composants (`GoalCard`
+importe `widgets/primitives`, `ReviewCard` empile des `Card`…). Pour PARTAGE-01, non.
+
+**La règle à écrire noir sur blanc** dans le workflow : la maquette est **obligatoire quand l'US
+introduit une primitive visuelle nouvelle ou sort du système de design**, et **explicitement
+dispensable** sinon — la dispense étant notée dans la spec. Aujourd'hui l'étape 3 est présentée comme
+inconditionnelle, elle est sautée en silence 8 fois sur 8, et le seul cas qui la méritait est passé
+avec les autres.
 
 ---
 

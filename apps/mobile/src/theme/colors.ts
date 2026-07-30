@@ -9,7 +9,18 @@ export type Palette = {
   background: string;
   surface: string;
   surfaceAlt: string;
+  /** Séparateurs et contours **décoratifs** (cartes, lignes de liste). Volontairement discret. */
   border: string;
+  /**
+   * Contour d'un **composant d'interface** dont la limite doit être perceptible — champ de saisie
+   * d'abord. WCAG 1.4.11 exige **3:1** pour ce cas, et le tient contre les **deux** couleurs que la
+   * bordure sépare : le remplissage (`surface`) et la page (`background`).
+   *
+   * Distinct de `border` à dessein : un séparateur de carte ne porte aucune information nécessaire
+   * pour identifier un composant, il n'a donc pas à être aussi contrasté. Monter `border` à 3:1
+   * aurait cerné toutes les cartes d'un trait lourd pour un gain d'accessibilité nul.
+   */
+  borderStrong: string;
   text: string;
   textMuted: string;
   accent: string;
@@ -38,9 +49,13 @@ export const palettes: Record<ColorScheme, Palette> = {
     surface: '#fffaf2',
     surfaceAlt: '#f3ddd0',
     border: '#ece0cd',
+    borderStrong: '#90897d', // 3,01 / fond · 3,33 / surface
     text: '#33291f',
-    textMuted: '#96856f',
-    accent: '#c0562f',
+    // Assombris le 30/07/2026 : les valeurs d'origine (#96856f, #c0562f) donnaient 3,10 et 3,95
+    // contre le fond, sous les 4,5 exigés par WCAG AA pour du texte normal. Le thème sombre, lui,
+    // passait déjà — c'est le clair seul qui échouait. Teinte et saturation conservées.
+    textMuted: '#786a59', // 4,55 / fond · 5,05 / surface
+    accent: '#b14f2b', // 4,53 / fond · blanc dessus : 5,22
     accentText: '#ffffff',
     success: '#7c8a5b',
     danger: '#b23b2e',
@@ -59,6 +74,10 @@ export const palettes: Record<ColorScheme, Palette> = {
     surface: '#30271e',
     surfaceAlt: '#3a2e22',
     border: '#3a2e22',
+    // Même défaut de limite de champ qu'en clair (`border` n'était qu'à 1,37 du fond) : la bordure
+    // de composant est donc relevée ici aussi. Les couleurs de texte du thème sombre, elles, sont
+    // inchangées — elles passaient déjà largement.
+    borderStrong: '#797169', // 3,77 / fond · 3,05 / surface
     text: '#f4ecdd',
     textMuted: '#c9b79a',
     accent: '#dd6e40',
