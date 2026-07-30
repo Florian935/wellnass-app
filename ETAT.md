@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 174 livré · 20 partiel · 12 à faire (sur 212)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 174 livré · 22 partiel · 10 à faire (sur 212)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -58,7 +58,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 987 · `main` a **984** commits de retard sur `dev` |
+| Commits | 988 · `main` a **985** commits de retard sur `dev` |
 | Specs d'US | 94 au total — 75 clôturées, 19 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -66,15 +66,14 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 ### ⚠️ Alertes
 
 - ⚠️ Working tree : modifications non commitées
-- 🔴 **Le récapitulatif de la roadmap ne correspond pas au comptage réel** : 🟡 annoncé 20 / compté 22 · ⬜ annoncé 12 / compté 10. Corriger les compteurs (et le détail par version) dans [la roadmap](docs/roadmap/roadmap.md).
 
 ## 🕒 Derniers commits
 
+- `b460410` feat(cycle01): réglages, désactivation et écran de croisement
 - `1fa7eee` feat(cycle01): opt-in, widget 3 formes et écrans de saisie
 - `3d4fb5d` feat(cycle01): socle de données et calculs purs du suivi de cycle
 - `4bff808` docs(cycle01): widget complet au lieu d'un 5e onglet (arbitrage Damien)
 - `44f74eb` docs(cycle01): intègre la maquette Claude Design et supprime TEMP
-- `4bef8d8` docs(cycle01): cadre le suivi du cycle menstruel (spec + plan + maquette)
 
 ---
 

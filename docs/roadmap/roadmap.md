@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 174 | ~83 % |
-| 🟡 Partiel | 20 | ~10 % |
-| ⬜ À faire | 12 | ~6 % |
+| 🟡 Partiel | 22 | ~10 % |
+| ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **212** | |
@@ -461,7 +461,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (16) | 4 | 5 | 7 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
+| V0.9 (16) | 4 | 7 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (17) | 17 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… |
