@@ -33,6 +33,7 @@ avant de pouvoir publier.
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
+| **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
 ⏳ **14 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
@@ -41,9 +42,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (5) · P2 confort (2)</summary>
+<details><summary>P1 finitions (4) · P2 confort (2)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F1b — Dénivelé cumulé
 
 **P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
 
@@ -55,9 +56,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf1b-schema-muscles` (modifications non commitées) |
-| Commits | 979 · `main` a **976** commits de retard sur `dev` |
-| Specs d'US | 92 au total — 75 clôturées, 17 en cours |
+| Branche courante | `feature/runf3-resume-course-enrichi` (modifications non commitées) |
+| Commits | 980 · `main` a **977** commits de retard sur `dev` |
+| Specs d'US | 93 au total — 75 clôturées, 18 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -67,11 +68,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `2d8d57a` docs(muscf1b): cadre le schema corporel des muscles cibles
 - `690ceeb` docs(muscf9): cadre le glisser-deposer du planning (spec + plan + maquette)
 - `45abd7c` docs(lance00): rédige la fiche Play et la politique de confidentialité
 - `0df5e02` docs(conf07): cadre l'accessibilité — 5 non-conformités WCAG restantes
 - `cf17e5c` feat(partage01): carte de partage — charte alignée sur le thème sombre
-- `56ea41d` merge: intègre origin/dev dans la refonte nutrition
 
 ---
 
