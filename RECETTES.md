@@ -15,6 +15,29 @@
 
 ---
 
+## ⚠️ À lire avant de recetter (30/07/2026) — le code des surfaces « aujourd'hui » a changé
+
+Le correctif `e3fe754` a modifié **19 sites** portant des décisions « aujourd'hui » : dashboard
+(séance du jour, résumé nutrition, série, temps d'entraînement, alerte déficit), objectifs, planning,
+pas, bien-être, records, journal nutrition. Motif : React Compiler **gelait la date au montage**, donc
+en build release ces écrans répondaient éternellement sur le jour de leur premier affichage. Détail
+complet dans le [CHANGELOG](CHANGELOG.md).
+
+Deux conséquences pour ta recette :
+
+1. **Tu recettes du code modifié aujourd'hui** sur ces surfaces. Si un critère échoue, regarde d'abord
+   s'il touche l'une d'elles.
+2. **Ce défaut-là n'est pas observable sur un dev build** : le cache du compilateur est réinitialisé à
+   chaque sauvegarde de fichier, et Jest n'applique pas le plugin. Le vérifier demande un **build
+   release**, avec ce scénario : ouvrir l'app, laisser en arrière-plan **sans tuer le process**,
+   revenir le lendemain, et vérifier que la séance du jour, le journal nutrition, le widget bien-être
+   et la série ont bien suivi le changement de jour.
+
+Un test de non-régression a été ajouté pour cette classe de bugs (il compile le code et échoue si une
+date est gelée) — mais il protège l'avenir, il ne remplace pas cette vérification-là.
+
+---
+
 ## ⛔ Prérequis bloquant — à faire AVANT les recettes device
 
 - [x] **Déployer les sync rules PowerSync** — fait le 29/07/2026 (Damien). Coller
