@@ -36,6 +36,7 @@ import { useSettings } from './settings-repository';
 import { useGoals } from './goal-repository';
 import { useGoalAdherenceForRange } from './dashboard-repository';
 import { useStepGoal } from './daily-steps-repository';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 /**
  * Bornes UTC d'une fenêtre de jours **locaux**.
@@ -191,7 +192,8 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
   const { settings } = useSettings();
   const { goal: stepGoal, isLoading: stepGoalLoading } = useStepGoal();
 
-  const period = lastClosedWeek(new Date());
+  const today = useTodayDate();
+  const period = lastClosedWeek(today);
   const prevPeriod = previousWeek(period);
 
   const current = useWeekMetrics(period, stepGoal);
@@ -215,11 +217,15 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
     };
   }, [settings?.activePillars]);
 
+  // `todayKey` doit figurer dans les dépendances : sans lui, `elapsedRatio` restait figé sur le jour
+  // du calcul. Cette péremption-là est antérieure à React Compiler — c'est un `useMemo` écrit à la
+  // main dont la liste de dépendances était incomplète.
+  const todayKey = useTodayKey();
   const goals = useMemo<ReviewGoal[]>(
     () =>
       activeGoals.map((goal) => {
         const total = Math.max(1, daysInclusive(goal.startDate, goal.deadline));
-        const elapsed = Math.min(total, daysInclusive(goal.startDate, localDayKey(new Date())));
+        const elapsed = Math.min(total, daysInclusive(goal.startDate, todayKey));
         return {
           id: goal.id,
           label: goal.exerciseName ?? goal.kind,
@@ -227,7 +233,7 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
           elapsedRatio: elapsed / total,
         };
       }),
-    [activeGoals],
+    [activeGoals, todayKey],
   );
 
   const isLoading =

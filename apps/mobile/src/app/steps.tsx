@@ -36,6 +36,7 @@ import { upsertProfile } from '@/data/repositories/profile-repository';
 import { useHealthConnectState } from '@/hooks/useHealthConnectState';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useWindowStartKey } from '@/hooks/useTodayKey';
 
 const HISTORY_DAYS = 30;
 
@@ -55,9 +56,8 @@ export default function StepsScreen() {
   const { colors } = useTheme();
   const { state } = useHealthConnectState();
 
-  const since = new Date();
-  since.setDate(since.getDate() - (HISTORY_DAYS - 1));
-  const { rows, isLoading } = useDailySteps(localDayKey(since));
+  const sinceKey = useWindowStartKey(HISTORY_DAYS);
+  const { rows, isLoading } = useDailySteps(sinceKey);
   const { goal } = useStepGoal();
   const { steps: todaySteps, reached: todayReached } = useTodaySteps();
 

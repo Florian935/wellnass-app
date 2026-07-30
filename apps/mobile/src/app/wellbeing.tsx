@@ -42,6 +42,7 @@ import {
 } from '@/data/repositories/daily-wellbeing-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 /** Fenêtres proposées, alignées sur `/progress`. */
 const WINDOWS = [30, 90, 365] as const;
@@ -64,7 +65,7 @@ export default function WellbeingScreen() {
   const [editing, setEditing] = useState<WellbeingEntry | null>(null);
   const [editingDay, setEditingDay] = useState<string | null>(null);
 
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
   const { entries } = useWellbeingEntries();
 
   const series = useMemo(

@@ -27,9 +27,8 @@ import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
-const pad = (n: number) => String(n).padStart(2, '0');
-const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 /** Une barre macro (consommé / cible) avec pastille de couleur. */
 function MacroBar({ label, consumed, target, color }: { label: string; consumed: number; target: number | null; color: string }) {
@@ -59,10 +58,12 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
     useNutritionSummary();
   const { nutritionProfile } = useNutritionProfile();
   const { profile } = useProfile();
+  // Hook AVANT tout retour anticipé (règle des hooks). L'ancien `isoDay(new Date())` était placé
+  // après le `if (isLoading)` — légal pour un simple calcul, illégal pour un hook.
+  const today = useTodayKey();
 
   if (isLoading) return null;
 
-  const today = isoDay(new Date());
   const openFood = () =>
     router.push({ pathname: '/food-picker', params: { date: today, meal: 'breakfast' } });
   const openProfile = () => router.push('/nutrition-profile');

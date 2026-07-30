@@ -25,6 +25,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 /** Un jour de pas, forme applicative. */
 export type DailySteps = { id: string; logDate: string; steps: number };
@@ -63,7 +64,7 @@ export function useTodaySteps(): {
   reached: boolean;
   isLoading: boolean;
 } {
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
   const { data, isLoading } = useQuery<DailyStepsDbRow>(
     `SELECT id, log_date, steps FROM daily_steps WHERE deleted_at IS NULL AND log_date = ? LIMIT 1`,
     [todayKey],

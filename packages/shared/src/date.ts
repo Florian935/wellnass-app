@@ -4,6 +4,21 @@ export function localDayKey(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+/**
+ * Inverse de `localDayKey` : minuit **local** du jour désigné par la clé `AAAA-MM-JJ`.
+ *
+ * Ne jamais passer par `new Date('2026-07-12')` pour ça : la spec ECMAScript parse une date seule
+ * en **UTC**, donc dans un fuseau négatif on obtiendrait la veille. On découpe la chaîne et on
+ * construit la date par composants, ce qui la rend locale par construction.
+ *
+ * Sert à reconstruire une `Date` depuis la clé réactive du jour courant (`useTodayKey` côté mobile) :
+ * une seule valeur réactive à la racine, tout le reste en dérive.
+ */
+export function localDateFromDayKey(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y!, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+}
+
 /** Jour de semaine ISO : 0 = lundi … 6 = dimanche (JS getDay() est 0 = dimanche). */
 export function weekdayIndex(d: Date): number {
   return (d.getDay() + 6) % 7;

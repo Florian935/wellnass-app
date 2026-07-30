@@ -24,6 +24,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 /** Un check-in, forme applicative. */
 export type WellbeingEntry = {
@@ -85,7 +86,7 @@ export function useWellbeingRows(sinceDate?: string): {
 
 /** Check-in du jour, ou `null` s'il n'a pas encore été fait — alimente l'état du widget. */
 export function useTodayWellbeing(): { entry: WellbeingEntry | null; isLoading: boolean } {
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
   const { data, isLoading } = useQuery<WellbeingDbRow>(
     `SELECT ${SELECT_COLS} FROM daily_wellbeing WHERE deleted_at IS NULL AND log_date = ? LIMIT 1`,
     [todayKey],

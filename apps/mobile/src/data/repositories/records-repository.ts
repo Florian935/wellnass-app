@@ -61,6 +61,7 @@ import {
   type WorkoutEntry,
   type WorkoutSetItem,
 } from './workout-repository';
+import { useTodayDate, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -312,23 +313,31 @@ const PERIOD_DAYS: Record<Exclude<ProgressionPeriod, 'all'>, number> = {
  * - `all` : « depuis toujours » → epoch (1970-01-01T00:00:00.000Z).
  * - autres : « N derniers jours » (now − N jours).
  */
-function periodLowerBound(period: ProgressionPeriod): string {
+function periodLowerBound(period: ProgressionPeriod, ref: Date): string {
   if (period === 'all') {
     return new Date(0).toISOString();
   }
   const days = PERIOD_DAYS[period];
-  const bound = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  const bound = new Date(ref.getTime() - days * 24 * 60 * 60 * 1000);
   return bound.toISOString();
 }
 
 /**
- * Borne basse ISO UTC d'une fenêtre glissante de `days` jours (now − N jours).
- * Fonction dédiée (plutôt qu'un `Date.now()` inline dans un hook) pour rester
- * cohérent avec `periodLowerBound` / `startOfWeekLocalUtc` ci-dessus et respecter
- * la règle de pureté du rendu (`react-hooks/purity`).
+ * Borne basse ISO UTC d'une fenêtre glissante de `days` jours, à partir de `ref`.
+ *
+ * ⚠️ `ref` est **injectée** et non lue de l'horloge. Le commentaire précédent affirmait qu'extraire
+ * l'appel dans une fonction dédiée suffisait à « respecter la règle de pureté du rendu » : c'est
+ * faux sous React Compiler, qui mémoïse **l'appel** dans un slot mount-only quand ses arguments ne
+ * sont pas réactifs. La fenêtre cessait donc de glisser.
+ *
+ * ⚠️ **Changement de comportement assumé** : la borne était calculée depuis l'**instant** courant
+ * (`Date.now()`), elle l'est désormais depuis **minuit local** du jour de `ref`. La fenêtre est donc
+ * jour-alignée, comme `rollingWeekStartLocalUtc` et comme toutes les autres fenêtres du dépôt
+ * (`localMidnightDaysAgo`, `ROLLING_WEEK_DAYS - 1`). C'était l'outlier ; une borne à l'instant
+ * faisait bouger les stats au fil de la journée.
  */
-function rollingWindowLowerBound(days: number): string {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+function rollingWindowLowerBound(days: number, ref: Date): string {
+  return new Date(ref.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 /**
@@ -338,9 +347,9 @@ function rollingWindowLowerBound(days: number): string {
  * glissants. Jour-alignée en heure locale puis convertie en UTC pour comparer aux
  * `finished_at` (stockés en UTC).
  */
-function rollingWeekStartLocalUtc(): string {
-  return localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1).toISOString();
-}
+// `rollingWeekStartLocalUtc()` a été retirée : les hooks utilisent `useWindowStartUtc(ROLLING_WEEK_DAYS)`,
+// qui dérive de la clé de jour **réactive**. Une fonction de module lisant l'horloge était figée au
+// montage par React Compiler.
 
 // ---------------------------------------------------------------------------
 // Écritures / évaluation (hors contexte hook)
@@ -605,7 +614,8 @@ export function useExerciseProgression(
   metric: ProgressionMetric,
   period: ProgressionPeriod,
 ): { points: ProgressionPoint[]; isLoading: boolean } {
-  const lowerBound = periodLowerBound(period);
+  const today = useTodayDate();
+  const lowerBound = periodLowerBound(period, today);
 
   // Trois requêtes statiques ; on choisit le SQL selon la métrique. Le `useQuery`
   // reste un unique appel (règle des hooks), avec les mêmes params liés.
@@ -714,7 +724,7 @@ export function useMuscleVolumeThisWeek(): {
   volumes: MuscleVolume[];
   isLoading: boolean;
 } {
-  const weekStart = rollingWeekStartLocalUtc();
+  const weekStart = useWindowStartUtc(ROLLING_WEEK_DAYS);
 
   const sql = `
     SELECT e.muscle_primary AS muscle,
@@ -763,7 +773,8 @@ export function useMuscleBalance(): {
   volumes: { muscle: MuscleGroup; sets: number; tonnage: number }[];
   isLoading: boolean;
 } {
-  const since = rollingWindowLowerBound(14);
+  const today = useTodayDate();
+  const since = rollingWindowLowerBound(14, today);
 
   const sql = `
     SELECT e.muscle_primary AS muscle,
@@ -816,7 +827,7 @@ export function useWeeklyVolumeComparison(): {
   previous: number;
   isLoading: boolean;
 } {
-  const weekStart = rollingWeekStartLocalUtc();
+  const weekStart = useWindowStartUtc(ROLLING_WEEK_DAYS);
   const prevWeekStart = new Date(
     new Date(weekStart).getTime() - 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
@@ -863,14 +874,16 @@ export function useWeeklyVolumeComparison(): {
 
 /**
  * Range des séries dans des seaux de 7 jours (seau 0 = semaine courante) et renvoie le
- * **tonnage par semaine**, la plus ancienne d'abord. Pur / module-level (calcule `now` hors rendu).
+ * **tonnage par semaine**, la plus ancienne d'abord. Entièrement **pure** : `nowMs` est injecté —
+ * le lire ici l'aurait figé avec la mémoïsation de l'appel.
  */
 function bucketWeeklyVolume(
   rows: { finished_at: string | null; reps: number | null; weight_kg: number | null }[],
   weeks: number,
+  nowMs: number,
 ): number[] {
   const buckets = new Array(Math.max(1, weeks)).fill(0) as number[];
-  const now = Date.now();
+  const now = nowMs;
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
   for (const r of rows) {
     if (!r.finished_at) continue;
@@ -890,7 +903,8 @@ function bucketWeeklyVolume(
  * autres calculs de volume (séries validées non-échauffement de séances terminées).
  */
 export function useWeeklyVolumeSeries(weeks = 8): { series: number[]; isLoading: boolean } {
-  const since = rollingWindowLowerBound(weeks * 7);
+  const today = useTodayDate();
+  const since = rollingWindowLowerBound(weeks * 7, today);
   const sql = `
     SELECT w.finished_at AS finished_at, s.reps AS reps, s.weight_kg AS weight_kg
     FROM workout_sets s
@@ -907,7 +921,7 @@ export function useWeeklyVolumeSeries(weeks = 8): { series: number[]; isLoading:
     weight_kg: number | null;
   }>(sql, [since]);
 
-  return { series: bucketWeeklyVolume(data, weeks), isLoading };
+  return { series: bucketWeeklyVolume(data, weeks, today.getTime()), isLoading };
 }
 
 /**
@@ -972,8 +986,8 @@ const CROSS_WEEKS = 8;
  * local, et dayKey). Chaque fenêtre couvre 7 jours consécutifs ; la plus récente démarre à
  * J−6. Remplace les 8 semaines calendaires (décision produit : stats en 7 jours glissants).
  */
-function last8RollingWeeksLocal(): { weekStarts: string[]; oldestIsoUtc: string; oldestDayKey: string } {
-  const starts = rollingWeekStarts(CROSS_WEEKS); // récent → ancien, minuit local
+function last8RollingWeeksLocal(ref: Date): { weekStarts: string[]; oldestIsoUtc: string; oldestDayKey: string } {
+  const starts = rollingWeekStarts(CROSS_WEEKS, ref); // récent → ancien, minuit local
   const oldest = starts[starts.length - 1]!;
   return {
     weekStarts: starts.map(localDayKey),
@@ -992,7 +1006,8 @@ export function useTrainingNutritionCross(): {
   weeks: WeeklyTrainingNutrition[];
   isLoading: boolean;
 } {
-  const { weekStarts, oldestIsoUtc, oldestDayKey } = last8RollingWeeksLocal();
+  const today = useTodayDate();
+  const { weekStarts, oldestIsoUtc, oldestDayKey } = last8RollingWeeksLocal(today);
   const { settings } = useSettings();
   const pillars = settings?.activePillars ?? [...PILLARS];
   const active = pillars.includes('strength') && pillars.includes('nutrition');

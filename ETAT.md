@@ -52,8 +52,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `docs/socle01-differee` (modifications non commitées) |
-| Commits | 969 · `main` a **966** commits de retard sur `dev` |
+| Branche courante | `fix/date-gelee-react-compiler` (modifications non commitées) |
+| Commits | 970 · `main` a **967** commits de retard sur `dev` |
 | Specs d'US | 88 au total — 75 clôturées, 13 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -64,11 +64,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `e7c60ee` docs(socle01): SOCLE-01 différée après cadrage, REFACTO-01 créée (roadmap 9.14 → reporté)
 - `ba4e9ee` feat(nutrf1): rappels programmés nutrition — repas et pesée à l'échéance apprise (US NUTR-F1, 1.14/2.5)
 - `038c664` fix(theme): supprime le flash de thème à chaque navigation
 - `c227127` fix(a11y): contraste WCAG AA du thème clair + limite de champ perceptible (9.12)
 - `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
-- `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
 
 ---
 

@@ -44,6 +44,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { nowUtc, patch, txInsert } from './_sql';
+import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -202,7 +203,7 @@ export function useMissedSessions(): {
   isLoading: boolean;
 } {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
-  const today = localDayKey(new Date());
+  const today = useTodayKey();
 
   const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_MISSED, [
     userId,
@@ -224,8 +225,9 @@ export function useUpcomingSessions(days: number): {
   isLoading: boolean;
 } {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
-  const today = localDayKey(new Date());
-  const end = localDayKey(addDays(new Date(), Math.max(0, days - 1)));
+  const today = useTodayKey();
+  const todayDate = useTodayDate();
+  const end = localDayKey(addDays(todayDate, Math.max(0, days - 1)));
 
   const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_PLANNED_BETWEEN, [
     userId,

@@ -22,19 +22,18 @@
  * lignes. C'est la convention du dépôt (cf. `body-measurement-repository.ts`).
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { AppState, type AppStateStatus } from 'react-native';
+import { useMemo } from 'react';
 
 import { useQuery } from '@powersync/react';
 import {
   LEARNED_HOUR_WINDOW_DAYS,
-  localDayKey,
   localMidnightDaysAgo,
   resolveReminderDeadline,
   type LogSample,
   type NotificationPrefs,
   type ReminderDeadline as PureReminderDeadline,
 } from '@wellness/shared';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 /** Échéance résolue d'un rappel, plus l'état de chargement des requêtes locales. */
 export type ReminderDeadline = PureReminderDeadline & { isLoading: boolean };
@@ -81,47 +80,6 @@ function windowStartUtcFrom(todayKey: string): string {
   const [y, m, d] = todayKey.split('-').map(Number);
   const ref = new Date(y!, m! - 1, d!, 0, 0, 0, 0);
   return localMidnightDaysAgo(LEARNED_HOUR_WINDOW_DAYS - 1, ref).toISOString();
-}
-
-/**
- * Clé du jour local courant, **réactive**.
- *
- * ── Le bug que ce hook corrige (30/07/2026, trouvé en revue avant livraison) ───────────────────────
- * La version précédente écrivait directement `useQuery(sql, [localDayKey(new Date())])`, avec un
- * commentaire affirmant que la valeur était « recalculée à chaque render ». **C'était faux en
- * production.** `experiments.reactCompiler` est activé ([app.json](../../../app.json)) : le tableau
- * de paramètres n'ayant aucune entrée réactive, React Compiler le classe constant et le range dans
- * un slot `useMemoCache` **mount-only**, qui vit aussi longtemps que l'instance du composant.
- *
- * Et le bug était **invisible partout où on l'aurait cherché** : en dev, le cache est réinitialisé à
- * chaque sauvegarde de fichier ; sous Jest, le plugin du compilateur n'est pas appliqué. Il ne se
- * manifestait qu'en **build release**.
- *
- * Conséquence, sur le hook monté dans le layout racine (donc une seule instance pour toute la vie du
- * process, qu'Android conserve en arrière-plan) : l'utilisateur note son dîner le soir, revient le
- * lendemain matin, et la requête « déjà fait aujourd'hui ? » répond encore sur **la veille** → `true`
- * → le rappel est annulé. **Plus aucun rappel de repas, jamais**, pour exactement l'utilisateur
- * qu'on cible. Et la fenêtre d'apprentissage cessait de glisser.
- *
- * D'où un vrai `useState` : la clé devient une entrée réactive, et elle est rafraîchie au retour au
- * premier plan — le seul moment où l'app peut constater un changement de jour.
- */
-function useTodayKey(): string {
-  const [key, setKey] = useState(() => localDayKey(new Date()));
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state !== 'active') return;
-      // Garde d'idempotence : sans elle, chaque retour au premier plan re-render tous les abonnés.
-      setKey((current) => {
-        const next = localDayKey(new Date());
-        return next === current ? current : next;
-      });
-    });
-    return () => sub.remove();
-  }, []);
-
-  return key;
 }
 
 function useSamples(sql: string, todayKey: string): { samples: LogSample[]; isLoading: boolean } {

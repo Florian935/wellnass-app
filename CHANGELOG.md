@@ -10,6 +10,116 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/date-gelee-react-compiler` — 19 lectures d'horloge gelées par React Compiler
+
+Commit précédent : `e7c60ee`.
+
+#### Corrigé
+
+- 🔴 **Toute une famille de bugs, invisible en dev et en test, active uniquement en build release.**
+
+  `experiments.reactCompiler` est activé ([app.json](apps/mobile/app.json)). Quand une valeur calculée
+  dans un composant ou un hook n'a **aucune entrée réactive** — le cas de `localDayKey(new Date())`,
+  qui ne dépend d'aucune prop, d'aucun state, d'aucun hook — le compilateur la classe **constante** et
+  la range dans un slot `useMemoCache` **mount-only**, évalué **une seule fois** pour la durée de vie
+  de l'instance.
+
+  Sur les hooks montés dans le layout racine (`useStreakData`, `useWeeklyReview`), l'instance vit
+  aussi longtemps que le process JS. Sur les onglets, **aucun `unmountOnBlur` n'est configuré** : un
+  onglet monté au premier affichage ne se démonte jamais. La requête « et aujourd'hui ? » interrogeait
+  donc éternellement **le jour du montage**.
+
+  **Pourquoi personne ne l'avait vu** : `tsc` ne voit rien (le code est bien typé) ; en dev,
+  `enableResetCacheOnSourceFileChanges: !isProduction` réinitialise le cache à chaque sauvegarde ; et
+  sous Jest, `babel-preset-expo` n'applique le plugin que si l'appelant pose `supportsReactCompiler`,
+  ce que seul le transformer Metro fait — **jamais `babel-jest`**. Aucune des trois portes de qualité
+  ne pouvait l'attraper.
+
+  Découvert le matin même sur `reminder-habits-repository.ts` pendant la revue de NUTR-F1, puis
+  généralisé : l'audit a compilé chaque fichier de `apps/mobile/src` et trouvé **19 sites réels**.
+
+  Ce qui était cassé, concrètement :
+
+  | Hook / composant | Effet en release |
+  |---|---|
+  | `useStreakData` | `activeToday` répond sur la veille → **le rappel de série ne repart plus jamais** si l'utilisateur était actif hier ; le compteur se figeait ; `restorableGap` proposait un joker sur le mauvais jour |
+  | `useWeeklyReview` | Le planificateur décidait « notifier ou pas » sur **la semaine d'avant celle qu'il faut**, dès que le process survivait au lundi |
+  | `useTodaySession` | La carte « séance du jour » proposait celle de la veille — et **la valider marquait l'occurrence du mauvais jour** (`plannedSessionId` est le lien de complétion) |
+  | `WellbeingCard` | `todayKey` était passé en `logDate` à la feuille de saisie → **un check-in écrivait sur le mauvais jour** |
+  | `useTodayWellbeing` | Le check-in d'hier passait pour celui d'aujourd'hui → l'app ne proposait plus jamais de le faire |
+  | `useNutritionSummary`, onglet nutrition | Kcal et macros de la veille ; les repas du jour n'apparaissaient jamais |
+  | `useGoals` | Un objectif échu aujourd'hui restait « actif » ; les jours restants n'avançaient plus |
+  | `useTodaySteps`, `useUpcomingSessions`, `useRunStats`, `useTrainingTime`, `useDeficitVolumeAlert`, 4 sites de `records-repository` | Widgets et fenêtres glissantes figés. `useDeficitVolumeAlert().show` conditionnant une cellule de la grille, c'était même **la mise en page du dashboard** qui se figeait |
+
+#### Ajouté
+
+- [useTodayKey.ts](apps/mobile/src/hooks/useTodayKey.ts) — **une seule source d'horloge réactive**, et
+  tout le reste en dérive. C'est ce qui rend le correctif sûr : une fois la racine réactive, chaque
+  valeur calculée à partir d'elle tombe dans un scope mémoïsé **keyé sur elle**, donc se rafraîchit
+  avec elle. Il n'y a pas à auditer les dérivations une par une.
+  - `useTodayKey()` — clé `AAAA-MM-JJ`, rafraîchie au retour au premier plan (seul moment où l'app
+    peut constater un changement de jour sans minuteur qui la réveille pour rien) ;
+  - `useTodayDate()` — **minuit** local, pour les helpers de `shared` qui prennent une référence
+    injectable. Volontairement pas l'instant courant : une valeur changeant à la seconde
+    re-souscrirait les requêtes en boucle ;
+  - `useWindowStartKey(days)` / `useWindowStartUtc(days)` — bornes de fenêtre glissante
+    **inclusives** (`days = 7` → J-6), pour ne plus recopier le `- 1` qui est la source d'erreur de
+    bord classique.
+- [no-frozen-clock.test.ts](apps/mobile/src/hooks/__tests__/no-frozen-clock.test.ts) — **le garde-fou,
+  et il était indispensable** : puisque ni `tsc`, ni le dev, ni Jest ne voient cette classe de bugs, le
+  seul test possible **applique lui-même le compilateur** et échoue si un bloc mémoïsé au montage
+  contient une lecture d'horloge. 12 fichiers surveillés, liste explicite (un scan complet serait lent
+  en CI et signalerait des cas bénins, donc finirait désactivé). Inclut un **test du test** : on
+  compile un hook volontairement fautif et on vérifie que le détecteur le voit — sans ça, un détecteur
+  cassé passerait pour un code sain.
+- `localDateFromDayKey(key)` dans [date.ts](packages/shared/src/date.ts) — inverse de `localDayKey`,
+  par composants et non via `new Date('AAAA-MM-JJ')`, que la spec ECMAScript parse en **UTC** (donc la
+  veille dans un fuseau négatif).
+
+#### Modifié
+
+- **Onglet nutrition** : le jour affiché était un `useState` — gelé par **conception**, pas par le
+  compilateur, mais l'onglet ne se démontant jamais, le résultat utilisateur était le même (on revenait
+  le lendemain, le journal était encore sur la veille). Règle retenue : **suivre le jour courant
+  uniquement si l'utilisateur était déjà sur « aujourd'hui »**, pour ne pas écraser une navigation
+  délibérée vers un jour passé.
+- `rollingWindowLowerBound` (records) prend sa référence en paramètre. ⚠️ **Seul changement de
+  comportement de ce commit** : la borne était calculée depuis l'**instant** courant, elle l'est
+  désormais depuis **minuit local**. La fenêtre devient jour-alignée, comme `rollingWeekStartLocalUtc`
+  et comme toutes les autres du dépôt ; c'était l'outlier, et une borne à l'instant faisait bouger les
+  stats au fil de la journée. Concerne `useMuscleBalance` (14 j) et `useWeeklyVolumeSeries`.
+- `periodLowerBound`, `bucketWeeklyVolume`, `last8RollingWeeksLocal`, `daysAgo` : la date de référence
+  devient un **paramètre**. Le commentaire de `rollingWindowLowerBound` affirmait qu'extraire l'appel
+  dans une fonction dédiée suffisait à « respecter la règle de pureté du rendu » — c'est faux, le
+  compilateur mémoïse **l'appel**.
+- `weekly-review-repository` : `elapsedRatio` vivait dans un `useMemo` écrit à la main dont la liste de
+  dépendances **omettait le jour**. Péremption antérieure au compilateur, corrigée au passage.
+- `useTodayKey` était privé à `reminder-habits-repository` depuis le matin : dédupliqué vers le hook
+  partagé (41 lignes en moins).
+- `NutritionSummaryCard` : le hook est remonté **avant** le `if (isLoading) return null` — un simple
+  calcul pouvait vivre après un retour anticipé, un hook non.
+
+#### Technique / Notes
+
+- **Ce commit ne change aucune fenêtre de calcul, à l'exception documentée ci-dessus.** Les bornes de
+  `useDeficitVolumeAlert` ont été **délibérément laissées identiques à l'avant-correctif**, alors que
+  deux écarts y sont visibles : `daysAgo(7)` donne J-7, donc **8 jours inclusifs** pour un hook dit
+  « weekly », et `+ 'T00:00:00.000Z'` étiquette un minuit **local** comme s'il était UTC. Les redresser
+  ici aurait changé les chiffres de l'alerte au milieu d'un commit censé ne corriger que le gel.
+  **À traiter dans une passe dédiée** — c'est écrit en commentaire dans le code, à l'endroit exact.
+- **Restent classés 🟠, non traités** : `useMissedSessions`, `useProgression`, `usePaceTrend`, et les
+  libellés « J-n » de `GoalsCard`/`GoalCard`. Tous sur des écrans Stack qui se démontent, ou dans des
+  scopes réactifs qui se rafraîchissent au moindre changement de données. Impact borné.
+- **Règle à retenir** : dans le corps d'un composant ou d'un hook, jamais de `new Date()` ni de
+  `Date.now()`. Dans un **callback d'événement**, en revanche, c'est correct et attendu — la closure lit
+  l'horloge à l'appel. Le garde-fou ne regarde que les blocs mémoïsés, donc il ne gêne pas ce cas.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0 ·
+  `npm run test` 0 → **1195 Vitest** (61 fichiers) + **195 Jest** (38 suites — +1 suite et +13 tests
+  apportés par le garde-fou).
+- ⚠️ **Recette** : ces correctifs ne sont vérifiables qu'en **build release**. Scénario minimal : ouvrir
+  l'app, laisser en arrière-plan **sans tuer le process**, revenir le lendemain, et vérifier que la
+  séance du jour, le journal nutrition, le widget bien-être et la série ont suivi.
+
 ### 30/07/2026 — `docs/socle01-differee` — SOCLE-01 différée, REFACTO-01 créée (suivi seul, aucun code)
 
 Commit précédent : `ba4e9ee`.
