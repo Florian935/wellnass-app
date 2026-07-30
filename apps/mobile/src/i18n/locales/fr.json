@@ -470,7 +470,28 @@
       "dinner": "Dîner",
       "snack": "Collation",
       "other": "Autres"
-    }
+    },
+    "balance": {
+      "title": "BILAN DU JOUR",
+      "consumed": "Consommé",
+      "target": "Objectif",
+      "remaining": "Restant",
+      "kcalRemaining": "kcal restantes",
+      "kcalOver": "kcal au-delà",
+      "noTargetHint": "Complète ton profil pour obtenir un objectif calorique et suivre ce qu'il te reste.",
+      "a11yRemaining": "Il te reste {{kcal}} kcal sur un objectif de {{target}}.",
+      "a11yOver": "Tu dépasses ton objectif de {{target}} kcal de {{kcal}} kcal."
+    },
+    "micros": {
+      "title": "MICRONUTRIMENTS SUIVIS",
+      "subtitle": "% des apports conseillés",
+      "a11yCell": "{{label}} : {{value}} {{unit}}, soit {{pct}} % des apports conseillés."
+    },
+    "emptyDay": {
+      "title": "Journée encore vide",
+      "body": "Note ton premier repas, ou repars de ce que tu mangeais hier."
+    },
+    "mealMenu": "Actions du repas {{meal}}"
   },
   "meals": {
     "manage": "Gérer les repas",

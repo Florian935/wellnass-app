@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 168 livré · 19 partiel · 16 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 170 livré · 19 partiel · 16 à faire (sur 210)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -51,8 +51,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/theme-contraste-et-flash` (modifications non commitées) |
-| Commits | 967 · `main` a **963** commits de retard sur `dev` |
+| Branche courante | `feature/refonte-nutrition` (modifications non commitées) |
+| Commits | 968 · `main` a **965** commits de retard sur `dev` |
 | Specs d'US | 87 au total — 75 clôturées, 12 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -63,11 +63,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `038c664` fix(theme): supprime le flash de thème à chaque navigation
 - `c227127` fix(a11y): contraste WCAG AA du thème clair + limite de champ perceptible (9.12)
 - `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
 - `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
 - `ecee20e` fix(pas01): en-tête de navigation manquant sur l'écran des pas (9.15)
-- `7459258` feat(muscf14): suggestion de substitution d'exercice en séance (US MUSC-F14, 3.52)
 
 ---
 

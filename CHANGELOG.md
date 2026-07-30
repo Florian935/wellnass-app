@@ -10,6 +10,91 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `feature/refonte-nutrition` — refonte visuelle du journal alimentaire
+
+Commit précédent : `038c664`. Roadmap : **4.37** et **7.14** (lignes créées hors cadrage).
+
+Maquette source : [FitTrio - Nutrition.dc.html](design/FitTrio%20-%20Nutrition.dc.html) (Claude Design,
+10 écrans). **Seul l'écran 01 (journal) est réimplémenté** ; les 9 autres écrans du pilier gardent leur
+habillage actuel.
+
+#### Ajouté
+
+- **Carte héros « Bilan du jour »** ([DayBalanceCard.tsx](apps/mobile/src/components/nutrition/DayBalanceCard.tsx)) —
+  anneau calorique, restant au centre, détail Consommé / Objectif / Restant, badge de bonus séance.
+  La maquette proposait deux variantes (anneau vs chiffres géants) : **l'anneau est retenu**, c'est la
+  forme déjà employée par le widget `NutritionSummaryCard` et le timer de repos. Le dépassement n'est
+  pas traité comme une faute (couleur `danger` + libellé « au-delà », aucune alerte).
+- **Macros en 3 colonnes** ([MacroTriple.tsx](apps/mobile/src/components/nutrition/MacroTriple.tsx)) —
+  la carte passe de ~200 px à ~90 px. Remplissage borné à 100 %.
+- **Grille de micronutriments à couverture**
+  ([MicroCoverageGrid.tsx](apps/mobile/src/components/nutrition/MicroCoverageGrid.tsx)) — mini-anneaux
+  + % des VNR au lieu d'une liste de valeurs nues. Seuils de la maquette (vert ≥ 70 %, ambre 45–69 %,
+  terracotta < 45 %). La couleur **ne porte pas seule** l'information (WCAG 1.4.1) : le % est écrit.
+- **Valeurs nutritionnelles de référence**
+  ([micronutrient-reference.ts](packages/shared/src/micronutrient-reference.ts)) — VNR de l'annexe XIII
+  du **règlement (UE) 1169/2011**, 23 vitamines et minéraux, + `micronutrientCoverage` / `coverageLevel`.
+  ⚠️ **Sodium et lipides détaillés volontairement exclus** : ce sont des **plafonds**, pas des cibles —
+  afficher « 95 % couverts » sur du sel inverserait le message. Ces clés s'affichent sans anneau.
+- **Cercle d'accent sur les cartes** ([AccentHalo.tsx](apps/mobile/src/components/AccentHalo.tsx)) +
+  contexte d'identité de widget ([widget-identity.tsx](apps/mobile/src/components/widgets/widget-identity.tsx)),
+  fourni par les deux grilles et consommé par le halo.
+- Token de thème **`panelAccent`** (accent lisible sur fond `panel`).
+- 25 tests : VNR (10), géométrie du halo (8), cartes du journal (9 dans
+  [journal-cards-smoke.test.tsx](apps/mobile/src/components/nutrition/__tests__/journal-cards-smoke.test.tsx)),
+  hydratation des repas (3).
+
+#### Modifié
+
+- [nutrition.tsx](apps/mobile/src/app/(tabs)/nutrition.tsx) — navigation par jour encartée
+  (« Aujourd'hui » + date en sous-titre) ; cartes de repas (icône, total, menu `⋯` replié portant
+  *Copier* / *Enregistrer comme modèle*) ; repas vides en carte pointillée ; **état « journée vide »
+  plein** avec *Copier la journée d'hier* et *+ Ajouter un aliment*.
+- **Repas et carte de suggestion masqués sur une journée vide** — l'état vide portait déjà les deux
+  actions utiles ; empiler 5 cartes pointillées identiques par-dessus n'ajoutait que du bruit, et
+  « il te manque 160 g de protéines » sur une journée vide n'est qu'une paraphrase de l'objectif.
+
+#### Corrigé
+
+- 🔴 **Perte de configuration des repas** — [nutrition-meals.tsx](apps/mobile/src/app/nutrition-meals.tsx).
+  Le formulaire s'initialisait avec `useState(() => resolveMealConfig(nutritionProfile?.meals))` :
+  l'initialiseur ne s'exécute qu'au **premier rendu**, alors que `useNutritionProfile` lit SQLite en
+  asynchrone et renvoie `null` en attendant. L'écran affichait donc **toujours les 4 repas par défaut**,
+  quelle que soit la configuration réelle — et « Enregistrer » l'écrasait silencieusement, les entrées
+  de journal rattachées aux repas perdus basculant dans la section « Autres ».
+  **Reproduit en recette sur device** : un repas créé puis l'écran rouvert → il avait disparu du
+  formulaire. Explique très probablement les entrées « Autres » déjà présentes en base.
+  Correctif : état à `null` jusqu'à `isLoading === false`, indicateur de chargement, initialisation
+  **unique** (une resynchro écraserait les saisies en cours), garde-fou dans `save()`.
+  `nutrition-profile.tsx` a été vérifié : il dérive ses valeurs à chaque rendu, il n'a pas ce défaut.
+- **Rose saumon en thème clair** — repas vides, pastille `+`, bouton `⋯` et icône d'état vide
+  utilisaient `surfaceAlt`, qui est la surface **teintée accent** du design system (`--soft`), pas un
+  neutre. Invisible en thème sombre, franchement rose en clair. Repassés sur `surface` / `track`.
+
+#### Technique / Notes
+
+- **Halo : le bord net est voulu.** Une variante en dégradé radial (`react-native-svg`) a été
+  implémentée pour adoucir l'arête, puis **écartée par Damien** après comparaison sur device au profit
+  du cercle de la maquette. C'est noté dans le fichier — ne pas le « corriger » lors d'un futur passage.
+- **Halo : géométrie et présence par hachage** (FNV-1a de l'id du widget). Trois tranches
+  indépendantes du hash → coin, taille, présence. ~**1 carte sur 3** en porte : un cercle sur *chaque*
+  carte n'accentue plus rien. Déterministe (pas de saut au re-render) et stable au réagencement (la clé
+  est l'id, pas la position). Hors grille, repli sur une géométrie par module (`MENU_HALO`).
+- Diamètre du halo indexé sur `pad` (90 / 115 / 140) et opacité à .1 sur les cartes claires : le cercle
+  fixe de 150 de la maquette, dessiné pour une carte pleine largeur, couvrait le tiers d'une petite tuile.
+- **Dossier `design/` mis à jour.** L'export Claude Design avait des **noms de fichiers mélangés** (la
+  maquette Nutrition s'appelait `FitTrio.dc (2).html`, le `support.js` était un `.png`) : la
+  réconciliation s'est faite **par empreinte MD5**, pas par nom. 19 des 23 fichiers étaient déjà présents
+  à l'identique ; 4 étaient neufs.
+- **Écran recetté sur device** (Pixel 6a, APK release local) : bilan, macros, grille micros avec de
+  vraies données (Magnésium 22 %, Calcium 10 %, Fer 7 %, Sodium et Sel sans anneau), cartes de repas,
+  swipe Modifier/Supprimer, états vides, thèmes clair et sombre, et le parcours complet de
+  « Gérer les repas » (ajout, renommage, réordonnancement, suppression).
+- ⚠️ **Reste à faire** : les écrans 02 à 10 du pilier (détail d'entrée, sélection d'aliment, scan,
+  saisie rapide, aliment perso, recette, profil, statistiques, gestion des repas) gardent leur
+  habillage d'origine. Le choix entre les variantes « anneau » et « chiffres » du bilan reste
+  ré-ouvrable — la seconde est dans la maquette.
+
 ### 30/07/2026 — `fix/theme-contraste-et-flash` — flash de thème à chaque navigation
 
 Commit précédent : `c227127`.

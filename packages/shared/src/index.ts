@@ -36,6 +36,7 @@ export * from './nutrition';
 export * from './protein-target';
 export * from './records';
 export * from './food';
+export * from './micronutrient-reference';
 export * from './food-csv';
 export * from './food-form';
 export * from './meal-parser';

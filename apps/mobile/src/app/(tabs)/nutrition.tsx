@@ -43,6 +43,9 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
+import { DayBalanceCard } from '@/components/nutrition/DayBalanceCard';
+import { MacroTriple, type MacroKey } from '@/components/nutrition/MacroTriple';
+import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
 import { useRecentFoods } from '@/data/repositories/food-repository';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -53,9 +56,6 @@ const addDays = (iso: string, n: number) => {
   return isoDay(date);
 };
 
-const MACRO_KEYS = ['protein', 'carbs', 'fat'] as const;
-type MacroKey = (typeof MACRO_KEYS)[number];
-
 /** Unité d'un micronutriment déduite du suffixe de sa clé (`_mg` / `_ug`). */
 const microUnit = (key: MicronutrientKey): 'mg' | 'ug' => (key.endsWith('_ug') ? 'ug' : 'mg');
 
@@ -65,10 +65,12 @@ function fmtMicro(n: number, lang: 'fr' | 'en', decimals?: number): string {
   const s = n.toFixed(d);
   return lang === 'fr' ? s.replace('.', ',') : s;
 }
-const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
-  protein: 'accent',
-  carbs: 'success',
-  fat: 'textMuted',
+/** Emoji d'en-tête de repas — repère visuel de la maquette, replié sur 🍽️ pour un repas perso. */
+const MEAL_ICONS: Record<string, string> = {
+  breakfast: '🥐',
+  lunch: '🍽️',
+  dinner: '🍲',
+  snack: '🍎',
 };
 
 export default function NutritionScreen() {
@@ -139,13 +141,13 @@ export default function NutritionScreen() {
   const remaining = effectiveTarget != null ? effectiveTarget - totals.kcal : null;
 
   const isToday = day === isoDay(new Date());
-  const dayLabel = isToday
-    ? t('journal.today')
-    : new Date(day + 'T00:00:00').toLocaleDateString(i18n.language, {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-      });
+  // Toujours calculée : aujourd'hui, elle passe en sous-titre sous « Aujourd'hui » (la date reste
+  // utile pour se repérer) ; les autres jours, elle devient le libellé principal.
+  const dayLabel = new Date(day + 'T00:00:00').toLocaleDateString(i18n.language, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
 
   // US NUTR-F2 — vivier de suggestion : les **aliments récents** (décision D4 — on mange ce qu'on a
   // chez soi, et suggérer un aliment jamais consommé reste un conseil théorique).
@@ -240,92 +242,92 @@ export default function NutritionScreen() {
         }
       />
 
-      {/* Navigation entre les jours (4.22) */}
-      <View style={styles.dayNav}>
-        <Pressable accessibilityLabel={t('journal.prevDay')} onPress={() => setDay(addDays(day, -1))} hitSlop={10}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+      {/* Navigation entre les jours (4.22) — encartée : elle appartient au contenu du journal,
+          pas à l'en-tête de l'app, et se distingue ainsi des actions de la barre de titre. */}
+      <View style={[styles.dayNav, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('journal.prevDay')}
+          onPress={() => setDay(addDays(day, -1))}
+          style={styles.dayNavBtn}
+          hitSlop={6}
+        >
+          <Ionicons name="chevron-back" size={22} color={colors.accent} />
         </Pressable>
-        <Pressable onPress={() => setDay(isoDay(new Date()))}>
-          <Text style={[styles.dayLabel, { color: colors.text }]}>{dayLabel}</Text>
+        <Pressable onPress={() => setDay(isoDay(new Date()))} style={styles.dayNavCenter}>
+          <Text style={[styles.dayLabel, { color: colors.text }]}>
+            {isToday ? t('journal.today') : dayLabel}
+          </Text>
+          {isToday ? <Text style={[styles.dayDate, { color: colors.textMuted }]}>{dayLabel}</Text> : null}
         </Pressable>
-        <Pressable accessibilityLabel={t('journal.nextDay')} onPress={() => setDay(addDays(day, 1))} hitSlop={10}>
-          <Ionicons name="chevron-forward" size={24} color={colors.text} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('journal.nextDay')}
+          onPress={() => setDay(addDays(day, 1))}
+          style={styles.dayNavBtn}
+          hitSlop={6}
+        >
+          <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Totaux du jour (4.20 / 4.21) */}
-        <View style={[styles.totals, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.totalsHead}>
-            <View>
-              <Text style={[styles.kcalValue, { color: colors.text }]}>{totals.kcal}</Text>
-              <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>
-                {effectiveTarget != null ? `/ ${effectiveTarget} ${t('nutrition.kcal')}` : t('nutrition.kcal')}
-              </Text>
-              {trainingApplies && !targetLoading ? (
-                <Text style={[styles.trainingBadge, { color: colors.accent }]}>
-                  {t(bonusSource === 'run' ? 'journal.runDayBadge' : 'journal.trainingDayBadge', {
-                    kcal: trainingBonus,
-                  })}
-                </Text>
-              ) : null}
-            </View>
-            {remaining != null ? (
-              <View style={styles.remaining}>
-                <Text style={[styles.remainingValue, { color: remaining < 0 ? colors.danger : colors.success }]}>
-                  {remaining < 0 ? '+' : ''}{Math.abs(remaining)}
-                </Text>
-                <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>
-                  {remaining < 0 ? t('journal.over') : t('journal.remaining')}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-          <View style={styles.macroBars}>
-            {MACRO_KEYS.map((key) => {
-              const consumed = consumedMacros[key];
-              const goal = targetMacros?.[key] ?? 0;
-              const pct = goal > 0 ? Math.min(100, (consumed / goal) * 100) : 0;
-              return (
-                <View key={key} style={styles.macroBar}>
-                  <View style={styles.macroBarHead}>
-                    <Text style={[styles.macroName, { color: colors.textMuted }]}>{t(`nutrition.macros.${key}`)}</Text>
-                    <Text style={[styles.macroVal, { color: colors.text }]}>
-                      {consumed}{goal > 0 ? ` / ${goal}` : ''} g
-                    </Text>
-                  </View>
-                  <View style={[styles.track, { backgroundColor: colors.surfaceAlt }]}>
-                    <View style={[styles.fill, { backgroundColor: colors[MACRO_COLORS[key]], width: `${pct}%` }]} />
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-          {/* Micronutriments suivis du jour (4.35) */}
-          <TrackedMicrosRecap entries={entries} />
+        {/* Bilan du jour (4.20 / 4.21) — carte héros */}
+        <DayBalanceCard
+          consumed={totals.kcal}
+          target={effectiveTarget}
+          trainingBonus={trainingBonus}
+          bonusSource={bonusSource}
+          isTrainingDay={trainingApplies && !targetLoading}
+          onSetTarget={() => router.push('/nutrition-profile')}
+        />
 
-          {target == null ? (
-            <Pressable onPress={() => router.push('/nutrition-profile')}>
-              <Text style={[styles.setupLink, { color: colors.accent }]}>{t('journal.setTarget')}</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        <MacroTriple consumed={consumedMacros} targets={targetMacros} />
 
-        {/* Copier la journée d'hier (4.18) — seulement si le jour affiché est vide */}
+        {/* Micronutriments suivis du jour (4.35) */}
+        <TrackedMicrosRecap entries={entries} />
+
+        {/* Journée vide (4.18) — un état plein plutôt qu'une simple ligne pointillée : c'est le
+            premier écran d'un nouvel utilisateur, et « copier hier » y est l'action la plus utile. */}
         {entries.length === 0 ? (
-          <Pressable
-            onPress={copyYesterday}
-            style={[styles.copyDay, { borderColor: colors.border }]}
-            accessibilityRole="button"
-            accessibilityLabel={t('journal.copyDayYesterday')}
-          >
-            <Ionicons name="copy-outline" size={16} color={colors.accent} />
-            <Text style={[styles.copyDayLabel, { color: colors.accent }]}>{t('journal.copyDayYesterday')}</Text>
-          </Pressable>
+          <View style={[styles.emptyDay, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.track }]}>
+              <Text style={styles.emptyIconGlyph}>🍽️</Text>
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('journal.emptyDay.title')}</Text>
+            <Text style={[styles.emptyBody, { color: colors.textMuted }]}>{t('journal.emptyDay.body')}</Text>
+            <Pressable
+              onPress={copyYesterday}
+              style={[styles.emptyPrimary, { backgroundColor: colors.panel }]}
+              accessibilityRole="button"
+              accessibilityLabel={t('journal.copyDayYesterday')}
+            >
+              <Ionicons name="copy-outline" size={17} color={colors.panelText} />
+              <Text style={[styles.emptyPrimaryLabel, { color: colors.panelText }]}>
+                {t('journal.copyDayYesterday')}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: '/food-picker',
+                  params: { date: day, meal: mealList[0]?.key ?? 'breakfast' },
+                })
+              }
+              style={[styles.emptySecondary, { borderColor: colors.borderStrong }]}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.emptyPrimaryLabel, { color: colors.accent }]}>
+                + {t('journal.addFood')}
+              </Text>
+            </Pressable>
+          </View>
         ) : null}
 
-        {/* Repas configurables (4.14 / 4.15) */}
-        {mealList.map((m) => (
+        {/* Repas configurables (4.14 / 4.15). Masqués sur une journée vide : l'état vide ci-dessus
+            porte déjà les deux actions utiles, et empiler 5 cartes pointillées identiques par-dessus
+            ne donnait aucun repère de plus — juste du bruit. */}
+        {entries.length > 0 ? mealList.map((m) => (
           <MealSection
             key={m.key}
             mealKey={m.key}
@@ -337,13 +339,14 @@ export default function NutritionScreen() {
             onSelectEntry={onSelectEntry}
             onEditEntry={onEditEntry}
           />
-        ))}
+        )) : null}
 
         {/* US NUTR-F2 — suggestion pour combler un macro. La carte se rend `null` d'elle-même s'il
             n'y a pas d'objectif, pas d'écart significatif, ou plus de budget calorique (D6). Placée
             sous les repas : le conseil doit apparaître là où le manque se voit. Jour courant
-            seulement — suggérer d'ajouter un aliment à une journée passée n'a pas de sens. */}
-        {isToday ? (
+            seulement — et jamais sur une journée vide, où « il te manque 160 g de protéines » n'est
+            qu'une paraphrase de l'objectif, pas un conseil. */}
+        {isToday && entries.length > 0 ? (
           <MacroSuggestionCard
             day={day}
             mealType={mealList[0]?.key ?? 'snack'}
@@ -401,48 +404,39 @@ export default function NutritionScreen() {
   );
 }
 
-/** Totaux du jour des micronutriments suivis, sous les barres macros du récap (4.35). */
+/** Micronutriments suivis du jour, en grille de couverture (4.35). */
 function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
   const tracked = useTrackedMicros((s) => s.tracked);
   const dayMicros = useMemo(
     () => sumMicronutrients(entries.map((e) => e.micronutrients)),
     [entries],
   );
-  if (tracked.length === 0) return null;
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
-  const row = (label: string, value: string, unit: string, key: string) => (
-    <View key={key} style={styles.microRow}>
-      <Text style={[styles.microLabel, { color: colors.textMuted }]} numberOfLines={1}>{label}</Text>
-      <Text style={styles.microValueWrap}>
-        <Text style={[styles.microValue, { color: colors.text }]}>{value}</Text>
-        <Text style={[styles.microUnit, { color: colors.textMuted }]}> {unit}</Text>
-      </Text>
-    </View>
-  );
+  const cells = useMemo<MicroCell[]>(() => {
+    const list: MicroCell[] = tracked.map((key) => ({
+      key,
+      label: t(`nutrition.micros.labels.${key}`),
+      value: fmtMicro(dayMicros[key] ?? 0, lang),
+      unit: t(`nutrition.micros.units.${microUnit(key)}`),
+      amount: dayMicros[key] ?? 0,
+    }));
+    // Le sel est dérivé du sodium et n'a pas de VNR : il reste affiché, sans anneau.
+    if (tracked.includes('sodium_mg')) {
+      list.push({
+        key: 'salt',
+        label: t('nutrition.micros.labels.salt'),
+        value: fmtMicro(saltFromSodiumMg(dayMicros.sodium_mg ?? 0), lang, 2),
+        unit: t('nutrition.micros.units.g'),
+        amount: null,
+      });
+    }
+    return list;
+  }, [tracked, dayMicros, lang, t]);
 
-  return (
-    <View style={[styles.microsRecap, { borderTopColor: colors.border }]}>
-      {tracked.map((key) =>
-        row(
-          t(`nutrition.micros.labels.${key}`),
-          fmtMicro(dayMicros[key] ?? 0, lang),
-          t(`nutrition.micros.units.${microUnit(key)}`),
-          key,
-        ),
-      )}
-      {tracked.includes('sodium_mg')
-        ? row(
-            t('nutrition.micros.labels.salt'),
-            fmtMicro(saltFromSodiumMg(dayMicros.sodium_mg ?? 0), lang, 2),
-            t('nutrition.micros.units.g'),
-            'salt',
-          )
-        : null}
-    </View>
-  );
+  if (tracked.length === 0) return null;
+  return <MicroCoverageGrid cells={cells} />;
 }
 
 /** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
@@ -768,6 +762,9 @@ function MealSection({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
+  // Menu du repas (copier / enregistrer comme modèle) : replié par défaut. Deux actions
+  // secondaires n'ont pas à occuper l'en-tête de chacun des 3 à 6 repas de la journée.
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const copyFromYesterday = () => {
     void copyMeal(addDays(day, -1), mealKey, day).then((n) => {
@@ -790,20 +787,76 @@ function MealSection({
     );
   };
 
-  return (
-    <View style={styles.meal}>
-      <View style={styles.mealHead}>
-        <Text style={[styles.mealName, { color: colors.text }]}>{mealLabel}</Text>
-        <View style={styles.mealHeadRight}>
-          {entries.length > 0 ? (
-            <Pressable onPress={saveAsTemplate} hitSlop={8} accessibilityLabel={t('journal.saveMeal')}>
-              <Ionicons name="bookmark-outline" size={18} color={colors.textMuted} />
-            </Pressable>
-          ) : null}
-          <Text style={[styles.mealKcal, { color: colors.textMuted }]}>{mealKcal} {t('nutrition.kcal')}</Text>
+  // Repas vide et ajoutable → carte pointillée, sans en-tête ni total : il n'y a rien à totaliser,
+  // et l'écran reste lisible quand 3 repas sur 5 sont vides en début de journée.
+  if (entries.length === 0 && onAdd) {
+    return (
+      <Pressable
+        onPress={onAdd}
+        accessibilityRole="button"
+        accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
+        style={[styles.mealEmpty, { backgroundColor: colors.surface, borderColor: colors.borderStrong }]}
+      >
+        <View style={styles.mealEmptyLeft}>
+          <Text style={styles.mealIcon}>{MEAL_ICONS[mealKey] ?? '🍽️'}</Text>
+          <Text style={[styles.mealEmptyName, { color: colors.textMuted }]} numberOfLines={1}>
+            {mealLabel}
+          </Text>
         </View>
+        <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.mealHead, { borderBottomColor: colors.border }]}>
+        <Text style={styles.mealIcon}>{MEAL_ICONS[mealKey] ?? '🍽️'}</Text>
+        <Text style={[styles.mealName, { color: colors.text }]} numberOfLines={1}>{mealLabel}</Text>
+        <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
+          {mealKcal}
+          <Text style={styles.mealKcalUnit}> {t('nutrition.kcal')}</Text>
+        </Text>
+        {entries.length > 0 ? (
+          <Pressable
+            onPress={() => setMenuOpen((v) => !v)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: menuOpen }}
+            accessibilityLabel={t('journal.mealMenu', { meal: mealLabel })}
+            style={[styles.mealMenuBtn, { backgroundColor: colors.track }]}
+          >
+            <Ionicons name="ellipsis-horizontal" size={16} color={colors.text} />
+          </Pressable>
+        ) : null}
       </View>
-      <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+
+      {menuOpen ? (
+        <View style={[styles.mealMenu, { backgroundColor: colors.track, borderBottomColor: colors.border }]}>
+          <Pressable
+            onPress={() => {
+              setMenuOpen(false);
+              copyFromYesterday();
+            }}
+            style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.mealMenuLabel, { color: colors.text }]}>{t('journal.copyYesterday')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              setMenuOpen(false);
+              saveAsTemplate();
+            }}
+            style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.mealMenuLabel, { color: colors.text }]}>{t('journal.saveMeal')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      <View style={styles.mealItems}>
         {entries.map((e) => (
           <ReanimatedSwipeable
             key={e.id}
@@ -848,18 +901,12 @@ function MealSection({
           </ReanimatedSwipeable>
         ))}
         {onAdd ? (
-          <View style={styles.mealActions}>
-            <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
-              <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
-              <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
-            </Pressable>
-            {entries.length === 0 ? (
-              <Pressable onPress={copyFromYesterday} style={styles.addRow} accessibilityRole="button">
-                <Ionicons name="copy-outline" size={18} color={colors.textMuted} />
-                <Text style={[styles.copyLabel, { color: colors.textMuted }]}>{t('journal.copyYesterday')}</Text>
-              </Pressable>
-            ) : null}
-          </View>
+          <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
+            <View style={[styles.addGlyph, { backgroundColor: colors.track }]}>
+              <Ionicons name="add" size={15} color={colors.accent} />
+            </View>
+            <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
+          </Pressable>
         ) : null}
       </View>
     </View>
@@ -871,45 +918,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    paddingBottom: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    marginBottom: 14,
   },
-  dayLabel: { fontFamily: fontFamily.bodyBold, fontSize: 16, textTransform: 'capitalize' },
+  dayNavBtn: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  dayNavCenter: { alignItems: 'center' },
+  dayLabel: { fontFamily: fontFamily.displayBold, fontSize: 15, textTransform: 'capitalize' },
+  dayDate: { fontFamily: fontFamily.mono, fontSize: 11.5, textTransform: 'capitalize' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  mealHeadRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  content: { gap: 16, paddingBottom: 32 },
-  totals: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 14 },
-  totalsHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  kcalValue: { fontFamily: fontFamily.displayBold, fontSize: 36 },
-  kcalUnit: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  remaining: { alignItems: 'flex-end' },
-  remainingValue: { fontFamily: fontFamily.monoBold, fontSize: 22 },
-  macroBars: { gap: 10 },
-  macroBar: { gap: 4 },
-  macroBarHead: { flexDirection: 'row', justifyContent: 'space-between' },
-  macroName: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  macroVal: { fontFamily: fontFamily.mono, fontSize: 13 },
-  track: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 4 },
-  setupLink: { fontFamily: fontFamily.bodySemi, fontSize: 14, textAlign: 'center' },
-  trainingBadge: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: 2 },
-  microsRecap: { borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 12, gap: 8 },
-  microRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
-  microLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13, flexShrink: 1 },
-  microValueWrap: { flexShrink: 0 },
-  microValue: { fontFamily: fontFamily.monoBold, fontSize: 14 },
-  microUnit: { fontFamily: fontFamily.mono, fontSize: 11 },
-  copyDay: {
+  content: { gap: 12, paddingBottom: 32 },
+  emptyDay: { borderRadius: 20, borderWidth: 1, paddingVertical: 34, paddingHorizontal: 24, alignItems: 'center' },
+  emptyIcon: { width: 62, height: 62, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+  emptyIconGlyph: { fontSize: 28 },
+  emptyTitle: { fontFamily: fontFamily.displayBold, fontSize: 18, marginBottom: 5, textAlign: 'center' },
+  emptyBody: { fontFamily: fontFamily.body, fontSize: 13.5, lineHeight: 20, textAlign: 'center', maxWidth: 250, marginBottom: 18 },
+  emptyPrimary: {
+    height: 48,
+    alignSelf: 'stretch',
+    borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderStyle: 'dashed',
+    gap: 9,
   },
-  copyDayLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  emptyPrimaryLabel: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
+  emptySecondary: {
+    height: 48,
+    alignSelf: 'stretch',
+    borderRadius: 15,
+    borderWidth: 1.5,
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
   modalSheet: { maxHeight: '85%', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
   modalHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
@@ -919,6 +963,9 @@ const styles = StyleSheet.create({
   detailMacros: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
   detailKcalRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   detailKcal: { fontFamily: fontFamily.displayBold, fontSize: 32 },
+  // Conservés pour le détail d'entrée (modal), qui garde sa mise en page en lignes.
+  kcalUnit: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  macroName: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   detailMacroRow: { flexDirection: 'row', gap: 10 },
   detailMacro: { flex: 1, gap: 2 },
   detailMacroVal: { fontFamily: fontFamily.monoBold, fontSize: 16 },
@@ -936,32 +983,66 @@ const styles = StyleSheet.create({
   moveChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   moveChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14 },
   moveChipLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  meal: { gap: 8 },
-  mealHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 4 },
-  mealName: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
-  mealKcal: { fontFamily: fontFamily.mono, fontSize: 13 },
-  mealCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  mealCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
+  mealHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    paddingLeft: 15,
+    paddingRight: 12,
+    paddingTop: 13,
+    paddingBottom: 11,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  mealIcon: { fontSize: 19 },
+  mealName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flex: 1 },
+  mealKcal: { fontFamily: fontFamily.monoBold, fontSize: 13 },
+  mealKcalUnit: { fontFamily: fontFamily.mono, fontSize: 10 },
+  mealMenuBtn: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  mealMenu: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  mealMenuChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 11 },
+  mealMenuLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  mealItems: { paddingVertical: 4, paddingHorizontal: 4 },
+  mealEmpty: {
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    paddingVertical: 15,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  mealEmptyLeft: { flexDirection: 'row', alignItems: 'center', gap: 11, flexShrink: 1 },
+  mealEmptyName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flexShrink: 1 },
+  mealEmptyAdd: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
   entry: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(150,133,111,0.25)',
+    borderRadius: 12,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
     gap: 12,
   },
   swipeActions: { flexDirection: 'row', alignItems: 'stretch' },
   swipeAction: { justifyContent: 'center', alignItems: 'center', gap: 2, width: 76 },
   swipeActionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11, color: '#fff' },
   entryMain: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  entryName: { fontFamily: fontFamily.bodySemi, fontSize: 15, flexShrink: 1 },
+  entryName: { fontFamily: fontFamily.body, fontSize: 13.5, flexShrink: 1 },
   entryQty: { fontFamily: fontFamily.mono, fontSize: 12 },
-  entryKcal: { fontFamily: fontFamily.mono, fontSize: 13 },
-  mealActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  addRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 12 },
-  addLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
-  copyLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  entryKcal: { fontFamily: fontFamily.monoBold, fontSize: 12.5 },
+  addRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 11, paddingVertical: 9 },
+  addGlyph: { width: 20, height: 20, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  addLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   manageMeals: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
   manageMealsLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
 });

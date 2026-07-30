@@ -35,6 +35,7 @@ import {
 } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
 
 const LONG_PRESS_MS = 700;
 const REFLOW_MS = 180;
@@ -327,7 +328,9 @@ function Cell({
         ]}
       >
         <View pointerEvents="none" style={styles.fill}>
-          {renderWidget(entry.id, entry.size)}
+          <WidgetIdentityProvider id={entry.id}>
+            {renderWidget(entry.id, entry.size)}
+          </WidgetIdentityProvider>
         </View>
 
         <View style={styles.chips}>

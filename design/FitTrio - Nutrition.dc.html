@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    color-scheme: light;
+    --txt:#33291f; --panel:#33291f; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#d9a888;
+    --acc:#c0562f; --acc-rgb:192,86,47; --grn:#6f7d4e; --grn-rgb:111,125,78; --amber:#b3792e; --amber-rgb:179,121,46;
+    --card:#fffaf2; --line:#ece0cd; --line2:#e0d0b6; --mut:#8a7458; --mut2:#a8967d;
+    --sub:#7a6244; --deep:#5c4a35; --lbl:#6f5a40;
+    --soft:#f3ddd0; --softline:#e6c3ae; --accdk:#a34e2c;
+    --grnbg:#e6ead6; --grntx:#4c5730; --amberbg:#f6e6cd; --ambertx:#8a5a1c;
+    --track:#eadcc6; --track2:#e2d3ba; --chip:#faf5ec; --chipline:#e8dcc9; --btnsoft:#e6d7bf; --seg:#e8dcc9;
+    --tert:#faf3e6; --tertline:#dcc9ab; --field:#fffaf2; --frame:#efe4d1; --bezel:#241c15;
+    --empty:#f3ede1; --stripe1:#eaddc8; --stripe2:#e3d4bc; --scrim:#2a2118; --danger:#b23a24; --dangerbg:#f6ddd4;
+    --deskA:#ece0cd; --deskB:#ddd0ba; --deskC:#d3c5ac; --railbg:#fbf6ee;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --txt:#f4ecdd; --panel:#2c241c; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#e0a97f;
+    --acc:#dd6e40; --acc-rgb:221,110,64; --grn:#a9ba7e; --grn-rgb:169,186,126; --amber:#e0b155; --amber-rgb:224,177,85;
+    --card:#241e18; --line:#342c24; --line2:#3d332a; --mut:#b0a088; --mut2:#8b7c66;
+    --sub:#c4b298; --deep:#c4b298; --lbl:#a99madd; --lbl:#a9977c;
+    --soft:#3a281d; --softline:#4a3124; --accdk:#f0a074;
+    --grnbg:#2b3122; --grntx:#bccb8f; --amberbg:#382c1a; --ambertx:#e6b866;
+    --track:#362c22; --track2:#3a2f24; --chip:#241e18; --chipline:#342c24; --btnsoft:#2d251d; --seg:#342c24;
+    --tert:#241e18; --tertline:#3a3026; --field:#1e1913; --frame:#1a140f; --bezel:#0c0906;
+    --empty:#2e2820; --stripe1:#2a221b; --stripe2:#241d16; --scrim:#16100b; --danger:#f08a6f; --dangerbg:#3a221b;
+    --deskA:#1a140f; --deskB:#140f0b; --deskC:#100c08; --railbg:#211a13;
+  }
+  body { margin:0; background:radial-gradient(circle at 50% 6%, var(--deskA) 0%, var(--deskB) 58%, var(--deskC) 100%); min-height:100vh; font-family:'Hanken Grotesk',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:var(--txt); padding:40px; display:flex; gap:36px; align-items:flex-start; justify-content:center; }
+  a { color:var(--acc); text-decoration:none; } a:hover { color:var(--accdk); }
+  .hgs { scrollbar-width:none; } .hgs::-webkit-scrollbar { display:none; }
+  @keyframes sheetup { from { transform:translateY(100%); } to { transform:translateY(0); } }
+  @keyframes fadein { from { opacity:0; } to { opacity:1; } }
+  @keyframes fadeslide { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes scanline { 0% { top:14%; } 50% { top:80%; } 100% { top:14%; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes shimmer { 0% { opacity:.55; } 50% { opacity:1; } 100% { opacity:.55; } }
+</style>
+</helmet>
+
+<div style="display:flex; gap:36px; align-items:flex-start; justify-content:center;">
+<!-- ══════════════ INDEX RAIL ══════════════ -->
+<div style="width:238px; flex:none; position:sticky; top:40px; display:flex; flex-direction:column; gap:16px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:44px; height:44px; border-radius:14px; background:var(--acc); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 22px -8px rgba(var(--acc-rgb),.55); flex:none;">
+      <svg width="24" height="24" viewBox="0 0 38 38" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><rect x="12" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><rect x="22" y="12" width="4" height="14" rx="2" fill="#fff" stroke="none"/><path d="M16 19h6M8 19h4M26 19h4"/></svg>
+    </div>
+    <div>
+      <div style="font:700 10px 'Space Mono',monospace; color:var(--acc); letter-spacing:1.5px;">FITTRIO</div>
+      <div style="font:800 19px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px; line-height:1;">Nutrition</div>
+    </div>
+  </div>
+  <button onClick="{{ toggleTheme }}" style="height:42px; border:1.5px solid var(--line2); border-radius:13px; background:var(--card); color:var(--deep); font:600 13px 'Hanken Grotesk'; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;">{{ themeIcon }} {{ themeLabel }}</button>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:2px 2px -4px;">ÉCRANS</div>
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <button onClick="{{ nav.journal }}" style="{{ navSty.journal }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">01</span> Journal alimentaire</button>
+    <button onClick="{{ nav.detail }}" style="{{ navSty.detail }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">02</span> Détail d'une entrée</button>
+    <button onClick="{{ nav.picker }}" style="{{ navSty.picker }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">03</span> Sélection d'un aliment</button>
+    <button onClick="{{ nav.scan }}" style="{{ navSty.scan }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">04</span> Scan code-barres</button>
+    <button onClick="{{ nav.quick }}" style="{{ navSty.quick }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">05</span> Saisie rapide texte</button>
+    <button onClick="{{ nav.create }}" style="{{ navSty.create }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">06</span> Créer un aliment</button>
+    <button onClick="{{ nav.recipe }}" style="{{ navSty.recipe }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">07</span> Recette</button>
+    <button onClick="{{ nav.profil }}" style="{{ navSty.profil }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">08</span> Profil nutritionnel</button>
+    <button onClick="{{ nav.stats }}" style="{{ navSty.stats }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">09</span> Statistiques</button>
+    <button onClick="{{ nav.meals }}" style="{{ navSty.meals }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">10</span> Gestion des repas</button>
+  </div>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:4px 2px -4px;">ÉTATS PARTICULIERS</div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button onClick="{{ toggleEmpty }}" style="{{ tglSty.empty }}">Journée {{ emptyWord }}</button>
+    <button onClick="{{ toggleBilan }}" style="{{ chipSty }}">Bilan : {{ bilanWord }}</button>
+    <button onClick="{{ toggleGoal }}" style="{{ chipSty }}">Objectif {{ goalWord }}</button>
+    <button onClick="{{ cycleScan }}" style="{{ chipSty }}">Scan : {{ scanWord }}</button>
+  </div>
+  <div style="font-size:11px; line-height:1.45; color:var(--mut); margin-top:2px;">Maquette de refonte du pilier Nutrition. Toutes les fonctions existantes, rehabillées dans le langage FitTrio. La note d'arbitrage est en bas de page.</div>
+</div>
+
+<!-- ══════════════ PHONE ══════════════ -->
+<div style="width:392px; height:812px; flex:none; position:sticky; top:40px; border-radius:46px; border:9px solid var(--bezel); background:var(--frame); overflow:hidden; box-shadow:0 40px 90px -20px rgba(60,40,20,.5), inset 0 0 0 2px rgba(255,255,255,.05); display:flex; flex-direction:column;">
+
+  <!-- status bar -->
+  <div style="height:42px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px; position:relative; z-index:5; {{ statusTint }}">
+    <span style="font:700 15px 'Space Mono'; letter-spacing:.5px;">9:41</span>
+    <div style="position:absolute; left:50%; top:11px; transform:translateX(-50%); width:11px; height:11px; border-radius:50%; background:{{ notchColor }};"></div>
+    <div style="display:flex; align-items:center; gap:5px;">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+    </div>
+  </div>
+
+  <div class="hgs" style="flex:1; overflow-y:auto; position:relative;">
+
+    <!-- ════════ 01 · JOURNAL ════════ -->
+    <sc-if value="{{ scr_journal }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:6px 20px 26px;">
+      <!-- header -->
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px;">
+        <div>
+          <h1 style="margin:0; font:800 27px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.9px; line-height:1;">Nutrition</h1>
+          <div style="font-size:13px; color:var(--mut); margin-top:3px;">Ton journal du jour</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button onClick="{{ nav.stats }}" title="Statistiques" style="width:42px; height:42px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></button>
+          <button onClick="{{ nav.profil }}" title="Réglages nutrition" style="width:42px; height:42px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button>
+        </div>
+      </div>
+
+      <!-- day nav -->
+      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:6px 8px; margin-bottom:14px;">
+        <button style="width:34px; height:34px; border:none; border-radius:10px; background:transparent; color:var(--acc); font-size:20px; cursor:pointer;">‹</button>
+        <button style="background:none; border:none; text-align:center; cursor:pointer;"><div style="font:700 15px 'Bricolage Grotesque'; color:var(--txt);">Aujourd'hui</div><div style="font-size:11.5px; color:var(--mut); font-family:'Space Mono';">lun. 28 juil.</div></button>
+        <button style="width:34px; height:34px; border:none; border-radius:10px; background:transparent; color:var(--mut2); font-size:20px; cursor:pointer;">›</button>
+      </div>
+
+      <!-- ░░ BILAN — VARIANTE ANNEAU ░░ -->
+      <sc-if value="{{ bilanRing }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--panel); border-radius:24px; padding:22px 20px 20px; color:var(--paneltx); margin-bottom:12px; position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%; background:rgba(var(--acc-rgb),.22);"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; position:relative;">
+          <span style="font:700 11px 'Space Mono'; color:var(--panelacc); letter-spacing:.8px;">BILAN DU JOUR</span>
+          <button onClick="{{ toggleBilan }}" style="border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.06); color:var(--panelmut); font:600 11px 'Hanken Grotesk'; padding:5px 10px; border-radius:999px; cursor:pointer;">↻ Chiffres</button>
+        </div>
+        <div style="display:flex; align-items:center; gap:18px; margin-top:14px;">
+          <div style="position:relative; width:132px; height:132px; flex:none;">
+            <svg width="132" height="132" viewBox="0 0 132 132">
+              <circle cx="66" cy="66" r="54" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="12"/>
+              <circle cx="66" cy="66" r="54" fill="none" stroke="var(--acc)" stroke-width="12" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="106" transform="rotate(-90 66 66)"/>
+            </svg>
+            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="font:800 34px 'Bricolage Grotesque'; color:#fff; letter-spacing:-1.5px; line-height:1;">670</div>
+              <div style="font:700 10px 'Space Mono'; color:var(--grn); margin-top:2px;">kcal restantes</div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.1);"><span style="font-size:13px; color:var(--panelmut);">Consommé</span><span style="font:700 15px 'Space Mono'; color:#fff;">1 480</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.1);"><span style="font-size:13px; color:var(--panelmut);">Objectif</span><span style="font:700 15px 'Space Mono'; color:#fff;">2 150</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; padding:5px 0;"><span style="font-size:13px; color:var(--panelmut);">Restant</span><span style="font:700 15px 'Space Mono'; color:var(--grn);">670</span></div>
+          </div>
+        </div>
+        <div style="display:inline-flex; align-items:center; gap:7px; margin-top:14px; background:rgba(var(--acc-rgb),.9); color:#fff; padding:8px 13px; border-radius:999px;"><span style="font-size:14px;">🏋️</span><span style="font:700 12.5px 'Hanken Grotesk';">Jour de séance · +250 kcal</span></div>
+      </div>
+      </sc-if>
+
+      <!-- ░░ BILAN — VARIANTE CHIFFRES ░░ -->
+      <sc-if value="{{ bilanNum }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--panel); border-radius:24px; padding:22px 20px 20px; color:var(--paneltx); margin-bottom:12px; position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%; background:rgba(var(--acc-rgb),.2);"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; position:relative;">
+          <span style="font:700 11px 'Space Mono'; color:var(--panelacc); letter-spacing:.8px;">BILAN DU JOUR</span>
+          <button onClick="{{ toggleBilan }}" style="border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.06); color:var(--panelmut); font:600 11px 'Hanken Grotesk'; padding:5px 10px; border-radius:999px; cursor:pointer;">↻ Anneau</button>
+        </div>
+        <div style="display:flex; align-items:flex-end; gap:10px; margin-top:12px;">
+          <div style="font:800 70px 'Bricolage Grotesque'; color:#fff; letter-spacing:-3.5px; line-height:.82;">670</div>
+          <div style="padding-bottom:8px;"><div style="font:700 15px 'Bricolage Grotesque'; color:var(--grn); letter-spacing:-.3px;">kcal restantes</div><div style="font-size:12px; color:var(--panelmut);">sur 2 150 aujourd'hui</div></div>
+        </div>
+        <!-- consumed track -->
+        <div style="height:10px; border-radius:6px; background:rgba(255,255,255,.12); overflow:hidden; margin:16px 0 8px;"><div style="height:100%; width:68.8%; background:var(--acc); border-radius:6px;"></div></div>
+        <div style="display:flex; justify-content:space-between; font:600 12px 'Space Mono'; color:var(--panelmut);"><span style="color:#fff;">1 480 consommées</span><span>+250 séance incluses</span></div>
+        <div style="display:inline-flex; align-items:center; gap:7px; margin-top:14px; background:rgba(var(--acc-rgb),.9); color:#fff; padding:8px 13px; border-radius:999px;"><span style="font-size:14px;">🏋️</span><span style="font:700 12.5px 'Hanken Grotesk';">Jour de séance · +250 kcal</span></div>
+      </div>
+      </sc-if>
+
+      <!-- macros -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px 18px; margin-bottom:12px; display:flex; gap:16px;">
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font:600 12px 'Hanken Grotesk'; color:var(--lbl);">Protéines</span></div><div style="height:8px; border-radius:5px; background:var(--track); overflow:hidden;"><div style="height:100%; width:75%; background:var(--acc); border-radius:5px;"></div></div><div style="font:700 11px 'Space Mono'; color:var(--mut); margin-top:6px;">124 / 165 g</div></div>
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font:600 12px 'Hanken Grotesk'; color:var(--lbl);">Glucides</span></div><div style="height:8px; border-radius:5px; background:var(--track); overflow:hidden;"><div style="height:100%; width:62%; background:var(--amber); border-radius:5px;"></div></div><div style="font:700 11px 'Space Mono'; color:var(--mut); margin-top:6px;">180 / 290 g</div></div>
+        <div style="flex:1;"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font:600 12px 'Hanken Grotesk'; color:var(--lbl);">Lipides</span></div><div style="height:8px; border-radius:5px; background:var(--track); overflow:hidden;"><div style="height:100%; width:67%; background:var(--grn); border-radius:5px;"></div></div><div style="font:700 11px 'Space Mono'; color:var(--mut); margin-top:6px;">52 / 78 g</div></div>
+      </div>
+
+      <sc-if value="{{ notEmpty }}" hint-placeholder-val="{{ true }}">
+      <!-- micros -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin:16px 2px 8px;"><span style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.8px;">MICRONUTRIMENTS SUIVIS</span><span style="font-size:11.5px; color:var(--mut2);">% des apports conseillés</span></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+        <sc-for list="{{ micros }}" as="m" hint-placeholder-count="6">
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:11px 12px; display:flex; align-items:center; gap:11px;">
+          <div style="position:relative; width:34px; height:34px; flex:none;">
+            <svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="13" fill="none" stroke="var(--track)" stroke-width="4"/><circle cx="17" cy="17" r="13" fill="none" stroke="{{ m.color }}" stroke-width="4" stroke-linecap="round" stroke-dasharray="81.7" stroke-dashoffset="{{ m.off }}" transform="rotate(-90 17 17)"/></svg>
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:700 9px 'Space Mono'; color:{{ m.color }};">{{ m.pct }}</div>
+          </div>
+          <div style="flex:1; min-width:0;"><div style="font:600 13px 'Hanken Grotesk'; color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ m.label }}</div><div style="font:700 11px 'Space Mono'; color:var(--mut);">{{ m.val }}</div></div>
+        </div>
+        </sc-for>
+      </div>
+
+      <!-- suggestion (jour courant) -->
+      <div style="background:var(--grnbg); border:1px solid var(--grn); border-radius:16px; padding:14px 15px; margin-bottom:16px; display:flex; gap:11px; align-items:flex-start;">
+        <span style="font-size:18px; line-height:1.1;">💡</span>
+        <div style="flex:1;"><div style="font:700 13.5px 'Hanken Grotesk'; color:var(--grntx); line-height:1.35;">Il te manque 41 g de protéines aujourd'hui.</div><button onClick="{{ nav.picker }}" style="margin-top:8px; border:none; background:var(--grn); color:#fff; font:700 12.5px 'Hanken Grotesk'; padding:7px 13px; border-radius:999px; cursor:pointer;">+ Ajouter 150 g de skyr</button></div>
+      </div>
+
+      <!-- meals -->
+      <div style="display:flex; flex-direction:column; gap:11px;">
+        <sc-for list="{{ meals }}" as="ml" hint-placeholder-count="3">
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:visible;">
+          <div style="display:flex; align-items:center; gap:11px; padding:13px 15px 11px; border-bottom:1px solid var(--line);">
+            <span style="font-size:19px;">{{ ml.icon }}</span>
+            <div style="flex:1;"><div style="font:700 15px 'Hanken Grotesk'; color:var(--txt); letter-spacing:-.2px;">{{ ml.name }}</div></div>
+            <span style="font:700 13px 'Space Mono'; color:var(--sub);">{{ ml.kcal }}<span style="font-size:10px; color:var(--mut);"> kcal</span></span>
+            <button onClick="{{ ml.menu }}" style="width:28px; height:28px; border:none; border-radius:9px; background:var(--btnsoft); color:var(--deep); cursor:pointer; font-size:15px; line-height:1;">⋯</button>
+          </div>
+          <sc-if value="{{ ml.openMenu }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:8px 12px; display:flex; gap:8px; flex-wrap:wrap; background:var(--chip); border-bottom:1px solid var(--line);">
+            <span style="font:600 12px 'Hanken Grotesk'; color:var(--sub); background:var(--card); border:1px solid var(--chipline); padding:6px 11px; border-radius:999px;">Copier ce repas</span>
+            <span style="font:600 12px 'Hanken Grotesk'; color:var(--sub); background:var(--card); border:1px solid var(--chipline); padding:6px 11px; border-radius:999px;">Enregistrer comme modèle</span>
+          </div>
+          </sc-if>
+          <div style="padding:4px 4px 8px;">
+            <sc-for list="{{ ml.items }}" as="it" hint-placeholder-count="2">
+            <div style="position:relative; overflow:hidden; border-radius:12px;">
+              <sc-if value="{{ it.swiped }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute; inset:0; display:flex; justify-content:flex-end; gap:0;">
+                <button onClick="{{ nav.detail }}" style="width:64px; border:none; background:var(--amber); color:#fff; font:700 11px 'Hanken Grotesk'; cursor:pointer;">Modifier</button>
+                <button style="width:64px; border:none; background:var(--danger); color:#fff; font:700 11px 'Hanken Grotesk'; cursor:pointer;">Supprimer</button>
+              </div>
+              </sc-if>
+              <button onClick="{{ it.tap }}" style="position:relative; width:100%; text-align:left; border:none; background:var(--card); cursor:pointer; display:flex; align-items:center; gap:10px; padding:9px 11px; transform:translateX({{ it.shift }}); transition:transform .25s cubic-bezier(.4,0,.2,1);">
+                <span style="flex:1; font-size:13.5px; color:var(--sub);">{{ it.name }} <span style="color:var(--mut2); font-size:12px;">· {{ it.qty }}</span></span>
+                <span style="font:700 12.5px 'Space Mono'; color:var(--mut);">{{ it.kcal }}</span>
+              </button>
+            </div>
+            </sc-for>
+            <button onClick="{{ ml.add }}" style="width:100%; text-align:left; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; gap:9px; padding:9px 11px; color:var(--acc); font:700 13px 'Hanken Grotesk';"><span style="width:20px; height:20px; border-radius:7px; background:var(--soft); display:inline-flex; align-items:center; justify-content:center; font-size:14px;">+</span> Ajouter un aliment</button>
+          </div>
+        </div>
+        </sc-for>
+        <!-- empty meal (dîner) -->
+        <button onClick="{{ nav.picker }}" style="background:var(--tert); border:1.5px dashed var(--tertline); border-radius:18px; padding:15px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;"><span style="display:flex; align-items:center; gap:11px; font:700 15px 'Hanken Grotesk'; color:var(--mut2);"><span style="font-size:19px;">🍽️</span> Dîner</span><span style="color:var(--acc); font-weight:700; font-size:14px;">+ Ajouter</span></button>
+      </div>
+      </sc-if>
+
+      <!-- ░░ ÉTAT JOURNÉE VIDE ░░ -->
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:8px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px 24px; text-align:center;">
+        <div style="width:62px; height:62px; border-radius:20px; background:var(--empty); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:28px;">🍽️</div>
+        <div style="font:700 18px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:5px;">Journée encore vide</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.5; max-width:250px; margin:0 auto 18px;">Note ton premier repas, ou repars de ce que tu mangeais hier.</div>
+        <button style="height:48px; width:100%; border:none; border-radius:15px; background:var(--panel); color:var(--paneltx); font:700 15px 'Hanken Grotesk'; cursor:pointer; margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:9px;"><span style="font-size:16px;">📋</span> Copier la journée d'hier</button>
+        <button onClick="{{ nav.picker }}" style="height:48px; width:100%; border:1.5px solid var(--line2); border-radius:15px; background:var(--card); color:var(--acc); font:700 15px 'Hanken Grotesk'; cursor:pointer;">+ Ajouter un aliment</button>
+      </div>
+      </sc-if>
+
+      <a href="#" onClick="{{ nav.meals }}" style="display:block; text-align:center; margin-top:18px; font:600 13px 'Hanken Grotesk'; color:var(--mut);">Gérer mes repas ›</a>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 04 · SCAN (fullscreen) ════════ -->
+    <sc-if value="{{ scr_scan }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100%; background:var(--scrim); display:flex; flex-direction:column; color:#f0e4d0;">
+      <div style="position:relative; flex:1; overflow:hidden;">
+        <!-- fake camera bg -->
+        <div style="position:absolute; inset:0; background:repeating-linear-gradient(115deg,#1c150f 0 26px,#221a12 26px 52px); opacity:.9;"></div>
+        <div style="position:absolute; inset:0; background:radial-gradient(circle at 50% 42%, rgba(0,0,0,0) 30%, rgba(0,0,0,.55) 100%);"></div>
+        <!-- top bar -->
+        <div style="position:relative; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+          <button onClick="{{ nav.picker }}" style="width:38px; height:38px; border:none; border-radius:12px; background:rgba(255,255,255,.14); color:#fff; font-size:18px; cursor:pointer;">‹</button>
+          <span style="font:600 13px 'Hanken Grotesk'; color:#fff;">Scanner un code-barres</span>
+          <span style="width:38px;"></span>
+        </div>
+        <!-- viewfinder -->
+        <div style="position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); width:250px; height:170px;">
+          <div style="position:absolute; inset:0; border-radius:20px; box-shadow:0 0 0 2000px rgba(20,14,9,.45);"></div>
+          <div style="position:absolute; left:-2px; top:-2px; width:34px; height:34px; border-top:3px solid var(--acc); border-left:3px solid var(--acc); border-radius:14px 0 0 0;"></div>
+          <div style="position:absolute; right:-2px; top:-2px; width:34px; height:34px; border-top:3px solid var(--acc); border-right:3px solid var(--acc); border-radius:0 14px 0 0;"></div>
+          <div style="position:absolute; left:-2px; bottom:-2px; width:34px; height:34px; border-bottom:3px solid var(--acc); border-left:3px solid var(--acc); border-radius:0 0 0 14px;"></div>
+          <div style="position:absolute; right:-2px; bottom:-2px; width:34px; height:34px; border-bottom:3px solid var(--acc); border-right:3px solid var(--acc); border-radius:0 0 14px 0;"></div>
+          <sc-if value="{{ scanSearching }}" hint-placeholder-val="{{ true }}"><div style="position:absolute; left:8%; right:8%; height:2px; background:linear-gradient(90deg,transparent,var(--acc),transparent); animation:scanline 2.4s ease-in-out infinite;"></div></sc-if>
+        </div>
+      </div>
+
+      <!-- status sheet -->
+      <div style="flex:none; background:var(--frame); border-radius:28px 28px 0 0; padding:22px 22px 26px; color:var(--txt); animation:sheetup .3s cubic-bezier(.16,1,.3,1);">
+        <!-- searching -->
+        <sc-if value="{{ scanSearching }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:32px; height:32px; border:3px solid var(--track); border-top-color:var(--acc); border-radius:50%; animation:spin .8s linear infinite; flex:none;"></div>
+          <div><div style="font:700 16px 'Bricolage Grotesque'; color:var(--txt);">Recherche du produit…</div><div style="font-size:13px; color:var(--mut); font-family:'Space Mono';">EAN 3175680011480</div></div>
+        </div>
+        </sc-if>
+        <!-- unknown -->
+        <sc-if value="{{ scanUnknown }}" hint-placeholder-val="{{ false }}">
+        <div style="width:48px; height:48px; border-radius:15px; background:var(--empty); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:12px;">🔍</div>
+        <div style="font:700 18px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:4px;">Produit introuvable</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.5; margin-bottom:16px;">Ce code-barres n'existe ni dans ta base ni sur OpenFoodFacts. Tu peux le créer toi-même.</div>
+        <div style="display:flex; gap:10px;"><button onClick="{{ cycleScan }}" style="flex:1; height:48px; border:1.5px solid var(--line2); border-radius:15px; background:var(--card); color:var(--deep); font:700 14px 'Hanken Grotesk'; cursor:pointer;">Rescanner</button><button onClick="{{ nav.create }}" style="flex:1; height:48px; border:none; border-radius:15px; background:var(--acc); color:#fff; font:700 14px 'Hanken Grotesk'; cursor:pointer;">Créer l'aliment</button></div>
+        </sc-if>
+        <!-- incomplete -->
+        <sc-if value="{{ scanIncomplete }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:13px; margin-bottom:14px;">
+          <div style="width:52px; height:52px; border-radius:14px; background:repeating-linear-gradient(135deg,var(--stripe1) 0 6px,var(--stripe2) 6px 12px); flex:none;"></div>
+          <div style="flex:1;"><div style="font:700 16px 'Hanken Grotesk'; color:var(--txt);">Skyr nature 0%</div><div style="font-size:12.5px; color:var(--mut);">Fiche partielle · kcal + macros OK</div></div>
+        </div>
+        <div style="background:var(--amberbg); border:1px solid var(--amber); border-radius:14px; padding:11px 13px; display:flex; gap:9px; align-items:flex-start; margin-bottom:14px;"><span style="font-size:15px; line-height:1.2;">⚠️</span><span style="font-size:12.5px; color:var(--ambertx); line-height:1.4;">Micronutriments manquants. Tu peux compléter la fiche après l'ajout.</span></div>
+        <button onClick="{{ nav.detail }}" style="height:48px; width:100%; border:none; border-radius:15px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer;">Ajouter quand même</button>
+        </sc-if>
+        <!-- network -->
+        <sc-if value="{{ scanNetwork }}" hint-placeholder-val="{{ false }}">
+        <div style="width:48px; height:48px; border-radius:15px; background:var(--empty); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:12px;">📡</div>
+        <div style="font:700 18px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:4px;">Réseau indisponible</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.5; margin-bottom:16px;">Impossible de joindre OpenFoodFacts. Vérifie ta connexion, ou saisis l'aliment à la main.</div>
+        <div style="display:flex; gap:10px;"><button onClick="{{ cycleScan }}" style="flex:1; height:48px; border:none; border-radius:15px; background:var(--acc); color:#fff; font:700 14px 'Hanken Grotesk'; cursor:pointer;">Réessayer</button><button onClick="{{ nav.quick }}" style="flex:1; height:48px; border:1.5px solid var(--line2); border-radius:15px; background:var(--card); color:var(--deep); font:700 14px 'Hanken Grotesk'; cursor:pointer;">Saisie manuelle</button></div>
+        </sc-if>
+        <!-- permission -->
+        <sc-if value="{{ scanPerm }}" hint-placeholder-val="{{ false }}">
+        <div style="width:48px; height:48px; border-radius:15px; background:var(--empty); display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:12px;">🎥</div>
+        <div style="font:700 18px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:4px;">Caméra non autorisée</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.5; margin-bottom:16px;">Autorise l'accès à la caméra dans les réglages pour scanner un code-barres.</div>
+        <div style="display:flex; gap:10px;"><button style="flex:1; height:48px; border:none; border-radius:15px; background:var(--acc); color:#fff; font:700 14px 'Hanken Grotesk'; cursor:pointer;">Ouvrir les réglages</button><button onClick="{{ nav.picker }}" style="flex:1; height:48px; border:1.5px solid var(--line2); border-radius:15px; background:var(--card); color:var(--deep); font:700 14px 'Hanken Grotesk'; cursor:pointer;">Rechercher</button></div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 05 · SAISIE RAPIDE ════════ -->
+    <sc-if value="{{ scr_quick }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <button onClick="{{ nav.picker }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <div><h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Saisie rapide</h2><div style="font-size:12.5px; color:var(--mut);">Décris ton repas, on le décompose.</div></div>
+      </div>
+
+      <div style="font:700 11px 'Space Mono'; color:var(--lbl); letter-spacing:.5px; margin:0 2px 8px;">TON REPAS EN TEXTE LIBRE</div>
+      <div style="min-height:96px; border:1.5px solid var(--acc); border-radius:16px; background:var(--field); padding:14px 15px; font-size:15px; line-height:1.55; color:var(--txt); margin-bottom:12px;">150 g poulet, 2 œufs, un bol de riz, une banane, cabillaud 200g</div>
+      <button onClick="{{ analyze }}" style="height:50px; width:100%; border:none; border-radius:15px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.5); display:flex; align-items:center; justify-content:center; gap:9px;"><span style="font-size:16px;">✨</span> Analyser</button>
+
+      <sc-if value="{{ qcResult }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin:0 2px 10px;"><span style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.5px;">RÉVISION · 4 RECONNUS · 1 À VÉRIFIER</span></div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <sc-for list="{{ qcLines }}" as="q" hint-placeholder-count="4">
+          <div style="background:var(--card); border:1px solid {{ q.line }}; border-radius:14px; padding:11px 13px; display:flex; align-items:center; gap:11px;">
+            <span style="width:26px; height:26px; border-radius:8px; background:{{ q.iconbg }}; color:{{ q.iconfg }}; display:flex; align-items:center; justify-content:center; font-size:14px; flex:none;">{{ q.icon }}</span>
+            <div style="flex:1; min-width:0;"><div style="font:600 14px 'Hanken Grotesk'; color:{{ q.nameColor }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ q.name }}</div><div style="font-size:11.5px; color:var(--mut);">{{ q.sub }}</div></div>
+            <sc-if value="{{ q.ok }}" hint-placeholder-val="{{ true }}"><div style="display:flex; align-items:center; gap:5px; border:1.5px solid var(--line2); border-radius:10px; padding:5px 9px;"><span style="font:700 15px 'Space Mono'; color:var(--txt);">{{ q.g }}</span><span style="font-size:11px; color:var(--mut);">g</span></div></sc-if>
+            <sc-if value="{{ q.bad }}" hint-placeholder-val="{{ false }}"><button style="width:30px; height:30px; border:none; border-radius:9px; background:var(--dangerbg); color:var(--danger); font-size:16px; cursor:pointer;">✕</button></sc-if>
+          </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ nav.journal }}" style="height:52px; width:100%; border:none; border-radius:16px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; margin-top:16px; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.5);">Ajouter les 4 aliments</button>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 06 · CRÉER ALIMENT ════════ -->
+    <sc-if value="{{ scr_create }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <button onClick="{{ nav.picker }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <span style="font:600 13px 'Hanken Grotesk'; color:var(--mut);">Nouvel aliment</span>
+        <span style="font:700 13px 'Hanken Grotesk'; color:var(--mut2);">Enreg.</span>
+      </div>
+      <h2 style="margin:0 0 16px; font:700 24px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Aliment personnalisé</h2>
+
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <div style="flex:1.4;"><div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:6px;">Nom</div><div style="height:48px; border:1.5px solid var(--acc); border-radius:14px; background:var(--field); display:flex; align-items:center; padding:0 14px; font:600 15px 'Hanken Grotesk'; color:var(--txt);">Granola maison</div></div>
+        <div style="flex:1;"><div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:6px;">Marque</div><div style="height:48px; border:1.5px solid var(--line2); border-radius:14px; background:var(--field); display:flex; align-items:center; padding:0 14px; font-size:14px; color:var(--mut2);">Optionnel</div></div>
+      </div>
+
+      <div style="font:700 11px 'Space Mono'; color:var(--acc); letter-spacing:.6px; margin:14px 2px 10px;">VALEURS POUR 100 G</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <sc-for list="{{ createMain }}" as="it" hint-placeholder-count="4">
+        <div><div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:5px;">{{ it.label }}</div><div style="height:46px; border:1.5px solid {{ it.border }}; border-radius:13px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 13px;"><span style="font:700 17px 'Bricolage Grotesque'; color:{{ it.color }}; letter-spacing:-.4px;">{{ it.disp }}</span><span style="font:400 12px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span></div></div>
+        </sc-for>
+      </div>
+
+      <!-- collapsible : valeurs détaillées -->
+      <button onClick="{{ toggleDetailed }}" style="width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:15px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><div><div style="font:700 14.5px 'Hanken Grotesk'; color:var(--txt);">Valeurs détaillées</div><div style="font-size:12px; color:var(--mut);">Fibres, sucres, sel, saturés</div></div><span style="{{ chevDetailed }}">›</span></button>
+      <sc-if value="{{ detailedOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; animation:fadeslide .3s ease;">
+        <sc-for list="{{ createDetailed }}" as="it" hint-placeholder-count="4">
+        <div><div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:5px;">{{ it.label }}</div><div style="height:44px; border:1.5px solid {{ it.border }}; border-radius:12px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 12px;"><span style="font:700 15px 'Bricolage Grotesque'; color:{{ it.color }};">{{ it.disp }}</span><span style="font:400 11px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span></div></div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <!-- accordion micros -->
+      <button onClick="{{ toggleMicroAcc }}" style="width:100%; text-align:left; background:var(--soft); border:1px solid var(--softline); border-radius:15px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;"><div><div style="font:700 14.5px 'Hanken Grotesk'; color:var(--accdk);">Micronutriments</div><div style="font-size:12px; color:var(--accdk); opacity:.8;">Vitamines & minéraux · facultatif</div></div><span style="{{ chevMicro }} color:var(--accdk);">›</span></button>
+      <sc-if value="{{ microAccOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:fadeslide .3s ease;">
+        <sc-for list="{{ createMicroGroups }}" as="g" hint-placeholder-count="2">
+        <div style="margin-bottom:12px;"><div style="font:700 10.5px 'Space Mono'; color:var(--mut); letter-spacing:.6px; margin:0 2px 8px;">{{ g.title }}</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2"><div><div style="font:600 11px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:4px;">{{ it.label }}</div><div style="height:42px; border:1.5px solid {{ it.border }}; border-radius:12px; background:var(--field); display:flex; align-items:center; justify-content:space-between; padding:0 12px;"><span style="font:700 14px 'Bricolage Grotesque'; color:{{ it.color }};">{{ it.disp }}</span><span style="font:400 11px 'Space Mono'; color:var(--mut);">{{ it.unit }}</span></div></div></sc-for></div></div>
+        </sc-for>
+      </div>
+      </sc-if>
+
+      <button style="height:52px; width:100%; border:none; border-radius:16px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; margin-top:12px; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.5);">Enregistrer l'aliment</button>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 07 · RECETTE ════════ -->
+    <sc-if value="{{ scr_recipe }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <button onClick="{{ nav.picker }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <span style="font:600 13px 'Hanken Grotesk'; color:var(--mut);">Recette</span>
+        <span style="font-size:20px; color:var(--acc);">⭐</span>
+      </div>
+      <span style="display:inline-block; padding:5px 12px; border-radius:999px; background:var(--soft); color:var(--accdk); font:700 12px 'Hanken Grotesk'; margin-bottom:10px;">Recette maison</span>
+      <h2 style="margin:0 0 4px; font:700 25px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">Bowl poulet-riz</h2>
+      <div style="font-size:13.5px; color:var(--mut); margin-bottom:16px;">Batch cooking · se conserve 3 jours</div>
+
+      <!-- portions -->
+      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--line); border-radius:15px; padding:10px 12px 10px 16px; margin-bottom:14px;">
+        <span style="font:600 14px 'Hanken Grotesk'; color:var(--txt);">Portions</span>
+        <div style="display:flex; align-items:center; gap:14px;"><button style="width:38px; height:38px; border:1.5px solid var(--line2); border-radius:12px; background:var(--card); color:var(--deep); font-size:20px; cursor:pointer;">−</button><span style="font:700 20px 'Space Mono'; color:var(--txt); min-width:20px; text-align:center;">4</span><button style="width:38px; height:38px; border:none; border-radius:12px; background:var(--acc); color:#fff; font-size:20px; cursor:pointer;">+</button></div>
+      </div>
+
+      <!-- per-portion nutrition hero -->
+      <div style="background:var(--panel); border-radius:18px; padding:16px 18px; color:var(--paneltx); display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+        <div style="text-align:center; min-width:60px;"><div style="font:800 30px 'Bricolage Grotesque'; color:#fff; letter-spacing:-1px; line-height:1;">512</div><div style="font:700 10px 'Space Mono'; color:var(--panelacc); margin-top:3px;">kcal</div></div>
+        <div style="width:1px; align-self:stretch; background:rgba(255,255,255,.15);"></div>
+        <div style="flex:1; display:flex;"><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">42 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Prot.</div></div><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">54 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Gluc.</div></div><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">14 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Lip.</div></div></div>
+      </div>
+      <div style="font:400 10px 'Space Mono'; color:var(--mut); text-align:right; margin:0 2px 16px;">PAR PORTION · CALCULÉ SUR LES INGRÉDIENTS</div>
+
+      <div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.5px; margin:0 2px 10px;">INGRÉDIENTS · 4 PORTIONS</div>
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:4px 14px;">
+        <sc-for list="{{ recipeIngredients }}" as="r" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--line);"><span style="font-size:14px; color:var(--sub);">{{ r.name }}</span><span style="display:flex; align-items:center; gap:10px;"><span style="font:700 13px 'Space Mono'; color:var(--txt);">{{ r.qty }}</span><span style="font:700 12px 'Space Mono'; color:var(--mut);">{{ r.kcal }}</span></span></div>
+        </sc-for>
+        <button style="width:100%; text-align:left; border:none; background:transparent; cursor:pointer; padding:12px 0; color:var(--acc); font:700 13.5px 'Hanken Grotesk';">+ Ajouter un ingrédient</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 08 · PROFIL NUTRITIONNEL ════════ -->
+    <sc-if value="{{ scr_profil }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <button onClick="{{ nav.journal }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Profil nutritionnel</h2>
+      </div>
+
+      <!-- objectif segments -->
+      <div style="font:700 11px 'Space Mono'; color:var(--lbl); letter-spacing:.5px; margin:0 2px 8px;">OBJECTIF</div>
+      <div style="display:flex; background:var(--seg); border-radius:14px; padding:4px; margin-bottom:16px;">
+        <button onClick="{{ setGoalPerte }}" style="{{ goalSeg.perte }}">Perte</button>
+        <button onClick="{{ setGoalMaint }}" style="{{ goalSeg.maint }}">Maintien</button>
+        <button onClick="{{ setGoalPrise }}" style="{{ goalSeg.prise }}">Prise</button>
+      </div>
+
+      <!-- TDEE card / no-goal state -->
+      <sc-if value="{{ hasGoal }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--panel); border-radius:22px; padding:20px; color:var(--paneltx); margin-bottom:14px;">
+        <div style="font:700 11px 'Space Mono'; color:var(--panelacc); letter-spacing:.6px; margin-bottom:12px;">TDEE → OBJECTIF CALORIQUE</div>
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.12);"><div><div style="font-size:12px; color:var(--panelmut);">Métabolisme estimé</div><div style="font:800 26px 'Bricolage Grotesque'; color:#fff; letter-spacing:-.6px;">2 400 <span style="font-size:13px; color:var(--panelacc);">kcal</span></div></div><span style="font-size:12px; color:var(--panelmut); font-family:'Space Mono'; padding-bottom:5px;">Mifflin-St Jeor</span></div>
+        <div style="display:flex; align-items:flex-end; justify-content:space-between; padding-top:14px;"><div><div style="font-size:12px; color:var(--panelmut);">Objectif quotidien</div><div style="font:800 30px 'Bricolage Grotesque'; color:var(--acc); letter-spacing:-.8px;">2 150 <span style="font-size:14px;">kcal</span></div></div><button style="height:38px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#fff; font:600 12.5px 'Hanken Grotesk'; padding:0 14px; border-radius:11px; cursor:pointer;">Saisir manuellement</button></div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ noGoal }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--card); border:1.5px dashed var(--line2); border-radius:22px; padding:26px 22px; margin-bottom:14px; text-align:center;">
+        <div style="width:56px; height:56px; border-radius:18px; background:var(--empty); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:26px;">🎯</div>
+        <div style="font:700 17px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:5px;">Aucun objectif défini</div>
+        <div style="font-size:13px; color:var(--mut); line-height:1.5; margin-bottom:16px;">Renseigne ton objectif et ton activité pour calculer un objectif calorique adapté.</div>
+        <button onClick="{{ toggleGoal }}" style="height:46px; width:100%; border:none; border-radius:14px; background:var(--acc); color:#fff; font:700 14px 'Hanken Grotesk'; cursor:pointer;">Calculer mon TDEE</button>
+      </div>
+      </sc-if>
+
+      <!-- activity level -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px 16px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;"><div><div style="font:600 14px 'Hanken Grotesk'; color:var(--txt);">Niveau d'activité</div><div style="font-size:12px; color:var(--mut);">Hors entraînements</div></div><span style="font:600 13px 'Hanken Grotesk'; color:var(--acc);">Modéré ›</span></div>
+
+      <!-- bonus jour de séance -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px 16px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;"><div style="font:600 14px 'Hanken Grotesk'; color:var(--txt);">Bonus jour de séance</div><div style="display:flex; background:var(--seg); border-radius:10px; padding:3px;"><span style="padding:6px 12px; border-radius:8px; background:var(--panel); color:var(--paneltx); font:600 12px 'Hanken Grotesk';">Auto</span><span style="padding:6px 12px; border-radius:8px; color:var(--lbl); font:600 12px 'Hanken Grotesk';">Forfait</span></div></div>
+        <div style="display:flex; align-items:center; gap:12px;"><div style="flex:1; height:8px; border-radius:5px; background:var(--track); overflow:hidden;"><div style="height:100%; width:50%; background:var(--acc); border-radius:5px;"></div></div><span style="font:700 13px 'Space Mono'; color:var(--acc);">+250 kcal</span></div>
+      </div>
+
+      <!-- adherence margin -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px 16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;"><div><div style="font:600 14px 'Hanken Grotesk'; color:var(--txt);">Marge d'adhérence</div><div style="font-size:12px; color:var(--mut);">Tolérance autour de l'objectif</div></div><span style="font:700 13px 'Space Mono'; color:var(--sub);">± 100 kcal</span></div>
+
+      <!-- macro split -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin:0 2px 10px;"><span style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.5px;">RÉPARTITION DES MACROS</span><span style="font-size:12px; color:var(--acc); font-weight:600;">Auto ✓</span></div>
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px;">
+        <div style="display:flex; height:14px; border-radius:7px; overflow:hidden; margin-bottom:14px;"><div style="width:31%; background:var(--acc);"></div><div style="width:47%; background:var(--amber);"></div><div style="width:22%; background:var(--grn);"></div></div>
+        <div style="display:flex; justify-content:space-between;"><div style="text-align:center;"><div style="font:700 16px 'Bricolage Grotesque'; color:var(--txt);">165 g</div><div style="font-size:11px; color:var(--acc); font-weight:600;">● Protéines</div></div><div style="text-align:center;"><div style="font:700 16px 'Bricolage Grotesque'; color:var(--txt);">290 g</div><div style="font-size:11px; color:var(--amber); font-weight:600;">● Glucides</div></div><div style="text-align:center;"><div style="font:700 16px 'Bricolage Grotesque'; color:var(--txt);">78 g</div><div style="font-size:11px; color:var(--grn); font-weight:600;">● Lipides</div></div></div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 09 · STATISTIQUES ════════ -->
+    <sc-if value="{{ scr_stats }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <button onClick="{{ nav.journal }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Statistiques</h2>
+      </div>
+      <div style="display:flex; gap:7px; margin-bottom:16px;">
+        <span style="padding:7px 14px; border-radius:999px; background:var(--panel); color:#fff; font:700 12px 'Hanken Grotesk';">30 j</span>
+        <span style="padding:7px 14px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font-size:12px;">7 j</span>
+        <span style="padding:7px 14px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font-size:12px;">3 mois</span>
+      </div>
+
+      <!-- poids -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; margin-bottom:12px;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px;"><div><div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.5px;">POIDS</div><div style="font:800 30px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-1px; margin-top:4px;">74,2 <span style="font-size:15px; color:var(--mut);">kg</span></div><div style="font:600 12.5px 'Hanken Grotesk'; color:var(--grn);">↓ 0,8 kg sur 30 j</div></div><button style="height:36px; border:1.5px solid var(--line2); border-radius:11px; background:var(--card); color:var(--acc); font:700 12.5px 'Hanken Grotesk'; padding:0 13px; cursor:pointer;">+ Saisir</button></div>
+        <svg width="100%" height="60" viewBox="0 0 300 60" preserveAspectRatio="none" style="margin-top:6px;"><polyline points="0,14 43,18 86,16 129,26 172,24 215,34 258,32 300,42" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="300" cy="42" r="4" fill="var(--acc)"/></svg>
+      </div>
+
+      <!-- apports moyens -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; margin-bottom:12px;">
+        <div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.5px; margin-bottom:4px;">APPORTS MOYENS</div>
+        <div style="font:800 26px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.8px;">2 040 <span style="font-size:13px; color:var(--mut);">kcal / jour</span></div>
+        <svg width="100%" height="54" viewBox="0 0 300 54" preserveAspectRatio="none" style="margin:8px 0 12px;"><polyline points="0,32 50,28 100,34 150,22 200,26 250,18 300,24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="display:flex; justify-content:space-between;"><div><div style="font:700 15px 'Bricolage Grotesque'; color:var(--acc);">142 g</div><div style="font-size:11px; color:var(--mut);">Prot. moy.</div></div><div><div style="font:700 15px 'Bricolage Grotesque'; color:var(--amber);">248 g</div><div style="font-size:11px; color:var(--mut);">Gluc. moy.</div></div><div><div style="font:700 15px 'Bricolage Grotesque'; color:var(--grn);">66 g</div><div style="font-size:11px; color:var(--mut);">Lip. moy.</div></div></div>
+      </div>
+
+      <!-- adherence + completude -->
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; text-align:center;">
+          <div style="position:relative; width:78px; height:78px; margin:0 auto 8px;"><svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="31" fill="none" stroke="var(--track)" stroke-width="8"/><circle cx="39" cy="39" r="31" fill="none" stroke="var(--grn)" stroke-width="8" stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="52" transform="rotate(-90 39 39)"/></svg><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:800 20px 'Bricolage Grotesque'; color:var(--txt);">73%</div></div>
+          <div style="font:600 12.5px 'Hanken Grotesk'; color:var(--txt);">Adhérence</div><div style="font-size:11px; color:var(--mut); font-family:'Space Mono';">22 / 30 jours</div>
+        </div>
+        <div style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px; text-align:center;">
+          <div style="position:relative; width:78px; height:78px; margin:0 auto 8px;"><svg width="78" height="78" viewBox="0 0 78 78"><circle cx="39" cy="39" r="31" fill="none" stroke="var(--track)" stroke-width="8"/><circle cx="39" cy="39" r="31" fill="none" stroke="var(--acc)" stroke-width="8" stroke-linecap="round" stroke-dasharray="194.8" stroke-dashoffset="25" transform="rotate(-90 39 39)"/></svg><div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:800 20px 'Bricolage Grotesque'; color:var(--txt);">87%</div></div>
+          <div style="font:600 12.5px 'Hanken Grotesk'; color:var(--txt);">Complétude</div><div style="font-size:11px; color:var(--mut); font-family:'Space Mono';">journal rempli</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 10 · GESTION DES REPAS ════════ -->
+    <sc-if value="{{ scr_meals }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <button onClick="{{ nav.journal }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Gérer mes repas</h2>
+      </div>
+      <p style="margin:0 0 16px 52px; font-size:13px; color:var(--mut);">Réordonne, renomme ou supprime les repas de ta journée.</p>
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <sc-for list="{{ mealMgmt }}" as="m" hint-placeholder-count="4">
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:15px; padding:13px 14px; display:flex; align-items:center; gap:12px;">
+          <span style="color:var(--mut2); font-size:18px; cursor:grab; line-height:1;">⋮⋮</span>
+          <span style="font-size:19px;">{{ m.icon }}</span>
+          <div style="flex:1;"><div style="font:600 15px 'Hanken Grotesk'; color:var(--txt);">{{ m.name }}</div><div style="font-size:11.5px; color:var(--mut);">{{ m.sub }}</div></div>
+          <button style="width:32px; height:32px; border:none; border-radius:10px; background:var(--btnsoft); color:var(--deep); cursor:pointer; font-size:14px;">✎</button>
+          <button style="width:32px; height:32px; border:none; border-radius:10px; background:var(--dangerbg); color:var(--danger); cursor:pointer; font-size:15px;">✕</button>
+        </div>
+        </sc-for>
+        <button style="background:var(--tert); border:1.5px dashed var(--tertline); border-radius:15px; padding:14px; color:var(--acc); font:700 14px 'Hanken Grotesk'; cursor:pointer;">+ Ajouter un repas</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 02 · DÉTAIL ENTRÉE (bottom sheet) ════════ -->
+    <sc-if value="{{ ov_detail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:30; background:rgba(20,15,10,.5); display:flex; align-items:flex-end; animation:fadein .2s ease;">
+      <div class="hgs" style="width:100%; max-height:92%; overflow-y:auto; background:var(--frame); border-radius:28px 28px 0 0; padding:12px 22px 24px; animation:sheetup .32s cubic-bezier(.16,1,.3,1);">
+        <div style="width:44px; height:5px; border-radius:3px; background:var(--line2); margin:0 auto 14px;"></div>
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px;">
+          <div><span style="display:inline-block; padding:4px 11px; border-radius:999px; background:var(--soft); color:var(--accdk); font:700 11px 'Hanken Grotesk'; margin-bottom:8px;">Déjeuner</span><h2 style="margin:0; font:700 24px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Poulet grillé</h2></div>
+          <button onClick="{{ closeOverlay }}" style="width:36px; height:36px; border:none; border-radius:12px; background:var(--btnsoft); color:var(--deep); font-size:17px; cursor:pointer; flex:none;">✕</button>
+        </div>
+
+        <!-- quantity -->
+        <div style="font:600 11.5px 'Hanken Grotesk'; color:var(--lbl); margin-bottom:7px;">Quantité</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+          <button style="width:46px; height:46px; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); color:var(--deep); font-size:22px; cursor:pointer;">−</button>
+          <div style="flex:1; height:46px; border:1.5px solid var(--acc); border-radius:14px; background:var(--card); display:flex; align-items:center; justify-content:center; gap:6px;"><span style="font:700 19px 'Bricolage Grotesque'; color:var(--txt);">150</span><span style="font:400 13px 'Space Mono'; color:var(--mut);">g</span></div>
+          <button style="width:46px; height:46px; border:none; border-radius:14px; background:var(--acc); color:#fff; font-size:22px; cursor:pointer;">+</button>
+        </div>
+
+        <!-- live macros -->
+        <div style="background:var(--panel); border-radius:18px; padding:16px 18px; color:var(--paneltx); display:flex; align-items:center; gap:14px; margin-bottom:6px;">
+          <div style="text-align:center; min-width:56px;"><div style="font:800 30px 'Bricolage Grotesque'; color:#fff; letter-spacing:-1px; line-height:1;">248</div><div style="font:700 10px 'Space Mono'; color:var(--panelacc); margin-top:3px;">kcal</div></div>
+          <div style="width:1px; align-self:stretch; background:rgba(255,255,255,.15);"></div>
+          <div style="flex:1; display:flex;"><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">46 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Prot.</div></div><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">0 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Gluc.</div></div><div style="flex:1; text-align:center;"><div style="font:700 19px 'Bricolage Grotesque'; color:#fff;">5,5 g</div><div style="font-size:10.5px; color:var(--panelacc); margin-top:4px;">Lip.</div></div></div>
+        </div>
+        <div style="font:400 10px 'Space Mono'; color:var(--mut); text-align:right; margin:6px 2px 14px;">RECALCULÉ POUR 150 G</div>
+
+        <!-- micros -->
+        <div style="font:700 10.5px 'Space Mono'; color:var(--mut); letter-spacing:.5px; margin:0 2px 8px;">MICRONUTRIMENTS</div>
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:14px; padding:2px 14px; margin-bottom:16px;">
+          <sc-for list="{{ detailMicros }}" as="d" hint-placeholder-count="3">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-bottom:1px solid var(--line);"><span style="font-size:13px; color:var(--sub);">{{ d.label }}</span><span><span style="font:700 15px 'Bricolage Grotesque'; color:var(--txt);">{{ d.val }}</span> <span style="font:400 11px 'Space Mono'; color:var(--mut);">{{ d.unit }}</span></span></div>
+          </sc-for>
+        </div>
+
+        <!-- actions -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:9px;">
+          <button style="height:46px; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); color:var(--deep); font:600 13.5px 'Hanken Grotesk'; cursor:pointer;">↑ Monter</button>
+          <button style="height:46px; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); color:var(--deep); font:600 13.5px 'Hanken Grotesk'; cursor:pointer;">↓ Descendre</button>
+        </div>
+        <button style="height:46px; width:100%; border:1.5px solid var(--line2); border-radius:14px; background:var(--card); color:var(--deep); font:600 13.5px 'Hanken Grotesk'; cursor:pointer; margin-bottom:9px;">⇄ Déplacer vers un autre repas</button>
+        <button style="height:48px; width:100%; border:none; border-radius:14px; background:var(--dangerbg); color:var(--danger); font:700 14px 'Hanken Grotesk'; cursor:pointer;">Supprimer l'aliment</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 03 · FOOD PICKER (bottom sheet) ════════ -->
+    <sc-if value="{{ ov_picker }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:30; background:rgba(20,15,10,.5); display:flex; align-items:flex-end; animation:fadein .2s ease;">
+      <div class="hgs" style="width:100%; height:92%; overflow-y:auto; background:var(--frame); border-radius:28px 28px 0 0; padding:12px 20px 22px; animation:sheetup .32s cubic-bezier(.16,1,.3,1); display:flex; flex-direction:column;">
+        <div style="width:44px; height:5px; border-radius:3px; background:var(--line2); margin:0 auto 12px; flex:none;"></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex:none;">
+          <h2 style="margin:0; font:700 21px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Ajouter au déjeuner</h2>
+          <button onClick="{{ closeOverlay }}" style="width:36px; height:36px; border:none; border-radius:12px; background:var(--btnsoft); color:var(--deep); font-size:17px; cursor:pointer;">✕</button>
+        </div>
+
+        <!-- 3 add modes -->
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex:none;">
+          <div style="flex:1; background:var(--panel); border-radius:14px; padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--paneltx);"><span style="font-size:20px;">🔎</span><span style="font:700 11.5px 'Hanken Grotesk'; color:#fff;">Rechercher</span></div>
+          <button onClick="{{ nav.scan }}" style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;"><span style="font-size:20px;">📷</span><span style="font:700 11.5px 'Hanken Grotesk'; color:var(--txt);">Scanner</span></button>
+          <button onClick="{{ nav.quick }}" style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;"><span style="font-size:20px;">✨</span><span style="font:700 11.5px 'Hanken Grotesk'; color:var(--txt);">Texte libre</span></button>
+        </div>
+
+        <!-- search field -->
+        <div style="height:48px; border-radius:14px; background:var(--card); border:1.5px solid var(--acc); display:flex; align-items:center; gap:10px; padding:0 15px; margin-bottom:12px; flex:none;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span style="font-size:15px; color:var(--mut2);">Rechercher un aliment…</span></div>
+
+        <!-- tabs -->
+        <div style="display:flex; gap:7px; margin-bottom:12px; flex:none; overflow:hidden;">
+          <span style="padding:7px 13px; border-radius:999px; background:var(--acc); color:#fff; font:700 12.5px 'Hanken Grotesk'; white-space:nowrap;">Récents</span>
+          <span style="padding:7px 13px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font-size:12.5px; white-space:nowrap;">Base d'aliments</span>
+          <span style="padding:7px 13px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font-size:12.5px; white-space:nowrap;">Recettes</span>
+          <span style="padding:7px 13px; border-radius:999px; background:var(--card); border:1px solid var(--chipline); color:var(--sub); font-size:12.5px; white-space:nowrap;">Modèles</span>
+        </div>
+
+        <!-- list -->
+        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+          <sc-for list="{{ pickerFoods }}" as="p" hint-placeholder-count="5">
+          <button onClick="{{ nav.detail }}" style="width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; border-radius:11px; background:repeating-linear-gradient(135deg,var(--stripe1) 0 5px,var(--stripe2) 5px 10px); flex:none;"></div>
+            <div style="flex:1; min-width:0;"><div style="font:600 14.5px 'Hanken Grotesk'; color:var(--txt);">{{ p.name }}</div><div style="font-size:12px; color:var(--mut);">{{ p.sub }}</div></div>
+            <span style="font:700 13px 'Space Mono'; color:var(--mut); white-space:nowrap;">{{ p.kcal }}</span>
+            <span style="width:28px; height:28px; border-radius:9px; background:var(--soft); color:var(--acc); display:flex; align-items:center; justify-content:center; font-size:17px; flex:none;">+</span>
+          </button>
+          </sc-for>
+          <!-- OpenFoodFacts fallback -->
+          <div style="background:var(--tert); border:1px dashed var(--tertline); border-radius:14px; padding:14px; text-align:center; margin-top:2px;">
+            <div style="font-size:12.5px; color:var(--mut); margin-bottom:9px;">Pas trouvé dans ta base locale ?</div>
+            <button onClick="{{ nav.scan }}" style="height:42px; padding:0 18px; border:none; border-radius:12px; background:var(--panel); color:var(--paneltx); font:700 13px 'Hanken Grotesk'; cursor:pointer;">Rechercher dans OpenFoodFacts</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- bottom nav -->
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none; background:var(--railbg); border-top:1px solid var(--line); padding:9px 12px 5px; display:flex; z-index:6;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span style="font-size:10px; font-weight:600;">Accueil</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M4 10v4M20 10v4M6 12h12"/></svg><span style="font-size:10px; font-weight:600;">Muscu</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-4 3 8 2-5 2 3h5"/></svg><span style="font-size:10px; font-weight:600;">Running</span></div>
+    <button onClick="{{ nav.journal }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--acc);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6a4 4 0 008 0V4M8 4v16M17 4c-1.5 0-2 2-2 5s.5 4 2 4 2-1 2-4-.5-5-2-5zM17 13v7"/></svg><span style="font-size:10px; font-weight:700;">Alim</span></button>
+  </div>
+  </sc-if>
+  <div style="flex:none; height:20px; display:flex; align-items:center; justify-content:center; background:{{ pillBg }};"><div style="width:120px; height:5px; border-radius:3px; background:{{ pillColor }};"></div></div>
+</div>
+</div>
+
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screen: 'journal',
+    overlay: null,
+    theme: 'light',
+    bilan: 'ring',
+    empty: false,
+    hasGoal: true,
+    goal: 'prise',
+    scan: 'searching',
+    qc: 'result',
+    mealMenu: null,
+    swiped: '0-0',
+    detailedOpen: false,
+    microAccOpen: true,
+  };
+
+  componentDidMount() {
+    let t = 'light';
+    try { t = localStorage.getItem('fittrio-theme') || 'light'; } catch (e) {}
+    this.applyTheme(t);
+  }
+  applyTheme(t) {
+    try { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('fittrio-theme', t); } catch (e) {}
+    this.setState({ theme: t });
+  }
+  toggleTheme() { this.applyTheme(this.state.theme === 'dark' ? 'light' : 'dark'); }
+
+  go(s) { this.setState({ screen: s, overlay: null, mealMenu: null }); }
+  openOverlay(o) { this.setState({ overlay: o }); }
+  closeOverlay() { this.setState({ overlay: null }); }
+
+  cycleScan() {
+    const order = ['searching', 'unknown', 'incomplete', 'network', 'perm'];
+    const i = order.indexOf(this.state.scan);
+    this.setState({ screen: 'scan', overlay: null, scan: order[(i + 1) % order.length] });
+  }
+
+  navBtn(active) {
+    return 'text-align:left; display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:11px; cursor:pointer; font:600 13px Hanken Grotesk; border:1px solid transparent;'
+      + (active ? 'background:var(--acc); color:#fff;' : 'background:var(--railbg); color:var(--deep); border-color:var(--line);');
+  }
+  chip(active) {
+    return 'padding:7px 11px; border-radius:999px; cursor:pointer; font:600 11.5px Hanken Grotesk; border:1px solid var(--line2);'
+      + (active ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'background:var(--card); color:var(--sub);');
+  }
+  seg(active) {
+    return 'flex:1; padding:9px; border:none; border-radius:11px; cursor:pointer; font:600 13px Hanken Grotesk;'
+      + (active ? 'background:var(--panel); color:var(--paneltx);' : 'background:transparent; color:var(--lbl);');
+  }
+
+  renderVals() {
+    const st = this.state;
+    const S = st.screen, O = st.overlay;
+    const overlayOpen = O !== null;
+
+    const micros = [
+      { label: 'Fer', val: '8,4 mg', pct: 60, tone: 'amber' },
+      { label: 'Calcium', val: '620 mg', pct: 62, tone: 'amber' },
+      { label: 'Magnésium', val: '210 mg', pct: 56, tone: 'amber' },
+      { label: 'Potassium', val: '2 100 mg', pct: 45, tone: 'acc' },
+      { label: 'Vitamine C', val: '48 mg', pct: 60, tone: 'amber' },
+      { label: 'Fibres', val: '22 g', pct: 73, tone: 'grn' },
+    ].map(m => {
+      const color = m.tone === 'grn' ? 'var(--grn)' : m.tone === 'amber' ? 'var(--amber)' : 'var(--acc)';
+      const circ = 2 * Math.PI * 13;
+      return { ...m, color, pct: m.pct + '%', off: (circ * (1 - Math.min(m.pct, 100) / 100)).toFixed(1) };
+    });
+
+    const mk = (icon, name, kcal, i, items) => ({
+      icon, name, kcal, openMenu: st.mealMenu === i,
+      menu: () => this.setState(s => ({ mealMenu: s.mealMenu === i ? null : i })),
+      add: () => this.openOverlay('picker'),
+      items: items.map((it, j) => ({
+        ...it, swiped: st.swiped === i + '-' + j, shift: st.swiped === i + '-' + j ? '-128px' : '0px',
+        tap: () => this.setState(s => ({ swiped: s.swiped === i + '-' + j ? null : i + '-' + j })),
+      })),
+    });
+    const meals = [
+      mk('🍳', 'Petit-déjeuner', '557', 0, [
+        { name: "Flocons d'avoine", qty: '80 g', kcal: '312' },
+        { name: 'Œufs', qty: '2', kcal: '156' },
+        { name: 'Banane', qty: '1', kcal: '89' },
+      ]),
+      mk('🥗', 'Déjeuner', '598', 1, [
+        { name: 'Poulet grillé', qty: '150 g', kcal: '248' },
+        { name: 'Riz basmati cuit', qty: '200 g', kcal: '260' },
+        { name: "Huile d'olive", qty: '1 c. à s.', kcal: '90' },
+      ]),
+      mk('🥛', 'Collation', '325', 2, [
+        { name: 'Skyr nature', qty: '150 g', kcal: '90' },
+        { name: 'Amandes', qty: '35 g', kcal: '205' },
+        { name: 'Miel', qty: '10 g', kcal: '30' },
+      ]),
+    ];
+
+    const qcLines = [
+      { name: 'Poulet grillé', sub: 'Base d\u2019aliments', g: '150', ok: true },
+      { name: 'Œufs', sub: '2 unités · ~120 g', g: '120', ok: true },
+      { name: 'Riz basmati cuit', sub: '« un bol » estimé', g: '200', ok: true },
+      { name: 'Banane', sub: '1 unité · ~120 g', g: '120', ok: true },
+      { name: 'cabillaud 200g', sub: 'Non reconnu — vérifie l\u2019orthographe', bad: true },
+    ].map(q => q.bad
+      ? { ...q, ok: false, line: 'var(--danger)', icon: '!', iconbg: 'var(--dangerbg)', iconfg: 'var(--danger)', nameColor: 'var(--danger)' }
+      : { ...q, bad: false, line: 'var(--line)', icon: '✓', iconbg: 'var(--grnbg)', iconfg: 'var(--grntx)', nameColor: 'var(--txt)' });
+
+    const field = (label, value, unit) => {
+      const filled = value !== '';
+      return { label, unit, disp: filled ? value : '—', border: filled ? 'var(--acc)' : 'var(--line2)', color: filled ? 'var(--txt)' : 'var(--mut2)' };
+    };
+    const createMain = [field('Calories', '412', 'kcal'), field('Protéines', '9', 'g'), field('Glucides', '62', 'g'), field('Lipides', '14', 'g')];
+    const createDetailed = [field('Fibres', '7', 'g'), field('Sucres', '18', 'g'), field('Sel', '0,1', 'g'), field('Ac. saturés', '2,4', 'g')];
+    const createMicroGroups = [
+      { title: 'MINÉRAUX', items: [field('Sodium', '40', 'mg'), field('Potassium', '', 'mg'), field('Calcium', '90', 'mg'), field('Fer', '', 'mg')] },
+      { title: 'VITAMINES', items: [field('Vitamine C', '', 'mg'), field('Vitamine D', '', 'µg'), field('Vitamine B9', '', 'µg'), field('Vitamine B12', '', 'µg')] },
+    ];
+
+    const recipeIngredients = [
+      { name: 'Blanc de poulet', qty: '600 g', kcal: '990' },
+      { name: 'Riz basmati (cru)', qty: '300 g', kcal: '1 065' },
+      { name: 'Brocoli', qty: '400 g', kcal: '136' },
+      { name: "Huile d'olive", qty: '3 c. à s.', kcal: '360' },
+    ];
+
+    const detailMicros = [
+      { label: 'Fer', val: '1,3', unit: 'mg' },
+      { label: 'Potassium', val: '384', unit: 'mg' },
+      { label: 'Sodium', val: '104', unit: 'mg' },
+      { label: 'Vitamine B6', val: '0,8', unit: 'mg' },
+    ];
+
+    const pickerFoods = [
+      { name: 'Skyr nature 0%', sub: 'Récent · / 100 g', kcal: '63' },
+      { name: 'Poulet grillé', sub: 'Base · / 100 g', kcal: '165' },
+      { name: 'Banane', sub: 'Récent · / portion', kcal: '89' },
+      { name: 'Flocons d\u2019avoine', sub: 'Base · / 100 g', kcal: '389' },
+      { name: 'Bowl poulet-riz', sub: 'Recette · / portion', kcal: '512' },
+    ];
+
+    const mealMgmt = [
+      { icon: '🍳', name: 'Petit-déjeuner', sub: '~7h30' },
+      { icon: '🥗', name: 'Déjeuner', sub: '~12h30' },
+      { icon: '🥛', name: 'Collation', sub: '~16h' },
+      { icon: '🍽️', name: 'Dîner', sub: '~20h' },
+    ];
+
+    const navKeys = ['journal', 'detail', 'picker', 'scan', 'quick', 'create', 'recipe', 'profil', 'stats', 'meals'];
+    const nav = {}, navSty = {};
+    navKeys.forEach(k => {
+      nav[k] = k === 'detail' ? () => this.setState({ screen: 'journal', overlay: 'detail' })
+             : k === 'picker' ? () => this.setState({ screen: 'journal', overlay: 'picker' })
+             : () => this.go(k);
+    });
+    const activeNav = (S === 'journal' && O === 'detail') ? 'detail'
+                    : (S === 'journal' && O === 'picker') ? 'picker'
+                    : S;
+    navKeys.forEach(k => { navSty[k] = this.navBtn(activeNav === k); });
+
+    const showTabs = ['journal', 'profil', 'stats', 'meals'].includes(S) && !overlayOpen;
+    const liveDark = S === 'scan';
+
+    return {
+      scr_journal: S === 'journal', scr_scan: S === 'scan', scr_quick: S === 'quick',
+      scr_create: S === 'create', scr_recipe: S === 'recipe', scr_profil: S === 'profil',
+      scr_stats: S === 'stats', scr_meals: S === 'meals',
+      ov_detail: O === 'detail', ov_picker: O === 'picker',
+      nav, navSty, closeOverlay: () => this.closeOverlay(),
+
+      toggleTheme: () => this.toggleTheme(), themeIcon: st.theme === 'dark' ? '☀️' : '🌙', themeLabel: st.theme === 'dark' ? 'Clair' : 'Sombre',
+
+      bilanRing: st.bilan === 'ring', bilanNum: st.bilan === 'num',
+      toggleBilan: () => this.setState(s => ({ bilan: s.bilan === 'ring' ? 'num' : 'ring' })),
+      bilanWord: st.bilan === 'ring' ? 'anneau' : 'chiffres',
+
+      isEmpty: st.empty, notEmpty: !st.empty,
+      toggleEmpty: () => this.setState(s => ({ empty: !s.empty, screen: 'journal', overlay: null })),
+      emptyWord: st.empty ? 'vide ✓' : 'remplie',
+
+      hasGoal: st.hasGoal, noGoal: !st.hasGoal,
+      toggleGoal: () => this.setState(s => ({ hasGoal: !s.hasGoal })),
+      goalWord: st.hasGoal ? 'défini ✓' : 'absent',
+      goalSeg: { perte: this.seg(st.goal === 'perte'), maint: this.seg(st.goal === 'maint'), prise: this.seg(st.goal === 'prise') },
+      setGoalPerte: () => this.setState({ goal: 'perte' }), setGoalMaint: () => this.setState({ goal: 'maint' }), setGoalPrise: () => this.setState({ goal: 'prise' }),
+
+      cycleScan: () => this.cycleScan(),
+      scanSearching: st.scan === 'searching', scanUnknown: st.scan === 'unknown', scanIncomplete: st.scan === 'incomplete', scanNetwork: st.scan === 'network', scanPerm: st.scan === 'perm',
+      scanWord: { searching: 'recherche', unknown: 'inconnu', incomplete: 'partiel', network: 'réseau', perm: 'perm.' }[st.scan],
+
+      qcResult: st.qc === 'result', analyze: () => this.setState({ qc: 'result' }), qcLines,
+
+      detailedOpen: st.detailedOpen, toggleDetailed: () => this.setState(s => ({ detailedOpen: !s.detailedOpen })),
+      chevDetailed: 'font-size:22px; color:var(--mut); display:inline-block; transition:transform .25s;' + (st.detailedOpen ? 'transform:rotate(90deg);' : ''),
+      microAccOpen: st.microAccOpen, toggleMicroAcc: () => this.setState(s => ({ microAccOpen: !s.microAccOpen })),
+      chevMicro: 'font-size:22px; display:inline-block; transition:transform .25s;' + (st.microAccOpen ? 'transform:rotate(90deg);' : ''),
+
+      chipSty: this.chip(false),
+      tglSty: { empty: this.chip(st.empty) },
+
+      micros, meals, createMain, createDetailed, createMicroGroups, recipeIngredients, detailMicros, pickerFoods, mealMgmt,
+
+      showTabs,
+      statusTint: liveDark ? 'color:#f0e4d0;' : 'color:var(--txt);',
+      notchColor: liveDark ? '#000' : 'var(--bezel)',
+      pillBg: liveDark ? 'var(--scrim)' : 'var(--railbg)',
+      pillColor: liveDark ? 'rgba(255,255,255,.3)' : 'var(--line2)',
+    };
+  }
+}
+</script>
+</body>
+</html>

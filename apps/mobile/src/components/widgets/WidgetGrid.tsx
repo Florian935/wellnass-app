@@ -28,6 +28,7 @@ import { SortableWidgetGrid } from '@/components/widgets/SortableWidgetGrid';
 import { useScreenLayout } from '@/data/repositories/widget-layout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
 
 /** Gouttière entre cases (px). */
 export const GRID_GAP = 12;
@@ -129,7 +130,9 @@ export function WidgetGrid({
                   overflow: 'hidden',
                 }}
               >
-                {renderWidget(w.id, w.size)}
+                <WidgetIdentityProvider id={w.id}>
+                  {renderWidget(w.id, w.size)}
+                </WidgetIdentityProvider>
               </View>
             );
           })

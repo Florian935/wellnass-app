@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_MEAL_KEYS, resolveMealConfig, type MealConfigItem } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -14,25 +14,41 @@ export default function NutritionMealsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { nutritionProfile } = useNutritionProfile();
+  const { nutritionProfile, isLoading } = useNutritionProfile();
 
-  const [meals, setMeals] = useState<MealConfigItem[]>(() =>
-    resolveMealConfig(nutritionProfile?.meals).map((m) => ({ ...m, label: m.label ?? '' })),
-  );
+  /**
+   * Formulaire local. `null` = **pas encore initialisé** (la config n'est pas arrivée).
+   *
+   * ⚠️ Ne surtout pas repasser à un `useState(() => …)` seul : l'initialiseur ne s'exécute
+   * qu'au **premier** rendu, alors que `useNutritionProfile` lit SQLite de façon asynchrone et
+   * renvoie `null` en attendant. Le formulaire se figeait donc sur les 4 repas par défaut, et
+   * « Enregistrer » écrasait silencieusement la vraie configuration — les entrées de journal
+   * rattachées aux repas ainsi perdus se retrouvant dans la section « Autres ».
+   * Bug constaté en recette sur device le 30/07/2026.
+   */
+  const [meals, setMeals] = useState<MealConfigItem[] | null>(null);
+
+  useEffect(() => {
+    // Une seule initialisation : une fois le formulaire peuplé, l'utilisateur en est maître.
+    // Une resynchro ultérieure écraserait ses saisies en cours.
+    if (isLoading || meals != null) return;
+    setMeals(resolveMealConfig(nutritionProfile?.meals).map((m) => ({ ...m, label: m.label ?? '' })));
+  }, [isLoading, nutritionProfile, meals]);
 
   const defaultLabel = (key: string) =>
     (DEFAULT_MEAL_KEYS as readonly string[]).includes(key) ? t(`journal.meals.${key}`) : t('meals.newMeal');
 
   const setLabel = (i: number, label: string) =>
-    setMeals((prev) => prev.map((m, j) => (j === i ? { ...m, label } : m)));
-  const remove = (i: number) => setMeals((prev) => prev.filter((_, j) => j !== i));
+    setMeals((prev) => prev?.map((m, j) => (j === i ? { ...m, label } : m)) ?? prev);
+  const remove = (i: number) => setMeals((prev) => prev?.filter((_, j) => j !== i) ?? prev);
   const add = () =>
-    setMeals((prev) => [...prev, { key: `custom-${Date.now()}`, label: '' }]);
+    setMeals((prev) => (prev ? [...prev, { key: `custom-${Date.now()}`, label: '' }] : prev));
 
   // Réordonnancement : échange la position i ↔ i+dir. Les clés sont conservées → aucune
   // entrée du journal n'est orpheline (contrairement à supprimer/recréer un repas).
   const move = (i: number, dir: -1 | 1) =>
     setMeals((prev) => {
+      if (prev == null) return prev;
       const j = i + dir;
       if (j < 0 || j >= prev.length) return prev;
       const next = [...prev];
@@ -41,6 +57,9 @@ export default function NutritionMealsScreen() {
     });
 
   const save = async () => {
+    // Garde-fou : sans configuration chargée, il n'y a rien à enregistrer — et écrire ici
+    // reviendrait précisément à écraser la config réelle par les défauts.
+    if (meals == null) return;
     // Libellé vide → null (défaut). Si la config == défaut, on stocke null.
     const normalized: MealConfigItem[] = meals.map((m) => ({
       key: m.key,
@@ -52,6 +71,14 @@ export default function NutritionMealsScreen() {
     await upsertNutritionProfile({ meals: isDefault ? null : normalized });
     router.back();
   };
+
+  if (meals == null) {
+    return (
+      <View style={[styles.loading, { backgroundColor: colors.background }]}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
@@ -113,6 +140,7 @@ export default function NutritionMealsScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 20, gap: 12 },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   hint: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   reorder: { paddingBottom: 10, gap: 2, alignItems: 'center' },

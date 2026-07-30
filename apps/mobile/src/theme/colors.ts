@@ -41,6 +41,8 @@ export type Palette = {
   panel: string;
   panelText: string;
   panelMuted: string;
+  /** Accent **lisible sur `panel`** — l'accent terracotta standard y manque de contraste. */
+  panelAccent: string;
 };
 
 export const palettes: Record<ColorScheme, Palette> = {
@@ -68,6 +70,7 @@ export const palettes: Record<ColorScheme, Palette> = {
     panel: '#33291f',
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
+    panelAccent: '#d9a888',
   },
   dark: {
     background: '#1c150e',
@@ -93,5 +96,6 @@ export const palettes: Record<ColorScheme, Palette> = {
     panel: '#241e18',
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
+    panelAccent: '#e0a97f',
   },
 };

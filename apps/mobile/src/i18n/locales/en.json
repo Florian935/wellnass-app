@@ -470,7 +470,28 @@
       "dinner": "Dinner",
       "snack": "Snack",
       "other": "Other"
-    }
+    },
+    "balance": {
+      "title": "TODAY'S BALANCE",
+      "consumed": "Consumed",
+      "target": "Target",
+      "remaining": "Remaining",
+      "kcalRemaining": "kcal left",
+      "kcalOver": "kcal over",
+      "noTargetHint": "Complete your profile to get a calorie target and track what is left.",
+      "a11yRemaining": "You have {{kcal}} kcal left out of a {{target}} target.",
+      "a11yOver": "You are {{kcal}} kcal over your {{target}} kcal target."
+    },
+    "micros": {
+      "title": "TRACKED MICRONUTRIENTS",
+      "subtitle": "% of reference intakes",
+      "a11yCell": "{{label}}: {{value}} {{unit}}, {{pct}} % of the reference intake."
+    },
+    "emptyDay": {
+      "title": "Nothing logged yet",
+      "body": "Log your first meal, or start from what you ate yesterday."
+    },
+    "mealMenu": "{{meal}} meal actions"
   },
   "meals": {
     "manage": "Manage meals",

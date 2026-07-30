@@ -12,6 +12,7 @@
 | [FitTrio.dc.html](FitTrio.dc.html) | La maquette principale : 14 écrans + logique d'états (balise `<x-dc>`) |
 | [FitTrio - Composants.dc.html](FitTrio%20-%20Composants.dc.html) | Bibliothèque de composants du design system (extraits réutilisables) |
 | [FitTrio - Micronutriments.dc.html](FitTrio%20-%20Micronutriments.dc.html) | **US 4.33** — détail aliment (section « Valeurs détaillées ») + aliment perso (saisie micros). Clair & sombre, accordéons. |
+| [FitTrio - Nutrition.dc.html](FitTrio%20-%20Nutrition.dc.html) | **Refonte du pilier Nutrition** (30/07/2026) — les 10 écrans nutrition + états particuliers, rail de navigation à gauche. Clair & sombre. Notes de conception : [FitTrio - Nutrition.README.md](FitTrio%20-%20Nutrition.README.md) · aperçu : [.preview.webp](FitTrio%20-%20Nutrition.preview.webp) |
 | [support.js](support.js) | Le **`dc-runtime`** de Claude Design que les maquettes chargent (`<script src="./support.js">`). Généré, ne pas éditer. |
 | [Architecture Applicative.md](Architecture%20Applicative.md) / [.jpg](Architecture%20Applicative.jpg) | Arborescence des écrans + descriptif des fonctionnalités, pilier par pilier. |
 | [FitTrio.preview.webp](FitTrio.preview.webp) · [screenshots/](screenshots/) | Aperçus rendus des maquettes |
@@ -51,7 +52,7 @@ Pilotés par `state.screen` dans la logique (`<script data-dc-script>` de la maq
 | `muscuHist` | Progression & historique | 1RM estimé, records récents, heatmap volume/groupe |
 | `run` | Running — accueil | Prochaine sortie, course libre, stats semaine, évolution allure |
 | `runLive` | **Suivi GPS live** | Carte (SVG animée), distance/temps/allure, contrôles, auto-pause |
-| `alim` | Journal alimentaire | Bilan calorique (anneau), macros, repas |
+| `alim` | Journal alimentaire | Bilan calorique (anneau), macros, repas — ⚠️ **remplacé par la refonte Nutrition**, voir ci-dessous |
 | `profil` | Profil | Apparence (clair/sombre), poids, TDEE, notifs, import/export, déconnexion |
 
 ### Graphe de navigation
@@ -64,6 +65,27 @@ Pilotés par `state.screen` dans la logique (`<script data-dc-script>` de la maq
 
 > Rappel produit ([CLAUDE.md](../CLAUDE.md), décision H) : les piliers sont **opt-in** ; les
 > onglets des piliers non activés doivent être **masqués**. Dans la maquette les 3 sont actifs.
+
+### Refonte Nutrition (30/07/2026)
+
+L'écran `alim` de la maquette principale ne couvrait que le journal, en cartes plates. La maquette
+[FitTrio - Nutrition.dc.html](FitTrio%20-%20Nutrition.dc.html) le **remplace** et étend le pilier à
+ses **10 écrans** : journal · détail d'entrée (sheet) · sélection d'aliment · scan code-barres ·
+saisie rapide en texte · aliment perso · recette · profil nutritionnel · statistiques · gestion des
+repas. États particuliers navigables depuis le rail de gauche : journée vide, objectif absent, et
+les **5 états de scan** (recherche, produit inconnu, fiche partielle, réseau, permission).
+
+Décisions structurantes actées par la maquette (détail dans son
+[README](FitTrio%20-%20Nutrition.README.md)) :
+
+- **Carte « Bilan du jour »** en 2 variantes basculables (**anneau** calorique SVG vs **chiffres**
+  typographiques, restant en Bricolage 70px) — *le choix entre les deux reste à trancher*.
+- **Ajout d'aliment contextuel** : pas de FAB. Chaque en-tête de repas porte « + Ajouter un
+  aliment » et ouvre un **sheet exposant les 3 modes** (Rechercher · Scanner · Texte libre).
+- **Grille micronutriments à couverture** : mini-anneaux + code couleur (vert ≥ 70 %, ambre
+  45–69 %, terracotta < 45 %) à la place de la liste de valeurs.
+- **Contrastes renforcés** : textes atténués assombris (`--mut`, `--sub`), texte toujours `#fff`
+  sur fond accent — cf. l'exigence WCAG AA (US 9.12).
 
 ---
 

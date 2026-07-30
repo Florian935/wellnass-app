@@ -20,6 +20,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import { AccentHalo } from '@/components/AccentHalo';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
@@ -55,8 +56,28 @@ export function WidgetFrame({
 
   const base: StyleProp<ViewStyle> = [styles.card, { padding: pad }, toneStyle, style];
 
+  // Cercle d'accent en coin (celui de la maquette). **Quels** widgets en portent, dans quel
+  // coin et avec quel facteur de taille est décidé par `AccentHalo` à partir de l'identité du
+  // widget (`hasHaloFor` / `geometryFromId`) ; ici on ne règle que ce qui dépend de la carte :
+  //  - le **diamètre de base suit la taille de la carte** via `pad` (16 petit carré ·
+  //    18 rectangle · 22 grand). Un cercle fixe de 150 comme dans la maquette — dessiné pour
+  //    une carte pleine largeur — couvrait le tiers d'une petite tuile et s'y lisait comme une
+  //    tache ;
+  //  - l'opacité tombe à .1 sur les cartes claires, où .22 de terracotta sur du crème vire au
+  //    rose sale (constaté sur device en thème clair).
+  // Les cartes d'alerte en sont exemptées : leur teinte ambre porte déjà un sens, un cercle
+  // accent par-dessus la brouillerait.
+  const haloSize = pad <= 16 ? 90 : pad <= 18 ? 115 : 140;
+  const content = (
+    <>
+      {tone === 'panel' ? <AccentHalo size={haloSize} /> : null}
+      {tone === 'card' ? <AccentHalo size={haloSize} opacity={0.1} /> : null}
+      {children}
+    </>
+  );
+
   if (!onPress) {
-    return <View style={base}>{children}</View>;
+    return <View style={base}>{content}</View>;
   }
   return (
     <Pressable
@@ -66,7 +87,7 @@ export function WidgetFrame({
       onPress={onPress}
       style={({ pressed }) => [base, pressed && styles.pressed]}
     >
-      {children}
+      {content}
     </Pressable>
   );
 }

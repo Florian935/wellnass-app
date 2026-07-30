@@ -40,9 +40,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | **V0.9** | Enrichissements avant lancement *(ajoutée le 28/07/2026)* | Rétention (check-in, objectifs, bilan, joker de streak), mensurations, pas quotidiens, finitions UX de recette | 14 | ~57h |
 | **V1.0** | Lancement store | Publication Play Store (Android) | 1 | — |
 | **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
-| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… | 15 | *non estimé* |
+| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… | 17 | *non estimé* |
 | **Ultérieur — iOS** | Portage iOS (hors lancement) | App Store + OAuth Apple | 2 | — |
-| | | **Total (périmètre de lancement)** | **208** | **~534h** |
+| | | **Total (périmètre de lancement)** | **210** | **~534h** |
 
 **Logique d'ordonnancement** :
 - **Muscu d'abord** : cœur de valeur, zéro dépendance externe (pas de GPS, pas de clé API) — on valide vite le produit.
@@ -390,6 +390,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 4.34 | Détail d'une entrée de repas | Écran de détail complet d'une entrée journalisée. | 🟢 | ✅ | |
 | 4.35 | Suivi de micronutriments | Récapitulatif des micros suivis sur la journée. | 🟢 | ✅ | Sélection des micros suivis (`tracked-micros`). |
 | 4.36 | Saisie de repas par liste | Saisie en **langage naturel** (« 100 g de riz, 2 œufs ») → analyse → revue éditable → confirmation. | 🟢 | ✅ | ⚠️ Cette US porte historiquement le n° « 4.5 » dans son nom de fichier — **collision** avec 4.5 « Modification manuelle des macros ». Le numéro qui fait foi est **4.36**. Anti-friction majeur. |
+| 4.37 | Refonte visuelle du journal alimentaire | Carte héros « Bilan du jour » (anneau calorique + détail consommé/objectif/restant), macros en 3 colonnes, grille de micronutriments **à couverture** (% des VNR), cartes de repas (icône, total, menu replié), repas vides en pointillés, état « journée vide » plein. | 🟢 | ✅ | Maquette [FitTrio - Nutrition](../../design/FitTrio%20-%20Nutrition.dc.html), demande Damien. Le pilier nutrition était le plus pauvre visuellement des trois. **Écran 01 (journal) seul** — les 9 autres écrans du pilier gardent leur habillage. Variante « anneau » retenue contre « chiffres » (cohérence avec le widget dashboard). |
+| 7.14 | Cercle d'accent sur les cartes | Reflet terracotta en coin de carte, repris de la maquette. Coin, taille et **présence** dérivés par hachage de l'identité du widget : ~1 carte sur 3, géométrie stable au réagencement. | 🟢 | ✅ | Demande Damien (« casser la monotonie »). Arbitré sur device : le cercle net de la maquette est retenu contre une variante en dégradé radial. |
 | 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
 
@@ -421,16 +423,16 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 > **9.3** SQLite maison → PowerSync (8 h → 6 h) · **9.7** conflits délégués à PowerSync (6 h → 3 h) · **2.12** sync arrière-plan via PowerSync (6 h → 3 h) ·
 > **− 1.3** OAuth Apple (−3 h) et **− 9.1** App iOS déplacés en « Ultérieur — iOS » (hors décompte de lancement).
 
-**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 28/07/2026)** :
+**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 30/07/2026)** :
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 168 | ~81 % |
+| ✅ Livré | 170 | ~81 % |
 | 🟡 Partiel | 19 | ~9 % |
 | ⬜ À faire | 16 | ~8 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **208** | |
+| **Total périmètre de lancement** | **210** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
@@ -460,10 +462,10 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.9 (14) | 4 | 5 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
-| Hors cadrage (15) | 15 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, infobulle graphiques… |
+| Hors cadrage (17) | 17 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… |
 
-- **~208 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 15 nées en cours de route + 14 de V0.9).
-- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 15 items hors cadrage.
+- **~210 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 17 nées en cours de route + 14 de V0.9).
+- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 17 items hors cadrage.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
 - **+ ~10 US d'analyse** suivies au [catalogue](../product/analyses-donnees.md), hors décompte.
 
@@ -489,6 +491,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**30/07/2026 — Refonte visuelle du pilier Nutrition (4.37 ✅) + cercle d'accent (7.14 ✅)**
+Deux lignes **créées** hors cadrage : ni l'une ni l'autre n'existait dans la roadmap. Journal
+alimentaire seul (écran 01/10) ; les 9 autres écrans du pilier gardent leur habillage. Total
+**208 → 210**, hors cadrage **15 → 17**.
 
 **29/07/2026 — MUSC-F14 : substitution d'exercice (3.52) ⬜ → 🟡**
 Motif « zone douloureuse » **retiré** : sans donnée articulaire, y répondre serait un conseil de santé
