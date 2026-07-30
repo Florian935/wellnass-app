@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : widget au lieu d'un 5ᵉ onglet
+
+Commit précédent : `44f74eb`. Toujours **aucun code applicatif** — `etape: validation`.
+
+#### Modifié
+
+- **Arbitrage Damien : pas d'onglet de navigation pour le cycle, un widget complet.** La maquette
+  Claude Design plaçait « Cycle » en **5ᵉ onglet** ; c'est écarté. À la place : un widget `cycle` sur
+  le hub Accueil, décliné sur les **3 formes** (`small` / `wide` / `large`), l'écran de détail étant
+  atteint en appuyant dessus — le patron de `steps` (PAS-01) et `wellbeing` (BIEN-01).
+  → spec **R16 bis**, plan **étape 4** (6 h → 8 h), roadmap 1.25.
+- **Deux raisons, toutes deux issues de décisions antérieures** : BIEN-01 avait explicitement tranché
+  que le bien-être est une « 4ᵉ dimension légère, **pas** un 4ᵉ pilier » — le cycle est de la même
+  famille et en faire un onglet le hisserait au-dessus sans justification ; et la barre du bas varie
+  déjà de **2 à 5 entrées** selon les piliers activés (décision H).
+
+#### Ajouté
+
+- [ECART-AVEC-LA-SPEC.md](design/cycle01-suivi-menstruel/ECART-AVEC-LA-SPEC.md) dans le dossier de
+  maquette. La maquette reste la référence pour **tout le reste** ; seule la barre de navigation est
+  à ignorer. Sans cette note, quelqu'un qui implémente en lisant le HTML sans la spec recréerait
+  l'onglet — c'est le genre d'écart qui se rattrape en recette, trop tard.
+
+#### Technique / Notes
+
+- ⚠️ **Le widget introduit une troisième dimension de filtrage, et c'est le vrai point technique de
+  l'étape 4.** `WIDGET_REGISTRY` ([widgets.ts](packages/shared/src/widgets.ts)) ne connaît que deux
+  cas : une **liste de piliers**, ou le sentinelle **`'always'`**. Le cycle n'est **ni l'un ni
+  l'autre** — il n'appartient à aucun pilier (donc pas de liste) mais ne doit pas s'afficher pour
+  tout le monde (donc pas `'always'`) : il dépend d'un **réglage**. C'est exactement la dette relevée
+  par **REFACTO-01** (~12 copies en ligne de la décision d'accès). Consigne posée dans la spec
+  (R16 ter) et le plan : **étendre proprement le registre à un garde par réglage**, ne pas ajouter
+  une 13ᵉ copie.
+- La capture **04 Historique**, absente du bundle, a été relue depuis une image partagée par Damien :
+  elle confirme **R6** (le cycle de 119 j porte « ignoré du calcul » avec « exclu de la moyenne, mais
+  conservé — rien n'est effacé ») et **R5** (chaque ligne porte la longueur du cycle qui *commence* à
+  cette date). Le fichier n'a pas pu être récupéré sur disque.
+- La maquette affiche aussi une **durée de règles** (« 5 j de règles ») distincte de la longueur du
+  cycle. **Dérivable du modèle tel quel** (`ended_on − started_on`) — aucune colonne à ajouter.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — maquette Claude Design intégrée
 
 Commit précédent : `4bef8d8`. **Aucun code applicatif** — CYCLE-01 reste à `etape: validation`.

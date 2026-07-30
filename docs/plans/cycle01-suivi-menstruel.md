@@ -57,11 +57,24 @@ coup (critère de recette 14) sans fouiller le calcul.
   (R16). Désactivé ⇒ **aucune écriture possible**, garde au niveau repository et non seulement en UI.
 - Désactivation → proposition de suppression (R17).
 
-## Étape 4 — Journal et calendrier *(≈ 6 h)*
+## Étape 4 — Widget, journal et calendrier *(≈ 8 h)*
 
-Écran `app/cycle/index.tsx` : calendrier mensuel, saisie du jour (flux + symptômes), historique.
-Réutiliser les composants existants ; **ne pas** introduire de librairie de calendrier — la grille de
-7 jours du planning est un patron déjà présent.
+⚠️ **Pas d'onglet** (spec R16 bis, arbitrage du 31/07). L'entrée se fait par un **widget** sur le hub
+Accueil, comme `steps` et `wellbeing`.
+
+**4a — Le garde par réglage, d'abord.** `WIDGET_REGISTRY` ne connaît que « liste de piliers » ou
+`'always'`. Le cycle n'est ni l'un ni l'autre : il dépend de `cycleTrackingEnabled`. **Étendre le
+registre** à un garde par réglage — et surtout **ne pas** ajouter une 13ᵉ copie en ligne de la
+décision d'accès (spec R16 ter, dette REFACTO-01). C'est la seule vraie difficulté de l'étape ; le
+reste est de l'assemblage.
+
+**4b — Le widget, 3 formes** (`small` / `wide` / `large`) : jour du cycle + phase · + estimation ou
+état d'attente · + mini-calendrier et accès à la saisie. Vérifier qu'il se réagence comme les autres
+(UX-LOT-01).
+
+**4c — L'écran de détail** `app/cycle/index.tsx`, atteint **depuis le widget** : calendrier mensuel,
+saisie du jour, historique. **Ne pas** introduire de librairie de calendrier — la grille de 7 jours du
+planning est un patron déjà présent.
 
 Le bandeau d'avertissement (§0 de la spec) est posé ici, **visible sans défilement**.
 
@@ -103,4 +116,7 @@ l'APK actuel.
   compressibles.
 - 🟠 **L'export RGPD** est facile à oublier et c'est un manquement réglementaire — traité dès l'étape 1.
 - 🟠 **Sync rules manuelles** — déjà oubliées une fois sur ce projet.
+- 🟠 **La maquette Claude Design montre un 5ᵉ onglet, que la décision produit écarte** (R16 bis).
+  Tout le reste de la maquette fait foi ; **seule la barre de navigation est à ignorer**, et l'entrée
+  passe par un widget. À redire à quiconque implémente en lisant la maquette sans la spec.
 - 🟢 Offline et calculs : sans risque, tout est pur et local.

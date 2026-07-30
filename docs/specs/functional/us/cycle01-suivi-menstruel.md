@@ -136,8 +136,38 @@ déclarée est en moyenne de 2,8/5 contre 3,6 en phase folliculaire » — c'est
 ### Confidentialité (transverse)
 
 **R16 — Opt-in strict, désactivé par défaut.** Réglage `cycleTrackingEnabled`, **accessible à tous**
-sans filtre sur `sex` (arbitrage Damien). Tant qu'il est désactivé : aucun onglet, aucun widget,
-**aucune ligne écrite**.
+sans filtre sur `sex` (arbitrage Damien). Tant qu'il est désactivé : aucun widget, aucune route
+atteignable, **aucune ligne écrite**.
+
+**R16 bis — 🔴 PAS d'onglet de navigation. Un widget complet, sur les 3 formes.**
+*(Arbitrage Damien du 31/07/2026, contre ce que propose la maquette Claude Design.)*
+
+La maquette livrée place « Cycle » en **5ᵉ onglet** de la barre du bas. **C'est écarté**, pour deux
+raisons :
+- **Cohérence avec le précédent BIEN-01.** Le check-in de bien-être a été explicitement traité comme
+  une « **4ᵉ dimension légère, pas un 4ᵉ pilier** » : aucun onglet, un widget transverse. Le cycle est
+  de la même famille — en faire un onglet le hisserait au-dessus du bien-être sans justification.
+- **La barre du bas varie déjà de 2 à 5 entrées** selon les piliers activés (décision H). Un 6ᵉ
+  emplacement possible la rendrait ingérable sur petit écran.
+
+**À la place** : un widget `cycle` sur le hub **Accueil**, décliné sur les **3 formes**
+(`small` / `wide` / `large`, cf. `WidgetSize`), plus un écran de détail atteignable **en appuyant sur
+le widget** — le patron déjà employé par `steps` (PAS-01) et `wellbeing` (BIEN-01).
+
+Contenu attendu par forme :
+| Forme | Contenu |
+|---|---|
+| `small` | jour du cycle (« J26 ») + phase |
+| `wide` | + prochaine estimation avec sa fourchette, ou l'état « pas assez de données » |
+| `large` | + mini-calendrier de la période en cours et accès direct à la saisie du jour |
+
+⚠️ **R16 ter — le widget introduit une troisième dimension de filtrage, et il ne faut pas la
+bricoler.** Le registre ne connaît aujourd'hui que deux cas : une liste de piliers, ou le sentinelle
+`'always'` ([widgets.ts](../../../../packages/shared/src/widgets.ts)). Le cycle n'est **ni l'un ni
+l'autre** : il n'appartient à aucun pilier (donc pas de liste) **mais** ne doit pas s'afficher pour
+tout le monde (donc pas `'always'`) — il dépend d'un **réglage**. C'est exactement la dette relevée
+par **REFACTO-01** (~12 copies en ligne de la décision d'accès). **Ne pas ajouter une 13ᵉ copie** :
+étendre proprement le registre à un garde par réglage, ou traiter REFACTO-01 d'abord.
 
 **R17 — La désactivation propose la suppression des données.** Désactiver ≠ effacer : on demande
 explicitement, et le choix « garder » conserve les lignes sans les afficher.
@@ -195,7 +225,11 @@ oubliée une fois sur ce projet.**
 
 ## 7. Critères de recette
 
-- [ ] 1. Réglage **désactivé par défaut** : aucun onglet, aucun widget, aucune trace.
+- [ ] 1. Réglage **désactivé par défaut** : aucun widget, aucune route atteignable, aucune trace.
+- [ ] 1 bis. **La barre du bas n'a PAS gagné d'onglet** (R16 bis) — c'est le point où la maquette
+      diverge de la décision produit.
+- [ ] 1 ter. Widget `cycle` disponible dans les **3 formes**, et le réagencement du dashboard le
+      traite comme les autres.
 - [ ] 2. Activation → saisir un début de règles → il apparaît au calendrier.
 - [ ] 3. Saisir un **nouveau début** sans avoir clos le précédent → l'ancien se clôt tout seul (R2).
 - [ ] 4. Période laissée ouverte **16 jours** → close automatiquement et signalée (R3).
