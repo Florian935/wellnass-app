@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **81 %** — 170 livré · 19 partiel · 16 à faire (sur 210)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 174 livré · 20 partiel · 10 à faire (sur 210)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -22,6 +22,8 @@ avant de pouvoir publier.
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **MUSC-F14** — Suggestion de substitution d'exercice | `recette` | `feature/muscf14-substitution-exercice` | [3.52] |
+| **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
+| **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
@@ -29,7 +31,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **12 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, MUSC-F14, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **14 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -37,11 +39,11 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (8) · P2 confort (2)</summary>
+<details><summary>P1 finitions (7) · P2 confort (2)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
-**P2** — NUTR-F1 — Rappels programmés nutrition · SOCLE-01 — RevenueCat câblé inactif
+**P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
 
 </details>
 
@@ -52,8 +54,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/refonte-nutrition` (modifications non commitées) |
-| Commits | 968 · `main` a **965** commits de retard sur `dev` |
-| Specs d'US | 87 au total — 75 clôturées, 12 en cours |
+| Commits | 969 · `main` a **970** commits de retard sur `dev` |
+| Specs d'US | 89 au total — 75 clôturées, 14 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -63,11 +65,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `e3abfa3` feat(nutrition): refonte visuelle du journal alimentaire
 - `038c664` fix(theme): supprime le flash de thème à chaque navigation
 - `c227127` fix(a11y): contraste WCAG AA du thème clair + limite de champ perceptible (9.12)
 - `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
 - `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
-- `ecee20e` fix(pas01): en-tête de navigation manquant sur l'écran des pas (9.15)
 
 ---
 

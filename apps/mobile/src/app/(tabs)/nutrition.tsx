@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +47,7 @@ import { DayBalanceCard } from '@/components/nutrition/DayBalanceCard';
 import { MacroTriple, type MacroKey } from '@/components/nutrition/MacroTriple';
 import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
 import { useRecentFoods } from '@/data/repositories/food-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -81,7 +82,16 @@ export default function NutritionScreen() {
 
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
-  const [day, setDay] = useState(() => isoDay(new Date()));
+  const todayKey = useTodayKey();
+  const [day, setDay] = useState(todayKey);
+  // Suit le jour courant **uniquement** si l'utilisateur était sur « aujourd'hui » : sinon on
+  // écraserait une navigation délibérée vers un jour passé.
+  const previousToday = useRef(todayKey);
+  useEffect(() => {
+    if (previousToday.current === todayKey) return;
+    setDay((current) => (current === previousToday.current ? todayKey : current));
+    previousToday.current = todayKey;
+  }, [todayKey]);
   const { entries } = useDayEntries(day);
 
   // Entrée sélectionnée pour le détail (4.34) — tap sur une entrée du journal.

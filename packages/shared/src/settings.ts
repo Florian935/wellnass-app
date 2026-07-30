@@ -3,23 +3,32 @@ import { localeSchema, PILLARS, pillarSchema } from './pillar';
 import { unitSystemSchema } from './units';
 import { INTENSITY_SCALES } from './intensity';
 import { syncFieldsSchema } from './sync';
-import { defaultNotificationPrefs } from './notifications';
+import { defaultNotificationPrefs, parseNotificationPrefs } from './notifications';
 
 /**
  * Schéma Zod des préférences de notifications (voir `notifications.ts`).
- * Les heures sont bornées à [0, 23] et `maxPerDay >= 1`. La forme est validée
- * ici ; le parse *tolérant* des anciennes valeurs (colonne enrichie sans
- * migration) reste à la charge de `parseNotificationPrefs` côté repository.
+ *
+ * ── Pourquoi ce schéma délègue au lieu d'énumérer ─────────────────────────────────────────────────
+ * Il décrivait la forme champ par champ, avec des champs **obligatoires**. Deux problèmes, dont le
+ * second est celui qui compte :
+ *
+ * 1. Il en déclarait **6 sur 8** : `weeklyReview` et `weeklyReviewHour` manquaient depuis BILAN-01, et
+ *    `z.object` étant strippant, tout passage par ce schéma les **perdait silencieusement**.
+ * 2. Surtout, `user_settings.notifications` est une colonne JSON **enrichie sans migration** : aucune
+ *    ligne existante en base ne contient les champs ajoutés après coup. Compléter la liste à 13
+ *    champs obligatoires n'aurait pas corrigé le piège, ça l'aurait **approfondi** — au lieu de
+ *    stripper en silence, le schéma se serait mis à lever sur toute ligne antérieure, le jour où
+ *    quelqu'un aurait branché `userSettingsRowSchema.parse()` sur une lecture.
+ *
+ * Le contrat de cette colonne, c'est le **parse tolérant**. Le schéma l'exprime donc en déléguant à
+ * `parseNotificationPrefs` : n'importe quelle entrée (absente, `{}`, l'ancien
+ * `Record<string, boolean>`, partielle, avec des heures hors bornes) produit des `NotificationPrefs`
+ * complètes, heures bornées à [0, 23] et `maxPerDay >= 1`. Une seule implémentation de la tolérance,
+ * testée en un seul endroit.
  */
-const hourSchema = z.number().int().min(0).max(23);
-export const notificationPrefsSchema = z.object({
-  streakDanger: z.boolean(),
-  reminderHour: hourSchema,
-  dndEnabled: z.boolean(),
-  dndStartHour: hourSchema,
-  dndEndHour: hourSchema,
-  maxPerDay: z.number().int().min(1),
-});
+export const notificationPrefsSchema = z
+  .unknown()
+  .transform((raw): ReturnType<typeof defaultNotificationPrefs> => parseNotificationPrefs(raw));
 
 /**
  * Thème visuel de l'interface.

@@ -193,3 +193,20 @@ jest.mock('@supabase/supabase-js', () => ({
     })),
   })),
 }));
+
+// ---------------------------------------------------------------------------
+// Mock expo-notifications — module natif, absent de l'environnement de test
+// ---------------------------------------------------------------------------
+// `@/lib/notifications` enregistre un `setNotificationHandler` **au chargement du module** : sans
+// ce mock, tout test qui importe (même indirectement) un écran ou un repository touchant aux
+// notifications échoue à l'import, avant même d'exécuter une assertion.
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ granted: true, canAskAgain: true }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
+  scheduleNotificationAsync: jest.fn().mockResolvedValue('mock-id'),
+  cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  AndroidImportance: { DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { DATE: 'date', WEEKLY: 'weekly' },
+}));

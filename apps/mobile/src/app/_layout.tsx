@@ -21,6 +21,7 @@ import { useProfile } from '@/data/repositories/profile-repository';
 import { autoCloseStaleWorkout } from '@/data/repositories/workout-repository';
 import { ensureSettings, useSettings } from '@/data/repositories/settings-repository';
 import {
+  useProgrammedRemindersScheduler,
   useStreakReminderScheduler,
   useWeeklyReviewScheduler,
 } from '@/data/repositories/notification-repository';
@@ -177,6 +178,11 @@ function RootNavigator() {
   // OS). Réévalué à chaque ouverture parce que la décision D4 interdit de notifier une semaine vide,
   // et que le contenu d'une semaine ne peut pas être connu à l'avance.
   useWeeklyReviewScheduler();
+
+  // Notifications (US NUTR-F1) : monte les deux rappels programmés — journal alimentaire et pesée.
+  // Éteints par défaut (opt-in). L'échéance visée est le p90 de l'heure du geste, donc un
+  // utilisateur régulier ne les reçoit presque jamais : c'est le comportement voulu.
+  useProgrammedRemindersScheduler();
 
   // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
   useAppOpenedAnalytics();

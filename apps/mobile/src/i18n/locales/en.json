@@ -205,6 +205,10 @@
           "best_volume": "Set volume"
         }
       },
+      "celebration": {
+        "titleOne": "New personal record!",
+        "titleMany": "Records broken on {{count}} exercises!"
+      },
       "warmupCount_one": "+{{count}} warm-up",
       "warmupCount_other": "+{{count}} warm-ups",
       "saveAsTemplate": "Save as template",
@@ -1272,10 +1276,27 @@
       "dndDesc": "No notifications during the chosen window.",
       "dndStart": "Start",
       "dndEnd": "End",
-      "hint": "The window can span midnight (e.g. 22:00 → 07:00). Max 3 notifications per day.",
+      "hint": "The window can span midnight (e.g. 22:00 → 07:00). At most one reminder per type per day, plus up to 3 record celebrations.",
       "permissionDenied": "Notifications are turned off at the system level. Enable them in your Android settings to receive reminders.",
       "decreaseHour": "Decrease hour",
-      "increaseHour": "Increase hour"
+      "increaseHour": "Increase hour",
+      "learnedHour": "Match my habits",
+      "learnedHourDesc": "Reminders go out once you'd usually be done.",
+      "learnedHourValue": "Based on your habits: {{hour}}",
+      "learnedHourShifted": "Based on your habits: {{hour}} — moved before your do-not-disturb window",
+      "learnedHourPending": "Not enough history yet — {{hour}} for now",
+      "manualHourInDnd": "This time falls inside your do-not-disturb window — the reminder won't be sent.",
+      "mealReminder": "Meal reminder",
+      "mealReminderDesc": "If your log is still empty.",
+      "mealReminderTime": "Reminder time",
+      "weighInReminder": "Weigh-in reminder",
+      "weighInReminderDesc": "If you haven't weighed in yet today.",
+      "weighInReminderTime": "Reminder time",
+      "recordPush": "New record",
+      "recordPushDesc": "A notification when you break a record.",
+      "sessionReminder": "Session reminder",
+      "sessionReminderDesc": "If today's session is still on your plan.",
+      "sessionReminderTime": "Reminder time"
     },
     "account": {
       "title": "Account",
@@ -1669,6 +1690,25 @@
     "streakDanger": {
       "title": "Your streak is at risk 🔥",
       "body": "Do an activity today to keep your streak going."
+    },
+    "mealReminder": {
+      "title": "Your log is still empty",
+      "body": "Jot down what you ate — it takes 30 seconds."
+    },
+    "weighInReminder": {
+      "title": "No weigh-in yet today",
+      "body": "One more point to track your trend."
+    },
+    "sessionReminder": {
+      "title": "Today's session is waiting",
+      "body": "It's still on your plan — 40 minutes and it's done."
+    },
+    "record": {
+      "titleOne": "🏆 New personal record!",
+      "titleMany": "🏆 Records broken on {{count}} exercises!",
+      "bodyOne": "{{exercise}} — {{value}}",
+      "bodyMany": "{{names}}",
+      "bodyManyOverflow": "{{names}} and {{rest}} more"
     }
   },
   "steps": {

@@ -7,6 +7,9 @@ import {
   canScheduleMore,
   shouldScheduleWeeklyReview,
   WEEKLY_REVIEW_WEEKDAY,
+  clampOutOfDnd,
+  decideProgrammedReminder,
+  REMINDER_MIN_LEAD_MINUTES,
   type NotificationPrefs,
 } from './notifications';
 
@@ -23,19 +26,41 @@ describe('defaultNotificationPrefs', () => {
       maxPerDay: 3,
       weeklyReview: true,
       weeklyReviewHour: 9,
+      mealReminder: false,
+      mealReminderHour: 13,
+      weighInReminder: false,
+      weighInReminderHour: 10,
+      learnedHour: true,
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
     });
   });
 
-  it('place reminderHour HORS de la fenêtre DND par défaut (invariant)', () => {
+  it('laisse les rappels programmés ÉTEINTS par défaut (opt-in, NUTR-F1 + MUSC-F8)', () => {
     const d = defaultNotificationPrefs();
-    expect(isWithinDnd(d.reminderHour, d)).toBe(false);
+    expect(d.mealReminder).toBe(false);
+    expect(d.weighInReminder).toBe(false);
+    expect(d.sessionReminder).toBe(false);
   });
 
-  it('place weeklyReviewHour HORS de la fenêtre DND par défaut (invariant, BILAN-01)', () => {
-    // Sans cet invariant, le bilan serait planifié puis systématiquement supprimé par le filtre DND
-    // — une fonctionnalité muette, sans aucune erreur visible.
+  it('active le push de record par défaut (opt-out, MUSC-F8 — ça célèbre, pas une sollicitation)', () => {
+    expect(defaultNotificationPrefs().recordPush).toBe(true);
+  });
+
+  it('place les CINQ heures par défaut HORS de la fenêtre DND (invariant)', () => {
+    // Sans cet invariant, la notification serait planifiée puis systématiquement supprimée par le
+    // filtre DND — une fonctionnalité muette, sans aucune erreur visible.
     const d = defaultNotificationPrefs();
-    expect(isWithinDnd(d.weeklyReviewHour, d)).toBe(false);
+    for (const hour of [
+      d.reminderHour,
+      d.weeklyReviewHour,
+      d.mealReminderHour,
+      d.weighInReminderHour,
+      d.sessionReminderHour,
+    ]) {
+      expect(isWithinDnd(hour, d)).toBe(false);
+    }
   });
 
   it('retourne un nouvel objet à chaque appel (pas de partage de référence)', () => {
@@ -85,7 +110,60 @@ describe('parseNotificationPrefs — champs partiels et bornes', () => {
       maxPerDay: 3,
       weeklyReview: true,
       weeklyReviewHour: 9,
+      mealReminder: false,
+      mealReminderHour: 13,
+      weighInReminder: false,
+      weighInReminderHour: 10,
+      learnedHour: true,
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
     });
+  });
+
+  it('lit les 3 champs de MUSC-F8, et sinon retombe sur leurs défauts', () => {
+    // Même raisonnement que NUTR-F1 : une ligne enregistrée avant cette US ne les contient pas.
+    expect(parseNotificationPrefs({ streakDanger: true })).toMatchObject({
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
+    });
+    expect(
+      parseNotificationPrefs({ recordPush: false, sessionReminder: true, sessionReminderHour: 19 }),
+    ).toMatchObject({ recordPush: false, sessionReminder: true, sessionReminderHour: 19 });
+    expect(parseNotificationPrefs({ sessionReminderHour: 99 }).sessionReminderHour).toBe(18);
+    expect(parseNotificationPrefs({ recordPush: 'oui' }).recordPush).toBe(true);
+  });
+
+  it('lit les 5 champs de NUTR-F1, et sinon retombe sur leurs défauts', () => {
+    // Le point qui compte : les réglages DÉJÀ enregistrés en base ne contiennent aucun de ces
+    // champs. Ils doivent continuer de fonctionner sans migration — et surtout **rappels éteints**,
+    // pour ne pas se mettre à notifier des utilisateurs qui n'ont rien demandé.
+    expect(parseNotificationPrefs({ streakDanger: true })).toMatchObject({
+      mealReminder: false,
+      mealReminderHour: 13,
+      weighInReminder: false,
+      weighInReminderHour: 10,
+      learnedHour: true,
+    });
+    expect(
+      parseNotificationPrefs({
+        mealReminder: true,
+        mealReminderHour: 14,
+        weighInReminder: true,
+        weighInReminderHour: 9,
+        learnedHour: false,
+      }),
+    ).toMatchObject({
+      mealReminder: true,
+      mealReminderHour: 14,
+      weighInReminder: true,
+      weighInReminderHour: 9,
+      learnedHour: false,
+    });
+    expect(parseNotificationPrefs({ mealReminderHour: 99 }).mealReminderHour).toBe(13);
+    expect(parseNotificationPrefs({ weighInReminderHour: -2 }).weighInReminderHour).toBe(10);
+    expect(parseNotificationPrefs({ learnedHour: 'oui' }).learnedHour).toBe(true);
   });
 
   it('lit les 2 champs du bilan hebdo, et sinon retombe sur leurs défauts', () => {
@@ -306,5 +384,207 @@ describe('shouldScheduleWeeklyReview', () => {
   it('lundi vaut 2 dans la convention du SDK (1 = dimanche), pas 1', () => {
     // La confusion la plus probable de tout le lot : 1 = dimanche côté expo-notifications.
     expect(WEEKLY_REVIEW_WEEKDAY).toBe(2);
+  });
+});
+
+// ─── clampOutOfDnd (NUTR-F1, D5) ─────────────────────────────────────────────
+
+describe('clampOutOfDnd', () => {
+  const prefs = defaultNotificationPrefs(); // DND [22, 7)
+
+  it('laisse une heure déjà hors fenêtre inchangée', () => {
+    expect(clampOutOfDnd(8, prefs)).toBe(8);
+    expect(clampOutOfDnd(13, prefs)).toBe(13);
+    expect(clampOutOfDnd(21, prefs)).toBe(21);
+  });
+
+  it('laisse inchangé quand le DND est désactivé', () => {
+    const off: NotificationPrefs = { ...prefs, dndEnabled: false };
+    expect(clampOutOfDnd(2, off)).toBe(2);
+  });
+
+  it('laisse inchangé quand la fenêtre est vide (start === end)', () => {
+    const empty: NotificationPrefs = { ...prefs, dndStartHour: 9, dndEndHour: 9 };
+    expect(clampOutOfDnd(9, empty)).toBe(9);
+  });
+
+  describe('fenêtre enjambant minuit [22, 7)', () => {
+    it.each([
+      [22, 21],
+      [23, 21],
+      [0, 21],
+      [3, 7], // à équidistance de 21 h (6 h en arrière) et 7 h (4 h en avant) → le plus proche
+      [5, 7],
+      [6, 7],
+    ])('rabat %i h sur %i h', (hour, expected) => {
+      expect(clampOutOfDnd(hour, prefs)).toBe(expected);
+    });
+  });
+
+  describe('fenêtre simple [9, 17)', () => {
+    const day: NotificationPrefs = { ...prefs, dndStartHour: 9, dndEndHour: 17 };
+
+    it.each([
+      [9, 8],
+      [10, 8],
+      [16, 17],
+    ])('rabat %i h sur %i h', (hour, expected) => {
+      expect(clampOutOfDnd(hour, day)).toBe(expected);
+    });
+  });
+
+  it('à égalité de distance, rabat vers l’arrière', () => {
+    // Fenêtre [10, 15) : depuis 12 h, 9 h est à 3 h en arrière et 15 h à 3 h en avant.
+    // On préfère l'arrière : rappeler un peu tôt le jour même plutôt que trop tard.
+    const window: NotificationPrefs = { ...prefs, dndStartHour: 10, dndEndHour: 15 };
+    expect(clampOutOfDnd(12, window)).toBe(9);
+  });
+
+  it('gère start = 0 (le bord arrière vaut 23 h)', () => {
+    const fromMidnight: NotificationPrefs = { ...prefs, dndStartHour: 0, dndEndHour: 6 };
+    expect(clampOutOfDnd(1, fromMidnight)).toBe(23);
+    expect(clampOutOfDnd(5, fromMidnight)).toBe(6);
+  });
+
+  it('gère une fenêtre couvrant 23 h sur 24 — les deux bords convergent', () => {
+    const almostAll: NotificationPrefs = { ...prefs, dndStartHour: 8, dndEndHour: 7 };
+    expect(clampOutOfDnd(12, almostAll)).toBe(7);
+  });
+
+  // ── La vraie garantie : une propriété, pas un cas ──
+  it('produit TOUJOURS une heure hors DND, pour toute fenêtre et toute heure', () => {
+    const windows: Array<[number, number]> = [
+      [22, 7],
+      [9, 17],
+      [0, 6],
+      [8, 7],
+      [23, 1],
+      [12, 13],
+    ];
+    for (const [dndStartHour, dndEndHour] of windows) {
+      const p: NotificationPrefs = { ...prefs, dndStartHour, dndEndHour };
+      for (let hour = 0; hour < 24; hour += 1) {
+        const clamped = clampOutOfDnd(hour, p);
+        expect(clamped).toBeGreaterThanOrEqual(0);
+        expect(clamped).toBeLessThanOrEqual(23);
+        expect(isWithinDnd(clamped, p)).toBe(false);
+      }
+    }
+  });
+});
+
+// ─── decideProgrammedReminder (NUTR-F1) ──────────────────────────────────────
+
+describe('decideProgrammedReminder', () => {
+  const prefs = defaultNotificationPrefs(); // DND [22, 7)
+  /** 9 h pile, échéance à 13 h : 4 h de marge, tout est réuni. */
+  const base = {
+    enabled: true,
+    doneToday: false,
+    nowMinutes: 9 * 60,
+    targetHour: 13,
+    learned: true,
+    prefs,
+  };
+
+  it('planifie à l’échéance quand tout est réuni', () => {
+    expect(decideProgrammedReminder(base)).toEqual({ kind: 'schedule', atHour: 13 });
+  });
+
+  it('refuse si le rappel est désactivé', () => {
+    expect(decideProgrammedReminder({ ...base, enabled: false })).toEqual({
+      kind: 'skip',
+      reason: 'disabled',
+    });
+  });
+
+  it('refuse si le geste est déjà fait aujourd’hui', () => {
+    expect(decideProgrammedReminder({ ...base, doneToday: true })).toEqual({
+      kind: 'skip',
+      reason: 'done',
+    });
+  });
+
+  it('refuse une heure MANUELLE tombant en DND (D6 — on ne réécrit pas un choix)', () => {
+    expect(decideProgrammedReminder({ ...base, learned: false, targetHour: 23 })).toEqual({
+      kind: 'skip',
+      reason: 'dnd',
+    });
+  });
+
+  it('n’oppose PAS le DND à une heure apprise — elle a déjà été rabattue en amont (D5)', () => {
+    // Si `clampOutOfDnd` a été appliqué, `targetHour` est hors DND ; ce test verrouille le fait
+    // qu'on ne re-teste pas le DND sur ce chemin, sinon un rabattement raté deviendrait invisible.
+    expect(decideProgrammedReminder({ ...base, learned: true, targetHour: 21 })).toEqual({
+      kind: 'schedule',
+      atHour: 21,
+    });
+  });
+
+  it('refuse quand l’échéance est déjà passée — pas de rattrapage (D7)', () => {
+    expect(decideProgrammedReminder({ ...base, nowMinutes: 14 * 60 })).toEqual({
+      kind: 'skip',
+      reason: 'passed',
+    });
+  });
+
+  it('refuse à la minute pile de l’échéance (borne exacte)', () => {
+    // `nowMinutes >= targetMinutes` : à 13 h 00 pour une échéance de 13 h, il est trop tard.
+    // C'est la borne où vivent les bugs.
+    expect(decideProgrammedReminder({ ...base, nowMinutes: 13 * 60 })).toEqual({
+      kind: 'skip',
+      reason: 'passed',
+    });
+  });
+
+  // ── Marge d'imminence : le pendant de D7, avant l'échéance ──
+  it('refuse une échéance imminente — on ne notifie pas quelqu’un qui est dans l’app', () => {
+    // 12 h 59 pour une échéance à 13 h : sans cette règle, la notification « ton journal est encore
+    // vide » arriverait 60 secondes plus tard, pendant que l'utilisateur le remplit.
+    expect(decideProgrammedReminder({ ...base, nowMinutes: 12 * 60 + 59 })).toEqual({
+      kind: 'skip',
+      reason: 'imminent',
+    });
+  });
+
+  it.each([
+    [13 * 60 - 1, { kind: 'skip', reason: 'imminent' }],
+    [13 * 60 - 14, { kind: 'skip', reason: 'imminent' }],
+    [13 * 60 - 15, { kind: 'schedule', atHour: 13 }],
+    [13 * 60 - 16, { kind: 'schedule', atHour: 13 }],
+  ])('à %i minutes depuis minuit, décide %o (bornes de la marge)', (nowMinutes, expected) => {
+    expect(decideProgrammedReminder({ ...base, nowMinutes })).toEqual(expected);
+  });
+
+  it('accepte une marge surchargée', () => {
+    expect(
+      decideProgrammedReminder({ ...base, nowMinutes: 12 * 60 + 50, minLeadMinutes: 5 }),
+    ).toEqual({ kind: 'schedule', atHour: 13 });
+  });
+
+  it('distingue « trop tard » de « trop tôt » — ils ne se diagnostiquent pas pareil', () => {
+    expect(decideProgrammedReminder({ ...base, nowMinutes: 13 * 60 + 1 })).toMatchObject({
+      reason: 'passed',
+    });
+    expect(decideProgrammedReminder({ ...base, nowMinutes: 13 * 60 - 5 })).toMatchObject({
+      reason: 'imminent',
+    });
+  });
+
+  it('évalue « désactivé » avant tout le reste', () => {
+    expect(
+      decideProgrammedReminder({
+        ...base,
+        enabled: false,
+        doneToday: true,
+        nowMinutes: 20 * 60,
+        learned: false,
+        targetHour: 23,
+      }),
+    ).toEqual({ kind: 'skip', reason: 'disabled' });
+  });
+
+  it('expose une marge par défaut de 15 minutes', () => {
+    expect(REMINDER_MIN_LEAD_MINUTES).toBe(15);
   });
 });

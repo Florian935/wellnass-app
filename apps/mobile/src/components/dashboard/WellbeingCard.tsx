@@ -18,9 +18,9 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  ROLLING_WEEK_DAYS,
   WELLBEING_INDICATORS,
   isWellbeingLevel,
-  localDayKey,
   wellbeingSeries,
   type WellbeingLevel,
   type WidgetSize,
@@ -36,13 +36,8 @@ import {
 } from '@/data/repositories/daily-wellbeing-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
 
-/** Début de la fenêtre de 7 jours (aujourd'hui inclus). */
-function sevenDaysAgoKey(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 6);
-  return localDayKey(d);
-}
 
 export function WellbeingCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
@@ -51,9 +46,12 @@ export function WellbeingCard({ size = 'wide' }: { size?: WidgetSize }) {
   const levelLabel = useLevelLabel();
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const todayKey = localDayKey(new Date());
+  // `todayKey` alimente `logDate` de la feuille de saisie : gelé, un check-in aurait écrit sur le
+  // jour du montage de la carte.
+  const todayKey = useTodayKey();
   const { entry, isLoading } = useTodayWellbeing();
-  const { rows } = useWellbeingRows(sevenDaysAgoKey());
+  const weekStartKey = useWindowStartKey(ROLLING_WEEK_DAYS);
+  const { rows } = useWellbeingRows(weekStartKey);
 
   if (isLoading) return null;
 

@@ -49,6 +49,7 @@ import i18n from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { pushRun } from '@/lib/health-connect';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -342,7 +343,8 @@ export function useRunStatsAt(
  * sur « aujourd'hui ». Délègue à `useRunStatsAt` (voir ci-dessus).
  */
 export function useRunStats(period: StatPeriod): { stats: RunStats; isLoading: boolean } {
-  return useRunStatsAt(period, localDayKey(new Date()));
+  const todayKey = useTodayKey();
+  return useRunStatsAt(period, todayKey);
 }
 
 /**
@@ -358,7 +360,7 @@ export function usePaceTrend(days: number): {
   isLoading: boolean;
 } {
   const { runs, isLoading } = useRunHistory();
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
   const points = paceTrendPoints(runs.map(toStatRun), days, todayKey);
   const trend = paceTrend(points);
   return { points, trend, isLoading };

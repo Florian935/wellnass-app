@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — MUSC-F8 · Notifications muscu</title>
+<style>
+  :root{
+    --bg:#1c150e; --surface:#30271e; --surfaceAlt:#3a2e22; --border:#3a2e22;
+    --text:#f4ecdd; --muted:#c9b79a; --accent:#dd6e40; --accentText:#fff; --gold:#e8b64c; --radius:16px;
+    --warnBg:#3a2410; --warnBorder:#6b4a1f; --warn:#f0d9b8;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+    --mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0b07;color:var(--text);font-family:var(--body);padding:32px 16px;line-height:1.5}
+  h1{font-family:var(--display);font-weight:800;font-size:22px;text-align:center;margin:0 0 4px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin:0 auto 28px;max-width:690px}
+  .sub b{color:var(--text)}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .phone{width:344px;background:var(--bg);border-radius:34px;padding:14px 12px 22px;border:1px solid #2a2018;
+    box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .notch{width:120px;height:6px;border-radius:99px;background:#000;margin:2px auto 14px;opacity:.5}
+  .screentitle{font-family:var(--display);font-weight:800;font-size:24px;padding:2px 8px 4px}
+  .sectlabel{font-family:var(--body);font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);padding:18px 10px 8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 8px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:14px 16px}
+  .row + .row{border-top:1px solid var(--border)}
+  .row .lbl{font-family:var(--body);font-weight:600;font-size:15px}
+  .row .desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .grow{flex:1;min-width:0}
+  .sw{flex:0 0 auto;width:46px;height:28px;border-radius:99px;padding:3px;display:flex;align-items:center}
+  .sw .knob{width:22px;height:22px;border-radius:50%;background:#fff}
+  .sw.on{background:var(--accent);justify-content:flex-end}
+  .sw.off{background:var(--surfaceAlt);border:1px solid var(--border)}
+  .stepper{flex:0 0 auto;display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;
+    background:var(--surfaceAlt);overflow:hidden}
+  .stepper button{width:34px;height:34px;border:none;background:transparent;color:var(--accent);font-size:18px;font-weight:700}
+  .stepper .val{min-width:58px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--text);
+    border-left:1px solid var(--border);border-right:1px solid var(--border);height:34px;line-height:34px}
+  .disabled{opacity:.38}
+  .prov{font-size:12px;color:var(--accent);padding:0 16px 12px;margin-top:-6px}
+  .prov.pending{color:var(--muted)}
+  .hint{color:var(--muted);font-size:12px;padding:10px 12px 0;margin:0 8px}
+  .caption{font-family:var(--display);font-weight:700;font-size:13px;text-align:center;margin:14px 0 0;color:var(--accent)}
+  .caption span{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);margin-top:3px}
+  .new{display:inline-block;background:var(--accent);color:var(--accentText);font-size:10px;font-weight:700;
+    padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:.4px}
+  /* notifications */
+  .notif{margin:0 8px 10px;background:#efe7d8;color:#241a10;border-radius:14px;padding:11px 13px;
+    box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .notif .app{display:flex;align-items:center;gap:7px;font-size:11px;color:#6b5a45;font-weight:700;margin-bottom:5px}
+  .notif .dot{width:15px;height:15px;border-radius:5px;background:var(--accent)}
+  .notif .ntitle{font-family:var(--display);font-weight:800;font-size:14.5px;margin-bottom:2px}
+  .notif .nbody{font-size:12.5px;color:#4a3a28;line-height:1.35}
+  .lockbg{background:linear-gradient(160deg,#241a10,#0f0b07);border-radius:24px;padding:18px 6px 24px;margin:0 4px}
+  .clock{text-align:center;font-family:var(--display);font-weight:800;font-size:38px;margin:6px 0 2px}
+  .clockday{text-align:center;color:var(--muted);font-size:12px;margin-bottom:18px}
+  /* celebration banner */
+  .celebr{margin:0 8px 12px;border-radius:var(--radius);padding:16px 18px;text-align:center;
+    background:linear-gradient(140deg,#4a2f12,#30271e);border:1px solid #6b4a1f}
+  .celebr .trophy{font-size:30px;display:block;margin-bottom:4px}
+  .celebr .ct{font-family:var(--display);font-weight:800;font-size:17px;color:var(--gold)}
+  .celebr .cs{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .recline{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--border)}
+  .recline:first-child{border-top:none}
+  .recline .ri{font-size:16px}
+  .recline .rn{flex:1;font-size:14px;font-weight:600}
+  .recline .rv{font-family:var(--mono);font-size:13px;color:var(--gold)}
+  .frame{margin:0 8px}
+  .legend{width:340px;background:#14100b;border:1px solid var(--border);border-radius:16px;padding:18px}
+  .legend h2{font-family:var(--display);font-weight:700;font-size:15px;margin:0 0 12px}
+  .legend .item{font-size:13px;color:var(--muted);margin-bottom:13px}
+  .legend .item b{color:var(--text)}
+  .dec{border-left:2px solid var(--accent);padding-left:11px}
+  .dec.warn{border-left-color:var(--warnBorder)}
+  code{font-family:var(--mono);background:#1c150e;padding:1px 5px;border-radius:5px;font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--muted)}
+  th{color:var(--text);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  td b{color:var(--text)}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:26px}
+</style>
+</head>
+<body>
+  <h1>MUSC-F8 — Notifications muscu</h1>
+  <p class="sub">Trois capacités : un <b>push de record agrégé</b> (un seul, jamais quinze), la
+  <b>célébration animée</b> au résumé de séance, et un <b>rappel de séance planifiée</b> à l'échéance
+  apprise — parce que le « 30 min avant » de la roadmap est incalculable : <code>scheduled_date</code>
+  est un jour, sans heure.</p>
+
+  <div class="stage">
+
+    <!-- ÉCRAN 1 — les 3 formes du push -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="lockbg">
+          <div class="clock">19:42</div>
+          <div class="clockday">jeudi 30 juillet</div>
+
+          <div class="notif">
+            <div class="app"><div class="dot"></div> WELLNESS · maintenant</div>
+            <div class="ntitle">🏆 Nouveau record !</div>
+            <div class="nbody">Développé couché — 82,5 kg</div>
+          </div>
+
+          <div class="notif">
+            <div class="app"><div class="dot"></div> WELLNESS · hier</div>
+            <div class="ntitle">🏆 Records battus sur 3 exercices !</div>
+            <div class="nbody">Développé couché, Squat, Soulevé de terre</div>
+          </div>
+
+          <div class="notif">
+            <div class="app"><div class="dot"></div> WELLNESS · lundi</div>
+            <div class="ntitle">🏆 Records battus sur 7 exercices !</div>
+            <div class="nbody">Développé couché, Squat, Soulevé de terre et 4 autres</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">① Un push, trois formes selon le décompte
+        <span>1 record · 2 à 3 · 4 et plus (3 nommés + « et N autres »).<br>
+        Une première séance de 5 exercices produit <b>15 records</b> — et <b>un seul</b> push.</span></p>
+    </div>
+
+    <!-- ÉCRAN 2 — résumé de séance avec célébration -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screentitle">Séance terminée</div>
+
+        <div class="celebr">
+          <span class="trophy">🏆</span>
+          <div class="ct">Records battus sur 3 exercices !</div>
+          <div class="cs">Fondu + zoom 0,96 → 1 · 320 ms</div>
+        </div>
+
+        <div class="sectlabel">Records</div>
+        <div class="card">
+          <div class="recline"><span class="ri">🏆</span><span class="rn">Développé couché</span><span class="rv">82,5 kg</span></div>
+          <div class="recline"><span class="ri">🏆</span><span class="rn">Squat</span><span class="rv">120 kg</span></div>
+          <div class="recline"><span class="ri">🏆</span><span class="rn">Soulevé de terre</span><span class="rv">140 kg</span></div>
+        </div>
+        <p class="hint">La bannière est <b>décorative</b> : elle ne dit rien que la liste ne dise déjà.
+          Réglage système « réduire les animations » actif → affichée directement à l'état final.</p>
+      </div>
+      <p class="caption">② La célébration animée
+        <span>Transposée de <code>run/summary.tsx</code>, qui l'avait déjà.<br>
+        Zéro dépendance native. La carte de records existait, l'animation non.</span></p>
+    </div>
+
+    <!-- ÉCRAN 3 — réglages -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screentitle">Réglages</div>
+
+        <div class="sectlabel">Notifications</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow">
+              <div class="lbl">Nouveau record<span class="new">NOUVEAU</span></div>
+              <div class="desc">Une notification quand tu bats un record.</div>
+            </div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+
+          <div class="row">
+            <div class="grow">
+              <div class="lbl">Rappel de séance<span class="new">NOUVEAU</span></div>
+              <div class="desc">Si ta séance du jour est encore au planning.</div>
+            </div>
+            <div class="sw off"><div class="knob"></div></div>
+          </div>
+          <div class="row disabled">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">18 h</div><button>+</button></div>
+          </div>
+
+          <div class="row">
+            <div class="grow"><div class="lbl">Caler sur mes habitudes</div>
+              <div class="desc">Les rappels partent quand tu as d'habitude déjà fini.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row disabled">
+            <div class="grow"><div class="lbl">Rappel de repas</div></div>
+            <div class="stepper"><button>−</button><div class="val">13 h</div><button>+</button></div>
+          </div>
+          <div class="prov">D'après tes habitudes : 13 h</div>
+        </div>
+        <p class="hint">Au plus un rappel par type et par jour, plus 3 notifications de record au
+          maximum.</p>
+      </div>
+      <p class="caption">③ Deux défauts opposés, délibérément
+        <span><b>Record activé</b> (ça célèbre) · <b>rappel de séance éteint</b> (ça réclame).<br>
+        La règle d'opt-in protégeait du volume de sollicitations.</span></p>
+    </div>
+
+    <!-- LÉGENDE -->
+    <div class="legend">
+      <h2>Ce que la maquette fixe</h2>
+
+      <div class="item dec"><b>D10 — un push, pas quinze.</b>
+        <code>computeWorkoutRecords</code> émet 3 candidats par exercice, et sur un exercice neuf les 3
+        sont battus : 5 exercices = 15 records en un appel. L'agrégation n'est pas une optimisation,
+        c'est la condition pour que la fonctionnalité soit supportable. <b>Dédoublonnage par
+        exercice</b> : 3 types battus sur un seul exercice affichent « Nouveau record ! » au singulier,
+        sinon « 3 records » pour un exercice serait perçu comme un mensonge.</div>
+
+      <div class="item dec warn"><b>D11 — le point contestable, et il est écrit.</b> Le push part même
+        au premier plan, donc il <b>double l'écran de résumé</b> que l'utilisateur a sous les yeux.
+        Supprimer au premier plan reviendrait à ne jamais l'envoyer (la détection y est toujours). La
+        valeur retenue est la <b>trace dans le tiroir</b> — retrouver son record le soir — pas
+        l'information. D'où l'opt-out, et une réévaluation en recette.</div>
+
+      <div class="item dec"><b>D12 — « 30 min avant » est impossible.</b>
+        <code>planned_sessions.scheduled_date</code> est un <code>date</code>, et aucune heure de séance
+        n'existe dans le projet. Le rappel devient une <b>échéance apprise</b> (p90 de
+        <code>workouts.started_at</code>) : « la journée avance, ta séance n'est pas faite ».
+        ⚠️ Un rappel « ta séance commence » aurait voulu le bord <b>précoce</b> (p10) — c'est la
+        sémantique du message qui décide du bord.</div>
+
+      <div class="item dec"><b>D14 — le plafond devient réel, et D3 est soldée.</b> D3 refusait le
+        compteur parce qu'il ferait <i>perdre</i> des rappels à la re-planification. Vrai — mais
+        seulement pour les notifications <b>replanifiées</b>. Un push immédiat est
+        <b>fire-and-forget</b> : jamais réévalué, donc comptable sans perte. Le plafond s'applique donc
+        aux <b>seules notifications immédiates</b> ; les 5 rappels programmés en sont exemptés.</div>
+
+      <div class="item"><b>Le rappel de séance ne part que s'il y a quelque chose au planning.</b>
+        C'est un rappel d'<i>engagement</i>, pas d'habitude : sans séance prévue, il n'y a rien à
+        rappeler et notifier quand même serait du harcèlement.</div>
+
+      <div class="item"><b>Muscu seulement.</b> Les records de course sont un mécanisme séparé, et son
+        chemin de détection est <b>aussi</b> celui de <code>backfillRunningRecords</code>, qui rejoue
+        tout l'historique — un push branché là partirait en rafale au premier passage.</div>
+
+      <h2 style="margin-top:18px">Défauts et bornes</h2>
+      <table>
+        <tr><th>Réglage</th><th>Défaut</th></tr>
+        <tr><td><b>Nouveau record</b></td><td>activé (opt-out)</td></tr>
+        <tr><td><b>Rappel de séance</b></td><td>éteint · 18 h</td></tr>
+        <tr><td>Exercices nommés</td><td>3 max, puis « et N autres »</td></tr>
+        <tr><td>Plafond de pushes immédiats</td><td>3 / jour</td></tr>
+        <tr><td>Apprentissage</td><td>14 j · ≥ 5 jours · p90</td></tr>
+      </table>
+      <div class="item" style="margin-top:12px"><b>18 h est hors du « Ne pas déranger » par défaut</b>
+        (22 h → 7 h). L'invariant testé couvre désormais <b>5</b> heures.</div>
+      <div class="item">Le hint de section est corrigé <b>pour la deuxième fois de la journée</b>.
+        Signe qu'un texte portant une garantie chiffrée est fragile — candidat à une reformulation
+        qualitative.</div>
+    </div>
+
+  </div>
+
+  <p class="foot">Maquette MUSC-F8 · roadmap 3.42 + 2.7 + 2.4 · 30/07/2026 · aucune migration, aucune
+  dépendance native, aucun nouveau build</p>
+</body>
+</html>

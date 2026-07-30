@@ -34,6 +34,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, softDelete } from './_sql';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 /** Un objectif enrichi de sa progression calculée et du nom de l'exercice visé. */
 export type GoalWithProgress = PersonalGoal & {
@@ -169,7 +170,7 @@ export function useGoals(): {
 
   const { lifts, isLoading: liftsLoading } = useGoalLifts(exerciseIds);
 
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
 
   return useMemo(() => {
     const runs: GoalRun[] = runRows.map((r) => ({

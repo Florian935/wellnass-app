@@ -63,6 +63,7 @@ import { useActiveProgram } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
+import { useTodayDate, useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // useTodaySession — hub muscu + widget dashboard (Refonte-B)
@@ -163,7 +164,7 @@ const SELECT_NEXT_UPCOMING = `
 export function useTodaySession(pillar: Pillar): TodaySessionState {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
   const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
-  const today = localDayKey(new Date());
+  const today = useTodayKey();
 
   const { workout, isLoading: workoutLoading } = useActiveWorkout();
   const { program, isLoading: programLoading } = useActiveProgram(pillar);
@@ -240,7 +241,7 @@ export function useIsTrainingDay(dayKey: string): { isTrainingDay: boolean; isLo
     return doneOnDay(workouts) || doneOnDay(runs);
   }, [workouts, runs, dayKey]);
 
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
 
   return {
     isTrainingDay: computeIsTrainingDay({ retroactiveDone, hasPlanned, dayKey, todayKey }),
@@ -416,7 +417,7 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
  * hooks React / React Compiler).
  */
 export function useNutritionSummary(): NutritionSummary {
-  const todayKey = localDayKey(new Date());
+  const todayKey = useTodayKey();
 
   const { totals, isLoading: totalsLoading } = useDailyTotals(todayKey);
   const { nutritionProfile, isLoading: nutritionLoading } = useNutritionProfile();
@@ -515,10 +516,9 @@ export function useStreakData(windowDays = 30): StreakData {
   const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
   const { runs, isLoading: runsLoading } = useRunHistory();
 
-  // Fenêtre d'analyse
-  const sinceDate = new Date();
-  sinceDate.setDate(sinceDate.getDate() - windowDays);
-  const sinceKey = localDayKey(sinceDate);
+  // Fenêtre d'analyse. `windowDays + 1` : la borne est inclusive côté aujourd'hui, donc `windowDays`
+  // jours d'historique + le jour courant — c'est ce que faisait le `setDate(- windowDays)` précédent.
+  const sinceKey = useWindowStartKey(windowDays + 1);
 
   const { totals, isLoading: totalsLoading } = useDailyTotals(sinceKey);
   const { rows: stepRows, isLoading: stepsLoading } = useDailySteps(sinceKey);
@@ -534,8 +534,8 @@ export function useStreakData(windowDays = 30): StreakData {
     goalLoading ||
     jokersLoading;
 
-  const today = new Date();
-  const todayKey = localDayKey(today);
+  const today = useTodayDate();
+  const todayKey = useTodayKey();
 
   const { streak, last7, restorableGap } = useMemo(() => {
     // Construire la map des activités par jour
@@ -795,12 +795,13 @@ export function useRecentStrengthRecords(limit = 4): {
 // useDeficitVolumeAlert — widget 7.9 (US 4.32)
 // ---------------------------------------------------------------------------
 
-/** Clé AAAA-MM-JJ locale du jour situé `n` jours avant aujourd'hui (mirroir de nutrition-stats.tsx). */
-const daysAgo = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return localDayKey(d);
-};
+/**
+ * Clé AAAA-MM-JJ locale du jour situé `n` jours avant `ref`.
+ *
+ * `ref` est **injectée** et non lue de l'horloge : sans ça, React Compiler gèle l'appel dans un slot
+ * mount-only et la fenêtre glissante cesse de glisser. Les appelants passent `useTodayDate()`.
+ */
+const daysAgo = (n: number, ref: Date) => localDayKey(localMidnightDaysAgo(n, ref));
 
 /**
  * Volume muscu (Σ reps × poids) des sets effectifs (non warmup, terminés) sur les 7
@@ -832,11 +833,19 @@ export function useDeficitVolumeAlert(): DeficitVolumeAlert {
   const strengthActive = activePillars.includes('strength');
   const nutritionActive = activePillars.includes('nutrition');
 
-  const { totals } = useDailyTotals(daysAgo(7));
+  // ⚠️ Bornes **volontairement identiques à l'avant-correctif** : `daysAgo(7)` donne J-7, donc une
+  // fenêtre de 8 jours inclusifs alors que le hook s'appelle « weekly ». Et le `+ 'T00:00:00.000Z'`
+  // étiquette un minuit **local** comme s'il était UTC, donc décale d'un fuseau. Ces deux écarts
+  // sont antérieurs à ce correctif : les redresser ici changerait les chiffres de l'alerte au milieu
+  // d'un commit censé ne corriger que le gel. Consignés pour une passe dédiée.
+  const today = useTodayDate();
+  const windowStartKey = daysAgo(7, today);
+
+  const { totals } = useDailyTotals(windowStartKey);
   const { target } = useNutritionSummary();
   const { data: volRows } = useQuery<{ reps: number | null; weight_kg: number | null }>(
     SELECT_WEEKLY_STRENGTH_VOLUME,
-    [daysAgo(7) + 'T00:00:00.000Z'],
+    [windowStartKey + 'T00:00:00.000Z'],
   );
 
   if (!(strengthActive && nutritionActive)) {
@@ -883,7 +892,7 @@ export function useTrainingTime(): TrainingTime {
   const { stats, isLoading: runLoading } = useRunStats('week');
   const { workouts, isLoading: workoutLoading } = useWorkoutHistory();
 
-  const weekStartKey = localDayKey(localMidnightDaysAgo(ROLLING_WEEK_DAYS - 1));
+  const weekStartKey = useWindowStartKey(ROLLING_WEEK_DAYS);
   const strengthSecondsRaw = workouts.reduce((sum, w) => {
     if (w.durationSeconds == null || w.finishedAt == null) return sum;
     const dayKey = localDayKey(new Date(w.finishedAt));
@@ -920,7 +929,8 @@ export type GoalAdherence = {
  * Hooks appelés inconditionnellement.
  */
 export function useGoalAdherence(windowDays: number): GoalAdherence {
-  return useGoalAdherenceForRange(daysAgo(windowDays), null);
+  const today = useTodayDate();
+  return useGoalAdherenceForRange(daysAgo(windowDays, today), null);
 }
 
 /**

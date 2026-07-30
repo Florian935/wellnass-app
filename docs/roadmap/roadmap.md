@@ -81,7 +81,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 9.5 | Authentification JWT | Token court (accès) + token long (refresh). Renouvellement silencieux. | Moyen | 4h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 9.6 | Isolation données utilisateur | Row Level Security — chaque utilisateur n'accède qu'à ses données. | Moyen | 3h | 🟢 | ✅ | |
 | 9.8 | Chiffrement tokens | Android Keystore (iOS Keychain lors du portage). Jamais en clair. | Moyen | 2h | 🟢 | ✅ | `lib/secure-storage.ts` (SecureStore/Keystore). |
-| 9.14 | **Câblage RevenueCat / entitlements (inactif)** *(nouvel item optionnel — arbitrage D)* | SDK RevenueCat intégré, entitlements multi-paliers définis (Premium muscu → Écosystème → IA), **laissés inactifs**. **Aucun écran de paiement, aucun paywall.** | Facile | 2h | 🟡 | ⬜ | Optionnel. Peu coûteux posé tôt, évite une refonte — voir [ADR-003](../adr/ADR-003-monetisation.md). **Aucune trace dans le code.** |
+| 9.14 | **Câblage RevenueCat / entitlements (inactif)** *(nouvel item optionnel — arbitrage D)* | SDK RevenueCat intégré, entitlements multi-paliers définis (Premium muscu → Écosystème → IA), **laissés inactifs**. **Aucun écran de paiement, aucun paywall.** | Facile | 2h | 🟡 | ⏳ | **Reportée le 30/07/2026 (Florian)** après cadrage : le [PRD](../product/prd.md) dit les paliers « non engageants », « Premium muscu » n'a aucun contenu défini, aucune fonctionnalité IA n'est livrée (donc **aucun consommateur réel** pour la couture) et LANCE-00 non fait (donc aucun produit configurable). Motifs détaillés dans [BACKLOG.md](../../BACKLOG.md). **À reprendre avec la 1ʳᵉ US IA.** |
 | 1.21 | Écrans légaux & consentement | CGU + politique de confidentialité acceptées à l'inscription. Âge minimum 16 ans (RGPD). | Facile | 2h | 🟡 | ✅ | `(auth)/terms.tsx`, `privacy.tsx`, contrôle âge 16+ à l'inscription. 🌐 bilingue FR+EN. |
 | 2.1 | Bottom tab bar 4 onglets | Navigation principale : Accueil / Muscu / Running / Alim. | Facile | 2h | 🟢 | ✅ | Onglets vides au début, remplis version après version. |
 | 2.2 | Masquage onglets non activés | Si running non activé, son onglet disparaît. Réactivable depuis les paramètres. | Facile | 1h | 🟢 | ✅ | Filtre sur `settings.activePillars`. |
@@ -158,9 +158,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.21 | Courbe de progression par exercice | Charge max / volume sur 30 / 90 j / 1 an. | Moyen | 4h | 🟢 | ✅ | + 1RM estimé + période « tout » (MUSC-04). |
 | 3.40 | Volume par groupe musculaire | Séries par groupe sur la semaine — détecte les déséquilibres. | Moyen | 3h | 🟢 | ✅ | `MuscleVolumeBarChart` + `useMuscleVolumeThisWeek`. |
 | 3.41 | Alerte déséquilibre musculaire | Si un groupe très sous-sollicité sur 2 semaines. | Moyen | 3h | 🟢 | ✅ | `useMuscleBalance` + alerte groupes négligés (MUSC-05). |
-| 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ⬜ | Records affichés au résumé, **aucun push** (notifs = streak seul). |
-| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | ⬜ | **Aucune notif de rappel de séance planifiée.** |
-| 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ⬜ | **Aucune notif push de record.** |
+| 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ✅ | US MUSC-F8. Push **agrégé** (1 par séance, jamais 1 par record) + célébration animée transposée de la course. |
+| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | 🟡 | US MUSC-F8. **Recadré en échéance apprise** (p90 de `finished_at`) : `scheduled_date` est un jour sans heure, « 30 min avant » est incalculable en l'état. Vrai horaire = US à part (heure de séance en base). |
+| 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ✅ | US MUSC-F8. Muscu uniquement (course écartée : son chemin de détection est aussi celui du backfill, qui rejouerait tout l'historique). Plafond de 3/jour réellement appliqué (D14, solde D3 de NUTR-F1). |
 
 ---
 
@@ -198,11 +198,11 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 4.25 | Valeurs nutritionnelles calculées | Macros totales et par portion automatiques. | Facile | 1h | 🟢 | ✅ | `perServing`. |
 | 4.26 | Repas types (templates) | Réutiliser un repas entier en 1 tap. | Facile | 2h | 🟢 | ✅ | `saveMealAsTemplate` / `applyTemplate`. |
 | 1.13 | Historique poids corporel | Pesées enregistrées et affichées en courbe. | Facile | 3h | 🟢 | ✅ | `bodyweight-repository.ts`. |
-| 1.14 | Rappel de pesée | Notification optionnelle à heure fixe. | Facile | 1h | 🟢 | ⬜ | **Aucune trace** (notifs = streak seul). |
+| 1.14 | Rappel de pesée | Notification optionnelle à heure fixe. | Facile | 1h | 🟢 | ✅ | US NUTR-F1. Périmètre **élargi** : l'heure n'est pas fixe mais **apprise** (p90 des heures de pesée, 14 j, local). Opt-in. `reminder-habits-repository.ts`. |
 | 4.30 | Courbe poids corporel | Évolution sur 4 sem / 3 mois / 1 an. | Moyen | 3h | 🟢 | ✅ | `nutrition-stats.tsx`. |
 | 4.31 | Évolution apports moyens | Calories et macros moyennes 7 / 30 jours. | Moyen | 3h | 🟢 | ✅ | `averageIntake`. |
 | 4.32 | Alerte déficit + fort volume | Déficit important + semaine à fort volume muscu. | Moyen | 2h | 🟢 | ✅ | `DeficitVolumeAlertCard`. Première stat croisée entre piliers. |
-| 2.5 | Notif — Rappel repas | Push à heure définie. | Facile | 1h | 🟢 | ⬜ | **Aucun scheduling repas.** |
+| 2.5 | Notif — Rappel repas | Push à heure définie. | Facile | 1h | 🟢 | ✅ | US NUTR-F1. **Un** rappel de journal (pas un par repas : aucune heure n'est associée aux repas en base). Échéance apprise, opt-in. `useProgrammedRemindersScheduler`. |
 
 ---
 
@@ -427,10 +427,10 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 170 | ~81 % |
-| 🟡 Partiel | 19 | ~9 % |
-| ⬜ À faire | 16 | ~8 % |
-| ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
+| ✅ Livré | 174 | ~83 % |
+| 🟡 Partiel | 20 | ~10 % |
+| ⬜ À faire | 10 | ~5 % |
+| ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **210** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
@@ -453,7 +453,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 27 | 1 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu. Reste 🟡 3.36 (fenêtre de reprise à réconcilier) et ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 15 | 3 | 3 | 0 | 0 | Reste les **3 push** (3.42, 2.4, 2.7) ; progression auto (3.7) et deload (3.8) partiels — briques livrées, non câblées. **3.1 → ✅** (bibliothèque de programmes muscu seedée, 29/07) |
+| V0.3 (21) | 17 | 4 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). Progression auto (3.7) et deload (3.8) restent partiels — briques livrées, non câblées. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
@@ -494,8 +494,24 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 
 **30/07/2026 — Refonte visuelle du pilier Nutrition (4.37 ✅) + cercle d'accent (7.14 ✅)**
 Deux lignes **créées** hors cadrage : ni l'une ni l'autre n'existait dans la roadmap. Journal
-alimentaire seul (écran 01/10) ; les 9 autres écrans du pilier gardent leur habillage. Total
-**208 → 210**, hors cadrage **15 → 17**.
+alimentaire seul (écran 01/10) ; les 9 autres écrans du pilier gardent leur habillage.
+Total **208 → 210**, hors cadrage **15 → 17**. Compteurs : **174 / 20 / 10 / 2⏳**.
+
+**30/07/2026 — MUSC-F8 : notifications muscu (3.42, 2.7 ✅ · 2.4 🟡)**
+Push de record **agrégé** (jamais 1 par record — jusqu'à 15 en une séance) + célébration animée +
+rappel de séance recadré en échéance apprise sur `finished_at` (pas `started_at` : même piège que D1,
+déplacé). Solde D3 de NUTR-F1 : plafond de 3/jour réellement appliqué aux notifications immédiates.
+Compteurs : **172 / 20 / 10 / 2⏳**.
+
+**30/07/2026 — SOCLE-01 : entitlements RevenueCat (9.14) ⬜ → ⏳ Reporté**
+Cadrée puis reportée le même jour : le PRD dit les paliers « non engageants », « Premium muscu » n'a
+aucun contenu défini, et **aucune fonctionnalité IA n'est livrée** — la couture n'aurait aucun
+consommateur. Dette d'accès réelle isolée en **REFACTO-01**. Compteurs : **170 / 19 / 13 / 2⏳**.
+
+**30/07/2026 — NUTR-F1 : rappels programmés nutrition (1.14, 2.5) ⬜ → ✅ ×2**
+Défaut de conception corrigé avant tout code : on apprend le **p90** de l'heure du geste (une échéance),
+pas la médiane — sinon le rappel partait pendant que l'utilisateur faisait le geste. Le hint « max 3
+notifs/jour », faux depuis V0.6, est corrigé par le **texte** (D3). 0 migration. Compteurs : **170 / 19 / 14**.
 
 **29/07/2026 — MUSC-F14 : substitution d'exercice (3.52) ⬜ → 🟡**
 Motif « zone douloureuse » **retiré** : sans donnée articulaire, y répondre serait un conseil de santé

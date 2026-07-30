@@ -25,6 +25,8 @@ export * from './share-card';
 export * from './intensity';
 export * from './exercise-substitution';
 export * from './notifications';
+export * from './learned-hour';
+export * from './record-notification';
 export * from './widgets';
 export * from './exercise';
 export * from './exercise-filter';

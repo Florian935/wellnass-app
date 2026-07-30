@@ -12,7 +12,7 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 ### 30/07/2026 — `feature/refonte-nutrition` — refonte visuelle du journal alimentaire
 
-Commit précédent : `038c664`. Roadmap : **4.37** et **7.14** (lignes créées hors cadrage).
+Commit précédent : `5fda5e3`. Roadmap : **4.37** et **7.14** (lignes créées hors cadrage).
 
 Maquette source : [FitTrio - Nutrition.dc.html](design/FitTrio%20-%20Nutrition.dc.html) (Claude Design,
 10 écrans). **Seul l'écran 01 (journal) est réimplémenté** ; les 9 autres écrans du pilier gardent leur
@@ -94,6 +94,472 @@ habillage actuel.
   saisie rapide, aliment perso, recette, profil, statistiques, gestion des repas) gardent leur
   habillage d'origine. Le choix entre les variantes « anneau » et « chiffres » du bilan reste
   ré-ouvrable — la seconde est dans la maquette.
+### 30/07/2026 — `feature/muscf8-notifications-muscu` — notifications muscu : push de record agrégé, célébration animée, rappel de séance (US MUSC-F8, roadmap 3.42/2.7/2.4)
+
+Commit précédent : `0710b73`.
+
+Trois capacités : un **push « nouveau record »** agrégé (un seul par séance, jamais un par record),
+la **célébration animée** au résumé de séance, et un **rappel de séance planifiée** — recadré en
+échéance apprise, parce que la formulation de la roadmap (« 30 min avant ») décrit quelque chose que
+le modèle de données ne permet pas. Au passage, cette US **solde la décision D3** de NUTR-F1 : le
+plafond quotidien devient réel pour les notifications immédiates.
+
+**Aucune migration, aucune sync rule, aucune dépendance native, aucun nouveau build** : 3 nouvelles
+préférences dans la colonne JSON déjà synchronisée, `trigger: { channelId }` étant déjà du SDK 57
+installé.
+
+#### Deux erreurs de conception corrigées en revue, avant livraison
+
+- 🔴 **J'apprenais `started_at` au lieu de `finished_at`** pour le rappel de séance — la même erreur
+  que D1 (NUTR-F1), sous une autre forme. Le p90 des heures de *début* fait partir le rappel pendant
+  l'échauffement, pas après. Corrigé : l'apprentissage porte sur `finished_at`, avec
+  `finished_at IS NOT NULL` (exclut les séances en cours et les abandons soft-deleted).
+- 🔴 **Contradiction interne entre D10 et D11** : la première version posait un identifiant *stable*
+  pour le push de record (« au plus un en attente »), alors que D11 justifiait le push entier par
+  « la valeur, c'est la trace dans le tiroir ». Un id stable aurait fait **effacer** la trace de la
+  première séance à la deuxième séance à record du jour — détruisant la valeur même invoquée pour
+  justifier le push. Corrigé : identifiant **unique par séance** (`record-push-<workoutId>`), donc
+  le plafond de D14 devient nécessaire pour de vraies raisons.
+- 🔴 Le cas limite de la spec disait « 15 records battus ! » pour une première séance de 5 exercices,
+  alors que D10 impose de dédoublonner par exercice — les deux ne pouvaient pas être vrais en même
+  temps. Corrigé en « Records battus sur 5 exercices ! » ; un test dédié verrouille que le décompte
+  porte sur les exercices, pas sur les lignes de record.
+- 🔴 **`useHasPlannedSession` ne convient pas** à la condition « une séance muscu est planifiée
+  aujourd'hui » : son `WHERE` accepte `status = 'done'` et n'a aucun filtre de pilier — une course
+  planifiée aurait déclenché le rappel muscu. Requête dédiée avec `programs.pillar = 'strength'`.
+- 🔴 **`maybePushRecords` n'avait accès à rien hors React** : c'est un callback d'événement
+  (`doFinish`), pas un rendu, et aucun accesseur asynchrone n'existait pour les préférences de
+  notification ni le système d'unités. Deux accesseurs ajoutés (`getNotificationPrefs`,
+  `getUnitSystem`), même patron que `getAnalyticsEnabled`.
+- ⚠️ **Le contrat no-throw rendait le quota immesurable** : sans un retour booléen de `presentNow`,
+  une notification qui échoue silencieusement aurait quand même consommé une unité de plafond.
+  Corrigé : `presentNow` renvoie `boolean`, et la permission est vérifiée **avant** toute
+  consommation de quota — sinon une permission refusée aurait brûlé les 3 unités du jour pour rien.
+
+#### Ajouté
+
+- [record-notification.ts](packages/shared/src/record-notification.ts) — `buildRecordPushContent`,
+  brique pure : **deux dédoublonnages distincts** (par `exerciseId` pour le décompte, par libellé
+  pour la liste de noms — un exercice custom dupliqué ou recréé peut porter deux fois le même nom).
+  Nom vide exclu de la liste mais compté. 11 tests, dont le cas 15 records / 5 exercices de la spec.
+- [CelebrationCard.tsx](apps/mobile/src/components/CelebrationCard.tsx) — conteneur animé extrait de
+  `CelebrationBanner` (course) : fondu + zoom 320 ms, **respect de « réduire les animations »**
+  (nouveau — le composant course ne le gérait pas). 3 tests, dont un qui a trouvé un vrai bug :
+  la première version jouait `Animated.timing` une fois avant de recevoir la réponse asynchrone du
+  réglage système, donc une animation aurait joué même avec « réduire les animations » actif.
+  Corrigé avec un état tri-valué (`null | boolean`) : on attend une réponse connue avant d'animer.
+- [notification-quota-store.ts](apps/mobile/src/stores/notification-quota-store.ts) — plafond
+  quotidien des notifications **immédiates** (décision D14). Ne compte que les **tentatives
+  réussies** (`recordSuccess`, jamais sur un échec). Local à l'appareil, non synchronisé.
+- `presentNow(id, content): Promise<boolean>` + `RECORD_PUSH_PREFIX` + `SESSION_REMINDER_ID` dans
+  [notifications.ts](apps/mobile/src/lib/notifications.ts) — notification immédiate via
+  `trigger: { channelId }` (SDK 57 ; `presentNotificationAsync` n'existe plus).
+- `maybePushRecords(workoutId, beaten)` dans
+  [notification-repository.ts](apps/mobile/src/data/repositories/notification-repository.ts) —
+  fonction de module (pas un hook), branchée dans `doFinish` ([workout.tsx](apps/mobile/src/app/workout.tsx))
+  dans le **même** `try/catch` best-effort que `evaluateWorkoutRecords` : un échec du push ne bloque
+  pas plus la navigation qu'un échec de l'évaluation.
+- `useSessionDeadline` + `useHasPlannedStrengthSessionToday` — 3ᵉ entrée du planificateur
+  `useProgrammedRemindersScheduler`, sur la structure existante (jeton de génération inchangé).
+- 3 préférences (`recordPush: true`, `sessionReminder: false`, `sessionReminderHour: 18`) — deux
+  défauts **opposés**, délibérément : le push **célèbre** (opt-out), le rappel **réclame** (opt-in).
+- 3 nouveaux contrôles dans les réglages ; hint de section réécrit pour la **deuxième fois de la
+  journée** (« Au plus un rappel par type et par jour, plus 3 célébrations de record au maximum »).
+- 18 clés i18n FR/EN (parité vérifiée : 1509 = 1509, zéro orpheline).
+
+#### Modifié
+
+- `run/summary.tsx` — `CelebrationBanner` (course) consomme désormais le conteneur extrait
+  `CelebrationCard` ; gagne au passage le respect de « réduire les animations », qu'il n'avait pas.
+- `workout-summary.tsx` — nouvelle `WorkoutCelebrationBanner`, montée **juste après `ScreenHeader`**
+  et non au-dessus de `RecordsSection` (~60 lignes de JSX plus bas) : une bannière montée trop bas
+  aurait déjà fini son animation, hors écran, avant que l'utilisateur y arrive en scrollant.
+- `notification-repository.ts` : le commentaire d'aveu sur `maxPerDay` renvoie désormais à **D14**
+  (solde de D3) au lieu de dire que le plafond n'est appliqué nulle part — ce qui reste vrai pour les
+  5 rappels programmés, mais plus pour le push de record.
+
+#### Technique / Notes
+
+- **Muscu seulement, pas la course** : les deux mécanismes de détection de record sont entièrement
+  séparés, et le chemin course est **aussi** celui de `backfillRunningRecords`, qui rejoue tout
+  l'historique — un push branché là partirait en rafale au premier passage.
+- **D11 reste ouverte et assumée** : le push part même au premier plan, donc il double l'écran de
+  résumé qui affiche déjà les mêmes records. La spec propose un premier essai de recette : un
+  handler de notification sélectif par identifiant pourrait supprimer la bannière tout en gardant la
+  trace dans le tiroir — non vérifié, Android pourrait ne pas le permettre.
+- **Garde-fou `no-frozen-clock` non modifié** : `notification-repository.ts` y figurait déjà, et
+  `maybePushRecords` n'est jamais mémoïsée par React Compiler (fonction de module, pas un
+  composant/hook) — le `localDayKey(new Date())` qu'elle contient est donc correct et ne pouvait de
+  toute façon pas y être signalé à tort. Vérifié en relançant le garde-fou après tous les changements.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0
+  (28 warnings, tous préexistants) · `npm run test` 0 → **1208 tests Vitest** (62 fichiers, +13) +
+  **211 tests Jest** (41 suites, +16).
+- **Reste à faire** : recette device (§7 de la spec) — **pas de nouveau build nécessaire**. Le point
+  D11 (push au premier plan) est le premier à réévaluer si l'usage réel déplaît.
+
+### 30/07/2026 — `fix/date-gelee-react-compiler` — 19 lectures d'horloge gelées par React Compiler
+
+Commit précédent : `e7c60ee`.
+
+#### Corrigé
+
+- 🔴 **Toute une famille de bugs, invisible en dev et en test, active uniquement en build release.**
+
+  `experiments.reactCompiler` est activé ([app.json](apps/mobile/app.json)). Quand une valeur calculée
+  dans un composant ou un hook n'a **aucune entrée réactive** — le cas de `localDayKey(new Date())`,
+  qui ne dépend d'aucune prop, d'aucun state, d'aucun hook — le compilateur la classe **constante** et
+  la range dans un slot `useMemoCache` **mount-only**, évalué **une seule fois** pour la durée de vie
+  de l'instance.
+
+  Sur les hooks montés dans le layout racine (`useStreakData`, `useWeeklyReview`), l'instance vit
+  aussi longtemps que le process JS. Sur les onglets, **aucun `unmountOnBlur` n'est configuré** : un
+  onglet monté au premier affichage ne se démonte jamais. La requête « et aujourd'hui ? » interrogeait
+  donc éternellement **le jour du montage**.
+
+  **Pourquoi personne ne l'avait vu** : `tsc` ne voit rien (le code est bien typé) ; en dev,
+  `enableResetCacheOnSourceFileChanges: !isProduction` réinitialise le cache à chaque sauvegarde ; et
+  sous Jest, `babel-preset-expo` n'applique le plugin que si l'appelant pose `supportsReactCompiler`,
+  ce que seul le transformer Metro fait — **jamais `babel-jest`**. Aucune des trois portes de qualité
+  ne pouvait l'attraper.
+
+  Découvert le matin même sur `reminder-habits-repository.ts` pendant la revue de NUTR-F1, puis
+  généralisé : l'audit a compilé chaque fichier de `apps/mobile/src` et trouvé **19 sites réels**.
+
+  Ce qui était cassé, concrètement :
+
+  | Hook / composant | Effet en release |
+  |---|---|
+  | `useStreakData` | `activeToday` répond sur la veille → **le rappel de série ne repart plus jamais** si l'utilisateur était actif hier ; le compteur se figeait ; `restorableGap` proposait un joker sur le mauvais jour |
+  | `useWeeklyReview` | Le planificateur décidait « notifier ou pas » sur **la semaine d'avant celle qu'il faut**, dès que le process survivait au lundi |
+  | `useTodaySession` | La carte « séance du jour » proposait celle de la veille — et **la valider marquait l'occurrence du mauvais jour** (`plannedSessionId` est le lien de complétion) |
+  | `WellbeingCard` | `todayKey` était passé en `logDate` à la feuille de saisie → **un check-in écrivait sur le mauvais jour** |
+  | `useTodayWellbeing` | Le check-in d'hier passait pour celui d'aujourd'hui → l'app ne proposait plus jamais de le faire |
+  | `useNutritionSummary`, onglet nutrition | Kcal et macros de la veille ; les repas du jour n'apparaissaient jamais |
+  | `useGoals` | Un objectif échu aujourd'hui restait « actif » ; les jours restants n'avançaient plus |
+  | `useTodaySteps`, `useUpcomingSessions`, `useRunStats`, `useTrainingTime`, `useDeficitVolumeAlert`, 4 sites de `records-repository` | Widgets et fenêtres glissantes figés. `useDeficitVolumeAlert().show` conditionnant une cellule de la grille, c'était même **la mise en page du dashboard** qui se figeait |
+
+#### Ajouté
+
+- [useTodayKey.ts](apps/mobile/src/hooks/useTodayKey.ts) — **une seule source d'horloge réactive**, et
+  tout le reste en dérive. C'est ce qui rend le correctif sûr : une fois la racine réactive, chaque
+  valeur calculée à partir d'elle tombe dans un scope mémoïsé **keyé sur elle**, donc se rafraîchit
+  avec elle. Il n'y a pas à auditer les dérivations une par une.
+  - `useTodayKey()` — clé `AAAA-MM-JJ`, rafraîchie au retour au premier plan (seul moment où l'app
+    peut constater un changement de jour sans minuteur qui la réveille pour rien) ;
+  - `useTodayDate()` — **minuit** local, pour les helpers de `shared` qui prennent une référence
+    injectable. Volontairement pas l'instant courant : une valeur changeant à la seconde
+    re-souscrirait les requêtes en boucle ;
+  - `useWindowStartKey(days)` / `useWindowStartUtc(days)` — bornes de fenêtre glissante
+    **inclusives** (`days = 7` → J-6), pour ne plus recopier le `- 1` qui est la source d'erreur de
+    bord classique.
+- [no-frozen-clock.test.ts](apps/mobile/src/hooks/__tests__/no-frozen-clock.test.ts) — **le garde-fou,
+  et il était indispensable** : puisque ni `tsc`, ni le dev, ni Jest ne voient cette classe de bugs, le
+  seul test possible **applique lui-même le compilateur** et échoue si un bloc mémoïsé au montage
+  contient une lecture d'horloge. 12 fichiers surveillés, liste explicite (un scan complet serait lent
+  en CI et signalerait des cas bénins, donc finirait désactivé). Inclut un **test du test** : on
+  compile un hook volontairement fautif et on vérifie que le détecteur le voit — sans ça, un détecteur
+  cassé passerait pour un code sain.
+- `localDateFromDayKey(key)` dans [date.ts](packages/shared/src/date.ts) — inverse de `localDayKey`,
+  par composants et non via `new Date('AAAA-MM-JJ')`, que la spec ECMAScript parse en **UTC** (donc la
+  veille dans un fuseau négatif).
+
+#### Modifié
+
+- **Onglet nutrition** : le jour affiché était un `useState` — gelé par **conception**, pas par le
+  compilateur, mais l'onglet ne se démontant jamais, le résultat utilisateur était le même (on revenait
+  le lendemain, le journal était encore sur la veille). Règle retenue : **suivre le jour courant
+  uniquement si l'utilisateur était déjà sur « aujourd'hui »**, pour ne pas écraser une navigation
+  délibérée vers un jour passé.
+- `rollingWindowLowerBound` (records) prend sa référence en paramètre. ⚠️ **Seul changement de
+  comportement de ce commit** : la borne était calculée depuis l'**instant** courant, elle l'est
+  désormais depuis **minuit local**. La fenêtre devient jour-alignée, comme `rollingWeekStartLocalUtc`
+  et comme toutes les autres du dépôt ; c'était l'outlier, et une borne à l'instant faisait bouger les
+  stats au fil de la journée. Concerne `useMuscleBalance` (14 j) et `useWeeklyVolumeSeries`.
+- `periodLowerBound`, `bucketWeeklyVolume`, `last8RollingWeeksLocal`, `daysAgo` : la date de référence
+  devient un **paramètre**. Le commentaire de `rollingWindowLowerBound` affirmait qu'extraire l'appel
+  dans une fonction dédiée suffisait à « respecter la règle de pureté du rendu » — c'est faux, le
+  compilateur mémoïse **l'appel**.
+- `weekly-review-repository` : `elapsedRatio` vivait dans un `useMemo` écrit à la main dont la liste de
+  dépendances **omettait le jour**. Péremption antérieure au compilateur, corrigée au passage.
+- `useTodayKey` était privé à `reminder-habits-repository` depuis le matin : dédupliqué vers le hook
+  partagé (41 lignes en moins).
+- `NutritionSummaryCard` : le hook est remonté **avant** le `if (isLoading) return null` — un simple
+  calcul pouvait vivre après un retour anticipé, un hook non.
+
+#### Technique / Notes
+
+- **Ce commit ne change aucune fenêtre de calcul, à l'exception documentée ci-dessus.** Les bornes de
+  `useDeficitVolumeAlert` ont été **délibérément laissées identiques à l'avant-correctif**, alors que
+  deux écarts y sont visibles : `daysAgo(7)` donne J-7, donc **8 jours inclusifs** pour un hook dit
+  « weekly », et `+ 'T00:00:00.000Z'` étiquette un minuit **local** comme s'il était UTC. Les redresser
+  ici aurait changé les chiffres de l'alerte au milieu d'un commit censé ne corriger que le gel.
+  **À traiter dans une passe dédiée** — c'est écrit en commentaire dans le code, à l'endroit exact.
+- **Restent classés 🟠, non traités** : `useMissedSessions`, `useProgression`, `usePaceTrend`, et les
+  libellés « J-n » de `GoalsCard`/`GoalCard`. Tous sur des écrans Stack qui se démontent, ou dans des
+  scopes réactifs qui se rafraîchissent au moindre changement de données. Impact borné.
+- **Règle à retenir** : dans le corps d'un composant ou d'un hook, jamais de `new Date()` ni de
+  `Date.now()`. Dans un **callback d'événement**, en revanche, c'est correct et attendu — la closure lit
+  l'horloge à l'appel. Le garde-fou ne regarde que les blocs mémoïsés, donc il ne gêne pas ce cas.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0 ·
+  `npm run test` 0 → **1195 Vitest** (61 fichiers) + **195 Jest** (38 suites — +1 suite et +13 tests
+  apportés par le garde-fou).
+- ⚠️ **Recette** : ces correctifs ne sont vérifiables qu'en **build release**. Scénario minimal : ouvrir
+  l'app, laisser en arrière-plan **sans tuer le process**, revenir le lendemain, et vérifier que la
+  séance du jour, le journal nutrition, le widget bien-être et la série ont suivi.
+
+### 30/07/2026 — `docs/socle01-differee` — SOCLE-01 différée, REFACTO-01 créée (suivi seul, aucun code)
+
+Commit précédent : `ba4e9ee`.
+
+**Aucun code applicatif.** Trois fichiers de suivi. L'US SOCLE-01 a été **cadrée puis reportée le
+même jour** : elle n'est jamais entrée dans le pipeline, donc pas de spec, pas de plan, pas de
+maquette, et **pas de front-matter à faire avancer**.
+
+#### Modifié
+
+- [BACKLOG.md](BACKLOG.md) — **SOCLE-01 → ⏳ différée**, avec les 4 constats qui l'ont motivée :
+  1. [prd.md:122](docs/product/prd.md) qualifie les paliers Premium → Écosystème → IA de
+     « conservés **pour mémoire uniquement, non engageants** » — les définir aurait été les inventer,
+     contre une position produit écrite ;
+  2. **« Premium muscu » n'a aucun contenu défini nulle part**, « Écosystème » n'est nommé que dans
+     l'ADR-003 ; seul le palier **IA** a une décision datée (Florian, 15/07/2026 : 1-2 bilans croisés
+     gratuits bridés vs analyses exhaustives à la demande + chatbot à quota) ;
+  3. **aucune fonctionnalité IA n'est livrée** ([ia-integration-analyse.md](docs/product/ia-integration-analyse.md)
+     n'est pas encore une US) → la couture d'accès n'aurait eu **aucun consommateur réel**, donc
+     aurait été une promesse non vérifiée plutôt qu'une conception validée ;
+  4. LANCE-00 non fait → sans compte Play, aucun produit configurable, donc **un SDK RevenueCat
+     n'aurait rien à récupérer**. À noter pour la reprise : une clé SDK publique `goog_` **n'est pas
+     un secret** (elle est conçue pour être embarquée dans le client, même classe que
+     `EXPO_PUBLIC_SUPABASE_ANON_KEY`) — c'est l'inutilité qui l'a écartée, pas le garde-fou.
+
+  **Point de reprise : la première US IA**, qui fournira le premier point d'accès réellement gatable.
+- [roadmap.md](docs/roadmap/roadmap.md) — **9.14 → ⏳ Reporté** avec le motif, compteurs
+  **170 ✅ / 19 🟡 / 13 ⬜ / 2 ⏳** (8.7 et 9.14), entrée au journal des réconciliations.
+- **MUSC-F8 enrichie** dans le backlog : l'**échéance apprise** (p90) et le **rabattement DND** livrés
+  par NUTR-F1 sont réutilisables tels quels — et surtout, les décisions **D8** (marge d'imminence de
+  15 min) et **D9** (clé du jour réactive) l'attendent au même endroit. Sans cette note, le prochain
+  rappel muscu retomberait dans les deux mêmes pièges.
+
+#### Ajouté
+
+- **REFACTO-01 — Unifier la décision d'accès par pilier** (backlog P2). Trouvée en cadrant SOCLE-01,
+  et c'est le vrai enseignement de ce cadrage : le gating de la décision H
+  (`settings?.activePillars ?? [...PILLARS]` puis `.includes()`) est **recopié en ligne dans
+  ~12 endroits** — `(tabs)/_layout.tsx`, `settings.tsx`, `dashboard-repository`,
+  `records-repository`, `weekly-review-repository`, `widget-layout-repository` — **sans aucun helper
+  partagé**. La seule version propre est interne aux widgets (`WIDGET_REGISTRY.pillars` + son
+  sentinelle `'always'`), et c'est exactement la forme cible.
+
+  **La refonte que l'ADR-003 croyait prévenir existe donc déjà, et elle n'a rien à voir avec
+  RevenueCat.** Y brancher des entitlements plus tard devient alors une entrée de plus, pas une
+  refonte. ⚠️ Touche du code livré et recetté en 12 endroits : refacto dédiée, jamais passager
+  clandestin d'une autre US. ~6-8 h.
+
+#### Technique / Notes
+
+- **Dette de doc repérée, non corrigée ici** : [analyses-donnees.md:38-40](docs/product/analyses-donnees.md)
+  cite `WIDGET_PILLARS` + `resolveDashboardLayout` dans `packages/shared/src/dashboard.ts`. **Ce
+  fichier n'existe pas** ; les vrais noms sont `WIDGET_REGISTRY[screen].pillars` +
+  `resolveScreenLayout` dans `widgets.ts`. À corriger au prochain passage sur le catalogue.
+- **Bug confirmé dans du code livré, à traiter ensuite** : `dashboard-repository.ts` présente
+  **4 occurrences** (lignes 166, 243, 419, 537) du patron responsable du bug bloquant de NUTR-F1 —
+  `localDayKey(new Date())` passé en paramètre de requête sans entrée réactive, donc **gelé au
+  montage par React Compiler en build release**. Les fonctionnalités concernées sont vivantes :
+  `useTodaySession` (séance du jour au dashboard) et `useStreakData` (`activeToday`, qui pilote le
+  **rappel streak**). Correctif prévu sur `fix/date-gelee-react-compiler` — le remède
+  (`useTodayKey`) est déjà écrit et testé dans `reminder-habits-repository.ts`.
+- Vérifications malgré l'absence de code (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 ·
+  `npm run lint` 0 · `npm run test` 0.
+
+### 30/07/2026 — `feature/nutrf1-rappels-nutrition` — rappels programmés nutrition (US NUTR-F1, roadmap 1.14 + 2.5)
+
+Commit précédent : `038c664`.
+
+Deux rappels locaux — **journal alimentaire** et **pesée** — déclenchés à une **échéance apprise** du
+comportement. **Aucune migration, aucune sync rule à redéployer, aucune dépendance native, aucun
+nouveau build** : les 5 nouvelles préférences vivent dans la colonne JSON `user_settings.notifications`
+déjà synchronisée, et tout le calcul est local.
+
+#### Le défaut de conception corrigé avant d'écrire une ligne de code
+
+La première rédaction de la spec apprenait la **médiane** de l'heure de saisie et déclenchait le
+rappel à cette heure. La relecture critique a montré que c'était contre-productif : la médiane est par
+définition l'heure où le geste est fait **une fois sur deux**, donc un utilisateur régulier qui logge à
+8 h aurait reçu « ton journal est vide » à 8 h, **un jour sur deux, pendant qu'il le remplit** — et une
+notification déjà tirée ne s'annule pas (la re-planification n'a lieu qu'à l'ouverture de l'app, et le
+handler affiche la bannière même au premier plan).
+
+On apprend donc une **échéance** : le **p90** de l'heure du geste, l'heure avant laquelle c'est déjà
+fait 9 jours sur 10. Le rappel devient **rare par construction**, ce qui est le but.
+
+#### Ajouté
+
+- [learned-hour.ts](packages/shared/src/learned-hour.ts) — brique pure de l'échéance apprise.
+  `usableDailyHours` (une heure locale par jour, filtre anti-saisie-rétroactive),
+  `percentileHour` (percentile **par rang**, sans interpolation), `resolveLearnedDeadline`.
+  Constantes : fenêtre 14 jours, seuil 5 jours, décile 0,9. **28 tests** — dont les tests
+  indépendants du fuseau de la machine (les horodatages sont construits depuis des `Date` locales
+  puis sérialisés en UTC, comme le fait l'app).
+- `clampOutOfDnd(hour, prefs)` dans [notifications.ts](packages/shared/src/notifications.ts) —
+  rabat une heure **apprise** hors de la fenêtre « Ne pas déranger », sur le bord le plus proche
+  (`dndEndHour` ou `dndStartHour − 1`), égalité vers l'arrière. Couvert par un **test de propriété**
+  (6 fenêtres × 24 heures : le résultat vérifie toujours `!isWithinDnd`).
+- `decideProgrammedReminder(input): ReminderDecision` — union discriminée
+  `{schedule, atHour} | {skip, reason}` avec `reason ∈ disabled|done|passed|dnd`, chaque refus testé
+  nommément.
+- 5 préférences dans `NotificationPrefs` : `mealReminder` (défaut `false`), `mealReminderHour` (13),
+  `weighInReminder` (`false`), `weighInReminderHour` (10), `learnedHour` (`true`).
+- [reminder-habits-repository.ts](apps/mobile/src/data/repositories/reminder-habits-repository.ts) —
+  lecture locale des habitudes (`useMealDeadline`, `useWeighInDeadline`, `useMealLoggedToday`,
+  `useWeighInToday`).
+- `useProgrammedRemindersScheduler()` dans
+  [notification-repository.ts](apps/mobile/src/data/repositories/notification-repository.ts) — un
+  seul hook et un seul abonnement `AppState` pour les deux rappels ; monté dans
+  [_layout.tsx](apps/mobile/src/app/_layout.tsx).
+- `scheduleDatedReminder(id, date, content)` / `cancelReminder(id)` +
+  `MEAL_REMINDER_ID` / `WEIGH_IN_REMINDER_ID` dans
+  [notifications.ts](apps/mobile/src/lib/notifications.ts).
+- Réglages : switch **« Caler sur mes habitudes »** + 2 rappels (switch + `HourStepper`) avec la
+  **provenance de l'heure** affichée, dans [settings.tsx](apps/mobile/src/app/settings.tsx).
+- Mock `expo-notifications` dans [jest.setup.ts](apps/mobile/jest.setup.ts) — il n'existait pas, et
+  `@/lib/notifications` enregistre un `setNotificationHandler` **au chargement du module** : sans le
+  mock, tout test important indirectement ce module échouait à l'import.
+- 15 clés i18n FR/EN (parité vérifiée : 1495 = 1495, zéro orpheline).
+
+#### Corrigé — trouvés en revue de code, AVANT livraison
+
+- 🔴 **BLOQUANT : la date « aujourd'hui » était gelée au montage par React Compiler.**
+  `reminder-habits-repository.ts` écrivait `useQuery(sql, [localDayKey(new Date())])`, avec un
+  commentaire affirmant que la valeur était « recalculée à chaque render ». **Faux en production.**
+  `experiments.reactCompiler` est activé ([app.json:83](apps/mobile/app.json#L83)) : le tableau de
+  paramètres n'ayant aucune entrée réactive, le compilateur le classe constant et le range dans un
+  slot `useMemoCache` **mount-only**.
+
+  Le hook étant monté dans le layout racine — donc une seule instance pour toute la vie du process,
+  qu'Android conserve en arrière-plan — le scénario réel était : l'utilisateur note son dîner le soir,
+  revient le lendemain matin, la requête « déjà fait aujourd'hui ? » répond encore sur **la veille**
+  → `true` → `cancelReminder`. **Plus aucun rappel de repas, jamais**, pour exactement l'utilisateur
+  qu'on cible. Et la fenêtre d'apprentissage cessait de glisser.
+
+  **Le bug était invisible partout où on l'aurait cherché** : en dev, le cache du compilateur est
+  réinitialisé à chaque sauvegarde de fichier ; sous Jest, le plugin n'est pas appliqué. Il ne se
+  manifestait qu'en **build release**. Corrigé par un `useTodayKey()` à base de `useState`, rafraîchi
+  au retour au premier plan — la clé devient une entrée réactive (décision **D9**).
+
+  ⚠️ **Même patron ailleurs, non corrigé ici** : `dashboard-repository.ts` (`useStreakData` →
+  `activeToday`) présente la même construction. C'est une famille de bugs préexistante qui mérite sa
+  propre passe — elle affecte le rappel streak de la même manière.
+- 🔴 **Aucune marge avant l'échéance** (décision **D8**, ajoutée) : D7 avait supprimé le rattrapage
+  *après* l'échéance, mais rien ne protégeait *juste avant*. Ouvrir l'app à 12 h 59 pour une échéance
+  à 13 h faisait arriver « ton journal est encore vide » **60 secondes plus tard, pendant que
+  l'utilisateur le remplit** — le scénario exact que D7 invoque pour se justifier. Marge de
+  `REMINDER_MIN_LEAD_MINUTES = 15`, avec un motif de refus **distinct** (`imminent` vs `passed`) :
+  en recette, l'un dit « trop tard », l'autre « tu es déjà là ».
+- ⚠️ **Course entre deux `apply()` concurrents.** `apply()` démarre par deux allers-retours natifs, donc
+  deux invocations peuvent se chevaucher : A décide « planifier » sur un journal vide, l'utilisateur
+  ajoute un aliment, B décide « annuler » — et si les promesses ne se résolvent pas dans l'ordre de
+  départ, le `schedule` de A s'exécute **après** le `cancel` de B et le rappel revient alors que le
+  journal est rempli. Ce hook étant réveillé par **deux tables surveillées**, le chevauchement n'est
+  pas théorique. Corrigé par un jeton de génération (`useRef`), vérifié après chaque `await`.
+- ⚠️ **`resolveDeadline` n'était pas testé** — et c'était le **seul** morceau de logique métier de l'US
+  qui ne l'était pas, alors que c'est là que D5 et D6 sont réellement câblés. Il était pur et sans
+  dépendance React : déplacé dans `packages/shared` sous le nom `resolveReminderDeadline`, avec
+  6 tests. Le chemin qui manquait entièrement : apprentissage **puis** rabattement
+  (`daysAt(23, 7)` → `{ hour: 21, learned: true, shifted: true }`).
+- **Fenêtre d'apprentissage à 15 jours au lieu de 14** : `localMidnightDaysAgo(14)` couvre J-14…J0.
+  Corrigé en `LEARNED_HOUR_WINDOW_DAYS - 1`, la convention du dépôt (cf. `ROLLING_WEEK_DAYS - 1`).
+
+#### Corrigé
+
+- 🔴 **Dérive Zod de `notificationPrefsSchema`** ([settings.ts](packages/shared/src/settings.ts)) :
+  le schéma ne déclarait que **6** des 8 champs de `NotificationPrefs` — `weeklyReview` et
+  `weeklyReviewHour` manquaient depuis BILAN-01. `z.object` étant strippant, tout passage par ce
+  schéma les **perdait silencieusement**. Dérive **latente** (le chemin runtime passe par
+  `parseNotificationPrefs`, pas par Zod), donc jamais visible en production — mais le piège attendait
+  les 5 champs suivants.
+
+  ⚠️ **Première tentative de correction rejetée en revue** : compléter la liste à 13 champs
+  **obligatoires** n'aurait pas corrigé le piège, ça l'aurait **approfondi**. La colonne est enrichie
+  *sans migration*, donc aucune ligne existante ne contient les champs ajoutés après coup : au lieu de
+  stripper en silence, le schéma se serait mis à **lever** sur toute ligne antérieure. Le schéma
+  délègue désormais à `parseNotificationPrefs` (`z.unknown().transform(...)`), ce qui est le contrat
+  réel de cette colonne — une seule implémentation de la tolérance, testée en un seul endroit. Trois
+  tests ajoutés, dont « une ligne de 6 champs se lit sans lever, les 7 autres sont complétés ».
+- ⚠️ **Le hint « Max 3 notifications par jour » était faux depuis V0.6.** `canScheduleMore` existe,
+  est testé, et n'était appelé par personne — aveu explicite en commentaire dans
+  `notification-repository.ts`. Décision **D3** : on corrige le **texte**, pas le code, parce qu'un
+  compteur n'ajouterait aucune protection (chaque type est déjà borné à un par jour par son
+  identifiant stable) et **ferait perdre des rappels** (les planificateurs re-tournent à chaque retour
+  au premier plan ; sans court-circuit, un type déjà compté se verrait refuser sa re-planification et
+  la branche d'annulation supprimerait le rappel à la deuxième ouverture de l'app). Le hint énonce
+  désormais la garantie réelle : « Au plus un rappel par type et par jour. »
+- Un trou trouvé en relecture du code livré : apprentissage actif **mais historique insuffisant** →
+  l'heure de repli s'applique sans être rabattue, donc un repli tombant dans le DND ne partait jamais,
+  alors que l'écran affichait sereinement « 23:00 en attendant ». L'avertissement DND dépend maintenant
+  de `deadline.learned` et non du mode d'apprentissage, et les deux lignes explicatives coexistent.
+
+#### Modifié
+
+- `useStreakReminderScheduler` (**code livré et recetté**) : il recopiait `NotificationPrefs` champ par
+  champ dans un objet local — patron qui casse à chaque ajout de champ au type, et qui a effectivement
+  cassé au typecheck dès l'ajout des 5 champs de cette US. Il passe désormais `prefs` directement
+  (8 lignes de moins, plus de littéral à maintenir). Les 3 heures du DND quittent la liste de
+  dépendances du `useCallback` (elles sont portées par `prefs`), ce qui aligne ce hook sur son
+  jumeau `useWeeklyReviewScheduler`. **Point d'attention** : `prefs` est un objet recréé à chaque
+  render par `parseNotificationPrefs`, donc `apply` change d'identité à chaque render — comportement
+  déjà celui de `useWeeklyReviewScheduler`, et inoffensif grâce aux identifiants stables (planifier
+  remplace, annuler est idempotent).
+- `scheduleStreakReminder` / `cancelStreakReminder` deviennent de fines enveloppes sur la paire
+  générique — comportement identique, une seule implémentation au lieu de trois copies à venir.
+
+#### Technique / Notes
+
+- **Aucun agrégat SQL sur `created_at`.** Le plan prévoyait initialement
+  `MIN(created_at) … GROUP BY log_date` ; c'est faux, parce que le choix de l'entrée retenue dépend du
+  filtre anti-rétroactif, qui se calcule en **heure locale** donc en JS. Un `strftime('%H', created_at)`
+  aurait renvoyé l'heure **UTC** et décalé tout l'apprentissage de 1 à 2 h selon la saison.
+- **Cycle d'import évité** : `reminder-habits-repository` reçoit les préférences en **paramètre** au
+  lieu d'appeler `useNotificationPrefs()`, sinon il serait en cycle avec `notification-repository` qui
+  le consomme. L'écran de réglages et le planificateur disposent tous deux déjà des prefs — et
+  consomment **les mêmes hooks**, donc l'heure affichée ne peut pas diverger de l'heure planifiée.
+- **Percentile par rang** (`trié[ceil(p × n) − 1]`) et non médiane : défini pour tout `n`, sans règle
+  à inventer pour les échantillons pairs (majoritaires ici : fenêtre 14, seuil 5), et il neutralise le
+  problème circulaire dans le sens utile — sur `{23,0,23,0,23,0}` la médiane renvoie 11 h 30 (le point
+  antipodal de l'habitude réelle), le p90 renvoie 23 (le bord tardif, ce qu'on cherche).
+- **Limite assumée du filtre anti-rétroactif (D4)** : il n'attrape **pas** les copies du jour même
+  (`copyMeal`, `duplicateDay`, repas types portent `created_at = maintenant` et `log_date` = le jour
+  affiché, presque toujours aujourd'hui). Quelqu'un qui duplique la veille chaque matin à 10 h
+  apprendra « 10 h ». Assumé : sous D1, une contamination qui **repousse** l'échéance va dans le sens
+  sûr — elle rend le rappel plus rare, jamais plus intrusif. Distinguer une copie exigerait une
+  colonne `source`, donc une migration, pour un gain nul dans la direction qui compte.
+- **Aucune fenêtre de rattrapage (D7)**, alors que le backlog en prévoyait une de ~30 min pour le doze
+  mode. Écartée : l'évaluation a lieu **à l'ouverture de l'app**, donc rattraper aurait notifié
+  l'utilisateur pendant qu'il est dans l'app. Et si l'échéance est passée, c'est précisément qu'il a
+  ouvert l'app — il n'a pas besoin d'une notification l'invitant à l'ouvrir.
+- **Deux politiques DND, une par origine de l'heure** : rabattement pour une heure que l'app a choisie
+  (D5), respect strict — donc non-envoi + avertissement à l'écran — pour une heure que l'humain a
+  composée (D6). On ne réécrit pas en douce un choix de l'utilisateur.
+- **Rappels opt-in** (défaut `false`) : l'app envoie environ une notification par jour ; les activer
+  d'office pour les utilisateurs existants en triplerait le volume sans qu'ils l'aient demandé — c'est
+  le genre de mise à jour qui fait couper les notifications au niveau système, et on perdrait alors
+  *aussi* le rappel streak.
+- **Invariant étendu et testé** : les **4** heures par défaut (20, 9, 13, 10) sont hors de la fenêtre
+  DND par défaut `[22, 7)`. Sans lui, la notification serait planifiée puis systématiquement supprimée
+  — une fonctionnalité muette, sans erreur visible.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0
+  (9 warnings, tous préexistants, aucun sur les fichiers de cette US) · `npm run test` 0 →
+  **1195 tests Vitest** (61 fichiers) + **182 tests Jest** (37 suites).
+- **La revue de code a payé, et voici comment** : elle n'a pas raisonné à vide, elle a **compilé** le
+  code avec `babel-plugin-react-compiler` pour inspecter la sortie réelle. C'est ce qui a produit le
+  bug bloquant, qu'aucune des trois portes de qualité ne pouvait attraper (le compilateur n'est pas
+  appliqué sous Jest, et son cache est réinitialisé en dev). **Leçon à garder** : sur ce dépôt,
+  `reactCompiler` étant activé, un paramètre de requête `useQuery` sans entrée réactive est gelé au
+  montage — et `panicThreshold: 'NONE'` en production signifie qu'un fichier non compilable est
+  abandonné **en silence**, donc ne jamais faire dépendre une propriété de *correction* du compilateur.
+- **Reste à faire** : recette device (§7 de la spec), prévue par Florian le 30/07/2026 au soir.
+  **Pas de nouveau build nécessaire.**
+- **Ce que cette US pose pour MUSC-F8** : l'échéance apprise et le rabattement DND sont réutilisables
+  tels quels pour les rappels muscu (P1). C'était la raison de faire NUTR-F1 en premier.
 
 ### 30/07/2026 — `fix/theme-contraste-et-flash` — flash de thème à chaque navigation
 

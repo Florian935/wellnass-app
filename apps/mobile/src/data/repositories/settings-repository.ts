@@ -19,7 +19,7 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { Pillar, UserSettingsRow } from '@wellness/shared';
+import type { NotificationPrefs, Pillar, UnitSystem, UserSettingsRow } from '@wellness/shared';
 import {
   PILLARS,
   defaultNotificationPrefs,
@@ -211,6 +211,25 @@ export async function getAnalyticsEnabled(): Promise<boolean> {
  */
 export async function getHealthConnectEnabled(): Promise<boolean> {
   return decodeHealthConnectEnabled(await getCurrentRow());
+}
+
+/**
+ * Préférences de notifications courantes (hors contexte React) — US MUSC-F8. Le push de record est
+ * déclenché depuis `doFinish` (callback d'événement, pas un rendu), qui ne peut pas appeler
+ * `useNotificationPrefs()`. Même parse tolérant que la version hook.
+ */
+export async function getNotificationPrefs(): Promise<NotificationPrefs> {
+  const row = await getCurrentRow();
+  return parseNotificationPrefs(parseJsonColumn(row?.notifications ?? null, null));
+}
+
+/**
+ * Système d'unités courant (hors contexte React) — même besoin que ci-dessus : formater la valeur
+ * d'un record dans le contenu du push de célébration.
+ */
+export async function getUnitSystem(): Promise<UnitSystem> {
+  const row = await getCurrentRow();
+  return (row?.units as UnitSystem | undefined) ?? 'metric';
 }
 
 /**

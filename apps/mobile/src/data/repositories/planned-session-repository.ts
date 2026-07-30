@@ -44,6 +44,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { nowUtc, patch, txInsert } from './_sql';
+import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -202,7 +203,7 @@ export function useMissedSessions(): {
   isLoading: boolean;
 } {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
-  const today = localDayKey(new Date());
+  const today = useTodayKey();
 
   const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_MISSED, [
     userId,
@@ -224,8 +225,9 @@ export function useUpcomingSessions(days: number): {
   isLoading: boolean;
 } {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
-  const today = localDayKey(new Date());
-  const end = localDayKey(addDays(new Date(), Math.max(0, days - 1)));
+  const today = useTodayKey();
+  const todayDate = useTodayDate();
+  const end = localDayKey(addDays(todayDate, Math.max(0, days - 1)));
 
   const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_PLANNED_BETWEEN, [
     userId,
@@ -260,6 +262,43 @@ export function useHasPlannedSession(dayKey: string): {
 } {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
   const { data, isLoading } = useQuery<{ has: number }>(SELECT_HAS_PLANNED, [
+    userId,
+    dayKey,
+  ]);
+  return { hasPlanned: data.length > 0, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useHasPlannedStrengthSessionToday — support US MUSC-F8 (rappel de séance)
+// ---------------------------------------------------------------------------
+
+/**
+ * ⚠️ **`useHasPlannedSession` ne convient PAS** pour le rappel de séance muscu, pour deux raisons :
+ * son `WHERE` accepte `status IN ('planned','done')` — donc répond `true` pour une séance **déjà
+ * faite** — et il n'a **aucun filtre de pilier**, `planned_sessions` étant pilier-agnostique par
+ * conception (le pilier vit sur `programs.pillar`, jamais dupliqué sur l'occurrence). Une course
+ * planifiée aurait donc déclenché le rappel muscu (décision D16, US MUSC-F8).
+ *
+ * Cette requête filtre `status = 'planned'` **strictement** (porte à elle seule le « pas déjà
+ * faite » — inutile d'une seconde condition) et `programs.pillar = 'strength'`.
+ */
+const SELECT_HAS_PLANNED_STRENGTH_TODAY = `
+  SELECT 1 AS has
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND ps.status = 'planned' AND ps.scheduled_date = ? AND p.pillar = 'strength'
+  LIMIT 1
+`;
+
+/** Une occurrence `planned` de pilier muscu existe-t-elle pour `dayKey` ? */
+export function useHasPlannedStrengthSessionToday(dayKey: string): {
+  hasPlanned: boolean;
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ has: number }>(SELECT_HAS_PLANNED_STRENGTH_TODAY, [
     userId,
     dayKey,
   ]);
