@@ -30,8 +30,8 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `code` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
-| **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `validation` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
@@ -58,9 +58,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 984 · `main` a **981** commits de retard sur `dev` |
+| Commits | 985 · `main` a **982** commits de retard sur `dev` |
 | Specs d'US | 94 au total — 75 clôturées, 19 en cours |
-| Migrations | 58/58 poussées sur le cloud |
+| Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -69,11 +69,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4bff808` docs(cycle01): widget complet au lieu d'un 5e onglet (arbitrage Damien)
 - `44f74eb` docs(cycle01): intègre la maquette Claude Design et supprime TEMP
 - `4bef8d8` docs(cycle01): cadre le suivi du cycle menstruel (spec + plan + maquette)
 - `0aff4d2` docs(reconciliation): le suivi rattrape le code -- 4 affirmations fausses corrigees
 - `a073b9a` docs(runf3): cadre le resume de course enrichi et scinde meteo / objectif
-- `2d8d57a` docs(muscf1b): cadre le schema corporel des muscles cibles
 
 ---
 

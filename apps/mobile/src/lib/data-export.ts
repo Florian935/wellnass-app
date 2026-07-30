@@ -2,7 +2,7 @@
  * Orchestration native de l'export RGPD (US CONF-01).
  *
  * Lit toutes les données perso de l'utilisateur dans la base locale PowerSync
- * (28 tables), assemble l'enveloppe JSON (logique pure partagée) → écrit dans le
+ * (30 tables), assemble l'enveloppe JSON (logique pure partagée) → écrit dans le
  * cache app → feuille de partage OS. 100 % local/hors-ligne : aucun réseau, aucun
  * cloud. Non testée unitairement (I/O natif) — vérifiée en revue + recette device.
  * Patron identique à `gpx-export.ts`.
@@ -52,6 +52,12 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // US OBJ-01 — objectifs à échéance. Seuls la cible et le point de départ sont stockés : la
   // progression est dérivée, donc absente de l'export par construction (elle se recalcule).
   { table: 'personal_goals', col: 'user_id' },
+  // US CYCLE-01 — cycle menstruel. **Catégorie sensible au sens du RGPD** : l'omettre de l'export
+  // ne serait pas une finition oubliée mais un manquement réglementaire. Les deux tables sont
+  // exportées même quand le suivi a été désactivé sans suppression (R17 : « garder » est un choix
+  // possible, et ce qui est gardé reste exportable).
+  { table: 'menstrual_periods', col: 'user_id' },
+  { table: 'menstrual_daily_logs', col: 'user_id' },
 ];
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };

@@ -963,6 +963,88 @@ export type Database = {
           },
         ]
       }
+      menstrual_daily_logs: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          flow: string | null
+          id: string
+          log_date: string
+          symptoms: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          flow?: string | null
+          id: string
+          log_date: string
+          symptoms?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          flow?: string | null
+          id?: string
+          log_date?: string
+          symptoms?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menstrual_daily_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menstrual_periods: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          ended_on: string | null
+          id: string
+          source: string
+          started_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          ended_on?: string | null
+          id: string
+          source?: string
+          started_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          ended_on?: string | null
+          id?: string
+          source?: string
+          started_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menstrual_periods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nutrition_profiles: {
         Row: {
           activity_level: string
@@ -1859,6 +1941,8 @@ export type Database = {
           active_pillars: Json
           analytics_enabled: boolean
           created_at: string
+          cycle_health_connect_enabled: boolean
+          cycle_tracking_enabled: boolean
           dashboard_layout: Json | null
           deleted_at: string | null
           health_connect_enabled: boolean
@@ -1875,6 +1959,8 @@ export type Database = {
           active_pillars?: Json
           analytics_enabled?: boolean
           created_at?: string
+          cycle_health_connect_enabled?: boolean
+          cycle_tracking_enabled?: boolean
           dashboard_layout?: Json | null
           deleted_at?: string | null
           health_connect_enabled?: boolean
@@ -1891,6 +1977,8 @@ export type Database = {
           active_pillars?: Json
           analytics_enabled?: boolean
           created_at?: string
+          cycle_health_connect_enabled?: boolean
+          cycle_tracking_enabled?: boolean
           dashboard_layout?: Json | null
           deleted_at?: string | null
           health_connect_enabled?: boolean

@@ -50,6 +50,12 @@ bucket_definitions:
       - select * from daily_steps           where user_id = bucket.user_id and deleted_at is null
       # US BIEN-01 : check-in de bien-être (humeur / énergie / stress, une ligne par jour).
       - select * from daily_wellbeing       where user_id = bucket.user_id and deleted_at is null
+      # US CYCLE-01 : suivi du cycle menstruel. Deux tables indépendantes (aucune FK entre elles) —
+      # un jour de flux peut exister sans période déclarée. `ended_on` null = période en cours.
+      # ⚠️ Donnée de santé SENSIBLE : elle ne quitte l'appareil que si l'utilisatrice a activé le
+      # suivi (opt-in strict, `user_settings.cycle_tracking_enabled`, désactivé par défaut).
+      - select * from menstrual_periods     where user_id = bucket.user_id and deleted_at is null
+      - select * from menstrual_daily_logs  where user_id = bucket.user_id and deleted_at is null
       # US MESUR-01 : mensurations corporelles (modèle normalisé — une ligne par jour ET par mesure).
       - select * from body_measurements     where user_id = bucket.user_id and deleted_at is null
       # US STREAK-01 : jokers de série (une ligne par jour manqué couvert).

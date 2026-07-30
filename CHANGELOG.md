@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 étapes 1 & 2 : socle de données et calculs
+
+Commit précédent : `4bff808`. **Validée par Damien** → `etape: validation` → `code`. Roadmap 1.25 / 1.26.
+
+#### Ajouté
+
+- **2 migrations poussées sur le cloud** (44 → 46), cochées dans [MIGRATIONS.md](supabase/MIGRATIONS.md) :
+  `menstrual_periods` (début / fin / `source`) et `menstrual_daily_logs` (flux / symptômes `jsonb`),
+  **volontairement sans FK entre elles** — un jour de flux peut exister sans période déclarée, les
+  lier imposerait un ordre de saisie que personne ne respecte. Découpage **calqué sur Health
+  Connect** (`MenstruationPeriod` / `MenstruationFlow`) pour que l'étape 7 soit une correspondance
+  directe. + `user_settings.cycle_tracking_enabled` et `cycle_health_connect_enabled`, **tous deux
+  `default false`**.
+- [menstrual-cycle.ts](packages/shared/src/menstrual-cycle.ts) — 8 fonctions **pures** couvrant
+  R2, R3, R5, R6, R8, R9, R10, R12, R13, R14. **33 tests**, écrits avant le code.
+- Vocabulaire fermé exporté : 4 niveaux de flux, **8 symptômes**, 4 phases. Aucun champ libre (R7).
+
+#### Modifié
+
+- [powersync/schema.ts](apps/mobile/src/powersync/schema.ts) : les 2 tables déclarées.
+- [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) : 2 lignes ajoutées au
+  bucket `user_data` — **déployées par Damien le 31/07**.
+- [data-export.ts](apps/mobile/src/lib/data-export.ts) : export RGPD **28 → 30 tables**. Traité dès
+  l'étape 1, pas relégué en finition : sur une catégorie sensible, l'omettre serait un manquement
+  réglementaire, et les données conservées après désactivation (R17) restent exportables.
+
+#### Technique / Notes
+
+- 🔑 **L'index unique partiel `(user_id) where ended_on is null and deleted_at is null`** est la
+  contrainte qui protège tout le reste : sans elle, un oubli de « fin » laisse deux périodes ouvertes
+  et fausse **silencieusement** les longueurs de cycle, donc la moyenne, donc la prédiction.
+- ⚠️ **La borne des 15 jours n'est PAS un `check` SQL**, et c'est délibéré. R3 veut une clôture
+  *automatique*, pas un refus : un `check` rejetterait aussi les imports Health Connect plus longs,
+  alors que la règle veut les **accueillir puis les signaler**. Refuser la donnée aurait été pire.
+- ⚠️ **L'opt-in n'est pas non plus une contrainte SQL** : il doit rester possible de *conserver* les
+  données quand l'utilisatrice désactive le suivi sans les supprimer (R17, « garder » est un choix).
+  La garde est applicative, au niveau du repository (étape 3).
+- **Aucune fonction de `menstrual-cycle.ts` ne produit de phrase** — elles renvoient nombres et
+  états, les libellés vivent en i18n. Ce n'est pas du style : c'est ce qui permettra de relire
+  **toutes** les formulations d'un coup au critère de recette 14, au lieu de les traquer dans le
+  calcul.
+- **Trois choix de calcul qui méritent d'être connus** :
+  1. `predictNextPeriod` a un **plancher de fourchette à 1 jour**. Sur des cycles parfaitement
+     réguliers la dispersion est nulle, et annoncer une date **sans** fourchette la ferait lire
+     comme une certitude.
+  2. Une prédiction **déjà dépassée est rendue telle quelle** — aucune notion de « retard » nulle
+     part (R11). Un test verrouille ce comportement.
+  3. `phaseForDate` renvoie **`null`** dans trois cas normaux et fréquents : avant toute période
+     connue, au-delà d'un cycle invraisemblable (données périmées), et hors phase menstruelle tant
+     que la longueur moyenne est inconnue. Se taire plutôt que deviner.
+- Les **cycles aberrants sont exclus du décompte du seuil autant que de la moyenne** : un historique
+  contenant 3 cycles valides + 1 aberrant est `ready` sur 3, pas 4. Testé.
+- Qualité : `typecheck` **0** · `test` shared **1251 passés / 64 fichiers** (+33).
+- ⏭️ Reste : étapes 3 à 8. Et **2 démarches externes à lancer** (déclaration Health apps à 6 types,
+  relecture juridique du paragraphe cycle) — délais en série, hors du chemin du code.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : widget au lieu d'un 5ᵉ onglet
 
 Commit précédent : `44f74eb`. Toujours **aucun code applicatif** — `etape: validation`.

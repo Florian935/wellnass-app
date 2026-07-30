@@ -469,6 +469,39 @@ const daily_wellbeing = new Table({
   deleted_at: column.text,
 });
 
+// ── US CYCLE-01 : suivi du cycle menstruel ────────────────────────────────
+// Migrations : supabase/migrations/20260730230615_cycle01_menstrual_tracking.sql
+//              + 20260730230617_cycle01_menstrual_tracking_publication.sql
+//
+// Deux tables **indépendantes** (aucune FK entre elles) : un jour de flux peut exister sans période
+// déclarée, et une période peut n'avoir aucun log quotidien. Le découpage calque Health Connect
+// (`MenstruationPeriod` = un intervalle · `MenstruationFlow` = un enregistrement par jour).
+//
+// ⚠️ Donnée de santé **sensible**, écrite uniquement si `user_settings.cycle_tracking_enabled`.
+// `ended_on` à `null` = période **en cours** — un état normal, pas une donnée manquante.
+const menstrual_periods = new Table({
+  user_id: column.text,
+  started_on: column.text,
+  ended_on: column.text,
+  source: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// `symptoms` est un tableau JSON **sérialisé en texte** côté SQLite (PowerSync n'a pas de type
+// jsonb) : toujours passer par `JSON.parse` / `JSON.stringify` au franchissement du repository.
+// Vocabulaire fermé (8 valeurs), validé par le schéma Zod partagé — jamais de champ libre.
+const menstrual_daily_logs = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  flow: column.text,
+  symptoms: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US STREAK-01 : jokers de série ────────────────────────────────────────
 // Migrations : supabase/migrations/20260729095446_streak01_jokers.sql
 //              + 20260729095705_streak01_jokers_publication.sql
@@ -560,6 +593,8 @@ export const AppSchema = new Schema({
   body_weight_entries,
   daily_steps,
   daily_wellbeing,
+  menstrual_periods,
+  menstrual_daily_logs,
   body_measurements,
   streak_jokers,
   personal_goals,

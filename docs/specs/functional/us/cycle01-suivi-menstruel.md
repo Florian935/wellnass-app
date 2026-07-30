@@ -3,9 +3,9 @@ id: CYCLE-01
 titre: "Suivi du cycle menstruel — journal, prédiction et croisement"
 roadmap: [1.25, 1.26]
 catalogue: []
-etape: validation
+etape: code
 branche: feature/cycle01-suivi-menstruel
-maj: 30/07/2026
+maj: 31/07/2026
 ---
 
 # US CYCLE-01 — Suivi du cycle menstruel
