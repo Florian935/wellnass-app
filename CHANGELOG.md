@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 cadrée (spec + plan + maquette)
+
+Commit précédent : `0aff4d2`. Roadmap **1.25 / 1.26** (lignes **créées**). **Aucun code applicatif** —
+`etape: validation`, en attente du feu vert de Damien ou Florian.
+
+#### Ajouté
+
+- [spec](docs/specs/functional/us/cycle01-suivi-menstruel.md) ·
+  [plan](docs/plans/cycle01-suivi-menstruel.md) ·
+  [maquette](design/cycle01-suivi-menstruel/cycle01-suivi-menstruel.html).
+- **Roadmap 1.25 et 1.26 créées.** Le sujet n'existait **nulle part** avant aujourd'hui : zéro
+  occurrence de `menstrual`/`ovulation`/`luteal`/`follicular` dans le code, les **58 migrations**, les
+  220 items du catalogue d'analyses et IDEAS.md.
+
+#### Technique / Notes
+
+- **4 arbitrages de Damien, tous en option maximale** : périmètre **journal + prédiction +
+  croisement** · **tout part en V1** · **Health Connect dès maintenant** · **opt-in pour tous, sans
+  filtre sur `sex`**. J'ai signalé le coût, il a été réaffirmé — c'est acté.
+- 🔴 **Conséquence chiffrée sur le lancement : chemin critique ~3 → ~5 semaines.** La relecture
+  juridique s'élargit à une catégorie sensible, et une **nouvelle déclaration Health apps** (~7 j
+  d'instruction + 5-7 j ouvrés de propagation) s'ajoute **en série**.
+- **Deux documents de conformité marqués périmés en tête**, pour qu'aucune fiche ne parte sur
+  l'ancienne version : [lance00-fiche-play-et-confidentialite.md](docs/specs/technical/lance00-fiche-play-et-confidentialite.md)
+  (§1 politique, §3 Sécurité des données, §4 déclaration) et
+  [health-connect-play-declaration.md](docs/specs/technical/health-connect-play-declaration.md)
+  (§2 bis ajouté : 4 → **6 types**, avec justifications prêtes à coller). ⚠️ **La déclaration doit
+  être déposée une seule fois avec les 6 types** — la déposer à 4 puis l'étendre ferait payer deux
+  fois les ~2 semaines.
+- **Le risque dominant de cette US n'est pas technique, il est rédactionnel.** Une formulation qui
+  laisserait croire à une fiabilité contraceptive ou à un avis médical est un défaut **bloquant**
+  (critère de recette 14). Deux garde-fous structurels en réponse : les fonctions de calcul **ne
+  produisent aucune phrase** (elles renvoient nombres et états, les libellés vivent en i18n, donc
+  toutes les formulations se relisent d'un coup), et le croisement n'affiche que des **moyennes
+  observées** — jamais une causalité ni un conseil.
+- **Aucune notification, jamais** (R11) : ni rappel, ni alerte de retard. C'est le point précis où un
+  carnet devient anxiogène, voire un substitut de test.
+- **Seuils anti-bruit** : pas de prédiction sous 3 cycles complets ; **pas de date du tout** si
+  l'écart-type dépasse 7 jours ; pas de croisement sous 3 cycles **et** 10 jours par phase, vérifié
+  **métrique par métrique**. Un cycle aberrant est **exclu du calcul mais jamais effacé**.
+- **Modèle calqué sur Health Connect** (`menstrual_periods` + `menstrual_daily_logs` ↔
+  `MenstruationPeriod` + `MenstruationFlow`) : la synchronisation devient quasi directe au lieu
+  d'exiger une couche de traduction.
+- **Symptômes en liste fermée, aucun champ libre** : un texte libre dans une donnée de santé sensible
+  est un risque disproportionné, et il ne serait ni traduisible ni exploitable en croisement.
+- **Export RGPD traité dès l'étape 1 du plan** (`EXPORT_TABLES` 28 → 30) : une donnée sensible absente
+  de l'export est un manquement réglementaire, pas une finition.
+- ⚠️ Le plan impose **1 migration + redéploiement manuel des sync rules** et un **nouveau build**
+  (permissions natives) : la recette ne se fera **pas** sur l'APK actuel.
+
 ### 30/07/2026 — `docs/reconciliation-30-07` — réconciliation : le suivi rattrape le code
 
 Commit précédent : `a073b9a`. **Aucun statut de livraison ne change** — rien n'a été codé aujourd'hui

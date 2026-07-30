@@ -21,6 +21,12 @@ pas bloqués : on peut tout construire et tout recetter pendant que le dossier e
 
 ## 2. Ce que l'app demande — exactement
 
+> 🔴 **Étendu à 6 types le 30/07/2026** par l'US
+> [CYCLE-01](../functional/us/cycle01-suivi-menstruel.md) (décision Damien). Les 2 permissions
+> `READ_MENSTRUATION` / `WRITE_MENSTRUATION` s'ajoutent au tableau ci-dessous, avec leurs
+> justifications en **§2 bis**. ⚠️ **La déclaration est à déposer une seule fois, avec les 6 types** —
+> déposer les 4 puis étendre ferait payer deux fois les ~2 semaines d'instruction + propagation.
+
 **Quatre** permissions, pas une de plus (principe de minimisation : chaque type de donnée
 supplémentaire doit être justifié et rallonge l'instruction).
 
@@ -30,6 +36,22 @@ supplémentaire doit être justifié et rallonge l'instruction).
 | `android.permission.health.WRITE_DISTANCE` | écriture | Distance parcourue associée à chaque course | « Une course sans sa distance n'a pas de valeur pour l'utilisateur dans les autres applications ; la distance est écrite avec la séance de course correspondante. » |
 | `android.permission.health.READ_WEIGHT` | lecture | Alimenter le suivi de poids de l'app depuis une balance connectée | « L'application suit l'évolution du poids corporel, saisi manuellement aujourd'hui. La lecture évite à l'utilisateur de ressaisir une pesée déjà mesurée par sa balance connectée. » |
 | `android.permission.health.READ_STEPS` *(US PAS-01, 28/07/2026)* | lecture | Afficher le nombre de pas quotidien, l'objectif de pas et l'historique ; les pas comptent dans la série de régularité | « L'application affiche à l'utilisateur son nombre de pas quotidien et un objectif de pas. Elle lit le total déjà mesuré par l'appareil ou la montre de l'utilisateur plutôt que de le recalculer, afin de ne pas dupliquer un capteur ni consommer de batterie. Seul un **total par jour** est conservé — jamais le détail horodaté des déplacements. » |
+
+### 2 bis. Types ajoutés par CYCLE-01 (30/07/2026)
+
+| Permission | Sens | Ce qu'on en fait | Justification à donner |
+|---|---|---|---|
+| `android.permission.health.READ_MENSTRUATION` | lecture | Importer les périodes déjà saisies ailleurs dans le journal de cycle de l'app | « L'utilisatrice suit parfois son cycle dans une autre application. La lecture évite une double saisie et alimente le journal de Wellness avec des données qu'elle a elle-même déjà enregistrées. » |
+| `android.permission.health.WRITE_MENSTRUATION` | écriture | Écrire les périodes saisies dans Wellness vers le hub santé | « Les périodes saisies par l'utilisatrice dans Wellness sont écrites dans Health Connect pour qu'elle puisse les retrouver depuis les autres applications de santé de son choix. » |
+
+⚠️ **Points de vigilance propres à ces deux types** — l'instruction est plus stricte sur les données
+de santé sensibles :
+- La fonctionnalité est **opt-in, désactivée par défaut, et sans aucune donnée écrite tant qu'elle
+  l'est**. À dire explicitement dans le formulaire : c'est un argument de minimisation.
+- L'app **n'émet aucune notification** liée au cycle et **ne présente jamais** la fonctionnalité comme
+  un moyen de contraception, un outil de conception ou un dispositif médical (spec CYCLE-01 §0).
+- Les données sont **synchronisées sur nos serveurs** (comme les pas) → à déclarer en « Sécurité des
+  données » comme **collectées ET transmises hors de l'appareil**, catégorie **sensible**.
 
 **Ne pas demander** (et donc ne pas déclarer) : **sommeil** (écarté le 28/07/2026 : aucune valeur
 produit avant les analyses croisées, post-V1), fréquence cardiaque, calories, VO2max,

@@ -327,6 +327,8 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
 | 1.24 | Check-in quotidien & journal de bien-être | Humeur / énergie / stress en ~10 s le matin (+ poids), historique et courbes. 🌐 FR+EN. | Moyen | 5h | 🟢 | 🟡 | **BIEN-01 — code livré le 28/07/2026** : table `daily_wellbeing` (2 migrations poussées), briques pures testées, repository, feuille de check-in, widget transverse 3 formes, écran d'historique, i18n FR+EN, export RGPD. **4ᵉ dimension légère**, pas un 4ᵉ pilier (widget `'always'`). 🟡 et non ✅ pour deux raisons : **la sync rule PowerSync reste à déployer à la main** sur l'instance, et **la recette device n'a pas eu lieu**. Alimentera les corrélations récup ↔ perfs (post-V1). |
+| 1.25 | Suivi du cycle menstruel — journal & prédiction | Périodes, flux, symptômes (liste fermée), calendrier, historique + estimation du prochain cycle avec fourchette. Health Connect en lecture/écriture. 🌐 FR+EN. | Moyen | 18h | 🟢 | ⬜ | **CYCLE-01**, cadrée le 30/07/2026 — `etape: validation`. Ligne **créée** (le sujet n'avait jamais été évoqué sur ce projet : zéro occurrence dans le code, les 58 migrations, le catalogue et IDEAS.md). 4 arbitrages Damien, tous en option maximale. **Opt-in strict, sans filtre sur `sex`** ; désactivé = aucune ligne écrite. **Aucune notification, jamais** (R11) — c'est le point où un carnet devient anxiogène. Prédiction : rien sous 3 cycles, toujours une fourchette, **pas de date si l'écart-type > 7 j**. ⚠️ **Donnée de santé sensible** : rouvre la politique de confidentialité et le formulaire « Sécurité des données » de LANCE-00, et impose une **nouvelle déclaration Health apps à 6 types** (~2 sem. en série). Chemin critique du lancement : ~3 → ~5 semaines, **assumé**. |
+| 1.26 | Croisement cycle ↔ énergie, performance et nutrition | Moyennes observées par phase (menstruelle / folliculaire / ovulatoire / lutéale) sur les données déjà collectées. | Moyen | 12h | 🟢 | ⬜ | **CYCLE-01** (même US, livrable séparable). C'est l'angle « les 3 piliers se parlent » appliqué au cycle. **Ne collecte rien de neuf** : lit `daily_wellbeing`, `workouts`, `runs`, `food_entries`. Seuil vérifié **métrique par métrique** (l'énergie peut être exploitable quand la performance ne l'est pas). 🔴 **Contrainte de fond : on affiche des moyennes observées, jamais une causalité ni un conseil.** « Ta baisse d'énergie est due à ta phase lutéale » ou « évite les séances lourdes » sont des défauts bloquants — d'où des calculs qui ne renvoient que des nombres, les libellés vivant en i18n. |
 | 3.51 | Mensurations corporelles | Tour de taille, poitrine, bras, cuisses… historisées + courbes d'évolution, à côté du poids. | Moyen | 5h | 🟢 | 🟡 | **MESUR-01 — code livré le 29/07/2026.** Fait enfin descendre **E8** de la spec muscu §5, cadrée le 04/07 et jamais dotée d'un modèle de données. Table `body_measurements` **normalisée** (une ligne par jour ET par mesure, décision D1 : la liste des mesures a vocation à bouger, une table large coûterait une migration par ajout et serait majoritairement `NULL`) — 6 mesures, stockage **toujours en cm**, feuille de saisie pré-remplie, historique avec courbe par mesure et delta. Entrée depuis **Progression** (pas de widget : une mesure mensuelle ne mérite pas une place sur un écran quotidien). 🟡 : **sync rule à déployer à la main** + recette device. |
 | 3.52 | Suggestion de substitution d'exercice | Matériel pris → proposer des alternatives du même groupe musculaire. | Moyen | 4h | 🟢 | 🟡 | **MUSC-F14** livré (séance), recette device à faire. ⚠️ Le motif **« zone douloureuse » a été retiré** : sans information articulaire ni schéma de mouvement en base, y répondre serait un **conseil de santé inventé**. Suggestions **neutres**, au plus 4. Une **variante déclarée** (MUSC-F10c-2) prime toujours sur un score calculé. Tri déterministe. Exercices archivés jamais suggérés. **Aucune migration.** ⚠️ L'éditeur de programme n'a **pas de parcours de remplacement** : décision attendue (spec §0.2). |
 | 3.53 | Création d'exercice perso en modale | Bottom-sheet (patron `ExerciseFilterDrawer`) au lieu de la card intercalée, segment `scrollable`, placeholder sur le nom. | Facile | 2h | 🟢 | ✅ | **UX-02 — constaté déjà livré le 29/07/2026** par `12bd3a1` (« feat(muscf11) »), avant même que la ligne ne soit créée : `CreateExerciseModal.tsx` est une modale bottom-sheet avec placeholder et segment `scrollable`. Les 3 points, ligne pour ligne. ✅ par **réconciliation**, sans commit de code. |
@@ -429,10 +431,10 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|
 | ✅ Livré | 174 | ~83 % |
 | 🟡 Partiel | 20 | ~10 % |
-| ⬜ À faire | 10 | ~5 % |
+| ⬜ À faire | 12 | ~6 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **210** | |
+| **Total périmètre de lancement** | **212** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
@@ -459,7 +461,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (9) | 7 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
-| V0.9 (14) | 4 | 5 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
+| V0.9 (16) | 4 | 5 | 7 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
 | Hors cadrage (17) | 17 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… |
@@ -491,6 +493,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**30/07/2026 — CYCLE-01 : suivi du cycle menstruel (1.25 / 1.26 créées)**
+Sujet totalement absent du dépôt jusqu'ici. Total 210 → **212**, V0.9 14 → **16**. 4 arbitrages
+Damien en option maximale ; chemin critique du lancement ~3 → **~5 semaines**, assumé.
 
 **30/07/2026 (soir) — Réconciliation : 4 affirmations fausses corrigées, 4 US entrées en pipeline**
 Aucun statut de livraison ne change (rien n'a été codé). Corrigé : 9.12 « le clair passe AA » (faux,

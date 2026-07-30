@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 174 livré · 20 partiel · 10 à faire (sur 210)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 174 livré · 20 partiel · 12 à faire (sur 212)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -31,6 +31,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
+| **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `validation` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
@@ -56,9 +57,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `docs/reconciliation-30-07` (modifications non commitées) |
-| Commits | 981 · `main` a **978** commits de retard sur `dev` |
-| Specs d'US | 93 au total — 75 clôturées, 18 en cours |
+| Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
+| Commits | 982 · `main` a **979** commits de retard sur `dev` |
+| Specs d'US | 94 au total — 75 clôturées, 19 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -68,11 +69,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `0aff4d2` docs(reconciliation): le suivi rattrape le code -- 4 affirmations fausses corrigees
 - `a073b9a` docs(runf3): cadre le resume de course enrichi et scinde meteo / objectif
 - `2d8d57a` docs(muscf1b): cadre le schema corporel des muscles cibles
 - `690ceeb` docs(muscf9): cadre le glisser-deposer du planning (spec + plan + maquette)
 - `45abd7c` docs(lance00): rédige la fiche Play et la politique de confidentialité
-- `0df5e02` docs(conf07): cadre l'accessibilité — 5 non-conformités WCAG restantes
 
 ---
 

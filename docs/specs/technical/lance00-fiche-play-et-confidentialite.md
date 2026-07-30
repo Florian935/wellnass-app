@@ -1,5 +1,14 @@
 # LANCE-00 — Fiche Play, politique de confidentialité publiable et solde `app.json`
 
+> 🔴 **À REPRENDRE — décision Damien du 30/07/2026.** L'US **CYCLE-01** (suivi du cycle menstruel)
+> introduit une **catégorie de données de santé sensible** et **2 permissions Health Connect
+> supplémentaires**. Trois sections de ce document sont donc **périmées en l'état** :
+> **§1** (la politique doit gagner un paragraphe cycle), **§3** (le formulaire « Sécurité des données »
+> doit déclarer cette catégorie, collectée **et transmise hors de l'appareil** — elle est synchronisée
+> sur le compte), **§4** (la déclaration Health apps passe de **4 à 6 types**).
+> Conséquence actée : le chemin critique passe d'environ **3 à 5 semaines**.
+> **Ne pas déposer la fiche avant d'avoir répercuté ces trois points.**
+
 > **Statut : brouillons prêts à relire.** Ce document rassemble tout ce qui peut être **rédigé sans
 > compte Google Play**, pour que la création du compte (délai externe : vérification d'identité
 > Google, plusieurs jours) ne soit pas suivie d'une deuxième attente de rédaction.
