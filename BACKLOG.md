@@ -187,11 +187,14 @@ Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md
       (que personne n'a). Les 16 exercices de bibliothèque sont donc arrivés sur le cloud par un
       chemin non tracé. → Les basculer en **migration idempotente** (comme le seed CIQUAL), ou
       documenter explicitement que `seed.sql` ne sert qu'au futur usage Docker.
-- [ ] **`main` n'a pas bougé depuis le 04/07/2026** (927 commits de retard sur `dev`). Aucun tag,
+- [ ] **`main` n'a pas bougé depuis le 04/07/2026** (972 commits de retard sur `dev` au 30/07/2026). Aucun tag,
       aucun point de repère de version. → À traiter au moment de LANCE-01.
-- [ ] **2 tests mobile en échec par timeout** (`edit-exercise-modal-smoke`, `exercise-detail-smoke`) :
-      dépassement des 15 s sur poste lent (jest y met ~250 s par suite). Pas une régression logique.
-      → Vérifier sur CI ; si rouge, relever le `testTimeout` de ces deux suites.
+- [x] ~~**2 tests mobile en échec par timeout** (`edit-exercise-modal-smoke`, `exercise-detail-smoke`)~~
+      → **Non reproduit le 30/07/2026, constat clos.** Suite complète relancée : **44 suites / 231
+      tests mobile verts en 20 s**, plus 1218 tests `shared` en 5,8 s. Les deux suites incriminées
+      tournent en **6,4 s et 7,2 s** isolément — largement sous le `testTimeout` de 15 s. Le
+      diagnostic « ~250 s par suite » était un artefact de poste chargé, **pas** un défaut de code
+      ni de configuration. Aucun `testTimeout` à relever.
 - [ ] **Suivi analytics (US 9.10)** : dépendance circulaire bénigne `analytics.ts ↔ settings-repository.ts` ·
       test du gating `track()` (OFF → no-op) · doublon `onboarding_started` observé en dev (probable
       StrictMode, à confirmer hors dev) · renseigner une vraie `app_version` avant la bêta.

@@ -5,7 +5,7 @@ roadmap: [7.17]
 catalogue: [META-41]
 etape: recette
 branche: feature/partage01-carte-partageable
-maj: 29/07/2026
+maj: 30/07/2026
 ---
 
 # US PARTAGE-01 — Carte de séance / course partageable

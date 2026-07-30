@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="width:100%; height:100%; container-type:size; position:relative;">
+  <div style="position:absolute; inset:0; background:var(--sc-bg,#1c130c); overflow:hidden; display:flex; flex-direction:column; padding:7cqw 7cqw 6cqw; font-family:'Hanken Grotesk',sans-serif; -webkit-font-smoothing:antialiased;">
+
+    <div style="position:absolute; right:-13cqw; top:-13cqw; width:42cqw; height:42cqw; border-radius:50%; background:var(--sc-accsoft,rgba(221,110,64,.13));"></div>
+
+    <!-- header -->
+    <div style="position:relative; display:flex; align-items:baseline; justify-content:space-between; gap:3cqw;">
+      <span style="font:700 3cqw 'Space Mono',monospace; color:var(--sc-acc,#dd6e40); letter-spacing:.35cqw;">{{ data.kicker }}</span>
+      <span style="font:400 3cqw 'Space Mono',monospace; color:var(--sc-sub,#c9b79a); letter-spacing:.15cqw; white-space:nowrap;">{{ data.date }}</span>
+    </div>
+
+    <!-- ══════ COURSE ══════ -->
+    <sc-if value="{{ isRun }}" hint-placeholder-val="{{ true }}">
+      <sc-if value="{{ hasTrace }}">
+        <div style="position:relative; flex:1; min-height:0; margin:5cqw 0 4.5cqw; border-radius:4cqw; background:var(--sc-map,#241910); overflow:hidden; padding:4.5cqw;">
+          <svg width="100%" height="100%" viewBox="{{ traceBox }}" preserveAspectRatio="xMidYMid meet" style="display:block;">
+            <path d="{{ traceD }}" fill="none" stroke="var(--sc-acc,#dd6e40)" stroke-width="{{ traceW }}" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="{{ sx }}" cy="{{ sy }}" r="{{ dr }}" fill="var(--sc-txt,#f4ecdd)"></circle>
+            <circle cx="{{ ex }}" cy="{{ ey }}" r="{{ dr }}" fill="var(--sc-acc,#dd6e40)"></circle>
+          </svg>
+        </div>
+        <div style="position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:4cqw;">
+          <div>
+            <div style="font:800 15cqw/.82 'Bricolage Grotesque',sans-serif; color:var(--sc-txt,#f4ecdd); letter-spacing:-.5cqw;">{{ data.dist }}<span style="font:700 5cqw 'Bricolage Grotesque',sans-serif; color:var(--sc-acc,#dd6e40); letter-spacing:0;"> {{ data.distUnit }}</span></div>
+            <div style="font:600 3cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a); margin-top:1cqw; letter-spacing:.1cqw;">Distance</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:2.6cqw; text-align:right;">
+            <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="2"><div><div style="font:700 5cqw 'Space Mono',monospace; color:var(--sc-txt,#f4ecdd);">{{ m.v }}</div><div style="font:600 2.5cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a);">{{ m.l }}</div></div></sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noTrace }}">
+        <div style="position:relative; flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; margin:5cqw 0;">
+          <div style="font:800 27cqw/.8 'Bricolage Grotesque',sans-serif; color:var(--sc-txt,#f4ecdd); letter-spacing:-1cqw;">{{ data.dist }}<span style="font:700 7cqw 'Bricolage Grotesque',sans-serif; color:var(--sc-acc,#dd6e40); letter-spacing:0;"> {{ data.distUnit }}</span></div>
+          <div style="font:600 3.2cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a); margin-top:3cqw; display:flex; align-items:center; gap:2cqw;"><span style="width:2.4cqw; height:2.4cqw; border-radius:50%; background:var(--sc-acc,#dd6e40); flex:none;"></span>{{ data.note }}</div>
+        </div>
+        <div style="position:relative; display:flex; gap:9cqw;">
+          <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="2"><div><div style="font:700 6.5cqw 'Space Mono',monospace; color:var(--sc-txt,#f4ecdd);">{{ m.v }}</div><div style="font:600 2.8cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a); margin-top:.6cqw;">{{ m.l }}</div></div></sc-for>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ══════ MUSCULATION ══════ -->
+    <sc-if value="{{ isMuscu }}">
+      <div style="position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:4cqw; margin-top:2.5cqw;">
+        <div>
+          <div style="font:800 11cqw/.82 'Bricolage Grotesque',sans-serif; color:var(--sc-txt,#f4ecdd); letter-spacing:-.5cqw;">{{ data.hero }}<span style="font:700 5cqw 'Bricolage Grotesque',sans-serif; color:var(--sc-acc,#dd6e40); letter-spacing:0;"> {{ data.heroUnit }}</span></div>
+          <div style="font:600 3cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a); margin-top:1cqw; letter-spacing:.1cqw;">{{ data.heroLabel }}</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:2.6cqw; text-align:right;">
+          <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="2"><div><div style="font:700 5cqw 'Space Mono',monospace; color:var(--sc-txt,#f4ecdd);">{{ m.v }}</div><div style="font:600 2.5cqw 'Hanken Grotesk',sans-serif; color:var(--sc-sub,#c9b79a);">{{ m.l }}</div></div></sc-for>
+        </div>
+      </div>
+      <div style="position:relative; flex:none; display:flex; flex-direction:column; margin:2cqw 0 0;">
+        <sc-for list="{{ exos }}" as="e" hint-placeholder-count="4"><div style="display:flex; align-items:baseline; justify-content:space-between; gap:3cqw; padding:1.2cqw 0; border-bottom:1px solid var(--sc-line,rgba(244,236,221,.10));"><span style="font:700 3.6cqw 'Hanken Grotesk',sans-serif; color:var(--sc-txt,#f4ecdd);">{{ e.n }}</span><span style="font:700 3.4cqw 'Space Mono',monospace; color:var(--sc-sub,#c9b79a); white-space:nowrap;">{{ e.d }}</span></div></sc-for>
+      </div>
+      <div style="flex:1; min-height:0;"></div>
+      <sc-if value="{{ hasRecords }}">
+        <div style="position:relative; background:var(--sc-recbg,rgba(221,110,64,.14)); border:1px solid var(--sc-recln,rgba(221,110,64,.34)); border-radius:3.5cqw; padding:2cqw 4cqw;">
+          <div style="font:700 2.7cqw 'Space Mono',monospace; color:var(--sc-acc,#dd6e40); letter-spacing:.4cqw; margin-bottom:1cqw;">RECORDS</div>
+          <sc-for list="{{ records }}" as="r" hint-placeholder-count="1"><div style="display:flex; align-items:baseline; justify-content:space-between; gap:3cqw; padding:0.7cqw 0;"><span style="font:700 3.4cqw 'Hanken Grotesk',sans-serif; color:var(--sc-txt,#f4ecdd);">{{ r.n }}</span><span style="font:700 3.6cqw 'Space Mono',monospace; color:var(--sc-acc,#dd6e40); white-space:nowrap;">{{ r.v }}</span></div></sc-for>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <!-- ══════ MARQUE ══════ -->
+    <div style="position:relative; display:flex; align-items:center; gap:2.6cqw; padding-top:3.5cqw; margin-top:2.5cqw; border-top:1px solid var(--sc-line,rgba(244,236,221,.10));">
+      <div style="width:6cqw; height:6cqw; border-radius:1.8cqw; background:var(--sc-acc,#dd6e40); display:flex; align-items:center; justify-content:center; flex:none;">
+        <svg width="62%" height="62%" viewBox="0 0 38 38" fill="none" stroke="var(--sc-mark-fg,#1c130c)" stroke-width="4" stroke-linecap="round"><rect x="12" y="12" width="4" height="14" rx="2" fill="var(--sc-mark-fg,#1c130c)" stroke="none"></rect><rect x="22" y="12" width="4" height="14" rx="2" fill="var(--sc-mark-fg,#1c130c)" stroke="none"></rect><path d="M16 19h6M8 19h4M26 19h4"></path></svg>
+      </div>
+      <span style="font:700 4cqw 'Bricolage Grotesque',sans-serif; color:var(--sc-txt,#f4ecdd); letter-spacing:-.1cqw;">Wellness</span>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:460},&quot;data&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const d = this.props.data || {};
+    const t = d.trace || null;
+    return {
+      isRun: d.kind === 'run', isMuscu: d.kind === 'muscu',
+      hasTrace: d.kind === 'run' && !!t,
+      noTrace: d.kind === 'run' && !t,
+      hasRecords: (d.records || []).length > 0,
+      traceD: t ? t.d : '', traceBox: t ? t.box : '0 0 100 80', traceW: t ? t.w : 2.4,
+      sx: t ? t.s[0] : 0, sy: t ? t.s[1] : 0, ex: t ? t.e[0] : 0, ey: t ? t.e[1] : 0, dr: t ? t.r : 2,
+      metrics: d.metrics || [], exos: d.exos || [], records: d.records || [],
+    };
+  }
+}
+</script>
+</body>
+</html>

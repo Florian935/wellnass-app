@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `feature/refonte-nutrition` — carte de partage : charte alignée sur le thème sombre
+
+Commit précédent : `56ea41d`. US **PARTAGE-01** (roadmap **7.17**), reste à `etape: recette`.
+
+Change l'habillage de la carte partageable livrée le 29/07/2026, **avant** sa recette device.
+Aucune logique métier touchée : uniquement des constantes de couleur et un cadre.
+
+#### Modifié
+
+- **Charte de la carte** ([ShareCard.tsx](apps/mobile/src/components/share/ShareCard.tsx)) — abandon
+  du bordeaux/doré (`#6b0028` / `#c9a96e`) au profit des couleurs du **thème sombre** :
+  `CARD_BG #1c130c` · `CARD_ACCENT #dd6e40` · `CARD_TEXT #f4ecdd` · `CARD_MUTED #c9b79a`.
+  **Ce n'est pas un correctif d'accessibilité** — les deux directions passaient AA. C'est une mise
+  en cohérence : le bordeaux ne renvoyait à rien de visible dans l'app, alors que l'image circule
+  **hors** de l'app, où reprendre les couleurs du produit la rend reconnaissable.
+- **Cadre du bloc records** — fond `rgba(221,110,64,0.14)` + trait `rgba(221,110,64,0.34)`, rayon et
+  rembourrage proportionnels à `size`. Détache le bloc **sans introduire une cinquième couleur**.
+
+#### Ajouté
+
+- **Maquette** [design/partage01-carte-partageable/](design/partage01-carte-partageable/) — 13
+  fichiers (Claude Design) : les deux directions comparées (`existing` vs `proposed`) et les
+  aperçus de contrôle.
+
+#### Technique / Notes
+
+- ⚠️ **Les couleurs sont volontairement recopiées du thème sombre, pas lues via `useTheme()`.** La
+  carte doit rendre **à l'identique quel que soit le thème actif** : une carte claire chez l'un et
+  sombre chez l'autre ne serait plus une identité. Le lien avec la palette est intentionnel mais
+  **figé** — si la palette sombre bouge, ces 4 constantes ne suivront pas toutes seules.
+- `borderWidth: 1` laissé **fixe** (non proportionnel à `size`) : c'est un trait, il ne doit pas
+  grossir avec la carte. Vérifié sur l'aperçu à 320 dp.
+- Contrastes mesurés contre `CARD_BG` : texte **15,58** · secondaire **9,34** · accent **5,56**
+  (AA ≥ 4,5 partout).
+- **Recette PARTAGE-01 impactée** : les critères visuels décrivaient la carte bordeaux. Ils sont
+  réécrits dans [RECETTES.md](RECETTES.md). La recette exigeait déjà un **second build**
+  (`react-native-view-shot` est natif) — ce commit ne change pas ce besoin.
+- Qualité au moment du commit : `typecheck` ✅ · `lint` ✅ (0 erreur, 29 warnings préexistants de
+  variables inutilisées) · `test` ✅ **1218 shared + 231 mobile, 44 suites, 0 échec**.
+- **Constat de suivi corrigé dans [BACKLOG.md](BACKLOG.md)** : les « 2 tests mobile en échec par
+  timeout » (`edit-exercise-modal-smoke`, `exercise-detail-smoke`) **ne se reproduisent pas** —
+  6,4 s et 7,2 s isolément, contre un budget de 15 s. Le « ~250 s par suite » était un artefact de
+  poste chargé. Entrée close, aucun `testTimeout` relevé. Compteur de retard de `main` réactualisé
+  (927 → 972).
+
 ### 30/07/2026 — `feature/refonte-nutrition` — refonte visuelle du journal alimentaire
 
 Commit précédent : `5fda5e3`. Roadmap : **4.37** et **7.14** (lignes créées hors cadrage).

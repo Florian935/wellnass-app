@@ -242,6 +242,8 @@ désactiver/réactiver la préférence ne casse rien.
 
 📄 [spec](docs/specs/functional/us/partage01-carte-partageable.md) · roadmap 7.17 · **📱 device**
 ✅ aucune sync rule · ✅ **recettable sur l'APK du 29/07/2026** — voir l'encadré en bas de page.
+🎨 **Habillage revu le 30/07/2026** (bordeaux → thème sombre) : changement **JS pur**, aucune
+dépendance native ajoutée → **le même APK reste valable**, un simple rechargement du bundle suffit.
 
 - [ ] 1. Résumé d'une course GPS → « Partager » ouvre un aperçu **avec le tracé**.
 - [ ] 2. Le tracé **ressemble au parcours réel** (comparer à la carte de l'écran de résumé) : ni
@@ -256,6 +258,11 @@ désactiver/réactiver la préférence ne casse rien.
 - [ ] 10. En **EN** : les libellés imprimés **sur l'image** sont en anglais.
 - [ ] 11. Mode avion : génération et partage fonctionnent (le tracé ne dépend d'aucune tuile).
 - [ ] 12. TalkBack annonce le contenu chiffré de l'aperçu.
+- [ ] 13. **Charte revue le 30/07/2026** — la carte est **sombre** (fond `#1c130c`, accent orange
+      `#dd6e40`), plus bordeaux/doré. Le bloc records est posé sur un **cadre orangé translucide**.
+- [ ] 14. **Le critère qui piège** : basculer l'app en thème **clair**, régénérer une carte → elle
+      doit rester **identiquement sombre**. Une carte qui suivrait le thème de l'utilisateur serait
+      un bug (les couleurs sont figées exprès, cf. CHANGELOG du 30/07/2026).
 
 ---
 

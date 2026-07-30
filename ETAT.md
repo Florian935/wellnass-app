@@ -54,7 +54,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/refonte-nutrition` (modifications non commitées) |
-| Commits | 969 · `main` a **970** commits de retard sur `dev` |
+| Commits | 975 · `main` a **972** commits de retard sur `dev` |
 | Specs d'US | 89 au total — 75 clôturées, 14 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -65,11 +65,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `56ea41d` merge: intègre origin/dev dans la refonte nutrition
 - `e3abfa3` feat(nutrition): refonte visuelle du journal alimentaire
-- `038c664` fix(theme): supprime le flash de thème à chaque navigation
-- `c227127` fix(a11y): contraste WCAG AA du thème clair + limite de champ perceptible (9.12)
-- `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
-- `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
+- `5fda5e3` feat(muscf8): notifications muscu — push de record agrégé, célébration animée, rappel de séance (US MUSC-F8, 3.42/2.7/2.4)
+- `0710b73` docs(recettes): signale que les surfaces « aujourd'hui » ont changé et exigent un build release
+- `e3fe754` fix(dates): 19 lectures d'horloge gelées par React Compiler (release uniquement)
 
 ---
 

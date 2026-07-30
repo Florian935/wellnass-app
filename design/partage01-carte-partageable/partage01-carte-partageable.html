@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; background:#0e0a06; font-family:'Hanken Grotesk',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:#f4ecdd; padding:60px 56px 130px; }
+  a { color:#dd6e40; text-decoration:none; } a:hover { color:#e88a5f; }
+  .gal[data-sc-theme="proposed"] { --sc-bg:#1c130c; --sc-acc:#dd6e40; --sc-txt:#f4ecdd; --sc-sub:#c9b79a; --sc-map:#241910; --sc-accsoft:rgba(221,110,64,.13); --sc-recbg:rgba(221,110,64,.14); --sc-recln:rgba(221,110,64,.34); --sc-line:rgba(244,236,221,.10); --sc-mark-fg:#1c130c; }
+  .gal[data-sc-theme="existing"] { --sc-bg:#6b0028; --sc-acc:#c9a96e; --sc-txt:#fdf6ec; --sc-sub:#d9b9c4; --sc-map:#560020; --sc-accsoft:rgba(201,169,110,.14); --sc-recbg:rgba(201,169,110,.14); --sc-recln:rgba(201,169,110,.34); --sc-line:rgba(253,246,236,.12); --sc-mark-fg:#6b0028; }
+  .gal[data-glow="off"] { --sc-accsoft:transparent; }
+</style>
+</helmet>
+<div class="gal" data-sc-theme="{{ theme }}" data-glow="{{ glow }}" style="max-width:1240px; margin:0 auto;">
+
+  <!-- Masthead -->
+  <div style="display:flex; align-items:flex-start; gap:20px; margin-bottom:16px;">
+    <div style="width:52px; height:52px; border-radius:16px; background:#dd6e40; display:flex; align-items:center; justify-content:center; flex:none;">
+      <svg width="27" height="27" viewBox="0 0 38 38" fill="none" stroke="#1c130c" stroke-width="3.6" stroke-linecap="round"><rect x="12" y="12" width="4" height="14" rx="2" fill="#1c130c" stroke="none"></rect><rect x="22" y="12" width="4" height="14" rx="2" fill="#1c130c" stroke="none"></rect><path d="M16 19h6M8 19h4M26 19h4"></path></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="font:700 12px 'Space Mono',monospace; color:#dd6e40; letter-spacing:2px;">WELLNESS · CARTE PARTAGEABLE</div>
+      <h1 style="margin:4px 0 0; font:800 40px 'Bricolage Grotesque',sans-serif; letter-spacing:-1.6px;">L'image qui sort de l'app</h1>
+    </div>
+  </div>
+  <p style="max-width:760px; color:#c9b79a; font-size:16px; line-height:1.55; margin:0 0 44px; text-wrap:pretty;">1080 × 1080, exportée en PNG après une séance puis envoyée sur Instagram, WhatsApp ou Discord. Elle circule sans contexte : l'identité doit tenir seule. Rendu React&nbsp;Native + SVG — aplats, cercles, chemins, texte, opacité, coins arrondis. Bascule <b style="color:#f4ecdd;">Palette</b> dans les Tweaks pour comparer la direction proposée à l'existant.</p>
+
+  <!-- ══════════ NOMINALES ══════════ -->
+  <div style="display:flex; align-items:center; gap:14px; margin-bottom:26px;">
+    <span style="font:700 12px 'Space Mono',monospace; color:#dd6e40; letter-spacing:2px;">CARTES NOMINALES</span>
+    <span style="font-size:13px; color:#8a7458;">1080 × 1080 · export réel, plein cadre</span>
+    <div style="flex:1; height:1px; background:rgba(244,236,221,.10);"></div>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:44px; margin-bottom:64px;">
+    <sc-for list="{{ nominalCards }}" as="c" hint-placeholder-count="2">
+      <div style="display:flex; flex-direction:column; gap:15px;">
+        <div style="width:460px; height:460px; border:1px solid rgba(244,236,221,.09); box-shadow:0 34px 70px -34px rgba(0,0,0,.8);">
+          <dc-import name="Carte" data="{{ c.data }}" hint-size="460px,460px" style="width:460px; height:460px; display:block;"></dc-import>
+        </div>
+        <div style="max-width:460px;"><div style="font:700 16px 'Bricolage Grotesque',sans-serif; color:#f4ecdd;">{{ c.title }}</div><div style="font-size:13.5px; color:#c9b79a; margin-top:2px; text-wrap:pretty;">{{ c.cap }}</div></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ══════════ ÉTATS LIMITES ══════════ -->
+  <div style="display:flex; align-items:center; gap:14px; margin-bottom:26px;">
+    <span style="font:700 12px 'Space Mono',monospace; color:#dd6e40; letter-spacing:2px;">ÉTATS LIMITES</span>
+    <span style="font-size:13px; color:#8a7458;">les cas qui décident si le visuel tient</span>
+    <div style="flex:1; height:1px; background:rgba(244,236,221,.10);"></div>
+  </div>
+  <div style="display:flex; flex-wrap:wrap; gap:36px; margin-bottom:64px;">
+    <sc-for list="{{ edgeCards }}" as="c" hint-placeholder-count="4">
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="width:360px; height:360px; border:1px solid rgba(244,236,221,.09); box-shadow:0 28px 56px -30px rgba(0,0,0,.8);">
+          <dc-import name="Carte" data="{{ c.data }}" hint-size="360px,360px" style="width:360px; height:360px; display:block;"></dc-import>
+        </div>
+        <div style="max-width:360px;"><div style="display:inline-block; font:700 10px 'Space Mono',monospace; color:#dd6e40; letter-spacing:1px; padding:3px 8px; border:1px solid rgba(221,110,64,.4); border-radius:6px; margin-bottom:7px;">{{ c.tag }}</div><div style="font:700 15px 'Bricolage Grotesque',sans-serif; color:#f4ecdd;">{{ c.title }}</div><div style="font-size:13px; color:#c9b79a; margin-top:2px; text-wrap:pretty;">{{ c.cap }}</div></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ══════════ APERÇU 320 ══════════ -->
+  <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px;">
+    <span style="font:700 12px 'Space Mono',monospace; color:#dd6e40; letter-spacing:2px;">APERÇU DANS L'APP</span>
+    <span style="font-size:13px; color:#8a7458;">320 px — tout doit rester lisible au tiers</span>
+    <div style="flex:1; height:1px; background:rgba(244,236,221,.10);"></div>
+  </div>
+  <p style="max-width:640px; color:#96856f; font-size:13.5px; line-height:1.5; margin:0 0 26px;">Rendu à l'échelle exacte de la vignette affichée avant partage. Mêmes proportions relatives (cqw) que l'export 1080 : rien n'est ré-agencé.</p>
+  <div style="display:flex; flex-wrap:wrap; gap:34px; margin-bottom:20px;">
+    <sc-for list="{{ previews }}" as="c" hint-placeholder-count="2">
+      <div style="display:flex; flex-direction:column; gap:13px;">
+        <div style="width:320px; height:320px; border-radius:22px; overflow:hidden; box-shadow:0 24px 48px -26px rgba(0,0,0,.8);">
+          <dc-import name="Carte" data="{{ c.data }}" hint-size="320px,320px" style="width:320px; height:320px; display:block;"></dc-import>
+        </div>
+        <div style="font-size:13.5px; color:#c9b79a;">{{ c.title }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ══════════ NOTE ══════════ -->
+  <div style="margin-top:52px; background:#16100a; border:1px solid rgba(244,236,221,.09); border-radius:20px; padding:34px 38px; max-width:860px;">
+    <div style="font:700 12px 'Space Mono',monospace; color:#dd6e40; letter-spacing:2px; margin-bottom:8px;">NOTE DE CONCEPTION</div>
+    <h2 style="margin:0 0 6px; font:800 26px 'Bricolage Grotesque',sans-serif; letter-spacing:-.8px; color:#f4ecdd;">Ce qui change par rapport à l'existant — et pourquoi</h2>
+    <p style="margin:0 0 22px; color:#96856f; font-size:14px;">Palette existante challengée : fond bordeaux, accent doré, secondaire rose poudré.</p>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <sc-for list="{{ notes }}" as="n" hint-placeholder-count="8">
+        <div style="display:flex; gap:15px; align-items:flex-start;">
+          <span style="flex:none; width:26px; height:26px; border-radius:8px; background:rgba(221,110,64,.16); color:#dd6e40; font:700 12px 'Space Mono',monospace; display:flex; align-items:center; justify-content:center;">{{ n.i }}</span>
+          <div style="flex:1;"><span style="font:700 15px 'Hanken Grotesk',sans-serif; color:#f4ecdd;">{{ n.t }}</span> <span style="font-size:14.5px; color:#c9b79a; line-height:1.55; text-wrap:pretty;">{{ n.d }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;palette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Terracotta (proposé)&quot;,&quot;Bordeaux · doré (existant)&quot;],&quot;default&quot;:&quot;Terracotta (proposé)&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Comparer&quot;},&quot;halo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Style&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const existing = String(p.palette || '').indexOf('Bordeaux') >= 0;
+
+    const traceNominal = {
+      d: 'M16,60 C10,46 16,34 30,30 C42,27 46,40 58,34 C72,27 82,30 84,42 C86,54 74,60 60,58 C46,56 40,63 30,58',
+      box: '0 0 100 78', w: 2.6, s: [16, 60], e: [30, 58], r: 2.7,
+    };
+    const traceElong = {
+      d: 'M3,11 C12,5 18,14 28,10 C38,6 46,13 56,9 C66,5 74,14 82,8 C90,4 94,11 97,9',
+      box: '0 0 100 18', w: 2.0, s: [3, 11], e: [97, 9], r: 1.8,
+    };
+
+    const runNominal = {
+      kind: 'run', kicker: 'COURSE · MATIN', date: 'Jeu. 4 juil.',
+      dist: '8,24', distUnit: 'km',
+      metrics: [{ v: '44:12', l: 'Durée' }, { v: '5:22', l: 'Allure /km' }],
+      trace: traceNominal,
+    };
+    const muscuNominal = {
+      kind: 'muscu', kicker: 'MUSCU · PUSH', date: 'Jeu. 4 juil.',
+      hero: '4 820', heroUnit: 'kg', heroLabel: 'Volume soulevé',
+      metrics: [{ v: '52 min', l: 'Durée' }, { v: '22', l: 'Séries' }],
+      exos: [
+        { n: 'Développé couché', d: '4 × 8 · 82 kg' },
+        { n: 'Développé incliné', d: '4 × 10 · 30 kg' },
+        { n: 'Élévations latérales', d: '3 × 15 · 14 kg' },
+      ],
+      records: [{ n: 'Développé couché', v: '85 kg' }, { n: 'Développé incliné', v: '32 kg' }],
+    };
+    const runNoTrace = {
+      kind: 'run', kicker: 'COURSE · SOIR', date: 'Mar. 2 juil.',
+      dist: '6,10', distUnit: 'km', trace: null,
+      note: 'Tracé GPS indisponible — signal perdu',
+      metrics: [{ v: '33:48', l: 'Durée' }, { v: '5:32', l: 'Allure /km' }],
+    };
+    const runElong = {
+      kind: 'run', kicker: 'TRAIL · POINT À POINT', date: 'Dim. 30 juin',
+      dist: '12,4', distUnit: 'mi',
+      metrics: [{ v: '2:03:41', l: 'Durée' }, { v: '9:58', l: 'Allure /mi' }],
+      trace: traceElong,
+    };
+    const muscuNoRec = {
+      kind: 'muscu', kicker: 'MUSCU · PULL', date: 'Mer. 3 juil.',
+      hero: '5 240', heroUnit: 'kg', heroLabel: 'Volume soulevé',
+      metrics: [{ v: '48 min', l: 'Durée' }, { v: '20', l: 'Séries' }],
+      exos: [
+        { n: 'Soulevé de terre', d: '4 × 6 · 120 kg' },
+        { n: 'Tractions lestées', d: '4 × 8 · +15 kg' },
+        { n: 'Rowing barre', d: '4 × 10 · 70 kg' },
+        { n: 'Curl haltères', d: '3 × 12 · 16 kg' },
+      ],
+      records: [],
+    };
+    const muscuLong = {
+      kind: 'muscu', kicker: 'MUSCU · LEGS', date: 'Sam. 29 juin',
+      hero: '12 340', heroUnit: 'kg', heroLabel: 'Volume soulevé',
+      metrics: [{ v: '2:34:56', l: 'Durée' }, { v: '42', l: 'Séries' }],
+      exos: [
+        { n: 'Back squat', d: '5 × 5 · 405 lb' },
+        { n: 'Presse à cuisses', d: '4 × 12 · 810 lb' },
+        { n: 'Soulevé roumain', d: '4 × 8 · 275 lb' },
+      ],
+      records: [{ n: 'Total powerlifting', v: '1 234,5 kg' }],
+    };
+
+    return {
+      theme: existing ? 'existing' : 'proposed',
+      glow: (p.halo ?? true) ? 'on' : 'off',
+      nominalCards: [
+        { title: 'Course', cap: 'Le tracé GPS domine la composition — distance, durée, allure, date.', data: runNominal },
+        { title: 'Musculation', cap: 'Purement typographique — tonnage héroïsé, exercices, records, date.', data: muscuNominal },
+      ],
+      edgeCards: [
+        { tag: 'GPS ABSENT', title: 'Course sans tracé', cap: 'Pas de carte : la distance héroïsée porte seule la composition, même présence que la muscu.', data: runNoTrace },
+        { tag: 'ÉCHELLE', title: 'Tracé très allongé', cap: '12,4 mi point à point, rendu à échelle uniforme (meet) — bande fine centrée, jamais étirée pour remplir le carré.', data: runElong },
+        { tag: 'PAS DE PR', title: 'Séance sans record', cap: 'La section records disparaît entièrement ; la liste d\u2019exercices se recentre — aucun vide.', data: muscuNoRec },
+        { tag: 'CHIFFRES LONGS', title: 'Chiffres longs & impérial', cap: '« 2:34:56 », « 1 234,5 kg », charges en livres — la grille absorbe sans casser.', data: muscuLong },
+      ],
+      previews: [
+        { title: 'Course · 320 px', data: runNominal },
+        { title: 'Musculation · 320 px', data: muscuNominal },
+      ],
+      notes: [
+        { i: '1', t: 'Fond bordeaux → espresso chaud #1c130c.', d: 'Cohérent avec l\u2019accent terracotta de Wellness. Surtout : un rouge sombre saturé est le pire cas pour la sous-échantillonnage chroma des JPEG réseaux (bandes, virage de teinte), là où un quasi-noir chaud reste net après recompression, et donne un contraste maximal.' },
+        { i: '2', t: 'Accent doré → terracotta #dd6e40.', d: 'C\u2019est l\u2019accent de marque. Orange haute-chroma qui tient à la recompression, alors que le doré sur bordeaux restait terne et hors identité.' },
+        { i: '3', t: 'Secondaire rose poudré → sable #c9b79a.', d: 'Le rose sur bordeaux rejouait exactement le défaut du thème clair : un secondaire sous-contrasté. Le sable atteint ≈ 9:1 sur l\u2019espresso — un vrai contraste, pas une nuance décorative.' },
+        { i: '4', t: 'Texte crème conservé #f4ecdd (≈ 15:1).', d: 'Le terracotta (≈ 5,4:1) reste réservé aux grands chiffres et accents, jamais au texte courant.' },
+        { i: '5', t: 'Marque discrète en pied.', d: 'Pastille + « Wellness » : présente pour justifier la fonctionnalité, jamais publicitaire. Le halo terracotta est désactivable (tweak) pour une carte encore plus sobre.' },
+        { i: '6', t: 'Tracé GPS à échelle uniforme.', d: 'preserveAspectRatio « meet » : un 2 km sur 100 m s\u2019affiche en bande fine centrée, jamais déformé pour remplir le carré.' },
+        { i: '7', t: 'Course sans GPS = repli typographique.', d: 'La carte bascule sur la distance en très grand, pour tenir sans son atout visuel.' },
+        { i: '8', t: 'Zéro donnée de santé.', d: 'Ni poids, ni mensuration, ni « bien-être ». Uniquement de l\u2019activité — une image partie sur un réseau public ne se rattrape pas.' },
+        { i: '9', t: 'Unités relatives (cqw) partout.', d: 'Rendu identique en export 1080 et en aperçu 320 : la lisibilité au tiers est garantie par construction, pas par un second layout.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

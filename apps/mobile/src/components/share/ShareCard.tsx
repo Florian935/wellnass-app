@@ -32,11 +32,35 @@ import {
 
 import { fontFamily } from '@/theme/fonts';
 
-/** Charte de la carte : bordeaux + doré, comme le bandeau de célébration du résumé de course. */
-const CARD_BG = '#6b0028';
-const CARD_ACCENT = '#c9a96e';
-const CARD_TEXT = '#fdf6ec';
-const CARD_MUTED = '#d9b9c4';
+/**
+ * Charte de la carte — direction **`proposed`** de la maquette
+ * ([design/partage01-carte-partageable/](../../../../../design/partage01-carte-partageable/),
+ * 30/07/2026), retenue contre la direction `existing` (bordeaux `#6b0028` + doré `#c9a96e`).
+ *
+ * ── Pourquoi avoir abandonné le bordeaux ──────────────────────────────────────────────────────────
+ * Ce n'est **pas** un correctif d'accessibilité : les deux directions passaient AA sur le texte.
+ * C'est une mise en cohérence. Le bordeaux ne renvoyait à rien de visible dans l'app, alors que
+ * l'image, elle, circule **hors** de l'app : reprendre les couleurs du produit est ce qui le rend
+ * reconnaissable quand quelqu'un tombe dessus sur Instagram.
+ *
+ * Ces valeurs sont **volontairement recopiées** du thème sombre plutôt que lues via `useTheme()` :
+ * la carte doit rendre **à l'identique quel que soit le thème actif** de l'utilisateur — une carte
+ * claire chez l'un et sombre chez l'autre ne serait plus une identité. Le lien avec la palette est
+ * donc intentionnel mais figé.
+ *
+ * Contrastes vérifiés contre `CARD_BG` : texte 15,58 · secondaire 9,34 · accent 5,56 (AA ≥ 4,5).
+ */
+const CARD_BG = '#1c130c'; // = fond du thème sombre (#1c150e), à un cheveu
+const CARD_ACCENT = '#dd6e40'; // = accent du thème sombre
+const CARD_TEXT = '#f4ecdd'; // = text du thème sombre
+const CARD_MUTED = '#c9b79a'; // = textMuted du thème sombre
+
+/**
+ * Cadre des records (tokens `--sc-recbg` / `--sc-recln` de la maquette) : l'accent à 14 % de fond et
+ * 34 % de trait. Détache le bloc sans introduire une cinquième couleur.
+ */
+const RECORDS_BG = 'rgba(221,110,64,0.14)';
+const RECORDS_BORDER = 'rgba(221,110,64,0.34)';
 
 /** Nom affiché en pied de carte (décision D2 : discret, mais présent). */
 const BRAND = 'Wellness';
@@ -179,7 +203,17 @@ function WorkoutBody({ records, size }: { records: string[]; size: number }) {
   if (records.length === 0) return null;
 
   return (
-    <View style={styles.records}>
+    <View
+      style={[
+        styles.records,
+        {
+          backgroundColor: RECORDS_BG,
+          borderColor: RECORDS_BORDER,
+          borderRadius: s(0.03),
+          padding: s(0.03),
+        },
+      ]}
+    >
       <Text
         style={[styles.recordsTitle, { color: CARD_ACCENT, fontSize: s(0.034) }]}
         maxFontSizeMultiplier={1}
@@ -239,7 +273,9 @@ const styles = StyleSheet.create({
   title: { fontFamily: fontFamily.displayBold, letterSpacing: 1.5 },
   date: { fontFamily: fontFamily.body },
   body: { flex: 1, justifyContent: 'center' },
-  records: { gap: 4 },
+  // `borderWidth` fixe : c'est un trait, il ne doit pas grossir avec la carte (le rayon et le
+  // rembourrage, eux, sont proportionnels à `size` — cf. l'aperçu à 320 dp).
+  records: { gap: 4, borderWidth: 1 },
   recordsTitle: { fontFamily: fontFamily.bodySemi, letterSpacing: 1 },
   recordLine: { fontFamily: fontFamily.displayBold },
   stats: { flexDirection: 'row', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' },
