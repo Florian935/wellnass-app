@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useStatus } from '@powersync/react';
 import {
   INTENSITY_SCALES,
+  isWithinDnd,
   LOCALES,
   PILLARS,
   UNIT_SYSTEMS,
@@ -25,6 +26,11 @@ import {
   useNotificationPrefs,
   updateNotificationPrefs,
 } from '@/data/repositories/notification-repository';
+import {
+  useMealDeadline,
+  useWeighInDeadline,
+  type ReminderDeadline,
+} from '@/data/repositories/reminder-habits-repository';
 import { getAppLanguage } from '@/i18n';
 import { exportUserData } from '@/lib/data-export';
 import { ensurePermissionAndChannel } from '@/lib/notifications';
@@ -103,6 +109,121 @@ function HourStepper({
   );
 }
 
+/**
+ * Les deux lignes d'un rappel programmé (US NUTR-F1) : interrupteur, sélecteur d'heure, et surtout
+ * la **provenance de l'heure**.
+ *
+ * ── Pourquoi la provenance est affichée, toujours ─────────────────────────────────────────────────
+ * Quand « Caler sur mes habitudes » est actif, l'heure du rappel est calculée (p90 des heures de
+ * saisie, éventuellement rabattu hors « Ne pas déranger »). Une heure qui bouge sans explication est
+ * un bug perçu : l'écran doit pouvoir répondre à « pourquoi 13 h ? » sans qu'on nous écrive. Trois
+ * états, donc — apprise, apprise et décalée, pas encore assez d'historique.
+ *
+ * ── Et l'avertissement DND ────────────────────────────────────────────────────────────────────────
+ * Une heure réglée **à la main** n'est jamais réécrite (décision D6) : si elle tombe dans la fenêtre
+ * « Ne pas déranger », le rappel ne partira pas. On respecte le choix de l'utilisateur, mais on ne
+ * le laisse pas dans le noir — d'où l'avertissement.
+ */
+function ProgrammedReminderRows({
+  label,
+  desc,
+  hourLabel,
+  enabled,
+  onToggle,
+  hour,
+  onHour,
+  deadline,
+  learnedMode,
+  prefs,
+}: {
+  label: string;
+  desc: string;
+  hourLabel: string;
+  enabled: boolean;
+  onToggle: (next: boolean) => void;
+  hour: number;
+  onHour: (next: number) => void;
+  deadline: ReminderDeadline;
+  learnedMode: boolean;
+  prefs: NotificationPrefs;
+}) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  /**
+   * Lignes explicatives sous le rappel. Il peut y en avoir **deux** : la provenance de l'heure et,
+   * séparément, l'avertissement « Ne pas déranger ».
+   *
+   * L'avertissement ne dépend **pas** du mode d'apprentissage mais du fait que l'heure effective
+   * soit `learned` ou non : une heure apprise a été rabattue hors DND, donc elle partira ; une heure
+   * de **repli** (apprentissage actif mais historique insuffisant) est traitée comme une heure
+   * manuelle — elle n'est pas rabattue, donc elle ne partira pas si elle tombe en DND. Sans cette
+   * distinction, l'écran affichait « 23:00 en attendant » pour un rappel qui n'allait jamais arriver.
+   */
+  const hints = (): { id: string; text: string; warning: boolean }[] => {
+    if (!enabled) return [];
+
+    const lines: { id: string; text: string; warning: boolean }[] = [];
+
+    if (deadline.learned) {
+      const key = deadline.shifted
+        ? 'settings.notifications.learnedHourShifted'
+        : 'settings.notifications.learnedHourValue';
+      lines.push({ id: 'provenance', text: t(key, { hour: formatHour(deadline.hour) }), warning: false });
+    } else if (learnedMode) {
+      lines.push({
+        id: 'provenance',
+        text: t('settings.notifications.learnedHourPending', { hour: formatHour(deadline.hour) }),
+        warning: false,
+      });
+    }
+
+    if (!deadline.learned && isWithinDnd(deadline.hour, prefs)) {
+      lines.push({ id: 'dnd', text: t('settings.notifications.manualHourInDnd'), warning: true });
+    }
+
+    return lines;
+  };
+
+  return (
+    <>
+      <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+        <View style={styles.rowGrow}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{label}</Text>
+          <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{desc}</Text>
+        </View>
+        <Switch
+          value={enabled}
+          onValueChange={onToggle}
+          trackColor={{ true: colors.accent, false: colors.border }}
+          thumbColor="#ffffff"
+          accessibilityLabel={label}
+        />
+      </View>
+      <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+        <View style={styles.rowGrow}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{hourLabel}</Text>
+        </View>
+        <HourStepper
+          value={hour}
+          onChange={onHour}
+          // Le stepper reste **visible** (grisé) quand l'apprentissage pilote l'heure : l'utilisateur
+          // voit la valeur de repli qui s'appliquerait s'il coupait l'apprentissage.
+          disabled={!enabled || learnedMode}
+        />
+      </View>
+      {hints().map((hint) => (
+        <Text
+          key={hint.id}
+          style={[styles.provenance, { color: hint.warning ? colors.text : colors.accent }]}
+        >
+          {hint.warning ? `⚠️ ${hint.text}` : hint.text}
+        </Text>
+      ))}
+    </>
+  );
+}
+
 export default function SettingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -137,6 +258,11 @@ export default function SettingsScreen() {
 
   const patchNotifications = (patch: Partial<NotificationPrefs>) =>
     void updateNotificationPrefs(notificationPrefs, patch);
+
+  // Échéances des rappels programmés (US NUTR-F1) — mêmes hooks que le planificateur, donc aucune
+  // divergence possible entre ce que l'écran affiche et ce qui sera réellement planifié.
+  const mealDeadline = useMealDeadline(notificationPrefs);
+  const weighInDeadline = useWeighInDeadline(notificationPrefs);
 
   const relaunchOnboarding = async () => {
     // Réinitialise le drapeau d'onboarding via le profil ; la gate de routing
@@ -405,7 +531,52 @@ export default function SettingsScreen() {
         </View>
       ) : null}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {/* Apprentissage (US NUTR-F1) — un seul concept, global à la section, en tête. */}
         <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('settings.notifications.learnedHour')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('settings.notifications.learnedHourDesc')}
+            </Text>
+          </View>
+          <Switch
+            value={notificationPrefs.learnedHour}
+            onValueChange={(next) => patchNotifications({ learnedHour: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.notifications.learnedHour')}
+          />
+        </View>
+
+        {/* Rappels programmés (US NUTR-F1), dans l'ordre chronologique de la journée. */}
+        <ProgrammedReminderRows
+          label={t('settings.notifications.weighInReminder')}
+          desc={t('settings.notifications.weighInReminderDesc')}
+          hourLabel={t('settings.notifications.weighInReminderTime')}
+          enabled={notificationPrefs.weighInReminder}
+          onToggle={(next) => patchNotifications({ weighInReminder: next })}
+          hour={notificationPrefs.weighInReminderHour}
+          onHour={(next) => patchNotifications({ weighInReminderHour: next })}
+          deadline={weighInDeadline}
+          learnedMode={notificationPrefs.learnedHour}
+          prefs={notificationPrefs}
+        />
+        <ProgrammedReminderRows
+          label={t('settings.notifications.mealReminder')}
+          desc={t('settings.notifications.mealReminderDesc')}
+          hourLabel={t('settings.notifications.mealReminderTime')}
+          enabled={notificationPrefs.mealReminder}
+          onToggle={(next) => patchNotifications({ mealReminder: next })}
+          hour={notificationPrefs.mealReminderHour}
+          onHour={(next) => patchNotifications({ mealReminderHour: next })}
+          deadline={mealDeadline}
+          learnedMode={notificationPrefs.learnedHour}
+          prefs={notificationPrefs}
+        />
+
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
           <View style={styles.rowGrow}>
             <Text style={[styles.rowLabel, { color: colors.text }]}>
               {t('settings.notifications.streakReminder')}
@@ -615,6 +786,15 @@ const styles = StyleSheet.create({
   rowGrow: { flex: 1, minWidth: 0, paddingRight: 12 },
   rowDesc: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 2, lineHeight: 16 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8, lineHeight: 18 },
+  /** Provenance de l'heure d'un rappel programmé, sous sa ligne (US NUTR-F1). */
+  provenance: {
+    fontFamily: fontFamily.body,
+    fontSize: 12,
+    lineHeight: 17,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    marginTop: -4,
+  },
   signOut: { marginTop: 12 },
   dangerZone: {
     marginTop: 28,

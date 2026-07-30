@@ -198,11 +198,11 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 4.25 | Valeurs nutritionnelles calculées | Macros totales et par portion automatiques. | Facile | 1h | 🟢 | ✅ | `perServing`. |
 | 4.26 | Repas types (templates) | Réutiliser un repas entier en 1 tap. | Facile | 2h | 🟢 | ✅ | `saveMealAsTemplate` / `applyTemplate`. |
 | 1.13 | Historique poids corporel | Pesées enregistrées et affichées en courbe. | Facile | 3h | 🟢 | ✅ | `bodyweight-repository.ts`. |
-| 1.14 | Rappel de pesée | Notification optionnelle à heure fixe. | Facile | 1h | 🟢 | ⬜ | **Aucune trace** (notifs = streak seul). |
+| 1.14 | Rappel de pesée | Notification optionnelle à heure fixe. | Facile | 1h | 🟢 | ✅ | US NUTR-F1. Périmètre **élargi** : l'heure n'est pas fixe mais **apprise** (p90 des heures de pesée, 14 j, local). Opt-in. `reminder-habits-repository.ts`. |
 | 4.30 | Courbe poids corporel | Évolution sur 4 sem / 3 mois / 1 an. | Moyen | 3h | 🟢 | ✅ | `nutrition-stats.tsx`. |
 | 4.31 | Évolution apports moyens | Calories et macros moyennes 7 / 30 jours. | Moyen | 3h | 🟢 | ✅ | `averageIntake`. |
 | 4.32 | Alerte déficit + fort volume | Déficit important + semaine à fort volume muscu. | Moyen | 2h | 🟢 | ✅ | `DeficitVolumeAlertCard`. Première stat croisée entre piliers. |
-| 2.5 | Notif — Rappel repas | Push à heure définie. | Facile | 1h | 🟢 | ⬜ | **Aucun scheduling repas.** |
+| 2.5 | Notif — Rappel repas | Push à heure définie. | Facile | 1h | 🟢 | ✅ | US NUTR-F1. **Un** rappel de journal (pas un par repas : aucune heure n'est associée aux repas en base). Échéance apprise, opt-in. `useProgrammedRemindersScheduler`. |
 
 ---
 
@@ -421,13 +421,13 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 > **9.3** SQLite maison → PowerSync (8 h → 6 h) · **9.7** conflits délégués à PowerSync (6 h → 3 h) · **2.12** sync arrière-plan via PowerSync (6 h → 3 h) ·
 > **− 1.3** OAuth Apple (−3 h) et **− 9.1** App iOS déplacés en « Ultérieur — iOS » (hors décompte de lancement).
 
-**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 28/07/2026)** :
+**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 30/07/2026)** :
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 168 | ~81 % |
+| ✅ Livré | 170 | ~82 % |
 | 🟡 Partiel | 19 | ~9 % |
-| ⬜ À faire | 16 | ~8 % |
+| ⬜ À faire | 14 | ~7 % |
 | ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**30/07/2026 — NUTR-F1 : rappels programmés nutrition (1.14, 2.5) ⬜ → ✅ ×2**
+Défaut de conception corrigé avant tout code : on apprend le **p90** de l'heure du geste (une échéance),
+pas la médiane — sinon le rappel partait pendant que l'utilisateur faisait le geste. Le hint « max 3
+notifs/jour », faux depuis V0.6, est corrigé par le **texte** (D3). 0 migration. Compteurs : **170 / 19 / 14**.
 
 **29/07/2026 — MUSC-F14 : substitution d'exercice (3.52) ⬜ → 🟡**
 Motif « zone douloureuse » **retiré** : sans donnée articulaire, y répondre serait un conseil de santé

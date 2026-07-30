@@ -40,8 +40,21 @@ export const STREAK_REMINDER_ID = 'streak-danger-reminder';
  */
 export const WEEKLY_REVIEW_ID = 'weekly-review';
 
-/** Contenu i18n d'une notification (résolu par l'appelant via i18next). */
-export interface StreakReminderContent {
+/**
+ * Identifiants stables des rappels programmés (US NUTR-F1). Même raison que ci-dessus : re-planifier
+ * remplace, donc il y a **au plus un** rappel en attente par type. C'est cet invariant qui borne
+ * structurellement le volume de notifications à un par type et par jour (décision D3).
+ */
+export const MEAL_REMINDER_ID = 'meal-reminder';
+export const WEIGH_IN_REMINDER_ID = 'weigh-in-reminder';
+
+/**
+ * Contenu i18n d'une notification (résolu par l'appelant via i18next).
+ *
+ * Nommé `StreakReminderContent` à l'origine, quand le rappel streak était le seul type. Il sert
+ * désormais de contrat à tous les rappels — d'où le renommage.
+ */
+export interface ReminderContent {
   title: string;
   body: string;
 }
@@ -89,20 +102,23 @@ export async function ensurePermissionAndChannel(): Promise<boolean> {
 }
 
 /**
- * (Re)planifie le rappel streak pour l'instant `date` avec un identifiant
- * stable (remplace tout rappel streak déjà en attente → au plus un).
+ * (Re)planifie un rappel **ponctuel** pour l'instant `date`, sous un identifiant stable — donc
+ * remplace tout rappel déjà en attente sous le même id (au plus un par type).
  *
- * L'appelant est responsable de n'appeler cette fonction *que* lorsque la
- * règle métier l'autorise (`shouldScheduleStreakReminder`) et que la permission
- * est accordée. Ne lève jamais (no-op silencieux en cas d'erreur).
+ * L'appelant est responsable de n'appeler cette fonction *que* lorsque la règle métier l'autorise et
+ * que la permission est accordée. Ne lève jamais (no-op silencieux en cas d'erreur).
+ *
+ * Généralisée par NUTR-F1 : le rappel streak et les deux rappels programmés partagent exactement ce
+ * comportement, il n'y avait pas de raison d'en avoir trois copies.
  */
-export async function scheduleStreakReminder(
+export async function scheduleDatedReminder(
+  id: string,
   date: Date,
-  content: StreakReminderContent,
+  content: ReminderContent,
 ): Promise<void> {
   try {
     await Notifications.scheduleNotificationAsync({
-      identifier: STREAK_REMINDER_ID,
+      identifier: id,
       content: {
         title: content.title,
         body: content.body,
@@ -119,15 +135,28 @@ export async function scheduleStreakReminder(
 }
 
 /**
- * Annule le rappel streak en attente (par identifiant stable). Idempotent :
- * sans rappel en attente, no-op. Ne lève jamais.
+ * Annule le rappel en attente sous cet identifiant. Idempotent : sans rappel en attente, no-op.
+ * Ne lève jamais.
  */
-export async function cancelStreakReminder(): Promise<void> {
+export async function cancelReminder(id: string): Promise<void> {
   try {
-    await Notifications.cancelScheduledNotificationAsync(STREAK_REMINDER_ID);
+    await Notifications.cancelScheduledNotificationAsync(id);
   } catch {
     // no-op : rien à annuler / module indisponible.
   }
+}
+
+/** (Re)planifie le rappel streak (US 2.6). */
+export async function scheduleStreakReminder(
+  date: Date,
+  content: ReminderContent,
+): Promise<void> {
+  await scheduleDatedReminder(STREAK_REMINDER_ID, date, content);
+}
+
+/** Annule le rappel streak en attente. */
+export async function cancelStreakReminder(): Promise<void> {
+  await cancelReminder(STREAK_REMINDER_ID);
 }
 
 /**
@@ -151,7 +180,7 @@ export async function cancelStreakReminder(): Promise<void> {
 export async function scheduleWeeklyReview(
   weekday: number,
   hour: number,
-  content: StreakReminderContent,
+  content: ReminderContent,
 ): Promise<void> {
   try {
     await Notifications.scheduleNotificationAsync({

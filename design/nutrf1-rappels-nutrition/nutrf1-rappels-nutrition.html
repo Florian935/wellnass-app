@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maquette — NUTR-F1 · Rappels programmés nutrition</title>
+<style>
+  :root{
+    --bg:#1c150e; --surface:#30271e; --surfaceAlt:#3a2e22; --border:#3a2e22;
+    --text:#f4ecdd; --muted:#c9b79a; --accent:#dd6e40; --accentText:#fff; --radius:16px;
+    --warn:#f0d9b8; --warnBg:#3a2410; --warnBorder:#6b4a1f;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+    --mono:"Space Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0f0b07;color:var(--text);font-family:var(--body);padding:32px 16px;line-height:1.5}
+  h1{font-family:var(--display);font-weight:800;font-size:22px;text-align:center;margin:0 0 4px}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin:0 auto 28px;max-width:680px}
+  .sub b{color:var(--text)}
+  .stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+  .phone{width:344px;background:var(--bg);border-radius:34px;padding:14px 12px 22px;border:1px solid #2a2018;
+    box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .notch{width:120px;height:6px;border-radius:99px;background:#000;margin:2px auto 14px;opacity:.5}
+  .screentitle{font-family:var(--display);font-weight:800;font-size:24px;padding:2px 8px 4px}
+  .sectlabel{font-family:var(--body);font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;
+    color:var(--muted);padding:18px 10px 8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 8px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:14px 16px}
+  .row + .row{border-top:1px solid var(--border)}
+  .row .lbl{font-family:var(--body);font-weight:600;font-size:15px;color:var(--text)}
+  .row .desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .grow{flex:1;min-width:0}
+  .sw{flex:0 0 auto;width:46px;height:28px;border-radius:99px;padding:3px;display:flex;align-items:center}
+  .sw .knob{width:22px;height:22px;border-radius:50%;background:#fff}
+  .sw.on{background:var(--accent);justify-content:flex-end}
+  .sw.off{background:var(--surfaceAlt);border:1px solid var(--border)}
+  .stepper{flex:0 0 auto;display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;
+    background:var(--surfaceAlt);overflow:hidden}
+  .stepper button{width:34px;height:34px;border:none;background:transparent;color:var(--accent);font-size:18px;
+    font-family:var(--body);font-weight:700}
+  .stepper .val{min-width:58px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--text);
+    border-left:1px solid var(--border);border-right:1px solid var(--border);height:34px;line-height:34px}
+  .disabled{opacity:.38}
+  .prov{font-size:12px;color:var(--accent);padding:0 16px 12px;margin-top:-6px}
+  .prov.pending{color:var(--muted)}
+  .prov.shift{color:var(--accent)}
+  .prov .why{color:var(--muted)}
+  .warn{margin:0 16px 12px;margin-top:-4px;background:var(--warnBg);border:1px solid var(--warnBorder);
+    border-radius:10px;padding:9px 11px;font-size:12px;color:var(--warn)}
+  .hint{color:var(--muted);font-size:12px;padding:10px 12px 0;margin:0 8px}
+  .caption{font-family:var(--display);font-weight:700;font-size:13px;text-align:center;margin:14px 0 0;color:var(--accent)}
+  .caption span{display:block;font-family:var(--body);font-weight:400;font-size:12px;color:var(--muted);margin-top:3px}
+  .new{display:inline-block;background:var(--accent);color:var(--accentText);font-size:10px;font-weight:700;
+    padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:.4px}
+  .notif{margin:0 8px 10px;background:#efe7d8;color:#241a10;border-radius:14px;padding:11px 13px;
+    box-shadow:0 6px 18px rgba(0,0,0,.35)}
+  .notif .app{display:flex;align-items:center;gap:7px;font-size:11px;color:#6b5a45;font-weight:700;margin-bottom:5px}
+  .notif .dot{width:15px;height:15px;border-radius:5px;background:var(--accent)}
+  .notif .ntitle{font-family:var(--display);font-weight:800;font-size:14.5px;margin-bottom:2px}
+  .notif .nbody{font-size:12.5px;color:#4a3a28;line-height:1.35}
+  .lockbg{background:linear-gradient(160deg,#241a10,#0f0b07);border-radius:24px;padding:18px 6px 24px;margin:0 4px}
+  .clock{text-align:center;font-family:var(--display);font-weight:800;font-size:40px;color:#f4ecdd;margin:6px 0 2px}
+  .clockday{text-align:center;color:var(--muted);font-size:12px;margin-bottom:20px}
+  .legend{width:336px;background:#14100b;border:1px solid var(--border);border-radius:16px;padding:18px}
+  .legend h2{font-family:var(--display);font-weight:700;font-size:15px;margin:0 0 12px}
+  .legend .item{font-size:13px;color:var(--muted);margin-bottom:13px}
+  .legend .item b{color:var(--text)}
+  .dec{border-left:2px solid var(--accent);padding-left:11px}
+  code{font-family:var(--mono);background:#1c150e;padding:1px 5px;border-radius:5px;font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--muted)}
+  th{color:var(--text);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  td b{color:var(--text)}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:26px}
+</style>
+</head>
+<body>
+  <h1>NUTR-F1 — Rappels programmés nutrition</h1>
+  <p class="sub">Deux rappels locaux — <b>journal alimentaire</b> et <b>pesée</b> — déclenchés à une
+  <b>échéance apprise</b> : l'heure après laquelle l'utilisateur a, d'habitude, <i>déjà fait</i> le
+  geste (9ᵉ décile, pas la médiane). Trois nouveaux contrôles dans la section Notifications
+  existante, aucun nouvel écran. Les deux rappels sont <b>désactivés par défaut</b>.</p>
+
+  <div class="stage">
+
+    <!-- ÉCRAN 1 — apprentissage actif -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screentitle">Réglages</div>
+
+        <div class="sectlabel">Notifications</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow">
+              <div class="lbl">Caler sur mes habitudes<span class="new">NOUVEAU</span></div>
+              <div class="desc">Les rappels partent quand tu as d'habitude déjà fini.</div>
+            </div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+
+          <div class="row">
+            <div class="grow"><div class="lbl">Rappel de repas<span class="new">NOUVEAU</span></div>
+              <div class="desc">Si ton journal est encore vide.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row disabled">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">13 h</div><button>+</button></div>
+          </div>
+          <div class="prov">D'après tes habitudes : 13 h</div>
+
+          <div class="row">
+            <div class="grow"><div class="lbl">Rappel de pesée<span class="new">NOUVEAU</span></div>
+              <div class="desc">Si tu ne t'es pas encore pesé aujourd'hui.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row disabled">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">10 h</div><button>+</button></div>
+          </div>
+          <div class="prov pending">Pas encore assez d'historique — 10 h en attendant</div>
+
+          <div class="row">
+            <div class="grow"><div class="lbl">Rappel série en danger</div>
+              <div class="desc">Si tu n'as rien fait aujourd'hui.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">20 h</div><button>+</button></div>
+          </div>
+        </div>
+        <p class="hint">Au plus un rappel par type et par jour.</p>
+      </div>
+      <p class="caption">① Apprentissage actif
+        <span>Steppers inertes, provenance de l'heure écrite en clair.
+        Deux états : apprise / historique insuffisant.</span></p>
+    </div>
+
+    <!-- ÉCRAN 2 — les deux cas DND -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screentitle">Réglages</div>
+
+        <div class="sectlabel">Notifications</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow">
+              <div class="lbl">Caler sur mes habitudes</div>
+              <div class="desc">Les rappels partent quand tu as d'habitude déjà fini.</div>
+            </div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+
+          <div class="row">
+            <div class="grow"><div class="lbl">Rappel de repas</div>
+              <div class="desc">Si ton journal est encore vide.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row disabled">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">13 h</div><button>+</button></div>
+          </div>
+          <div class="prov shift">D'après tes habitudes : 21 h
+            <span class="why">— décalé avant ta plage Ne pas déranger</span></div>
+        </div>
+        <p class="hint">Au plus un rappel par type et par jour.</p>
+
+        <div class="sectlabel">Notifications — apprentissage coupé</div>
+        <div class="card">
+          <div class="row">
+            <div class="grow">
+              <div class="lbl">Caler sur mes habitudes</div>
+            </div>
+            <div class="sw off"><div class="knob"></div></div>
+          </div>
+          <div class="row">
+            <div class="grow"><div class="lbl">Rappel de pesée</div>
+              <div class="desc">Si tu ne t'es pas encore pesé aujourd'hui.</div></div>
+            <div class="sw on"><div class="knob"></div></div>
+          </div>
+          <div class="row">
+            <div class="grow"><div class="lbl">Heure du rappel</div></div>
+            <div class="stepper"><button>−</button><div class="val">23 h</div><button>+</button></div>
+          </div>
+          <div class="warn">Cette heure est dans ta plage Ne pas déranger — le rappel ne sera pas
+            envoyé.</div>
+        </div>
+      </div>
+      <p class="caption">② Les deux politiques « Ne pas déranger »
+        <span>Heure <b>apprise</b> → rabattue, et on le dit.<br>
+        Heure <b>réglée à la main</b> → respectée donc non envoyée, et on avertit.</span></p>
+    </div>
+
+    <!-- ÉCRAN 3 — les notifications -->
+    <div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="lockbg">
+          <div class="clock">13:00</div>
+          <div class="clockday">jeudi 30 juillet</div>
+
+          <div class="notif">
+            <div class="app"><div class="dot"></div> WELLNESS · maintenant</div>
+            <div class="ntitle">Ton journal est encore vide</div>
+            <div class="nbody">Note ce que tu as mangé, ça prend 30 secondes.</div>
+          </div>
+
+          <div class="notif">
+            <div class="app"><div class="dot"></div> WELLNESS · 10:00</div>
+            <div class="ntitle">Pas encore de pesée aujourd'hui</div>
+            <div class="nbody">Un point de plus pour suivre ta tendance.</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">③ Contenu des notifications
+        <span>Ton non punitif (décision D4 de BILAN-01).<br>
+        « encore vide » / « pas encore » : un constat, pas un reproche.</span></p>
+    </div>
+
+    <!-- LÉGENDE -->
+    <div class="legend">
+      <h2>Ce que la maquette fixe</h2>
+
+      <div class="item dec"><b>D1 — une échéance, pas une habitude.</b> On apprend le <b>p90</b> de
+        l'heure du geste, pas la médiane. Avec la médiane, un utilisateur régulier qui logge à 8 h
+        aurait reçu « ton journal est vide » à 8 h, <b>un jour sur deux, pendant qu'il le
+        remplit</b>. Le p90, c'est l'heure avant laquelle c'est déjà fait 9 fois sur 10 : le rappel
+        devient <b>rare par construction</b>, et c'est le but.</div>
+
+      <div class="item"><b>Un seul concept d'apprentissage.</b> Un switch global
+        <code>learnedHour</code> en tête de section, pas un réglage auto/manuel par rappel. Le
+        modèle mental tient en une phrase.</div>
+
+      <div class="item"><b>La provenance de l'heure est toujours écrite.</b> Trois états :
+        « D'après tes habitudes : 13 h » · « Pas encore assez d'historique — 10 h en attendant » ·
+        « D'après tes habitudes : 21 h — décalé avant ta plage Ne pas déranger ». C'est ce qui évite
+        le ticket « pourquoi 13 h&nbsp;? ».</div>
+
+      <div class="item"><b>Steppers inertes, pas cachés.</b> Quand l'apprentissage est actif, le
+        stepper reste visible à 38 % d'opacité — l'utilisateur voit la valeur de repli qui
+        s'appliquerait s'il coupait l'apprentissage.
+        <code>accessibilityState={{disabled:true}}</code> obligatoire, sinon un lecteur d'écran
+        annonce un contrôle actionnable qui ne fait rien.</div>
+
+      <div class="item dec"><b>D3 — le hint est corrigé, pas le code.</b> « Max 3 notifications par
+        jour » est affiché depuis V0.6 alors que rien ne l'applique. Plutôt que d'ajouter un
+        compteur (qui perdrait des rappels à la re-planification), on énonce la garantie réelle :
+        <b>un rappel par type et par jour</b>, borné par l'identifiant stable de chaque type.</div>
+
+      <div class="item"><b>Aucun nouvel écran, aucune nouvelle carte.</b> Les 3 contrôles entrent
+        dans la section Notifications existante, au-dessus du rappel de série — ordre chronologique
+        de la journée : pesée le matin, repas à midi, série le soir.</div>
+
+      <h2 style="margin-top:18px">Heures et défauts</h2>
+      <table>
+        <tr><th>Réglage</th><th>Défaut</th></tr>
+        <tr><td><b>Rappel de repas</b></td><td>éteint · 13 h</td></tr>
+        <tr><td><b>Rappel de pesée</b></td><td>éteint · 10 h</td></tr>
+        <tr><td><b>Caler sur mes habitudes</b></td><td>activé</td></tr>
+        <tr><td>Fenêtre d'apprentissage</td><td>14 jours · ≥ 5 jours retenus</td></tr>
+        <tr><td>Décile visé</td><td>p90, par rang</td></tr>
+      </table>
+      <div class="item" style="margin-top:12px">Ce sont des <b>échéances</b>, pas des heures de
+        geste : 13 h = « midi passé, rien de noté » · 10 h = « la matinée est bien avancée, pas de
+        pesée ». D'où l'absence de saut choquant quand l'apprentissage prend le relais au 5ᵉ jour.</div>
+      <div class="item">Les deux rappels sont <b>opt-in</b> : les activer d'office triplerait le
+        volume de notifications d'un utilisateur existant, et c'est ce qui fait couper les
+        notifications au niveau système — on perdrait alors aussi le rappel de série.</div>
+      <div class="item"><b>13 h et 10 h sont hors du « Ne pas déranger » par défaut</b> (22 h → 7 h).
+        Invariant testé, comme pour les deux heures existantes.</div>
+    </div>
+
+  </div>
+
+  <p class="foot">Maquette NUTR-F1 · roadmap 1.14 + 2.5 · 30/07/2026 · aucune migration, aucune sync
+  rule, aucun nouveau build</p>
+</body>
+</html>

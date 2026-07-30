@@ -1251,10 +1251,22 @@
       "dndDesc": "Aucune notification pendant la plage choisie.",
       "dndStart": "Début",
       "dndEnd": "Fin",
-      "hint": "La plage peut enjamber minuit (ex. 22:00 → 07:00). Max 3 notifications par jour.",
+      "hint": "La plage peut enjamber minuit (ex. 22:00 → 07:00). Au plus un rappel par type et par jour.",
       "permissionDenied": "Notifications désactivées au niveau du système. Active-les dans les paramètres Android pour recevoir les rappels.",
       "decreaseHour": "Diminuer l'heure",
-      "increaseHour": "Augmenter l'heure"
+      "increaseHour": "Augmenter l'heure",
+      "learnedHour": "Caler sur mes habitudes",
+      "learnedHourDesc": "Les rappels partent quand tu as d'habitude déjà fini.",
+      "learnedHourValue": "D'après tes habitudes : {{hour}}",
+      "learnedHourShifted": "D'après tes habitudes : {{hour}} — décalé avant ta plage Ne pas déranger",
+      "learnedHourPending": "Pas encore assez d'historique — {{hour}} en attendant",
+      "manualHourInDnd": "Cette heure est dans ta plage Ne pas déranger — le rappel ne sera pas envoyé.",
+      "mealReminder": "Rappel de repas",
+      "mealReminderDesc": "Si ton journal est encore vide.",
+      "mealReminderTime": "Heure du rappel",
+      "weighInReminder": "Rappel de pesée",
+      "weighInReminderDesc": "Si tu ne t'es pas encore pesé aujourd'hui.",
+      "weighInReminderTime": "Heure du rappel"
     },
     "account": {
       "title": "Compte",
@@ -1648,6 +1660,14 @@
     "streakDanger": {
       "title": "Ta série est en danger 🔥",
       "body": "Fais une activité aujourd'hui pour garder ta série."
+    },
+    "mealReminder": {
+      "title": "Ton journal est encore vide",
+      "body": "Note ce que tu as mangé, ça prend 30 secondes."
+    },
+    "weighInReminder": {
+      "title": "Pas encore de pesée aujourd'hui",
+      "body": "Un point de plus pour suivre ta tendance."
     }
   },
   "steps": {

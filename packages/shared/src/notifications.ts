@@ -31,15 +31,31 @@ export interface NotificationPrefs {
   weeklyReview: boolean;
   /** Heure du bilan hebdomadaire, 0-23 (défaut `9`). Le jour est fixé au **lundi**. */
   weeklyReviewHour: number;
+  /** Rappel de journal alimentaire activé (défaut `false`, **opt-in**) — US NUTR-F1. */
+  mealReminder: boolean;
+  /** Échéance du rappel de repas, 0-23 (défaut `13`). Sert de **repli** et de valeur manuelle. */
+  mealReminderHour: number;
+  /** Rappel de pesée activé (défaut `false`, **opt-in**) — US NUTR-F1. */
+  weighInReminder: boolean;
+  /** Échéance du rappel de pesée, 0-23 (défaut `10`). Sert de **repli** et de valeur manuelle. */
+  weighInReminderHour: number;
+  /**
+   * Caler les rappels programmés sur les habitudes de l'utilisateur (défaut `true`) — US NUTR-F1.
+   *
+   * Global à la section : un seul concept, pas un réglage auto/manuel par rappel. Quand il est
+   * actif, `mealReminderHour` / `weighInReminderHour` ne servent que de repli tant que l'historique
+   * est insuffisant.
+   */
+  learnedHour: boolean;
 }
 
 /**
  * Valeurs par défaut des préférences de notifications.
  *
- * Note : `reminderHour = 20` **et** `weeklyReviewHour = 9` sont **volontairement hors**
- * de la fenêtre DND par défaut `[22, 7)` — sinon ces notifications seraient
- * systématiquement supprimées par le filtre DND. Toute modification des défauts
- * doit préserver cet invariant, qui est **testé**.
+ * Note : les **quatre** heures par défaut (`reminderHour = 20`, `weeklyReviewHour = 9`,
+ * `mealReminderHour = 13`, `weighInReminderHour = 10`) sont **volontairement hors** de la fenêtre
+ * DND par défaut `[22, 7)` — sinon ces notifications seraient systématiquement supprimées par le
+ * filtre DND. Toute modification des défauts doit préserver cet invariant, qui est **testé**.
  */
 export function defaultNotificationPrefs(): NotificationPrefs {
   return {
@@ -53,6 +69,18 @@ export function defaultNotificationPrefs(): NotificationPrefs {
     // arrive au début de la semaine où elle s'applique — pas la veille au soir (BILAN-01, D5).
     weeklyReview: true,
     weeklyReviewHour: 9,
+    // NUTR-F1 — **opt-in assumé.** L'app envoie aujourd'hui environ une notification par jour ;
+    // activer ces deux rappels d'office pour les utilisateurs existants en triplerait le volume
+    // sans qu'ils l'aient demandé. C'est le genre de mise à jour qui fait couper les notifications
+    // au niveau système — on perdrait alors *aussi* le rappel streak.
+    mealReminder: false,
+    // Ce sont des **échéances**, pas des heures de geste : 13 h = « midi passé, rien de noté »,
+    // 10 h = « la matinée est bien avancée, pas de pesée ». Cohérent avec le p90 appris (D1), donc
+    // sans saut choquant quand l'apprentissage prend le relais au 5ᵉ jour.
+    mealReminderHour: 13,
+    weighInReminder: false,
+    weighInReminderHour: 10,
+    learnedHour: true,
   };
 }
 
@@ -97,6 +125,11 @@ export function parseNotificationPrefs(raw: unknown): NotificationPrefs {
     maxPerDay,
     weeklyReview: boolOr(obj['weeklyReview'], d.weeklyReview),
     weeklyReviewHour: clampHour(obj['weeklyReviewHour'], d.weeklyReviewHour),
+    mealReminder: boolOr(obj['mealReminder'], d.mealReminder),
+    mealReminderHour: clampHour(obj['mealReminderHour'], d.mealReminderHour),
+    weighInReminder: boolOr(obj['weighInReminder'], d.weighInReminder),
+    weighInReminderHour: clampHour(obj['weighInReminderHour'], d.weighInReminderHour),
+    learnedHour: boolOr(obj['learnedHour'], d.learnedHour),
   };
 }
 
@@ -187,4 +220,127 @@ export interface WeeklyReviewScheduleInput {
 export function shouldScheduleWeeklyReview(input: WeeklyReviewScheduleInput): boolean {
   const { enabled, hasContent, prefs } = input;
   return enabled && hasContent && !isWithinDnd(prefs.weeklyReviewHour, prefs);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────────────────────────
+ * Rappels programmés — US NUTR-F1 (journal alimentaire, pesée)
+ * ──────────────────────────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Ramène `hour` **hors** de la fenêtre « Ne pas déranger », en la rabattant sur le bord le plus
+ * proche : soit `dndEndHour` (l'heure où le DND se lève), soit `dndStartHour - 1` (la dernière heure
+ * avant qu'il commence). **Égalité de distance → vers l'arrière** : mieux vaut rappeler un peu tôt
+ * le soir même que le lendemain matin, quand le geste n'a plus de sens.
+ *
+ * Retourne `hour` inchangée si elle est déjà hors fenêtre, si le DND est désactivé, ou si la fenêtre
+ * est vide (`dndStartHour === dndEndHour`).
+ *
+ * Les deux bords candidats sont **toujours** hors de la fenêtre `[start, end)` dès que
+ * `start !== end` : `end` en est exclu par construction (borne haute ouverte), et `start - 1` la
+ * précède. Un test de propriété le vérifie sur les 24 heures.
+ *
+ * ⚠️ **À n'appliquer QUE sur une heure apprise.** Réécrire en douce le 23 h qu'un utilisateur a
+ * composé au stepper reproduirait le « pourquoi cette heure-là ? » qu'on cherche à éliminer : une
+ * heure réglée à la main et tombant en DND est **supprimée**, avec un avertissement à l'écran
+ * (décisions D5 et D6).
+ */
+export function clampOutOfDnd(hour: number, prefs: NotificationPrefs): number {
+  if (!isWithinDnd(hour, prefs)) return hour;
+
+  const { dndStartHour: start, dndEndHour: end } = prefs;
+  const forward = end;
+  const backward = (start + 23) % 24;
+
+  const distForward = (forward - hour + 24) % 24;
+  const distBackward = (hour - backward + 24) % 24;
+
+  return distBackward <= distForward ? backward : forward;
+}
+
+/**
+ * Délai minimal entre l'instant de la décision et l'échéance visée, en minutes.
+ *
+ * ── Pourquoi cette marge existe ───────────────────────────────────────────────────────────────────
+ * La décision est prise **à l'ouverture de l'app**, donc l'app est au premier plan — et le handler de
+ * notification affiche la bannière même au premier plan. Sans marge, ouvrir l'app à 12 h 59 avec une
+ * échéance à 13 h ferait arriver « ton journal est encore vide » **60 secondes plus tard, pendant que
+ * l'utilisateur le remplit**.
+ *
+ * C'est mot pour mot le scénario qui a fait écarter la fenêtre de rattrapage (décision D7) : celle-ci
+ * couvrait le cas « échéance juste dépassée », et la même absurdité existait, symétrique, juste
+ * **avant** l'échéance. Trouvé en revue avant livraison.
+ */
+export const REMINDER_MIN_LEAD_MINUTES = 15;
+
+/** Arguments de la règle de planification d'un rappel programmé (NUTR-F1). */
+export interface ProgrammedReminderInput {
+  /** Ce rappel est-il activé dans les réglages ? */
+  enabled: boolean;
+  /** Le geste est-il déjà fait aujourd'hui (repas loggé / pesée saisie) ? */
+  doneToday: boolean;
+  /** Minutes écoulées depuis minuit local (`h * 60 + min`). */
+  nowMinutes: number;
+  /**
+   * Échéance visée (0-23) : soit apprise **et déjà rabattue** par `clampOutOfDnd`, soit réglée à la
+   * main et prise telle quelle.
+   */
+  targetHour: number;
+  /**
+   * L'échéance vient-elle de l'apprentissage ? Décide de la politique DND : une heure apprise a
+   * déjà été rabattue en amont, une heure manuelle doit être respectée — donc supprimée si elle
+   * tombe en DND (D6).
+   */
+  learned: boolean;
+  /** Préférences (fenêtre DND). */
+  prefs: NotificationPrefs;
+  /** Marge minimale avant l'échéance, en minutes. Défaut `REMINDER_MIN_LEAD_MINUTES`. */
+  minLeadMinutes?: number;
+}
+
+/**
+ * Décision de planification d'un rappel programmé.
+ *
+ * Union discriminée plutôt qu'un booléen (le patron de `shouldScheduleStreakReminder`) : chaque
+ * refus est ainsi testable **nommément** et exploitable en diagnostic pendant la recette.
+ */
+export type ReminderDecision =
+  | { kind: 'schedule'; atHour: number }
+  | { kind: 'skip'; reason: 'disabled' | 'done' | 'passed' | 'imminent' | 'dnd' };
+
+/**
+ * Décide s'il faut planifier un rappel programmé aujourd'hui.
+ *
+ * Ordre d'évaluation : `disabled` → `done` → `dnd` (heures manuelles seulement) → `passed` →
+ * `imminent` → planifie.
+ *
+ * **Échéance dépassée = pas de rappel aujourd'hui**, sans fenêtre de rattrapage (décision D7). Le
+ * backlog prévoyait une tolérance de 30 min pour le doze mode ; elle a été écartée parce que
+ * l'évaluation a lieu **à l'ouverture de l'app** : rattraper aurait notifié l'utilisateur pendant
+ * qu'il est dans l'app. Et si l'échéance est passée, c'est précisément qu'il a ouvert l'app — il n'a
+ * pas besoin d'une notification l'invitant à l'ouvrir.
+ *
+ * **Échéance trop proche = pas de rappel non plus** (`imminent`, voir `REMINDER_MIN_LEAD_MINUTES`).
+ * `passed` et `imminent` sont distingués parce qu'ils ne se diagnostiquent pas pareil en recette :
+ * l'un dit « trop tard », l'autre « tu es déjà là ».
+ */
+export function decideProgrammedReminder(input: ProgrammedReminderInput): ReminderDecision {
+  const {
+    enabled,
+    doneToday,
+    nowMinutes,
+    targetHour,
+    learned,
+    prefs,
+    minLeadMinutes = REMINDER_MIN_LEAD_MINUTES,
+  } = input;
+
+  if (!enabled) return { kind: 'skip', reason: 'disabled' };
+  if (doneToday) return { kind: 'skip', reason: 'done' };
+  if (!learned && isWithinDnd(targetHour, prefs)) return { kind: 'skip', reason: 'dnd' };
+
+  const targetMinutes = targetHour * 60;
+  if (nowMinutes >= targetMinutes) return { kind: 'skip', reason: 'passed' };
+  if (targetMinutes - nowMinutes < minLeadMinutes) return { kind: 'skip', reason: 'imminent' };
+
+  return { kind: 'schedule', atHour: targetHour };
 }

@@ -10,6 +10,196 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `feature/nutrf1-rappels-nutrition` — rappels programmés nutrition (US NUTR-F1, roadmap 1.14 + 2.5)
+
+Commit précédent : `038c664`.
+
+Deux rappels locaux — **journal alimentaire** et **pesée** — déclenchés à une **échéance apprise** du
+comportement. **Aucune migration, aucune sync rule à redéployer, aucune dépendance native, aucun
+nouveau build** : les 5 nouvelles préférences vivent dans la colonne JSON `user_settings.notifications`
+déjà synchronisée, et tout le calcul est local.
+
+#### Le défaut de conception corrigé avant d'écrire une ligne de code
+
+La première rédaction de la spec apprenait la **médiane** de l'heure de saisie et déclenchait le
+rappel à cette heure. La relecture critique a montré que c'était contre-productif : la médiane est par
+définition l'heure où le geste est fait **une fois sur deux**, donc un utilisateur régulier qui logge à
+8 h aurait reçu « ton journal est vide » à 8 h, **un jour sur deux, pendant qu'il le remplit** — et une
+notification déjà tirée ne s'annule pas (la re-planification n'a lieu qu'à l'ouverture de l'app, et le
+handler affiche la bannière même au premier plan).
+
+On apprend donc une **échéance** : le **p90** de l'heure du geste, l'heure avant laquelle c'est déjà
+fait 9 jours sur 10. Le rappel devient **rare par construction**, ce qui est le but.
+
+#### Ajouté
+
+- [learned-hour.ts](packages/shared/src/learned-hour.ts) — brique pure de l'échéance apprise.
+  `usableDailyHours` (une heure locale par jour, filtre anti-saisie-rétroactive),
+  `percentileHour` (percentile **par rang**, sans interpolation), `resolveLearnedDeadline`.
+  Constantes : fenêtre 14 jours, seuil 5 jours, décile 0,9. **28 tests** — dont les tests
+  indépendants du fuseau de la machine (les horodatages sont construits depuis des `Date` locales
+  puis sérialisés en UTC, comme le fait l'app).
+- `clampOutOfDnd(hour, prefs)` dans [notifications.ts](packages/shared/src/notifications.ts) —
+  rabat une heure **apprise** hors de la fenêtre « Ne pas déranger », sur le bord le plus proche
+  (`dndEndHour` ou `dndStartHour − 1`), égalité vers l'arrière. Couvert par un **test de propriété**
+  (6 fenêtres × 24 heures : le résultat vérifie toujours `!isWithinDnd`).
+- `decideProgrammedReminder(input): ReminderDecision` — union discriminée
+  `{schedule, atHour} | {skip, reason}` avec `reason ∈ disabled|done|passed|dnd`, chaque refus testé
+  nommément.
+- 5 préférences dans `NotificationPrefs` : `mealReminder` (défaut `false`), `mealReminderHour` (13),
+  `weighInReminder` (`false`), `weighInReminderHour` (10), `learnedHour` (`true`).
+- [reminder-habits-repository.ts](apps/mobile/src/data/repositories/reminder-habits-repository.ts) —
+  lecture locale des habitudes (`useMealDeadline`, `useWeighInDeadline`, `useMealLoggedToday`,
+  `useWeighInToday`).
+- `useProgrammedRemindersScheduler()` dans
+  [notification-repository.ts](apps/mobile/src/data/repositories/notification-repository.ts) — un
+  seul hook et un seul abonnement `AppState` pour les deux rappels ; monté dans
+  [_layout.tsx](apps/mobile/src/app/_layout.tsx).
+- `scheduleDatedReminder(id, date, content)` / `cancelReminder(id)` +
+  `MEAL_REMINDER_ID` / `WEIGH_IN_REMINDER_ID` dans
+  [notifications.ts](apps/mobile/src/lib/notifications.ts).
+- Réglages : switch **« Caler sur mes habitudes »** + 2 rappels (switch + `HourStepper`) avec la
+  **provenance de l'heure** affichée, dans [settings.tsx](apps/mobile/src/app/settings.tsx).
+- Mock `expo-notifications` dans [jest.setup.ts](apps/mobile/jest.setup.ts) — il n'existait pas, et
+  `@/lib/notifications` enregistre un `setNotificationHandler` **au chargement du module** : sans le
+  mock, tout test important indirectement ce module échouait à l'import.
+- 15 clés i18n FR/EN (parité vérifiée : 1495 = 1495, zéro orpheline).
+
+#### Corrigé — trouvés en revue de code, AVANT livraison
+
+- 🔴 **BLOQUANT : la date « aujourd'hui » était gelée au montage par React Compiler.**
+  `reminder-habits-repository.ts` écrivait `useQuery(sql, [localDayKey(new Date())])`, avec un
+  commentaire affirmant que la valeur était « recalculée à chaque render ». **Faux en production.**
+  `experiments.reactCompiler` est activé ([app.json:83](apps/mobile/app.json#L83)) : le tableau de
+  paramètres n'ayant aucune entrée réactive, le compilateur le classe constant et le range dans un
+  slot `useMemoCache` **mount-only**.
+
+  Le hook étant monté dans le layout racine — donc une seule instance pour toute la vie du process,
+  qu'Android conserve en arrière-plan — le scénario réel était : l'utilisateur note son dîner le soir,
+  revient le lendemain matin, la requête « déjà fait aujourd'hui ? » répond encore sur **la veille**
+  → `true` → `cancelReminder`. **Plus aucun rappel de repas, jamais**, pour exactement l'utilisateur
+  qu'on cible. Et la fenêtre d'apprentissage cessait de glisser.
+
+  **Le bug était invisible partout où on l'aurait cherché** : en dev, le cache du compilateur est
+  réinitialisé à chaque sauvegarde de fichier ; sous Jest, le plugin n'est pas appliqué. Il ne se
+  manifestait qu'en **build release**. Corrigé par un `useTodayKey()` à base de `useState`, rafraîchi
+  au retour au premier plan — la clé devient une entrée réactive (décision **D9**).
+
+  ⚠️ **Même patron ailleurs, non corrigé ici** : `dashboard-repository.ts` (`useStreakData` →
+  `activeToday`) présente la même construction. C'est une famille de bugs préexistante qui mérite sa
+  propre passe — elle affecte le rappel streak de la même manière.
+- 🔴 **Aucune marge avant l'échéance** (décision **D8**, ajoutée) : D7 avait supprimé le rattrapage
+  *après* l'échéance, mais rien ne protégeait *juste avant*. Ouvrir l'app à 12 h 59 pour une échéance
+  à 13 h faisait arriver « ton journal est encore vide » **60 secondes plus tard, pendant que
+  l'utilisateur le remplit** — le scénario exact que D7 invoque pour se justifier. Marge de
+  `REMINDER_MIN_LEAD_MINUTES = 15`, avec un motif de refus **distinct** (`imminent` vs `passed`) :
+  en recette, l'un dit « trop tard », l'autre « tu es déjà là ».
+- ⚠️ **Course entre deux `apply()` concurrents.** `apply()` démarre par deux allers-retours natifs, donc
+  deux invocations peuvent se chevaucher : A décide « planifier » sur un journal vide, l'utilisateur
+  ajoute un aliment, B décide « annuler » — et si les promesses ne se résolvent pas dans l'ordre de
+  départ, le `schedule` de A s'exécute **après** le `cancel` de B et le rappel revient alors que le
+  journal est rempli. Ce hook étant réveillé par **deux tables surveillées**, le chevauchement n'est
+  pas théorique. Corrigé par un jeton de génération (`useRef`), vérifié après chaque `await`.
+- ⚠️ **`resolveDeadline` n'était pas testé** — et c'était le **seul** morceau de logique métier de l'US
+  qui ne l'était pas, alors que c'est là que D5 et D6 sont réellement câblés. Il était pur et sans
+  dépendance React : déplacé dans `packages/shared` sous le nom `resolveReminderDeadline`, avec
+  6 tests. Le chemin qui manquait entièrement : apprentissage **puis** rabattement
+  (`daysAt(23, 7)` → `{ hour: 21, learned: true, shifted: true }`).
+- **Fenêtre d'apprentissage à 15 jours au lieu de 14** : `localMidnightDaysAgo(14)` couvre J-14…J0.
+  Corrigé en `LEARNED_HOUR_WINDOW_DAYS - 1`, la convention du dépôt (cf. `ROLLING_WEEK_DAYS - 1`).
+
+#### Corrigé
+
+- 🔴 **Dérive Zod de `notificationPrefsSchema`** ([settings.ts](packages/shared/src/settings.ts)) :
+  le schéma ne déclarait que **6** des 8 champs de `NotificationPrefs` — `weeklyReview` et
+  `weeklyReviewHour` manquaient depuis BILAN-01. `z.object` étant strippant, tout passage par ce
+  schéma les **perdait silencieusement**. Dérive **latente** (le chemin runtime passe par
+  `parseNotificationPrefs`, pas par Zod), donc jamais visible en production — mais le piège attendait
+  les 5 champs suivants.
+
+  ⚠️ **Première tentative de correction rejetée en revue** : compléter la liste à 13 champs
+  **obligatoires** n'aurait pas corrigé le piège, ça l'aurait **approfondi**. La colonne est enrichie
+  *sans migration*, donc aucune ligne existante ne contient les champs ajoutés après coup : au lieu de
+  stripper en silence, le schéma se serait mis à **lever** sur toute ligne antérieure. Le schéma
+  délègue désormais à `parseNotificationPrefs` (`z.unknown().transform(...)`), ce qui est le contrat
+  réel de cette colonne — une seule implémentation de la tolérance, testée en un seul endroit. Trois
+  tests ajoutés, dont « une ligne de 6 champs se lit sans lever, les 7 autres sont complétés ».
+- ⚠️ **Le hint « Max 3 notifications par jour » était faux depuis V0.6.** `canScheduleMore` existe,
+  est testé, et n'était appelé par personne — aveu explicite en commentaire dans
+  `notification-repository.ts`. Décision **D3** : on corrige le **texte**, pas le code, parce qu'un
+  compteur n'ajouterait aucune protection (chaque type est déjà borné à un par jour par son
+  identifiant stable) et **ferait perdre des rappels** (les planificateurs re-tournent à chaque retour
+  au premier plan ; sans court-circuit, un type déjà compté se verrait refuser sa re-planification et
+  la branche d'annulation supprimerait le rappel à la deuxième ouverture de l'app). Le hint énonce
+  désormais la garantie réelle : « Au plus un rappel par type et par jour. »
+- Un trou trouvé en relecture du code livré : apprentissage actif **mais historique insuffisant** →
+  l'heure de repli s'applique sans être rabattue, donc un repli tombant dans le DND ne partait jamais,
+  alors que l'écran affichait sereinement « 23:00 en attendant ». L'avertissement DND dépend maintenant
+  de `deadline.learned` et non du mode d'apprentissage, et les deux lignes explicatives coexistent.
+
+#### Modifié
+
+- `useStreakReminderScheduler` (**code livré et recetté**) : il recopiait `NotificationPrefs` champ par
+  champ dans un objet local — patron qui casse à chaque ajout de champ au type, et qui a effectivement
+  cassé au typecheck dès l'ajout des 5 champs de cette US. Il passe désormais `prefs` directement
+  (8 lignes de moins, plus de littéral à maintenir). Les 3 heures du DND quittent la liste de
+  dépendances du `useCallback` (elles sont portées par `prefs`), ce qui aligne ce hook sur son
+  jumeau `useWeeklyReviewScheduler`. **Point d'attention** : `prefs` est un objet recréé à chaque
+  render par `parseNotificationPrefs`, donc `apply` change d'identité à chaque render — comportement
+  déjà celui de `useWeeklyReviewScheduler`, et inoffensif grâce aux identifiants stables (planifier
+  remplace, annuler est idempotent).
+- `scheduleStreakReminder` / `cancelStreakReminder` deviennent de fines enveloppes sur la paire
+  générique — comportement identique, une seule implémentation au lieu de trois copies à venir.
+
+#### Technique / Notes
+
+- **Aucun agrégat SQL sur `created_at`.** Le plan prévoyait initialement
+  `MIN(created_at) … GROUP BY log_date` ; c'est faux, parce que le choix de l'entrée retenue dépend du
+  filtre anti-rétroactif, qui se calcule en **heure locale** donc en JS. Un `strftime('%H', created_at)`
+  aurait renvoyé l'heure **UTC** et décalé tout l'apprentissage de 1 à 2 h selon la saison.
+- **Cycle d'import évité** : `reminder-habits-repository` reçoit les préférences en **paramètre** au
+  lieu d'appeler `useNotificationPrefs()`, sinon il serait en cycle avec `notification-repository` qui
+  le consomme. L'écran de réglages et le planificateur disposent tous deux déjà des prefs — et
+  consomment **les mêmes hooks**, donc l'heure affichée ne peut pas diverger de l'heure planifiée.
+- **Percentile par rang** (`trié[ceil(p × n) − 1]`) et non médiane : défini pour tout `n`, sans règle
+  à inventer pour les échantillons pairs (majoritaires ici : fenêtre 14, seuil 5), et il neutralise le
+  problème circulaire dans le sens utile — sur `{23,0,23,0,23,0}` la médiane renvoie 11 h 30 (le point
+  antipodal de l'habitude réelle), le p90 renvoie 23 (le bord tardif, ce qu'on cherche).
+- **Limite assumée du filtre anti-rétroactif (D4)** : il n'attrape **pas** les copies du jour même
+  (`copyMeal`, `duplicateDay`, repas types portent `created_at = maintenant` et `log_date` = le jour
+  affiché, presque toujours aujourd'hui). Quelqu'un qui duplique la veille chaque matin à 10 h
+  apprendra « 10 h ». Assumé : sous D1, une contamination qui **repousse** l'échéance va dans le sens
+  sûr — elle rend le rappel plus rare, jamais plus intrusif. Distinguer une copie exigerait une
+  colonne `source`, donc une migration, pour un gain nul dans la direction qui compte.
+- **Aucune fenêtre de rattrapage (D7)**, alors que le backlog en prévoyait une de ~30 min pour le doze
+  mode. Écartée : l'évaluation a lieu **à l'ouverture de l'app**, donc rattraper aurait notifié
+  l'utilisateur pendant qu'il est dans l'app. Et si l'échéance est passée, c'est précisément qu'il a
+  ouvert l'app — il n'a pas besoin d'une notification l'invitant à l'ouvrir.
+- **Deux politiques DND, une par origine de l'heure** : rabattement pour une heure que l'app a choisie
+  (D5), respect strict — donc non-envoi + avertissement à l'écran — pour une heure que l'humain a
+  composée (D6). On ne réécrit pas en douce un choix de l'utilisateur.
+- **Rappels opt-in** (défaut `false`) : l'app envoie environ une notification par jour ; les activer
+  d'office pour les utilisateurs existants en triplerait le volume sans qu'ils l'aient demandé — c'est
+  le genre de mise à jour qui fait couper les notifications au niveau système, et on perdrait alors
+  *aussi* le rappel streak.
+- **Invariant étendu et testé** : les **4** heures par défaut (20, 9, 13, 10) sont hors de la fenêtre
+  DND par défaut `[22, 7)`. Sans lui, la notification serait planifiée puis systématiquement supprimée
+  — une fonctionnalité muette, sans erreur visible.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0
+  (9 warnings, tous préexistants, aucun sur les fichiers de cette US) · `npm run test` 0 →
+  **1195 tests Vitest** (61 fichiers) + **182 tests Jest** (37 suites).
+- **La revue de code a payé, et voici comment** : elle n'a pas raisonné à vide, elle a **compilé** le
+  code avec `babel-plugin-react-compiler` pour inspecter la sortie réelle. C'est ce qui a produit le
+  bug bloquant, qu'aucune des trois portes de qualité ne pouvait attraper (le compilateur n'est pas
+  appliqué sous Jest, et son cache est réinitialisé en dev). **Leçon à garder** : sur ce dépôt,
+  `reactCompiler` étant activé, un paramètre de requête `useQuery` sans entrée réactive est gelé au
+  montage — et `panicThreshold: 'NONE'` en production signifie qu'un fichier non compilable est
+  abandonné **en silence**, donc ne jamais faire dépendre une propriété de *correction* du compilateur.
+- **Reste à faire** : recette device (§7 de la spec), prévue par Florian le 30/07/2026 au soir.
+  **Pas de nouveau build nécessaire.**
+- **Ce que cette US pose pour MUSC-F8** : l'échéance apprise et le rabattement DND sont réutilisables
+  tels quels pour les rappels muscu (P1). C'était la raison de faire NUTR-F1 en premier.
+
 ### 30/07/2026 — `fix/theme-contraste-et-flash` — flash de thème à chaque navigation
 
 Commit précédent : `c227127`.

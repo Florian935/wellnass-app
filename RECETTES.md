@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **29/07/2026** — 12 US en attente.
+> Dernière mise à jour : **30/07/2026** — 13 US en attente.
 
 ---
 
@@ -294,6 +294,62 @@ en reste là — voir [spec §0.2](docs/specs/functional/us/muscf14-substitution
 - [ ] 6. Les chips afficher/masquer et changer-de-forme se tapent **sans viser** (cible 48 dp).
 - [ ] 7. L'appui long déplace toujours la carte, le glissement conserve son retour visuel.
 - [ ] 8. En **EN**, les deux nouvelles chaînes sont traduites.
+
+---
+
+## 13. NUTR-F1 — Rappels programmés nutrition (repas + pesée)
+
+📄 [spec](docs/specs/functional/us/nutrf1-rappels-nutrition.md) · roadmap 1.14 + 2.5 ·
+**📱 device** (13 critères) · **aucun nouveau build nécessaire** (`expo-notifications` était déjà là)
+
+> ⚠️ **Un critère exige un build release** (le premier, marqué 🔴). Le bug qu'il vérifie est masqué
+> en dev par le cache de React Compiler. Si tu recettes sur le dev build, note-le comme **non
+> vérifié** plutôt que comme passé.
+
+> ⏱️ **Cette recette demande de la patience ou de la triche.** Les rappels partent à une heure de la
+> journée. Pour ne pas attendre 13 h, coupe « Caler sur mes habitudes » et règle l'heure au stepper
+> **une heure après l'heure courante** — le rappel se planifie à l'ouverture suivante de l'app.
+> Rappelle-toi qu'une échéance **déjà passée** ne planifie rien (c'est voulu, décision D7).
+
+- [ ] **Les deux rappels sont éteints à l'ouverture des réglages.** C'est l'opt-in : une mise à jour
+      ne doit pas se mettre à notifier quelqu'un qui n'a rien demandé.
+- [ ] **Rappel de repas** activé, journal du jour vide → notification reçue à l'heure attendue,
+      titre « Ton journal est encore vide ».
+- [ ] **Logger un repas annule le rappel en attente.** Vérifiable en rouvrant l'app puis en
+      attendant l'heure : rien ne doit arriver.
+- [ ] **Rappel de pesée** activé, aucune pesée du jour → notification reçue, titre « Pas encore de
+      pesée aujourd'hui ». Puis saisir une pesée → plus rien pour la journée.
+- [ ] 🔴 **Le rappel repart bien le lendemain** (décision D9, bug bloquant trouvé en revue) : logger
+      un repas le soir, laisser l'app en arrière-plan **sans la tuer**, revenir le lendemain matin →
+      le rappel doit se reprogrammer. ⚠️ **Observable uniquement en build release** : en dev, le cache
+      de React Compiler est réinitialisé à chaque sauvegarde, ce qui masque le défaut. C'est le
+      critère le plus important de cette recette.
+- [ ] **Ouvrir l'app APRÈS l'échéance ne déclenche aucune notification.** C'est le critère qui
+      vérifie la décision D7 : on ne notifie pas quelqu'un qui est déjà dans l'app.
+- [ ] **Ouvrir l'app MOINS DE 15 MIN avant l'échéance ne déclenche rien non plus** (D8) : régler
+      l'heure au stepper à l'heure courante + 1, ouvrir l'app dans le dernier quart d'heure → aucune
+      notification. Sans cette marge, elle arrivait pendant qu'on remplissait le journal.
+- [ ] **« Caler sur mes habitudes » actif** : sous chaque rappel, la ligne de provenance s'affiche
+      (« D'après tes habitudes : 13:00 » ou « Pas encore assez d'historique — 13:00 en attendant »),
+      et les steppers sont **grisés et inertes**.
+- [ ] **« Caler sur mes habitudes » coupé** : le stepper reprend la main, effet immédiat sans
+      redémarrage.
+- [ ] **Heure apprise tombant dans le « Ne pas déranger »** → le rappel arrive à l'heure
+      **rabattue** (pas dans la nuit, et pas jamais), et la ligne le dit : « — décalé avant ta plage
+      Ne pas déranger ». *Mise en condition : régler la fenêtre DND pour qu'elle englobe l'heure
+      apprise affichée.*
+- [ ] **Heure réglée à la main dans la fenêtre DND** → **aucun rappel**, et l'avertissement
+      « ⚠️ Cette heure est dans ta plage Ne pas déranger… » est affiché sous la ligne.
+- [ ] **Le hint de section ne promet plus « max 3 notifications par jour »** mais « Au plus un
+      rappel par type et par jour ».
+- [ ] **Parité FR/EN** : basculer la langue et revérifier les 3 nouveaux libellés, les lignes de
+      provenance et le **contenu des notifications**. ⚠️ Un rappel **déjà posé** garde la langue
+      d'alors (limite connue, déjà vraie pour le streak) — reposer le rappel après la bascule.
+
+**Le rappel n'arrive pas ?** Dans l'ordre : notifications autorisées au niveau système (le bandeau
+des réglages le dit) · le rappel est-il activé · le geste n'est-il pas **déjà fait** aujourd'hui ·
+l'heure effective (ligne de provenance) est-elle bien **dans le futur** · l'heure n'est-elle pas dans
+le DND avec un réglage manuel. Ces cinq refus sont exactement les `reason` de la règle métier.
 
 ---
 
