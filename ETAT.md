@@ -53,8 +53,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/conf07-accessibilite` (modifications non commitées) |
-| Commits | 976 · `main` a **973** commits de retard sur `dev` |
+| Branche courante | `docs/lance00-prerequis-publication` (modifications non commitées) |
+| Commits | 977 · `main` a **974** commits de retard sur `dev` |
 | Specs d'US | 90 au total — 75 clôturées, 15 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -65,11 +65,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `0df5e02` docs(conf07): cadre l'accessibilité — 5 non-conformités WCAG restantes
 - `cf17e5c` feat(partage01): carte de partage — charte alignée sur le thème sombre
 - `56ea41d` merge: intègre origin/dev dans la refonte nutrition
 - `e3abfa3` feat(nutrition): refonte visuelle du journal alimentaire
 - `5fda5e3` feat(muscf8): notifications muscu — push de record agrégé, célébration animée, rappel de séance (US MUSC-F8, 3.42/2.7/2.4)
-- `0710b73` docs(recettes): signale que les surfaces « aujourd'hui » ont changé et exigent un build release
 
 ---
 

@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `docs/lance00-prerequis-publication` — prérequis de publication rédigés d'avance
+
+Commit précédent : `0df5e02`. Roadmap **9.2** (LANCE-00). Objectif : que la création du compte Play
+— délai externe de plusieurs jours — ne soit **pas** suivie d'une seconde attente de rédaction.
+
+#### Ajouté
+
+- [lance00-fiche-play-et-confidentialite.md](docs/specs/technical/lance00-fiche-play-et-confidentialite.md)
+  — politique de confidentialité **publiable** (distincte du résumé in-app, qui reste un brouillon
+  assumé), fiche Play (titre 29 car., description courte 79 car., description complète), réponses au
+  formulaire **Sécurité des données** établies d'après les **41 tables réelles** des migrations, et
+  l'ordre d'exécution des 6 étapes en série.
+
+#### Corrigé
+
+- **`app.json` : `version` `0.0.0` → `1.0.0`.** Incohérent avec le `runtimeVersion: "1.0.0"` déjà
+  présent, et la roadmap vise V1.0 au lancement. ⚠️ **Effet de bord à connaître** : le suivi
+  analytics (9.10) enregistre cette valeur — **toutes les mesures collectées jusqu'ici portent
+  `0.0.0`** et sont indistinguables entre elles.
+
+#### Technique / Notes
+
+- 🟠 **Trouvé en relisant `app.json` : l'app démarre sur un écran bleu Expo.**
+  `expo-splash-screen.backgroundColor` vaut `#208AEF` et `android.adaptiveIcon.backgroundColor`
+  `#E6F4FE` — les **couleurs du gabarit de départ**, jamais remplacées. La palette du produit est
+  crème `#f7eede` / terracotta `#dd6e40`, et `expo-notifications` est déjà correctement réglé sur
+  `#dd6e40`. C'est la **première chose vue à chaque lancement**, et c'est le fond de l'icône sur la
+  fiche Play. **Non corrigé ici** : c'est un choix de charte (proposition `#f7eede` pour les deux)
+  → Damien/Florian, à trancher avec CONF-07 §4.
+- 🟠 Pas de `android.versionCode` explicite : EAS l'incrémente, mais le **build local Gradle** n'est
+  alors pas reproductible. Play refuse un `versionCode` déjà soumis et ne le dit qu'à l'upload.
+- 🔴 **Deux trous que je ne peux pas combler** : l'identité du **responsable de traitement** et
+  l'**e-mail de contact** sont exigés par le RGPD et laissés en `<à compléter>` — les inventer serait
+  produire un document juridiquement faux. La **version EN** de la politique est également à produire
+  (décision G : FR + EN dès le lancement), de préférence avant la relecture juridique pour n'en faire
+  qu'une.
+- Trois affirmations de la fiche sont signalées comme **à revérifier avant publication** (« gratuit
+  sans abonnement », « aucune publicité », captures d'écran) : une fiche qui promet ce que l'app ne
+  fait pas est un motif de rejet, et les captures sont contrôlées par un humain chez Google. Les
+  captures ne doivent pas être produites **avant** l'arbitrage CONF-07 (les couleurs de boutons
+  peuvent changer).
+
 ### 30/07/2026 — `fix/conf07-accessibilite` — CONF-07 cadrée (spec + plan + maquette)
 
 Commit précédent : `cf17e5c`. Roadmap **9.11 / 9.12**. **Aucun code applicatif** — l'US s'arrête à

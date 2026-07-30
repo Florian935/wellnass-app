@@ -33,7 +33,20 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 >    des 3 types de données. ~7 j d'instruction + 5-7 j ouvrés de propagation. Procédure et textes
 >    prêts à coller : [health-connect-play-declaration.md](docs/specs/technical/health-connect-play-declaration.md).
 > 4. SMTP custom Supabase (le service e-mail intégré est rate-limité).
-> 5. `app_version` réelle dans `app.json` (aujourd'hui `0.0.0`).
+> 5. ~~`app_version` réelle dans `app.json`~~ → ✅ **fait le 30/07/2026** (`0.0.0` → `1.0.0`, aligné sur
+>    le `runtimeVersion` déjà présent). ⚠️ Toutes les mesures analytics collectées jusqu'ici portent
+>    `0.0.0` et sont indistinguables.
+>
+> 📄 **Brouillons prêts à relire** :
+> [lance00-fiche-play-et-confidentialite.md](docs/specs/technical/lance00-fiche-play-et-confidentialite.md)
+> — politique de confidentialité publiable, fiche Play (titre / descriptions), réponses au formulaire
+> « Sécurité des données » établies d'après les 41 tables réelles, et ordre d'exécution.
+> **Restent à compléter par un humain** : l'identité du responsable de traitement + l'e-mail de
+> contact (RGPD, je ne peux pas les inventer), la version EN, et la relecture juridique.
+> 🟠 **Trouvé au passage** : l'écran de démarrage est resté au **bleu du gabarit Expo** (`#208AEF`),
+> ainsi que le fond de l'icône adaptative (`#E6F4FE`), alors que la palette est crème/terracotta.
+> C'est la première chose vue à chaque lancement, et c'est l'icône de la fiche Play. Décision de
+> charte → Damien/Florian (proposition : `#f7eede` pour les deux).
 >
 > ⚠️ Les points 1 → 3 s'enchaînent **en série** et sont tous à délai externe : environ **3 semaines**
 > entre « je crée le compte » et « Health Connect fonctionne en production ». À démarrer bien avant
