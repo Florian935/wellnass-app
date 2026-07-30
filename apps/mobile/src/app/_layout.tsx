@@ -33,7 +33,7 @@ import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
-import { useTheme } from '@/theme/useTheme';
+import { useSyncColorScheme, useTheme } from '@/theme/useTheme';
 
 // Garde le splash affiché tant que les polices ne sont pas chargées.
 void SplashScreen.preventAutoHideAsync();
@@ -68,6 +68,10 @@ function navTheme(base: NavTheme, colors: ReturnType<typeof useTheme>['colors'])
  */
 function RootNavigator() {
   const { t } = useTranslation();
+  // Résolution du thème : **ici et nulle part ailleurs**. Publie dans `color-scheme-store`, que les
+  // 126 appels à `useTheme()` lisent ensuite sans requête ni état de chargement — c'est ce qui
+  // supprime le flash de thème à chaque navigation (cf. color-scheme-store.ts).
+  useSyncColorScheme();
   const { scheme, colors } = useTheme();
   const { loaded, error } = useAppFonts();
   const session = useAuthStore((s) => s.session);

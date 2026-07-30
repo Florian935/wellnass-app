@@ -1,25 +1,52 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { useColorSchemeStore } from '@/stores/color-scheme-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { palettes, type ColorScheme, type Palette } from './colors';
 
 /**
- * Résout le schéma effectif : la préférence utilisateur (Réglages, persistée via
- * PowerSync) prime ; en mode « système » on suit le réglage OS. Indépendant de la
- * langue et des unités.
+ * Résout le schéma effectif et le publie dans le store partagé. **À appeler une seule fois**, dans
+ * le navigateur racine — c'est le seul endroit qui lit la préférence en base.
  *
- * Tant que les réglages ne sont pas chargés (`settings` null), on retombe sur
- * `'system'` afin d'éviter tout plantage / flash.
+ * Avant le 30/07/2026, cette résolution vivait dans `useTheme()` : les 126 composants qui l'appellent
+ * ouvraient donc chacun leur propre requête PowerSync et repartaient du thème système à chaque
+ * montage, d'où un flash de thème à chaque navigation. Voir `color-scheme-store.ts`.
+ */
+export function useSyncColorScheme(): void {
+  const system = useColorScheme();
+  const { settings, isLoading } = useSettings();
+  const setScheme = useColorSchemeStore((s) => s.setScheme);
+
+  const preference = settings?.theme ?? null;
+  // Tant que la lecture n'a pas abouti, on ne publie **rien** : publier le thème système serait
+  // exactement le flash qu'on supprime. Le splash couvre cette fenêtre (`resolveRootRoute` attend
+  // `settingsLoading`).
+  const resolved: ColorScheme | null = isLoading
+    ? null
+    : preference === 'light' || preference === 'dark'
+      ? preference
+      : system === 'dark'
+        ? 'dark'
+        : 'light';
+
+  useEffect(() => {
+    if (resolved !== null) setScheme(resolved);
+  }, [resolved, setScheme]);
+}
+
+/**
+ * Schéma effectif pour l'affichage. Lit le store (résolu une fois par `useSyncColorScheme`).
+ *
+ * Repli sur le thème **système** uniquement si le store n'a jamais été alimenté — cas d'un composant
+ * rendu hors de l'app (test isolé, story). En fonctionnement normal ce repli ne sert jamais : le
+ * splash est maintenu jusqu'à la résolution.
  */
 export function useColorSchemePref(): ColorScheme {
+  const stored = useColorSchemeStore((s) => s.scheme);
   const system = useColorScheme();
-  const { settings } = useSettings();
-  const preference = settings?.theme ?? 'system';
-  if (preference === 'system') {
-    return system === 'dark' ? 'dark' : 'light';
-  }
-  return preference;
+  if (stored !== null) return stored;
+  return system === 'dark' ? 'dark' : 'light';
 }
 
 /**

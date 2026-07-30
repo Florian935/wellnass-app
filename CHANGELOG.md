@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `fix/theme-contraste-et-flash` — flash de thème à chaque navigation
+
+Commit précédent : `c227127`.
+
+#### Corrigé
+
+- 🔴 **Flash de thème à chaque changement d'écran.** Symptôme rapporté par Damien en entrant dans le
+  module poids : « thème sombre 0,2 s, puis **petit à petit** le clair ». Reproduit — préférence
+  stockée `light`, système `dark`.
+
+  **Deux causes qui se combinaient**, toutes deux dans [useTheme.ts](apps/mobile/src/theme/useTheme.ts) :
+
+  1. `useColorSchemePref` faisait `settings?.theme ?? 'system'`. Le commentaire affirmait que ce repli
+     *évitait* un flash — il le **causait** dès que la préférence stockée diffère du réglage OS : tant
+     que la lecture n'avait pas abouti, l'app peignait avec le thème **système**.
+  2. `useTheme()` est appelé par **126 composants**, et chacun ouvrait **sa propre requête PowerSync**
+     via `useSettings()`. À chaque navigation, les composants du nouvel écran montaient tous avec
+     `settings === null` puis se résolvaient **indépendamment** → le basculement se voyait composant
+     par composant. C'est le « petit à petit » : pas un fondu, 126 rebascules successives.
+
+  Le démarrage, lui, était sain : `resolveRootRoute` maintient déjà le splash tant que
+  `settingsLoading`. Le défaut ne se manifestait donc **qu'à la navigation**.
+
+#### Ajouté
+
+- [color-scheme-store.ts](apps/mobile/src/stores/color-scheme-store.ts) — le schéma effectif, résolu
+  **une seule fois** et partagé. `null` tant que non résolu (fenêtre couverte par le splash).
+- `useSyncColorScheme()`, appelée **uniquement** dans [_layout.tsx](apps/mobile/src/app/_layout.tsx) :
+  seul endroit qui lit la préférence en base, et qui ne publie **rien** avant que la lecture aboutisse.
+
+#### Technique / Notes
+
+- **Store Zustand plutôt que contexte React**, pour trois raisons : c'est le patron déjà en place
+  (`menu-accent-store`, `useTrackedMicros`) ; un store se lit **sans provider**, donc les tests qui
+  rendent un composant isolé continuent de fonctionner ; et la valeur **survit à la navigation** — un
+  contexte remonté aurait reproduit le défaut.
+- **`useTheme()` garde exactement la même signature** : les 126 appels sont inchangés, d'où un diff de
+  3 fichiers pour un correctif structurel.
+- Effet de bord favorable : **125 requêtes PowerSync redondantes supprimées** (une seule
+  souscription aux réglages au lieu d'une par composant thémé).
+- Le repli sur le thème système subsiste dans `useColorSchemePref`, mais **uniquement** si le store
+  n'a jamais été alimenté — composant rendu hors de l'app (test isolé). En fonctionnement normal il
+  ne sert jamais.
+- ⚠️ **Vérification incomplète, à assumer** : `adb screencap` prend ~150 ms par image, donc les
+  captures ne peuvent pas *prouver* l'absence d'une frame sombre de 200 ms. Elles montrent le
+  dashboard et l'écran Suivi/Poids en clair dès la première image. La garantie réelle est
+  structurelle : le thème ne dépend plus d'une requête asynchrone par composant. **Confirmation
+  finale à l'œil, en recette.**
+- Qualité (racine, codes de sortie lus sans pipe) : `lint` **0** · `typecheck` **0** · `test` **0** —
+  1 126 Vitest + 182 Jest.
+
 ### 30/07/2026 — `fix/theme-contraste-et-flash` — contraste WCAG du thème clair (9.12)
 
 Commit précédent : `1cdaf11`.
