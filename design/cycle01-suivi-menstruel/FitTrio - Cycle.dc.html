@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    color-scheme: light;
+    --txt:#33291f; --panel:#33291f; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#d9a888;
+    --acc:#b14f2b; --acc-rgb:177,79,43; --grn:#66714b; --amber:#b47f31;
+    --card:#fffaf2; --line:#ece0cd; --line2:#e0d0b6; --mut:#8a7458; --mut2:#a8967d;
+    --sub:#7a6244; --deep:#5c4a35; --lbl:#6f5a40;
+    --soft:#f3ddd0; --softline:#e6c3ae; --accdk:#a34e2c;
+    --track:#eadcc6; --chip:#faf5ec; --chipline:#e8dcc9; --btnsoft:#e6d7bf; --seg:#e8dcc9;
+    --tert:#faf3e6; --tertline:#dcc9ab; --field:#fffaf2; --frame:#efe4d1; --bezel:#241c15;
+    --empty:#f3ede1; --stripe1:#eaddc8; --stripe2:#e3d4bc; --danger:#b23b2e; --dangerbg:#f6ddd4;
+    --deskA:#ece0cd; --deskB:#ddd0ba; --deskC:#d3c5ac; --railbg:#fbf6ee;
+    --warnbg:#f7ead6; --warnline:#e9cfa0; --warntx:#8a6419;
+    --ph1:#b14f2b; --ph1bg:#f3ddd0; --ph2:#6f7d4e; --ph2bg:#e6ead6;
+    --ph3:#c1902f; --ph3bg:#f6e6cd; --ph4:#8a5638; --ph4bg:#eadccb;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --txt:#f4ecdd; --panel:#2c241c; --paneltx:#f0e4d0; --panelmut:#c9b79a; --panelacc:#e0a97f;
+    --acc:#dd6e40; --acc-rgb:221,110,64; --grn:#a9ba7e; --amber:#e0b155;
+    --card:#241e18; --line:#342c24; --line2:#3d332a; --mut:#b0a088; --mut2:#8b7c66;
+    --sub:#c4b298; --deep:#c4b298; --lbl:#a9977c;
+    --soft:#3a281d; --softline:#4a3124; --accdk:#f0a074;
+    --track:#362c22; --chip:#241e18; --chipline:#342c24; --btnsoft:#2d251d; --seg:#342c24;
+    --tert:#241e18; --tertline:#3a3026; --field:#1e1913; --frame:#1a140f; --bezel:#0c0906;
+    --empty:#2e2820; --stripe1:#2a221b; --stripe2:#241d16; --danger:#f08a6f; --dangerbg:#3a221b;
+    --deskA:#1a140f; --deskB:#140f0b; --deskC:#100c08; --railbg:#211a13;
+    --warnbg:#382c1a; --warnline:#5c4a2a; --warntx:#e0b155;
+    --ph1:#dd6e40; --ph1bg:#3a281d; --ph2:#a9ba7e; --ph2bg:#2b3122;
+    --ph3:#e0b155; --ph3bg:#382c1a; --ph4:#c08a63; --ph4bg:#332721;
+  }
+  body { margin:0; background:radial-gradient(circle at 50% 6%, var(--deskA) 0%, var(--deskB) 58%, var(--deskC) 100%); min-height:100vh; font-family:'Hanken Grotesk',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:var(--txt); padding:40px; }
+  a { color:var(--acc); text-decoration:none; } a:hover { color:var(--accdk); }
+  .hgs { scrollbar-width:none; } .hgs::-webkit-scrollbar { display:none; }
+  @keyframes sheetup { from { transform:translateY(100%); } to { transform:translateY(0); } }
+  @keyframes fadein { from { opacity:0; } to { opacity:1; } }
+  @keyframes fadeslide { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</helmet>
+
+<div style="display:flex; gap:36px; align-items:flex-start; justify-content:center;">
+<!-- ══════════════ INDEX RAIL ══════════════ -->
+<div style="width:238px; flex:none; position:sticky; top:40px; display:flex; flex-direction:column; gap:16px;">
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div style="width:44px; height:44px; border-radius:14px; background:var(--acc); display:flex; align-items:center; justify-content:center; box-shadow:0 10px 22px -8px rgba(var(--acc-rgb),.55); flex:none;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 12l3-2"/></svg>
+    </div>
+    <div>
+      <div style="font:700 10px 'Space Mono',monospace; color:var(--acc); letter-spacing:1.5px;">WELLNESS</div>
+      <div style="font:800 19px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px; line-height:1;">Suivi du cycle</div>
+    </div>
+  </div>
+  <button onClick="{{ toggleTheme }}" style="height:42px; border:1.5px solid var(--line2); border-radius:13px; background:var(--card); color:var(--deep); font:600 13px 'Hanken Grotesk'; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;">{{ themeIcon }} {{ themeLabel }}</button>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:2px 2px -4px;">ÉCRANS</div>
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <button onClick="{{ nav.cycle }}" style="{{ navSty.cycle }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">01</span> Onglet Cycle</button>
+    <button onClick="{{ nav.entry }}" style="{{ navSty.entry }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">02</span> Saisie d'un jour</button>
+    <button onClick="{{ nav.prediction }}" style="{{ navSty.prediction }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">03</span> Prédiction</button>
+    <button onClick="{{ nav.history }}" style="{{ navSty.history }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">04</span> Historique</button>
+    <button onClick="{{ nav.cross }}" style="{{ navSty.cross }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">05</span> Croisement piliers</button>
+    <button onClick="{{ nav.settings }}" style="{{ navSty.settings }}"><span style="font:700 10px 'Space Mono'; opacity:.6;">06</span> Réglages du suivi</button>
+  </div>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:4px 2px -4px;">PRÉDICTION · ÉTATS</div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button onClick="{{ setPredA }}" style="{{ predSty.A }}">A · Peu de données</button>
+    <button onClick="{{ setPredB }}" style="{{ predSty.B }}">B · Estimation</button>
+    <button onClick="{{ setPredC }}" style="{{ predSty.C }}">C · Irrégulier</button>
+  </div>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:4px 2px -4px;">CROISEMENT · ÉTATS</div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button onClick="{{ setCrossFull }}" style="{{ crossSty.full }}">Complet</button>
+    <button onClick="{{ setCrossPartial }}" style="{{ crossSty.partial }}">Seuils partiels</button>
+  </div>
+
+  <div style="font:700 10px 'Space Mono'; color:var(--mut); letter-spacing:1.2px; margin:4px 2px -4px;">RÉGLAGES · ÉTAT</div>
+  <div style="display:flex; flex-wrap:wrap; gap:6px;">
+    <button onClick="{{ toggleModule }}" style="{{ moduleChip }}">Suivi {{ moduleWord }}</button>
+  </div>
+
+  <div style="font-size:11px; line-height:1.45; color:var(--mut); margin-top:2px;">Un carnet, pas un outil médical. Aucune notification, aucun indicateur de fertilité, aucun champ libre. Les états vides et incomplets sont dessinés au même titre que les états nominaux.</div>
+</div>
+
+<!-- ══════════════ PHONE ══════════════ -->
+<div style="width:392px; height:812px; flex:none; position:sticky; top:40px; border-radius:46px; border:9px solid var(--bezel); background:var(--frame); overflow:hidden; box-shadow:0 40px 90px -20px rgba(60,40,20,.5), inset 0 0 0 2px rgba(255,255,255,.05); display:flex; flex-direction:column;">
+
+  <!-- status bar -->
+  <div style="height:42px; flex:none; display:flex; align-items:center; justify-content:space-between; padding:0 26px; position:relative; z-index:5; color:var(--txt);">
+    <span style="font:700 15px 'Space Mono'; letter-spacing:.5px;">9:41</span>
+    <div style="position:absolute; left:50%; top:11px; transform:translateX(-50%); width:11px; height:11px; border-radius:50%; background:var(--bezel);"></div>
+    <div style="display:flex; align-items:center; gap:5px;">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="currentColor"/><rect x="9" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13"><rect x="1" y="1" width="21" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".5"/><rect x="3" y="3" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="23" y="4" width="2" height="5" rx="1" fill="currentColor" opacity=".5"/></svg>
+    </div>
+  </div>
+
+  <div class="hgs" style="flex:1; overflow-y:auto; position:relative;">
+
+    <!-- ════════ 01 · ONGLET CYCLE ════════ -->
+    <sc-if value="{{ scr_cycle }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:6px 20px 26px;">
+      <!-- warning banner -->
+      <div style="display:flex; gap:10px; align-items:flex-start; background:var(--warnbg); border:1px solid var(--warnline); border-radius:13px; padding:11px 13px; margin-bottom:16px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warntx)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span style="font-size:12px; line-height:1.4; color:var(--warntx);">Wellness est un carnet. Ce suivi n'est pas un moyen de contraception ni un avis médical.</span>
+      </div>
+
+      <!-- header -->
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px;">
+        <div>
+          <h1 style="margin:0; font:800 27px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.9px; line-height:1;">Cycle</h1>
+          <div style="font-size:13px; color:var(--mut); margin-top:3px;">Ton carnet du cycle</div>
+        </div>
+        <button onClick="{{ nav.settings }}" title="Réglages" style="width:42px; height:42px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); cursor:pointer; display:flex; align-items:center; justify-content:center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button>
+      </div>
+
+      <!-- summary hero -->
+      <div style="background:var(--panel); border-radius:24px; padding:20px; color:var(--paneltx); margin-bottom:14px; position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-40px; top:-40px; width:150px; height:150px; border-radius:50%; background:var(--ph4); opacity:.28;"></div>
+        <div style="position:relative;">
+          <span style="font:700 11px 'Space Mono'; color:var(--panelacc); letter-spacing:.8px;">CYCLE EN COURS</span>
+          <div style="display:flex; align-items:flex-end; gap:12px; margin-top:8px;">
+            <div style="font:800 56px 'Bricolage Grotesque'; color:#fff; letter-spacing:-2.5px; line-height:.85;">J26</div>
+            <div style="padding-bottom:7px;">
+              <div style="display:inline-flex; align-items:center; gap:7px; background:var(--ph4); color:#fff; padding:5px 11px; border-radius:999px; font:700 12.5px 'Hanken Grotesk';">Phase lutéale</div>
+            </div>
+          </div>
+          <div style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,.14);">
+            <div style="font-size:12px; color:var(--panelmut);">Prochaines règles estimées</div>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:3px;">
+              <span style="font:700 18px 'Bricolage Grotesque'; color:#fff;">vers le 30 juil.</span>
+              <span style="font:700 12px 'Space Mono'; color:var(--panelacc); border:1px dashed var(--panelacc); padding:2px 8px; border-radius:999px;">± 3 j</span>
+            </div>
+            <div style="font-size:11.5px; color:var(--panelmut); margin-top:5px;">Estimation, pas une certitude.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- calendar -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px 16px 18px; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <button style="width:32px; height:32px; border:none; border-radius:10px; background:var(--btnsoft); color:var(--deep); font-size:18px; cursor:pointer;">‹</button>
+          <div style="font:700 15px 'Bricolage Grotesque'; color:var(--txt);">Juillet 2026</div>
+          <button style="width:32px; height:32px; border:none; border-radius:10px; background:var(--btnsoft); color:var(--mut2); font-size:18px; cursor:pointer;">›</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:5px;">
+          <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7">
+          <div style="text-align:center; font:700 10px 'Space Mono'; color:var(--mut2);">{{ w }}</div>
+          </sc-for>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px;">
+          <sc-for list="{{ calCells }}" as="c" hint-placeholder-count="35">
+          <div style="{{ c.sty }}">{{ c.n }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex; gap:16px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line);">
+          <div style="display:flex; align-items:center; gap:7px;"><span style="width:15px; height:15px; border-radius:5px; background:var(--acc); flex:none;"></span><span style="font-size:12px; color:var(--sub);">Règles saisies</span></div>
+          <div style="display:flex; align-items:center; gap:7px;"><span style="width:15px; height:15px; border-radius:5px; border:1.5px dashed var(--acc); flex:none;"></span><span style="font-size:12px; color:var(--sub);">Estimation</span></div>
+        </div>
+      </div>
+
+      <!-- primary action -->
+      <button onClick="{{ nav.entry }}" style="height:52px; width:100%; border:none; border-radius:16px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.5); display:flex; align-items:center; justify-content:center; gap:9px; margin-bottom:12px;"><span style="font-size:19px; line-height:1;">+</span> Noter aujourd'hui</button>
+
+      <!-- sub-screen links -->
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <button onClick="{{ nav.prediction }}" style="{{ linkRow }}"><span style="display:flex; align-items:center; gap:11px;"><span style="{{ linkIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 109-9"/><path d="M12 7v5l3 2"/></svg></span><span><span style="{{ linkTitle }}">Prédiction</span><span style="{{ linkSub }}">Prochaines règles &amp; fourchette</span></span></span><span style="color:var(--mut2); font-size:16px;">›</span></button>
+        <button onClick="{{ nav.history }}" style="{{ linkRow }}"><span style="display:flex; align-items:center; gap:11px;"><span style="{{ linkIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span><span><span style="{{ linkTitle }}">Historique des cycles</span><span style="{{ linkSub }}">Durées &amp; régularité</span></span></span><span style="color:var(--mut2); font-size:16px;">›</span></button>
+        <button onClick="{{ nav.cross }}" style="{{ linkRow }}"><span style="display:flex; align-items:center; gap:11px;"><span style="{{ linkIcon }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M10 19V5M16 19v-6M20 19H2"/></svg></span><span><span style="{{ linkTitle }}">Croisement avec tes piliers</span><span style="{{ linkSub }}">Phase × énergie, muscu, course…</span></span></span><span style="color:var(--mut2); font-size:16px;">›</span></button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 03 · PRÉDICTION ════════ -->
+    <sc-if value="{{ scr_prediction }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+        <button onClick="{{ nav.cycle }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <div><h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Prédiction</h2><div style="font-size:12.5px; color:var(--mut);">Prochaines règles estimées</div></div>
+      </div>
+
+      <!-- A · pas assez de données -->
+      <sc-if value="{{ predA }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:22px; padding:28px 22px; text-align:center; animation:fadeslide .3s ease;">
+        <div style="width:60px; height:60px; border-radius:20px; background:var(--empty); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 00-.6-1.4L12 12l-4.4 4.4a2 2 0 00-.6 1.4V22M7 2v4.2a2 2 0 00.6 1.4L12 12l4.4-4.4a2 2 0 00.6-1.4V2"/></svg></div>
+        <div style="font:700 19px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:7px;">Encore 1 cycle avant une estimation</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.55; max-width:270px; margin:0 auto 18px;">Wellness a besoin d'au moins 3 cycles complets pour proposer une estimation. Tu en as enregistré 2.</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-bottom:12px;">
+          <span style="width:44px; height:8px; border-radius:5px; background:var(--acc);"></span>
+          <span style="width:44px; height:8px; border-radius:5px; background:var(--acc);"></span>
+          <span style="width:44px; height:8px; border-radius:5px; background:var(--track);"></span>
+        </div>
+        <div style="font:700 11px 'Space Mono'; color:var(--mut2); letter-spacing:.5px;">2 / 3 CYCLES COMPLETS</div>
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:var(--mut); line-height:1.5; padding:0 6px; text-align:center;">Rien ne s'affiche tant que le seuil n'est pas atteint — plutôt que de deviner.</div>
+      </sc-if>
+
+      <!-- B · estimation disponible -->
+      <sc-if value="{{ predB }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--panel); border-radius:24px; padding:22px 20px; color:var(--paneltx); animation:fadeslide .3s ease;">
+        <span style="font:700 11px 'Space Mono'; color:var(--panelacc); letter-spacing:.8px;">PROCHAINES RÈGLES ESTIMÉES</span>
+        <div style="display:flex; align-items:baseline; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <span style="font:800 34px 'Bricolage Grotesque'; color:#fff; letter-spacing:-1.4px; line-height:1;">vers le 28 août</span>
+          <span style="font:700 13px 'Space Mono'; color:#fff; background:var(--acc); padding:4px 11px; border-radius:999px;">± 3 jours</span>
+        </div>
+        <!-- range strip -->
+        <div style="margin-top:20px;">
+          <div style="position:relative; height:12px; border-radius:7px; background:rgba(255,255,255,.12);">
+            <div style="position:absolute; left:28%; width:30%; top:0; bottom:0; border-radius:7px; background:var(--acc);"></div>
+            <div style="position:absolute; left:43%; top:-4px; bottom:-4px; width:2px; background:#fff; border-radius:2px;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:7px; font:600 11px 'Space Mono'; color:var(--panelmut);"><span>25 août</span><span style="color:#fff;">28 août</span><span>31 août</span></div>
+        </div>
+        <div style="display:flex; gap:0; margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.14);">
+          <div style="flex:1;"><div style="font:700 18px 'Bricolage Grotesque'; color:#fff;">6</div><div style="font-size:11px; color:var(--panelmut); margin-top:2px;">cycles observés</div></div>
+          <div style="flex:1;"><div style="font:700 18px 'Bricolage Grotesque'; color:#fff;">28 j</div><div style="font-size:11px; color:var(--panelmut); margin-top:2px;">cycle moyen</div></div>
+          <div style="flex:1;"><div style="font:700 18px 'Bricolage Grotesque'; color:#fff;">± 2 j</div><div style="font-size:11px; color:var(--panelmut); margin-top:2px;">variation</div></div>
+        </div>
+      </div>
+      <div style="margin-top:12px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 15px; display:flex; gap:10px; align-items:flex-start;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span style="font-size:12.5px; color:var(--sub); line-height:1.45;">Une estimation, jamais une date nue. La fourchette accompagne toujours la date.</span>
+      </div>
+      </sc-if>
+
+      <!-- C · trop irrégulier -->
+      <sc-if value="{{ predC }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:22px; padding:24px 22px; animation:fadeslide .3s ease;">
+        <div style="width:52px; height:52px; border-radius:16px; background:var(--warnbg); border:1px solid var(--warnline); display:flex; align-items:center; justify-content:center; margin-bottom:14px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warntx)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-6 4 12 2-6h5"/></svg></div>
+        <div style="font:700 19px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:8px; line-height:1.2;">Tes cycles varient beaucoup en ce moment</div>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.55; margin-bottom:18px;">Une estimation ne serait pas fiable — on préfère ne rien afficher plutôt qu'un chiffre trompeur. Aucune date n'est proposée.</div>
+        <div style="font:700 10.5px 'Space Mono'; color:var(--mut2); letter-spacing:.6px; margin-bottom:9px;">TES 4 DERNIERS CYCLES</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <sc-for list="{{ irregCycles }}" as="v" hint-placeholder-count="4">
+          <span style="font:700 14px 'Space Mono'; color:var(--sub); background:var(--chip); border:1px solid var(--chipline); padding:8px 13px; border-radius:11px;">{{ v }} j</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:var(--mut); line-height:1.5; padding:0 6px; text-align:center;">C'est un état à part entière, pas une erreur. L'estimation reviendra quand tes cycles se stabiliseront.</div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 04 · HISTORIQUE ════════ -->
+    <sc-if value="{{ scr_history }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <button onClick="{{ nav.cycle }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Historique des cycles</h2>
+      </div>
+
+      <!-- summary strip -->
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <div style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 15px;"><div style="font:800 24px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">28 j</div><div style="font-size:11.5px; color:var(--mut); margin-top:2px;">Cycle moyen · 6 retenus</div></div>
+        <div style="flex:1; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 15px;"><div style="font:800 24px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.6px;">5 j</div><div style="font-size:11.5px; color:var(--mut); margin-top:2px;">Règles en moyenne</div></div>
+      </div>
+
+      <div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.6px; margin:0 2px 10px;">PÉRIODES ENREGISTRÉES</div>
+      <div style="display:flex; flex-direction:column; gap:9px;">
+        <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+        <div style="background:var(--card); border:1px solid {{ h.line }}; border-radius:16px; padding:14px 15px;">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">{{ h.range }}</div>
+              <div style="font-size:12px; color:var(--mut); margin-top:2px;">{{ h.flow }} de règles</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font:700 15px 'Space Mono'; color:{{ h.cycleColor }};">{{ h.cycle }}</div>
+              <div style="font-size:11px; color:var(--mut2); margin-top:2px;">cycle</div>
+            </div>
+          </div>
+          <sc-if value="{{ h.ignored }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:11px; padding-top:11px; border-top:1px solid var(--line); display:flex; gap:9px; align-items:flex-start;">
+            <span style="display:inline-flex; align-items:center; gap:5px; font:700 11px 'Hanken Grotesk'; color:var(--warntx); background:var(--warnbg); border:1px solid var(--warnline); padding:4px 9px; border-radius:999px; flex:none;">ignoré du calcul</span>
+            <span style="font-size:11.5px; color:var(--mut); line-height:1.4;">Écart inhabituel — exclu de la moyenne, mais conservé. Rien n'est effacé.</span>
+          </div>
+          </sc-if>
+        </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 05 · CROISEMENT ════════ -->
+    <sc-if value="{{ scr_cross }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <button onClick="{{ nav.cycle }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <div><h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Croisement</h2><div style="font-size:12.5px; color:var(--mut);">Ta phase × tes données Wellness</div></div>
+      </div>
+
+      <div style="font-size:12.5px; color:var(--sub); line-height:1.5; margin:0 2px 14px;">Des observations, pas des conseils. Moyennes par phase, avec le nombre de cycles réellement observés.</div>
+
+      <!-- phase legend -->
+      <div style="display:flex; flex-wrap:wrap; gap:8px 14px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:14px;">
+        <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; gap:7px;"><span style="width:12px; height:12px; border-radius:4px; background:{{ p.c }}; flex:none;"></span><span style="font-size:12px; color:var(--sub); font-weight:600;">{{ p.label }}</span></div>
+        </sc-for>
+      </div>
+
+      <!-- metric cards -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="5">
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px 16px 14px;">
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:4px;">
+            <div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">{{ m.title }}</div>
+            <span style="{{ m.badgeSty }}">{{ m.badge }}</span>
+          </div>
+
+          <sc-if value="{{ m.hasObs }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:12.5px; color:var(--sub); line-height:1.5; margin:4px 0 12px;">{{ m.obs }}</div>
+          </sc-if>
+
+          <sc-if value="{{ m.ok }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex; flex-direction:column; gap:9px; margin-top:8px;">
+            <sc-for list="{{ m.bars }}" as="b" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="width:74px; flex:none; font-size:11.5px; color:var(--sub);">{{ b.label }}</span>
+              <div style="flex:1; height:16px; border-radius:6px; background:var(--track); overflow:hidden;"><div style="height:100%; width:{{ b.pct }}; background:{{ b.c }}; border-radius:6px;"></div></div>
+              <span style="width:52px; flex:none; text-align:right; font:700 12px 'Space Mono'; color:var(--txt);">{{ b.val }}</span>
+            </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ m.incomplete }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:9px; margin-top:8px; opacity:.55;">
+            <sc-for list="{{ m.bars }}" as="b" hint-placeholder-count="4">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="width:74px; flex:none; font-size:11.5px; color:var(--sub);">{{ b.label }}</span>
+              <div style="flex:1; height:16px; border-radius:6px; background:var(--track); overflow:hidden;"><div style="height:100%; width:{{ b.pct }}; background:{{ b.c }}; border-radius:6px;"></div></div>
+              <span style="width:52px; flex:none; text-align:right; font:700 12px 'Space Mono'; color:{{ b.valColor }};">{{ b.val }}</span>
+            </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:12px; background:var(--warnbg); border:1px solid var(--warnline); border-radius:12px; padding:11px 13px; display:flex; gap:9px; align-items:flex-start;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--warntx)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none; margin-top:1px;"><path d="M12 2a10 10 0 100 20"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span style="font-size:12px; color:var(--warntx); line-height:1.4;">{{ m.missing }}</span>
+          </div>
+          </sc-if>
+        </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:14px; font-size:11.5px; color:var(--mut); line-height:1.5; text-align:center; padding:0 8px;">Chaque métrique atteint son seuil indépendamment. Certaines sont déjà lisibles, d'autres attendent encore des données.</div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 06 · RÉGLAGES ════════ -->
+    <sc-if value="{{ scr_settings }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:8px 20px 26px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <button onClick="{{ nav.cycle }}" style="width:40px; height:40px; border:none; border-radius:13px; background:var(--btnsoft); color:var(--deep); font-size:20px; cursor:pointer;">‹</button>
+        <h2 style="margin:0; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Réglages du suivi</h2>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:flex-start; background:var(--warnbg); border:1px solid var(--warnline); border-radius:13px; padding:11px 13px; margin-bottom:14px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--warntx)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+        <span style="font-size:12px; line-height:1.4; color:var(--warntx);">Un carnet, pas un dispositif médical. Aucune notification ni rappel ne sera émis.</span>
+      </div>
+
+      <!-- main toggle -->
+      <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <div style="flex:1;">
+            <div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Suivi du cycle</div>
+            <div style="font-size:12.5px; color:var(--mut); margin-top:3px; line-height:1.4;">Accessible à tout le monde. Désactivé par défaut.</div>
+          </div>
+          <button onClick="{{ toggleModule }}" style="{{ swTrack }}"><span style="{{ swKnob }}"></span></button>
+        </div>
+      </div>
+
+      <sc-if value="{{ moduleOff }}" hint-placeholder-val="{{ true }}">
+      <div style="background:var(--card); border:1.5px dashed var(--line2); border-radius:18px; padding:26px 22px; text-align:center;">
+        <div style="width:56px; height:56px; border-radius:18px; background:var(--empty); display:flex; align-items:center; justify-content:center; margin:0 auto 12px;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 12l3-2"/></svg></div>
+        <div style="font:700 17px 'Bricolage Grotesque'; color:var(--txt); margin-bottom:5px;">Suivi désactivé</div>
+        <div style="font-size:13px; color:var(--mut); line-height:1.5; max-width:250px; margin:0 auto;">Active le suivi pour commencer à noter tes jours. Rien n'est collecté tant qu'il est désactivé.</div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ moduleOn }}" hint-placeholder-val="{{ false }}">
+      <div style="animation:fadeslide .3s ease;">
+        <!-- health connect -->
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div style="flex:1;">
+              <div style="font:700 15px 'Hanken Grotesk'; color:var(--txt);">Synchroniser avec Health Connect</div>
+              <div style="font-size:12.5px; color:var(--mut); margin-top:3px; line-height:1.4;">Partage tes jours de règles avec Health Connect.</div>
+            </div>
+            <button onClick="{{ toggleSync }}" style="{{ syncTrack }}"><span style="{{ syncKnob }}"></span></button>
+          </div>
+        </div>
+
+        <!-- data -->
+        <div style="font:700 11px 'Space Mono'; color:var(--mut); letter-spacing:.6px; margin:16px 2px 10px;">TES DONNÉES</div>
+        <div style="background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding-bottom:13px; border-bottom:1px solid var(--line);">
+            <div><div style="font:700 14px 'Hanken Grotesk'; color:var(--txt);">Données de cycle</div><div style="font-size:12px; color:var(--mut); margin-top:2px;">64 jours notés · sur cet appareil</div></div>
+          </div>
+          <button style="width:100%; text-align:left; border:none; background:transparent; cursor:pointer; padding:13px 0 4px; display:flex; align-items:center; justify-content:space-between;"><span style="font:700 13.5px 'Hanken Grotesk'; color:var(--acc);">Exporter mes données</span><span style="color:var(--mut2); font-size:15px;">›</span></button>
+        </div>
+
+        <button onClick="{{ toggleModule }}" style="height:50px; width:100%; border:1.5px solid var(--line2); border-radius:15px; background:var(--card); color:var(--danger); font:700 14.5px 'Hanken Grotesk'; cursor:pointer; margin-top:16px;">Désactiver le suivi du cycle</button>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ════════ 02 · SAISIE D'UN JOUR (bottom sheet) ════════ -->
+    <sc-if value="{{ ov_entry }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:30; background:rgba(20,15,10,.5); display:flex; align-items:flex-end; animation:fadein .2s ease;">
+      <div class="hgs" style="width:100%; max-height:92%; overflow-y:auto; background:var(--frame); border-radius:28px 28px 0 0; padding:12px 22px 24px; animation:sheetup .32s cubic-bezier(.16,1,.3,1);">
+        <div style="width:44px; height:5px; border-radius:3px; background:var(--line2); margin:0 auto 14px;"></div>
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px;">
+          <div><span style="display:inline-block; padding:4px 11px; border-radius:999px; background:var(--soft); color:var(--accdk); font:700 11px 'Hanken Grotesk'; margin-bottom:8px;">Aujourd'hui</span><h2 style="margin:0; font:700 23px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Noter le jour</h2><div style="font-size:12.5px; color:var(--mut); margin-top:2px; font-family:'Space Mono';">mar. 28 juil.</div></div>
+          <button onClick="{{ closeOverlay }}" style="width:36px; height:36px; border:none; border-radius:12px; background:var(--btnsoft); color:var(--deep); font-size:17px; cursor:pointer; flex:none;">✕</button>
+        </div>
+
+        <!-- flow -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin:0 2px 9px;"><span style="font:700 11px 'Space Mono'; color:var(--lbl); letter-spacing:.5px;">FLUX</span><span style="font-size:11px; color:var(--mut2);">Optionnel · choix unique</span></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:18px;">
+          <sc-for list="{{ flowOptions }}" as="f" hint-placeholder-count="4">
+          <button onClick="{{ f.tap }}" style="{{ f.sty }}"><span style="display:flex; gap:3px;"><span style="{{ f.d1 }}"></span><span style="{{ f.d2 }}"></span><span style="{{ f.d3 }}"></span></span>{{ f.label }}</button>
+          </sc-for>
+        </div>
+
+        <!-- symptoms -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin:0 2px 9px;"><span style="font:700 11px 'Space Mono'; color:var(--lbl); letter-spacing:.5px;">SYMPTÔMES</span><span style="font-size:11px; color:var(--mut2);">Optionnel · plusieurs possibles</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;">
+          <sc-for list="{{ symptoms }}" as="s" hint-placeholder-count="8">
+          <button onClick="{{ s.tap }}" style="{{ s.sty }}">{{ s.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="background:var(--chip); border:1px solid var(--chipline); border-radius:13px; padding:12px 14px; margin-bottom:16px; font-size:12.5px; color:var(--sub); line-height:1.5;">Tout est optionnel. Tu peux enregistrer le flux seul, quelques symptômes, ou rien du tout.</div>
+
+        <button onClick="{{ closeOverlay }}" style="height:52px; width:100%; border:none; border-radius:16px; background:var(--acc); color:#fff; font:700 15px 'Hanken Grotesk'; cursor:pointer; box-shadow:0 10px 24px -8px rgba(var(--acc-rgb),.5); margin-bottom:9px;">Enregistrer</button>
+        <button onClick="{{ closeOverlay }}" style="height:46px; width:100%; border:none; border-radius:14px; background:transparent; color:var(--mut); font:600 13.5px 'Hanken Grotesk'; cursor:pointer;">Effacer ce jour</button>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ════════ DÉSACTIVATION (bottom sheet) ════════ -->
+    <sc-if value="{{ ov_deactivate }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:30; background:rgba(20,15,10,.5); display:flex; align-items:flex-end; animation:fadein .2s ease;">
+      <div style="width:100%; background:var(--frame); border-radius:28px 28px 0 0; padding:12px 22px 24px; animation:sheetup .32s cubic-bezier(.16,1,.3,1);">
+        <div style="width:44px; height:5px; border-radius:3px; background:var(--line2); margin:0 auto 16px;"></div>
+        <h2 style="margin:0 0 8px; font:700 22px 'Bricolage Grotesque'; color:var(--txt); letter-spacing:-.5px;">Désactiver le suivi ?</h2>
+        <div style="font-size:13.5px; color:var(--mut); line-height:1.55; margin-bottom:8px;">Tes données ne sont jamais partagées vers l'extérieur. Que veux-tu en faire ?</div>
+        <div style="background:var(--chip); border:1px solid var(--chipline); border-radius:12px; padding:11px 13px; margin-bottom:18px; font-size:12px; color:var(--sub); line-height:1.45;">Wellness n'efface jamais tes saisies sans ta demande.</div>
+        <button onClick="{{ confirmDeactivate }}" style="height:52px; width:100%; border:none; border-radius:15px; background:var(--panel); color:var(--paneltx); font:700 15px 'Hanken Grotesk'; cursor:pointer; margin-bottom:10px;">Garder mes données</button>
+        <button onClick="{{ confirmDeactivate }}" style="height:52px; width:100%; border:1.5px solid var(--danger); border-radius:15px; background:var(--dangerbg); color:var(--danger); font:700 15px 'Hanken Grotesk'; cursor:pointer; margin-bottom:10px;">Supprimer les données du cycle</button>
+        <button onClick="{{ closeOverlay }}" style="height:46px; width:100%; border:none; border-radius:14px; background:transparent; color:var(--mut); font:600 14px 'Hanken Grotesk'; cursor:pointer;">Annuler</button>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+
+  <!-- bottom nav -->
+  <sc-if value="{{ showTabs }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none; background:var(--railbg); border-top:1px solid var(--line); padding:9px 12px 5px; display:flex; z-index:6;">
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span style="font-size:10px; font-weight:600;">Accueil</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8v8M18 8v8M4 10v4M20 10v4M6 12h12"/></svg><span style="font-size:10px; font-weight:600;">Muscu</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-4 3 8 2-5 2 3h5"/></svg><span style="font-size:10px; font-weight:600;">Running</span></div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--mut2);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v6a4 4 0 008 0V4M8 4v16M17 4c-1.5 0-2 2-2 5s.5 4 2 4 2-1 2-4-.5-5-2-5zM17 13v7"/></svg><span style="font-size:10px; font-weight:600;">Nutrition</span></div>
+    <button onClick="{{ nav.cycle }}" style="flex:1; background:transparent; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--acc);"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 12l3-2"/></svg><span style="font-size:10px; font-weight:700;">Cycle</span></button>
+  </div>
+  </sc-if>
+  <div style="flex:none; height:20px; display:flex; align-items:center; justify-content:center; background:var(--railbg);"><div style="width:120px; height:5px; border-radius:3px; background:var(--line2);"></div></div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:720,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Aperçu&quot;},&quot;prediction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;B&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;,&quot;C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;États&quot;},&quot;crossComplete&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;États&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'cycle',
+    overlay: null,
+    theme: 'light',
+    pred: 'B',
+    cross: 'full',
+    moduleOn: true,
+    sync: false,
+    flow: null,
+    symptoms: [],
+  };
+
+  componentDidMount() {
+    let t = 'light';
+    try { t = localStorage.getItem('fittrio-theme') || 'light'; } catch (e) {}
+    if (this.props.theme) t = this.props.theme;
+    this.applyTheme(t);
+    const s = {};
+    if (this.props.prediction) s.pred = this.props.prediction;
+    if (this.props.crossComplete === false) s.cross = 'partial';
+    if (Object.keys(s).length) this.setState(s);
+  }
+  applyTheme(t) {
+    try { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('fittrio-theme', t); } catch (e) {}
+    this.setState({ theme: t });
+  }
+  toggleTheme() { this.applyTheme(this.state.theme === 'dark' ? 'light' : 'dark'); }
+
+  go(s) { this.setState({ screen: s, overlay: null }); }
+  closeOverlay() { this.setState({ overlay: null }); }
+
+  toggleModule() {
+    if (this.state.moduleOn) { this.setState({ overlay: 'deactivate' }); }
+    else { this.setState({ moduleOn: true, screen: 'settings', overlay: null }); }
+  }
+  confirmDeactivate() { this.setState({ moduleOn: false, sync: false, overlay: null }); }
+
+  navBtn(active) {
+    return 'text-align:left; display:flex; align-items:center; gap:9px; padding:9px 12px; border-radius:11px; cursor:pointer; font:600 13px Hanken Grotesk; border:1px solid transparent;'
+      + (active ? 'background:var(--acc); color:#fff;' : 'background:var(--railbg); color:var(--deep); border-color:var(--line);');
+  }
+  chip(active) {
+    return 'padding:7px 11px; border-radius:999px; cursor:pointer; font:600 11.5px Hanken Grotesk; border:1px solid var(--line2);'
+      + (active ? 'background:var(--acc); color:#fff; border-color:var(--acc);' : 'background:var(--card); color:var(--sub);');
+  }
+
+  renderVals() {
+    const st = this.state;
+    const S = st.screen, O = st.overlay;
+    const overlayOpen = O !== null;
+
+    // ── calendar (Juillet 2026, Mon-first; Jul 1 = mercredi) ──
+    const weekdays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const period = [3, 4, 5, 6, 7, 8];
+    const estimate = [30, 31];
+    const today = 28;
+    const cellBase = "height:38px; display:flex; align-items:center; justify-content:center; border-radius:11px; font:700 13px 'Space Mono';";
+    const days = [];
+    for (let i = 0; i < 2; i++) days.push(null);
+    for (let d = 1; d <= 31; d++) days.push(d);
+    while (days.length < 35) days.push(null);
+    const calCells = days.map(d => {
+      if (d === null) return { n: '', sty: cellBase + 'opacity:0;' };
+      if (period.includes(d)) return { n: d, sty: cellBase + 'background:var(--acc); color:#fff;' };
+      if (d === today) return { n: d, sty: cellBase + 'border:2px solid var(--acc); color:var(--acc);' };
+      if (estimate.includes(d)) return { n: d, sty: cellBase + 'border:1.5px dashed var(--acc); color:var(--acc);' };
+      return { n: d, sty: cellBase + 'color:var(--txt);' };
+    });
+
+    // ── prediction ──
+    const irregCycles = [24, 41, 29, 52];
+
+    // ── history ──
+    const history = [
+      { range: '3 – 8 juil. 2026', flow: '6 j', cycle: '28 j', ignored: false },
+      { range: '5 – 9 juin 2026', flow: '5 j', cycle: '28 j', ignored: false },
+      { range: '8 – 12 mai 2026', flow: '5 j', cycle: '28 j', ignored: false },
+      { range: '10 – 13 avr. 2026', flow: '4 j', cycle: '28 j', ignored: false },
+      { range: '13 – 17 déc. 2025', flow: '5 j', cycle: '119 j', ignored: true },
+      { range: '16 – 21 août 2025', flow: '6 j', cycle: '30 j', ignored: false },
+    ].map(h => ({
+      ...h,
+      line: h.ignored ? 'var(--warnline)' : 'var(--line)',
+      cycleColor: h.ignored ? 'var(--warntx)' : 'var(--sub)',
+    }));
+
+    // ── cross ──
+    const phases = [
+      { key: 'mens', label: 'Menstruelle', c: 'var(--ph1)' },
+      { key: 'foll', label: 'Folliculaire', c: 'var(--ph2)' },
+      { key: 'ovul', label: 'Ovulatoire', c: 'var(--ph3)' },
+      { key: 'lut', label: 'Lutéale', c: 'var(--ph4)' },
+    ];
+    const pc = ['var(--ph1)', 'var(--ph2)', 'var(--ph3)', 'var(--ph4)'];
+    const pl = ['Menstruelle', 'Folliculaire', 'Ovulatoire', 'Lutéale'];
+    const bars = (vals, max, fmt) => vals.map((v, i) => ({
+      label: pl[i], c: pc[i], val: fmt(v), pct: (Math.max(v, 0) / max * 100).toFixed(0) + '%', valColor: 'var(--txt)',
+    }));
+    const okBadge = 'font:700 10px \'Space Mono\'; letter-spacing:.3px; color:var(--grn); background:var(--ph2bg); border:1px solid var(--ph2); padding:3px 8px; border-radius:999px;';
+    const incBadge = 'font:700 10px \'Space Mono\'; letter-spacing:.3px; color:var(--warntx); background:var(--warnbg); border:1px solid var(--warnline); padding:3px 8px; border-radius:999px;';
+
+    const metricsFull = [
+      {
+        title: 'Énergie déclarée', ok: true, incomplete: false, badge: 'disponible · 4 cycles', badgeSty: okBadge,
+        hasObs: true, obs: 'En phase lutéale, ton énergie déclarée est en moyenne de 2,8/5, contre 3,6 en folliculaire.',
+        bars: bars([3.1, 3.6, 3.9, 2.8], 5, v => v.toFixed(1).replace('.', ',') + '/5'),
+      },
+      {
+        title: 'Humeur déclarée', ok: true, incomplete: false, badge: 'disponible · 4 cycles', badgeSty: okBadge,
+        hasObs: false,
+        bars: bars([3.3, 3.7, 3.8, 3.1], 5, v => v.toFixed(1).replace('.', ',') + '/5'),
+      },
+      {
+        title: 'Tonnage muscu', ok: false, incomplete: true, badge: 'seuil partiel', badgeSty: incBadge,
+        hasObs: false, missing: 'Encore 6 séances à enregistrer en phase lutéale pour une moyenne fiable.',
+        bars: bars([4.2, 5.1, 5.4, 0], 6, v => v > 0 ? v.toFixed(1).replace('.', ',') + ' t' : '—')
+          .map((b, i) => i === 3 ? { ...b, val: '—', valColor: 'var(--mut2)', pct: '0%' } : b),
+      },
+      {
+        title: 'Allure course', ok: false, incomplete: true, badge: 'seuil partiel', badgeSty: incBadge,
+        hasObs: false, missing: 'Encore 3 sorties à enregistrer en phase menstruelle pour une moyenne fiable.',
+        bars: bars([0, 78, 82, 74], 100, v => v > 0 ? (6 - v / 100 * 1.2).toFixed(1).replace('.', ',') + '/km' : '—')
+          .map((b, i) => i === 0 ? { ...b, val: '—', valColor: 'var(--mut2)', pct: '0%' } : b),
+      },
+      {
+        title: 'Apport calorique', ok: true, incomplete: false, badge: 'disponible · 4 cycles', badgeSty: okBadge,
+        hasObs: false,
+        bars: bars([1980, 2040, 2110, 2180], 2400, v => (v / 1000).toFixed(2).replace('.', ',') + 'k'),
+      },
+    ];
+    // partial state: fewer metrics unlocked, more incomplete
+    const metricsPartial = [
+      {
+        title: 'Énergie déclarée', ok: true, incomplete: false, badge: 'disponible · 4 cycles', badgeSty: okBadge,
+        hasObs: true, obs: 'En phase lutéale, ton énergie déclarée est en moyenne de 2,8/5, contre 3,6 en folliculaire.',
+        bars: bars([3.1, 3.6, 3.9, 2.8], 5, v => v.toFixed(1).replace('.', ',') + '/5'),
+      },
+      {
+        title: 'Humeur déclarée', ok: false, incomplete: true, badge: 'seuil partiel', badgeSty: incBadge,
+        hasObs: false, missing: 'Encore 2 cycles à observer avant une moyenne par phase.',
+        bars: bars([3.3, 3.7, 0, 0], 5, v => v > 0 ? v.toFixed(1).replace('.', ',') + '/5' : '—')
+          .map((b, i) => i >= 2 ? { ...b, val: '—', valColor: 'var(--mut2)', pct: '0%' } : b),
+      },
+      {
+        title: 'Tonnage muscu', ok: false, incomplete: true, badge: 'seuil partiel', badgeSty: incBadge,
+        hasObs: false, missing: 'Encore 6 séances à enregistrer en phase lutéale pour une moyenne fiable.',
+        bars: bars([4.2, 5.1, 5.4, 0], 6, v => v.toFixed(1).replace('.', ',') + ' t')
+          .map((b, i) => i === 3 ? { ...b, val: '—', valColor: 'var(--mut2)', pct: '0%' } : b),
+      },
+      {
+        title: 'Allure course', ok: false, incomplete: true, badge: 'seuil partiel', badgeSty: incBadge,
+        hasObs: false, missing: 'Encore 3 sorties à enregistrer en phase menstruelle pour une moyenne fiable.',
+        bars: bars([0, 78, 82, 74], 100, v => v > 0 ? (6 - v / 100 * 1.2).toFixed(1).replace('.', ',') + '/km' : '—')
+          .map((b, i) => i === 0 ? { ...b, val: '—', valColor: 'var(--mut2)', pct: '0%' } : b),
+      },
+      {
+        title: 'Apport calorique', ok: true, incomplete: false, badge: 'disponible · 4 cycles', badgeSty: okBadge,
+        hasObs: false,
+        bars: bars([1980, 2040, 2110, 2180], 2400, v => (v / 1000).toFixed(2).replace('.', ',') + 'k'),
+      },
+    ];
+    const metrics = st.cross === 'full' ? metricsFull : metricsPartial;
+
+    // ── entry sheet: flow + symptoms ──
+    const flowDefs = [
+      { key: 'spotting', label: 'Spotting', dots: 1 },
+      { key: 'leger', label: 'Léger', dots: 1 },
+      { key: 'moyen', label: 'Moyen', dots: 2 },
+      { key: 'abondant', label: 'Abondant', dots: 3 },
+    ];
+    const flowOptions = flowDefs.map(f => {
+      const on = st.flow === f.key;
+      const dot = (active) => 'width:6px; height:6px; border-radius:50%; background:' + (active ? (on ? '#fff' : 'var(--acc)') : (on ? 'rgba(255,255,255,.35)' : 'var(--line2)')) + ';';
+      return {
+        label: f.label,
+        sty: 'height:52px; border-radius:13px; cursor:pointer; font:700 14px Hanken Grotesk; display:flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid ' + (on ? 'var(--acc)' : 'var(--line2)') + '; background:' + (on ? 'var(--acc)' : 'var(--card)') + '; color:' + (on ? '#fff' : 'var(--txt)') + ';',
+        d1: dot(f.dots >= 1), d2: dot(f.dots >= 2), d3: dot(f.dots >= 3),
+        tap: () => this.setState(s => ({ flow: s.flow === f.key ? null : f.key })),
+      };
+    });
+
+    const sympDefs = ['Crampes', 'Maux de tête', 'Fatigue', 'Ballonnement', 'Sensibilité mammaire', 'Sautes d\u2019humeur', 'Acné', 'Fringales'];
+    const symptoms = sympDefs.map(label => {
+      const on = st.symptoms.includes(label);
+      return {
+        label,
+        sty: 'padding:9px 14px; border-radius:999px; cursor:pointer; font:600 13px Hanken Grotesk; border:1.5px solid ' + (on ? 'var(--acc)' : 'var(--line2)') + '; background:' + (on ? 'var(--soft)' : 'var(--card)') + '; color:' + (on ? 'var(--accdk)' : 'var(--sub)') + ';',
+        tap: () => this.setState(s => ({ symptoms: s.symptoms.includes(label) ? s.symptoms.filter(x => x !== label) : [...s.symptoms, label] })),
+      };
+    });
+
+    // ── nav ──
+    const navKeys = ['cycle', 'prediction', 'history', 'cross', 'settings'];
+    const nav = {}, navSty = {};
+    navKeys.forEach(k => { nav[k] = () => this.go(k); });
+    nav.entry = () => this.setState({ screen: 'cycle', overlay: 'entry' });
+    const activeNav = (O === 'entry') ? 'entry' : S;
+    navKeys.forEach(k => { navSty[k] = this.navBtn(activeNav === k); });
+    navSty.entry = this.navBtn(activeNav === 'entry');
+
+    // toggles / switches
+    const swTrack = (on) => 'width:52px; height:30px; border-radius:999px; border:none; cursor:pointer; padding:0; position:relative; flex:none; background:' + (on ? 'var(--acc)' : 'var(--line2)') + ';';
+    const swKnob = (on) => 'position:absolute; top:3px; left:' + (on ? '25px' : '3px') + '; width:24px; height:24px; border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.2); transition:left .2s;';
+
+    const showTabs = ['cycle', 'prediction', 'history', 'cross', 'settings'].includes(S) && !overlayOpen;
+
+    return {
+      scr_cycle: S === 'cycle', scr_prediction: S === 'prediction', scr_history: S === 'history',
+      scr_cross: S === 'cross', scr_settings: S === 'settings',
+      ov_entry: O === 'entry', ov_deactivate: O === 'deactivate',
+      nav, navSty, closeOverlay: () => this.closeOverlay(),
+
+      toggleTheme: () => this.toggleTheme(), themeIcon: st.theme === 'dark' ? '☀️' : '🌙', themeLabel: st.theme === 'dark' ? 'Clair' : 'Sombre',
+
+      predA: st.pred === 'A', predB: st.pred === 'B', predC: st.pred === 'C',
+      setPredA: () => this.setState({ pred: 'A', screen: 'prediction', overlay: null }),
+      setPredB: () => this.setState({ pred: 'B', screen: 'prediction', overlay: null }),
+      setPredC: () => this.setState({ pred: 'C', screen: 'prediction', overlay: null }),
+      predSty: { A: this.chip(st.pred === 'A'), B: this.chip(st.pred === 'B'), C: this.chip(st.pred === 'C') },
+
+      setCrossFull: () => this.setState({ cross: 'full', screen: 'cross', overlay: null }),
+      setCrossPartial: () => this.setState({ cross: 'partial', screen: 'cross', overlay: null }),
+      crossSty: { full: this.chip(st.cross === 'full'), partial: this.chip(st.cross === 'partial') },
+
+      moduleOn: st.moduleOn, moduleOff: !st.moduleOn,
+      toggleModule: () => this.toggleModule(), confirmDeactivate: () => this.confirmDeactivate(),
+      moduleChip: this.chip(st.moduleOn), moduleWord: st.moduleOn ? 'activé' : 'désactivé',
+      swTrack: swTrack(st.moduleOn), swKnob: swKnob(st.moduleOn),
+      toggleSync: () => this.setState(s => ({ sync: !s.sync })),
+      syncTrack: swTrack(st.sync), syncKnob: swKnob(st.sync),
+
+      weekdays, calCells, irregCycles, history, phases, metrics,
+      flowOptions, symptoms,
+
+      linkRow: 'width:100%; text-align:left; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 15px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;',
+      linkIcon: 'width:36px; height:36px; border-radius:11px; background:var(--soft); display:flex; align-items:center; justify-content:center; flex:none;',
+      linkTitle: "display:block; font:700 14.5px 'Hanken Grotesk'; color:var(--txt);",
+      linkSub: 'display:block; font-size:12px; color:var(--mut); margin-top:1px;',
+
+      showTabs,
+    };
+  }
+}
+</script>
+</body>
+</html>

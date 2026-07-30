@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — maquette Claude Design intégrée
+
+Commit précédent : `4bef8d8`. **Aucun code applicatif** — CYCLE-01 reste à `etape: validation`.
+
+#### Ajouté
+
+- **Maquette Claude Design** dans [design/cycle01-suivi-menstruel/](design/cycle01-suivi-menstruel/) :
+  `FitTrio - Cycle.dc.html` (6 écrans), son aperçu `.preview.webp`, le `README` du bundle, et
+  **5 captures** nommées d'après l'écran qu'elles montrent (onglet cycle, saisie du jour, prédiction
+  état A, croisement, réglages) — clair **et** sombre.
+- [PROMPT-claude-design.md](design/cycle01-suivi-menstruel/PROMPT-claude-design.md) — le prompt qui a
+  produit la maquette, versionné pour être rejouable si la charte bouge.
+
+#### Supprimé
+
+- `cycle01-suivi-menstruel.html` — la maquette **d'attente** que j'avais dessinée à la main le 30/07.
+  Remplacée par l'export Claude Design, qui est le livrable attendu par le workflow. Garder les deux
+  aurait exposé au risque d'implémenter la mauvaise. Récupérable dans l'historique git.
+- Dossier `TEMP/` à la racine, après vérification par empreinte (voir Notes).
+
+#### Technique / Notes
+
+- ⚠️ **Le bundle livré avait des noms et des extensions systématiquement faux.** Sur 34 fichiers :
+  `FitTrio - Cycle.dc.html` était en réalité une **image WEBP**, `01-cycle-check.png` du **HTML**,
+  `Architecture Applicative (3).md` un **JPEG**, `download (3)` du **Markdown**, `support (2) (2).js`
+  un JPEG… Les noms étaient **décalés par rapport aux contenus**. Identification faite par
+  **octets d'en-tête et par contenu**, jamais par nom — la vraie maquette Cycle se cachait sous
+  `FitTrio - Nutrition.dc (2).html` (75 occurrences du vocabulaire du cycle).
+- **Tri par empreinte MD5 avant toute suppression** : sur 34 fichiers, **24 étaient des doublons
+  exacts** de fichiers déjà dans `design/` (partage01, FitTrio, support.js…), **3 des doublons
+  internes**, et **4 une image blanche vide** (raté d'export, présente en 4 exemplaires) — écartée.
+  Il ne restait que **8 fichiers utiles**. Vérifié qu'aucun fichier de `TEMP/` n'était perdu avant de
+  supprimer le dossier.
+- **Aucune capture de l'écran 04 (historique)** dans le bundle — l'écran existe bien dans le HTML,
+  seule la capture manque. Sans conséquence.
+- **Conformité de la maquette à la spec vérifiée**, point par point : avertissement « carnet, pas un
+  dispositif médical » présent · les **3 états de prédiction** (dont « trop irrégulier », sans date) ·
+  fourchette ± · 4 phases · cycle aberrant marqué « ignoré » · opt-in désactivé par défaut · seuil
+  affiché **par métrique**. Et les 5 formulations interdites sont **absentes** (fertilité, conception,
+  probabilité de grossesse, « consulte un médecin », « évite les séances »).
+
 ### 30/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 cadrée (spec + plan + maquette)
 
 Commit précédent : `0aff4d2`. Roadmap **1.25 / 1.26** (lignes **créées**). **Aucun code applicatif** —
@@ -19,7 +60,8 @@ Commit précédent : `0aff4d2`. Roadmap **1.25 / 1.26** (lignes **créées**). *
 
 - [spec](docs/specs/functional/us/cycle01-suivi-menstruel.md) ·
   [plan](docs/plans/cycle01-suivi-menstruel.md) ·
-  [maquette](design/cycle01-suivi-menstruel/cycle01-suivi-menstruel.html).
+  [maquette](design/cycle01-suivi-menstruel/). *(Maquette d'attente remplacée le 31/07/2026 par
+  l'export Claude Design — voir l'entrée du 31/07.)*
 - **Roadmap 1.25 et 1.26 créées.** Le sujet n'existait **nulle part** avant aujourd'hui : zéro
   occurrence de `menstrual`/`ovulation`/`luteal`/`follicular` dans le code, les **58 migrations**, les
   220 items du catalogue d'analyses et IDEAS.md.

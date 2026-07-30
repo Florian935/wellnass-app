@@ -1,4 +1,4 @@
-# État du projet — 30/07/2026
+# État du projet — 31/07/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -58,7 +58,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 982 · `main` a **979** commits de retard sur `dev` |
+| Commits | 983 · `main` a **980** commits de retard sur `dev` |
 | Specs d'US | 94 au total — 75 clôturées, 19 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -69,11 +69,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4bef8d8` docs(cycle01): cadre le suivi du cycle menstruel (spec + plan + maquette)
 - `0aff4d2` docs(reconciliation): le suivi rattrape le code -- 4 affirmations fausses corrigees
 - `a073b9a` docs(runf3): cadre le resume de course enrichi et scinde meteo / objectif
 - `2d8d57a` docs(muscf1b): cadre le schema corporel des muscles cibles
 - `690ceeb` docs(muscf9): cadre le glisser-deposer du planning (spec + plan + maquette)
-- `45abd7c` docs(lance00): rédige la fiche Play et la politique de confidentialité
 
 ---
 
