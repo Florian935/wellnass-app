@@ -10,6 +10,70 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `docs/socle01-differee` — SOCLE-01 différée, REFACTO-01 créée (suivi seul, aucun code)
+
+Commit précédent : `ba4e9ee`.
+
+**Aucun code applicatif.** Trois fichiers de suivi. L'US SOCLE-01 a été **cadrée puis reportée le
+même jour** : elle n'est jamais entrée dans le pipeline, donc pas de spec, pas de plan, pas de
+maquette, et **pas de front-matter à faire avancer**.
+
+#### Modifié
+
+- [BACKLOG.md](BACKLOG.md) — **SOCLE-01 → ⏳ différée**, avec les 4 constats qui l'ont motivée :
+  1. [prd.md:122](docs/product/prd.md) qualifie les paliers Premium → Écosystème → IA de
+     « conservés **pour mémoire uniquement, non engageants** » — les définir aurait été les inventer,
+     contre une position produit écrite ;
+  2. **« Premium muscu » n'a aucun contenu défini nulle part**, « Écosystème » n'est nommé que dans
+     l'ADR-003 ; seul le palier **IA** a une décision datée (Florian, 15/07/2026 : 1-2 bilans croisés
+     gratuits bridés vs analyses exhaustives à la demande + chatbot à quota) ;
+  3. **aucune fonctionnalité IA n'est livrée** ([ia-integration-analyse.md](docs/product/ia-integration-analyse.md)
+     n'est pas encore une US) → la couture d'accès n'aurait eu **aucun consommateur réel**, donc
+     aurait été une promesse non vérifiée plutôt qu'une conception validée ;
+  4. LANCE-00 non fait → sans compte Play, aucun produit configurable, donc **un SDK RevenueCat
+     n'aurait rien à récupérer**. À noter pour la reprise : une clé SDK publique `goog_` **n'est pas
+     un secret** (elle est conçue pour être embarquée dans le client, même classe que
+     `EXPO_PUBLIC_SUPABASE_ANON_KEY`) — c'est l'inutilité qui l'a écartée, pas le garde-fou.
+
+  **Point de reprise : la première US IA**, qui fournira le premier point d'accès réellement gatable.
+- [roadmap.md](docs/roadmap/roadmap.md) — **9.14 → ⏳ Reporté** avec le motif, compteurs
+  **170 ✅ / 19 🟡 / 13 ⬜ / 2 ⏳** (8.7 et 9.14), entrée au journal des réconciliations.
+- **MUSC-F8 enrichie** dans le backlog : l'**échéance apprise** (p90) et le **rabattement DND** livrés
+  par NUTR-F1 sont réutilisables tels quels — et surtout, les décisions **D8** (marge d'imminence de
+  15 min) et **D9** (clé du jour réactive) l'attendent au même endroit. Sans cette note, le prochain
+  rappel muscu retomberait dans les deux mêmes pièges.
+
+#### Ajouté
+
+- **REFACTO-01 — Unifier la décision d'accès par pilier** (backlog P2). Trouvée en cadrant SOCLE-01,
+  et c'est le vrai enseignement de ce cadrage : le gating de la décision H
+  (`settings?.activePillars ?? [...PILLARS]` puis `.includes()`) est **recopié en ligne dans
+  ~12 endroits** — `(tabs)/_layout.tsx`, `settings.tsx`, `dashboard-repository`,
+  `records-repository`, `weekly-review-repository`, `widget-layout-repository` — **sans aucun helper
+  partagé**. La seule version propre est interne aux widgets (`WIDGET_REGISTRY.pillars` + son
+  sentinelle `'always'`), et c'est exactement la forme cible.
+
+  **La refonte que l'ADR-003 croyait prévenir existe donc déjà, et elle n'a rien à voir avec
+  RevenueCat.** Y brancher des entitlements plus tard devient alors une entrée de plus, pas une
+  refonte. ⚠️ Touche du code livré et recetté en 12 endroits : refacto dédiée, jamais passager
+  clandestin d'une autre US. ~6-8 h.
+
+#### Technique / Notes
+
+- **Dette de doc repérée, non corrigée ici** : [analyses-donnees.md:38-40](docs/product/analyses-donnees.md)
+  cite `WIDGET_PILLARS` + `resolveDashboardLayout` dans `packages/shared/src/dashboard.ts`. **Ce
+  fichier n'existe pas** ; les vrais noms sont `WIDGET_REGISTRY[screen].pillars` +
+  `resolveScreenLayout` dans `widgets.ts`. À corriger au prochain passage sur le catalogue.
+- **Bug confirmé dans du code livré, à traiter ensuite** : `dashboard-repository.ts` présente
+  **4 occurrences** (lignes 166, 243, 419, 537) du patron responsable du bug bloquant de NUTR-F1 —
+  `localDayKey(new Date())` passé en paramètre de requête sans entrée réactive, donc **gelé au
+  montage par React Compiler en build release**. Les fonctionnalités concernées sont vivantes :
+  `useTodaySession` (séance du jour au dashboard) et `useStreakData` (`activeToday`, qui pilote le
+  **rappel streak**). Correctif prévu sur `fix/date-gelee-react-compiler` — le remède
+  (`useTodayKey`) est déjà écrit et testé dans `reminder-habits-repository.ts`.
+- Vérifications malgré l'absence de code (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 ·
+  `npm run lint` 0 · `npm run test` 0.
+
 ### 30/07/2026 — `feature/nutrf1-rappels-nutrition` — rappels programmés nutrition (US NUTR-F1, roadmap 1.14 + 2.5)
 
 Commit précédent : `038c664`.

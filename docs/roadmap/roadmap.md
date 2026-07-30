@@ -81,7 +81,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 9.5 | Authentification JWT | Token court (accès) + token long (refresh). Renouvellement silencieux. | Moyen | 4h | 🟢 | ✅ | Géré par Supabase Auth. |
 | 9.6 | Isolation données utilisateur | Row Level Security — chaque utilisateur n'accède qu'à ses données. | Moyen | 3h | 🟢 | ✅ | |
 | 9.8 | Chiffrement tokens | Android Keystore (iOS Keychain lors du portage). Jamais en clair. | Moyen | 2h | 🟢 | ✅ | `lib/secure-storage.ts` (SecureStore/Keystore). |
-| 9.14 | **Câblage RevenueCat / entitlements (inactif)** *(nouvel item optionnel — arbitrage D)* | SDK RevenueCat intégré, entitlements multi-paliers définis (Premium muscu → Écosystème → IA), **laissés inactifs**. **Aucun écran de paiement, aucun paywall.** | Facile | 2h | 🟡 | ⬜ | Optionnel. Peu coûteux posé tôt, évite une refonte — voir [ADR-003](../adr/ADR-003-monetisation.md). **Aucune trace dans le code.** |
+| 9.14 | **Câblage RevenueCat / entitlements (inactif)** *(nouvel item optionnel — arbitrage D)* | SDK RevenueCat intégré, entitlements multi-paliers définis (Premium muscu → Écosystème → IA), **laissés inactifs**. **Aucun écran de paiement, aucun paywall.** | Facile | 2h | 🟡 | ⏳ | **Reportée le 30/07/2026 (Florian)** après cadrage : le [PRD](../product/prd.md) dit les paliers « non engageants », « Premium muscu » n'a aucun contenu défini, aucune fonctionnalité IA n'est livrée (donc **aucun consommateur réel** pour la couture) et LANCE-00 non fait (donc aucun produit configurable). Motifs détaillés dans [BACKLOG.md](../../BACKLOG.md). **À reprendre avec la 1ʳᵉ US IA.** |
 | 1.21 | Écrans légaux & consentement | CGU + politique de confidentialité acceptées à l'inscription. Âge minimum 16 ans (RGPD). | Facile | 2h | 🟡 | ✅ | `(auth)/terms.tsx`, `privacy.tsx`, contrôle âge 16+ à l'inscription. 🌐 bilingue FR+EN. |
 | 2.1 | Bottom tab bar 4 onglets | Navigation principale : Accueil / Muscu / Running / Alim. | Facile | 2h | 🟢 | ✅ | Onglets vides au début, remplis version après version. |
 | 2.2 | Masquage onglets non activés | Si running non activé, son onglet disparaît. Réactivable depuis les paramètres. | Facile | 1h | 🟢 | ✅ | Filtre sur `settings.activePillars`. |
@@ -427,8 +427,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|
 | ✅ Livré | 170 | ~82 % |
 | 🟡 Partiel | 19 | ~9 % |
-| ⬜ À faire | 14 | ~7 % |
-| ⏳ Reporté (dans le périmètre — 8.7) | 1 | — |
+| ⬜ À faire | 13 | ~6 % |
+| ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
@@ -489,6 +489,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**30/07/2026 — SOCLE-01 : entitlements RevenueCat (9.14) ⬜ → ⏳ Reporté**
+Cadrée puis reportée le même jour : le PRD dit les paliers « non engageants », « Premium muscu » n'a
+aucun contenu défini, et **aucune fonctionnalité IA n'est livrée** — la couture n'aurait aucun
+consommateur. Dette d'accès réelle isolée en **REFACTO-01**. Compteurs : **170 / 19 / 13 / 2⏳**.
 
 **30/07/2026 — NUTR-F1 : rappels programmés nutrition (1.14, 2.5) ⬜ → ✅ ×2**
 Défaut de conception corrigé avant tout code : on apprend le **p90** de l'heure du geste (une échéance),

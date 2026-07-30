@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 170 livré · 19 partiel · 14 à faire (sur 208)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 170 livré · 19 partiel · 13 à faire (sur 208)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -38,11 +38,11 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (8) · P2 confort (1)</summary>
+<details><summary>P1 finitions (8) · P2 confort (2)</summary>
 
 **P1** — MUSC-F7 — Progression assistée · MUSC-F8 — Notifications push muscu · MUSC-F9 — Décalage en glisser-déposer · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
-**P2** — SOCLE-01 — RevenueCat câblé inactif
+**P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
 
 </details>
 
@@ -52,8 +52,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/nutrf1-rappels-nutrition` (modifications non commitées) |
-| Commits | 968 · `main` a **965** commits de retard sur `dev` |
+| Branche courante | `docs/socle01-differee` (modifications non commitées) |
+| Commits | 969 · `main` a **966** commits de retard sur `dev` |
 | Specs d'US | 88 au total — 75 clôturées, 13 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -64,11 +64,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `ba4e9ee` feat(nutrf1): rappels programmés nutrition — repas et pesée à l'échéance apprise (US NUTR-F1, 1.14/2.5)
 - `038c664` fix(theme): supprime le flash de thème à chaque navigation
 - `c227127` fix(a11y): contraste WCAG AA du thème clair + limite de champ perceptible (9.12)
 - `1cdaf11` chore(git): ignore les artefacts locaux de Claude Design
 - `936ec81` fix(ux): 5 correctifs issus de la passe device + plan de test des 73 écrans
-- `ecee20e` fix(pas01): en-tête de navigation manquant sur l'écran des pas (9.15)
 
 ---
 
