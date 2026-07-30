@@ -31,6 +31,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
+| **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 
 ⏳ **14 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
@@ -40,9 +41,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (6) · P2 confort (2)</summary>
+<details><summary>P1 finitions (5) · P2 confort (2)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F1b — Muscles ciblés sur schéma SVG · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3 — Résumé de course enrichi · RUN-F1b — Dénivelé cumulé
 
 **P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
 
@@ -54,9 +55,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf9-planning-glisser-deposer` (modifications non commitées) |
-| Commits | 978 · `main` a **975** commits de retard sur `dev` |
-| Specs d'US | 91 au total — 75 clôturées, 16 en cours |
+| Branche courante | `feature/muscf1b-schema-muscles` (modifications non commitées) |
+| Commits | 979 · `main` a **976** commits de retard sur `dev` |
+| Specs d'US | 92 au total — 75 clôturées, 17 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -66,11 +67,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `690ceeb` docs(muscf9): cadre le glisser-deposer du planning (spec + plan + maquette)
 - `45abd7c` docs(lance00): rédige la fiche Play et la politique de confidentialité
 - `0df5e02` docs(conf07): cadre l'accessibilité — 5 non-conformités WCAG restantes
 - `cf17e5c` feat(partage01): carte de partage — charte alignée sur le thème sombre
 - `56ea41d` merge: intègre origin/dev dans la refonte nutrition
-- `e3abfa3` feat(nutrition): refonte visuelle du journal alimentaire
 
 ---
 
