@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-F9 — Glisser-déposer du planning</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:72ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:72ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .step{background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:14px}
+  .stepno{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:10px}
+  .day{border-radius:12px;padding:9px 11px;margin-bottom:8px;background:var(--surf);
+       border:1px solid var(--border)}
+  .dayname{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;
+           margin-bottom:5px}
+  .sess{background:var(--surfalt);border-radius:9px;padding:8px 10px;font-size:13.5px;font-weight:600}
+  .sess .meta{font-weight:400;font-size:12px;color:var(--muted);margin-top:1px}
+  .lift{box-shadow:0 10px 22px rgba(51,41,31,.28);transform:rotate(-1.6deg) scale(1.04);
+        border:1px solid var(--accent);position:relative;z-index:2}
+  .target{border:2px dashed var(--accent);background:rgba(177,79,43,.07)}
+  .ghost{opacity:.32;border:1px dashed var(--bstrong);background:transparent}
+  .done{opacity:.55}
+  .done .sess{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:6px;align-items:center}
+  .toast{margin-top:10px;background:#33291f;color:#f0e4d0;border-radius:9px;
+         padding:9px 11px;font-size:13px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:80ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  .ko{border-left:3px solid #b23b2e} .ok{border-left:3px solid var(--success)}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-F9 — Décalage en glisser-déposer</h1>
+<p class="sub">Décaler du mardi au jeudi est le cas le plus courant, et c'est précisément celui que
+les trois boutons actuels (« aujourd'hui », « demain », « +7 jours ») ne couvrent pas.
+<strong>Aucune règle métier nouvelle</strong> : le geste appelle la fonction de report déjà en place.</p>
+
+<h2>Le geste, en trois temps</h2>
+<p class="why">Décision <strong>D1</strong> : la prise se fait à l'<strong>appui long</strong>, comme
+le réagencement du dashboard livré par UX-LOT-01 — l'utilisateur connaît déjà ce geste dans l'app.</p>
+<div class="row">
+  <div class="step"><div class="stepno">1 · Repos</div>
+    <div class="day"><div class="dayname">Mardi 4</div>
+      <div class="sess">Haut du corps A<div class="meta">6 exercices · muscu</div></div></div>
+    <div class="day"><div class="dayname">Mercredi 5</div>
+      <div class="sess" style="background:transparent;border:1px dashed var(--border);color:var(--muted);font-weight:400">Repos</div></div>
+    <div class="day"><div class="dayname">Jeudi 6</div>
+      <div class="sess" style="background:transparent;border:1px dashed var(--border);color:var(--muted);font-weight:400">Repos</div></div>
+    <div class="hint">⏱ Appui long pour déplacer</div>
+  </div>
+
+  <div class="step"><div class="stepno">2 · En cours</div>
+    <div class="day"><div class="dayname">Mardi 4</div>
+      <div class="sess ghost">Haut du corps A<div class="meta">emplacement d'origine</div></div></div>
+    <div class="day"><div class="dayname">Mercredi 5</div>
+      <div class="sess" style="background:transparent;border:1px dashed var(--border);color:var(--muted);font-weight:400">Repos</div></div>
+    <div class="day target"><div class="dayname">Jeudi 6 — déposer ici</div>
+      <div class="sess lift">Haut du corps A<div class="meta">6 exercices · muscu</div></div></div>
+    <div class="hint">La carte décolle · le jour survolé s'entoure</div>
+  </div>
+
+  <div class="step"><div class="stepno">3 · Déposé</div>
+    <div class="day"><div class="dayname">Mardi 4</div>
+      <div class="sess" style="background:transparent;border:1px dashed var(--border);color:var(--muted);font-weight:400">Repos</div></div>
+    <div class="day"><div class="dayname">Mercredi 5</div>
+      <div class="sess" style="background:transparent;border:1px dashed var(--border);color:var(--muted);font-weight:400">Repos</div></div>
+    <div class="day"><div class="dayname">Jeudi 6</div>
+      <div class="sess">Haut du corps A<div class="meta">6 exercices · muscu</div></div></div>
+    <div class="toast">Séance déplacée au jeudi 6</div>
+  </div>
+</div>
+
+<h2>Ce qui ne se déplace pas, et ce qui ne déclenche rien</h2>
+<div class="rules">
+  <div class="rule ko"><b>Séance terminée — non saisissable</b>
+    <div class="day done" style="margin:8px 0 0"><div class="dayname">Lundi 3</div>
+      <div class="sess">✓ Bas du corps B<div class="meta">terminée</div></div></div>
+    <span style="font-size:13px;color:var(--muted)">Déplacer un fait accompli n'a pas de sens (R1).</span></div>
+  <div class="rule ok"><b>Déposé sur son propre jour — aucune écriture</b>
+    <span style="font-size:13px;color:var(--muted)">Geste annulé, pas action : ni toast, ni requête (R3).
+    Idem si on relâche hors de toute zone (R6).</span></div>
+  <div class="rule ok"><b>Plusieurs séances le même jour — autorisé</b>
+    <span style="font-size:13px;color:var(--muted)">Déjà possible via « +7 ». Le jour cible les empile,
+    sans limite ni avertissement (R4).</span></div>
+  <div class="rule ok"><b>Vers un jour passé — autorisé</b>
+    <span style="font-size:13px;color:var(--muted)">La séance reste <code>planned</code> et rejoint
+    « manquées ». Interdire le passé contredirait le marquage rétroactif déjà permis (R5).</span></div>
+</div>
+
+<div class="note">
+  <strong>Les trois boutons de report restent en place — ce n'est pas négociable.</strong>
+  Un glisser-déposer est <em>inutilisable</em> sous TalkBack. La feuille d'action existante est le
+  chemin accessible, et elle couvre déjà les cas courants. Cette US <strong>ajoute</strong> un
+  raccourci gestuel ; elle ne remplace rien.
+  <br><br>
+  <strong>Deux arbitrages attendus.</strong>
+  <strong>D2</strong> — glisser d'une semaine à l'autre : recommandation <em>ne pas le gérer</em>
+  (le bouton « +7 » couvre le cas ; l'auto-défilement pendant un glissement est la source classique
+  de bugs). <strong>D3</strong> — retour haptique : <code>expo-haptics</code> serait la
+  <em>seule</em> dépendance nouvelle, et donc ce qui décide si la recette exige un nouveau build ou
+  se fait sur l'APK existant.
+</div>
+
+</div></body></html>
