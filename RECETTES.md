@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **30/07/2026** — 13 US en attente.
+> Dernière mise à jour : **30/07/2026** — 14 US en attente.
 
 ---
 
@@ -373,6 +373,41 @@ en reste là — voir [spec §0.2](docs/specs/functional/us/muscf14-substitution
 des réglages le dit) · le rappel est-il activé · le geste n'est-il pas **déjà fait** aujourd'hui ·
 l'heure effective (ligne de provenance) est-elle bien **dans le futur** · l'heure n'est-elle pas dans
 le DND avec un réglage manuel. Ces cinq refus sont exactement les `reason` de la règle métier.
+
+---
+
+## 14. MUSC-F8 — Notifications muscu (push de record, célébration, rappel de séance)
+
+📄 [spec](docs/specs/functional/us/muscf8-notifications-muscu.md) · roadmap 3.42 + 2.7 + 2.4 ·
+**📱 device** (10 critères) · **aucun nouveau build nécessaire**
+
+- [ ] **Séance sur des exercices neufs → une seule notification.** Termine une séance de plusieurs
+      exercices jamais travaillés (donc plusieurs records par exercice) → une **seule** notification
+      de record, pas une par ligne battue.
+- [ ] **3 types battus sur un seul exercice → titre au singulier** (« Nouveau record ! »), pas
+      « records battus sur 1 exercice ».
+- [ ] **4 exercices ou plus → 3 nommés + « et N autres »** dans le corps de la notification.
+- [ ] **La célébration animée apparaît au résumé de séance** quand il y a un record — juste après le
+      titre de l'écran, pas plus bas — et **pas du tout** sinon.
+- [ ] Réglage système « **réduire les animations** » actif → la bannière s'affiche directement à son
+      état final, sans transition.
+- [ ] **Désactiver « Nouveau record »** dans les réglages → plus aucune notification de record ;
+      l'animation du résumé, elle, reste (elle est indépendante).
+- [ ] **4 séances à record le même jour → 3 notifications**, la 4ᵉ silencieuse (plafond).
+- [ ] **Deux séances à record le même jour → 2 notifications distinctes** dans le tiroir (contrairement
+      aux autres rappels, celui-ci n'efface pas la précédente — c'est voulu, D10).
+- [ ] **Rappel de séance** : une occurrence muscu planifiée aujourd'hui, non faite → notification à
+      l'échéance affichée dans les réglages ; la valider (terminer la séance) **annule** le rappel.
+- [ ] **Aucune séance muscu planifiée aujourd'hui** (y compris s'il n'y a qu'une **course** planifiée)
+      → **aucun** rappel de séance.
+
+⚠️ **Point à surveiller en priorité** : le push de record part **même si l'app est au premier
+plan**, donc il arrive alors que l'écran de résumé affiche déjà les mêmes records (décision D11,
+assumée mais contestable — voir la spec). Si ça gêne à l'usage, c'est le premier réglage à
+reconsidérer, pas un bug.
+
+**Quand une US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
 
 ---
 

@@ -71,6 +71,9 @@ describe('userSettingsRowSchema — defaults', () => {
       weighInReminder: false,
       weighInReminderHour: 10,
       learnedHour: true,
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
     });
   });
 
@@ -115,7 +118,7 @@ describe('userSettingsRowSchema — valeurs explicites', () => {
   });
 
   // Ce test énumérait 6 des 8 champs et **entérinait la dérive** : `weeklyReview` /
-  // `weeklyReviewHour` étaient strippés sans que rien ne le signale. Il énumère désormais les 13
+  // `weeklyReviewHour` étaient strippés sans que rien ne le signale. Il énumère désormais les 16
   // champs, ce qui fait de lui le garde-fou contre une nouvelle dérive.
   it('accepte des préférences de notifications explicites — sans stripper aucun champ', () => {
     expect.hasAssertions();
@@ -133,6 +136,9 @@ describe('userSettingsRowSchema — valeurs explicites', () => {
       weighInReminder: true,
       weighInReminderHour: 9,
       learnedHour: false,
+      recordPush: false,
+      sessionReminder: true,
+      sessionReminderHour: 19,
     };
     const row = userSettingsRowSchema.parse({ ...syncBase, notifications: prefs });
     expect(row.notifications).toEqual(prefs);

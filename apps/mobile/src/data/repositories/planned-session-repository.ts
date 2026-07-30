@@ -269,6 +269,43 @@ export function useHasPlannedSession(dayKey: string): {
 }
 
 // ---------------------------------------------------------------------------
+// useHasPlannedStrengthSessionToday — support US MUSC-F8 (rappel de séance)
+// ---------------------------------------------------------------------------
+
+/**
+ * ⚠️ **`useHasPlannedSession` ne convient PAS** pour le rappel de séance muscu, pour deux raisons :
+ * son `WHERE` accepte `status IN ('planned','done')` — donc répond `true` pour une séance **déjà
+ * faite** — et il n'a **aucun filtre de pilier**, `planned_sessions` étant pilier-agnostique par
+ * conception (le pilier vit sur `programs.pillar`, jamais dupliqué sur l'occurrence). Une course
+ * planifiée aurait donc déclenché le rappel muscu (décision D16, US MUSC-F8).
+ *
+ * Cette requête filtre `status = 'planned'` **strictement** (porte à elle seule le « pas déjà
+ * faite » — inutile d'une seconde condition) et `programs.pillar = 'strength'`.
+ */
+const SELECT_HAS_PLANNED_STRENGTH_TODAY = `
+  SELECT 1 AS has
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND ps.status = 'planned' AND ps.scheduled_date = ? AND p.pillar = 'strength'
+  LIMIT 1
+`;
+
+/** Une occurrence `planned` de pilier muscu existe-t-elle pour `dayKey` ? */
+export function useHasPlannedStrengthSessionToday(dayKey: string): {
+  hasPlanned: boolean;
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ has: number }>(SELECT_HAS_PLANNED_STRENGTH_TODAY, [
+    userId,
+    dayKey,
+  ]);
+  return { hasPlanned: data.length > 0, isLoading };
+}
+
+// ---------------------------------------------------------------------------
 // Écritures (hors contexte hook) — toutes optimistes (SQLite immédiat)
 // ---------------------------------------------------------------------------
 

@@ -49,6 +49,17 @@ export const MEAL_REMINDER_ID = 'meal-reminder';
 export const WEIGH_IN_REMINDER_ID = 'weigh-in-reminder';
 
 /**
+ * Préfixe de l'identifiant du push de record (US MUSC-F8). **Volontairement pas un id stable** :
+ * `<préfixe><workoutId>` produit un identifiant **par séance**, pour que deux séances à record le
+ * même jour laissent deux traces distinctes dans le tiroir de notifications au lieu que la seconde
+ * n'efface la première (décision D10, revue après un premier essai avec id stable).
+ */
+export const RECORD_PUSH_PREFIX = 'record-push-';
+
+/** Identifiant du rappel de séance planifiée muscu (US MUSC-F8). */
+export const SESSION_REMINDER_ID = 'session-reminder';
+
+/**
  * Contenu i18n d'une notification (résolu par l'appelant via i18next).
  *
  * Nommé `StreakReminderContent` à l'origine, quand le rappel streak était le seul type. Il sert
@@ -205,5 +216,31 @@ export async function cancelWeeklyReview(): Promise<void> {
     await Notifications.cancelScheduledNotificationAsync(WEEKLY_REVIEW_ID);
   } catch {
     // no-op : rien à annuler / module indisponible.
+  }
+}
+
+/**
+ * Envoie une notification **immédiatement**, sous l'identifiant fourni par l'appelant (US MUSC-F8).
+ *
+ * `trigger: { channelId }` est la forme `ChannelAwareTriggerInput` du SDK 57 : pas de planification,
+ * mais un routage obligatoire sur le canal Android (tout passe par `REMINDERS_CHANNEL_ID`).
+ * ⚠️ `presentNotificationAsync` n'existe plus en SDK 57 — ne pas le chercher, cette fonction est le
+ * remplacement.
+ *
+ * @returns `true` si l'appel natif n'a pas levé — **et seulement dans ce cas** l'appelant doit
+ * consommer une unité de quota (décision D14, `notification-quota-store.ts`). `false` sinon, jamais
+ * de `throw` : sans ce contrat booléen, une notification qui échoue silencieusement consommerait
+ * quand même le plafond quotidien.
+ */
+export async function presentNow(id: string, content: ReminderContent): Promise<boolean> {
+  try {
+    await Notifications.scheduleNotificationAsync({
+      identifier: id,
+      content: { title: content.title, body: content.body },
+      trigger: { channelId: REMINDERS_CHANNEL_ID },
+    });
+    return true;
+  } catch {
+    return false;
   }
 }

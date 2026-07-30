@@ -158,9 +158,9 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.21 | Courbe de progression par exercice | Charge max / volume sur 30 / 90 j / 1 an. | Moyen | 4h | 🟢 | ✅ | + 1RM estimé + période « tout » (MUSC-04). |
 | 3.40 | Volume par groupe musculaire | Séries par groupe sur la semaine — détecte les déséquilibres. | Moyen | 3h | 🟢 | ✅ | `MuscleVolumeBarChart` + `useMuscleVolumeThisWeek`. |
 | 3.41 | Alerte déséquilibre musculaire | Si un groupe très sous-sollicité sur 2 semaines. | Moyen | 3h | 🟢 | ✅ | `useMuscleBalance` + alerte groupes négligés (MUSC-05). |
-| 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ⬜ | Records affichés au résumé, **aucun push** (notifs = streak seul). |
-| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | ⬜ | **Aucune notif de rappel de séance planifiée.** |
-| 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ⬜ | **Aucune notif push de record.** |
+| 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ✅ | US MUSC-F8. Push **agrégé** (1 par séance, jamais 1 par record) + célébration animée transposée de la course. |
+| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | 🟡 | US MUSC-F8. **Recadré en échéance apprise** (p90 de `finished_at`) : `scheduled_date` est un jour sans heure, « 30 min avant » est incalculable en l'état. Vrai horaire = US à part (heure de séance en base). |
+| 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ✅ | US MUSC-F8. Muscu uniquement (course écartée : son chemin de détection est aussi celui du backfill, qui rejouerait tout l'historique). Plafond de 3/jour réellement appliqué (D14, solde D3 de NUTR-F1). |
 
 ---
 
@@ -425,9 +425,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 170 | ~82 % |
-| 🟡 Partiel | 19 | ~9 % |
-| ⬜ À faire | 13 | ~6 % |
+| ✅ Livré | 172 | ~83 % |
+| 🟡 Partiel | 20 | ~10 % |
+| ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **208** | |
@@ -451,7 +451,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 27 | 1 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu. Reste 🟡 3.36 (fenêtre de reprise à réconcilier) et ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 15 | 3 | 3 | 0 | 0 | Reste les **3 push** (3.42, 2.4, 2.7) ; progression auto (3.7) et deload (3.8) partiels — briques livrées, non câblées. **3.1 → ✅** (bibliothèque de programmes muscu seedée, 29/07) |
+| V0.3 (21) | 17 | 4 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). Progression auto (3.7) et deload (3.8) restent partiels — briques livrées, non câblées. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
@@ -489,6 +489,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**30/07/2026 — MUSC-F8 : notifications muscu (3.42, 2.7 ✅ · 2.4 🟡)**
+Push de record **agrégé** (jamais 1 par record — jusqu'à 15 en une séance) + célébration animée +
+rappel de séance recadré en échéance apprise sur `finished_at` (pas `started_at` : même piège que D1,
+déplacé). Solde D3 de NUTR-F1 : plafond de 3/jour réellement appliqué aux notifications immédiates.
+Compteurs : **172 / 20 / 10 / 2⏳**.
 
 **30/07/2026 — SOCLE-01 : entitlements RevenueCat (9.14) ⬜ → ⏳ Reporté**
 Cadrée puis reportée le même jour : le PRD dit les paliers « non engageants », « Premium muscu » n'a

@@ -47,15 +47,28 @@ export interface NotificationPrefs {
    * est insuffisant.
    */
   learnedHour: boolean;
+  /**
+   * Push de célébration « nouveau record » (défaut `true`, **opt-out**) — US MUSC-F8.
+   *
+   * Défaut opposé aux rappels ci-dessus, délibérément : ceux-là **réclament** (opt-in, pour ne pas
+   * augmenter le volume de sollicitations sans consentement), celui-ci **célèbre** — la règle
+   * d'opt-in de NUTR-F1 protégeait d'un volume de réclamations, pas d'une bonne nouvelle.
+   */
+  recordPush: boolean;
+  /** Rappel de séance planifiée muscu activé (défaut `false`, **opt-in**) — US MUSC-F8. */
+  sessionReminder: boolean;
+  /** Échéance du rappel de séance, 0-23 (défaut `18`). Sert de **repli** et de valeur manuelle. */
+  sessionReminderHour: number;
 }
 
 /**
  * Valeurs par défaut des préférences de notifications.
  *
- * Note : les **quatre** heures par défaut (`reminderHour = 20`, `weeklyReviewHour = 9`,
- * `mealReminderHour = 13`, `weighInReminderHour = 10`) sont **volontairement hors** de la fenêtre
- * DND par défaut `[22, 7)` — sinon ces notifications seraient systématiquement supprimées par le
- * filtre DND. Toute modification des défauts doit préserver cet invariant, qui est **testé**.
+ * Note : les **cinq** heures par défaut (`reminderHour = 20`, `weeklyReviewHour = 9`,
+ * `mealReminderHour = 13`, `weighInReminderHour = 10`, `sessionReminderHour = 18`) sont
+ * **volontairement hors** de la fenêtre DND par défaut `[22, 7)` — sinon ces notifications seraient
+ * systématiquement supprimées par le filtre DND. Toute modification des défauts doit préserver cet
+ * invariant, qui est **testé**.
  */
 export function defaultNotificationPrefs(): NotificationPrefs {
   return {
@@ -81,6 +94,12 @@ export function defaultNotificationPrefs(): NotificationPrefs {
     weighInReminder: false,
     weighInReminderHour: 10,
     learnedHour: true,
+    // MUSC-F8 — célèbre, donc activé par défaut (voir la docstring du champ).
+    recordPush: true,
+    // Opt-in, comme les rappels NUTR-F1. 18 h = « la journée avance, ta séance n'est pas faite »
+    // (une échéance, pas une convocation — voir D12 de la spec).
+    sessionReminder: false,
+    sessionReminderHour: 18,
   };
 }
 
@@ -130,6 +149,9 @@ export function parseNotificationPrefs(raw: unknown): NotificationPrefs {
     weighInReminder: boolOr(obj['weighInReminder'], d.weighInReminder),
     weighInReminderHour: clampHour(obj['weighInReminderHour'], d.weighInReminderHour),
     learnedHour: boolOr(obj['learnedHour'], d.learnedHour),
+    recordPush: boolOr(obj['recordPush'], d.recordPush),
+    sessionReminder: boolOr(obj['sessionReminder'], d.sessionReminder),
+    sessionReminderHour: clampHour(obj['sessionReminderHour'], d.sessionReminderHour),
   };
 }
 

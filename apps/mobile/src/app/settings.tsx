@@ -28,6 +28,7 @@ import {
 } from '@/data/repositories/notification-repository';
 import {
   useMealDeadline,
+  useSessionDeadline,
   useWeighInDeadline,
   type ReminderDeadline,
 } from '@/data/repositories/reminder-habits-repository';
@@ -263,6 +264,7 @@ export default function SettingsScreen() {
   // divergence possible entre ce que l'écran affiche et ce qui sera réellement planifié.
   const mealDeadline = useMealDeadline(notificationPrefs);
   const weighInDeadline = useWeighInDeadline(notificationPrefs);
+  const sessionDeadline = useSessionDeadline(notificationPrefs);
 
   const relaunchOnboarding = async () => {
     // Réinitialise le drapeau d'onboarding via le profil ; la gate de routing
@@ -550,7 +552,26 @@ export default function SettingsScreen() {
           />
         </View>
 
-        {/* Rappels programmés (US NUTR-F1), dans l'ordre chronologique de la journée. */}
+        {/* Push de célébration (US MUSC-F8) — pas de HourStepper, c'est une notification immédiate. */}
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('settings.notifications.recordPush')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('settings.notifications.recordPushDesc')}
+            </Text>
+          </View>
+          <Switch
+            value={notificationPrefs.recordPush}
+            onValueChange={(next) => patchNotifications({ recordPush: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.notifications.recordPush')}
+          />
+        </View>
+
+        {/* Rappels programmés (US NUTR-F1 + MUSC-F8), dans l'ordre chronologique de la journée. */}
         <ProgrammedReminderRows
           label={t('settings.notifications.weighInReminder')}
           desc={t('settings.notifications.weighInReminderDesc')}
@@ -572,6 +593,18 @@ export default function SettingsScreen() {
           hour={notificationPrefs.mealReminderHour}
           onHour={(next) => patchNotifications({ mealReminderHour: next })}
           deadline={mealDeadline}
+          learnedMode={notificationPrefs.learnedHour}
+          prefs={notificationPrefs}
+        />
+        <ProgrammedReminderRows
+          label={t('settings.notifications.sessionReminder')}
+          desc={t('settings.notifications.sessionReminderDesc')}
+          hourLabel={t('settings.notifications.sessionReminderTime')}
+          enabled={notificationPrefs.sessionReminder}
+          onToggle={(next) => patchNotifications({ sessionReminder: next })}
+          hour={notificationPrefs.sessionReminderHour}
+          onHour={(next) => patchNotifications({ sessionReminderHour: next })}
+          deadline={sessionDeadline}
           learnedMode={notificationPrefs.learnedHour}
           prefs={notificationPrefs}
         />

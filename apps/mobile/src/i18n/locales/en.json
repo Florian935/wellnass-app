@@ -205,6 +205,10 @@
           "best_volume": "Set volume"
         }
       },
+      "celebration": {
+        "titleOne": "New personal record!",
+        "titleMany": "Records broken on {{count}} exercises!"
+      },
       "warmupCount_one": "+{{count}} warm-up",
       "warmupCount_other": "+{{count}} warm-ups",
       "saveAsTemplate": "Save as template",
@@ -1251,7 +1255,7 @@
       "dndDesc": "No notifications during the chosen window.",
       "dndStart": "Start",
       "dndEnd": "End",
-      "hint": "The window can span midnight (e.g. 22:00 → 07:00). At most one reminder per type per day.",
+      "hint": "The window can span midnight (e.g. 22:00 → 07:00). At most one reminder per type per day, plus up to 3 record celebrations.",
       "permissionDenied": "Notifications are turned off at the system level. Enable them in your Android settings to receive reminders.",
       "decreaseHour": "Decrease hour",
       "increaseHour": "Increase hour",
@@ -1266,7 +1270,12 @@
       "mealReminderTime": "Reminder time",
       "weighInReminder": "Weigh-in reminder",
       "weighInReminderDesc": "If you haven't weighed in yet today.",
-      "weighInReminderTime": "Reminder time"
+      "weighInReminderTime": "Reminder time",
+      "recordPush": "New record",
+      "recordPushDesc": "A notification when you break a record.",
+      "sessionReminder": "Session reminder",
+      "sessionReminderDesc": "If today's session is still on your plan.",
+      "sessionReminderTime": "Reminder time"
     },
     "account": {
       "title": "Account",
@@ -1668,6 +1677,17 @@
     "weighInReminder": {
       "title": "No weigh-in yet today",
       "body": "One more point to track your trend."
+    },
+    "sessionReminder": {
+      "title": "Today's session is waiting",
+      "body": "It's still on your plan — 40 minutes and it's done."
+    },
+    "record": {
+      "titleOne": "🏆 New personal record!",
+      "titleMany": "🏆 Records broken on {{count}} exercises!",
+      "bodyOne": "{{exercise}} — {{value}}",
+      "bodyMany": "{{names}}",
+      "bodyManyOverflow": "{{names}} and {{rest}} more"
     }
   },
   "steps": {

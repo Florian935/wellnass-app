@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { computeVolume, formatDayFull } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { CelebrationCard } from '@/components/CelebrationCard';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ShareCardSheet } from '@/components/share/ShareCardSheet';
@@ -190,6 +191,38 @@ function RecordsSection({ workoutId }: { workoutId: string }) {
   );
 }
 
+/**
+ * Bannière de célébration animée — US MUSC-F8 (roadmap 3.42, partie animation).
+ *
+ * Montée **juste après `ScreenHeader`**, pas au-dessus de `RecordsSection` (qui est ~60 lignes de
+ * JSX plus bas) : `CelebrationCard` démarre son animation au montage, et une bannière montée trop
+ * bas serait déjà à son état final quand l'utilisateur y arrive en scrollant.
+ *
+ * Purement décorative : le décompte qu'elle affiche est redondant avec `RecordsSection`, qui reste
+ * la source d'information. Dédoublonne par exercice (`exerciseId`), comme le fait le push de
+ * `buildRecordPushContent` — même règle, deux lectures indépendantes du même `useWorkoutRecords`.
+ */
+function WorkoutCelebrationBanner({ workoutId }: { workoutId: string }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { records, isLoading } = useWorkoutRecords(workoutId);
+
+  if (isLoading || records.length === 0) return null;
+
+  const exerciseCount = new Set(records.map((r) => r.exerciseId)).size;
+
+  return (
+    <CelebrationCard style={[styles.celebration, { backgroundColor: colors.accent }]}>
+      <Text style={styles.celebrationSpark}>🏆</Text>
+      <Text style={[styles.celebrationTitle, { color: colors.accentText }]}>
+        {exerciseCount === 1
+          ? t('workout.summary.celebration.titleOne')
+          : t('workout.summary.celebration.titleMany', { count: exerciseCount })}
+      </Text>
+    </CelebrationCard>
+  );
+}
+
 export default function WorkoutSummaryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -268,6 +301,7 @@ export default function WorkoutSummaryScreen() {
   return (
     <FormScreen>
       <ScreenHeader title={t('workout.summary.title')} subtitle={t('workout.summary.subtitle')} />
+      {id ? <WorkoutCelebrationBanner workoutId={id} /> : null}
       {summary ? (
         <Card>
           <Row
@@ -389,6 +423,15 @@ const styles = StyleSheet.create({
   saveAsTemplateSection: { gap: 10 },
   saveAsTemplateActions: { flexDirection: 'row', gap: 10 },
   saveAsTemplateActionFlex: { flex: 1 },
+  // Célébration (US MUSC-F8)
+  celebration: {
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    gap: 4,
+  },
+  celebrationSpark: { fontSize: 28 },
+  celebrationTitle: { fontFamily: fontFamily.displayBold, fontSize: 17, textAlign: 'center' },
   // Records section
   recordsSection: { gap: 10 },
   recordsSectionTitle: {

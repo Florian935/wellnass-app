@@ -27,6 +27,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import {
   LEARNED_HOUR_WINDOW_DAYS,
+  localDayKey,
   localMidnightDaysAgo,
   resolveReminderDeadline,
   type LogSample,
@@ -58,6 +59,28 @@ const SELECT_WEIGH_IN_SAMPLES = `
   FROM body_weight_entries
   WHERE deleted_at IS NULL AND created_at >= ?
   ORDER BY created_at
+`;
+
+/**
+ * Séances **terminées** de la fenêtre d'apprentissage — US MUSC-F8 (rappel de séance, D12).
+ *
+ * ⚠️ On apprend `finished_at`, **pas `started_at`**. La sémantique voulue est « l'heure après
+ * laquelle, 9 fois sur 10, c'est déjà fait » : au p90 des heures de *début*, la séance commence à
+ * peine. Quelqu'un qui démarre habituellement à 18 h aurait reçu « ta séance t'attend » à 18 h,
+ * pendant son échauffement — la même erreur que D1 (NUTR-F1), déplacée. `finished_at IS NOT NULL`
+ * exclut les séances en cours (`finished_at = null` tant qu'elle n'est pas close) et les séances
+ * abandonnées (soft-deleted par `cancelWorkout`, donc déjà couvertes par `deleted_at IS NULL`).
+ *
+ * `workouts` n'a pas de colonne `log_date` : `finished_at` **est** l'instant du geste, une séance ne
+ * se saisit pas rétroactivement. Le mapping utilise donc `logDate = localDayKey(finished_at)`
+ * (calculé dans `useSessionSamples`, pas ici), ce qui rend le filtre anti-rétroactif de
+ * `usableDailyHours` un no-op — attendu, pas un défaut.
+ */
+const SELECT_SESSION_SAMPLES = `
+  SELECT finished_at
+  FROM workouts
+  WHERE deleted_at IS NULL AND finished_at IS NOT NULL AND finished_at >= ?
+  ORDER BY finished_at
 `;
 
 const COUNT_MEALS_TODAY = `
@@ -95,6 +118,26 @@ function useSamples(sql: string, todayKey: string): { samples: LogSample[]; isLo
 function useDoneToday(sql: string, todayKey: string): { done: boolean; isLoading: boolean } {
   const { data, isLoading } = useQuery<{ n: number }>(sql, [todayKey]);
   return { done: (data[0]?.n ?? 0) > 0, isLoading };
+}
+
+/**
+ * Échantillons de séances terminées, sur le même modèle que `useSamples` mais avec une source qui
+ * n'a pas de colonne `log_date` : `logDate` est dérivée de `finished_at` (voir `SELECT_SESSION_SAMPLES`).
+ */
+function useSessionSamples(todayKey: string): { samples: LogSample[]; isLoading: boolean } {
+  const windowStart = windowStartUtcFrom(todayKey);
+  const { data, isLoading } = useQuery<{ finished_at: string }>(SELECT_SESSION_SAMPLES, [
+    windowStart,
+  ]);
+  const samples = useMemo(
+    () =>
+      data.map((row) => ({
+        logDate: localDayKey(new Date(row.finished_at)),
+        createdAt: row.finished_at,
+      })),
+    [data],
+  );
+  return { samples, isLoading };
 }
 
 /**
@@ -139,4 +182,23 @@ export function useMealLoggedToday(): { done: boolean; isLoading: boolean } {
 export function useWeighInToday(): { done: boolean; isLoading: boolean } {
   const todayKey = useTodayKey();
   return useDoneToday(COUNT_WEIGH_IN_TODAY, todayKey);
+}
+
+/**
+ * Échéance du rappel de séance planifiée muscu (US MUSC-F8).
+ *
+ * Apprise sur `finished_at`, pas `started_at` — voir la docstring de `SELECT_SESSION_SAMPLES`
+ * (D12). C'est une **échéance** (« la journée avance, ta séance n'est pas faite »), pas une
+ * convocation : le p90 est donc le bon bord, comme pour les deux rappels de NUTR-F1.
+ */
+export function useSessionDeadline(prefs: NotificationPrefs): ReminderDeadline {
+  const todayKey = useTodayKey();
+  const { samples, isLoading } = useSessionSamples(todayKey);
+  const resolved = resolveReminderDeadline(
+    samples,
+    prefs.sessionReminderHour,
+    prefs.learnedHour,
+    prefs,
+  );
+  return { ...resolved, isLoading };
 }

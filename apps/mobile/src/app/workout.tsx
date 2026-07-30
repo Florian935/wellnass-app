@@ -31,6 +31,7 @@ import {
   type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
+import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -444,8 +445,11 @@ export default function WorkoutScreen() {
     await finishWorkout(workoutId);
     // 2. Évaluation des records : enrichissement best-effort. Un échec ne doit
     //    jamais bloquer la navigation (le résumé lit les records de façon réactive).
+    //    US MUSC-F8 : le push de record est lui aussi best-effort, dans le même `try` — un
+    //    échec du push ne doit pas plus bloquer la navigation qu'un échec de l'évaluation.
     try {
-      await evaluateWorkoutRecords(workoutId);
+      const beaten = await evaluateWorkoutRecords(workoutId);
+      await maybePushRecords(workoutId, beaten);
     } catch (error) {
       console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
     }

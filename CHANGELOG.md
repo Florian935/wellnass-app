@@ -10,6 +10,109 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `feature/muscf8-notifications-muscu` — notifications muscu : push de record agrégé, célébration animée, rappel de séance (US MUSC-F8, roadmap 3.42/2.7/2.4)
+
+Commit précédent : `0710b73`.
+
+Trois capacités : un **push « nouveau record »** agrégé (un seul par séance, jamais un par record),
+la **célébration animée** au résumé de séance, et un **rappel de séance planifiée** — recadré en
+échéance apprise, parce que la formulation de la roadmap (« 30 min avant ») décrit quelque chose que
+le modèle de données ne permet pas. Au passage, cette US **solde la décision D3** de NUTR-F1 : le
+plafond quotidien devient réel pour les notifications immédiates.
+
+**Aucune migration, aucune sync rule, aucune dépendance native, aucun nouveau build** : 3 nouvelles
+préférences dans la colonne JSON déjà synchronisée, `trigger: { channelId }` étant déjà du SDK 57
+installé.
+
+#### Deux erreurs de conception corrigées en revue, avant livraison
+
+- 🔴 **J'apprenais `started_at` au lieu de `finished_at`** pour le rappel de séance — la même erreur
+  que D1 (NUTR-F1), sous une autre forme. Le p90 des heures de *début* fait partir le rappel pendant
+  l'échauffement, pas après. Corrigé : l'apprentissage porte sur `finished_at`, avec
+  `finished_at IS NOT NULL` (exclut les séances en cours et les abandons soft-deleted).
+- 🔴 **Contradiction interne entre D10 et D11** : la première version posait un identifiant *stable*
+  pour le push de record (« au plus un en attente »), alors que D11 justifiait le push entier par
+  « la valeur, c'est la trace dans le tiroir ». Un id stable aurait fait **effacer** la trace de la
+  première séance à la deuxième séance à record du jour — détruisant la valeur même invoquée pour
+  justifier le push. Corrigé : identifiant **unique par séance** (`record-push-<workoutId>`), donc
+  le plafond de D14 devient nécessaire pour de vraies raisons.
+- 🔴 Le cas limite de la spec disait « 15 records battus ! » pour une première séance de 5 exercices,
+  alors que D10 impose de dédoublonner par exercice — les deux ne pouvaient pas être vrais en même
+  temps. Corrigé en « Records battus sur 5 exercices ! » ; un test dédié verrouille que le décompte
+  porte sur les exercices, pas sur les lignes de record.
+- 🔴 **`useHasPlannedSession` ne convient pas** à la condition « une séance muscu est planifiée
+  aujourd'hui » : son `WHERE` accepte `status = 'done'` et n'a aucun filtre de pilier — une course
+  planifiée aurait déclenché le rappel muscu. Requête dédiée avec `programs.pillar = 'strength'`.
+- 🔴 **`maybePushRecords` n'avait accès à rien hors React** : c'est un callback d'événement
+  (`doFinish`), pas un rendu, et aucun accesseur asynchrone n'existait pour les préférences de
+  notification ni le système d'unités. Deux accesseurs ajoutés (`getNotificationPrefs`,
+  `getUnitSystem`), même patron que `getAnalyticsEnabled`.
+- ⚠️ **Le contrat no-throw rendait le quota immesurable** : sans un retour booléen de `presentNow`,
+  une notification qui échoue silencieusement aurait quand même consommé une unité de plafond.
+  Corrigé : `presentNow` renvoie `boolean`, et la permission est vérifiée **avant** toute
+  consommation de quota — sinon une permission refusée aurait brûlé les 3 unités du jour pour rien.
+
+#### Ajouté
+
+- [record-notification.ts](packages/shared/src/record-notification.ts) — `buildRecordPushContent`,
+  brique pure : **deux dédoublonnages distincts** (par `exerciseId` pour le décompte, par libellé
+  pour la liste de noms — un exercice custom dupliqué ou recréé peut porter deux fois le même nom).
+  Nom vide exclu de la liste mais compté. 11 tests, dont le cas 15 records / 5 exercices de la spec.
+- [CelebrationCard.tsx](apps/mobile/src/components/CelebrationCard.tsx) — conteneur animé extrait de
+  `CelebrationBanner` (course) : fondu + zoom 320 ms, **respect de « réduire les animations »**
+  (nouveau — le composant course ne le gérait pas). 3 tests, dont un qui a trouvé un vrai bug :
+  la première version jouait `Animated.timing` une fois avant de recevoir la réponse asynchrone du
+  réglage système, donc une animation aurait joué même avec « réduire les animations » actif.
+  Corrigé avec un état tri-valué (`null | boolean`) : on attend une réponse connue avant d'animer.
+- [notification-quota-store.ts](apps/mobile/src/stores/notification-quota-store.ts) — plafond
+  quotidien des notifications **immédiates** (décision D14). Ne compte que les **tentatives
+  réussies** (`recordSuccess`, jamais sur un échec). Local à l'appareil, non synchronisé.
+- `presentNow(id, content): Promise<boolean>` + `RECORD_PUSH_PREFIX` + `SESSION_REMINDER_ID` dans
+  [notifications.ts](apps/mobile/src/lib/notifications.ts) — notification immédiate via
+  `trigger: { channelId }` (SDK 57 ; `presentNotificationAsync` n'existe plus).
+- `maybePushRecords(workoutId, beaten)` dans
+  [notification-repository.ts](apps/mobile/src/data/repositories/notification-repository.ts) —
+  fonction de module (pas un hook), branchée dans `doFinish` ([workout.tsx](apps/mobile/src/app/workout.tsx))
+  dans le **même** `try/catch` best-effort que `evaluateWorkoutRecords` : un échec du push ne bloque
+  pas plus la navigation qu'un échec de l'évaluation.
+- `useSessionDeadline` + `useHasPlannedStrengthSessionToday` — 3ᵉ entrée du planificateur
+  `useProgrammedRemindersScheduler`, sur la structure existante (jeton de génération inchangé).
+- 3 préférences (`recordPush: true`, `sessionReminder: false`, `sessionReminderHour: 18`) — deux
+  défauts **opposés**, délibérément : le push **célèbre** (opt-out), le rappel **réclame** (opt-in).
+- 3 nouveaux contrôles dans les réglages ; hint de section réécrit pour la **deuxième fois de la
+  journée** (« Au plus un rappel par type et par jour, plus 3 célébrations de record au maximum »).
+- 18 clés i18n FR/EN (parité vérifiée : 1509 = 1509, zéro orpheline).
+
+#### Modifié
+
+- `run/summary.tsx` — `CelebrationBanner` (course) consomme désormais le conteneur extrait
+  `CelebrationCard` ; gagne au passage le respect de « réduire les animations », qu'il n'avait pas.
+- `workout-summary.tsx` — nouvelle `WorkoutCelebrationBanner`, montée **juste après `ScreenHeader`**
+  et non au-dessus de `RecordsSection` (~60 lignes de JSX plus bas) : une bannière montée trop bas
+  aurait déjà fini son animation, hors écran, avant que l'utilisateur y arrive en scrollant.
+- `notification-repository.ts` : le commentaire d'aveu sur `maxPerDay` renvoie désormais à **D14**
+  (solde de D3) au lieu de dire que le plafond n'est appliqué nulle part — ce qui reste vrai pour les
+  5 rappels programmés, mais plus pour le push de record.
+
+#### Technique / Notes
+
+- **Muscu seulement, pas la course** : les deux mécanismes de détection de record sont entièrement
+  séparés, et le chemin course est **aussi** celui de `backfillRunningRecords`, qui rejoue tout
+  l'historique — un push branché là partirait en rafale au premier passage.
+- **D11 reste ouverte et assumée** : le push part même au premier plan, donc il double l'écran de
+  résumé qui affiche déjà les mêmes records. La spec propose un premier essai de recette : un
+  handler de notification sélectif par identifiant pourrait supprimer la bannière tout en gardant la
+  trace dans le tiroir — non vérifié, Android pourrait ne pas le permettre.
+- **Garde-fou `no-frozen-clock` non modifié** : `notification-repository.ts` y figurait déjà, et
+  `maybePushRecords` n'est jamais mémoïsée par React Compiler (fonction de module, pas un
+  composant/hook) — le `localDayKey(new Date())` qu'elle contient est donc correct et ne pouvait de
+  toute façon pas y être signalé à tort. Vérifié en relançant le garde-fou après tous les changements.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0
+  (28 warnings, tous préexistants) · `npm run test` 0 → **1208 tests Vitest** (62 fichiers, +13) +
+  **211 tests Jest** (41 suites, +16).
+- **Reste à faire** : recette device (§7 de la spec) — **pas de nouveau build nécessaire**. Le point
+  D11 (push au premier plan) est le premier à réévaluer si l'usage réel déplaît.
+
 ### 30/07/2026 — `fix/date-gelee-react-compiler` — 19 lectures d'horloge gelées par React Compiler
 
 Commit précédent : `e7c60ee`.

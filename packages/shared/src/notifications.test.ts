@@ -31,20 +31,34 @@ describe('defaultNotificationPrefs', () => {
       weighInReminder: false,
       weighInReminderHour: 10,
       learnedHour: true,
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
     });
   });
 
-  it('laisse les deux rappels programmés ÉTEINTS par défaut (opt-in, NUTR-F1)', () => {
+  it('laisse les rappels programmés ÉTEINTS par défaut (opt-in, NUTR-F1 + MUSC-F8)', () => {
     const d = defaultNotificationPrefs();
     expect(d.mealReminder).toBe(false);
     expect(d.weighInReminder).toBe(false);
+    expect(d.sessionReminder).toBe(false);
   });
 
-  it('place les QUATRE heures par défaut HORS de la fenêtre DND (invariant)', () => {
+  it('active le push de record par défaut (opt-out, MUSC-F8 — ça célèbre, pas une sollicitation)', () => {
+    expect(defaultNotificationPrefs().recordPush).toBe(true);
+  });
+
+  it('place les CINQ heures par défaut HORS de la fenêtre DND (invariant)', () => {
     // Sans cet invariant, la notification serait planifiée puis systématiquement supprimée par le
     // filtre DND — une fonctionnalité muette, sans aucune erreur visible.
     const d = defaultNotificationPrefs();
-    for (const hour of [d.reminderHour, d.weeklyReviewHour, d.mealReminderHour, d.weighInReminderHour]) {
+    for (const hour of [
+      d.reminderHour,
+      d.weeklyReviewHour,
+      d.mealReminderHour,
+      d.weighInReminderHour,
+      d.sessionReminderHour,
+    ]) {
       expect(isWithinDnd(hour, d)).toBe(false);
     }
   });
@@ -101,7 +115,24 @@ describe('parseNotificationPrefs — champs partiels et bornes', () => {
       weighInReminder: false,
       weighInReminderHour: 10,
       learnedHour: true,
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
     });
+  });
+
+  it('lit les 3 champs de MUSC-F8, et sinon retombe sur leurs défauts', () => {
+    // Même raisonnement que NUTR-F1 : une ligne enregistrée avant cette US ne les contient pas.
+    expect(parseNotificationPrefs({ streakDanger: true })).toMatchObject({
+      recordPush: true,
+      sessionReminder: false,
+      sessionReminderHour: 18,
+    });
+    expect(
+      parseNotificationPrefs({ recordPush: false, sessionReminder: true, sessionReminderHour: 19 }),
+    ).toMatchObject({ recordPush: false, sessionReminder: true, sessionReminderHour: 19 });
+    expect(parseNotificationPrefs({ sessionReminderHour: 99 }).sessionReminderHour).toBe(18);
+    expect(parseNotificationPrefs({ recordPush: 'oui' }).recordPush).toBe(true);
   });
 
   it('lit les 5 champs de NUTR-F1, et sinon retombe sur leurs défauts', () => {

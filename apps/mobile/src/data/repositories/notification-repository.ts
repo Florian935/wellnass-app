@@ -17,11 +17,16 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  buildRecordPushContent,
+  canScheduleMore,
   decideProgrammedReminder,
+  displayWeight,
+  localDayKey,
   parseNotificationPrefs,
   shouldScheduleStreakReminder,
   shouldScheduleWeeklyReview,
   WEEKLY_REVIEW_WEEKDAY,
+  type BeatenRecordSummary,
   type NotificationPrefs,
 } from '@wellness/shared';
 import {
@@ -30,17 +35,31 @@ import {
   cancelWeeklyReview,
   ensurePermissionAndChannel,
   MEAL_REMINDER_ID,
+  presentNow,
+  RECORD_PUSH_PREFIX,
   scheduleDatedReminder,
   scheduleStreakReminder,
   scheduleWeeklyReview,
+  SESSION_REMINDER_ID,
   WEIGH_IN_REMINDER_ID,
 } from '@/lib/notifications';
-import { useSettings, updateSettings } from './settings-repository';
+import i18n from '@/i18n';
+import { useTodayKey } from '@/hooks/useTodayKey';
+import { useNotificationQuota } from '@/stores/notification-quota-store';
+import type { BeatenRecord } from './records-repository';
+import {
+  getNotificationPrefs,
+  getUnitSystem,
+  useSettings,
+  updateSettings,
+} from './settings-repository';
 import { useStreakData } from './dashboard-repository';
 import { useWeeklyReview } from './weekly-review-repository';
+import { useHasPlannedStrengthSessionToday } from './planned-session-repository';
 import {
   useMealDeadline,
   useMealLoggedToday,
+  useSessionDeadline,
   useWeighInDeadline,
   useWeighInToday,
 } from './reminder-habits-repository';
@@ -141,11 +160,14 @@ export function useStreakReminderScheduler(): void {
     // plus tôt aujourd'hui peut donc encore se déclencher même si l'utilisateur est
     // devenu actif alors que l'app était fermée : c'est toléré (simple rappel), et
     // `apply()` réévalue (annule si actif) au prochain passage au premier plan.
-    // NB : `maxPerDay` n'est **volontairement pas** appliqué — décision D3 de NUTR-F1. Chaque type de
-    // rappel est déjà borné à un par jour par son identifiant stable, donc un compteur quotidien
-    // n'ajouterait aucune protection : il ferait surtout perdre des rappels, puisque `apply()`
-    // re-tourne à chaque retour au premier plan et qu'un type déjà compté se verrait refuser sa
-    // re-planification. Le hint des réglages énonce désormais la garantie réelle.
+    // NB : `maxPerDay` n'est **volontairement pas** appliqué ICI — décision D3 de NUTR-F1, **soldée**
+    // par D14 de MUSC-F8. Ce rappel (comme les 4 autres rappels programmés) est déjà borné à un par
+    // jour par son identifiant stable : un compteur quotidien n'ajouterait aucune protection, et en
+    // ferait perdre puisque `apply()` re-tourne à chaque retour au premier plan et qu'un type déjà
+    // compté se verrait refuser sa re-planification. Le plafond s'applique en revanche bien aux
+    // notifications **immédiates** (le push de record, `notification-quota-store.ts`) : celles-là
+    // sont fire-and-forget, jamais réévaluées, donc comptables sans rien perdre. Deux mécanismes
+    // distincts pour deux natures de notification différentes — volontaire, pas incohérent.
     if (should) {
       await scheduleStreakReminder(todayAtHour(reminderHour), {
         title: t('notifications.streakDanger.title'),
@@ -267,6 +289,12 @@ export function useProgrammedRemindersScheduler(): void {
   const weighIn = useWeighInDeadline(prefs);
   const mealDone = useMealLoggedToday();
   const weighInDone = useWeighInToday();
+  // US MUSC-F8 : rappel de séance muscu. `doneToday` = « pas de séance planned pilier strength
+  // aujourd'hui » — inversé par rapport aux deux autres (voir §2.3 de la spec, D16) : ce rappel
+  // n'a de sens que s'il y a quelque chose au planning ; sans occurrence, il n'y a rien à faire.
+  const session = useSessionDeadline(prefs);
+  const todayKey = useTodayKey();
+  const plannedSession = useHasPlannedStrengthSessionToday(todayKey);
 
   /**
    * Jeton de génération, pour qu'un `apply()` périmé ne ressuscite pas un rappel.
@@ -283,9 +311,18 @@ export function useProgrammedRemindersScheduler(): void {
   const generation = useRef(0);
 
   const apply = useCallback(async () => {
-    // Tant qu'une des quatre sources n'est pas résolue, on ne décide pas : on annulerait un rappel
+    // Tant qu'une des six sources n'est pas résolue, on ne décide pas : on annulerait un rappel
     // valide sur la base d'un « déjà fait » qui n'est faux que parce qu'il n'est pas encore chargé.
-    if (meal.isLoading || weighIn.isLoading || mealDone.isLoading || weighInDone.isLoading) return;
+    if (
+      meal.isLoading ||
+      weighIn.isLoading ||
+      mealDone.isLoading ||
+      weighInDone.isLoading ||
+      session.isLoading ||
+      plannedSession.isLoading
+    ) {
+      return;
+    }
 
     const gen = ++generation.current;
 
@@ -295,6 +332,7 @@ export function useProgrammedRemindersScheduler(): void {
     if (!granted) {
       await cancelReminder(MEAL_REMINDER_ID);
       await cancelReminder(WEIGH_IN_REMINDER_ID);
+      await cancelReminder(SESSION_REMINDER_ID);
       return;
     }
 
@@ -317,6 +355,17 @@ export function useProgrammedRemindersScheduler(): void {
         deadline: weighIn,
         titleKey: 'notifications.weighInReminder.title',
         bodyKey: 'notifications.weighInReminder.body',
+      },
+      {
+        id: SESSION_REMINDER_ID,
+        enabled: prefs.sessionReminder,
+        // « Rien à faire » couvre les deux cas à la fois : aucune séance planifiée aujourd'hui, ou
+        // la séance planifiée a déjà été faite (`useHasPlannedStrengthSessionToday` filtre
+        // `status = 'planned'` strictement — une séance faite n'y apparaît plus).
+        doneToday: !plannedSession.hasPlanned,
+        deadline: session,
+        titleKey: 'notifications.sessionReminder.title',
+        bodyKey: 'notifications.sessionReminder.body',
       },
     ] as const;
 
@@ -343,7 +392,7 @@ export function useProgrammedRemindersScheduler(): void {
       // rappel : `apply()` sera de toute façon rappelé avec les données fraîches.
       if (gen !== generation.current) return;
     }
-  }, [prefs, meal, weighIn, mealDone, weighInDone, t]);
+  }, [prefs, meal, weighIn, mealDone, weighInDone, session, plannedSession, t]);
 
   useEffect(() => {
     void apply();
@@ -355,4 +404,74 @@ export function useProgrammedRemindersScheduler(): void {
     });
     return () => sub.remove();
   }, [apply]);
+}
+
+// ---------------------------------------------------------------------------
+// Push de record (US MUSC-F8) — décisions D10, D11, D14
+// ---------------------------------------------------------------------------
+
+/**
+ * Envoie, si les conditions sont réunies, **un seul** push agrégé pour les records battus par une
+ * séance. Best-effort : appelée depuis `doFinish` (`workout.tsx`) dans le même `try/catch` que
+ * `evaluateWorkoutRecords`, elle ne doit jamais faire échouer la navigation vers le résumé.
+ *
+ * ── Fonction de module, pas un hook ───────────────────────────────────────────────────────────────
+ * `doFinish` est un callback d'événement, pas un rendu : les préférences et le système d'unités sont
+ * donc lus via les accesseurs hors-hook de `settings-repository` (`getNotificationPrefs`,
+ * `getUnitSystem`), pas via `useNotificationPrefs()`/`useUnits()`.
+ *
+ * `localDayKey(new Date())` est **correct ici**, et c'est le seul endroit de cette US où il l'est :
+ * on est dans un callback, jamais mémoïsé par React Compiler (donc jamais dans un bloc
+ * `memo_cache_sentinel`), pas dans un corps de rendu. Le garde-fou `no-frozen-clock` ne signale rien
+ * ici parce que cette fonction n'est **jamais mémoïsée** — pas parce qu'il « ignorerait les closures ».
+ *
+ * ── Ordre des vérifications, et pourquoi il compte (D14) ──────────────────────────────────────────
+ * La permission est vérifiée **avant** toute consommation de quota. Sans cet ordre, une permission
+ * refusée consommerait quand même les 3 unités du jour sans qu'aucune notification ne s'affiche.
+ * Et le quota n'est incrémenté que **si `presentNow` a renvoyé `true`** — jamais sur un échec.
+ *
+ * ── Identifiant par séance, pas stable (D10) ──────────────────────────────────────────────────────
+ * `RECORD_PUSH_PREFIX + workoutId` : deux séances à record le même jour laissent deux traces
+ * distinctes dans le tiroir. Un identifiant stable aurait fait remplacer la trace de la première
+ * séance par la seconde — ce qui aurait détruit la valeur même invoquée par D11 (« la valeur du push
+ * est la trace, pas l'information »).
+ */
+export async function maybePushRecords(
+  workoutId: string,
+  beaten: BeatenRecord[],
+): Promise<void> {
+  if (beaten.length === 0) return;
+
+  const prefs = await getNotificationPrefs();
+  if (!prefs.recordPush) return;
+
+  const granted = await ensurePermissionAndChannel();
+  if (!granted) return;
+
+  const todayKey = localDayKey(new Date());
+  await useNotificationQuota.getState().hydrate();
+  const countToday = useNotificationQuota.getState().countFor(todayKey);
+  if (!canScheduleMore(countToday, prefs)) return;
+
+  const unitSystem = await getUnitSystem();
+  const summaries: BeatenRecordSummary[] = beaten.map((record) => {
+    const formatted = displayWeight(record.value, unitSystem);
+    return {
+      exerciseId: record.exerciseId,
+      exerciseName: record.exerciseName,
+      formattedValue:
+        record.type === 'best_volume' ? String(record.value) : `${formatted.value} ${formatted.unit}`,
+    };
+  });
+
+  const content = buildRecordPushContent(summaries);
+  if (!content) return;
+
+  const title = i18n.t(content.titleKey, content.titleParams);
+  const body = i18n.t(content.bodyKey, content.bodyParams);
+
+  const sent = await presentNow(RECORD_PUSH_PREFIX + workoutId, { title, body });
+  if (sent) {
+    useNotificationQuota.getState().recordSuccess(todayKey);
+  }
 }

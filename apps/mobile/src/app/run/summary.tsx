@@ -12,7 +12,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Animated,
   StyleSheet,
   Text,
   TextInput,
@@ -22,6 +21,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { CelebrationCard } from '@/components/CelebrationCard';
 import { FormScreen } from '@/components/FormScreen';
 import { RouteMap } from '@/components/running/RouteMap';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -140,23 +140,15 @@ function RpeSelector({
 
 /**
  * Bandeau in-app affiché en tête du résumé quand la course vient de battre au moins
- * un record. Apparition subtile (fondu + léger zoom via `Animated`, aucun module
- * natif). Chips = distances battues (allure non affichée ici, seul le libellé) et
+ * un record. Chips = distances battues (allure non affichée ici, seul le libellé) et
  * ligne dorée « allure de référence mise à jour » quand le 5 km est tombé.
+ *
+ * L'animation (fondu + léger zoom, respect de « réduire les animations ») vit dans
+ * `CelebrationCard`, extrait en composant partagé pour MUSC-F8 — le contenu ci-dessous
+ * reste propre à la course.
  */
 function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
   const { t } = useTranslation();
-
-  // Valeur animée stockée en state (créée une fois) : lisible pendant le rendu
-  // sans enfreindre la règle React Compiler « pas d'accès aux refs au rendu ».
-  const [anim] = useState(() => new Animated.Value(0));
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: 1,
-      duration: 320,
-      useNativeDriver: true,
-    }).start();
-  }, [anim]);
 
   // Distances triées dans l'ordre canonique + libellés i18n.
   const ordered = RECORD_ORDER.filter((k) => distances.includes(k));
@@ -164,17 +156,7 @@ function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
   const includes5k = ordered.includes('5k');
 
   return (
-    <Animated.View
-      style={[
-        styles.celebration,
-        {
-          opacity: anim,
-          transform: [
-            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1] }) },
-          ],
-        },
-      ]}
-    >
+    <CelebrationCard style={styles.celebration}>
       <Text style={styles.celebrationSpark}>🏅</Text>
       <Text style={styles.celebrationTitle}>{t('running.records.newRecordTitle')}</Text>
       <Text style={styles.celebrationBody}>
@@ -183,7 +165,7 @@ function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
       {includes5k ? (
         <Text style={styles.celebrationRef}>★ {t('running.records.refPaceUpdated')}</Text>
       ) : null}
-    </Animated.View>
+    </CelebrationCard>
   );
 }
 
