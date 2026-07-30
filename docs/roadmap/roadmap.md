@@ -492,6 +492,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
 
+**30/07/2026 (soir) — Réconciliation : 4 affirmations fausses corrigées, 4 US entrées en pipeline**
+Aucun statut de livraison ne change (rien n'a été codé). Corrigé : 9.12 « le clair passe AA » (faux,
+3 non-conformités restantes), RUN-F3 « la météo est un champ post-séance » (aucun champ n'existe),
+« 2 tests en timeout » (suite verte), retard de `main` (927 → 972). Entrées : CONF-07, MUSC-F9,
+MUSC-F1b, RUN-F3. **5.24 scindé en RUN-F3b** — il touche la confidentialité de LANCE-00.
+
 **30/07/2026 — Carte de partage : charte alignée sur le thème sombre (7.17, reste 🟡)**
 Aucun changement de statut : habillage seul, l'US reste en recette device. Couleurs figées
 volontairement. Constat « 2 tests en timeout » **clos** au backlog — suite 100 % verte (231 + 1218).

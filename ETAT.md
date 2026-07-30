@@ -42,9 +42,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (4) · P2 confort (2)</summary>
+<details><summary>P1 finitions (5) · P2 confort (2)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
 
 **P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
 
@@ -56,8 +56,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf3-resume-course-enrichi` (modifications non commitées) |
-| Commits | 980 · `main` a **977** commits de retard sur `dev` |
+| Branche courante | `docs/reconciliation-30-07` (modifications non commitées) |
+| Commits | 981 · `main` a **978** commits de retard sur `dev` |
 | Specs d'US | 93 au total — 75 clôturées, 18 en cours |
 | Migrations | 58/58 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -68,11 +68,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a073b9a` docs(runf3): cadre le resume de course enrichi et scinde meteo / objectif
 - `2d8d57a` docs(muscf1b): cadre le schema corporel des muscles cibles
 - `690ceeb` docs(muscf9): cadre le glisser-deposer du planning (spec + plan + maquette)
 - `45abd7c` docs(lance00): rédige la fiche Play et la politique de confidentialité
 - `0df5e02` docs(conf07): cadre l'accessibilité — 5 non-conformités WCAG restantes
-- `cf17e5c` feat(partage01): carte de partage — charte alignée sur le thème sombre
 
 ---
 

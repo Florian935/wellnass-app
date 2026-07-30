@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 30/07/2026 — `docs/reconciliation-30-07` — réconciliation : le suivi rattrape le code
+
+Commit précédent : `a073b9a`. **Aucun statut de livraison ne change** — rien n'a été codé aujourd'hui
+hors le restyle de `ShareCard`. Cette entrée solde l'**écart entre ce que la documentation affirmait
+et ce que le code dit**.
+
+#### Corrigé — 4 affirmations fausses
+
+| Où | Ce qui était écrit | Le réel, vérifié |
+|---|---|---|
+| roadmap **9.12** | « le clair passe désormais AA sur texte **et** composants » | **3 non-conformités** subsistent en clair (`success` 3,23 · `warnText` 3,19 · `amber` 2,29). La 1ʳᵉ passe n'avait mesuré que 3 paires. |
+| BACKLOG **RUN-F3** | « aujourd'hui la météo n'est qu'un champ post-séance » | **Aucun champ météo n'existe.** `runs` = distance, durée, allure, tracé, rpe, notes. `weather`/`terrain`/`elevation` absents des **58 migrations**. |
+| BACKLOG « suivi » | « 2 tests mobile en échec par timeout (~250 s/suite) » | **Non reproduit.** 44 suites / 231 tests verts en 20 s ; les 2 incriminées en 6,4 s et 7,2 s. |
+| BACKLOG « suivi » | `main` à **927** commits de retard | **972** au 30/07/2026. |
+
+#### Modifié — 4 candidats sortis du backlog vers le pipeline
+
+**CONF-07**, **MUSC-F9**, **MUSC-F1b**, **RUN-F3** ont désormais spec + plan (+ maquette pour les
+trois premiers) et `etape: validation`. Conformément à la règle du dépôt, ils **quittent le backlog**.
+Il reste **2 P0**, tous deux **hors-code** : LANCE-00 et LANCE-01.
+
+#### Ajouté
+
+- **RUN-F3b — Météo de course**, nouveau candidat P1 **scindé de RUN-F3**. Motif : une requête météo
+  transmet des **coordonnées à un service tiers**, ce qui contredit la politique de confidentialité et
+  le formulaire « Sécurité des données » rédigés le jour même pour LANCE-00. 🔴 **À trancher avant de
+  soumettre la fiche Play**, sinon la déclaration sera à refaire.
+
+#### Technique / Notes
+
+- **Vérifié, et exact** : l'entrée RUN-F1b (dénivelé bloqué) dit vrai — `GpsPoint` est bien
+  `{ lat, lng, t }` dans [running.ts](packages/shared/src/running.ts), sans altitude, et aucune
+  colonne d'élévation n'existe. Contrôlée plutôt que recopiée.
+- **Le motif commun aux 4 erreurs** : chacune était une affirmation **plausible et invérifiée**, née
+  d'un audit partiel présenté comme complet. Le garde-fou proposé par CONF-07 (un test qui échoue si
+  une paire de contraste repasse sous son seuil) répond exactement à ça — une mesure qui tourne vaut
+  mieux qu'une phrase dans un fichier.
+- `node scripts/etat.mjs` : **93 specs, 18 en cours, 2 P0**. Aucune spec sans front-matter.
+
 ### 30/07/2026 — `docs/lance00-prerequis-publication` — prérequis de publication rédigés d'avance
 
 Commit précédent : `0df5e02`. Roadmap **9.2** (LANCE-00). Objectif : que la création du compte Play
