@@ -19,6 +19,7 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { HealthConnectSection } from '@/components/HealthConnectSection';
+import { CycleTrackingSection } from '@/components/CycleTrackingSection';
 import { Segment } from '@/components/Segment';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
@@ -738,6 +739,12 @@ export default function SettingsScreen() {
 
       {/* Health Connect — opt-in (US CONF-06, donnée de santé) */}
       <HealthConnectSection enabled={settings?.healthConnectEnabled ?? false} />
+
+      {/* Suivi du cycle — opt-in strict (US CYCLE-01, donnée de santé sensible) */}
+      <CycleTrackingSection
+        enabled={settings?.cycleTrackingEnabled ?? false}
+        healthConnectEnabled={settings?.cycleHealthConnectEnabled ?? false}
+      />
 
       {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

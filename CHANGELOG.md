@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : réglages, désactivation et croisement
+
+Commit précédent : `1fa7eee`. Roadmap **1.25 → 🟡**, **1.26 → 🟡**.
+
+#### Ajouté
+
+- [CycleTrackingSection.tsx](apps/mobile/src/components/CycleTrackingSection.tsx) — section des
+  Réglages : opt-in principal, second interrupteur Health Connect (n'apparaît **que** si le suivi est
+  actif), suppression des données, et l'avertissement répété au point d'activation.
+- [cycle-insights-repository.ts](apps/mobile/src/data/repositories/cycle-insights-repository.ts) +
+  [app/cycle/insights.tsx](apps/mobile/src/app/cycle/insights.tsx) — écran « Croisement », **4
+  métriques** (énergie, humeur, stress, tonnage) étiquetées par phase.
+- **2 permissions Health Connect** déclarées dans [app.json](apps/mobile/app.json) :
+  `READ_MENSTRUATION` / `WRITE_MENSTRUATION`.
+- i18n FR + EN : `cycle.settings.*` et `cycle.insights.*`, **pluriels en clés distinctes**.
+
+#### Technique / Notes
+
+- **R17 mis en œuvre dans le bon ordre** : à l'extinction, on coupe **d'abord** le réglage — la
+  fonctionnalité disparaît immédiatement — **puis** on propose la suppression. L'inverse laisserait
+  le widget affiché derrière une boîte de dialogue. Et « Garder » est un choix de premier rang, pas
+  un bouton d'annulation déguisé : ce qui est conservé reste dans l'export RGPD.
+- **Le seuil du croisement est vérifié métrique par métrique** (R13) : un bloc peut être disponible
+  pendant qu'un autre annonce ce qui lui manque. Attendre que *tout* soit prêt donnerait un écran
+  vide pendant des mois. Et le message dit **ce qui manque, phase par phase**, pas un « pas assez de
+  données » opaque.
+- ⚠️ **Une séance à tonnage nul est écartée, pas comptée comme faible.** Cardio ou poids du corps non
+  chiffré : ce n'est pas une séance « légère », c'est une séance non mesurable sur cet axe. La
+  compter zéro tirerait la moyenne vers le bas pour une raison qui n'a rien à voir avec le cycle.
+  Même logique pour les jours sans phase déterminable : écartés plutôt qu'attribués par défaut.
+- ⚠️ **Types de routes Expo Router** : deuxième rencontre du même piège, à chaque nouvelle route sous
+  `app/`. `tsc` échoue tant que le serveur de dev n'a pas réécrit `.expo/types/router.d.ts`.
+- Qualité : `typecheck` **0** · `lint` **0 erreur** · `test` **1257 shared + 231 mobile, 0 échec**.
+
+#### ⏭️ Ce qui reste sur CYCLE-01
+
+- 🔴 **Health Connect n'est pas câblé.** Les 2 permissions sont déclarées et les 2 interrupteurs
+  existent, mais **aucune lecture ni écriture** n'est implémentée dans `lib/health-connect.ts`. Il
+  faut aussi un `expo prebuild` + **nouveau build** (permissions natives) et la **déclaration Play à
+  6 types**. C'est le plus gros reste, et son délai est externe.
+- 🟠 **2 métriques de croisement non branchées** : apport calorique et allure de course. Aucun
+  agrégat quotidien existant côté nutrition (`nutrition-repository` n'expose ni totaux ni kcal par
+  jour) — à créer, ce n'est pas une simple lecture.
+- 🟠 **Pas de calendrier mensuel** sur l'écran de détail : l'historique est une liste. La maquette en
+  montre un ; c'est une finition d'affichage, la donnée est là.
+- 🟠 **Aucun test mobile** sur les nouveaux écrans (les calculs, eux, ont 33 tests). À ajouter au
+  niveau smoke, comme les autres écrans.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 étapes 3 & 4 : opt-in, widget, écrans
 
 Commit précédent : `3d4fb5d`. Roadmap 1.25.

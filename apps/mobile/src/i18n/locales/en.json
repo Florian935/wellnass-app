@@ -2034,7 +2034,8 @@
     "actions": {
       "startPeriod": "Period started today",
       "endPeriod": "Period ended today",
-      "logDay": "Log the day"
+      "logDay": "Log the day",
+      "insights": "Cross-pillar insights"
     },
     "history": {
       "title": "Logged periods",
@@ -2053,6 +2054,38 @@
       "save": "Save",
       "cancel": "Cancel",
       "close": "Close"
+    },
+    "settings": {
+      "toggle": "Cycle tracking",
+      "subtitle": "Available to everyone. Off by default.",
+      "healthConnect": "Sync with Health Connect",
+      "healthConnectDesc": "Shares your period days with the Android health hub.",
+      "disableTitle": "Tracking turned off",
+      "disableMessage": "Do you want to keep the data already logged? It will stay in your export but will no longer be shown.",
+      "keepData": "Keep",
+      "deleteData": "Delete",
+      "cancel": "Cancel",
+      "deleteAll": "Delete my cycle data",
+      "deleteTitle": "Delete cycle data?",
+      "deleteMessage": "All your periods and daily logs will be deleted. This cannot be undone."
+    },
+    "insights": {
+      "title": "Cross-pillar",
+      "subtitle": "Your phase × your Wellness data",
+      "lead": "Observations, not advice. Averages per phase, with the number of cycles actually observed.",
+      "pending": "pending",
+      "availableCycles_one": "available · {{count}} cycle",
+      "availableCycles_other": "available · {{count}} cycles",
+      "missingSamples_one": "{{count}} more day to log in the {{phase}} phase.",
+      "missingSamples_other": "{{count}} more days to log in the {{phase}} phase.",
+      "missingCycles_one": "{{count}} more complete cycle.",
+      "missingCycles_other": "{{count}} more complete cycles.",
+      "metrics": {
+        "energy": "Reported energy",
+        "mood": "Reported mood",
+        "stress": "Reported stress",
+        "tonnage": "Tonnage per session"
+      }
     }
   }
 }

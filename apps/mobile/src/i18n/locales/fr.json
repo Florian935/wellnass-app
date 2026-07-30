@@ -2034,7 +2034,8 @@
     "actions": {
       "startPeriod": "Début des règles aujourd'hui",
       "endPeriod": "Fin des règles aujourd'hui",
-      "logDay": "Noter le jour"
+      "logDay": "Noter le jour",
+      "insights": "Croisement avec mes piliers"
     },
     "history": {
       "title": "Périodes enregistrées",
@@ -2053,6 +2054,38 @@
       "save": "Enregistrer",
       "cancel": "Annuler",
       "close": "Fermer"
+    },
+    "settings": {
+      "toggle": "Suivi du cycle",
+      "subtitle": "Accessible à tout le monde. Désactivé par défaut.",
+      "healthConnect": "Synchroniser avec Health Connect",
+      "healthConnectDesc": "Partage tes jours de règles avec le hub santé d'Android.",
+      "disableTitle": "Suivi désactivé",
+      "disableMessage": "Veux-tu conserver les données déjà enregistrées ? Elles resteront dans ton export, mais ne seront plus affichées.",
+      "keepData": "Garder",
+      "deleteData": "Supprimer",
+      "cancel": "Annuler",
+      "deleteAll": "Supprimer mes données de cycle",
+      "deleteTitle": "Supprimer les données de cycle ?",
+      "deleteMessage": "Toutes tes périodes et tes journaux quotidiens seront supprimés. Cette action est définitive."
+    },
+    "insights": {
+      "title": "Croisement",
+      "subtitle": "Ta phase × tes données Wellness",
+      "lead": "Des observations, pas des conseils. Moyennes par phase, avec le nombre de cycles réellement observés.",
+      "pending": "en attente",
+      "availableCycles_one": "disponible · {{count}} cycle",
+      "availableCycles_other": "disponible · {{count}} cycles",
+      "missingSamples_one": "Encore {{count}} jour à enregistrer en phase {{phase}}.",
+      "missingSamples_other": "Encore {{count}} jours à enregistrer en phase {{phase}}.",
+      "missingCycles_one": "Encore {{count}} cycle complet.",
+      "missingCycles_other": "Encore {{count}} cycles complets.",
+      "metrics": {
+        "energy": "Énergie déclarée",
+        "mood": "Humeur déclarée",
+        "stress": "Stress déclaré",
+        "tonnage": "Tonnage par séance"
+      }
     }
   }
 }

@@ -6,6 +6,7 @@ catalogue: []
 etape: code
 branche: feature/cycle01-suivi-menstruel
 maj: 31/07/2026
+reste: "Health Connect non câblé (permissions déclarées seulement) · 2 métriques de croisement non branchées (kcal, allure) · calendrier mensuel · tests smoke des écrans"
 ---
 
 # US CYCLE-01 — Suivi du cycle menstruel

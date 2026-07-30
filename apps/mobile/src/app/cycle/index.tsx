@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -42,6 +43,7 @@ import { useTheme } from '@/theme/useTheme';
 export default function CycleScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const todayKey = useTodayKey();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -128,6 +130,11 @@ export default function CycleScreen() {
           label={t('cycle.actions.logDay')}
           variant="ghost"
           onPress={() => setSheetOpen(true)}
+        />
+        <Button
+          label={t('cycle.actions.insights')}
+          variant="ghost"
+          onPress={() => router.push('/cycle/insights')}
         />
       </View>
 
