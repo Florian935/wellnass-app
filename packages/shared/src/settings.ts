@@ -100,6 +100,23 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * demande de permission automatique.
    */
   healthConnectEnabled: z.boolean().default(false),
+
+  /**
+   * Suivi du cycle menstruel (US CYCLE-01). **Opt-in strict : false par défaut**, et **accessible à
+   * tout le monde** — aucun filtre sur `profiles.sex` (arbitrage Damien du 30/07/2026).
+   *
+   * Tant qu'il est faux : aucun widget, aucune route atteignable, et **aucune ligne écrite** dans
+   * `menstrual_periods` / `menstrual_daily_logs`. Le défaut `false` garantit qu'aucun compte
+   * existant ne voit la fonctionnalité apparaître à la mise à jour.
+   */
+  cycleTrackingEnabled: z.boolean().default(false),
+
+  /**
+   * Synchronisation du cycle avec Health Connect (US CYCLE-01, R20). **Indépendant** de
+   * `cycleTrackingEnabled` et de `healthConnectEnabled` : les **trois** doivent être vrais, plus la
+   * permission système, pour qu'une écriture ait lieu. Aucune écriture silencieuse.
+   */
+  cycleHealthConnectEnabled: z.boolean().default(false),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

@@ -1988,5 +1988,71 @@
     "a11yAdd": "Add {{grams}} grams of {{name}}, {{kcal}} kilocalories",
     "a11yMacroTab": "Fill {{macro}}",
     "addError": "Could not add. Please try again."
+  },
+  "cycle": {
+    "title": "Cycle",
+    "disclaimer": "Wellness is a journal. This tracker is not a contraceptive method or medical advice.",
+    "phase": {
+      "menstrual": "Menstrual",
+      "follicular": "Follicular",
+      "ovulatory": "Ovulatory",
+      "luteal": "Luteal"
+    },
+    "flow": {
+      "spotting": "Spotting",
+      "light": "Light",
+      "medium": "Medium",
+      "heavy": "Heavy"
+    },
+    "symptoms": {
+      "cramps": "Cramps",
+      "headache": "Headache",
+      "fatigue": "Fatigue",
+      "bloating": "Bloating",
+      "breast_tenderness": "Breast tenderness",
+      "mood_swings": "Mood swings",
+      "acne": "Acne",
+      "cravings": "Cravings"
+    },
+    "widget": {
+      "dayOfCycle": "D{{day}}",
+      "emptyPrompt": "Start tracking",
+      "emptyHint": "Log a period start to begin.",
+      "emptyA11y": "Cycle tracking, no data logged",
+      "logToday": "Log today"
+    },
+    "prediction": {
+      "nextLabel": "Next period estimated",
+      "aroundDate": "around {{date}}",
+      "margin": "± {{days}} days",
+      "insufficient_one": "{{count}} more cycle before an estimate.",
+      "insufficient_other": "{{count}} more cycles before an estimate.",
+      "irregular": "Your cycles vary a lot right now — an estimate would not be reliable."
+    },
+    "subtitle": "Your cycle journal",
+    "noData": "No period logged yet.",
+    "actions": {
+      "startPeriod": "Period started today",
+      "endPeriod": "Period ended today",
+      "logDay": "Log the day"
+    },
+    "history": {
+      "title": "Logged periods",
+      "empty": "Nothing yet.",
+      "range": "{{from}} — {{to}}",
+      "ongoing": "Since {{from}}",
+      "cycleLength": "{{days}} d",
+      "ignored": "Unusual gap — excluded from the average, but kept."
+    },
+    "sheet": {
+      "title": "Log the day",
+      "flow": "Flow",
+      "symptoms": "Symptoms",
+      "optionalSingle": "Optional · single choice",
+      "optionalMulti": "Optional · multiple allowed",
+      "save": "Save",
+      "cancel": "Cancel",
+      "close": "Close"
+    }
   }
 }

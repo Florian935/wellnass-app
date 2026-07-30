@@ -71,12 +71,20 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 13, muscu 5, course 3 ; gardes pilier', () => {
-    expect(HOME_WIDGET_IDS).toHaveLength(13);
+  it('accueil 14, muscu 5, course 3 ; gardes pilier', () => {
+    // 14 depuis CYCLE-01 (31/07/2026). Le registre les **déclare** tous ; c'est
+    // `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
+    expect(HOME_WIDGET_IDS).toHaveLength(14);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
     expect(WIDGET_REGISTRY.strength.pillars['strength-programs']).toEqual(['strength']);
+  });
+
+  it('garde le cycle (CYCLE-01) par un RÉGLAGE — ni pilier, ni « always »', () => {
+    // La 3ᵉ forme de garde, ajoutée pour ce cas précis : le cycle n'appartient à aucun pilier
+    // (donc pas de liste) mais ne doit pas s'afficher pour tout le monde (donc pas `'always'`).
+    expect(WIDGET_REGISTRY.home.pillars['cycle']).toEqual({ setting: 'cycleTrackingEnabled' });
   });
 
   it('garde les objectifs (OBJ-01) derrière muscu OU course, et non « always »', () => {
@@ -109,7 +117,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    expect(layout.widgets).toHaveLength(13);
+    // 14 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
+    expect(layout.widgets).toHaveLength(14);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -158,6 +168,49 @@ describe('resolveScreenLayout', () => {
     expect(r.widgets.map((w) => w.id)).toContain('steps');
     expect(r.widgets.map((w) => w.id)).toContain('wellbeing');
     assertNoOverlap(r.widgets);
+  });
+
+  // -------------------------------------------------------------------------
+  // US CYCLE-01 — garde par réglage (3ᵉ forme de `WidgetGuard`)
+  // -------------------------------------------------------------------------
+
+  it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
+    const r = resolveScreenLayout(null, 'home', [...all]);
+    expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
+    // Et le hub garde donc exactement ses 13 widgets historiques.
+    expect(r.widgets).toHaveLength(13);
+  });
+
+  it('masque `cycle` quand le drapeau est explicitement faux', () => {
+    const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: false });
+    expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
+  });
+
+  it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
+    const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
+    expect(r.widgets.map((w) => w.id)).toContain('cycle');
+    expect(r.widgets).toHaveLength(14);
+    assertNoOverlap(r.widgets);
+  });
+
+  it("affiche `cycle` même en « nutrition seule » : il n'est gardé par aucun pilier", () => {
+    const r = resolveScreenLayout(null, 'home', ['nutrition'], { cycleTrackingEnabled: true });
+    expect(r.widgets.map((w) => w.id)).toContain('cycle');
+  });
+
+  it('retire `cycle` d’un layout stocké si le suivi a été désactivé depuis', () => {
+    // Cas réel : l'utilisatrice a rangé le widget, puis coupé le suivi. Le layout stocké le
+    // mentionne encore ; il ne doit plus être rendu, et sans laisser de trou.
+    const stored: ScreenLayout = {
+      widgets: [
+        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'cycle', visible: true, size: 'wide', col: 0, row: 1 },
+      ],
+    };
+    const r = resolveScreenLayout(stored, 'home', [...all], { cycleTrackingEnabled: false });
+    expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
+    assertNoOverlap(r.widgets);
+    assertNoEmptyRow(r.widgets);
   });
 
   it('garde `wellbeing` visible pour un utilisateur « nutrition seule » (US BIEN-01)', () => {

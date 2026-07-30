@@ -10,6 +10,73 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 étapes 3 & 4 : opt-in, widget, écrans
+
+Commit précédent : `3d4fb5d`. Roadmap 1.25.
+
+#### Ajouté
+
+- **3ᵉ forme de garde de widget** dans [widgets.ts](packages/shared/src/widgets.ts) :
+  `WidgetGuard = Pillar[] | 'always' | { setting: WidgetSettingKey }`. C'est **le** point technique
+  de l'étape — voir Notes.
+- [menstrual-cycle-repository.ts](apps/mobile/src/data/repositories/menstrual-cycle-repository.ts) —
+  lectures réactives, `startPeriod` / `endPeriod` / `autoCloseStalePeriods` /
+  `saveMenstrualDailyLog` / `deleteAllCycleData`.
+- [CycleCard.tsx](apps/mobile/src/components/dashboard/CycleCard.tsx) — widget aux **3 formes**,
+  14ᵉ entrée du hub Accueil.
+- [app/cycle/index.tsx](apps/mobile/src/app/cycle/index.tsx) — écran de détail (bandeau
+  d'avertissement en tête, état courant, prédiction, actions, historique) et
+  [CycleDaySheet.tsx](apps/mobile/src/components/cycle/CycleDaySheet.tsx) — saisie flux + symptômes.
+- **i18n FR + EN** : famille `cycle.*` complète (phases, flux, 8 symptômes, prédiction, historique,
+  feuille). Les 3 états de prédiction et les pluriels sont des **clés distinctes**, jamais des
+  concaténations.
+- **6 tests** de garde par réglage dans [widgets.test.ts](packages/shared/src/widgets.test.ts).
+
+#### Modifié
+
+- [settings.ts](packages/shared/src/settings.ts) + [settings-repository.ts](apps/mobile/src/data/repositories/settings-repository.ts) :
+  `cycleTrackingEnabled` et `cycleHealthConnectEnabled`, **`false` par défaut** — `null` ou colonne
+  absente ne vaut **jamais** consentement.
+- [widget-layout-repository.ts](apps/mobile/src/data/repositories/widget-layout-repository.ts) :
+  le drapeau est passé aux deux appels de `resolveScreenLayout`.
+- Comptes de widgets du hub Accueil : **13 → 14** (2 assertions de test mises à jour).
+
+#### Technique / Notes
+
+- 🔑 **Le registre de widgets ne savait exprimer que deux conditions** : une liste de piliers, ou le
+  sentinelle `'always'`. Le cycle n'est **ni l'un ni l'autre** — il n'appartient à aucun pilier
+  (donc pas de liste) mais ne doit pas s'afficher pour tout le monde (donc pas `'always'`). Plutôt
+  qu'une **13ᵉ copie en ligne** de la décision d'accès (la dette relevée par REFACTO-01), le registre
+  gagne une troisième forme de garde. `WIDGET_SETTING_KEYS` est volontairement une **liste fermée
+  d'une entrée** : ce n'est pas un mécanisme de feature-flags générique.
+- ⚠️ **Pour une garde par réglage, l'absence de valeur vaut NON.** C'est l'inverse du repli des
+  piliers (où l'absence de garde vaut « visible »), et c'est délibéré : un drapeau manquant
+  (réglages pas encore chargés, ligne locale d'avant la migration) doit **masquer** le widget. Le
+  paramètre `flags` de `resolveScreenLayout` est optionnel — un appelant qui l'oublie cache le
+  widget au lieu de le révéler, ce qui est le sens sûr de l'erreur. Un test verrouille les deux cas.
+- ⚠️ **`fullScreenFrom` passe `cycleTrackingEnabled: true` volontairement.** C'est la base **non
+  filtrée** sur laquelle opèrent les mutateurs de layout : sans ce drapeau, réagencer n'importe quel
+  autre widget ferait **disparaître `cycle` du JSON stocké**, et sa position serait perdue.
+- **La garde d'opt-in est appliquée au niveau du repository, pas seulement de l'UI.** Masquer un
+  écran ne garantit pas qu'aucune ligne n'est écrite ; sur une donnée sensible, la garantie doit
+  tenir au point d'écriture. Elle lit le réglage **en base locale** et non dans un store React —
+  un état désynchronisé laisserait passer une écriture.
+- ⚠️ **`deleteAllCycleData` ne passe PAS par cette garde** : on doit pouvoir supprimer *après* avoir
+  désactivé (R17).
+- **Un jour sans flux ni symptôme est une saisie valide** : c'est ainsi qu'on efface une saisie
+  précédente. Refuser la ligne vide rendrait la correction impossible. Idem pour le flux, qu'un
+  second appui désélectionne.
+- `startPeriod` est **idempotent sur `started_on`** et applique R2 dans la même passe (clôture de la
+  période restée ouverte) — sans quoi l'index unique partiel rejetterait l'insertion.
+- Le parse des symptômes est **tolérant** : valeur illisible ou code inconnu → liste vide plutôt
+  qu'exception. Un journal de santé ne doit pas devenir inaccessible parce qu'une ligne est malformée.
+- ⚠️ **Types de routes Expo Router à régénérer** après création de `app/cycle/` : `tsc` échoue tant
+  que le serveur de dev n'a pas réécrit `.expo/types/router.d.ts`. Piège non évident — l'erreur
+  parle d'un type de chaîne, pas d'un fichier manquant.
+- Qualité : `typecheck` **0** · `lint` **0 erreur** (29 warnings préexistants) · `test` **1257 shared
+  + 231 mobile, 0 échec**.
+- ⏭️ Reste : croisement par phase, écran de réglages + désactivation, Health Connect, solde.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 étapes 1 & 2 : socle de données et calculs
 
 Commit précédent : `4bff808`. **Validée par Damien** → `etape: validation` → `code`. Roadmap 1.25 / 1.26.

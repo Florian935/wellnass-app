@@ -1988,5 +1988,71 @@
     "a11yAdd": "Ajouter {{grams}} grammes de {{name}}, {{kcal}} kilocalories",
     "a11yMacroTab": "Combler les {{macro}}",
     "addError": "L'ajout a échoué. Réessaie."
+  },
+  "cycle": {
+    "title": "Cycle",
+    "disclaimer": "Wellness est un carnet. Ce suivi n'est pas un moyen de contraception ni un avis médical.",
+    "phase": {
+      "menstrual": "Menstruelle",
+      "follicular": "Folliculaire",
+      "ovulatory": "Ovulatoire",
+      "luteal": "Lutéale"
+    },
+    "flow": {
+      "spotting": "Spotting",
+      "light": "Léger",
+      "medium": "Moyen",
+      "heavy": "Abondant"
+    },
+    "symptoms": {
+      "cramps": "Crampes",
+      "headache": "Maux de tête",
+      "fatigue": "Fatigue",
+      "bloating": "Ballonnement",
+      "breast_tenderness": "Sensibilité mammaire",
+      "mood_swings": "Sautes d'humeur",
+      "acne": "Acné",
+      "cravings": "Fringales"
+    },
+    "widget": {
+      "dayOfCycle": "J{{day}}",
+      "emptyPrompt": "Commence ton suivi",
+      "emptyHint": "Note un début de règles pour démarrer.",
+      "emptyA11y": "Suivi du cycle, aucune donnée enregistrée",
+      "logToday": "Noter aujourd'hui"
+    },
+    "prediction": {
+      "nextLabel": "Prochaines règles estimées",
+      "aroundDate": "vers le {{date}}",
+      "margin": "± {{days}} jours",
+      "insufficient_one": "Encore {{count}} cycle avant une estimation.",
+      "insufficient_other": "Encore {{count}} cycles avant une estimation.",
+      "irregular": "Tes cycles varient beaucoup en ce moment — une estimation ne serait pas fiable."
+    },
+    "subtitle": "Ton carnet du cycle",
+    "noData": "Aucune période enregistrée pour l'instant.",
+    "actions": {
+      "startPeriod": "Début des règles aujourd'hui",
+      "endPeriod": "Fin des règles aujourd'hui",
+      "logDay": "Noter le jour"
+    },
+    "history": {
+      "title": "Périodes enregistrées",
+      "empty": "Rien encore.",
+      "range": "{{from}} — {{to}}",
+      "ongoing": "Depuis le {{from}}",
+      "cycleLength": "{{days}} j",
+      "ignored": "Écart inhabituel — exclu de la moyenne, mais conservé."
+    },
+    "sheet": {
+      "title": "Noter le jour",
+      "flow": "Flux",
+      "symptoms": "Symptômes",
+      "optionalSingle": "Optionnel · choix unique",
+      "optionalMulti": "Optionnel · plusieurs possibles",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "close": "Fermer"
+    }
   }
 }

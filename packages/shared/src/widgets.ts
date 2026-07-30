@@ -56,6 +56,9 @@ export const HOME_WIDGET_IDS = [
   'goals',
   // US BILAN-01 — idem.
   'review',
+  // US CYCLE-01 — idem. **Pas d'onglet de navigation** (arbitrage du 31/07/2026) : ce widget est
+  // le seul point d'entrée du suivi de cycle, l'écran de détail s'ouvre en appuyant dessus.
+  'cycle',
 ] as const;
 
 /**
@@ -85,11 +88,33 @@ export type RunningWidgetId = (typeof RUNNING_WIDGET_IDS)[number];
 /** Identifiant d'un widget, tous hubs confondus (scopé par préfixe pour muscu/course). */
 export type WidgetId = HomeWidgetId | StrengthWidgetId | RunningWidgetId;
 
-/** Définition d'un hub : IDs ordonnés + garde pilier + forme par défaut, par widget. */
+/**
+ * Réglages **booléens** capables de garder un widget. Volontairement une liste fermée et courte :
+ * ce n'est pas un mécanisme de feature-flags générique, seulement le moyen d'exprimer « ce widget
+ * dépend d'un opt-in ».
+ */
+export const WIDGET_SETTING_KEYS = ['cycleTrackingEnabled'] as const;
+export type WidgetSettingKey = (typeof WIDGET_SETTING_KEYS)[number];
+export type WidgetSettingFlags = Partial<Record<WidgetSettingKey, boolean>>;
+
+/**
+ * Condition d'affichage d'un widget. **Trois formes**, et il a fallu les trois :
+ *  - `Pillar[]`             — visible si l'un de ces piliers est actif (le cas courant) ;
+ *  - `'always'`             — transverse, jamais filtré (`streak`, `steps`, `wellbeing`, `review`) ;
+ *  - `{ setting: … }`       — dépend d'un **opt-in**, ni pilier ni universel (US CYCLE-01).
+ *
+ * La troisième forme a été ajoutée le 31/07/2026 pour le suivi de cycle, qui n'appartient à aucun
+ * pilier (donc pas de liste) **mais** ne doit pas s'afficher pour tout le monde (donc pas
+ * `'always'`). Sans elle, la seule issue aurait été une 13ᵉ copie en ligne de la décision d'accès —
+ * exactement la dette que REFACTO-01 a relevée.
+ */
+export type WidgetGuard = readonly Pillar[] | 'always' | { readonly setting: WidgetSettingKey };
+
+/** Définition d'un hub : IDs ordonnés + garde d'affichage + forme par défaut, par widget. */
 interface ScreenRegistry {
   ids: readonly WidgetId[];
-  /** `'always'` = widget transverse, jamais filtré par pilier (cf. accueil). */
-  pillars: Record<string, Pillar[] | 'always'>;
+  /** Condition d'affichage par widget (voir `WidgetGuard`). */
+  pillars: Record<string, WidgetGuard>;
   defaultSize: Record<string, WidgetSize>;
 }
 
@@ -99,10 +124,7 @@ function uniformSize(ids: readonly string[], size: WidgetSize): Record<string, W
 }
 
 /** Toutes les entrées d'un hub gardées par un unique pilier (muscu / course). */
-function uniformPillar(
-  ids: readonly string[],
-  pillar: Pillar,
-): Record<string, Pillar[] | 'always'> {
+function uniformPillar(ids: readonly string[], pillar: Pillar): Record<string, WidgetGuard> {
   return Object.fromEntries(ids.map((id) => [id, [pillar]]));
 }
 
@@ -134,6 +156,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // existe** — un utilisateur « nutrition seule » y trouve ses jours journalisés et son
       // adhérence, donc la carte a du contenu quel que soit le pilier activé.
       review: 'always',
+      // US CYCLE-01 : **ni pilier, ni `'always'`** — le seul widget gardé par un réglage.
+      // Pas une liste de piliers : le cycle n'appartient à aucun des trois. Pas `'always'` non
+      // plus : c'est une donnée de santé sensible, en opt-in strict, désactivé par défaut.
+      cycle: { setting: 'cycleTrackingEnabled' },
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },
@@ -340,16 +366,25 @@ export function defaultScreenLayout(screen: WidgetScreen): ScreenLayout {
 // Résolution (ordre + forward-compat + filtrage pilier + recompactage)
 // ---------------------------------------------------------------------------
 
-/** Vrai si le widget doit être affiché compte tenu des piliers actifs. */
+/**
+ * Vrai si le widget doit être affiché, compte tenu des piliers actifs **et** des réglages d'opt-in.
+ *
+ * ⚠️ Pour une garde par réglage, l'absence de valeur vaut **non** — jamais oui. Un drapeau manquant
+ * (réglages pas encore chargés, ligne locale antérieure à la migration) doit masquer le widget, pas
+ * le révéler : c'est ce qui garantit qu'un opt-in de donnée sensible ne s'ouvre pas par accident.
+ * C'est l'inverse du repli des piliers juste en dessous, où l'absence de garde vaut « visible ».
+ */
 function isWidgetAllowed(
   screen: WidgetScreen,
   id: string,
   activePillars: readonly Pillar[],
+  flags: WidgetSettingFlags,
 ): boolean {
-  const pillars = WIDGET_REGISTRY[screen].pillars[id];
-  if (pillars === 'always') return true;
-  if (!pillars) return true;
-  return pillars.some((p) => activePillars.includes(p));
+  const guard = WIDGET_REGISTRY[screen].pillars[id];
+  if (guard === 'always') return true;
+  if (!guard) return true;
+  if (Array.isArray(guard)) return guard.some((p) => activePillars.includes(p));
+  return flags[(guard as { setting: WidgetSettingKey }).setting] === true;
 }
 
 /** Entrée brute normalisée en interne (position grille éventuellement absente = ancien format). */
@@ -376,6 +411,12 @@ export function resolveScreenLayout(
   stored: ScreenLayout | null | undefined,
   screen: WidgetScreen,
   activePillars: readonly Pillar[],
+  /**
+   * Réglages d'opt-in gardant certains widgets. **Optionnel, et son absence masque** les widgets
+   * concernés — voir `isWidgetAllowed`. Un appelant qui l'oublie ne révèle donc jamais un widget
+   * sensible par inadvertance ; il le cache, ce qui est le sens sûr de l'erreur.
+   */
+  flags: WidgetSettingFlags = {},
 ): ScreenLayout {
   const base = stored ?? defaultScreenLayout(screen);
   const known = knownIds(screen);
@@ -398,10 +439,11 @@ export function resolveScreenLayout(
     });
   }
 
-  // Filtrage pilier AVANT placement (évite les trous laissés par des widgets de pilier inactif).
-  const filtered = raw.filter((w) => isWidgetAllowed(screen, w.id, activePillars));
+  // Filtrage AVANT placement (évite les trous laissés par un widget masqué : pilier inactif ou
+  // opt-in désactivé).
+  const filtered = raw.filter((w) => isWidgetAllowed(screen, w.id, activePillars, flags));
   const missing = WIDGET_REGISTRY[screen].ids.filter(
-    (id) => !seen.has(id) && isWidgetAllowed(screen, id, activePillars),
+    (id) => !seen.has(id) && isWidgetAllowed(screen, id, activePillars, flags),
   );
 
   const hasGrid = filtered.length > 0 && filtered.every((w) => w.col !== undefined && w.row !== undefined);

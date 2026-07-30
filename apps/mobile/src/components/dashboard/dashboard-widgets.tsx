@@ -20,6 +20,7 @@ import { StepsCard } from '@/components/dashboard/StepsCard';
 import { WellbeingCard } from '@/components/dashboard/WellbeingCard';
 import { GoalsCard } from '@/components/dashboard/GoalsCard';
 import { ReviewCard } from '@/components/dashboard/ReviewCard';
+import { CycleCard } from '@/components/dashboard/CycleCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
@@ -37,6 +38,7 @@ const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   wellbeing: WellbeingCard,
   goals: GoalsCard,
   review: ReviewCard,
+  cycle: CycleCard,
 };
 
 /** Rend le widget `id` à la taille demandée. */

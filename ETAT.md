@@ -58,7 +58,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 985 · `main` a **982** commits de retard sur `dev` |
+| Commits | 986 · `main` a **983** commits de retard sur `dev` |
 | Specs d'US | 94 au total — 75 clôturées, 19 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -69,11 +69,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `3d4fb5d` feat(cycle01): socle de données et calculs purs du suivi de cycle
 - `4bff808` docs(cycle01): widget complet au lieu d'un 5e onglet (arbitrage Damien)
 - `44f74eb` docs(cycle01): intègre la maquette Claude Design et supprime TEMP
 - `4bef8d8` docs(cycle01): cadre le suivi du cycle menstruel (spec + plan + maquette)
 - `0aff4d2` docs(reconciliation): le suivi rattrape le code -- 4 affirmations fausses corrigees
-- `a073b9a` docs(runf3): cadre le resume de course enrichi et scinde meteo / objectif
 
 ---
 

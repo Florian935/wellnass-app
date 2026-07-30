@@ -46,7 +46,12 @@ const SIZE_CYCLE: Record<WidgetSize, WidgetSize> = {
  */
 function fullScreenFrom(storedRaw: unknown, screen: WidgetScreen): ScreenLayout {
   const parsed = parseMultiScreenLayout(storedRaw);
-  return resolveScreenLayout(parsed?.screens[screen] ?? null, screen, [...PILLARS]);
+  // Tous les piliers **et** tous les opt-in : c'est la base non filtrée sur laquelle opèrent les
+  // mutateurs. Sans le drapeau, réagencer le dashboard ferait disparaître le widget cycle du JSON
+  // stocké — sa position serait perdue à chaque déplacement d'un autre widget.
+  return resolveScreenLayout(parsed?.screens[screen] ?? null, screen, [...PILLARS], {
+    cycleTrackingEnabled: true,
+  });
 }
 
 /**
@@ -89,9 +94,13 @@ export function useScreenLayout(screen: WidgetScreen): {
   );
   const storedRaw = settings?.dashboardLayout ?? null;
 
-  // Résolu (filtré piliers) pour l'affichage.
+  // Résolu (filtré piliers **et** opt-in) pour l'affichage.
   const parsed = parseMultiScreenLayout(storedRaw);
-  const layout = resolveScreenLayout(parsed?.screens[screen] ?? null, screen, activePillars);
+  const layout = resolveScreenLayout(parsed?.screens[screen] ?? null, screen, activePillars, {
+    // `settings` non chargé → `undefined` → widget masqué. C'est le sens sûr : sur un opt-in de
+    // donnée de santé, un affichage fugace avant chargement serait une fuite visuelle.
+    cycleTrackingEnabled: settings?.cycleTrackingEnabled === true,
+  });
 
   // Ref du JSON brut le plus récent : les mutateurs composent sur l'état courant sans dépendre
   // de la fermeture (mutations successives enchaînées avant le rafraîchissement de `useQuery`).

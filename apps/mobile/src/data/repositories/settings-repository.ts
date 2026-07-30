@@ -51,6 +51,8 @@ export type SettingsInput = Pick<
   | 'dashboardLayout'
   | 'analyticsEnabled'
   | 'healthConnectEnabled'
+  | 'cycleTrackingEnabled'
+  | 'cycleHealthConnectEnabled'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -72,6 +74,10 @@ type SettingsDbRow = {
   analytics_enabled: number | null;
   /** 0/1 (opt-in Health Connect) ou null si colonne non renseignée localement. */
   health_connect_enabled: number | null;
+  /** 0/1 (opt-in suivi du cycle, US CYCLE-01) ou null sur les lignes locales antérieures. */
+  cycle_tracking_enabled: number | null;
+  /** 0/1 (synchro cycle ↔ Health Connect) ou null sur les lignes locales antérieures. */
+  cycle_health_connect_enabled: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -107,6 +113,19 @@ function decodeHealthConnectEnabled(row: SettingsDbRow | null): boolean {
   return row?.health_connect_enabled === 1;
 }
 
+/**
+ * Décode les deux opt-in du cycle (US CYCLE-01). Même logique que Health Connect et pour la même
+ * raison, en plus stricte encore : donnée de santé **sensible**, donc `null` / colonne absente ne
+ * vaut **jamais** consentement. Une ligne locale antérieure à la migration lit donc `false`.
+ */
+function decodeCycleTrackingEnabled(row: SettingsDbRow | null): boolean {
+  return row?.cycle_tracking_enabled === 1;
+}
+
+function decodeCycleHealthConnectEnabled(row: SettingsDbRow | null): boolean {
+  return row?.cycle_health_connect_enabled === 1;
+}
+
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToSettings(row: SettingsDbRow): UserSettings {
   return {
@@ -123,6 +142,8 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     dashboardLayout: parseJsonColumn<unknown>(row.dashboard_layout, null),
     analyticsEnabled: decodeAnalyticsEnabled(row),
     healthConnectEnabled: decodeHealthConnectEnabled(row),
+    cycleTrackingEnabled: decodeCycleTrackingEnabled(row),
+    cycleHealthConnectEnabled: decodeCycleHealthConnectEnabled(row),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -153,6 +174,12 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('healthConnectEnabled' in input) {
     columns['health_connect_enabled'] = input.healthConnectEnabled ? 1 : 0;
+  }
+  if ('cycleTrackingEnabled' in input) {
+    columns['cycle_tracking_enabled'] = input.cycleTrackingEnabled ? 1 : 0;
+  }
+  if ('cycleHealthConnectEnabled' in input) {
+    columns['cycle_health_connect_enabled'] = input.cycleHealthConnectEnabled ? 1 : 0;
   }
   return columns;
 }
