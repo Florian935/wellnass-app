@@ -6,7 +6,7 @@ catalogue: []
 etape: code
 branche: feature/cycle01-suivi-menstruel
 maj: 31/07/2026
-reste: "Health Connect non câblé (permissions déclarées seulement) · 2 métriques de croisement non branchées (kcal, allure) · calendrier mensuel · tests smoke des écrans"
+reste: "Health Connect non câblé (permissions déclarées seulement) — nécessite expo prebuild + nouveau build + déclaration Play à 6 types. C'est le seul reste : calendrier mensuel, 2 métriques de croisement (kcal, allure) et tests smoke des écrans ont été traités le 31/07/2026."
 ---
 
 # US CYCLE-01 — Suivi du cycle menstruel

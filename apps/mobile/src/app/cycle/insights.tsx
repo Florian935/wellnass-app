@@ -20,8 +20,25 @@ import {
   useCycleInsights,
   type CycleInsightMetric,
 } from '@/data/repositories/cycle-insights-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/**
+ * Formatage d'une moyenne selon la métrique. Les 4 métriques d'origine (énergie, humeur, stress,
+ * tonnage) restaient des nombres bruts ; `calories` et `pace` en ont besoin d'une mise en forme —
+ * une allure en secondes brutes (ex. « 320 ») serait illisible, et respecter le système d'unités
+ * (métrique/impérial) est la même règle que partout ailleurs dans l'app pour une allure.
+ */
+function useMetricFormatter() {
+  const { t } = useTranslation();
+  const units = useUnits();
+  return (metric: CycleInsightMetric, value: number): string => {
+    if (metric === 'pace') return units.formatPace(value);
+    if (metric === 'calories') return `${Math.round(value)} ${t('nutrition.kcal')}`;
+    return String(value);
+  };
+}
 
 export default function CycleInsightsScreen() {
   const { t } = useTranslation();
@@ -52,6 +69,7 @@ function MetricBlock({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const formatValue = useMetricFormatter();
 
   const title = t(`cycle.insights.metrics.${metric}`);
 
@@ -114,9 +132,10 @@ function MetricBlock({
             </View>
             <Text
               style={[styles.value, { color: colors.text }]}
-              accessibilityLabel={`${t(`cycle.phase.${phase}`)} : ${cell.average}`}
+              accessibilityLabel={`${t(`cycle.phase.${phase}`)} : ${formatValue(metric, cell.average)}`}
+              numberOfLines={1}
             >
-              {cell.average}
+              {formatValue(metric, cell.average)}
             </Text>
           </View>
         );
@@ -152,5 +171,5 @@ const styles = StyleSheet.create({
   phase: { fontFamily: fontFamily.body, fontSize: 12.5, width: 92 },
   track: { flex: 1, height: 10, borderRadius: 5, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 5 },
-  value: { fontFamily: fontFamily.mono, fontSize: 13, width: 56, textAlign: 'right' },
+  value: { fontFamily: fontFamily.mono, fontSize: 13, width: 68, textAlign: 'right' },
 });

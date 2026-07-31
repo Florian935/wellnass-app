@@ -2019,7 +2019,8 @@
       "emptyPrompt": "Start tracking",
       "emptyHint": "Log a period start to begin.",
       "emptyA11y": "Cycle tracking, no data logged",
-      "logToday": "Log today"
+      "logToday": "Log today",
+      "periodStripA11y": "Days of the current period, flow intensity per day"
     },
     "prediction": {
       "nextLabel": "Next period estimated",
@@ -2044,6 +2045,12 @@
       "ongoing": "Since {{from}}",
       "cycleLength": "{{days}} d",
       "ignored": "Unusual gap — excluded from the average, but kept."
+    },
+    "calendar": {
+      "title": "Calendar",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "dayA11y": "Day {{date}}, tap to log"
     },
     "sheet": {
       "title": "Log the day",
@@ -2084,7 +2091,9 @@
         "energy": "Reported energy",
         "mood": "Reported mood",
         "stress": "Reported stress",
-        "tonnage": "Tonnage per session"
+        "tonnage": "Tonnage per session",
+        "calories": "Calorie intake",
+        "pace": "Running pace"
       }
     }
   }

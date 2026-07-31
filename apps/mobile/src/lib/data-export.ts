@@ -2,7 +2,9 @@
  * Orchestration native de l'export RGPD (US CONF-01).
  *
  * Lit toutes les données perso de l'utilisateur dans la base locale PowerSync
- * (30 tables), assemble l'enveloppe JSON (logique pure partagée) → écrit dans le
+ * (voir `EXPORT_TABLES` ci-dessous pour le compte exact et l'historique des ajouts — le chiffre
+ * a été retiré d'ici pour ne plus se périmer à chaque US qui étend la liste), assemble l'enveloppe
+ * JSON (logique pure partagée) → écrit dans le
  * cache app → feuille de partage OS. 100 % local/hors-ligne : aucun réseau, aucun
  * cloud. Non testée unitairement (I/O natif) — vérifiée en revue + recette device.
  * Patron identique à `gpx-export.ts`.

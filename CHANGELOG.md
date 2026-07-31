@@ -10,6 +10,78 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : calendrier, croisement complet, tests smoke
+
+Commit précédent : `e947659`. Roadmap **1.25** et **1.26** restent 🟡 — seul Health Connect subsiste.
+
+Reprise du travail codé la nuit précédente par une autre session, sur la base d'un audit complet du
+code réel avant de continuer (voir la section « Ce qui reste » du commit `1fa7eee`). Trois des quatre
+manques déclarés sont traités ; **Health Connect reste hors périmètre**, délibérément — il exige un
+`expo prebuild` + un nouveau build (permissions natives) que le reste de cette US n'exige pas.
+
+#### Ajouté
+
+- [CycleMonthCalendar.tsx](apps/mobile/src/components/cycle/CycleMonthCalendar.tsx) — calendrier
+  mensuel (navigation mois précédent/suivant, futur non navigable), coloré par intensité de flux et
+  appartenance à une période, jour courant mis en avant, tap ouvre `CycleDaySheet` pour **n'importe
+  quel jour** (pas seulement aujourd'hui). Pas de librairie externe — même famille de calcul que
+  `PlanningPreview`, réécrite spécifiquement (les données à colorer n'ont rien à voir).
+  - Le futur reste refusé (R4) : jour affiché mais non appuyable, cohérent avec
+    `assertNotFuture` côté repository.
+- Mini-calendrier de la **période en cours** sur le widget `CycleCard` (forme `large`) — bande de
+  pastilles colorées par intensité de flux, du début de la période ouverte à aujourd'hui. Absent
+  jusqu'ici malgré le commentaire du fichier qui l'annonçait déjà.
+- **2 métriques de croisement** : `calories` (apport quotidien) et `pace` (allure de course), dans
+  [cycle-insights-repository.ts](apps/mobile/src/data/repositories/cycle-insights-repository.ts).
+  `CYCLE_INSIGHT_METRICS` passe de 4 à 6.
+- 16 tests smoke Jest, sur 4 fichiers : `CycleMonthCalendar.test.tsx` (3),
+  `CycleCard.test.tsx` (5), `cycle-index-smoke.test.tsx` (4), `cycle-insights-smoke.test.tsx` (4).
+  Aucun écran de cycle n'en avait, malgré 33 tests Vitest côté calculs purs.
+- 12 clés i18n FR/EN (`cycle.calendar.*`, `cycle.widget.periodStripA11y`,
+  `cycle.insights.metrics.{calories,pace}`). Parité vérifiée : 1606 = 1606.
+
+#### Corrigé
+
+- ⚠️ **Le CHANGELOG de la nuit précédente affirmait à tort que les kcal/allure « nécessitaient un
+  nouvel agrégat, ce n'est pas une simple lecture ».** Faux : `journal-repository.ts` expose depuis
+  l'US 7.2 un `useDailyTotals(sinceDate)` qui agrège déjà `food_entries` par jour, et
+  `run-repository.ts` calcule déjà `avgPaceSPerKm` par course. L'affirmation ne portait en réalité
+  que sur `nutrition-repository.ts` (profil, cibles), pas sur le repository qui compte. Les deux
+  métriques n'ont donc demandé **aucun nouvel agrégat** — seulement le branchement, comme les 4
+  autres. `'1970-01-01'` est passé à `useDailyTotals` pour lire « depuis toujours », même convention
+  que la période `'all'` de `records-repository.ts`.
+- Commentaire périmé dans
+  [data-export.ts](apps/mobile/src/lib/data-export.ts) : annonçait « 30 tables », le total réel est
+  39 (37 avant CYCLE-01) — chiffre hérité d'une version antérieure du fichier, jamais mis à jour au
+  fil des US qui l'ont étendu. Retiré plutôt que corrigé une fois de plus : le chiffre se périmerait
+  à la prochaine US, `EXPORT_TABLES` fait foi.
+
+#### Technique / Notes
+
+- **Piège d'environnement rencontré, déjà documenté par la session précédente** (CHANGELOG,
+  commit `1fa7eee` : « deuxième rencontre du même piège ») : `tsc` échoue sur toute nouvelle route
+  Expo Router tant que `.expo/types/router.d.ts` (gitignored, généré) n'a pas été réécrit par un
+  démarrage réel de Metro. Confirmé **pré-existant** (reproductible sur `dev` avant tout changement
+  de cette session, via `git stash`) — pas une régression de CYCLE-01. Résolu en laissant
+  `expo start` tourner ~50 s avant de l'arrêter proprement.
+- **Décile de robustesse implicite** : le filtre `w.volumeKg > 0` du tonnage (séance cardio/poids du
+  corps non mesurée, écartée plutôt que comptée zéro) ne s'applique **pas** aux calories — un jour à
+  0 kcal ne peut pas exister dans `useDailyTotals` (agrégat `GROUP BY`, donc au moins une entrée par
+  ligne renvoyée), contrairement au tonnage où 0 est une valeur réelle et trompeuse. Documenté dans
+  le code pour que personne n'ajoute le même filtre par réflexe.
+- **Le mini-calendrier du widget ne s'affiche que s'il y a une période ouverte** — état normal la
+  plupart du temps, pas une régression silencieuse : couvert par un test dédié.
+- **Vérifications** (codes de sortie lus **sans pipe**) : `npm run typecheck` 0 · `npm run lint` 0
+  (30 warnings, tous préexistants) · `npm run test` 0 → **1257 tests Vitest** (inchangé, aucun calcul
+  pur ajouté) + **247 tests Jest** (+16).
+- **Reste sur CYCLE-01** : Health Connect (lecture/écriture `MenstruationPeriod`/`MenstruationFlow`,
+  nouveau build, déclaration Play à 6 types — délai externe ~2 semaines). Traité comme un incrément
+  séparé, sur la même branche.
+- **Vérification humaine encore ouverte, non technique** : le redéploiement des sync rules PowerSync
+  pour les 2 tables du cycle est affirmé dans le CHANGELOG/commit de la nuit précédente, mais
+  indérivable du code — à confirmer dans le dashboard avant de considérer l'étape 1 close, vu
+  l'historique d'oublis sur ce point précis.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : réglages, désactivation et croisement
 
 Commit précédent : `1fa7eee`. Roadmap **1.25 → 🟡**, **1.26 → 🟡**.

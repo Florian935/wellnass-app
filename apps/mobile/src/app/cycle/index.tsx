@@ -28,13 +28,17 @@ import {
 import { Button } from '@/components/Button';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { CycleDaySheet } from '@/components/cycle/CycleDaySheet';
+import { CycleMonthCalendar } from '@/components/cycle/CycleMonthCalendar';
 import {
   autoCloseStalePeriods,
   endPeriod,
+  getMenstrualLogForDay,
   startPeriod,
+  useMenstrualDailyLogs,
   useMenstrualPeriods,
   useOpenPeriod,
   useTodayMenstrualLog,
+  type MenstrualDailyLog,
 } from '@/data/repositories/menstrual-cycle-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
@@ -45,11 +49,22 @@ export default function CycleScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const todayKey = useTodayKey();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  // Feuille de saisie : un seul état pour « aujourd'hui » (bouton d'action) ET n'importe quel jour
+  // tappé au calendrier — plutôt que deux mécanismes qui finiraient par diverger.
+  const [daySheet, setDaySheet] = useState<{ dateKey: string; existing: MenstrualDailyLog | null } | null>(
+    null,
+  );
 
   const { periods, isLoading } = useMenstrualPeriods();
   const { period: openPeriod } = useOpenPeriod();
   const { log: todayLog } = useTodayMenstrualLog();
+  const { logs } = useMenstrualDailyLogs();
+
+  const openDaySheet = async (dateKey: string) => {
+    // Le jour courant est déjà chargé de façon réactive (todayLog) : pas de round-trip pour lui.
+    const existing = dateKey === todayKey ? todayLog : await getMenstrualLogForDay(dateKey);
+    setDaySheet({ dateKey, existing });
+  };
 
   // R3 — clôture des périodes oubliées, **à l'ouverture de l'écran** et non sur un minuteur : c'est
   // une correction de saisie, pas un fait à horodater.
@@ -129,7 +144,7 @@ export default function CycleScreen() {
         <Button
           label={t('cycle.actions.logDay')}
           variant="ghost"
-          onPress={() => setSheetOpen(true)}
+          onPress={() => void openDaySheet(todayKey)}
         />
         <Button
           label={t('cycle.actions.insights')}
@@ -137,6 +152,17 @@ export default function CycleScreen() {
           onPress={() => router.push('/cycle/insights')}
         />
       </View>
+
+      {/* ── Calendrier ───────────────────────────────────────────────────────────────────────── */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+        {t('cycle.calendar.title')}
+      </Text>
+      <CycleMonthCalendar
+        periods={periods}
+        logs={logs}
+        todayKey={todayKey}
+        onSelectDay={(dateKey) => void openDaySheet(dateKey)}
+      />
 
       {/* ── Historique ───────────────────────────────────────────────────────────────────────── */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
@@ -180,10 +206,10 @@ export default function CycleScreen() {
       )}
 
       <CycleDaySheet
-        visible={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        logDate={todayKey}
-        existing={todayLog}
+        visible={daySheet !== null}
+        onClose={() => setDaySheet(null)}
+        logDate={daySheet?.dateKey ?? todayKey}
+        existing={daySheet?.existing ?? null}
       />
     </ScrollView>
   );

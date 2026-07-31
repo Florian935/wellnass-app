@@ -2019,7 +2019,8 @@
       "emptyPrompt": "Commence ton suivi",
       "emptyHint": "Note un début de règles pour démarrer.",
       "emptyA11y": "Suivi du cycle, aucune donnée enregistrée",
-      "logToday": "Noter aujourd'hui"
+      "logToday": "Noter aujourd'hui",
+      "periodStripA11y": "Jours de la période en cours, intensité du flux par jour"
     },
     "prediction": {
       "nextLabel": "Prochaines règles estimées",
@@ -2044,6 +2045,12 @@
       "ongoing": "Depuis le {{from}}",
       "cycleLength": "{{days}} j",
       "ignored": "Écart inhabituel — exclu de la moyenne, mais conservé."
+    },
+    "calendar": {
+      "title": "Calendrier",
+      "prevMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "dayA11y": "Jour {{date}}, appuie pour noter"
     },
     "sheet": {
       "title": "Noter le jour",
@@ -2084,7 +2091,9 @@
         "energy": "Énergie déclarée",
         "mood": "Humeur déclarée",
         "stress": "Stress déclaré",
-        "tonnage": "Tonnage par séance"
+        "tonnage": "Tonnage par séance",
+        "calories": "Apport calorique",
+        "pace": "Allure de course"
       }
     }
   }

@@ -3,7 +3,13 @@
  *
  *  - `small` : jour du cycle + phase ;
  *  - `wide`  : + la prochaine estimation, ou l'état d'attente ;
- *  - `large` : + les 7 derniers jours et un accès direct à la saisie.
+ *  - `large` : + un mini-calendrier de la **période en cours** et un accès direct à la saisie.
+ *
+ * ⚠️ Le mini-calendrier n'existait pas dans le code livré la nuit du 30 au 31/07 : ce commentaire
+ * l'annonçait déjà, mais le rendu s'arrêtait à la prédiction + un lien texte. Ajouté ici (spec §R16
+ * bis, tableau des formes) — une bande de pastilles colorées par intensité de flux, du début de la
+ * période en cours à aujourd'hui. **Rien à afficher si aucune période n'est ouverte** : ce n'est pas
+ * une régression, c'est l'état normal la plupart du temps.
  *
  * ⚠️ **Ce widget est le SEUL point d'entrée du suivi** — il n'y a pas d'onglet de navigation
  * (arbitrage du 31/07/2026, contre ce que proposait la maquette). Le cycle est une dimension
@@ -22,20 +28,35 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  addDays,
   cycleDayFor,
   cycleLengths,
+  localDayKey,
   phaseForDate,
   predictNextPeriod,
   usableCycleLengths,
   formatDayFull,
+  type MenstrualFlow,
   type WidgetSize,
 } from '@wellness/shared';
 
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
-import { useMenstrualPeriods } from '@/data/repositories/menstrual-cycle-repository';
+import {
+  useMenstrualDailyLogs,
+  useMenstrualPeriods,
+  useOpenPeriod,
+} from '@/data/repositories/menstrual-cycle-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useTodayKey } from '@/hooks/useTodayKey';
+
+/** Intensité visuelle par flux — même échelle que `CycleMonthCalendar`. */
+const FLOW_OPACITY: Record<MenstrualFlow, number> = {
+  spotting: 0.3,
+  light: 0.5,
+  medium: 0.75,
+  heavy: 1,
+};
 
 export function CycleCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
@@ -43,6 +64,26 @@ export function CycleCard({ size = 'wide' }: { size?: WidgetSize }) {
   const router = useRouter();
   const todayKey = useTodayKey();
   const { periods, isLoading } = useMenstrualPeriods();
+  // Hooks inconditionnels : `useOpenPeriod`/`useMenstrualDailyLogs` sont toujours appelés, la donnée
+  // n'est simplement pas utilisée quand `size !== 'large'` ou qu'aucune période n'est ouverte.
+  const { period: openPeriod } = useOpenPeriod();
+  const { logs } = useMenstrualDailyLogs(openPeriod?.startedOn);
+
+  const periodDays = useMemo(() => {
+    if (!openPeriod) return [];
+    const flowByDate = new Map(logs.map((l) => [l.logDate, l.flow]));
+    const days: { key: string; flow: MenstrualFlow | null }[] = [];
+    // Construction locale par composants — `new Date("AAAA-MM-JJ")` parse en UTC (piège documenté
+    // dans `formatDayFull`), ce qui décalerait la période d'un jour en fuseau négatif.
+    const [y, m, dNum] = openPeriod.startedOn.split('-').map(Number);
+    let cursor = new Date(y!, m! - 1, dNum!);
+    while (localDayKey(cursor) <= todayKey) {
+      const key = localDayKey(cursor);
+      days.push({ key, flow: flowByDate.get(key) ?? null });
+      cursor = addDays(cursor, 1);
+    }
+    return days;
+  }, [openPeriod, logs, todayKey]);
 
   const view = useMemo(() => {
     const usable = usableCycleLengths(cycleLengths(periods)).usable;
@@ -152,6 +193,25 @@ export function CycleCard({ size = 'wide' }: { size?: WidgetSize }) {
     <WidgetFrame pad={22} style={styles.col} onPress={open} accessibilityLabel={a11y}>
       {header}
       {prediction}
+      {periodDays.length > 0 && (
+        <View style={styles.periodStrip} accessibilityLabel={t('cycle.widget.periodStripA11y')}>
+          {periodDays.map((d) => (
+            <View
+              key={d.key}
+              style={[
+                styles.periodDot,
+                {
+                  backgroundColor: d.flow
+                    ? colors.accent
+                    : colors.surfaceAlt,
+                  opacity: d.flow ? FLOW_OPACITY[d.flow] : 1,
+                  borderColor: colors.border,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      )}
       <Text style={[styles.cta, { color: colors.accent }]}>{t('cycle.widget.logToday')}</Text>
     </WidgetFrame>
   );
@@ -174,4 +234,6 @@ const styles = StyleSheet.create({
   predLabel: { fontFamily: fontFamily.body, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6 },
   predValue: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
   cta: { fontFamily: fontFamily.bodySemi, fontSize: 13, marginTop: 2 },
+  periodStrip: { flexDirection: 'row', gap: 4, marginTop: 4, flexWrap: 'wrap' },
+  periodDot: { width: 10, height: 10, borderRadius: 5, borderWidth: 1 },
 });
