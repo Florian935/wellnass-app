@@ -33,6 +33,7 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
+| **MUSC-F6** — Fenêtre de reprise de séance — réconciliation du seuil 3h/4h | `validation` | `feature/muscf6-fenetre-reprise-seance` | [3.36] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
@@ -43,9 +44,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (5) · P2 confort (1)</summary>
+<details><summary>P1 finitions (4) · P2 confort (1)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
+**P1** — MUSC-F7 — Progression assistée · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -57,9 +58,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/health-connect-erreur-opt-in-off` (modifications non commitées) |
-| Commits | 994 · `main` a **991** commits de retard sur `dev` |
-| Specs d'US | 95 au total — 76 clôturées, 19 en cours |
+| Branche courante | `feature/muscf6-fenetre-reprise-seance` (modifications non commitées) |
+| Commits | 995 · `main` a **992** commits de retard sur `dev` |
+| Specs d'US | 96 au total — 76 clôturées, 20 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -69,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5643442` fix(health-connect): clarifie le bandeau d'échec pour les utilisateurs anglophones
 - `d639a72` refactor(pillar): unifie la décision d'accès par pilier (REFACTO-01, 9.16)
 - `51626ac` docs(refacto01): spec + plan — unifier la décision d'accès par pilier
 - `010a4d3` chore(etat): régénère ETAT.md après le commit Health Connect
 - `e5efdde` feat(cycle01): synchro Health Connect du cycle (permissions, push/import, dédup R21)
-- `4e9c2c3` feat(cycle01): calendrier mensuel, croisement complet, tests smoke (US CYCLE-01, 1.25/1.26)
 
 ---
 

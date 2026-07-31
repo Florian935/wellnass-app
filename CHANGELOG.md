@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : entrée en pipeline (spec + plan)
+
+Commit précédent : `5643442`. Documentation uniquement, **aucun code**. Front-matter `etape:
+validation` — arrêt avant tout code, en attente de la décision D1 (Florian/Damien).
+
+#### Ajouté
+
+- [docs/specs/functional/us/muscf6-fenetre-reprise-seance.md](docs/specs/functional/us/muscf6-fenetre-reprise-seance.md)
+  — spec. **Pas de maquette** pour l'option recommandée (aucun écran ne change).
+  - **Trouvaille de cadrage** : le « conflit 3h/4h » que le roadmap documentait depuis le 28/07 n'a
+    **jamais existé dans le comportement observable de l'app**. Recherche exhaustive (code
+    applicatif + i18n) : aucune trace du chiffre « 4 heures », aucun statut `paused`, aucune popup
+    « Abandonner/Pause ». La seule limite réelle est `WORKOUT_AUTO_CLOSE_SECONDS` (3h,
+    `packages/shared/src/workout.ts`, déjà testée) — le « 4h » n'était qu'un vestige de la
+    rédaction initiale de `musculation.md` §4.4, jamais implémenté ni retouché depuis.
+  - **Décision D1 posée, pas tranchée** : Option A (officialiser 3h, corriger la doc pour qu'elle
+    dise ce que le code fait déjà — recommandée, zéro ligne de code) vs Option B (construire une
+    vraie fenêtre de reprise distincte de la clôture auto, avec avertissement — chantier réel,
+    bénéfice non démontré : personne n'a réclamé ce chiffre depuis la rédaction de la spec).
+- [docs/plans/muscf6-fenetre-reprise-seance.md](docs/plans/muscf6-fenetre-reprise-seance.md) — 4
+  tasks pour l'Option A uniquement ; si Option B est retenue, ce plan est explicitement caduc et
+  une nouvelle spec/plan/maquette seront nécessaires (l'US redevient un vrai chantier de code + UI).
+- `BACKLOG.md` — entrée MUSC-F6 marquée entrée en pipeline (patron `~~NUTR-F1~~`).
+
 ### 31/07/2026 — `fix/health-connect-erreur-opt-in-off` — Health Connect : bandeau d'échec clarifié pour les utilisateurs EN
 
 Commit précédent : `d639a72`. Correctif issu de « Constats de la passe device automatisée du
