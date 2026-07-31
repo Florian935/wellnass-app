@@ -40,6 +40,7 @@ import {
   useTodayMenstrualLog,
   type MenstrualDailyLog,
 } from '@/data/repositories/menstrual-cycle-repository';
+import { pushCycleData } from '@/lib/health-connect';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -138,7 +139,9 @@ export default function CycleScreen() {
           <Button
             label={t('cycle.actions.endPeriod')}
             variant="ghost"
-            onPress={() => void endPeriod(openPeriod.id, todayKey)}
+            // La période close devient exportable (R20/D) : synchro fire-and-forget, comme
+            // `pushWorkout` à la clôture d'une séance — elle ne doit jamais bloquer l'UI.
+            onPress={() => void endPeriod(openPeriod.id, todayKey).then(() => void pushCycleData())}
           />
         )}
         <Button

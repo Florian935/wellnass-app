@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **30/07/2026** — 14 US en attente.
+> Dernière mise à jour : **31/07/2026** — 15 US en attente.
 
 ---
 
@@ -414,6 +414,68 @@ assumée mais contestable — voir la spec). Si ça gêne à l'usage, c'est le p
 reconsidérer, pas un bug.
 
 **Quand une US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 15. CYCLE-01 — Suivi du cycle menstruel (journal, prédiction, croisement, Health Connect)
+
+📄 [spec](docs/specs/functional/us/cycle01-suivi-menstruel.md) · roadmap 1.25 + 1.26 ·
+**📱 device** (20 critères, §7 de la spec) · **nouveau build probablement nécessaire** (voir
+prérequis ci-dessous)
+
+⛔ **Prérequis bloquant propre à cette US** : contrairement au lot du 29/07/2026, il n'existe
+**aucune confirmation** que les sync rules PowerSync couvrant `menstrual_periods` et
+`menstrual_daily_logs` (ajoutées le 30/07/2026) ont été **collées et déployées** dans le dashboard
+PowerSync — seul le fichier [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml)
+les contient. Sans ce déploiement, le suivi du cycle **ne se synchronise jamais entre appareils**,
+sans erreur visible. Vérifier avec Florian/Damien avant de recetter, et cocher ici une fois fait :
+
+- [ ] Sync rules PowerSync (menstrual_periods, menstrual_daily_logs) confirmées déployées.
+
+⚠️ **Le build actuel embarque-t-il les permissions Health Connect du cycle ?** `app.json` déclare
+`READ_MENSTRUATION`/`WRITE_MENSTRUATION`, mais Android **exige** qu'une permission figure dans le
+manifest **au moment du build** pour qu'elle soit demandable à l'exécution. Si l'écran système de
+demande de permissions (interrupteur « Synchroniser avec Health Connect » dans Réglages) n'affiche
+pas les deux types Menstruation, ou si `requestCyclePermissions()` échoue silencieusement : le dev
+build est antérieur à ces lignes → `npx expo prebuild --platform android --clean` puis un nouveau
+build (même piège que documenté plus bas pour PARTAGE-01).
+
+- [ ] 1. Réglage **désactivé par défaut** : aucun widget, aucune route atteignable, aucune trace.
+- [ ] 1 bis. **La barre du bas n'a PAS gagné d'onglet** (R16 bis).
+- [ ] 1 ter. Widget `cycle` disponible dans les **3 formes** du dashboard.
+- [ ] 2. Activation → saisir un début de règles → il apparaît au calendrier.
+- [ ] 3. Saisir un **nouveau début** sans avoir clos le précédent → l'ancien se clôt tout seul (R2).
+- [ ] 4. Période laissée ouverte **16 jours** → close automatiquement et signalée (R3).
+- [ ] 5. Saisie **rétroactive** d'un cycle d'il y a 3 mois : acceptée (R4). Date **future** : refusée.
+- [ ] 6. Avec **2 cycles** : aucune prédiction, message « encore 1 cycle » (R8).
+- [ ] 7. Avec **3 cycles réguliers** : date estimée **avec sa fourchette ±** (R9).
+- [ ] 8. Avec 3 cycles **très irréguliers** (écart-type > 7 j) : **pas de date**, explication (R10).
+- [ ] 9. Un cycle de 120 jours dans l'historique : **exclu** de la moyenne, **toujours visible** (R6).
+- [ ] 10. Onglet croisement (`/cycle/insights`) avec peu de données : dit ce qui manque (R13).
+- [ ] 11. Croisement nourri, **6 métriques** (énergie, humeur, stress, tonnage, kcal, allure) :
+      moyennes par phase affichées **sans une seule formule causale** (R14).
+- [ ] 12. **Export RGPD** : les deux tables sont dans le JSON exporté (R18).
+- [ ] 13. Désactiver le suivi → la suppression des données est **proposée** explicitement (R17).
+- [ ] 14. 🔴 **Le critère qui prime sur tous les autres** : relire chaque écran et chaque chaîne, FR
+      et EN, en cherchant tout ce qui pourrait se lire comme un **conseil médical, une garantie de
+      fiabilité ou une aide à la contraception**. Une seule formulation ambiguë = **rejet**.
+- [ ] 15. **Mode avion** : saisie, prédiction et croisement fonctionnent intégralement.
+- [ ] 16. **Health Connect** : activer la synchro (Réglages → Suivi du cycle → interrupteur dédié) →
+      les permissions système s'affichent pour les 2 types Menstruation ; une période **close**
+      saisie dans Wellness apparaît dans une autre app santé (ou le hub Health Connect) ; une
+      période créée dans le hub apparaît dans Wellness au retour au premier plan (throttle 6 h,
+      ou en forçant via le débogage) ; une **saisie manuelle n'est jamais écrasée** par un import
+      (R21) — modifier la date de fin d'une période saisie à la main dans le hub ne doit **rien**
+      changer côté Wellness.
+- [ ] 17. Health Connect **refusé** ou indisponible : le journal fonctionne normalement, sans erreur
+      (couper la permission système en cours de route ne doit rien casser, juste arrêter la synchro).
+- [ ] 18. **Aucune notification** n'est jamais émise par cette fonctionnalité (R11).
+- [ ] 19. Carte partageable d'une séance : **aucune** mention du cycle (R19).
+- [ ] 20. En **EN** : phases, flux, symptômes et avertissement sont en anglais **relu**, pas traduits
+      mot à mot.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
 
 ---

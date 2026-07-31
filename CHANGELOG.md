@@ -10,6 +10,92 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : Health Connect câblé (code complet)
+
+Commit précédent : `4e9c2c3`. Roadmap **1.25** et **1.26** passent front-matter `etape: recette` —
+**code complet**, ne reste que la recette device (RECETTES.md #15). Termine le dernier point de la
+US ("le seul reste" déclaré dans le front-matter précédent).
+
+#### Ajouté
+
+- [health-connect.ts (shared)](packages/shared/src/health-connect.ts) — briques pures
+  Menstruation : `buildMenstruationPeriodRecord`/`buildMenstruationFlowRecord` (construction),
+  `selectPeriodsToImport`/`selectFlowLogsToImport` (réduction des records lus), `flowToHealthConnect`/
+  `flowFromHealthConnect` (mapping 4 niveaux internes ↔ 3 niveaux Health Connect). 33 tests Vitest.
+  - **Point de vérification important avant d'écrire une ligne de code** : la déclaration
+    TypeScript de `react-native-health-connect@3.5.3` fait hériter `MenstruationPeriodRecord`
+    d'`InstantaneousRecord` (`time` seul) — ce qui aurait imposé de regrouper des marqueurs
+    quotidiens en périodes. Vérification faite dans le binding **natif** Kotlin de la bibliothèque
+    (`ReactMenstruationPeriodRecord.kt`) : il construit bien un
+    `MenstruationPeriodRecord(startTime, endTime, …)` — un vrai intervalle. La déclaration
+    TypeScript est simplement fausse. Sans cette vérification, l'implémentation serait partie sur
+    un modèle plus complexe et inutile ; documenté en commentaire dans le fichier pour la prochaine
+    mise à jour de la lib.
+  - `MenstruationPeriodRecord.endTime` posé à **minuit du lendemain** du dernier jour de règles
+    (borne exclusive) : une période d'un seul jour donnerait sinon `startTime === endTime`, que
+    Health Connect refuse. Symétrique à la lecture (`selectPeriodsToImport` retranche 1 ms avant de
+    redater localement).
+  - `spotting` (notre niveau le plus faible, R7) n'a pas d'équivalent Health Connect (3 niveaux
+    seulement) : mappé sur `LIGHT`, pas `UNKNOWN` — un flux « inconnu » se lirait comme
+    « non renseigné » pour un partenaire santé, ce qu'un spotting n'est pas. Ce choix n'est pas
+    réversible à l'import : Health Connect ne renvoie jamais `spotting`.
+- [menstrual-cycle.ts (shared)](packages/shared/src/menstrual-cycle.ts) — `shouldImportCycleData`,
+  throttle dédié (dupliqué depuis `shouldImportWeight`/`shouldImportSteps`, pas partagé — c'est déjà
+  la convention du reste de l'intégration Health Connect : un throttle par domaine).
+- [menstrual-cycle-repository.ts](apps/mobile/src/data/repositories/menstrual-cycle-repository.ts)
+  — `getManualClosedPeriodsForExport`/`getDailyLogsWithFlowForExport` (lecture hors contexte React,
+  export) ; `importPeriodFromHealthConnect`/`importDailyFlowFromHealthConnect` (écriture d'import,
+  R21) :
+  - Périodes : dédup sur `started_on`. Une période **saisie à la main** (`source = 'manual'`)
+    trouvée à cette date n'est **jamais** modifiée, même si sa fin diffère de celle lue. Une
+    période déjà importée (`source = 'health_connect'`) voit sa fin **mise à jour** — c'est la
+    même période relue, pas un conflit.
+  - Journal quotidien : `menstrual_daily_logs` **n'a pas** de colonne `source` (contrairement aux
+    périodes) — impossible de distinguer une saisie manuelle d'un import antérieur. Politique
+    volontairement conservatrice : un flux déjà présent n'est **jamais** modifié par un import, quelle
+    que soit son origine. Plus strict que nécessaire pour le cas « réimport », mais garantit qu'une
+    saisie manuelle n'est jamais écrasée (R21).
+- [health-connect.ts (mobile)](apps/mobile/src/lib/health-connect.ts) — `CYCLE_PERMISSIONS` (4
+  entrées : lecture/écriture × Period/Flow), `hasCyclePermissions`/`requestCyclePermissions`,
+  `getCycleState`, `readyCycle()` (garde sur les **trois** opt-in R20 :
+  `cycleTrackingEnabled` + `healthConnectEnabled` + `cycleHealthConnectEnabled` + permissions),
+  `pushCycleData()` (périodes closes **saisies à la main** + flux, fire-and-forget), `importCycleData`/
+  `importCycleDataIfDue` (throttle 6 h, retour au premier plan).
+  - ⚠️ **`CYCLE_PERMISSIONS` est une liste séparée de `PERMISSIONS`**, jamais fusionnée.
+    `hasPermissions()`/`getState()` conditionnent la synchro séances/poids/pas de **tout le monde** ;
+    y ajouter 2 permissions de santé sensible aurait fait régresser en `permissions_missing` tous
+    les comptes n'ayant jamais activé le cycle (opt-in indépendant, R20).
+  - `pushCycleData()` n'exporte que les périodes **closes** (`MenstruationPeriodRecord` exige une
+    fin — une période ouverte forcerait une fin provisoire fausse) et de source **`manual`**
+    (réexporter une période elle-même importée serait un aller-retour inutile).
+- Permissions Android `READ_MENSTRUATION`/`WRITE_MENSTRUATION` : **déjà déclarées** dans
+  [app.json](apps/mobile/app.json) par un travail antérieur — vérifié, rien à ajouter côté manifest.
+- Câblage UI : [CycleTrackingSection.tsx](apps/mobile/src/components/CycleTrackingSection.tsx)
+  (interrupteur dédié → permissions système → push + import initial, même séquence que
+  `HealthConnectSection.enable()`), [cycle/index.tsx](apps/mobile/src/app/cycle/index.tsx) (push
+  fire-and-forget à la clôture d'une période), [CycleDaySheet.tsx](apps/mobile/src/components/cycle/CycleDaySheet.tsx)
+  (push fire-and-forget à l'enregistrement d'un flux),
+  [useHealthConnectImports.ts](apps/mobile/src/hooks/useHealthConnectImports.ts) (import throttlé
+  au retour au premier plan, aux côtés du poids et des pas).
+- [settings-repository.ts](apps/mobile/src/data/repositories/settings-repository.ts) —
+  `getCycleTrackingEnabled`/`getCycleHealthConnectEnabled` (accesseurs async hors contexte React,
+  même patron que `getHealthConnectEnabled`).
+- Clé i18n `cycle.settings.healthConnectDenied` (FR/EN) — bandeau affiché si la demande de
+  permissions échoue ou est refusée.
+- RECETTES.md — section **#15 CYCLE-01** créée (20 critères §7 de la spec, jamais recensés
+  jusqu'ici) avec un prérequis bloquant propre à cette US : les sync rules PowerSync du cycle
+  n'ont, contrairement au lot du 29/07/2026, **aucune confirmation de déploiement**.
+
+#### Technique / Notes
+
+- Un test (`cycle-index-smoke.test.tsx`) mockait `react-i18next` mais pas `@/lib/health-connect` :
+  le nouvel import de `pushCycleData` dans `cycle/index.tsx` remontait jusqu'à `@/i18n` (via
+  `settings-repository`) et plantait `i18next.use(undefined)`. Même piège que documenté pour
+  `cycle-insights-smoke.test.tsx` la veille — corrigé par un mock ciblé du module.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 247 + shared Vitest 1277) —
+  lus sans pipe, tous verts.
+- Front-matter `docs/specs/functional/us/cycle01-suivi-menstruel.md` : `etape: code` → `recette`.
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : calendrier, croisement complet, tests smoke
 
 Commit précédent : `e947659`. Roadmap **1.25** et **1.26** restent 🟡 — seul Health Connect subsiste.

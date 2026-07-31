@@ -31,6 +31,11 @@ jest.mock('@/data/repositories/menstrual-cycle-repository', () => ({
 jest.mock('@/components/cycle/CycleDaySheet', () => ({ CycleDaySheet: () => null }));
 jest.mock('@/components/cycle/CycleMonthCalendar', () => ({ CycleMonthCalendar: () => null }));
 
+// L'écran appelle `pushCycleData` en fire-and-forget après clôture d'une période (R20/D) : sans ce
+// mock, le vrai module remonte jusqu'à `@/i18n` (via settings-repository) et plante hors contexte
+// i18next mocké ici — même piège que documenté dans cycle-insights-smoke.test.tsx.
+jest.mock('@/lib/health-connect', () => ({ pushCycleData: jest.fn() }));
+
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: () => '2026-07-31' }));
 
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));

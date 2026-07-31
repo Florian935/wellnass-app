@@ -2067,6 +2067,7 @@
       "subtitle": "Available to everyone. Off by default.",
       "healthConnect": "Sync with Health Connect",
       "healthConnectDesc": "Shares your period days with the Android health hub.",
+      "healthConnectDenied": "Permissions denied or Health Connect unavailable: sync stays off.",
       "disableTitle": "Tracking turned off",
       "disableMessage": "Do you want to keep the data already logged? It will stay in your export but will no longer be shown.",
       "keepData": "Keep",

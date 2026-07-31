@@ -20,22 +20,42 @@
 import { Linking, Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import {
+  buildMenstruationFlowRecord,
+  buildMenstruationPeriodRecord,
   buildRunRecords,
   buildWorkoutSessionRecord,
+  deviceOffsetSeconds,
+  selectFlowLogsToImport,
+  selectPeriodsToImport,
   selectWeightEntriesToImport,
+  shouldImportCycleData,
   shouldImportSteps,
   shouldImportWeight,
   toDailySteps,
   type DistanceRecordInput,
   type ExerciseSessionRecordInput,
+  type MenstruationFlowRecordInput,
+  type MenstruationPeriodRecordInput,
+  type RemoteMenstruationFlowRecord,
+  type RemoteMenstruationPeriodRecord,
   type RemoteWeightRecord,
   type StepsBucket,
 } from '@wellness/shared';
 
 import { powerSync } from '@/powersync/system';
-import { getHealthConnectEnabled } from '@/data/repositories/settings-repository';
+import {
+  getCycleHealthConnectEnabled,
+  getCycleTrackingEnabled,
+  getHealthConnectEnabled,
+} from '@/data/repositories/settings-repository';
 import { logWeight } from '@/data/repositories/bodyweight-repository';
 import { upsertDailySteps } from '@/data/repositories/daily-steps-repository';
+import {
+  getDailyLogsWithFlowForExport,
+  getManualClosedPeriodsForExport,
+  importDailyFlowFromHealthConnect,
+  importPeriodFromHealthConnect,
+} from '@/data/repositories/menstrual-cycle-repository';
 
 /** Package du fournisseur Health Connect (app système sur Android 14+, APK Play Store avant). */
 export const HEALTH_CONNECT_PACKAGE = 'com.google.android.apps.healthdata';
@@ -48,6 +68,9 @@ const LAST_WEIGHT_IMPORT_KEY = 'healthConnect.lastWeightImportAt';
 
 /** Idem pour les pas (US PAS-01) — curseur distinct, throttle distinct. */
 const LAST_STEPS_IMPORT_KEY = 'healthConnect.lastStepsImportAt';
+
+/** Idem pour le cycle (US CYCLE-01) — curseur distinct, throttle distinct. */
+const LAST_CYCLE_IMPORT_KEY = 'healthConnect.lastCycleImportAt';
 
 /** Fenêtre par défaut, en jours, pour le rattrapage et la lecture du poids. */
 export const DEFAULT_WINDOW_DAYS = 30;
@@ -64,6 +87,9 @@ export const WEIGHT_IMPORT_THROTTLE_HOURS = 6;
  */
 export const STEPS_IMPORT_THROTTLE_HOURS = 1;
 
+/** Throttle de l'import automatique du cycle (US CYCLE-01) — même ordre de grandeur que le poids. */
+export const CYCLE_IMPORT_THROTTLE_HOURS = 6;
+
 /**
  * Les 4 permissions demandées — et pas une de plus (minimisation, déclaration Play).
  *
@@ -71,12 +97,30 @@ export const STEPS_IMPORT_THROTTLE_HOURS = 1;
  * cette liste, tous les comptes déjà autorisés repassent en état `permissions_missing` jusqu'à ce
  * qu'ils accordent la lecture des pas. C'est attendu — et sans conséquence sur l'écriture des
  * séances, les permissions étant indépendantes côté système.
+ *
+ * ⚠️ **Les permissions du cycle (US CYCLE-01) sont volontairement à PART** (`CYCLE_PERMISSIONS`
+ * ci-dessous), pas ajoutées ici. Cette liste conditionne `hasPermissions()`/`getState()`, utilisés
+ * par la synchro séances/poids/pas de **tout le monde** — y ajouter 2 permissions de santé sensible
+ * ferait repasser en `permissions_missing` des comptes qui n'ont jamais activé, et n'activeront
+ * peut-être jamais, le suivi du cycle (opt-in indépendant, R20).
  */
 const PERMISSIONS = [
   { accessType: 'write', recordType: 'ExerciseSession' },
   { accessType: 'write', recordType: 'Distance' },
   { accessType: 'read', recordType: 'Weight' },
   { accessType: 'read', recordType: 'Steps' },
+] as const;
+
+/**
+ * Permissions du cycle (US CYCLE-01 §4, D) — demandées et vérifiées **séparément** de
+ * `PERMISSIONS`, cf. avertissement ci-dessus. Les deux permissions Android (`READ_MENSTRUATION`,
+ * `WRITE_MENSTRUATION`) couvrent les deux types de record à la fois.
+ */
+const CYCLE_PERMISSIONS = [
+  { accessType: 'read', recordType: 'MenstruationPeriod' },
+  { accessType: 'write', recordType: 'MenstruationPeriod' },
+  { accessType: 'read', recordType: 'MenstruationFlow' },
+  { accessType: 'write', recordType: 'MenstruationFlow' },
 ] as const;
 
 /** Disponibilité du fournisseur — niveau 1 de l'état affiché (spec §2.1). */
@@ -117,7 +161,7 @@ export type SyncReport = {
   /** Instant de la tentative (ISO UTC). */
   at: string;
   /** Ce qui était tenté. */
-  kind: 'workout' | 'run' | 'backfill' | 'weight' | 'steps';
+  kind: 'workout' | 'run' | 'backfill' | 'weight' | 'steps' | 'cycle';
   /** Nombre d'éléments réellement écrits / importés. */
   written: number;
   /**
@@ -221,6 +265,95 @@ export async function getState(): Promise<HealthConnectState> {
   if (availability !== 'available') return availability;
   if (!(await getHealthConnectEnabled())) return 'off';
   return (await hasPermissions()) ? 'ready' : 'permissions_missing';
+}
+
+/** Les 4 permissions du cycle sont-elles **déjà** accordées ? (Ne déclenche aucune demande.) */
+export async function hasCyclePermissions(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const { initialize, getGrantedPermissions } = await nativeModule();
+    if (!(await initialize(HEALTH_CONNECT_PACKAGE))) return false;
+    const granted = await getGrantedPermissions();
+    return CYCLE_PERMISSIONS.every((needed) =>
+      granted.some(
+        (g) =>
+          (g as { accessType?: string }).accessType === needed.accessType &&
+          (g as { recordType?: string }).recordType === needed.recordType,
+      ),
+    );
+  } catch (error) {
+    console.warn('[health-connect] getGrantedPermissions (cycle) a échoué :', error);
+    return false;
+  }
+}
+
+/**
+ * Demande les 4 permissions du cycle à l'utilisateur (écran système). **Seul** point de l'app qui
+ * déclenche cette demande, et uniquement sur action explicite dans les Réglages (interrupteur
+ * dédié, R20).
+ */
+export async function requestCyclePermissions(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const { initialize, requestPermission } = await nativeModule();
+    if (!(await initialize(HEALTH_CONNECT_PACKAGE))) return false;
+    await requestPermission([...CYCLE_PERMISSIONS] as Parameters<typeof requestPermission>[0]);
+    return hasCyclePermissions();
+  } catch (error) {
+    console.warn('[health-connect] requestPermission (cycle) a échoué :', error);
+    return false;
+  }
+}
+
+/**
+ * État de la synchro du cycle — utilisé par `CycleTrackingSection` pour son propre interrupteur,
+ * indépendant de `getState()` (opt-in général) et de `hasPermissions()` (4 permissions générales).
+ */
+export async function getCycleState(): Promise<HealthConnectState> {
+  const availability = await getAvailability();
+  if (availability !== 'available') return availability;
+  if (!(await getCycleHealthConnectEnabled())) return 'off';
+  return (await hasCyclePermissions()) ? 'ready' : 'permissions_missing';
+}
+
+/**
+ * Garde du cycle — même forme que `ready()`, mais sur les **trois** opt-in exigés par R20
+ * (`cycleTrackingEnabled`, `healthConnectEnabled`, `cycleHealthConnectEnabled`) plus les permissions
+ * dédiées. Volontairement séparée de `ready()` : les deux fonctionnalités ont des opt-in
+ * indépendants, et confondre les gardes ferait dépendre le cycle d'un réglage qu'il ne doit pas
+ * vérifier seul, ou inversement.
+ */
+async function readyCycle(): Promise<
+  | { native: Awaited<ReturnType<typeof nativeModule>>; reason?: undefined; inactive?: undefined }
+  | { native: null; reason: string; inactive?: boolean }
+> {
+  if (Platform.OS !== 'android') {
+    return { native: null, reason: 'plateforme non Android', inactive: true };
+  }
+  try {
+    const [trackingEnabled, hcEnabled, cycleHcEnabled] = await Promise.all([
+      getCycleTrackingEnabled(),
+      getHealthConnectEnabled(),
+      getCycleHealthConnectEnabled(),
+    ]);
+    if (!trackingEnabled || !hcEnabled || !cycleHcEnabled) {
+      return { native: null, reason: 'opt-in cycle/Health Connect incomplet (R20)', inactive: true };
+    }
+    const native = await nativeModule();
+    const status = await native.getSdkStatus(HEALTH_CONNECT_PACKAGE);
+    if (status !== SDK_AVAILABLE) {
+      return { native: null, reason: `Health Connect indisponible (getSdkStatus = ${status})` };
+    }
+    if (!(await native.initialize(HEALTH_CONNECT_PACKAGE))) {
+      return { native: null, reason: 'initialize() a renvoyé false' };
+    }
+    if (!(await hasCyclePermissions())) {
+      return { native: null, reason: 'permissions cycle non accordées' };
+    }
+    return { native };
+  } catch (error) {
+    return { native: null, reason: `initialisation impossible : ${errorMessage(error)}` };
+  }
 }
 
 /**
@@ -656,6 +789,178 @@ export async function importStepsIfDue(): Promise<number> {
   const last = await getLastStepsImportAt();
   if (!shouldImportSteps(last, Date.now(), STEPS_IMPORT_THROTTLE_HOURS)) return 0;
   return importSteps();
+}
+
+/**
+ * Écrit dans Health Connect les périodes **closes saisies à la main** et les journaux avec flux
+ * (US CYCLE-01 §4, D). Fire-and-forget, sûr à répéter : dédup par `clientRecordId` côté Health
+ * Connect (une réécriture met à jour, ne duplique pas).
+ *
+ * N'écrit **jamais** de période ouverte (`MenstruationPeriodRecord` exige une fin, cf.
+ * `buildMenstruationPeriodRecord`) ni de période déjà importée depuis Health Connect (aller-retour
+ * inutile — cf. `getManualClosedPeriodsForExport`).
+ */
+export async function pushCycleData(): Promise<{ periods: number; flows: number }> {
+  const { native, reason, inactive } = await readyCycle();
+  if (!native) {
+    if (!inactive) report('cycle', 0, reason);
+    return { periods: 0, flows: 0 };
+  }
+  try {
+    const offsetSeconds = deviceOffsetSeconds();
+
+    const periods = await getManualClosedPeriodsForExport();
+    const periodRecords = periods.flatMap((p) => {
+      const record = buildMenstruationPeriodRecord({
+        startedOn: p.startedOn,
+        endedOn: p.endedOn,
+        updatedAt: p.updatedAt,
+        offsetSeconds,
+      });
+      return record ? [record] : [];
+    });
+
+    const logs = await getDailyLogsWithFlowForExport();
+    const flowRecords = logs.flatMap((l) => {
+      const record = buildMenstruationFlowRecord({
+        logDate: l.logDate,
+        flow: l.flow,
+        updatedAt: l.updatedAt,
+        offsetSeconds,
+      });
+      return record ? [record] : [];
+    });
+
+    const periodsWritten = await insertMenstruationBatch(native, periodRecords);
+    const flowsWritten = await insertMenstruationBatch(native, flowRecords);
+
+    report(
+      'cycle',
+      periodsWritten.written + flowsWritten.written,
+      periodsWritten.error ?? flowsWritten.error,
+    );
+    return { periods: periodsWritten.written, flows: flowsWritten.written };
+  } catch (error) {
+    report('cycle', 0, errorMessage(error));
+    return { periods: 0, flows: 0 };
+  }
+}
+
+/** Même politique de reprise unitaire qu'`insertBatch`, pour les records de type Menstruation. */
+async function insertMenstruationBatch(
+  native: Awaited<ReturnType<typeof nativeModule>>,
+  records: readonly (MenstruationPeriodRecordInput | MenstruationFlowRecordInput)[],
+): Promise<{ written: number; error: string | null }> {
+  if (records.length === 0) return { written: 0, error: null };
+  try {
+    await native.insertRecords(records as Parameters<typeof native.insertRecords>[0]);
+    return { written: records.length, error: null };
+  } catch (error) {
+    if (records.length === 1) return { written: 0, error: errorMessage(error) };
+    let written = 0;
+    let firstError: string | null = null;
+    for (const record of records) {
+      try {
+        await native.insertRecords([record] as Parameters<typeof native.insertRecords>[0]);
+        written += 1;
+      } catch (itemError) {
+        firstError = firstError ?? errorMessage(itemError);
+      }
+    }
+    return { written, error: written === records.length ? null : firstError };
+  }
+}
+
+/**
+ * Importe depuis Health Connect les périodes et journaux de flux des `days` derniers jours
+ * (US CYCLE-01 §4, D — R21 : la saisie manuelle gagne toujours, cf.
+ * `importPeriodFromHealthConnect`/`importDailyFlowFromHealthConnect`).
+ */
+export async function importCycleData(
+  days = DEFAULT_WINDOW_DAYS,
+): Promise<{ periods: number; flows: number }> {
+  const { native, reason, inactive } = await readyCycle();
+  if (!native) {
+    if (!inactive) report('cycle', 0, reason);
+    return { periods: 0, flows: 0 };
+  }
+  try {
+    const now = Date.now();
+    const timeRangeFilter = {
+      operator: 'between' as const,
+      startTime: new Date(now - days * 86_400_000).toISOString(),
+      endTime: new Date(now).toISOString(),
+    };
+
+    const periodResult = await native.readRecords('MenstruationPeriod', { timeRangeFilter });
+    const flowResult = await native.readRecords('MenstruationFlow', { timeRangeFilter });
+
+    const periodsToImport = selectPeriodsToImport(
+      periodResult.records as unknown as RemoteMenstruationPeriodRecord[],
+      OWN_PACKAGE,
+    );
+    const flowsToImport = selectFlowLogsToImport(
+      flowResult.records as unknown as RemoteMenstruationFlowRecord[],
+      OWN_PACKAGE,
+    );
+
+    let periodsImported = 0;
+    for (const p of periodsToImport) {
+      if ((await importPeriodFromHealthConnect(p.startedOn, p.endedOn)) === 'imported') {
+        periodsImported += 1;
+      }
+    }
+    let flowsImported = 0;
+    for (const f of flowsToImport) {
+      if ((await importDailyFlowFromHealthConnect(f.logDate, f.flow)) === 'imported') {
+        flowsImported += 1;
+      }
+    }
+
+    await setLastCycleImportAt(new Date(now).toISOString());
+    report(
+      'cycle',
+      periodsImported + flowsImported,
+      periodResult.records.length === 0 && flowResult.records.length === 0
+        ? `aucune donnée de cycle lue sur ${days} jours`
+        : null,
+    );
+    return { periods: periodsImported, flows: flowsImported };
+  } catch (error) {
+    report('cycle', 0, errorMessage(error));
+    return { periods: 0, flows: 0 };
+  }
+}
+
+/** Horodatage du dernier import du cycle (base du throttle). */
+export async function getLastCycleImportAt(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(LAST_CYCLE_IMPORT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+async function setLastCycleImportAt(iso: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(LAST_CYCLE_IMPORT_KEY, iso);
+  } catch (error) {
+    console.warn('[health-connect] écriture du curseur d’import du cycle impossible :', error);
+  }
+}
+
+/**
+ * Import du cycle automatique, throttlé (retour au premier plan). Ne fait rien si la fenêtre n'est
+ * pas écoulée — no-op silencieux si le cycle ou sa synchro Health Connect ne sont pas activés
+ * (vérifié par `readyCycle()` à l'intérieur d'`importCycleData`).
+ */
+export async function importCycleDataIfDue(): Promise<{ periods: number; flows: number }> {
+  if (Platform.OS !== 'android') return { periods: 0, flows: 0 };
+  const last = await getLastCycleImportAt();
+  if (!shouldImportCycleData(last, Date.now(), CYCLE_IMPORT_THROTTLE_HOURS)) {
+    return { periods: 0, flows: 0 };
+  }
+  return importCycleData();
 }
 
 /** Ouvre les réglages Health Connect du système (pour revoir ou révoquer les accès). */

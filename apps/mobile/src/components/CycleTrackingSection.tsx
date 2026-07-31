@@ -5,6 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { updateSettings } from '@/data/repositories/settings-repository';
 import { deleteAllCycleData } from '@/data/repositories/menstrual-cycle-repository';
+import {
+  DEFAULT_WINDOW_DAYS,
+  importCycleData,
+  pushCycleData,
+  requestCyclePermissions,
+} from '@/lib/health-connect';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -29,6 +35,8 @@ export function CycleTrackingSection({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const [busy, setBusy] = useState(false);
+  const [hcBusy, setHcBusy] = useState(false);
+  const [hcDenied, setHcDenied] = useState(false);
 
   /**
    * Extinction : on coupe **d'abord** le réglage (la fonctionnalité disparaît tout de suite), puis
@@ -57,6 +65,36 @@ export function CycleTrackingSection({
       return;
     }
     void disable();
+  };
+
+  /**
+   * Activation de la synchro Health Connect (R20) : permissions **d'abord** (interrupteur système,
+   * seul point de l'app qui les demande pour ces types), réglage ON **seulement** si accordées, puis
+   * un aller-retour immédiat (push des données déjà saisies + import de ce qui existe déjà dans le
+   * hub) — même séquence que `HealthConnectSection.enable()`.
+   */
+  const enableHealthConnect = async () => {
+    setHcBusy(true);
+    setHcDenied(false);
+    const granted = await requestCyclePermissions();
+    if (!granted) {
+      setHcDenied(true);
+      setHcBusy(false);
+      return;
+    }
+    await updateSettings({ cycleHealthConnectEnabled: true });
+    await pushCycleData();
+    await importCycleData(DEFAULT_WINDOW_DAYS);
+    setHcBusy(false);
+  };
+
+  const onToggleHealthConnect = (next: boolean) => {
+    if (next) {
+      void enableHealthConnect();
+      return;
+    }
+    setHcDenied(false);
+    void updateSettings({ cycleHealthConnectEnabled: false });
   };
 
   return (
@@ -99,7 +137,8 @@ export function CycleTrackingSection({
             </View>
             <Switch
               value={healthConnectEnabled}
-              onValueChange={(next) => void updateSettings({ cycleHealthConnectEnabled: next })}
+              onValueChange={onToggleHealthConnect}
+              disabled={hcBusy}
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"
               accessibilityLabel={t('cycle.settings.healthConnect')}
@@ -107,6 +146,16 @@ export function CycleTrackingSection({
           </View>
         )}
       </View>
+
+      {hcDenied && (
+        <View
+          style={[styles.banner, { backgroundColor: colors.surfaceAlt, borderColor: colors.danger }]}
+        >
+          <Text style={[styles.bannerText, { color: colors.text }]}>
+            {t('cycle.settings.healthConnectDenied')}
+          </Text>
+        </View>
+      )}
 
       {/* L'avertissement est répété ici : c'est le point où l'on active, donc où il compte le plus. */}
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('cycle.disclaimer')}</Text>
@@ -150,4 +199,6 @@ const styles = StyleSheet.create({
   desc: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
   hint: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 8, lineHeight: 17 },
   stack: { marginTop: 12, gap: 8 },
+  banner: { borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 10 },
+  bannerText: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
 });

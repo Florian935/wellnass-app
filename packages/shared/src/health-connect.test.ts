@@ -2,11 +2,20 @@ import { describe, expect, it } from 'vitest';
 import {
   EXERCISE_TYPE_RUNNING,
   EXERCISE_TYPE_STRENGTH_TRAINING,
+  MENSTRUATION_FLOW_HEAVY,
+  MENSTRUATION_FLOW_LIGHT,
+  MENSTRUATION_FLOW_MEDIUM,
   RECORDING_METHOD_ACTIVELY_RECORDED,
   RECORDING_METHOD_MANUAL_ENTRY,
+  buildMenstruationFlowRecord,
+  buildMenstruationPeriodRecord,
   buildRunRecords,
   buildWorkoutSessionRecord,
+  flowFromHealthConnect,
+  flowToHealthConnect,
   localDateOfInstant,
+  selectFlowLogsToImport,
+  selectPeriodsToImport,
   selectWeightEntriesToImport,
   shouldImportWeight,
   toIsoInstant,
@@ -375,6 +384,185 @@ describe('selectWeightEntriesToImport', () => {
       '2026-07-20',
       '2026-07-22',
     ]);
+  });
+});
+
+describe('flowToHealthConnect / flowFromHealthConnect', () => {
+  it('mappe nos 4 niveaux sur les 3 niveaux Health Connect', () => {
+    expect(flowToHealthConnect('spotting')).toBe(MENSTRUATION_FLOW_LIGHT);
+    expect(flowToHealthConnect('light')).toBe(MENSTRUATION_FLOW_LIGHT);
+    expect(flowToHealthConnect('medium')).toBe(MENSTRUATION_FLOW_MEDIUM);
+    expect(flowToHealthConnect('heavy')).toBe(MENSTRUATION_FLOW_HEAVY);
+  });
+
+  it('reconstruit le flux depuis Health Connect', () => {
+    expect(flowFromHealthConnect(MENSTRUATION_FLOW_LIGHT)).toBe('light');
+    expect(flowFromHealthConnect(MENSTRUATION_FLOW_MEDIUM)).toBe('medium');
+    expect(flowFromHealthConnect(MENSTRUATION_FLOW_HEAVY)).toBe('heavy');
+  });
+
+  it('ne reconstruit jamais « spotting » — inexistant côté Health Connect', () => {
+    expect(flowFromHealthConnect(MENSTRUATION_FLOW_LIGHT)).not.toBe('spotting');
+  });
+
+  it('ignore UNKNOWN (0) et toute valeur hors échelle', () => {
+    expect(flowFromHealthConnect(0)).toBeNull();
+    expect(flowFromHealthConnect(99)).toBeNull();
+    expect(flowFromHealthConnect(undefined)).toBeNull();
+  });
+});
+
+describe('buildMenstruationPeriodRecord', () => {
+  const PERIOD = {
+    startedOn: '2026-07-10',
+    endedOn: '2026-07-14',
+    updatedAt: '2026-07-14T20:00:00.000Z',
+    offsetSeconds: 0,
+  };
+
+  it('construit un intervalle minuit(début) → minuit(lendemain de fin), en UTC (offset 0)', () => {
+    const record = buildMenstruationPeriodRecord(PERIOD);
+    expect(record).not.toBeNull();
+    expect(record!.recordType).toBe('MenstruationPeriod');
+    expect(record!.startTime).toBe('2026-07-10T00:00:00.000Z');
+    // Borne de fin EXCLUSIVE : minuit du lendemain du dernier jour de règles (15/07, pas 14/07).
+    expect(record!.endTime).toBe('2026-07-15T00:00:00.000Z');
+  });
+
+  it('décale les deux bornes du fuseau donné', () => {
+    // UTC+2 : minuit local = 22h00 UTC la veille.
+    const record = buildMenstruationPeriodRecord({ ...PERIOD, offsetSeconds: 7200 });
+    expect(record!.startTime).toBe('2026-07-09T22:00:00.000Z');
+    expect(record!.endTime).toBe('2026-07-14T22:00:00.000Z');
+  });
+
+  it('reste constructible pour une période d’un seul jour (endTime > startTime malgré tout)', () => {
+    const record = buildMenstruationPeriodRecord({ ...PERIOD, startedOn: '2026-07-10', endedOn: '2026-07-10' });
+    expect(record).not.toBeNull();
+    expect(Date.parse(record!.endTime)).toBeGreaterThan(Date.parse(record!.startTime));
+  });
+
+  it('marque toujours MANUAL_ENTRY (une date de règles est choisie, jamais captée)', () => {
+    expect(buildMenstruationPeriodRecord(PERIOD)!.metadata?.recordingMethod).toBe(
+      RECORDING_METHOD_MANUAL_ENTRY,
+    );
+  });
+
+  it('préfixe le clientRecordId par started_on', () => {
+    expect(buildMenstruationPeriodRecord(PERIOD)!.metadata?.clientRecordId).toBe(
+      'period-2026-07-10',
+    );
+  });
+
+  it('renvoie null sur une date illisible', () => {
+    expect(buildMenstruationPeriodRecord({ ...PERIOD, startedOn: 'bidon' })).toBeNull();
+  });
+});
+
+describe('buildMenstruationFlowRecord', () => {
+  const LOG = {
+    logDate: '2026-07-11',
+    flow: 'medium' as const,
+    updatedAt: '2026-07-11T20:00:00.000Z',
+    offsetSeconds: 0,
+  };
+
+  it('construit un marqueur à midi local (heure neutre, le flux n’a pas d’heure)', () => {
+    const record = buildMenstruationFlowRecord(LOG);
+    expect(record).not.toBeNull();
+    expect(record!.recordType).toBe('MenstruationFlow');
+    expect(record!.time).toBe('2026-07-11T12:00:00.000Z');
+    expect(record!.flow).toBe(MENSTRUATION_FLOW_MEDIUM);
+  });
+
+  it('traduit chaque niveau de flux vers l’échelle Health Connect', () => {
+    expect(buildMenstruationFlowRecord({ ...LOG, flow: 'spotting' })!.flow).toBe(
+      MENSTRUATION_FLOW_LIGHT,
+    );
+    expect(buildMenstruationFlowRecord({ ...LOG, flow: 'heavy' })!.flow).toBe(
+      MENSTRUATION_FLOW_HEAVY,
+    );
+  });
+
+  it('renvoie null sur une date illisible', () => {
+    expect(buildMenstruationFlowRecord({ ...LOG, logDate: 'bidon' })).toBeNull();
+  });
+});
+
+describe('selectPeriodsToImport', () => {
+  it('convertit un intervalle Health Connect en période locale (fin exclusive → dernier jour inclus)', () => {
+    const remote = [{ startTime: '2026-07-10T00:00:00.000Z', endTime: '2026-07-15T00:00:00.000Z' }];
+    expect(selectPeriodsToImport(remote, undefined, 0)).toEqual([
+      { startedOn: '2026-07-10', endedOn: '2026-07-14' },
+    ]);
+  });
+
+  it('écarte nos propres records (pas d’aller-retour)', () => {
+    const remote = [
+      {
+        startTime: '2026-07-10T00:00:00.000Z',
+        endTime: '2026-07-15T00:00:00.000Z',
+        metadata: { dataOrigin: 'com.wellness.app' },
+      },
+      {
+        startTime: '2026-08-10T00:00:00.000Z',
+        endTime: '2026-08-14T00:00:00.000Z',
+        metadata: { dataOrigin: 'com.other.app' },
+      },
+    ];
+    expect(selectPeriodsToImport(remote, 'com.wellness.app', 0)).toEqual([
+      { startedOn: '2026-08-10', endedOn: '2026-08-13' },
+    ]);
+  });
+
+  it('utilise le fuseau propre à chaque borne (start/end peuvent différer)', () => {
+    const remote = [
+      {
+        startTime: '2026-07-09T22:00:00.000Z',
+        endTime: '2026-07-14T22:00:00.000Z',
+        startZoneOffset: { totalSeconds: 7200 },
+        endZoneOffset: { totalSeconds: 7200 },
+      },
+    ];
+    expect(selectPeriodsToImport(remote)).toEqual([{ startedOn: '2026-07-10', endedOn: '2026-07-14' }]);
+  });
+
+  it('ignore un record illisible sans faire échouer les autres', () => {
+    const remote = [
+      { startTime: 'bidon', endTime: '2026-07-15T00:00:00.000Z' },
+      { startTime: '2026-08-10T00:00:00.000Z', endTime: '2026-08-14T00:00:00.000Z' },
+    ];
+    expect(selectPeriodsToImport(remote, undefined, 0)).toEqual([
+      { startedOn: '2026-08-10', endedOn: '2026-08-13' },
+    ]);
+  });
+});
+
+describe('selectFlowLogsToImport', () => {
+  it('convertit un marqueur Health Connect en journal local', () => {
+    const remote = [{ time: '2026-07-11T12:00:00.000Z', flow: MENSTRUATION_FLOW_HEAVY }];
+    expect(selectFlowLogsToImport(remote, undefined, 0)).toEqual([
+      { logDate: '2026-07-11', flow: 'heavy' },
+    ]);
+  });
+
+  it('ignore un flux UNKNOWN ou absent', () => {
+    const remote = [
+      { time: '2026-07-11T12:00:00.000Z', flow: 0 },
+      { time: '2026-07-12T12:00:00.000Z' },
+    ];
+    expect(selectFlowLogsToImport(remote, undefined, 0)).toEqual([]);
+  });
+
+  it('écarte nos propres records', () => {
+    const remote = [
+      {
+        time: '2026-07-11T12:00:00.000Z',
+        flow: MENSTRUATION_FLOW_LIGHT,
+        metadata: { dataOrigin: 'com.wellness.app' },
+      },
+    ];
+    expect(selectFlowLogsToImport(remote, 'com.wellness.app', 0)).toEqual([]);
   });
 });
 

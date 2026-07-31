@@ -1,16 +1,19 @@
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
-import { importStepsIfDue, importWeightIfDue } from '@/lib/health-connect';
+import { importCycleDataIfDue, importStepsIfDue, importWeightIfDue } from '@/lib/health-connect';
 
 /**
  * Importe les données **lues** dans Health Connect au démarrage et au retour au premier plan :
- * les pesées (US CONF-06, throttle 6 h) et les **pas quotidiens** (US PAS-01, throttle 1 h).
+ * les pesées (US CONF-06, throttle 6 h), les **pas quotidiens** (US PAS-01, throttle 1 h) et le
+ * **cycle** (US CYCLE-01, throttle 6 h).
  *
  * Anciennement `useHealthConnectWeightImport` — renommé quand les pas sont arrivés, le nom devenant
- * faux. C'est bien un seul point d'entrée pour deux imports **indépendants** : chacun a son curseur
- * persisté et son throttle, et l'échec de l'un ne doit pas empêcher l'autre (d'où deux `void`
- * séparés, jamais un `await` en série).
+ * faux. C'est bien un seul point d'entrée pour des imports **indépendants** : chacun a son curseur
+ * persisté et son throttle, et l'échec de l'un ne doit pas empêcher les autres (d'où des `void`
+ * séparés, jamais un `await` en série). `importCycleDataIfDue` est no-op silencieux tant que les
+ * trois opt-in R20 (`cycleTrackingEnabled`, `healthConnectEnabled`, `cycleHealthConnectEnabled`) ne
+ * sont pas tous réunis — pas besoin d'un `enabled` dédié ici.
  *
  * Calqué sur `useAppOpenedAnalytics` pour la gestion d'`AppState`, avec deux différences :
  * - le throttle n'est pas une variable module mais un curseur **persisté** (`expo-secure-store`),
@@ -29,6 +32,7 @@ export function useHealthConnectImports(enabled: boolean): void {
     if (!enabled) return;
     void importWeightIfDue();
     void importStepsIfDue();
+    void importCycleDataIfDue();
   }, [enabled]);
 
   useEffect(() => {
@@ -37,6 +41,7 @@ export function useHealthConnectImports(enabled: boolean): void {
       if (state !== 'active') return;
       void importWeightIfDue();
       void importStepsIfDue();
+      void importCycleDataIfDue();
     });
     return () => sub.remove();
   }, [enabled]);

@@ -2067,6 +2067,7 @@
       "subtitle": "Accessible à tout le monde. Désactivé par défaut.",
       "healthConnect": "Synchroniser avec Health Connect",
       "healthConnectDesc": "Partage tes jours de règles avec le hub santé d'Android.",
+      "healthConnectDenied": "Permissions refusées ou Health Connect indisponible : la synchro reste désactivée.",
       "disableTitle": "Suivi désactivé",
       "disableMessage": "Veux-tu conserver les données déjà enregistrées ? Elles resteront dans ton export, mais ne seront plus affichées.",
       "keepData": "Garder",

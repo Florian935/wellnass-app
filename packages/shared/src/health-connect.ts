@@ -1,5 +1,5 @@
 /**
- * US CONF-06 — briques pures de l'intégration Health Connect.
+ * US CONF-06 (+ CYCLE-01 §4, D) — briques pures de l'intégration Health Connect.
  *
  * Volontairement **sans aucune dépendance à `react-native-health-connect`** : toute la logique
  * métier vit ici (donc testable sous Vitest, sans device ni module natif), l'adaptateur mobile
@@ -8,6 +8,9 @@
  * Les constantes numériques ci-dessous sont **recopiées** de la bibliothèque (v3.5.3) pour la même
  * raison. À revérifier contre `node_modules` si l'on met la lib à jour.
  */
+
+import { addDays, localDateFromDayKey, localDayKey } from './date';
+import type { MenstrualFlow } from './menstrual-cycle';
 
 /** `ExerciseType.STRENGTH_TRAINING` — musculation. */
 export const EXERCISE_TYPE_STRENGTH_TRAINING = 70;
@@ -23,6 +26,15 @@ export const EXERCISE_TYPE_RUNNING = 56;
 export const RECORDING_METHOD_ACTIVELY_RECORDED = 1;
 /** `RecordingMethod.RECORDING_METHOD_MANUAL_ENTRY` — saisi à la main / importé après coup. */
 export const RECORDING_METHOD_MANUAL_ENTRY = 3;
+
+/**
+ * `MenstruationFlowRecord.FLOW_*` (androidx.health.connect.client.records) — trois niveaux, quand
+ * notre propre échelle en a quatre (R7 : `spotting`, `light`, `medium`, `heavy`). Pas de niveau
+ * `UNKNOWN` en écriture : un flux qu'on choisit d'exporter est par définition connu.
+ */
+export const MENSTRUATION_FLOW_LIGHT = 1;
+export const MENSTRUATION_FLOW_MEDIUM = 2;
+export const MENSTRUATION_FLOW_HEAVY = 3;
 
 /** Bornes de plausibilité d'une pesée (la base impose déjà `weight_kg > 0`). */
 const MIN_WEIGHT_KG = 0;
@@ -349,4 +361,203 @@ export function shouldImportWeight(
   const last = msOf(lastImportAt);
   if (last === null || last > nowMs) return true;
   return nowMs - last >= throttleHours * 3600 * 1000;
+}
+
+// ---------------------------------------------------------------------------
+// US CYCLE-01 §4 (D) — MenstruationPeriod / MenstruationFlow
+// ---------------------------------------------------------------------------
+//
+// Le modèle natif Health Connect (androidx) traite une période comme un **intervalle**
+// (`MenstruationPeriodRecord.startTime`/`endTime`) — malgré une déclaration TypeScript trompeuse
+// dans `react-native-health-connect@3.5.3` qui le fait hériter d'`InstantaneousRecord` (`time` seul).
+// Vérifié dans le binding natif de la bibliothèque
+// (`android/src/main/java/dev/matinzd/healthconnect/records/ReactMenstruationPeriodRecord.kt`),
+// qui construit bien un `MenstruationPeriodRecord(startTime, endTime, …)`. C'est ce qui rend le
+// mapping direct : nos `menstrual_periods.started_on`/`ended_on` **sont** l'intervalle attendu — la
+// spec le dit explicitement (§2, « calqué sur la façon dont Health Connect modélise le sujet »).
+// `MenstruationFlowRecord`, lui, est bien un `InstantaneousRecord` (`time` + `flow`) — un marqueur
+// par jour, symétrique de `menstrual_daily_logs`.
+
+/** `MenstruationPeriodRecord` (sous-ensemble écrit). */
+export type MenstruationPeriodRecordInput = {
+  recordType: 'MenstruationPeriod';
+  startTime: string;
+  endTime: string;
+  metadata?: RecordMetadata;
+};
+
+/** `MenstruationFlowRecord` (sous-ensemble écrit). */
+export type MenstruationFlowRecordInput = {
+  recordType: 'MenstruationFlow';
+  time: string;
+  flow: number;
+  metadata?: RecordMetadata;
+};
+
+/** `MenstruationPeriodRecord` tel que renvoyé par Health Connect à la lecture. */
+export type RemoteMenstruationPeriodRecord = {
+  startTime: string;
+  endTime: string;
+  startZoneOffset?: RecordZoneOffset;
+  endZoneOffset?: RecordZoneOffset;
+  metadata?: { dataOrigin?: string };
+};
+
+/** `MenstruationFlowRecord` tel que renvoyé par Health Connect à la lecture. */
+export type RemoteMenstruationFlowRecord = {
+  time: string;
+  flow?: number;
+  zoneOffset?: RecordZoneOffset;
+  metadata?: { dataOrigin?: string };
+};
+
+/** Période prête à être importée localement. */
+export type PeriodToImport = { startedOn: string; endedOn: string };
+
+/** Journal quotidien (flux seul) prêt à être importé localement. */
+export type FlowLogToImport = { logDate: string; flow: MenstrualFlow };
+
+/**
+ * `spotting` (notre niveau le plus faible, R7) n'existe pas côté Health Connect : le plus proche est
+ * `LIGHT`, pas `UNKNOWN` — un flux « inconnu » chez un partenaire santé se lit comme « non
+ * renseigné », ce qu'un spotting n'est pas.
+ */
+const FLOW_TO_HEALTH_CONNECT: Record<MenstrualFlow, number> = {
+  spotting: MENSTRUATION_FLOW_LIGHT,
+  light: MENSTRUATION_FLOW_LIGHT,
+  medium: MENSTRUATION_FLOW_MEDIUM,
+  heavy: MENSTRUATION_FLOW_HEAVY,
+};
+
+/** Sens inverse — `UNKNOWN` (0) ou toute valeur hors échelle est **ignorée**, jamais devinée. */
+const FLOW_FROM_HEALTH_CONNECT: Partial<Record<number, MenstrualFlow>> = {
+  [MENSTRUATION_FLOW_LIGHT]: 'light',
+  [MENSTRUATION_FLOW_MEDIUM]: 'medium',
+  [MENSTRUATION_FLOW_HEAVY]: 'heavy',
+};
+
+export function flowToHealthConnect(flow: MenstrualFlow): number {
+  return FLOW_TO_HEALTH_CONNECT[flow];
+}
+
+export function flowFromHealthConnect(flow: number | undefined): MenstrualFlow | null {
+  if (flow === undefined) return null;
+  return FLOW_FROM_HEALTH_CONNECT[flow] ?? null;
+}
+
+/** Minuit local d'une date civile (`AAAA-MM-JJ`), en millisecondes UTC. `null` si illisible. */
+function localMidnightMs(dateKey: string, offsetSeconds: number): number | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  if (!match) return null;
+  const utcMidnight = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return utcMidnight - offsetSeconds * 1000;
+}
+
+/** Midi local d'une date civile — instant neutre pour un marqueur ponctuel (le flux n'a pas d'heure). */
+function localMiddayMs(dateKey: string, offsetSeconds: number): number | null {
+  const midnight = localMidnightMs(dateKey, offsetSeconds);
+  return midnight === null ? null : midnight + 12 * 3600 * 1000;
+}
+
+/**
+ * Période close → `MenstruationPeriodRecord`.
+ *
+ * `endTime` est **exclusif** : minuit local du lendemain du dernier jour de règles. Sans ça, une
+ * période d'un seul jour donnerait `startTime === endTime`, que Health Connect refuse (l'intervalle
+ * doit être strictement positif) — même contrainte que `normalizedInterval` pour les séances.
+ *
+ * Toujours marqué `RECORDING_METHOD_MANUAL_ENTRY` : une date de début/fin de règles est **choisie**,
+ * jamais captée par un capteur, qu'elle soit issue d'une saisie immédiate ou corrigée après coup.
+ *
+ * Renvoie `null` si l'intervalle n'est pas constructible (dates illisibles).
+ */
+export function buildMenstruationPeriodRecord(input: {
+  startedOn: string;
+  endedOn: string;
+  updatedAt: string;
+  offsetSeconds: number;
+}): MenstruationPeriodRecordInput | null {
+  const startMs = localMidnightMs(input.startedOn, input.offsetSeconds);
+  const endExclusiveKey = localDayKey(addDays(localDateFromDayKey(input.endedOn), 1));
+  const endMs = localMidnightMs(endExclusiveKey, input.offsetSeconds);
+  if (startMs === null || endMs === null || endMs <= startMs) return null;
+
+  return {
+    recordType: 'MenstruationPeriod',
+    startTime: new Date(startMs).toISOString(),
+    endTime: new Date(endMs).toISOString(),
+    metadata: metadataFor(`period-${input.startedOn}`, input.updatedAt, true),
+  };
+}
+
+/** Journal quotidien (flux) → `MenstruationFlowRecord`. Renvoie `null` si la date est illisible. */
+export function buildMenstruationFlowRecord(input: {
+  logDate: string;
+  flow: MenstrualFlow;
+  updatedAt: string;
+  offsetSeconds: number;
+}): MenstruationFlowRecordInput | null {
+  const ms = localMiddayMs(input.logDate, input.offsetSeconds);
+  if (ms === null) return null;
+
+  return {
+    recordType: 'MenstruationFlow',
+    time: new Date(ms).toISOString(),
+    flow: flowToHealthConnect(input.flow),
+    metadata: metadataFor(`flow-${input.logDate}`, input.updatedAt, true),
+  };
+}
+
+/**
+ * Réduit les records `MenstruationPeriod` de Health Connect aux périodes à importer.
+ *
+ * Le dernier jour de règles est retrouvé en retranchant 1 ms à `endTime` **avant** de le redater
+ * localement — symétrique de la borne exclusive posée par `buildMenstruationPeriodRecord`. Un
+ * fournisseur tiers qui daterait différemment produirait au pire un décalage d'un jour, jamais un
+ * plantage : les records illisibles sont ignorés un par un (même politique que l'import du poids).
+ */
+export function selectPeriodsToImport(
+  remote: ReadonlyArray<RemoteMenstruationPeriodRecord>,
+  ownPackageName?: string,
+  fallbackOffsetSeconds?: number,
+): PeriodToImport[] {
+  const out: PeriodToImport[] = [];
+  for (const record of remote) {
+    if (ownPackageName && record.metadata?.dataOrigin === ownPackageName) continue;
+
+    const startedOn = localDateOfInstant(record.startTime, record.startZoneOffset, fallbackOffsetSeconds);
+    const endMs = msOf(record.endTime);
+    if (startedOn === null || endMs === null) continue;
+
+    const endedOn = localDateOfInstant(
+      new Date(endMs - 1).toISOString(),
+      record.endZoneOffset,
+      fallbackOffsetSeconds,
+    );
+    if (endedOn === null || endedOn < startedOn) continue;
+
+    out.push({ startedOn, endedOn });
+  }
+  return out;
+}
+
+/** Réduit les records `MenstruationFlow` de Health Connect aux journaux à importer. */
+export function selectFlowLogsToImport(
+  remote: ReadonlyArray<RemoteMenstruationFlowRecord>,
+  ownPackageName?: string,
+  fallbackOffsetSeconds?: number,
+): FlowLogToImport[] {
+  const out: FlowLogToImport[] = [];
+  for (const record of remote) {
+    if (ownPackageName && record.metadata?.dataOrigin === ownPackageName) continue;
+
+    const flow = flowFromHealthConnect(record.flow);
+    if (flow === null) continue;
+
+    const logDate = localDateOfInstant(record.time, record.zoneOffset, fallbackOffsetSeconds);
+    if (logDate === null) continue;
+
+    out.push({ logDate, flow });
+  }
+  return out;
 }

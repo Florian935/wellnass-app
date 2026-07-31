@@ -241,6 +241,19 @@ export async function getHealthConnectEnabled(): Promise<boolean> {
 }
 
 /**
+ * Les deux opt-in du cycle courants (hors contexte React) — lus par le service
+ * `health-connect.ts` (US CYCLE-01, R20), qui s'exécute depuis les repositories, en dehors de tout
+ * composant. Défaut **OFF** pour les deux (donnée de santé sensible).
+ */
+export async function getCycleTrackingEnabled(): Promise<boolean> {
+  return decodeCycleTrackingEnabled(await getCurrentRow());
+}
+
+export async function getCycleHealthConnectEnabled(): Promise<boolean> {
+  return decodeCycleHealthConnectEnabled(await getCurrentRow());
+}
+
+/**
  * Préférences de notifications courantes (hors contexte React) — US MUSC-F8. Le push de record est
  * déclenché depuis `doFinish` (callback d'événement, pas un rendu), qui ne peut pas appeler
  * `useNotificationPrefs()`. Même parse tolérant que la version hook.

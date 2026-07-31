@@ -29,6 +29,7 @@ import {
   saveMenstrualDailyLog,
   type MenstrualDailyLog,
 } from '@/data/repositories/menstrual-cycle-repository';
+import { pushCycleData } from '@/lib/health-connect';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -93,6 +94,9 @@ function Form({
     setSaving(true);
     try {
       await saveMenstrualDailyLog(logDate, { flow, symptoms });
+      // Fire-and-forget (R20/D) : un flux tout juste saisi devient exportable, mais la fermeture de
+      // la feuille ne doit pas attendre l'aller-retour Health Connect.
+      void pushCycleData();
       onClose();
     } finally {
       setSaving(false);

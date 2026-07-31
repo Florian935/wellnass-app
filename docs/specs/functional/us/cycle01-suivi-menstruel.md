@@ -3,10 +3,10 @@ id: CYCLE-01
 titre: "Suivi du cycle menstruel — journal, prédiction et croisement"
 roadmap: [1.25, 1.26]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/cycle01-suivi-menstruel
 maj: 31/07/2026
-reste: "Health Connect non câblé (permissions déclarées seulement) — nécessite expo prebuild + nouveau build + déclaration Play à 6 types. C'est le seul reste : calendrier mensuel, 2 métriques de croisement (kcal, allure) et tests smoke des écrans ont été traités le 31/07/2026."
+reste: "Code complet, y compris Health Connect (permissions dédiées, push/import des périodes closes et des flux, dédup R21). Reste hors code : recette device (RECETTES.md #15 — vérifier en premier que les sync rules PowerSync du cycle sont déployées, et qu'un build embarque bien READ/WRITE_MENSTRUATION dans le manifest), relecture juridique de la politique de confidentialité, et dépôt de la déclaration Play Health apps à 6 types."
 ---
 
 # US CYCLE-01 — Suivi du cycle menstruel

@@ -323,3 +323,114 @@ export async function deleteAllCycleData(): Promise<void> {
     );
   });
 }
+
+// ---------------------------------------------------------------------------
+// Health Connect (US CYCLE-01 §4, D) — lecture hors contexte React (export) et écritures d'import
+// ---------------------------------------------------------------------------
+
+/**
+ * Périodes **closes**, saisies à la main — hors contexte réactif, pour l'export vers Health Connect.
+ *
+ * Seules les périodes **closes** sont exportées : `MenstruationPeriodRecord` exige une fin, et
+ * inventer une fin provisoire pour une période en cours produirait un record faux le temps qu'elle
+ * se termine (`buildMenstruationPeriodRecord`, `@wellness/shared`). Seules les périodes de
+ * **source `manual`** sont exportées : réexporter une période elle-même importée de Health Connect
+ * serait un aller-retour inutile (Health Connect l'a déjà).
+ */
+export async function getManualClosedPeriodsForExport(): Promise<
+  { startedOn: string; endedOn: string; updatedAt: string }[]
+> {
+  const rows = await powerSync.getAll<{ started_on: string; ended_on: string; updated_at: string }>(
+    `SELECT started_on, ended_on, updated_at FROM menstrual_periods
+     WHERE deleted_at IS NULL AND ended_on IS NOT NULL AND source = 'manual'
+     ORDER BY started_on ASC`,
+  );
+  return rows.map((r) => ({ startedOn: r.started_on, endedOn: r.ended_on, updatedAt: r.updated_at }));
+}
+
+/** Tous les journaux quotidiens **avec un flux renseigné** — hors contexte réactif (export HC). */
+export async function getDailyLogsWithFlowForExport(): Promise<
+  { logDate: string; flow: MenstrualFlow; updatedAt: string }[]
+> {
+  const rows = await powerSync.getAll<{ log_date: string; flow: string; updated_at: string }>(
+    `SELECT log_date, flow, updated_at FROM menstrual_daily_logs
+     WHERE deleted_at IS NULL AND flow IS NOT NULL`,
+  );
+  return rows.flatMap((r) => {
+    const parsed = menstrualFlowSchema.safeParse(r.flow);
+    return parsed.success
+      ? [{ logDate: r.log_date, flow: parsed.data, updatedAt: r.updated_at }]
+      : [];
+  });
+}
+
+/**
+ * Importe une période lue depuis Health Connect (R21 — la saisie manuelle gagne toujours).
+ *
+ * Dédup sur `started_on` :
+ * - une période déjà connue à cette date et **saisie à la main** n'est **jamais** modifiée, même si
+ *   sa date de fin diffère de celle lue ici ;
+ * - une période déjà connue et elle-même issue d'un import précédent (`source = 'health_connect'`)
+ *   voit sa fin **mise à jour** — c'est la même période relue, pas un conflit ;
+ * - sinon, la période est créée avec `source = 'health_connect'`.
+ */
+export async function importPeriodFromHealthConnect(
+  startedOn: string,
+  endedOn: string,
+): Promise<'imported' | 'skipped'> {
+  await assertCycleTrackingEnabled();
+
+  const existing = await powerSync.getOptional<{ id: string; source: string; ended_on: string | null }>(
+    'SELECT id, source, ended_on FROM menstrual_periods WHERE deleted_at IS NULL AND started_on = ? LIMIT 1',
+    [startedOn],
+  );
+  if (existing) {
+    if (existing.source !== 'health_connect') return 'skipped';
+    if (existing.ended_on !== endedOn) {
+      await patch('menstrual_periods', existing.id, { ended_on: endedOn });
+    }
+    return 'imported';
+  }
+
+  await insertWithSyncFields('menstrual_periods', {
+    user_id: currentUserId(),
+    started_on: startedOn,
+    ended_on: endedOn,
+    source: 'health_connect',
+  });
+  return 'imported';
+}
+
+/**
+ * Importe un flux quotidien lu depuis Health Connect (R21).
+ *
+ * ⚠️ `menstrual_daily_logs` n'a **pas** de colonne `source` (contrairement aux périodes) :
+ * impossible de distinguer une saisie manuelle d'un import antérieur. Par prudence, on ne renseigne
+ * donc **que** les jours sans flux — un flux déjà présent n'est jamais modifié, qu'il vienne d'une
+ * saisie ou d'un import précédent. C'est plus conservateur que nécessaire pour le cas « import
+ * précédent », mais c'est ce qui garantit qu'une saisie manuelle n'est **jamais** écrasée.
+ */
+export async function importDailyFlowFromHealthConnect(
+  logDate: string,
+  flow: MenstrualFlow,
+): Promise<'imported' | 'skipped'> {
+  await assertCycleTrackingEnabled();
+
+  const existing = await powerSync.getOptional<{ id: string; flow: string | null }>(
+    'SELECT id, flow FROM menstrual_daily_logs WHERE deleted_at IS NULL AND log_date = ? LIMIT 1',
+    [logDate],
+  );
+  if (existing) {
+    if (existing.flow !== null) return 'skipped';
+    await patch('menstrual_daily_logs', existing.id, { flow });
+    return 'imported';
+  }
+
+  await insertWithSyncFields('menstrual_daily_logs', {
+    user_id: currentUserId(),
+    log_date: logDate,
+    flow,
+    symptoms: '[]',
+  });
+  return 'imported';
+}

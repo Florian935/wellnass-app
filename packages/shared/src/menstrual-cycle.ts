@@ -395,3 +395,22 @@ export function crossPhaseAverages(
   }
   return { status: 'ready', byPhase, cyclesObserved };
 }
+
+/**
+ * Faut-il relancer la synchro Health Connect du cycle (§4, D) ? Throttle simple sur l'horodatage de
+ * la dernière tentative — même logique que `shouldImportWeight`/`shouldImportSteps`, dupliquée par
+ * domaine plutôt que partagée, comme le fait déjà le reste de l'intégration Health Connect.
+ *
+ * En cas de doute (curseur illisible, horloge décalée vers le futur), on **autorise** : mieux vaut
+ * un import de trop — idempotent et peu coûteux — qu'une utilisatrice définitivement enfermée.
+ */
+export function shouldImportCycleData(
+  lastImportAt: string | null | undefined,
+  nowMs: number,
+  throttleHours: number,
+): boolean {
+  if (!lastImportAt) return true;
+  const last = Date.parse(lastImportAt.includes('T') ? lastImportAt : lastImportAt.replace(' ', 'T'));
+  if (!Number.isFinite(last) || last > nowMs) return true;
+  return nowMs - last >= throttleHours * 3600 * 1000;
+}
