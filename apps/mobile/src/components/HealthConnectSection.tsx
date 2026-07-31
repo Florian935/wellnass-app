@@ -297,9 +297,14 @@ export function HealthConnectSection({ enabled }: { enabled: boolean }) {
           ) : null}
 
           {/*
-            Compte rendu de la dernière tentative, affiché **uniquement en cas d'échec**. Message
-            technique non traduit : c'est un outil de diagnostic (sans lui, une panne d'écriture est
-            invisible — l'app semble fonctionner alors que rien n'est envoyé).
+            Compte rendu de la dernière tentative, affiché **uniquement en cas d'échec réel**
+            (`ready()` ne rapporte jamais un abandon `inactive` — opt-in OFF n'est pas un échec,
+            cf. `health-connect-inactive.test.ts`). Le détail interpolé (`reason`) reste un message
+            technique non traduit : c'est un outil de diagnostic, pas un texte produit (sans lui,
+            une panne d'écriture est invisible). La phrase qui l'encadre le dit **explicitement**
+            dans les deux langues (« détail technique, non traduit » / « technical detail, not
+            translated ») : sans cette annonce, un utilisateur anglophone lisait du français brut
+            et pouvait croire l'app mal traduite plutôt qu'en train de signaler une vraie panne.
           */}
           {report?.error ? (
             <View style={[styles.banner, { backgroundColor: colors.surfaceAlt, borderColor: colors.danger }]}>

@@ -169,16 +169,6 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 Passe adb sur 41 écrans (37 routes + 4 onglets), en 3 campagnes : nominal, police 1,5×, mode avion.
 Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md).
 
-- [ ] 🟠 **Réglages affiche une erreur rouge alors que Health Connect est simplement désactivé.**
-      Bandeau bordé `danger` : « Dernière tentative (steps) en échec : **[r4] synchronisation
-      désactivée (opt-in OFF)** ». Un opt-in sur OFF n'est pas une panne — c'est l'état par défaut de
-      tout utilisateur qui n'a rien activé. Deux problèmes distincts : (a) l'état normal est présenté
-      comme un échec ; (b) la raison interpolée est une **chaîne de diagnostic non traduite** portant
-      le tag de build `SERVICE_REV = 'r4'` — délibéré et commenté dans
-      [HealthConnectSection.tsx](apps/mobile/src/components/HealthConnectSection.tsx#L299), mais un
-      utilisateur **anglophone** lit alors du français technique. ⚠️ CONF-06 est clôturée (9.9 ✅) et
-      Health Connect est sur le chemin critique de la déclaration Play.
-      → Ne pas traiter `opt-in OFF` comme une erreur ; réserver le bandeau aux échecs réels.
 - [ ] 🟠 **`run/active` sans course active : écran vide avec un bouton « Retour » seul**, sans aucun
       message. C'est le seul écran de l'app à violer la convention « jamais d'écran vide : un message
       qui explique » — les 40 autres ont un état vide rédigé.

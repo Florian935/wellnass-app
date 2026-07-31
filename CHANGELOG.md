@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `fix/health-connect-erreur-opt-in-off` — Health Connect : bandeau d'échec clarifié pour les utilisateurs EN
+
+Commit précédent : `d639a72`. Correctif issu de « Constats de la passe device automatisée du
+30/07/2026 » (BACKLOG.md). Deux problèmes distincts avaient été notés dans le même constat — la
+relecture a montré que **le premier était déjà corrigé** :
+
+- **(a) « opt-in OFF traité comme une panne »** : déjà résolu par le commit `936ec81` (30/07/2026),
+  qui a introduit le drapeau `inactive` dans `ready()`/`readyCycle()` — un abandon normal
+  (plateforme, opt-in désactivé) n'appelle plus jamais `report()`. Verrouillé par
+  `health-connect-inactive.test.ts` (toujours vert). La case du BACKLOG n'avait simplement jamais
+  été cochée malgré le correctif déjà livré.
+- **(b) « détail technique non traduit lu par un utilisateur anglophone »** : **c'est celui-là qui
+  restait réellement à corriger.**
+
+#### Corrigé
+
+- [HealthConnectSection.tsx](apps/mobile/src/components/HealthConnectSection.tsx) — le bandeau
+  d'échec (`report?.error`, affiché **uniquement** sur une vraie panne) encadre désormais le
+  diagnostic technique interpolé d'une mention **explicite et traduite** : « détail technique, non
+  traduit » (FR) / « technical detail, not translated » (EN). Le contenu du diagnostic lui-même
+  reste volontairement en français brut (`SERVICE_REV`, messages internes) — le traduire
+  dynamiquement serait disproportionné pour un outil de diagnostic — mais un utilisateur EN
+  comprend maintenant que c'est **voulu**, plutôt que de lire une app mal traduite.
+  - Clé i18n `settings.healthConnect.lastAttemptFailed` (FR + EN).
+  - Commentaire du composant mis à jour pour expliciter les deux moitiés du correctif (a) et (b) et
+    pointer vers le test de non-régression existant.
+
+#### Technique / Notes
+
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 247 + shared Vitest 1282) —
+  lus sans pipe, tous verts. Parité i18n FR/EN vérifiée (1580 clés de chaque côté).
+- BACKLOG.md : entrée retirée (les deux volets du constat sont désormais traités).
+- Roadmap 9.9 (Health Connect, déjà ✅) : remarque additionnelle datée, pas de changement de statut.
+- Pas de spec/plan/maquette dédiés : correctif ponctuel sur une fonctionnalité déjà livrée et
+  recettée (CONF-06, 9.9 ✅), branche `fix/*` — même traitement que le correctif d'en-tête PAS-01
+  du 30/07/2026.
+
 ### 31/07/2026 — `refactor/refacto01-acces-pilier` — REFACTO-01 : unification livrée (US clôturée)
 
 Commit précédent : `51626ac`. Front-matter `etape: close` — **aucune recette device** requise

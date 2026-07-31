@@ -1319,7 +1319,7 @@
       "denied": "Accès refusé. Tu peux l'autoriser à tout moment depuis les réglages de Health Connect.",
       "syncNow": "Renvoyer mes activités récentes",
       "importWeight": "Importer le poids maintenant",
-      "lastAttemptFailed": "Dernière tentative ({{kind}}) en échec : {{reason}}",
+      "lastAttemptFailed": "Dernière tentative ({{kind}}) en échec — détail technique, non traduit : {{reason}}",
       "imported_one": "{{count}} pesée importée",
       "imported_other": "{{count}} pesées importées",
       "pushed_one": "{{count}} activité synchronisée",
