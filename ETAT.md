@@ -57,23 +57,21 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 990 · `main` a **987** commits de retard sur `dev` |
+| Branche courante | `feature/cycle01-suivi-menstruel` (propre) |
+| Commits | 991 · `main` a **988** commits de retard sur `dev` |
 | Specs d'US | 94 au total — 75 clôturées, 19 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
-### ⚠️ Alertes
-
-- ⚠️ Working tree : modifications non commitées
+✅ Aucune alerte.
 
 ## 🕒 Derniers commits
 
+- `e5efdde` feat(cycle01): synchro Health Connect du cycle (permissions, push/import, dédup R21)
 - `4e9c2c3` feat(cycle01): calendrier mensuel, croisement complet, tests smoke (US CYCLE-01, 1.25/1.26)
 - `e947659` docs(roadmap): réactualise les compteurs après CYCLE-01 (1.25/1.26 → 🟡)
 - `b460410` feat(cycle01): réglages, désactivation et écran de croisement
 - `1fa7eee` feat(cycle01): opt-in, widget 3 formes et écrans de saisie
-- `3d4fb5d` feat(cycle01): socle de données et calculs purs du suivi de cycle
 
 ---
 
