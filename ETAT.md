@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 174 livré · 22 partiel · 10 à faire (sur 212)
+**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 174 livré · 23 partiel · 10 à faire (sur 213)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -34,6 +34,7 @@ avant de pouvoir publier.
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
+| **REFACTO-01** — Unifier la décision d'accès par pilier | `validation` | `refactor/refacto01-acces-pilier` | [9.16] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
 ⏳ **15 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
@@ -43,11 +44,11 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (5) · P2 confort (2)</summary>
+<details><summary>P1 finitions (5) · P2 confort (1)</summary>
 
 **P1** — MUSC-F7 — Progression assistée · MUSC-F6 — Fenêtre de reprise de séance · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
 
-**P2** — REFACTO-01 — Unifier la décision d'accès par pilier · SOCLE-01 — RevenueCat câblé inactif
+**P2** — SOCLE-01 — RevenueCat câblé inactif
 
 </details>
 
@@ -57,21 +58,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/cycle01-suivi-menstruel` (propre) |
-| Commits | 991 · `main` a **988** commits de retard sur `dev` |
-| Specs d'US | 94 au total — 75 clôturées, 19 en cours |
+| Branche courante | `refactor/refacto01-acces-pilier` (modifications non commitées) |
+| Commits | 992 · `main` a **989** commits de retard sur `dev` |
+| Specs d'US | 95 au total — 75 clôturées, 20 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
-✅ Aucune alerte.
+### ⚠️ Alertes
+
+- ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `010a4d3` chore(etat): régénère ETAT.md après le commit Health Connect
 - `e5efdde` feat(cycle01): synchro Health Connect du cycle (permissions, push/import, dédup R21)
 - `4e9c2c3` feat(cycle01): calendrier mensuel, croisement complet, tests smoke (US CYCLE-01, 1.25/1.26)
 - `e947659` docs(roadmap): réactualise les compteurs après CYCLE-01 (1.25/1.26 → 🟡)
 - `b460410` feat(cycle01): réglages, désactivation et écran de croisement
-- `1fa7eee` feat(cycle01): opt-in, widget 3 formes et écrans de saisie
 
 ---
 

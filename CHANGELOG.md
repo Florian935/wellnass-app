@@ -10,6 +10,35 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `refactor/refacto01-acces-pilier` — REFACTO-01 : entrée en pipeline (spec + plan)
+
+Commit précédent : `010a4d3`. Documentation uniquement, **aucun code**. Front-matter `etape:
+validation` — arrêt avant code, en attente de validation Florian/Damien (workflow obligatoire).
+
+#### Ajouté
+
+- [docs/specs/functional/us/refacto01-acces-pilier.md](docs/specs/functional/us/refacto01-acces-pilier.md)
+  — spec technique. **Pas de maquette** : refactor invisible, zéro écran touché.
+  - Cartographie exhaustive (agent Explore) des ~10 sites qui recopient
+    `settings?.activePillars ?? [...PILLARS]` : `(tabs)/_layout.tsx`, `settings.tsx`,
+    `(onboarding)/pillars.tsx`, `(onboarding)/summary.tsx`, 5 hooks de
+    `dashboard-repository.ts`, `records-repository.ts`, `weekly-review-repository.ts`,
+    `widget-layout-repository.ts`.
+  - **Trouvaille concrète** : `weekly-review-repository.ts` a un repli **codé en dur**
+    (`['strength', 'running', 'nutrition']`) au lieu de `[...PILLARS]` — désynchronisé de la
+    source de vérité, un 4ᵉ pilier futur ne serait jamais vu par ce site sans erreur TypeScript.
+    Sera corrigé en même temps que l'unification.
+  - Périmètre volontairement étroit (documenté explicitement en §1/§3 pour ne pas être
+    « corrigé » plus tard par erreur) : `WidgetGuard`/`widgets.ts` non touché (rôle différent,
+    pas de repli à corriger), les 2 sites de conjonction `&&` non touchés (2 occurrences,
+    lisibles, aucun bug constaté), `apps/admin/src/data/users.ts` non touché (repli **inversé** —
+    absent → `[]`, pas `[...PILLARS]` — fusionner casserait un comportement voulu).
+- [docs/plans/refacto01-acces-pilier.md](docs/plans/refacto01-acces-pilier.md) — 10 tasks, une par
+  site + la fonction pure + le contrôle final par `grep`.
+- `docs/roadmap/roadmap.md` — ligne **9.16** créée (V0.8), Récapitulatif 212→213 / Partiel 22→23,
+  entrée courte au Journal des réconciliations.
+- `BACKLOG.md` — entrée REFACTO-01 marquée entrée en pipeline (patron `~~NUTR-F1~~`).
+
 ### 31/07/2026 — `feature/cycle01-suivi-menstruel` — CYCLE-01 : Health Connect câblé (code complet)
 
 Commit précédent : `4e9c2c3`. Roadmap **1.25** et **1.26** passent front-matter `etape: recette` —
