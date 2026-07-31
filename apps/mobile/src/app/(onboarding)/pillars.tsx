@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { PILLARS, type Pillar } from '@wellness/shared';
+import { PILLARS, resolveActivePillars, type Pillar } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { togglePillar, useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -15,7 +15,7 @@ export default function OnboardingPillars() {
   const router = useRouter();
   const { settings } = useSettings();
   // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
 
   return (
     <OnboardingScaffold

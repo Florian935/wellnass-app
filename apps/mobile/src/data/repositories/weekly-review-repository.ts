@@ -25,6 +25,7 @@ import {
   lastClosedWeek,
   localDayKey,
   previousWeek,
+  resolveActivePillars,
   type MuscleGroup,
   type PillarWeek,
   type ReviewGoal,
@@ -209,7 +210,7 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
   const adherence = useGoalAdherenceForRange(period.start, period.end);
 
   const activePillars = useMemo(() => {
-    const pillars = settings?.activePillars ?? ['strength', 'running', 'nutrition'];
+    const pillars = resolveActivePillars(settings?.activePillars);
     return {
       strength: pillars.includes('strength'),
       running: pillars.includes('running'),

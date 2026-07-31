@@ -39,7 +39,7 @@ import {
   localMidnightDaysAgo,
   rollingWeekStarts,
   ROLLING_WEEK_DAYS,
-  PILLARS,
+  resolveActivePillars,
   pickOneRepMax,
   sessionBestEstimated1RM,
   type OneRepMaxSample,
@@ -1009,8 +1009,8 @@ export function useTrainingNutritionCross(): {
   const today = useTodayDate();
   const { weekStarts, oldestIsoUtc, oldestDayKey } = last8RollingWeeksLocal(today);
   const { settings } = useSettings();
-  const pillars = settings?.activePillars ?? [...PILLARS];
-  const active = pillars.includes('strength') && pillars.includes('nutrition');
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const active = activePillars.includes('strength') && activePillars.includes('nutrition');
 
   // Muscu : une ligne par séance terminée (LEFT JOIN → séances sans série qualifiante comptées, tonnage 0).
   const sql = `

@@ -8,6 +8,7 @@ import {
   isWithinDnd,
   LOCALES,
   PILLARS,
+  resolveActivePillars,
   UNIT_SYSTEMS,
   WORKOUT_DISPLAY_LEVELS,
   type IntensityScale,
@@ -237,7 +238,7 @@ export default function SettingsScreen() {
   const setMenuColor = useMenuAccent((s) => s.setColor);
   const resetMenuColors = useMenuAccent((s) => s.reset);
   // Defaults null-safe tant que les réglages ne sont pas chargés / synchronisés.
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const theme = settings?.theme ?? 'system';
   const units = settings?.units ?? 'metric';
   const intensityScale = settings?.intensityScale ?? 'rpe';

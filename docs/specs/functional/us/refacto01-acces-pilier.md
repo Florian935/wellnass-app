@@ -3,7 +3,7 @@ id: REFACTO-01
 titre: "Unifier la décision d'accès par pilier"
 roadmap: [9.16]
 catalogue: []
-etape: validation
+etape: close
 branche: refactor/refacto01-acces-pilier
 maj: 31/07/2026
 ---

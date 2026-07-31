@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 31/07/2026 — `refactor/refacto01-acces-pilier` — REFACTO-01 : unification livrée (US clôturée)
+
+Commit précédent : `51626ac`. Front-matter `etape: close` — **aucune recette device** requise
+(spec §3 : comportement strictement inchangé à 3 piliers, vérifiable par lecture + tests).
+
+#### Ajouté
+
+- [pillar.ts (shared)](packages/shared/src/pillar.ts) — `resolveActivePillars(activePillars)` :
+  source **unique** du repli « piliers actifs, ou tous si non chargés ». 5 tests Vitest
+  (`undefined`, `null`, tableau vide **non** retombé sur le repli, sous-ensemble préservé, copie
+  défensive — pas la même référence que l'entrée).
+
+#### Modifié — remplacement du repli en ligne par `resolveActivePillars` (10 sites)
+
+- [`(tabs)/_layout.tsx`](apps/mobile/src/app/(tabs)/_layout.tsx) — visibilité des 3 onglets pilier.
+- [`settings.tsx`](apps/mobile/src/app/settings.tsx) — boutons profil nutrition/course + switches piliers.
+- [`(onboarding)/pillars.tsx`](apps/mobile/src/app/(onboarding)/pillars.tsx) — switches piliers à l'onboarding.
+- [`(onboarding)/summary.tsx`](apps/mobile/src/app/(onboarding)/summary.tsx) — libellé récapitulatif.
+- [`dashboard-repository.ts`](apps/mobile/src/data/repositories/dashboard-repository.ts) — 5 sites :
+  `useDayCalorieTarget`, `useMostRecentRecord`, `useDeficitVolumeAlert`, `useTrainingTime`,
+  `useGoalAdherenceForRange` (ce dernier enchaînait le repli et `.includes()` sans variable
+  intermédiaire — même remplacement, une ligne).
+- [`records-repository.ts`](apps/mobile/src/data/repositories/records-repository.ts) —
+  `useTrainingNutritionCross` : variable locale renommée `pillars` → `activePillars` au passage
+  (cohérence avec les 9 autres sites, usage strictement local à la fonction).
+- [`weekly-review-repository.ts`](apps/mobile/src/data/repositories/weekly-review-repository.ts)
+  — **corrige un bug latent** : le repli était **codé en dur**
+  (`['strength', 'running', 'nutrition']`) au lieu de `[...PILLARS]`, donc désynchronisé de la
+  source de vérité — un 4ᵉ pilier futur n'y aurait jamais été vu, sans erreur TypeScript (le
+  littéral reste un sous-ensemble valide de `Pillar[]`). Comportement identique aujourd'hui (3
+  piliers), corrigé pour de bon.
+- [`widget-layout-repository.ts`](apps/mobile/src/data/repositories/widget-layout-repository.ts)
+  — **un seul** des deux appels à `[...PILLARS]` touché (celui du calcul réactif filtré). L'autre
+  (`fullScreenFrom`, layout **non filtré** utilisé par l'écran de réorganisation) reste
+  intentionnellement un littéral `[...PILLARS]` — ce n'est pas un repli sur donnée absente, c'est
+  une valeur volontairement différente des piliers réels de l'utilisateur.
+
+#### Volontairement non touché (documenté en spec §1/§3, pour ne pas être « corrigé » par erreur)
+
+- `packages/shared/src/widgets.ts` (`WidgetGuard`) — mécanisme du registre de widgets, ne fait pas
+  le repli lui-même, aucun rapport direct avec cette dette.
+- Les 2 sites de conjonction `&&` (`useDeficitVolumeAlert`, `useTrainingNutritionCross`) — 2
+  occurrences, lisibles telles quelles, aucun bug constaté. Introduire un type de garde générique
+  pour 2 sites aurait été une abstraction sans bénéfice mesurable.
+- `apps/admin/src/data/users.ts` (`parseActivePillars`) — repli **inversé** (absent → aucun pilier,
+  pas tous) et rendu d'affichage, pas une décision d'accès : fusionner aurait inversé un
+  comportement voulu ailleurs.
+- Les littéraux `'strength'`/`'running'`/`'nutrition'` codés en dur dans le JSX de
+  `(tabs)/_layout.tsx` (3 onglets fixes) — pas une décision dupliquée, juste une expression directe.
+
+#### Technique / Notes
+
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 247 + shared Vitest 1282) —
+  lus sans pipe, tous verts. `grep` de contrôle : plus aucune occurrence de `?? [...PILLARS]` ni de
+  repli codé en dur hors de `resolveActivePillars`.
+- Front-matter `docs/specs/functional/us/refacto01-acces-pilier.md` : `etape: code` → `close`
+  directement (pas d'étape recette pour ce refactor, spec §3).
+- Roadmap 9.16 → ✅, Récapitulatif 🟡 23 → 22 / ✅ 174 → 175, V0.8 (10) : 7/3 → 8/2.
+- Entrée REFACTO-01 retirée de [BACKLOG.md](BACKLOG.md) (US clôturée).
+
 ### 31/07/2026 — `refactor/refacto01-acces-pilier` — REFACTO-01 : entrée en pipeline (spec + plan)
 
 Commit précédent : `010a4d3`. Documentation uniquement, **aucun code**. Front-matter `etape:

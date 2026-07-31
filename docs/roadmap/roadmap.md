@@ -342,7 +342,7 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | 7.18 | Réagencement du dashboard découvrable | Poignée ≥ 48 dp + `hitSlop`, appui long sur une card, retour visuel pendant le glissement. | Facile | 2h | 🟢 | ✅ | **UX-LOT-01, 29/07/2026.** ⚠️ Diagnostic initial **faux sur 2 points** : l'appui long (`activateAfterLongPress(700)`) et le retour visuel existaient déjà. Les vrais défauts, corrigés ici : les chips faisaient **36 dp effectifs** (24 + hitSlop 6) au lieu de 48 (CONF-07), et **aucune affordance** n'indiquait le geste. Ajout d'une poignée `pointerEvents="none"` (elle signale sans réduire la zone de préhension, qui reste toute la carte) + indice « appui long » dans le bandeau. |
 | 8.11 | Archivage sûr du contenu éditorial | Écran des archivés + restauration (`deleted_at → null`) + garde-fou qui compte les usages avant d'archiver. | Moyen | 4h | 🟢 | 🟡 | **ADMIN-01 — code livré le 29/07/2026** : fonction SQL `editorial_usage_counts` (security definer, admins — la RLS interdit à un admin de compter les données des autres), décompte affiché avant archivage (3 types), filtre actifs/archivés/tous et **restauration en cascade miroir** dans les 3 écrans, audit `*.restore`, import CSV qui **réactive** un aliment archivé au lieu de le mettre à jour dans l'ombre. Correctif de fond : `shared_content` ne retire plus `exercises`/`exercise_translations` archivés des appareils, et l'historique muscu + les records résolvent le nom sans filtrer `deleted_at`. 🟡 : **sync rule à redéployer à la main** + recette navigateur à faire. |
 | 9.15 | Pas quotidiens (lecture Health Connect) | Lire le total de pas par jour via Health Connect, objectif de pas quotidien, widget + historique. Les pas comptent dans le streak. | Moyen | 8h | 🟢 | ✅ | **PAS-01 — livré et recetté le 28/07/2026** (recette device Florian, APK release local `r4`). Lecture par **agrégation** Health Connect (jamais la somme des records), table `daily_steps` synchronisée, objectif de pas, widget 3 formes, écran d'historique, **pas comptés dans la série** (jour actif = objectif atteint). Reste la **déclaration Play** étendue à `READ_STEPS` — prérequis de LANCE-00, sans effet en dev build. **Sommeil écarté** (décision Florian, 28/07/2026) : aucune valeur avant les analyses croisées, qui sont post-V1 → l'ajouter plus tard imposera une **re-déclaration Play**, coût accepté. Décisions actées : données **synchronisées dans le cloud** (donc politique de confidentialité et « Sécurité des données » Play à revoir — voir la spec §7) et **pas comptés dans le streak**. ⚠️ 1 type de données en plus (`READ_STEPS`) à justifier dans le **même** formulaire que CONF-06 → à figer avant LANCE-00. |
-| 9.16 | Unifier la décision d'accès par pilier | Point de décision unique (`resolveActivePillars`) pour « ce pilier est-il actif ? », au lieu de ~10 copies en ligne de `activePillars ?? [...PILLARS]`. | Facile | 2h | 🟢 | 🟡 | **REFACTO-01 — trouvée le 30/07/2026** en cadrant SOCLE-01 : le gating de la décision H était recopié en ligne dans ~10 endroits, sans helper partagé — dont un repli **codé en dur et désynchronisé de `PILLARS`** dans `weekly-review-repository.ts` (bug latent, corrigé au passage). **Dette pure, zéro changement de comportement** à 3 piliers → pas de recette device, clôture par lecture + tests + typecheck. Périmètre volontairement étroit : le `WidgetGuard` de `widgets.ts` n'est pas touché (rôle différent), ni les 2 sites de conjonction (`&&`, lisibles tels quels), ni `apps/admin/.../users.ts` (repli inversé, hors sujet). |
+| 9.16 | Unifier la décision d'accès par pilier | Point de décision unique (`resolveActivePillars`) pour « ce pilier est-il actif ? », au lieu de ~10 copies en ligne de `activePillars ?? [...PILLARS]`. | Facile | 2h | 🟢 | ✅ | **REFACTO-01 — livré et clôturé le 31/07/2026.** Trouvée le 30/07/2026 en cadrant SOCLE-01 : le gating de la décision H était recopié en ligne dans ~10 endroits, sans helper partagé — dont un repli **codé en dur et désynchronisé de `PILLARS`** dans `weekly-review-repository.ts` (bug latent, corrigé au passage). **Dette pure, zéro changement de comportement** à 3 piliers → pas de recette device, clôturée par lecture + tests + typecheck (`resolveActivePillars` testée, 1282 tests Vitest + 247 Jest verts). Périmètre volontairement étroit : le `WidgetGuard` de `widgets.ts` n'est pas touché (rôle différent), ni les 2 sites de conjonction (`&&`, lisibles tels quels), ni `apps/admin/.../users.ts` (repli inversé, hors sujet). |
 
 ---
 
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 174 | ~82 % |
-| 🟡 Partiel | 23 | ~11 % |
+| ✅ Livré | 175 | ~82 % |
+| 🟡 Partiel | 22 | ~10 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -461,7 +461,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (10) | 7 | 3 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) + **9.16 (REFACTO-01, code en cours)** |
+| V0.8 (10) | 8 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** + **9.16 (REFACTO-01, clôturée le 31/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
 | V0.9 (16) | 4 | 7 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**31/07/2026 — REFACTO-01 : livrée et clôturée (9.16 ✅)**
+~10 sites unifiés sur `resolveActivePillars`, corrige au passage un repli codé en dur désynchronisé
+de `PILLARS` (`weekly-review-repository.ts`). Aucune recette device : clôturée directement.
 
 **31/07/2026 — REFACTO-01 : ligne créée (9.16 🟡)**
 Dette trouvée le 30/07/2026 en cadrant SOCLE-01, entrée en pipeline (spec + plan). Total 212 → **213**,

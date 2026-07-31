@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { PILLARS, type Pillar } from '@wellness/shared';
+import { resolveActivePillars, type Pillar } from '@wellness/shared';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { fontFamily } from '@/theme/fonts';
@@ -27,7 +27,7 @@ export default function TabsLayout() {
   const menuColorsEnabled = useMenuAccent((s) => s.enabled);
   const menuColors = useMenuAccent((s) => s.colors);
   // Tant que les réglages ne sont pas chargés, on affiche tous les piliers par défaut.
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
 
   const isActive = (pillar: Pillar) => activePillars.includes(pillar);
   // Couleurs par menu si activé (réglages), sinon accent unique pour tous les onglets.

@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { PILLARS } from '@wellness/shared';
+import { resolveActivePillars } from '@wellness/shared';
 import { completeOnboarding, useProfile } from '@/data/repositories/profile-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
@@ -29,7 +29,7 @@ export default function OnboardingSummary() {
   const { profile } = useProfile();
   const { settings } = useSettings();
   // Tant que les réglages ne sont pas chargés, on suppose tous les piliers actifs.
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
 
   const finish = async () => {
     void track(ANALYTICS_EVENTS.onboardingCompleted);

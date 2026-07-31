@@ -23,6 +23,7 @@ import {
   parseMultiScreenLayout,
   resolveScreenLayout,
   PILLARS,
+  resolveActivePillars,
   WIDGET_SCREENS,
   type MultiScreenLayout,
   type ScreenLayout,
@@ -89,7 +90,7 @@ export function useScreenLayout(screen: WidgetScreen): {
   const { settings, isLoading } = useSettings();
 
   const activePillars = useMemo(
-    () => settings?.activePillars ?? [...PILLARS],
+    () => resolveActivePillars(settings?.activePillars),
     [settings?.activePillars],
   );
   const storedRaw = settings?.dashboardLayout ?? null;

@@ -35,7 +35,7 @@ import {
   localDayKey,
   localMidnightDaysAgo,
   objectiveFromGoal,
-  PILLARS,
+  resolveActivePillars,
   ROLLING_WEEK_DAYS,
   stepsActiveDays,
   targetCalories,
@@ -369,7 +369,7 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
   const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
 
   // Piliers actifs (même patron que useMostRecentRecord / useDeficitVolumeAlert).
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const runningActive = activePillars.includes('running');
 
   // Dépense des courses terminées ce jour (0 si running inactif).
@@ -687,7 +687,7 @@ export function useMostRecentRecord(): {
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
 
   const { settings } = useSettings();
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const strengthActive = activePillars.includes('strength');
   const runningActive = activePillars.includes('running');
 
@@ -829,7 +829,7 @@ const SELECT_WEEKLY_STRENGTH_VOLUME = `
  */
 export function useDeficitVolumeAlert(): DeficitVolumeAlert {
   const { settings } = useSettings();
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const strengthActive = activePillars.includes('strength');
   const nutritionActive = activePillars.includes('nutrition');
 
@@ -885,7 +885,7 @@ export type TrainingTime = {
  */
 export function useTrainingTime(): TrainingTime {
   const { settings } = useSettings();
-  const activePillars = settings?.activePillars ?? [...PILLARS];
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const strengthActive = activePillars.includes('strength');
   const runningActive = activePillars.includes('running');
 
@@ -978,7 +978,7 @@ export function useGoalAdherenceForRange(
   const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
   const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
-  const runningActive = (settings?.activePillars ?? [...PILLARS]).includes('running');
+  const runningActive = resolveActivePillars(settings?.activePillars).includes('running');
 
   // Jours d'entraînement (muscu/course terminés) + dépense course, par jour local.
   const trainedDays = new Set<string>();
