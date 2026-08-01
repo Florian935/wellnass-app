@@ -269,7 +269,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 7.10 | Widget — Résumé running semaine | Distance + séances vs objectif hebdo. | Facile | 2h | 🟢 | ✅ | `RunningWeekCard`. |
 | 7.11 | Taille de widget configurable | Version compacte (ligne) ou normale (carte). | Moyen | 4h | 🟢 | ✅ | `setSize` compact/full. |
 | 7.12 | Persistance de la configuration | Disposition sauvegardée localement + cloud (PowerSync). | Facile | 1h | 🟢 | ✅ | `dashboard-layout-repository`. |
-| 9.4 | Synchronisation cloud (PowerSync) *(reformulé — arbitrage B)* | Synchro bidirectionnelle **gérée par PowerSync** entre le SQLite local et Postgres/Supabase, en arrière-plan dès connexion. | Difficile | 8h | 🟢 | ✅ | `powersync/system.ts` + `connector.ts`. |
+| 9.4 | Synchronisation cloud (PowerSync) *(reformulé — arbitrage B)* | Synchro bidirectionnelle **gérée par PowerSync** entre le SQLite local et Postgres/Supabase, en arrière-plan dès connexion. | Difficile | 8h | 🟢 | ✅ | `powersync/system.ts` + `connector.ts`. **Correctif 01/08/2026** : les colonnes `jsonb` remontaient en **texte** (SQLite n'a pas de type JSON), ce qui bloquait la file d'envoi en boucle sur `menstrual_daily_logs` (colonne gardée par un `check`) et corrompait silencieusement `foods.portions` (colonne sans garde). Rien ne montait **ni ne descendait**, tableau de bord sur « Synchronisé ». `decodeJsonColumns()` + 10 tests. ⚠️ Reste ouvert : une opération en échec bloque toujours la file indéfiniment (traitement des « opérations empoisonnées » = arbitrage produit), et l'indicateur de synchro ne reflète pas l'état de la file. |
 | 9.7 | Gestion conflits de sync (PowerSync) *(reformulé — arbitrage B)* | **Conflits gérés par PowerSync** (plus de last-write-wins codé à la main). Vérifier le comportement sur 2 appareils. | Moyen | 3h | 🟢 | ✅ | Délégué au SDK. |
 | 2.12 | Sync cloud en arrière-plan (PowerSync) *(reformulé — arbitrage B)* | Synchro **automatique via PowerSync** dès connexion disponible. | Moyen | 3h | 🟢 | ✅ | `PowerSyncProvider` connecte dès session. |
 | 2.13 | Indicateur mode hors-ligne | Bandeau discret quand offline (état de connexion PowerSync). | Facile | 1h | 🟢 | ✅ | `SyncStatus.tsx`. |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — Synchro bloquée : correctif du connecteur PowerSync (9.4, reste ✅)**
+Les colonnes `jsonb` remontaient en texte : file d'envoi gelée en boucle, plus rien ne montait ni ne
+descendait, « Synchronisé » affiché. Trouvé en recette device. Aucun compteur ne bouge.
 
 **31/07/2026 — REFACTO-01 : livrée et clôturée (9.16 ✅)**
 ~10 sites unifiés sur `resolveActivePillars`, corrige au passage un repli codé en dur désynchronisé

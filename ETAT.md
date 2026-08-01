@@ -1,4 +1,4 @@
-# État du projet — 31/07/2026
+# État du projet — 01/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -58,10 +58,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf6-fenetre-reprise-seance` (modifications non commitées) |
-| Commits | 995 · `main` a **992** commits de retard sur `dev` |
+| Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
+| Commits | 996 · `main` a **993** commits de retard sur `dev` |
 | Specs d'US | 96 au total — 76 clôturées, 20 en cours |
-| Migrations | 60/60 poussées sur le cloud |
+| Migrations | 61/61 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `e6b9e08` docs(muscf6): spec + plan — fenêtre de reprise de séance (3h vs 4h)
 - `5643442` fix(health-connect): clarifie le bandeau d'échec pour les utilisateurs anglophones
 - `d639a72` refactor(pillar): unifie la décision d'accès par pilier (REFACTO-01, 9.16)
 - `51626ac` docs(refacto01): spec + plan — unifier la décision d'accès par pilier
 - `010a4d3` chore(etat): régénère ETAT.md après le commit Health Connect
-- `e5efdde` feat(cycle01): synchro Health Connect du cycle (permissions, push/import, dédup R21)
 
 ---
 

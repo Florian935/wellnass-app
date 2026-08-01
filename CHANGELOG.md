@@ -10,6 +10,87 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/cycle01-suivi-menstruel` — 🔴 Synchro bloquée : les colonnes `jsonb` remontaient en texte
+
+Commit précédent : `e6b9e08`. **Correctif le plus important de la recette device du 31/07–01/08/2026.**
+Isolé dans son propre commit parce qu'il touche **toutes les écritures de l'app** : s'il régresse, il
+doit pouvoir être révoqué seul.
+
+#### Le symptôme
+
+Découvert en cherchant pourquoi une mise à jour de `foods` poussée sur le cloud n'arrivait jamais sur
+le device. Les logs tournaient en boucle, toutes les 5 secondes :
+
+```
+[PowerSync] upload PUT menstrual_daily_logs échoué :
+  new row for relation "menstrual_daily_logs" violates check constraint "menstrual_daily_logs_symptoms_check"
+```
+
+…**pendant que le tableau de bord affichait « Synchronisé »**.
+
+#### La cause
+
+PowerSync n'a pas de type JSON : les colonnes `jsonb` sont stockées en **TEXT** côté SQLite, donc le
+client sérialise (`JSON.stringify`) pour écrire en local. `uploadData` remontait `op.opData` **brut** —
+la *chaîne* `'["cramps"]'` partait donc dans une colonne `jsonb`, où Postgres stockait une valeur de
+type `string` au lieu du tableau attendu.
+
+Deux conséquences, selon que la colonne est gardée ou non :
+
+- **`menstrual_daily_logs.symptoms`** porte `check (jsonb_typeof(symptoms) = 'array')` → l'upload est
+  **rejeté**, l'opération rejouée indéfiniment, et la **file d'envoi PowerSync reste bloquée**. Rien ne
+  monte, et — c'est le piège — **rien ne descend non plus**. Une seule ligne malformée gèle toute la
+  synchronisation d'un utilisateur, sans le moindre signal dans l'UI.
+- **`foods.portions`**, sans garde équivalente → corruption **silencieuse**. Constaté en base : 5
+  aliments créés depuis l'app portaient `"[]"` (une chaîne) au lieu de `[]`.
+
+> **Ce défaut était connu à moitié.** Le côté **lecture** était déjà contourné par
+> [`parseJsonColumn`](packages/shared/src/json-column.ts), qui déballe jusqu'à **trois** fois et dont le
+> commentaire documente le double-encodage depuis l'US 4.34. Ce helper traitait le symptôme ; personne
+> n'avait remonté la chaîne jusqu'à l'écriture. Le contournement en lecture reste utile (les lignes déjà
+> corrompues existent), mais il n'a plus vocation à voir de nouvelles occurrences.
+
+#### Corrigé
+
+- [connector.ts](apps/mobile/src/powersync/connector.ts) — `decodeJsonColumns()` déballe les colonnes
+  `jsonb` déclarées avant l'envoi, pour `PUT` comme pour `PATCH`. Registre `JSON_COLUMNS` des **13**
+  colonnes, relevé sur le schéma réel :
+  `audit_log.details` · `exercises.muscles_secondary` · `food_entries.micronutrients` ·
+  `foods.micronutrients` · `foods.portions` · `menstrual_daily_logs.symptoms` ·
+  `nutrition_profiles.{allergens,meals,restrictions}` · `user_settings.{active_pillars,dashboard_layout,notifications}`.
+  - **Tolérant par conception** : valeur déjà décodée, `null`, ou chaîne non-JSON sont laissées
+    telles quelles plutôt que de faire échouer la transaction — bloquer la synchro est exactement ce
+    qu'on cherche à éviter ici.
+  - **Ne mute pas** `op.opData` (copie à la première réécriture).
+
+#### Ajouté
+
+- [connector-json-columns.test.ts](apps/mobile/src/powersync/__tests__/connector-json-columns.test.ts)
+  — 10 tests : le cas qui bloquait la synchro, la corruption silencieuse de `portions`, colonnes
+  multiples, tables sans colonne JSON, colonnes non déclarées, valeur déjà décodée, `null`, chaîne
+  illisible, non-mutation de la source, `opData` absent.
+
+#### Vérification device
+
+Rebuild + réinstallation : l'erreur `menstrual_daily_logs` **disparaît au premier lancement**. Une
+deuxième opération empoisonnée attendait derrière (`food_entries` avec `date: ""`, cf. l'entrée du lot
+de correctifs) ; après purge de la base locale et reconnexion, **0 erreur d'upload** et la mise à jour
+cloud des portions est enfin descendue sur l'appareil.
+
+#### Technique / Notes
+
+- ⚠️ **`JSON_COLUMNS` est un registre manuel.** Toute nouvelle colonne `jsonb` doit y être ajoutée.
+  Requête de contrôle dans le commentaire du fichier :
+  `select table_name, column_name from information_schema.columns where table_schema='public' and data_type in ('jsonb','json');`
+- ⚠️ **La résilience reste à traiter — c'est un arbitrage produit, pas un oubli.** Les deux causes de
+  ce soir sont corrigées, mais le **mécanisme** demeure : une opération en échec bloque la file
+  indéfiniment. Un traitement des « opérations empoisonnées » (abandon après N tentatives sur une
+  erreur 4xx, avec trace) suppose d'accepter une **perte de données** — décision Florian/Damien.
+- ⚠️ **L'indicateur « Synchronisé » ment dans cet état.** C'est ce qui rend le défaut invisible : il
+  devrait refléter l'état réel de la file d'envoi, pas seulement la connexion.
+- **Les 5 lignes `foods.portions` déjà corrompues ne sont pas réparées** par ce commit. Impact faible :
+  `parseJsonColumn` déballe `"[]"` en `[]` à la lecture. À nettoyer par une migration si besoin.
+
 ### 31/07/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : entrée en pipeline (spec + plan)
 
 Commit précédent : `5643442`. Documentation uniquement, **aucun code**. Front-matter `etape:
