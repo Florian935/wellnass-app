@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : réconciliation livrée (Option A, US clôturée)
+
+Commit précédent : `78b6ead`. Décision D1 validée par Florian : **Option A**. Documentation
+uniquement, **aucun code applicatif**. Front-matter `etape: close` directement (spec §4 : aucun
+critère de recette).
+
+#### Modifié
+
+- [musculation.md §4.4](docs/specs/functional/musculation.md) — le paragraphe « Abandon de
+  séance / reprise » ne promet plus une fenêtre de 4h et une popup « Pause » jamais construites :
+  il décrit maintenant le comportement réel (quitter laisse la séance `active`, reprenable via
+  « Reprendre » jusqu'à la clôture automatique à 3h, US 3.37).
+- `docs/roadmap/roadmap.md` — ligne 3.36 : libellé + remarque réécrits, statut 🟡 → ✅. Récapitulatif
+  (✅ 175→**176**, 🟡 22→**21**), détail V0.2 (27/1→**28/0**), entrée au Journal des réconciliations.
+- `BACKLOG.md` — entrée MUSC-F6 retirée (US clôturée).
+
+#### Technique / Notes
+
+- Aucun test à ajouter ni à modifier : `WORKOUT_AUTO_CLOSE_SECONDS` et `workout.test.ts` restent
+  inchangés — c'est justement le point de cette US (le code avait déjà raison, la doc mentait).
+- Coïncidence notée en recette device (voir l'entrée du lot de correctifs juste en dessous) :
+  une séance du 22/07 trouvée à **3 150 min** (52 h), laissée ouverte — la donnée réelle confirme
+  après coup le bien-fondé de cette réconciliation.
+
 ### 01/08/2026 — `feature/cycle01-suivi-menstruel` — Lot de correctifs de la recette device (CYCLE-01, NUTR-F2, MESUR-01, PARTAGE-01, BIEN-01)
 
 Commit précédent : `3300104`. **Aucune fonctionnalité nouvelle** : 8 défauts trouvés en pilotant l'app

@@ -3,7 +3,7 @@ id: MUSC-F6
 titre: "Fenêtre de reprise de séance — réconciliation du seuil 3h/4h"
 roadmap: [3.36]
 catalogue: []
-etape: validation
+etape: close
 branche: feature/muscf6-fenetre-reprise-seance
 maj: 31/07/2026
 ---

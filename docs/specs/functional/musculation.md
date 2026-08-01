@@ -175,9 +175,12 @@ Les **templates de séances** (routines réutilisables) permettent de composer u
 - Champ **« Ressenti global »** (1 à 5, ou RPE 1-10).
 - Bouton « Terminer et enregistrer ».
 
-**Abandon de séance / reprise**
-- Si l'utilisateur quitte en cours : popup **« Abandonner »** ou **« Pause »** (met en pause, sauvegarde l'état).
-- Une **séance en pause** peut être **reprise dans les 4 heures**.
+**Abandon de séance / reprise** *(US MUSC-F6, réconcilié le 01/08/2026)*
+- Quitter l'écran de séance en cours ne demande **aucune confirmation** : la séance reste
+  `active` en base, sans état « pause » distinct.
+- Elle est **reprenable** via le bouton « Reprendre » du hub muscu jusqu'à sa **clôture
+  automatique après 3h d'inactivité** (US 3.37, `WORKOUT_AUTO_CLOSE_SECONDS`) — vérifiée au
+  démarrage de l'app, pas par un minuteur en tâche de fond.
 
 ---
 

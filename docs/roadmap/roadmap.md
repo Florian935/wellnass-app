@@ -126,7 +126,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.33 | Note de séance | Champ texte libre. | Facile | 1h | 🟢 | ✅ | Note de séance collectée au résumé (`workout-summary.tsx` → `setWorkoutFeedback`). |
 | 3.34 | Ressenti global | RPE 1-10 ou 5 étoiles en fin de séance. | Facile | 1h | 🟢 | ✅ | RPE de séance saisi au résumé (`RpeSelector` → `setWorkoutFeedback`). |
 | 3.35 | Résumé fin de séance | Durée, volume, séries validées, records battus. | Moyen | 3h | 🟢 | ✅ | `workout-summary.tsx`. |
-| 3.36 | Mise en pause de séance | Suspendre et reprendre dans les 4 heures. | Moyen | 3h | 🟢 | 🟡 | Pause = quitter (séance reste active, reprise via « Reprendre ») ; **pas de fenêtre 4 h explicite**, bornée à 3 h par la clôture auto (3.37) — seuils 3 h/4 h à réconcilier. |
+| 3.36 | Mise en pause de séance | Reprenable jusqu'à la clôture automatique (3h, US 3.37). | Moyen | 3h | 🟢 | ✅ | **MUSC-F6 — réconcilié le 01/08/2026 (Option A, Florian).** Le « conflit 3h/4h » n'a **jamais existé dans le comportement observable** : `WORKOUT_AUTO_CLOSE_SECONDS` (3h, déjà testée) est la seule limite réelle ; la promesse « 4h + popup Pause » de `musculation.md` §4.4 n'avait jamais été implémentée (aucun statut `paused`, aucune constante, aucune chaîne i18n). Doc corrigée pour dire ce que le code fait déjà — **zéro ligne de code applicatif**. |
 | 3.37 | Clôture automatique après 3h | Fermeture et sauvegarde automatiques. | Facile | 1h | 🟢 | ✅ | `isWorkoutStale` + `autoCloseStaleWorkout()` au démarrage (gaté `hasSynced`), durée plafonnée à la dernière activité réelle (25/07/2026). |
 | 3.22 | Record personnel (1RM estimé) | Formule d'Epley : charge × (1 + reps/30). | Facile | 1h | 🟢 | ✅ | `shared/records.ts` `estimate1RM`. Motivation (arbitrage C). |
 | 2.3 | Écran actif pendant séance | Pas de mise en veille pendant un suivi actif. | Facile | 1h | 🟢 | ✅ | `useKeepAwake()` dans `workout.tsx` (muscu) — présent aussi en course. |
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 175 | ~82 % |
-| 🟡 Partiel | 22 | ~10 % |
+| ✅ Livré | 176 | ~83 % |
+| 🟡 Partiel | 21 | ~10 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -455,7 +455,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 27 | 1 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu. Reste 🟡 3.36 (fenêtre de reprise à réconcilier) et ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.2 (32) | 28 | 0 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). Reste ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 17 | 4 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). Progression auto (3.7) et deload (3.8) restent partiels — briques livrées, non câblées. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — MUSC-F6 : réconciliée (3.36 🟡 → ✅, Option A)**
+Le conflit « 3h/4h » n'existait que dans la doc — `WORKOUT_AUTO_CLOSE_SECONDS` (3h) est la seule
+limite réelle, déjà testée. Corrigé `musculation.md` §4.4 + le libellé roadmap. Zéro code.
 
 **01/08/2026 — Recette device : 8 correctifs (1.25 🟡, 4.37 🟡, statuts inchangés)**
 CYCLE-01 était **inactivable** (colonnes absentes du schéma local) et ses routes ouvertes suivi éteint ;
