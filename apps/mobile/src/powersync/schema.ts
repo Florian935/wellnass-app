@@ -353,6 +353,10 @@ const runs = new Table({
   gps_track: column.text,
   rpe: column.integer,
   notes: column.text,
+  // US RUN-F3 (5.25) : lien vers la séance planifiée réalisée + terrain (D3). Toute colonne
+  // absente d'ici échoue silencieusement à l'écriture (leçon du 01/08/2026, CYCLE-01).
+  planned_session_id: column.text,
+  terrain: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

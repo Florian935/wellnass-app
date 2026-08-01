@@ -1,12 +1,15 @@
 import {
+  compareToTarget,
   computeKmSplits,
   decodeTrack,
   formatDayFull,
   formatPaceMMSS,
   isValidCoord,
+  RUN_TERRAINS,
   RUNNING_RECORD_DISTANCES,
   simplifyTrack,
   type RecordDistanceKey,
+  type RunTerrain,
 } from '@wellness/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -29,7 +32,9 @@ import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import {
   setManualRunDistance,
   setRunFeedback,
+  setRunTerrain,
   useRun,
+  useRunTarget,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
 import { exportRunAsGpx } from '@/lib/gpx-export';
@@ -189,11 +194,28 @@ export default function RunSummaryScreen() {
 
   const { run, isLoading } = useRun(id);
 
+  // US RUN-F3 (5.25) : cible de la séance planifiée réalisée (null si course libre ou lien résolu
+  // à rien) et comparaison pure — aucune clé si la séance ne visait pas cet axe (R1, R3).
+  const target = useRunTarget(run?.plannedSessionId ?? null);
+  const comparison = useMemo(
+    () =>
+      compareToTarget(
+        { distanceM: run?.distanceM ?? null, durationS: run?.durationSeconds ?? null },
+        {
+          targetDistanceM: target?.targetDistanceM ?? null,
+          targetDurationS: target?.targetDurationSeconds ?? null,
+        },
+      ),
+    [run?.distanceM, run?.durationSeconds, target],
+  );
+
   // État local du formulaire de feedback
   const [rpe, setRpe] = useState<number | null>(run?.rpe ?? null);
   const [notes, setNotes] = useState<string>(run?.notes ?? '');
   // Distance manuelle saisie (texte libre ; dans l'unité d'affichage courante)
   const [manualDistanceText, setManualDistanceText] = useState<string>('');
+  // Terrain (D3) : facultatif, écrit à tout moment après la clôture.
+  const [terrain, setTerrain] = useState<RunTerrain | null>(run?.terrain ?? null);
 
   // US PARTAGE-01 : aperçu de la carte partageable.
   const [shareOpen, setShareOpen] = useState(false);
@@ -233,6 +255,7 @@ export default function RunSummaryScreen() {
     setFeedbackInit(true);
     if (run.rpe !== null) setRpe(run.rpe);
     if (run.notes !== null) setNotes(run.notes);
+    if (run.terrain !== null) setTerrain(run.terrain);
   }
 
   // Détection des records battus par cette course, une seule fois au montage.
@@ -284,6 +307,17 @@ export default function RunSummaryScreen() {
         await setRunFeedback(id, { notes: notes.trim() || null });
       } catch (err) {
         console.warn('[RunSummary] setRunFeedback notes failed:', err);
+      }
+    }
+  };
+
+  const onTerrainChange = async (value: RunTerrain) => {
+    setTerrain(value);
+    if (id) {
+      try {
+        await setRunTerrain(id, value);
+      } catch (err) {
+        console.warn('[RunSummary] setRunTerrain failed:', err);
       }
     }
   };
@@ -362,6 +396,27 @@ export default function RunSummaryScreen() {
   const canExport =
     run.status === 'completed' && run.source !== 'manual' && validPointCount >= 2;
 
+  // US RUN-F3 (5.25) : phrases d'écart, une par axe présent — jamais de concaténation, l'ordre
+  // des mots diffère entre FR et EN (R2). `success` pour atteint/dépassé, neutre pour en deçà —
+  // jamais `danger` (R4, ne pas atteindre un objectif de course n'est pas un échec).
+  const distanceTarget = comparison.distance;
+  const distanceTargetLabel = distanceTarget
+    ? t(`running.target.distance${distanceTarget.status === 'reached' ? 'Reached' : distanceTarget.status === 'over' ? 'Over' : 'Under'}`, {
+        done: units.formatDistance(distanceTarget.doneValue / 1000),
+        target: units.formatDistance(distanceTarget.targetValue / 1000),
+        diff: units.formatDistance(Math.abs(distanceTarget.diff) / 1000),
+      })
+    : null;
+  const durationTarget = comparison.duration;
+  const durationTargetLabel = durationTarget
+    ? t(`running.target.duration${durationTarget.status === 'reached' ? 'Reached' : durationTarget.status === 'over' ? 'Over' : 'Under'}`, {
+        done: formatDuration(durationTarget.doneValue),
+        target: formatDuration(durationTarget.targetValue),
+        diff: formatDuration(Math.abs(durationTarget.diff)),
+      })
+    : null;
+  const hasTarget = distanceTargetLabel !== null || durationTargetLabel !== null;
+
   return (
     <FormScreen>
       <ScreenHeader
@@ -390,6 +445,43 @@ export default function RunSummaryScreen() {
           value={units.formatPace(run.avgPaceSPerKm)}
         />
       </Card>
+
+      {/* Comparaison à l'objectif (US RUN-F3, 5.25) — montée SEULEMENT si non vide (R1) : une
+          course libre, ou une séance sans cible chiffrée, n'affiche aucun encart, jamais un
+          « — » (spec §2, critère de recette 5). */}
+      {hasTarget ? (
+        <Card>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {t('running.target.title')}
+          </Text>
+          {distanceTargetLabel ? (
+            <Text
+              style={[
+                styles.targetText,
+                {
+                  color:
+                    distanceTarget!.status === 'under' ? colors.textMuted : colors.success,
+                },
+              ]}
+            >
+              {distanceTargetLabel}
+            </Text>
+          ) : null}
+          {durationTargetLabel ? (
+            <Text
+              style={[
+                styles.targetText,
+                {
+                  color:
+                    durationTarget!.status === 'under' ? colors.textMuted : colors.success,
+                },
+              ]}
+            >
+              {durationTargetLabel}
+            </Text>
+          ) : null}
+        </Card>
+      ) : null}
 
       {/* Saisie de distance manuelle (uniquement si source=manual et distance inconnue) */}
       {isManual && !hasDistance ? (
@@ -502,6 +594,43 @@ export default function RunSummaryScreen() {
         ) : null}
       </Card>
 
+      {/* Terrain (US RUN-F3, D3) — facultatif, sans rapport avec le GPS : une course sans
+          terrain choisi reste parfaitement valide. */}
+      <Card>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>
+          {t('running.terrain.title')}
+        </Text>
+        <View style={styles.terrainRow}>
+          {RUN_TERRAINS.map((option) => {
+            const selected = terrain === option;
+            return (
+              <TouchableOpacity
+                key={option}
+                onPress={() => void onTerrainChange(option)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                style={[
+                  styles.terrainChip,
+                  {
+                    backgroundColor: selected ? colors.accent : colors.surface,
+                    borderColor: selected ? colors.accent : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.terrainChipLabel,
+                    { color: selected ? colors.background : colors.text },
+                  ]}
+                >
+                  {t(`running.terrain.${option}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </Card>
+
       {/* Ressenti : note libre */}
       <Card>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -611,6 +740,28 @@ const styles = StyleSheet.create({
   distanceUnit: {
     fontFamily: fontFamily.bodySemi,
     fontSize: 15,
+  },
+  // Objectif de la séance (RUN-F3)
+  targetText: {
+    fontFamily: fontFamily.body,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  // Terrain (RUN-F3, D3)
+  terrainRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  terrainChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  terrainChipLabel: {
+    fontFamily: fontFamily.bodyMedium,
+    fontSize: 13,
   },
   // RPE
   rpeRow: {

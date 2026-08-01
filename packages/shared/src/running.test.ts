@@ -594,6 +594,8 @@ describe('runRowSchema', () => {
     gpsTrack: null,
     rpe: null,
     notes: null,
+    plannedSessionId: null,
+    terrain: null,
   };
 
   it('valide une ligne course minimale', () => {

@@ -47,6 +47,7 @@ export * from './bodyweight';
 export * from './weight-goal';
 export * from './muscle-balance';
 export * from './running';
+export * from './run-target';
 export * from './gpx';
 export * from './running-paces';
 export * from './pace-records';

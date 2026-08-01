@@ -223,8 +223,8 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 5.21 | Mode sans GPS | Suivi à la durée seule (streak + historique, exclu des records). | Facile | 2h | 🟢 | ✅ | Source `manual`. Couvre aussi le tapis. |
 | 5.19 | Annonces audio périodiques | À chaque km (paramétrable) : distance, temps, allure. | Facile | 2h | 🟢 | ⬜ | **Aucune trace `expo-speech`/audio.** |
 | 5.23 | Prolonger ou raccourcir | Terminer avant la cible ou continuer en libre. | Facile | 1h | 🟢 | ⬜ | Course active = libre uniquement, **aucune cible**. |
-| 5.24 | Note + ressenti post-séance | RPE, météo, terrain. | Facile | 2h | 🟢 | 🟡 | RPE + notes OK, mais **pas météo/terrain**. |
-| 5.25 | Résumé post-séance | Distance, durée, allure, carte, dénivelé, comparaison objectif. | Moyen | 4h | 🟢 | 🟡 | Distance/durée/allure/carte OK ; **dénivelé + comparaison objectif absents**. |
+| 5.24 | Note + ressenti post-séance | RPE, météo, terrain. | Facile | 2h | 🟢 | 🟡 | **RUN-F3 — terrain livré le 01/08/2026** (D3, 4 choix, aucun réseau) ; RPE + notes déjà OK. **Reste la météo** — scindée en **RUN-F3b** (roadmap 5.24 bis, backlog) : dépend d'un arbitrage confidentialité (position transmise à un tiers) à trancher avant LANCE-00. |
+| 5.25 | Résumé post-séance | Distance, durée, allure, carte, dénivelé, comparaison objectif. | Moyen | 4h | 🟢 | ✅ | **RUN-F3 — code livré le 01/08/2026**, en recette → [RECETTES.md](../../RECETTES.md). Distance/durée/allure/carte déjà livrés ; **comparaison à l'objectif** ajoutée (`compareToTarget`, tolérance 2 %) — a exigé de construire le lien course↔séance planifiée, inexistant jusqu'ici (`runs.planned_session_id`, nouveau point d'entrée sur le hub course). **Dénivelé reste absent** : bloqué séparément (RUN-F1b, `GpsPoint` ne porte pas l'altitude). |
 | 5.26 | Tableau pace par km | Allure de chaque kilomètre. | Moyen | 3h | 🟢 | ✅ | `computeKmSplits` + tableau splits/km sur `run/summary.tsx`, km le plus rapide en accent (25/07/2026). |
 | 5.1 | Profil coureur | Objectif, niveau, allure de référence, fréquence. | Facile | 2h | 🟢 | ✅ | `running-profile.tsx`. |
 | 5.8 | Endurance fondamentale | Allure de réf. + 60-90 s/km. Base aérobie. | Facile | 1h | 🟢 | ✅ | `sessionTargetPace('endurance')`. |
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 179 | ~84 % |
-| 🟡 Partiel | 18 | ~8 % |
+| ✅ Livré | 180 | ~85 % |
+| 🟡 Partiel | 17 | ~8 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -458,7 +458,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.2 (32) | 28 | 0 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). Reste ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 18 | 3 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
-| V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
+| V0.5 (33) | 27 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (10) | 10 | 0 | 0 | 0 | 0 | ✅ **Complet.** 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + 9.9 (Health Connect, recetté le 28/07) + 9.16 (REFACTO-01, clôturée le 31/07) + **9.11/9.12 (CONF-07, code livré le 01/08, en recette)** livrés. |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — RUN-F3 : comparaison à l'objectif + terrain (5.25 🟡 → ✅, 5.24 partiel)**
+Construit le lien course↔séance planifiée, inexistant jusqu'ici (`runs.planned_session_id`,
+nouveau point d'entrée sur le hub). Météo (5.24) reste scindée en RUN-F3b, à part.
 
 **01/08/2026 — CONF-07 : palette corrigée, V0.8 complète (9.11/9.12 🟡 → ✅)**
 5 paires corrigées (assombrissement pur HSL), D1/D2 validées par Florian. Garde-fou durable :

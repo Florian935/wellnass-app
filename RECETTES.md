@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **01/08/2026** — 17 US en attente.
+> Dernière mise à jour : **01/08/2026** — 18 US en attente.
 
 ---
 
@@ -534,6 +534,39 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
       boueux, c'est un rejet — même si les ratios sont techniquement bons.
 - [ ] 7. Les **graphes** n'ont pas noirci (`chartGreen` n'a volontairement pas bougé).
 - [ ] 8. `font_scale` 1,5× sur 3 écrans au hasard : toujours aucune troncature (non-régression 9.11).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 18. RUN-F3 — Résumé de course enrichi (objectif atteint + terrain)
+
+📄 [spec](docs/specs/functional/us/runf3-resume-course-enrichi.md) · roadmap 5.24 (D3) + 5.25 ·
+**📱 device** · migration poussée, **aucune sync rule à redéployer** (`runs` déjà en `select *`)
+
+⚠️ **Le point à vérifier en priorité** : le lien course↔séance planifiée est **neuf** (rien
+n'existait avant cette US) — démarrer une course *sans* passer par la carte « Course planifiée
+aujourd'hui » doit rester un comportement parfaitement normal (course libre, R1).
+
+- [ ] 1. Depuis le hub course, une séance planifiée aujourd'hui affiche la carte **« Course
+      planifiée aujourd'hui »** avec sa cible (distance et/ou durée) — pas si aucune séance
+      planifiée ce jour, ou si elle est `done`/`skipped`.
+- [ ] 2. Démarrer cette course, la terminer, réussir la cible (dans la tolérance de 2 %) → le
+      résumé affiche « objectif atteint ».
+- [ ] 3. Même parcours, distance nettement sous la cible → écart affiché **sans rouge ni « raté »**
+      (R4) — ton neutre.
+- [ ] 4. Dépasser nettement la cible → « objectif dépassé de X » (R2, phrase en clair, pas juste un %).
+- [ ] 5. Une séance ne visant qu'une **durée** → seule la durée est comparée, aucune ligne distance
+      (R3).
+- [ ] 6. **Course libre** (bouton « Démarrer une course libre », pas depuis la carte planifiée) →
+      résumé strictement inchangé, **aucun encart objectif** (R1).
+- [ ] 7. Réglage **impérial** → miles, tolérance inchangée (R6).
+- [ ] 8. **Terrain** (D3) : sélecteur à 4 choix sur le résumé, facultatif, persistant (visible en
+      rouvrant le résumé/l'historique).
+- [ ] 9. **Mode avion** : comparaison à l'objectif et sélecteur de terrain fonctionnent
+      normalement (aucun réseau requis).
+- [ ] 10. En **EN** : les phrases d'écart sont grammaticales (« exceeded by », pas de mots collés).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

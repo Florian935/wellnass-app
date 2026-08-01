@@ -37,7 +37,9 @@ import {
   aggregateRunStats,
   paceTrendPoints,
   paceTrend,
+  runTerrainSchema,
   type RunSource,
+  type RunTerrain,
   type StatPeriod,
   type RunStats,
   type PaceTrendPoint,
@@ -95,6 +97,10 @@ export type RunDetail = {
   notes: string | null;
   /** Trace GPS brute encodée (à décoder via `decodeTrack`), `null` si aucune. */
   gpsTrack: string | null;
+  /** Occurrence planifiée réalisée (US RUN-F3), `null` pour une course libre. */
+  plannedSessionId: string | null;
+  /** Terrain (US RUN-F3, D3), `null` si non renseigné. */
+  terrain: RunTerrain | null;
 };
 
 /** Champs persistés lors d'un flush (le tracker fournit le cumul courant). */
@@ -158,6 +164,8 @@ type RunDetailDbRow = {
   rpe: number | null;
   notes: string | null;
   gps_track: string | null;
+  planned_session_id: string | null;
+  terrain: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -184,7 +192,7 @@ const SELECT_HISTORY = `
 /** Détail d'une course par id (tous statuts, non supprimée). */
 const SELECT_RUN_BY_ID = `
   SELECT id, source, status, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes, gps_track
+         avg_pace_s_per_km, rpe, notes, gps_track, planned_session_id, terrain
   FROM runs
   WHERE id = ? AND deleted_at IS NULL
   LIMIT 1
@@ -223,6 +231,7 @@ function rowToHistoryItem(row: RunHistoryDbRow): RunHistoryItem {
 
 /** Convertit une ligne course détail SQLite → RunDetail (camelCase). */
 function rowToRunDetail(row: RunDetailDbRow): RunDetail {
+  const terrain = runTerrainSchema.safeParse(row.terrain);
   return {
     id: row.id,
     source: row.source as RunSource,
@@ -235,6 +244,8 @@ function rowToRunDetail(row: RunDetailDbRow): RunDetail {
     rpe: row.rpe,
     notes: row.notes,
     gpsTrack: row.gps_track,
+    plannedSessionId: row.planned_session_id,
+    terrain: terrain.success ? terrain.data : null,
   };
 }
 
@@ -259,6 +270,75 @@ export function useActiveRun(): { run: ActiveRun | null; isLoading: boolean } {
   const run = row ? rowToActiveRun(row) : null;
 
   return { run, isLoading };
+}
+
+/** Séance de course planifiée aujourd'hui, ni faite ni sautée — au plus une (US RUN-F3). */
+export type TodayRunSession = {
+  id: string;
+  sessionId: string;
+  targetDistanceM: number | null;
+  targetDurationSeconds: number | null;
+};
+
+type TodayRunSessionDbRow = {
+  id: string;
+  session_id: string;
+  target_distance_m: number | null;
+  target_duration_seconds: number | null;
+};
+
+/**
+ * Occurrence `planned` du jour pour le pilier course, s'il y en a une — sert de point d'entrée
+ * « démarrer ma course planifiée » sur le hub (US RUN-F3, symétrique de `useTodaySession` côté
+ * muscu, mais volontairement **séparé** : `useTodaySession` est propre à `strength`/`workouts`
+ * et ne doit pas être touché pour ce besoin, cf. spec).
+ */
+export function useTodayRunSession(): { session: TodayRunSession | null; isLoading: boolean } {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const todayKey = useTodayKey();
+  const { data, isLoading } = useQuery<TodayRunSessionDbRow>(
+    `SELECT ps.id, ps.session_id, s.target_distance_m, s.target_duration_seconds
+     FROM planned_sessions ps
+     JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+     JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
+     WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND p.pillar = 'running'
+       AND ps.status = 'planned' AND ps.scheduled_date = ?
+     ORDER BY s.order_index
+     LIMIT 1`,
+    [userId, todayKey],
+  );
+  const row = data[0] ?? null;
+  const session: TodayRunSession | null = row
+    ? {
+        id: row.id,
+        sessionId: row.session_id,
+        targetDistanceM: row.target_distance_m,
+        targetDurationSeconds: row.target_duration_seconds,
+      }
+    : null;
+  return { session, isLoading };
+}
+
+/**
+ * Cible (distance/durée) de la séance planifiée qu'une course a réalisée — `null` si la course
+ * est libre (`plannedSessionId` absent) ou si le lien ne résout à rien (séance supprimée depuis).
+ * Alimente `compareToTarget` (US RUN-F3, roadmap 5.25).
+ */
+export function useRunTarget(plannedSessionId: string | null): {
+  targetDistanceM: number | null;
+  targetDurationSeconds: number | null;
+} | null {
+  const { data } = useQuery<{ target_distance_m: number | null; target_duration_seconds: number | null }>(
+    `SELECT s.target_distance_m, s.target_duration_seconds
+     FROM planned_sessions ps
+     JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+     WHERE ps.id = ? AND ps.deleted_at IS NULL
+     LIMIT 1`,
+    [plannedSessionId ?? ''],
+  );
+  const row = data[0];
+  if (!plannedSessionId || !row) return null;
+  return { targetDistanceM: row.target_distance_m, targetDurationSeconds: row.target_duration_seconds };
 }
 
 /**
@@ -386,8 +466,12 @@ function currentUserId(): string {
  * non supprimée existe déjà pour l'utilisateur courant, on retourne son id au lieu
  * d'en créer une seconde (au plus une course active à la fois — indispensable car le
  * tracker et un éventuel bouton « reprendre » pourraient sinon en créer plusieurs).
+ *
+ * `plannedSessionId` (US RUN-F3, roadmap 5.25) : posé **une seule fois**, à la création —
+ * jamais modifié ensuite. `undefined`/course déjà active → la course active existante garde
+ * son lien d'origine (ou son absence), il n'est jamais réécrit ici.
  */
-export async function startRun(source: RunSource): Promise<string> {
+export async function startRun(source: RunSource, plannedSessionId?: string): Promise<string> {
   const userId = currentUserId();
 
   const existing = await powerSync.getOptional<{ id: string }>(
@@ -415,7 +499,18 @@ export async function startRun(source: RunSource): Promise<string> {
     gps_track: null,
     rpe: null,
     notes: null,
+    planned_session_id: plannedSessionId ?? null,
+    terrain: null,
   });
+}
+
+/**
+ * Renseigne le terrain d'une course (US RUN-F3, D3) — saisie facultative, à tout moment après
+ * la clôture (comme `setRunFeedback`). Aucune garde de statut : conçu pour compléter une course
+ * déjà `completed`.
+ */
+export async function setRunTerrain(runId: string, terrain: RunTerrain): Promise<void> {
+  await patch('runs', runId, { terrain });
 }
 
 // ---------------------------------------------------------------------------

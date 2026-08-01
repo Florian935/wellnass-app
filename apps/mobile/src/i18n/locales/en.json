@@ -1495,6 +1495,13 @@
       "subtitle": "A run is already being recorded.",
       "cta": "Resume run"
     },
+    "plannedToday": {
+      "title": "Planned run today",
+      "distance": "{{distance}} target",
+      "duration": "{{minutes}} min target",
+      "noTarget": "No numeric target for this session.",
+      "startCta": "Start this run"
+    },
     "permission": {
       "title": "Location required",
       "message": "GPS tracking needs access to your location. Without this permission, you can continue in no-GPS mode or cancel the run.",
@@ -1534,6 +1541,22 @@
       "done": "Done",
       "splits": "Splits per km",
       "splitKm": "Km {{km}}"
+    },
+    "target": {
+      "title": "Session target",
+      "distanceReached": "{{done}} of {{target}} target — target reached",
+      "distanceOver": "{{done}} of {{target}} target — exceeded by {{diff}}",
+      "distanceUnder": "{{done}} of {{target}} target",
+      "durationReached": "{{done}} of {{target}} target — target reached",
+      "durationOver": "{{done}} of {{target}} target — exceeded by {{diff}}",
+      "durationUnder": "{{done}} of {{target}} target"
+    },
+    "terrain": {
+      "title": "Terrain",
+      "road": "Road",
+      "trail": "Trail",
+      "track": "Track",
+      "treadmill": "Treadmill"
     },
     "export": {
       "cta": "Export (GPX)",

@@ -1495,6 +1495,13 @@
       "subtitle": "Une course est déjà en cours d'enregistrement.",
       "cta": "Reprendre la course"
     },
+    "plannedToday": {
+      "title": "Course planifiée aujourd'hui",
+      "distance": "{{distance}} visés",
+      "duration": "{{minutes}} min visées",
+      "noTarget": "Aucun objectif chiffré pour cette séance.",
+      "startCta": "Démarrer cette course"
+    },
     "permission": {
       "title": "Localisation nécessaire",
       "message": "Le suivi GPS a besoin d'accéder à ta position. Sans cette autorisation, tu peux continuer en mode sans GPS ou annuler la course.",
@@ -1534,6 +1541,22 @@
       "done": "Terminé",
       "splits": "Splits par km",
       "splitKm": "Km {{km}}"
+    },
+    "target": {
+      "title": "Objectif de la séance",
+      "distanceReached": "{{done}} sur {{target}} visés — objectif atteint",
+      "distanceOver": "{{done}} sur {{target}} visés — objectif dépassé de {{diff}}",
+      "distanceUnder": "{{done}} sur {{target}} visés",
+      "durationReached": "{{done}} sur {{target}} visées — objectif atteint",
+      "durationOver": "{{done}} sur {{target}} visées — dépassée de {{diff}}",
+      "durationUnder": "{{done}} sur {{target}} visées"
+    },
+    "terrain": {
+      "title": "Terrain",
+      "road": "Route",
+      "trail": "Sentier",
+      "track": "Piste",
+      "treadmill": "Tapis"
     },
     "export": {
       "cta": "Exporter (GPX)",

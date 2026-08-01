@@ -1684,10 +1684,12 @@ export type Database = {
           gps_track: string | null
           id: string
           notes: string | null
+          planned_session_id: string | null
           rpe: number | null
           source: string
           started_at: string
           status: string
+          terrain: string | null
           updated_at: string
           user_id: string
         }
@@ -1701,10 +1703,12 @@ export type Database = {
           gps_track?: string | null
           id: string
           notes?: string | null
+          planned_session_id?: string | null
           rpe?: number | null
           source?: string
           started_at: string
           status?: string
+          terrain?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1718,10 +1722,12 @@ export type Database = {
           gps_track?: string | null
           id?: string
           notes?: string | null
+          planned_session_id?: string | null
           rpe?: number | null
           source?: string
           started_at?: string
           status?: string
+          terrain?: string | null
           updated_at?: string
           user_id?: string
         }

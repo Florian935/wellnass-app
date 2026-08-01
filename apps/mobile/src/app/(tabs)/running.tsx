@@ -12,7 +12,8 @@ import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { RUNNING_WIDGETS } from '@/components/widgets/running-widgets';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
-import { useActiveRun } from '@/data/repositories/run-repository';
+import { useActiveRun, useTodayRunSession } from '@/data/repositories/run-repository';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -21,7 +22,10 @@ export default function RunningScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const units = useUnits();
   const { run: active } = useActiveRun();
+  // US RUN-F3 — séance de course planifiée aujourd'hui, pas encore démarrée.
+  const { session: todaySession } = useTodayRunSession();
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -43,7 +47,8 @@ export default function RunningScreen() {
         showsVerticalScrollIndicator={false}
         scrollEnabled={!dragging}
       >
-        {/* Carte d'action épinglée (hors grille) : reprendre / démarrer une course. */}
+        {/* Carte d'action épinglée (hors grille) : reprendre / démarrer une course planifiée /
+            démarrer une course libre — dans cet ordre de priorité. */}
         {active ? (
           <Card>
             <View style={styles.cardHeader}>
@@ -56,6 +61,37 @@ export default function RunningScreen() {
               {t('running.resume.subtitle')}
             </Text>
             <Button label={t('running.resume.cta')} onPress={() => router.push('/run/active')} />
+          </Card>
+        ) : todaySession ? (
+          <Card>
+            <View style={styles.cardHeader}>
+              <Ionicons name="calendar-outline" size={18} color={colors.accent} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>
+                {t('running.plannedToday.title')}
+              </Text>
+            </View>
+            <Text style={[styles.cardText, { color: colors.textMuted }]}>
+              {[
+                todaySession.targetDistanceM
+                  ? t('running.plannedToday.distance', {
+                      distance: units.formatDistance(todaySession.targetDistanceM / 1000),
+                    })
+                  : null,
+                todaySession.targetDurationSeconds
+                  ? t('running.plannedToday.duration', {
+                      minutes: Math.round(todaySession.targetDurationSeconds / 60),
+                    })
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ') || t('running.plannedToday.noTarget')}
+            </Text>
+            <Button
+              label={t('running.plannedToday.startCta')}
+              onPress={() =>
+                router.push({ pathname: '/run', params: { plannedSessionId: todaySession.id } })
+              }
+            />
           </Card>
         ) : (
           <Card>

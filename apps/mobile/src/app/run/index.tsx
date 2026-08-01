@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { RunSource } from '@wellness/shared';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -23,11 +23,14 @@ import { useTheme } from '@/theme/useTheme';
  *   navigue PAS vers le suivi sans permission de localisation).
  * - Si une course est déjà active, propose de la reprendre plutôt que d'en créer
  *   une seconde (le repository est idempotent, mais l'UX doit être explicite).
+ * - `plannedSessionId` (US RUN-F3, roadmap 5.25) : param de route optionnel, posé par le hub
+ *   course quand une séance planifiée du jour est démarrée depuis là — sinon absent (course libre).
  */
 export default function RunStartScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const { plannedSessionId } = useLocalSearchParams<{ plannedSessionId?: string }>();
 
   const { run: active, isLoading } = useActiveRun();
 
@@ -47,7 +50,7 @@ export default function RunStartScreen() {
     if (starting) return;
     setStarting(true);
     try {
-      const id = await startRun(source);
+      const id = await startRun(source, plannedSessionId);
 
       if (source === 'gps') {
         const startedAtMs = await readStartedAtMs(id);
@@ -89,7 +92,7 @@ export default function RunStartScreen() {
           // démarre une nouvelle en mode manuel pour que l'écran actif affiche
           // le chrono sans chercher un signal GPS indisponible.
           await cancelRun(gpsRunId);
-          await startRun('manual');
+          await startRun('manual', plannedSessionId);
           router.push('/run/active');
         },
       },

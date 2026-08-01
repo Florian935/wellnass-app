@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { syncFieldsSchema, utcTimestampSchema } from './sync';
+import { syncFieldsSchema, utcTimestampSchema, uuidSchema } from './sync';
 
 // ---------------------------------------------------------------------------
 // Statuts et sources
@@ -23,6 +23,14 @@ export type RunStatus = z.infer<typeof runStatusSchema>;
 export const RUN_SOURCES = ['gps', 'manual'] as const;
 export const runSourceSchema = z.enum(RUN_SOURCES);
 export type RunSource = z.infer<typeof runSourceSchema>;
+
+/**
+ * Terrain d'une course (US RUN-F3, D3) — saisie facultative, aucun réseau. `treadmill` (tapis) est
+ * inclus malgré l'absence de trace GPS : une course en salle reste une course.
+ */
+export const RUN_TERRAINS = ['road', 'trail', 'track', 'treadmill'] as const;
+export const runTerrainSchema = z.enum(RUN_TERRAINS);
+export type RunTerrain = z.infer<typeof runTerrainSchema>;
 
 // ---------------------------------------------------------------------------
 // Type point GPS
@@ -621,6 +629,14 @@ export const runRowSchema = syncFieldsSchema.extend({
   rpe: z.number().int().min(1).max(10).nullable(),
   /** Notes libres sur la course. */
   notes: z.string().nullable(),
+  /**
+   * Occurrence planifiee que cette course realise (US RUN-F3, roadmap 5.25) — nullable, une course
+   * libre n'en a pas. Pose a la creation (`startRun`), jamais modifie ensuite : c'est ce qui rend
+   * la comparaison a l'objectif possible (`compareToTarget`, `run-target.ts`).
+   */
+  plannedSessionId: uuidSchema.nullable(),
+  /** Terrain de la course (US RUN-F3, D3) — saisie facultative, sans rapport avec le GPS. */
+  terrain: runTerrainSchema.nullable(),
 });
 export type RunRow = z.infer<typeof runRowSchema>;
 

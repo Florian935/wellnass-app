@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/runf3-resume-course-enrichi` — RUN-F3 : comparaison à l'objectif + terrain (5.25 livrée, D3)
+
+Commit précédent : `4d6594d`. Florian valide de construire le parcours complet (pas une
+heuristique). Front-matter `etape: recette` (spec §7, critères device).
+
+#### Le vrai chantier de cette US : un lien qui n'existait pas
+
+En lisant le code (Étape 0 du plan, comme demandé) : `runs` n'avait **aucune** colonne vers
+`planned_sessions`, et — découverte non anticipée par la spec — **il n'existait aucun parcours
+pour démarrer une course planifiée** : `startRun()` ne prenait qu'une source, jamais d'identifiant
+de séance, et `useTodaySession` (le widget « séance du jour ») n'était câblé que sur `'strength'`
+malgré une signature générique. Construit de bout en bout plutôt qu'une heuristique approximative
+(date + pilier, qui se serait trompée avec 2 courses le même jour).
+
+#### Ajouté
+
+- [run-target.ts (shared)](packages/shared/src/run-target.ts) — `compareToTarget`, pur, tolérance
+  relative de 2 % (R5, dans les deux sens). 10 tests, dont le cas qui compte : 4,95 km sur 5 km
+  visés → `reached` (sans la tolérance, une séance réussie s'afficherait presque toujours manquée).
+- 2 migrations additives sur `runs` — `planned_session_id` (uuid, nullable) et `terrain` (text,
+  check 4 valeurs). **Aucune sync rule à redéployer** (`runs` déjà en `select *`).
+- [run-repository.ts](apps/mobile/src/data/repositories/run-repository.ts) —
+  `useTodayRunSession()` (symétrique de `useTodaySession` côté muscu, mais **délibérément séparé** :
+  ne touche pas au hook existant, propre à `strength`), `useRunTarget(plannedSessionId)`,
+  `setRunTerrain`. `startRun(source, plannedSessionId?)` étendu.
+- Carte « Course planifiée aujourd'hui » sur le hub course
+  ([running.tsx](apps/mobile/src/app/(tabs)/running.tsx)), entre la reprise et le démarrage libre.
+- Bloc de comparaison à l'objectif + sélecteur de terrain (4 choix) sur
+  [summary.tsx](apps/mobile/src/app/run/summary.tsx) — monté **seulement** si la course a une
+  cible résolue (R1, aucun encart vide pour une course libre).
+- 6 clés i18n `running.target.*` (phrases à variables, jamais de concaténation — R2) + 5
+  `running.terrain.*` + 5 `running.plannedToday.*`, FR+EN.
+
+#### Technique / Notes
+
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 265 + shared Vitest, +10 pour
+  `run-target.test.ts`) — lus sans pipe, tous verts. Parité i18n FR/EN vérifiée (1599 clés).
+- `runRowSchema`/`RunDetail` gagnent 2 champs — fixtures de test existantes mises à jour
+  (`running.test.ts`, `run-summary-smoke.test.tsx`).
+- Roadmap 5.25 → ✅, 5.24 reste 🟡 (terrain livré, météo scindée en RUN-F3b). RECETTES.md #18 créée.
+
 ### 01/08/2026 — `fix/conf07-accessibilite` — CONF-07 : contraste WCAG AA corrigé, V0.8 complète
 
 Commit précédent : `3d2acd1`. D1 et D2 validées par Florian (maquette envoyée avant décision).
