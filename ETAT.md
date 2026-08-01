@@ -33,6 +33,7 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
+| **MUSC-F7** — Progression assistée — deload sur stagnation | `validation` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
@@ -45,7 +46,7 @@ avant de pouvoir publier.
 
 <details><summary>P1 finitions (4) · P2 confort (1)</summary>
 
-**P1** — MUSC-F7 — Progression assistée · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
+**P1** — Progression au niveau du programme (roadmap 3.7) · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -57,9 +58,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `dev` (modifications non commitées) |
-| Commits | 998 · `main` a **995** commits de retard sur `dev` |
-| Specs d'US | 96 au total — 77 clôturées, 19 en cours |
+| Branche courante | `feature/muscf7-deload` (modifications non commitées) |
+| Commits | 1000 · `main` a **997** commits de retard sur `dev` |
+| Specs d'US | 97 au total — 77 clôturées, 20 en cours |
 | Migrations | 61/61 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -69,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8b37cf4` Merge feature/muscf6-fenetre-reprise-seance into dev
+- `47b276f` docs(muscf6): réconcilie la fenêtre de reprise de séance (Option A validée)
 - `78b6ead` fix(recette): lot de 8 correctifs de la recette device (CYCLE-01, NUTR-F2, MESUR-01, PARTAGE-01, BIEN-01)
 - `3300104` fix(sync): déballe les colonnes jsonb à la remontée PowerSync
 - `e6b9e08` docs(muscf6): spec + plan — fenêtre de reprise de séance (3h vs 4h)
-- `5643442` fix(health-connect): clarifie le bandeau d'échec pour les utilisateurs anglophones
-- `d639a72` refactor(pillar): unifie la décision d'accès par pilier (REFACTO-01, 9.16)
 
 ---
 

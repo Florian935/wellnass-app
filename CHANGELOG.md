@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf7-deload` — MUSC-F7 : entrée en pipeline, scindée du roadmap 3.7 (spec + plan)
+
+Commit précédent : `8b37cf4`. Documentation uniquement, **aucun code**. Front-matter `etape:
+validation` — arrêt avant tout code, en attente de la décision D1 (Florian/Damien).
+
+#### Ajouté
+
+- [docs/specs/functional/us/muscf7-progression-assistee.md](docs/specs/functional/us/muscf7-progression-assistee.md)
+  — spec. **Pas de maquette** : la restitution UI et les 2 clés i18n (`workout.suggestion.deload`
+  FR/EN) existent déjà depuis Refonte-C3.
+  - **Trouvaille de cadrage la plus importante** : le backlog présentait MUSC-F7 comme un seul
+    chantier (« progression programme + câblage deload »). Cartographie (agent Explore) : ce sont
+    deux volets d'ampleur radicalement différente.
+    - **Volet B (roadmap 3.8, deload)** — brique de calcul déjà livrée et testée
+      (`computeProgressionSuggestion`, `packages/shared/src/workout.ts`), UI déjà câblée. Il ne
+      manque qu'un signal, `previousStruggled`, jamais fourni à l'appel actuel. **C'est le seul
+      périmètre retenu pour cette US.**
+    - **Volet A (roadmap 3.7, progression au niveau programme)** — `exercise_plans.target_weight_kg`
+      est figé par plan (aucune notion de semaine), aucun taux de complétion n'est calculé nulle
+      part, `planned_sessions.week_index` n'est posé qu'une fois à la génération. Ce n'est pas un
+      signal manquant : c'est un **concept de données à concevoir** (où stocker une cible qui
+      évolue, quelle fenêtre, quand recalculer, comment l'exposer). **Scindé, traité comme un
+      futur candidat séparé** avec son propre cadrage produit.
+  - Décision D1 posée : confirmer la règle déjà écrite (2 séances d'affilée en échec/RPE ≥ 8,
+    −10 %, arrondi 0,5 kg) avant de l'activer — elle est dormante depuis Refonte-C3, jamais revue.
+- [docs/plans/muscf7-progression-assistee.md](docs/plans/muscf7-progression-assistee.md) — 6 tasks :
+  exporter `sessionStruggled`, requête symétrique à `SELECT_LAST_PERFORMANCE` (offset 1), hook
+  `usePreviousStruggled`, branchement dans `workout.tsx`.
+- `BACKLOG.md` — ligne MUSC-F7 recadrée sur le seul volet 3.8 (patron `~~MUSC-F7~~`) ; nouvelle
+  ligne séparée pour le volet 3.7 (« Progression au niveau du programme »), non encore une US.
+- `docs/roadmap/roadmap.md` — 3.7 : remarque honnête sur l'ampleur réelle du chantier (estimation
+  « 3h » signalée sous-évaluée) ; 3.8 : pointeur vers la spec/plan.
+
 ### 01/08/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : réconciliation livrée (Option A, US clôturée)
 
 Commit précédent : `78b6ead`. Décision D1 validée par Florian : **Option A**. Documentation
