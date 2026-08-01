@@ -1,4 +1,4 @@
-# État du projet — 31/07/2026
+# État du projet — 01/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `████████████████░░░░` **82 %** — 175 livré · 22 partiel · 10 à faire (sur 213)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 176 livré · 21 partiel · 10 à faire (sur 213)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -33,7 +33,6 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
-| **MUSC-F6** — Fenêtre de reprise de séance — réconciliation du seuil 3h/4h | `validation` | `feature/muscf6-fenetre-reprise-seance` | [3.36] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
@@ -59,8 +58,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscf6-fenetre-reprise-seance` (modifications non commitées) |
-| Commits | 995 · `main` a **992** commits de retard sur `dev` |
-| Specs d'US | 96 au total — 76 clôturées, 20 en cours |
+| Commits | 996 · `main` a **993** commits de retard sur `dev` |
+| Specs d'US | 96 au total — 77 clôturées, 19 en cours |
 | Migrations | 60/60 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -70,11 +69,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `e6b9e08` docs(muscf6): spec + plan — fenêtre de reprise de séance (3h vs 4h)
 - `5643442` fix(health-connect): clarifie le bandeau d'échec pour les utilisateurs anglophones
 - `d639a72` refactor(pillar): unifie la décision d'accès par pilier (REFACTO-01, 9.16)
 - `51626ac` docs(refacto01): spec + plan — unifier la décision d'accès par pilier
 - `010a4d3` chore(etat): régénère ETAT.md après le commit Health Connect
-- `e5efdde` feat(cycle01): synchro Health Connect du cycle (permissions, push/import, dédup R21)
 
 ---
 

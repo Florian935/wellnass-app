@@ -10,6 +10,27 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : réconciliation livrée (Option A, US clôturée)
+
+Commit précédent : `e6b9e08`. Décision D1 validée par Florian : **Option A**. Documentation
+uniquement, **aucun code applicatif**. Front-matter `etape: close` directement (spec §4 : aucun
+critère de recette).
+
+#### Modifié
+
+- [musculation.md §4.4](docs/specs/functional/musculation.md) — le paragraphe « Abandon de
+  séance / reprise » ne promet plus une fenêtre de 4h et une popup « Pause » jamais construites :
+  il décrit maintenant le comportement réel (quitter laisse la séance `active`, reprenable via
+  « Reprendre » jusqu'à la clôture automatique à 3h, US 3.37).
+- `docs/roadmap/roadmap.md` — ligne 3.36 : libellé + remarque réécrits, statut 🟡 → ✅. Récapitulatif
+  (✅ 175→**176**, 🟡 22→**21**), détail V0.2 (27/1→**28/0**), entrée au Journal des réconciliations.
+- `BACKLOG.md` — entrée MUSC-F6 retirée (US clôturée).
+
+#### Technique / Notes
+
+- Aucun test à ajouter ni à modifier : `WORKOUT_AUTO_CLOSE_SECONDS` et `workout.test.ts` restent
+  inchangés — c'est justement le point de cette US (le code avait déjà raison, la doc mentait).
+
 ### 31/07/2026 — `feature/muscf6-fenetre-reprise-seance` — MUSC-F6 : entrée en pipeline (spec + plan)
 
 Commit précédent : `5643442`. Documentation uniquement, **aucun code**. Front-matter `etape:
