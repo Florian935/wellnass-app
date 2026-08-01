@@ -29,6 +29,43 @@ export const MACRO_GAP_MIN_RATIO = 0.1;
 export const SUGGESTION_MIN_G = 10;
 export const SUGGESTION_MAX_G = 400;
 
+/**
+ * Plafond de quantité quand l'aliment n'a **pas** de portion de référence en base.
+ *
+ * `SUGGESTION_MAX_G` (400 g) est la borne d'absurdité — au-delà, la proposition ne veut plus rien
+ * dire. Ce n'est pas la même chose qu'une **portion** : 400 g d'avocat restent dans les bornes et
+ * restent inmangeables (recette device du 01/08/2026). Sans portion connue, on s'arrête donc à une
+ * assiette plausible tous aliments confondus.
+ */
+export const SUGGESTION_NO_PORTION_MAX_G = 200;
+
+/**
+ * Part minimale de l'écart qu'une portion doit couvrir pour valoir la peine d'être proposée.
+ *
+ * Contrepartie indispensable du plafond de portion. Sans elle, rabattre la quantité transforme
+ * « 1 kg de brocoli pour 30 g de protéines » — écarté, à juste titre — en « 200 g de brocoli,
+ * +5,6 g » : une ligne exacte, honnête, et sans aucun intérêt. Une suggestion qui ne déplace pas
+ * l'aiguille est du bruit, et trois lignes de bruit valent moins qu'une carte vide.
+ */
+export const SUGGESTION_MIN_GAP_COVERAGE = 0.25;
+
+/**
+ * Part maximale du budget calorique restant qu'une **seule** suggestion peut consommer.
+ *
+ * La quantité proposée comble l'écart **en entier** : pour 80 g de lipides manquants, cela donnait
+ * « Chipolatas 350 g · 952 kcal » ou « Rillettes de saumon 380 g · 999 kcal » — dans les bornes en
+ * grammes, sous le budget du jour, et pourtant inutilisables (recette device du 31/07/2026,
+ * critère 2 « aucun 900 g, aucun 8 g »).
+ *
+ * Les bornes en grammes ne peuvent pas attraper ce cas : 380 g de rillettes et 380 g de courgettes
+ * ont la même masse et rien à voir. C'est la **densité calorique** qui rend la proposition absurde,
+ * donc c'est elle qu'on plafonne. Un aliment qui coûterait plus du tiers de ce qu'il reste à manger
+ * n'est pas un complément, c'est un repas.
+ *
+ * ⚠️ Valeur de **calibrage**, pas une règle métier figée : à réévaluer à l'usage.
+ */
+export const SUGGESTION_MAX_KCAL_RATIO = 1 / 3;
+
 /** Pas d'arrondi de la quantité proposée. */
 export const SUGGESTION_STEP_G = 5;
 
@@ -58,6 +95,12 @@ export type SuggestionCandidate = {
   proteinPer100g: number | null;
   carbsPer100g: number | null;
   fatPer100g: number | null;
+  /**
+   * Portion de référence de l'aliment en grammes (« 1 banane » = 120 g), quand la base la connaît.
+   * C'est le plafond de quantité le plus honnête dont on dispose : « 1 avocat » veut dire quelque
+   * chose, « 390 g d'avocat » non. Absente → repli sur {@link SUGGESTION_NO_PORTION_MAX_G}.
+   */
+  portionG?: number | null;
 };
 
 /** Une suggestion prête à afficher — et à journaliser en un tap. */
@@ -110,20 +153,40 @@ export function pickMacroToFill(gaps: ReadonlyArray<MacroGap>): SuggestibleMacro
   return best ? best.macro : null;
 }
 
+/** Arrondit une quantité au pas d'affichage. */
+function roundToStep(grams: number): number {
+  return Math.round(grams / SUGGESTION_STEP_G) * SUGGESTION_STEP_G;
+}
+
 /** Quantité (g) nécessaire pour apporter `gapG` du macro, arrondie au pas. */
 function quantityFor(gapG: number, macroPer100g: number): number {
-  const raw = (gapG / macroPer100g) * 100;
-  return Math.round(raw / SUGGESTION_STEP_G) * SUGGESTION_STEP_G;
+  return roundToStep((gapG / macroPer100g) * 100);
 }
 
 /**
- * Jusqu'à 3 aliments qui comblent l'écart, du plus efficace au moins efficace.
+ * Jusqu'à 3 aliments qui **rapprochent** de la cible, du plus efficace au moins efficace.
+ *
+ * ── Ce que la fonction promet, et ce qu'elle ne promet plus ──────────────────────────────────────
+ * Elle proposait la quantité qui comble l'écart **en entier**. Pour 80 g de lipides manquants —
+ * c'est-à-dire la cible d'une journée complète — cela donnait « Chipolatas 350 g », « Rillettes de
+ * saumon 380 g », « Avocat 390 g » : arithmétiquement exact, inutilisable en cuisine (recette
+ * device des 31/07 et 01/08/2026, critère 2 « aucun 900 g, aucun 8 g »).
+ *
+ * Le défaut n'était pas dans les bornes mais dans le **contrat** : aucun aliment unique ne couvre
+ * la cible d'un macro sur une journée, et prétendre le contraire produit mécaniquement des portions
+ * absurdes. La fonction propose donc désormais une **portion réaliste** — plafonnée par la portion
+ * de référence de l'aliment quand la base la connaît — et `macroG` dit ce qu'elle apporte
+ * réellement. C'est à l'appelant d'afficher cet apport : une suggestion qui tait sa contribution
+ * laisserait croire qu'elle comble tout, ce qui est précisément le défaut corrigé.
  *
  * Un candidat est **écarté** — et non ajusté — dès que :
  *  - la valeur du macro visé est absente ou nulle (rien à scorer) ;
- *  - la quantité nécessaire sort des bornes plausibles (règle 3) ;
+ *  - la quantité retenue sort des bornes plausibles (règle 3) ;
+ *  - la portion retenue couvre moins de {@link SUGGESTION_MIN_GAP_COVERAGE} de l'écart : elle est
+ *    exacte mais sans intérêt (« 200 g de brocoli, +5,6 g de protéines ») ;
  *  - l'apport calorique à cette quantité **dépasse le budget restant** : suggérer de combler un macro
- *    en faisant exploser les calories serait un mauvais conseil, pas un conseil imparfait.
+ *    en faisant exploser les calories serait un mauvais conseil, pas un conseil imparfait ;
+ *  - cet apport dépasse {@link SUGGESTION_MAX_KCAL_RATIO} du budget restant.
  *
  * `recentIds` départage les scores proches (décision D4) : on mange ce qu'on a chez soi, et suggérer
  * un aliment jamais consommé reste un conseil théorique.
@@ -147,11 +210,26 @@ export function suggestFoodsForMacro(params: {
     if (density === null) return [];
     if (!Number.isFinite(food.kcalPer100g) || food.kcalPer100g <= 0) return [];
 
-    const quantityG = quantityFor(gapG, density);
+    // Quantité idéale (comble tout l'écart), puis rabattue sur une portion mangeable. On ne garde
+    // pas la plus grande des deux : c'est justement la quantité idéale qui produisait les absurdités.
+    const ideal = quantityFor(gapG, density);
+    const ceiling =
+      food.portionG != null && Number.isFinite(food.portionG) && food.portionG > 0
+        ? Math.min(food.portionG, SUGGESTION_MAX_G)
+        : SUGGESTION_NO_PORTION_MAX_G;
+    const quantityG = roundToStep(Math.min(ideal, ceiling));
+
     if (quantityG < SUGGESTION_MIN_G || quantityG > SUGGESTION_MAX_G) return [];
+
+    // Ce que cette portion apporte réellement. C'est le chiffre affiché, et le chiffre jugé.
+    const macroG = Math.round(((density * quantityG) / 100) * 10) / 10;
+    if (macroG < gapG * SUGGESTION_MIN_GAP_COVERAGE) return [];
 
     const kcal = Math.round((food.kcalPer100g * quantityG) / 100);
     if (kcal > kcalBudget) return [];
+    // Une suggestion est un **complément**, pas un repas : au-delà d'une fraction du budget
+    // restant, la proposition est écartée même si elle comble parfaitement le macro.
+    if (kcal > kcalBudget * SUGGESTION_MAX_KCAL_RATIO) return [];
 
     return [
       {
@@ -160,7 +238,7 @@ export function suggestFoodsForMacro(params: {
           name: food.name,
           quantityG,
           kcal,
-          macroG: Math.round(((density * quantityG) / 100) * 10) / 10,
+          macroG,
         } satisfies MacroSuggestion,
         // Densité du macro **pour 100 kcal** (règle 1).
         score: (density / food.kcalPer100g) * 100,

@@ -10,6 +10,152 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/cycle01-suivi-menstruel` — Lot de correctifs de la recette device (CYCLE-01, NUTR-F2, MESUR-01, PARTAGE-01, BIEN-01)
+
+Commit précédent : `3300104`. **Aucune fonctionnalité nouvelle** : 8 défauts trouvés en pilotant l'app
+sur Pixel 6a (build release, 34 routes balayées), corrigés et **revérifiés à l'écran** un par un.
+
+#### Corrigé
+
+**🔴 CYCLE-01 — le suivi du cycle était impossible à activer**
+
+L'interrupteur des réglages ne basculait pas, **sans le moindre message**.
+[schema.ts](apps/mobile/src/powersync/schema.ts) ne déclarait pas `cycle_tracking_enabled` ni
+`cycle_health_connect_enabled` dans la table locale `user_settings` : les tables `menstrual_*` avaient
+été ajoutées à la migration `20260730230615`, les **deux colonnes du réglage** non. L'écriture
+PowerSync échouait et `void updateSettings(...)` avalait l'erreur.
+
+> **Aucun des 1 529 tests ne pouvait l'attraper** : ils mockent le repository. Le défaut n'existe que
+> contre le schéma local réel. C'est l'argument le plus net de la session pour la recette device.
+
+**CYCLE-01 — les routes s'ouvraient suivi éteint (critère de recette 1)**
+
+`wellness://cycle` et `wellness://cycle/insights` s'affichaient **entièrement** alors que l'opt-in était
+désactivé. Aucun garde dans le code : la protection reposait sur une convention (« on n'y accède que
+depuis le widget »), or Expo Router enregistre les routes et le schéma `wellness://` est déclaré. Pour
+une donnée de santé en opt-in strict, la convention ne suffit pas.
+→ [CycleTrackingGuard](apps/mobile/src/components/cycle/CycleTrackingGuard.tsx), appliqué aux 2 écrans.
+Le garde **enveloppe** le contenu : suivi éteint, aucun hook de `menstrual-cycle-repository` ne
+s'exécute, la route ne lit rien. Ne redirige **jamais** pendant le chargement des réglages (sinon on
+renverrait à l'accueil un utilisateur qui a bien activé le suivi).
+
+**NUTR-F2 — des suggestions inutilisables : « Chipolatas 350 g · 952 kcal »**
+
+Pour 80 g de lipides manquants, la carte proposait *Chipolatas 350 g · 952 kcal*, *Beurre de cacahuète
+155 g · 997 kcal*, *Rillettes de saumon 380 g · 999 kcal* — dans les bornes en grammes, sous le budget
+du jour, et impossibles à cuisiner (critère de recette 2 : « aucun 900 g, aucun 8 g »).
+
+Le défaut n'était **pas dans les bornes, mais dans le contrat** : la quantité proposée comblait 100 % de
+l'écart. Or un écart de 80 g de lipides, c'est la cible d'une **journée entière** — aucun aliment seul ne
+la couvre, et prétendre le contraire produit mécaniquement des portions absurdes. Trois changements
+dans [macro-suggestion.ts](packages/shared/src/macro-suggestion.ts) :
+
+- **Plafond de portion** — la quantité est rabattue sur la **portion de référence** de l'aliment
+  (`SuggestionCandidate.portionG`, alimentée par `foods.portions`), ou `SUGGESTION_NO_PORTION_MAX_G`
+  (200 g) à défaut. La portion sert de **plafond**, jamais de plancher : un petit écart reste un petit
+  apport.
+- **Plafond calorique** — `SUGGESTION_MAX_KCAL_RATIO` (1/3) : une suggestion ne peut pas coûter plus du
+  tiers des calories restantes. Les bornes en grammes ne peuvent pas attraper ce cas — 380 g de rillettes
+  et 380 g de courgettes ont la même masse et rien à voir ; c'est la **densité calorique** qui rend la
+  proposition absurde, donc c'est elle qu'on plafonne. Reste utile après le plafond de portion : 100 g
+  d'huile est une portion normale et pèse 900 kcal.
+- **Seuil d'utilité** — `SUGGESTION_MIN_GAP_COVERAGE` (25 %). **Contrepartie indispensable** du plafond :
+  sans lui, rabattre la quantité transformait « 1 kg de brocoli », correctement rejeté, en « 200 g de
+  brocoli, +5,6 g » — exact, honnête, et sans le moindre intérêt. *C'est le test existant sur le brocoli
+  qui a fait échouer la première version du correctif et imposé ce seuil.*
+- **La carte annonce ce qu'elle apporte**
+  ([MacroSuggestionCard](apps/mobile/src/components/nutrition/MacroSuggestionCard.tsx)) — « 150 g ·
+  305 kcal · **+30,9 g de lipides** ». Sans ce chiffre, une portion laisserait croire qu'elle comble la
+  cible : c'est précisément le défaut corrigé. Chaîne `suggestion.noCandidate` réalignée sur le nouveau
+  contrat (« n'apporte ce macro dans une portion raisonnable », plus « ne comble cet écart »).
+
+**NUTR-F2 — 50 des 80 aliments de bibliothèque n'avaient aucune portion**
+
+Conséquence directe : après le correctif ci-dessus, **toutes** les suggestions sortaient à exactement
+200 g — la borne de repli. Le plafonnement par portion ne pouvait pas s'appliquer.
+→ Migration [`20260801001204`](supabase/migrations/20260801001204_nutrf2_portions_reference_aliments.sql),
+**poussée sur le cloud** et cochée dans [MIGRATIONS.md](supabase/MIGRATIONS.md). `update` par id, donc
+idempotent. Le catalogue source `foods-catalog.json` est mis à jour dans le même commit — une
+régénération du seed conservera ces portions.
+Résultat device : *Avocat **150 g** · 305 kcal · +30,9 g de lipides*.
+
+**MESUR-01 — « réessaie » sur une valeur qui échouera toujours (critère de recette 7)**
+
+Saisir 500 cm affichait « Les mesures n'ont pas pu être enregistrées. **Réessaie.** » — un conseil faux.
+La borne (1-300 cm) existait bien dans `isValidMeasurementCm`, mais uniquement au dépôt : la valeur se
+parsait, le bouton restait actif, l'écriture échouait, et l'utilisateur recevait le catch générique.
+→ [MeasurementSheet](apps/mobile/src/components/measurements/MeasurementSheet.tsx) contrôle les bornes
+**avant** l'envoi : message qui donne les limites dans l'unité active, bouton désactivé.
+
+**PARTAGE-01 — « Wellness » collé à « DURÉE »** sur la carte partageable : `styles.brand` n'avait aucune
+marge haute, les deux lignes se lisaient comme une seule. `marginTop` proportionnel à la taille de carte,
+comme le reste de [ShareCard](apps/mobile/src/components/share/ShareCard.tsx).
+
+**BIEN-01 — barres d'énergie invisibles** : les glyphes `▁▃▅▆█` sont du **texte**, pas des emoji — sans
+`color`, ils héritent du noir par défaut de RN sur Android et disparaissaient sur le thème sombre. Les
+emoji d'humeur et de stress portent leur propre couleur, d'où un défaut visible sur une seule des trois
+échelles. Couleur de thème explicite dans
+[WellbeingScale](apps/mobile/src/components/wellbeing/WellbeingScale.tsx).
+
+**food-picker — un écran qui confirmait un enregistrement fantôme**
+
+`params.date ?? ''` écrivait l'entrée sur une **clé de jour vide** : ligne enregistrée sans erreur,
+comptée par « N aliments ajoutés », et invisible dans tous les journaux. Repli sur aujourd'hui
+(`useTodayKey`). ⚠️ **Conséquence sous-estimée à la première analyse** : ces lignes bloquaient aussi la
+file d'envoi PowerSync (`invalid input syntax for type date: ""`), au même titre que le défaut jsonb du
+commit `3300104`.
+
+**Trois occurrences du même symptôme : le point décimal en français**
+
+- « Essaie 82.**5** kg » — `weightInputValue()` (fait pour pré-remplir un `TextInput`, qui n'accepte pas
+  la virgule) réutilisé comme **texte d'affichage** → `formatWeight`
+  ([workout.tsx](apps/mobile/src/app/workout.tsx)).
+- Axe des mensurations « 90.2 | 67.7 | 45.1 » — sans `formatYLabel`, gifted-charts génère ses propres
+  libellés en formatage JS brut → nouveau `formatAxisNumber` dans
+  [useUnits](apps/mobile/src/hooks/useUnits.ts). Bénéfice au passage : l'échelle suit désormais la plage
+  réelle (81 → 82) au lieu de partir de 0, où un tour de taille est une ligne plate.
+- « +41.**2** g de lipides » — i18next interpole les nombres avec un `String()` brut → formatage
+  **avant** passage de la variable.
+
+- **« 1 ajouté(s) à ce repas »** → pluriel i18next (`addedCount_one` / `_other`), FR + EN.
+
+#### Ajouté
+
+- [CycleTrackingGuard.tsx](apps/mobile/src/components/cycle/CycleTrackingGuard.tsx) — garde d'accès des
+  écrans de cycle.
+- **Règle ESLint** ([eslint.config.js](apps/mobile/eslint.config.js)) — `no-restricted-syntax` refusant un
+  helper `*InputValue` à l'intérieur d'un `t(...)`. **Vérifiée en réintroduisant le bug d'origine** : elle
+  le rattrape, et laisse passer le code corrigé.
+- [bonnes-pratiques.md §2](docs/specs/technical/bonnes-pratiques.md) — « tout nombre affiché passe par un
+  formateur localisé », avec les **trois pièges** ci-dessus. Seul le premier est détectable
+  statiquement ; les deux autres relèvent de la convention.
+- **Tests** : +5 sur `macro-suggestion` (plafond de portion, apport réel annoncé, repli sans portion, pas
+  de gonflement, portion aberrante en base) ; +3 sur le garde de cycle (suivi éteint, réglages absents,
+  chargement en cours) ; plafond calorique réécrit sur l'huile d'olive — le cas où une portion **normale**
+  reste hors budget, que le plafond de portion ne couvre pas.
+
+#### Modifié
+
+- [buildPaceYAxis](packages/shared/src/units.ts) — paramètre `flatPad` optionnel (défaut inchangé : 30 s
+  d'allure). Le nom reste historique, la fonction est générique. Les mensurations passent **2 cm** : le
+  défaut aurait ouvert une bande de 60 cm autour d'un relevé plat.
+- `apps/mobile/src/app/(tabs)/nutrition.tsx` — `portionG` transmis aux candidats.
+
+#### Technique / Notes
+
+- **Périmètre volontairement large** : 8 défauts d'un même passage de recette, tous des `fix`, tous
+  revérifiés sur device. Le correctif de synchro, lui, a été **isolé** dans `3300104` — il touche toutes
+  les écritures de l'app et doit pouvoir être révoqué seul.
+- ⚠️ **Deux points restent ouverts côté NUTR-F2.** Les suggestions issues d'aliments **OpenFoodFacts**
+  (scannés) restent au repli 200 g : ces aliments n'ont légitimement pas de portion déclarée. Et les trois
+  seuils (1/3 du budget, 200 g, 25 % de couverture) sont des **valeurs de calibrage** commentées comme
+  telles, à réévaluer à l'usage — pas des règles métier figées.
+- **Anomalie de données trouvée, non corrigée** : une séance du 22/07 dure **3 150 min** (52 h), laissée
+  ouverte. C'est exactement ce que vise la spec MUSC-F6 cadrée le 31/07 — la donnée réelle confirme le
+  besoin.
+- **Non reproduit / non testé** : Health Connect de bout en bout (permissions système à valider à la main)
+  et les notifications programmées (attente d'échéance).
+
 ### 01/08/2026 — `feature/cycle01-suivi-menstruel` — 🔴 Synchro bloquée : les colonnes `jsonb` remontaient en texte
 
 Commit précédent : `e6b9e08`. **Correctif le plus important de la recette device du 31/07–01/08/2026.**

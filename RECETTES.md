@@ -147,6 +147,15 @@ l'historique. Nom vide = sync rule pas déployée.
 
 📄 [spec](docs/specs/functional/us/nutrf2-substitution-aliments.md) · roadmap 4.37 · **📱 device**
 
+> ⚠️ **Le critère 2 a échoué le 01/08/2026, et le contrat de la fonctionnalité a changé en conséquence.**
+> La carte proposait *Chipolatas 350 g · 952 kcal* : la quantité visait à combler **100 % de l'écart**, ce
+> qu'aucun aliment seul ne peut faire dans une portion mangeable. Une suggestion est désormais une **portion**
+> (plafonnée par la portion de référence de l'aliment, un tiers du budget calorique, écartée sous 25 % de
+> couverture) et la carte **annonce son apport réel**. 50 portions manquantes ont été renseignées en base.
+> **À recetter avec ce nouveau contrat en tête** : le critère 1 ne doit plus se lire « 3 aliments qui comblent
+> l'écart » mais « 3 portions plausibles qui en rapprochent ». Les aliments **OpenFoodFacts scannés** restent
+> à 200 g : ils n'ont pas de portion déclarée, c'est attendu.
+
 - [ ] 1. Journée avec un manque de protéines net : la carte apparaît, 3 aliments plausibles.
 - [ ] 2. Quantités **réalistes** — aucun « 900 g », aucun « 8 g ».
 - [ ] 3. L'apport calorique de chaque suggestion est affiché.
@@ -440,6 +449,16 @@ demande de permissions (interrupteur « Synchroniser avec Health Connect » dans
 pas les deux types Menstruation, ou si `requestCyclePermissions()` échoue silencieusement : le dev
 build est antérieur à ces lignes → `npx expo prebuild --platform android --clean` puis un nouveau
 build (même piège que documenté plus bas pour PARTAGE-01).
+
+> ✅ **Deux bloquants levés le 01/08/2026** (passe device automatisée). (a) Le suivi était **impossible à
+> activer** : les colonnes `cycle_tracking_enabled` / `cycle_health_connect_enabled` manquaient au schéma
+> PowerSync local, l'écriture échouait et l'erreur était avalée — l'interrupteur ne bougeait pas, sans message.
+> (b) Les routes `wellness://cycle` et `/cycle/insights` s'ouvraient **entièrement** suivi éteint (critère 1),
+> désormais fermées par un garde. **Le manifest embarque bien les 2 permissions Menstruation** après un
+> `prebuild --clean` — le dossier `android/` local était antérieur à l'US, exactement le piège documenté en bas
+> de page. **Déjà vérifiés automatiquement** : 1, 1 bis, 2, 6 (R8), 10 (R13), 13 (R17), 16 partiel (les 2
+> interrupteurs apparaissent). **Non testé** : Health Connect de bout en bout (permissions système à valider
+> à la main).
 
 - [ ] 1. Réglage **désactivé par défaut** : aucun widget, aucune route atteignable, aucune trace.
 - [ ] 1 bis. **La barre du bas n'a PAS gagné d'onglet** (R16 bis).

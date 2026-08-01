@@ -277,15 +277,19 @@ export default function WorkoutScreen() {
   const suggestionLabel = (() => {
     if (!suggestion) return null;
     if (suggestion.kind === 'weightOrReps') {
+      // `formatWeight` et non `weightInputValue` : ce libellé est du **texte affiché**, pas le
+      // pré-remplissage d'un champ. `weightInputValue` passe par `String(Number(...))`, donc un
+      // point décimal — « Essaie 82.5 kg » au milieu d'une app qui écrit « 76,0 kg » partout
+      // ailleurs (constaté en recette device du 31/07/2026).
       return t('workout.suggestion.weightOrReps', {
-        weight: `${units.weightInputValue(suggestion.weightKg)} ${units.weightSymbol}`,
+        weight: units.formatWeight(suggestion.weightKg),
         reps: suggestion.reps,
       });
     }
     if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
     if (suggestion.kind === 'deload') {
       return t('workout.suggestion.deload', {
-        weight: `${units.weightInputValue(suggestion.weightKg)} ${units.weightSymbol}`,
+        weight: units.formatWeight(suggestion.weightKg),
       });
     }
     return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });

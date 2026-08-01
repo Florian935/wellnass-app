@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { CYCLE_PHASES, type CyclePhase, type CrossPhaseResult } from '@wellness/shared';
 
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { CycleTrackingGuard } from '@/components/cycle/CycleTrackingGuard';
 import {
   CYCLE_INSIGHT_METRICS,
   useCycleInsights,
@@ -41,6 +42,14 @@ function useMetricFormatter() {
 }
 
 export default function CycleInsightsScreen() {
+  return (
+    <CycleTrackingGuard>
+      <CycleInsightsContent />
+    </CycleTrackingGuard>
+  );
+}
+
+function CycleInsightsContent() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { byMetric, isLoading } = useCycleInsights();

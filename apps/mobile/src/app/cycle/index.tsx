@@ -27,6 +27,7 @@ import {
 
 import { Button } from '@/components/Button';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { CycleTrackingGuard } from '@/components/cycle/CycleTrackingGuard';
 import { CycleDaySheet } from '@/components/cycle/CycleDaySheet';
 import { CycleMonthCalendar } from '@/components/cycle/CycleMonthCalendar';
 import {
@@ -46,6 +47,16 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function CycleScreen() {
+  // Le garde enveloppe le contenu plutôt que de vivre dedans : tant que le suivi est éteint,
+  // aucun hook de `menstrual-cycle-repository` ne s'exécute — la route ne lit rien.
+  return (
+    <CycleTrackingGuard>
+      <CycleScreenContent />
+    </CycleTrackingGuard>
+  );
+}
+
+function CycleScreenContent() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

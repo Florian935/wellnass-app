@@ -20,6 +20,14 @@ jest.mock('@/data/repositories/cycle-insights-repository', () => ({
   useCycleInsights: jest.fn(),
 }));
 
+// Le garde d'accès (`CycleTrackingGuard`) lit les réglages. Mocké au niveau du repository pour que
+// le vrai garde s'exécute — c'est lui qui ferme la route quand le suivi est éteint (critère 1).
+jest.mock('@/data/repositories/settings-repository', () => ({
+  useSettings: jest.fn(() => ({ settings: { cycleTrackingEnabled: true }, isLoading: false })),
+}));
+
+jest.mock('expo-router', () => ({ Redirect: jest.fn(() => null) }));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),

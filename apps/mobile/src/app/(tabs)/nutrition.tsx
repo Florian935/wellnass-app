@@ -177,6 +177,9 @@ export default function NutritionScreen() {
         proteinPer100g: f.proteinPer100g,
         carbsPer100g: f.carbsPer100g,
         fatPer100g: f.fatPer100g,
+        // Première portion déclarée = portion de référence (« 1 banane » = 120 g). C'est le
+        // plafond de quantité de la suggestion : sans elle, on retombe sur une borne générique.
+        portionG: f.portions[0]?.grams ?? null,
       })),
     [recentFoods],
   );

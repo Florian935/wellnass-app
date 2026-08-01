@@ -59,6 +59,12 @@ type ProgressLineChartProps = {
    * 4 points (repli automatique sur le rendu brut).
    */
   smooth?: boolean;
+  /**
+   * Demi-largeur de la bande ouverte quand tous les points sont égaux, dans l'unité des valeurs.
+   * Sans effet si `formatYLabel` n'est pas fourni. Défaut : celui de `buildPaceYAxis` (30 s
+   * d'allure) — à passer explicitement dès que les valeurs ne sont pas des secondes.
+   */
+  flatPad?: number;
 };
 
 /** Fenêtre de lissage auto : impaire, bornée [3,7], selon la longueur de série. */
@@ -80,6 +86,7 @@ export function ProgressLineChart({
   width,
   formatYLabel,
   smooth,
+  flatPad,
 }: ProgressLineChartProps) {
   const { colors } = useTheme();
   const { i18n } = useTranslation();
@@ -111,7 +118,7 @@ export function ProgressLineChart({
   // gifted-charts trace sur son échelle 0→max et les libellés M:SS ne correspondent pas
   // aux points. `buildPaceYAxis` renvoie l'échelle ET les libellés sur la même plage.
   const yAxis = formatYLabel
-    ? buildPaceYAxis(chartData.map((d) => d.value), NO_OF_SECTIONS, formatYLabel)
+    ? buildPaceYAxis(chartData.map((d) => d.value), NO_OF_SECTIONS, formatYLabel, flatPad)
     : null;
 
   // Overlay lissé (opt-in) : le brut garde l'échelle (yAxis ci-dessus, calculé sur le

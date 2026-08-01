@@ -59,7 +59,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cycle01-suivi-menstruel` (modifications non commitées) |
-| Commits | 996 · `main` a **993** commits de retard sur `dev` |
+| Commits | 997 · `main` a **993** commits de retard sur `dev` |
 | Specs d'US | 96 au total — 76 clôturées, 20 en cours |
 | Migrations | 61/61 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `3300104` fix(sync): déballe les colonnes jsonb à la remontée PowerSync
 - `e6b9e08` docs(muscf6): spec + plan — fenêtre de reprise de séance (3h vs 4h)
 - `5643442` fix(health-connect): clarifie le bandeau d'échec pour les utilisateurs anglophones
 - `d639a72` refactor(pillar): unifie la décision d'accès par pilier (REFACTO-01, 9.16)
 - `51626ac` docs(refacto01): spec + plan — unifier la décision d'accès par pilier
-- `010a4d3` chore(etat): régénère ETAT.md après le commit Health Connect
 
 ---
 

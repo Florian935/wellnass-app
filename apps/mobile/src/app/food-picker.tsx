@@ -28,6 +28,7 @@ import {
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { addRecipeIngredient, useRecipes, type RecipeListItem } from '@/data/repositories/recipe-repository';
 import { applyTemplate, useMealTemplates } from '@/data/repositories/meal-template-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { searchOpenFoodFacts, type OffFood } from '@/lib/openfoodfacts';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -38,7 +39,18 @@ export default function FoodPickerScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ date?: string; meal?: string; mode?: string; recipeId?: string }>();
   const mode = params.mode === 'recipe' ? 'recipe' : 'journal';
-  const date = params.date ?? '';
+  /**
+   * Repli sur **aujourd'hui**, et non sur la chaîne vide.
+   *
+   * `date` alimente directement la clé de jour de l'entrée : `''` produisait une ligne rattachée à
+   * aucune journée — écrite sans erreur, comptée par le compteur « N aliments ajoutés », et
+   * invisible dans tous les journaux. Constaté en recette device du 01/08/2026 en ouvrant
+   * `wellness://food-picker` en lien direct : l'écran confirmait deux ajouts qui n'existaient
+   * nulle part. Un écran qui accuse réception d'un enregistrement fantôme est pire qu'un écran
+   * qui échoue.
+   */
+  const todayKey = useTodayKey();
+  const date = params.date ?? todayKey;
   const meal = params.meal ?? 'breakfast';
   const recipeId = params.recipeId ?? '';
   const lang = i18n.language === 'en' ? 'en' : 'fr';

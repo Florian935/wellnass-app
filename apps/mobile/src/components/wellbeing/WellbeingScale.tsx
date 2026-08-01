@@ -94,7 +94,16 @@ export function WellbeingScale({ indicator, value, onChange }: Props) {
                 selected && { backgroundColor: colors.track },
               ]}
             >
-              <Text style={styles.glyph} maxFontSizeMultiplier={1.4}>
+              {/*
+                Couleur explicite : les glyphes d'`energy` (▁▃▅▆█) sont du **texte**, pas des
+                emoji — sans `color` ils héritent du noir par défaut de RN sur Android et
+                disparaissent sur le thème sombre (constaté en recette device du 31/07/2026).
+                Les emoji de `mood`/`stress` portent leur propre couleur et ne bougent pas.
+              */}
+              <Text
+                style={[styles.glyph, { color: selected ? colors.text : colors.textMuted }]}
+                maxFontSizeMultiplier={1.4}
+              >
                 {WELLBEING_GLYPHS[indicator][level]}
               </Text>
               <Text
@@ -128,7 +137,7 @@ export function WellbeingLevelSummary({
 
   return (
     <View style={[styles.summary, { borderColor: colors.border, backgroundColor: colors.track }]}>
-      <Text style={styles.glyph} maxFontSizeMultiplier={1.4}>
+      <Text style={[styles.glyph, { color: colors.text }]} maxFontSizeMultiplier={1.4}>
         {WELLBEING_GLYPHS[indicator][level]}
       </Text>
       <Text

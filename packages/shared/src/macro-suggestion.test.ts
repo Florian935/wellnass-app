@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MACRO_GAP_MIN_RATIO,
   SUGGESTION_MAX_COUNT,
+  SUGGESTION_NO_PORTION_MAX_G,
   macroGaps,
   pickMacroToFill,
   suggestFoodsForMacro,
@@ -211,5 +212,140 @@ describe('suggestFoodsForMacro', () => {
     expect(
       suggestFoodsForMacro({ macro: 'protein', gapG: 30, kcalBudget: 2000, candidates: [] }),
     ).toEqual([]);
+  });
+
+  /**
+   * Non-régression du constat de recette device du 31/07/2026 : pour 80 g de lipides manquants,
+   * la carte proposait « Chipolatas 350 g · 952 kcal » — dans les bornes en grammes et sous le
+   * budget, donc accepté, mais inutilisable (critère 2).
+   */
+  /**
+   * Non-régression du constat de recette device du 01/08/2026 : le plafond calorique seul laissait
+   * passer « Avocat 390 g · 792 kcal ». La quantité comblait tout l'écart — 80 g de lipides, soit
+   * la cible d'une journée — ce qu'aucun aliment unique ne peut faire dans une portion mangeable.
+   */
+  describe('quantité rabattue sur une portion mangeable', () => {
+    const avocat = (portionG: number | null): SuggestionCandidate => ({
+      id: 'avocat',
+      name: 'Avocat',
+      kcalPer100g: 203,
+      proteinPer100g: null,
+      carbsPer100g: null,
+      fatPer100g: 20,
+      portionG,
+    });
+
+    it('plafonne à la portion de référence quand la base la connaît', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80, // idéal = 400 g ; portion = 150 g
+        kcalBudget: 2465,
+        candidates: [avocat(150)],
+      });
+      expect(out[0]!.quantityG).toBe(150);
+    });
+
+    it('annonce ce que la portion apporte réellement, pas l’écart visé', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80,
+        kcalBudget: 2465,
+        candidates: [avocat(150)],
+      });
+      // 150 g à 20 g/100 g = 30 g de lipides : la portion ne comble PAS les 80 g, et le dit.
+      expect(out[0]!.macroG).toBe(30);
+      expect(out[0]!.macroG).toBeLessThan(80);
+    });
+
+    it('sans portion connue, retombe sur la borne générique', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80,
+        kcalBudget: 2465,
+        candidates: [avocat(null)],
+      });
+      expect(out[0]!.quantityG).toBe(SUGGESTION_NO_PORTION_MAX_G);
+    });
+
+    it('ne gonfle jamais une quantité : un petit écart reste un petit apport', () => {
+      // 10 g de lipides manquants → 50 g d'avocat suffisent : la portion (150 g) ne doit pas
+      // servir de plancher, seulement de plafond.
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 10,
+        kcalBudget: 2465,
+        candidates: [avocat(150)],
+      });
+      expect(out[0]!.quantityG).toBe(50);
+    });
+
+    it('ignore une portion aberrante en base (0 ou négative)', () => {
+      for (const bad of [0, -20]) {
+        const out = suggestFoodsForMacro({
+          macro: 'fat',
+          gapG: 80,
+          kcalBudget: 2465,
+          candidates: [avocat(bad)],
+        });
+        expect(out[0]!.quantityG).toBe(SUGGESTION_NO_PORTION_MAX_G);
+      }
+    });
+  });
+
+  /**
+   * Le plafond de portion ne rend pas le plafond calorique inutile : une portion parfaitement
+   * normale d'un aliment très dense reste hors budget. L'huile est le cas d'école — 100 g de
+   * portion déclarée, mais 900 kcal.
+   */
+  describe('plafond calorique par suggestion', () => {
+    const huile: SuggestionCandidate = {
+      id: 'huile',
+      name: "Huile d'olive",
+      kcalPer100g: 900,
+      proteinPer100g: 0,
+      carbsPer100g: 0,
+      fatPer100g: 100,
+      portionG: 100, // portion plausible, et pourtant 900 kcal
+    };
+
+    // 80 g d'huile (sous la portion de 100 g) apportent les 80 g de lipides, pour 720 kcal.
+    it('écarte une portion normale mais qui coûterait plus du tiers du budget restant', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80,
+        kcalBudget: 1500, // le tiers vaut 500 kcal : les 720 kcal ne passent pas
+        candidates: [huile],
+      });
+      expect(out).toEqual([]);
+    });
+
+    it('la garde le budget venant, quand elle redevient un complément', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80,
+        kcalBudget: 2465, // le tiers vaut ~822 kcal : les 720 kcal repassent
+        candidates: [huile],
+      });
+      expect(out.map((s) => s.foodId)).toEqual(['huile']);
+    });
+
+    it('n’écarte pas un aliment dense en macro et sobre en calories', () => {
+      // Blanc de poulet : 30 g de lipides / 100 g pour 165 kcal → 267 g, 440 kcal, sous le tiers.
+      const poulet: SuggestionCandidate = {
+        id: 'poulet',
+        name: 'Blanc de poulet',
+        kcalPer100g: 165,
+        proteinPer100g: 0,
+        carbsPer100g: 0,
+        fatPer100g: 30,
+      };
+      const out = suggestFoodsForMacro({
+        macro: 'fat',
+        gapG: 80,
+        kcalBudget: 2465,
+        candidates: [poulet],
+      });
+      expect(out.map((s) => s.foodId)).toEqual(['poulet']);
+    });
   });
 });

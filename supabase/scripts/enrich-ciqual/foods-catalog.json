@@ -4,7 +4,7 @@
   "nameFr": "Poulet (blanc, cuit)",
   "nameEn": "Chicken breast (cooked)",
   "category": "meat",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 blanc\", \"labelEn\": \"1 breast\", \"grams\": 120}]",
   "ciqualCode": "36018",
   "new": false
  },
@@ -13,7 +13,7 @@
   "nameFr": "Bœuf haché 5%",
   "nameEn": "Lean ground beef 5%",
   "category": "meat",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 steak\", \"labelEn\": \"1 patty\", \"grams\": 125}]",
   "ciqualCode": "6251",
   "new": false
  },
@@ -40,7 +40,7 @@
   "nameFr": "Escalope de dinde",
   "nameEn": "Turkey breast",
   "category": "meat",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 escalope\", \"labelEn\": \"1 cutlet\", \"grams\": 120}]",
   "ciqualCode": "36306",
   "new": false
  },
@@ -67,7 +67,7 @@
   "nameFr": "Cabillaud",
   "nameEn": "Cod",
   "category": "fish",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 pavé\", \"labelEn\": \"1 fillet\", \"grams\": 130}]",
   "ciqualCode": "26043",
   "new": false
  },
@@ -76,7 +76,7 @@
   "nameFr": "Crevettes",
   "nameEn": "Shrimp",
   "category": "fish",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "10007",
   "new": false
  },
@@ -130,7 +130,7 @@
   "nameFr": "Pomme de terre cuite",
   "nameEn": "Boiled potato",
   "category": "starchy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 pomme de terre\", \"labelEn\": \"1 potato\", \"grams\": 150}]",
   "ciqualCode": "4003",
   "new": false
  },
@@ -148,7 +148,7 @@
   "nameFr": "Quinoa cuit",
   "nameEn": "Cooked quinoa",
   "category": "starchy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "9341",
   "new": false
  },
@@ -157,7 +157,7 @@
   "nameFr": "Semoule cuite",
   "nameEn": "Cooked couscous",
   "category": "starchy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "9683",
   "new": false
  },
@@ -166,7 +166,7 @@
   "nameFr": "Lentilles cuites",
   "nameEn": "Cooked lentils",
   "category": "starchy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20360",
   "new": false
  },
@@ -175,7 +175,7 @@
   "nameFr": "Brocoli",
   "nameEn": "Broccoli",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20057",
   "new": false
  },
@@ -202,7 +202,7 @@
   "nameFr": "Courgette",
   "nameEn": "Zucchini",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 courgette\", \"labelEn\": \"1 zucchini\", \"grams\": 200}]",
   "ciqualCode": "20020",
   "new": false
  },
@@ -211,7 +211,7 @@
   "nameFr": "Épinards",
   "nameEn": "Spinach",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20059",
   "new": false
  },
@@ -220,7 +220,7 @@
   "nameFr": "Haricots verts",
   "nameEn": "Green beans",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20061",
   "new": false
  },
@@ -238,7 +238,7 @@
   "nameFr": "Salade verte",
   "nameEn": "Lettuce",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 50}]",
   "ciqualCode": "20031",
   "new": false
  },
@@ -274,7 +274,7 @@
   "nameFr": "Fraises",
   "nameEn": "Strawberries",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "13014",
   "new": false
  },
@@ -283,7 +283,7 @@
   "nameFr": "Myrtilles",
   "nameEn": "Blueberries",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "13028",
   "new": false
  },
@@ -301,7 +301,7 @@
   "nameFr": "Raisin",
   "nameEn": "Grapes",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "13395",
   "new": false
  },
@@ -310,7 +310,7 @@
   "nameFr": "Ananas",
   "nameEn": "Pineapple",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 tranche\", \"labelEn\": \"1 slice\", \"grams\": 100}]",
   "ciqualCode": "13002",
   "new": false
  },
@@ -364,7 +364,7 @@
   "nameFr": "Mozzarella",
   "nameEn": "Mozzarella",
   "category": "dairy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 boule\", \"labelEn\": \"1 ball\", \"grams\": 125}]",
   "ciqualCode": "19590",
   "new": false
  },
@@ -391,7 +391,7 @@
   "nameFr": "Noix",
   "nameEn": "Walnuts",
   "category": "nuts",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 poignée\", \"labelEn\": \"1 handful\", \"grams\": 30}]",
   "ciqualCode": "15005",
   "new": false
  },
@@ -463,7 +463,7 @@
   "nameFr": "Poire",
   "nameEn": "Pear",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 poire\", \"labelEn\": \"1 pear\", \"grams\": 150}]",
   "ciqualCode": "13037",
   "new": true
  },
@@ -472,7 +472,7 @@
   "nameFr": "Pêche",
   "nameEn": "Peach",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 pêche\", \"labelEn\": \"1 peach\", \"grams\": 150}]",
   "ciqualCode": "13043",
   "new": true
  },
@@ -481,7 +481,7 @@
   "nameFr": "Abricot",
   "nameEn": "Apricot",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 abricot\", \"labelEn\": \"1 apricot\", \"grams\": 50}]",
   "ciqualCode": "13000",
   "new": true
  },
@@ -490,7 +490,7 @@
   "nameFr": "Cerise",
   "nameEn": "Cherry",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "13008",
   "new": true
  },
@@ -499,7 +499,7 @@
   "nameFr": "Pastèque",
   "nameEn": "Watermelon",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 tranche\", \"labelEn\": \"1 slice\", \"grams\": 200}]",
   "ciqualCode": "13036",
   "new": true
  },
@@ -508,7 +508,7 @@
   "nameFr": "Melon",
   "nameEn": "Melon",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 200}]",
   "ciqualCode": "13026",
   "new": true
  },
@@ -517,7 +517,7 @@
   "nameFr": "Mangue",
   "nameEn": "Mango",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 mangue\", \"labelEn\": \"1 mango\", \"grams\": 200}]",
   "ciqualCode": "13025",
   "new": true
  },
@@ -526,7 +526,7 @@
   "nameFr": "Framboise",
   "nameEn": "Raspberry",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "13015",
   "new": true
  },
@@ -535,7 +535,7 @@
   "nameFr": "Citron",
   "nameEn": "Lemon",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 citron\", \"labelEn\": \"1 lemon\", \"grams\": 100}]",
   "ciqualCode": "13009",
   "new": true
  },
@@ -544,7 +544,7 @@
   "nameFr": "Avocat",
   "nameEn": "Avocado",
   "category": "fruits",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 avocat\", \"labelEn\": \"1 avocado\", \"grams\": 150}]",
   "ciqualCode": "13004",
   "new": true
  },
@@ -553,7 +553,7 @@
   "nameFr": "Concombre",
   "nameEn": "Cucumber",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "20019",
   "new": true
  },
@@ -562,7 +562,7 @@
   "nameFr": "Oignon",
   "nameEn": "Onion",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 oignon\", \"labelEn\": \"1 onion\", \"grams\": 100}]",
   "ciqualCode": "20034",
   "new": true
  },
@@ -571,7 +571,7 @@
   "nameFr": "Champignon de Paris",
   "nameEn": "Button mushroom",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "20056",
   "new": true
  },
@@ -580,7 +580,7 @@
   "nameFr": "Aubergine",
   "nameEn": "Eggplant",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20053",
   "new": true
  },
@@ -589,7 +589,7 @@
   "nameFr": "Chou-fleur",
   "nameEn": "Cauliflower",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20016",
   "new": true
  },
@@ -598,7 +598,7 @@
   "nameFr": "Poireau",
   "nameEn": "Leek",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 poireau\", \"labelEn\": \"1 leek\", \"grams\": 100}]",
   "ciqualCode": "20039",
   "new": true
  },
@@ -607,7 +607,7 @@
   "nameFr": "Petits pois",
   "nameEn": "Green peas",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20072",
   "new": true
  },
@@ -616,7 +616,7 @@
   "nameFr": "Maïs doux",
   "nameEn": "Sweet corn",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "20233",
   "new": true
  },
@@ -625,7 +625,7 @@
   "nameFr": "Betterave rouge",
   "nameEn": "Beetroot",
   "category": "vegetables",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "20003",
   "new": true
  },
@@ -634,7 +634,7 @@
   "nameFr": "Patate douce",
   "nameEn": "Sweet potato",
   "category": "starchy",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 patate douce\", \"labelEn\": \"1 sweet potato\", \"grams\": 150}]",
   "ciqualCode": "4102",
   "new": true
  },
@@ -643,7 +643,7 @@
   "nameFr": "Côte de porc",
   "nameEn": "Pork chop",
   "category": "meat",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 côte\", \"labelEn\": \"1 chop\", \"grams\": 150}]",
   "ciqualCode": "28101",
   "new": true
  },
@@ -652,7 +652,7 @@
   "nameFr": "Sardine",
   "nameEn": "Sardine",
   "category": "fish",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 boîte\", \"labelEn\": \"1 can\", \"grams\": 100}]",
   "ciqualCode": "26065",
   "new": true
  },
@@ -661,7 +661,7 @@
   "nameFr": "Maquereau",
   "nameEn": "Mackerel",
   "category": "fish",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 filet\", \"labelEn\": \"1 fillet\", \"grams\": 100}]",
   "ciqualCode": "26051",
   "new": true
  },
@@ -670,7 +670,7 @@
   "nameFr": "Truite",
   "nameEn": "Trout",
   "category": "fish",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 filet\", \"labelEn\": \"1 fillet\", \"grams\": 120}]",
   "ciqualCode": "26092",
   "new": true
  },
@@ -679,7 +679,7 @@
   "nameFr": "Cuisse de poulet",
   "nameEn": "Chicken thigh",
   "category": "meat",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 cuisse\", \"labelEn\": \"1 thigh\", \"grams\": 150}]",
   "ciqualCode": "36006",
   "new": true
  },
@@ -688,7 +688,7 @@
   "nameFr": "Pois chiches",
   "nameEn": "Chickpeas",
   "category": "other",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20507",
   "new": true
  },
@@ -697,7 +697,7 @@
   "nameFr": "Haricots rouges",
   "nameEn": "Kidney beans",
   "category": "other",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 150}]",
   "ciqualCode": "20503",
   "new": true
  },
@@ -706,7 +706,7 @@
   "nameFr": "Tofu",
   "nameEn": "Tofu",
   "category": "other",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 portion\", \"labelEn\": \"1 serving\", \"grams\": 100}]",
   "ciqualCode": "20904",
   "new": true
  },
@@ -715,7 +715,7 @@
   "nameFr": "Noisette",
   "nameEn": "Hazelnut",
   "category": "nuts",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 poignée\", \"labelEn\": \"1 handful\", \"grams\": 30}]",
   "ciqualCode": "15004",
   "new": true
  },
@@ -724,7 +724,7 @@
   "nameFr": "Noix de cajou",
   "nameEn": "Cashew",
   "category": "nuts",
-  "portions": "[]",
+  "portions": "[{\"labelFr\": \"1 poignée\", \"labelEn\": \"1 handful\", \"grams\": 30}]",
   "ciqualCode": "15019",
   "new": true
  }

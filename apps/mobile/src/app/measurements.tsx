@@ -157,6 +157,14 @@ export default function MeasurementsScreen() {
                   title={t(`measurements.kinds.${kind}`)}
                   unit={units.circumferenceSymbol}
                   smooth
+                  // Sans formateur, gifted-charts génère ses propres libellés en formatage JS
+                  // brut — « 90.2 » en français. Le fournir impose aussi l'échelle sur [min, max],
+                  // ce qui est de toute façon plus lisible ici : un tour de taille qui passe de 81
+                  // à 82 cm est une ligne plate sur un axe partant de 0.
+                  formatYLabel={units.formatAxisNumber}
+                  // 2 cm de marge quand tous les relevés sont identiques (le défaut vaut 30, en
+                  // secondes d'allure — il ouvrirait une bande de 60 cm).
+                  flatPad={2}
                 />
               )}
             </Card>

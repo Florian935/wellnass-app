@@ -5,7 +5,8 @@ roadmap: [4.37]
 catalogue: []
 etape: recette
 branche: feature/nutrf2-substitution-aliments
-maj: 29/07/2026
+maj: 01/08/2026
+reste: "Recette device du 01/08/2026 : le critère 2 (« quantités réalistes ») échouait — la suggestion comblait 100 % de l'écart, d'où « Chipolatas 350 g · 952 kcal ». Contrat revu (portion de référence + plafond calorique + seuil d'utilité, la carte annonce son apport) et 50 portions manquantes renseignées en base. Reste : rejouer la recette complète, et trancher les 3 valeurs de calibrage à l'usage. Les aliments OpenFoodFacts scannés restent au repli 200 g, faute de portion déclarée."
 ---
 
 # US NUTR-F2 — Suggestion d'aliments pour combler un macro

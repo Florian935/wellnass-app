@@ -16,6 +16,8 @@ import {
   useOpenPeriod,
   useTodayMenstrualLog,
 } from '@/data/repositories/menstrual-cycle-repository';
+import { useSettings } from '@/data/repositories/settings-repository';
+import { Redirect } from 'expo-router';
 
 jest.mock('@/data/repositories/menstrual-cycle-repository', () => ({
   useMenstrualPeriods: jest.fn(() => ({ periods: [], isLoading: false })),
@@ -38,7 +40,18 @@ jest.mock('@/lib/health-connect', () => ({ pushCycleData: jest.fn() }));
 
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: () => '2026-07-31' }));
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+// Le garde d'accès (`CycleTrackingGuard`) lit les réglages : on mocke le repository plutôt que le
+// garde, pour que le **vrai** garde s'exécute et que les tests ci-dessous le couvrent.
+jest.mock('@/data/repositories/settings-repository', () => ({
+  useSettings: jest.fn(() => ({ settings: { cycleTrackingEnabled: true }, isLoading: false })),
+}));
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+  // Rend `null` (le renderer RN refuse une chaîne nue) mais reste observable : c'est l'appel qui
+  // prouve la redirection, pas un texte à l'écran.
+  Redirect: jest.fn(() => null),
+}));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -64,12 +77,49 @@ jest.mock('@/theme/useTheme', () => ({
 const mockUseMenstrualPeriods = useMenstrualPeriods as jest.Mock;
 const mockUseOpenPeriod = useOpenPeriod as jest.Mock;
 const mockUseTodayMenstrualLog = useTodayMenstrualLog as jest.Mock;
+const mockUseSettings = useSettings as unknown as jest.Mock;
+const mockRedirect = Redirect as unknown as jest.Mock;
 
 describe('CycleScreen — smoke', () => {
   beforeEach(() => {
     mockUseMenstrualPeriods.mockReturnValue({ periods: [], isLoading: false });
     mockUseOpenPeriod.mockReturnValue({ period: null, isLoading: false });
     mockUseTodayMenstrualLog.mockReturnValue({ log: null, isLoading: false });
+    mockUseSettings.mockReturnValue({
+      settings: { cycleTrackingEnabled: true },
+      isLoading: false,
+    });
+  });
+
+  /**
+   * Non-régression du défaut trouvé en recette device du 31/07/2026 : la route s'ouvrait
+   * entièrement suivi éteint, alors que le critère 1 exige « aucune route atteignable ».
+   */
+  describe("garde d'accès (critère 1)", () => {
+    beforeEach(() => mockRedirect.mockClear());
+
+    it('suivi désactivé → redirige, et ne rend aucun contenu de cycle', async () => {
+      mockUseSettings.mockReturnValue({
+        settings: { cycleTrackingEnabled: false },
+        isLoading: false,
+      });
+      const { queryByText } = await render(<CycleScreen />);
+      expect(mockRedirect).toHaveBeenCalled();
+      expect(queryByText('cycle.disclaimer')).toBeNull();
+    });
+
+    it('réglages absents (compte neuf) → redirige, pas d’accès par défaut', async () => {
+      mockUseSettings.mockReturnValue({ settings: null, isLoading: false });
+      const { queryByText } = await render(<CycleScreen />);
+      expect(mockRedirect).toHaveBeenCalled();
+      expect(queryByText('cycle.disclaimer')).toBeNull();
+    });
+
+    it('réglages en cours de chargement → on ne redirige PAS (sinon faux négatif)', async () => {
+      mockUseSettings.mockReturnValue({ settings: null, isLoading: true });
+      await render(<CycleScreen />);
+      expect(mockRedirect).not.toHaveBeenCalled();
+    });
   });
 
   it("le bandeau d'avertissement est rendu même sans aucune donnée (§0, critère 14)", async () => {

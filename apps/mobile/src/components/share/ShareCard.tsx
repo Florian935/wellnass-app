@@ -150,8 +150,13 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size
         )}
       </View>
 
+      {/*
+        `marginTop` proportionnel comme le reste de la carte : sans lui, la mention colle au
+        libellé de la dernière statistique (« DURÉE ») et les deux se lisent comme une seule
+        ligne — constaté en recette device du 31/07/2026, à l'aperçu comme à l'export.
+      */}
       <Text
-        style={[styles.brand, { color: CARD_MUTED, fontSize: s(0.026) }]}
+        style={[styles.brand, { color: CARD_MUTED, fontSize: s(0.026), marginTop: s(0.028) }]}
         maxFontSizeMultiplier={1}
       >
         {BRAND}

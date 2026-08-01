@@ -18,6 +18,29 @@
 - **Composants d'affichage purs** ; la logique dans des hooks custom (`useWorkoutSession`, `useStreak`).
 - **Aucune chaîne en dur dans l'UI** : i18n **FR + EN dès le départ** (décision G) — chaque clé écrite en FR **et** EN dans la même PR (voir [i18n.md](./i18n.md)).
 - **Aucun nombre magique métier dans le code** : les constantes (facteurs d'activité, ratios macros, seuil deload 80 %, règle des 10 %) centralisées dans un module de configuration documenté.
+- **Tout nombre affiché passe par un formateur localisé** — jamais `String(n)`, `n.toFixed()`, ni une
+  interpolation directe dans une chaîne. Le point d'entrée unique est
+  [`useUnits()`](../../../apps/mobile/src/hooks/useUnits.ts) : `formatWeight`, `formatDistance`,
+  `formatCircumference`, `formatPace`, `formatAxisNumber`. Tous passent par `Intl.NumberFormat` sur
+  la locale active, donc « 82,5 kg » en français et « 82.5 kg » en anglais.
+
+  > **Pourquoi une règle explicite.** Trois défauts du même symptôme — un point décimal en pleine
+  > interface française — ont été trouvés le même soir en recette device (31/07 → 01/08/2026), avec
+  > trois causes différentes : un helper `*InputValue` (fait pour pré-remplir un champ) réutilisé
+  > comme texte, les libellés d'axe natifs de `gifted-charts` faute de `formatYLabel`, et
+  > l'interpolation i18next qui fait un `String()` brut sur `{{maVariable}}`. Aucun test unitaire ne
+  > les attrapait ; ils ne se voient qu'à l'écran.
+
+  Trois pièges à connaître :
+  1. **`*InputValue` n'est pas un formateur d'affichage.** `weightInputValue` / `distanceInputValue`
+     produisent volontairement un point décimal : un `TextInput` numérique n'accepte pas la virgule.
+     Les utiliser hors d'un champ de saisie est un bug. Une règle ESLint
+     (`no-restricted-syntax`, voir [eslint.config.js](../../../apps/mobile/eslint.config.js)) le
+     refuse à l'intérieur d'un `t(...)`.
+  2. **Un graphe sans `formatYLabel` génère ses propres libellés**, en formatage JS brut. Dès que
+     l'échelle peut tomber sur des décimales, passer `formatAxisNumber`.
+  3. **i18next n'a aucun formatage par défaut.** `t('cle', { valeur: 41.2 })` interpole `"41.2"`.
+     Formater **avant** de passer la variable.
 
 ## 3. Git & workflow
 

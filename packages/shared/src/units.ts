@@ -193,13 +193,20 @@ export function buildPaceYAxis(
   values: number[],
   sections: number,
   format: (value: number) => string,
+  /**
+   * Demi-largeur de la bande ouverte quand toutes les valeurs sont égales, **dans l'unité des
+   * valeurs**. Le défaut (30) est en secondes d'allure, d'où le nom historique de la fonction —
+   * mais rien ici n'est propre à l'allure. Un appelant en centimètres ou en kilogrammes doit passer
+   * sa propre valeur : 30 cm de marge autour d'un tour de taille écraserait la courbe.
+   */
+  flatPad: number = PACE_AXIS_FLAT_PAD_S,
 ): { labels: string[]; maxValue: number; yAxisOffset: number; stepValue: number } {
   const rawMin = Math.min(...values);
   const rawMax = Math.max(...values);
 
   // Bande élargie quand plat, sinon plage réelle.
-  const min = rawMin === rawMax ? rawMin - PACE_AXIS_FLAT_PAD_S : rawMin;
-  const max = rawMin === rawMax ? rawMax + PACE_AXIS_FLAT_PAD_S : rawMax;
+  const min = rawMin === rawMax ? rawMin - flatPad : rawMin;
+  const max = rawMin === rawMax ? rawMax + flatPad : rawMax;
 
   const range = max - min;
   const stepValue = range / sections;

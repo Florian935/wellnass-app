@@ -15,6 +15,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useUnits } from '@/hooks/useUnits';
 import {
   SUGGESTIBLE_MACROS,
   macroGaps,
@@ -56,6 +57,9 @@ export function MacroSuggestionCard({
   recentIds,
 }: Props) {
   const { t } = useTranslation();
+  // `macroG` a une décimale : interpolé tel quel par i18next (un `String()` brut), il ressort
+  // « +41.2 g » en français. Les nombres affichés passent par le formateur localisé, toujours.
+  const { formatAxisNumber } = useUnits();
   const { colors } = useTheme();
 
   const [override, setOverride] = useState<SuggestibleMacro | null>(null);
@@ -193,11 +197,19 @@ export function MacroSuggestionCard({
               >
                 {suggestion.name}
               </Text>
-              {/* Le coût calorique est affiché : un conseil qui cache son prix est partiel. */}
+              {/*
+                Trois nombres, et les trois comptent : la quantité, son prix calorique (un conseil
+                qui cache son prix est partiel) et **ce qu'elle apporte vraiment** du macro visé.
+                Ce dernier n'est pas décoratif : depuis que la suggestion est une portion et non
+                plus « de quoi combler tout l'écart », l'omettre laisserait croire qu'une portion
+                suffit à atteindre la cible du jour.
+              */}
               <Text style={[styles.detail, { color: colors.textMuted }]} maxFontSizeMultiplier={1.3}>
                 {t('suggestion.quantity', {
                   grams: suggestion.quantityG,
                   kcal: suggestion.kcal,
+                  macroG: formatAxisNumber(suggestion.macroG),
+                  macro: t(`suggestion.macros.${macro}`),
                 })}
               </Text>
             </View>

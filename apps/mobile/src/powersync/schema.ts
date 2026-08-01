@@ -53,6 +53,12 @@ const user_settings = new Table({
   dashboard_layout: column.text,
   analytics_enabled: column.integer, // 0/1 — consentement analytics (US 9.10)
   health_connect_enabled: column.integer, // 0/1 — opt-in Health Connect (US CONF-06)
+  // US CYCLE-01 — opt-in strict du suivi de cycle, et sa synchro Health Connect. ⚠️ Toute colonne
+  // absente d'ici n'existe pas dans la base locale : l'écriture échoue, et `void updateSettings()`
+  // avale l'erreur — l'interrupteur reste éteint sans le moindre message (constaté en recette
+  // device du 31/07/2026).
+  cycle_tracking_enabled: column.integer, // 0/1
+  cycle_health_connect_enabled: column.integer, // 0/1
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

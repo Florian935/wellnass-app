@@ -17,7 +17,10 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { useTranslation } from 'react-i18next';
 import {
   MEASUREMENT_KINDS,
+  MEASUREMENT_MAX_CM,
+  MEASUREMENT_MIN_CM,
   formatDayFull,
+  isValidMeasurementCm,
   localDayKey,
   type MeasurementKind,
   type MeasurementPoint,
@@ -108,6 +111,18 @@ function MeasurementForm({
     const text = texts[kind] ?? '';
     return text.trim() !== '' && units.parseCircumferenceToCm(text) === null;
   });
+  /**
+   * Valeur lisible mais **hors bornes** (500 cm). Contrôlée ici et pas seulement au dépôt : sans
+   * ça, la valeur se parse, le bouton reste actif, l'écriture échoue et l'utilisateur reçoit
+   * « n'ont pas pu être enregistrées, **réessaie** » — un conseil faux, puisque réessayer avec la
+   * même valeur échouera toujours (constaté en recette device du 31/07/2026).
+   */
+  const hasOutOfRange = MEASUREMENT_KINDS.some((kind) => {
+    const text = texts[kind] ?? '';
+    if (text.trim() === '') return false;
+    const cm = units.parseCircumferenceToCm(text);
+    return cm !== null && !isValidMeasurementCm(cm);
+  });
 
   const submit = async () => {
     setSaving(true);
@@ -193,11 +208,19 @@ function MeasurementForm({
           {t('measurements.invalidValue')}
         </Text>
       )}
+      {!hasBadInput && hasOutOfRange && (
+        <Text style={[styles.error, { color: colors.danger }]} accessibilityRole="alert">
+          {t('measurements.outOfRange', {
+            min: units.formatCircumference(MEASUREMENT_MIN_CM),
+            max: units.formatCircumference(MEASUREMENT_MAX_CM),
+          })}
+        </Text>
+      )}
 
       <Button
         label={t('measurements.save')}
         onPress={submit}
-        disabled={!touched || hasBadInput}
+        disabled={!touched || hasBadInput || hasOutOfRange}
         loading={saving}
       />
       <Text style={[styles.hint, { color: colors.textMuted }]}>

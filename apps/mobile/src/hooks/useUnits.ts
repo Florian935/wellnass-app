@@ -84,6 +84,16 @@ export function useUnits() {
       /** Symbole de circonférence, pour un placeholder ou un suffixe de champ. */
       circumferenceSymbol: system === 'imperial' ? 'in' : 'cm',
       /**
+       * Nombre déjà converti → texte **localisé**, sans symbole. Pour les libellés d'axe, où le
+       * symbole est porté ailleurs (titre du graphe).
+       *
+       * ⚠️ À ne pas confondre avec les `*InputValue` : ceux-là passent par `String(Number(...))`,
+       * donc un **point** décimal, ce qui est juste dans un champ de saisie et faux à l'affichage.
+       * C'est ce mélange qui donnait un axe « 90.2 | 67.7 » en français (recette du 01/08/2026).
+       */
+      formatAxisNumber: (value: number): string =>
+        Number.isInteger(value) ? nf0.format(value) : nf1.format(value),
+      /**
        * Saisie utilisateur → centimètres. Accepte la **virgule** comme séparateur décimal (clavier
        * français) autant que le point. Renvoie `null` si ce n'est pas un nombre exploitable.
        */
