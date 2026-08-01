@@ -33,7 +33,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
-| **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
+| **MUSC-F1b** — Muscles ciblés sur schéma corporel — anatomie fine | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
@@ -58,8 +58,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf7-deload` (modifications non commitées) |
-| Commits | 1001 · `main` a **998** commits de retard sur `dev` |
+| Branche courante | `feature/muscf1b-schema-muscles` (modifications non commitées) |
+| Commits | 1002 · `main` a **999** commits de retard sur `dev` |
 | Specs d'US | 97 au total — 77 clôturées, 20 en cours |
 | Migrations | 61/61 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `fe24e1f` feat(muscf7): câble le signal de deload sur stagnation (roadmap 3.8)
 - `52fe4fe` docs(muscf7): spec + plan — deload sur stagnation, scindé du roadmap 3.7
 - `8b37cf4` Merge feature/muscf6-fenetre-reprise-seance into dev
 - `47b276f` docs(muscf6): réconcilie la fenêtre de reprise de séance (Option A validée)
 - `78b6ead` fix(recette): lot de 8 correctifs de la recette device (CYCLE-01, NUTR-F2, MESUR-01, PARTAGE-01, BIEN-01)
-- `3300104` fix(sync): déballe les colonnes jsonb à la remontée PowerSync
 
 ---
 

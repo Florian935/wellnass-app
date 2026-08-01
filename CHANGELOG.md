@@ -10,6 +10,49 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf1b-schema-muscles` — MUSC-F1b : recadrage complet en Voie B (spec + plan + maquette)
+
+Commit précédent : `fe24e1f`. Documentation uniquement, **aucun code**. Florian a validé la **Voie B**
+(anatomie fine) contre la recommandation initiale de la v1 (Voie A) — cette entrée remplace
+entièrement la spec, le plan et la maquette du 30/07/2026.
+
+#### Modifié
+
+- [docs/specs/functional/us/muscf1b-schema-muscles.md](docs/specs/functional/us/muscf1b-schema-muscles.md)
+  — spec réécrite. **Trouvaille de cadrage centrale** : le système actuel de 6 groupes larges est
+  consommé par **18 fichiers** (alerte de déséquilibre MUSC-05, graphique de volume, remplacement
+  d'exercice, filtre de bibliothèque, écran admin) — le remplacer aurait fait dépendre tout ce code
+  déjà livré et recetté d'une nouvelle taxonomie. **Décision de conception : additive.** Nouvelle
+  colonne `musclesFine`, indépendante, les 6 groupes larges ne bougent pas.
+  - **Taxonomie reprise, pas inventée** : les 10 muscles de
+    `docs/specs/functional/administration.md` §3.3 (Pectoraux, Dos, Épaules, Biceps, Triceps,
+    Abdominaux, Fessiers, Quadriceps, Ischio-jambiers, Mollets), décrits le 04/07/2026, jamais
+    implémentés — plutôt qu'une liste de 15-20 muscles latins à inventer.
+  - **Une seule fonction de résolution** (`resolveFineMuscles`) unifie fiche/aperçu/bilan : un
+    exercice tagué fin s'affiche précisément (`full`), un exercice non tagué retombe sur
+    l'expansion de ses groupes larges (`BROAD_TO_FINE`) — reproduisant fidèlement le défaut
+    d'origine (un curl non tagué éclaire encore tout le bras) jusqu'à ce qu'un coach le corrige.
+  - **11 tracés SVG, pas 20** : seules les épaules apparaissent sur les deux vues (face+dos), les
+    9 autres muscles n'apparaissent que sur une vue chacun.
+  - **Correction d'une affirmation obsolète** : la v1 disait « la bibliothèque est encore vide
+    (CONTENU-01) » — faux depuis le 29/07/2026 (16 exercices livrés, avant même la rédaction de la
+    v1 le 30/07). Ne change pas la conclusion à elle seule, mais l'argument ne portait plus.
+- [docs/plans/muscf1b-schema-muscles.md](docs/plans/muscf1b-schema-muscles.md) — plan réécrit, 5
+  étapes : fonction pure + tests, migration additive + admin, `BodyMap` (11 tracés), 3 points de
+  montage, solde. **Aucune sync rule à redéployer** (`exercises` est en `select *`) — contrairement
+  à ce qu'annonçait la v1 pour la Voie B.
+- [design/muscf1b-schema-muscles/muscf1b-schema-muscles.html](design/muscf1b-schema-muscles/muscf1b-schema-muscles.html)
+  — maquette réécrite : deux vues de référence (tous les muscles nommés, pour la relecture
+  anatomique du critère de recette 12) + 3 cas d'usage (curl tagué fin, curl en repli large, bilan
+  hebdomadaire) montrant explicitement que le repli **n'est pas un cas d'erreur caché** — c'est
+  l'état réel des 16 exercices actuels au lancement de cette US.
+- `BACKLOG.md` — entrée MUSC-F1b mise à jour (Voie B, recadrage, référence à la maquette).
+
+#### Technique / Notes
+
+- Pas de recette device à ce stade : la maquette doit être validée **avant** tout code (critère 12).
+- Front-matter `etape: validation` — en attente de validation Florian/Damien sur les 3 livrables.
+
 ### 01/08/2026 — `feature/muscf7-deload` — MUSC-F7 : deload câblé (code livré, en recette)
 
 Commit précédent : `52fe4fe`. Décision D1 validée par Florian : activer la règle telle qu'écrite.

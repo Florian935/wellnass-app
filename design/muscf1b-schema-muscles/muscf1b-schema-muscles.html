@@ -3,18 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MUSC-F1b — Schéma corporel des muscles ciblés</title>
+<title>MUSC-F1b — Schéma corporel, anatomie fine (Voie B)</title>
 <style>
   :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--text:#33291f;
         --muted:#786a59;--accent:#b14f2b;--sil:#e3d5bf}
   *{box-sizing:border-box}
   body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
        font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-  .wrap{max-width:1000px;margin:0 auto}
-  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 26px;max-width:74ch}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 26px;max-width:78ch}
   h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
-  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:74ch}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:78ch}
   .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .row2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:640px}
   @media(max-width:820px){.row{grid-template-columns:1fr}}
   .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:14px}
   .card h3{margin:0 0 3px;font-size:15px} .card p{margin:0 0 10px;font-size:13px;color:var(--muted)}
@@ -23,143 +24,198 @@
        letter-spacing:.07em;margin-top:5px}
   .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px}
   .chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--surfalt);color:var(--text)}
-  .chip.prim{background:var(--accent);color:#fff;font-weight:600}
-  .chip.sec{background:rgba(177,79,43,.20);color:#7d3a1f}
+  .chip.full{background:var(--accent);color:#fff;font-weight:600}
+  .chip.red{background:rgba(177,79,43,.20);color:#7d3a1f}
   .note{background:#fff8ea;border-left:3px solid var(--accent);padding:13px 15px;
-        border-radius:0 8px 8px 0;margin-top:20px;font-size:14px;max-width:82ch}
+        border-radius:0 8px 8px 0;margin-top:20px;font-size:14px;max-width:86ch}
   table{border-collapse:collapse;width:100%;margin-top:14px;font-size:14px;background:var(--surf);
         border-radius:10px;overflow:hidden}
   th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
   th{background:var(--surfalt);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
   code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .lbl{font-size:10px;fill:var(--text);text-anchor:middle;font-family:inherit}
 </style>
 </head>
 <body><div class="wrap">
 
-<h1>MUSC-F1b — Muscles ciblés sur schéma corporel</h1>
-<p class="sub">Silhouette stylisée à <strong>6 zones</strong> — exactement la granularité de la base.
-Le vrai sujet de cette US n'est pas le dessin, c'est de décider ce que le dessin a le droit de
-promettre.</p>
+<h1>MUSC-F1b — Muscles ciblés sur schéma corporel (Voie B, recadrage du 01/08/2026)</h1>
+<p class="sub">Anatomie fine sur <strong>10 muscles</strong> (référentiel repris
+d'<code>administration.md</code> §3.3, jamais construit) — <strong>additif</strong> aux 6 groupes
+larges existants, qui continuent de servir l'alerte de déséquilibre, le filtre et le remplacement
+d'exercice sans y toucher.</p>
 
-<h2>🔴 La décision, avant tout dessin</h2>
-<p class="why">La base ne connaît que <code>chest</code>, <code>back</code>, <code>legs</code>,
-<code>shoulders</code>, <code>arms</code>, <code>core</code> — et <code>musclesSecondary</code> puise
-dans la même liste. Une planche anatomique fine afficherait une précision que la donnée n'a pas : sur
-un curl, il faudrait allumer « arms », donc <em>tout le bras, triceps compris</em>.</p>
+<h2>🔴 Le critère qui juge tout le reste (recette 12)</h2>
+<p class="why">Avant de coder quoi que ce soit : ces 11 tracés ressemblent-ils à de l'anatomie, ou
+faut-il les revoir ? C'est la question à trancher <strong>ici</strong>, sur le dessin — pas une
+fois l'app codée.</p>
+<div class="row2">
+  <div class="card"><h3>Vue de face — 5 muscles</h3>
+    <div class="figs">
+      <svg width="160" height="268" viewBox="0 0 112 188" role="img" aria-label="Référence face : pectoraux, épaules, biceps, abdominaux, quadriceps">
+        <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
+        <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
+        <path d="M24 46h14v12H24z" rx="6" fill="var(--accent)" opacity=".85"/>
+        <path d="M74 46h14v12H74z" rx="6" fill="var(--accent)" opacity=".85"/>
+        <path d="M34 48h44v30H34z" fill="var(--accent)" opacity=".95"/>
+        <path d="M38 78h36v30H38z" fill="var(--accent)" opacity=".65"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".75"/>
+        <path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".75"/>
+        <path d="M40 110h14v72H40z" fill="var(--accent)" opacity=".55"/>
+        <path d="M58 110h14v72H58z" fill="var(--accent)" opacity=".55"/>
+        <text class="lbl" x="27" y="55">Épaule</text>
+        <text class="lbl" x="85" y="55">Épaule</text>
+        <text class="lbl" x="56" y="66">Pecto.</text>
+        <text class="lbl" x="56" y="96">Abdo.</text>
+        <text class="lbl" x="27" y="84">Biceps</text>
+        <text class="lbl" x="85" y="84">Biceps</text>
+        <text class="lbl" x="47" y="148">Quadri.</text>
+        <text class="lbl" x="65" y="148">ceps</text>
+      </svg>
+    </div>
+    <div class="cap">Pectoraux · Épaules · Biceps · Abdominaux · Quadriceps</div>
+  </div>
+  <div class="card"><h3>Vue de dos — 6 muscles</h3>
+    <div class="figs">
+      <svg width="160" height="268" viewBox="0 0 112 188" role="img" aria-label="Référence dos : dos, épaules, triceps, fessiers, ischio-jambiers, mollets">
+        <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
+        <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
+        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".85"/>
+        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".85"/>
+        <path d="M34 48h44v34H34z" fill="var(--accent)" opacity=".95"/>
+        <path d="M38 82h36v22H38z" fill="var(--sil)"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".75"/>
+        <path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".75"/>
+        <path d="M40 110h14v16H40z" fill="var(--accent)" opacity=".6"/>
+        <path d="M58 110h14v16H58z" fill="var(--accent)" opacity=".6"/>
+        <path d="M40 126h14v30H40z" fill="var(--accent)" opacity=".5"/>
+        <path d="M58 126h14v30H58z" fill="var(--accent)" opacity=".5"/>
+        <path d="M40 156h14v26H40z" fill="var(--accent)" opacity=".4"/>
+        <path d="M58 156h14v26H58z" fill="var(--accent)" opacity=".4"/>
+        <text class="lbl" x="27" y="55">Épaule</text>
+        <text class="lbl" x="85" y="55">Épaule</text>
+        <text class="lbl" x="56" y="68">Dos</text>
+        <text class="lbl" x="27" y="84">Triceps</text>
+        <text class="lbl" x="85" y="84">Triceps</text>
+        <text class="lbl" x="56" y="121">Fessiers</text>
+        <text class="lbl" x="46" y="144">Ischio-</text>
+        <text class="lbl" x="66" y="144">jamb.</text>
+        <text class="lbl" x="56" y="172">Mollets</text>
+      </svg>
+    </div>
+    <div class="cap">Dos · Épaules · Triceps · Fessiers · Ischio-jambiers · Mollets</div>
+  </div>
+</div>
+<div class="note">
+  <strong>Ce que ces deux vues doivent provoquer chez un lecteur qui connaît l'anatomie</strong> :
+  ni surprise, ni objection. Si « fessiers » et « ischio-jambiers » se lisent comme une seule masse,
+  ou si les épaules paraissent être des bras, c'est un rejet du critère 12 — retour au dessin.
+</div>
+
+<h2>Pourquoi 11 tracés, pas 20</h2>
 <table>
-  <tr><th></th><th>Voie A — 6 zones stylisées <em>(recommandée)</em></th><th>Voie B — enrichir la donnée d'abord</th></tr>
-  <tr><td><b>Donnée</b></td><td>celle qui existe</td><td>nouvelle table + re-tag de toute la bibliothèque</td></tr>
-  <tr><td><b>Migration</b></td><td><b>aucune</b></td><td>oui, + sync rules à redéployer</td></tr>
-  <tr><td><b>Coût</b></td><td>~6-8 h</td><td>~6-8 h <b>+ travail de coach sur chaque exercice</b></td></tr>
-  <tr><td><b>Blocage</b></td><td>—</td><td>la bibliothèque est encore <b>vide</b> (CONTENU-01) : re-tagger quoi&nbsp;?</td></tr>
+  <tr><th>Muscle</th><th>Face</th><th>Dos</th></tr>
+  <tr><td>Pectoraux</td><td>✅</td><td>—</td></tr>
+  <tr><td>Dos</td><td>—</td><td>✅</td></tr>
+  <tr><td>Épaules</td><td>✅</td><td>✅ <em>(seul muscle sur les deux vues)</em></td></tr>
+  <tr><td>Biceps</td><td>✅</td><td>—</td></tr>
+  <tr><td>Triceps</td><td>—</td><td>✅</td></tr>
+  <tr><td>Abdominaux</td><td>✅</td><td>—</td></tr>
+  <tr><td>Fessiers</td><td>—</td><td>✅</td></tr>
+  <tr><td>Quadriceps</td><td>✅</td><td>—</td></tr>
+  <tr><td>Ischio-jambiers</td><td>—</td><td>✅</td></tr>
+  <tr><td>Mollets</td><td>—</td><td>✅</td></tr>
 </table>
 
-<h2>Voie A — les trois emplacements</h2>
-<p class="why">Deux niveaux d'emphase seulement (R1) : primaire en accent plein, secondaire au même
-accent à ~35 %. Un groupe non sollicité reste <strong>neutre</strong>, il n'est pas « éteint » (R2).</p>
+<h2>Les trois emplacements — avec repli automatique tant qu'un exercice n'est pas tagué fin</h2>
+<p class="why"><code>resolveFineMuscles()</code> : un exercice tagué fin (<span class="chip full">plein</span>)
+s'affiche précisément ; un exercice pas encore tagué retombe sur ses groupes larges, étendus vers les
+muscles fins plausibles (<span class="chip red">réduit</span> pour le secondaire) — <em>c'est
+exactement le comportement de la v1 (Voie A), qui ne disparaît pas : il devient l'état « pas encore
+amélioré ».</em></p>
 <div class="row">
 
-  <div class="card"><h3>1 · Fiche d'exercice</h3><p>Développé couché</p>
+  <div class="card"><h3>1 · Curl biceps — tagué fin</h3><p>Après passage du coach</p>
     <div class="figs">
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Face : pectoraux sollicités">
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Face : biceps seul">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v30H34z" fill="var(--accent)" opacity=".95"/>
-        <path d="M38 78h36v30H38z" fill="var(--sil)"/>
-        <path d="M22 50h11v52H22z" rx="5" fill="var(--accent)" opacity=".35"/>
-        <path d="M79 50h11v52H79z" rx="5" fill="var(--accent)" opacity=".35"/>
-        <path d="M24 46h14v12H24z" rx="6" fill="var(--accent)" opacity=".35"/>
-        <path d="M74 46h14v12H74z" rx="6" fill="var(--accent)" opacity=".35"/>
+        <path d="M24 46h14v12H24z" fill="var(--sil)"/><path d="M74 46h14v12H74z" fill="var(--sil)"/>
+        <path d="M34 48h44v30H34z" fill="var(--sil)"/><path d="M38 78h36v30H38z" fill="var(--sil)"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".95"/>
+        <path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".95"/>
         <path d="M40 110h14v72H40z" fill="var(--sil)"/><path d="M58 110h14v72H58z" fill="var(--sil)"/>
-      </svg><div class="cap">Face</div></div>
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Dos : non sollicité">
+      </svg><div class="cap">Face</div>
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Dos : rien">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v34H34z" fill="var(--sil)"/><path d="M38 82h36v26H38z" fill="var(--sil)"/>
-        <path d="M22 50h11v52H22z" fill="var(--accent)" opacity=".35"/>
-        <path d="M79 50h11v52H79z" fill="var(--accent)" opacity=".35"/>
-        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".35"/>
-        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".35"/>
+        <path d="M24 46h14v12H24z" fill="var(--sil)"/><path d="M74 46h14v12H74z" fill="var(--sil)"/>
+        <path d="M34 48h44v34H34z" fill="var(--sil)"/><path d="M38 82h36v22H38z" fill="var(--sil)"/>
+        <path d="M22 58h11v46H22z" fill="var(--sil)"/><path d="M79 58h11v46H79z" fill="var(--sil)"/>
         <path d="M40 110h14v72H40z" fill="var(--sil)"/><path d="M58 110h14v72H58z" fill="var(--sil)"/>
-      </svg><div class="cap">Dos</div></div>
+      </svg><div class="cap">Dos</div>
     </div>
-    <div class="chips"><span class="chip prim">Pectoraux</span><span class="chip sec">Épaules</span><span class="chip sec">Bras</span></div>
+    <div class="chips"><span class="chip full">Biceps</span></div>
   </div>
 
-  <div class="card"><h3>2 · Aperçu de séance</h3><p>Haut du corps A — 6 exercices</p>
+  <div class="card"><h3>2 · Curl biceps — pas encore tagué</h3><p>État par défaut (les 16 actuels)</p>
     <div class="figs">
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Face">
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Face : biceps ET triceps par repli large">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v30H34z" fill="var(--accent)" opacity=".95"/>
-        <path d="M38 78h36v30H38z" fill="var(--accent)" opacity=".35"/>
-        <path d="M22 50h11v52H22z" fill="var(--accent)" opacity=".95"/>
-        <path d="M79 50h11v52H79z" fill="var(--accent)" opacity=".95"/>
-        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".95"/>
-        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".95"/>
+        <path d="M24 46h14v12H24z" fill="var(--sil)"/><path d="M74 46h14v12H74z" fill="var(--sil)"/>
+        <path d="M34 48h44v30H34z" fill="var(--sil)"/><path d="M38 78h36v30H38z" fill="var(--sil)"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".95"/>
+        <path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".95"/>
         <path d="M40 110h14v72H40z" fill="var(--sil)"/><path d="M58 110h14v72H58z" fill="var(--sil)"/>
-      </svg><div class="cap">Face</div></div>
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Dos : dorsaux sollicités">
+      </svg><div class="cap">Face</div>
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Dos : triceps aussi éclairé">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v34H34z" fill="var(--accent)" opacity=".95"/>
-        <path d="M38 82h36v26H38z" fill="var(--sil)"/>
-        <path d="M22 50h11v52H22z" fill="var(--accent)" opacity=".95"/>
-        <path d="M79 50h11v52H79z" fill="var(--accent)" opacity=".95"/>
-        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".95"/>
-        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".95"/>
+        <path d="M24 46h14v12H24z" fill="var(--sil)"/><path d="M74 46h14v12H74z" fill="var(--sil)"/>
+        <path d="M34 48h44v34H34z" fill="var(--sil)"/><path d="M38 82h36v22H38z" fill="var(--sil)"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".95"/>
+        <path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".95"/>
         <path d="M40 110h14v72H40z" fill="var(--sil)"/><path d="M58 110h14v72H58z" fill="var(--sil)"/>
-      </svg><div class="cap">Dos</div></div>
+      </svg><div class="cap">Dos</div>
     </div>
-    <div class="chips"><span class="chip prim">Pectoraux</span><span class="chip prim">Dos</span><span class="chip prim">Épaules</span><span class="chip prim">Bras</span><span class="chip sec">Gainage</span></div>
+    <div class="chips"><span class="chip full">Biceps</span><span class="chip full">Triceps</span></div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Même défaut qu'en Voie A — assumé, disparaît muscle par muscle au fil du tagging.</p>
   </div>
 
-  <div class="card"><h3>3 · Bilan hebdomadaire</h3><p>Intensité relative à <em>ta</em> semaine</p>
+  <div class="card"><h3>3 · Bilan hebdomadaire</h3><p>Intensité relative au tonnage de la semaine</p>
     <div class="figs">
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Face : jambes les plus sollicitées">
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Face : quadriceps le plus sollicité">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v30H34z" fill="var(--accent)" opacity=".45"/>
-        <path d="M38 78h36v30H38z" fill="var(--accent)" opacity=".25"/>
-        <path d="M22 50h11v52H22z" fill="var(--accent)" opacity=".30"/>
-        <path d="M79 50h11v52H79z" fill="var(--accent)" opacity=".30"/>
-        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".20"/>
-        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".20"/>
-        <path d="M40 110h14v72H40z" fill="var(--accent)" opacity=".95"/>
-        <path d="M58 110h14v72H58z" fill="var(--accent)" opacity=".95"/>
-      </svg><div class="cap">Face</div></div>
-      <div><svg width="112" height="188" viewBox="0 0 112 188" role="img" aria-label="Dos">
+        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".25"/><path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".25"/>
+        <path d="M34 48h44v30H34z" fill="var(--accent)" opacity=".35"/><path d="M38 78h36v30H38z" fill="var(--accent)" opacity=".2"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".3"/><path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".3"/>
+        <path d="M40 110h14v72H40z" fill="var(--accent)" opacity=".95"/><path d="M58 110h14v72H58z" fill="var(--accent)" opacity=".95"/>
+      </svg><div class="cap">Face</div>
+      <svg width="100" height="168" viewBox="0 0 112 188" role="img" aria-label="Dos">
         <ellipse cx="56" cy="20" rx="13" ry="15" fill="var(--sil)"/>
         <rect x="42" y="37" width="28" height="10" rx="4" fill="var(--sil)"/>
-        <path d="M34 48h44v34H34z" fill="var(--accent)" opacity=".55"/>
-        <path d="M38 82h36v26H38z" fill="var(--sil)"/>
-        <path d="M22 50h11v52H22z" fill="var(--accent)" opacity=".30"/>
-        <path d="M79 50h11v52H79z" fill="var(--accent)" opacity=".30"/>
-        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".20"/>
-        <path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".20"/>
-        <path d="M40 110h14v72H40z" fill="var(--accent)" opacity=".95"/>
-        <path d="M58 110h14v72H58z" fill="var(--accent)" opacity=".95"/>
-      </svg><div class="cap">Dos</div></div>
+        <path d="M24 46h14v12H24z" fill="var(--accent)" opacity=".25"/><path d="M74 46h14v12H74z" fill="var(--accent)" opacity=".25"/>
+        <path d="M34 48h44v34H34z" fill="var(--accent)" opacity=".3"/>
+        <path d="M22 58h11v46H22z" fill="var(--accent)" opacity=".3"/><path d="M79 58h11v46H79z" fill="var(--accent)" opacity=".3"/>
+        <path d="M40 110h14v16H40z" fill="var(--accent)" opacity=".55"/><path d="M58 110h14v16H58z" fill="var(--accent)" opacity=".55"/>
+        <path d="M40 126h14v30H40z" fill="var(--accent)" opacity=".85"/><path d="M58 126h14v30H58z" fill="var(--accent)" opacity=".85"/>
+        <path d="M40 156h14v26H40z" fill="var(--accent)" opacity=".5"/><path d="M58 156h14v26H58z" fill="var(--accent)" opacity=".5"/>
+      </svg><div class="cap">Dos</div>
     </div>
-    <div class="chips"><span class="chip prim">Jambes — le plus</span><span class="chip sec">Dos</span><span class="chip sec">Pectoraux</span><span class="chip sec">Bras</span></div>
+    <div class="chips"><span class="chip full">Quadriceps — le plus</span><span class="chip red">Ischio-jambiers</span><span class="chip red">Dos</span></div>
   </div>
 </div>
 
 <div class="note">
-  <strong>Pourquoi la vue de dos n'est pas décorative.</strong> Sur une silhouette de face,
-  <code>core</code> occupe l'abdomen ; sur le dos, <code>back</code> occupe la même hauteur. Sans la
-  seconde vue, <code>back</code> — l'un des six groupes — n'aurait <em>nulle part</em> où s'afficher (R4).
+  <strong>La colonne « repli » n'est pas un pis-aller caché.</strong> Les 16 exercices de la
+  bibliothèque partent tous à <code>musclesFine: []</code> — la carte 2 ci-dessus est leur état
+  <strong>réel</strong> au lancement de cette US, pas un cas d'erreur. L'amélioration est
+  progressive, exercice par exercice, au rythme du tagging par un coach — hors code.
   <br><br>
-  <strong>L'échelle du bilan est relative, pas absolue.</strong> Le groupe le plus travaillé de
-  <em>ta</em> semaine est à opacité pleine, les autres au prorata du tonnage. Comparer 20 séries de
-  jambes à 20 séries de bras sur une échelle absolue n'aurait aucun sens (R3).
-  <br><br>
-  <strong>La liste de chips reste affichée partout.</strong> Le schéma ne porte jamais seul
-  l'information : c'est ce qui le rend utilisable sous TalkBack et en cas de daltonisme (R5).
-  <br><br>
-  <strong>Le critère de recette qui juge la voie A</strong> : montrer la fiche d'un curl biceps à
-  quelqu'un qui connaît l'anatomie. S'il dit « c'est faux, ça allume aussi le triceps », le dessin est
-  <em>trop détaillé pour la donnée</em> — il faut styliser davantage, pas enrichir la base.
+  <strong>Ce qui ne change pas depuis la Voie A</strong> : la liste textuelle reste affichée à côté
+  du schéma (R5, accessibilité) ; l'échelle du bilan est relative à la semaine, jamais absolue (R3) ;
+  un muscle non sollicité reste neutre, jamais « éteint » (R2).
 </div>
 
 </div></body></html>

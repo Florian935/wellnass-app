@@ -1,133 +1,214 @@
 ---
 id: MUSC-F1b
-titre: "Muscles ciblés sur schéma corporel"
+titre: "Muscles ciblés sur schéma corporel — anatomie fine"
 roadmap: [6.2]
 catalogue: []
 etape: validation
 branche: feature/muscf1b-schema-muscles
-maj: 30/07/2026
+maj: 01/08/2026
 ---
 
-# US MUSC-F1b — Muscles ciblés sur schéma corporel
+# US MUSC-F1b — Muscles ciblés sur schéma corporel (Voie B)
 
-> Sujet **distinct** des GIF de démonstration abandonnés (roadmap 6.1) : celui-ci reste ouvert.
-> Roadmap **6.2**, P1.
+> **Recadrage du 01/08/2026.** La première version de cette spec (30/07/2026) recommandait la
+> **Voie A** (6 zones larges, celles que la base connaît déjà) plutôt qu'une anatomie fine, pour
+> deux raisons : le coût d'une nouvelle taxonomie, et une bibliothèque d'exercices jugée « encore
+> vide ». **La seconde raison n'est plus exacte** — CONTENU-01 a livré 16 exercices le 29/07/2026,
+> avant même la première rédaction de cette spec. Florian a validé la **Voie B** (anatomie fine) en
+> connaissance de cause. Cette version remplace entièrement la précédente.
 
-## 0. 🔴 Le point dur n'est pas le dessin — c'est la granularité de la donnée
+## 0. Le vrai risque de la Voie B, et comment on l'évite
 
-La formulation d'origine dit « corps humain SVG avec **muscles** travaillés en évidence ». Or la base
-ne connaît **que six groupes** ([exercise.ts](../../../../packages/shared/src/exercise.ts)) :
+**Le système actuel de 6 groupes larges (`musclePrimary`/`musclesSecondary`,
+[exercise.ts](../../../../packages/shared/src/exercise.ts)) est utilisé dans 18 fichiers** :
+l'alerte de déséquilibre musculaire (MUSC-05, `muscle-balance.ts`), le graphique de volume par
+groupe (`MuscleVolumeCard`), le remplacement d'exercice (`exercise-substitution.ts`), le filtre de
+bibliothèque (`exercise-filter.ts`), l'écran admin. **Remplacer ce système** par une anatomie fine
+ferait dépendre toutes ces fonctionnalités déjà livrées et recettées d'une nouvelle taxonomie — le
+même risque que REFACTO-01 a évité en touchant le moins de code possible.
 
+**Décision de conception (posée, pas à valider — elle découle directement du risque ci-dessus)** :
+cette US est **additive**. Les 6 groupes larges ne bougent pas, ne sont pas dépréciés, continuent de
+servir exactement ce qu'ils servent aujourd'hui. Une **nouvelle colonne indépendante**
+`muscles_fine` porte l'anatomie fine, utilisée **uniquement** par le nouveau schéma corporel.
+
+## 1. La taxonomie — reprise, pas inventée
+
+`docs/specs/functional/administration.md` §3.3 décrit depuis le 04/07/2026, **jamais implémenté**,
+un référentiel de 10 muscles en français courant :
+
+> Pectoraux, Dos, Épaules, Biceps, Triceps, Abdominaux, Fessiers, Quadriceps, Ischio-jambiers,
+> Mollets.
+
+C'est cette liste, pas une invention à 15-20 muscles. Elle est délibérément plus grossière qu'une
+planche d'anatomie (pas de deltoïde antérieur/moyen/postérieur, pas d'adducteurs séparés) — le
+niveau choisi par le produit en juillet, avant même que ce sujet ne soit rouvert.
+
+| Clé technique | Label FR | Label EN | Vue(s) où le muscle s'affiche |
+|---|---|---|---|
+| `chest` | Pectoraux | Chest | face |
+| `back` | Dos | Back | dos |
+| `shoulders` | Épaules | Shoulders | face **et** dos |
+| `biceps` | Biceps | Biceps | face |
+| `triceps` | Triceps | Triceps | dos |
+| `abs` | Abdominaux | Abs | face |
+| `glutes` | Fessiers | Glutes | dos |
+| `quadriceps` | Quadriceps | Quadriceps | face |
+| `hamstrings` | Ischio-jambiers | Hamstrings | dos |
+| `calves` | Mollets | Calves | dos |
+
+**Conséquence utile** : seuls les épaules apparaissent sur les deux vues → **11 tracés SVG au
+total** (5 en face, 6 au dos), pas 20. Nettement plus tractable que l'anatomie complète envisagée
+au premier abord.
+
+⚠️ `chest`/`back`/`shoulders` portent **la même clé** que leur équivalent dans `MUSCLE_GROUPS` (les
+6 groupes larges) — ce sont deux champs distincts (`musclePrimary` vs `musclesFine`), aucune
+collision de code, mais à garder en tête en relisant les diffs.
+
+## 2. Le lien avec les 6 groupes larges — une seule fonction de résolution
+
+Chaque groupe large **s'étend** vers un ou plusieurs muscles fins :
+
+```ts
+const BROAD_TO_FINE: Record<MuscleGroup, FineMuscle[]> = {
+  chest: ['chest'],
+  back: ['back'],
+  shoulders: ['shoulders'],
+  arms: ['biceps', 'triceps'],       // on ne sait pas lequel spécifiquement → les deux
+  legs: ['quadriceps', 'hamstrings', 'calves'],
+  core: ['abs'],
+};
 ```
-chest · back · legs · shoulders · arms · core
+
+**Une seule fonction pure** décide quoi éclairer sur le schéma, pour n'importe quel exercice :
+
+```ts
+function resolveFineMuscles(exercise: {
+  musclePrimary: MuscleGroup;
+  musclesSecondary: MuscleGroup[];
+  musclesFine: FineMuscle[];
+}): { full: FineMuscle[]; reduced: FineMuscle[] } {
+  if (exercise.musclesFine.length > 0) {
+    // Tagué fin : tout à pleine émphase — la précision EST la nuance, pas besoin d'un 2ᵉ niveau.
+    return { full: exercise.musclesFine, reduced: [] };
+  }
+  // Pas encore tagué : repli sur les groupes larges, même émphase à deux niveaux qu'avant (R1
+  // de la version précédente de cette spec) — primaire plein, secondaires à ~35 %.
+  return {
+    full: BROAD_TO_FINE[exercise.musclePrimary],
+    reduced: exercise.musclesSecondary.flatMap((m) => BROAD_TO_FINE[m]),
+  };
+}
 ```
 
-`musclesSecondary` puise dans **la même liste** — c'est un second groupe, pas un muscle fin.
+**C'est ce qui résout le problème d'honnêteté de la version précédente** (§0 de la v1 : « sur un
+curl, il faudrait éclairer tout le bras, triceps compris ») — mais **seulement une fois l'exercice
+tagué fin**. Tant qu'il ne l'est pas, le repli reproduit fidèlement l'ancien défaut (un curl non
+tagué éclaire biceps **et** triceps) — c'est le prix de l'amélioration progressive, assumé et
+documenté, pas caché.
 
-**Conséquence à regarder en face** : un schéma anatomique détaillé — biceps distinct du triceps,
-quadriceps distinct des ischio-jambiers, deltoïde antérieur distinct du postérieur — **afficherait une
-précision que la donnée n'a pas**. Sur un curl, il faudrait éclairer « arms » : le dessin allumerait
-donc *tout* le bras, triceps compris. Un utilisateur qui connaît son anatomie y lirait une **erreur**.
+**Un seul chemin de rendu** (fiche, aperçu de séance, bilan hebdo) : chacun agrège des
+`resolveFineMuscles(...)` par exercice, jamais deux logiques de rendu séparées « fin » et
+« large ».
 
-Deux voies s'ouvrent, et **il faut choisir avant de dessiner** :
+## 3. Périmètre
 
-| | **Voie A — schéma à 6 zones** | **Voie B — enrichir la donnée d'abord** |
-|---|---|---|
-| Ce qu'on dessine | 6 zones larges, franchement stylisées | anatomie fine, ~15-20 muscles |
-| Donnée | **celle qui existe** | nouvelle table + **re-tagger toute la bibliothèque** |
-| Honnêteté | ✅ le dessin ne promet que ce qu'on sait | ✅ mais seulement une fois la donnée saisie |
-| Coût | ~6-8 h | ~6-8 h **+ un travail de coach sur chaque exercice** |
-| Migration | **aucune** | oui, + sync rules à redéployer |
-| Risque | le schéma paraît grossier | **la bibliothèque est vide** (CONTENU-01) : re-tagger quoi ? |
+**Dans le périmètre** :
+1. **`muscles_fine` sur `exercises`** — colonne `jsonb`, `default '[]'`, additive (migration
+   symétrique à celle de `muscles_secondary`, US MUSC-F10c-1). **Aucune sync rule à redéployer** :
+   la sync rule de `exercises` est `select *` ([powersync-sync-rules.yaml](../../technical/powersync-sync-rules.yaml)), une colonne en plus n'exige rien de plus.
+2. **Écran admin** — section « Muscles fins (optionnel) » sur la fiche exercice, **groupée
+   visuellement par région** (Haut du corps : Pectoraux/Dos/Épaules/Biceps/Triceps · Bas du corps :
+   Quadriceps/Ischio-jambiers/Mollets/Fessiers · Tronc : Abdominaux) — 10 checkboxes seraient un mur
+   illisible en vrac (constaté en cartographiant l'écran actuel), le regroupement est nécessaire.
+3. **`<BodyMap />`** — composant `react-native-svg` (déjà présent, aucune dépendance nouvelle),
+   deux vues (face/dos), 11 tracés à main levée, rendu à deux niveaux d'émphase (`full`/`reduced`,
+   §2). Utilisé aux 3 endroits déjà prévus par la v1 :
+   - fiche d'exercice (un exercice) ;
+   - aperçu de séance avant démarrage (union des exercices de la séance) ;
+   - bilan hebdomadaire (intensité relative au **tonnage** de la semaine, R3 ci-dessous).
+4. **Tagging des 16 exercices existants par un coach** (Florian/Damien, ou toute personne
+   compétente) — **hors dev, hors code**. ~1-2h pour 16 exercices (2-4 muscles chacun en moyenne).
+   L'US **ne bloque pas** sur ce travail : elle livre et fonctionne (en repli large) avant qu'il ne
+   soit fait, et s'améliore exercice par exercice au fur et à mesure du tagging.
 
-→ **Ma recommandation : voie A.** La voie B fait dépendre une US P1 d'un travail de contenu qui n'a
-même pas commencé (CONTENU-01 attend encore ses programmes). Un schéma à 6 zones **assumé comme tel**
-— silhouette stylisée, pas planche d'anatomie — est utile, honnête, et n'empêche pas la voie B plus
-tard. **→ Décision Damien / Florian.**
+**Hors périmètre**, inchangé depuis la v1 : l'animation du mouvement (6.1, abandonné), la vue
+latérale, la distinction gauche/droite. **Nouveau, explicitement exclu** : remplacer les 6 groupes
+larges dans l'alerte de déséquilibre / le filtre / le remplacement d'exercice — voir §0.
 
-Le reste de cette spec décrit la **voie A**.
+## 4. Règles
 
-## 1. Périmètre
+**R1 — Deux niveaux d'émphase au repli large, un seul niveau une fois tagué fin.** Voir §2. Pas de
+troisième niveau : illisible à la taille d'affichage (héritée de la v1).
 
-**Dans le périmètre** — une silhouette (face + dos) où les groupes sollicités s'éclairent, à trois
-endroits :
-1. **Fiche d'exercice** — le groupe primaire, et les secondaires dans un ton atténué.
-2. **Aperçu d'une séance** (avant démarrage) — union des groupes de tous les exercices.
-3. **Bilan hebdomadaire** — intensité par groupe sur la semaine (voir R3).
+**R2 — Un muscle non sollicité n'est pas « éteint », il est neutre.** Inchangé depuis la v1.
 
-**Hors périmètre** : l'animation du mouvement (c'est 6.1, abandonné), la vue latérale, la distinction
-gauche/droite, et toute mention de muscle nommé individuellement.
+**R3 — Bilan hebdomadaire : échelle relative au tonnage de la semaine.** Le muscle fin le plus
+sollicité (tonnage agrégé de tous les exercices qui le ciblent, via `resolveFineMuscles`) = pleine
+émphase ; les autres au prorata. Inchangé en esprit depuis la v1, calculé maintenant en espace
+« muscle fin » plutôt qu'en espace « groupe large ».
 
-## 2. Règles
+**R4 — Les vues face et dos sont toutes les deux nécessaires.** `back`, `triceps`, `glutes`,
+`hamstrings`, `calves` n'existent que sur la vue de dos ; `chest`, `biceps`, `abs`, `quadriceps`
+que sur la vue de face ; `shoulders` sur les deux (§1).
 
-**R1 — Deux niveaux d'emphase, pas plus.** Primaire = accent plein ; secondaire = **le même accent à
-~35 % d'opacité**. Introduire une troisième couleur rendrait le schéma illisible à la taille où il
-s'affiche.
+**R5 — Le schéma reste un complément, jamais le seul porteur d'information.** La liste textuelle
+des muscles sollicités reste affichée à côté (inchangé depuis la v1, condition de l'accessibilité
+§6).
 
-**R2 — Un groupe non sollicité n'est pas « éteint », il est neutre.** Il garde la couleur de
-silhouette. Le schéma montre ce qui travaille, il n'accuse pas ce qui ne travaille pas.
+## 5. Rendu SVG — le vrai risque de cette US
 
-**R3 — Au bilan hebdomadaire, l'échelle est relative à la semaine de l'utilisateur.** Le groupe le
-plus sollicité = opacité pleine ; les autres au prorata du **tonnage** (unité déjà calculée par
-`weekly-review`). Une échelle absolue n'aurait aucun sens : 20 séries de jambes ne se comparent pas à
-20 séries de bras.
+`react-native-svg` (déjà présent) suffit techniquement. Le risque n'est pas la bibliothèque, c'est
+la **justesse anatomique** des 11 tracés : contrairement aux 6 zones larges et stylisées de la v1,
+une silhouette où « biceps » et « triceps » sont visuellement confondus, ou où « quadriceps » et
+« ischio-jambiers » se chevauchent sur la vue de face, **rate l'objectif même de la Voie B**.
 
-**R4 — `core` et `back` se recouvrent visuellement.** Sur une silhouette de face, `core` occupe
-l'abdomen ; sur le dos, `back` occupe la même hauteur. Les deux vues sont donc **nécessaires**, pas
-décoratives — sans la vue de dos, `back` n'a nulle part où s'afficher.
+→ **Une maquette dédiée** (`design/muscf1b-schema-muscles/`) est produite **avant** le code,
+montrant les 11 tracés sur les deux vues, chaque muscle isolé et nommé — pour que la relecture
+anatomique (critère de recette 12) se fasse sur le dessin, pas sur l'app une fois codée.
 
-**R5 — Le schéma est un complément, jamais le seul porteur d'information.** La liste textuelle des
-groupes reste affichée à côté. C'est ce qui rend l'écran utilisable sans voir le dessin (§5).
+## 6. i18n
 
-## 3. Rendu
+Nouvelle famille `muscleFine.*` (10 clés, FR+EN, §1). Plus les 2 clés d'accessibilité déjà prévues
+par la v1 : `bodyMap.a11yLabel`, `bodyMap.frontBack`.
 
-`react-native-svg` est **déjà présent** (utilisé par `ShareCard` et les graphes) — aucune dépendance
-nouvelle. Le schéma est un composant `<BodyMap groups={...} />` avec 12 tracés (6 groupes × 2 vues),
-écrits à la main, sans asset externe : il doit fonctionner **hors ligne** et suivre le thème.
+## 7. Accessibilité
 
-⚠️ **Ne pas importer une planche anatomique trouvée en ligne** : question de licence, et cela
-ramènerait le problème de granularité de §0.
+Inchangé depuis la v1 : `accessibilityLabel` énonçant les muscles sollicités, liste textuelle
+toujours présente (R5), contraste de remplissage 3:1 contre la silhouette (palette CONF-07).
 
-## 4. i18n
+## 8. Comportement offline
 
-Aucune chaîne neuve **sur le schéma lui-même** — les noms de groupes sont déjà traduits
-(`muscles.chest`, etc.). Deux ajouts pour l'accessibilité seulement :
-- `bodyMap.a11yLabel` — « Schéma corporel : {{liste}} sollicités » / « Body map: {{list}} worked ».
-- `bodyMap.frontBack` — « Face » / « Dos », « Front » / « Back ».
+**Total.** Tracés SVG en dur dans le bundle, données (`musclesFine` compris) lues depuis PowerSync
+local. Aucun réseau, aucune image distante.
 
-## 5. Accessibilité
+## 9. Critères de recette
 
-Le schéma est **purement visuel** : il doit donc porter un `accessibilityLabel` qui énonce les groupes
-(`bodyMap.a11yLabel`), et **la liste textuelle reste à l'écran** (R5). C'est aussi la réponse au
-daltonisme : l'information passe par le texte, la couleur ne fait que l'appuyer.
+- [ ] 1. Fiche d'un exercice **non tagué fin** (les 16 actuels, au départ) : repli large identique
+      au comportement décrit par la v1 (primaire plein, secondaires à ~35 %).
+- [ ] 2. Un coach tague un exercice (ex. Curl biceps → `biceps`) : sa fiche affiche **seulement**
+      biceps, plus le triceps qu'affichait le repli large.
+- [ ] 3. Fiche d'un exercice sans secondaire : un seul muscle éclairé, aucun résidu.
+- [ ] 4. Aperçu d'une séance mêlant exercices tagués et non tagués : l'union se fait correctement
+      dans les deux cas, sans doublon d'émphase.
+- [ ] 5. Bilan hebdo : le muscle le plus travaillé (par tonnage agrégé) est le plus marqué (R3).
+- [ ] 6. Semaine vide : silhouette neutre, pas d'écran cassé ni de division par zéro.
+- [ ] 7. Vue de dos atteignable et correcte — sans elle, 6 des 10 muscles ne s'affichent nulle part
+      (R4).
+- [ ] 8. Thème clair et sombre : la silhouette reste lisible dans les deux.
+- [ ] 9. TalkBack énonce les muscles sollicités ; la liste textuelle est là (R5).
+- [ ] 10. Mode avion : le schéma s'affiche (aucune ressource distante).
+- [ ] 11. En EN : « Front »/« Back », les 10 noms de `muscleFine.*` et l'annonce d'accessibilité
+      sont en anglais.
+- [ ] 12. 🔴 **Le critère qui juge tout le reste** : montrer les deux vues (maquette §5, puis l'app
+      une fois codée) à quelqu'un qui connaît l'anatomie. S'il dit « ça ne ressemble pas à des
+      biceps » ou « je ne distingue pas quadriceps et ischio-jambiers », c'est un rejet — retour au
+      dessin, pas au modèle de données.
+- [ ] 13. Écran admin : les 10 checkboxes sont groupées par région (Haut du corps / Bas du corps /
+      Tronc), pas un mur en vrac.
 
-Contraste : la couleur de remplissage doit tenir **3:1 contre la silhouette** — non textuel, WCAG
-1.4.11. À vérifier avec la palette **issue de CONF-07**, pas l'actuelle.
+## 10. Ce qui reste hors code
 
-## 6. Comportement offline
-
-**Total.** Tracés SVG en dur dans le bundle, données lues depuis PowerSync local. Aucun réseau, aucune
-image distante, **aucune migration, aucune sync rule**.
-
-## 7. Critères de recette
-
-- [ ] 1. Fiche d'un développé couché : **pectoraux** en plein, **épaules/bras** en atténué.
-- [ ] 2. Fiche d'un exercice sans secondaires : un seul groupe éclairé, aucun résidu.
-- [ ] 3. Aperçu d'une séance complète : l'union des groupes, sans doublon d'intensité.
-- [ ] 4. Bilan hebdo : le groupe le plus travaillé est le plus marqué (R3).
-- [ ] 5. Semaine **vide** : silhouette neutre, **pas** d'écran cassé ni de division par zéro.
-- [ ] 6. Vue de **dos** présente et atteignable — sans elle, `back` ne s'affiche nulle part (R4).
-- [ ] 7. Thème **clair** et **sombre** : la silhouette reste lisible dans les deux.
-- [ ] 8. **TalkBack** énonce les groupes sollicités ; la liste textuelle est là (R5).
-- [ ] 9. Mode avion : le schéma s'affiche (aucune ressource distante).
-- [ ] 10. En **EN** : « Front » / « Back » et l'annonce d'accessibilité sont en anglais.
-- [ ] 11. **Le critère qui juge la voie A** : montrer la fiche d'un curl biceps à quelqu'un qui
-      connaît l'anatomie. S'il dit « c'est faux, ça allume aussi le triceps », c'est que le dessin
-      est **trop détaillé** pour la donnée — il faut styliser davantage, pas enrichir la base.
-
-## 8. Ce que cette US ne prétend pas faire
-
-Elle n'apporte **aucune** précision anatomique nouvelle. Elle rend visible, d'un coup d'œil, une
-information déjà présente sous forme de liste. Si l'attente réelle est « savoir quel muscle précis
-travaille », alors c'est la **voie B** qu'il faut ouvrir — et elle commence par du travail de contenu,
-pas par du code.
+Le tagging des 16 exercices (§3.4) — travail de coach, à faire à son rythme, sans bloquer la
+recette du reste. Le critère de recette 1 (repli large) et le critère 2 (une fois tagué) peuvent
+donc être vérifiés **avant** que le tagging ne soit terminé.
