@@ -1705,6 +1705,8 @@
     "statusMissed": "Manquée",
     "empty": "Aucun programme planifié. Planifie un programme depuis son détail.",
     "noProfileHint": "Définis ton allure de référence dans le profil coureur pour voir les allures cibles.",
+    "dragHint": "Appui long sur une séance pour la glisser vers un autre jour",
+    "movedTo": "Séance déplacée au {{date}}",
     "generatedCount_one": "Planifier · {{count}} séance",
     "generatedCount_other": "Planifier · {{count}} séances",
     "planErrorTitle": "Échec de la planification",

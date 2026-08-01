@@ -573,6 +573,33 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 19. MUSC-F9 — Décalage d'une séance planifiée en glisser-déposer
+
+📄 [spec](docs/specs/functional/us/muscf9-planning-glisser-deposer.md) · roadmap 3.10 ·
+**📱 device — ⚠️ nouveau dev build requis** (`expo-haptics`, dépendance native neuve non présente
+sur l'APK existant), aucune migration, aucune sync rule.
+
+⚠️ **Le point à vérifier en priorité** : la **cohabitation de trois gestes** sur la même surface
+(défilement vertical, changement de semaine, glissement) — critère 10.
+
+- [ ] 1. Appui long sur une séance `planned` → elle « décolle » visuellement.
+- [ ] 2. La déposer sur un autre jour de la semaine → elle s'y affiche immédiatement.
+- [ ] 3. Fermer puis rouvrir l'app → **le déplacement a tenu**.
+- [ ] 4. Déposer une séance sur son propre jour → **rien ne se passe**, aucun toast.
+- [ ] 5. Relâcher en dehors de tout jour → retour à la place d'origine, aucune écriture.
+- [ ] 6. Une séance **terminée** ne se saisit pas.
+- [ ] 7. Deux séances sur le même jour cible : les deux s'affichent, aucune n'est perdue.
+- [ ] 8. **Mode avion** : le déplacement s'affiche tout de suite ; réseau rétabli → il remonte.
+- [ ] 9. **TalkBack actif** : les trois boutons de report restent atteignables et fonctionnels.
+- [ ] 10. Le **défilement vertical** de l'écran fonctionne toujours normalement (le geste de
+      glissement ne doit pas l'avoir capturé).
+- [ ] 11. En **EN** : l'indice et le toast sont en anglais.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,

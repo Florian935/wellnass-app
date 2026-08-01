@@ -53,6 +53,7 @@ export * from './running-paces';
 export * from './pace-records';
 export * from './geo';
 export * from './date';
+export * from './drop-target';
 export * from './menstrual-cycle';
 export * from './planning';
 export * from './run-stats';

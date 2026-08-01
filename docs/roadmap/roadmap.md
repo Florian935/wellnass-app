@@ -148,7 +148,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.3 | Dupliquer un programme | Copier pour personnaliser sans toucher l'original. | Facile | 1h | 🟢 | ✅ | `duplicateProgram`. |
 | 3.12 | Un programme actif à la fois | Activer un programme désactive le précédent (historique conservé). | Facile | 1h | 🟢 | ✅ | `activateProgram` (un actif par pilier). |
 | 3.9 | Planning calendrier auto | Séances placées automatiquement après activation. | Moyen | 4h | 🟢 | ✅ | `planProgram`. |
-| 3.10 | Décalage de séance | Glisser-déposer vers un autre jour. | Moyen | 3h | 🟢 | 🟡 | `reschedulePlannedSession` par action, **pas de glisser-déposer**. |
+| 3.10 | Décalage de séance | Glisser-déposer vers un autre jour. | Moyen | 3h | 🟢 | ✅ | **MUSC-F9, 01/08/2026** : appui long + glissement (`react-native-gesture-handler`/`reanimated`), zones de dépôt mesurées à chaque prise de geste, `reschedulePlannedSession` réutilisée telle quelle. Les 3 boutons de report restent (chemin accessible). ⚠️ `expo-haptics` neuf → nouveau dev build requis pour recette device. |
 | 3.11 | Gestion séance manquée | Reporter ou sauter. | Facile | 2h | 🟢 | ✅ | `skip` + `reschedule` + `useMissedSessions`. |
 | 3.24 | Plan de séance avant démarrage | Récap des exercices prévus avec cibles. | Facile | 2h | 🟢 | ✅ | `programs/[id].tsx`. |
 | 3.7 | Progression automatique | Charge cible +X d'une semaine à l'autre (si ≥ 80 % complété). | Moyen | 3h ⚠️ *sous-évalué* | 🟢 | 🟡 | Suggestion de progression **par exercice** en séance (`computeProgressionSuggestion`, RPE-aware, jamais imposée) — Refonte-C3, déjà livrée. **La progression au niveau du programme reste un chantier à part entière**, scindée de MUSC-F7 le 01/08/2026 : `exercise_plans.target_weight_kg` est figé par plan (aucune notion de semaine), aucun taux de complétion n'est calculé nulle part. Ce n'est pas un signal manquant (comme 3.8) mais un concept de données à concevoir — voir [BACKLOG.md](../../BACKLOG.md). |
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 180 | ~85 % |
-| 🟡 Partiel | 17 | ~8 % |
+| ✅ Livré | 181 | ~85 % |
+| 🟡 Partiel | 16 | ~8 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -456,7 +456,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 28 | 0 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). Reste ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 18 | 3 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
+| V0.3 (21) | 19 | 2 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 27 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — MUSC-F9 : glisser-déposer du planning (3.10 🟡 → ✅)**
+Geste appui long + glissement sur les cartes du planning, zones mesurées à chaque prise de geste
+(`measureInWindow`). Les 3 boutons de report restent (chemin accessible). ⚠️ `expo-haptics` neuf → nouveau build requis.
 
 **01/08/2026 — RUN-F3 : comparaison à l'objectif + terrain (5.25 🟡 → ✅, 5.24 partiel)**
 Construit le lien course↔séance planifiée, inexistant jusqu'ici (`runs.planned_session_id`,

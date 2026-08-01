@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf9-planning-glisser-deposer` — MUSC-F9 : glisser-déposer d'une séance planifiée (3.10 livrée)
+
+Commit précédent : `1773aaf`. Consolidation des 4 validations (« Oui, go ») reçues pour CONF-07,
+RUN-F3, MUSC-F9, MUSC-F1b — traité dans l'ordre du plus simple au plus gros. Front-matter
+`etape: recette` (spec §7, 11 critères device).
+
+#### Ajouté
+
+- [drop-target.ts (shared)](packages/shared/src/drop-target.ts) — `findDropTarget(y, zones)`, pur :
+  jour dont la zone `[y, y+height)` contient la coordonnée testée, `null` hors de toute zone (dépôt
+  annulé, R6). 7 tests, dont les bornes exactes (une frontière ne matche jamais deux zones à la fois).
+- [planning/index.tsx](apps/mobile/src/app/planning/index.tsx) — geste `Gesture.Pan()` sur chaque
+  carte de séance (`activateAfterLongPress(200)`, plus court que les 700 ms du réagencement du
+  dashboard car la liste ne défile pas sur la même zone) : élévation visuelle au doigt
+  (`useAnimatedStyle`/`reanimated`), retour haptique à la prise et au dépôt (D3, `expo-haptics`),
+  toast de confirmation, surbrillance de la zone survolée.
+- Les zones de dépôt sont mesurées **à chaque début de geste** (`measureInWindow`, coordonnées
+  écran absolues), pas une fois au montage — ce qui les garde justes même après un défilement
+  vertical, sans avoir à suivre l'offset de scroll explicitement (aucun auto-défilement, D2-option 1).
+- Indice textuel `planning.dragHint` au-dessus de la grille + `planning.movedTo` dans le toast,
+  FR+EN. Les 3 boutons de report existants **restent en place** (chemin accessible sous TalkBack,
+  R6/§6 — un glisser-déposer n'est jamais utilisable en lecture d'écran seule).
+- `reschedulePlannedSession(id, dateCible)` réutilisée telle quelle (R2) : aucune règle métier
+  neuve, aucune migration, aucune sync rule à redéployer.
+
+#### Technique / Notes
+
+- `expo-haptics` (`~57.0.1`) est une **dépendance native neuve** — non recettable sur l'APK
+  existant, un nouveau dev build EAS est requis avant la recette device (RECETTES.md #19).
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/265 tests + shared
+  Vitest 67 fichiers/1319 tests, +7 pour `drop-target.test.ts`) — lus sans pipe, tous verts.
+  Parité i18n FR/EN vérifiée (1628 clés).
+- Roadmap 3.10 → ✅ (V0.3 : 19 livré / 2 partiel). RECETTES.md #19 créée. BACKLOG.md : entrée
+  MUSC-F9 marquée livrée.
+
 ### 01/08/2026 — `feature/runf3-resume-course-enrichi` — RUN-F3 : comparaison à l'objectif + terrain (5.25 livrée, D3)
 
 Commit précédent : `4d6594d`. Florian valide de construire le parcours complet (pas une

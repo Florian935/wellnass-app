@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   Pressable,
@@ -9,12 +9,21 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import {
   addDays,
+  findDropTarget,
   isMissed,
   localDayKey,
   sessionTargetPace,
   startOfWeek,
+  type DropZone,
   type ProgramSessionType,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -40,6 +49,16 @@ import { useTheme } from '@/theme/useTheme';
 
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+
+/**
+ * Délai d'appui long avant que le glisser-déposer démarre (US MUSC-F9, D1) — plus court que les
+ * 700 ms du réagencement du dashboard (`SortableWidgetGrid`) : ici la liste ne défile pas
+ * verticalement sur la même zone que les cartes-jour, le risque de conflit est moindre.
+ */
+const LONG_PRESS_MS = 200;
+
+/** Durée d'affichage du toast de confirmation (US MUSC-F9). */
+const TOAST_MS = 2500;
 
 /**
  * Couleur de pilier « muscu » : bordeaux de la charte (fixe, hors thème clair/sombre —
@@ -80,6 +99,76 @@ export default function PlanningScreen() {
 
   const onPrevWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), -7)));
   const onNextWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), 7)));
+  const weekStartDate = dateFromKey(weekStart);
+
+  // ---------------------------------------------------------------------------
+  // Glisser-déposer d'une séance planifiée (US MUSC-F9, roadmap 3.10)
+  // ---------------------------------------------------------------------------
+
+  /** Une ref de `View` par jour de la semaine affichée (indexée par `dateKey`). */
+  const dayCardRefs = useRef<Record<string, View | null>>({});
+  /** Zones mesurées à l'écran (coordonnées absolues) — fraîches à chaque début de geste. */
+  const zonesRef = useRef<DropZone[]>([]);
+  /** Id de la séance actuellement tirée (`null` = aucun geste en cours). */
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  /** Jour actuellement survolé pendant le geste — pour la surbrillance de la zone cible. */
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null);
+  /** Confirmation transitoire après un déplacement réussi. */
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const h = setTimeout(() => setToast(null), TOAST_MS);
+    return () => clearTimeout(h);
+  }, [toast]);
+
+  /**
+   * Mesure les 7 zones-jour **au moment où un geste démarre** (pas avant) : c'est ce qui rend le
+   * calcul sûr même si l'utilisateur a fait défiler l'écran depuis le dernier rendu — mesurer trop
+   * tôt (ou une seule fois au montage) reviendrait exactement au piège décrit par le plan
+   * (« le dépôt vise juste tant qu'on n'a pas fait défiler »).
+   */
+  const measureZones = (): Promise<void> => {
+    const dayKeys = WEEKDAY_KEYS.map((_, i) => localDayKey(addDays(weekStartDate, i)));
+    return Promise.all(
+      dayKeys.map(
+        (dateKey) =>
+          new Promise<DropZone>((resolve) => {
+            const ref = dayCardRefs.current[dateKey];
+            if (!ref) {
+              resolve({ dateKey, y: 0, height: 0 });
+              return;
+            }
+            ref.measureInWindow((_x, y, _width, height) => resolve({ dateKey, y, height }));
+          }),
+      ),
+    ).then((zones) => {
+      zonesRef.current = zones;
+    });
+  };
+
+  const onDragBegin = (_itemId: string) => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    void measureZones();
+    setDraggingId(_itemId);
+  };
+
+  const onDragUpdate = (absoluteY: number) => {
+    setDragOverDate(findDropTarget(absoluteY, zonesRef.current));
+  };
+
+  const onDragEnd = (item: PlannedSessionItem, absoluteY: number) => {
+    const target = findDropTarget(absoluteY, zonesRef.current);
+    setDraggingId(null);
+    setDragOverDate(null);
+    // R3 — déposer sur son propre jour ne fait rien : ni écriture, ni toast (geste annulé).
+    if (!target || target === item.scheduledDate) return;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    void reschedulePlannedSession(item.id, target).catch(() => {
+      // Écriture offline-first optimiste.
+    });
+    setToast(t('planning.movedTo', { date: formatDayKey(target) }));
+  };
 
   // Regroupe les séances de la semaine par date planifiée.
   const byDate: Record<string, PlannedSessionItem[]> = {};
@@ -87,7 +176,6 @@ export default function PlanningScreen() {
     (byDate[item.scheduledDate] ??= []).push(item);
   }
 
-  const weekStartDate = dateFromKey(weekStart);
   const isEmpty = items.length === 0 && missed.length === 0;
 
   const closeSheet = () => setSelected(null);
@@ -148,6 +236,16 @@ export default function PlanningScreen() {
     <Screen edges={['top']}>
       <ScreenHeader title={t('planning.title')} />
 
+      {/* Confirmation transitoire après un glisser-déposer (US MUSC-F9) */}
+      {toast ? (
+        <View
+          style={[styles.toast, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+          accessibilityRole="text"
+        >
+          <Text style={[styles.toastText, { color: colors.text }]}>{toast}</Text>
+        </View>
+      ) : null}
+
       {/* Sélecteur de semaine */}
       <View style={styles.weekSelector}>
         <Pressable
@@ -172,6 +270,11 @@ export default function PlanningScreen() {
           <Text style={[styles.weekArrowText, { color: colors.text }]}>▶</Text>
         </Pressable>
       </View>
+
+      {/* Indice de découvrabilité du geste (US MUSC-F9) — même patron que UX-LOT-01. */}
+      {!isEmpty ? (
+        <Text style={[styles.dragHint, { color: colors.textMuted }]}>{t('planning.dragHint')}</Text>
+      ) : null}
 
       {isEmpty ? (
         <EmptyState
@@ -224,15 +327,25 @@ export default function PlanningScreen() {
             const coordCount = dayItems.filter(
               (it) => it.status === 'planned' || it.status === 'done',
             ).length;
+            // US MUSC-F9 — surbrillance de la zone survolée pendant un glissement en cours.
+            const isDropTarget = draggingId !== null && dragOverDate === dayKey;
             return (
               <View
                 key={key}
+                ref={(node) => {
+                  dayCardRefs.current[dayKey] = node;
+                }}
                 style={[
                   styles.dayCard,
                   {
                     backgroundColor: colors.surface,
-                    borderColor: isToday ? colors.accent : colors.border,
-                    borderWidth: isToday ? 2 : 1,
+                    borderColor: isDropTarget
+                      ? colors.accent
+                      : isToday
+                        ? colors.accent
+                        : colors.border,
+                    borderWidth: isDropTarget ? 2 : isToday ? 2 : 1,
+                    borderStyle: isDropTarget ? 'dashed' : 'solid',
                   },
                 ]}
               >
@@ -265,6 +378,11 @@ export default function PlanningScreen() {
                         ref5kPaceSPerKm={ref5kPaceSPerKm}
                         units={units}
                         onPress={() => setSelected(item)}
+                        draggable
+                        isDragging={draggingId === item.id}
+                        onDragBegin={() => onDragBegin(item.id)}
+                        onDragUpdate={(absoluteY) => onDragUpdate(absoluteY)}
+                        onDragEnd={(absoluteY) => onDragEnd(item, absoluteY)}
                       />
                     ))}
                   </View>
@@ -340,6 +458,16 @@ type PlannedSessionRowProps = {
   onPress: () => void;
   /** Affiche la date de la séance (bannière « manquées », hors carte de jour). */
   showDate?: boolean;
+  /**
+   * Active le geste de glisser-déposer (US MUSC-F9) — seulement dans la grille des 7 jours, pas
+   * dans la bannière « séances manquées » (hors périmètre de cette US, cf. spec/plan).
+   */
+  draggable?: boolean;
+  /** Vrai si CETTE ligne est la séance actuellement tirée (élévation + suit le doigt). */
+  isDragging?: boolean;
+  onDragBegin?: () => void;
+  onDragUpdate?: (absoluteY: number) => void;
+  onDragEnd?: (absoluteY: number) => void;
 };
 
 function PlannedSessionRow({
@@ -349,9 +477,55 @@ function PlannedSessionRow({
   units,
   onPress,
   showDate = false,
+  draggable = false,
+  isDragging = false,
+  onDragBegin,
+  onDragUpdate,
+  onDragEnd,
 }: PlannedSessionRowProps) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+
+  // US MUSC-F9 — R1 : seules les séances `planned` se saisissent (une `done`/`skipped` ne réagit
+  // pas au geste, elle reste sélectionnable à l'appui simple comme avant).
+  const canDrag = draggable && item.status === 'planned';
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  const active = useSharedValue(false);
+
+  const pan = Gesture.Pan()
+    .enabled(canDrag)
+    .activateAfterLongPress(LONG_PRESS_MS)
+    .onStart(() => {
+      active.value = true;
+      if (onDragBegin) runOnJS(onDragBegin)();
+    })
+    .onUpdate((e) => {
+      dragX.value = e.translationX;
+      dragY.value = e.translationY;
+      if (onDragUpdate) runOnJS(onDragUpdate)(e.absoluteY);
+    })
+    .onEnd((e) => {
+      if (onDragEnd) runOnJS(onDragEnd)(e.absoluteY);
+    })
+    .onFinalize(() => {
+      active.value = false;
+      dragX.value = 0;
+      dragY.value = 0;
+    });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    if (!active.value) return { transform: [{ translateX: 0 }, { translateY: 0 }] };
+    return {
+      transform: [{ translateX: dragX.value }, { translateY: dragY.value }, { scale: 1.03 }],
+      zIndex: 10,
+      elevation: 8,
+      shadowColor: '#000',
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 8 },
+    };
+  });
 
   const isRunning = item.pillar === 'running';
   const sessionType = item.sessionType as ProgramSessionType | null;
@@ -408,56 +582,60 @@ function PlannedSessionRow({
   const dimmed = item.status === 'done' || item.status === 'skipped';
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={typeLabel ?? undefined}
-      onPress={onPress}
-      style={[
-        styles.row,
-        { backgroundColor: colors.background, borderColor: colors.border },
-        dimmed && styles.rowDimmed,
-      ]}
-    >
-      <View
-        style={[styles.pillarDot, { backgroundColor: pillarColor }]}
-        accessibilityLabel={pillarLabel}
-      />
-      <View style={styles.rowText}>
-        <Text
+    <GestureDetector gesture={pan}>
+      <Animated.View style={[isDragging && styles.rowLifted, animatedStyle]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={typeLabel ?? undefined}
+          onPress={onPress}
           style={[
-            styles.rowTitle,
-            { color: colors.text },
-            item.status === 'skipped' && styles.strike,
+            styles.row,
+            { backgroundColor: colors.background, borderColor: colors.border },
+            dimmed && styles.rowDimmed,
           ]}
         >
-          {typeLabel}
-        </Text>
-        {showDate ? (
-          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>
-            {formatDayKey(item.scheduledDate)}
-          </Text>
-        ) : null}
-        {exerciseLabel ? (
-          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{exerciseLabel}</Text>
-        ) : null}
-        {targetLabel ? (
-          <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{targetLabel}</Text>
-        ) : null}
-        {paceLabel ? (
-          <Text style={[styles.rowPace, { color: colors.textMuted }]}>{paceLabel}</Text>
-        ) : null}
-      </View>
-      <View style={styles.rowEnd}>
-        <View style={[styles.pillarChip, { backgroundColor: pillarColor }]}>
-          <Text style={styles.pillarChipText}>{pillarLabel}</Text>
-        </View>
-        {statusLabel ? (
-          <View style={[styles.statusBadge, { borderColor: colors.border }]}>
-            <Text style={[styles.statusText, { color: colors.textMuted }]}>{statusLabel}</Text>
+          <View
+            style={[styles.pillarDot, { backgroundColor: pillarColor }]}
+            accessibilityLabel={pillarLabel}
+          />
+          <View style={styles.rowText}>
+            <Text
+              style={[
+                styles.rowTitle,
+                { color: colors.text },
+                item.status === 'skipped' && styles.strike,
+              ]}
+            >
+              {typeLabel}
+            </Text>
+            {showDate ? (
+              <Text style={[styles.rowMeta, { color: colors.textMuted }]}>
+                {formatDayKey(item.scheduledDate)}
+              </Text>
+            ) : null}
+            {exerciseLabel ? (
+              <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{exerciseLabel}</Text>
+            ) : null}
+            {targetLabel ? (
+              <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{targetLabel}</Text>
+            ) : null}
+            {paceLabel ? (
+              <Text style={[styles.rowPace, { color: colors.textMuted }]}>{paceLabel}</Text>
+            ) : null}
           </View>
-        ) : null}
-      </View>
-    </Pressable>
+          <View style={styles.rowEnd}>
+            <View style={[styles.pillarChip, { backgroundColor: pillarColor }]}>
+              <Text style={styles.pillarChipText}>{pillarLabel}</Text>
+            </View>
+            {statusLabel ? (
+              <View style={[styles.statusBadge, { borderColor: colors.border }]}>
+                <Text style={[styles.statusText, { color: colors.textMuted }]}>{statusLabel}</Text>
+              </View>
+            ) : null}
+          </View>
+        </Pressable>
+      </Animated.View>
+    </GestureDetector>
   );
 }
 
@@ -571,4 +749,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 6,
   },
+  toast: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  toastText: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  dragHint: { fontFamily: fontFamily.body, fontSize: 12, marginBottom: 10 },
+  rowLifted: { opacity: 0.95 },
 });
