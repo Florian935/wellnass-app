@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `feature/muscf7-deload` — MUSC-F7 : deload câblé (code livré, en recette)
+
+Commit précédent : `52fe4fe`. Décision D1 validée par Florian : activer la règle telle qu'écrite.
+Front-matter `etape: code` → `recette` (spec §5 a des critères observables, contrairement à MUSC-F6).
+
+#### Ajouté
+
+- [workout-repository.ts](apps/mobile/src/data/repositories/workout-repository.ts) —
+  `SELECT_SECOND_LAST_PERFORMANCE` (même forme que `SELECT_LAST_PERFORMANCE`, sous-requête
+  `OFFSET 1` au lieu de `LIMIT 1` seul) + `usePreviousStruggled(exerciseId): boolean`, qui applique
+  `sessionStruggled` aux séries qualifiantes de l'**avant-dernière** séance sur l'exercice.
+  `false` s'il n'existe pas d'avant-dernière séance qualifiante — pas de deload sans donnée
+  suffisante pour l'établir. Pas de test dédié à la requête elle-même (même convention que
+  `useLastPerformance`, non testée en tant que requête SQL).
+- [workout.test.ts](packages/shared/src/workout.test.ts) — 5 tests directs de `sessionStruggled`
+  (échec sans RPE, RPE 8/9, RPE 7 sans échec, aucune série qualifiante, RPE max parmi plusieurs
+  séries) — elle devient une API publique du package, elle doit être testée comme telle.
+- RECETTES.md — section #16 créée (4 critères, spec §5).
+
+#### Modifié
+
+- [workout.ts](packages/shared/src/workout.ts) — `sessionStruggled` passe de privée à **exportée**
+  (aucun changement de signature) : réutilisée par `usePreviousStruggled` sans dupliquer la règle.
+- [workout.tsx](apps/mobile/src/app/workout.tsx) — `usePreviousStruggled(currentExerciseId)` appelé
+  et passé dans les `opts` de `computeProgressionSuggestion`. Seule ligne changée dans ce fichier :
+  la restitution (`suggestion.kind === 'deload'`) et les 2 clés i18n existaient déjà (Refonte-C3).
+- `docs/roadmap/roadmap.md` — 3.8 : 🟡 → ✅. Récapitulatif (✅ 176→**177**, 🟡 21→**20**), détail V0.3
+  (17/4→**18/3**), entrée au Journal des réconciliations.
+- `BACKLOG.md` — entrée MUSC-F7 marquée livrée, en recette (patron `~~MUSC-F14~~`).
+
+#### Technique / Notes
+
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 260 + shared Vitest 1287, dont
+  82 pour `workout.test.ts` : +5) — lus sans pipe, tous verts.
+- Le Volet A (roadmap 3.7, progression au niveau programme) reste hors périmètre — scindé dans le
+  commit précédent (`52fe4fe`), aucun changement ici.
+
 ### 01/08/2026 — `feature/muscf7-deload` — MUSC-F7 : entrée en pipeline, scindée du roadmap 3.7 (spec + plan)
 
 Commit précédent : `8b37cf4`. Documentation uniquement, **aucun code**. Front-matter `etape:

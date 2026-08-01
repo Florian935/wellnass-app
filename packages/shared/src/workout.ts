@@ -196,8 +196,14 @@ export type ProgressionSuggestion =
 /** Baisse de charge par défaut d'un deload (−10 %, spec 3.8). Arrondi au pas de 0,5 kg. */
 export const DEFAULT_DELOAD_FACTOR = 0.1;
 
-/** Vrai si un ensemble de séries « qualifiantes » traduit une séance difficile (échec ou RPE ≥ 8). */
-function sessionStruggled(qualifying: ReadonlyArray<{ setType: string; rpe: number | null }>): boolean {
+/**
+ * Vrai si un ensemble de séries « qualifiantes » traduit une séance difficile (échec ou RPE ≥ 8).
+ *
+ * Exportée (US MUSC-F7) pour être réutilisée côté repository mobile (`usePreviousStruggled`) sans
+ * dupliquer la règle — elle y est appliquée aux séries qualifiantes de l'**avant-dernière** séance
+ * sur un exercice, exactement comme ici pour la dernière.
+ */
+export function sessionStruggled(qualifying: ReadonlyArray<{ setType: string; rpe: number | null }>): boolean {
   if (qualifying.some((s) => s.setType === 'failure')) return true;
   const rpeValues = qualifying.map((s) => s.rpe).filter((r): r is number => r != null);
   return rpeValues.length > 0 && Math.max(...rpeValues) >= 8;

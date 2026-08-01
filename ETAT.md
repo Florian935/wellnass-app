@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 176 livré · 21 partiel · 10 à faire (sur 213)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **83 %** — 177 livré · 20 partiel · 10 à faire (sur 213)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -23,6 +23,7 @@ avant de pouvoir publier.
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **MUSC-F14** — Suggestion de substitution d'exercice | `recette` | `feature/muscf14-substitution-exercice` | [3.52] |
+| **MUSC-F7** — Progression assistée — deload sur stagnation | `recette` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
@@ -33,11 +34,10 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `validation` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
-| **MUSC-F7** — Progression assistée — deload sur stagnation | `validation` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `validation` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `validation` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 
-⏳ **15 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **16 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F7, MUSC-F8, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -59,7 +59,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscf7-deload` (modifications non commitées) |
-| Commits | 1000 · `main` a **997** commits de retard sur `dev` |
+| Commits | 1001 · `main` a **998** commits de retard sur `dev` |
 | Specs d'US | 97 au total — 77 clôturées, 20 en cours |
 | Migrations | 61/61 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `52fe4fe` docs(muscf7): spec + plan — deload sur stagnation, scindé du roadmap 3.7
 - `8b37cf4` Merge feature/muscf6-fenetre-reprise-seance into dev
 - `47b276f` docs(muscf6): réconcilie la fenêtre de reprise de séance (Option A validée)
 - `78b6ead` fix(recette): lot de 8 correctifs de la recette device (CYCLE-01, NUTR-F2, MESUR-01, PARTAGE-01, BIEN-01)
 - `3300104` fix(sync): déballe les colonnes jsonb à la remontée PowerSync
-- `e6b9e08` docs(muscf6): spec + plan — fenêtre de reprise de séance (3h vs 4h)
 
 ---
 

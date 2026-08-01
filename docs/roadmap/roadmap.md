@@ -152,7 +152,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.11 | Gestion séance manquée | Reporter ou sauter. | Facile | 2h | 🟢 | ✅ | `skip` + `reschedule` + `useMissedSessions`. |
 | 3.24 | Plan de séance avant démarrage | Récap des exercices prévus avec cibles. | Facile | 2h | 🟢 | ✅ | `programs/[id].tsx`. |
 | 3.7 | Progression automatique | Charge cible +X d'une semaine à l'autre (si ≥ 80 % complété). | Moyen | 3h ⚠️ *sous-évalué* | 🟢 | 🟡 | Suggestion de progression **par exercice** en séance (`computeProgressionSuggestion`, RPE-aware, jamais imposée) — Refonte-C3, déjà livrée. **La progression au niveau du programme reste un chantier à part entière**, scindée de MUSC-F7 le 01/08/2026 : `exercise_plans.target_weight_kg` est figé par plan (aucune notion de semaine), aucun taux de complétion n'est calculé nulle part. Ce n'est pas un signal manquant (comme 3.8) mais un concept de données à concevoir — voir [BACKLOG.md](../../BACKLOG.md). |
-| 3.8 | Deload / gestion de stagnation | Échec 2 semaines de suite → proposition −10 %. Jamais imposé. | Moyen | 3h | 🟢 | 🟡 | **MUSC-F7 — entrée en pipeline le 01/08/2026** → [spec](../specs/functional/us/muscf7-progression-assistee.md) · [plan](../plans/muscf7-progression-assistee.md). Brique pure livrée et testée (`computeProgressionSuggestion` kind `deload`, −10 %), UI et i18n **déjà écrits** — il ne manque que le signal `previousStruggled`. Pas de maquette (aucune UI nouvelle). |
+| 3.8 | Deload / gestion de stagnation | Échec 2 semaines de suite → proposition −10 %. Jamais imposé. | Moyen | 3h | 🟢 | ✅ | **MUSC-F7 — code livré le 01/08/2026** → [spec](../specs/functional/us/muscf7-progression-assistee.md) · [plan](../plans/muscf7-progression-assistee.md), en recette → [RECETTES.md](../../RECETTES.md). `sessionStruggled` exportée + requête symétrique (`OFFSET 1`) + hook `usePreviousStruggled` : le signal manquant est câblé, la brique de calcul et l'UI existaient déjà (Refonte-C3). Pas de maquette (aucune UI nouvelle). |
 | 3.38 | Historique des séances | Liste chronologique filtrable. | Moyen | 3h | 🟢 | ✅ | `history/index.tsx`. Journal horodaté = base future couche jeu (arbitrage C). |
 | 3.39 | Courbes charge / volume | Évolution par exercice sur différentes périodes. | Moyen | 4h | 🟢 | ✅ | `progress/index.tsx` + `ProgressLineChart`. |
 | 3.21 | Courbe de progression par exercice | Charge max / volume sur 30 / 90 j / 1 an. | Moyen | 4h | 🟢 | ✅ | + 1RM estimé + période « tout » (MUSC-04). |
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 176 | ~83 % |
-| 🟡 Partiel | 21 | ~10 % |
+| ✅ Livré | 177 | ~83 % |
+| 🟡 Partiel | 20 | ~9 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -456,7 +456,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 28 | 0 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). Reste ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 17 | 4 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). Progression auto (3.7) et deload (3.8) restent partiels — briques livrées, non câblées. |
+| V0.3 (21) | 18 | 3 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — MUSC-F7 : deload câblé (3.8 🟡 → ✅), 3.7 scindé (reste 🟡)**
+Signal `previousStruggled` câblé sur une brique/UI déjà livrées (Refonte-C3) — zéro nouvelle UI.
+3.7 (progression au niveau programme) scindé : aucune brique de données n'existe, cadrage à part.
 
 **01/08/2026 — MUSC-F6 : réconciliée (3.36 🟡 → ✅, Option A)**
 Le conflit « 3h/4h » n'existait que dans la doc — `WORKOUT_AUTO_CLOSE_SECONDS` (3h) est la seule

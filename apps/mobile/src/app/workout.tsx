@@ -25,6 +25,7 @@ import {
   useExerciseNote,
   useExerciseNotes,
   useLastPerformance,
+  usePreviousStruggled,
   useSessionRest,
   useSupersetPairs,
   type WorkoutEntry,
@@ -219,6 +220,8 @@ export default function WorkoutScreen() {
 
   // Dernière perf de l'exercice courant (requête stable : '' → aucune ligne).
   const lastPerf = useLastPerformance(currentExerciseId);
+  // Avant-dernière séance sur cet exercice, difficile ou non (US MUSC-F7 — signal du deload).
+  const previousStruggled = usePreviousStruggled(currentExerciseId);
   const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
   const allExerciseNotes = useExerciseNotes();
   // Paires superset de la séance (requête stable : '' → aucune ligne tant qu'`active` n'est pas résolu).
@@ -265,13 +268,14 @@ export default function WorkoutScreen() {
 
   // Suggestion de progression (C3) : basée sur les séries qualifiantes de la
   // dernière séance terminée (déjà filtrées `done=1` par `useLastPerformance`)
-  // et la série de référence au même rang.
+  // et la série de référence au même rang. `previousStruggled` (MUSC-F7) active
+  // la branche deload : 2 séances d'affilée difficiles sur cet exercice.
   const referenceSet = current ? lastPerf[rang] : undefined;
   const suggestion = current
     ? computeProgressionSuggestion(
         lastPerf.map((p) => ({ setType: p.setType, rpe: p.rpe, done: true })),
         referenceSet,
-        { weightIncrementKg: 2.5, durationIncrementSeconds: 10 },
+        { weightIncrementKg: 2.5, durationIncrementSeconds: 10, previousStruggled },
       )
     : null;
   const suggestionLabel = (() => {

@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **31/07/2026** — 15 US en attente.
+> Dernière mise à jour : **01/08/2026** — 16 US en attente.
 
 ---
 
@@ -493,6 +493,24 @@ build (même piège que documenté plus bas pour PARTAGE-01).
 - [ ] 19. Carte partageable d'une séance : **aucune** mention du cycle (R19).
 - [ ] 20. En **EN** : phases, flux, symptômes et avertissement sont en anglais **relu**, pas traduits
       mot à mot.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 16. MUSC-F7 — Deload sur stagnation
+
+📄 [spec](docs/specs/functional/us/muscf7-progression-assistee.md) · roadmap 3.8 · **📱 device**
+✅ aucune migration, aucune sync rule · ✅ recettable sur **l'APK actuel** (aucune UI nouvelle)
+
+- [ ] 1. Deux séances d'affilée en échec (ou RPE ≥ 8) sur le **même exercice** → à la 3ᵉ, la
+      suggestion affichée est « 2 séances difficiles de suite — tu peux alléger à X kg ».
+- [ ] 2. Une seule séance difficile (la précédente était correcte) → **aucune** suggestion de deload.
+- [ ] 3. Exercice au poids du corps (pas de charge) → jamais de deload, même après 2 séances
+      difficiles de suite.
+- [ ] 4. La suggestion reste **une proposition** : rien ne pré-remplit la série à la baisse
+      automatiquement (même comportement que les autres suggestions de progression).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

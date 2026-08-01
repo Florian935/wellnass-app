@@ -25,6 +25,7 @@ import { useQuery } from '@powersync/react';
 import {
   computeReorderedExerciseOrder,
   isWorkoutStale,
+  sessionStruggled,
   type ReorderOperation,
   type SetType,
 } from '@wellness/shared';
@@ -397,6 +398,36 @@ export function useLastPerformance(
     rpe: row.rpe,
     durationSeconds: row.duration_seconds,
   }));
+}
+
+/**
+ * Séries qualifiantes de l'**avant-dernière** séance terminée où l'exercice a été fait — même
+ * forme que `SELECT_LAST_PERFORMANCE`, sous-requête `OFFSET 1` (US MUSC-F7) : sert de signal
+ * `previousStruggled` pour `computeProgressionSuggestion` (kind `deload`, spec 3.8).
+ */
+const SELECT_SECOND_LAST_PERFORMANCE = `
+  SELECT s.set_type, s.rpe FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+  WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+    AND w.id = (
+      SELECT w2.id FROM workouts w2
+      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
+      WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
+      ORDER BY w2.finished_at DESC LIMIT 1 OFFSET 1
+    )
+`;
+
+/**
+ * Vrai si l'**avant-dernière** séance terminée sur `exerciseId` était difficile (échec ou
+ * RPE ≥ 8) — US MUSC-F7. `false` s'il n'existe pas d'avant-dernière séance (moins de 2 séances
+ * qualifiantes en historique) : pas de deload sans donnée suffisante pour l'établir.
+ */
+export function usePreviousStruggled(exerciseId: string): boolean {
+  const { data } = useQuery<{ set_type: string; rpe: number | null }>(SELECT_SECOND_LAST_PERFORMANCE, [
+    exerciseId,
+    exerciseId,
+  ]);
+  return sessionStruggled(data.map((row) => ({ setType: row.set_type, rpe: row.rpe })));
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
   computeReorderedExerciseOrder,
   computeProgressionSuggestion,
   deriveTemplateTargetsFromWorkoutSets,
+  sessionStruggled,
 } from './workout';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -426,6 +427,34 @@ describe('computeReorderedExerciseOrder', () => {
       exerciseId: 'D',
     });
     expect(result).toEqual(['A', 'B', 'C', 'D']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sessionStruggled (US MUSC-F7 — exportée pour usePreviousStruggled côté mobile)
+// ---------------------------------------------------------------------------
+describe('sessionStruggled', () => {
+  it('une série en échec → difficile, même sans RPE', () => {
+    expect(sessionStruggled([{ setType: 'failure', rpe: null }])).toBe(true);
+  });
+
+  it('RPE 8 ou plus → difficile', () => {
+    expect(sessionStruggled([{ setType: 'normal', rpe: 8 }])).toBe(true);
+    expect(sessionStruggled([{ setType: 'normal', rpe: 9 }])).toBe(true);
+  });
+
+  it('RPE 7, aucun échec → pas difficile', () => {
+    expect(sessionStruggled([{ setType: 'normal', rpe: 7 }])).toBe(false);
+  });
+
+  it('aucune série qualifiante → pas difficile', () => {
+    expect(sessionStruggled([])).toBe(false);
+  });
+
+  it('retient le RPE le plus élevé parmi plusieurs séries', () => {
+    expect(sessionStruggled([{ setType: 'normal', rpe: 5 }, { setType: 'normal', rpe: 8 }])).toBe(
+      true,
+    );
   });
 });
 
