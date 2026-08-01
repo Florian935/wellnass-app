@@ -24,8 +24,13 @@ import {
   computeMuscleBalance,
   lastClosedWeek,
   localDayKey,
+  normalizeFineMuscles,
+  normalizeSecondaryMuscles,
+  parseJsonColumn,
   previousWeek,
   resolveActivePillars,
+  resolveTonnageFineMuscles,
+  type FineMuscle,
   type MuscleGroup,
   type PillarWeek,
   type ReviewGoal,
@@ -79,6 +84,26 @@ const SELECT_MUSCLE_SETS = `
   WHERE s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
     AND w.finished_at >= ? AND w.finished_at < ?
   GROUP BY e.muscle_primary
+`;
+
+/**
+ * Tonnage par exercice sur la fenêtre, avec l'anatomie de l'exercice — US MUSC-F1b (roadmap 6.2).
+ * **Additive, indépendante de `SELECT_MUSCLE_SETS`** (spec §0) : celle-ci alimente
+ * `computeMuscleBalance` sur les 6 groupes larges et ne doit pas être touchée. Groupée par exercice
+ * (pas par muscle) : l'agrégation vers les muscles fins se fait en JS via `resolveFineMuscles`, un
+ * exercice pouvant contribuer à plusieurs muscles.
+ */
+const SELECT_EXERCISE_TONNAGE = `
+  SELECT e.id AS exercise_id, e.muscle_primary, e.muscles_secondary, e.muscles_fine,
+         COALESCE(SUM(s.reps * s.weight_kg), 0) AS tonnage
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id
+    AND w.status = 'completed' AND w.deleted_at IS NULL
+  JOIN exercises e ON e.id = s.exercise_id
+  WHERE s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+    AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+    AND w.finished_at >= ? AND w.finished_at < ?
+  GROUP BY e.id
 `;
 
 /** Sorties terminées + distance, bornées sur la fenêtre. */
@@ -181,6 +206,56 @@ function useWeekMetrics(
   }, [strength.data, runs.data, logged.data, activity.data, steps.data, stepGoal]);
 
   return { metrics, muscleSets: muscles.data, isLoading };
+}
+
+/** Ligne brute de `SELECT_EXERCISE_TONNAGE`. */
+type ExerciseTonnageDbRow = {
+  exercise_id: string;
+  muscle_primary: string;
+  muscles_secondary: string | null;
+  muscles_fine: string | null;
+  tonnage: number;
+};
+
+/**
+ * Schéma corporel du bilan hebdomadaire (US MUSC-F1b, R3) : agrège le tonnage de la **même
+ * semaine ISO close** que le reste du bilan (D6, voir en-tête du fichier) par muscle fin, via
+ * `resolveTonnageFineMuscles`. Semaine vide → `{ full: [], reduced: [] }` (silhouette neutre).
+ */
+export function useWeeklyMuscleTonnage(): {
+  full: FineMuscle[];
+  reduced: FineMuscle[];
+  isLoading: boolean;
+} {
+  const today = useTodayDate();
+  const period = lastClosedWeek(today);
+  const { from, toExclusive } = utcBounds(period);
+
+  const { data, isLoading } = useQuery<ExerciseTonnageDbRow>(SELECT_EXERCISE_TONNAGE, [
+    from,
+    toExclusive,
+  ]);
+
+  const result = useMemo(
+    () =>
+      resolveTonnageFineMuscles(
+        data.map((row) => {
+          const musclePrimary = row.muscle_primary as MuscleGroup;
+          return {
+            tonnageKg: row.tonnage,
+            musclePrimary,
+            musclesSecondary: normalizeSecondaryMuscles(
+              parseJsonColumn<unknown>(row.muscles_secondary, []),
+              musclePrimary,
+            ),
+            musclesFine: normalizeFineMuscles(parseJsonColumn<unknown>(row.muscles_fine, [])),
+          };
+        }),
+      ),
+    [data],
+  );
+
+  return { ...result, isLoading };
 }
 
 /**

@@ -107,7 +107,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.13 | Bibliothèque d'exercices | Base fournie par l'app avec fiche complète par exercice. | Moyen | 4h | 🟡 | ✅ | Fiche complète `/exercises/[id]` (nom, groupe, matériel, instructions, muscles secondaires, variantes, records) + accès direct depuis le hub muscu — MUSC-F10a/b (22/07/2026). 🌐 fiches bilingues FR+EN. |
 | 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ❌ | **Abandonné** (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée (sourcing + hébergement + import en masse). `media_url` reste stocké (colonne inoffensive, non retirée) mais ne sera **jamais rendu**. Voir [[Musculation]]. |
 | 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ❌ | **Abandonné** avec 6.1 (dont il dépendait). |
-| 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ⬜ | **Aucun composant schéma corporel.** |
+| 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ✅ | **MUSC-F1b, 02/08/2026** : anatomie fine à 10 muscles (`muscles_fine`, **additive** aux 6 groupes larges existants, spec §0), `<BodyMap/>` (11 tracés, face + dos), montée sur la fiche exercice, l'aperçu de séance et le bilan hebdo. Repli automatique sur les groupes larges tant qu'un exercice n'est pas tagué fin (travail de coach, hors dev). ⚠️ Critère de recette 12 (relecture anatomique des 11 tracés) reste à valider — device requis. |
 | 3.14 | Recherche d'exercices | Par nom, groupe musculaire ou matériel. | Facile | 2h | 🟢 | ✅ | Nom + **filtre groupe musculaire & matériel** (tiroir Filtres, MUSC-F3). Recette device validée (Florian, 22/07/2026). |
 | 3.15 | Exercices favoris | Épingler les exercices préférés. | Facile | 1h | 🟢 | ✅ | `toggleFavorite` + tri favoris. |
 | 3.16 | Exercice personnalisé | Créer un exercice custom si absent de la base. | Facile | 2h | 🟢 | ✅ | `addCustomExercise` ; création en **modale bottom-sheet** (MUSC-F11) ; **édition enrichie** (groupe, matériel, muscles secondaires, instructions) en modale (MUSC-F12, 23/07/2026). **Recette validée (Florian, 23/07/2026).** |
@@ -430,9 +430,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 181 | ~85 % |
+| ✅ Livré | 182 | ~85 % |
 | 🟡 Partiel | 16 | ~8 % |
-| ⬜ À faire | 10 | ~5 % |
+| ⬜ À faire | 9 | ~4 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **213** | |
@@ -455,7 +455,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Version | ✅ Livré | 🟡 Partiel | ⬜ À faire | ⏳ Reporté | ❌ Abandonné | État |
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
-| V0.2 (32) | 28 | 0 | 1 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). Reste ⬜ 6.2 (schéma SVG) ; GIF/démo (6.1/3.18/6.3) abandonnés |
+| V0.2 (32) | 29 | 0 | 0 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). **6.2 → ✅ le 02/08/2026** (MUSC-F1b, schéma corporel SVG). GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 19 | 2 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
 | V0.4 (33) | 31 | 0 | 2 | 0 | 0 | Complet (2 notifs manquantes) |
 | V0.5 (33) | 27 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
@@ -494,6 +494,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**02/08/2026 — MUSC-F1b : schéma corporel, anatomie fine (6.2 ⬜ → ✅)**
+`muscles_fine` additif aux 6 groupes larges (aucun ricochet sur les 18 fichiers qui les
+consomment). `<BodyMap/>` monté sur fiche/aperçu de séance/bilan hebdo, repli large tant qu'un
+exercice n'est pas tagué (travail de coach, hors dev). Critère 12 (relecture anatomique) restant.
 
 **01/08/2026 — MUSC-F9 : glisser-déposer du planning (3.10 🟡 → ✅)**
 Geste appui long + glissement sur les cartes du planning, zones mesurées à chaque prise de geste

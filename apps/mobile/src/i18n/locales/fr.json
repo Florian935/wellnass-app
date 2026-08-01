@@ -27,6 +27,24 @@
     "arms": "Bras",
     "core": "Abdos"
   },
+  "muscleFine": {
+    "chest": "Pectoraux",
+    "back": "Dos",
+    "shoulders": "Épaules",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "abs": "Abdominaux",
+    "glutes": "Fessiers",
+    "quadriceps": "Quadriceps",
+    "hamstrings": "Ischio-jambiers",
+    "calves": "Mollets"
+  },
+  "bodyMap": {
+    "front": "Face",
+    "back": "Dos",
+    "a11yLabel": "Schéma corporel — muscles sollicités : {{muscles}}",
+    "a11yLabelEmpty": "Schéma corporel — aucun muscle sollicité"
+  },
   "equipment": {
     "barbell": "Barre",
     "dumbbell": "Haltères",
@@ -1916,6 +1934,7 @@
     "empty": "Rien à résumer pour cette semaine. Une séance de 30 minutes suffit à relancer.",
     "decisionTitle": "Ta décision pour la semaine",
     "sectionNumbers": "Les chiffres",
+    "sectionMuscles": "Muscles sollicités",
     "blocks": {
       "workouts": "Séances",
       "tonnage": "Tonnage",

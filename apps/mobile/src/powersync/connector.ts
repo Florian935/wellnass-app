@@ -32,7 +32,7 @@ const powerSyncUrl = process.env.EXPO_PUBLIC_POWERSYNC_URL;
  */
 const JSON_COLUMNS: Record<string, readonly string[]> = {
   audit_log: ['details'],
-  exercises: ['muscles_secondary'],
+  exercises: ['muscles_secondary', 'muscles_fine'],
   food_entries: ['micronutrients'],
   foods: ['micronutrients', 'portions'],
   menstrual_daily_logs: ['symptoms'],

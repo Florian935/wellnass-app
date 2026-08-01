@@ -16,10 +16,11 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { formatDayFull, type ReviewChange } from '@wellness/shared';
 
+import { BodyMap } from '@/components/body/BodyMap';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { useWeeklyReview } from '@/data/repositories/weekly-review-repository';
+import { useWeeklyMuscleTonnage, useWeeklyReview } from '@/data/repositories/weekly-review-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -29,6 +30,7 @@ export default function ReviewScreen() {
   const { colors } = useTheme();
   const units = useUnits();
   const { review, isLoading } = useWeeklyReview();
+  const { full: bodyMapFull, reduced: bodyMapReduced } = useWeeklyMuscleTonnage();
 
   /** Variation en **mots**, jamais seulement en couleur ou en flèche (accessibilité). */
   const changeLabel = (change: ReviewChange): string | null => {
@@ -162,6 +164,15 @@ export default function ReviewScreen() {
                   </View>
                 );
               })}
+            </Card>
+
+            {/* US MUSC-F1b — schéma corporel, complément visuel au tonnage listé ci-dessus (R5 :
+                la ligne « Tonnage » du bloc chiffres reste affichée, jamais remplacée). */}
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('review.sectionMuscles')}
+            </Text>
+            <Card>
+              <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
             </Card>
 
             {review.previous === null && (

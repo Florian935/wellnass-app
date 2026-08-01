@@ -10,7 +10,9 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { resolveSessionFineMuscles } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { BodyMap } from '@/components/body/BodyMap';
 import { Card } from '@/components/Card';
 import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
@@ -264,6 +266,18 @@ function SessionCard({
     session.name?.trim() ||
     t('programs.detail.sessionFallback', { index: session.orderIndex + 1 });
 
+  // US MUSC-F1b — union sur tous les exercices de la séance (plan étape 4), exercices
+  // sans muscle connu ignorés (ne devrait pas arriver, FK garantie).
+  const { full: bodyMapFull, reduced: bodyMapReduced } = resolveSessionFineMuscles(
+    session.plans
+      .filter((p) => p.musclePrimary !== null)
+      .map((p) => ({
+        musclePrimary: p.musclePrimary!,
+        musclesSecondary: p.musclesSecondary,
+        musclesFine: p.musclesFine,
+      })),
+  );
+
   return (
     <CollapsibleCard
       title={sessionName}
@@ -282,6 +296,9 @@ function SessionCard({
     >
       {hasPlans ? (
         <View style={styles.planList}>
+          {/* US MUSC-F1b — complément visuel (R5 : la liste des exercices ci-dessous reste
+              affichée, jamais remplacée). */}
+          <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
           {session.plans.map((plan) => (
             <PlanRow key={plan.id} plan={plan} />
           ))}

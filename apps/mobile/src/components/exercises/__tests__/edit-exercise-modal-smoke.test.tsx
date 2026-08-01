@@ -28,6 +28,7 @@ const exercise = {
   isFavorite: false,
   instructions: 'Notes',
   musclesSecondary: ['arms' as const],
+  musclesFine: [],
 };
 
 describe('EditExerciseModal — smoke', () => {

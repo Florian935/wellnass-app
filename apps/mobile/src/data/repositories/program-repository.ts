@@ -33,7 +33,8 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { Pillar, ProgramLevel, ProgramSessionType, SetType } from '@wellness/shared';
+import type { FineMuscle, MuscleGroup, Pillar, ProgramLevel, ProgramSessionType, SetType } from '@wellness/shared';
+import { normalizeFineMuscles, normalizeSecondaryMuscles, parseJsonColumn } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -66,6 +67,14 @@ export type PlanItem = {
   targetReps: string | null;
   targetWeightKg: number | null;
   restSeconds: number | null;
+  /**
+   * Anatomie de l'exercice planifié — US MUSC-F1b, à passer à `resolveFineMuscles` par
+   * l'appelant. `musclePrimary` null uniquement si l'exercice référencé a disparu (ne devrait
+   * pas arriver, FK garantie) — l'appelant ignore alors ce plan dans l'agrégat.
+   */
+  musclePrimary: MuscleGroup | null;
+  musclesSecondary: MuscleGroup[];
+  musclesFine: FineMuscle[];
 };
 
 /** Une séance avec ses exercices planifiés (triés par `order_index`). */
@@ -157,6 +166,9 @@ type PlanDbRow = {
   rest_seconds: number | null;
   /** Nom d'exercice résolu par COALESCE(langue courante, fr) — peut être null. */
   exercise_name: string | null;
+  muscle_primary: string;
+  muscles_secondary: string | null;
+  muscles_fine: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -223,11 +235,13 @@ const SELECT_SESSIONS_FOR_PROGRAM = `
 const SELECT_PLANS_FOR_PROGRAM = `
   SELECT ep.id, ep.session_id, ep.exercise_id, ep.order_index, ep.set_type,
          ep.target_sets, ep.target_reps, ep.target_weight_kg, ep.rest_seconds,
-         COALESCE(tl.name, tfr.name) AS exercise_name
+         COALESCE(tl.name, tfr.name) AS exercise_name,
+         e.muscle_primary, e.muscles_secondary, e.muscles_fine
   FROM exercise_plans ep
   JOIN sessions s ON s.id = ep.session_id AND s.deleted_at IS NULL
   LEFT JOIN exercise_translations tl  ON tl.exercise_id = ep.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
   LEFT JOIN exercise_translations tfr ON tfr.exercise_id = ep.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  LEFT JOIN exercises e ON e.id = ep.exercise_id
   WHERE s.program_id = ? AND ep.deleted_at IS NULL
   ORDER BY s.order_index, ep.order_index
 `;
@@ -252,6 +266,7 @@ function rowToListItem(row: ProgramListDbRow): ProgramListItem {
 
 /** Convertit une ligne plan SQLite → item de domaine (camelCase). */
 function rowToPlanItem(row: PlanDbRow): PlanItem {
+  const musclePrimary = (row.muscle_primary as MuscleGroup | null) ?? null;
   return {
     id: row.id,
     exerciseId: row.exercise_id,
@@ -262,6 +277,11 @@ function rowToPlanItem(row: PlanDbRow): PlanItem {
     targetReps: row.target_reps,
     targetWeightKg: row.target_weight_kg,
     restSeconds: row.rest_seconds,
+    musclePrimary,
+    musclesSecondary: musclePrimary
+      ? normalizeSecondaryMuscles(parseJsonColumn<unknown>(row.muscles_secondary, []), musclePrimary)
+      : [],
+    musclesFine: normalizeFineMuscles(parseJsonColumn<unknown>(row.muscles_fine, [])),
   };
 }
 

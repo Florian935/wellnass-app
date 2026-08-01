@@ -8,6 +8,7 @@ import {
   type ExerciseStatus,
   type MuscleGroup,
   type Equipment,
+  type FineMuscle,
 } from '../data/exercises';
 import {
   listVariants,
@@ -18,6 +19,16 @@ import {
 } from '../data/exercise-variants';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
+
+/**
+ * Regroupement visuel des 10 muscles fins par région (US MUSC-F1b, spec §3.2) — 10 checkboxes
+ * en vrac seraient un mur illisible (constaté en cartographiant l'écran actuel).
+ */
+const FINE_MUSCLE_REGIONS: { key: keyof typeof fr.exercises.fineMuscleRegions; muscles: FineMuscle[] }[] = [
+  { key: 'upperBody', muscles: ['chest', 'back', 'shoulders', 'biceps', 'triceps'] },
+  { key: 'lowerBody', muscles: ['quadriceps', 'hamstrings', 'calves', 'glutes'] },
+  { key: 'core', muscles: ['abs'] },
+];
 
 /**
  * Formulaire de création / édition d'un exercice éditorial (US 8.2). Groupe
@@ -32,6 +43,7 @@ export function ExerciseEditScreen() {
 
   const [musclePrimary, setMusclePrimary] = useState<MuscleGroup>(MUSCLE_GROUPS[0]);
   const [musclesSecondary, setMusclesSecondary] = useState<MuscleGroup[]>([]);
+  const [musclesFine, setMusclesFine] = useState<FineMuscle[]>([]);
   const [equipment, setEquipment] = useState<Equipment | ''>('');
   const [status, setStatus] = useState<ExerciseStatus>('draft');
   const [nameFr, setNameFr] = useState('');
@@ -64,6 +76,7 @@ export function ExerciseEditScreen() {
     }
     setMusclePrimary(exercise.musclePrimary);
     setMusclesSecondary(exercise.musclesSecondary);
+    setMusclesFine(exercise.musclesFine);
     setEquipment(exercise.equipment ?? '');
     setStatus(exercise.status);
     setNameFr(exercise.nameFr);
@@ -137,6 +150,7 @@ export function ExerciseEditScreen() {
       id,
       musclePrimary,
       musclesSecondary,
+      musclesFine,
       equipment: equipment === '' ? null : equipment,
       status,
       nameFr: fr2,
@@ -233,6 +247,37 @@ export function ExerciseEditScreen() {
                     <label htmlFor={`secondary-${g}`} style={styles.checkboxLabel}>
                       {fr.exercises.groupNames[g]}
                     </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={styles.field}>
+              <span style={styles.label}>{fr.exercises.fineMusclesLabel}</span>
+              <p style={styles.muted}>{fr.exercises.fineMusclesHint}</p>
+              <div style={styles.regionGroup}>
+                {FINE_MUSCLE_REGIONS.map((region) => (
+                  <div key={region.key} style={styles.field}>
+                    <span style={styles.regionTitle}>{fr.exercises.fineMuscleRegions[region.key]}</span>
+                    <div style={styles.checkboxGroup}>
+                      {region.muscles.map((m) => (
+                        <div key={m} style={styles.checkboxItem}>
+                          <input
+                            id={`fine-${m}`}
+                            type="checkbox"
+                            checked={musclesFine.includes(m)}
+                            onChange={(e) =>
+                              setMusclesFine((prev) =>
+                                e.target.checked ? [...prev, m] : prev.filter((f) => f !== m),
+                              )
+                            }
+                          />
+                          <label htmlFor={`fine-${m}`} style={styles.checkboxLabel}>
+                            {fr.exercises.fineMuscleNames[m]}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -417,6 +462,16 @@ const styles: Record<string, React.CSSProperties> = {
   checkboxGroup: { display: 'flex', flexWrap: 'wrap', gap: 12 },
   checkboxItem: { display: 'flex', alignItems: 'center', gap: 6 },
   checkboxLabel: { fontSize: 13, color: colors.ink, fontFamily: font, cursor: 'pointer' },
+  regionGroup: { display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 },
+  regionTitle: {
+    display: 'block',
+    fontSize: 11,
+    color: colors.muted,
+    marginBottom: 4,
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
   variantsBox: { display: 'flex', flexDirection: 'column', gap: 8 },
   chipGroup: { display: 'flex', flexWrap: 'wrap', gap: 8, minHeight: 20 },
   chip: {

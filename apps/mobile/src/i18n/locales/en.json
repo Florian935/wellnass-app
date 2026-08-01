@@ -27,6 +27,24 @@
     "arms": "Arms",
     "core": "Core"
   },
+  "muscleFine": {
+    "chest": "Chest",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "biceps": "Biceps",
+    "triceps": "Triceps",
+    "abs": "Abs",
+    "glutes": "Glutes",
+    "quadriceps": "Quadriceps",
+    "hamstrings": "Hamstrings",
+    "calves": "Calves"
+  },
+  "bodyMap": {
+    "front": "Front",
+    "back": "Back",
+    "a11yLabel": "Body map — muscles worked: {{muscles}}",
+    "a11yLabelEmpty": "Body map — no muscle worked"
+  },
   "equipment": {
     "barbell": "Barbell",
     "dumbbell": "Dumbbell",
@@ -1916,6 +1934,7 @@
     "empty": "Nothing to sum up for this week. A 30-minute session is enough to restart.",
     "decisionTitle": "Your call for the week",
     "sectionNumbers": "The numbers",
+    "sectionMuscles": "Muscles worked",
     "blocks": {
       "workouts": "Workouts",
       "tonnage": "Tonnage",

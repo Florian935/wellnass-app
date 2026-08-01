@@ -1,4 +1,4 @@
-# État du projet — 01/08/2026
+# État du projet — 02/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **85 %** — 181 livré · 16 partiel · 10 à faire (sur 213)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **85 %** — 182 livré · 16 partiel · 9 à faire (sur 213)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -24,6 +24,7 @@ avant de pouvoir publier.
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **MUSC-F14** — Suggestion de substitution d'exercice | `recette` | `feature/muscf14-substitution-exercice` | [3.52] |
+| **MUSC-F1b** — Muscles ciblés sur schéma corporel — anatomie fine | `recette` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F7** — Progression assistée — deload sur stagnation | `recette` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `recette` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
@@ -35,9 +36,8 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **MUSC-F1b** — Muscles ciblés sur schéma corporel — anatomie fine | `validation` | `feature/muscf1b-schema-muscles` | [6.2] |
 
-⏳ **19 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **20 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -58,10 +58,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscf9-planning-glisser-deposer` (modifications non commitées) |
-| Commits | 1005 · `main` a **1002** commits de retard sur `dev` |
+| Branche courante | `feature/muscf1b-schema-muscles` (modifications non commitées) |
+| Commits | 1006 · `main` a **1003** commits de retard sur `dev` |
 | Specs d'US | 97 au total — 77 clôturées, 20 en cours |
-| Migrations | 63/63 poussées sur le cloud |
+| Migrations | 64/64 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a293ba8` feat(muscf9): glisser-déposer du planning + retour haptique (US MUSC-F9, 3.10)
 - `1773aaf` feat(runf3): comparaison à l'objectif de course + terrain (roadmap 5.25, D3)
 - `4d6594d` fix(conf07): corrige les 5 non-conformités WCAG AA restantes (roadmap 9.11/9.12)
 - `3d2acd1` docs(muscf1b): recadre en Voie B — anatomie fine additive (spec + plan + maquette)
 - `fe24e1f` feat(muscf7): câble le signal de deload sur stagnation (roadmap 3.8)
-- `52fe4fe` docs(muscf7): spec + plan — deload sur stagnation, scindé du roadmap 3.7
 
 ---
 

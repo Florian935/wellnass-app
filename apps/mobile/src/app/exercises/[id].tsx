@@ -3,7 +3,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { resolveFineMuscles } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { BodyMap } from '@/components/body/BodyMap';
 import { EditExerciseModal } from '@/components/exercises/EditExerciseModal';
 import {
   useExercise,
@@ -75,6 +77,13 @@ export default function ExerciseDetailScreen() {
   }
 
   const isCustom = exercise.source === 'custom';
+
+  // Schéma corporel (US MUSC-F1b) — un seul chemin de rendu, résolu depuis l'exercice.
+  const { full: bodyMapFull, reduced: bodyMapReduced } = resolveFineMuscles({
+    musclePrimary: exercise.muscle,
+    musclesSecondary: exercise.musclesSecondary,
+    musclesFine: exercise.musclesFine,
+  });
 
   const onDelete = () => {
     Alert.alert(exercise.name, t('exercises.detail.deleteConfirm'), [
@@ -160,6 +169,10 @@ export default function ExerciseDetailScreen() {
               {t(`muscle.${exercise.muscle}`)}
             </Text>
           </View>
+
+          {/* US MUSC-F1b — schéma corporel, complément visuel (R5 : la liste textuelle ci-dessus
+              et ci-dessous reste affichée, jamais remplacée). */}
+          <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
 
           {/* US UX-03 — la section est TOUJOURS rendue, avec un état vide explicite plutôt que
               masquée. Un exercice perso créé sur mobile n'a ni muscles secondaires ni

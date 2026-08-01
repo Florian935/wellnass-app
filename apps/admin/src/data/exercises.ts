@@ -2,10 +2,13 @@ import { supabase } from '../lib/supabase';
 import {
   MUSCLE_GROUPS,
   EQUIPMENTS,
+  FINE_MUSCLES,
   normalizeSecondaryMuscles,
+  normalizeFineMuscles,
   type Database,
   type MuscleGroup,
   type Equipment,
+  type FineMuscle,
 } from '@wellness/shared';
 import { logAudit } from './audit';
 
@@ -29,6 +32,10 @@ export type { MuscleGroup };
 /** Réexport des équipements (source unique `@wellness/shared`). */
 export { EQUIPMENTS };
 export type { Equipment };
+
+/** Réexport de l'anatomie fine — US MUSC-F1b (source unique `@wellness/shared`). */
+export { FINE_MUSCLES };
+export type { FineMuscle };
 
 
 /**
@@ -69,6 +76,8 @@ export type ExerciseDetail = {
   id: string;
   musclePrimary: MuscleGroup;
   musclesSecondary: MuscleGroup[];
+  /** Anatomie fine (US MUSC-F1b) — additive et indépendante de `musclesSecondary` (spec §0). */
+  musclesFine: FineMuscle[];
   equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
@@ -82,6 +91,7 @@ export type ExerciseInput = {
   id?: string;
   musclePrimary: MuscleGroup;
   musclesSecondary: MuscleGroup[];
+  musclesFine: FineMuscle[];
   equipment: Equipment | null;
   status: ExerciseStatus;
   nameFr: string;
@@ -146,7 +156,7 @@ export async function getExercise(id: string): Promise<{
   const { data, error } = await supabase
     .from('exercises')
     .select(
-      'id, muscle_primary, muscles_secondary, equipment, status, exercise_translations(lang, name, instructions)',
+      'id, muscle_primary, muscles_secondary, muscles_fine, equipment, status, exercise_translations(lang, name, instructions)',
     )
     .eq('id', id)
     .is('owner_id', null) // éditorial uniquement (jamais un exercice utilisateur)
@@ -168,6 +178,7 @@ export async function getExercise(id: string): Promise<{
     id: data.id,
     musclePrimary: data.muscle_primary as MuscleGroup,
     musclesSecondary: normalizeSecondaryMuscles(data.muscles_secondary, data.muscle_primary as MuscleGroup),
+    musclesFine: normalizeFineMuscles(data.muscles_fine),
     equipment: data.equipment as Equipment | null,
     status: (data.status as ExerciseStatus) ?? 'draft',
     nameFr: fr?.name ?? '',
@@ -191,10 +202,13 @@ export async function saveExercise(input: ExerciseInput): Promise<{
 }> {
   const id = input.id ?? crypto.randomUUID();
 
-  // `muscles_secondary` est typée `Json` en base → cast depuis `MuscleGroup[]` (assignable).
+  // `muscles_secondary`/`muscles_fine` sont typées `Json` en base → cast depuis les tableaux typés.
   const musclesSecondary =
     normalizeSecondaryMuscles(input.musclesSecondary, input.musclePrimary) as
       Database['public']['Tables']['exercises']['Insert']['muscles_secondary'];
+  const musclesFine =
+    normalizeFineMuscles(input.musclesFine) as
+      Database['public']['Tables']['exercises']['Insert']['muscles_fine'];
 
   const exerciseUpsert: Database['public']['Tables']['exercises']['Insert'] = {
     id,
@@ -202,6 +216,7 @@ export async function saveExercise(input: ExerciseInput): Promise<{
     source: 'library',
     muscle_primary: input.musclePrimary,
     muscles_secondary: musclesSecondary,
+    muscles_fine: musclesFine,
     equipment: input.equipment,
     status: input.status,
   };

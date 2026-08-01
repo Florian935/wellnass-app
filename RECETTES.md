@@ -600,10 +600,47 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 20. MUSC-F1b — Muscles ciblés sur schéma corporel (anatomie fine, Voie B)
+
+📄 [spec](docs/specs/functional/us/muscf1b-schema-muscles.md) · roadmap 6.2 ·
+**📱 device** · migration poussée (`exercises.muscles_fine`), **aucune sync rule à redéployer**
+(`exercises` déjà en `select *`), **aucune dépendance native neuve** (`react-native-svg` déjà
+présent) → recettable sur l'APK existant.
+
+⚠️ **Le critère qui juge tout le reste** (12) : montrer les deux vues (face/dos) à quelqu'un qui
+connaît l'anatomie. Un rejet renvoie au dessin (maquette), pas au modèle de données.
+
+- [ ] 1. Fiche d'un exercice **non tagué fin** (les 16 actuels, au départ) : repli large identique
+      au comportement d'avant cette US (primaire plein, secondaires à ~35 %).
+- [ ] 2. Depuis l'admin, tague un exercice (ex. Curl biceps → `biceps`) : sa fiche mobile affiche
+      **seulement** biceps, plus le triceps qu'affichait le repli large.
+- [ ] 3. Fiche d'un exercice sans secondaire : un seul muscle éclairé, aucun résidu.
+- [ ] 4. Aperçu d'une séance mêlant exercices tagués et non tagués : l'union se fait correctement
+      dans les deux cas, sans doublon d'émphase.
+- [ ] 5. Bilan hebdo : le muscle le plus travaillé (par tonnage agrégé) est le plus marqué.
+- [ ] 6. Semaine sans séance muscu : silhouette neutre sur le bilan, pas d'écran cassé.
+- [ ] 7. Vue de dos atteignable et correcte (6 des 10 muscles n'existent que là).
+- [ ] 8. Thème clair et sombre : la silhouette reste lisible dans les deux.
+- [ ] 9. TalkBack énonce les muscles sollicités ; la liste textuelle reste affichée à côté.
+- [ ] 10. Mode avion : le schéma s'affiche (aucune ressource distante, tracés en dur).
+- [ ] 11. En EN : « Front »/« Back », les 10 noms de muscles et l'annonce d'accessibilité sont en
+      anglais.
+- [ ] 12. 🔴 **Montrer les deux vues à quelqu'un qui connaît l'anatomie.** S'il dit « ça ne
+      ressemble pas à des biceps » ou « je ne distingue pas quadriceps et ischio-jambiers », c'est
+      un rejet — retour au dessin, pas au modèle de données.
+- [ ] 13. Écran admin : les 10 checkboxes « Muscles fins » sont groupées par région (Haut du
+      corps / Bas du corps / Tronc), pas un mur en vrac.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
-UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01**
+UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b** (aucune dépendance
+native neuve, `react-native-svg` déjà présent)
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).

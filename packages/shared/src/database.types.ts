@@ -583,6 +583,7 @@ export type Database = {
           id: string
           media_url: string | null
           muscle_primary: string
+          muscles_fine: Json
           muscles_secondary: Json
           owner_id: string | null
           source: string
@@ -596,6 +597,7 @@ export type Database = {
           id: string
           media_url?: string | null
           muscle_primary: string
+          muscles_fine?: Json
           muscles_secondary?: Json
           owner_id?: string | null
           source?: string
@@ -609,6 +611,7 @@ export type Database = {
           id?: string
           media_url?: string | null
           muscle_primary?: string
+          muscles_fine?: Json
           muscles_secondary?: Json
           owner_id?: string | null
           source?: string

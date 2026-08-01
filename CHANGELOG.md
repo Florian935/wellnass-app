@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/muscf1b-schema-muscles` — MUSC-F1b : schéma corporel, anatomie fine (6.2 livrée)
+
+Commit précédent : `a293ba8`. Dernière des 4 US validées ce lot (« Oui, go ») — la plus grosse,
+traitée en dernier. Recadrage Voie B (anatomie fine) décidé par Florian le 01/08/2026, contre la
+recommandation initiale de la spec (Voie A) : voir le commit doc `3d2acd1` pour le raisonnement
+complet (18 fichiers consommaient déjà les 6 groupes larges, d'où le design additif).
+
+#### Ajouté
+
+- [exercise.ts (shared)](packages/shared/src/exercise.ts) — `FINE_MUSCLES` (10 clés, référentiel
+  repris tel quel d'`administration.md` §3.3, jamais implémenté), `FINE_MUSCLE_VIEWS`,
+  `BROAD_TO_FINE`, `normalizeFineMuscles`, et **3 fonctions pures de résolution** :
+  `resolveFineMuscles` (un exercice), `resolveSessionFineMuscles` (union sur une séance, sans
+  doublon d'émphase), `resolveTonnageFineMuscles` (bilan hebdo, tonnage agrégé par muscle fin,
+  silhouette neutre si semaine vide — 22 tests au total pour les 3).
+- Migration additive `exercises.muscles_fine jsonb not null default '[]'`, **indépendante** de
+  `muscles_secondary` (deux champs distincts, aucun invariant d'exclusion). **Aucune sync rule à
+  redéployer** (`exercises` déjà en `select *`).
+- [BodyMap.tsx](apps/mobile/src/components/body/BodyMap.tsx) (**nouveau**) — silhouette muette,
+  deux vues (face/dos, 11 tracés au total — épaules sur les deux), coordonnées reprises de la
+  maquette validée. Deux niveaux d'émphase (`full`/`reduced`), un muscle non sollicité reste
+  **neutre**, jamais éteint (R2).
+- **3 points de montage**, un seul chemin de rendu (`resolveFineMuscles` et dérivées) :
+  fiche d'exercice ([\[id\].tsx](apps/mobile/src/app/exercises/[id].tsx)), aperçu de séance avant
+  démarrage ([programs/\[id\].tsx](apps/mobile/src/app/programs/[id].tsx), union par séance),
+  bilan hebdomadaire ([review.tsx](apps/mobile/src/app/review.tsx), nouvelle requête
+  `SELECT_EXERCISE_TONNAGE` **additive et indépendante** de `SELECT_MUSCLE_SETS` — celle-ci reste
+  intouchée, elle alimente `computeMuscleBalance` sur les 6 groupes larges).
+- Écran admin ([ExerciseEditScreen.tsx](apps/admin/src/screens/ExerciseEditScreen.tsx)) — section
+  « Muscles fins (optionnel) », 10 checkboxes groupées par région (Haut du corps / Bas du corps /
+  Tronc) plutôt qu'un mur en vrac.
+- 10 clés `muscleFine.*` + 4 `bodyMap.*`, FR+EN.
+
+#### Technique / Notes
+
+- **Design additif (spec §0)** : les 6 groupes larges (`musclePrimary`/`musclesSecondary`) ne
+  bougent pas — aucun des 18 fichiers qui les consomment (alerte déséquilibre, filtre bibliothèque,
+  remplacement d'exercice, graphique de volume, écran admin) n'est touché.
+- `apps/mobile/src/powersync/connector.ts` — `muscles_fine` ajoutée à `JSON_COLUMNS.exercises`
+  (leçon CYCLE-01 : une colonne JSON absente de cette liste échoue silencieusement à l'écriture).
+- Aucune dépendance native neuve (`react-native-svg` déjà présent) → recettable sur l'APK existant.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/265 tests + shared
+  Vitest 67 fichiers/1347 tests) — lus sans pipe, tous verts. Parité i18n FR/EN vérifiée
+  (1643 clés).
+- Le tagging fin des 16 exercices existants reste **hors dev** (travail de coach, ~1-2h) : le code
+  fonctionne en repli large tant qu'il n'est pas fait, et s'améliore exercice par exercice.
+- Roadmap 6.2 → ✅ (V0.2 complet : 29 livré / 0 à faire hors abandons). RECETTES.md #20 créée,
+  13 critères — dont le critère 12 (relecture anatomique des 11 tracés), seul point qu'un agent ne
+  peut pas franchir.
+
 ### 01/08/2026 — `feature/muscf9-planning-glisser-deposer` — MUSC-F9 : glisser-déposer d'une séance planifiée (3.10 livrée)
 
 Commit précédent : `1773aaf`. Consolidation des 4 validations (« Oui, go ») reçues pour CONF-07,

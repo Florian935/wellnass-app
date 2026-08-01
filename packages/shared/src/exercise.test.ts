@@ -10,6 +10,14 @@ import {
   exerciseTranslationRowSchema,
   resolveExerciseName,
   normalizeSecondaryMuscles,
+  FINE_MUSCLES,
+  fineMuscleSchema,
+  BROAD_TO_FINE,
+  FINE_MUSCLE_VIEWS,
+  normalizeFineMuscles,
+  resolveFineMuscles,
+  resolveSessionFineMuscles,
+  resolveTonnageFineMuscles,
 } from './exercise';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -211,5 +219,223 @@ describe('exerciseRowSchema — musclesSecondary', () => {
   });
   it('accepte des groupes valides', () => {
     expect(exerciseRowSchema.parse({ ...base, musclesSecondary: ['arms'] }).musclesSecondary).toEqual(['arms']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FINE_MUSCLES (US MUSC-F1b)
+// ---------------------------------------------------------------------------
+describe('FINE_MUSCLES', () => {
+  it('contient les 10 muscles fins canoniques', () => {
+    expect(FINE_MUSCLES).toEqual([
+      'chest',
+      'back',
+      'shoulders',
+      'biceps',
+      'triceps',
+      'abs',
+      'glutes',
+      'quadriceps',
+      'hamstrings',
+      'calves',
+    ]);
+  });
+
+  it('fineMuscleSchema accepte une valeur valide', () => {
+    expect(fineMuscleSchema.parse('biceps')).toBe('biceps');
+  });
+
+  it('fineMuscleSchema rejette une valeur inconnue', () => {
+    expect(fineMuscleSchema.safeParse('deltoid_anterior').success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// FINE_MUSCLE_VIEWS
+// ---------------------------------------------------------------------------
+describe('FINE_MUSCLE_VIEWS', () => {
+  it('shoulders est sur les deux vues, seul dans ce cas', () => {
+    expect(FINE_MUSCLE_VIEWS.shoulders).toEqual(['front', 'back']);
+    const onBoth = FINE_MUSCLES.filter((m) => FINE_MUSCLE_VIEWS[m].length === 2);
+    expect(onBoth).toEqual(['shoulders']);
+  });
+
+  it('chest/biceps/abs/quadriceps sont uniquement en face', () => {
+    expect(FINE_MUSCLE_VIEWS.chest).toEqual(['front']);
+    expect(FINE_MUSCLE_VIEWS.biceps).toEqual(['front']);
+    expect(FINE_MUSCLE_VIEWS.abs).toEqual(['front']);
+    expect(FINE_MUSCLE_VIEWS.quadriceps).toEqual(['front']);
+  });
+
+  it('back/triceps/glutes/hamstrings/calves sont uniquement au dos', () => {
+    expect(FINE_MUSCLE_VIEWS.back).toEqual(['back']);
+    expect(FINE_MUSCLE_VIEWS.triceps).toEqual(['back']);
+    expect(FINE_MUSCLE_VIEWS.glutes).toEqual(['back']);
+    expect(FINE_MUSCLE_VIEWS.hamstrings).toEqual(['back']);
+    expect(FINE_MUSCLE_VIEWS.calves).toEqual(['back']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeFineMuscles
+// ---------------------------------------------------------------------------
+describe('normalizeFineMuscles', () => {
+  it('conserve les muscles fins valides', () => {
+    expect(normalizeFineMuscles(['biceps', 'triceps'])).toEqual(['biceps', 'triceps']);
+  });
+  it('déduplique', () => {
+    expect(normalizeFineMuscles(['biceps', 'biceps'])).toEqual(['biceps']);
+  });
+  it('n\'exclut pas un muscle qui porte la même clé qu\'un groupe large (pas d\'invariant primaire)', () => {
+    expect(normalizeFineMuscles(['chest'])).toEqual(['chest']);
+  });
+  it('filtre les valeurs inconnues', () => {
+    expect(normalizeFineMuscles(['biceps', 'bogus'])).toEqual(['biceps']);
+  });
+  it('renvoie [] pour une entrée non-tableau', () => {
+    expect(normalizeFineMuscles('nope')).toEqual([]);
+    expect(normalizeFineMuscles(null)).toEqual([]);
+    expect(normalizeFineMuscles(undefined)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveFineMuscles
+// ---------------------------------------------------------------------------
+describe('resolveFineMuscles', () => {
+  it('exercice tagué fin → full = musclesFine, reduced = []', () => {
+    expect(
+      resolveFineMuscles({ musclePrimary: 'arms', musclesSecondary: [], musclesFine: ['biceps'] }),
+    ).toEqual({ full: ['biceps'], reduced: [] });
+  });
+
+  it('exercice non tagué, primaire seul → full = expansion du primaire, reduced = []', () => {
+    expect(
+      resolveFineMuscles({ musclePrimary: 'chest', musclesSecondary: [], musclesFine: [] }),
+    ).toEqual({ full: ['chest'], reduced: [] });
+  });
+
+  it('exercice non tagué, primaire + secondaires → reduced = union des expansions des secondaires', () => {
+    expect(
+      resolveFineMuscles({ musclePrimary: 'chest', musclesSecondary: ['arms', 'core'], musclesFine: [] }),
+    ).toEqual({ full: ['chest'], reduced: ['biceps', 'triceps', 'abs'] });
+  });
+
+  it('arms non tagué → full contient biceps et triceps (défaut assumé)', () => {
+    expect(
+      resolveFineMuscles({ musclePrimary: 'arms', musclesSecondary: [], musclesFine: [] }).full,
+    ).toEqual(['biceps', 'triceps']);
+  });
+
+  it('legs non tagué → full contient quadriceps, ischio-jambiers et mollets', () => {
+    expect(
+      resolveFineMuscles({ musclePrimary: 'legs', musclesSecondary: [], musclesFine: [] }).full,
+    ).toEqual(['quadriceps', 'hamstrings', 'calves']);
+  });
+
+  it('BROAD_TO_FINE couvre les 6 groupes larges', () => {
+    expect(new Set(Object.keys(BROAD_TO_FINE))).toEqual(new Set(MUSCLE_GROUPS));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// exerciseRowSchema — musclesFine
+// ---------------------------------------------------------------------------
+describe('exerciseRowSchema — musclesFine', () => {
+  const base = {
+    id: '11111111-1111-1111-1111-111111111111',
+    ownerId: null,
+    createdAt: '2026-07-22T00:00:00.000Z',
+    updatedAt: '2026-07-22T00:00:00.000Z',
+    deletedAt: null,
+    source: 'library' as const,
+    musclePrimary: 'chest' as const,
+    equipment: null,
+    mediaUrl: null,
+  };
+  it('défaut [] si absent', () => {
+    expect(exerciseRowSchema.parse(base).musclesFine).toEqual([]);
+  });
+  it('accepte des muscles fins valides', () => {
+    expect(exerciseRowSchema.parse({ ...base, musclesFine: ['chest', 'triceps'] }).musclesFine).toEqual([
+      'chest',
+      'triceps',
+    ]);
+  });
+  it('rejette un muscle fin inconnu', () => {
+    expect(exerciseRowSchema.safeParse({ ...base, musclesFine: ['bogus'] }).success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveSessionFineMuscles
+// ---------------------------------------------------------------------------
+describe('resolveSessionFineMuscles', () => {
+  it('séance vide → aucune émphase', () => {
+    expect(resolveSessionFineMuscles([])).toEqual({ full: [], reduced: [] });
+  });
+
+  it('union de plusieurs exercices non tagués, sans doublon', () => {
+    const result = resolveSessionFineMuscles([
+      { musclePrimary: 'chest', musclesSecondary: [], musclesFine: [] },
+      { musclePrimary: 'chest', musclesSecondary: [], musclesFine: [] },
+    ]);
+    expect(result.full).toEqual(['chest']);
+  });
+
+  it('mêle exercices tagués et non tagués sans doublon d\'émphase', () => {
+    const result = resolveSessionFineMuscles([
+      { musclePrimary: 'arms', musclesSecondary: [], musclesFine: ['biceps'] },
+      { musclePrimary: 'chest', musclesSecondary: ['arms'], musclesFine: [] },
+    ]);
+    expect(new Set(result.full)).toEqual(new Set(['biceps', 'chest']));
+    expect(result.reduced).toEqual(['triceps']);
+  });
+
+  it('un muscle plein pour un exercice et réduit pour un autre finit plein (le plus fort gagne)', () => {
+    const result = resolveSessionFineMuscles([
+      { musclePrimary: 'arms', musclesSecondary: [], musclesFine: ['biceps'] },
+      { musclePrimary: 'back', musclesSecondary: ['arms'], musclesFine: [] },
+    ]);
+    expect(result.full).toContain('biceps');
+    expect(result.reduced).not.toContain('biceps');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveTonnageFineMuscles
+// ---------------------------------------------------------------------------
+describe('resolveTonnageFineMuscles', () => {
+  it('semaine vide → silhouette neutre, sans division par zéro (critère 6)', () => {
+    expect(resolveTonnageFineMuscles([])).toEqual({ full: [], reduced: [] });
+  });
+
+  it('le muscle au tonnage maximal est en pleine émphase, les autres touchés en réduite (critère 5)', () => {
+    const result = resolveTonnageFineMuscles([
+      { tonnageKg: 500, musclePrimary: 'legs', musclesSecondary: [], musclesFine: ['quadriceps'] },
+      { tonnageKg: 80, musclePrimary: 'back', musclesSecondary: [], musclesFine: ['back'] },
+    ]);
+    expect(result.full).toEqual(['quadriceps']);
+    expect(result.reduced).toEqual(['back']);
+  });
+
+  it('deux muscles à égalité de tonnage maximal sont tous les deux en pleine émphase', () => {
+    const result = resolveTonnageFineMuscles([
+      { tonnageKg: 100, musclePrimary: 'chest', musclesSecondary: [], musclesFine: ['chest'] },
+      { tonnageKg: 100, musclePrimary: 'back', musclesSecondary: [], musclesFine: ['back'] },
+    ]);
+    expect(new Set(result.full)).toEqual(new Set(['chest', 'back']));
+    expect(result.reduced).toEqual([]);
+  });
+
+  it('agrège le tonnage d\'un même muscle sur plusieurs exercices', () => {
+    const result = resolveTonnageFineMuscles([
+      { tonnageKg: 60, musclePrimary: 'arms', musclesSecondary: [], musclesFine: ['biceps'] },
+      { tonnageKg: 60, musclePrimary: 'arms', musclesSecondary: [], musclesFine: ['biceps'] },
+      { tonnageKg: 100, musclePrimary: 'legs', musclesSecondary: [], musclesFine: ['quadriceps'] },
+    ]);
+    // 120 (biceps agrégé) > 100 (quadriceps) → biceps devient le muscle plein, pas quadriceps.
+    expect(result.full).toEqual(['biceps']);
+    expect(result.reduced).toEqual(['quadriceps']);
   });
 });

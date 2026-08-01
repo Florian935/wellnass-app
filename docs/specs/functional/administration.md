@@ -63,6 +63,10 @@ Le module le plus riche : chaque exercice embarque sa fiche complète et sa dém
 - Référentiel fixe des groupes musculaires : Pectoraux / Dos / Épaules / Biceps / Triceps / Abdominaux / Fessiers / Quadriceps / Ischio-jambiers / Mollets.
 - Sous-groupes modifiables par un **super-admin uniquement**.
 
+> **Implémenté le 01/08/2026** (US MUSC-F1b, roadmap 6.2) — ce référentiel à 10 muscles est repris
+> tel quel comme anatomie fine (`musclesFine`), **additive** aux 6 groupes larges existants. Voir
+> [muscf1b-schema-muscles.md](us/muscf1b-schema-muscles.md).
+
 ---
 
 ## 4. Module — Gestion des Programmes

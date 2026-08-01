@@ -22,8 +22,13 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { Equipment, MuscleGroup, Source } from '@wellness/shared';
-import { buildExerciseFilterClause, normalizeSecondaryMuscles, parseJsonColumn } from '@wellness/shared';
+import type { Equipment, FineMuscle, MuscleGroup, Source } from '@wellness/shared';
+import {
+  buildExerciseFilterClause,
+  normalizeFineMuscles,
+  normalizeSecondaryMuscles,
+  parseJsonColumn,
+} from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -45,6 +50,8 @@ export type ExerciseListItem = {
 export type ExerciseDetail = ExerciseListItem & {
   instructions: string | null;
   musclesSecondary: MuscleGroup[];
+  /** Anatomie fine (US MUSC-F1b) — `[]` tant qu'aucun coach n'a tagué l'exercice (repli large, voir `resolveFineMuscles`). */
+  musclesFine: FineMuscle[];
 };
 
 /** Ligne brute renvoyée par SQLite pour la vue liste (colonnes résolues en SQL). */
@@ -83,6 +90,7 @@ const SELECT_EXERCISES = `
 type ExerciseDetailDbRow = ExerciseListDbRow & {
   instructions: string | null;
   muscles_secondary: string | null;
+  muscles_fine: string | null;
 };
 
 /**
@@ -91,7 +99,7 @@ type ExerciseDetailDbRow = ExerciseListDbRow & {
  * Filtre `e.deleted_at IS NULL` : un exo supprimé → aucune ligne → « introuvable ».
  */
 const SELECT_EXERCISE_DETAIL = `
-  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url, e.muscles_secondary,
+  SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url, e.muscles_secondary, e.muscles_fine,
          COALESCE(tl.name, tfr.name) AS name,
          COALESCE(tl.instructions, tfr.instructions) AS instructions,
          (f.id IS NOT NULL) AS is_favorite
@@ -214,6 +222,7 @@ export function useExercise(id: string): {
           parseJsonColumn<unknown>(row.muscles_secondary, []),
           row.muscle_primary as MuscleGroup,
         ),
+        musclesFine: normalizeFineMuscles(parseJsonColumn<unknown>(row.muscles_fine, [])),
       }
     : null;
 
