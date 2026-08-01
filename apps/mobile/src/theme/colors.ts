@@ -59,14 +59,23 @@ export const palettes: Record<ColorScheme, Palette> = {
     textMuted: '#786a59', // 4,55 / fond · 5,05 / surface
     accent: '#b14f2b', // 4,53 / fond · blanc dessus : 5,22
     accentText: '#ffffff',
-    success: '#7c8a5b',
+    // Assombri le 01/08/2026 (CONF-07) : 3,23 / fond, sous les 4,5 exigés — employé comme texte
+    // (« Compte créé », « Objectif atteint »). Teinte et saturation conservées (R1).
+    success: '#66714b', // 4,53 / fond · 5,02 / surface
     danger: '#b23b2e',
     track: '#eadcc6',
+    // Diverge volontairement de `success` depuis CONF-07 (R3) : `chartGreen` ne peint que des
+    // courbes (seuil 3,0, déjà tenu à 3,23) — l'assombrir comme `success` noircirait les graphes
+    // sans aucun gain d'accessibilité. Ne pas réunifier les deux tokens.
     chartGreen: '#7c8a5b',
-    amber: '#cc9544',
+    // Assombri le 01/08/2026 (CONF-07) : 2,29 / fond, sous les 3,0 exigés pour une couleur de
+    // donnée (WCAG 1.4.11 — barre glucides). Échouait même au seuil abaissé.
+    amber: '#b47f31', // 3,03 / fond · 3,36 / surface
     warn: '#f7ead6',
     warnBorder: '#e9cfa0',
-    warnText: '#a97b1f',
+    // Assombri le 01/08/2026 (CONF-07) : 3,19 / warn, sous les 4,5 exigés — le nom dit « text », et
+    // c'en est (titre + message des bandeaux d'alerte).
+    warnText: '#8a6419', // 4,52 / warn · 5,16 / surface
     panel: '#33291f',
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
@@ -83,8 +92,15 @@ export const palettes: Record<ColorScheme, Palette> = {
     borderStrong: '#797169', // 3,77 / fond · 3,05 / surface
     text: '#f4ecdd',
     textMuted: '#c9b79a',
+    // `accent` / `surface` = 4,45, à 0,05 du seuil 4,5 (WCAG 1.4.3) — écart ASSUMÉ (CONF-07, D2,
+    // 01/08/2026) : sous le bruit de l'arrondi, et l'éclaircir rendrait `accent` sombre plus clair
+    // que sa version en thème clair ; assombrir `surface` toucherait toutes les cartes. Ne pas
+    // « corriger » sans revalider D2.
     accent: '#dd6e40',
-    accentText: '#ffffff',
+    // Assombri le 01/08/2026 (CONF-07, D1) : le libellé blanc des boutons pleins n'était qu'à
+    // 3,29 / accent, sous les 4,5 exigés. C'est le changement le plus visible de CONF-07 — validé
+    // sur maquette avant d'être posé ici.
+    accentText: '#1c150e', // 5,48 / accent (= le fond sombre)
     success: '#a9ba7e',
     danger: '#e0524a',
     track: '#362c22',

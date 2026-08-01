@@ -16,7 +16,6 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
-| **CONF-07 — Accessibilité** | 9.11, 9.12 | Dynamic Type explicite (`maxFontSizeMultiplier` / `fontScale`) + audit contraste WCAG AA. | 🟢 **Dynamic Type : rien à faire.** 41 écrans vérifiés à 1,5× le 30/07/2026, aucune troncature — uniquement du reflux attendu.<br>🔴 **Contraste : 3 non-conformités mesurées sur la palette** ([colors.ts](apps/mobile/src/theme/colors.ts)), **toutes en thème clair** — le sombre passe partout.<br>• `textMuted` / fond = **3,10** et / surface = **3,44** (AA texte normal exige **4,5**). Touche *tout* le texte secondaire : dates, unités, hints, libellés de champ, « en baisse de 57 % ». Sombre : 9,22 / 7,47 ✅.<br>• `accent` / fond = **3,95** (< 4,5). Touche les liens et libellés accentués. Sombre : 5,48 ✅.<br>• **Champs de saisie sans limite perceptible, dans les deux thèmes** : `surface`/fond = 1,11 (clair) et 1,23 (sombre), `border`/fond = 1,13 / 1,37 — loin des **3,0** exigés pour un composant d'interface non textuel. Très visible en clair, où un champ vide se confond avec la page.<br>→ Le correctif est **central** (assombrir `textMuted` et `accent` en clair, renforcer `border`), pas écran par écran. La revue humaine reste utile, mais elle n'est plus le point de départ. |
 | **LANCE-00 — Compte développeur Google Play** | 9.2 | Créer le compte développeur (25 $, une fois), puis la fiche d'application dans la Play Console. | 🔴 **Rien de la chaîne de publication ne peut démarrer sans lui** — ni la fiche, ni la déclaration santé, ni la soumission. Vérification d'identité Google : compter plusieurs jours. **Non démarré au 27/07/2026.** ⚠️ **La déclaration santé doit porter 4 types de données** (`WRITE_EXERCISE`, `WRITE_DISTANCE`, `READ_WEIGHT` de CONF-06 **+ `READ_STEPS`** de PAS-01, tranché le 28/07/2026) et déclarer, en « Sécurité des données », une **donnée de santé transmise hors de l'appareil** (les pas sont synchronisés). |
 | **LANCE-01 — Publication Play Store** | 9.2 | Build AAB prod (EAS) + fiche Play + soumission review. | 🔴 Dépend de **LANCE-00** + de tout le P0 + du délai de review. |
 
@@ -73,7 +72,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 >
 > **Il ne reste donc plus aucun candidat de la salve V0.9.** La suite : les **P2** ci-dessous, puis
 > **CONF-07 en dernier** des chantiers de code, délibérément — un balayage d'accessibilité refait après
-> chaque nouvel écran serait du travail perdu.
+> chaque nouvel écran serait du travail perdu. ✅ **CONF-07 livrée le 01/08/2026**, en recette.
 
 ### Enrichissements V0.9 — rétention & valeur produit
 

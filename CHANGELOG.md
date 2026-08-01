@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 01/08/2026 — `fix/conf07-accessibilite` — CONF-07 : contraste WCAG AA corrigé, V0.8 complète
+
+Commit précédent : `3d2acd1`. D1 et D2 validées par Florian (maquette envoyée avant décision).
+Front-matter `etape: recette` (spec §7 a des critères visuels, device requis).
+
+#### Ajouté
+
+- [contrast.ts (shared)](packages/shared/src/contrast.ts) — `relativeLuminance`/`contrastRatio`,
+  purs, formule WCAG 2.1. 7 tests (`contrast.test.ts` : noir/blanc = 21, blanc/blanc = 1,
+  symétrie, valeur illisible → `null`).
+- [contrast.test.ts (mobile)](apps/mobile/src/theme/__tests__/contrast.test.ts) — le vrai
+  livrable durable : parcourt la **palette réelle** sur une table de paires explicite (reprise de
+  la spec §0), échoue si l'une repasse sous son seuil. **Vérifié rouge avant le correctif** (4
+  assertions en échec, exactement les ratios mesurés par l'audit du 30/07) puis vert après —
+  la 1ʳᵉ passe avait échoué faute de mesure automatisée, c'est exactement ce que ce test empêche
+  de se reproduire.
+- RECETTES.md — section #17 créée (8 critères visuels, spec §7).
+
+#### Modifié
+
+- [colors.ts](apps/mobile/src/theme/colors.ts) — 4 constantes, assombrissement pur en HSL (R1,
+  teinte/saturation conservées) : `success` clair 3,23→4,53, `warnText` clair (vs `warn`)
+  3,19→4,52, `amber` clair 2,29→3,03, `accentText` sombre (D1) 3,29→5,48. `accent`/`surface`
+  sombre (D2, 4,45) laissé **tel quel**, commenté comme écart assumé — pour qu'un futur lecteur
+  ne le « corrige » pas sans revalider D2. `chartGreen` **volontairement inchangé** (R3, diverge
+  de `success` : ne peint que des courbes, seuil 3,0 déjà tenu).
+- `docs/roadmap/roadmap.md` — 9.11 et 9.12 : 🟡 → ✅. **V0.8 est désormais complète** (10/10),
+  l'en-tête de section mise à jour. Récapitulatif (✅ 177→**179**, 🟡 20→**18**), journal des
+  réconciliations.
+- `BACKLOG.md` — CONF-07 retirée des P0 (n'en reste que 2, tous deux hors-code : LANCE-00/01).
+
+#### Technique / Notes
+
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 265 + shared Vitest, dont 7
+  pour `contrast.test.ts`) — lus sans pipe, tous verts.
+- Diff constant côté données : aucune migration, aucune sync rule, aucun impact i18n/offline.
+
 ### 01/08/2026 — `feature/muscf1b-schema-muscles` — MUSC-F1b : recadrage complet en Voie B (spec + plan + maquette)
 
 Commit précédent : `fe24e1f`. Documentation uniquement, **aucun code**. Florian a validé la **Voie B**

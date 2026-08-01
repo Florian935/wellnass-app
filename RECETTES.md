@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **01/08/2026** — 16 US en attente.
+> Dernière mise à jour : **01/08/2026** — 17 US en attente.
 
 ---
 
@@ -511,6 +511,29 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
       difficiles de suite.
 - [ ] 4. La suggestion reste **une proposition** : rien ne pré-remplit la série à la baisse
       automatiquement (même comportement que les autres suggestions de progression).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 17. CONF-07 — Accessibilité : contraste WCAG AA
+
+📄 [spec](docs/specs/functional/us/conf07-accessibilite.md) · roadmap 9.11 + 9.12 · **📱 device**
+✅ aucune migration, aucune sync rule · ✅ recettable sur **l'APK actuel** (diff = 4 constantes couleur)
+
+⚠️ **Le vrai test est visuel, pas fonctionnel** — la palette a changé, rien d'autre.
+
+- [ ] 1. **Thème sombre, écran avec un bouton plein** (« Démarrer la séance ») : le libellé est
+      lisible sans effort (D1 — le changement le plus visible de cette US, blanc → brun foncé).
+- [ ] 2. Thème **clair**, dashboard : le message d'alerte de volume/déficit se lit sans forcer.
+- [ ] 3. Thème **clair**, nutrition : la barre **glucides** (ambre) se distingue du fond crème.
+- [ ] 4. Thème **clair**, écran Pas : « Objectif atteint » en vert se lit sans forcer.
+- [ ] 5. Thème **clair**, création de compte : le message de succès se lit sans forcer.
+- [ ] 6. **Le test qui compte** : l'app ne paraît **pas** plus terne. Si l'identité chaude a viré au
+      boueux, c'est un rejet — même si les ratios sont techniquement bons.
+- [ ] 7. Les **graphes** n'ont pas noirci (`chartGreen` n'a volontairement pas bougé).
+- [ ] 8. `font_scale` 1,5× sur 3 écrans au hasard : toujours aucune troncature (non-régression 9.11).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

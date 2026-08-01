@@ -297,7 +297,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 
 ## V0.8 — Bêta : conformité & intégrations
 
-*Objectif : tout ce qui doit exister avant d'ouvrir à de vrais testeurs (Play interne) — OAuth Google, RGPD, Health, analytics, accessibilité. **OAuth Apple (1.3) sorti du périmètre de lancement** → section « Ultérieur — iOS » (arbitrage E).* **⚠️ Version quasi non entamée — principal reste-à-faire du MVP1.**
+*Objectif : tout ce qui doit exister avant d'ouvrir à de vrais testeurs (Play interne) — OAuth Google, RGPD, Health, analytics, accessibilité. **OAuth Apple (1.3) sorti du périmètre de lancement** → section « Ultérieur — iOS » (arbitrage E).* **✅ Version complète le 01/08/2026** (code livré sur les 10 items — la recette device de CONF-07 reste à faire, RECETTES.md).
 
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
@@ -308,8 +308,8 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 1.22 | Aide & support | FAQ + formulaire de contact / signalement de bug. | Facile | 2h | 🟢 | ✅ | **US 1.22 livré (24/07/2026).** Réglages → écran `/help` : FAQ statique embarquée (accordéon, 7 Q/R) + « Nous contacter » (mail natif) + « Signaler un bug » (mail + bloc technique). `expo-mail-composer`, zéro backend. `SUPPORT_EMAIL` placeholder + dev build requis avant recette. 🌐 bilingue FR+EN. Reste recette + Damien. |
 | 9.9 | Health Connect | Écriture des séances, lecture du poids (Android). Apple Health lors du portage iOS. | Moyen | ~20h (réel — 6h sous-estimait : module natif + plugin Expo maison + 2 correctifs de recette) | 🟢 | ✅ | **Livré et recetté sur device le 28/07/2026** (US CONF-06) : écriture séances/courses, lecture du poids, opt-in, plugin Expo maison. La **déclaration Google Play** reste requise pour la **publication** (LANCE-00/01) — sans effet sur le fonctionnement en dev build. **Correctif UX le 31/07/2026** : le compte rendu d'échec des Réglages annonçait désormais clairement (FR+EN) que le détail interpolé est un diagnostic technique volontairement non traduit — sans quoi un utilisateur anglophone lisait du français brut et pouvait croire l'app mal traduite. |
 | 9.10 | Analytics produit first-party | Événements anonymisés, instance auto-hébergée. | Moyen | 4h | 🟢 | ✅ | **US 9.10 livré (24/07/2026).** Événements anonymisés dans notre base Supabase (`analytics_events` append-only + RLS + FK cascade), offline-first PowerSync. Consentement **opt-out** + réglage « Statistiques d'usage » + mention confidentialité. Service `track()` (allowlist anti-PII, non bloquant), 15 points instrumentés. Migration + sync rule PowerSync déployées ; **recette validée 100 % (Florian, 24/07/2026)**. Dashboards via outil BI = ultérieur. |
-| 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | 🟡 | **Vérifié le 30/07/2026** : 41 écrans capturés à `font_scale` 1,5×, **aucune troncature** — le comportement RN par défaut suffit. Reste 🟡 tant que la gestion explicite (`maxFontSizeMultiplier` là où c'est utile) n'est pas posée, mais **plus rien de bloquant n'a été trouvé**. |
-| 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟡 | 🟡 | **Outillé et corrigé en partie le 30/07/2026.** 1ʳᵉ passe : `textMuted` 3,10 → 4,55 · `accent` 3,95 → 4,53 · token `borderStrong` (limite de champ 1,13 → 3,01). ⚠️ **Correction du 30/07/2026 (soir) : l'affirmation « le clair passe désormais AA » était fausse.** La 1ʳᵉ passe n'avait mesuré que 3 paires texte/fond ; un audit exhaustif (toutes les paires réellement employées, seuil choisi selon l'usage) trouve **5 non-conformités restantes — dont 3 en clair** : `success` 3,23 et `warnText` 3,19 (employés comme **texte**, seuil 4,5), `amber` 2,29 (couleur de **donnée**, échoue même au seuil abaissé de 3,0). Sombre : `accentText`/`accent` **3,29** sur *chaque* bouton plein, et `accent`/`surface` 4,45. → **CONF-07** cadrée, `etape: validation`, 2 décisions de charte en attente. |
+| 9.11 | Dynamic Type | Taille de texte selon les réglages système. | Facile | 2h | 🟢 | ✅ | **CONF-07 — clôturé le 01/08/2026.** Vérifié le 30/07/2026 : 41 écrans capturés à `font_scale` 1,5×, **aucune troncature** — le comportement RN par défaut suffit. Aucun `maxFontSizeMultiplier` posé en masse (ce serait *dégrader* l'accessibilité) — le garde-fou reste ponctuel, là où déjà justifié (`ShareCard`, `StreakCard`). |
+| 9.12 | Contraste WCAG AA | Ratio minimum sur toute l'interface. | Moyen | — | 🟢 | ✅ | **CONF-07 — code livré le 01/08/2026**, en recette → [RECETTES.md](../../RECETTES.md). Les 5 non-conformités trouvées le 30/07/2026 sont corrigées : `success` 3,23→**4,53**, `warnText` 3,19→**4,52** (vs `warn`), `amber` 2,29→**3,03** — tous assombrissements purs en HSL (teinte/saturation conservées, R1). Sombre : `accentText`/`accent` 3,29→**5,48** (**D1 validée**, le libellé des boutons pleins passe du blanc au brun foncé — changement le plus visible de cette US). `accent`/`surface` 4,45 laissé **tel quel** (**D2 validée**, écart assumé sous le bruit de l'arrondi). **Garde-fou durable** : `packages/shared/src/contrast.ts` (`contrastRatio`, pur, testé) + `apps/mobile/src/theme/__tests__/contrast.test.ts`, qui parcourt la palette réelle et échoue si une paire repasse sous son seuil — la 1ʳᵉ passe avait échoué **faute de mesure**, ce test est le vrai livrable. |
 
 ---
 
@@ -430,8 +430,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 177 | ~83 % |
-| 🟡 Partiel | 20 | ~9 % |
+| ✅ Livré | 179 | ~84 % |
+| 🟡 Partiel | 18 | ~8 % |
 | ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -461,7 +461,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.5 (33) | 26 | 3 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24, 5.25. **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets) |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
-| V0.8 (10) | 8 | 2 | 0 | 0 | 0 | 🟠 **Reste-à-faire MVP1** ; 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + **9.9 (Health Connect, recetté le 28/07)** + **9.16 (REFACTO-01, clôturée le 31/07)** livrés ; restent les finitions accessibilité (9.11/9.12 partiels) |
+| V0.8 (10) | 10 | 0 | 0 | 0 | 0 | ✅ **Complet.** 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + 9.9 (Health Connect, recetté le 28/07) + 9.16 (REFACTO-01, clôturée le 31/07) + **9.11/9.12 (CONF-07, code livré le 01/08, en recette)** livrés. |
 | V0.9 (16) | 4 | 7 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
@@ -494,6 +494,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**01/08/2026 — CONF-07 : palette corrigée, V0.8 complète (9.11/9.12 🟡 → ✅)**
+5 paires corrigées (assombrissement pur HSL), D1/D2 validées par Florian. Garde-fou durable :
+`contrastRatio` testé + un test qui parcourt la palette réelle — la 1ʳᵉ passe avait échoué faute de mesure.
 
 **01/08/2026 — MUSC-F7 : deload câblé (3.8 🟡 → ✅), 3.7 scindé (reste 🟡)**
 Signal `previousStruggled` câblé sur une brique/UI déjà livrées (Refonte-C3) — zéro nouvelle UI.
