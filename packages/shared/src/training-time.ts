@@ -49,8 +49,14 @@ export function sessionLoad(session: {
   return session.rpe * (session.durationSeconds / 60);
 }
 
+/** Zone qualitative du ratio ACWR (US RUN-18) — bornes inclusives côté zone saine. */
+export type AcwrZone = 'low' | 'safe' | 'risk';
+
+/** Borne basse de la zone saine (spec R5 de META-19 / R3 de RUN-18) — sous ce seuil, sous-entraînement. */
+const ACWR_LOW_THRESHOLD = 0.8;
+
 /** Résultat de l'ACWR combiné — `null` si aucune charge chronique (spec R6). */
-export type AcwrResult = { ratio: number; showAlert: boolean };
+export type AcwrResult = { ratio: number; zone: AcwrZone; showAlert: boolean };
 
 /**
  * ACWR combiné (muscu + course) : charge aiguë (7 j) ÷ charge chronique (28 j). Les deux listes
@@ -60,7 +66,8 @@ export type AcwrResult = { ratio: number; showAlert: boolean };
  *
  * `showAlert` est `true` **uniquement** au-dessus du seuil de risque (spec R4) — jamais pour un
  * ratio bas (spec R5) : une charge basse signale un sous-entraînement, pas un risque de surcharge,
- * et ce garde-fou ne suggère un repos que dans un seul sens.
+ * et ce garde-fou ne suggère un repos que dans un seul sens. `zone` (US RUN-18) qualifie le ratio
+ * dans les trois cas, bornes inclusives côté zone saine (0,8 et 1,3 comptent comme « saine »).
  */
 export function computeAcwr(input: {
   acuteSessions: ReadonlyArray<{ rpe: number | null; durationSeconds: number | null }>;
@@ -74,5 +81,8 @@ export function computeAcwr(input: {
   const chronicAvg = chronicTotal / CHRONIC_WINDOW_DAYS;
   const ratio = acuteAvg / chronicAvg;
 
-  return { ratio, showAlert: ratio > ACWR_RISK_THRESHOLD };
+  const zone: AcwrZone =
+    ratio < ACWR_LOW_THRESHOLD ? 'low' : ratio > ACWR_RISK_THRESHOLD ? 'risk' : 'safe';
+
+  return { ratio, zone, showAlert: ratio > ACWR_RISK_THRESHOLD };
 }

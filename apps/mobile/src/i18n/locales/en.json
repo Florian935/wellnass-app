@@ -1708,6 +1708,14 @@
       "sourceLabel": "Based on your 5K on {{date}} in {{time}}",
       "marathonWarning": "Take this estimate with caution: the marathon needs specific preparation this projection doesn't measure.",
       "empty": "Run at least 5K non-stop to see your estimated goals."
+    },
+    "trainingLoad": {
+      "title": "Training load",
+      "ratioLabel": "7-day / 28-day ratio",
+      "zoneLow": "Low zone — easing back in",
+      "zoneSafe": "Healthy zone",
+      "zoneRisk": "Risk zone — consider a rest day",
+      "empty": "Not enough history yet (28 days of running) to calculate your load."
     }
   },
   "planning": {

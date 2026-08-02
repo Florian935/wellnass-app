@@ -1708,6 +1708,14 @@
       "sourceLabel": "D'après ton 5 km du {{date}} en {{time}}",
       "marathonWarning": "Estimation à prendre avec prudence : le marathon demande une préparation spécifique que cette projection ne mesure pas.",
       "empty": "Cours au moins 5 km sans interruption pour voir tes objectifs estimés."
+    },
+    "trainingLoad": {
+      "title": "Charge d'entraînement",
+      "ratioLabel": "Ratio 7 j / 28 j",
+      "zoneLow": "Zone basse — reprise en douceur",
+      "zoneSafe": "Zone saine",
+      "zoneRisk": "Zone de risque — pense à un jour de repos",
+      "empty": "Pas encore assez d'historique (28 jours de course) pour calculer ta charge."
     }
   },
   "planning": {

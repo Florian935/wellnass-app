@@ -36,13 +36,13 @@ avant de pouvoir publier.
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
 | **RUN-14** — Prédiction de temps de course (formule de Riegel) | `recette` | `feature/run14-prediction-riegel` | [5.34] |
+| **RUN-18** — Charge d'entraînement & ACWR (running seul) | `recette` | `feature/run18-acwr-running` | — |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `recette` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **RUN-18** — Charge d'entraînement & ACWR (running seul) | `validation` | `feature/run18-acwr-running` | — |
 
-⏳ **24 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **25 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -64,7 +64,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/run18-acwr-running` (modifications non commitées) |
-| Commits | 1022 · `main` a **1019** commits de retard sur `dev` |
+| Commits | 1023 · `main` a **1020** commits de retard sur `dev` |
 | Specs d'US | 102 au total — 77 clôturées, 25 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -75,11 +75,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `0ec97e3` docs(run18): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `bff0be9` feat(meta19): garde-fou surentraînement — ACWR combiné (widget conditionnel Tier 2)
 - `7cc2990` docs(meta19): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `a9f15a6` docs(catalogue): corrige le statut de RUN-14/NUTR-16/MUSC-09 (analyses.md)
 - `5bb7e51` docs(backlog): retire MUSC-09 de la salve post-V0.9 (livrée)
-- `4a9c813` feat(musc09): record par plage de répétitions (roadmap 3.56)
 
 ---
 

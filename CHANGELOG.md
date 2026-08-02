@@ -10,6 +10,35 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/run18-acwr-running` — RUN-18 : charge d'entraînement & ACWR (running seul)
+
+Implémentation validée dans l'entrée précédente. Déclinaison running-seule de la brique ACWR posée
+par META-19, affichée en Tier 1 (écran de stats du pilier) plutôt qu'en widget dashboard.
+
+#### Ajouté
+
+- `packages/shared/src/training-time.ts` — `AcwrZone` (`'low' | 'safe' | 'risk'`) et extension
+  additive de `computeAcwr`/`AcwrResult` : nouveau champ `zone`, bornes inclusives côté zone saine
+  (0,8 et 1,3 comptent comme « saine »). `showAlert` (consommé par META-19) inchangé. 3 tests
+  ajoutés (zone par cas + les 2 bornes pile 0,8/1,3).
+- `apps/mobile/src/app/running-history/index.tsx` — nouvelle section `TrainingLoadSection`, sous
+  « Objectifs estimés » (RUN-14) : calcul inline à partir de `useRunHistory()` (aucun nouveau hook
+  de repository), fenêtres 7 j / 28 j via `useWindowStartKey`, délégation à `computeAcwr` sur les
+  seules courses. Affiche les 3 zones dans tous les cas (contrairement au widget dashboard de
+  META-19, qui reste conditionnel) ; absente si aucune course sur 28 jours (R5, convention
+  « absent, jamais zéro »). Ligne accessible unique (label + zone + ratio), pattern déjà utilisé par
+  `PredictionsSection` (`accessible` sur une `View` non-`Pressable`).
+- i18n `running.trainingLoad.*` (title/ratioLabel/zoneLow/zoneSafe/zoneRisk/empty), FR + EN. Parité
+  vérifiée (1640 clés de chaque côté).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1379 tests côté `packages/shared`, 50 suites / 269 tests côté `apps/mobile`).
+- Aucune migration, aucune sync rule PowerSync à redéployer (aucune nouvelle table, `runs` déjà
+  synchronisée).
+- Catalogue `analyses-donnees.md` mis à jour (RUN-18 🆕 → ✅), aucune ligne roadmap (US d'analyse).
+
 ### 02/08/2026 — `feature/run18-acwr-running` — RUN-18 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Déclinaison running-seule du garde-fou ACWR (META-19, livré juste avant). Aucun code, **aucune

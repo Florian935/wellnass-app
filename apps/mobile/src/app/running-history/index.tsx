@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  computeAcwr,
   formatDurationHms,
   formatPaceMMSS,
   localDayKey,
@@ -31,6 +32,7 @@ import {
   previousPeriodTodayKey,
   resolveRacePredictions,
   RUNNING_RECORD_DISTANCES,
+  type AcwrZone,
   type PaceTrendKind,
   type RecordDistanceKey,
   type StatPeriod,
@@ -53,6 +55,7 @@ import {
 } from '@/data/repositories/running-record-repository';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useUnits } from '@/hooks/useUnits';
+import { useWindowStartKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -71,6 +74,13 @@ const TREND_KEY: Record<PaceTrendKind, string> = {
   improving: 'running.history.trendImproving',
   declining: 'running.history.trendDeclining',
   stable: 'running.history.trendStable',
+};
+
+/** Clé i18n du libellé de zone ACWR (US RUN-18). */
+const ACWR_ZONE_KEY: Record<AcwrZone, string> = {
+  low: 'running.trainingLoad.zoneLow',
+  safe: 'running.trainingLoad.zoneSafe',
+  risk: 'running.trainingLoad.zoneRisk',
 };
 
 /** Clé i18n du libellé de distance pour chaque record canonique. */
@@ -155,6 +165,11 @@ export default function RunningHistoryScreen() {
             {t('running.predictions.title')}
           </Text>
           <PredictionsSection />
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+            {t('running.trainingLoad.title')}
+          </Text>
+          <TrainingLoadSection />
         </ScrollView>
       )}
     </Screen>
@@ -478,6 +493,72 @@ function PredictionsSection() {
           </View>
         );
       })}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Charge d'entraînement (US RUN-18) — ACWR running seul (7 j ÷ 28 j)
+// ---------------------------------------------------------------------------
+
+/**
+ * Réutilise `computeAcwr` (posé par META-19, `@wellness/shared`) sur les seules courses. Calcul
+ * inline, même patron que `PredictionsSection` : `useRunHistory()` est déjà chargée par l'écran,
+ * aucun nouveau hook de repository. Contrairement au widget dashboard de META-19 (conditionnel,
+ * replié `null` hors zone de risque), cette section affiche les **3 zones** — écran de stats
+ * consulté à la demande, pas une alerte (spec §1/R3).
+ */
+function TrainingLoadSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { runs } = useRunHistory();
+
+  const acuteStartKey = useWindowStartKey(7);
+  const chronicStartKey = useWindowStartKey(28);
+
+  const byWindow = (startKey: string) =>
+    runs
+      .filter((r) => r.finishedAt != null && localDayKey(new Date(r.finishedAt)) >= startKey)
+      .map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds }));
+
+  const result = computeAcwr({
+    acuteSessions: byWindow(acuteStartKey),
+    chronicSessions: byWindow(chronicStartKey),
+  });
+
+  if (!result) {
+    return (
+      <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+        {t('running.trainingLoad.empty')}
+      </Text>
+    );
+  }
+
+  const zoneToneColor =
+    result.zone === 'risk' ? colors.warnText : result.zone === 'low' ? colors.success : colors.textMuted;
+
+  return (
+    <View style={styles.list}>
+      <View
+        accessible
+        accessibilityLabel={`${t('running.trainingLoad.ratioLabel')} ${result.ratio.toFixed(2)}. ${t(ACWR_ZONE_KEY[result.zone])}`}
+        style={[
+          styles.predRow,
+          result.zone === 'risk'
+            ? { backgroundColor: colors.warn, borderColor: colors.warnBorder }
+            : { backgroundColor: colors.surface, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.predTop}>
+          <Text style={[styles.predDist, { color: colors.text }]}>
+            {t('running.trainingLoad.ratioLabel')}
+          </Text>
+          <Text style={[styles.predTime, { color: result.zone === 'risk' ? colors.warnText : colors.accent }]}>
+            {result.ratio.toFixed(2)}
+          </Text>
+        </View>
+        <Text style={[styles.predSrc, { color: zoneToneColor }]}>{t(ACWR_ZONE_KEY[result.zone])}</Text>
+      </View>
     </View>
   );
 }

@@ -3,7 +3,7 @@ id: RUN-18
 titre: "Charge d'entraînement & ACWR (running seul)"
 roadmap: []
 catalogue: [RUN-18]
-etape: validation
+etape: recette
 branche: feature/run18-acwr-running
 maj: 02/08/2026
 ---

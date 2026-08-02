@@ -69,6 +69,7 @@ describe('computeAcwr (US META-19)', () => {
     });
     expect(result?.ratio).toBeCloseTo(1, 5);
     expect(result?.showAlert).toBe(false);
+    expect(result?.zone).toBe('safe');
   });
 
   it('ratio > 1,3 → showAlert true (zone de risque, spec R4)', () => {
@@ -78,6 +79,7 @@ describe('computeAcwr (US META-19)', () => {
     });
     expect(result?.ratio).toBeGreaterThan(1.3);
     expect(result?.showAlert).toBe(true);
+    expect(result?.zone).toBe('risk');
   });
 
   it('ratio < 0,8 → showAlert false aussi (zone basse hors périmètre, spec R5)', () => {
@@ -86,6 +88,28 @@ describe('computeAcwr (US META-19)', () => {
       chronicSessions: [{ rpe: 10, durationSeconds: 16800 }], // charge 2800, /28 = 100
     });
     expect(result?.ratio).toBeLessThan(0.8);
+    expect(result?.showAlert).toBe(false);
+    expect(result?.zone).toBe('low');
+  });
+});
+
+describe('computeAcwr — zone (US RUN-18, bornes inclusives)', () => {
+  it('ratio pile 0,8 → zone saine (borne basse incluse)', () => {
+    const result = computeAcwr({
+      acuteSessions: [{ rpe: 10, durationSeconds: 3360 }], // charge 560, /7 = 80
+      chronicSessions: [{ rpe: 10, durationSeconds: 16800 }], // charge 2800, /28 = 100
+    });
+    expect(result?.ratio).toBeCloseTo(0.8, 5);
+    expect(result?.zone).toBe('safe');
+  });
+
+  it('ratio pile 1,3 → zone saine (borne haute incluse, pas encore risque)', () => {
+    const result = computeAcwr({
+      acuteSessions: [{ rpe: 10, durationSeconds: 5460 }], // charge 910, /7 = 130
+      chronicSessions: [{ rpe: 10, durationSeconds: 16800 }], // charge 2800, /28 = 100
+    });
+    expect(result?.ratio).toBeCloseTo(1.3, 5);
+    expect(result?.zone).toBe('safe');
     expect(result?.showAlert).toBe(false);
   });
 });
