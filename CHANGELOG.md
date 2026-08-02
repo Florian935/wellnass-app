@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf2c-blocs-fractionne` — RUN-F2c entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+3ᵉ des 4 candidats issus du découpage de RUN-F2 (roadmap 5.9) — la plus grosse des quatre. Aucun
+code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/runf2c-blocs-fractionne.md) — modèle de données par analogie
+  explicite avec `exercise_plans` : **une ligne = un bloc de répétitions**, exactement comme
+  `target_sets` est déjà un compteur sur une seule ligne côté musculation (« 6×400 m » = une seule
+  ligne `reps=6`, pas 6 lignes répétées). Nouvelle table `session_intervals` (reps, distance/durée
+  rapide, %VMA nullable, distance/durée récup entièrement optionnelle), étendue au type
+  `fractionne` uniquement, coexistant sans conflit avec la cible globale de séance déjà existante.
+  Seule fonction pure neuve : `paceAtVmaPercent` (packages/shared) — un pourcentage de VMA plus bas
+  donne une allure plus lente, vérifié par calcul en relecture (reproduit une valeur déjà connue de
+  `sessionTargetPace`).
+- [Plan](docs/plans/runf2c-blocs-fractionne.md) — 8 étapes : migration + schéma + **sync rules
+  (déploiement manuel dashboard, contrairement aux 3 US précédentes de la famille qui n'en avaient
+  pas besoin)** → fonction pure + Zod → repository mobile (CRUD + cascade suppression/duplication
+  de programme) → éditeur mobile → repository admin → éditeur admin (`SortableList`, déjà utilisé
+  pour les exercices) → affichage lecture seule (détail programme + planning) → i18n.
+- [Maquette](design/runf2c-blocs-fractionne/runf2c-blocs-fractionne.html) — l'affichage d'une
+  séance structurée vs. sans structure (comportement inchangé), l'édition d'un bloc, et le rappel
+  de l'analogie avec `exercise_plans`.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : aucune contradiction interne trouvée, 3 clarifications
+  mineures apportées (positivité de `reps` ≥ 1, affordance d'ajout de bloc explicitée côté admin
+  — pas seulement le réordonnancement —, et précision que la règle « exactement une cible » est
+  vérifiée côté application, pas par une contrainte SQL, cohérent avec `hasRunningSessionTarget`
+  déjà ainsi).
+- 2 risques réels trouvés en préparant le plan (pas dans la spec initiale) : les **sync rules** de
+  la nouvelle table doivent être déployées manuellement sur le dashboard PowerSync (leçon déjà
+  notée dans CLAUDE.md, oubliée une fois sur CYCLE-01) ; la **duplication de programme**
+  (`duplicateProgram`) doit explicitement copier `session_intervals`, sinon un programme fractionné
+  dupliqué perdrait silencieusement ses blocs.
+
 ### 02/08/2026 — `feature/runf2b-cible-en-direct` — RUN-F2b : cible en direct (roadmap 5.23 → ✅)
 
 Implémentation validée dans l'entrée précédente. 2ᵉ des 4 candidats issus du découpage de RUN-F2,

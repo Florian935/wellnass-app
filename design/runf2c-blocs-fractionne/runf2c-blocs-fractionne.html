@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-F2c — Blocs fractionné / intervalles</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:82ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:82ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .blockrow{background:var(--bg);border:1px solid var(--border);border-radius:12px;
+            padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .blockicon{width:34px;height:34px;border-radius:9px;background:rgba(177,79,43,.14);
+             display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;
+             color:var(--accent);flex-shrink:0}
+  .blocktext{flex:1;font-size:13.5px}
+  .blockmuted{color:var(--muted);font-size:12px;margin-top:2px}
+  .addbtn{background:var(--surfalt);border:1px dashed var(--bstrong);border-radius:12px;
+          padding:10px;text-align:center;color:var(--muted);font-size:13px;margin-top:4px}
+  .editrow{background:var(--surf);border:1px solid var(--border);border-radius:12px;
+           padding:12px 14px;margin-bottom:8px}
+  .editfields{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .editfield{background:var(--bg);border:1px solid var(--border);border-radius:8px;
+             padding:6px 10px;font-size:12px;color:var(--muted)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-F2c — Blocs fractionné / intervalles (roadmap 5.9)</h1>
+<p class="sub">3ᵉ des 4 candidats issus du découpage de RUN-F2 — la plus grosse des quatre.
+Reproduit le patron déjà établi côté musculation (<code>exercise_plans</code>) : <strong>une
+ligne = un bloc de répétitions</strong>, pas une ligne par répétition individuelle.</p>
+
+<h2>1 · Affichage lecture seule (détail programme / planning)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Séance « Fractionné » avec structure définie</div>
+    <div style="font-weight:700;margin-bottom:10px">Séance 3 — Fractionné</div>
+    <div class="blockrow">
+      <div class="blockicon">1×</div>
+      <div class="blocktext">1 km<div class="blockmuted">Échauffement, sans allure cible</div></div>
+    </div>
+    <div class="blockrow">
+      <div class="blockicon">6×</div>
+      <div class="blocktext">400 m à 95 % VMA<div class="blockmuted">Récup 200 m entre chaque</div></div>
+    </div>
+    <div class="blockrow">
+      <div class="blockicon">1×</div>
+      <div class="blocktext">1 km<div class="blockmuted">Retour au calme, sans allure cible</div></div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Séance « Fractionné » sans structure (comportement actuel, inchangé)</div>
+    <div style="font-weight:700;margin-bottom:10px">Séance 3 — Fractionné</div>
+    <div class="blockrow">
+      <div class="blocktext">Cible : 5 km<div class="blockmuted">Allure visée : 4:30 – 4:44 /km</div></div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 0">Aucun bloc défini → rien de
+    nouveau à l'écran, exactement le rendu d'aujourd'hui.</p>
+  </div>
+</div>
+
+<h2>2 · Édition mobile — ajouter/éditer un bloc</h2>
+<div class="screen" style="max-width:520px">
+  <div class="editrow">
+    <div style="font-weight:700;font-size:13px">Bloc — rapide + récup</div>
+    <div class="editfields">
+      <div class="editfield">Répétitions : 6</div>
+      <div class="editfield">Rapide : 400 m</div>
+      <div class="editfield">% VMA : 95</div>
+      <div class="editfield">Récup : 200 m</div>
+    </div>
+  </div>
+  <div class="addbtn">+ Ajouter un bloc</div>
+</div>
+<p style="font-size:12px;color:var(--muted);margin:10px 0 0">Édition en local, sauvegarde au
+blur — même patron que l'édition des exercices d'une séance muscu (<code>ExercisePlanEditor</code>).
+Pas de réordonnancement côté mobile (l'ordre d'ajout est l'ordre final, comme pour les exercices).</p>
+
+<h2>3 · Édition admin — réordonnancement</h2>
+<p class="why">Même composant <code>SortableList</code> (drag & drop) déjà utilisé pour les
+exercices d'une séance muscu, réutilisé tel quel pour les blocs.</p>
+
+<div class="note">
+  <strong>Pourquoi une seule ligne par bloc, pas 6 lignes pour « 6×400 m »</strong> : le projet a
+  déjà exactement ce besoin côté musculation — <code>exercise_plans.target_sets</code> est un
+  simple compteur sur une seule ligne (« 3 séries de 10 » = 1 ligne, jamais 3 lignes répétées).
+  RUN-F2c reproduit ce même principe pour le fractionné plutôt que d'inventer un format différent.
+</div>
+
+<h2>Les règles qui gouvernent le modèle</h2>
+<div class="rules">
+  <div class="rule"><b>R2 — Phase rapide : distance OU durée, jamais les deux</b>
+    Même règle que la cible globale d'une séance (<code>hasRunningSessionTarget</code>), appliquée
+    par bloc.</div>
+  <div class="rule"><b>R3 — Récupération entièrement optionnelle</b>
+    Un bloc sans récup (échauffement, retour au calme) est valide — les deux champs restent
+    absents, jamais une valeur à zéro.</div>
+  <div class="rule"><b>R4 — % VMA nullable, jamais inventé</b>
+    Un échauffement n'a pas de cible d'allure précise — l'absence est un vrai état.</div>
+  <div class="rule"><b>R5 — Changer de type ne supprime pas les blocs</b>
+    Ils redeviennent juste invisibles tant que le type reste différent de « fractionné ».</div>
+</div>
+
+</div></body></html>
