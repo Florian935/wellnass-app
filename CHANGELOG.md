@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `docs/catalogue-statuts-run14-nutr16-musc09` — Correction : statut catalogue de RUN-14/NUTR-16/MUSC-09
+
+Constat en cherchant un numéro roadmap pour META-19 : `docs/roadmap/roadmap.md` documente
+explicitement que les **US d'analyse** (catalogue) ne reçoivent **jamais** de ligne roadmap — leur
+statut vit uniquement dans [analyses-donnees.md](docs/product/analyses-donnees.md), pour ne pas
+dupliquer un backlog dans l'autre. RUN-14, NUTR-16 et MUSC-09 sont des US d'analyse et ont pourtant
+reçu une ligne (5.34/4.38/3.56) — la règle a été retrouvée *après coup*.
+
+#### Corrigé
+
+- [analyses-donnees.md](docs/product/analyses-donnees.md) — statut de RUN-14, NUTR-16, MUSC-09
+  passé 🆕 → ✅ avec une note de ce qui est livré (jusqu'ici toujours affiché 🆕, activement
+  trompeur pour quiconque consulte ce fichier comme source de vérité).
+- [roadmap.md](docs/roadmap/roadmap.md) — note ajoutée sous l'exclusion des US d'analyse,
+  documentant l'exception constatée. Les 3 lignes roadmap (5.34/4.38/3.56) **ne sont pas retirées** :
+  les défaire aurait exigé de désosser plusieurs commits de récapitulatif déjà poussés, un risque
+  plus élevé que la duplication elle-même une fois documentée.
+
+#### Technique / Notes
+
+- **META-19 et toute US d'analyse suivante suivront la règle correctement** : catalogue seul,
+  aucune nouvelle ligne roadmap.
+
 ### 02/08/2026 — `feature/musc09-record-plage-reps` — MUSC-09 : record par plage de reps livré (3.56, en recette)
 
 Commit précédent : `2215558`. Validation reçue (« ok go ») sur les 3 livrables — code implémenté

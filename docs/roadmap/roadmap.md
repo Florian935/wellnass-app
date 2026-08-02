@@ -407,6 +407,13 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 >   vérité, pour ne pas dupliquer un backlog dans l'autre ;
 > - les **corrections de bugs** cadrées en US (`fix-*`) — elles vivent dans le
 >   [CHANGELOG](../../CHANGELOG.md), pas dans un plan de versions.
+>
+> ⚠️ **Exception constatée le 02/08/2026** : RUN-14 (5.34), NUTR-16 (4.38) et MUSC-09 (3.56) sont
+> des **US d'analyse** du catalogue mais ont reçu une ligne roadmap — la règle ci-dessus a été
+> retrouvée *après coup*, en cherchant un numéro pour META-19. Retirer ces 3 lignes aurait exigé de
+> défaire plusieurs commits de récapitulatif déjà poussés ; laissées telles quelles, dupliquées avec
+> leur entrée (désormais ✅) dans le catalogue. **META-19 et toute US d'analyse suivante suivent la
+> règle correctement : catalogue seul, aucune ligne ici.**
 
 ---
 

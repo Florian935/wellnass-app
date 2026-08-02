@@ -61,8 +61,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/musc09-record-plage-reps` (modifications non commitées) |
-| Commits | 1017 · `main` a **1014** commits de retard sur `dev` |
+| Branche courante | `docs/catalogue-statuts-run14-nutr16-musc09` (modifications non commitées) |
+| Commits | 1019 · `main` a **1016** commits de retard sur `dev` |
 | Specs d'US | 100 au total — 77 clôturées, 23 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -73,11 +73,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5bb7e51` docs(backlog): retire MUSC-09 de la salve post-V0.9 (livrée)
+- `4a9c813` feat(musc09): record par plage de répétitions (roadmap 3.56)
 - `2215558` docs(musc09): entrée en pipeline — spec, plan, maquette (roadmap 3.56)
 - `a811e84` docs(backlog): retire NUTR-16 de la salve post-V0.9 (livrée)
 - `58ca914` feat(nutr16): répartition calorique par repas (roadmap 4.38)
-- `68781e9` docs(nutr16): entrée en pipeline — spec, plan, maquette (roadmap 4.38)
-- `7446f23` docs(backlog): retire RUN-14 de la salve post-V0.9 (livrée)
 
 ---
 
