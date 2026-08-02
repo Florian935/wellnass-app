@@ -168,15 +168,20 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 Passe adb sur 41 écrans (37 routes + 4 onglets), en 3 campagnes : nominal, police 1,5×, mode avion.
 Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md).
 
-- [ ] 🟠 **`run/active` sans course active : écran vide avec un bouton « Retour » seul**, sans aucun
-      message. C'est le seul écran de l'app à violer la convention « jamais d'écran vide : un message
-      qui explique » — les 40 autres ont un état vide rédigé.
-- [ ] 🟢 **`planning/plan` sans programme valide est un cul-de-sac** : « Ce programme n'existe pas ou
-      a été supprimé. » sans bouton retour ni CTA.
-- [ ] 🟢 **Champs de saisie sans libellé d'accessibilité.** 8 sur
-      [food-custom](apps/mobile/src/app/food-custom.tsx), 1 sur profile, recipe-edit et
-      account-delete : cliquables, sans `text` ni `content-desc`, ils s'appuient sur le libellé
-      visuel adjacent. À reprendre avec CONF-07.
+- [x] ~~🟠 **`run/active` sans course active : écran vide avec un bouton « Retour » seul**~~ —
+      **déjà corrigé** (`936ec81`, constaté en relisant le code le 02/08/2026) : un message
+      (`running.active.ended`) précède désormais le bouton « Retour ». Entrée restée stale ici.
+- [x] ~~🟢 **`planning/plan` sans programme valide est un cul-de-sac**~~ — **déjà corrigé**
+      (`936ec81`, même constat). Entrée restée stale ici.
+- [x] ~~🟢 **Champs de saisie sans libellé d'accessibilité.**~~ — **corrigé le 02/08/2026**
+      (`fix/dette-technique-ecrans-a11y-seed`) : les chips catégorie de
+      [food-custom](apps/mobile/src/app/food-custom.tsx) (`accessibilityRole`/`Label`/`State`),
+      [Segment.tsx](apps/mobile/src/components/Segment.tsx) (`accessibilityLabel` — corrige
+      profile **et** tous ses autres usages : thème, unités, objectif…), le bouton « Ajouter un
+      ingrédient » de recipe-edit, et **`Button.tsx`** dont l'`accessibilityLabel` ne retombait pas
+      sur `label` par défaut — corrige account-delete et, par construction, tout bouton de l'app
+      sans override explicite (surtout utile pendant `loading`, quand le texte visible disparaît
+      derrière le spinner).
 - [ ] 🟠 **Décision produit — le widget planning du hub Muscu annonce une séance de course.**
       Constaté : « Prochaine : Fractionné (VMA) » sous l'en-tête *Musculation*, à côté de « Aucun
       programme actif ». Ce n'est **pas un bug de filtre** : les requêtes de
@@ -185,10 +190,14 @@ Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md
       `PlanningPreview` sans filtre. **À trancher** : est-ce le comportement voulu, ou le widget d'un
       pilier doit-il se limiter à son pilier ?
 
-- [ ] **`supabase/seed.sql` est inatteignable** — il n'est joué que par `db:reset`, qui exige Docker
-      (que personne n'a). Les 16 exercices de bibliothèque sont donc arrivés sur le cloud par un
-      chemin non tracé. → Les basculer en **migration idempotente** (comme le seed CIQUAL), ou
-      documenter explicitement que `seed.sql` ne sert qu'au futur usage Docker.
+- [x] ~~**`supabase/seed.sql` est inatteignable**~~ — **corrigé le 02/08/2026**. Les 16 exercices +
+      le programme placeholder « Full Body Débutant » (US1/US2 du seed) basculés en migration
+      idempotente (`20260802055147_debt_seed_exercices_programme_placeholder.sql`, patron CIQUAL),
+      `seed.sql` réduit à un pointeur. ⚠️ 1ʳᵉ tentative en échec : les traductions déjà en base
+      portaient des `id` différents des UUID déterministes du seed mais le même
+      `(exercise_id, lang)` — conflit sur la mauvaise colonne cible, corrigé en
+      `on conflict (exercise_id, lang)`. Transaction annulée proprement par le CLI, aucune ligne
+      partielle.
 - [ ] **`main` n'a pas bougé depuis le 04/07/2026** (972 commits de retard sur `dev` au 30/07/2026). Aucun tag,
       aucun point de repère de version. → À traiter au moment de LANCE-01.
 - [x] ~~**2 tests mobile en échec par timeout** (`edit-exercise-modal-smoke`, `exercise-detail-smoke`)~~

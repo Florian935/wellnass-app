@@ -101,7 +101,12 @@ export default function RecipeEditScreen() {
             <Text style={[styles.ingKcal, { color: colors.textMuted }]}>{ing.kcal} {t('nutrition.kcal')}</Text>
           </Pressable>
         ))}
-        <Pressable style={styles.addRow} onPress={() => router.push({ pathname: '/food-picker', params: { mode: 'recipe', recipeId: id } })}>
+        <Pressable
+          style={styles.addRow}
+          onPress={() => router.push({ pathname: '/food-picker', params: { mode: 'recipe', recipeId: id } })}
+          accessibilityRole="button"
+          accessibilityLabel={t('recipes.addIngredient')}
+        >
           <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
           <Text style={[styles.addLabel, { color: colors.accent }]}>{t('recipes.addIngredient')}</Text>
         </Pressable>

@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `fix/dette-technique-ecrans-a11y-seed` — Dette technique : 3 items déjà corrigés reconciliés, a11y + seed.sql traités
+
+Pendant que les 20 US en recette attendent la vérification device de Florian/Damien : passe sur
+la liste « 🧹 Dette & suivi technique » du BACKLOG. Deux constats en relisant le code avant de
+corriger (Étape 0 du plan, comme d'habitude) : 2 des 4 items étaient **déjà corrigés** par un
+commit antérieur (`936ec81`, 30/07/2026) sans que le BACKLOG ne soit mis à jour — reconciliés
+plutôt que retravaillés.
+
+#### Corrigé
+
+- [food-custom.tsx](apps/mobile/src/app/food-custom.tsx) — les 9 chips de catégorie (`FOOD_CATEGORIES.map`)
+  gagnent `accessibilityRole="button"`, `accessibilityLabel` et `accessibilityState={{selected}}` :
+  seul le libellé visuel adjacent portait l'information jusqu'ici.
+- [Segment.tsx](apps/mobile/src/components/Segment.tsx) — `accessibilityLabel` ajouté sur chaque
+  option. Composant partagé (sexe, objectif, thème, unités, intensité…) : corrige d'un coup le
+  point relevé sur `profile.tsx` **et** tous ses autres usages dans l'app.
+- [recipe-edit.tsx](apps/mobile/src/app/recipe-edit.tsx) — bouton « Ajouter un ingrédient » gagne
+  `accessibilityRole`/`Label`.
+- [Button.tsx](apps/mobile/src/components/Button.tsx) — **`accessibilityLabel` retombe désormais sur
+  `label` par défaut** (`accessibilityLabel ?? label`) au lieu de rester `undefined` sans override
+  explicite. C'était la vraie cause du point relevé sur `account-delete.tsx` : sans ce défaut, un
+  bouton en `loading` (texte visible remplacé par le spinner) n'a **aucun** nom accessible. Corrige
+  ce composant partout où il est utilisé sans `accessibilityLabel` explicite, pas seulement là.
+- `supabase/seed.sql` → **migration idempotente**
+  ([20260802055147_debt_seed_exercices_programme_placeholder.sql](supabase/migrations/20260802055147_debt_seed_exercices_programme_placeholder.sql)),
+  même patron que le seed CIQUAL : les 16 exercices de bibliothèque + le programme placeholder
+  « Full Body Débutant » (US1/US2 du seed) étaient déjà sur le cloud par un chemin non tracé
+  (`seed.sql` n'est joué que par `db:reset`, qui exige Docker — absent chez les deux devs).
+  `seed.sql` réduit à un pointeur vers la migration.
+
+#### Technique / Notes
+
+- ⚠️ **1ʳᵉ tentative de migration en échec** : `on conflict (id) do nothing` sur
+  `exercise_translations` n'a pas suffi — les lignes déjà en base portent des `id` différents des
+  UUID déterministes du seed, mais le même `(exercise_id, lang)` (contrainte unique réelle).
+  Conflit levé sur la mauvaise colonne cible. Corrigé en `on conflict (exercise_id, lang)`.
+  **Transaction annulée proprement par le CLI** (une erreur = rollback de cette migration, comme
+  documenté dans CLAUDE.md) — aucune ligne partielle, aucune donnée dupliquée. Poussée avec succès
+  à la 2ᵉ tentative.
+- Reconciliation BACKLOG : `run/active` (état vide sans course) et `planning/plan` (cul-de-sac sur
+  programme invalide) étaient déjà corrigés par `936ec81` — entrées cochées, pas retravaillées.
+  Le point ouvert « widget planning cross-pilier » (décision produit) reste en l'état, non tranché.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/265 tests + shared
+  Vitest 67 fichiers/1347 tests) — lus sans pipe, tous verts, aucune régression.
+- Aucune ligne roadmap (dette hors US, pas de numéro thématique).
+
 ### 02/08/2026 — `feature/muscf1b-schema-muscles` — MUSC-F1b : schéma corporel, anatomie fine (6.2 livrée)
 
 Commit précédent : `a293ba8`. Dernière des 4 US validées ce lot (« Oui, go ») — la plus grosse,

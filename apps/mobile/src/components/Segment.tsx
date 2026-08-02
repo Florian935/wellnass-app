@@ -32,6 +32,7 @@ export function Segment<T extends string>({
       <Pressable
         key={option}
         accessibilityRole="button"
+        accessibilityLabel={label(option)}
         accessibilityState={{ selected }}
         onPress={() => onChange(option)}
         style={[

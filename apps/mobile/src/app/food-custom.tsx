@@ -146,6 +146,9 @@ export default function FoodCustomScreen() {
             <Pressable
               key={c}
               onPress={() => setCategory(c)}
+              accessibilityRole="button"
+              accessibilityLabel={t(`food.categories.${c}`)}
+              accessibilityState={{ selected: active }}
               style={[
                 styles.chip,
                 { backgroundColor: active ? colors.accent : colors.surface, borderColor: active ? colors.accent : colors.border },
