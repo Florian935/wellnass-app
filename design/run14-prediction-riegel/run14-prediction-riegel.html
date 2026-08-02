@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-14 — Prédiction de temps de course (Riegel)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:76ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:76ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .sectiontitle{font-size:14px;font-weight:700;margin:0 0 8px}
+  .recrow{display:flex;align-items:center;justify-content:space-between;gap:8px;
+          background:var(--bg);border:1px solid var(--border);border-radius:11px;
+          padding:9px 12px;margin-bottom:7px;font-size:13.5px}
+  .recrow .d{color:var(--muted);font-size:12px}
+  .recrow .t{font-weight:700;font-family:ui-monospace,Menlo,monospace}
+  .predsection{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+  .predrow{background:var(--surfalt);border:1px solid var(--border);border-radius:12px;
+           padding:11px 13px;margin-bottom:9px}
+  .predrow .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .predrow .dist{font-weight:700;font-size:14px}
+  .predrow .time{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:16px;color:var(--accent)}
+  .predrow .src{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .predrow.warn{background:var(--warn);border-color:var(--warnborder)}
+  .predrow.warn .warntxt{font-size:11.5px;color:var(--warntext);margin-top:5px;line-height:1.4}
+  .emptybox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+            padding:16px;text-align:center;color:var(--muted);font-size:13.5px;margin-top:14px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:84ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:860px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-14 — Prédiction de temps de course (formule de Riegel)</h1>
+<p class="sub">Nouveau bloc « Objectifs estimés », affiché <strong>sous les records existants</strong>
+sur l'écran historique de course — même écran, aucune nouvelle route. Formule pure
+(<code>T2 = T1×(D2/D1)^1,06</code>) depuis le record des <strong>5 km</strong>, source unique
+(spec R1). Aucune migration, aucune donnée nouvelle.</p>
+
+<h2>Les 3 états à valider</h2>
+<p class="why">Le même écran, selon ce que le coureur a déjà couru — c'est la mécanique de R1/R3 qui
+décide de ce qui s'affiche, pas un choix de design.</p>
+
+<div class="row">
+
+  <div class="screen">
+    <div class="screenlabel">1 · Seulement un record 5 km</div>
+    <div class="sectiontitle">Records d'allure</div>
+    <div class="recrow"><span>5 km</span><span class="t">24:10</span></div>
+    <div class="recrow"><span>10 km</span><span class="d">—</span></div>
+    <div class="recrow"><span>Semi</span><span class="d">—</span></div>
+    <div class="recrow"><span>Marathon</span><span class="d">—</span></div>
+
+    <div class="predsection">
+      <div class="sectiontitle">Objectifs estimés</div>
+      <div class="predrow">
+        <div class="top"><span class="dist">10 km</span><span class="time">50:24</span></div>
+        <div class="src">D'après ton 5 km du 28/07 en 24:10</div>
+      </div>
+      <div class="predrow">
+        <div class="top"><span class="dist">Semi</span><span class="time">1:51:40</span></div>
+        <div class="src">D'après ton 5 km du 28/07 en 24:10</div>
+      </div>
+      <div class="predrow warn">
+        <div class="top"><span class="dist">Marathon</span><span class="time">3:53:12</span></div>
+        <div class="src">D'après ton 5 km du 28/07 en 24:10</div>
+        <div class="warntxt">⚠️ Estimation à prendre avec prudence : le marathon demande une
+        préparation spécifique que cette projection ne mesure pas.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">2 · Record 5 km + record semi réel (R3)</div>
+    <div class="sectiontitle">Records d'allure</div>
+    <div class="recrow"><span>5 km</span><span class="t">24:10</span></div>
+    <div class="recrow"><span>10 km</span><span class="d">—</span></div>
+    <div class="recrow"><span>Semi</span><span class="t">1:48:02</span></div>
+    <div class="recrow"><span>Marathon</span><span class="d">—</span></div>
+
+    <div class="predsection">
+      <div class="sectiontitle">Objectifs estimés</div>
+      <div class="predrow">
+        <div class="top"><span class="dist">10 km</span><span class="time">50:24</span></div>
+        <div class="src">D'après ton 5 km du 28/07 en 24:10</div>
+      </div>
+      <div class="predrow warn">
+        <div class="top"><span class="dist">Marathon</span><span class="time">3:53:12</span></div>
+        <div class="src">D'après ton 5 km du 28/07 en 24:10</div>
+        <div class="warntxt">⚠️ Estimation à prendre avec prudence : le marathon demande une
+        préparation spécifique que cette projection ne mesure pas.</div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Pas de ligne « Semi » : le
+      coureur a déjà un <strong>vrai</strong> record sur cette distance (1:48:02, ci-dessus) — une
+      estimation à côté aurait été trompeuse.</p>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">3 · Aucun record 5 km (R1)</div>
+    <div class="sectiontitle">Records d'allure</div>
+    <div class="recrow"><span>1 km</span><span class="t">4:32</span></div>
+    <div class="recrow"><span>5 km</span><span class="d">—</span></div>
+    <div class="recrow"><span>10 km</span><span class="d">—</span></div>
+    <div class="recrow"><span>Semi</span><span class="d">—</span></div>
+    <div class="recrow"><span>Marathon</span><span class="d">—</span></div>
+
+    <div class="predsection">
+      <div class="sectiontitle">Objectifs estimés</div>
+      <div class="emptybox">Cours au moins 5 km sans interruption pour voir tes objectifs
+      estimés.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Pourquoi le 5 km et pas « le record le plus rapide »</strong> : c'est déjà la distance de
+  référence de l'app — <code>ref5kPaceSPerKm</code> du profil coureur se met à jour automatiquement
+  à chaque record battu (roadmap 5.31), et la VMA dérivée en dépend aussi
+  (<code>running-paces.ts</code>). Réutiliser cette convention évite d'inventer une deuxième notion
+  de « record de référence » à côté de celle qui existe déjà.
+</div>
+
+<h2>Les 4 règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Source fixe : le 5 km, jamais un autre</b>
+    Pas de record 5 km → aucune prédiction, état vide explicite (écran 3).</div>
+  <div class="rule"><b>R3 — Un record réel bat toujours une estimation</b>
+    Si la distance cible a déjà un vrai record, sa ligne « estimée » ne s'affiche pas (écran 2).</div>
+  <div class="rule"><b>R4 — La source est toujours visible</b>
+    Chaque ligne porte sa phrase « D'après ton 5 km du … » — jamais un chiffre seul.</div>
+  <div class="rule"><b>R5 — Le marathon porte un avertissement dédié</b>
+    Ratio d'extrapolation ≈ 8,4× — texte explicite dans le bloc, pas un astérisque discret.</div>
+</div>
+
+</div></body></html>

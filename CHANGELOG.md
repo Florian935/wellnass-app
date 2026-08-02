@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/run14-prediction-riegel` — RUN-14 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/run14-prediction-riegel.md) — prédiction de temps de course
+  (formule de Riegel, `T2 = T1×(D2/D1)^1,06`) depuis le record des **5 km** (source fixe, R1 —
+  réutilise la convention déjà établie par `ref5kPaceSPerKm`/VMA, pas une nouvelle notion de
+  référence). Règle centrale : **R3** — si un vrai record existe déjà pour une distance cible
+  (10 km/semi/marathon), sa prédiction ne s'affiche pas, la vraie donnée prime toujours sur une
+  estimation. **R5** — avertissement dédié sur le marathon (ratio d'extrapolation ≈8,4×, hors de la
+  zone où Riegel reste fiable).
+- [Plan](docs/plans/run14-prediction-riegel.md) — 3 étapes : `predictRaceTime` +
+  `resolveRacePredictions` (packages/shared, purs, testés d'abord) → nouvelle section
+  « Objectifs estimés » sous les records existants (`running-history/index.tsx`, aucune nouvelle
+  route) → solde. **Aucune migration, aucune dépendance native** : donnée déjà en base
+  (`running_pace_records`), calcul pur.
+- [Maquette](design/run14-prediction-riegel/run14-prediction-riegel.html) — 3 états à valider :
+  record 5 km seul (3 prédictions) · 5 km + record semi réel (R3 masque la ligne semi) · aucun
+  record 5 km (état vide).
+
+#### Technique / Notes
+
+- Roadmap : **5.34 créée** (V0.5 — Running), candidat né après le cadrage, aucun numéro existant à
+  réutiliser. `etape: validation` — en attente de Florian/Damien sur les 3 livrables avant tout code.
+- Aucun test, aucune ligne applicative modifiée (US bloquée avant l'étape 5 du workflow, CLAUDE.md).
+
 ### 02/08/2026 — `fix/dette-analytics-tests-cycle` — Dette analytics (US 9.10) : dépendance circulaire détricotée + tests de gating
 
 Commit précédent : `a311fa7`. Dernier item repris de la liste « Dette & suivi technique ».
