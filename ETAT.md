@@ -44,6 +44,7 @@ avant de pouvoir publier.
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **RUN-F2a** — Annonces audio périodiques | `validation` | `feature/runf2a-annonces-audio` | [5.19] |
 
 ⏳ **28 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
@@ -52,9 +53,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (2) · P2 confort (1)</summary>
+<details><summary>P1 finitions (4) · P2 confort (1)</summary>
 
-**P1** — RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course
+**P1** — RUN-F2b — Prolonger ou raccourcir · RUN-F2c — Blocs fractionné/intervalles · RUN-F2d — Guidage fractionné vocal · RUN-F3b — Météo de course
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -66,9 +67,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf1b-denivele-cumule` (modifications non commitées) |
-| Commits | 1030 · `main` a **1027** commits de retard sur `dev` |
-| Specs d'US | 105 au total — 77 clôturées, 28 en cours |
+| Branche courante | `feature/runf2a-annonces-audio` (modifications non commitées) |
+| Commits | 1031 · `main` a **1028** commits de retard sur `dev` |
+| Specs d'US | 106 au total — 77 clôturées, 29 en cours |
 | Migrations | 66/66 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -78,11 +79,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `f99d6bf` feat(runf1b): dénivelé cumulé — blocage codec levé (roadmap 5.32)
 - `48da50d` docs(runf1b): blocage levé, entrée en pipeline — spec, plan, maquette (roadmap 5.32)
 - `9aa7307` feat(muscf15): progression au niveau du programme (roadmap 3.7)
 - `fac9bde` docs(muscf15): entrée en pipeline — spec, plan, maquette (roadmap 3.7)
 - `8b97e7a` feat(tri12): détection de surcharge / sous-récupération globale (garde-fou tri-pilier)
-- `3137b3b` docs(tri12): entrée en pipeline — spec, plan, maquette (catalogue seul)
 
 ---
 

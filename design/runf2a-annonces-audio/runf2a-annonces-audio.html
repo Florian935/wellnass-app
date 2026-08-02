@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-F2a — Annonces audio périodiques</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:20px;
+         text-align:center}
+  .distval{font-size:44px;font-weight:800;letter-spacing:-1px}
+  .distunit{font-size:14px;color:var(--muted);margin-bottom:10px}
+  .bubble{background:rgba(177,79,43,.12);border:1px solid var(--accent);border-radius:14px;
+          padding:12px 14px;margin-top:14px;font-size:13.5px;display:flex;gap:8px;align-items:flex-start}
+  .bubble .icon{font-size:18px}
+  .settingrow{display:flex;align-items:center;justify-content:space-between;
+              background:var(--bg);border:1px solid var(--border);border-radius:12px;
+              padding:12px 14px;margin-bottom:10px}
+  .switch{width:44px;height:24px;border-radius:12px;background:var(--accent);position:relative}
+  .switch .knob{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:10px;
+                background:#fff}
+  .switch.off{background:var(--border)}
+  .switch.off .knob{left:2px;right:auto}
+  .segrow{display:flex;gap:6px;margin-top:8px}
+  .seg{flex:1;text-align:center;padding:6px 8px;border-radius:8px;font-size:12.5px;
+       background:var(--surf);border:1px solid var(--border);color:var(--muted)}
+  .seg.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-F2a — Annonces audio périodiques (roadmap 5.19)</h1>
+<p class="sub">1 des 4 candidats issus du découpage de RUN-F2 — le plus petit et le plus autonome.
+Introduit <code>expo-speech</code> (nouveau dev build requis). Tout le calcul (distance, temps,
+allure) existe déjà dans <code>run/active.tsx</code> ; il ne manque que le déclenchement vocal.</p>
+
+<h2>1 · L'écran de suivi, avec une annonce en cours</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">3 km franchis, annonce activée</div>
+    <div class="phone">
+      <div class="distval">3.02</div>
+      <div class="distunit">km</div>
+      <div class="bubble">
+        <span class="icon">🔊</span>
+        <span>« 3 kilomètres, 18 minutes, allure 5 minutes 30 au kilomètre. »</span>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Réglage désactivé (défaut) — aucun changement visuel</div>
+    <div class="phone">
+      <div class="distval">3.02</div>
+      <div class="distunit">km</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 0">Rien à l'écran ne change quand le
+    réglage est désactivé — l'affichage visuel existant (distance/temps/allure) reste identique dans
+    les deux cas.</p>
+  </div>
+</div>
+
+<h2>2 · Le réglage (écran profil coureur)</h2>
+<div class="screen" style="max-width:480px">
+  <div class="settingrow">
+    <span>Annonces vocales</span>
+    <div class="switch"><div class="knob"></div></div>
+  </div>
+  <div style="padding:0 4px">
+    <span style="font-size:12.5px;color:var(--muted)">Fréquence</span>
+    <div class="segrow">
+      <div class="seg">500 m</div>
+      <div class="seg active">1 km</div>
+      <div class="seg">2 km</div>
+    </div>
+  </div>
+</div>
+<div class="note" style="margin-top:14px">
+  <strong>Désactivé par défaut</strong> — une annonce vocale peut interrompre une musique ou un
+  podcast en cours ; mieux vaut un choix explicite qu'une surprise à la première course après mise
+  à jour (même logique prudente que le suivi de cycle, CYCLE-01, pour un comportement nouveau et
+  intrusif).
+</div>
+
+<h2>3 · Limite assumée — pas seulement l'écran verrouillé</h2>
+<div class="note" style="margin-top:0">
+  Les annonces ne se déclenchent que si l'écran de suivi est monté. Deux façons de le démonter
+  pendant une course, toutes deux déjà présentes dans l'app :
+  <br>• <strong>Écran verrouillé / app en arrière-plan</strong> (cas rare) ;
+  <br>• <strong>Changer d'onglet</strong> (ex. consulter Nutrition) puis revenir via la carte
+  « Reprendre » du hub course — <strong>cas fréquent</strong>, le tracker continue en tâche de fond
+  mais aucune annonce ne se déclenche tant qu'on n'est pas revenu sur l'écran. Au retour, aucune
+  rafale des seuils déjà franchis pendant l'absence (le compteur repart de la distance courante,
+  pas de zéro).
+</div>
+
+<h2>Les règles qui gouvernent l'annonce</h2>
+<div class="rules">
+  <div class="rule"><b>R2 — Jamais deux fois le même seuil</b>
+    Compteur initialisé depuis la distance courante au montage, pas depuis 0 — sinon rouvrir
+    l'écran via « Reprendre » redéclencherait tous les seuils déjà passés.</div>
+  <div class="rule"><b>R3 — Pluriels i18next corrects</b>
+    « 1 kilomètre » / « 3 kilomètres », jamais une concaténation manuelle qui dirait
+    « 1 kilomètres ».</div>
+  <div class="rule"><b>R3 bis — Mètres sous 1 km, kilomètres entiers sinon</b>
+    Un seuil de 500 m ou 1500 m s'annonce en mètres — jamais une décimale lue à voix haute
+    (« 1,5 kilomètre »).</div>
+  <div class="rule"><b>R4 — GPS uniquement</b>
+    Une course manuelle n'a pas de distance qui progresse en direct — aucune annonce possible.</div>
+</div>
+
+</div></body></html>

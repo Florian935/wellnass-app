@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf2a-annonces-audio` — RUN-F2 scindée en 4 + RUN-F2a entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+RUN-F2 (« Séances guidées vocales ») regroupait 4 items de roadmap hétérogènes (5.19, 5.23, 5.9,
+5.18) — trop inégaux en taille/dépendances pour un seul incrément. Scindée en 4 candidats
+(RUN-F2a/b/c/d, BACKLOG.md), ordre logique 5.19 → 5.23 → 5.9 → 5.18. Cette entrée cadre uniquement
+RUN-F2a. Aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/runf2a-annonces-audio.md) — annonces vocales périodiques
+  (distance/temps/allure) pendant une course GPS, via `expo-speech` (nouvelle dépendance native,
+  nouveau dev build requis). Déclenchées depuis `run/active.tsx` (premier plan), pas depuis la
+  tâche de fond — décision explicite pour ne pas toucher au fichier le plus sensible du projet
+  juste après RUN-F1b. Limite assumée et documentée : aucune annonce si l'écran de suivi n'est pas
+  monté, y compris le cas **fréquent** (pas seulement le verrouillage) de changer d'onglet pendant
+  la course puis revenir via « Reprendre ». Réglage opt-in (désactivé par défaut) sur
+  `running_profiles`, premier réglage de comportement de course jamais exposé à l'utilisateur
+  (`autoPause` est câblé en dur aujourd'hui).
+- [Plan](docs/plans/runf2a-annonces-audio.md) — dépendance native → fonction pure
+  `nextAnnouncementThreshold` (testée d'abord) → réglage `running_profiles` (migration + éditeur) →
+  composition i18n de la phrase → hook + câblage dans `active.tsx`.
+- [Maquette](design/runf2a-annonces-audio/runf2a-annonces-audio.html) — l'écran de suivi avec/sans
+  annonce, le réglage (switch + fréquence), et la limite du changement d'onglet illustrée.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 4 corrections apportées avant validation — le scénario
+  de remontage de l'écran (R2) était présenté comme hypothétique alors que la carte « Reprendre »
+  du hub course le rend systématique ; la limite §1 ne couvrait que l'écran verrouillé, pas le cas
+  bien plus fréquent du changement d'onglet (tracker de fond actif, écran démonté) ; R3 violait la
+  règle de pluralisation i18next du projet (`docs/specs/technical/i18n.md`) ; le cas des seuils à
+  500 m (demi-kilomètres) n'était pas traité (résolu en R3 bis : mètres sous 1 km).
+- Aucune migration de données rétroactive nécessaire (2 colonnes à défaut sur `running_profiles`).
+
 ### 02/08/2026 — `feature/runf1b-denivele-cumule` — RUN-F1b : dénivelé cumulé, blocage codec levé (roadmap 5.32 → ✅)
 
 Implémentation validée dans l'entrée précédente. Candidat marqué ⛔ bloqué (« il faut étendre le
