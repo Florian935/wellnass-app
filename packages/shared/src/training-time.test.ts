@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { computeAcwr, computeTrainingTime, formatHoursMinutes, sessionLoad } from './training-time';
+import {
+  computeAcwr,
+  computeOvertrainingGuard,
+  computeTrainingTime,
+  countDeficitDaysInWindow,
+  formatHoursMinutes,
+  sessionLoad,
+} from './training-time';
 
 describe('computeTrainingTime', () => {
   it('somme muscu + course', () => {
@@ -111,5 +118,62 @@ describe('computeAcwr — zone (US RUN-18, bornes inclusives)', () => {
     expect(result?.ratio).toBeCloseTo(1.3, 5);
     expect(result?.zone).toBe('safe');
     expect(result?.showAlert).toBe(false);
+  });
+});
+
+describe('countDeficitDaysInWindow (US TRI-12)', () => {
+  it('4 jours en déficit sur une liste de 7 → 4', () => {
+    const days = [
+      { kcal: 1500 }, // (2000-1500)/2000 = 25 % → déficit
+      { kcal: 1600 }, // 20 % → déficit
+      { kcal: 1700 }, // 15 % → pile le seuil, déficit
+      { kcal: 1900 }, // 5 % → pas déficit
+      { kcal: 2000 }, // 0 % → pas déficit
+      { kcal: 1000 }, // 50 % → déficit
+      { kcal: 2100 }, // surplus → pas déficit
+    ];
+    expect(countDeficitDaysInWindow(days, 2000)).toBe(4);
+  });
+
+  it('3 jours en déficit sur une liste de 5 (jours loggés incomplets) → 3, pas une proportion', () => {
+    // 3/5 = 60 % des jours loggés, mais la fonction ne connaît que le compte absolu — elle ne
+    // renvoie jamais un ratio ni n'extrapole sur les jours manquants (spec R3, point relu).
+    const days = [{ kcal: 1000 }, { kcal: 1200 }, { kcal: 1300 }, { kcal: 1900 }, { kcal: 2000 }];
+    expect(countDeficitDaysInWindow(days, 2000)).toBe(3);
+  });
+
+  it('targetKcal <= 0 → 0 (pas de division par une cible absente)', () => {
+    expect(countDeficitDaysInWindow([{ kcal: 500 }], 0)).toBe(0);
+    expect(countDeficitDaysInWindow([{ kcal: 500 }], -100)).toBe(0);
+  });
+
+  it('aucun jour → 0', () => {
+    expect(countDeficitDaysInWindow([], 2000)).toBe(0);
+  });
+});
+
+describe('computeOvertrainingGuard (US TRI-12)', () => {
+  it('streak 6 + déficit 4 → show true (les deux bornes pile atteintes)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 4 })).toEqual({
+      show: true,
+    });
+  });
+
+  it('streak 6 + déficit 3 → show false (R4, un seul signal ne suffit pas)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 3 })).toEqual({
+      show: false,
+    });
+  });
+
+  it('streak 5 + déficit 4 → show false', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 5, deficitDaysCount: 4 })).toEqual({
+      show: false,
+    });
+  });
+
+  it('streak 8 + déficit 7 → show true (au-delà des deux seuils)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 8, deficitDaysCount: 7 })).toEqual({
+      show: true,
+    });
   });
 });

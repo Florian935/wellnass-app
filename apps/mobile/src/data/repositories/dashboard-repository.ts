@@ -13,6 +13,7 @@
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
  *  - `useTrainingLoadAlert` → widget conditionnel Tier 2 (garde-fou ACWR, US META-19)
+ *  - `useOvertrainingGuardAlert` → widget conditionnel Tier 2 (garde-fou tri-pilier, US TRI-12)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -28,7 +29,10 @@ import {
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
+  computeOvertrainingGuard,
+  computeStreak,
   computeStreakWithJokers,
+  countDeficitDaysInWindow,
   findRestorableGap,
   computeTrainingTime,
   dayCalorieBonus,
@@ -39,6 +43,7 @@ import {
   objectiveFromGoal,
   resolveActivePillars,
   ROLLING_WEEK_DAYS,
+  sessionLoad,
   stepsActiveDays,
   targetCalories,
   tdee,
@@ -961,6 +966,76 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
   });
 
   return { show: result?.showAlert ?? false };
+}
+
+// ---------------------------------------------------------------------------
+// useOvertrainingGuardAlert — widget conditionnel (US TRI-12, garde-fou tri-pilier)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre de recherche du streak de charge — large mais bornée (le seuil d'alerte n'est que 6 j). */
+const LOAD_STREAK_LOOKBACK_DAYS = 30;
+
+/** Fenêtre du compte de jours en déficit — fixe, 7 j calendaires (spec R3). */
+const DEFICIT_WINDOW_DAYS = 7;
+
+export type OvertrainingGuardAlert = { show: boolean };
+
+/**
+ * Expose le garde-fou tri-pilier (charge sans repos + déficit persistant, US TRI-12).
+ *
+ * Composition : `useWorkoutHistory()` + `useRunHistory()` (déjà chargées ailleurs sur le
+ * dashboard) agrégées en jours à charge non nulle (R1), passées à `computeStreak` (même primitive
+ * que le streak d'activité, TRI-01, réutilisée sur un ensemble de jours différent) pour le streak
+ * (R2). `useDailyTotals()` + `useNutritionSummary().target` (même source que
+ * `useDeficitVolumeAlert`) donnent le compte de jours en déficit (R3). `computeOvertrainingGuard`
+ * applique R4 (les deux signaux, jamais un seul).
+ *
+ * **Gating tri-pilier** : `strength`, `running` ET `nutrition` tous actifs — sans les trois, le
+ * diagnostic n'est plus « global » (spec R5). Tous les hooks sous-jacents sont appelés
+ * inconditionnellement (règle des hooks React) ; le gating n'intervient qu'au retour.
+ */
+export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+  const nutritionActive = activePillars.includes('nutrition');
+
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+  const todayKey = useTodayKey();
+  const loadLookbackKey = useWindowStartKey(LOAD_STREAK_LOOKBACK_DAYS);
+  const deficitWindowKey = useWindowStartKey(DEFICIT_WINDOW_DAYS);
+  const { totals } = useDailyTotals(deficitWindowKey);
+  const { target } = useNutritionSummary();
+
+  if (!(strengthActive && runningActive && nutritionActive)) {
+    return { show: false };
+  }
+
+  const sessions = [
+    ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
+    ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
+  ].filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= loadLookbackKey);
+
+  const loadByDay = new Map<string, number>();
+  for (const s of sessions) {
+    const dayKey = localDayKey(new Date(s.finishedAt as string));
+    loadByDay.set(dayKey, (loadByDay.get(dayKey) ?? 0) + sessionLoad(s));
+  }
+  const chargeDays = new Set(
+    Array.from(loadByDay.entries())
+      .filter(([, load]) => load > 0)
+      .map(([dayKey]) => dayKey),
+  );
+  const loadStreakDays = computeStreak(chargeDays, todayKey).current;
+
+  const deficitDaysCount = countDeficitDaysInWindow(
+    totals.map((t) => ({ kcal: t.kcal })),
+    target ?? 0,
+  );
+
+  return computeOvertrainingGuard({ loadStreakDays, deficitDaysCount });
 }
 
 // ---------------------------------------------------------------------------

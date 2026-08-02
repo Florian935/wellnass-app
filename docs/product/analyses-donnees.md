@@ -272,7 +272,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | TRI-09 | 🆕 | Tendance globale de progression | Progression normalisée de chaque pilier agrégée en une flèche de tendance globale. | records/pace-records, run-stats, `averageIntake`, `weightTrend` | score | glissant 4-8 sem | « Est-ce que je progresse globalement ? » sans détails. | — |
 | TRI-10 | ⏳ | Badges / jalons transverses | Jalons croisant les piliers (« 7 jours actifs sur les 3 », « semaine parfaite »). Historique horodaté = compatible gamification future. | `streak.ts`, `personal_records`, agrégats 3 piliers | badge | événementiel | Récompenser l'usage intégré, gamification hors V1 (arbitrage C). | ADR-005 |
 | TRI-11 | 🆕 | Charge globale vs apports vs poids | Superpose charge combinée, apports moyens et courbe de poids sur une échelle temporelle. | `workout_sets`, `runs`, `food_entries`, `body_weight_entries` | courbe | glissant 8-12 sem | Diagnostiquer surentraînement/sous-alimentation. | IDEAS analyses-croisées |
-| TRI-12 | 🆕 | Détection de surcharge / sous-récupération globale | Enchaînement de jours à forte charge sans repos + déficit persistant → alerte. | `workout_sets`, `runs`, `activeDayKeys`, `averageIntake` | alerte | glissant 7-14 j | Protéger santé/perf en signalant le déséquilibre charge/récup/nutrition. | IDEAS garde-fou |
+| TRI-12 | ✅ **livrée** (reste recette) | Détection de surcharge / sous-récupération globale | Enchaînement de jours à forte charge sans repos (≥ 6 j, `sessionLoad`/`computeStreak`) **+** déficit persistant (≥ 4/7 j calendaires ≥ 15 %, `DEFICIT_ALERT_RATIO`) → alerte, jamais un seul signal seul. | `workout_sets`, `runs`, `food_entries` | alerte | glissant 7-14 j | Protéger santé/perf en signalant le déséquilibre charge/récup/nutrition. | TRI-12 (livrée · reste recette device) |
 | TRI-13 | 🆕 | Adhérence aux objectifs (tous piliers) | % réalisé par pilier (séances, distance vs objectif, jours nutrition dans la cible) → % global. | `planning.ts`, `planned_sessions`, `runs` vs profil, `food_entries` | score | hebdomadaire | Discipline réelle vs intentions, tous piliers réunis. | metriques §3 |
 | TRI-14 | 🆕 | Rapport bilan santé/perf exportable (PDF) | Document périodique agrégeant tous les piliers (livrable partageable coach/suivi). | ensemble des agrégats tri-piliers | tableau | mensuel/trimestriel | Bilan tangible partageable ; envisagé premium. | IDEAS rapport-PDF |
 | TRI-15 | 🆕 | Modèle forme-fatigue (CTL·ATL·TSB / Banister) | EWMA de la charge combinée : condition (~42 j), fatigue (~7 j), forme (TSB). Performance Management Chart, distinct de l'ACWR. | sRPE quotidien (workouts+runs), EWMA | courbe | quotidien | Bâtir la forme, gérer la fatigue, placer les pics de perf. | catalogue |
@@ -362,10 +362,10 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
 > ⚠️ **MàJ 02/08/2026 (suite)** — des trois déclinaisons de la brique ACWR identifiées par META-19
 > (RUN-18, MR-10, TRI-12) : **RUN-18 livrée** (reste recette, portée running seule, 3 zones
 > affichées) ; **MR-10 absorbée par META-19** (doublon de formulation — même calcul, mêmes deux
-> piliers, aucune nuance de portée ou de surfaçage dans sa description). **TRI-12 n'est pas un
-> doublon** : elle combine la charge (comme META-19) **et** un déficit calorique persistant
-> (`averageIntake`), une vraie troisième dimension — candidat encore ouvert, pas juste une
-> réutilisation de `computeAcwr`.
+> piliers, aucune nuance de portée ou de surfaçage dans sa description) ; **TRI-12 livrée** (reste
+> recette) — elle combinait bien une vraie troisième dimension (charge sans repos **et** déficit
+> persistant, alerte seulement si les deux), pas une réutilisation déguisée de `computeAcwr`. Les
+> **trois déclinaisons identifiées par META-19 sont désormais réglées**.
 
 1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.

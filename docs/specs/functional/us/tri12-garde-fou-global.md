@@ -3,7 +3,7 @@ id: TRI-12
 titre: "Détection de surcharge / sous-récupération globale"
 roadmap: []
 catalogue: [TRI-12]
-etape: validation
+etape: recette
 branche: feature/tri12-garde-fou-global
 maj: 02/08/2026
 ---

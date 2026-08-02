@@ -62,6 +62,9 @@ export const HOME_WIDGET_IDS = [
   // US META-19 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors de la zone de
   // risque ACWR, comme `deficit-volume` — pas un ajout permanent au plafond Tier 0.
   'training-load',
+  // US TRI-12 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors des deux
+  // signaux réunis (charge sans repos + déficit persistant) — même logique que `training-load`.
+  'overtraining-guard',
 ] as const;
 
 /**
@@ -166,6 +169,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US META-19 : même garde que `training-time` — l'ACWR combine muscu et course, un seul
       // pilier actif ne donnerait qu'une moitié du calcul.
       'training-load': ['strength', 'running'],
+      // US TRI-12 : garde **tri-pilier**, la seule à en exiger 3 — le garde-fou combine charge
+      // (muscu+course) et déficit nutritionnel, aucun des trois piliers n'est dispensable.
+      'overtraining-guard': ['strength', 'running', 'nutrition'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

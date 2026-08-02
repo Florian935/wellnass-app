@@ -10,6 +10,49 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/tri12-garde-fou-global` — TRI-12 : détection de surcharge / sous-récupération globale
+
+Implémentation validée dans l'entrée précédente. Dernière des trois déclinaisons de la brique ACWR
+identifiées par META-19 (avec RUN-18 livrée et MR-10 absorbée) — les trois sont désormais réglées.
+
+#### Ajouté
+
+- `packages/shared/src/training-time.ts` — `countDeficitDaysInWindow(loggedDays, targetKcal)`
+  (compte absolu de jours en déficit ≥ `DEFICIT_ALERT_RATIO` sur une liste déjà bornée par
+  l'appelant, jamais une proportion) et `computeOvertrainingGuard({ loadStreakDays,
+  deficitDaysCount })` (R4 : `show` seulement si les deux seuils — streak ≥ 6, déficit ≥ 4 — sont
+  atteints simultanément). Nouvelle constante `OVERTRAINING_DEFICIT_DAYS_REQUIRED`, distincte de
+  `MIN_LOGGED_DAYS` (bodyweight.ts) malgré la valeur numérique identique (4) — sémantiques
+  différentes, documenté en commentaire pour ne pas les confondre plus tard. 9 tests ajoutés.
+- `apps/mobile/src/data/repositories/dashboard-repository.ts` — `useOvertrainingGuardAlert()` :
+  agrège `useWorkoutHistory()`/`useRunHistory()` en jours à charge non nulle (`sessionLoad` par
+  jour, 30 derniers jours), passe le tout à `computeStreak` (même primitive que le streak
+  d'activité, TRI-01, réutilisée sur un ensemble de jours différent) ; combine avec
+  `useDailyTotals()`/`useNutritionSummary().target` sur les 7 derniers jours calendaires pour le
+  compte de déficit. Gating **tri-pilier** (`strength`+`running`+`nutrition`, les trois) — seule US
+  de la famille garde-fou à en exiger 3.
+- `apps/mobile/src/components/dashboard/OvertrainingGuardCard.tsx` (nouveau) — copie structurelle
+  de `TrainingLoadAlertCard` (META-19) : `if (!alert.show) return null;`, ton `warn`, 3 formes, bloc
+  `accessible` unique par forme.
+- `packages/shared/src/widgets.ts` — `'overtraining-guard'` ajouté en fin de `HOME_WIDGET_IDS`
+  (15 → 16) et à `WIDGET_REGISTRY.home.pillars` (`['strength', 'running', 'nutrition']`).
+- i18n `home.overtrainingGuard.*` (eyebrow/title/message/recommend), FR + EN. Parité vérifiée
+  (1644 clés de chaque côté).
+
+#### Corrigé
+
+- `packages/shared/src/widgets.test.ts` — 6 assertions `toHaveLength()`/valeurs codées en dur
+  mises à jour pour refléter le 16ᵉ widget (registre, `defaultScreenLayout`, 3 scénarios
+  `resolveScreenLayout`), + 1 nouveau test de gating tri-pilier.
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1388 tests côté `packages/shared`, 50 suites / 269 tests côté `apps/mobile`).
+- Aucune migration, aucune sync rule PowerSync à redéployer (aucune nouvelle table).
+- Catalogue `analyses-donnees.md` mis à jour (TRI-12 🆕 → ✅), aucune ligne roadmap (US d'analyse).
+  Les 3 déclinaisons identifiées par META-19 (RUN-18, MR-10, TRI-12) sont désormais toutes réglées.
+
 ### 02/08/2026 — `feature/tri12-garde-fou-global` — TRI-12 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Dernier candidat ouvert de la famille garde-fou identifiée par META-19 (avec RUN-18 livrée et MR-10

@@ -2,6 +2,8 @@
  * MR-06 — temps d'entraînement (inter-piliers muscu + course). Logique pure.
  */
 
+import { DEFICIT_ALERT_RATIO } from './bodyweight';
+
 /** Normalise une durée en secondes ≥ 0 (NaN / négatif / ∞ → 0). */
 function safeSeconds(v: number): number {
   return Number.isFinite(v) && v > 0 ? v : 0;
@@ -85,4 +87,54 @@ export function computeAcwr(input: {
     ratio < ACWR_LOW_THRESHOLD ? 'low' : ratio > ACWR_RISK_THRESHOLD ? 'risk' : 'safe';
 
   return { ratio, zone, showAlert: ratio > ACWR_RISK_THRESHOLD };
+}
+
+// ---------------------------------------------------------------------------
+// Garde-fou tri-pilier — charge sans repos + déficit persistant (US TRI-12, catalogue)
+// ---------------------------------------------------------------------------
+
+/** Seuil du streak « jours à charge sans repos » — aligné sur la fourchette catalogue de MR-14 (6-7 j). */
+const OVERTRAINING_LOAD_STREAK_DAYS = 6;
+
+/**
+ * Nb minimum de jours (sur une fenêtre fixe de 7 j calendaires) en déficit pour un déficit
+ * « persistant » (spec R3). ⚠️ Valeur numérique identique à `MIN_LOGGED_DAYS` (bodyweight.ts, MN-02)
+ * mais sémantique différente (échantillon minimal pour une moyenne, pas un compte de jours en
+ * déficit) — constantes volontairement séparées, ne pas les fusionner.
+ */
+const OVERTRAINING_DEFICIT_DAYS_REQUIRED = 4;
+
+/**
+ * Compte les jours en déficit ≥ `DEFICIT_ALERT_RATIO` parmi une liste de jours **déjà loggés**
+ * (spec R3). Ne connaît aucune notion de date ou de fenêtre — l'appelant lui fournit une liste déjà
+ * bornée aux 7 derniers jours calendaires, même discipline que `computeAcwr`. Renvoie un **compte
+ * absolu**, jamais une proportion : un jour non loggé au milieu de la fenêtre ne compte simplement
+ * pas, il n'est ni remplacé ni extrapolé.
+ */
+export function countDeficitDaysInWindow(
+  loggedDays: ReadonlyArray<{ kcal: number }>,
+  targetKcal: number,
+): number {
+  if (targetKcal <= 0) return 0;
+  return loggedDays.filter((d) => (targetKcal - d.kcal) / targetKcal >= DEFICIT_ALERT_RATIO).length;
+}
+
+/** Résultat du garde-fou tri-pilier — `show` uniquement si les deux signaux sont vrais (spec R4). */
+export type OvertrainingGuardResult = { show: boolean };
+
+/**
+ * Garde-fou combinant enchaînement de jours à charge sans repos (R2) et déficit calorique
+ * persistant (R3). Reçoit les deux résultats **déjà calculés** par l'appelant
+ * (`computeStreak(...).current` pour le streak, `countDeficitDaysInWindow(...)` pour le compte) —
+ * n'agrège rien elle-même, applique seulement R4 : un seul des deux signaux ne suffit jamais.
+ */
+export function computeOvertrainingGuard(input: {
+  loadStreakDays: number;
+  deficitDaysCount: number;
+}): OvertrainingGuardResult {
+  return {
+    show:
+      input.loadStreakDays >= OVERTRAINING_LOAD_STREAK_DAYS &&
+      input.deficitDaysCount >= OVERTRAINING_DEFICIT_DAYS_REQUIRED,
+  };
 }

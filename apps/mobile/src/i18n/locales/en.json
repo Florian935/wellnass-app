@@ -862,6 +862,12 @@
       "title": "High training load this week",
       "message": "Your combined load is well above your average over the last 4 weeks.",
       "recommend": "An extra rest day can help you recover."
+    },
+    "overtrainingGuard": {
+      "eyebrow": "Load & recovery",
+      "title": "Overload signal",
+      "message": "You've been training without rest for several days, with intake regularly below your target.",
+      "recommend": "A rest day and a more complete meal can help you bounce back."
     }
   },
   "onboarding": {

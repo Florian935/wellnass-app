@@ -862,6 +862,12 @@
       "title": "Charge élevée cette semaine",
       "message": "Ta charge combinée est nettement au-dessus de ta moyenne des 4 dernières semaines.",
       "recommend": "Un jour de repos supplémentaire peut aider à récupérer."
+    },
+    "overtrainingGuard": {
+      "eyebrow": "Charge & récupération",
+      "title": "Signal de surcharge",
+      "message": "Tu enchaînes les séances sans repos depuis plusieurs jours, avec des apports régulièrement sous ta cible.",
+      "recommend": "Un jour de repos et un repas plus complet peuvent t'aider à repartir du bon pied."
     }
   },
   "onboarding": {
