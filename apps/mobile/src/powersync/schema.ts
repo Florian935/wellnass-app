@@ -335,6 +335,10 @@ const running_profiles = new Table({
   level: column.text,
   ref_5k_pace_s_per_km: column.real,
   weekly_frequency: column.integer,
+  // US RUN-F2a (5.19) : premier réglage de comportement de course exposé à l'utilisateur,
+  // désactivé par défaut (une annonce vocale peut interrompre une musique en cours).
+  voice_announcements_enabled: column.integer, // 0/1
+  voice_announcement_interval_m: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

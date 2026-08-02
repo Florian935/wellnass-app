@@ -1497,7 +1497,11 @@
       "ref5kPlaceholderImperial": "8:03",
       "frequency": "Fréquence hebdo visée",
       "paces": "Mes allures d'entraînement",
-      "pacesEmpty": "Renseigne ton allure de référence pour voir tes allures cibles."
+      "pacesEmpty": "Renseigne ton allure de référence pour voir tes allures cibles.",
+      "announcements": "Annonces vocales",
+      "announcementsToggle": "Annonces vocales pendant la course",
+      "announcementsHint": "Distance, temps et allure annoncés à voix haute à intervalle régulier. Peut interrompre une musique en cours.",
+      "announcementsInterval": "Fréquence"
     },
     "objective": {
       "5k": "5 km",
@@ -1728,6 +1732,15 @@
       "gainLabel": "Dénivelé +",
       "lossLabel": "Dénivelé −",
       "statLabel": "Dénivelé"
+    },
+    "announcement": {
+      "distanceKm_one": "{{count}} kilomètre",
+      "distanceKm_other": "{{count}} kilomètres",
+      "distanceM_other": "{{count}} mètres",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "pacePart": "allure {{pace}} au kilomètre",
+      "template": "{{distance}}, {{time}}, {{pace}}."
     }
   },
   "planning": {

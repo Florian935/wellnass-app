@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   RUNNER_OBJECTIVES,
@@ -29,6 +29,9 @@ const PACE_SESSION_TYPES: readonly SessionType[] = [
   'fractionne',
 ] as const;
 
+/** Intervalles d'annonce proposés (US RUN-F2a, spec R1), en mètres. */
+const ANNOUNCEMENT_INTERVALS_M = [500, 1000, 2000] as const;
+
 export default function RunnerProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -46,6 +49,9 @@ export default function RunnerProfileScreen() {
   const level: RunnerLevel | null = runnerProfile?.level ?? null;
   const weeklyFrequency: number | null = runnerProfile?.weeklyFrequency ?? null;
   const ref5kPaceSPerKm: number | null = runnerProfile?.ref5kPaceSPerKm ?? null;
+  // US RUN-F2a : désactivé par défaut tant qu'aucun profil n'existe (spec R1).
+  const voiceAnnouncementsEnabled = runnerProfile?.voiceAnnouncementsEnabled ?? false;
+  const voiceAnnouncementIntervalM = runnerProfile?.voiceAnnouncementIntervalM ?? 1000;
 
   const onPaceChange = (v: string) => {
     setPaceText(v);
@@ -176,6 +182,67 @@ export default function RunnerProfileScreen() {
         </View>
       )}
 
+      {/* Annonces vocales (US RUN-F2a, roadmap 5.19) */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>
+        {t('running.profile.announcements')}
+      </Text>
+      <View style={[styles.announceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.announceRow}>
+          <View style={styles.announceGrow}>
+            <Text style={[styles.listLabel, { color: colors.text }]}>
+              {t('running.profile.announcementsToggle')}
+            </Text>
+            <Text style={[styles.hint, { color: colors.textMuted }]}>
+              {t('running.profile.announcementsHint')}
+            </Text>
+          </View>
+          <Switch
+            value={voiceAnnouncementsEnabled}
+            onValueChange={(v) => void upsertRunnerProfile({ voiceAnnouncementsEnabled: v })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('running.profile.announcementsToggle')}
+          />
+        </View>
+
+        {voiceAnnouncementsEnabled ? (
+          <View style={[styles.announceIntervalRow, { borderTopColor: colors.border }]}>
+            <Text style={[styles.hint, { color: colors.textMuted }]}>
+              {t('running.profile.announcementsInterval')}
+            </Text>
+            <View style={styles.freqRow}>
+              {ANNOUNCEMENT_INTERVALS_M.map((m) => {
+                const active = voiceAnnouncementIntervalM === m;
+                return (
+                  <Pressable
+                    key={m}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    onPress={() => void upsertRunnerProfile({ voiceAnnouncementIntervalM: m })}
+                    style={[
+                      styles.freqChip,
+                      {
+                        backgroundColor: active ? colors.accent : colors.surface,
+                        borderColor: active ? colors.accent : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.freqLabel,
+                        { color: active ? colors.accentText : colors.textMuted },
+                      ]}
+                    >
+                      {m < 1000 ? `${m} m` : `${m / 1000} km`}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+      </View>
+
       <View style={styles.footer}>
         <Button label={t('common.back')} onPress={() => router.back()} />
       </View>
@@ -269,4 +336,8 @@ const styles = StyleSheet.create({
   paceRange: { fontFamily: fontFamily.monoBold, fontSize: 14 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18, marginTop: 4 },
   footer: { marginTop: 20 },
+  announceCard: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
+  announceRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  announceGrow: { flex: 1, gap: 2 },
+  announceIntervalRow: { borderTopWidth: 1, paddingTop: 12, gap: 8 },
 });

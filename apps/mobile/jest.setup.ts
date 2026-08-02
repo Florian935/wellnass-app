@@ -210,3 +210,11 @@ jest.mock('expo-notifications', () => ({
   AndroidImportance: { DEFAULT: 3 },
   SchedulableTriggerInputTypes: { DATE: 'date', WEEKLY: 'weekly' },
 }));
+
+// ---------------------------------------------------------------------------
+// Mock expo-speech — module natif, absent de l'environnement de test (US RUN-F2a)
+// ---------------------------------------------------------------------------
+jest.mock('expo-speech', () => ({
+  speak: jest.fn(),
+  stop: jest.fn(),
+}));

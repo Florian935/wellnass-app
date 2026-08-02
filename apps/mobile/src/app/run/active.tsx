@@ -10,8 +10,10 @@ import { Button } from '@/components/Button';
 import { RouteMap } from '@/components/running/RouteMap';
 import { SyncStatus } from '@/components/SyncStatus';
 import { finishRun, useActiveRun } from '@/data/repositories/run-repository';
+import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
+import { useDistanceAnnouncements } from '@/running/announcements';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -78,6 +80,26 @@ export default function RunActiveScreen() {
   // Simplification de la trace pour le rendu cartographique (epsilon 5 m).
   const simplified = useMemo(() => simplifyTrack(points, 5), [points]);
 
+  const distanceM = active?.distanceM ?? 0;
+
+  // Allure moyenne : distance / durée nette (flushée) si dispo, sinon horloge
+  // (durée nette exclut les pauses ; l'horloge est un repli tant qu'aucun flush).
+  const durationForPace = active?.durationSeconds ?? elapsedSeconds;
+  const avgPaceValue = isGps ? averagePace(distanceM, durationForPace) : null;
+  const instantPaceValue = isGps ? instantPace(points) : null;
+
+  // US RUN-F2a (5.19) : annonces vocales périodiques, GPS uniquement (spec R4). Hook appelé
+  // inconditionnellement (règle des hooks) — le gating (pilier GPS + réglage utilisateur) est
+  // géré en interne par `enabled`.
+  const { runnerProfile } = useRunnerProfile();
+  useDistanceAnnouncements({
+    enabled: isGps && runnerProfile?.voiceAnnouncementsEnabled === true,
+    intervalM: runnerProfile?.voiceAnnouncementIntervalM ?? 1000,
+    distanceM,
+    elapsedSeconds,
+    avgPaceSPerKm: avgPaceValue,
+  });
+
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
@@ -101,14 +123,6 @@ export default function RunActiveScreen() {
       </SafeAreaView>
     );
   }
-
-  const distanceM = active.distanceM ?? 0;
-
-  // Allure moyenne : distance / durée nette (flushée) si dispo, sinon horloge
-  // (durée nette exclut les pauses ; l'horloge est un repli tant qu'aucun flush).
-  const durationForPace = active.durationSeconds ?? elapsedSeconds;
-  const avgPaceValue = isGps ? averagePace(distanceM, durationForPace) : null;
-  const instantPaceValue = isGps ? instantPace(points) : null;
 
   const gpsStatus = !isGps
     ? t('running.active.gpsManual')

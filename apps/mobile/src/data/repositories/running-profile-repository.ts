@@ -5,7 +5,8 @@
  * et assurer le mapping snake_case (base) ↔ camelCase (domaine `@wellness/shared`).
  *
  * Colonnes scalaires uniquement (`objective`, `level`, `ref_5k_pace_s_per_km`,
- * `weekly_frequency`) : pas de sérialisation JSON nécessaire.
+ * `weekly_frequency`, `voice_announcements_enabled`, `voice_announcement_interval_m`) : pas de
+ * sérialisation JSON nécessaire.
  *
  * Règles offline-first (voir docs/specs/technical/offline-sync.md) :
  *  - UUID généré côté client (via `insertWithSyncFields`).
@@ -34,6 +35,9 @@ type RunnerProfileDbRow = {
   level: string | null;
   ref_5k_pace_s_per_km: number | null;
   weekly_frequency: number | null;
+  /** US RUN-F2a (5.19) — 0/1, `null` pour une ligne créée avant cette US. */
+  voice_announcements_enabled: number | null;
+  voice_announcement_interval_m: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -47,6 +51,9 @@ export type RunnerProfile = {
   level: RunnerLevel | null;
   ref5kPaceSPerKm: number | null;
   weeklyFrequency: number | null;
+  /** US RUN-F2a (5.19) — désactivé par défaut (spec R1), premier réglage de course exposé. */
+  voiceAnnouncementsEnabled: boolean;
+  voiceAnnouncementIntervalM: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -62,6 +69,8 @@ export type RunnerProfileInput = Pick<
   | 'level'
   | 'ref5kPaceSPerKm'
   | 'weeklyFrequency'
+  | 'voiceAnnouncementsEnabled'
+  | 'voiceAnnouncementIntervalM'
 >;
 
 // ---------------------------------------------------------------------------
@@ -84,6 +93,10 @@ function rowToRunnerProfile(row: RunnerProfileDbRow): RunnerProfile {
     level: row.level as RunnerProfile['level'],
     ref5kPaceSPerKm: row.ref_5k_pace_s_per_km,
     weeklyFrequency: row.weekly_frequency,
+    // `null` pour une ligne locale antérieure à la migration RUN-F2a (colonne absente à
+    // l'écriture d'origine) → repli sur les mêmes défauts que la colonne SQL (spec R1).
+    voiceAnnouncementsEnabled: row.voice_announcements_enabled === 1,
+    voiceAnnouncementIntervalM: row.voice_announcement_interval_m ?? 1000,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -97,6 +110,12 @@ function inputToColumns(input: Partial<RunnerProfileInput>): Record<string, unkn
   if ('level' in input) columns['level'] = input.level;
   if ('ref5kPaceSPerKm' in input) columns['ref_5k_pace_s_per_km'] = input.ref5kPaceSPerKm;
   if ('weeklyFrequency' in input) columns['weekly_frequency'] = input.weeklyFrequency;
+  if ('voiceAnnouncementsEnabled' in input) {
+    columns['voice_announcements_enabled'] = input.voiceAnnouncementsEnabled ? 1 : 0;
+  }
+  if ('voiceAnnouncementIntervalM' in input) {
+    columns['voice_announcement_interval_m'] = input.voiceAnnouncementIntervalM;
+  }
   return columns;
 }
 

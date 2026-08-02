@@ -677,3 +677,25 @@ export function estimateRunCalories(params: {
   }
   return Math.round(base * (1 + intensityBonus));
 }
+
+// ---------------------------------------------------------------------------
+// Annonces audio périodiques (US RUN-F2a, roadmap 5.19)
+// ---------------------------------------------------------------------------
+
+/**
+ * Prochain seuil d'annonce franchi (US RUN-F2a), ou `null` si aucun nouveau seuil depuis
+ * `lastAnnouncedIndex`. Ne connaît aucune notion de temps/audio — l'appelant décide de l'index déjà
+ * annoncé (spec R2 : initialisé depuis la distance courante, pas 0) et déclenche l'effet de bord
+ * (`Speech.speak`). Un saut de plusieurs seuils d'un coup (gros lot GPS) n'annonce que le
+ * **dernier** — pas de rattrapage des seuils intermédiaires.
+ */
+export function nextAnnouncementThreshold(
+  distanceM: number,
+  intervalM: number,
+  lastAnnouncedIndex: number,
+): { index: number; thresholdM: number } | null {
+  if (intervalM <= 0) return null;
+  const currentIndex = Math.floor(distanceM / intervalM);
+  if (currentIndex <= lastAnnouncedIndex) return null;
+  return { index: currentIndex, thresholdM: currentIndex * intervalM };
+}

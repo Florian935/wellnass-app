@@ -20,6 +20,7 @@ import {
   estimateRunCalories,
   NET_KCAL_PER_KG_KM,
   MAX_INTENSITY_BONUS,
+  nextAnnouncementThreshold,
 } from './running';
 
 // ---------------------------------------------------------------------------
@@ -730,5 +731,32 @@ describe('computeKmSplits', () => {
     expect(splits.map((s) => s.km)).toEqual([1, 2]);
     expect(splits.length).toBe(Math.floor(totalDistance(pts) / 1000));
     for (const s of splits) expect(s.seconds).toBeGreaterThan(0);
+  });
+});
+
+describe('nextAnnouncementThreshold (US RUN-F2a)', () => {
+  it('franchit un nouveau seuil → renvoie index + distance', () => {
+    expect(nextAnnouncementThreshold(2500, 1000, 1)).toEqual({ index: 2, thresholdM: 2000 });
+  });
+
+  it('même distance rejouée (seuil déjà annoncé) → null, jamais deux fois le même (spec R2)', () => {
+    expect(nextAnnouncementThreshold(2500, 1000, 2)).toBeNull();
+  });
+
+  it('intervalle de 500 m, seuil franchi une seconde fois', () => {
+    expect(nextAnnouncementThreshold(1400, 500, 1)).toEqual({ index: 2, thresholdM: 1000 });
+  });
+
+  it('saut de plusieurs seuils d\'un coup → annonce seulement le dernier, pas de rattrapage', () => {
+    expect(nextAnnouncementThreshold(3200, 1000, 0)).toEqual({ index: 3, thresholdM: 3000 });
+  });
+
+  it('intervalle <= 0 → null (garde-fou)', () => {
+    expect(nextAnnouncementThreshold(1000, 0, 0)).toBeNull();
+    expect(nextAnnouncementThreshold(1000, -100, 0)).toBeNull();
+  });
+
+  it('distance sous le premier seuil → null', () => {
+    expect(nextAnnouncementThreshold(400, 1000, 0)).toBeNull();
   });
 });

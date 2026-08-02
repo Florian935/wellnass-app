@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf2a-annonces-audio` — RUN-F2a : annonces audio périodiques (roadmap 5.19 → ✅)
+
+Implémentation validée dans l'entrée précédente. Premier des 4 candidats issus du découpage de
+RUN-F2, et premier réglage de comportement de course jamais exposé à l'utilisateur.
+
+#### Ajouté
+
+- `expo-speech` (dépendance native neuve → **nouveau dev build EAS requis** pour la recette, comme
+  `expo-haptics`/MUSC-F9). Mock Jest ajouté (`jest.setup.ts`, même patron que `expo-notifications`).
+- `packages/shared/src/running.ts` — `nextAnnouncementThreshold(distanceM, intervalM,
+  lastAnnouncedIndex)` : renvoie le prochain seuil franchi ou `null`, jamais deux fois le même
+  seuil ; un saut de plusieurs seuils d'un coup n'annonce que le dernier (pas de rattrapage). 6
+  tests ajoutés.
+- Migration : `running_profiles.voice_announcements_enabled boolean not null default false`,
+  `voice_announcement_interval_m integer not null default 1000`, additives — **désactivé par
+  défaut** (une annonce vocale peut interrompre une musique en cours). Aucune sync rule à
+  redéployer (`running_profiles` déjà en `select *`).
+- `apps/mobile/src/data/repositories/running-profile-repository.ts` — `RunnerProfile`/
+  `RunnerProfileInput` étendus, lecture défensive (`?? false`/`?? 1000`) pour les lignes locales
+  antérieures à la migration.
+- `apps/mobile/src/app/running-profile.tsx` — réglage (`Switch` + choix d'intervalle 500 m/1 km/
+  2 km, affiché seulement si activé), même patron que `CycleTrackingSection`.
+- `apps/mobile/src/running/announcements.ts` (nouveau) — `buildAnnouncementPhrase` (pluriels
+  i18next `_one`/`_other`, jamais une concaténation manuelle ; mètres sous 1 km, kilomètres entiers
+  sinon — jamais une décimale lue à voix haute) et `useDistanceAnnouncements` (compteur de seuil
+  initialisé depuis la distance courante, pas 0, pour ne pas rejouer les annonces déjà passées si
+  l'écran est remonté via la carte « Reprendre » du hub course).
+- `apps/mobile/src/app/run/active.tsx` — câblage du hook (GPS uniquement, spec R4), calcul de
+  `distanceM`/`avgPaceValue` remonté avant les retours anticipés pour respecter la règle des hooks.
+- i18n `running.announcement.*` (7 clés avec pluriels) + `running.profile.announcements*` (4
+  clés), FR + EN. Parité vérifiée (1659 clés de chaque côté).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1402 tests côté `packages/shared`, 50 suites / 276 tests côté `apps/mobile`).
+- **Limite assumée et documentée dans la spec, pas un bug** : les annonces ne se déclenchent que si
+  `run/active.tsx` est monté. Changer d'onglet pendant la course (cas fréquent, confirmé par
+  relecture) coupe les annonces jusqu'au retour sur l'écran, même app au premier plan — décision
+  volontaire de ne pas déclencher depuis la tâche de fond, pour ne pas ajouter une inconnue dans le
+  fichier le plus sensible du projet.
+- Roadmap 5.19 ⬜ → ✅. RUN-F2 restant à cadrer : RUN-F2b (cible en temps réel), RUN-F2c (blocs
+  fractionné, le plus gros morceau), RUN-F2d (dépend des deux précédents + de celle-ci).
+
 ### 02/08/2026 — `feature/runf2a-annonces-audio` — RUN-F2 scindée en 4 + RUN-F2a entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 RUN-F2 (« Séances guidées vocales ») regroupait 4 items de roadmap hétérogènes (5.19, 5.23, 5.9,

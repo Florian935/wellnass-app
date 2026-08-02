@@ -1642,6 +1642,8 @@ export type Database = {
           ref_5k_pace_s_per_km: number | null
           updated_at: string
           user_id: string
+          voice_announcement_interval_m: number
+          voice_announcements_enabled: boolean
           weekly_frequency: number | null
         }
         Insert: {
@@ -1653,6 +1655,8 @@ export type Database = {
           ref_5k_pace_s_per_km?: number | null
           updated_at?: string
           user_id: string
+          voice_announcement_interval_m?: number
+          voice_announcements_enabled?: boolean
           weekly_frequency?: number | null
         }
         Update: {
@@ -1664,6 +1668,8 @@ export type Database = {
           ref_5k_pace_s_per_km?: number | null
           updated_at?: string
           user_id?: string
+          voice_announcement_interval_m?: number
+          voice_announcements_enabled?: boolean
           weekly_frequency?: number | null
         }
         Relationships: [

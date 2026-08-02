@@ -1497,7 +1497,11 @@
       "ref5kPlaceholderImperial": "8:03",
       "frequency": "Target weekly frequency",
       "paces": "My training paces",
-      "pacesEmpty": "Enter your reference pace to see your target paces."
+      "pacesEmpty": "Enter your reference pace to see your target paces.",
+      "announcements": "Voice announcements",
+      "announcementsToggle": "Voice announcements during the run",
+      "announcementsHint": "Distance, time, and pace announced out loud at a regular interval. May interrupt music playing in the background.",
+      "announcementsInterval": "Frequency"
     },
     "objective": {
       "5k": "5 km",
@@ -1728,6 +1732,15 @@
       "gainLabel": "Elevation gain",
       "lossLabel": "Elevation loss",
       "statLabel": "Elevation"
+    },
+    "announcement": {
+      "distanceKm_one": "{{count}} kilometer",
+      "distanceKm_other": "{{count}} kilometers",
+      "distanceM_other": "{{count}} meters",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "pacePart": "pace {{pace}} per kilometer",
+      "template": "{{distance}}, {{time}}, {{pace}}."
     }
   },
   "planning": {

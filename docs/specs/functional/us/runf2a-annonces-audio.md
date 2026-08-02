@@ -3,7 +3,7 @@ id: RUN-F2a
 titre: "Annonces audio périodiques"
 roadmap: [5.19]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/runf2a-annonces-audio
 maj: 02/08/2026
 ---
