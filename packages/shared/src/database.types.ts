@@ -1683,6 +1683,8 @@ export type Database = {
           deleted_at: string | null
           distance_m: number | null
           duration_seconds: number | null
+          elevation_gain_m: number | null
+          elevation_loss_m: number | null
           finished_at: string | null
           gps_track: string | null
           id: string
@@ -1702,6 +1704,8 @@ export type Database = {
           deleted_at?: string | null
           distance_m?: number | null
           duration_seconds?: number | null
+          elevation_gain_m?: number | null
+          elevation_loss_m?: number | null
           finished_at?: string | null
           gps_track?: string | null
           id: string
@@ -1721,6 +1725,8 @@ export type Database = {
           deleted_at?: string | null
           distance_m?: number | null
           duration_seconds?: number | null
+          elevation_gain_m?: number | null
+          elevation_loss_m?: number | null
           finished_at?: string | null
           gps_track?: string | null
           id?: string

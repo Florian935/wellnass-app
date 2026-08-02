@@ -10,6 +10,49 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf1b-denivele-cumule` — RUN-F1b : dénivelé cumulé, blocage codec levé (roadmap 5.32 → ✅)
+
+Implémentation validée dans l'entrée précédente. Candidat marqué ⛔ bloqué (« il faut étendre le
+tracker et le codec de trace ») — blocage levé sans toucher au codec.
+
+#### Ajouté
+
+- 1 migration (`runs.elevation_gain_m numeric`, `runs.elevation_loss_m numeric`, nullable,
+  additives) + `apps/mobile/src/powersync/schema.ts` étendu. Aucune sync rule à redéployer
+  (`select * from runs` déjà en place).
+- `apps/mobile/src/running/tracker-task.ts` — `TrackerState` gagne 2 cumuls flushés
+  (`cumulativeElevationGainM`/`LossM`) + 2 champs internes (`pendingElevationDeltaM`,
+  `lastAltitudeM`). `toGpsPointsWithAltitude` remplace `toGpsPoints` : altitude appariée **dans la
+  même boucle** que le filtre de validité horizontale (`isValidFix`), jamais par un second passage
+  — évite une désynchronisation silencieuse point/altitude. `handleLocationBatch` accumule le
+  dénivelé uniquement sur les segments déjà jugés fiables pour la distance, avec un filtre de bruit
+  vertical (seuil 3 m, solde en attente remis à zéro une fois validé) et un filtre de précision
+  (`altitudeAccuracy` > 30 m → traité comme absent). La pause suit exactement le même traitement que
+  `lastPoint`/`lastPointT` (pas de faux relief à la reprise). **Le codec de trace
+  (`GpsPoint`/`encodeSegment`/`decodeTrack`) reste entièrement inchangé.** 7 tests ajoutés
+  (`tracker-task.test.ts`).
+- `apps/mobile/src/data/repositories/run-repository.ts` — `FlushInput`, `RunHistoryItem`,
+  `RunDetail` étendus ; `startRun` initialise les 2 colonnes à `null` explicitement.
+- `packages/shared/src/run-stats.ts` — `StatRun`/`RunStats` gagnent les champs dénivelé ;
+  `aggregateRunStats` les somme avec `?? 0` (même convention que distance/durée). 4 tests existants
+  mis à jour (comparaison `toEqual` littérale), fixture étendue pour couvrir un mélange de courses
+  avec/sans dénivelé connu dans une même période.
+- Affichage : `run/summary.tsx` (ligne dénivelé + course, **absente** si `null` — jamais « 0 m ») et
+  `running-history/index.tsx` (`StatsSection`, dénivelé cumulé par période). i18n
+  `running.elevation.*` (3 clés), FR + EN. Parité vérifiée (1648 clés de chaque côté).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1396 tests côté `packages/shared`, 50 suites / 276 tests côté `apps/mobile`).
+- Relecture de spec (agent, niveau d'exigence élevé — tâche de fond GPS) avait fait remonter 2
+  points avant le code : l'appariement point↔altitude contraint à une seule boucle (appliqué), et
+  les 4 tests `aggregateRunStats` à mettre à jour (fait).
+- ⚠️ **Seuils non validés terrain** (`ALTITUDE_ACCURACY_MAX_M = 30`, `ELEVATION_NOISE_THRESHOLD_M = 3`)
+  — posés par analogie avec des pratiques connues (montres GPS grand public), à ajuster après une
+  vraie sortie de recette sur un parcours vallonné (comparaison avec une référence Strava/Garmin/IGN).
+- Aucune dépendance native nouvelle → recettable sur l'APK existant.
+
 ### 02/08/2026 — `feature/runf1b-denivele-cumule` — RUN-F1b : blocage levé, entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Candidat marqué ⛔ bloqué dans BACKLOG.md (« la trace GPS ne capte pas l'altitude, il faut étendre

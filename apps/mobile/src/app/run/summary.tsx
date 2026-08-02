@@ -444,6 +444,20 @@ export default function RunSummaryScreen() {
           label={t('running.summary.avgPace')}
           value={units.formatPace(run.avgPaceSPerKm)}
         />
+        {/* Dénivelé (US RUN-F1b) : absent si non connu (course manuelle ou antérieure à l'US) —
+            jamais une ligne à « 0 m » (spec R5/§0, critère de recette 4-5). */}
+        {run.elevationGainM !== null ? (
+          <>
+            <StatRow
+              label={t('running.elevation.gainLabel')}
+              value={`+${Math.round(run.elevationGainM)} m`}
+            />
+            <StatRow
+              label={t('running.elevation.lossLabel')}
+              value={`-${Math.round(run.elevationLossM ?? 0)} m`}
+            />
+          </>
+        ) : null}
       </Card>
 
       {/* Comparaison à l'objectif (US RUN-F3, 5.25) — montée SEULEMENT si non vide (R1) : une

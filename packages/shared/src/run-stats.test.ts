@@ -9,20 +9,22 @@ import {
 } from './run-stats';
 
 // today = mercredi 15/07/2026 ; lundi de la semaine = 13/07 ; semaine = 13→19 ; mois = 2026-07
+// Dénivelé (US RUN-F1b) : les courses du 10/07 et du 30/06 n'en ont pas (null, spec R6) — comme
+// une course manuelle ou antérieure à l'US, elles ne doivent pas fausser la somme des autres.
 const runs: StatRun[] = [
-  { finishedAtDayKey: '2026-07-13', distanceM: 5000, durationS: 1800, paceSPerKm: 360 },
-  { finishedAtDayKey: '2026-07-10', distanceM: 8000, durationS: 2400, paceSPerKm: 300 },
-  { finishedAtDayKey: '2026-07-15', distanceM: 3000, durationS: 1200, paceSPerKm: 400 },
-  { finishedAtDayKey: '2026-06-30', distanceM: 10000, durationS: 3000, paceSPerKm: null },
+  { finishedAtDayKey: '2026-07-13', distanceM: 5000, durationS: 1800, paceSPerKm: 360, elevationGainM: 50, elevationLossM: 40 },
+  { finishedAtDayKey: '2026-07-10', distanceM: 8000, durationS: 2400, paceSPerKm: 300, elevationGainM: null, elevationLossM: null },
+  { finishedAtDayKey: '2026-07-15', distanceM: 3000, durationS: 1200, paceSPerKm: 400, elevationGainM: 20, elevationLossM: 15 },
+  { finishedAtDayKey: '2026-06-30', distanceM: 10000, durationS: 3000, paceSPerKm: null, elevationGainM: null, elevationLossM: null },
 ];
 
 describe('aggregateRunStats', () => {
-  it('semaine (lun→dim)', () => expect(aggregateRunStats(runs, 'week', '2026-07-15')).toEqual({ totalDistanceM: 8000, totalDurationS: 3000, count: 2 }));
-  it('mois calendaire', () => expect(aggregateRunStats(runs, 'month', '2026-07-15')).toEqual({ totalDistanceM: 16000, totalDurationS: 5400, count: 3 }));
-  it('depuis le début', () => expect(aggregateRunStats(runs, 'all', '2026-07-15')).toEqual({ totalDistanceM: 26000, totalDurationS: 8400, count: 4 }));
-  it('null distance/durée = 0 mais compte', () => {
-    const r: StatRun[] = [{ finishedAtDayKey: '2026-07-15', distanceM: null, durationS: null, paceSPerKm: null }];
-    expect(aggregateRunStats(r, 'all', '2026-07-15')).toEqual({ totalDistanceM: 0, totalDurationS: 0, count: 1 });
+  it('semaine (lun→dim)', () => expect(aggregateRunStats(runs, 'week', '2026-07-15')).toEqual({ totalDistanceM: 8000, totalDurationS: 3000, count: 2, totalElevationGainM: 70, totalElevationLossM: 55 }));
+  it('mois calendaire', () => expect(aggregateRunStats(runs, 'month', '2026-07-15')).toEqual({ totalDistanceM: 16000, totalDurationS: 5400, count: 3, totalElevationGainM: 70, totalElevationLossM: 55 }));
+  it('depuis le début', () => expect(aggregateRunStats(runs, 'all', '2026-07-15')).toEqual({ totalDistanceM: 26000, totalDurationS: 8400, count: 4, totalElevationGainM: 70, totalElevationLossM: 55 }));
+  it('null distance/durée/dénivelé = 0 mais compte', () => {
+    const r: StatRun[] = [{ finishedAtDayKey: '2026-07-15', distanceM: null, durationS: null, paceSPerKm: null, elevationGainM: null, elevationLossM: null }];
+    expect(aggregateRunStats(r, 'all', '2026-07-15')).toEqual({ totalDistanceM: 0, totalDurationS: 0, count: 1, totalElevationGainM: 0, totalElevationLossM: 0 });
   });
 });
 

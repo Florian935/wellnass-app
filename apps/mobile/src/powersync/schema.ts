@@ -358,6 +358,11 @@ const runs = new Table({
   // absente d'ici échoue silencieusement à l'écriture (leçon du 01/08/2026, CYCLE-01).
   planned_session_id: column.text,
   terrain: column.text,
+  // US RUN-F1b (5.32) : scalaires cumulés en direct par le tracker, comme distance_m/
+  // duration_seconds — jamais recalculés depuis gps_track. `null` = donnée absente (course
+  // manuelle, ou course enregistrée avant cette US), jamais 0 (spec R5/§0).
+  elevation_gain_m: column.real,
+  elevation_loss_m: column.real,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

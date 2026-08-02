@@ -1723,6 +1723,11 @@
       "zoneSafe": "Healthy zone",
       "zoneRisk": "Risk zone — consider a rest day",
       "empty": "Not enough history yet (28 days of running) to calculate your load."
+    },
+    "elevation": {
+      "gainLabel": "Elevation gain",
+      "lossLabel": "Elevation loss",
+      "statLabel": "Elevation"
     }
   },
   "planning": {

@@ -245,7 +245,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 5.29 | Courbe d'allure moyenne | Sur 30 / 90 jours par type de séance. | Moyen | 3h | 🟢 | ✅ | `PaceSection` + tendance. |
 | 5.30 | Records personnels | 1 / 5 / 10 km / semi / marathon — meilleur segment glissant. | Moyen | 3h | 🟢 | ✅ | `RecordsSection`. Motivation (arbitrage C). |
 | 5.31 | Mise à jour allure de référence | Auto si record 5 km battu. | Facile | 1h | 🟢 | ✅ | `refPaceUpdated` sur record 5k. |
-| 5.32 | Dénivelé cumulé | Dénivelé positif par semaine / mois. | Moyen | 2h | 🟢 | ⬜ | **Aucun calcul d'élévation/altitude.** |
+| 5.32 | Dénivelé cumulé | Dénivelé positif par semaine / mois. | Moyen | 2h | 🟢 | ✅ | **RUN-F1b — code livré le 02/08/2026** → [spec](../specs/functional/us/runf1b-denivele-cumule.md) · [plan](../plans/runf1b-denivele-cumule.md) · [maquette](../../design/runf1b-denivele-cumule/runf1b-denivele-cumule.html), en recette → [RECETTES.md](../../RECETTES.md). Blocage initial (« il faut étendre le codec de trace ») levé : `elevation_gain_m`/`elevation_loss_m` cumulés en direct par le tracker comme `distance_m`/`duration_seconds`, `gps_track` inchangé. Seuils de précision GPS (30 m) et de bruit vertical (3 m) non validés terrain — à ajuster après la première recette réelle. |
 | 5.33 | Export GPX | Export d'une sortie (partage / Strava). | Facile | 2h | 🟢 | ✅ | `lib/gpx-export.ts`. |
 | 5.34 | Prédiction de temps de course (Riegel) | Estime le temps sur 10 km/semi/marathon depuis un record récent (`T2 = T1×(D2/D1)^1,06`) ; sert à fixer un objectif chrono réaliste et une allure cible. | Facile | 1h | 🟢 | ✅ | **RUN-14, code livré le 02/08/2026**, en recette → [RECETTES.md](../../RECETTES.md). `predictRaceTime`/`resolveRacePredictions` (packages/shared, purs, 7 tests) + bloc « Objectifs estimés » sous les records existants (`running-history/index.tsx`). Source fixe = record 5 km (R1) ; un vrai record bat toujours une estimation (R3) ; avertissement dédié sur le marathon (R5). Aucune migration, aucune dépendance native. |
 
@@ -440,9 +440,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 186 | ~86 % |
+| ✅ Livré | 187 | ~87 % |
 | 🟡 Partiel | 15 | ~7 % |
-| ⬜ À faire | 9 | ~4 % |
+| ⬜ À faire | 8 | ~4 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **216** | |
@@ -468,7 +468,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.2 (32) | 29 | 0 | 0 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). **6.2 → ✅ le 02/08/2026** (MUSC-F1b, schéma corporel SVG). GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (22) | 21 | 1 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). **3.56 → ✅ le 02/08/2026** (MUSC-09, record par plage de reps, en recette). **3.7 → ✅ le 02/08/2026** (MUSC-F15, progression au niveau du programme — second gate `weightHold`, aucune cible évolutive stockée). |
 | V0.4 (34) | 32 | 0 | 2 | 0 | 0 | 2 notifs manquantes. **4.38 → ✅ le 02/08/2026** (NUTR-16, répartition par repas, en recette). |
-| V0.5 (34) | 28 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). |
+| V0.5 (34) | 29 | 2 | 3 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). **5.32 → ✅ le 02/08/2026** (RUN-F1b, dénivelé cumulé — blocage codec levé, scalaires cumulés en direct par le tracker). |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (10) | 10 | 0 | 0 | 0 | 0 | ✅ **Complet.** 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + 9.9 (Health Connect, recetté le 28/07) + 9.16 (REFACTO-01, clôturée le 31/07) + **9.11/9.12 (CONF-07, code livré le 01/08, en recette)** livrés. |
@@ -504,6 +504,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**02/08/2026 — RUN-F1b : dénivelé cumulé livré, blocage codec levé (5.32 ⬜ → ✅)**
+`elevation_gain_m`/`elevation_loss_m` cumulés en direct par le tracker (comme `distance_m`/
+`duration_seconds`), `gps_track` inchangé — le blocage supposait à tort qu'il fallait étendre le
+codec de trace. Seuils GPS non validés terrain (30 m précision, 3 m bruit), à ajuster en recette.
 
 **02/08/2026 — MUSC-F15 : progression au niveau du programme livrée (3.7 🟡 → ✅)**
 Second gate `weightHold` sur `computeProgressionSuggestion` (symétrique à `previousStruggled`,

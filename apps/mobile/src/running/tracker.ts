@@ -209,6 +209,8 @@ async function persistCurrentState(): Promise<void> {
     segmentEncoded: '', // aucun nouveau point : appendTo'' est un no-op côté repo
     distanceM: s.cumulativeDistanceM,
     durationSeconds: Math.round(s.netDurationS),
+    elevationGainM: Math.round(s.cumulativeElevationGainM),
+    elevationLossM: Math.round(s.cumulativeElevationLossM),
   });
   setLastFlushPromise(p.catch(() => {}));
   await p;

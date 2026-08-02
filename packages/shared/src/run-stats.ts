@@ -6,9 +6,19 @@ export interface StatRun {
   distanceM: number | null;
   durationS: number | null;
   paceSPerKm: number | null;
+  /** Dénivelé cumulé (US RUN-F1b), `null` = donnée absente (course manuelle ou antérieure). */
+  elevationGainM: number | null;
+  elevationLossM: number | null;
 }
 export type StatPeriod = 'week' | 'month' | 'all';
-export interface RunStats { totalDistanceM: number; totalDurationS: number; count: number; }
+export interface RunStats {
+  totalDistanceM: number;
+  totalDurationS: number;
+  count: number;
+  /** Somme des courses de la période ayant un dénivelé connu (`null` traité comme 0, spec R6). */
+  totalElevationGainM: number;
+  totalElevationLossM: number;
+}
 export interface PaceTrendPoint { dayKey: string; paceSPerKm: number; }
 export type PaceTrendKind = 'improving' | 'declining' | 'stable';
 
@@ -31,13 +41,16 @@ export function aggregateRunStats(runs: StatRun[], period: StatPeriod, todayKey:
     return k >= monday && k <= sunday;
   };
   let totalDistanceM = 0, totalDurationS = 0, count = 0;
+  let totalElevationGainM = 0, totalElevationLossM = 0;
   for (const r of runs) {
     if (!inPeriod(r.finishedAtDayKey)) continue;
     totalDistanceM += r.distanceM ?? 0;
     totalDurationS += r.durationS ?? 0;
+    totalElevationGainM += r.elevationGainM ?? 0;
+    totalElevationLossM += r.elevationLossM ?? 0;
     count += 1;
   }
-  return { totalDistanceM, totalDurationS, count };
+  return { totalDistanceM, totalDurationS, count, totalElevationGainM, totalElevationLossM };
 }
 
 export function paceTrendPoints(runs: StatRun[], days: number, todayKey: string): PaceTrendPoint[] {

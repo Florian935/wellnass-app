@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **86 %** — 186 livré · 15 partiel · 9 à faire (sur 216)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **87 %** — 187 livré · 15 partiel · 8 à faire (sur 216)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -38,14 +38,14 @@ avant de pouvoir publier.
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
 | **RUN-14** — Prédiction de temps de course (formule de Riegel) | `recette` | `feature/run14-prediction-riegel` | [5.34] |
 | **RUN-18** — Charge d'entraînement & ACWR (running seul) | `recette` | `feature/run18-acwr-running` | — |
+| **RUN-F1b** — Dénivelé cumulé | `recette` | `feature/runf1b-denivele-cumule` | [5.32] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `recette` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **RUN-F1b** — Dénivelé cumulé | `validation` | `feature/runf1b-denivele-cumule` | [5.32] |
 
-⏳ **27 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **28 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -67,9 +67,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/runf1b-denivele-cumule` (modifications non commitées) |
-| Commits | 1029 · `main` a **1026** commits de retard sur `dev` |
+| Commits | 1030 · `main` a **1027** commits de retard sur `dev` |
 | Specs d'US | 105 au total — 77 clôturées, 28 en cours |
-| Migrations | 65/65 poussées sur le cloud |
+| Migrations | 66/66 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -78,11 +78,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `48da50d` docs(runf1b): blocage levé, entrée en pipeline — spec, plan, maquette (roadmap 5.32)
 - `9aa7307` feat(muscf15): progression au niveau du programme (roadmap 3.7)
 - `fac9bde` docs(muscf15): entrée en pipeline — spec, plan, maquette (roadmap 3.7)
 - `8b97e7a` feat(tri12): détection de surcharge / sous-récupération globale (garde-fou tri-pilier)
 - `3137b3b` docs(tri12): entrée en pipeline — spec, plan, maquette (catalogue seul)
-- `b39c7ad` docs(catalogue): MR-10 absorbée par META-19 (doublon de formulation)
 
 ---
 

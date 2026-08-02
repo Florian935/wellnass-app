@@ -3,7 +3,7 @@ id: RUN-F1b
 titre: "Dénivelé cumulé"
 roadmap: [5.32]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/runf1b-denivele-cumule
 maj: 02/08/2026
 ---

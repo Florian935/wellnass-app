@@ -81,6 +81,9 @@ export type RunHistoryItem = {
   avgPaceSPerKm: number | null;
   rpe: number | null;
   notes: string | null;
+  /** Dénivelé cumulé (US RUN-F1b), `null` = donnée absente (course manuelle ou antérieure). */
+  elevationGainM: number | null;
+  elevationLossM: number | null;
 };
 
 /** Détail complet d'une course (résumé post-clôture). */
@@ -101,6 +104,9 @@ export type RunDetail = {
   plannedSessionId: string | null;
   /** Terrain (US RUN-F3, D3), `null` si non renseigné. */
   terrain: RunTerrain | null;
+  /** Dénivelé cumulé (US RUN-F1b), `null` = donnée absente (course manuelle ou antérieure). */
+  elevationGainM: number | null;
+  elevationLossM: number | null;
 };
 
 /** Champs persistés lors d'un flush (le tracker fournit le cumul courant). */
@@ -111,6 +117,9 @@ export type FlushInput = {
   distanceM: number;
   /** Durée cumulée en secondes hors pauses (source de vérité = tracker). */
   durationSeconds: number;
+  /** Dénivelé positif/négatif cumulé en mètres (US RUN-F1b, source de vérité = tracker). */
+  elevationGainM: number;
+  elevationLossM: number;
 };
 
 /** Options de clôture d'une course. */
@@ -149,6 +158,8 @@ type RunHistoryDbRow = {
   avg_pace_s_per_km: number | null;
   rpe: number | null;
   notes: string | null;
+  elevation_gain_m: number | null;
+  elevation_loss_m: number | null;
 };
 
 /** Ligne brute d'une course au détail (résumé post-clôture). */
@@ -166,6 +177,8 @@ type RunDetailDbRow = {
   gps_track: string | null;
   planned_session_id: string | null;
   terrain: string | null;
+  elevation_gain_m: number | null;
+  elevation_loss_m: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -183,7 +196,7 @@ const SELECT_ACTIVE_RUN = `
 /** Historique des courses terminées, plus récentes d'abord. */
 const SELECT_HISTORY = `
   SELECT id, source, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes
+         avg_pace_s_per_km, rpe, notes, elevation_gain_m, elevation_loss_m
   FROM runs
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
@@ -192,7 +205,8 @@ const SELECT_HISTORY = `
 /** Détail d'une course par id (tous statuts, non supprimée). */
 const SELECT_RUN_BY_ID = `
   SELECT id, source, status, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes, gps_track, planned_session_id, terrain
+         avg_pace_s_per_km, rpe, notes, gps_track, planned_session_id, terrain,
+         elevation_gain_m, elevation_loss_m
   FROM runs
   WHERE id = ? AND deleted_at IS NULL
   LIMIT 1
@@ -226,6 +240,8 @@ function rowToHistoryItem(row: RunHistoryDbRow): RunHistoryItem {
     avgPaceSPerKm: row.avg_pace_s_per_km,
     rpe: row.rpe,
     notes: row.notes,
+    elevationGainM: row.elevation_gain_m,
+    elevationLossM: row.elevation_loss_m,
   };
 }
 
@@ -246,6 +262,8 @@ function rowToRunDetail(row: RunDetailDbRow): RunDetail {
     gpsTrack: row.gps_track,
     plannedSessionId: row.planned_session_id,
     terrain: terrain.success ? terrain.data : null,
+    elevationGainM: row.elevation_gain_m,
+    elevationLossM: row.elevation_loss_m,
   };
 }
 
@@ -396,6 +414,8 @@ function toStatRun(item: RunHistoryItem) {
     distanceM: item.distanceM,
     durationS: item.durationSeconds,
     paceSPerKm: item.avgPaceSPerKm,
+    elevationGainM: item.elevationGainM,
+    elevationLossM: item.elevationLossM,
   };
 }
 
@@ -501,6 +521,8 @@ export async function startRun(source: RunSource, plannedSessionId?: string): Pr
     notes: null,
     planned_session_id: plannedSessionId ?? null,
     terrain: null,
+    elevation_gain_m: null,
+    elevation_loss_m: null,
   });
 }
 
@@ -569,6 +591,8 @@ export function flushTrack(runId: string, input: FlushInput): Promise<void> {
       gps_track: appended,
       distance_m: input.distanceM,
       duration_seconds: input.durationSeconds,
+      elevation_gain_m: input.elevationGainM,
+      elevation_loss_m: input.elevationLossM,
     });
   });
 

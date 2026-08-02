@@ -238,6 +238,29 @@ function StatsSection() {
           </View>
         ))}
       </View>
+      {/* Dénivelé cumulé de la période (US RUN-F1b) — même bloc stats, deuxième rangée. */}
+      <View style={styles.statsRow}>
+        <View
+          style={[styles.statChip, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+        >
+          <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+            {t('running.elevation.gainLabel')}
+          </Text>
+          <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+            {`+${Math.round(stats.totalElevationGainM)} m`}
+          </Text>
+        </View>
+        <View
+          style={[styles.statChip, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+        >
+          <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+            {t('running.elevation.lossLabel')}
+          </Text>
+          <Text style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+            {`-${Math.round(stats.totalElevationLossM)} m`}
+          </Text>
+        </View>
+      </View>
     </Card>
   );
 }

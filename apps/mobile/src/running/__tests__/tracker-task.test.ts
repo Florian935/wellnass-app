@@ -36,14 +36,20 @@ const flushTrackMock = flushTrack as jest.Mock;
 const M_PER_DEG_LAT = (Math.PI / 180) * 6_371_000;
 
 /** Construit un `LocationObject` minimal a `metersNorth` m au nord de la base, au temps `tS` (s). */
-function loc(metersNorth: number, tS: number, baseLat = 48.85): LocationObject {
+function loc(
+  metersNorth: number,
+  tS: number,
+  baseLat = 48.85,
+  altitude: number | null = null,
+  altitudeAccuracy: number | null = null,
+): LocationObject {
   return {
     coords: {
       latitude: baseLat + metersNorth / M_PER_DEG_LAT,
       longitude: 2.35,
-      altitude: null,
+      altitude,
       accuracy: 5,
-      altitudeAccuracy: null,
+      altitudeAccuracy,
       heading: null,
       speed: null,
     },
@@ -125,5 +131,76 @@ describe('tracker-task — auto-pause / auto-reprise (Volet B)', () => {
     // Laisse l'etat module dans un etat neutre.
     setPaused(false);
     Object.assign(trackerState, initialTrackerState());
+  });
+});
+
+describe('tracker-task — dénivelé cumulé (US RUN-F1b)', () => {
+  beforeEach(() => {
+    flushTrackMock.mockClear();
+    resetTracker();
+    trackerState.autoPause = false; // isole le calcul de dénivelé du chemin auto-pause
+  });
+
+  it('montée régulière au-delà du seuil (+5 m) → gain cumulé, solde remis à zéro', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    handleLocationBatch([loc(1, 1, undefined, 105)]);
+    expect(trackerState.cumulativeElevationGainM).toBe(5);
+    expect(trackerState.cumulativeElevationLossM).toBe(0);
+    expect(trackerState.pendingElevationDeltaM).toBe(0);
+  });
+
+  it('bruit sous le seuil (+1 m puis -1 m) → aucun cumul (spec R3, vérifié concrètement)', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    handleLocationBatch([loc(1, 1, undefined, 101)]); // +1 m, sous le seuil de 3 m
+    handleLocationBatch([loc(2, 2, undefined, 100)]); // -1 m, retombe à 0 avant le seuil
+    expect(trackerState.cumulativeElevationGainM).toBe(0);
+    expect(trackerState.cumulativeElevationLossM).toBe(0);
+  });
+
+  it('altitude null sur un point → aucun crash, aucun cumul dénivelé, distance/durée inchangées', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    handleLocationBatch([loc(1, 1, undefined, null)]);
+    expect(trackerState.cumulativeElevationGainM).toBe(0);
+    expect(trackerState.cumulativeElevationLossM).toBe(0);
+    expect(trackerState.cumulativeDistanceM).toBeGreaterThan(0);
+    expect(trackerState.netDurationS).toBeGreaterThan(0);
+  });
+
+  it('altitudeAccuracy > 30 m → traité comme absent, même effet qu\'une altitude null', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    handleLocationBatch([loc(1, 1, undefined, 110, 50)]); // +10 m mais précision 50 m > seuil
+    expect(trackerState.cumulativeElevationGainM).toBe(0);
+    expect(trackerState.cumulativeElevationLossM).toBe(0);
+  });
+
+  it('segment rejeté par le filtre vitesse (glitch) met quand même à jour lastAltitudeM (spec R2)', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    // Saut de 1000 m en 1 s ≈ vitesse implausible → segment rejeté pour distance/durée/dénivelé,
+    // mais lastPoint/lastAltitudeM avancent quand même (même règle que lastPoint aujourd'hui).
+    handleLocationBatch([loc(1000, 1, undefined, 250)]);
+    expect(trackerState.cumulativeElevationGainM).toBe(0); // le segment glitch n'a pas compté
+    expect(trackerState.lastAltitudeM).toBe(250); // mais la base a bien avancé
+  });
+
+  it('pause puis reprise avec une altitude différente ne produit pas de saut de dénivelé (spec R4)', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    setPaused(true);
+    // Pendant la pause, l'altitude "descend" de 50 m (ex. ravitaillement en contrebas).
+    handleLocationBatch([loc(0.5, 5, undefined, 50)]);
+    expect(trackerState.cumulativeElevationLossM).toBe(0); // rien compté pendant la pause
+    setPaused(false);
+    // Reprise : nouvelle montée de 5 m depuis la base rebasée à 50 (pas depuis 100).
+    handleLocationBatch([loc(1, 10, undefined, 55)]);
+    expect(trackerState.cumulativeElevationGainM).toBe(5);
+    expect(trackerState.cumulativeElevationLossM).toBe(0);
+  });
+
+  it('flushTrack reçoit les cumuls dénivelé arrondis, aux côtés de distance/durée', () => {
+    handleLocationBatch([loc(0, 0, undefined, 100)]);
+    handleLocationBatch([loc(1, 1, undefined, 105)]);
+    expect(flushTrackMock).toHaveBeenLastCalledWith(
+      'run-1',
+      expect.objectContaining({ elevationGainM: 5, elevationLossM: 0 }),
+    );
   });
 });

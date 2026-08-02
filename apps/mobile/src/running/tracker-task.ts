@@ -84,6 +84,22 @@ export interface TrackerState {
   cumulativeDistanceM: number;
   /** Durée nette cumulée en secondes, hors temps de pause. */
   netDurationS: number;
+  /**
+   * Dénivelé positif/négatif cumulé en mètres (US RUN-F1b, spec R2/R3), source de vérité —
+   * jamais recalculé depuis `gps_track` (même patron que `cumulativeDistanceM`).
+   */
+  cumulativeElevationGainM: number;
+  cumulativeElevationLossM: number;
+  /**
+   * Solde d'altitude en attente de franchir le seuil de bruit avant validation (spec R3),
+   * jamais flushé — état interne uniquement.
+   */
+  pendingElevationDeltaM: number;
+  /**
+   * Dernière altitude connue (US RUN-F1b), ou `null`. Suit exactement le sort de `lastPoint`/
+   * `lastPointT` (spec R2/R4) : mise à jour même sur un segment rejeté ou pendant une pause.
+   */
+  lastAltitudeM: number | null;
   /** Dernier point GPS retenu (pour raccorder le lot suivant), ou `null`. */
   lastPoint: GpsPoint | null;
   /** `t` (s depuis départ) du dernier point retenu, pour la comptabilité durée. */
@@ -113,6 +129,10 @@ export function initialTrackerState(): TrackerState {
     startedAtMs: 0,
     cumulativeDistanceM: 0,
     netDurationS: 0,
+    cumulativeElevationGainM: 0,
+    cumulativeElevationLossM: 0,
+    pendingElevationDeltaM: 0,
+    lastAltitudeM: null,
     lastPoint: null,
     lastPointT: null,
     paused: false,
@@ -187,8 +207,28 @@ export function setLastFlushPromise(p: Promise<void>): void {
 }
 
 /**
- * Convertit un lot de positions natives en points GPS relatifs à la course,
- * en ÉCARTANT les fixes invalides (Volet A : null island (0,0), hors bornes,
+ * Seuil de précision verticale (m) au-delà duquel une altitude est traitée comme absente
+ * (US RUN-F1b, spec R1). ⚠️ Valeur posée par analogie (montres GPS grand public), **non validée
+ * terrain sur cette stack** — à ajuster après la première recette réelle (spec R7).
+ */
+const ALTITUDE_ACCURACY_MAX_M = 30;
+
+/**
+ * Point GPS retenu accompagné de son altitude (US RUN-F1b), construit dans la MÊME boucle que le
+ * filtre de validité horizontale (`isValidFix`) — jamais par un second passage indépendant sur
+ * `locations`, qui désynchroniserait silencieusement point et altitude dès qu'un fix est filtré
+ * (spec R1 bis). `point` reste `{lat,lng,t}` : le codec de trace (`encodeSegment`/`decodeTrack`)
+ * ne connaît pas l'altitude et n'a pas besoin de changer (spec §0).
+ */
+interface GpsPointWithAltitude {
+  point: GpsPoint;
+  /** `null` si absente, ou si `altitudeAccuracy` dépasse `ALTITUDE_ACCURACY_MAX_M` (spec R1). */
+  altitudeM: number | null;
+}
+
+/**
+ * Convertit un lot de positions natives en points GPS relatifs à la course (+ altitude, US
+ * RUN-F1b), en ÉCARTANT les fixes invalides (Volet A : null island (0,0), hors bornes,
  * précision dégradée > seuil). Le filtre `isValidFix` (pur, dans `@wellness/shared`)
  * est la source de vérité ; ici on ne fait qu'adapter le `LocationObject` d'Expo
  * (`coords.accuracy` peut être `null`).
@@ -198,10 +238,14 @@ export function setLastFlushPromise(p: Promise<void>): void {
  * par `encodeSegment`).
  *
  * Un fix rejeté n'entre pas dans le résultat : il n'est donc ni encodé, ni
- * cumulé (distance/durée), ni retenu comme `lastPoint` par `handleLocationBatch`.
+ * cumulé (distance/durée/dénivelé), ni retenu comme `lastPoint`/`lastAltitudeM` par
+ * `handleLocationBatch`.
  */
-function toGpsPoints(locations: LocationObject[], startedAtMs: number): GpsPoint[] {
-  const points: GpsPoint[] = [];
+function toGpsPointsWithAltitude(
+  locations: LocationObject[],
+  startedAtMs: number,
+): GpsPointWithAltitude[] {
+  const result: GpsPointWithAltitude[] = [];
   for (const loc of locations) {
     if (
       !isValidFix({
@@ -212,18 +256,33 @@ function toGpsPoints(locations: LocationObject[], startedAtMs: number): GpsPoint
     ) {
       continue; // fix invalide : écarté à l'ingestion.
     }
-    points.push({
-      lat: loc.coords.latitude,
-      lng: loc.coords.longitude,
-      t: (loc.timestamp - startedAtMs) / 1000,
+    const { altitude, altitudeAccuracy } = loc.coords;
+    const altitudeM =
+      altitude != null && (altitudeAccuracy == null || altitudeAccuracy <= ALTITUDE_ACCURACY_MAX_M)
+        ? altitude
+        : null;
+    result.push({
+      point: {
+        lat: loc.coords.latitude,
+        lng: loc.coords.longitude,
+        t: (loc.timestamp - startedAtMs) / 1000,
+      },
+      altitudeM,
     });
   }
-  return points;
+  return result;
 }
 
 /**
- * Traite un lot de positions : met à jour l'état cumulatif (distance/durée nette),
- * gère l'auto-pause, encode le lot et déclenche un flush append-only.
+ * Seuil de bruit vertical (m) avant de valider un gain/une perte de dénivelé (US RUN-F1b, spec
+ * R3). Simplification assumée, pas un modèle barométrique physique — même esprit pragmatique que
+ * `MAX_PLAUSIBLE_SPEED_MS` pour la distance. ⚠️ Non validé terrain sur cette stack (spec R7).
+ */
+const ELEVATION_NOISE_THRESHOLD_M = 3;
+
+/**
+ * Traite un lot de positions : met à jour l'état cumulatif (distance/durée nette, dénivelé
+ * US RUN-F1b), gère l'auto-pause, encode le lot et déclenche un flush append-only.
  *
  * Exportée pour être testable en isolation (aucun accès natif direct ici).
  *
@@ -238,21 +297,23 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
     return Promise.resolve();
   }
 
-  const points = toGpsPoints(locations, s.startedAtMs);
+  const withAltitude = toGpsPointsWithAltitude(locations, s.startedAtMs);
   // Points conservés pour l'encodage de CE lot (uniquement quand non en pause).
   const kept: GpsPoint[] = [];
 
-  for (const p of points) {
+  for (const { point: p, altitudeM } of withAltitude) {
     // Auto-pause : évaluer la vitesse instantanée par rapport au dernier point.
     if (s.autoPause) {
       evaluateAutoPause(p);
     }
 
     if (s.paused) {
-      // En pause : ne pas cumuler distance/durée ; le point sert de nouvelle base
-      // pour ne pas compter le trajet effectué pendant la pause à la reprise.
+      // En pause : ne pas cumuler distance/durée/dénivelé ; le point (et son altitude) sert de
+      // nouvelle base pour ne pas compter le trajet effectué pendant la pause à la reprise
+      // (spec R4 — même traitement que lastPoint/lastPointT).
       s.lastPoint = p;
       s.lastPointT = p.t;
+      s.lastAltitudeM = altitudeM ?? s.lastAltitudeM;
       continue;
     }
 
@@ -265,12 +326,27 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
         if (speed <= MAX_PLAUSIBLE_SPEED_MS) {
           s.cumulativeDistanceM += dist;
           s.netDurationS += dt;
+          // Dénivelé (US RUN-F1b) : accumulé UNIQUEMENT sur un segment déjà jugé fiable pour la
+          // distance (spec R2) — une seule notion de « segment fiable ».
+          if (altitudeM != null && s.lastAltitudeM != null) {
+            s.pendingElevationDeltaM += altitudeM - s.lastAltitudeM;
+            if (s.pendingElevationDeltaM >= ELEVATION_NOISE_THRESHOLD_M) {
+              s.cumulativeElevationGainM += s.pendingElevationDeltaM;
+              s.pendingElevationDeltaM = 0;
+            } else if (s.pendingElevationDeltaM <= -ELEVATION_NOISE_THRESHOLD_M) {
+              s.cumulativeElevationLossM += -s.pendingElevationDeltaM;
+              s.pendingElevationDeltaM = 0;
+            }
+          }
         }
       }
     }
 
     s.lastPoint = p;
     s.lastPointT = p.t;
+    // Même règle que lastPoint : mise à jour même si le segment a été rejeté par le filtre
+    // vitesse ci-dessus (spec R2) — une seule notion de « dernier point connu ».
+    s.lastAltitudeM = altitudeM ?? s.lastAltitudeM;
     kept.push(p);
   }
 
@@ -284,6 +360,8 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
     segmentEncoded,
     distanceM: s.cumulativeDistanceM,
     durationSeconds: Math.round(s.netDurationS),
+    elevationGainM: Math.round(s.cumulativeElevationGainM),
+    elevationLossM: Math.round(s.cumulativeElevationLossM),
   });
   setLastFlushPromise(p.catch(() => {}));
   return p;
