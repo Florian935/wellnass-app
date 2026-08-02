@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/run14-prediction-riegel` — RUN-14 : prédiction de temps de course livrée (5.34, en recette)
+
+Commit précédent : `d6d83b2`. Validation reçue (« ok go ») sur les 3 livrables — code implémenté
+directement, la spec avait déjà tranché toutes les questions produit.
+
+#### Ajouté
+
+- [pace-records.ts (shared)](packages/shared/src/pace-records.ts) — `predictRaceTime(t1Seconds,
+  d1Meters, d2Meters)` (formule de Riegel, cas limite `d1 === d2` → identité) et
+  `resolveRacePredictions(records)` : source fixe = record des 5 km (R1, `[]` si absent), 3
+  distances cibles (10 km/semi/marathon) **filtrées** de celles ayant déjà un vrai record dans
+  `records` (R3 — le test le plus important de cette US, une seule ligne de filtre à ne pas casser).
+  7 tests : formule vs règle de trois naïve, cas limite, croissance non linéaire, et les 4
+  combinaisons de R1/R3.
+- [running-history/index.tsx](apps/mobile/src/app/running-history/index.tsx) — nouvelle section
+  « Objectifs estimés » sous les records existants (`PredictionsSection`), recalculée à chaque
+  affichage (`useRunningRecords()` déjà réactif + fonction pure → un nouveau record 5 km met à jour
+  les 3 lignes sans code supplémentaire). Réutilise `RECORD_DISTANCE_KEY`/`isoToDate`/
+  `formatDurationHms` déjà en place dans ce fichier — aucun nouveau formateur. La ligne marathon
+  porte l'avertissement R5 dans le **même bloc accessible** (`accessible` sur la `View`), pas une
+  info-bulle séparée.
+- 4 clés `running.predictions.*`, FR+EN.
+
+#### Technique / Notes
+
+- **Aucune migration, aucune dépendance native** — donnée déjà en base
+  (`running_pace_records`, alimentée par `detectAndStoreRunRecords`), calcul pur. Recettable sur
+  l'APK existant.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/269 tests + shared
+  Vitest 67 fichiers/**1354** tests, +7) — lus sans pipe, tous verts. Parité i18n FR/EN vérifiée
+  (1647 clés).
+- Roadmap 5.34 → ✅ (V0.5 : 28 livré / 4 à faire). RECETTES.md #21 créée, 9 critères.
+
 ### 02/08/2026 — `feature/run14-prediction-riegel` — RUN-14 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.

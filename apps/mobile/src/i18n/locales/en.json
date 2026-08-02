@@ -1682,6 +1682,12 @@
       "newRecordTitle": "New record!",
       "newRecordBody": "You beat your record on {{distances}}",
       "refPaceUpdated": "Reference pace updated"
+    },
+    "predictions": {
+      "title": "Estimated goals",
+      "sourceLabel": "Based on your 5K on {{date}} in {{time}}",
+      "marathonWarning": "Take this estimate with caution: the marathon needs specific preparation this projection doesn't measure.",
+      "empty": "Run at least 5K non-stop to see your estimated goals."
     }
   },
   "planning": {

@@ -636,11 +636,37 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 21. RUN-14 — Prédiction de temps de course (formule de Riegel)
+
+📄 [spec](docs/specs/functional/us/run14-prediction-riegel.md) · roadmap 5.34 ·
+**📱 device** · aucune migration, aucune dépendance native → recettable sur l'APK existant.
+
+- [ ] 1. Un coureur avec un record 5 km et aucun autre record → 3 prédictions (10 km, semi,
+      marathon), chacune avec sa source visible (« D'après ton 5 km du … »).
+- [ ] 2. Un coureur avec un record 5 km **et** un record semi réel → la prédiction semi **ne
+      s'affiche pas** ; 10 km et marathon estimés restent affichés (R3).
+- [ ] 3. Un coureur sans aucun record 5 km (ex. n'a couru que du 1 km) → bloc vide explicite, pas de
+      calcul, pas d'écran cassé (R1).
+- [ ] 4. La prédiction marathon affiche l'avertissement dédié (R5) ; 10 km et semi n'en ont pas.
+- [ ] 5. Battre son record 5 km met à jour les 3 prédictions au prochain affichage (recalcul à la
+      lecture, pas de valeur mise en cache périmée).
+- [ ] 6. **Mode avion** : le bloc s'affiche normalement (aucun réseau requis).
+- [ ] 7. Réglage **impérial** : les temps s'affichent identiques (la formule ne dépend pas de
+      l'unité).
+- [ ] 8. En **EN** : toutes les phrases (source, avertissement, état vide) sont grammaticales.
+- [ ] 9. TalkBack énonce chaque ligne comme un bloc cohérent (distance + temps + source), pas des
+      fragments disjoints.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
-UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b** (aucune dépendance
-native neuve, `react-native-svg` déjà présent)
+UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b**/**RUN-14** (aucune
+dépendance native neuve, `react-native-svg`/calcul pur déjà en place)
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).

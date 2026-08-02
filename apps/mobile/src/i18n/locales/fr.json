@@ -1682,6 +1682,12 @@
       "newRecordTitle": "Nouveau record !",
       "newRecordBody": "Tu as battu ton record sur {{distances}}",
       "refPaceUpdated": "Allure de référence mise à jour"
+    },
+    "predictions": {
+      "title": "Objectifs estimés",
+      "sourceLabel": "D'après ton 5 km du {{date}} en {{time}}",
+      "marathonWarning": "Estimation à prendre avec prudence : le marathon demande une préparation spécifique que cette projection ne mesure pas.",
+      "empty": "Cours au moins 5 km sans interruption pour voir tes objectifs estimés."
     }
   },
   "planning": {

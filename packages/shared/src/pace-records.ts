@@ -68,3 +68,61 @@ export function computeRunRecords(points: ReadonlyArray<GpsPoint>): Partial<Reco
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// Prédiction de temps (US RUN-14, roadmap 5.34) — formule de Riegel
+// ---------------------------------------------------------------------------
+
+/** Exposant de Riegel : la fatigue s'accumule plus vite que la distance. */
+const RIEGEL_EXPONENT = 1.06;
+
+/** Distance source unique des prédictions (spec R1) — déjà la référence de l'app (VMA, `running-paces.ts`). */
+const PREDICTION_SOURCE: RecordDistanceKey = '5k';
+
+/** Distances cibles des prédictions, dans cet ordre (spec R2) — toujours plus longues que la source. */
+const PREDICTION_TARGETS: RecordDistanceKey[] = ['10k', 'semi', 'marathon'];
+
+/** Distance en mètres d'une clé canonique. */
+function metersOf(key: RecordDistanceKey): number {
+  return RUNNING_RECORD_DISTANCES.find((d) => d.key === key)!.meters;
+}
+
+/**
+ * Temps prédit (s) sur `d2Meters` à partir d'un temps `t1Seconds` sur `d1Meters` (formule de
+ * Riegel). `d2Meters === d1Meters` renvoie `t1Seconds` inchangé (cas limite trivial).
+ */
+export function predictRaceTime(t1Seconds: number, d1Meters: number, d2Meters: number): number {
+  if (d2Meters === d1Meters) return t1Seconds;
+  return t1Seconds * (d2Meters / d1Meters) ** RIEGEL_EXPONENT;
+}
+
+/** Une prédiction résolue, prête pour l'affichage. */
+export type RacePrediction = {
+  distanceKey: RecordDistanceKey;
+  predictedSeconds: number;
+  sourceTimeSeconds: number;
+  sourceAchievedAt: string;
+};
+
+/**
+ * Prédictions de temps (10 km / semi / marathon) depuis le record des 5 km (spec R1) — `[]` si ce
+ * record n'existe pas (aucun calcul, pas d'erreur). Une distance cible qui a déjà un **vrai**
+ * record dans `records` n'est **jamais** prédite (spec R3) : la vraie performance prime toujours
+ * sur une estimation.
+ */
+export function resolveRacePredictions(
+  records: ReadonlyArray<{ distanceKey: RecordDistanceKey; bestTimeSeconds: number; achievedAt: string }>,
+): RacePrediction[] {
+  const source = records.find((r) => r.distanceKey === PREDICTION_SOURCE);
+  if (!source) return [];
+
+  const alreadyRecorded = new Set(records.map((r) => r.distanceKey));
+  const d1 = metersOf(PREDICTION_SOURCE);
+
+  return PREDICTION_TARGETS.filter((key) => !alreadyRecorded.has(key)).map((distanceKey) => ({
+    distanceKey,
+    predictedSeconds: predictRaceTime(source.bestTimeSeconds, d1, metersOf(distanceKey)),
+    sourceTimeSeconds: source.bestTimeSeconds,
+    sourceAchievedAt: source.achievedAt,
+  }));
+}

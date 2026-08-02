@@ -29,6 +29,7 @@ import {
   formatDayFull,
   percentChange,
   previousPeriodTodayKey,
+  resolveRacePredictions,
   RUNNING_RECORD_DISTANCES,
   type PaceTrendKind,
   type RecordDistanceKey,
@@ -149,6 +150,11 @@ export default function RunningHistoryScreen() {
             {t('running.records.sectionTitle')}
           </Text>
           <RecordsSection />
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+            {t('running.predictions.title')}
+          </Text>
+          <PredictionsSection />
         </ScrollView>
       )}
     </Screen>
@@ -409,6 +415,74 @@ function RecordsSection() {
 }
 
 // ---------------------------------------------------------------------------
+// Objectifs estimés (US RUN-14) — formule de Riegel depuis le record des 5 km
+// ---------------------------------------------------------------------------
+
+/**
+ * Prédictions de temps (10 km / semi / marathon) depuis le record des 5 km. Calcul pur
+ * (`resolveRacePredictions`), recalculé à chaque affichage — pas de valeur stockée, un nouveau
+ * record 5 km met donc à jour les 3 lignes sans code supplémentaire (spec critère 5).
+ *
+ * R3 (spec) : une distance qui a déjà un **vrai** record dans `records` n'est jamais prédite ici —
+ * c'est `resolveRacePredictions` qui l'écarte, pas ce composant.
+ */
+function PredictionsSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { records } = useRunningRecords();
+
+  const predictions = resolveRacePredictions(records);
+
+  if (predictions.length === 0) {
+    return (
+      <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+        {t('running.predictions.empty')}
+      </Text>
+    );
+  }
+
+  return (
+    <View style={styles.list}>
+      {predictions.map((p) => {
+        const isMarathon = p.distanceKey === 'marathon';
+        return (
+          <View
+            key={p.distanceKey}
+            accessible
+            style={[
+              styles.predRow,
+              isMarathon
+                ? { backgroundColor: colors.warn, borderColor: colors.warnBorder }
+                : { backgroundColor: colors.surface, borderColor: colors.border },
+            ]}
+          >
+            <View style={styles.predTop}>
+              <Text style={[styles.predDist, { color: colors.text }]}>
+                {t(RECORD_DISTANCE_KEY[p.distanceKey])}
+              </Text>
+              <Text style={[styles.predTime, { color: colors.accent }]}>
+                {formatDurationHms(p.predictedSeconds)}
+              </Text>
+            </View>
+            <Text style={[styles.predSrc, { color: colors.textMuted }]}>
+              {t('running.predictions.sourceLabel', {
+                date: isoToDate(p.sourceAchievedAt),
+                time: formatDurationHms(p.sourceTimeSeconds),
+              })}
+            </Text>
+            {isMarathon ? (
+              <Text style={[styles.predWarn, { color: colors.warnText }]}>
+                {t('running.predictions.marathonWarning')}
+              </Text>
+            ) : null}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Styles
 // ---------------------------------------------------------------------------
 
@@ -461,4 +535,16 @@ const styles = StyleSheet.create({
   runDate: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   runMeta: { fontFamily: fontFamily.body, fontSize: 13 },
   recordPace: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
+  predRow: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 4,
+  },
+  predTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  predDist: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  predTime: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
+  predSrc: { fontFamily: fontFamily.body, fontSize: 12.5 },
+  predWarn: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17, marginTop: 2 },
 });
