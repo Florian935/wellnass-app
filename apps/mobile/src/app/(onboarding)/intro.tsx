@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
@@ -14,8 +14,13 @@ export default function OnboardingIntro() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  // Entrée dans l'onboarding : émis une seule fois au montage de l'écran d'intro.
+  // Entrée dans l'onboarding : émis une seule fois au montage de l'écran d'intro. Gardé par un
+  // ref (survit à un double-appel de l'effet, ex. React StrictMode en dev) — sans lui, un doublon
+  // d'`onboarding_started` était observé en dev (dette technique, US 9.10).
+  const started = useRef(false);
   useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     void track(ANALYTICS_EVENTS.onboardingStarted);
   }, []);
 

@@ -22,6 +22,7 @@ import { Button } from '@/components/Button';
 import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { CycleTrackingSection } from '@/components/CycleTrackingSection';
 import { Segment } from '@/components/Segment';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
 import {
@@ -336,7 +337,11 @@ export default function SettingsScreen() {
             <Text style={[styles.rowLabel, { color: colors.text }]}>{t(`pillars.${pillar}`)}</Text>
             <Switch
               value={activePillars.includes(pillar)}
-              onValueChange={() => void togglePillar(pillar)}
+              onValueChange={() =>
+                void togglePillar(pillar).then(({ activated }) => {
+                  if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
+                })
+              }
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"
               accessibilityLabel={t(`pillars.${pillar}`)}

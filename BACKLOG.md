@@ -205,9 +205,17 @@ Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md
       tournent en **6,4 s et 7,2 s** isolément — largement sous le `testTimeout` de 15 s. Le
       diagnostic « ~250 s par suite » était un artefact de poste chargé, **pas** un défaut de code
       ni de configuration. Aucun `testTimeout` à relever.
-- [ ] **Suivi analytics (US 9.10)** : dépendance circulaire bénigne `analytics.ts ↔ settings-repository.ts` ·
-      test du gating `track()` (OFF → no-op) · doublon `onboarding_started` observé en dev (probable
-      StrictMode, à confirmer hors dev) · renseigner une vraie `app_version` avant la bêta.
+- [x] ~~**Suivi analytics (US 9.10)**~~ — **corrigé le 02/08/2026** (`fix/dette-analytics-tests-cycle`).
+      **Dépendance circulaire détricotée** : `settings-repository.ts` n'importe plus `@/lib/analytics`
+      — `togglePillar` retourne désormais `{ activated }`, et c'est **l'appelant**
+      (`(onboarding)/pillars.tsx`, `settings.tsx`) qui décide de tracker `pillarActivated`. Un seul
+      sens d'import reste (`analytics.ts → settings-repository.ts`, pour `getAnalyticsEnabled`).
+      **Tests de gating de `track()` ajoutés** (4 cas : session+ON → écrit, OFF → no-op, pas de
+      session → no-op **sans même consulter le consentement**, échec d'écriture → ne jette jamais).
+      **Doublon `onboarding_started`** : confirmé être un artefact React StrictMode (dev uniquement,
+      effet à double-invocation) — corrigé par un garde `useRef` sur `(onboarding)/intro.tsx`, qui
+      rend la question sans objet plutôt que d'attendre une confirmation device. `app_version` était
+      déjà réelle depuis le 30/07/2026 (`app.json` → `1.0.0`), rien à faire de ce côté.
 - [ ] **Recette 2 appareils du `signOut` local** (`fix/signout-scope-local`) — déconnecter A ne doit
       pas déconnecter B. Non vérifiable sur un seul device.
 - [ ] **Découpage des stats course par type de séance** — différé : les courses libres n'ont pas de

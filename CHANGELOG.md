@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `fix/dette-analytics-tests-cycle` — Dette analytics (US 9.10) : dépendance circulaire détricotée + tests de gating
+
+Commit précédent : `a311fa7`. Dernier item repris de la liste « Dette & suivi technique ».
+
+#### Modifié
+
+- [settings-repository.ts](apps/mobile/src/data/repositories/settings-repository.ts) —
+  `togglePillar` **n'importe plus `@/lib/analytics`** (qui importe lui-même `getAnalyticsEnabled`
+  d'ici → c'était le cycle). Retourne désormais `{ activated: boolean }` ; c'est l'appelant qui
+  décide de tracker `pillarActivated`, uniquement à l'activation.
+- [(onboarding)/pillars.tsx](apps/mobile/src/app/(onboarding)/pillars.tsx) et
+  [settings.tsx](apps/mobile/src/app/settings.tsx) — les deux call sites de `togglePillar`
+  enchaînent désormais `.then(({ activated }) => ...)` pour émettre l'événement, comportement
+  utilisateur strictement inchangé.
+- [(onboarding)/intro.tsx](apps/mobile/src/app/(onboarding)/intro.tsx) — garde `useRef` sur
+  l'effet qui émet `onboarding_started` : le doublon observé en dev était un artefact React
+  StrictMode (effet à double-invocation), pas un vrai bug de tracking. La garde rend la question
+  sans objet plutôt que d'attendre une confirmation sur build de prod.
+
+#### Ajouté
+
+- [analytics.test.ts](apps/mobile/src/lib/__tests__/analytics.test.ts) — 4 tests sur `track()`
+  (jusqu'ici seuls les helpers purs `sanitizeProps`/`buildEventRow` l'étaient) : écrit si
+  session + consentement ON, no-op si OFF, no-op si pas de session **sans même consulter le
+  consentement**, et surtout **ne jette jamais** même si l'écriture échoue (garantie best-effort
+  du service, jusqu'ici non vérifiée).
+
+#### Technique / Notes
+
+- `app_version` était déjà réelle depuis le 30/07/2026 (`app.json` → `1.0.0`) — rien à faire, item
+  du même point de dette déjà clos.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/**269** tests, +4 —
+  shared Vitest 67 fichiers/1347 tests) — lus sans pipe, tous verts.
+- Aucune ligne roadmap (dette hors US, pas de numéro thématique). BACKLOG.md : item « Suivi
+  analytics (US 9.10) » clos.
+
 ### 02/08/2026 — `fix/planning-preview-pillar-label` — Widget planning cross-pilier : ambiguïté levée (décision Florian)
 
 Commit précédent : `6f0fc5d`. Point ouvert du BACKLOG tranché par Florian : le widget « Planning »

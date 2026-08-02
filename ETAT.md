@@ -58,8 +58,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/planning-preview-pillar-label` (modifications non commitées) |
-| Commits | 1008 · `main` a **1005** commits de retard sur `dev` |
+| Branche courante | `fix/dette-analytics-tests-cycle` (modifications non commitées) |
+| Commits | 1009 · `main` a **1006** commits de retard sur `dev` |
 | Specs d'US | 97 au total — 77 clôturées, 20 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -70,11 +70,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a311fa7` fix(planning): préfixe de pilier sur le widget planning cross-hub
 - `6f0fc5d` fix(dette): accessibilité (chips, Segment, Button) + seed.sql en migration idempotente
 - `54bf80b` feat(muscf1b): schéma corporel — anatomie fine additive (US MUSC-F1b, 6.2)
 - `a293ba8` feat(muscf9): glisser-déposer du planning + retour haptique (US MUSC-F9, 3.10)
 - `1773aaf` feat(runf3): comparaison à l'objectif de course + terrain (roadmap 5.25, D3)
-- `4d6594d` fix(conf07): corrige les 5 non-conformités WCAG AA restantes (roadmap 9.11/9.12)
 
 ---
 

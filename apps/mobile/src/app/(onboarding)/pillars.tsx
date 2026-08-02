@@ -3,6 +3,7 @@ import { StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PILLARS, resolveActivePillars, type Pillar } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { togglePillar, useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -37,7 +38,11 @@ export default function OnboardingPillars() {
             <Text style={[styles.label, { color: colors.text }]}>{t(`pillars.${pillar}`)}</Text>
             <Switch
               value={activePillars.includes(pillar)}
-              onValueChange={() => void togglePillar(pillar)}
+              onValueChange={() =>
+                void togglePillar(pillar).then(({ activated }) => {
+                  if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
+                })
+              }
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"
               accessibilityLabel={t(`pillars.${pillar}`)}

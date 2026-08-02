@@ -29,7 +29,6 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { resolveDeviceLocale } from '@/i18n';
 import { insertWithSyncFields, patch } from './_sql';
 
@@ -308,24 +307,26 @@ export async function updateSettings(patchInput: Partial<SettingsInput>): Promis
  * Active ou désactive un pilier dans `active_pillars`.
  * Si le pilier est présent → retrait. S'il est absent → ajout.
  * En l'absence de ligne existante, part de tous les piliers puis applique le toggle.
+ *
+ * Retourne `{ activated }` pour que l'appelant décide seul de tracker l'événement analytics
+ * (`pillarActivated`, uniquement à l'activation) — ce repository n'importe **jamais**
+ * `@/lib/analytics`, qui importe lui-même `getAnalyticsEnabled` d'ici (dépendance circulaire
+ * évitée, dette technique du 30/07/2026).
  */
-export async function togglePillar(pillar: Pillar): Promise<void> {
+export async function togglePillar(pillar: Pillar): Promise<{ activated: boolean }> {
   const existing = await getCurrentRow();
   const current: Pillar[] = existing
     ? parseJsonColumn<Pillar[]>(existing.active_pillars, [...PILLARS], isPillarArray)
     : [...PILLARS];
 
-  const isActivation = !current.includes(pillar);
-  const next = isActivation ? [...current, pillar] : current.filter((p) => p !== pillar);
-
-  // Analytics : uniquement à l'activation (ajout), pas au retrait. Fire-and-forget.
-  if (isActivation) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
+  const activated = !current.includes(pillar);
+  const next = activated ? [...current, pillar] : current.filter((p) => p !== pillar);
 
   if (existing) {
     await patch('user_settings', existing.id, {
       active_pillars: JSON.stringify(next),
     });
-    return;
+    return { activated };
   }
 
   // Aucune ligne : créer la ligne complète avec les defaults + active_pillars patché.
@@ -339,6 +340,7 @@ export async function togglePillar(pillar: Pillar): Promise<void> {
     notifications: JSON.stringify(defaultNotificationPrefs()),
     dashboard_layout: null,
   });
+  return { activated };
 }
 
 /**
