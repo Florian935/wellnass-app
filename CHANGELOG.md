@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/tri12-garde-fou-global` — TRI-12 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Dernier candidat ouvert de la famille garde-fou identifiée par META-19 (avec RUN-18 livrée et MR-10
+absorbée). Aucun code, **aucune ligne roadmap** (US d'analyse, catalogue seul).
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/tri12-garde-fou-global.md) — garde-fou tri-pilier combinant (a)
+  un enchaînement de ≥ 6 jours à charge sans repos (réutilise `sessionLoad`/`computeStreak`) et (b)
+  un déficit calorique persistant (≥ 4 des 7 derniers jours calendaires en déficit ≥ 15 %, seule la
+  constante `DEFICIT_ALERT_RATIO` de MN-02 est réutilisée, le comptage par jour est neuf). Alerte
+  **seulement si les deux signaux sont vrais** (R4) — ni un doublon d'ACWR, ni un doublon de MN-02.
+  Gating tri-pilier (`strength`+`running`+`nutrition`), Tier 2 (ADR-007), même patron que
+  `TrainingLoadAlertCard`.
+- [Plan](docs/plans/tri12-garde-fou-global.md) — 2 étapes : `countDeficitDaysInWindow` +
+  `computeOvertrainingGuard` (packages/shared, purs, testés d'abord, même fichier que
+  `sessionLoad`) → hook `useOvertrainingGuardAlert` + `OvertrainingGuardCard` (copie structurelle de
+  `TrainingLoadAlertCard`) → solde (catalogue seul).
+- [Maquette](design/tri12-garde-fou-global/tri12-garde-fou-global.html) — le widget visible + les 3
+  cas où il reste absent (un seul signal, gating incomplet) + une note explicite sur la coexistence
+  possible avec `DeficitVolumeAlertCard`/`TrainingLoadAlertCard`.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 5 corrections apportées avant validation — réutilisation
+  de MN-02 recadrée (seule la constante `DEFICIT_ALERT_RATIO` l'est, pas les fonctions, qui sont sur
+  une moyenne hebdo et un seuil de volume muscu sans rapport), collision de valeur avec
+  `MIN_LOGGED_DAYS` (bodyweight.ts) signalée et nommée distinctement, formulation « majorité »
+  corrigée en compte absolu sur fenêtre fixe (avec cas limite explicité), limite connue sur les
+  repas non loggés documentée comme héritée de MN-02 (pas un défaut nouveau), et coexistence des 3
+  widgets d'alerte dashboard traitée explicitement plutôt que passée sous silence.
+- Aucune migration, aucune nouvelle donnée (`workouts`/`runs`/`food_entries` déjà en base).
+
 ### 02/08/2026 — `docs/mr10-absorbee-meta19` — MR-10 marquée absorbée par META-19 (doublon de formulation)
 
 Doc uniquement, aucun code.

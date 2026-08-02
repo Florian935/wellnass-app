@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRI-12 — Détection de surcharge / sous-récupération globale</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:78ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:78ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px}
+  .cardwarn{background:var(--warn);border:1px solid var(--warnborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--warntext)}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;color:var(--warntext);margin-top:6px}
+  .cardmsg{font-size:13.5px;color:var(--warntext);margin-top:4px;line-height:1.4}
+  .banner{margin-top:12px;background:rgba(138,100,25,.1);border:1px solid var(--warnborder);
+          border-radius:12px;padding:10px 13px;font-size:12.5px;color:var(--warntext)}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .zone-low{border-left:4px solid var(--bstrong)}
+  .zone-safe{border-left:4px solid var(--success)}
+  .zone-high{border-left:4px solid var(--accent)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>TRI-12 — Détection de surcharge / sous-récupération globale</h1>
+<p class="sub">Widget <strong>conditionnel</strong> du dashboard (Tier 2, ADR-007), même famille que
+META-19 — mais un signal <strong>composite</strong> : il combine un enchaînement de jours
+d'entraînement sans repos <strong>et</strong> un déficit calorique persistant. Ni l'un ni l'autre
+seul ne suffit à l'afficher.</p>
+
+<h2>La méthode : deux signaux indépendants, une seule alerte s'ils sont vrais ensemble</h2>
+<p class="why">Ni un doublon d'ACWR (META-19/RUN-18), ni une nouvelle formule pour la charge : les
+deux briques déjà en place sont réutilisées, seule leur combinaison est nouvelle.</p>
+<div class="note" style="margin-top:0">
+  <code>jour à charge = au moins une séance (muscu ou course) avec sessionLoad &gt; 0</code><br>
+  <code>enchaînement sans repos = ≥ 6 jours à charge consécutifs (computeStreak)</code><br>
+  <code>déficit persistant = ≥ 4 des 7 derniers jours calendaires, loggés ET en déficit ≥ 15 %</code><br>
+  <code>alerte = enchaînement sans repos ET déficit persistant (jamais l'un sans l'autre)</code>
+</div>
+
+<h2>1 · Le widget visible — les deux conditions réunies</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Forme wide (dashboard)</div>
+    <div class="card cardwarn" style="display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;border-radius:15px;background:rgba(177,79,43,.14);
+                  display:flex;align-items:center;justify-content:center">
+        <span class="emoji">⚠️</span>
+      </div>
+      <div>
+        <div class="cardtitle" style="margin-top:0">Signal de surcharge</div>
+        <div class="cardmsg">Tu enchaînes les séances sans repos depuis plusieurs jours, avec des
+        apports régulièrement sous ta cible.</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme large (dashboard)</div>
+    <div class="card cardwarn">
+      <div class="cardhead"><span class="eyebrow">Charge &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">Signal de surcharge</div>
+      <div class="cardmsg">Tu enchaînes les séances sans repos depuis plusieurs jours, avec des
+      apports régulièrement sous ta cible.</div>
+      <div class="banner">Un jour de repos et un repas plus complet peuvent t'aider à repartir du
+      bon pied.</div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Un seul signal ne suffit jamais (spec R4)</h2>
+<div class="row3">
+  <div class="zonecard zone-safe">
+    <b>Charge sans repos seule</b>
+    <p>6+ jours à charge, mais apports dans la cible → le widget reste absent. Ce cas précis est un
+    autre candidat du catalogue (MR-14), pas celui-ci.</p>
+  </div>
+  <div class="zonecard zone-safe">
+    <b>Déficit persistant seul</b>
+    <p>Apports sous la cible 4 jours sur 7, mais un jour de repos a rompu la série de charge → le
+    widget reste absent. Déjà couvert par un autre widget existant (MN-02) sur sa propre fenêtre.</p>
+  </div>
+  <div class="zonecard zone-low">
+    <b>3 piliers non tous actifs (R5)</b>
+    <p>Nutrition désactivée, par exemple : le widget ne peut jamais s'afficher, quelle que soit la
+    charge — sans les 3 données, le diagnostic n'est plus « global ».</p>
+  </div>
+</div>
+<div class="hiddenbox" style="margin-top:14px">Dans les 3 cas ci-dessus : rien à cet endroit du
+dashboard — comme n'importe quel widget conditionnel masqué.</div>
+
+<h2>3 · Coexistence avec les widgets déjà livrés</h2>
+<div class="note" style="margin-top:0">
+  Avec les 3 piliers actifs et une situation vraiment mauvaise, <code>DeficitVolumeAlertCard</code>
+  (MN-02), <code>TrainingLoadAlertCard</code> (META-19) et ce widget peuvent s'afficher
+  <strong>en même temps</strong>. Assumé, pas un défaut : chacun répond à une question distincte sur
+  une fenêtre différente (moyenne hebdo déficit+volume · ratio ACWR 7j/28j · série sans repos +
+  persistance du déficit). Aucun mécanisme de priorité entre eux en V1.
+</div>
+
+<h2>Les règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — « Jour à charge » réutilise sessionLoad, pas un seuil inventé</b>
+    Même définition que META-19/RUN-18 : une séance sans RPE ni durée contribue une charge nulle,
+    elle ne compte pas comme un jour à charge.</div>
+  <div class="rule"><b>R2 — Seuil du streak (6 j) aligné sur la fourchette catalogue de MR-14</b>
+    Pas un chiffre inventé pour cette US : le catalogue proposait déjà « 6-7 j » pour la même idée
+    de série sans repos.</div>
+  <div class="rule"><b>R3 — Déficit : compte absolu sur 7 j calendaires, pas une majorité</b>
+    4 jours en déficit sur 7 sont requis en valeur absolue — un jour non loggé au milieu ne remplace
+    rien, il ne compte simplement pas.</div>
+  <div class="rule"><b>R4 — Les deux signaux, jamais un seul</b>
+    La règle la plus facile à casser par erreur à l'implémentation — testée en premier (plan, étape 1).</div>
+</div>
+
+</div></body></html>

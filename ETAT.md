@@ -41,6 +41,7 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **TRI-12** — Détection de surcharge / sous-récupération globale | `validation` | `feature/tri12-garde-fou-global` | — |
 
 ⏳ **25 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
@@ -63,9 +64,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `docs/mr10-absorbee-meta19` (modifications non commitées) |
-| Commits | 1024 · `main` a **1021** commits de retard sur `dev` |
-| Specs d'US | 102 au total — 77 clôturées, 25 en cours |
+| Branche courante | `feature/tri12-garde-fou-global` (modifications non commitées) |
+| Commits | 1025 · `main` a **1022** commits de retard sur `dev` |
+| Specs d'US | 103 au total — 77 clôturées, 26 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -75,11 +76,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b39c7ad` docs(catalogue): MR-10 absorbée par META-19 (doublon de formulation)
 - `02eacfd` feat(run18): charge d'entraînement & ACWR (running seul)
 - `0ec97e3` docs(run18): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `bff0be9` feat(meta19): garde-fou surentraînement — ACWR combiné (widget conditionnel Tier 2)
 - `7cc2990` docs(meta19): entrée en pipeline — spec, plan, maquette (catalogue seul)
-- `a9f15a6` docs(catalogue): corrige le statut de RUN-14/NUTR-16/MUSC-09 (analyses.md)
 
 ---
 
