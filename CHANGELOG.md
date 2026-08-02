@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/run18-acwr-running` — RUN-18 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Déclinaison running-seule du garde-fou ACWR (META-19, livré juste avant). Aucun code, **aucune
+ligne roadmap** (US d'analyse, catalogue seul — même règle que META-19).
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/run18-acwr-running.md) — réutilise `sessionLoad`/`computeAcwr`
+  (posés par META-19) sur les seules courses. **Surfaçage Tier 1** (écran `running-history`, à la
+  demande) et non Tier 2 dashboard : évite la redite avec l'alerte combinée de META-19 et affiche
+  les **3 zones** (basse/saine/risque), pas un simple booléen d'alerte. Seuil aligné sur 1,3
+  (méthode déjà validée par META-19), écart assumé avec le « 1,5 » du catalogue (non sourcé pour un
+  cas « course seule » distinct — même type de correction que le R5 de META-19 sur une formulation
+  trop large du catalogue).
+- [Plan](docs/plans/run18-acwr-running.md) — 2 étapes : extension additive de `computeAcwr` (ajout
+  du champ `zone`, sans toucher `showAlert` ni la signature) → section `TrainingLoadSection` dans
+  `running-history/index.tsx` (calcul inline, même patron que `PredictionsSection`/RUN-14, pas de
+  nouveau hook de repository) → solde (catalogue seul).
+- [Maquette](design/run18-acwr-running/run18-acwr-running.html) — les 4 états (zone basse, zone
+  saine, zone de risque, pas de base de comparaison) + le rappel des 4 différences avec le widget
+  dashboard de META-19.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 5 corrections apportées avant validation — bornes de
+  zone tranchées explicitement (comparaisons inclusives 0,8/1,3, alignées sur le code), format du
+  ratio précisé (2 décimales, sans formatage localisé), critère de recette sur le seuil déplacé vers
+  les tests unitaires (non vérifiable sur device), critère RPE manquant reformulé en scénario
+  intra-compte, et surtout : **le patron d'accessibilité `RecordsSection` n'était pas transposable
+  tel quel** (ses lignes sont des `Pressable`, accessibles par un mécanisme que cette section
+  n'aura pas — lignes `View`/`Text` pures nécessitant un `accessible` explicite).
+- Aucune migration, aucune nouvelle donnée (`runs.rpe`/`durationSeconds`/`finishedAt` déjà en base).
+
 ### 02/08/2026 — `feature/meta19-acwr-garde-fou` — META-19 : garde-fou surentraînement (ACWR combiné)
 
 Implémentation du garde-fou validé dans l'entrée précédente. Widget conditionnel Tier 2 (ADR-007) :

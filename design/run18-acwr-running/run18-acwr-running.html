@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-18 — Charge d'entraînement & ACWR (running seul)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419;--low:#eef1e7;--lowborder:#d7ddc7;
+        --lowtext:#586b3a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:76ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:76ch}
+  .row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media(max-width:1000px){.row{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:600px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .sectiontitle{font-size:14px;font-weight:700;margin:0 0 8px}
+  .predrow{background:var(--surfalt);border:1px solid var(--border);border-radius:12px;
+           padding:11px 13px;margin-bottom:9px}
+  .predrow .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .predrow .lbl{font-weight:700;font-size:13.5px}
+  .predrow .ratio{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:18px;color:var(--accent)}
+  .predrow .zone{font-size:12px;color:var(--muted);margin-top:4px}
+  .predrow.risk{background:var(--warn);border-color:var(--warnborder)}
+  .predrow.risk .ratio{color:var(--warntext)}
+  .predrow.risk .zone{color:var(--warntext)}
+  .predrow.low{background:var(--low);border-color:var(--lowborder)}
+  .predrow.low .ratio{color:var(--lowtext)}
+  .predrow.low .zone{color:var(--lowtext)}
+  .emptybox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+            padding:16px;text-align:center;color:var(--muted);font-size:13.5px;margin-top:14px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:84ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:860px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-18 — Charge d'entraînement & ACWR (running seul)</h1>
+<p class="sub">Nouvelle section « Charge d'entraînement », affichée <strong>sous « Objectifs
+estimés »</strong> (RUN-14) sur l'écran historique de course — même écran, aucune nouvelle route.
+Réutilise <code>computeAcwr</code> livré par META-19, appliqué aux seules courses. Contrairement au
+widget dashboard de META-19 (qui se replie hors de la zone de risque), cette section affiche le
+ratio et sa zone <strong>dans les trois cas</strong> — c'est un écran de stats consulté
+volontairement, pas une alerte.</p>
+
+<h2>Les 4 états à valider</h2>
+<p class="why">Trois zones qualitatives (basse / saine / risque) + l'état vide faute d'historique
+(28 jours de course) — jamais un ratio à 0 forcé.</p>
+
+<div class="row">
+
+  <div class="screen">
+    <div class="screenlabel">1 · Zone basse (&lt; 0,8)</div>
+    <div class="sectiontitle">Charge d'entraînement</div>
+    <div class="predrow low">
+      <div class="top"><span class="lbl">Ratio 7 j / 28 j</span><span class="ratio">0.62</span></div>
+      <div class="zone">Zone basse — reprise en douceur</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Ton factuel, pas d'icône
+    d'alerte : une charge basse signale une reprise ou du repos, pas un problème.</p>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">2 · Zone saine (0,8 – 1,3)</div>
+    <div class="sectiontitle">Charge d'entraînement</div>
+    <div class="predrow">
+      <div class="top"><span class="lbl">Ratio 7 j / 28 j</span><span class="ratio">1.05</span></div>
+      <div class="zone">Zone saine</div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">3 · Zone de risque (&gt; 1,3)</div>
+    <div class="sectiontitle">Charge d'entraînement</div>
+    <div class="predrow risk">
+      <div class="top"><span class="lbl">Ratio 7 j / 28 j</span><span class="ratio">1.47</span></div>
+      <div class="zone">Zone de risque — pense à un jour de repos</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Même seuil (1,3) et même
+    intention que le garde-fou combiné du dashboard (META-19) — reformulé pour la course seule.
+    Ton toujours factuel (R4), même dans cette zone.</p>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">4 · Pas de base de comparaison (R5)</div>
+    <div class="sectiontitle">Charge d'entraînement</div>
+    <div class="emptybox">Pas encore assez d'historique (28 jours de course) pour calculer ta
+    charge.</div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Pourquoi 1,3 et pas 1,5</strong> : le catalogue cite deux seuils différents pour la même
+  méthode selon la ligne (RUN-18 : « &gt;1,5 » · META-19 : « ~0,8-1,3 », le seuil standard de la
+  littérature sport-science, déjà implémenté). Sans source distincte pour justifier un seuil
+  « course seule », dupliquer avec un chiffre différent casserait la promesse de brique commune que
+  le catalogue met lui-même en avant pour RUN-18/MR-10/TRI-12. On aligne sur 1,3 (R2 de la spec).
+</div>
+
+<h2>Ce qui distingue cette section du widget dashboard (META-19)</h2>
+<div class="rules">
+  <div class="rule"><b>Tier 1, pas Tier 2</b>
+    Écran de stats du pilier, consulté à la demande — pas une alerte qui interrompt l'accueil.</div>
+  <div class="rule"><b>3 zones affichées, pas un booléen</b>
+    META-19 se replie <code>null</code> hors de la zone de risque ; ici les trois zones sont
+    visibles, y compris la zone basse (hors périmètre du garde-fou, mais pas hors intérêt d'un écran
+    de stats).</div>
+  <div class="rule"><b>Portée running seule</b>
+    Ne regarde que <code>runs</code> — utile en particulier pour un coureur sans pilier muscu actif,
+    pour qui META-19 ne s'affiche jamais (gating <code>strength</code>+<code>running</code>).</div>
+  <div class="rule"><b>Même seuil, même méthode</b>
+    <code>computeAcwr</code> réutilisé tel quel (nouveau champ <code>zone</code>, additif) — aucune
+    formule dupliquée, aucun risque de dérive entre les deux affichages.</div>
+</div>
+
+</div></body></html>
