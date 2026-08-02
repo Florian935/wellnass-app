@@ -10,6 +10,20 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `docs/mr10-absorbee-meta19` — MR-10 marquée absorbée par META-19 (doublon de formulation)
+
+Doc uniquement, aucun code.
+
+#### Modifié
+
+- [Catalogue](docs/product/analyses-donnees.md) — MR-10 (« Ratio charge aiguë:chronique, ACWR
+  combiné ») 🆕 → ✅ absorbée par META-19 : sa description était quasi identique à META-19 (même
+  méthode, mêmes deux piliers, mêmes fenêtres 7 j/28 j), sans nuance de portée ou de surfaçage —
+  même type de doublon que MN-13/MN-06 (constaté le 28/07/2026). Note mise à jour sur les 3
+  déclinaisons identifiées par META-19 : **RUN-18 livrée**, **MR-10 absorbée**, **TRI-12 non
+  concernée** (combine charge + déficit nutritionnel persistant, vraie troisième dimension —
+  candidat toujours ouvert).
+
 ### 02/08/2026 — `feature/run18-acwr-running` — RUN-18 : charge d'entraînement & ACWR (running seul)
 
 Implémentation validée dans l'entrée précédente. Déclinaison running-seule de la brique ACWR posée

@@ -63,8 +63,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/run18-acwr-running` (modifications non commitées) |
-| Commits | 1023 · `main` a **1020** commits de retard sur `dev` |
+| Branche courante | `docs/mr10-absorbee-meta19` (modifications non commitées) |
+| Commits | 1024 · `main` a **1021** commits de retard sur `dev` |
 | Specs d'US | 102 au total — 77 clôturées, 25 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -75,11 +75,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `02eacfd` feat(run18): charge d'entraînement & ACWR (running seul)
 - `0ec97e3` docs(run18): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `bff0be9` feat(meta19): garde-fou surentraînement — ACWR combiné (widget conditionnel Tier 2)
 - `7cc2990` docs(meta19): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `a9f15a6` docs(catalogue): corrige le statut de RUN-14/NUTR-16/MUSC-09 (analyses.md)
-- `5bb7e51` docs(backlog): retire MUSC-09 de la salve post-V0.9 (livrée)
 
 ---
 

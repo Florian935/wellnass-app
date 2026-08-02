@@ -181,7 +181,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | MR-07 | 🆕 | Équilibre force / cardio de la semaine | % (séances ou minutes) muscu vs course + zone cible selon l'objectif. | `workouts` + `runs`, `running_profiles`/objectif | widget | semaine glissante | Vérifier que la balance colle à l'objectif déclaré. | — |
 | MR-08 | 🆕 | Interférence concurrent training | Signale un fort volume course coïncidant avec une chute du volume/charge muscu (et inversement). | `computeVolume` hebdo + `aggregateRunStats` hebdo, `personal_records` | insight | sem à sem, 4-8 sem | Éduquer sur l'arbitrage force/endurance, expliquer une stagnation. | — |
 | MR-09 | ⏳ | Alerte surcharge / suggestion de jour de repos | Détecte l'accumulation de charge combinée et suggère un jour off (jamais imposé). | charge combinée sRPE + série de jours actifs | alerte | glissant 7-10 j | Prévenir blessure/épuisement = éviter l'abandon. | IDEAS garde-fou |
-| MR-10 | 🆕 | Ratio charge aiguë:chronique (ACWR combiné) | Charge 7 j / moyenne 28 j des deux piliers ; zone verte ~0,8-1,3. | charge combinée sRPE quotidienne | score | 7 j / 28 j glissant | Piloter la progression globale sans à-coups. | — |
+| MR-10 | ✅ **absorbée par META-19** | Ratio charge aiguë:chronique (ACWR combiné) | Charge 7 j / moyenne 28 j des deux piliers ; zone verte ~0,8-1,3. **Constaté le 02/08/2026** : description quasi identique à META-19 (même méthode, mêmes deux piliers, mêmes fenêtres) — doublon de formulation, pas une déclinaison distincte (contrairement à RUN-18, qui change de portée). | charge combinée sRPE quotidienne | score | 7 j / 28 j glissant | Piloter la progression globale sans à-coups. | META-19 (livrée · reste recette device) |
 | MR-11 | 🆕 | Progression combinée trop rapide (règle des 10 %) | Alerte si le volume combiné muscu+course grimpe >~10 % d'une semaine à l'autre. | volume muscu hebdo + distance/durée course hebdo | alerte | sem vs sem-1 | Éviter les sauts de charge globale. | running.md §11 |
 | MR-12 | 🆕 | Répartition hebdo des deux piliers (heatmap semaine) | Grille 7 jours colorée par pilier (muscu/course/mixte/repos). | `planned_sessions` + `programs.pillar`, `workouts`/`runs` | tableau | semaine | Visualiser la structure de la semaine (concentration vs étalement). | — |
 | MR-13 | 🆕 | Densité hebdo & jours de repos réels comptés | Nb de jours d'entraînement (muscu ∪ course) sur 7 + jours off, alerte si 0 off. | `workouts.finishedAt` + `runs.finishedAt`, `isTrainingDay` | stat | semaine glissante | Garantir un minimum de récupération hebdo. | — |
@@ -357,8 +357,15 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
 >
 > ⚠️ **MàJ 02/08/2026** — **12 (META-19) livrée** (reste recette) : les **12 candidats de cette
 > liste de priorisation sont désormais tous réglés** (livrés ou absorbés). Prochaine étape :
-> reprioriser depuis le reste du catalogue (RUN-18/MR-10/TRI-12, désormais débloqués par la brique
-> ACWR commune) plutôt que depuis cette liste, qui a rempli son rôle.
+> reprioriser depuis le reste du catalogue plutôt que depuis cette liste, qui a rempli son rôle.
+>
+> ⚠️ **MàJ 02/08/2026 (suite)** — des trois déclinaisons de la brique ACWR identifiées par META-19
+> (RUN-18, MR-10, TRI-12) : **RUN-18 livrée** (reste recette, portée running seule, 3 zones
+> affichées) ; **MR-10 absorbée par META-19** (doublon de formulation — même calcul, mêmes deux
+> piliers, aucune nuance de portée ou de surfaçage dans sa description). **TRI-12 n'est pas un
+> doublon** : elle combine la charge (comme META-19) **et** un déficit calorique persistant
+> (`averageIntake`), une vraie troisième dimension — candidat encore ouvert, pas juste une
+> réutilisation de `computeAcwr`.
 
 1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.
@@ -390,7 +397,9 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
 12. ~~**META-19 — Garde-fou surentraînement (ACWR)**~~ ✅ **livrée** (reste recette, constaté le
     02/08/2026). `computeAcwr` (shared, pur, testé) + widget conditionnel Tier 2
     `TrainingLoadAlertCard` (gating `strength`+`running`, replié `null` hors zone de risque). Brique
-    commune posée pour RUN-18, MR-10 et TRI-12.
+    commune posée pour RUN-18 (livrée le 02/08, running seul) et MR-10 (absorbée, doublon pur) ;
+    TRI-12 reste un candidat distinct (ajoute un déficit nutritionnel persistant à la charge, pas
+    juste une troisième portée du même calcul).
 
 **Note transverse :** avant les analyses inférentielles (corrélations META-20/21/22, forme-fatigue
 TRI-15), poser d'abord les **briques mathématiques socles** (META-08 régression, META-09 lissage,
