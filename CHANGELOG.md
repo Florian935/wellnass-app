@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/muscf15-progression-programme` — MUSC-F15 (3.7) : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Chantier scindé de MUSC-F7 le 01/08/2026, faute de cadrage produit. Cette entrée pose le cadrage
+manquant. Aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/muscf15-progression-programme.md) — résout les 3 questions
+  ouvertes du split (BACKLOG.md) en évitant d'inventer une cible de charge stockée : **second gate**
+  sur `computeProgressionSuggestion` (même patron que `previousStruggled`/MUSC-F7), évalué à la
+  volée à partir du taux de complétion de la semaine `week_index − 1` du **même programme** (≥ 80 %,
+  seuil déjà donné par la roadmap 3.7 — pas à re-trancher). Nouvelle variante `weightHold` du type
+  `ProgressionSuggestion` (poids gelé, reps toujours proposées à la hausse) et nouvelle clé i18n
+  dédiée — **pas** un recyclage de la clé « poids de corps » existante (relecture agent : réutiliser
+  ce texte aurait confondu deux situations différentes pour l'utilisateur).
+- [Plan](docs/plans/muscf15-progression-programme.md) — 2 étapes : `computeWeekCompletionRate` +
+  extension de `computeProgressionSuggestion` (packages/shared, purs, testés d'abord) → `ActiveWorkout`
+  étendu (`programId`/`plannedSessionId`/`weekIndex`) + hook `usePriorWeekAdherence` + câblage
+  `workout.tsx` → solde (roadmap 3.7 🟡→✅, retrait BACKLOG.md).
+- [Maquette](design/muscf15-progression-programme/muscf15-progression-programme.html) — 3 états de
+  la même bulle de suggestion (hausse pleine, poids gelé, deload prioritaire), aucun nouvel écran.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 2 corrections apportées avant validation — le choix
+  i18n initial (réutiliser `workout.suggestion.reps`) confondait le cas « poids de corps » et le cas
+  « adhérence insuffisante », corrigé en clé dédiée `weightHold` ; R3 confondait « séance libre » et
+  « séance de programme démarrée hors planning » (même résultat, causes différentes), reformulé pour
+  nommer les deux cas explicitement.
+- Aucune migration : `workouts.program_id`/`planned_session_id` et `planned_sessions.week_index`/
+  `status` sont déjà en base, seule la requête de lecture change.
+
 ### 02/08/2026 — `feature/tri12-garde-fou-global` — TRI-12 : détection de surcharge / sous-récupération globale
 
 Implémentation validée dans l'entrée précédente. Dernière des trois déclinaisons de la brique ACWR

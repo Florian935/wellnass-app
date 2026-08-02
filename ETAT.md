@@ -42,6 +42,7 @@ avant de pouvoir publier.
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **MUSC-F15** — Progression au niveau du programme | `validation` | `feature/muscf15-progression-programme` | [3.7] |
 
 ⏳ **26 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
@@ -50,9 +51,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (4) · P2 confort (1)</summary>
+<details><summary>P1 finitions (3) · P2 confort (1)</summary>
 
-**P1** — Progression au niveau du programme (roadmap 3.7) · RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
+**P1** — RUN-F2 — Séances guidées vocales · RUN-F3b — Météo de course · RUN-F1b — Dénivelé cumulé
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -64,9 +65,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/tri12-garde-fou-global` (modifications non commitées) |
-| Commits | 1026 · `main` a **1023** commits de retard sur `dev` |
-| Specs d'US | 103 au total — 77 clôturées, 26 en cours |
+| Branche courante | `feature/muscf15-progression-programme` (modifications non commitées) |
+| Commits | 1027 · `main` a **1024** commits de retard sur `dev` |
+| Specs d'US | 104 au total — 77 clôturées, 27 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -76,11 +77,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8b97e7a` feat(tri12): détection de surcharge / sous-récupération globale (garde-fou tri-pilier)
 - `3137b3b` docs(tri12): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `b39c7ad` docs(catalogue): MR-10 absorbée par META-19 (doublon de formulation)
 - `02eacfd` feat(run18): charge d'entraînement & ACWR (running seul)
 - `0ec97e3` docs(run18): entrée en pipeline — spec, plan, maquette (catalogue seul)
-- `bff0be9` feat(meta19): garde-fou surentraînement — ACWR combiné (widget conditionnel Tier 2)
 
 ---
 

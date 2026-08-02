@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-F15 — Progression au niveau du programme</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:78ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:78ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .setcard{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .exname{font-weight:700;font-size:14px;margin-bottom:8px}
+  .fieldrow{display:flex;gap:8px;margin-bottom:10px}
+  .field{flex:1;background:var(--surf);border:1px solid var(--border);border-radius:10px;
+         padding:8px 10px;font-size:13px;color:var(--muted)}
+  .field b{display:block;color:var(--text);font-size:15px;font-family:ui-monospace,Menlo,monospace}
+  .suggestion{font-size:12.5px;line-height:1.4;padding:8px 10px;border-radius:10px;margin-top:6px}
+  .sug-up{background:rgba(102,113,75,.14);color:var(--success)}
+  .sug-hold{background:var(--surfalt);color:var(--muted)}
+  .sug-deload{background:var(--warn);color:var(--warntext)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-F15 — Progression au niveau du programme (roadmap 3.7)</h1>
+<p class="sub"><strong>Aucun nouvel écran.</strong> Cette US ajoute un second gate à la bulle de
+suggestion déjà affichée en séance (<code>CurrentSetCard</code>) — celle qui propose déjà plus de
+poids/reps depuis Refonte-C3, et qui propose déjà un deload depuis MUSC-F7. Rien ne change dans la
+mise en page : seul le **texte** de la bulle change selon l'adhérence au programme la semaine
+précédente.</p>
+
+<h2>3 états de la même bulle, sur le même écran de séance</h2>
+<p class="why">Développé Couché, série 3/4 — même exercice, trois situations d'adhérence différentes.</p>
+
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Semaine bien suivie (≥ 80 %)</div>
+    <div class="setcard">
+      <div class="exname">Développé couché — série 3</div>
+      <div class="fieldrow">
+        <div class="field">Poids<br><b>80 kg</b></div>
+        <div class="field">Reps<br><b>8</b></div>
+      </div>
+      <div class="suggestion sug-up">💡 Essaie 82,5 kg ou 9 reps</div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">Semaine peu suivie (&lt; 80 %) — nouveau</div>
+    <div class="setcard">
+      <div class="exname">Développé couché — série 3</div>
+      <div class="fieldrow">
+        <div class="field">Poids<br><b>80 kg</b></div>
+        <div class="field">Reps<br><b>8</b></div>
+      </div>
+      <div class="suggestion sug-hold">💡 Reste à 80 kg, essaie 9 reps — la charge remonte en
+      enchaînant mieux les séances du programme.</div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">2 séances difficiles d'affilée (MUSC-F7 gagne)</div>
+    <div class="setcard">
+      <div class="exname">Développé couché — série 3</div>
+      <div class="fieldrow">
+        <div class="field">Poids<br><b>80 kg</b></div>
+        <div class="field">Reps<br><b>8</b></div>
+      </div>
+      <div class="suggestion sug-deload">💡 2 séances difficiles de suite — tu peux alléger à 72 kg</div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Pourquoi pas le texte « Essaie 9 reps » déjà existant (cas poids de corps)</strong> :
+  réutiliser ce texte confondrait deux situations différentes pour l'utilisateur — « cet exercice n'a
+  pas de notion de poids » vs « ton poids est gelé cette semaine, et voici pourquoi ». Sans
+  explication, quelqu'un qui progressait chaque semaine et voit soudain une bulle « reps seules »
+  identique au cas poids de corps risque de lire un bug plutôt qu'un signal d'adhérence. D'où
+  <code>workout.suggestion.weightHold</code>, une clé dédiée qui nomme la cause.
+</div>
+
+<h2>Les règles qui gouvernent le choix de la bulle</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Taux d'adhérence de la semaine précédente du programme</b>
+    <code>done ÷ (done+skipped+planned)</code> de la semaine <code>week_index − 1</code>, seuil
+    ≥ 80 % (roadmap 3.7, chiffre donné).</div>
+  <div class="rule"><b>R2 — Pas de semaine précédente connue → comportement inchangé</b>
+    1ʳᵉ semaine d'un programme, ou aucune donnée → suggestion de hausse pleine, comme avant cette US.</div>
+  <div class="rule"><b>R3 — Séance sans <code>week_index</code> → pas de gate</b>
+    Séance libre ou démarrée hors planning : aucune notion de semaine, comportement inchangé.</div>
+  <div class="rule"><b>R4 — Le deload (MUSC-F7) reste prioritaire</b>
+    Une séance en échec ne propose jamais <code>weightHold</code> à la place de <code>deload</code>
+    — les deux gates sont indépendants, celui-ci n'agit que sur la branche de hausse.</div>
+</div>
+
+</div></body></html>
