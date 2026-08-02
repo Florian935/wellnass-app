@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NUTR-16 — Répartition calorique par repas</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:76ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:76ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .toggle{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:12px;
+          padding:3px;margin-bottom:14px;font-size:12px}
+  .toggle span{padding:5px 12px;border-radius:9px}
+  .toggle .on{background:var(--accent);color:#fff;font-weight:700}
+  .mealrow{display:flex;align-items:center;gap:12px;padding:10px 0;
+           border-bottom:1px solid var(--border)}
+  .mealrow:last-child{border-bottom:none}
+  .mealname{width:110px;flex-shrink:0;font-weight:700;font-size:13.5px}
+  .mealname.other{color:var(--muted);font-weight:600}
+  .barwrap{flex:1;background:var(--bg);border-radius:8px;height:14px;overflow:hidden}
+  .bar{height:100%;background:var(--accent);border-radius:8px}
+  .bar.other{background:var(--bstrong)}
+  .mealval{width:132px;flex-shrink:0;text-align:right;font-size:12.5px;color:var(--muted)}
+  .mealval b{color:var(--text);font-family:ui-monospace,Menlo,monospace}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:84ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .emptybox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+            padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>NUTR-16 — Répartition calorique par repas</h1>
+<p class="sub">Nouveau bloc « Répartition par repas », sous la carte « Apports moyens » existante de
+l'écran de stats nutrition — <strong>même toggle 7 j / 30 j</strong>, pas un 2ᵉ sélecteur. Chaque
+repas affiche sa <strong>part (%)</strong> et sa <strong>moyenne absolue</strong> (kcal/jour) —
+les deux, pas l'une ou l'autre (spec R1). Aucune migration.</p>
+
+<h2>Les 2 états à valider</h2>
+
+<div class="row">
+
+  <div class="screen">
+    <div class="screenlabel">1 · Les 4 repas par défaut</div>
+    <div class="toggle"><span class="on">7 j</span><span>30 j</span></div>
+    <div class="mealrow">
+      <div class="mealname">Petit-déjeuner</div>
+      <div class="barwrap"><div class="bar" style="width:22%"></div></div>
+      <div class="mealval"><b>22 %</b> · 385 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname">Déjeuner</div>
+      <div class="barwrap"><div class="bar" style="width:35%"></div></div>
+      <div class="mealval"><b>35 %</b> · 612 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname">Dîner</div>
+      <div class="barwrap"><div class="bar" style="width:31%"></div></div>
+      <div class="mealval"><b>31 %</b> · 543 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname">Collation</div>
+      <div class="barwrap"><div class="bar" style="width:12%"></div></div>
+      <div class="mealval"><b>12 %</b> · 210 kcal/j</div>
+    </div>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">2 · Repas renommé + entrées orphelines (R3/R4)</div>
+    <div class="toggle"><span class="on">7 j</span><span>30 j</span></div>
+    <div class="mealrow">
+      <div class="mealname">Brunch</div>
+      <div class="barwrap"><div class="bar" style="width:28%"></div></div>
+      <div class="mealval"><b>28 %</b> · 490 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname">Dîner</div>
+      <div class="barwrap"><div class="bar" style="width:38%"></div></div>
+      <div class="mealval"><b>38 %</b> · 665 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname">Collation</div>
+      <div class="barwrap"><div class="bar" style="width:19%"></div></div>
+      <div class="mealval"><b>19 %</b> · 333 kcal/j</div>
+    </div>
+    <div class="mealrow">
+      <div class="mealname other">Autres</div>
+      <div class="barwrap"><div class="bar other" style="width:15%"></div></div>
+      <div class="mealval"><b>15 %</b> · 262 kcal/j</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 0">« Brunch » est un repas
+    personnalisé (renommé depuis « Petit-déjeuner ») — son libellé vient de
+    <code>nutrition_profiles.meals</code>, pas d'une clé technique. « Autres » regroupe des entrées
+    dont le repas d'origine a été supprimé de la config depuis — même bucket que le journal
+    (<code>journal.meals.other</code>), toujours en dernier (R4).</p>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Pourquoi part (%) ET moyenne absolue, pas l'une ou l'autre</strong> : le catalogue demande
+  une « part », mais un pourcentage seul ne dit pas si un dîner est <em>objectivement</em> trop
+  lourd — 35 % d'une journée légère n'est pas le même problème que 35 % d'une journée déjà
+  excessive. Les deux chiffres, côte à côte, répondent aux deux questions.
+</div>
+
+<h2>État vide (R5)</h2>
+<div class="emptybox">Aucune entrée sur cette période.</div>
+<p class="why" style="margin-top:8px">Réutilise le texte déjà établi de la carte « Apports moyens »
+juste au-dessus — pas une nouvelle clé si le texte convient tel quel.</p>
+
+<h2>Les 4 règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Deux métriques, pas une</b>
+    Part (%) et moyenne (kcal/jour) affichées ensemble sur chaque ligne.</div>
+  <div class="rule"><b>R2 — Grouper par la clé réelle, pas par la liste fixe</b>
+    <code>meal_type</code> n'a plus de contrainte à 4 valeurs depuis la migration des repas
+    personnalisés (§0 de la spec) — grouper par <code>MEAL_TYPES</code> ignorerait les repas
+    renommés/ajoutés.</div>
+  <div class="rule"><b>R3 — Les orphelins rejoignent « Autres »</b>
+    Même bucket, même libellé que le journal — pas une nouvelle règle inventée pour cette US.</div>
+  <div class="rule"><b>R4 — Ordre = ordre des repas configurés</b>
+    Jamais un tri par part décroissante, qui réordonnerait la liste à chaque bascule 7 j/30 j.</div>
+</div>
+
+</div></body></html>

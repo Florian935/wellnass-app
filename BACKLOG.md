@@ -220,6 +220,12 @@ Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md
       pas déconnecter B. Non vérifiable sur un seul device.
 - [ ] **Découpage des stats course par type de séance** — différé : les courses libres n'ont pas de
       `session_type`.
+- [ ] **Collision de numéro roadmap sur 4.37** — trouvée le 02/08/2026 en cherchant un numéro libre
+      pour NUTR-16. Deux fonctionnalités distinctes portent `4.37` : NUTR-F2 (table V0.9) et
+      « Refonte visuelle du journal alimentaire » (table Hors périmètre de cadrage). Même défaut que
+      la collision déjà connue sur 4.5/4.36 (voir roadmap.md, ligne 4.36) — pas corrigée ici, hors
+      scope de NUTR-16. À trancher via [`/reconcilier`](.claude/commands/reconcilier.md) : renuméroter
+      l'une des deux et propager (front-matter de sa spec, toute référence croisée).
 
 ---
 

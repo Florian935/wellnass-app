@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/nutr16-repartition-repas` — NUTR-16 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/nutr16-repartition-calorique-repas.md) — répartition calorique
+  par repas : part (%) **et** moyenne absolue (kcal/jour) par repas, sur la fenêtre 7 j/30 j déjà
+  présente sur l'écran de stats nutrition. **Piège de lecture documenté (§0)** :
+  `MEAL_TYPES = ['breakfast','lunch','dinner','snack']` n'est **plus** la contrainte réelle de
+  `food_entries.meal_type` depuis la migration `20260707140000_nutrition_meals` (repas
+  personnalisés, item 4.15) — grouper par cette liste fixe ignorerait les repas renommés/ajoutés.
+  R2 impose de grouper par la clé réelle et de résoudre le libellé via `resolveMealConfig`, déjà
+  éprouvé par le journal. R3 route les entrées orphelines vers le bucket « Autres » existant
+  (`journal.meals.other`), R4 fige l'ordre d'affichage sur celui des repas configurés.
+- [Plan](docs/plans/nutr16-repartition-calorique-repas.md) — 3 étapes : `resolveMealSplit`
+  (packages/shared, pur, testé d'abord) + nouvelle requête `SELECT_MEAL_TOTALS` (même patron que
+  `SELECT_DAILY_TOTALS`) → section sous « Apports moyens » (aucun nouveau toggle) → solde. **Aucune
+  migration.**
+- [Maquette](design/nutr16-repartition-calorique-repas/nutr16-repartition-calorique-repas.html) —
+  2 états : les 4 repas par défaut · un repas renommé (« Brunch ») + entrées orphelines groupées
+  sous « Autres ».
+
+#### Technique / Notes
+
+- ⚠️ **Collision de numéro trouvée en cherchant un numéro libre pour cette US** : `4.37` est utilisé
+  deux fois dans la roadmap (NUTR-F2 en V0.9, refonte visuelle du journal en Hors périmètre) — même
+  défaut que la collision déjà connue sur 4.5/4.36. **Non corrigée** (hors scope), notée dans
+  BACKLOG.md pour un futur `/reconcilier`.
+- Roadmap : **4.38 créée** (V0.4 — Alimentation), candidat né après le cadrage. `etape: validation`
+  — en attente de Florian/Damien sur les 3 livrables avant tout code.
+
 ### 02/08/2026 — `feature/run14-prediction-riegel` — RUN-14 : prédiction de temps de course livrée (5.34, en recette)
 
 Commit précédent : `d6d83b2`. Validation reçue (« ok go ») sur les 3 livrables — code implémenté
