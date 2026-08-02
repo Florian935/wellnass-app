@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf1b-denivele-cumule` — RUN-F1b : blocage levé, entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Candidat marqué ⛔ bloqué dans BACKLOG.md (« la trace GPS ne capte pas l'altitude, il faut étendre
+le tracker et le codec »). Aucun code — cette entrée pose le cadrage qui désamorce le blocage.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/runf1b-denivele-cumule.md) — décision centrale (§0) : **ne pas
+  toucher au codec de trace** (`GpsPoint`, `encodeSegment`/`decodeTrack` restent `{lat,lng,t}`
+  inchangés). Le dénivelé suit exactement le patron déjà établi de `distance_m`/`duration_seconds` :
+  deux scalaires (`elevation_gain_m`/`elevation_loss_m`) cumulés **en direct** par le tracker à
+  partir de `coords.altitude` (déjà fourni par `expo-location`, aucune dépendance native nouvelle),
+  jamais recalculés depuis `gps_track`. Filtre de bruit vertical (seuil 3 m, R3) et filtre de
+  précision (`altitudeAccuracy` > 30 m → absent, R1) — les deux seuils explicitement signalés (R7)
+  comme non validés terrain, à ajuster après recette réelle (même exigence que R1/running, qui avait
+  nécessité une validation terrain dédiée). Hors périmètre assumé : pas de profil d'altitude, pas de
+  balise GPX `<ele>` (nécessiteraient d'étendre le codec).
+- [Plan](docs/plans/runf1b-denivele-cumule.md) — 5 étapes : migration (2 colonnes nullable, aucune
+  sync rule à redéployer — `select * from runs` déjà en place) → tracker (`TrackerState` étendu,
+  appariement point↔altitude dans la même boucle que le filtre de validité existant, testé
+  d'abord) → repository + `aggregateRunStats` (packages/shared) → affichage (résumé de course +
+  stats de période) → solde.
+- [Maquette](design/runf1b-denivele-cumule/runf1b-denivele-cumule.html) — le contraste architecture
+  écartée/retenue, l'affichage par sortie (présent/absent) et par période, un schéma du filtre de
+  bruit.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale, avec un niveau d'exigence élevé (tâche de fond GPS,
+  zone la plus sensible du projet) : 2 points corrigés avant validation — l'appariement
+  point↔altitude devait être explicitement contraint à **une seule boucle** avec le filtre de
+  validité horizontale (une seconde passe indépendante désynchroniserait silencieusement, sans
+  crash) ; les 4 tests existants de `aggregateRunStats` (`toEqual` littéral) casseront en ajoutant
+  des champs à `RunStats` — désormais listés explicitement dans le plan plutôt que découverts après
+  coup.
+- Aucune dépendance native nouvelle → recettable sur l'APK existant.
+
 ### 02/08/2026 — `feature/muscf15-progression-programme` — MUSC-F15 : progression au niveau du programme (roadmap 3.7 → ✅)
 
 Implémentation validée dans l'entrée précédente. Chantier scindé de MUSC-F7 faute de cadrage —

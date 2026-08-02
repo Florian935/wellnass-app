@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-F1b — Dénivelé cumulé</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .statrow{display:flex;gap:10px;margin-bottom:10px}
+  .statchip{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:12px;
+            padding:10px;text-align:center}
+  .statchip .lbl{font-size:11.5px;color:var(--muted)}
+  .statchip .val{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:16px;margin-top:2px}
+  .elevchip{background:var(--surfalt)}
+  .absentbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:12px;text-align:center;color:var(--muted);font-size:12.5px;margin-top:6px}
+  .arch{display:flex;align-items:center;gap:10px;margin:14px 0}
+  .archbox{flex:1;background:var(--surf);border:1px solid var(--border);border-radius:12px;
+           padding:12px 14px;font-size:13px}
+  .archbox.no{border-color:var(--warnborder);background:var(--warn);color:var(--warntext)}
+  .archbox.yes{border-color:var(--success);background:rgba(102,113,75,.1)}
+  .archarrow{font-size:20px;color:var(--muted)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .chart{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:10px}
+  svg{display:block;width:100%;height:auto}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-F1b — Dénivelé cumulé (roadmap 5.32)</h1>
+<p class="sub">Candidat marqué <strong>⛔ bloqué</strong> dans le backlog : « la trace GPS ne capte
+pas l'altitude, il faut étendre le tracker et le codec ». Cette spec lève le blocage en évitant la
+partie la plus risquée du diagnostic.</p>
+
+<h2>La décision qui désamorce le risque</h2>
+<p class="why">Le dénivelé suit exactement le même patron que la distance : un scalaire cumulé en
+direct par le tracker, jamais recalculé depuis la trace stockée.</p>
+<div class="arch">
+  <div class="archbox no"><b>Écarté</b><br>Ajouter l'altitude à <code>GpsPoint</code>, étendre le
+  codec de trace (<code>encodeSegment</code>/<code>decodeTrack</code>, versionnage de segment) pour
+  la faire voyager jusqu'au stockage.</div>
+  <div class="archarrow">≠</div>
+  <div class="archbox yes"><b>Retenu</b><br>Deux nouveaux scalaires cumulés en direct
+  (<code>elevation_gain_m</code>/<code>elevation_loss_m</code>), calculés depuis
+  <code>coords.altitude</code> et stockés comme <code>distance_m</code>/<code>duration_seconds</code>
+  le sont déjà — <code>gps_track</code> ne change pas d'un octet.</div>
+</div>
+<div class="note" style="margin-top:0">
+  Conséquence assumée : pas de profil d'altitude (courbe), pas de balise <code>&lt;ele&gt;</code>
+  dans l'export GPX — seulement les deux totaux cumulés par course. Un futur candidat distinct
+  pourrait ajouter le profil s'il justifie le risque d'étendre le codec ; ce n'est pas cette US.
+</div>
+
+<h2>1 · Affichage « par sortie » (résumé de course)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Course récente, terrain vallonné</div>
+    <div class="statrow">
+      <div class="statchip"><div class="lbl">Distance</div><div class="val">8,42 km</div></div>
+      <div class="statchip"><div class="lbl">Durée</div><div class="val">42:18</div></div>
+    </div>
+    <div class="statrow">
+      <div class="statchip elevchip"><div class="lbl">Dénivelé +</div><div class="val">184 m</div></div>
+      <div class="statchip elevchip"><div class="lbl">Dénivelé −</div><div class="val">177 m</div></div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Course manuelle OU antérieure à cette US</div>
+    <div class="statrow">
+      <div class="statchip"><div class="lbl">Distance</div><div class="val">5,00 km</div></div>
+      <div class="statchip"><div class="lbl">Durée</div><div class="val">28:40</div></div>
+    </div>
+    <div class="absentbox">Aucune ligne dénivelé — donnée absente, jamais « 0 m » (spec R5/§0)</div>
+  </div>
+</div>
+
+<h2>2 · Affichage « par période » (écran historique)</h2>
+<div class="screen" style="max-width:520px">
+  <div class="screenlabel">Stats — cette semaine</div>
+  <div class="statrow">
+    <div class="statchip"><div class="lbl">Distance</div><div class="val">24,1 km</div></div>
+    <div class="statchip"><div class="lbl">Sorties</div><div class="val">4</div></div>
+  </div>
+  <div class="statrow">
+    <div class="statchip elevchip"><div class="lbl">Dénivelé + cumulé</div><div class="val">412 m</div></div>
+    <div class="statchip elevchip"><div class="lbl">Dénivelé − cumulé</div><div class="val">398 m</div></div>
+  </div>
+</div>
+
+<h2>3 · Le filtre de bruit (spec R3) — pourquoi il est nécessaire</h2>
+<p class="why">Sans seuil, le bruit vertical du GPS (plusieurs mètres, bien pire que le bruit
+horizontal) transformerait un terrain plat en un dénivelé cumulé fortement surestimé.</p>
+<div class="chart">
+  <svg viewBox="0 0 640 160">
+    <line x1="0" y1="80" x2="640" y2="80" stroke="#cfc0a9" stroke-width="1"/>
+    <text x="4" y="74" font-size="10" fill="#786a59">altitude brute (bruitée)</text>
+    <polyline points="0,80 40,74 80,86 120,72 160,90 200,76 240,68 280,82 320,60 360,70 400,50 440,64 480,40 520,52 560,30 600,44 640,26"
+      fill="none" stroke="#b14f2b" stroke-width="2" opacity="0.55"/>
+    <text x="4" y="140" font-size="10" fill="#786a59">solde retenu (seuil 3 m franchi → validé, sinon ignoré)</text>
+    <polyline points="0,120 80,120 160,120 240,100 320,100 400,80 480,80 560,60 640,60"
+      fill="none" stroke="#66714b" stroke-width="3"/>
+  </svg>
+  <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Trait terracotta : altitude brute
+  point par point, oscillante. Trait vert : ce qui est réellement compté dans le dénivelé cumulé —
+  seules les montées/descentes qui dépassent 3 m de suite franchissent le filtre.</p>
+</div>
+
+<h2>Les règles qui gouvernent le calcul</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Altitude filtrée par sa propre précision</b>
+    <code>altitudeAccuracy &gt; 30 m</code> → traité comme absent, comme un GPS sans capteur
+    barométrique. Seuil non validé terrain (R7), à ajuster après recette.</div>
+  <div class="rule"><b>R2 — Une seule notion de « segment fiable »</b>
+    Le dénivelé ne s'accumule que sur les segments déjà retenus pour la distance — jamais deux
+    logiques de validité qui pourraient diverger.</div>
+  <div class="rule"><b>R3 — Seuil de bruit 3 m avant de valider un gain/une perte</b>
+    Simplification assumée, pas un modèle barométrique physique — même esprit que le filtre de
+    vitesse déjà utilisé pour la distance.</div>
+  <div class="rule"><b>R4 — La pause ne produit pas de faux relief</b>
+    La base d'altitude continue d'être mise à jour pendant la pause, sans accumuler — la reprise
+    repart d'une base fraîche.</div>
+</div>
+
+</div></body></html>
