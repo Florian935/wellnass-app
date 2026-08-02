@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/nutr16-repartition-repas` — NUTR-16 : répartition calorique par repas livrée (4.38, en recette)
+
+Commit précédent : `68781e9`. Validation reçue (« ok let's go ») sur les 3 livrables — code
+implémenté directement.
+
+#### Ajouté
+
+- [nutrition.ts (shared)](packages/shared/src/nutrition.ts) — `resolveMealSplit(mealTotals,
+  configuredMeals, loggedDays)` : distribue les totaux de kcal groupés sur la **clé réelle** de
+  `meal_type` (jamais `MEAL_TYPES`, obsolète comme liste exhaustive depuis les repas personnalisés)
+  vers les repas configurés, route le reste vers `OTHER_MEAL_KEY` (toujours en dernier). Calcule
+  part (%) et moyenne kcal/jour (diviseur = jours **renseignés**, pas la longueur de la fenêtre —
+  même convention qu'`averageIntake`). Un repas configuré sans aucune entrée dans la fenêtre est
+  **absent** du résultat, pas une ligne à 0 %. 8 tests, dont le filtre bucket « Autres »/ordre figé
+  (le plus important) et la non-division-par-zéro.
+- [journal-repository.ts](apps/mobile/src/data/repositories/journal-repository.ts) —
+  `useMealTotals(sinceDate)` : même patron que `useDailyTotals`, `GROUP BY meal_type` au lieu de
+  `GROUP BY log_date`.
+- [nutrition-stats.tsx](apps/mobile/src/app/nutrition-stats.tsx) — section « Répartition par
+  repas » sous « Apports moyens », **même toggle 7 j/30 j** (pas un 2ᵉ sélecteur), `totals.length`
+  déjà calculé réutilisé comme diviseur (pas une 2ᵉ requête). Résolution de libellé identique au
+  journal ((tabs)/nutrition.tsx) : repas custom sans nom → « Repas N » (position parmi les repas
+  configurés), bucket via `journal.meals.other`. Chaque ligne est un bloc `accessible` unique.
+- 2 clés `stats.mealSplit.*`, FR+EN.
+
+#### Technique / Notes
+
+- **Aucune migration** — `food_entries`/`nutrition_profiles` déjà en base, calcul pur en lecture.
+  Recettable sur l'APK existant.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/269 tests + shared
+  Vitest 67 fichiers/**1362** tests, +8) — lus sans pipe, tous verts. Parité i18n FR/EN vérifiée
+  (1649 clés).
+- Roadmap 4.38 → ✅ (V0.4 : 32 livré / 2 à faire). RECETTES.md #22 créée, 9 critères.
+
 ### 02/08/2026 — `feature/nutr16-repartition-repas` — NUTR-16 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.

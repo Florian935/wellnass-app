@@ -3,7 +3,7 @@ id: NUTR-16
 titre: "Répartition calorique par repas"
 roadmap: [4.38]
 catalogue: [NUTR-16]
-etape: validation
+etape: recette
 branche: feature/nutr16-repartition-repas
 maj: 02/08/2026
 ---

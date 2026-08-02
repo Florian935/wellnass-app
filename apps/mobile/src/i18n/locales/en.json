@@ -598,6 +598,10 @@
       "empty": "Not enough data yet.",
       "perDay": "per day"
     },
+    "mealSplit": {
+      "title": "Meal breakdown",
+      "row": "{{kcal}} kcal/day · {{pct}}%"
+    },
     "adherence": {
       "title": "Goal adherence",
       "inTarget_one": "{{count}} / {{total}} day on target",

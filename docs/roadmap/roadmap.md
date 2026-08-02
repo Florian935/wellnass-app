@@ -203,7 +203,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 4.31 | Évolution apports moyens | Calories et macros moyennes 7 / 30 jours. | Moyen | 3h | 🟢 | ✅ | `averageIntake`. |
 | 4.32 | Alerte déficit + fort volume | Déficit important + semaine à fort volume muscu. | Moyen | 2h | 🟢 | ✅ | `DeficitVolumeAlertCard`. Première stat croisée entre piliers. |
 | 2.5 | Notif — Rappel repas | Push à heure définie. | Facile | 1h | 🟢 | ✅ | US NUTR-F1. **Un** rappel de journal (pas un par repas : aucune heure n'est associée aux repas en base). Échéance apprise, opt-in. `useProgrammedRemindersScheduler`. |
-| 4.38 | Répartition calorique par repas | Part (%) + moyenne (kcal/j) par repas, fenêtre 7 j/30 j. | Facile | 2h | 🟢 | ⬜ | **NUTR-16 (catalogue), entrée en pipeline le 02/08/2026.** Ligne **créée** (candidat né après le cadrage, promu depuis le [catalogue d'analyses](../product/analyses-donnees.md)). Groupe par la **valeur réelle** de `meal_type` (plus un enum fixe depuis les repas personnalisés, item 4.15) et non par `MEAL_TYPES` — sinon les repas renommés/ajoutés seraient ignorés. Réutilise `resolveMealConfig` et le bucket « Autres » déjà éprouvés par le journal. Aucune donnée nouvelle, aucune migration. |
+| 4.38 | Répartition calorique par repas | Part (%) + moyenne (kcal/j) par repas, fenêtre 7 j/30 j. | Facile | 2h | 🟢 | ✅ | **NUTR-16, code livré le 02/08/2026**, en recette → [RECETTES.md](../../RECETTES.md). `resolveMealSplit` (packages/shared, pur, 8 tests) + section « Répartition par repas » sous « Apports moyens » (`nutrition-stats.tsx`, même toggle 7 j/30 j). Groupe par la **valeur réelle** de `meal_type` (plus un enum fixe depuis les repas personnalisés, item 4.15) ; bucket « Autres » et repli de libellé réutilisés du journal. Aucune migration. |
 
 ---
 
@@ -432,9 +432,9 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 183 | ~85 % |
+| ✅ Livré | 184 | ~86 % |
 | 🟡 Partiel | 16 | ~7 % |
-| ⬜ À faire | 10 | ~5 % |
+| ⬜ À faire | 9 | ~4 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **215** | |
@@ -459,7 +459,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 29 | 0 | 0 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). **6.2 → ✅ le 02/08/2026** (MUSC-F1b, schéma corporel SVG). GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (21) | 19 | 2 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
-| V0.4 (34) | 31 | 0 | 3 | 0 | 0 | 2 notifs manquantes. **+1 le 02/08/2026** : 4.38 (NUTR-16, répartition par repas) entrée en pipeline, reste ⬜. |
+| V0.4 (34) | 32 | 0 | 2 | 0 | 0 | 2 notifs manquantes. **4.38 → ✅ le 02/08/2026** (NUTR-16, répartition par repas, en recette). |
 | V0.5 (34) | 28 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
@@ -497,10 +497,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
 
-**02/08/2026 — NUTR-16 entrée en pipeline (4.38, nouvelle ligne, ⬜)**
-Répartition calorique par repas, promue depuis le catalogue. ⚠️ **Collision de numéro trouvée en
-cherchant un numéro libre** : 4.37 existe **deux fois** (NUTR-F2 en V0.9, « Refonte visuelle du
-journal » en Hors périmètre) — non corrigée ici (hors scope), à traiter en `/reconcilier`.
+**02/08/2026 — NUTR-16 : répartition par repas livrée (4.38 ⬜ → ✅)**
+Part (%) + moyenne (kcal/j), groupées sur la clé réelle de `meal_type` (plus un enum fixe depuis
+les repas personnalisés). Bucket « Autres » et repli de libellé réutilisés du journal, sans 2ᵉ
+implémentation. Calcul pur, aucune migration.
 
 **02/08/2026 — RUN-14 : prédiction de temps (Riegel) livrée (5.34 ⬜ → ✅)**
 Source fixe = record 5 km (R1), un vrai record bat toujours une estimation (R3), avertissement

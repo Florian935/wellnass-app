@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { averageIntake, formatDayFull, percentChange, weightTrend } from '@wellness/shared';
+import {
+  averageIntake,
+  DEFAULT_MEAL_KEYS,
+  formatDayFull,
+  OTHER_MEAL_KEY,
+  percentChange,
+  resolveMealConfig,
+  resolveMealSplit,
+  weightTrend,
+  type MealSplitRow,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
@@ -13,8 +23,9 @@ import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossC
 import { WeightGoalCard } from '@/components/WeightGoalCard';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
-import { useDailyTotals, useJournalCompletion } from '@/data/repositories/journal-repository';
+import { useDailyTotals, useJournalCompletion, useMealTotals } from '@/data/repositories/journal-repository';
 import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
+import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -62,6 +73,23 @@ export default function NutritionStatsScreen() {
   const kcalChange = percentChange(avg.kcal, previousAvg.kcal);
   const adherence = useGoalAdherence(intakeWindowDays);
   const completion = useJournalCompletion(intakeWindowDays);
+
+  // Répartition par repas (US NUTR-16) — même fenêtre que « Apports moyens », pas un 2ᵉ toggle.
+  // `totals.length` = jours effectivement renseignés dans la fenêtre (même diviseur qu'`averageIntake`).
+  const { nutritionProfile } = useNutritionProfile();
+  const configuredMeals = resolveMealConfig(nutritionProfile?.meals);
+  const { mealTotals } = useMealTotals(intakeThreshold);
+  const mealSplit = resolveMealSplit(mealTotals, configuredMeals, totals.length);
+
+  // Même repli que le journal ((tabs)/nutrition.tsx) : repas custom sans nom → « Repas N » (position
+  // parmi les repas configurés), jamais sa clé technique. Bucket « Autres » via sa propre clé i18n.
+  const mealSplitLabel = (row: MealSplitRow): string => {
+    if (row.mealKey === OTHER_MEAL_KEY) return t('journal.meals.other');
+    if (row.label) return row.label;
+    if (DEFAULT_MEAL_KEYS.includes(row.mealKey as never)) return t(`journal.meals.${row.mealKey}`);
+    const idx = configuredMeals.findIndex((m) => m.key === row.mealKey);
+    return t('meals.mealN', { n: idx + 1 });
+  };
 
   const trend = weightTrend(weightEntries);
   // `label` = abrégé d'axe ; `detail` = date complète affichée dans l'infobulle (UX-01).
@@ -140,6 +168,38 @@ export default function NutritionStatsScreen() {
         )}
       </Card>
 
+      {/* Répartition par repas (US NUTR-16) — même fenêtre 7 j/30 j que les apports, pas de 2ᵉ toggle */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.mealSplit.title')}</Text>
+      <Card>
+        {mealSplit.length === 0 ? (
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.intake.empty')}</Text>
+        ) : (
+          <View style={styles.mealSplitList}>
+            {mealSplit.map((row) => (
+              <View key={row.mealKey} accessible style={styles.mealSplitRow}>
+                <Text style={[styles.mealSplitName, { color: colors.text }]}>
+                  {mealSplitLabel(row)}
+                </Text>
+                <View style={[styles.mealSplitBarTrack, { backgroundColor: colors.track }]}>
+                  <View
+                    style={[
+                      styles.mealSplitBar,
+                      {
+                        width: `${row.pct}%`,
+                        backgroundColor: row.mealKey === OTHER_MEAL_KEY ? colors.textMuted : colors.accent,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={[styles.mealSplitValue, { color: colors.textMuted }]}>
+                  {t('stats.mealSplit.row', { pct: row.pct, kcal: row.avgKcalPerDay })}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </Card>
+
       {/* Adhérence à l'objectif (NUTR-10) — même fenêtre 7 j/30 j que les apports */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.adherence.title')}</Text>
       <Card>
@@ -205,4 +265,10 @@ const styles = StyleSheet.create({
   avgKcal: { fontFamily: fontFamily.displayBold, fontSize: 30 },
   avgUnit: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   macroLine: { fontFamily: fontFamily.mono, fontSize: 13 },
+  mealSplitList: { gap: 12 },
+  mealSplitRow: { gap: 4 },
+  mealSplitName: { fontFamily: fontFamily.bodySemi, fontSize: 13.5 },
+  mealSplitBarTrack: { height: 10, borderRadius: 6, overflow: 'hidden' },
+  mealSplitBar: { height: '100%', borderRadius: 6 },
+  mealSplitValue: { fontFamily: fontFamily.mono, fontSize: 12.5 },
 });

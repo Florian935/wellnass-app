@@ -106,6 +106,27 @@ export function useDailyTotals(sinceDate: string): { totals: DailyTotal[]; isLoa
   };
 }
 
+/** Total de kcal par repas (clé réelle `meal_type`, pas `MEAL_TYPES` — voir spec NUTR-16 §0). */
+export type MealTotal = { mealKey: string; kcal: number };
+
+const SELECT_MEAL_TOTALS = `
+  SELECT meal_type, SUM(kcal) AS kcal
+  FROM food_entries
+  WHERE deleted_at IS NULL AND log_date >= ?
+  GROUP BY meal_type
+`;
+
+/** Totaux de kcal par repas depuis `sinceDate`, groupés sur la clé réelle (US NUTR-16). */
+export function useMealTotals(sinceDate: string): { mealTotals: MealTotal[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{ meal_type: string; kcal: number }>(SELECT_MEAL_TOTALS, [
+    sinceDate,
+  ]);
+  return {
+    mealTotals: data.map((r) => ({ mealKey: r.meal_type, kcal: Math.round(r.kcal) })),
+    isLoading,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Écritures
 // ---------------------------------------------------------------------------

@@ -18,7 +18,9 @@ import {
   nutritionProfileRowSchema,
   objectiveCalorieDelta,
   objectiveFromGoal,
+  OTHER_MEAL_KEY,
   resolveMealConfig,
+  resolveMealSplit,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -269,6 +271,70 @@ describe('meal config (4.15)', () => {
       meals: [{ key: 'breakfast', label: 'Petit-déj' }],
     });
     expect(parsed.meals?.[0]?.label).toBe('Petit-déj');
+  });
+});
+
+describe('resolveMealSplit (US NUTR-16)', () => {
+  const defaultMeals = resolveMealConfig(null); // breakfast/lunch/dinner/snack, label null
+
+  it('4 repas à totaux égaux → 25 % chacun, somme des parts = 100', () => {
+    const totals = [
+      { mealKey: 'breakfast', kcal: 700 },
+      { mealKey: 'lunch', kcal: 700 },
+      { mealKey: 'dinner', kcal: 700 },
+      { mealKey: 'snack', kcal: 700 },
+    ];
+    const rows = resolveMealSplit(totals, defaultMeals, 7);
+    expect(rows.map((r) => r.pct)).toEqual([25, 25, 25, 25]);
+    expect(rows.reduce((sum, r) => sum + r.pct, 0)).toBe(100);
+  });
+
+  it("un repas configuré sans aucune entrée dans la fenêtre est absent (pas une ligne à 0 %)", () => {
+    const totals = [
+      { mealKey: 'breakfast', kcal: 1000 },
+      { mealKey: 'dinner', kcal: 1000 },
+    ];
+    const rows = resolveMealSplit(totals, defaultMeals, 7);
+    expect(rows.map((r) => r.mealKey)).toEqual(['breakfast', 'dinner']);
+  });
+
+  it("des totaux sous une clé absente de configuredMeals rejoignent le bucket 'other', toujours en dernier (R3/R4)", () => {
+    const totals = [
+      { mealKey: 'dinner', kcal: 600 },
+      { mealKey: 'deleted-meal-xyz', kcal: 200 },
+      { mealKey: 'breakfast', kcal: 400 },
+    ];
+    const rows = resolveMealSplit(totals, defaultMeals, 7);
+    expect(rows.map((r) => r.mealKey)).toEqual(['breakfast', 'dinner', OTHER_MEAL_KEY]);
+    expect(rows.at(-1)?.label).toBeNull();
+  });
+
+  it('respecte l’ordre de configuredMeals, pas un tri par part décroissante (R4)', () => {
+    const totals = [
+      { mealKey: 'snack', kcal: 900 }, // le plus gros, mais dernier dans configuredMeals
+      { mealKey: 'breakfast', kcal: 100 },
+    ];
+    const rows = resolveMealSplit(totals, defaultMeals, 7);
+    expect(rows.map((r) => r.mealKey)).toEqual(['breakfast', 'snack']);
+  });
+
+  it('loggedDays = 0 → [] (pas de division par zéro, R5)', () => {
+    expect(resolveMealSplit([{ mealKey: 'breakfast', kcal: 500 }], defaultMeals, 0)).toEqual([]);
+  });
+
+  it('aucun total → [] (R5)', () => {
+    expect(resolveMealSplit([], defaultMeals, 7)).toEqual([]);
+  });
+
+  it('propage le label personnalisé d’un repas configuré tel quel (résolution i18n laissée à l’UI)', () => {
+    const customMeals = [{ key: 'breakfast', label: 'Brunch' }, ...defaultMeals.slice(1)];
+    const rows = resolveMealSplit([{ mealKey: 'breakfast', kcal: 500 }], customMeals, 7);
+    expect(rows[0]?.label).toBe('Brunch');
+  });
+
+  it('moyenne kcal/jour = total du repas / jours renseignés (pas la longueur de la fenêtre)', () => {
+    const rows = resolveMealSplit([{ mealKey: 'breakfast', kcal: 1050 }], defaultMeals, 3);
+    expect(rows[0]?.avgKcalPerDay).toBe(350);
   });
 });
 

@@ -598,6 +598,10 @@
       "empty": "Pas encore assez de données.",
       "perDay": "par jour"
     },
+    "mealSplit": {
+      "title": "Répartition par repas",
+      "row": "{{pct}} % · {{kcal}} kcal/jour"
+    },
     "adherence": {
       "title": "Adhérence à l'objectif",
       "inTarget_one": "{{count}} / {{total}} jour dans la cible",

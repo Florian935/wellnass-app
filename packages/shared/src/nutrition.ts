@@ -328,6 +328,65 @@ export function resolveMealConfig(
   return meals && meals.length > 0 ? [...meals] : DEFAULT_MEAL_CONFIG;
 }
 
+// --- Répartition calorique par repas (US NUTR-16, roadmap 4.38) --------------
+
+/** Clé technique du bucket des entrées « orphelines » (repas supprimé/renommé depuis). */
+export const OTHER_MEAL_KEY = 'other';
+
+/**
+ * Une ligne de répartition, prête pour l'affichage (spec R1). `label` reprend tel quel celui du
+ * repas configuré (`MealConfigItem.label`, `null` = à résoudre côté UI comme le journal) ;
+ * toujours `null` pour le bucket `OTHER_MEAL_KEY` — c'est `mealKey` qui l'identifie, l'UI
+ * l'affiche via `journal.meals.other`, pas via ce champ.
+ */
+export type MealSplitRow = {
+  mealKey: string;
+  label: string | null;
+  pct: number;
+  avgKcalPerDay: number;
+};
+
+/**
+ * Répartit les totaux de kcal par repas (spec R1 : part % + moyenne kcal/jour), groupés sur la
+ * **clé réelle** de `meal_type` (spec §0/R2 — `MEAL_TYPES` n'est plus la contrainte de la base
+ * depuis les repas personnalisés). Une clé absente de `configuredMeals` rejoint le bucket
+ * `OTHER_MEAL_KEY` (spec R3), toujours **en dernier** (spec R4 — l'ordre suit `configuredMeals`,
+ * jamais un tri par part décroissante). `loggedDays <= 0` ou aucun total → `[]` (spec R5).
+ */
+export function resolveMealSplit(
+  mealTotals: ReadonlyArray<{ mealKey: string; kcal: number }>,
+  configuredMeals: ReadonlyArray<MealConfigItem>,
+  loggedDays: number,
+): MealSplitRow[] {
+  if (loggedDays <= 0 || mealTotals.length === 0) return [];
+
+  const totalKcal = mealTotals.reduce((sum, m) => sum + m.kcal, 0);
+  if (totalKcal <= 0) return [];
+
+  const totalsByKey = new Map(mealTotals.map((m) => [m.mealKey, m.kcal]));
+  const configuredKeys = new Set(configuredMeals.map((m) => m.key));
+
+  const toRow = (mealKey: string, kcal: number, label: string | null): MealSplitRow => ({
+    mealKey,
+    label,
+    pct: Math.round((kcal / totalKcal) * 100),
+    avgKcalPerDay: Math.round(kcal / loggedDays),
+  });
+
+  const rows: MealSplitRow[] = [];
+  for (const meal of configuredMeals) {
+    const kcal = totalsByKey.get(meal.key);
+    if (kcal != null && kcal > 0) rows.push(toRow(meal.key, kcal, meal.label));
+  }
+
+  const otherKcal = mealTotals
+    .filter((m) => !configuredKeys.has(m.mealKey))
+    .reduce((sum, m) => sum + m.kcal, 0);
+  if (otherKcal > 0) rows.push(toRow(OTHER_MEAL_KEY, otherKcal, null));
+
+  return rows;
+}
+
 // --- Ligne synchronisée (table nutrition_profiles) ---------------------------
 
 /**

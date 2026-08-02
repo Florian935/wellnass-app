@@ -662,11 +662,34 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 22. NUTR-16 — Répartition calorique par repas
+
+📄 [spec](docs/specs/functional/us/nutr16-repartition-calorique-repas.md) · roadmap 4.38 ·
+**📱 device** · aucune migration, aucune dépendance native → recettable sur l'APK existant.
+
+- [ ] 1. Journal avec les 4 repas par défaut renseignés → 4 lignes, part (%) + moyenne (kcal/j),
+      dans l'ordre petit-déj/déjeuner/dîner/collation.
+- [ ] 2. Un repas personnalisé renommé (ex. « Brunch ») → sa ligne affiche le libellé personnalisé,
+      pas sa clé technique.
+- [ ] 3. Des entrées existent sous un repas depuis supprimé de la config → elles apparaissent sous
+      « Autres », pas perdues, pas sous leur ancienne clé technique.
+- [ ] 4. La somme des parts (%) des repas affichés ≈ 100 % (à l'arrondi près).
+- [ ] 5. Bascule 7 j ↔ 30 j (toggle existant) → les deux métriques se recalculent pour chaque repas.
+- [ ] 6. Aucune entrée dans la fenêtre → état vide, pas de graphique à zéro ni d'erreur.
+- [ ] 7. **Mode avion** : le bloc s'affiche normalement (aucun réseau requis).
+- [ ] 8. En **EN** : la phrase part/moyenne est grammaticale dans l'ordre anglais.
+- [ ] 9. TalkBack énonce chaque ligne comme un bloc cohérent, pas des fragments disjoints.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
-UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b**/**RUN-14** (aucune
-dépendance native neuve, `react-native-svg`/calcul pur déjà en place)
+UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b**/**RUN-14**/**NUTR-16**
+(aucune dépendance native neuve, `react-native-svg`/calcul pur déjà en place)
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).

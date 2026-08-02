@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **85 %** — 183 livré · 16 partiel · 10 à faire (sur 215)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **86 %** — 184 livré · 16 partiel · 9 à faire (sur 215)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -28,6 +28,7 @@ avant de pouvoir publier.
 | **MUSC-F7** — Progression assistée — deload sur stagnation | `recette` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `recette` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
+| **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
@@ -37,9 +38,8 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **NUTR-16** — Répartition calorique par repas | `validation` | `feature/nutr16-repartition-repas` | [4.38] |
 
-⏳ **21 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **22 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -61,7 +61,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/nutr16-repartition-repas` (modifications non commitées) |
-| Commits | 1013 · `main` a **1010** commits de retard sur `dev` |
+| Commits | 1014 · `main` a **1011** commits de retard sur `dev` |
 | Specs d'US | 99 au total — 77 clôturées, 22 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -72,11 +72,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `68781e9` docs(nutr16): entrée en pipeline — spec, plan, maquette (roadmap 4.38)
 - `7446f23` docs(backlog): retire RUN-14 de la salve post-V0.9 (livrée)
 - `f54937a` feat(run14): prédiction de temps de course — formule de Riegel (roadmap 5.34)
 - `d6d83b2` docs(run14): entrée en pipeline — spec, plan, maquette (roadmap 5.34)
 - `96aaebe` fix(dette): détricote analytics.ts <-> settings-repository.ts + tests de gating track()
-- `a311fa7` fix(planning): préfixe de pilier sur le widget planning cross-hub
 
 ---
 
