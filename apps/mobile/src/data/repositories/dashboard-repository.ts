@@ -12,6 +12,7 @@
  *  - `useStreakData`        → widget 7.6 (série de jours actifs + pastilles semaine)
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
+ *  - `useTrainingLoadAlert` → widget conditionnel Tier 2 (garde-fou ACWR, US META-19)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -22,6 +23,7 @@ import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
 import {
   activeDayKeys,
+  computeAcwr,
   computeAge,
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
@@ -905,6 +907,60 @@ export function useTrainingTime(): TrainingTime {
   });
 
   return { ...agg, strengthActive, runningActive, isLoading: runLoading || workoutLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useTrainingLoadAlert — widget conditionnel (US META-19, garde-fou ACWR)
+// ---------------------------------------------------------------------------
+
+const ACUTE_WINDOW_DAYS = 7;
+const CHRONIC_WINDOW_DAYS = 28;
+
+export type TrainingLoadAlert = { show: boolean };
+
+/**
+ * Expose l'alerte de surcharge combinée (ACWR, widget conditionnel Tier 2, US META-19).
+ *
+ * Composition : `useWorkoutHistory()` + `useRunHistory()` (déjà chargées ailleurs sur le
+ * dashboard, aucune nouvelle requête), filtrées par `finishedAt` sur les fenêtres 7 j / 28 j
+ * glissantes (`useWindowStartKey`, même patron que `useTrainingTime`), puis délégation à
+ * `computeAcwr` (règle pure, `@wellness/shared`).
+ *
+ * **Gating piliers** : nécessite `strength` ET `running` actifs — l'ACWR combine les deux, un
+ * seul actif ne donnerait qu'une moitié du calcul (même patron que `useTrainingTime`). Tous les
+ * hooks sous-jacents sont appelés inconditionnellement (règle des hooks React) ; le gating
+ * n'intervient qu'au moment de retourner le résultat.
+ */
+export function useTrainingLoadAlert(): TrainingLoadAlert {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+
+  const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
+  const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
+
+  if (!(strengthActive && runningActive)) {
+    return { show: false };
+  }
+
+  const sessions = [
+    ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
+    ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
+  ];
+
+  const byWindow = (startKey: string) =>
+    sessions.filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= startKey);
+
+  const result = computeAcwr({
+    acuteSessions: byWindow(acuteStartKey),
+    chronicSessions: byWindow(chronicStartKey),
+  });
+
+  return { show: result?.showAlert ?? false };
 }
 
 // ---------------------------------------------------------------------------

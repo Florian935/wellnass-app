@@ -305,7 +305,7 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 | META-16 | 🆕 | Projection d'atteinte d'objectif de volume | À mi-période, projette si le rythme atteint un objectif (km/mois, tonnage) : cumul + extrapolation. | `aggregateRunStats`, `computeVolume` agrégé | widget | période courante + projection | Savoir en cours de mois s'il faut accélérer. | objectifs-personnels |
 | META-17 | 🆕 | Bandes de confiance sur les projections | Intervalle de prédiction (± bande) sur les projections (poids, 1RM, temps, objectif) depuis les résidus. | séries de projection + résidus du modèle | courbe | selon projection | Honnêteté statistique : une fourchette gère les attentes. | — |
 | META-18 | ⏳ | Seuils adaptatifs vs moyenne personnelle | Généralise l'alerte à seuil fixe (4.32) en seuils relatifs à la baseline perso (X % de SA moyenne). | moyennes glissantes par utilisateur | alerte | baseline 14-30 j | Alertes pertinentes pour chacun (débutant ≠ confirmé). | généralise 4.32 |
-| META-19 | 🆕 | Garde-fou surentraînement (ACWR générique) | Charge 7 j ÷ moyenne 28 j ; hors zone sûre (~0,8-1,3) = risque, suggestion de jour off. | `workouts` (durée, rpe), `workout_sets`, `runs` | score | 7 j vs 28 j | Éviter blessure et burn-out = éviter l'abandon. | garde-fou-surentrainement |
+| META-19 | ✅ **livrée** (reste recette) | Garde-fou surentraînement (ACWR générique) | Charge 7 j ÷ moyenne 28 j ; **zone haute uniquement** (> 1,3) = risque, suggestion de jour off (zone basse hors périmètre, cf. spec R5). | `workouts` (durée, rpe), `workout_sets`, `runs` | score | 7 j vs 28 j | Éviter blessure et burn-out = éviter l'abandon. | garde-fou-surentrainement |
 | META-20 | 🆕 | Corrélation entre deux métriques (Pearson glissant) | Moteur générique de corrélation entre deux séries alignées (déficit ↔ 1RM, poids ↔ allure…). | toutes tables agrégées par jour/semaine | insight | glissant 8-12 sem | Passer des stats croisées à un moteur explicatif. | analyses-croisées |
 | META-21 | 🆕 | Corrélation croisée décalée (effet retardé) | Corrélation à différents lags (0-N j) : glucides J-1 ↔ allure J, charge J-2 ↔ RPE J. Retourne le lag au pic. | séries quotidiennes croisées | insight | glissant 60-90 j, lags 0-7 j | Rendre les liens causaux plus crédibles (l'effet est décalé). | analyses-croisées |
 | META-22 | 🆕 | Moteur d'analyses croisées poussées | Au-delà des stats simples : moteur causal (PR selon volume/intensité, surplus ↔ perf, récup ↔ perf). | toutes les tables des 3 piliers | insight | glissant multi-sem | Expliquer les liens perf↔nutrition↔récup — LE différenciateur, potentiellement premium. | analyses-croisées |
@@ -350,10 +350,15 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
 > ⚠️ **MàJ 28/07/2026 (réconciliation)** — cette liste avait dérivé : **sur les 3 candidats qu'elle
 > annonçait encore à démarrer, 2 étaient déjà réglés.** **3 (RUN-05)** est **livrée** (courbe + verdict
 > rendus dans `running-history`) et **10 (MN-13)** est **absorbée par MN-06** (doublon de formulation).
-> **Seule 12 (META-19) reste ouverte.** Corrigé aussi : **RUN-10** (splits par km) était ⏳ alors que
-> livré depuis le 25/07, et **MUSC-06** ⏳ alors que livrée avec MUSC-05. Leçon : ce catalogue n'est
-> **pas** une source de vérité sur l'état du code — vérifier `packages/shared/src` avant de démarrer
-> une ligne, et repasser [`/reconcilier`](../../.claude/commands/reconcilier.md) dessus régulièrement.
+> Corrigé aussi : **RUN-10** (splits par km) était ⏳ alors que livré depuis le 25/07, et **MUSC-06**
+> ⏳ alors que livrée avec MUSC-05. Leçon : ce catalogue n'est **pas** une source de vérité sur
+> l'état du code — vérifier `packages/shared/src` avant de démarrer une ligne, et repasser
+> [`/reconcilier`](../../.claude/commands/reconcilier.md) dessus régulièrement.
+>
+> ⚠️ **MàJ 02/08/2026** — **12 (META-19) livrée** (reste recette) : les **12 candidats de cette
+> liste de priorisation sont désormais tous réglés** (livrés ou absorbés). Prochaine étape :
+> reprioriser depuis le reste du catalogue (RUN-18/MR-10/TRI-12, désormais débloqués par la brique
+> ACWR commune) plutôt que depuis cette liste, qui a rempli son rôle.
 
 1. ~~**MUSC-04 — Courbe de progression charge & volume par exercice**~~ ✅ **livrée + recette OK**. Données déjà là
    (`workout_sets`, `personal_records`) ; forte valeur perçue, US 3.21/6.2 déjà cadrées.
@@ -382,8 +387,10 @@ des **données et des briques déjà présentes** (✅ à consolider → ⏳ cad
     formulation, pas une analyse distincte.
 11. ~~**RN-01 — Dépense calorique estimée d'une course**~~ ✅ **livrée + recette OK** (avec RN-02).
     Brique de base qui débloque la famille course↔nutrition (RN-04 restante) ; données déjà stockées.
-12. **META-19 — Garde-fou surentraînement (ACWR)** (🆕). Standard de préparation physique,
-    calculable dès qu'on dispose de la charge combinée ; base commune à RUN-18, MR-10 et TRI-12.
+12. ~~**META-19 — Garde-fou surentraînement (ACWR)**~~ ✅ **livrée** (reste recette, constaté le
+    02/08/2026). `computeAcwr` (shared, pur, testé) + widget conditionnel Tier 2
+    `TrainingLoadAlertCard` (gating `strength`+`running`, replié `null` hors zone de risque). Brique
+    commune posée pour RUN-18, MR-10 et TRI-12.
 
 **Note transverse :** avant les analyses inférentielles (corrélations META-20/21/22, forme-fatigue
 TRI-15), poser d'abord les **briques mathématiques socles** (META-08 régression, META-09 lissage,

@@ -59,6 +59,9 @@ export const HOME_WIDGET_IDS = [
   // US CYCLE-01 — idem. **Pas d'onglet de navigation** (arbitrage du 31/07/2026) : ce widget est
   // le seul point d'entrée du suivi de cycle, l'écran de détail s'ouvre en appuyant dessus.
   'cycle',
+  // US META-19 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors de la zone de
+  // risque ACWR, comme `deficit-volume` — pas un ajout permanent au plafond Tier 0.
+  'training-load',
 ] as const;
 
 /**
@@ -160,6 +163,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // Pas une liste de piliers : le cycle n'appartient à aucun des trois. Pas `'always'` non
       // plus : c'est une donnée de santé sensible, en opt-in strict, désactivé par défaut.
       cycle: { setting: 'cycleTrackingEnabled' },
+      // US META-19 : même garde que `training-time` — l'ACWR combine muscu et course, un seul
+      // pilier actif ne donnerait qu'une moitié du calcul.
+      'training-load': ['strength', 'running'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

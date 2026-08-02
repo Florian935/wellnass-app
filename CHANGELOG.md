@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/meta19-acwr-garde-fou` — META-19 : garde-fou surentraînement (ACWR combiné)
+
+Implémentation du garde-fou validé dans l'entrée précédente. Widget conditionnel Tier 2 (ADR-007) :
+**15ᵉ entrée de `HOME_WIDGET_IDS`**, mais rendu `null` hors de la zone de risque — jamais un ajout
+permanent au plafond Tier 0.
+
+#### Ajouté
+
+- `packages/shared/src/training-time.ts` — `sessionLoad(session)` (RPE × durée en minutes, méthode
+  session-RPE de Foster ; séance sans RPE ou sans durée → 0, ni ignorée ni inventée) et
+  `computeAcwr({ acuteSessions, chronicSessions })` (charge aiguë 7 j ÷ charge chronique 28 j ;
+  `null` si aucune charge chronique — pas de division par une base vide ; `showAlert` uniquement au-
+  dessus du seuil de risque 1,3, jamais pour la zone basse). 7 tests.
+- `apps/mobile/src/data/repositories/dashboard-repository.ts` — `useTrainingLoadAlert()` : compose
+  `useWorkoutHistory()` + `useRunHistory()` (déjà chargés ailleurs sur le dashboard, aucune nouvelle
+  requête), filtre par `finishedAt` sur les fenêtres 7 j / 28 j (`useWindowStartKey`, même patron que
+  `useTrainingTime`), délègue à `computeAcwr`. Gating `['strength', 'running']` — l'ACWR combine les
+  deux piliers, un seul actif ne donnerait qu'une moitié du calcul.
+- `apps/mobile/src/components/dashboard/TrainingLoadAlertCard.tsx` (nouveau) — copie structurelle de
+  `DeficitVolumeAlertCard` : `if (!alert.show) return null;`, ton `warn`, 3 formes. Accessibilité :
+  bloc `accessible` unique par forme (titre + message + recommandation), pas des `Text` disjoints
+  (spec §7).
+- `packages/shared/src/widgets.ts` — `'training-load'` ajouté en fin de `HOME_WIDGET_IDS` (14→15) et
+  à `WIDGET_REGISTRY.home.pillars` (`['strength', 'running']`).
+- `apps/mobile/src/components/dashboard/dashboard-widgets.tsx` — `'training-load': TrainingLoadAlertCard`
+  dans `WIDGET_COMPONENTS`.
+- i18n `home.trainingLoad.*` (eyebrow/title/message/recommend), FR + EN, ton factuel (spec §7 : pas
+  de mot comme « échec » ou « danger »). Parité FR/EN vérifiée (1634 clés de chaque côté).
+
+#### Corrigé
+
+- `packages/shared/src/widgets.test.ts` — 5 assertions `toHaveLength()` codées en dur (14→15) mises à
+  jour pour refléter le 15ᵉ widget : registre (accueil), `defaultScreenLayout`, et 3 scénarios de
+  `resolveScreenLayout` (stored=null, cycle masqué, cycle affiché).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1377 tests côté `packages/shared`, 50 suites / 269 tests côté `apps/mobile` —
+  lus sans pipe pour ne pas masquer un code de sortie non nul).
+- Aucune migration, aucune sync rule PowerSync à redéployer (aucune nouvelle table).
+
 ### 02/08/2026 — `feature/meta19-acwr-garde-fou` — META-19 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Seul candidat encore ouvert de la liste de priorisation officielle du catalogue d'analyses — aucun

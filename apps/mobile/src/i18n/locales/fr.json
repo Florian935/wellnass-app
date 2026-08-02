@@ -856,6 +856,12 @@
       "eyebrow": "Temps · 7 j",
       "activity": "d'activité",
       "total": "total"
+    },
+    "trainingLoad": {
+      "eyebrow": "Charge d'entraînement",
+      "title": "Charge élevée cette semaine",
+      "message": "Ta charge combinée est nettement au-dessus de ta moyenne des 4 dernières semaines.",
+      "recommend": "Un jour de repos supplémentaire peut aider à récupérer."
     }
   },
   "onboarding": {

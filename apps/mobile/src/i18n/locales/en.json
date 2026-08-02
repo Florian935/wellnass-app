@@ -856,6 +856,12 @@
       "eyebrow": "Time · 7 d",
       "activity": "of activity",
       "total": "total"
+    },
+    "trainingLoad": {
+      "eyebrow": "Training load",
+      "title": "High training load this week",
+      "message": "Your combined load is well above your average over the last 4 weeks.",
+      "recommend": "An extra rest day can help you recover."
     }
   },
   "onboarding": {
