@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-F2b — Prolonger ou raccourcir (cible en direct)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:18px;
+         text-align:center}
+  .distval{font-size:36px;font-weight:800;letter-spacing:-1px}
+  .distunit{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .targetcard{background:var(--surf);border:1px solid var(--border);border-radius:12px;
+              padding:12px 14px;text-align:left;margin-top:4px}
+  .targettitle{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+               margin-bottom:6px}
+  .targetline{font-size:14px;font-weight:600}
+  .under{color:var(--muted)}
+  .success{color:var(--success)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-F2b — Prolonger ou raccourcir (cible en direct)</h1>
+<p class="sub">2ᵉ des 4 candidats issus du découpage de RUN-F2. Réutilise <strong>tout</strong> ce
+que RUN-F3 a déjà construit (<code>compareToTarget</code>, clés i18n <code>running.target.*</code>)
+— aucune fonction pure neuve, aucune clé i18n neuve. Le seul manque réel : l'écran de suivi ne
+lisait jamais la cible pendant la course.</p>
+
+<h2>La carte objectif, dans les 3 états possibles</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">En dessous de la cible</div>
+    <div class="phone">
+      <div class="distval">4.2</div>
+      <div class="distunit">km</div>
+      <div class="targetcard">
+        <div class="targettitle">Objectif de la séance</div>
+        <div class="targetline under">4,2 km sur 8 km visés</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Cible atteinte</div>
+    <div class="phone">
+      <div class="distval">8.01</div>
+      <div class="distunit">km</div>
+      <div class="targetcard">
+        <div class="targettitle">Objectif de la séance</div>
+        <div class="targetline success">8 km sur 8 km visés — objectif atteint</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Poursuite au-delà (« continuer en libre »)</div>
+    <div class="phone">
+      <div class="distval">9.4</div>
+      <div class="distunit">km</div>
+      <div class="targetcard">
+        <div class="targettitle">Objectif de la séance</div>
+        <div class="targetline success">9,4 km sur 8 km visés — objectif dépassé de 1,4 km</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 0">Rien ne bloque ni ne signale
+    négativement la poursuite — « continuer en libre » est déjà le comportement par défaut, cette
+    US ne fait que le rendre visible.</p>
+  </div>
+</div>
+
+<div class="note">
+  <strong>« Terminer avant la cible » et « continuer en libre » sont déjà possibles aujourd'hui</strong>
+  — le bouton Stop existant termine la course à tout moment, et rien n'empêche de continuer à
+  courir après la cible. Le vrai manque n'était pas une mécanique de décision, mais l'absence
+  totale de visibilité sur la cible pendant la course (elle n'apparaissait qu'au résumé, après
+  coup). Cette US ajoute uniquement cette visibilité.
+</div>
+
+<h2>Les règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Même fonction pure que RUN-F3, appelée en continu</b>
+    <code>compareToTarget</code> ne connaît que des valeurs, jamais un état "terminé" — aucun
+    changement à cette fonction.</div>
+  <div class="rule"><b>R1 bis — Durée : jamais l'horloge murale en repli</b>
+    L'horloge de secours (<code>elapsedSeconds</code>) inclut les pauses ; la comparaison à une
+    cible de durée utilise <code>durationSeconds</code> (net), sinon reste absente.</div>
+  <div class="rule"><b>R2 — Mêmes clés i18n que le résumé, aucune neuve</b>
+    « X sur Y visés » est déjà neutre en temps — valable pendant et après la course.</div>
+  <div class="rule"><b>R4 — Jamais alarmant</b>
+    Neutre en dessous de la cible, succès à l'atteinte ou au-delà — jamais une couleur d'alerte.</div>
+</div>
+
+</div></body></html>

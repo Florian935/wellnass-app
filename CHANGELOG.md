@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf2b-cible-en-direct` — RUN-F2b entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+2ᵉ des 4 candidats issus du découpage de RUN-F2 (roadmap 5.23). Aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/runf2b-cible-en-direct.md) — reformulation du besoin roadmap
+  (« terminer avant la cible ou continuer en libre ») : les deux actions sont **déjà natives**
+  (le bouton Stop existant termine à tout moment, rien ne bloque la poursuite après la cible) — le
+  vrai manque diagnostiqué par le backlog est l'absence de **visibilité** de la cible pendant la
+  course. Réutilise intégralement ce que RUN-F3 (en recette) a déjà construit :
+  `compareToTarget`/`TargetComparison` (packages/shared, non modifié), `useRunTarget` (déjà
+  exporté), clés i18n `running.target.*` (déjà neutres en tense, « X sur Y visés » valable pendant
+  et après une course) — **aucune fonction pure neuve, aucune clé i18n neuve**. Seule extension :
+  `ActiveRun` gagne `plannedSessionId` (colonne déjà en base depuis RUN-F3).
+- [Plan](docs/plans/runf2b-cible-en-direct.md) — 2 étapes : extension de `ActiveRun`/requête SQL →
+  carte objectif dans `run/active.tsx` (calcul de libellé dupliqué depuis `summary.tsx`,
+  volontairement pas partagé — RUN-F3 encore en recette, un refactor à cheval ajouterait un risque
+  de régression sur du code pas encore validé, pour un gain de duplication mineur).
+- [Maquette](design/runf2b-cible-en-direct/runf2b-cible-en-direct.html) — les 3 états de la carte
+  objectif (en dessous, atteinte, dépassée) et le rappel que les deux actions du titre roadmap sont
+  déjà natives.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 1 correction réelle apportée avant validation — le
+  repli `elapsedSeconds` (horloge murale, inclut les pauses) aurait pu fausser la comparaison à une
+  cible de durée dans la fenêtre avant le premier flush GPS (faux « dépassé » possible) ; la
+  comparaison de durée utilise désormais exclusivement `active.durationSeconds` (net, post-flush),
+  absente sinon plutôt que de retomber sur l'horloge murale (R1 bis).
+- Aucune migration, aucune donnée nouvelle (`runs.planned_session_id` déjà en base et synchronisé).
+
 ### 02/08/2026 — `feature/runf2a-annonces-audio` — RUN-F2a : annonces audio périodiques (roadmap 5.19 → ✅)
 
 Implémentation validée dans l'entrée précédente. Premier des 4 candidats issus du découpage de
