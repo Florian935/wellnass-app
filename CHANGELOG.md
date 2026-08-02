@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `fix/planning-preview-pillar-label` — Widget planning cross-pilier : ambiguïté levée (décision Florian)
+
+Commit précédent : `6f0fc5d`. Point ouvert du BACKLOG tranché par Florian : le widget « Planning »
+du hub Muscu montrant une séance de course (et vice versa sur le hub Running) est **voulu** —
+cohérent avec le planning unifié (US 3.9), les deux widgets pointent vers le même `/planning`. Seule
+l'ambiguïté constatée en recette (« Prochaine : Fractionné (VMA) » sous l'en-tête *Musculation*,
+sans repère de pilier) restait à corriger.
+
+#### Modifié
+
+- [PlanningPreview.tsx](apps/mobile/src/components/PlanningPreview.tsx) — `sessionLabel` préfixe
+  désormais chaque libellé par son pilier (« Musculation · … » / « Course · … »), sur la ligne
+  « Prochaine » (forme `small`) et la liste des prochaines séances (forme `large`). Même convention
+  que le chip de pilier déjà affiché sur l'écran `/planning` (texte, pas seulement une couleur de
+  pastille — accessible).
+
+#### Technique / Notes
+
+- Composant purement présentationnel, utilisé identiquement par `StrengthPlanningWidget` et
+  `RunningPlanningWidget` (aucun prop de pilier « hôte » à threader) : le préfixe s'applique donc
+  aux deux hubs, symétriquement.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/265 tests + shared
+  Vitest 67 fichiers/1347 tests) — lus sans pipe, tous verts. Aucun test n'exerçait `sessionLabel`
+  ou `previewNext` textuellement, aucune régression à corriger.
+- Aucune ligne roadmap (dette hors US, pas de numéro thématique).
+
 ### 02/08/2026 — `fix/dette-technique-ecrans-a11y-seed` — Dette technique : 3 items déjà corrigés reconciliés, a11y + seed.sql traités
 
 Pendant que les 20 US en recette attendent la vérification device de Florian/Damien : passe sur

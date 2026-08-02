@@ -182,13 +182,12 @@ Méthode et résultats détaillés : [docs/plan-de-test.md](docs/plan-de-test.md
       sur `label` par défaut — corrige account-delete et, par construction, tout bouton de l'app
       sans override explicite (surtout utile pendant `loading`, quand le texte visible disparaît
       derrière le spinner).
-- [ ] 🟠 **Décision produit — le widget planning du hub Muscu annonce une séance de course.**
-      Constaté : « Prochaine : Fractionné (VMA) » sous l'en-tête *Musculation*, à côté de « Aucun
-      programme actif ». Ce n'est **pas un bug de filtre** : les requêtes de
-      [planned-session-repository.ts](apps/mobile/src/data/repositories/planned-session-repository.ts#L100)
-      sont explicitement « TOUS piliers » (planning unifié, US 3.9) et `StrengthPlanningWidget` rend
-      `PlanningPreview` sans filtre. **À trancher** : est-ce le comportement voulu, ou le widget d'un
-      pilier doit-il se limiter à son pilier ?
+- [x] ~~🟠 **Décision produit — le widget planning du hub Muscu annonce une séance de course.**~~ —
+      **tranché le 02/08/2026 (Florian)** : comportement **voulu**, gardé tel quel — cohérent avec
+      le planning unifié (US 3.9), les deux widgets pointent vers le même `/planning`. Seule
+      l'ambiguïté était à corriger : [PlanningPreview.tsx](apps/mobile/src/components/PlanningPreview.tsx)
+      préfixe désormais chaque libellé de séance par son pilier (« Musculation · … » / « Course · … »),
+      même convention que le chip de pilier déjà affiché sur `/planning` lui-même.
 
 - [x] ~~**`supabase/seed.sql` est inatteignable**~~ — **corrigé le 02/08/2026**. Les 16 exercices +
       le programme placeholder « Full Body Débutant » (US1/US2 du seed) basculés en migration

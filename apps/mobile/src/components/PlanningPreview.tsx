@@ -189,18 +189,27 @@ export function PlanningPreview({ size = 'wide' }: { size?: WidgetSize }) {
   );
 }
 
-/** Libellé court d'une séance : running = type (ou nom), muscu = nom (ou fallback). */
+/**
+ * Libellé court d'une séance, préfixé par son pilier : running = type (ou nom), muscu = nom (ou
+ * fallback). Ce composant est **volontairement affiché sur les 2 hubs** (planning unifié, US 3.9)
+ * — le préfixe de pilier lève l'ambiguïté d'une séance « étrangère » au hub courant (constaté en
+ * recette : « Prochaine : Fractionné (VMA) » sous l'en-tête Musculation surprenait sans lui).
+ */
 function sessionLabel(
   item: PlannedSessionItem,
   t: ReturnType<typeof useTranslation>['t'],
 ): string {
-  if (item.pillar === 'running') {
-    const type = item.sessionType as ProgramSessionType | null;
-    return type ? t(`running.sessionType.${type}`) : (item.sessionName ?? '');
-  }
-  return item.sessionName?.trim()
-    ? item.sessionName
-    : t('programs.detail.sessionFallback', { index: item.orderIndex + 1 });
+  const pillarLabel = t(item.pillar === 'running' ? 'planning.pillarRunning' : 'planning.pillarStrength');
+  const name =
+    item.pillar === 'running'
+      ? (() => {
+          const type = item.sessionType as ProgramSessionType | null;
+          return type ? t(`running.sessionType.${type}`) : (item.sessionName ?? '');
+        })()
+      : item.sessionName?.trim()
+        ? item.sessionName
+        : t('programs.detail.sessionFallback', { index: item.orderIndex + 1 });
+  return `${pillarLabel} · ${name}`;
 }
 
 const styles = StyleSheet.create({
