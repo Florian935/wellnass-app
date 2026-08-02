@@ -34,6 +34,7 @@ import {
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { usePriorWeekAdherence } from '@/data/repositories/planned-session-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -222,6 +223,10 @@ export default function WorkoutScreen() {
   const lastPerf = useLastPerformance(currentExerciseId);
   // Avant-dernière séance sur cet exercice, difficile ou non (US MUSC-F7 — signal du deload).
   const previousStruggled = usePreviousStruggled(currentExerciseId);
+  // Adhérence à la semaine précédente du programme (US MUSC-F15) — `null` si séance libre, hors
+  // planning, ou 1ʳᵉ semaine : `undefined` laisse alors `computeProgressionSuggestion` appliquer
+  // son propre défaut permissif (comportement inchangé), pas une valeur `true` forcée ici.
+  const priorWeekAdherenceOk = usePriorWeekAdherence(active?.programId ?? null, active?.weekIndex ?? null);
   const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
   const allExerciseNotes = useExerciseNotes();
   // Paires superset de la séance (requête stable : '' → aucune ligne tant qu'`active` n'est pas résolu).
@@ -270,12 +275,19 @@ export default function WorkoutScreen() {
   // dernière séance terminée (déjà filtrées `done=1` par `useLastPerformance`)
   // et la série de référence au même rang. `previousStruggled` (MUSC-F7) active
   // la branche deload : 2 séances d'affilée difficiles sur cet exercice.
+  // `priorWeekAdherenceOk` (MUSC-F15) : `null` → `undefined`, pour laisser
+  // `computeProgressionSuggestion` appliquer son propre défaut permissif (comportement inchangé).
   const referenceSet = current ? lastPerf[rang] : undefined;
   const suggestion = current
     ? computeProgressionSuggestion(
         lastPerf.map((p) => ({ setType: p.setType, rpe: p.rpe, done: true })),
         referenceSet,
-        { weightIncrementKg: 2.5, durationIncrementSeconds: 10, previousStruggled },
+        {
+          weightIncrementKg: 2.5,
+          durationIncrementSeconds: 10,
+          previousStruggled,
+          priorWeekAdherenceOk: priorWeekAdherenceOk ?? undefined,
+        },
       )
     : null;
   const suggestionLabel = (() => {
@@ -291,6 +303,12 @@ export default function WorkoutScreen() {
       });
     }
     if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
+    if (suggestion.kind === 'weightHold') {
+      return t('workout.suggestion.weightHold', {
+        weight: units.formatWeight(suggestion.weightKg),
+        reps: suggestion.reps,
+      });
+    }
     if (suggestion.kind === 'deload') {
       return t('workout.suggestion.deload', {
         weight: units.formatWeight(suggestion.weightKg),

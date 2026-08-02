@@ -204,7 +204,8 @@
       "weightOrReps": "Try {{weight}} or {{reps}} reps",
       "reps": "Try {{reps}} reps",
       "duration": "Try {{duration}}",
-      "deload": "Two tough sessions in a row — you can drop to {{weight}}"
+      "deload": "Two tough sessions in a row — you can drop to {{weight}}",
+      "weightHold": "Stay at {{weight}}, try {{reps}} reps — weight goes back up once you're keeping up with the program"
     },
     "reorder": {
       "up": "Move up",

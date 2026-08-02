@@ -191,6 +191,14 @@ export type ProgressionSuggestion =
    * proposition de **baisser la charge** (jamais imposé). `weightKg` = charge réduite suggérée.
    */
   | { kind: 'deload'; weightKg: number }
+  /**
+   * **Poids gelé** (US MUSC-F15, roadmap 3.7) : adhérence insuffisante au programme la semaine
+   * précédente → la branche `weightOrReps` se dégrade en reps seules, poids **inchangé**
+   * (`weightKg` = celui de la dernière fois, pas incrémenté). Variante dédiée plutôt qu'un recyclage
+   * de `kind: 'reps'` (celui-ci reste réservé au cas structurel « pas de poids », ex. poids de
+   * corps) — voir spec §1.
+   */
+  | { kind: 'weightHold'; weightKg: number; reps: number }
   | null;
 
 /** Baisse de charge par défaut d'un deload (−10 %, spec 3.8). Arrondi au pas de 0,5 kg. */
@@ -232,6 +240,13 @@ export function computeProgressionSuggestion(
     previousStruggled?: boolean;
     /** Fraction de baisse du deload (défaut `DEFAULT_DELOAD_FACTOR` = −10 %). */
     deloadFactor?: number;
+    /**
+     * `false` si la semaine précédente du programme n'a pas atteint 80 % de complétion (US
+     * MUSC-F15, roadmap 3.7) → dégrade `weightOrReps` en `weightHold` (poids gelé, reps toujours
+     * proposées). Défaut non fourni = comportement inchangé (rétrocompatible, même convention que
+     * `previousStruggled`) : seule une valeur strictement `false` déclenche le gate.
+     */
+    priorWeekAdherenceOk?: boolean;
   },
 ): ProgressionSuggestion {
   const qualifying = lastSets.filter((s) => s.done);
@@ -263,11 +278,32 @@ export function computeProgressionSuggestion(
     return { kind: 'reps', reps: referenceSet.reps + 1 };
   }
   if (referenceSet.reps == null) return null;
+  // Adhérence insuffisante la semaine précédente (US MUSC-F15) → poids gelé, reps toujours
+  // proposées à la hausse. Évalué APRÈS le deload (ligne 242) : un exercice en difficulté n'a pas
+  // besoin d'un second signal pour ne pas monter en charge, le deload reste seul prioritaire.
+  if (opts.priorWeekAdherenceOk === false) {
+    return { kind: 'weightHold', weightKg: referenceSet.weightKg, reps: referenceSet.reps + 1 };
+  }
   return {
     kind: 'weightOrReps',
     weightKg: referenceSet.weightKg + opts.weightIncrementKg,
     reps: referenceSet.reps + 1,
   };
+}
+
+/**
+ * Taux de complétion d'une semaine de programme (US MUSC-F15, roadmap 3.7) : `done` ÷ total des
+ * séances planifiées de cette semaine (`done` + `skipped` + `planned` encore non traitées — même
+ * lecture que MR-03 du catalogue). `null` si la liste est vide (aucune semaine à évaluer, spec
+ * R2) — ne connaît aucune notion de programme/semaine/date, l'appelant lui fournit déjà les
+ * statuts filtrés par `program_id` + `week_index`, même discipline que `computeAcwr`.
+ */
+export function computeWeekCompletionRate(
+  sessions: ReadonlyArray<{ status: 'planned' | 'done' | 'skipped' }>,
+): number | null {
+  if (sessions.length === 0) return null;
+  const done = sessions.filter((s) => s.status === 'done').length;
+  return done / sessions.length;
 }
 
 /** Une série de séance, telle que lue depuis `workout_sets` (déjà triée par `order_index`). */

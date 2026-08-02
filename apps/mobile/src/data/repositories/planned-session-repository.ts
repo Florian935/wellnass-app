@@ -37,6 +37,7 @@ import type {
 } from '@wellness/shared';
 import {
   addDays,
+  computeWeekCompletionRate,
   generatePlannedSessions,
   localDayKey,
   planProgramInputSchema,
@@ -482,4 +483,42 @@ export async function skipPlannedSession(id: string): Promise<void> {
 /** Marque une séance planifiée comme faite (statut `done` + horodatage `completed_at`). */
 export async function markPlannedSessionDone(id: string): Promise<void> {
   await patch('planned_sessions', id, { status: 'done', completed_at: nowUtc() });
+}
+
+// ---------------------------------------------------------------------------
+// usePriorWeekAdherence — garde de progression (US MUSC-F15, roadmap 3.7)
+// ---------------------------------------------------------------------------
+
+/** Statuts des séances planifiées d'un programme pour une semaine donnée (`week_index`). */
+const SELECT_WEEK_STATUSES = `
+  SELECT status FROM planned_sessions
+  WHERE owner_id = ? AND program_id = ? AND week_index = ? AND deleted_at IS NULL
+`;
+
+/**
+ * Adhérence au programme de la semaine `weekIndex - 1` (US MUSC-F15) : `true` si ≥ 80 % des
+ * séances de cette semaine sont `done` (spec R1), `null` si aucune donnée exploitable — première
+ * semaine d'un programme, ou séance sans programme/`week_index` connu (spec R2/R3). `null` n'est
+ * **pas** un signal négatif : c'est à l'appelant (`computeProgressionSuggestion`) d'appliquer son
+ * propre défaut permissif quand le signal est absent, pas à ce hook de le décider à sa place.
+ */
+export function usePriorWeekAdherence(
+  programId: string | null,
+  weekIndex: number | null,
+): boolean | null {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const priorWeekIndex = weekIndex != null ? weekIndex - 1 : -1;
+
+  const { data } = useQuery<{ status: string }>(SELECT_WEEK_STATUSES, [
+    userId,
+    programId ?? '',
+    priorWeekIndex,
+  ]);
+
+  if (programId == null || weekIndex == null) return null;
+
+  const rate = computeWeekCompletionRate(
+    data.map((row) => ({ status: row.status as PlannedSessionStatus })),
+  );
+  return rate == null ? null : rate >= 0.8;
 }

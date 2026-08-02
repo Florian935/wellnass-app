@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **86 %** — 185 livré · 16 partiel · 9 à faire (sur 216)
+**MVP1 (= V1.0 complète)** `█████████████████░░░` **86 %** — 186 livré · 15 partiel · 9 à faire (sur 216)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -26,6 +26,7 @@ avant de pouvoir publier.
 | **META-19** — Garde-fou surentraînement (ACWR combiné) | `recette` | `feature/meta19-acwr-garde-fou` | — |
 | **MUSC-09** — Record personnel par plage de répétitions | `recette` | `feature/musc09-record-plage-reps` | [3.56] |
 | **MUSC-F14** — Suggestion de substitution d'exercice | `recette` | `feature/muscf14-substitution-exercice` | [3.52] |
+| **MUSC-F15** — Progression au niveau du programme | `recette` | `feature/muscf15-progression-programme` | [3.7] |
 | **MUSC-F1b** — Muscles ciblés sur schéma corporel — anatomie fine | `recette` | `feature/muscf1b-schema-muscles` | [6.2] |
 | **MUSC-F7** — Progression assistée — deload sur stagnation | `recette` | `feature/muscf7-deload` | [3.8] |
 | **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
@@ -42,9 +43,8 @@ avant de pouvoir publier.
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **MUSC-F15** — Progression au niveau du programme | `validation` | `feature/muscf15-progression-programme` | [3.7] |
 
-⏳ **26 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **27 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -66,7 +66,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscf15-progression-programme` (modifications non commitées) |
-| Commits | 1027 · `main` a **1024** commits de retard sur `dev` |
+| Commits | 1028 · `main` a **1025** commits de retard sur `dev` |
 | Specs d'US | 104 au total — 77 clôturées, 27 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -77,11 +77,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `fac9bde` docs(muscf15): entrée en pipeline — spec, plan, maquette (roadmap 3.7)
 - `8b97e7a` feat(tri12): détection de surcharge / sous-récupération globale (garde-fou tri-pilier)
 - `3137b3b` docs(tri12): entrée en pipeline — spec, plan, maquette (catalogue seul)
 - `b39c7ad` docs(catalogue): MR-10 absorbée par META-19 (doublon de formulation)
 - `02eacfd` feat(run18): charge d'entraînement & ACWR (running seul)
-- `0ec97e3` docs(run18): entrée en pipeline — spec, plan, maquette (catalogue seul)
 
 ---
 

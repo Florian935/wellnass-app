@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/muscf15-progression-programme` — MUSC-F15 : progression au niveau du programme (roadmap 3.7 → ✅)
+
+Implémentation validée dans l'entrée précédente. Chantier scindé de MUSC-F7 faute de cadrage —
+cadrage tranché sans inventer de cible de charge stockée.
+
+#### Ajouté
+
+- `packages/shared/src/workout.ts` — `computeWeekCompletionRate(sessions)` (compte `done`/total,
+  `null` si liste vide) et extension de `ProgressionSuggestion`/`computeProgressionSuggestion` :
+  nouvelle variante `{ kind: 'weightHold'; weightKg; reps }` + option
+  `opts.priorWeekAdherenceOk?: boolean` (défaut non fourni = comportement inchangé). Si
+  `false`, la branche `weightOrReps` se dégrade en `weightHold` (poids inchangé, reps toujours
+  proposées) — évaluée **après** le deload (MUSC-F7), qui reste seul prioritaire. 8 tests ajoutés
+  (dont 1 vérifiant explicitement que deload + adhérence insuffisante ensemble → le deload gagne).
+- `apps/mobile/src/data/repositories/workout-repository.ts` — `ActiveWorkout` gagne `programId`/
+  `plannedSessionId`/`weekIndex` ; `SELECT_ACTIVE_WORKOUT` résout `week_index` en une jointure sur
+  `planned_sessions` (une seule requête, pas d'aller-retour supplémentaire).
+- `apps/mobile/src/data/repositories/planned-session-repository.ts` — `usePriorWeekAdherence(programId,
+  weekIndex)` : requête `planned_sessions` filtrée `program_id`+`week_index − 1`, délègue à
+  `computeWeekCompletionRate`, retourne `boolean | null` (`null` = signal absent, décision du défaut
+  laissée à l'appelant, pas au hook).
+- `apps/mobile/src/app/workout.tsx` — câblage `priorWeekAdherenceOk` dans l'appel existant à
+  `computeProgressionSuggestion`, branche `weightHold` ajoutée au switch de libellé.
+- i18n `workout.suggestion.weightHold` (1 clé, FR + EN) — **dédiée**, pas un recyclage de
+  `workout.suggestion.reps` (relecture agent : ce texte est déjà utilisé pour le cas structurel
+  « poids de corps », le réutiliser aurait confondu deux situations différentes pour l'utilisateur).
+  Parité FR/EN vérifiée (1645 clés de chaque côté).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1396 tests côté `packages/shared`, 50 suites / 269 tests côté `apps/mobile`).
+- Aucune migration : `workouts.program_id`/`planned_session_id` et `planned_sessions.week_index`/
+  `status` étaient déjà en base, seule la requête de lecture change.
+- Roadmap 3.7 🟡 → ✅ (Récapitulatif et V0.3 mis à jour : Livré 185→186, Partiel 16→15). BACKLOG.md :
+  ligne retirée (US désormais suivie par sa spec + RECETTES.md).
+
 ### 02/08/2026 — `feature/muscf15-progression-programme` — MUSC-F15 (3.7) : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Chantier scindé de MUSC-F7 le 01/08/2026, faute de cadrage produit. Cette entrée pose le cadrage

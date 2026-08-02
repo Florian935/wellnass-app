@@ -68,6 +68,12 @@ export type ActiveWorkout = {
   id: string;
   startedAt: string;
   sessionId: string | null;
+  /** US MUSC-F15 (roadmap 3.7) : programme d'origine, `null` si séance libre. */
+  programId: string | null;
+  /** US MUSC-F15 : occurrence planifiée d'origine, `null` si démarrée hors planning. */
+  plannedSessionId: string | null;
+  /** US MUSC-F15 : semaine du programme (résolue par jointure sur `planned_sessions`), `null` si `plannedSessionId` l'est aussi (spec R3). */
+  weekIndex: number | null;
   entries: WorkoutEntry[];
 };
 
@@ -109,6 +115,10 @@ type WorkoutDbRow = {
   notes: string | null;
   session_id: string | null;
   program_id: string | null;
+  /** US MUSC-F15 : occurrence planifiée d'origine ; absent de `SELECT_HISTORY`. */
+  planned_session_id?: string | null;
+  /** US MUSC-F15 : semaine du programme (jointure `planned_sessions`) ; absent des autres requêtes. */
+  week_index?: number | null;
   /** Tonnage total de la séance (correlated subquery de `SELECT_HISTORY`) ; absent des autres requêtes. */
   volume_kg?: number | null;
 };
@@ -136,11 +146,17 @@ type WorkoutSetDbRow = {
 // Requêtes SQL (noms de tables/colonnes statiques ; valeurs liées via ?)
 // ---------------------------------------------------------------------------
 
-/** Séance active de l'utilisateur courant (au plus une). */
+/**
+ * Séance active de l'utilisateur courant (au plus une). Jointure `planned_sessions` (US MUSC-F15,
+ * roadmap 3.7) pour résoudre `week_index` en une seule requête — `NULL` dès que
+ * `planned_session_id` l'est (séance libre ou démarrée hors planning, spec R3).
+ */
 const SELECT_ACTIVE_WORKOUT = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id
-  FROM workouts
-  WHERE status = 'active' AND deleted_at IS NULL
+  SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe, w.notes, w.session_id,
+         w.program_id, w.planned_session_id, ps.week_index
+  FROM workouts w
+  LEFT JOIN planned_sessions ps ON ps.id = w.planned_session_id AND ps.deleted_at IS NULL
+  WHERE w.status = 'active' AND w.deleted_at IS NULL
   LIMIT 1
 `;
 
@@ -290,6 +306,9 @@ export function useActiveWorkout(): {
     id: activeRow.id,
     startedAt: activeRow.started_at,
     sessionId: activeRow.session_id,
+    programId: activeRow.program_id,
+    plannedSessionId: activeRow.planned_session_id ?? null,
+    weekIndex: activeRow.week_index ?? null,
     entries: groupSetsByExercise(setRows),
   };
 

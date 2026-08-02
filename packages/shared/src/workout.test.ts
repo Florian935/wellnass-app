@@ -11,6 +11,7 @@ import {
   computeVolume,
   computeReorderedExerciseOrder,
   computeProgressionSuggestion,
+  computeWeekCompletionRate,
   deriveTemplateTargetsFromWorkoutSets,
   sessionStruggled,
 } from './workout';
@@ -574,6 +575,75 @@ describe('computeProgressionSuggestion', () => {
         deloadFactor: 0.2,
       }),
     ).toEqual({ kind: 'deload', weightKg: 64 });
+  });
+
+  // Poids gelé (US MUSC-F15, roadmap 3.7) : adhérence insuffisante au programme la semaine
+  // précédente → weightOrReps se dégrade en weightHold (poids inchangé, reps toujours proposées).
+  it('priorWeekAdherenceOk omis → comportement identique à avant cette US (non-régression)', () => {
+    const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
+    expect(computeProgressionSuggestion(lastSets, refWeight, OPTS)).toEqual({
+      kind: 'weightOrReps',
+      weightKg: 82.5,
+      reps: 9,
+    });
+  });
+
+  it('priorWeekAdherenceOk: true → weightOrReps inchangé', () => {
+    const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, { ...OPTS, priorWeekAdherenceOk: true }),
+    ).toEqual({ kind: 'weightOrReps', weightKg: 82.5, reps: 9 });
+  });
+
+  it('priorWeekAdherenceOk: false → weightHold (poids inchangé, reps +1)', () => {
+    const lastSets = [{ setType: 'normal', rpe: 6, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, { ...OPTS, priorWeekAdherenceOk: false }),
+    ).toEqual({ kind: 'weightHold', weightKg: 80, reps: 9 });
+  });
+
+  it('previousStruggled ET priorWeekAdherenceOk: false en même temps → le deload gagne (R4)', () => {
+    const lastSets = [{ setType: 'failure', rpe: null, done: true }];
+    expect(
+      computeProgressionSuggestion(lastSets, refWeight, {
+        ...OPTS,
+        previousStruggled: true,
+        priorWeekAdherenceOk: false,
+      }),
+    ).toEqual({ kind: 'deload', weightKg: 72 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeWeekCompletionRate (US MUSC-F15)
+// ---------------------------------------------------------------------------
+describe('computeWeekCompletionRate', () => {
+  it('4 séances dont 3 done → 0.75', () => {
+    const sessions = [
+      { status: 'done' as const },
+      { status: 'done' as const },
+      { status: 'done' as const },
+      { status: 'skipped' as const },
+    ];
+    expect(computeWeekCompletionRate(sessions)).toBe(0.75);
+  });
+
+  it('liste vide → null (pas de semaine à évaluer, spec R2)', () => {
+    expect(computeWeekCompletionRate([])).toBeNull();
+  });
+
+  it('1 séance done sur 1 → 1', () => {
+    expect(computeWeekCompletionRate([{ status: 'done' }])).toBe(1);
+  });
+
+  it('mélange done/skipped/planned → compté tel quel, jamais deviné', () => {
+    const sessions = [
+      { status: 'done' as const },
+      { status: 'skipped' as const },
+      { status: 'planned' as const },
+      { status: 'planned' as const },
+    ];
+    expect(computeWeekCompletionRate(sessions)).toBe(0.25);
   });
 });
 

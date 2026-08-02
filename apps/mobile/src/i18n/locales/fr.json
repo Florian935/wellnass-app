@@ -204,7 +204,8 @@
       "weightOrReps": "Essaie {{weight}} ou {{reps}} reps",
       "reps": "Essaie {{reps}} reps",
       "duration": "Essaie {{duration}}",
-      "deload": "2 séances difficiles de suite — tu peux alléger à {{weight}}"
+      "deload": "2 séances difficiles de suite — tu peux alléger à {{weight}}",
+      "weightHold": "Reste à {{weight}}, essaie {{reps}} reps — la charge remonte en enchaînant mieux les séances du programme"
     },
     "reorder": {
       "up": "Monter",

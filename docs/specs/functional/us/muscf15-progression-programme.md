@@ -3,7 +3,7 @@ id: MUSC-F15
 titre: "Progression au niveau du programme"
 roadmap: [3.7]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/muscf15-progression-programme
 maj: 02/08/2026
 ---
