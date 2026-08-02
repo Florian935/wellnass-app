@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-09 — Record par plage de répétitions</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:76ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:76ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .sectiontitle{font-size:14px;font-weight:700;margin:14px 0 8px}
+  .tiles{display:flex;gap:8px}
+  .tile{flex:1;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;
+        background:var(--bg)}
+  .tile .l{font-size:11px;color:var(--muted)}
+  .tile .v{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:15px;margin-top:2px}
+  .tile .m{font-size:10px;color:var(--muted);margin-top:2px}
+  .reprow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+  .reprow:last-child{border-bottom:none}
+  .repname{width:80px;flex-shrink:0;font-weight:700;font-size:13px}
+  .repbar{flex:1;background:var(--bg);border-radius:6px;height:10px;overflow:hidden}
+  .repbarfill{height:100%;background:var(--accent);border-radius:6px}
+  .repval{width:120px;text-align:right;font-size:12px;color:var(--muted)}
+  .repval b{color:var(--text);font-family:ui-monospace,Menlo,monospace}
+  .emptybox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+            padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:84ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;width:100%;margin-top:14px;font-size:14px;background:var(--surf);
+        border-radius:10px;overflow:hidden}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surfalt);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-09 — Record personnel par plage de répétitions</h1>
+<p class="sub">Nouvelle section « Force par plage de reps », sous les 3 tuiles de records existantes
+de la fiche exercice (1RM, charge max, meilleur volume) — même écran, aucune nouvelle route.
+Complète le 1RM unique par une vue du spectre complet de la force sur cet exercice. Aucune
+migration.</p>
+
+<h2>Les 6 plages — pourquoi des bornes, pas des valeurs exactes</h2>
+<table>
+  <tr><th>Plage</th><th>Reps couverts</th><th>Pourquoi cette borne</th></tr>
+  <tr><td><b>1</b></td><td>1</td><td>Un 1RM se teste à exactement 1 rep.</td></tr>
+  <tr><td><b>3</b></td><td>2 à 4</td><td>Une série « 3 reps » réelle tombe rarement pile sur 3.</td></tr>
+  <tr><td><b>5</b></td><td>5 à 7</td><td>Idem pour la force sous-maximale.</td></tr>
+  <tr><td><b>8</b></td><td>8 à 9</td><td>Début de la zone hypertrophie classique (8-12).</td></tr>
+  <tr><td><b>10</b></td><td>10 à 11</td><td>Milieu de la zone hypertrophie.</td></tr>
+  <tr><td><b>12+</b></td><td>12 et plus</td><td>Borne haute ouverte — 15, 20 reps y tombent aussi.</td></tr>
+</table>
+<p class="why" style="margin-top:10px">Ces 6 plages couvrent <strong>tout le spectre</strong> sans
+trou ni chevauchement — n'importe quelle série loggée tombe dans exactement une plage.</p>
+
+<h2>Les 2 états à valider</h2>
+
+<div class="row">
+
+  <div class="screen">
+    <div class="screenlabel">1 · Développé couché — historique riche</div>
+    <div class="tiles">
+      <div class="tile"><div class="l">1RM</div><div class="v">92,5 kg</div><div class="m">estimé · 28/07</div></div>
+      <div class="tile"><div class="l">Charge max</div><div class="v">85 kg</div><div class="m">15/07</div></div>
+      <div class="tile"><div class="l">Volume</div><div class="v">680</div><div class="m">02/06</div></div>
+    </div>
+
+    <div class="sectiontitle">Force par plage de reps</div>
+    <div class="reprow">
+      <div class="repname">1 rep</div>
+      <div class="repbar"><div class="repbarfill" style="width:100%"></div></div>
+      <div class="repval"><b>85 kg</b> · 15/07</div>
+    </div>
+    <div class="reprow">
+      <div class="repname">2-4 reps</div>
+      <div class="repbar"><div class="repbarfill" style="width:88%"></div></div>
+      <div class="repval"><b>75 kg</b> · 22/07</div>
+    </div>
+    <div class="reprow">
+      <div class="repname">5-7 reps</div>
+      <div class="repbar"><div class="repbarfill" style="width:76%"></div></div>
+      <div class="repval"><b>65 kg</b> · 28/07</div>
+    </div>
+    <div class="reprow">
+      <div class="repname">8-9 reps</div>
+      <div class="repbar"><div class="repbarfill" style="width:65%"></div></div>
+      <div class="repval"><b>55 kg</b> · 10/06</div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin:8px 0 0">Pas de ligne « 10-11 reps » ni
+    « 12+ reps » : jamais travaillées sur cet exercice — absentes, pas à 0 kg (R4).</p>
+  </div>
+
+  <div class="screen">
+    <div class="screenlabel">2 · Exercice jamais logué avec charge + reps</div>
+    <div class="tiles">
+      <div class="tile"><div class="l">1RM</div><div class="v">—</div><div class="m">Non renseigné</div></div>
+      <div class="tile"><div class="l">Charge max</div><div class="v">—</div><div class="m">Non renseigné</div></div>
+      <div class="tile"><div class="l">Volume</div><div class="v">—</div><div class="m">Non renseigné</div></div>
+    </div>
+
+    <div class="sectiontitle">Force par plage de reps</div>
+    <div class="emptybox">Pas encore de série à charge et reps renseignés pour cet exercice.</div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Pourquoi un tableau, pas une courbe</strong> : le catalogue mentionne « courbe
+  charge↔reps » en description, mais déclare le type comme <strong>tableau</strong>. Une courbe
+  ferait doublon avec la courbe de progression déjà présente sur cette fiche (poids/volume/1RM
+  dans le temps) — ce bloc répond à une question différente (« ma charge selon le nombre de reps »,
+  pas « ma charge dans le temps »).
+</div>
+
+<h2>Les règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R3 — Même éligibilité que les 3 records existants</b>
+    <code>done=1</code>, ni échauffement ni gainage, poids et reps renseignés — pas une règle
+    inventée pour cette US.</div>
+  <div class="rule"><b>R4 — Plage jamais travaillée = absente</b>
+    Jamais une ligne à 0 kg, qui se lirait comme un échec plutôt qu'une absence de donnée.</div>
+  <div class="rule"><b>R5 — Égalité de charge → la plus récente gagne</b>
+    Cohérent avec l'ordre déjà utilisé pour le 1RM réel ailleurs sur cette même fiche.</div>
+  <div class="rule"><b>R6 — Ordre fixe 1 → 12+, jamais par charge</b>
+    Un tableau qui se réordonne à chaque séance serait illisible pour comparer visuellement le
+    spectre.</div>
+</div>
+
+</div></body></html>

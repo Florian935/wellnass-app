@@ -161,6 +161,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ✅ | US MUSC-F8. Push **agrégé** (1 par séance, jamais 1 par record) + célébration animée transposée de la course. |
 | 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | 🟡 | US MUSC-F8. **Recadré en échéance apprise** (p90 de `finished_at`) : `scheduled_date` est un jour sans heure, « 30 min avant » est incalculable en l'état. Vrai horaire = US à part (heure de séance en base). |
 | 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ✅ | US MUSC-F8. Muscu uniquement (course écartée : son chemin de détection est aussi celui du backfill, qui rejouerait tout l'historique). Plafond de 3/jour réellement appliqué (D14, solde D3 de NUTR-F1). |
+| 3.56 | Record par plage de répétitions | Meilleure charge par tranche de reps (1/3/5/8/10/12+) sur la fiche exercice. | Facile | 2h | 🟢 | ⬜ | **MUSC-09 (catalogue), entrée en pipeline le 02/08/2026.** Ligne **créée** (candidat né après le cadrage, promu depuis le [catalogue d'analyses](../product/analyses-donnees.md)) — le lien qu'il portait vers 6.3 était erroné (6.3 = accès démo pendant la séance, ❌ abandonné, sans rapport). Complète les 3 records existants (3.48) par une vue du spectre force/reps, même exercice, même écran. Aucune donnée nouvelle, aucune migration. |
 
 ---
 
@@ -432,12 +433,12 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 184 | ~86 % |
+| ✅ Livré | 184 | ~85 % |
 | 🟡 Partiel | 16 | ~7 % |
-| ⬜ À faire | 9 | ~4 % |
+| ⬜ À faire | 10 | ~5 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **215** | |
+| **Total périmètre de lancement** | **216** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
@@ -458,7 +459,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|:---:|:---:|:---:|---|
 | V0.1 (17) | 16 | 0 | 1 | 0 | 0 | Quasi complet (reste 9.14 RevenueCat, optionnel) |
 | V0.2 (32) | 29 | 0 | 0 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). **6.2 → ✅ le 02/08/2026** (MUSC-F1b, schéma corporel SVG). GIF/démo (6.1/3.18/6.3) abandonnés |
-| V0.3 (21) | 19 | 2 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. |
+| V0.3 (22) | 19 | 2 | 1 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). Progression au niveau programme (3.7) reste 🟡 : chantier à part, scindé de MUSC-F7. **+1 le 02/08/2026** : 3.56 (MUSC-09, record par plage de reps) entrée en pipeline, reste ⬜. |
 | V0.4 (34) | 32 | 0 | 2 | 0 | 0 | 2 notifs manquantes. **4.38 → ✅ le 02/08/2026** (NUTR-16, répartition par repas, en recette). |
 | V0.5 (34) | 28 | 2 | 4 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
@@ -496,6 +497,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**02/08/2026 — MUSC-09 entrée en pipeline (3.56, nouvelle ligne, ⬜)**
+Record par plage de reps (1/3/5/8/10/12+), promue depuis le catalogue. Ligne créée : le lien vers
+6.3 qu'elle portait était erroné (6.3 = démo pendant la séance, abandonné, sans rapport).
 
 **02/08/2026 — NUTR-16 : répartition par repas livrée (4.38 ⬜ → ✅)**
 Part (%) + moyenne (kcal/j), groupées sur la clé réelle de `meal_type` (plus un enum fixe depuis

@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/musc09-record-plage-reps` — MUSC-09 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/musc09-record-plage-reps.md) — record personnel par plage de
+  répétitions (1/3/5/8/10/12+), complément aux 3 records déjà affichés sur la fiche exercice (1RM,
+  charge max, meilleur volume). **Bornes de plage fixées** (§1, pas des valeurs exactes) : une
+  série réelle tombe rarement pile sur l'ancre du catalogue, des plages couvrant tout le spectre
+  sans trou ni chevauchement sont nécessaires. Même éligibilité de série que le reste du système
+  de records (R3, `done`/`set_type`/`weight_kg` — pas une règle inventée), plage jamais travaillée
+  absente plutôt qu'à 0 (R4, même convention que NUTR-16), ordre fixe 1→12+ (R6).
+- [Plan](docs/plans/musc09-record-plage-reps.md) — 2 étapes : `resolveRepBucketRecords`
+  (packages/shared, pur, testé d'abord) + nouvelle requête (même patron que
+  `SELECT_EXERCISE_TOP_SINGLE`, sans le filtre `reps = 1`) → section sous les tuiles de records
+  existantes de la fiche exercice. **Aucune migration.**
+- [Maquette](design/musc09-record-plage-reps/musc09-record-plage-reps.html) — 2 états : historique
+  riche (4 plages sur 6 présentes) · exercice jamais logué avec charge+reps (état vide).
+
+#### Technique / Notes
+
+- ⚠️ Cette entrée du catalogue **n'avait aucune ligne roadmap** : le lien qu'elle portait vers 6.3
+  était erroné (6.3 = accès démo pendant la séance, ❌ abandonné avec les GIF, sans rapport).
+  **3.56 créée** (V0.3 — Muscu : programmes, historique & records, section thématique exacte).
+- `etape: validation` — en attente de Florian/Damien sur les 3 livrables avant tout code.
+
 ### 02/08/2026 — `feature/nutr16-repartition-repas` — NUTR-16 : répartition calorique par repas livrée (4.38, en recette)
 
 Commit précédent : `68781e9`. Validation reçue (« ok let's go ») sur les 3 livrables — code
