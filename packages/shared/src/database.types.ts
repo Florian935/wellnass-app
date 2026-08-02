@@ -1756,6 +1756,69 @@ export type Database = {
           },
         ]
       }
+      session_intervals: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          fast_distance_m: number | null
+          fast_duration_seconds: number | null
+          fast_pace_pct_vma: number | null
+          id: string
+          order_index: number
+          owner_id: string | null
+          recovery_distance_m: number | null
+          recovery_duration_seconds: number | null
+          reps: number
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          fast_distance_m?: number | null
+          fast_duration_seconds?: number | null
+          fast_pace_pct_vma?: number | null
+          id: string
+          order_index?: number
+          owner_id?: string | null
+          recovery_distance_m?: number | null
+          recovery_duration_seconds?: number | null
+          reps?: number
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          fast_distance_m?: number | null
+          fast_duration_seconds?: number | null
+          fast_pace_pct_vma?: number | null
+          id?: string
+          order_index?: number
+          owner_id?: string | null
+          recovery_distance_m?: number | null
+          recovery_duration_seconds?: number | null
+          reps?: number
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_intervals_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_intervals_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           created_at: string

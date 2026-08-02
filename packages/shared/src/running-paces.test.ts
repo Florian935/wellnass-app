@@ -11,6 +11,7 @@ import {
   sessionTargetPace,
   PROGRAM_SESSION_TYPES,
   hasRunningSessionTarget,
+  paceAtVmaPercent,
 } from './running-paces';
 
 describe('schemas enum running-paces', () => {
@@ -110,5 +111,20 @@ describe('hasRunningSessionTarget', () => {
     expect(hasRunningSessionTarget(null, null)).toBe(false);
     expect(hasRunningSessionTarget(0, 0)).toBe(false);
     expect(hasRunningSessionTarget(undefined, undefined)).toBe(false);
+  });
+});
+
+describe('paceAtVmaPercent (US RUN-F2c)', () => {
+  it('reproduit une valeur deja connue de sessionTargetPace (ref=300 -> vma=285 -> 95% = 300)', () => {
+    const vma = derivedVmaPace(300); // 285
+    expect(paceAtVmaPercent(vma, 95)).toBeCloseTo(300, 5);
+  });
+  it('un pourcentage plus bas donne une allure plus lente (chiffre plus grand)', () => {
+    expect(paceAtVmaPercent(240, 80)).toBeCloseTo(300, 5);
+    expect(paceAtVmaPercent(240, 95)).toBeCloseTo(252.6, 1);
+    expect(paceAtVmaPercent(240, 80)).toBeGreaterThan(paceAtVmaPercent(240, 95));
+  });
+  it('100 % renvoie l\'allure VMA inchangee', () => {
+    expect(paceAtVmaPercent(240, 100)).toBeCloseTo(240, 5);
   });
 });

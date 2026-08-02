@@ -310,6 +310,23 @@ const exercise_plans = new Table({
   deleted_at: column.text,
 });
 
+// ── US RUN-F2c : blocs fractionné/intervalles (une ligne = un bloc de répétitions) ──────────
+
+const session_intervals = new Table({
+  session_id: column.text,
+  owner_id: column.text,
+  order_index: column.integer,
+  reps: column.integer,
+  fast_distance_m: column.integer,
+  fast_duration_seconds: column.integer,
+  fast_pace_pct_vma: column.integer,
+  recovery_distance_m: column.integer,
+  recovery_duration_seconds: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US3 : records personnels ───────────────────────────────────────────────
 
 const personal_records = new Table({
@@ -630,6 +647,7 @@ export const AppSchema = new Schema({
   program_translations,
   sessions,
   exercise_plans,
+  session_intervals,
   personal_records,
   running_profiles,
   runs,

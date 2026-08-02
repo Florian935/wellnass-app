@@ -230,7 +230,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 26/07/2026, *
 | 5.26 | Tableau pace par km | Allure de chaque kilomètre. | Moyen | 3h | 🟢 | ✅ | `computeKmSplits` + tableau splits/km sur `run/summary.tsx`, km le plus rapide en accent (25/07/2026). |
 | 5.1 | Profil coureur | Objectif, niveau, allure de référence, fréquence. | Facile | 2h | 🟢 | ✅ | `running-profile.tsx`. |
 | 5.8 | Endurance fondamentale | Allure de réf. + 60-90 s/km. Base aérobie. | Facile | 1h | 🟢 | ✅ | `sessionTargetPace('endurance')`. |
-| 5.9 | Fractionné / intervalles | Blocs rapides / récupération (ex. 6×400 m à 95 % VMA). | Moyen | 4h | 🟢 | 🟡 | Type + plage d'allure seulement ; **pas de blocs rapide/récup structurés**. |
+| 5.9 | Fractionné / intervalles | Blocs rapides / récupération (ex. 6×400 m à 95 % VMA). | Moyen | 4h | 🟢 | ✅ | **RUN-F2c — code livré le 03/08/2026** → [spec](../specs/functional/us/runf2c-blocs-fractionne.md) · [plan](../plans/runf2c-blocs-fractionne.md) · [maquette](../../design/runf2c-blocs-fractionne/runf2c-blocs-fractionne.html), en recette → [RECETTES.md](../../RECETTES.md). Nouvelle table `session_intervals` (une ligne = un bloc, comme `exercise_plans.target_sets`), éditeurs mobile (`IntervalBlockEditor`) + admin (`SortableList`), affichage lecture seule sur 2 écrans. ⚠️ **2 sync rules à déployer manuellement sur le dashboard PowerSync** (table neuve, non fait par cette session). |
 | 5.10 | Sortie longue | Allure de réf. + 30-60 s/km. +10 % max par semaine. | Facile | 1h | 🟢 | ✅ | `sessionTargetPace('sortie_longue')`. |
 | 5.11 | Récupération active | Allure de réf. + 90 s/km ou plus, 20-30 min. | Facile | 1h | 🟢 | ✅ | `sessionTargetPace('recuperation')`. |
 | 5.18 | Guidage fractionné vocal | Annonce vocale + vibration à chaque changement de bloc. | Moyen | 4h | 🟢 | ⬜ | **Aucune trace** (dépend de blocs + Speech, absents). |
@@ -440,8 +440,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 189 | ~88 % |
-| 🟡 Partiel | 15 | ~7 % |
+| ✅ Livré | 190 | ~88 % |
+| 🟡 Partiel | 14 | ~6 % |
 | ⬜ À faire | 6 | ~3 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -468,7 +468,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.2 (32) | 29 | 0 | 0 | 0 | 3 | **Complet côté séance** : types de séries (3.27), repos par exercice (3.28), remplacement en direct (3.32), fiche exercice (3.13) livrés par la refonte muscu, **3.36 réconciliée le 01/08/2026** (MUSC-F6). **6.2 → ✅ le 02/08/2026** (MUSC-F1b, schéma corporel SVG). GIF/démo (6.1/3.18/6.3) abandonnés |
 | V0.3 (22) | 21 | 1 | 0 | 0 | 0 | **Les 3 push livrés le 30/07** (US MUSC-F8) : 3.42 et 2.7 → ✅ (push agrégé + célébration), 2.4 → 🟡 (recadré en échéance apprise, un vrai « 30 min avant » exigerait une heure de séance en base). **Deload (3.8) câblé le 01/08** (MUSC-F7) — brique et UI livrées, il ne manquait qu'un signal. **3.10 → ✅ le 01/08/2026** (MUSC-F9, glisser-déposer). **3.56 → ✅ le 02/08/2026** (MUSC-09, record par plage de reps, en recette). **3.7 → ✅ le 02/08/2026** (MUSC-F15, progression au niveau du programme — second gate `weightHold`, aucune cible évolutive stockée). |
 | V0.4 (34) | 32 | 0 | 2 | 0 | 0 | 2 notifs manquantes. **4.38 → ✅ le 02/08/2026** (NUTR-16, répartition par repas, en recette). |
-| V0.5 (34) | 31 | 2 | 1 | 0 | 0 | Cœur GPS/carte OK, **séances guidées incomplètes** ; 🟡 = 5.9, 5.24. **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). **5.32 → ✅ le 02/08/2026** (RUN-F1b, dénivelé cumulé — blocage codec levé, scalaires cumulés en direct par le tracker). **5.19 → ✅ le 02/08/2026** (RUN-F2a, annonces audio périodiques — `expo-speech`, nouveau dev build requis). **5.23 → ✅ le 02/08/2026** (RUN-F2b, cible en direct — réutilise RUN-F3 tel quel). |
+| V0.5 (34) | 32 | 1 | 1 | 0 | 0 | Cœur GPS/carte OK ; 🟡 = 5.24 (météo, RUN-F3b). **5.25 → ✅ le 01/08/2026** (RUN-F3, comparaison à l'objectif). **5.2 → ✅** (contenu vérifié en base le 29/07 : 3 programmes complets). **5.34 → ✅ le 02/08/2026** (RUN-14, prédiction Riegel, en recette). **5.32 → ✅ le 02/08/2026** (RUN-F1b, dénivelé cumulé — blocage codec levé, scalaires cumulés en direct par le tracker). **5.19 → ✅ le 02/08/2026** (RUN-F2a, annonces audio périodiques — `expo-speech`, nouveau dev build requis). **5.23 → ✅ le 02/08/2026** (RUN-F2b, cible en direct — réutilise RUN-F3 tel quel). **5.9 → ✅ le 03/08/2026** (RUN-F2c, blocs fractionné/intervalles — nouvelle table `session_intervals`, en recette). |
 | V0.6 (19) | 19 | 0 | 0 | 0 | 0 | **100 % livré** |
 | V0.7 (10) | 8 | 0 | 0 | 1 | 1 | 8.3 (upload média) abandonné ; 8.7 reporté |
 | V0.8 (10) | 10 | 0 | 0 | 0 | 0 | ✅ **Complet.** 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + 9.9 (Health Connect, recetté le 28/07) + 9.16 (REFACTO-01, clôturée le 31/07) + **9.11/9.12 (CONF-07, code livré le 01/08, en recette)** livrés. |
@@ -504,6 +504,11 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**03/08/2026 — RUN-F2c : blocs fractionné/intervalles livrés (5.9 🟡 → ✅)**
+Nouvelle table `session_intervals` (une ligne = un bloc, comme `exercise_plans.target_sets`),
+éditeurs mobile + admin (`SortableList`), affichage lecture seule sur 2 écrans. ⚠️ 2 sync rules
+à déployer manuellement sur le dashboard PowerSync avant recette (table neuve, non fait ce jour).
 
 **02/08/2026 — RUN-F2b : cible en direct livrée (5.23 ⬜ → ✅)**
 Réutilise `compareToTarget`/`useRunTarget`/`running.target.*` de RUN-F3 tels quels — aucune

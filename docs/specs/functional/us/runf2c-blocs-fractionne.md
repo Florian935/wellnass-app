@@ -3,9 +3,9 @@ id: RUN-F2c
 titre: "Blocs fractionné / intervalles"
 roadmap: [5.9]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/runf2c-blocs-fractionne
-maj: 02/08/2026
+maj: 03/08/2026
 ---
 
 # US RUN-F2c — Blocs fractionné / intervalles

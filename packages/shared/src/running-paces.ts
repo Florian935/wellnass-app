@@ -85,3 +85,16 @@ export function sessionTargetPace(type: SessionType, ref5kPaceSPerKm: number): P
       return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Allure a un pourcentage de VMA (US RUN-F2c, blocs fractionne)
+// ---------------------------------------------------------------------------
+
+/**
+ * Allure (s/km) a un pourcentage donne de VMA. Un pourcentage plus bas donne une allure plus
+ * LENTE (chiffre s/km plus grand) — courir a 95 % de sa vitesse maximale, pas 95 % de son allure.
+ * `vmaPaceSPerKm` = allure a 100 % VMA (typiquement `derivedVmaPace(ref5kPaceSPerKm)`).
+ */
+export function paceAtVmaPercent(vmaPaceSPerKm: number, pct: number): number {
+  return vmaPaceSPerKm / (pct / 100);
+}

@@ -67,7 +67,19 @@ export type AdminExercisePlan = {
   restSeconds: number | null;
 };
 
-/** Une séance d'un programme, avec ses exercices planifiés (vide en running). */
+/** Un bloc fractionné au sein d'une séance running (US RUN-F2c, `session_type='fractionne'`). */
+export type AdminIntervalBlock = {
+  id: string;
+  orderIndex: number;
+  reps: number;
+  fastDistanceM: number | null;
+  fastDurationSeconds: number | null;
+  fastPacePctVma: number | null;
+  recoveryDistanceM: number | null;
+  recoveryDurationSeconds: number | null;
+};
+
+/** Une séance d'un programme, avec ses exercices planifiés (vide en running) et ses blocs fractionné (vide hors running). */
 export type AdminSession = {
   id: string;
   orderIndex: number;
@@ -76,6 +88,7 @@ export type AdminSession = {
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
   plans: AdminExercisePlan[];
+  intervals: AdminIntervalBlock[];
 };
 
 /** Détail complet d'un programme éditorial : entête + traductions + séances. */
@@ -136,6 +149,16 @@ export type ExercisePlanInput = {
   restSeconds: number | null;
 };
 
+/** Entrée de `addIntervalBlock` / `updateIntervalBlock` (US RUN-F2c). */
+export type IntervalBlockInput = {
+  reps: number;
+  fastDistanceM: number | null;
+  fastDurationSeconds: number | null;
+  fastPacePctVma: number | null;
+  recoveryDistanceM: number | null;
+  recoveryDurationSeconds: number | null;
+};
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -191,6 +214,29 @@ async function nextPlanOrderIndex(
 ): Promise<{ index: number; error: unknown }> {
   const { data, error } = await supabase
     .from('exercise_plans')
+    .select('order_index')
+    .eq('session_id', sessionId)
+    .is('owner_id', null)
+    .is('deleted_at', null)
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    return { index: 0, error };
+  }
+  return { index: toNextIndex(data?.order_index), error: null };
+}
+
+/**
+ * `order_index` suivant pour les blocs fractionné non supprimés d'une séance
+ * éditoriale : max+1, ou 0 si aucun (US RUN-F2c).
+ */
+async function nextIntervalOrderIndex(
+  sessionId: string,
+): Promise<{ index: number; error: unknown }> {
+  const { data, error } = await supabase
+    .from('session_intervals')
     .select('order_index')
     .eq('session_id', sessionId)
     .is('owner_id', null)
@@ -326,6 +372,7 @@ export async function getProgram(id: string): Promise<{
     targetDistanceM: s.target_distance_m,
     targetDurationSeconds: s.target_duration_seconds,
     plans: [],
+    intervals: [],
   }));
 
   const sessionIds = sessions.map((s) => s.id);
@@ -373,6 +420,38 @@ export async function getProgram(id: string): Promise<{
           targetWeightKg:
             plan.target_weight_kg == null ? null : Number(plan.target_weight_kg),
           restSeconds: plan.rest_seconds,
+        });
+      }
+    }
+
+    // 4. Blocs fractionné de ces séances (US RUN-F2c). Sauté si aucune séance.
+    const { data: intervalsData, error: intervalsError } = await supabase
+      .from('session_intervals')
+      .select(
+        'id, session_id, order_index, reps, fast_distance_m, fast_duration_seconds, fast_pace_pct_vma, recovery_distance_m, recovery_duration_seconds',
+      )
+      .in('session_id', sessionIds)
+      .is('owner_id', null)
+      .is('deleted_at', null)
+      .order('order_index', { ascending: true });
+
+    if (intervalsError) {
+      return { program: null, error: intervalsError };
+    }
+
+    for (const block of intervalsData ?? []) {
+      const session = bySessionId.get(block.session_id);
+      // Un bloc sans séance connue est ignoré (ne devrait pas arriver — filtre `in`).
+      if (session) {
+        session.intervals.push({
+          id: block.id,
+          orderIndex: block.order_index,
+          reps: block.reps,
+          fastDistanceM: block.fast_distance_m,
+          fastDurationSeconds: block.fast_duration_seconds,
+          fastPacePctVma: block.fast_pace_pct_vma,
+          recoveryDistanceM: block.recovery_distance_m,
+          recoveryDurationSeconds: block.recovery_duration_seconds,
         });
       }
     }
@@ -604,6 +683,17 @@ export async function archiveProgram(
     if (plansError) {
       return { error: plansError };
     }
+
+    // 2 bis. Blocs fractionné de ces séances (US RUN-F2c), même patron.
+    const { error: intervalsError } = await supabase
+      .from('session_intervals')
+      .update({ deleted_at: now })
+      .in('session_id', sessionIds)
+      .is('owner_id', null)
+      .is('deleted_at', null);
+    if (intervalsError) {
+      return { error: intervalsError };
+    }
   }
 
   // 3. Séances du programme.
@@ -722,6 +812,17 @@ export async function restoreProgram(
     if (plansError) {
       return { error: plansError };
     }
+
+    // 4 bis. Blocs fractionné de ces séances (US RUN-F2c), même patron.
+    const { error: intervalsError } = await supabase
+      .from('session_intervals')
+      .update({ deleted_at: null })
+      .in('session_id', sessionIds)
+      .is('owner_id', null)
+      .not('deleted_at', 'is', null);
+    if (intervalsError) {
+      return { error: intervalsError };
+    }
   }
 
   await logAudit({
@@ -794,8 +895,8 @@ export async function updateSession(
 
 /**
  * Retire une séance éditoriale (soft-delete de la séance ET de tous ses plans
- * d'exercice). Séquentiel : les plans d'abord, puis la séance. Owner-scopé,
- * idempotent ; s'arrête à la première erreur.
+ * d'exercice et blocs fractionné). Séquentiel : les plans et blocs d'abord, puis
+ * la séance. Owner-scopé, idempotent ; s'arrête à la première erreur.
  */
 export async function removeSession(id: string): Promise<{ error: unknown }> {
   const now = new Date().toISOString();
@@ -808,6 +909,16 @@ export async function removeSession(id: string): Promise<{ error: unknown }> {
     .is('deleted_at', null);
   if (plansError) {
     return { error: plansError };
+  }
+
+  const { error: intervalsError } = await supabase
+    .from('session_intervals')
+    .update({ deleted_at: now })
+    .eq('session_id', id)
+    .is('owner_id', null)
+    .is('deleted_at', null);
+  if (intervalsError) {
+    return { error: intervalsError };
   }
 
   const { error: sessError } = await supabase
@@ -924,6 +1035,99 @@ export async function reorderExercisePlans(
   for (let i = 0; i < orderedIds.length; i += 1) {
     const { error } = await supabase
       .from('exercise_plans')
+      .update({ order_index: i })
+      .eq('id', orderedIds[i]!)
+      .eq('session_id', sessionId)
+      .is('owner_id', null);
+    if (error) {
+      return { error };
+    }
+  }
+  return { error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Écritures — blocs fractionné (running, `session_type='fractionne'` — US RUN-F2c)
+// ---------------------------------------------------------------------------
+
+/**
+ * Ajoute un bloc fractionné à une séance éditoriale. `order_index` = position
+ * suivante (max+1) parmi les blocs non supprimés de la séance (0 si aucun).
+ * Retourne l'`id` du bloc créé.
+ */
+export async function addIntervalBlock(
+  sessionId: string,
+  input: IntervalBlockInput,
+): Promise<{ id: string | null; error: unknown }> {
+  const { index, error: indexError } = await nextIntervalOrderIndex(sessionId);
+  if (indexError) {
+    return { id: null, error: indexError };
+  }
+
+  const id = crypto.randomUUID();
+  const intervalInsert: Database['public']['Tables']['session_intervals']['Insert'] = {
+    id,
+    session_id: sessionId,
+    owner_id: null,
+    order_index: index,
+    reps: input.reps,
+    fast_distance_m: input.fastDistanceM,
+    fast_duration_seconds: input.fastDurationSeconds,
+    fast_pace_pct_vma: input.fastPacePctVma,
+    recovery_distance_m: input.recoveryDistanceM,
+    recovery_duration_seconds: input.recoveryDurationSeconds,
+  };
+
+  const { error } = await supabase.from('session_intervals').insert(intervalInsert);
+  if (error) {
+    return { id: null, error };
+  }
+  return { id, error: null };
+}
+
+/** Met à jour un bloc fractionné (répétitions, phase rapide, récupération). */
+export async function updateIntervalBlock(
+  id: string,
+  input: IntervalBlockInput,
+): Promise<{ error: unknown }> {
+  const { error } = await supabase
+    .from('session_intervals')
+    .update({
+      reps: input.reps,
+      fast_distance_m: input.fastDistanceM,
+      fast_duration_seconds: input.fastDurationSeconds,
+      fast_pace_pct_vma: input.fastPacePctVma,
+      recovery_distance_m: input.recoveryDistanceM,
+      recovery_duration_seconds: input.recoveryDurationSeconds,
+    })
+    .eq('id', id)
+    .is('owner_id', null); // éditorial uniquement
+  return { error };
+}
+
+/** Retire un bloc fractionné d'une séance (soft-delete). */
+export async function removeIntervalBlock(id: string): Promise<{ error: unknown }> {
+  const { error } = await supabase
+    .from('session_intervals')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+    .is('owner_id', null); // éditorial uniquement
+  return { error };
+}
+
+/**
+ * Réordonne les blocs fractionné d'une séance : pour chaque id à l'index `i`,
+ * pose `order_index = i`. Écriture séquentielle, owner-scopée et bornée à la
+ * séance (`.eq('session_id', sessionId)` = défense en profondeur) ; s'arrête à
+ * la première erreur.
+ */
+export async function reorderIntervalBlocks(
+  sessionId: string,
+  orderedIds: string[],
+): Promise<{ error: unknown }> {
+  for (let i = 0; i < orderedIds.length; i += 1) {
+    const { error } = await supabase
+      .from('session_intervals')
       .update({ order_index: i })
       .eq('id', orderedIds[i]!)
       .eq('session_id', sessionId)

@@ -29,6 +29,7 @@ import {
 } from '@/data/repositories/program-repository';
 import { planProgram } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -337,6 +338,16 @@ function PlanSessionCard({
         <Text style={[styles.paceLabel, { color: colors.textMuted }]}>{paceLabel}</Text>
       ) : null}
 
+      {isRunning && session.intervals.length > 0 ? (
+        <View style={styles.intervalsList}>
+          {session.intervals.map((block) => (
+            <Text key={block.id} style={[styles.intervalLine, { color: colors.textMuted }]}>
+              {formatIntervalBlockSummary(t, block)}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+
       {/* Choix du jour de la semaine */}
       <Text style={[styles.assignLabel, { color: colors.textMuted }]}>
         {t('planning.assignDay')}
@@ -421,6 +432,8 @@ const styles = StyleSheet.create({
   },
   chipText: { fontFamily: fontFamily.body, fontSize: 12 },
   paceLabel: { fontFamily: fontFamily.mono, fontSize: 13 },
+  intervalsList: { gap: 4, marginTop: 4 },
+  intervalLine: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
   assignLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginTop: 4 },
   dayRow: { flexDirection: 'row', gap: 6 },
   dayPill: {

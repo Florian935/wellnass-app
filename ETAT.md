@@ -1,4 +1,4 @@
-# État du projet — 02/08/2026
+# État du projet — 03/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 189 livré · 15 partiel · 6 à faire (sur 216)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 190 livré · 14 partiel · 6 à faire (sur 216)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -41,14 +41,14 @@ avant de pouvoir publier.
 | **RUN-F1b** — Dénivelé cumulé | `recette` | `feature/runf1b-denivele-cumule` | [5.32] |
 | **RUN-F2a** — Annonces audio périodiques | `recette` | `feature/runf2a-annonces-audio` | [5.19] |
 | **RUN-F2b** — Prolonger ou raccourcir — cible visible en direct | `recette` | `feature/runf2b-cible-en-direct` | [5.23] |
+| **RUN-F2c** — Blocs fractionné / intervalles | `recette` | `feature/runf2c-blocs-fractionne` | [5.9] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `recette` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **RUN-F2c** — Blocs fractionné / intervalles | `validation` | `feature/runf2c-blocs-fractionne` | [5.9] |
 
-⏳ **30 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **31 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -70,9 +70,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/runf2c-blocs-fractionne` (modifications non commitées) |
-| Commits | 1035 · `main` a **1032** commits de retard sur `dev` |
+| Commits | 1036 · `main` a **1033** commits de retard sur `dev` |
 | Specs d'US | 108 au total — 77 clôturées, 31 en cours |
-| Migrations | 67/67 poussées sur le cloud |
+| Migrations | 68/68 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -81,11 +81,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `3da1d6d` docs(runf2c): entrée en pipeline — spec, plan, maquette (roadmap 5.9)
 - `d0d339a` feat(runf2b): cible en direct pendant la course (roadmap 5.23)
 - `6111815` docs(runf2b): entrée en pipeline — spec, plan, maquette (roadmap 5.23)
 - `5e60144` feat(runf2a): annonces audio périodiques pendant une course (roadmap 5.19)
 - `f65a67a` docs(runf2a): RUN-F2 scindée en 4 + entrée en pipeline de RUN-F2a (roadmap 5.19)
-- `f99d6bf` feat(runf1b): dénivelé cumulé — blocage codec levé (roadmap 5.32)
 
 ---
 

@@ -35,6 +35,8 @@ bucket_definitions:
       - select * from program_translations  where owner_id = bucket.user_id and deleted_at is null
       - select * from sessions              where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_plans        where owner_id = bucket.user_id and deleted_at is null
+      # US RUN-F2c : blocs fractionné/intervalles (une ligne = un bloc de répétitions).
+      - select * from session_intervals     where owner_id = bucket.user_id and deleted_at is null
       - select * from personal_records      where user_id = bucket.user_id and deleted_at is null
       # ── Alimentation ──────────────────────────────────────────────────────
       - select * from foods                 where owner_id = bucket.user_id and deleted_at is null
@@ -91,5 +93,6 @@ bucket_definitions:
       - select * from program_translations  where owner_id is null and deleted_at is null
       - select * from sessions              where owner_id is null and deleted_at is null
       - select * from exercise_plans        where owner_id is null and deleted_at is null
+      - select * from session_intervals     where owner_id is null and deleted_at is null
       - select * from foods                 where owner_id is null and deleted_at is null
       - select * from food_translations     where owner_id is null and deleted_at is null

@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `feature/runf2c-blocs-fractionne` — RUN-F2c : blocs fractionné / intervalles (roadmap 5.9 → ✅)
+
+Implémentation complète, 3ᵉ des 4 candidats issus du découpage de RUN-F2 — la plus grosse des
+quatre. Spec/plan/maquette validés dans les entrées précédentes (02/08/2026).
+
+#### Ajouté
+
+- **Nouvelle table `session_intervals`** (migration `20260802213841_runf2c_session_intervals`,
+  déjà poussée sur le cloud) : `reps`, `fast_distance_m`/`fast_duration_seconds` (exactement l'un
+  des deux), `fast_pace_pct_vma` (nullable), `recovery_distance_m`/`recovery_duration_seconds`
+  (récup entièrement optionnelle). Une ligne = un bloc de répétitions (analogie `exercise_plans`).
+  RLS + trigger `updated_at` + publication PowerSync identiques au patron `exercise_plans`.
+- `packages/shared/src/running-paces.ts` — `paceAtVmaPercent(vmaPaceSPerKm, pct)`, testée (3 tests).
+  `packages/shared/src/program.ts` — `sessionIntervalRowSchema`/`SessionIntervalRow`.
+- **Repository mobile** (`program-repository.ts`) : `IntervalBlockItem`, `SessionDetail.intervals`,
+  `addIntervalBlock`/`updateIntervalBlock`/`removeIntervalBlock`, cascade `removeSession` et
+  **cascade `duplicateProgram`** (copie des blocs par `sessionIdMap`, sans quoi dupliquer un
+  programme fractionné perdrait silencieusement ses blocs — trouvé en lisant le code réel, pas
+  dans la spec initiale).
+- **Éditeur mobile** — `IntervalBlockEditor.tsx` (nouveau, miroir de `ExercisePlanEditor`) : reps,
+  toggle distance/durée pour la phase rapide (R2), %VMA optionnel, toggle aucune/distance/durée
+  pour la récupération (R3), suppression. Monté dans `RunningSessionEditor.tsx` quand
+  `sessionType === 'fractionne'`, avec bouton d'ajout.
+- **Repository + éditeur admin** (`apps/admin/src/data/programs.ts`,
+  `ProgramEditScreen.tsx`) : CRUD complet (`addIntervalBlock`/`updateIntervalBlock`/
+  `removeIntervalBlock`/`reorderIntervalBlocks`) + `SortableList` de blocs (ajout, édition inline,
+  suppression, réordonnancement) dans la branche `isRunning` de `SessionCard`, quand
+  `sessionType === 'fractionne'` — intégration nouvelle dans cette branche (auparavant un simple
+  bloc de champs sans liste). Cascade `archiveProgram`/`restoreProgram`/`removeSession` étendue.
+- **Affichage lecture seule** — `apps/mobile/src/running/interval-summary.ts` (nouveau,
+  `formatIntervalBlockSummary`, 4 gabarits selon présence %VMA/récup) monté dans
+  `RunningSessionCard` (`running-programs/[id].tsx`) et `PlanSessionCard` (`planning/plan.tsx`).
+- i18n `running.intervals.*` (FR+EN, parité vérifiée) : titre, libellés de champs, gabarits de
+  résumé de bloc. Admin (FR uniquement) : `programs.intervals*`/`programs.addInterval`/etc.
+
+#### Modifié
+
+- `docs/specs/technical/powersync-sync-rules.yaml` — 2 nouvelles lignes pour `session_intervals`
+  (owner + éditorial). **⚠️ Déploiement manuel dashboard PowerSync requis avant recette** — non
+  effectué par cette session (pas d'accès dashboard), à vérifier par Florian/Damien.
+- Roadmap 5.9 : 🟡 → ✅. `apps/mobile/src/powersync/schema.ts` : nouvelle table locale
+  `session_intervals`.
+
+#### Technique / Notes
+
+- Quality gate exécuté par étape (comme prévu au plan vu l'ampleur de cette US), jamais uniquement
+  à la fin : typecheck/lint/test au vert après chaque groupe d'étapes, aucune régression détectée.
+  Suite complète finale : 276 tests Jest (mobile) + 1405 tests Vitest (shared), tous verts ;
+  lint sans nouveau warning ; typecheck propre sur les 3 workspaces.
+- Distances de bloc saisies en **mètres bruts** (pas de conversion impériale) : un fractionné se
+  décrit universellement en mètres (convention piste, « 400 m »), à la différence de la distance
+  totale d'une séance qui suit le système d'unités choisi.
+- **Aucun risque sur le tracker/la tâche de fond** : cette US s'arrête à la planification et à
+  l'affichage ; le guidage vocal pendant la course reste RUN-F2d (hors périmètre, dépend de
+  RUN-F2a et RUN-F2c).
+
 ### 02/08/2026 — `feature/runf2c-blocs-fractionne` — RUN-F2c entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 3ᵉ des 4 candidats issus du découpage de RUN-F2 (roadmap 5.9) — la plus grosse des quatre. Aucun

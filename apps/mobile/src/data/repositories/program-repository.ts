@@ -77,6 +77,21 @@ export type PlanItem = {
   musclesFine: FineMuscle[];
 };
 
+/**
+ * Un bloc de répétitions fractionné (US RUN-F2c) — une ligne = un bloc (ex. « 6×400 m »), pas
+ * une ligne par répétition individuelle. Running uniquement, type `fractionne`.
+ */
+export type IntervalBlockItem = {
+  id: string;
+  orderIndex: number;
+  reps: number;
+  fastDistanceM: number | null;
+  fastDurationSeconds: number | null;
+  fastPacePctVma: number | null;
+  recoveryDistanceM: number | null;
+  recoveryDurationSeconds: number | null;
+};
+
 /** Une séance avec ses exercices planifiés (triés par `order_index`). */
 export type SessionDetail = {
   id: string;
@@ -89,6 +104,8 @@ export type SessionDetail = {
   targetDistanceM: number | null;
   /** Running uniquement (secondes) — null pour les séances muscu. */
   targetDurationSeconds: number | null;
+  /** Running uniquement, type `fractionne` — vide pour les autres types (US RUN-F2c). */
+  intervals: IntervalBlockItem[];
 };
 
 /** Détail complet d'un programme : entête + séances + plans. */
@@ -120,6 +137,16 @@ export type ExercisePlanPatch = {
   targetReps?: string | null;
   targetWeightKg?: number | null;
   restSeconds?: number | null;
+};
+
+/** Champs modifiables d'un bloc fractionné via `updateIntervalBlock` (US RUN-F2c). */
+export type IntervalBlockPatch = {
+  reps?: number;
+  fastDistanceM?: number | null;
+  fastDurationSeconds?: number | null;
+  fastPacePctVma?: number | null;
+  recoveryDistanceM?: number | null;
+  recoveryDurationSeconds?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -169,6 +196,19 @@ type PlanDbRow = {
   muscle_primary: string;
   muscles_secondary: string | null;
   muscles_fine: string | null;
+};
+
+/** Ligne brute d'un bloc fractionné (US RUN-F2c). */
+type IntervalDbRow = {
+  id: string;
+  session_id: string;
+  order_index: number;
+  reps: number;
+  fast_distance_m: number | null;
+  fast_duration_seconds: number | null;
+  fast_pace_pct_vma: number | null;
+  recovery_distance_m: number | null;
+  recovery_duration_seconds: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -246,6 +286,21 @@ const SELECT_PLANS_FOR_PROGRAM = `
   ORDER BY s.order_index, ep.order_index
 `;
 
+/**
+ * Tous les blocs fractionné des séances d'un programme (US RUN-F2c). Premier `?` = id du
+ * programme. Tri par (order_index de la séance, order_index du bloc), même patron que
+ * `SELECT_PLANS_FOR_PROGRAM`.
+ */
+const SELECT_INTERVALS_FOR_PROGRAM = `
+  SELECT si.id, si.session_id, si.order_index, si.reps,
+         si.fast_distance_m, si.fast_duration_seconds, si.fast_pace_pct_vma,
+         si.recovery_distance_m, si.recovery_duration_seconds
+  FROM session_intervals si
+  JOIN sessions s ON s.id = si.session_id AND s.deleted_at IS NULL
+  WHERE s.program_id = ? AND si.deleted_at IS NULL
+  ORDER BY s.order_index, si.order_index
+`;
+
 // ---------------------------------------------------------------------------
 // Mapping snake_case ↔ camelCase
 // ---------------------------------------------------------------------------
@@ -285,13 +340,28 @@ function rowToPlanItem(row: PlanDbRow): PlanItem {
   };
 }
 
+/** Convertit une ligne bloc fractionné SQLite → item de domaine (camelCase, US RUN-F2c). */
+function rowToIntervalItem(row: IntervalDbRow): IntervalBlockItem {
+  return {
+    id: row.id,
+    orderIndex: row.order_index,
+    reps: row.reps,
+    fastDistanceM: row.fast_distance_m,
+    fastDurationSeconds: row.fast_duration_seconds,
+    fastPacePctVma: row.fast_pace_pct_vma,
+    recoveryDistanceM: row.recovery_distance_m,
+    recoveryDurationSeconds: row.recovery_duration_seconds,
+  };
+}
+
 /**
- * Regroupe les plans (déjà triés par order_index de séance puis de plan) sous leurs
- * séances (elles-mêmes déjà triées par order_index). L'ordre est préservé.
+ * Regroupe les plans et blocs fractionné (déjà triés par order_index de séance puis d'élément)
+ * sous leurs séances (elles-mêmes déjà triées par order_index). L'ordre est préservé.
  */
 function buildSessionDetails(
   sessionRows: SessionDbRow[],
   planRows: PlanDbRow[],
+  intervalRows: IntervalDbRow[] = [],
 ): SessionDetail[] {
   const sessions: SessionDetail[] = sessionRows.map((s) => ({
     id: s.id,
@@ -301,6 +371,7 @@ function buildSessionDetails(
     sessionType: (s.session_type as ProgramSessionType | null) ?? null,
     targetDistanceM: s.target_distance_m,
     targetDurationSeconds: s.target_duration_seconds,
+    intervals: [],
   }));
 
   const bySessionId = new Map<string, SessionDetail>();
@@ -313,6 +384,14 @@ function buildSessionDetails(
     // Un plan sans séance connue est ignoré (ne devrait pas arriver — JOIN garanti).
     if (session) {
       session.plans.push(rowToPlanItem(row));
+    }
+  }
+
+  for (const row of intervalRows) {
+    const session = bySessionId.get(row.session_id);
+    // Un bloc sans séance connue est ignoré (ne devrait pas arriver — JOIN garanti).
+    if (session) {
+      session.intervals.push(rowToIntervalItem(row));
     }
   }
 
@@ -430,7 +509,7 @@ export function useActiveProgram(pillar: Pillar): {
  * Détail complet d'un programme (entête + séances ordonnées + plans ordonnés),
  * réactif. Les noms d'exercice sont résolus dans la langue applicative.
  *
- * Trois requêtes réactives (entête, séances, plans) toujours appelées (règle des
+ * Quatre requêtes réactives (entête, séances, plans, blocs fractionné) toujours appelées (règle des
  * hooks) ; quand `programId` est vide/inconnu, elles renvoient des résultats vides.
  */
 export function useProgramDetail(programId: string): {
@@ -448,8 +527,12 @@ export function useProgramDetail(programId: string): {
     SELECT_PLANS_FOR_PROGRAM,
     [lang, programId],
   );
+  const { data: intervalRows, isLoading: intervalsLoading } = useQuery<IntervalDbRow>(
+    SELECT_INTERVALS_FOR_PROGRAM,
+    [programId],
+  );
 
-  const isLoading = headerLoading || sessionsLoading || plansLoading;
+  const isLoading = headerLoading || sessionsLoading || plansLoading || intervalsLoading;
 
   const header = headerRows[0];
   if (!header) {
@@ -460,7 +543,7 @@ export function useProgramDetail(programId: string): {
   const detail: ProgramDetail = {
     ...base,
     summary: header.summary,
-    sessions: buildSessionDetails(sessionRows, planRows),
+    sessions: buildSessionDetails(sessionRows, planRows, intervalRows),
   };
 
   return { detail, isLoading };
@@ -620,6 +703,66 @@ export async function removeExercisePlan(planId: string): Promise<void> {
 }
 
 /**
+ * Ajoute un bloc fractionné à une séance running (US RUN-F2c, type `fractionne` uniquement —
+ * non contraint côté écriture, la lecture ignore les blocs des autres types).
+ * `order_index` = position suivante (max+1) dans la séance.
+ */
+export async function addIntervalBlock(
+  sessionId: string,
+  input: {
+    reps?: number;
+    fastDistanceM?: number | null;
+    fastDurationSeconds?: number | null;
+    fastPacePctVma?: number | null;
+    recoveryDistanceM?: number | null;
+    recoveryDurationSeconds?: number | null;
+  },
+): Promise<void> {
+  const ownerId = currentUserId();
+  const orderIndex = await nextOrderIndex(
+    'session_intervals',
+    'session_id',
+    sessionId,
+  );
+
+  await insertWithSyncFields('session_intervals', {
+    session_id: sessionId,
+    owner_id: ownerId,
+    order_index: orderIndex,
+    reps: input.reps ?? 1,
+    fast_distance_m: input.fastDistanceM ?? null,
+    fast_duration_seconds: input.fastDurationSeconds ?? null,
+    fast_pace_pct_vma: input.fastPacePctVma ?? null,
+    recovery_distance_m: input.recoveryDistanceM ?? null,
+    recovery_duration_seconds: input.recoveryDurationSeconds ?? null,
+  });
+}
+
+/**
+ * Met à jour un bloc fractionné (répétitions, phase rapide, récupération).
+ * Seules les clés présentes dans `input` sont modifiées.
+ */
+export async function updateIntervalBlock(
+  blockId: string,
+  input: IntervalBlockPatch,
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('reps' in input) columns['reps'] = input.reps;
+  if ('fastDistanceM' in input) columns['fast_distance_m'] = input.fastDistanceM;
+  if ('fastDurationSeconds' in input) columns['fast_duration_seconds'] = input.fastDurationSeconds;
+  if ('fastPacePctVma' in input) columns['fast_pace_pct_vma'] = input.fastPacePctVma;
+  if ('recoveryDistanceM' in input) columns['recovery_distance_m'] = input.recoveryDistanceM;
+  if ('recoveryDurationSeconds' in input) columns['recovery_duration_seconds'] = input.recoveryDurationSeconds;
+
+  await patch('session_intervals', blockId, columns);
+}
+
+/** Retire un bloc fractionné d'une séance (soft delete). */
+export async function removeIntervalBlock(blockId: string): Promise<void> {
+  await softDelete('session_intervals', blockId);
+}
+
+/**
  * Met à jour le contenu running d'une séance (type, distance cible, durée cible, nom).
  * Seules les clés présentes dans `input` sont modifiées (même pattern que
  * `updateExercisePlan`). Compatible offline-first : écrit en SQLite local, PowerSync
@@ -662,6 +805,14 @@ export async function removeSession(sessionId: string): Promise<void> {
     await softDelete('exercise_plans', plan.id);
   }
 
+  const intervals = await powerSync.getAll<{ id: string }>(
+    `SELECT id FROM session_intervals WHERE session_id = ? AND deleted_at IS NULL`,
+    [sessionId],
+  );
+  for (const block of intervals) {
+    await softDelete('session_intervals', block.id);
+  }
+
   // Cascade planning : soft-delete les séances planifiées de l'owner liées à cette séance.
   await powerSync.execute(
     `UPDATE planned_sessions SET deleted_at = ?, updated_at = ?
@@ -679,8 +830,8 @@ export async function removeSession(sessionId: string): Promise<void> {
 /**
  * Duplique un programme (éditorial ou autre) en un NOUVEAU programme personnalisé
  * de l'utilisateur : nouveaux UUID partout, `owner_id`=user, `status='published'`,
- * `is_active=0`. Copie l'entête, toutes les traductions, les séances et leurs plans
- * (avec remappage des `session_id`).
+ * `is_active=0`. Copie l'entête, toutes les traductions, les séances, leurs plans et leurs
+ * blocs fractionné (avec remappage des `session_id`).
  *
  * Effectué dans une transaction : une copie partielle est impossible.
  * Retourne l'`id` du nouveau programme.
@@ -798,6 +949,39 @@ export async function duplicateProgram(
           target_reps: plan.target_reps,
           target_weight_kg: plan.target_weight_kg,
           rest_seconds: plan.rest_seconds,
+        });
+      }
+    }
+
+    // 5. Copie des blocs fractionné (nouveaux id, session_id remappé — US RUN-F2c).
+    for (const [oldSessionId, newSessionId] of sessionIdMap) {
+      const intervals = await tx.getAll<{
+        order_index: number;
+        reps: number;
+        fast_distance_m: number | null;
+        fast_duration_seconds: number | null;
+        fast_pace_pct_vma: number | null;
+        recovery_distance_m: number | null;
+        recovery_duration_seconds: number | null;
+      }>(
+        `SELECT order_index, reps, fast_distance_m, fast_duration_seconds, fast_pace_pct_vma,
+                recovery_distance_m, recovery_duration_seconds
+         FROM session_intervals
+         WHERE session_id = ? AND deleted_at IS NULL
+         ORDER BY order_index`,
+        [oldSessionId],
+      );
+      for (const block of intervals) {
+        await txInsert(tx, 'session_intervals', {
+          session_id: newSessionId,
+          owner_id: ownerId,
+          order_index: block.order_index,
+          reps: block.reps,
+          fast_distance_m: block.fast_distance_m,
+          fast_duration_seconds: block.fast_duration_seconds,
+          fast_pace_pct_vma: block.fast_pace_pct_vma,
+          recovery_distance_m: block.recovery_distance_m,
+          recovery_duration_seconds: block.recovery_duration_seconds,
         });
       }
     }

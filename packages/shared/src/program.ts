@@ -126,6 +126,35 @@ export const exercisePlanRowSchema = contentOwnerSyncFieldsSchema.extend({
 export type ExercisePlanRow = z.infer<typeof exercisePlanRowSchema>;
 
 // ---------------------------------------------------------------------------
+// Schéma d'un bloc fractionné (table `session_intervals`, US RUN-F2c)
+// ---------------------------------------------------------------------------
+
+/**
+ * Schéma d'une ligne bloc de répétitions au sein d'une session (type 'fractionne' uniquement).
+ * Une ligne = un bloc (ex. « 6×400 m »), pas une ligne par répétition individuelle — même
+ * principe que `target_sets` sur `exercise_plans`. Hérite de `contentOwnerSyncFieldsSchema`.
+ */
+export const sessionIntervalRowSchema = contentOwnerSyncFieldsSchema.extend({
+  /** Identifiant de la session parente. */
+  sessionId: uuidSchema,
+  /** Position dans la session (0-based). */
+  orderIndex: z.number().int().min(0),
+  /** Nombre de répétitions du couple rapide/récup (toujours >= 1). */
+  reps: z.number().int().min(1),
+  /** Distance de la phase rapide, en mètres (exactement l'une des deux avec la durée). */
+  fastDistanceM: z.number().int().positive().nullable(),
+  /** Durée de la phase rapide, en secondes (exactement l'une des deux avec la distance). */
+  fastDurationSeconds: z.number().int().positive().nullable(),
+  /** Pourcentage de VMA visé pour la phase rapide (nullable — ex. échauffement sans cible). */
+  fastPacePctVma: z.number().int().positive().nullable(),
+  /** Distance de récupération, en mètres (récup entièrement optionnelle). */
+  recoveryDistanceM: z.number().int().positive().nullable(),
+  /** Durée de récupération, en secondes (récup entièrement optionnelle). */
+  recoveryDurationSeconds: z.number().int().positive().nullable(),
+});
+export type SessionIntervalRow = z.infer<typeof sessionIntervalRowSchema>;
+
+// ---------------------------------------------------------------------------
 // Helper — résolution du nom d'un programme
 // ---------------------------------------------------------------------------
 

@@ -5,18 +5,24 @@ import {
   PROGRAM_SESSION_TYPES,
   SET_TYPES,
   addExercisePlan,
+  addIntervalBlock,
   addSession,
   getProgram,
   removeExercisePlan,
+  removeIntervalBlock,
   removeSession,
   reorderExercisePlans,
+  reorderIntervalBlocks,
   reorderSessions,
   setStatus,
   updateExercisePlan,
+  updateIntervalBlock,
   updateProgramMeta,
   updateSession,
   type AdminExercisePlan,
+  type AdminIntervalBlock,
   type AdminSession,
+  type IntervalBlockInput,
   type ProgramDetail,
   type ProgramLevel,
   type SessionType,
@@ -64,6 +70,19 @@ function toNonNegFloatOrNull(value: string): number | null {
   if (!trimmed) return null;
   const parsed = Number.parseFloat(trimmed);
   if (Number.isNaN(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
+/**
+ * Parse un entier strictement positif (>= 1) depuis une saisie texte : vide,
+ * non numérique ou <= 0 → null. Utilisé pour `reps` d'un bloc fractionné
+ * (US RUN-F2c, R1 : toujours au moins une répétition).
+ */
+function toPositiveIntOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parsed = Number.parseInt(trimmed, 10);
+  if (Number.isNaN(parsed) || parsed < 1) return null;
   return parsed;
 }
 
@@ -333,6 +352,42 @@ export function ProgramEditScreen() {
                       );
                       void runReorder({ ...program, sessions: nextSessions }, () =>
                         reorderExercisePlans(session.id, orderedIds),
+                      );
+                    }}
+                    onAddBlock={() =>
+                      runWrite(async () => {
+                        const { error } = await addIntervalBlock(session.id, {
+                          reps: 1,
+                          fastDistanceM: null,
+                          fastDurationSeconds: null,
+                          fastPacePctVma: null,
+                          recoveryDistanceM: null,
+                          recoveryDurationSeconds: null,
+                        });
+                        return { error };
+                      })
+                    }
+                    onUpdateBlock={(blockId, input) =>
+                      runWrite(() => updateIntervalBlock(blockId, input))
+                    }
+                    onRemoveBlock={(blockId) => {
+                      if (!window.confirm(fr.programs.removeIntervalConfirm)) return;
+                      void runWrite(() => removeIntervalBlock(blockId));
+                    }}
+                    onReorderBlocks={(orderedIds) => {
+                      if (!program) return;
+                      const byId = new Map(session.intervals.map((b) => [b.id, b]));
+                      const reordered = orderedIds
+                        .map((bid, index) => {
+                          const b = byId.get(bid);
+                          return b ? { ...b, orderIndex: index } : null;
+                        })
+                        .filter((b): b is AdminIntervalBlock => b !== null);
+                      const nextSessions = program.sessions.map((s) =>
+                        s.id === session.id ? { ...s, intervals: reordered } : s,
+                      );
+                      void runReorder({ ...program, sessions: nextSessions }, () =>
+                        reorderIntervalBlocks(session.id, orderedIds),
                       );
                     }}
                   />
@@ -641,6 +696,10 @@ type SessionCardProps = {
   onUpdatePlan: (planId: string, input: PlanInput) => Promise<void>;
   onRemovePlan: (planId: string) => void;
   onReorderPlans: (orderedIds: string[]) => void;
+  onAddBlock: () => Promise<void>;
+  onUpdateBlock: (blockId: string, input: IntervalBlockInput) => Promise<void>;
+  onRemoveBlock: (blockId: string) => void;
+  onReorderBlocks: (orderedIds: string[]) => void;
 };
 
 type PlanInput = {
@@ -664,6 +723,10 @@ function SessionCard({
   onUpdatePlan,
   onRemovePlan,
   onReorderPlans,
+  onAddBlock,
+  onUpdateBlock,
+  onRemoveBlock,
+  onReorderBlocks,
 }: SessionCardProps) {
   const [name, setName] = useState(session.name ?? '');
   const [sessionType, setSessionType] = useState<SessionType | ''>(
@@ -767,6 +830,7 @@ function SessionCard({
       </div>
 
       {isRunning ? (
+        <>
         <div style={styles.runningRow}>
           <div style={{ flex: 1, minWidth: 140 }}>
             <label style={styles.label}>{fr.programs.sessionType}</label>
@@ -825,6 +889,39 @@ function SessionCard({
             </div>
           </div>
         </div>
+
+        {sessionType === 'fractionne' ? (
+          <div style={styles.exercisesBlock}>
+            <div style={styles.exercisesHead}>
+              <h3 style={styles.h3}>{fr.programs.intervalsTitle}</h3>
+              <button type="button" style={styles.action} disabled={busy} onClick={() => void onAddBlock()}>
+                {fr.programs.addInterval}
+              </button>
+            </div>
+
+            {session.intervals.length === 0 ? (
+              <p style={styles.muted}>{fr.programs.noIntervals}</p>
+            ) : (
+              <div style={styles.planList}>
+                <SortableList
+                  items={session.intervals}
+                  getId={(b) => b.id}
+                  onReorder={onReorderBlocks}
+                  renderItem={(block, blockHandle) => (
+                    <IntervalBlockRow
+                      block={block}
+                      busy={busy}
+                      dragHandle={blockHandle}
+                      onUpdate={(input) => onUpdateBlock(block.id, input)}
+                      onRemove={() => onRemoveBlock(block.id)}
+                    />
+                  )}
+                />
+              </div>
+            )}
+          </div>
+        ) : null}
+        </>
       ) : (
         <div style={styles.exercisesBlock}>
           <div style={styles.exercisesHead}>
@@ -998,6 +1095,193 @@ function ExercisePlanRow({ plan, busy, dragHandle, onUpdate, onRemove }: Exercis
             style={styles.input}
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Ligne bloc fractionné (running, `session_type='fractionne'` — US RUN-F2c)
+// ---------------------------------------------------------------------------
+
+type IntervalBlockRowProps = {
+  block: AdminIntervalBlock;
+  busy: boolean;
+  dragHandle: React.HTMLAttributes<HTMLElement>;
+  onUpdate: (input: IntervalBlockInput) => Promise<void>;
+  onRemove: () => void;
+};
+
+type IntervalPhaseKind = 'distance' | 'duration';
+
+function IntervalBlockRow({ block, busy, dragHandle, onUpdate, onRemove }: IntervalBlockRowProps) {
+  const [reps, setReps] = useState(String(block.reps));
+
+  // R2 : exactement une des deux (distance ou durée) pour la phase rapide.
+  const [fastKind, setFastKind] = useState<IntervalPhaseKind>(
+    block.fastDurationSeconds != null && block.fastDistanceM == null ? 'duration' : 'distance',
+  );
+  const [fastDistanceM, setFastDistanceM] = useState(
+    block.fastDistanceM != null ? String(block.fastDistanceM) : '',
+  );
+  const [fastDurationS, setFastDurationS] = useState(
+    block.fastDurationSeconds != null ? String(block.fastDurationSeconds) : '',
+  );
+  const [pctVma, setPctVma] = useState(block.fastPacePctVma != null ? String(block.fastPacePctVma) : '');
+
+  // R3 : récupération entièrement optionnelle ; si présente, exactement une des deux.
+  const [recoveryKind, setRecoveryKind] = useState<'none' | IntervalPhaseKind>(
+    block.recoveryDistanceM != null ? 'distance' : block.recoveryDurationSeconds != null ? 'duration' : 'none',
+  );
+  const [recoveryDistanceM, setRecoveryDistanceM] = useState(
+    block.recoveryDistanceM != null ? String(block.recoveryDistanceM) : '',
+  );
+  const [recoveryDurationS, setRecoveryDurationS] = useState(
+    block.recoveryDurationSeconds != null ? String(block.recoveryDurationSeconds) : '',
+  );
+
+  // C1 anti-clobber : seed-once (initialiseurs `useState`), même patron qu'`ExercisePlanRow`.
+
+  function persistBlock(overrides?: {
+    fastKind?: IntervalPhaseKind;
+    recoveryKind?: 'none' | IntervalPhaseKind;
+  }) {
+    const nextFastKind = overrides?.fastKind ?? fastKind;
+    const nextRecoveryKind = overrides?.recoveryKind ?? recoveryKind;
+
+    void onUpdate({
+      reps: toPositiveIntOrNull(reps) ?? 1,
+      fastDistanceM: nextFastKind === 'distance' ? toNonNegIntOrNull(fastDistanceM) : null,
+      fastDurationSeconds: nextFastKind === 'duration' ? toNonNegIntOrNull(fastDurationS) : null,
+      fastPacePctVma: toNonNegIntOrNull(pctVma),
+      recoveryDistanceM: nextRecoveryKind === 'distance' ? toNonNegIntOrNull(recoveryDistanceM) : null,
+      recoveryDurationSeconds: nextRecoveryKind === 'duration' ? toNonNegIntOrNull(recoveryDurationS) : null,
+    });
+  }
+
+  return (
+    <div style={styles.planRow}>
+      <div style={styles.planHead}>
+        <button
+          type="button"
+          aria-label={fr.programs.reorderHint}
+          style={styles.handle}
+          {...dragHandle}
+        >
+          ⠿
+        </button>
+        <span style={styles.planName}>
+          {fr.programs.intervalReps} × {block.reps}
+        </span>
+        <button type="button" style={styles.danger} disabled={busy} onClick={onRemove}>
+          {fr.programs.removeInterval}
+        </button>
+      </div>
+
+      <div style={styles.planFields}>
+        <div style={styles.planFieldSmall}>
+          <label style={styles.label}>{fr.programs.intervalReps}</label>
+          <input
+            type="number"
+            min={1}
+            value={reps}
+            onChange={(e) => setReps(e.target.value)}
+            onBlur={() => persistBlock()}
+            style={styles.input}
+          />
+        </div>
+        <div style={styles.planField}>
+          <label style={styles.label}>{fr.programs.intervalFastKind}</label>
+          <select
+            value={fastKind}
+            onChange={(e) => {
+              const next = e.target.value as IntervalPhaseKind;
+              setFastKind(next);
+              persistBlock({ fastKind: next });
+            }}
+            style={styles.input}
+          >
+            <option value="distance">{fr.programs.intervalKindDistance}</option>
+            <option value="duration">{fr.programs.intervalKindDuration}</option>
+          </select>
+        </div>
+        {fastKind === 'distance' ? (
+          <div style={styles.planFieldSmall}>
+            <label style={styles.label}>{fr.programs.intervalFastDistanceM}</label>
+            <input
+              type="number"
+              min={0}
+              value={fastDistanceM}
+              onChange={(e) => setFastDistanceM(e.target.value)}
+              onBlur={() => persistBlock()}
+              style={styles.input}
+            />
+          </div>
+        ) : (
+          <div style={styles.planFieldSmall}>
+            <label style={styles.label}>{fr.programs.intervalFastDurationS}</label>
+            <input
+              type="number"
+              min={0}
+              value={fastDurationS}
+              onChange={(e) => setFastDurationS(e.target.value)}
+              onBlur={() => persistBlock()}
+              style={styles.input}
+            />
+          </div>
+        )}
+        <div style={styles.planFieldSmall}>
+          <label style={styles.label}>{fr.programs.intervalPctVma}</label>
+          <input
+            type="number"
+            min={0}
+            value={pctVma}
+            onChange={(e) => setPctVma(e.target.value)}
+            onBlur={() => persistBlock()}
+            style={styles.input}
+          />
+        </div>
+        <div style={styles.planField}>
+          <label style={styles.label}>{fr.programs.intervalRecoveryKind}</label>
+          <select
+            value={recoveryKind}
+            onChange={(e) => {
+              const next = e.target.value as 'none' | IntervalPhaseKind;
+              setRecoveryKind(next);
+              persistBlock({ recoveryKind: next });
+            }}
+            style={styles.input}
+          >
+            <option value="none">{fr.programs.intervalRecoveryNone}</option>
+            <option value="distance">{fr.programs.intervalKindDistance}</option>
+            <option value="duration">{fr.programs.intervalKindDuration}</option>
+          </select>
+        </div>
+        {recoveryKind === 'distance' ? (
+          <div style={styles.planFieldSmall}>
+            <label style={styles.label}>{fr.programs.intervalRecoveryDistanceM}</label>
+            <input
+              type="number"
+              min={0}
+              value={recoveryDistanceM}
+              onChange={(e) => setRecoveryDistanceM(e.target.value)}
+              onBlur={() => persistBlock()}
+              style={styles.input}
+            />
+          </div>
+        ) : recoveryKind === 'duration' ? (
+          <div style={styles.planFieldSmall}>
+            <label style={styles.label}>{fr.programs.intervalRecoveryDurationS}</label>
+            <input
+              type="number"
+              min={0}
+              value={recoveryDurationS}
+              onChange={(e) => setRecoveryDurationS(e.target.value)}
+              onBlur={() => persistBlock()}
+              style={styles.input}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );

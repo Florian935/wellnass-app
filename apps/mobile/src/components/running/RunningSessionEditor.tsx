@@ -9,11 +9,14 @@ import {
   type ProgramSessionType,
 } from '@wellness/shared';
 import {
+  addIntervalBlock,
   removeSession,
   updateRunningSession,
   type SessionDetail,
 } from '@/data/repositories/program-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { IntervalBlockEditor } from '@/components/running/IntervalBlockEditor';
+import { Button } from '@/components/Button';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -143,6 +146,18 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
           targetDistanceM: null,
         });
       }
+    }
+  };
+
+  // Blocs fractionné (US RUN-F2c) — uniquement pour session_type='fractionne' (R5).
+  const [addingBlock, setAddingBlock] = useState(false);
+  const onAddBlock = async () => {
+    if (addingBlock) return;
+    setAddingBlock(true);
+    try {
+      await addIntervalBlock(session.id, { reps: 1 });
+    } finally {
+      setAddingBlock(false);
     }
   };
 
@@ -333,6 +348,28 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
           {paceDisplay}
         </Text>
       ) : null}
+
+      {/* Blocs fractionné (US RUN-F2c) — uniquement pour ce type de séance (R5) */}
+      {sessionType === 'fractionne' ? (
+        <View style={styles.intervalsSection}>
+          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+            {t('running.intervals.title')}
+          </Text>
+          {session.intervals.length > 0 ? (
+            <View style={styles.intervalsList}>
+              {session.intervals.map((block, index) => (
+                <IntervalBlockEditor key={block.id} block={block} index={index} />
+              ))}
+            </View>
+          ) : null}
+          <Button
+            label={t('running.intervals.addBlock')}
+            variant="ghost"
+            onPress={() => void onAddBlock()}
+            disabled={addingBlock}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -414,4 +451,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.mono,
     fontSize: 13,
   },
+  intervalsSection: { gap: 10 },
+  intervalsList: { gap: 10 },
 });

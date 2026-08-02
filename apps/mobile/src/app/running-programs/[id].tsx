@@ -23,6 +23,7 @@ import {
   type SessionDetail,
 } from '@/data/repositories/program-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -291,6 +292,16 @@ function RunningSessionCard({
       {paceLabel ? (
         <Text style={[styles.paceLabel, { color: colors.textMuted }]}>{paceLabel}</Text>
       ) : null}
+
+      {session.intervals.length > 0 ? (
+        <View style={styles.intervalsList}>
+          {session.intervals.map((block) => (
+            <Text key={block.id} style={[styles.intervalLine, { color: colors.textMuted }]}>
+              {formatIntervalBlockSummary(t, block)}
+            </Text>
+          ))}
+        </View>
+      ) : null}
     </CollapsibleCard>
   );
 }
@@ -333,6 +344,12 @@ const styles = StyleSheet.create({
   paceLabel: {
     fontFamily: fontFamily.mono,
     fontSize: 13,
+  },
+  intervalsList: { gap: 4, marginTop: 4 },
+  intervalLine: {
+    fontFamily: fontFamily.body,
+    fontSize: 13,
+    lineHeight: 18,
   },
   emptyCard: { padding: 16 },
   emptyText: {

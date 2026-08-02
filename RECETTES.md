@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **01/08/2026** — 18 US en attente.
+> Dernière mise à jour : **03/08/2026** — 24 US en attente.
 
 ---
 
@@ -700,6 +700,44 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 - [ ] 6. **Mode avion** : le tableau s'affiche normalement (aucun réseau requis).
 - [ ] 7. En **EN** : les 6 libellés de plage et l'état vide sont grammaticaux.
 - [ ] 8. TalkBack énonce chaque ligne comme un bloc cohérent, pas des fragments disjoints.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 24. RUN-F2c — Blocs fractionné / intervalles
+
+📄 [spec](docs/specs/functional/us/runf2c-blocs-fractionne.md) · roadmap 5.9 ·
+**📱 device + 🌐 navigateur (admin)** · migration poussée (nouvelle table `session_intervals`)
+
+⛔ **Prérequis bloquant propre à cette US** : contrairement aux 3 précédentes de la famille RUN-F2
+(qui n'ajoutaient que des colonnes à des tables déjà publiées), `session_intervals` est une
+**table neuve** — elle a besoin de ses **deux propres lignes** de sync rule, déjà écrites dans
+[powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) mais **pas encore
+collées/déployées dans le dashboard PowerSync** (pas d'accès dashboard depuis cette session).
+Sans ce déploiement, les blocs créés **ne synchroniseraient jamais**, sans erreur visible — c'est
+exactement le piège déjà rencontré une fois sur CYCLE-01. Vérifier avec Florian/Damien avant de
+recetter, et cocher ici une fois fait :
+
+- [ ] Sync rules PowerSync (`session_intervals`, owner + éditorial) confirmées déployées.
+
+- [ ] 1. Ajouter un bloc « 6×400 m, 95 % VMA, récup 200 m » à une séance fractionné (mobile ou
+      admin), le retrouver affiché correctement sur l'écran de détail du programme.
+- [ ] 2. Un bloc échauffement (reps=1, distance seule, pas de %VMA, pas de récup) s'affiche sans
+      ligne d'allure ni de récup vide.
+- [ ] 3. Changer le type de séance de fractionné vers endurance masque les blocs sans les
+      supprimer ; revenir à fractionné les fait réapparaître intacts (R5).
+- [ ] 4. Réordonner les blocs dans l'admin persiste l'ordre ; l'app mobile affiche le nouvel ordre
+      sans permettre de le modifier elle-même (R6, pas de réordonnancement mobile).
+- [ ] 5. Supprimer un bloc côté mobile ou admin ne supprime pas les autres blocs de la même séance.
+- [ ] 6. **Mode avion** : ajout/édition/suppression de blocs fonctionne normalement côté mobile.
+- [ ] 7. En **EN** : les gabarits de résumé de bloc (avec/sans allure, avec/sans récup) sont tous
+      grammaticaux.
+- [ ] 8. TalkBack énonce chaque bloc comme un ensemble cohérent.
+- [ ] 9. Dupliquer un programme running contenant une séance fractionné avec des blocs : la copie
+      a bien les **mêmes blocs** (cascade `duplicateProgram`, trouvée en préparant le plan, pas
+      dans la spec initiale).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
