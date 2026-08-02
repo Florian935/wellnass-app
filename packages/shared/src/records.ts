@@ -217,3 +217,62 @@ export function computeWorkoutRecords(
 
   return candidates;
 }
+
+// ---------------------------------------------------------------------------
+// Record par plage de répétitions (US MUSC-09, roadmap 3.56)
+// ---------------------------------------------------------------------------
+
+/**
+ * Plages de reps — bornes fixes, non paramétrables (spec R1). Couvrent tout le spectre sans trou
+ * ni chevauchement : une série réelle tombe rarement pile sur les ancres du catalogue
+ * (1/3/5/8/10/12+), d'où des plages plutôt que des valeurs exactes. `maxReps: Infinity` sur la
+ * dernière plage — 15, 20 reps y tombent aussi, pas seulement 12-13.
+ */
+export const REP_BUCKETS = [
+  { key: '1', minReps: 1, maxReps: 1 },
+  { key: '3', minReps: 2, maxReps: 4 },
+  { key: '5', minReps: 5, maxReps: 7 },
+  { key: '8', minReps: 8, maxReps: 9 },
+  { key: '10', minReps: 10, maxReps: 11 },
+  { key: '12plus', minReps: 12, maxReps: Infinity },
+] as const;
+export type RepBucketKey = (typeof REP_BUCKETS)[number]['key'];
+
+/** Un record de plage de reps, prêt pour l'affichage. */
+export type RepBucketRecord = {
+  bucketKey: RepBucketKey;
+  weightKg: number;
+  achievedAt: string;
+};
+
+/**
+ * Distribue des séries (déjà filtrées en éligibilité par l'appelant, spec R3 — cette fonction ne
+ * réapplique pas `done`/`set_type`) vers les 6 plages de reps, en gardant la charge maximale de
+ * chacune. Égalité de charge dans une même plage → la plus récente gagne (spec R5). Une plage sans
+ * série qualifiante est **absente** du résultat (spec R4). Ordre du résultat = ordre de
+ * `REP_BUCKETS` (spec R6), jamais un tri par charge.
+ */
+export function resolveRepBucketRecords(
+  sets: ReadonlyArray<{ reps: number; weightKg: number; achievedAt: string }>,
+): RepBucketRecord[] {
+  const bestByBucket = new Map<RepBucketKey, RepBucketRecord>();
+
+  for (const bucket of REP_BUCKETS) {
+    let best: RepBucketRecord | null = null;
+    for (const s of sets) {
+      if (s.reps < bucket.minReps || s.reps > bucket.maxReps) continue;
+      if (
+        best === null ||
+        s.weightKg > best.weightKg ||
+        (s.weightKg === best.weightKg && s.achievedAt > best.achievedAt)
+      ) {
+        best = { bucketKey: bucket.key, weightKg: s.weightKg, achievedAt: s.achievedAt };
+      }
+    }
+    if (best !== null) bestByBucket.set(bucket.key, best);
+  }
+
+  return REP_BUCKETS.map((b) => bestByBucket.get(b.key)).filter(
+    (r): r is RepBucketRecord => r !== undefined,
+  );
+}

@@ -275,6 +275,43 @@ export default function ExerciseDetailScreen() {
             )}
           </View>
 
+          {/* US MUSC-09 — complète les records ci-dessus par la charge max par plage de reps. */}
+          <View style={styles.records}>
+            <Text style={[styles.recordsTitle, { color: colors.text }]}>
+              {t('exercises.detail.records.repRanges.title')}
+            </Text>
+            {recordsLoading ? (
+              <ActivityIndicator color={colors.accent} />
+            ) : records.repRanges.length === 0 ? (
+              <Text style={[styles.recordsEmpty, { color: colors.textMuted }]}>
+                {t('exercises.detail.records.repRanges.empty')}
+              </Text>
+            ) : (
+              <View style={styles.repRangeList}>
+                {records.repRanges.map((r) => (
+                  <View
+                    key={r.bucketKey}
+                    accessible
+                    style={[
+                      styles.repRangeRow,
+                      { backgroundColor: colors.surfaceAlt, borderColor: colors.border },
+                    ]}
+                  >
+                    <Text style={[styles.repRangeLabel, { color: colors.text }]}>
+                      {t(`exercises.detail.records.repRanges.range${r.bucketKey}`)}
+                    </Text>
+                    <Text style={[styles.repRangeValue, { color: colors.text }]}>
+                      {units.formatWeight(r.weightKg)}
+                    </Text>
+                    <Text style={[styles.recordMeta, { color: colors.textMuted }]}>
+                      {formatRecordDate(r.achievedAt)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
           <View style={styles.field}>
             <Text style={[styles.recordsTitle, { color: colors.text }]}>
               {t('exercises.detail.variants')}
@@ -388,6 +425,19 @@ const styles = StyleSheet.create({
   recordLabel: { fontFamily: fontFamily.body, fontSize: 12, textAlign: 'center' },
   recordValue: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.2 },
   recordMeta: { fontFamily: fontFamily.body, fontSize: 10, textAlign: 'center' },
+  repRangeList: { gap: 8 },
+  repRangeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  repRangeLabel: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 13.5 },
+  repRangeValue: { fontFamily: fontFamily.displaySemi, fontSize: 15, letterSpacing: -0.2 },
   seeProgression: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   variantRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   variantName: { flex: 1 },

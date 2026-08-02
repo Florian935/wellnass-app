@@ -7,6 +7,8 @@ import {
   computeWorkoutRecords,
   sessionBestEstimated1RM,
   pickOneRepMax,
+  REP_BUCKETS,
+  resolveRepBucketRecords,
 } from './records';
 
 const UUID = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
@@ -508,5 +510,64 @@ describe('pickOneRepMax', () => {
   });
   it('null si ni réel ni estimé', () => {
     expect(pickOneRepMax(null, null)).toBeNull();
+  });
+});
+
+describe('resolveRepBucketRecords (US MUSC-09)', () => {
+  it('séries à 1/5/10 reps, charges différentes → 3 entrées, dans l’ordre 1/5/10', () => {
+    const sets = [
+      { reps: 10, weightKg: 40, achievedAt: '2026-07-10T10:00:00Z' },
+      { reps: 1, weightKg: 90, achievedAt: '2026-07-15T10:00:00Z' },
+      { reps: 5, weightKg: 65, achievedAt: '2026-07-20T10:00:00Z' },
+    ];
+    const result = resolveRepBucketRecords(sets);
+    expect(result.map((r) => r.bucketKey)).toEqual(['1', '5', '10']);
+    expect(result.map((r) => r.weightKg)).toEqual([90, 65, 40]);
+  });
+
+  it('reps=3 et reps=4 (même plage) → une seule entrée, la charge la plus haute', () => {
+    const sets = [
+      { reps: 3, weightKg: 60, achievedAt: '2026-07-10T10:00:00Z' },
+      { reps: 4, weightKg: 70, achievedAt: '2026-07-12T10:00:00Z' },
+    ];
+    const result = resolveRepBucketRecords(sets);
+    expect(result).toEqual([{ bucketKey: '3', weightKg: 70, achievedAt: '2026-07-12T10:00:00Z' }]);
+  });
+
+  it('égalité de charge dans la même plage → la plus récente est retenue (R5)', () => {
+    const sets = [
+      { reps: 5, weightKg: 60, achievedAt: '2026-07-01T10:00:00Z' },
+      { reps: 6, weightKg: 60, achievedAt: '2026-07-20T10:00:00Z' },
+    ];
+    const result = resolveRepBucketRecords(sets);
+    expect(result).toEqual([{ bucketKey: '5', weightKg: 60, achievedAt: '2026-07-20T10:00:00Z' }]);
+  });
+
+  it('aucune série → []', () => {
+    expect(resolveRepBucketRecords([])).toEqual([]);
+  });
+
+  it('reps=12/15/30 tombent tous dans 12plus (borne haute ouverte)', () => {
+    const sets = [
+      { reps: 12, weightKg: 20, achievedAt: '2026-07-01T10:00:00Z' },
+      { reps: 15, weightKg: 25, achievedAt: '2026-07-05T10:00:00Z' },
+      { reps: 30, weightKg: 10, achievedAt: '2026-07-08T10:00:00Z' },
+    ];
+    const result = resolveRepBucketRecords(sets);
+    expect(result).toEqual([{ bucketKey: '12plus', weightKg: 25, achievedAt: '2026-07-05T10:00:00Z' }]);
+  });
+
+  it('une plage sans série qualifiante est absente du résultat (R4)', () => {
+    const sets = [{ reps: 1, weightKg: 90, achievedAt: '2026-07-15T10:00:00Z' }];
+    const result = resolveRepBucketRecords(sets);
+    expect(result).toHaveLength(1);
+    expect(result.some((r) => r.bucketKey === '10')).toBe(false);
+  });
+
+  it('REP_BUCKETS couvre le spectre 1..12+ sans trou ni chevauchement', () => {
+    for (let reps = 1; reps <= 30; reps++) {
+      const matches = REP_BUCKETS.filter((b) => reps >= b.minReps && reps <= b.maxReps);
+      expect(matches).toHaveLength(1);
+    }
   });
 });

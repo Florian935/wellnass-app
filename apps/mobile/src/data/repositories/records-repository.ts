@@ -41,11 +41,13 @@ import {
   ROLLING_WEEK_DAYS,
   resolveActivePillars,
   pickOneRepMax,
+  resolveRepBucketRecords,
   sessionBestEstimated1RM,
   type OneRepMaxSample,
   type MuscleBalance,
   type MuscleGroup,
   type RecordType,
+  type RepBucketRecord,
   type WeeklyTrainingNutrition,
 } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
@@ -219,6 +221,23 @@ const SELECT_EXERCISE_TOP_SINGLE = `
     AND s.set_type NOT IN ('warmup','duration')
   ORDER BY s.weight_kg DESC, w.finished_at DESC
   LIMIT 1
+`;
+
+/**
+ * Toutes les séries éligibles d'un exercice (reps + charge + date de séance), tous temps —
+ * US MUSC-09. Même éligibilité que le reste du système de records (spec R3), **sans** filtre sur
+ * `reps` : le bucketing par plage se fait en JS (`resolveRepBucketRecords`).
+ */
+const SELECT_EXERCISE_SETS_FOR_REP_BUCKETS = `
+  SELECT s.reps AS reps, s.weight_kg AS weight_kg, w.finished_at AS achieved_at
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL AND w.finished_at IS NOT NULL
+  WHERE s.exercise_id = ?
+    AND s.deleted_at IS NULL
+    AND s.done = 1
+    AND s.reps IS NOT NULL
+    AND s.weight_kg IS NOT NULL
+    AND s.set_type NOT IN ('warmup','duration')
 `;
 
 /** Ligne brute d'une série (nom d'exercice résolu), pour le regroupement du détail. */
@@ -558,23 +577,44 @@ export function useExerciseTopSingle(
   return { topSingle, isLoading };
 }
 
+/**
+ * Records par plage de reps d'un exercice, tous temps (US MUSC-09) — réactif. Bucketing pur
+ * (`resolveRepBucketRecords`), la requête ne fait que l'éligibilité (spec R3).
+ */
+export function useExerciseRepRanges(
+  exerciseId: string,
+): { repRanges: RepBucketRecord[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{ reps: number; weight_kg: number; achieved_at: string }>(
+    SELECT_EXERCISE_SETS_FOR_REP_BUCKETS,
+    [exerciseId],
+  );
+  const repRanges = resolveRepBucketRecords(
+    data.map((r) => ({ reps: r.reps, weightKg: r.weight_kg, achievedAt: r.achieved_at })),
+  );
+  return { repRanges, isLoading };
+}
+
 /** Vue records prête pour la fiche exercice (F10b). Chaque entrée : valeur + date ISO. */
 export type ExerciseFicheRecords = {
   oneRepMax: { value: number; date: string; real: boolean } | null;
   maxWeight: { value: number; date: string } | null;
   bestVolume: { value: number; date: string } | null;
+  /** Charge max par plage de reps (US MUSC-09) — `[]` si aucune série éligible. */
+  repRanges: RepBucketRecord[];
 };
 
 /**
  * Records d'un exercice pour la fiche : 1RM (réel si dispo, sinon estimé),
- * charge max, meilleur volume — chacun avec sa date. Compose `useExerciseRecords`
- * (personal_records) + `useExerciseTopSingle` (1RM réel dérivé) + `pickOneRepMax`.
+ * charge max, meilleur volume, charge par plage de reps — chacun avec sa date. Compose
+ * `useExerciseRecords` (personal_records) + `useExerciseTopSingle` (1RM réel dérivé) +
+ * `useExerciseRepRanges` + `pickOneRepMax`.
  */
 export function useExerciseFicheRecords(
   exerciseId: string,
 ): { records: ExerciseFicheRecords; isLoading: boolean } {
   const { records: best, isLoading: bestLoading } = useExerciseRecords(exerciseId);
   const { topSingle, isLoading: singleLoading } = useExerciseTopSingle(exerciseId);
+  const { repRanges, isLoading: repRangesLoading } = useExerciseRepRanges(exerciseId);
 
   const byType = (t: RecordType) => best.find((r) => r.type === t) ?? null;
   const maxW = byType('max_weight');
@@ -588,9 +628,10 @@ export function useExerciseFicheRecords(
     ),
     maxWeight: maxW ? { value: maxW.value, date: maxW.achievedAt } : null,
     bestVolume: vol ? { value: vol.value, date: vol.achievedAt } : null,
+    repRanges,
   };
 
-  return { records, isLoading: bestLoading || singleLoading };
+  return { records, isLoading: bestLoading || singleLoading || repRangesLoading };
 }
 
 /**

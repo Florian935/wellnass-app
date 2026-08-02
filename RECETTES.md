@@ -685,11 +685,33 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 23. MUSC-09 — Record personnel par plage de répétitions
+
+📄 [spec](docs/specs/functional/us/musc09-record-plage-reps.md) · roadmap 3.56 ·
+**📱 device** · aucune migration, aucune dépendance native → recettable sur l'APK existant.
+
+- [ ] 1. Un exercice avec des séries loggées à 1, 5 et 10 reps (charges différentes) → 3 lignes,
+      dans l'ordre 1 → 5 → 10, chacune avec sa charge et sa date.
+- [ ] 2. Une plage jamais travaillée pour cet exercice → **absente** du tableau, pas une ligne à
+      0 kg.
+- [ ] 3. Aucune série éligible pour cet exercice → état vide explicite, pas de tableau cassé.
+- [ ] 4. Une série d'échauffement (`warmup`) à charge élevée n'apparaît **dans aucune** plage.
+- [ ] 5. Deux séries à charge égale dans la même plage → la plus récente est celle affichée.
+- [ ] 6. **Mode avion** : le tableau s'affiche normalement (aucun réseau requis).
+- [ ] 7. En **EN** : les 6 libellés de plage et l'état vide sont grammaticaux.
+- [ ] 8. TalkBack énonce chaque ligne comme un bloc cohérent, pas des fragments disjoints.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
-UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et **MUSC-F1b**/**RUN-14**/**NUTR-16**
-(aucune dépendance native neuve, `react-native-svg`/calcul pur déjà en place)
+UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et
+**MUSC-F1b**/**RUN-14**/**NUTR-16**/**MUSC-09** (aucune dépendance native neuve,
+`react-native-svg`/calcul pur déjà en place)
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
 rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).

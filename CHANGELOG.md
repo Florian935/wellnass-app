@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/musc09-record-plage-reps` — MUSC-09 : record par plage de reps livré (3.56, en recette)
+
+Commit précédent : `2215558`. Validation reçue (« ok go ») sur les 3 livrables — code implémenté
+directement.
+
+#### Ajouté
+
+- [records.ts (shared)](packages/shared/src/records.ts) — `REP_BUCKETS` (6 plages fixes, bornes en
+  intervalles plutôt que valeurs exactes — une série réelle tombe rarement pile sur les ancres du
+  catalogue) et `resolveRepBucketRecords(sets)` : bucketing pur, égalité de charge → la série la
+  plus récente gagne, plage sans série qualifiante absente du résultat (pas une ligne à 0), ordre
+  figé sur `REP_BUCKETS`. 7 tests, dont la couverture totale du spectre 1..30 sans trou ni
+  chevauchement.
+- [records-repository.ts](apps/mobile/src/data/repositories/records-repository.ts) —
+  `useExerciseRepRanges(exerciseId)` (même patron que `useExerciseTopSingle`, sans le filtre
+  `reps = 1`) ; `ExerciseFicheRecords` étendu d'un champ `repRanges`, composé dans
+  `useExerciseFicheRecords` au même titre que les 3 records existants.
+- [id].tsx](apps/mobile/src/app/exercises/[id].tsx) — nouvelle section « Force par plage de reps »
+  sous les 3 tuiles de records existantes, réutilisant `formatRecordDate`/`units.formatWeight`
+  déjà présents dans ce fichier. Chaque ligne est un bloc `accessible` unique.
+- 8 clés `exercises.detail.records.repRanges.*`, FR+EN.
+
+#### Technique / Notes
+
+- **Aucune migration** — `workout_sets` déjà en base, calcul pur en lecture. Recettable sur l'APK
+  existant. `personal_records` (table des 3 records existants) n'est pas touchée.
+- `npm run typecheck` / `npm run lint` / `npm run test` (mobile Jest 50 suites/269 tests + shared
+  Vitest 67 fichiers/**1369** tests, +7) — lus sans pipe, tous verts. Parité i18n FR/EN vérifiée
+  (1657 clés).
+- Roadmap 3.56 → ✅ (V0.3 : 20 livré / 0 à faire). RECETTES.md #23 créée, 8 critères.
+
 ### 02/08/2026 — `feature/musc09-record-plage-reps` — MUSC-09 : entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 Candidat du [catalogue d'analyses](docs/product/analyses-donnees.md) promu via `/us` — aucun code.

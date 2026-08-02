@@ -98,7 +98,17 @@
         "oneRepMax": "1RM",
         "real": "actual",
         "estimated": "est.",
-        "seeProgression": "View progression"
+        "seeProgression": "View progression",
+        "repRanges": {
+          "title": "Strength by rep range",
+          "empty": "No sets with both weight and reps logged for this exercise yet.",
+          "range1": "1 rep",
+          "range3": "2-4 reps",
+          "range5": "5-7 reps",
+          "range8": "8-9 reps",
+          "range10": "10-11 reps",
+          "range12plus": "12+ reps"
+        }
       },
       "notSet": "Not set"
     }

@@ -98,7 +98,17 @@
         "oneRepMax": "1RM",
         "real": "réel",
         "estimated": "estimé",
-        "seeProgression": "Voir la progression"
+        "seeProgression": "Voir la progression",
+        "repRanges": {
+          "title": "Force par plage de reps",
+          "empty": "Pas encore de série à charge et reps renseignés pour cet exercice.",
+          "range1": "1 rep",
+          "range3": "2-4 reps",
+          "range5": "5-7 reps",
+          "range8": "8-9 reps",
+          "range10": "10-11 reps",
+          "range12plus": "12+ reps"
+        }
       },
       "notSet": "Non renseigné"
     }
