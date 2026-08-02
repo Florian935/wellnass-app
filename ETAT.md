@@ -39,6 +39,7 @@ avant de pouvoir publier.
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **META-19** — Garde-fou surentraînement (ACWR combiné) | `validation` | `feature/meta19-acwr-garde-fou` | — |
 
 ⏳ **23 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, MUSC-09, MUSC-F14, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-F3, STREAK-01, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
@@ -61,9 +62,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `docs/catalogue-statuts-run14-nutr16-musc09` (modifications non commitées) |
-| Commits | 1019 · `main` a **1016** commits de retard sur `dev` |
-| Specs d'US | 100 au total — 77 clôturées, 23 en cours |
+| Branche courante | `feature/meta19-acwr-garde-fou` (modifications non commitées) |
+| Commits | 1020 · `main` a **1017** commits de retard sur `dev` |
+| Specs d'US | 101 au total — 77 clôturées, 24 en cours |
 | Migrations | 65/65 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -73,11 +74,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a9f15a6` docs(catalogue): corrige le statut de RUN-14/NUTR-16/MUSC-09 (analyses.md)
 - `5bb7e51` docs(backlog): retire MUSC-09 de la salve post-V0.9 (livrée)
 - `4a9c813` feat(musc09): record par plage de répétitions (roadmap 3.56)
 - `2215558` docs(musc09): entrée en pipeline — spec, plan, maquette (roadmap 3.56)
 - `a811e84` docs(backlog): retire NUTR-16 de la salve post-V0.9 (livrée)
-- `58ca914` feat(nutr16): répartition calorique par repas (roadmap 4.38)
 
 ---
 

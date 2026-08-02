@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/meta19-acwr-garde-fou` — META-19 : entrée en pipeline (spec + plan + maquette, doc uniquement)
+
+Seul candidat encore ouvert de la liste de priorisation officielle du catalogue d'analyses — aucun
+code, **aucune ligne roadmap** (règle appliquée correctement cette fois, cf. commit précédent).
+
+#### Ajouté
+
+- [Spec](docs/specs/functional/us/meta19-acwr-garde-fou.md) — garde-fou surentraînement, ACWR
+  combiné (charge aiguë 7 j ÷ charge chronique 28 j, méthode session-RPE de Foster). **Surfaçage
+  ADR-007 déclaré explicitement (Tier 2, conditionnel)** : ce n'est pas un 15ᵉ widget permanent du
+  dashboard, il se replie hors de la zone de risque — même patron que `DeficitVolumeAlertCard`
+  (MN-02). Écart assumé par rapport à la formulation du catalogue : **seule la zone haute
+  (ACWR > 1,3) déclenche l'alerte** — la zone basse (< 0,8) signale un sous-entraînement, pas un
+  risque de surcharge, et suggérer un repos y serait contradictoire (R5).
+- [Plan](docs/plans/meta19-acwr-garde-fou.md) — 2 étapes : `sessionLoad`/`computeAcwr`
+  (packages/shared, purs, testés d'abord, même fichier que `computeTrainingTime`) → hook
+  `useTrainingLoadAlert` (même patron que `useDeficitVolumeAlert`) + `TrainingLoadAlertCard`
+  (copie structurelle de `DeficitVolumeAlertCard`) → solde (catalogue seul).
+- [Maquette](design/meta19-acwr-garde-fou/meta19-acwr-garde-fou.html) — le widget visible (zone de
+  risque) + les 3 cas où il disparaît (zone saine, zone basse hors périmètre, pas de charge
+  chronique).
+
+#### Technique / Notes
+
+- Brique commune explicitement identifiée par le catalogue pour 3 candidats non cadrés (RUN-18,
+  MR-10, TRI-12) — les construire plus tard sera moins cher une fois `computeAcwr` en place.
+- Aucune migration, aucune dépendance native, aucune nouvelle requête réseau (réutilise
+  `useWorkoutHistory`/`useRunHistory` déjà chargés ailleurs sur le dashboard).
+- `etape: validation` — en attente de Florian/Damien avant tout code.
+
 ### 02/08/2026 — `docs/catalogue-statuts-run14-nutr16-musc09` — Correction : statut catalogue de RUN-14/NUTR-16/MUSC-09
 
 Constat en cherchant un numéro roadmap pour META-19 : `docs/roadmap/roadmap.md` documente

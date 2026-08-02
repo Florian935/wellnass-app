@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>META-19 — Garde-fou surentraînement (ACWR)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:78ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:78ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px}
+  .cardwarn{background:var(--warn);border:1px solid var(--warnborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--warntext)}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;color:var(--warntext);margin-top:6px}
+  .cardmsg{font-size:13.5px;color:var(--warntext);margin-top:4px;line-height:1.4}
+  .banner{margin-top:12px;background:rgba(138,100,25,.1);border:1px solid var(--warnborder);
+          border-radius:12px;padding:10px 13px;font-size:12.5px;color:var(--warntext)}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .zone-low{border-left:4px solid var(--bstrong)}
+  .zone-safe{border-left:4px solid var(--success)}
+  .zone-high{border-left:4px solid var(--accent)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>META-19 — Garde-fou surentraînement (ACWR combiné)</h1>
+<p class="sub">Widget <strong>conditionnel</strong> du dashboard (Tier 2, ADR-007) — invisible la
+plupart du temps, ne s'affiche que quand la charge combinée (muscu + course) dépasse nettement la
+moyenne récente. Même patron que l'alerte déficit calorique déjà livrée (MN-02) : pas un 15ᵉ widget
+permanent, un garde-fou qui se replie hors condition.</p>
+
+<h2>La méthode : charge combinée (session-RPE)</h2>
+<p class="why">Standard sport-science (méthode de Foster), pas une formule inventée pour cette US.</p>
+<div class="note" style="margin-top:0">
+  <code>charge d'une séance = RPE (1-10) × durée en minutes</code><br>
+  <code>charge aiguë = Σ charge des 7 derniers jours ÷ 7</code><br>
+  <code>charge chronique = Σ charge des 28 derniers jours ÷ 28</code><br>
+  <code>ACWR = charge aiguë ÷ charge chronique</code>
+</div>
+
+<h2>1 · Le widget visible — zone de risque (ACWR &gt; 1,3)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Forme wide (dashboard)</div>
+    <div class="card cardwarn" style="display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;border-radius:15px;background:rgba(177,79,43,.14);
+                  display:flex;align-items:center;justify-content:center">
+        <span class="emoji">⚠️</span>
+      </div>
+      <div>
+        <div class="cardtitle" style="margin-top:0">Charge élevée cette semaine</div>
+        <div class="cardmsg">Ta charge combinée est nettement au-dessus de ta moyenne des 4
+        dernières semaines.</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme large (dashboard)</div>
+    <div class="card cardwarn">
+      <div class="cardhead"><span class="eyebrow">Charge d'entraînement</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">Charge élevée cette semaine</div>
+      <div class="cardmsg">Ta charge combinée est nettement au-dessus de ta moyenne des 4
+      dernières semaines.</div>
+      <div class="banner">Un jour de repos supplémentaire peut aider à récupérer.</div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Quand le widget disparaît (3 cas, spec R2/R5/R6)</h2>
+<div class="row3">
+  <div class="zonecard zone-safe">
+    <b>Zone saine (0,8 – 1,3)</b>
+    <p>Le cas le plus fréquent. Le widget est absent de l'écran — pas un état neutre affiché, une
+    vraie absence (comme MN-02 aujourd'hui).</p>
+  </div>
+  <div class="zonecard zone-low">
+    <b>Zone basse (&lt; 0,8) — hors périmètre (R5)</b>
+    <p>Signale un sous-entraînement, pas un risque de surcharge. Suggérer un jour de repos ici
+    serait contradictoire. Ce garde-fou reste silencieux, volontairement.</p>
+  </div>
+  <div class="zonecard zone-low">
+    <b>Pas de charge chronique (R6)</b>
+    <p>Compte neuf ou reprise après une longue pause : aucune base de comparaison. Pas de ratio
+    affiché plutôt qu'un chiffre absurde (division par une charge quasi nulle).</p>
+  </div>
+</div>
+<div class="hiddenbox" style="margin-top:14px">Dans les 3 cas ci-dessus : rien à cet endroit du
+dashboard — le widget suivant remonte, comme pour n'importe quel widget conditionnel masqué.</div>
+
+<h2>Les règles qui gouvernent l'affichage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Séance sans RPE = charge zéro, pas ignorée</b>
+    Une séance non notée ne fausse le calcul dans aucun sens — elle contribue 0, comme si elle
+    n'avait pas eu lieu pour cette mesure précise.</div>
+  <div class="rule"><b>R3 — Fenêtres calendaires fixes (7/28 j), pas jours actifs</b>
+    Divergence assumée avec NUTR-16/RUN-F3 : ici un jour de repos fait baisser la moyenne, c'est le
+    principe même de l'ACWR.</div>
+  <div class="rule"><b>R4 — Seuil de risque : ACWR &gt; 1,3</b>
+    Seuil standard de la littérature sport-science, cité par le catalogue.</div>
+  <div class="rule"><b>Gating — course ET muscu actifs</b>
+    Un seul pilier actif → le widget ne s'affiche jamais, quelle que soit la charge (même patron
+    que le widget « Temps d'entraînement », MR-06).</div>
+</div>
+
+</div></body></html>
