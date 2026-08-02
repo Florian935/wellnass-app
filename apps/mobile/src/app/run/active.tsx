@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { averagePace, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
+import { averagePace, compareToTarget, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
 import { useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useEffect, useMemo, useState } from 'react';
@@ -7,9 +7,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 import { RouteMap } from '@/components/running/RouteMap';
 import { SyncStatus } from '@/components/SyncStatus';
-import { finishRun, useActiveRun } from '@/data/repositories/run-repository';
+import { finishRun, useActiveRun, useRunTarget } from '@/data/repositories/run-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
@@ -100,6 +101,26 @@ export default function RunActiveScreen() {
     avgPaceSPerKm: avgPaceValue,
   });
 
+  // US RUN-F2b (5.23) : cible de la séance planifiée, comparée en direct — même fonction pure et
+  // mêmes clés i18n que le résumé post-course (RUN-F3), aucune n'est modifiée (spec R1/R2).
+  const target = useRunTarget(active?.plannedSessionId ?? null);
+  const comparison = useMemo(
+    () =>
+      compareToTarget(
+        {
+          distanceM: isGps ? distanceM : null,
+          // R1 bis : jamais `elapsedSeconds` ici (horloge murale, inclut les pauses) — absent
+          // tant que le tracker n'a pas encore flushé de durée nette.
+          durationS: active?.durationSeconds ?? null,
+        },
+        {
+          targetDistanceM: target?.targetDistanceM ?? null,
+          targetDurationS: target?.targetDurationSeconds ?? null,
+        },
+      ),
+    [isGps, distanceM, active?.durationSeconds, target],
+  );
+
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
@@ -129,6 +150,31 @@ export default function RunActiveScreen() {
     : points.length > 0
       ? t('running.active.gpsActive')
       : t('running.active.gpsSearching');
+
+  // US RUN-F2b : libellés de comparaison à la cible — copie volontaire de la logique de
+  // `run/summary.tsx` (RUN-F3 encore en recette, pas de partage d'abstraction pour l'instant,
+  // voir plan). Même règle de ton (R4) : jamais une couleur d'alerte.
+  const distanceTargetLabel = comparison.distance
+    ? t(
+        `running.target.distance${comparison.distance.status === 'reached' ? 'Reached' : comparison.distance.status === 'over' ? 'Over' : 'Under'}`,
+        {
+          done: units.formatDistance(comparison.distance.doneValue / 1000),
+          target: units.formatDistance(comparison.distance.targetValue / 1000),
+          diff: units.formatDistance(Math.abs(comparison.distance.diff) / 1000),
+        },
+      )
+    : null;
+  const durationTargetLabel = comparison.duration
+    ? t(
+        `running.target.duration${comparison.duration.status === 'reached' ? 'Reached' : comparison.duration.status === 'over' ? 'Over' : 'Under'}`,
+        {
+          done: formatDuration(comparison.duration.doneValue),
+          target: formatDuration(comparison.duration.targetValue),
+          diff: formatDuration(Math.abs(comparison.duration.diff)),
+        },
+      )
+    : null;
+  const hasTarget = distanceTargetLabel !== null || durationTargetLabel !== null;
 
   const onTogglePause = () => {
     // L'affichage suit l'émetteur du tracker (`subscribePaused`) : ces appels
@@ -218,6 +264,37 @@ export default function RunActiveScreen() {
         ) : null}
       </View>
 
+      {/* Objectif de la séance planifiée (US RUN-F2b) — absente si aucune cible chiffrée */}
+      {hasTarget ? (
+        <View style={styles.targetWrap}>
+          <Card>
+            <Text style={[styles.targetTitle, { color: colors.text }]}>
+              {t('running.target.title')}
+            </Text>
+            {distanceTargetLabel ? (
+              <Text
+                style={[
+                  styles.targetText,
+                  { color: comparison.distance!.status === 'under' ? colors.textMuted : colors.success },
+                ]}
+              >
+                {distanceTargetLabel}
+              </Text>
+            ) : null}
+            {durationTargetLabel ? (
+              <Text
+                style={[
+                  styles.targetText,
+                  { color: comparison.duration!.status === 'under' ? colors.textMuted : colors.success },
+                ]}
+              >
+                {durationTargetLabel}
+              </Text>
+            ) : null}
+          </Card>
+        </View>
+      ) : null}
+
       {/* Carte du parcours en temps réel */}
       <View style={styles.mapCard}>
         <RouteMap
@@ -284,6 +361,9 @@ const styles = StyleSheet.create({
   paces: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
   paceItem: { alignItems: 'center', gap: 4 },
   paceValue: { fontFamily: fontFamily.monoBold, fontSize: 24 },
+  targetWrap: { paddingHorizontal: 20, paddingBottom: 4 },
+  targetTitle: { fontFamily: fontFamily.bodySemi, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
+  targetText: { fontFamily: fontFamily.bodyBold, fontSize: 14, lineHeight: 19 },
   mapCard: { paddingHorizontal: 20, paddingBottom: 12 },
   controls: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 12 },
   pauseBtn: {

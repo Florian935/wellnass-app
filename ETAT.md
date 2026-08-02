@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `█████████████████░░░` **87 %** — 188 livré · 15 partiel · 7 à faire (sur 216)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 189 livré · 15 partiel · 6 à faire (sur 216)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -40,14 +40,14 @@ avant de pouvoir publier.
 | **RUN-18** — Charge d'entraînement & ACWR (running seul) | `recette` | `feature/run18-acwr-running` | — |
 | **RUN-F1b** — Dénivelé cumulé | `recette` | `feature/runf1b-denivele-cumule` | [5.32] |
 | **RUN-F2a** — Annonces audio périodiques | `recette` | `feature/runf2a-annonces-audio` | [5.19] |
+| **RUN-F2b** — Prolonger ou raccourcir — cible visible en direct | `recette` | `feature/runf2b-cible-en-direct` | [5.23] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `recette` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **RUN-F2b** — Prolonger ou raccourcir — cible visible en direct | `validation` | `feature/runf2b-cible-en-direct` | [5.23] |
 
-⏳ **29 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **30 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -69,7 +69,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/runf2b-cible-en-direct` (modifications non commitées) |
-| Commits | 1033 · `main` a **1030** commits de retard sur `dev` |
+| Commits | 1034 · `main` a **1031** commits de retard sur `dev` |
 | Specs d'US | 107 au total — 77 clôturées, 30 en cours |
 | Migrations | 67/67 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -80,11 +80,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6111815` docs(runf2b): entrée en pipeline — spec, plan, maquette (roadmap 5.23)
 - `5e60144` feat(runf2a): annonces audio périodiques pendant une course (roadmap 5.19)
 - `f65a67a` docs(runf2a): RUN-F2 scindée en 4 + entrée en pipeline de RUN-F2a (roadmap 5.19)
 - `f99d6bf` feat(runf1b): dénivelé cumulé — blocage codec levé (roadmap 5.32)
 - `48da50d` docs(runf1b): blocage levé, entrée en pipeline — spec, plan, maquette (roadmap 5.32)
-- `9aa7307` feat(muscf15): progression au niveau du programme (roadmap 3.7)
 
 ---
 

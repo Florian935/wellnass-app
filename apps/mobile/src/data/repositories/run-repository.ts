@@ -68,6 +68,8 @@ export type ActiveRun = {
   durationSeconds: number | null;
   /** Trace GPS **brute encodée** (à décoder côté écran via `decodeTrack`), `null` si aucune. */
   gpsTrack: string | null;
+  /** US RUN-F2b : occurrence planifiée d'origine, `null` pour une course libre. */
+  plannedSessionId: string | null;
 };
 
 /** Élément d'historique (course terminée), volontairement léger. */
@@ -145,6 +147,7 @@ type ActiveRunDbRow = {
   duration_seconds: number | null;
   distance_m: number | null;
   gps_track: string | null;
+  planned_session_id: string | null;
 };
 
 /** Ligne brute d'une course terminée (entête d'historique). */
@@ -187,7 +190,7 @@ type RunDetailDbRow = {
 
 /** Course active de l'utilisateur courant (au plus une). */
 const SELECT_ACTIVE_RUN = `
-  SELECT id, source, started_at, duration_seconds, distance_m, gps_track
+  SELECT id, source, started_at, duration_seconds, distance_m, gps_track, planned_session_id
   FROM runs
   WHERE status = 'active' AND deleted_at IS NULL
   LIMIT 1
@@ -225,6 +228,7 @@ function rowToActiveRun(row: ActiveRunDbRow): ActiveRun {
     distanceM: row.distance_m,
     durationSeconds: row.duration_seconds,
     gpsTrack: row.gps_track,
+    plannedSessionId: row.planned_session_id,
   };
 }
 

@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 02/08/2026 — `feature/runf2b-cible-en-direct` — RUN-F2b : cible en direct (roadmap 5.23 → ✅)
+
+Implémentation validée dans l'entrée précédente. 2ᵉ des 4 candidats issus du découpage de RUN-F2,
+la plus petite et la plus sûre — aucune fonction pure neuve, aucune clé i18n neuve, aucun fichier
+`packages/shared` touché.
+
+#### Ajouté
+
+- `apps/mobile/src/data/repositories/run-repository.ts` — `ActiveRun`/`ActiveRunDbRow`/
+  `SELECT_ACTIVE_RUN`/`rowToActiveRun` étendus (`plannedSessionId`, colonne déjà en base depuis
+  RUN-F3).
+- `apps/mobile/src/app/run/active.tsx` — carte « Objectif » sous les métriques principales,
+  montée seulement si une cible chiffrée existe (`hasTarget`, jamais un encart vide). Réutilise
+  `compareToTarget` (packages/shared, non modifiée) + `useRunTarget` (déjà exporté) + les clés
+  i18n `running.target.*` de RUN-F3, appelés en continu avec les valeurs **en cours** au lieu des
+  valeurs finales — usage déjà couvert par leur signature actuelle. L'axe durée utilise
+  exclusivement `active.durationSeconds` (net, post-flush), jamais l'horloge murale de secours
+  (`elapsedSeconds`, qui inclut les pauses) — sinon un faux « objectif dépassé » aurait pu
+  s'afficher dans la fenêtre avant le premier flush GPS (R1 bis, relevé en relecture de spec).
+
+#### Technique / Notes
+
+- Quality gate complet : `npm run typecheck` (0 erreur), `npm run lint` (0 erreur), `npm run test`
+  (67 fichiers / 1402 tests côté `packages/shared`, 50 suites / 276 tests côté `apps/mobile` —
+  compteurs inchangés, aucune fonction/test neuf nécessaire).
+- Duplication volontaire avec `run/summary.tsx` (construction des libellés) plutôt qu'un partage
+  d'abstraction : RUN-F3 est encore en recette (non clôturée), toucher son code pour factoriser
+  ~15 lignes aurait ajouté un risque de régression sur une fonctionnalité pas encore validée par un
+  humain. Un futur nettoyage post-clôture RUN-F3 pourra factoriser un helper commun.
+- Aucune migration, aucune dépendance nouvelle, aucune sync rule à redéployer — recettable sur
+  l'APK existant (contrairement à RUN-F2a).
+
 ### 02/08/2026 — `feature/runf2b-cible-en-direct` — RUN-F2b entrée en pipeline (spec + plan + maquette, doc uniquement)
 
 2ᵉ des 4 candidats issus du découpage de RUN-F2 (roadmap 5.23). Aucun code.
