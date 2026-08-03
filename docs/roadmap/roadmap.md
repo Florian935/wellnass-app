@@ -400,6 +400,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 7.14 | Cercle d'accent sur les cartes | Reflet terracotta en coin de carte, repris de la maquette. Coin, taille et **présence** dérivés par hachage de l'identité du widget : ~1 carte sur 3, géométrie stable au réagencement. | 🟢 | ✅ | Demande Damien (« casser la monotonie »). Arbitré sur device : le cercle net de la maquette est retenu contre une variante en dégradé radial. |
 | 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
+| 1.27 | Parcours « 7 jours pour démarrer » | Mini-programme d'activation guidé (7 jours, tous piliers actifs), pour atteindre vite le « aha moment » sans exiger d'historique. | 🟢 | ⬜ | ACTIV-01 — idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026, différée après V0.9). **Entrée en pipeline le 03/08/2026** → [spec](../specs/functional/us/activ01-parcours-7-jours.md). Distinct de l'onboarding (1.7-1.11). |
 
 > **Ne figurent pas dans ce tableau, volontairement** :
 > - les **US d'analyse** (META-06/08/09, MN-03/06, MR-06, NUTR-10/11/17, RN-01/02, MUSC-04/05) —
@@ -442,10 +443,10 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|
 | ✅ Livré | 191 | ~88 % |
 | 🟡 Partiel | 14 | ~6 % |
-| ⬜ À faire | 5 | ~2 % |
+| ⬜ À faire | 6 | ~3 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **216** | |
+| **Total périmètre de lancement** | **217** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
