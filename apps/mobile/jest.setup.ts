@@ -88,6 +88,16 @@ jest.mock('expo-localization', () => ({
 }));
 
 // ---------------------------------------------------------------------------
+// Mock expo-crypto (natif) — `generateId()` en dépend
+// ---------------------------------------------------------------------------
+// Sans ce mock, `Crypto.randomUUID()` renvoie `undefined` en test : toute ligne insérée par
+// `insertWithSyncFields` reçoit un `id` nul, et les `WHERE id = ?` suivants ne matchent rien —
+// une panne muette qui rend intestable tout parcours écriture puis relecture.
+jest.mock('expo-crypto', () => ({
+  randomUUID: () => require('node:crypto').randomUUID(),
+}));
+
+// ---------------------------------------------------------------------------
 // Mock expo-secure-store (natif)
 // ---------------------------------------------------------------------------
 jest.mock('expo-secure-store', () => ({

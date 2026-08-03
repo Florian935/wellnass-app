@@ -69,8 +69,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf2c-blocs-fractionne` (modifications non commitées) |
-| Commits | 1036 · `main` a **1033** commits de retard sur `dev` |
+| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
+| Commits | 1037 · `main` a **1034** commits de retard sur `dev` |
 | Specs d'US | 108 au total — 77 clôturées, 31 en cours |
 | Migrations | 68/68 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -81,11 +81,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `7a8faa0` feat(runf2c): blocs fractionné / intervalles pour le running (US RUN-F2c, 5.9)
 - `3da1d6d` docs(runf2c): entrée en pipeline — spec, plan, maquette (roadmap 5.9)
 - `d0d339a` feat(runf2b): cible en direct pendant la course (roadmap 5.23)
 - `6111815` docs(runf2b): entrée en pipeline — spec, plan, maquette (roadmap 5.23)
 - `5e60144` feat(runf2a): annonces audio périodiques pendant une course (roadmap 5.19)
-- `f65a67a` docs(runf2a): RUN-F2 scindée en 4 + entrée en pipeline de RUN-F2a (roadmap 5.19)
 
 ---
 

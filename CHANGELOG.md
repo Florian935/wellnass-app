@@ -10,6 +10,87 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Socle de tests des repositories (SQLite en mémoire)
+
+Outillage, pas une fonctionnalité produit : aucune ligne de roadmap, aucun front-matter d'US
+avancé. Point de départ = un audit chiffré de la couverture (`npm run test:coverage`), qui montre
+un déséquilibre net : `packages/shared` à **99,2 %** d'instructions couvertes, `apps/mobile` à
+**15,0 %** (dont `src/data/repositories` à **9 %** pour 12 157 lignes), `apps/admin` à **0 %**
+sans aucun runner installé.
+
+La cause n'est pas de la négligence : jusqu'ici on ne savait tester la couche base locale qu'en
+mockant `powerSync` de bout en bout (`getAll` → `[]`), ce qui vérifie **qu'on a appelé une
+fonction**, jamais **que la requête est juste**. C'est ce qui a laissé passer le bug de la recette
+device du 31/07/2026 (`cycle_tracking_enabled` absent du schéma PowerSync local → écriture avalée
+en silence, interrupteur qui reste éteint).
+
+#### Ajouté
+
+- **`apps/mobile/src/test-utils/sqlite-harness.ts`** — fausse instance PowerSync adossée à une
+  base **SQLite réelle en mémoire**, dont le DDL est **dérivé du `AppSchema` de l'app**
+  (`@/powersync/schema`). Moteur `node:sqlite`, intégré à Node : **aucune dépendance ajoutée**.
+  Surface couverte : `execute` / `getAll` / `getOptional` / `get` / `writeTransaction` /
+  `readTransaction`. Les transactions sont réelles (`BEGIN` / `COMMIT` / `ROLLBACK`), donc
+  l'atomicité d'une écriture multi-tables est testable. Helpers `resetTestDb()`, `seed()`
+  (complète `id`/`created_at`/`updated_at`/`deleted_at`), `rowsOf()` (relecture d'assertion,
+  option `includeDeleted`).
+  Ce que ça attrape et que le mock laissait passer : colonne absente du schéma local,
+  `WHERE deleted_at IS NULL` oublié, idempotence annoncée mais fausse, `ORDER BY` inversé,
+  jointure fausse, transaction non atomique.
+- **`apps/mobile/src/test-utils/node-sqlite.d.ts`** — déclaration ambiante minimale de
+  `node:sqlite`. Choix délibéré de **ne pas** ajouter `@types/node` au champ `types` du tsconfig
+  mobile : cela rendrait `process`/`Buffer` visibles dans le code applicatif React Native, où ils
+  n'existent pas à l'exécution.
+- **`apps/mobile/src/data/repositories/__tests__/menstrual-cycle-sql.test.ts`** — 15 tests, premier
+  usage du harness et **fichier de référence à copier** pour tout nouveau test de repository.
+  Couvre les écritures d'US CYCLE-01 sur du vrai SQL : garde d'activation (R16, y compris réglage
+  absent), idempotence de `startPeriod` sur la date de début (R21) et son insensibilité aux lignes
+  en soft delete, clôture de la période ouverte la veille du nouveau début (R2), refus des dates
+  futures (R4), `autoCloseStalePeriods` (R3), création puis mise à jour du journal sans doublon,
+  saisie vide acceptée (c'est ainsi qu'on efface), `deleteAllCycleData` en soft delete (R17).
+- **`docs/specs/technical/strategie-tests.md`** — le cadrage : constat chiffré par dossier, les
+  4 niveaux (pur / base locale / rendu / device) avec l'outil et l'objectif de chacun, conventions
+  d'écriture, **plan en 6 lots** priorisés par risque × coût de la recette manuelle, seuils de
+  couverture proposés, et la liste de **ce qui doit rester sur téléphone** (permissions Android,
+  GPS réel, notifications système, Health Connect, synchro 2 appareils, TalkBack, batterie).
+  Principe directeur : ne pas courir après le pourcentage, mais **faire descendre du niveau 4 vers
+  les niveaux 2 et 3** tout ce qui peut l'être, pour raccourcir [RECETTES.md](RECETTES.md).
+- Scripts `test:coverage` (racine + `apps/mobile`) et `test:watch` (`apps/mobile`).
+
+#### Corrigé
+
+- **`expo-crypto` n'était pas mocké dans `jest.setup.ts`** : `Crypto.randomUUID()` renvoyait
+  `undefined` en test, donc toute ligne insérée par `insertWithSyncFields` recevait un `id` nul et
+  les `WHERE id = ?` suivants ne matchaient rien. Panne muette qui rendait **intestable tout
+  parcours écriture → relecture** — découverte en écrivant les premiers tests du harness, qui
+  échouaient sur `id: null`. Mock ajouté (délègue à `node:crypto`).
+
+#### Modifié
+
+- **`.nvmrc` : 20 → 24** et `engines.node` : `>=20` → `>=24`. **Nécessaire** : `node:sqlite`
+  n'existe pas en Node 20 et exige un drapeau en 22 ; il n'est disponible tel quel qu'à partir de
+  Node 23.4/24. La CI suit `.nvmrc` automatiquement.
+  ⚠️ **Action requise côté devs** : `nvm install 24` / `nvm use 24`, sinon la suite mobile échoue
+  à l'import du harness. C'est le seul coût imposé par ce socle.
+
+#### Technique / Notes
+
+- `readSchema()` sonde plusieurs emplacements (`tables` / `props` / racine) pour lire le
+  `AppSchema`, car sa forme diffère selon qu'il est mocké (`jest.setup.ts`) ou réel, et selon la
+  version de PowerSync. **Échoue bruyamment** si aucune table n'est trouvée : un schéma vide
+  produirait des tests verts sans aucune table, le pire des faux positifs.
+- `bind()` convertit booléens (→ 0/1) et `undefined` (→ `null`) : op-sqlite est plus permissif que
+  `node:sqlite` sur les types liés, sans quoi un test échouerait sur une différence de binding et
+  non sur la logique testée.
+- `node:sqlite` est marqué expérimental par Node : chaque exécution de test émet un
+  `ExperimentalWarning`. Bruit uniquement, aucun impact fonctionnel.
+- Un test de repository doit poser son propre `jest.mock('@/powersync/system', …)` pour remplacer
+  le mock global de `jest.setup.ts` — sans ce bloc, le harness n'est pas branché et le test
+  retombe silencieusement sur les mocks vides. Le fichier de référence le montre en en-tête.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur (30 warnings
+  préexistants, aucun dans les fichiers ajoutés), typecheck propre sur les 3 workspaces,
+  **291 tests Jest (mobile, +15) + 1 405 tests Vitest (shared) = 1 696 tests, tous verts**.
+
 ### 03/08/2026 — `feature/runf2c-blocs-fractionne` — RUN-F2c : blocs fractionné / intervalles (roadmap 5.9 → ✅)
 
 Implémentation complète, 3ᵉ des 4 candidats issus du découpage de RUN-F2 — la plus grosse des
