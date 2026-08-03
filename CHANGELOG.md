@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `feature/launcher01-widget-ecran-accueil` — LAUNCHER-01 : widget transparent en recette, deux causes racines trouvées et corrigées
+
+Suite de `55db491`. Constaté en recette device (Pixel 6a) le soir même : le widget s'ajoutait à
+l'écran d'accueil mais restait **entièrement transparent**. Deux bugs indépendants, diagnostiqués
+par `adb logcat` (aucun des deux n'était reproductible en lecture de code seule).
+
+#### Corrigé
+
+- 🔴 **Course perdue entre l'invocation native du widget et l'enregistrement JS de sa tâche de
+  fond.** Log exact : `No task registered for key RNWidgetBackgroundTask`. Après un `WIDGET_ADDED`
+  à froid, Android relance le process et invoque la tâche de fond **~1,7 s** après le démarrage —
+  mais `registerWidgetTaskHandler` (`register-home-widget.tsx`) n'était atteint qu'au fond du
+  graphe de require d'Expo Router (`_layout.tsx` → i18n → PowerSync → tous les écrans...), qui met
+  lui **plus de 3,5 s** à charger. Corrigé en créant `apps/mobile/index.js` (nouveau point d'entrée,
+  `package.json` → `main`) qui enregistre la tâche **avant** `import 'expo-router/entry'` — patron
+  standard des tâches Headless JS React Native (registre au plus haut niveau du bundle, jamais dans
+  un composant imbriqué). Retiré de `_layout.tsx`, avec un commentaire expliquant pourquoi ne pas
+  l'y remettre.
+- 🔴 **`HomeWidget.tsx` incompatible avec le React Compiler.** Une fois la course ci-dessus corrigée,
+  nouveau log : `Widget Error: Invalid Hook Call detected... Fix: Add "use no memo"; at the very top
+  of your widget file`. Le React Compiler (`app.json` → `experiments.reactCompiler`, activé pour
+  tout le projet) transforme le composant d'une façon incompatible avec `buildWidgetTree` de
+  `react-native-android-widget`, qui appelle la fonction directement hors du reconciler React. **Ce
+  point était identifié dans la recherche technique initiale** (§1 de la spec) mais oublié à
+  l'écriture du composant — leçon retenue, documentée en commentaire dans le fichier pour ne pas la
+  reperdre. Corrigé par l'ajout de `'use no memo';` en tout premier de `HomeWidget.tsx`.
+
+#### Technique / Notes
+
+- Diagnostic mené en 3 allers-retours : APK instrumenté → `adb logcat -c` → reproduction (retrait +
+  ajout du widget) → `adb logcat -d`, à chaque fois. Aucun des deux bugs n'était visible en lecture
+  de code ni en test unitaire (les deux sont des interactions avec le runtime natif Android /
+  React Compiler, hors du périmètre de ce que `home-widget-data.test.ts`/`home-widget-texts.test.ts`
+  peuvent couvrir).
+- **Validé sur device** (Pixel 6a) après le second correctif : logs propres (`WM-WorkerWrapper:
+  Worker result SUCCESS`), plus aucune trace de `No task registered` ni `Invalid Hook Call`, widget
+  affiché avec son vrai contenu.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur) · `test` ✅ **69 shared + 68 suites mobile
+  (646 tests) + 6 admin, 0 échec** (aucun changement dans ce commit ne touche du code testable
+  unitairement — les deux bugs vivent à la frontière runtime natif / bundler).
+
 ### 03/08/2026 — `feature/launcher01-widget-ecran-accueil` — Widget écran d'accueil Android (US LAUNCHER-01, roadmap 7.19)
 
 Suite de `4c24843` (spec/plan/maquette validés par Florian). Dernier candidat non démarré de la

@@ -1,3 +1,4 @@
+'use no memo';
 /**
  * US LAUNCHER-01 — widget de l'écran d'accueil Android (launcher), pas un widget in-app.
  *
@@ -8,6 +9,13 @@
  * Accessibilité (spec §6) : `accessibilityLabel` posé sur la racine couvre tout le widget d'un
  * seul bloc lu par TalkBack — la librairie le supporte nativement (`ClickActionProps`), le risque
  * initialement soulevé dans la spec est donc levé.
+ *
+ * ⚠️ **`'use no memo';` en tout premier (avant même ce commentaire) est obligatoire** : le React
+ * Compiler (activé, `app.json` → `experiments.reactCompiler`) transforme sinon ce composant d'une
+ * façon incompatible avec `buildWidgetTree` (la lib construit l'arbre RemoteViews en appelant la
+ * fonction directement, hors du reconciler React) — constaté en recette le 03/08/2026 : « Invalid
+ * Hook Call detected », widget resté transparent. Repéré dans la recherche technique initiale,
+ * oublié à l'implémentation — leçon retenue.
  */
 
 import { FlexWidget, TextWidget } from 'react-native-android-widget';

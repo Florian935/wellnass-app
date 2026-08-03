@@ -73,7 +73,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/launcher01-widget-ecran-accueil` (modifications non commitées) |
-| Commits | 1062 · `main` a **1058** commits de retard sur `dev` |
+| Commits | 1063 · `main` a **1060** commits de retard sur `dev` |
 | Specs d'US | 111 au total — 77 clôturées, 34 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -84,11 +84,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `55db491` feat(launcher01): widget écran d'accueil Android (US LAUNCHER-01, roadmap 7.19)
 - `4c24843` docs(launcher01): spec, plan et maquette du widget écran d'accueil Android
 - `70d6f26` merge: intègre fix/dashboard-widgets-tier2-vides dans dev
 - `1b112de` fix(dashboard): trou dans la grille quand training-load/overtraining-guard sont vides
 - `b14f287` test(mobile): lot 5 débloqué — le blocage annoncé n'en était pas un
-- `f328e3d` test(admin): lectures de liste + lot 5 bloqué (les effets React ne tournent pas)
 
 ---
 

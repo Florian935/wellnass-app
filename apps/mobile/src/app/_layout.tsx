@@ -14,9 +14,11 @@ import i18n from '@/i18n';
 // Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
 // (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
 import '@/running/tracker-task';
-// US LAUNCHER-01 — enregistre la tâche de fond du widget d'écran d'accueil (side-effect), même
-// raison que ci-dessus : Android peut invoquer ce module hors de tout arbre React monté.
-import '@/widgets/register-home-widget';
+// US LAUNCHER-01 : la tâche de fond du widget d'écran d'accueil est enregistrée dans
+// `apps/mobile/index.js`, **avant** cet import — pas ici. Un enregistrement trop tardif dans le
+// graphe de require (derrière PowerSync, i18n, tous les écrans) perdait la course contre le
+// premier appel natif après un WIDGET_ADDED à froid (« No task registered », widget transparent
+// en recette le 03/08/2026). Ne pas la réimporter ici sans comprendre pourquoi.
 // Configure Google Sign-In (side-effect) au chargement du JS (US 1.2).
 import '@/lib/google-signin';
 import { useDeletionStore } from '@/stores/deletion-store';

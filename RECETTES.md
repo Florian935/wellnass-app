@@ -833,6 +833,12 @@ APK antérieur à cette US.
 ⚠️ **Distinct des 16 widgets du tableau de bord in-app** (WIDGETS-01) : celui-ci vit sur l'écran
 d'accueil **du téléphone** (le launcher Android), en dehors de l'application.
 
+> ✅ **Bug « widget transparent » corrigé et validé sur device le 03/08/2026** (Florian, Pixel 6a).
+> Deux causes racines trouvées par `adb logcat` : une course entre l'invocation native et
+> l'enregistrement JS de la tâche de fond (déplacé dans `apps/mobile/index.js`), et une
+> incompatibilité React Compiler sur `HomeWidget.tsx` (`'use no memo';` manquant). Détail dans le
+> [CHANGELOG](CHANGELOG.md). Les 13 critères ci-dessous restent à parcourir un par un.
+
 - [ ] 1. Le widget « Wellness » est proposé dans le sélecteur de widgets du launcher (appui long
       sur l'écran d'accueil → Widgets).
 - [ ] 2. Une fois posé, affiche la série, la séance du jour (ou « Repos aujourd'hui ») et les kcal
