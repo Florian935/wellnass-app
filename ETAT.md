@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 191 livré · 14 partiel · 6 à faire (sur 217)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 192 livré · 14 partiel · 5 à faire (sur 217)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -16,6 +16,7 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
+| **ACTIV-01** — Parcours « 7 jours pour démarrer » | `recette` | `feature/activ01-parcours-7-jours` | [1.27] |
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
 | **BILAN-01** — Bilan hebdomadaire automatique | `recette` | `feature/bilan01-bilan-hebdo` | [7.16] |
@@ -48,9 +49,8 @@ avant de pouvoir publier.
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
-| **ACTIV-01** — Parcours « 7 jours pour démarrer » | `validation` | `feature/activ01-parcours-7-jours` | [1.27] |
 
-⏳ **32 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **33 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -72,9 +72,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/activ01-parcours-7-jours` (modifications non commitées) |
-| Commits | 1047 · `main` a **1044** commits de retard sur `dev` |
+| Commits | 1048 · `main` a **1044** commits de retard sur `dev` |
 | Specs d'US | 110 au total — 77 clôturées, 33 en cours |
-| Migrations | 69/69 poussées sur le cloud |
+| Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -83,11 +83,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `dd9d240` docs(activ01): spec, plan et maquette du parcours 7 jours (US ACTIV-01, roadmap 1.27)
 - `5aef9a5` chore: régénère ETAT.md après fusion RUN-F2d dans dev
 - `9c04688` merge: intègre RUN-F2d (guidage fractionné vocal) dans dev
 - `366be64` feat(runf2d): guidage fractionné vocal + vibration (US RUN-F2d, 5.18)
 - `5ce41bb` docs(tests): point de reprise du chantier de tests unitaires
-- `cbab8a0` test(admin): lot 4 — le back-office sort du zéro absolu (55 tests)
 
 ---
 

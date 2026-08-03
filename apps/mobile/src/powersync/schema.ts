@@ -35,6 +35,8 @@ const profiles = new Table({
   main_goal: column.text,
   workout_display_level: column.text,
   onboarding_completed_at: column.text,
+  // US ACTIV-01 (1.27) : fermeture explicite du widget « Parcours 7 jours pour démarrer ».
+  activation_path_dismissed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

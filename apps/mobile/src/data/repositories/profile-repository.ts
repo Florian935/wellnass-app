@@ -46,6 +46,7 @@ export type ProfileInput = Pick<
   | 'workoutDisplayLevel'
   | 'dailyStepGoal'
   | 'onboardingCompletedAt'
+  | 'activationPathDismissedAt'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -63,6 +64,7 @@ type ProfileDbRow = {
   workout_display_level: string | null;
   daily_step_goal: number | null;
   onboarding_completed_at: string | null;
+  activation_path_dismissed_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -90,6 +92,7 @@ function rowToProfile(row: ProfileDbRow): Profile {
     workoutDisplayLevel: coerceWorkoutDisplayLevel(row.workout_display_level),
     dailyStepGoal: row.daily_step_goal,
     onboardingCompletedAt: row.onboarding_completed_at,
+    activationPathDismissedAt: row.activation_path_dismissed_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -111,6 +114,9 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('dailyStepGoal' in input) columns['daily_step_goal'] = input.dailyStepGoal;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;
+  }
+  if ('activationPathDismissedAt' in input) {
+    columns['activation_path_dismissed_at'] = input.activationPathDismissedAt;
   }
   return columns;
 }
@@ -182,6 +188,15 @@ export async function upsertProfile(patchInput: Partial<ProfileInput>): Promise<
  */
 export async function completeOnboarding(): Promise<void> {
   await upsertProfile({ onboardingCompletedAt: nowUtc() });
+}
+
+/**
+ * Ferme explicitement le widget « Parcours 7 jours pour démarrer » (US ACTIV-01, bouton
+ * « Passer »). Distinct de l'expiration naturelle au jour 7, qui n'écrit rien (calculée à la
+ * lecture, voir `activationPathDayIndex`).
+ */
+export async function dismissActivationPath(): Promise<void> {
+  await upsertProfile({ activationPathDismissedAt: nowUtc() });
 }
 
 /**
