@@ -44,6 +44,7 @@ import {
   type RunStats,
   type PaceTrendPoint,
   type PaceTrendKind,
+  type ProgramSessionType,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -51,6 +52,11 @@ import i18n from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { pushRun } from '@/lib/health-connect';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
+import {
+  rowToIntervalItem,
+  type IntervalBlockItem,
+  type IntervalDbRow,
+} from './program-repository';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
@@ -70,6 +76,14 @@ export type ActiveRun = {
   gpsTrack: string | null;
   /** US RUN-F2b : occurrence planifiée d'origine, `null` pour une course libre. */
   plannedSessionId: string | null;
+  /**
+   * US RUN-F2d : progression du guidage fractionné — index de la phase courante dans la séquence
+   * linéarisée (`expandIntervalPhases`), et distance/durée cumulées de la course au moment où
+   * cette phase a démarré. `null` = guidage non démarré ou non applicable à cette course (spec R8).
+   */
+  intervalPhaseIndex: number | null;
+  intervalPhaseStartDistanceM: number | null;
+  intervalPhaseStartDurationS: number | null;
 };
 
 /** Élément d'historique (course terminée), volontairement léger. */
@@ -148,6 +162,9 @@ type ActiveRunDbRow = {
   distance_m: number | null;
   gps_track: string | null;
   planned_session_id: string | null;
+  interval_phase_index: number | null;
+  interval_phase_start_distance_m: number | null;
+  interval_phase_start_duration_s: number | null;
 };
 
 /** Ligne brute d'une course terminée (entête d'historique). */
@@ -190,7 +207,8 @@ type RunDetailDbRow = {
 
 /** Course active de l'utilisateur courant (au plus une). */
 const SELECT_ACTIVE_RUN = `
-  SELECT id, source, started_at, duration_seconds, distance_m, gps_track, planned_session_id
+  SELECT id, source, started_at, duration_seconds, distance_m, gps_track, planned_session_id,
+         interval_phase_index, interval_phase_start_distance_m, interval_phase_start_duration_s
   FROM runs
   WHERE status = 'active' AND deleted_at IS NULL
   LIMIT 1
@@ -229,6 +247,9 @@ function rowToActiveRun(row: ActiveRunDbRow): ActiveRun {
     durationSeconds: row.duration_seconds,
     gpsTrack: row.gps_track,
     plannedSessionId: row.planned_session_id,
+    intervalPhaseIndex: row.interval_phase_index,
+    intervalPhaseStartDistanceM: row.interval_phase_start_distance_m,
+    intervalPhaseStartDurationS: row.interval_phase_start_duration_s,
   };
 }
 
@@ -361,6 +382,45 @@ export function useRunTarget(plannedSessionId: string | null): {
   const row = data[0];
   if (!plannedSessionId || !row) return null;
   return { targetDistanceM: row.target_distance_m, targetDurationSeconds: row.target_duration_seconds };
+}
+
+/**
+ * Type de séance + blocs fractionné ordonnés de la séance planifiée qu'une course réalise
+ * (US RUN-F2d). `null`/`[]` si la course est libre ou si le lien ne résout à rien — même garde
+ * que `useRunTarget`. Deux requêtes réactives chaînées (même patron de jointure) : `useRunTarget`
+ * ne résout ni `session_type` ni les blocs, d'où ce hook dédié plutôt qu'une extension du premier.
+ */
+export function useIntervalBlocksForRun(plannedSessionId: string | null): {
+  sessionType: ProgramSessionType | null;
+  blocks: IntervalBlockItem[];
+} {
+  const { data: sessionRows } = useQuery<{ id: string; session_type: string | null }>(
+    `SELECT s.id, s.session_type
+     FROM planned_sessions ps
+     JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+     WHERE ps.id = ? AND ps.deleted_at IS NULL
+     LIMIT 1`,
+    [plannedSessionId ?? ''],
+  );
+  const sessionRow = sessionRows[0];
+  const sessionId = plannedSessionId && sessionRow ? sessionRow.id : '';
+
+  const { data: intervalRows } = useQuery<IntervalDbRow>(
+    `SELECT id, session_id, order_index, reps, fast_distance_m, fast_duration_seconds,
+            fast_pace_pct_vma, recovery_distance_m, recovery_duration_seconds
+     FROM session_intervals
+     WHERE session_id = ? AND deleted_at IS NULL
+     ORDER BY order_index`,
+    [sessionId],
+  );
+
+  if (!plannedSessionId || !sessionRow) {
+    return { sessionType: null, blocks: [] };
+  }
+  return {
+    sessionType: (sessionRow.session_type as ProgramSessionType | null) ?? null,
+    blocks: intervalRows.map(rowToIntervalItem),
+  };
 }
 
 /**
@@ -537,6 +597,23 @@ export async function startRun(source: RunSource, plannedSessionId?: string): Pr
  */
 export async function setRunTerrain(runId: string, terrain: RunTerrain): Promise<void> {
   await patch('runs', runId, { terrain });
+}
+
+/**
+ * Persiste la progression du guidage fractionné (US RUN-F2d) : index de la phase courante et
+ * point de départ (distance/durée cumulées de la course) de cette phase. Appelé à chaque
+ * transition détectée par `useIntervalGuidance`, pour survivre à un remontage de l'écran de
+ * suivi sans perdre ni fausser la phase courante (spec R8/R8 bis).
+ */
+export async function advanceIntervalPhase(
+  runId: string,
+  input: { phaseIndex: number; phaseStartDistanceM: number; phaseStartDurationS: number },
+): Promise<void> {
+  await patch('runs', runId, {
+    interval_phase_index: input.phaseIndex,
+    interval_phase_start_distance_m: input.phaseStartDistanceM,
+    interval_phase_start_duration_s: input.phaseStartDurationS,
+  });
 }
 
 // ---------------------------------------------------------------------------

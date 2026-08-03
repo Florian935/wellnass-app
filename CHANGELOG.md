@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `feature/runf2d-guidage-fractionne-vocal` — RUN-F2d : guidage fractionné vocal (roadmap 5.18 → ✅)
+
+Implémentation complète, 4ᵉ et dernier candidat de la famille RUN-F2 (dépendait de RUN-F2a et
+RUN-F2c, toutes deux livrées). Spec/plan/maquette validés dans l'entrée précédente.
+
+#### Ajouté
+
+- **3 fonctions pures neuves** (`packages/shared/src/running-intervals.ts`, testées d'abord,
+  11 tests) : `expandIntervalPhases` (linéarise les blocs `session_intervals` en phases
+  rapide/récup successives — un `reps=6` produit 12 phases, pas 2), `isIntervalPhaseComplete`,
+  `resyncIntervalPhase` (rattrapage : avance l'index de phase autant de fois que nécessaire en une
+  seule évaluation, pour le cas où l'écran de suivi est resté démonté pendant plusieurs
+  transitions). **Bug trouvé et corrigé par les tests écrits d'abord** : la première version de
+  `resyncIntervalPhase` recalait la baseline sur la valeur absolue courante à chaque franchissement
+  au lieu d'avancer exactement de la cible de la phase franchie — un rattrapage multi-phases
+  effaçait silencieusement la progression déjà faite dans la phase suivante (100 m perdus sur
+  l'exemple testé). Corrigé avant tout code d'intégration.
+- **Repository mobile** (`run-repository.ts`) : `ActiveRun` étendu (`intervalPhaseIndex`,
+  `intervalPhaseStartDistanceM`, `intervalPhaseStartDurationS`), `advanceIntervalPhase` (persiste
+  la progression), `useIntervalBlocksForRun` (résout `plannedSessionId → session_type + blocs`,
+  requête absente jusqu'ici — `useRunTarget` ne portait pas ces champs). `program-repository.ts` :
+  `IntervalDbRow`/`rowToIntervalItem` exportés pour réutilisation.
+- **Hook de guidage** (`apps/mobile/src/running/interval-guidance.ts`, nouveau) :
+  `useIntervalGuidance` détecte les transitions de phase et déclenche `Speech.speak` +
+  `Vibration.vibrate()` (aucune dépendance native neuve). Rattrapage silencieux au premier calcul
+  suivant un remontage d'écran (pas de rafale d'annonces obsolètes) ; le tout premier
+  déclenchement (phase 0) est annoncé immédiatement au démarrage de la course.
+- Wiring dans `run/active.tsx` (3ᵉ guidage sur cet écran, après RUN-F2a et RUN-F2b) et nouveau
+  réglage indépendant dans `running-profile.tsx` (« Guidage fractionné », désactivé par défaut).
+- i18n `running.guidance.*` (FR+EN, parité vérifiée) : distance en km entier si multiple de
+  1000 m sinon en mètres (même règle qu'RUN-F2a R3 bis) ; durée en secondes sous 90 s, en minutes
+  arrondies au-delà — jamais un nombre décimal lu.
+
+#### Modifié
+
+- Migration `20260803061055_runf2d_interval_guidance` : 3 colonnes additives sur `runs`
+  (`interval_phase_index`, `interval_phase_start_distance_m`, `interval_phase_start_duration_s`),
+  1 sur `running_profiles` (`interval_guidance_enabled`). **Aucune sync rule à redéployer** — les
+  deux tables sont déjà publiées en `select *`, contrairement à RUN-F2c.
+- Roadmap 5.18 : ⬜ → ✅.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 3 points corrigés avant tout code — (1) la règle
+  « distances toujours en mètres » se contredisait avec l'exemple même de RUN-F2c (« 1 km
+  d'échauffement » se serait annoncé « 1000 mètres »), corrigée pour reprendre exactement la règle
+  d'RUN-F2a ; (2) aucun algorithme de rattrapage n'était prévu pour un remontage après plusieurs
+  phases franchies d'un coup, ajouté (R8 bis) ; (3) la résolution `plannedSessionId → blocs` était
+  présentée comme déjà disponible alors qu'elle n'existait pas, reclassée en travail neuf.
+- Quality gate vert après chaque étape (comme RUN-F2c). Suite finale : 517 tests Jest (mobile) +
+  1416 tests Vitest (shared, dont 11 nouveaux pour `running-intervals.ts`), tous verts ; aucun
+  nouveau warning lint ; typecheck propre sur les 3 workspaces.
+- **Aucun risque sur le tracker/la tâche de fond** : troisième US consécutive de la famille RUN-F2
+  à ne jamais toucher `tracker-task.ts` (même décision qu'RUN-F2a, spec R5).
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Point de reprise du chantier de tests
 
 Documentation seule, aucun code. Le chantier des lots 0→4 était traçable dans le CHANGELOG et

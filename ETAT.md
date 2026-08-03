@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 190 livré · 14 partiel · 6 à faire (sur 216)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 191 livré · 14 partiel · 5 à faire (sur 216)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -42,22 +42,23 @@ avant de pouvoir publier.
 | **RUN-F2a** — Annonces audio périodiques | `recette` | `feature/runf2a-annonces-audio` | [5.19] |
 | **RUN-F2b** — Prolonger ou raccourcir — cible visible en direct | `recette` | `feature/runf2b-cible-en-direct` | [5.23] |
 | **RUN-F2c** — Blocs fractionné / intervalles | `recette` | `feature/runf2c-blocs-fractionne` | [5.9] |
+| **RUN-F2d** — Guidage fractionné vocal | `recette` | `feature/runf2d-guidage-fractionne-vocal` | [5.18] |
 | **RUN-F3** — Résumé de course enrichi — objectif atteint et conditions | `recette` | `feature/runf3-resume-course-enrichi` | [5.24, 5.25] |
 | **STREAK-01** — Joker de série (gel d'un jour manqué) | `recette` | `feature/streak01-joker` | [7.14] |
 | **TRI-12** — Détection de surcharge / sous-récupération globale | `recette` | `feature/tri12-garde-fou-global` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **31 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **32 US attendent une recette humaine** (ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (2) · P2 confort (1)</summary>
+<details><summary>P1 finitions (1) · P2 confort (1)</summary>
 
-**P1** — RUN-F2d — Guidage fractionné vocal · RUN-F3b — Météo de course
+**P1** — RUN-F3b — Météo de course
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -69,10 +70,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1043 · `main` a **1040** commits de retard sur `dev` |
-| Specs d'US | 108 au total — 77 clôturées, 31 en cours |
-| Migrations | 68/68 poussées sur le cloud |
+| Branche courante | `feature/runf2d-guidage-fractionne-vocal` (modifications non commitées) |
+| Commits | 1044 · `main` a **1041** commits de retard sur `dev` |
+| Specs d'US | 109 au total — 77 clôturées, 32 en cours |
+| Migrations | 69/69 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -81,11 +82,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5ce41bb` docs(tests): point de reprise du chantier de tests unitaires
 - `cbab8a0` test(admin): lot 4 — le back-office sort du zéro absolu (55 tests)
 - `4dfc32f` test(repositories): lot 2 terminé — journal alimentaire et profil nutritionnel
 - `68ff2e9` test(repositories): lot 2 — tests SQL des lectures (bilan, dashboard, programmes)
 - `17139aa` test(repositories): lot 1 terminé — records, objectifs, joker, mensurations
-- `a9425b3` test(repositories): lot 1 — tests SQL des écritures muscu, running et planning
 
 ---
 

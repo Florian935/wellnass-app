@@ -10,11 +10,17 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { RouteMap } from '@/components/running/RouteMap';
 import { SyncStatus } from '@/components/SyncStatus';
-import { finishRun, useActiveRun, useRunTarget } from '@/data/repositories/run-repository';
+import {
+  finishRun,
+  useActiveRun,
+  useIntervalBlocksForRun,
+  useRunTarget,
+} from '@/data/repositories/run-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
 import { useDistanceAnnouncements } from '@/running/announcements';
+import { useIntervalGuidance } from '@/running/interval-guidance';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useUnits } from '@/hooks/useUnits';
@@ -99,6 +105,30 @@ export default function RunActiveScreen() {
     distanceM,
     elapsedSeconds,
     avgPaceSPerKm: avgPaceValue,
+  });
+
+  // US RUN-F2d (5.18) : guidage vocal + vibration à chaque changement de phase fractionné.
+  // Réglage indépendant de RUN-F2a (spec R3) ; actif seulement en GPS, sur une séance fractionné
+  // structurée avec au moins un bloc (spec R2/R4).
+  const { sessionType: plannedSessionType, blocks: intervalBlocks } = useIntervalBlocksForRun(
+    active?.plannedSessionId ?? null,
+  );
+  useIntervalGuidance({
+    enabled:
+      isGps &&
+      runnerProfile?.intervalGuidanceEnabled === true &&
+      plannedSessionType === 'fractionne' &&
+      intervalBlocks.length > 0,
+    runId: active?.id ?? null,
+    blocks: intervalBlocks,
+    distanceM,
+    // Jamais `elapsedSeconds` (horloge murale, inclut les pauses) — même garde que RUN-F2b R1
+    // bis : une phase à cible durée doit attendre le premier flush du tracker, pas un repli qui
+    // pourrait la faire franchir en avance.
+    durationSeconds: active?.durationSeconds ?? 0,
+    persistedPhaseIndex: active?.intervalPhaseIndex ?? null,
+    persistedPhaseStartDistanceM: active?.intervalPhaseStartDistanceM ?? null,
+    persistedPhaseStartDurationS: active?.intervalPhaseStartDurationS ?? null,
   });
 
   // US RUN-F2b (5.23) : cible de la séance planifiée, comparée en direct — même fonction pure et

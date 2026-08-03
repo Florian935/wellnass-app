@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **03/08/2026** — 24 US en attente.
+> Dernière mise à jour : **03/08/2026** — 25 US en attente.
 
 ---
 
@@ -738,6 +738,48 @@ recetter, et cocher ici une fois fait :
 - [ ] 9. Dupliquer un programme running contenant une séance fractionné avec des blocs : la copie
       a bien les **mêmes blocs** (cascade `duplicateProgram`, trouvée en préparant le plan, pas
       dans la spec initiale).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 25. RUN-F2d — Guidage fractionné vocal
+
+📄 [spec](docs/specs/functional/us/runf2d-guidage-fractionne-vocal.md) · roadmap 5.18 ·
+**📱 device** · migration poussée (colonnes additives), ✅ **aucune sync rule à déployer**
+(contrairement à RUN-F2c) — dernier candidat de la famille RUN-F2, tous ses prérequis livrés.
+
+⚠️ **Le point à vérifier en priorité** : le rattrapage silencieux après un changement d'onglet en
+cours de séance (critère 4 bis) — c'est le point le plus délicat de cette US, celui qu'une
+relecture de spec a identifié comme absent de la première version.
+
+- [ ] 1. Séance fractionné avec un bloc « 6×400 m à 95 % VMA, récup 200 m », guidage activé,
+      course GPS : une annonce + une vibration à **chaque** passage rapide↔récup (12 transitions
+      pour ce bloc), pas seulement 2 fois.
+- [ ] 2. La toute première annonce (phase 0) part **au démarrage de la course**, avant tout mètre
+      parcouru.
+- [ ] 3. Un bloc échauffement sans récup (reps=1, distance seule) : une seule transition vers la
+      phase suivante, sans annonce de récupération fantôme.
+- [ ] 4. **Changer d'onglet puis revenir** (carte « Reprendre ») en cours de séance ne redémarre
+      pas la séquence de phases à 0 — la phase courante correspond à la progression réelle.
+- [ ] 4 bis. **Changer d'onglet pendant une durée qui couvre plusieurs phases** (ex. tout un
+      rapide + sa récup), puis revenir : aucune rafale d'annonces des phases sautées, seule la
+      phase réellement en cours au retour est annoncée une fois.
+- [ ] 4 ter. Une séance avec **au moins 2 blocs** (échauffement puis série principale) : la
+      transition à la frontière des deux blocs est annoncée normalement, sans saut ni doublon.
+- [ ] 5. Séance **fractionné sans bloc défini** : aucune annonce ni vibration liée à cette US.
+- [ ] 6. **Course libre** (sans séance planifiée) : aucune annonce ni vibration liée à cette US.
+- [ ] 7. **Mode manuel (sans GPS)** : aucune annonce ni vibration liée à cette US, même sur une
+      séance fractionné structurée.
+- [ ] 8. Le réglage est **désactivé par défaut** et indépendant de celui de RUN-F2a (activer l'un
+      sans l'autre fonctionne).
+- [ ] 9. La dernière phase franchie déclenche une annonce de fin de séance distincte.
+- [ ] 10. **Mode avion** : guidage complet (annonce + vibration) fonctionne normalement.
+- [ ] 11. En **EN** : les gabarits de phase rapide/récup/fin sont tous grammaticaux, y compris au
+      pluriel des comptages.
+- [ ] 12. Une durée de récupération courte (ex. 30 s) est annoncée **en secondes**, pas arrondie à
+      « 0 minute » ou « 1 minute ».
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

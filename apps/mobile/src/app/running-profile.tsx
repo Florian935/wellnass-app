@@ -52,6 +52,8 @@ export default function RunnerProfileScreen() {
   // US RUN-F2a : désactivé par défaut tant qu'aucun profil n'existe (spec R1).
   const voiceAnnouncementsEnabled = runnerProfile?.voiceAnnouncementsEnabled ?? false;
   const voiceAnnouncementIntervalM = runnerProfile?.voiceAnnouncementIntervalM ?? 1000;
+  // US RUN-F2d : désactivé par défaut, réglage indépendant du précédent (spec R3).
+  const intervalGuidanceEnabled = runnerProfile?.intervalGuidanceEnabled ?? false;
 
   const onPaceChange = (v: string) => {
     setPaceText(v);
@@ -241,6 +243,30 @@ export default function RunnerProfileScreen() {
             </View>
           </View>
         ) : null}
+      </View>
+
+      {/* Guidage fractionné vocal + vibration (US RUN-F2d, roadmap 5.18) */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>
+        {t('running.profile.intervalGuidance')}
+      </Text>
+      <View style={[styles.announceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.announceRow}>
+          <View style={styles.announceGrow}>
+            <Text style={[styles.listLabel, { color: colors.text }]}>
+              {t('running.profile.intervalGuidanceToggle')}
+            </Text>
+            <Text style={[styles.hint, { color: colors.textMuted }]}>
+              {t('running.profile.intervalGuidanceHint')}
+            </Text>
+          </View>
+          <Switch
+            value={intervalGuidanceEnabled}
+            onValueChange={(v) => void upsertRunnerProfile({ intervalGuidanceEnabled: v })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('running.profile.intervalGuidanceToggle')}
+          />
+        </View>
       </View>
 
       <View style={styles.footer}>

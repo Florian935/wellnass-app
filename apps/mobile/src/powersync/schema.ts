@@ -356,6 +356,9 @@ const running_profiles = new Table({
   // désactivé par défaut (une annonce vocale peut interrompre une musique en cours).
   voice_announcements_enabled: column.integer, // 0/1
   voice_announcement_interval_m: column.integer,
+  // US RUN-F2d (5.18) : guidage vocal + vibration à chaque changement de phase fractionné,
+  // réglage indépendant de voice_announcements_enabled (usages différents), désactivé par défaut.
+  interval_guidance_enabled: column.integer, // 0/1
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -384,6 +387,12 @@ const runs = new Table({
   // manuelle, ou course enregistrée avant cette US), jamais 0 (spec R5/§0).
   elevation_gain_m: column.real,
   elevation_loss_m: column.real,
+  // US RUN-F2d (5.18) : progression du guidage fractionné, persistée pour reconstruire la phase
+  // courante et son point de départ au remontage de l'écran (rattrapage silencieux, spec R8/R8 bis)
+  // — `null` = guidage non démarré ou non applicable à cette course.
+  interval_phase_index: column.integer,
+  interval_phase_start_distance_m: column.integer,
+  interval_phase_start_duration_s: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

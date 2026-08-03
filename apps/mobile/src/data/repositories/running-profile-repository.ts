@@ -38,6 +38,8 @@ type RunnerProfileDbRow = {
   /** US RUN-F2a (5.19) — 0/1, `null` pour une ligne créée avant cette US. */
   voice_announcements_enabled: number | null;
   voice_announcement_interval_m: number | null;
+  /** US RUN-F2d (5.18) — 0/1, `null` pour une ligne créée avant cette US. */
+  interval_guidance_enabled: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -54,6 +56,11 @@ export type RunnerProfile = {
   /** US RUN-F2a (5.19) — désactivé par défaut (spec R1), premier réglage de course exposé. */
   voiceAnnouncementsEnabled: boolean;
   voiceAnnouncementIntervalM: number;
+  /**
+   * US RUN-F2d (5.18) — désactivé par défaut, réglage indépendant de `voiceAnnouncementsEnabled`
+   * (spec R3 : usages différents, activer l'un sans l'autre doit fonctionner).
+   */
+  intervalGuidanceEnabled: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -71,6 +78,7 @@ export type RunnerProfileInput = Pick<
   | 'weeklyFrequency'
   | 'voiceAnnouncementsEnabled'
   | 'voiceAnnouncementIntervalM'
+  | 'intervalGuidanceEnabled'
 >;
 
 // ---------------------------------------------------------------------------
@@ -97,6 +105,7 @@ function rowToRunnerProfile(row: RunnerProfileDbRow): RunnerProfile {
     // l'écriture d'origine) → repli sur les mêmes défauts que la colonne SQL (spec R1).
     voiceAnnouncementsEnabled: row.voice_announcements_enabled === 1,
     voiceAnnouncementIntervalM: row.voice_announcement_interval_m ?? 1000,
+    intervalGuidanceEnabled: row.interval_guidance_enabled === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -115,6 +124,9 @@ function inputToColumns(input: Partial<RunnerProfileInput>): Record<string, unkn
   }
   if ('voiceAnnouncementIntervalM' in input) {
     columns['voice_announcement_interval_m'] = input.voiceAnnouncementIntervalM;
+  }
+  if ('intervalGuidanceEnabled' in input) {
+    columns['interval_guidance_enabled'] = input.intervalGuidanceEnabled ? 1 : 0;
   }
   return columns;
 }

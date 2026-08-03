@@ -198,8 +198,12 @@ type PlanDbRow = {
   muscles_fine: string | null;
 };
 
-/** Ligne brute d'un bloc fractionné (US RUN-F2c). */
-type IntervalDbRow = {
+/**
+ * Ligne brute d'un bloc fractionné (US RUN-F2c). Exportée pour réutilisation par
+ * `run-repository.ts` (US RUN-F2d, `useIntervalBlocksForRun`) — même forme de ligne,
+ * scopée séance plutôt que programme.
+ */
+export type IntervalDbRow = {
   id: string;
   session_id: string;
   order_index: number;
@@ -340,8 +344,11 @@ function rowToPlanItem(row: PlanDbRow): PlanItem {
   };
 }
 
-/** Convertit une ligne bloc fractionné SQLite → item de domaine (camelCase, US RUN-F2c). */
-function rowToIntervalItem(row: IntervalDbRow): IntervalBlockItem {
+/**
+ * Convertit une ligne bloc fractionné SQLite → item de domaine (camelCase, US RUN-F2c).
+ * Exportée (voir `IntervalDbRow`) pour réutilisation par `run-repository.ts` (US RUN-F2d).
+ */
+export function rowToIntervalItem(row: IntervalDbRow): IntervalBlockItem {
   return {
     id: row.id,
     orderIndex: row.order_index,
