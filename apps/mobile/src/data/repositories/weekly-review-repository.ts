@@ -44,6 +44,17 @@ import { useGoalAdherenceForRange } from './dashboard-repository';
 import { useStepGoal } from './daily-steps-repository';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Requêtes — exportées pour être testables
+//
+// Les constantes SQL et `utcBounds` ci-dessous sont `export` **uniquement pour les tests** : elles
+// ne sont consommées ailleurs que par les hooks de ce fichier. Un bilan est fait de chiffres qu'on
+// affiche sous un titre de semaine ; une borne fausse ou un `deleted_at` oublié produit un bilan
+// qui ment sans jamais planter. Les exécuter pour de bon contre le harness SQLite
+// (`@/test-utils/sqlite-harness`) est le seul moyen de le voir — les hooks, eux, ne sont pas
+// exécutables hors React.
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Bornes UTC d'une fenêtre de jours **locaux**.
  *
@@ -51,7 +62,7 @@ import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from 
  * d'un côté ou de l'autre selon le fuseau. On convertit donc la fenêtre locale en instants UTC —
  * borne haute exclusive au minuit du lendemain.
  */
-function utcBounds(period: ReviewPeriod): { from: string; toExclusive: string } {
+export function utcBounds(period: ReviewPeriod): { from: string; toExclusive: string } {
   const parse = (key: string): Date => {
     const [y, m, d] = key.split('-').map(Number);
     return new Date(y!, m! - 1, d!, 0, 0, 0, 0);
@@ -63,7 +74,7 @@ function utcBounds(period: ReviewPeriod): { from: string; toExclusive: string } 
 }
 
 /** Séances terminées + tonnage, bornés sur la fenêtre. */
-const SELECT_STRENGTH = `
+export const SELECT_STRENGTH = `
   SELECT COUNT(DISTINCT w.id) AS workouts,
          COALESCE(SUM(s.reps * s.weight_kg), 0) AS tonnage
   FROM workouts w
@@ -75,7 +86,7 @@ const SELECT_STRENGTH = `
 `;
 
 /** Séries par groupe musculaire sur la fenêtre — alimente `computeMuscleBalance`. */
-const SELECT_MUSCLE_SETS = `
+export const SELECT_MUSCLE_SETS = `
   SELECT e.muscle_primary AS muscle, COUNT(*) AS sets
   FROM workout_sets s
   JOIN workouts w ON w.id = s.workout_id
@@ -93,7 +104,7 @@ const SELECT_MUSCLE_SETS = `
  * (pas par muscle) : l'agrégation vers les muscles fins se fait en JS via `resolveFineMuscles`, un
  * exercice pouvant contribuer à plusieurs muscles.
  */
-const SELECT_EXERCISE_TONNAGE = `
+export const SELECT_EXERCISE_TONNAGE = `
   SELECT e.id AS exercise_id, e.muscle_primary, e.muscles_secondary, e.muscles_fine,
          COALESCE(SUM(s.reps * s.weight_kg), 0) AS tonnage
   FROM workout_sets s
@@ -107,7 +118,7 @@ const SELECT_EXERCISE_TONNAGE = `
 `;
 
 /** Sorties terminées + distance, bornées sur la fenêtre. */
-const SELECT_RUNS = `
+export const SELECT_RUNS = `
   SELECT COUNT(*) AS runs, COALESCE(SUM(distance_m), 0) AS distance
   FROM runs
   WHERE status = 'completed' AND deleted_at IS NULL
@@ -115,14 +126,14 @@ const SELECT_RUNS = `
 `;
 
 /** Records battus dans la fenêtre. */
-const SELECT_RECORDS = `
+export const SELECT_RECORDS = `
   SELECT COUNT(*) AS records
   FROM personal_records
   WHERE deleted_at IS NULL AND achieved_at >= ? AND achieved_at < ?
 `;
 
 /** Jours de journal alimentaire (au moins 1 kcal) dans la fenêtre — bornes sur `log_date` local. */
-const SELECT_LOGGED_DAYS = `
+export const SELECT_LOGGED_DAYS = `
   SELECT log_date, SUM(kcal) AS kcal
   FROM food_entries
   WHERE deleted_at IS NULL AND log_date >= ? AND log_date <= ?
@@ -131,7 +142,7 @@ const SELECT_LOGGED_DAYS = `
 `;
 
 /** Jours d'activité (muscu / course) de la fenêtre, en clés de jour locales. */
-const SELECT_ACTIVITY_DAYS = `
+export const SELECT_ACTIVITY_DAYS = `
   SELECT finished_at FROM workouts
   WHERE status = 'completed' AND deleted_at IS NULL
     AND finished_at >= ? AND finished_at < ?
@@ -142,7 +153,7 @@ const SELECT_ACTIVITY_DAYS = `
 `;
 
 /** Pas de la fenêtre (bornes sur `log_date`). */
-const SELECT_STEPS = `
+export const SELECT_STEPS = `
   SELECT log_date, steps FROM daily_steps
   WHERE deleted_at IS NULL AND log_date >= ? AND log_date <= ?
 `;

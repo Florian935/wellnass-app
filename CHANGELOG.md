@@ -10,6 +10,69 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 2 : tests SQL des lectures (bilan, dashboard, programmes)
+
+Suite de `17139aa`. **69 tests ajoutés** sur les requêtes de **lecture**. Outillage — aucune ligne
+de roadmap, aucun front-matter d'US avancé.
+
+#### Décision — comment tester une lecture
+
+Les lectures passent par des hooks `useQuery`, **non exécutables hors React**. Deux options
+étaient sur la table : exporter les constantes SQL, ou brancher un faux `useQuery` sur le harness.
+**Retenu : exporter les constantes** (arbitré par Damien le 03/08/2026, « touche au code »). C'est
+le seul choix qui teste le SQL **réellement embarqué** plutôt qu'une copie qui divergerait.
+
+Les 13 constantes concernées portent désormais un en-tête `Requêtes — exportées pour être
+testables` disant explicitement que l'`export` n'existe que pour les tests et qu'aucun code
+applicatif ne doit les importer.
+
+#### Ajouté
+
+- **`weekly-review-sql.test.ts` — 25 tests** (US BILAN-01). Un bilan est **fait de chiffres**
+  affichés sous un titre de semaine : une borne fausse, un `deleted_at` oublié ou un échauffement
+  compté produisent un bilan **qui ment sans jamais planter**, invisible en recette puisqu'il
+  faudrait recalculer sa semaine à la main. Couvre `utcBounds` (conversion fenêtre locale →
+  instants UTC, borne haute exclusive — une séance du dimanche 23 h compte, une du lundi 0 h non),
+  `SELECT_STRENGTH`, `SELECT_MUSCLE_SETS`, `SELECT_RUNS`, `SELECT_RECORDS`, `SELECT_LOGGED_DAYS`
+  (dont le seuil « > 0 kcal » et la borne haute **inclusive** sur `log_date`, contrairement aux
+  bornes UTC), `SELECT_ACTIVITY_DAYS` et `SELECT_STEPS`. Fixe au passage par un test que **le
+  joker de série ne compte pas comme jour actif** (STREAK-01, décision D3).
+- **`dashboard-sql.test.ts` — 20 tests**. Le dashboard est le premier écran vu ; ses requêtes
+  joignent jusqu'à 4 tables et filtrent sur propriétaire, pilier et date. Une jointure fausse
+  affiche **la mauvaise séance** ou le record d'un autre — sans planter. Couvre
+  `SELECT_TODAY_OCCURRENCES` (tri par ordre de séance, comptage des exercices hors supprimés,
+  résolution du libellé de programme avec repli FR, exclusion des occurrences/séances/programmes
+  supprimés), `SELECT_NEXT_UPCOMING` (strictement après aujourd'hui, `planned` seulement),
+  les deux requêtes de records (repli de langue, cloisonnement par utilisateur), et
+  `SELECT_WEEKLY_STRENGTH_VOLUME` — dont un test **documente** qu'elle compte volontairement la
+  séance **en cours**, divergence assumée avec le bilan hebdomadaire qui n'admet que les séances
+  closes.
+- **`program-sql.test.ts` — 24 tests**. Trois opérations à fort risque de perte silencieuse :
+  `duplicateProgram` copie 5 tables en remappant les `session_id` (un oubli produit un programme
+  d'apparence correcte dont les exercices ou les blocs fractionné ont disparu — c'est exactement
+  ce qui avait été rattrapé en cours d'US RUN-F2c, en lisant le code) ; `activateProgram` doit
+  garantir **un seul actif par pilier** et **refuser un programme non possédé** (un éditorial
+  activé en local passe la base locale puis est rejeté par la RLS au sync → divergence
+  local↔cloud invisible sur l'appareil) ; `deleteProgram` doit désactiver **avant** de
+  soft-deleter, sans quoi une ligne supprimée resterait `is_active = 1`. Couvre aussi les cascades
+  de `removeSession` (plans + blocs + planning) et `updateProgramTranslation` (pas de résurrection
+  d'une traduction supprimée).
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — nouvelle section **3.3** documentant la technique
+  des constantes exportées et ce qu'elle attrape : plusieurs **propriétaires**, plusieurs
+  **piliers** et plusieurs **langues** en base, qu'un téléphone de recette n'a jamais (un compte,
+  un programme actif, une langue). Lot 2 marqué en cours (3/5).
+- `weekly-review-repository.ts`, `dashboard-repository.ts` — `export` sur 13 constantes SQL et sur
+  `utcBounds`, avec l'en-tête explicatif. **Aucun changement de comportement.**
+
+#### Technique / Notes
+
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre,
+  **1 405 (shared) + 483 (mobile) = 1 888 tests**. Couverture mobile 19,9 % → **20,7 %** ;
+  `src/data/repositories` 25 % → **29 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 1 terminé : records, objectifs, joker, mensurations
 
 Suite de `a9425b3`. **49 tests ajoutés**, le lot 1 est clos : les 7 repositories d'écriture qui

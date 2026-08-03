@@ -109,6 +109,17 @@ export type TodaySessionState =
     };
 
 /** Ligne brute d'occurrence planifiée du jour (`SELECT_TODAY_OCCURRENCES`). */
+// ─────────────────────────────────────────────────────────────────────────────
+// Requêtes — exportées pour être testables
+//
+// Les constantes `SELECT_*` de ce fichier sont `export` **uniquement pour les tests** : hors d'ici,
+// personne ne les consomme. Ce sont des jointures à 4 tables filtrées sur propriétaire, pilier et
+// date ; une jointure fausse ou un `deleted_at` oublié produit un dashboard qui affiche la mauvaise
+// séance sans jamais planter. Les hooks `useQuery` qui les portent ne sont pas exécutables hors
+// React — les exécuter contre le harness SQLite (`@/test-utils/sqlite-harness`) est le seul moyen
+// de vérifier le SQL lui-même.
+// ─────────────────────────────────────────────────────────────────────────────
+
 type TodayOccurrenceDbRow = {
   id: string;
   session_id: string;
@@ -124,7 +135,7 @@ type TodayOccurrenceDbRow = {
  * leur statut — permet de distinguer une occurrence encore `planned` d'une occurrence déjà
  * `done` le même jour. Paramètres : `[lang, userId, pillar, todayKey]`.
  */
-const SELECT_TODAY_OCCURRENCES = `
+export const SELECT_TODAY_OCCURRENCES = `
   SELECT ps.id, ps.session_id, ps.status, s.name AS session_name, s.order_index,
          (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count,
          COALESCE(tl.name, tfr.name) AS program_name
@@ -144,7 +155,7 @@ type NextUpcomingDbRow = { scheduled_date: string; session_name: string | null }
  * Prochaine occurrence `planned` de `pillar` strictement après aujourd'hui, la plus proche.
  * Paramètres : `[userId, pillar, todayKey]`.
  */
-const SELECT_NEXT_UPCOMING = `
+export const SELECT_NEXT_UPCOMING = `
   SELECT ps.scheduled_date, s.name AS session_name
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
@@ -660,7 +671,7 @@ type MostRecentRecordDbRow = {
  * (jointure translations), 2nd `?` = `user_id` (owner-scope). Reproduit le patron de
  * jointure/langue de `SELECT_RECORDS_FOR_WORKOUT` (records-repository).
  */
-const SELECT_MOST_RECENT_STRENGTH_RECORD = `
+export const SELECT_MOST_RECENT_STRENGTH_RECORD = `
   SELECT r.type, r.value, r.achieved_at,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM personal_records r
@@ -760,7 +771,7 @@ export type RecentStrengthRecord = {
 };
 
 /** Les `limit` records muscu les plus récents (nom d'exercice résolu). Paramètres : `[lang, userId, limit]`. */
-const SELECT_RECENT_STRENGTH_RECORDS = `
+export const SELECT_RECENT_STRENGTH_RECORDS = `
   SELECT r.type, r.value, r.achieved_at,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM personal_records r
@@ -815,7 +826,7 @@ const daysAgo = (n: number, ref: Date) => localDayKey(localMidnightDaysAgo(n, re
  * derniers jours, tous exercices confondus. Requête copiée de `nutrition-stats.tsx`
  * (US 4.32, tâche 6 la retirera de cet écran) — duplication temporaire assumée.
  */
-const SELECT_WEEKLY_STRENGTH_VOLUME = `
+export const SELECT_WEEKLY_STRENGTH_VOLUME = `
   SELECT ws.reps, ws.weight_kg FROM workout_sets ws
   JOIN workouts w ON w.id = ws.workout_id AND w.deleted_at IS NULL
   WHERE ws.deleted_at IS NULL AND ws.done = 1 AND ws.set_type != 'warmup' AND w.started_at >= ?
