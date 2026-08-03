@@ -401,6 +401,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
 | 1.27 | Parcours « 7 jours pour démarrer » | Mini-programme d'activation guidé (7 jours, tous piliers actifs), pour atteindre vite le « aha moment » sans exiger d'historique. | 🟢 | ✅ | **ACTIV-01 — code livré le 03/08/2026** → [spec](../specs/functional/us/activ01-parcours-7-jours.md) · [plan](../plans/activ01-parcours-7-jours.md) · [maquette](../../design/activ01-parcours-7-jours/activ01-parcours-7-jours.html), en recette → [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026). Widget d'accueil auto-masquant (`'always'`, wiré dans `isWidgetActive`), aucune notification, 1 colonne additive (`profiles.activation_path_dismissed_at`), aucune sync rule. Distinct de l'onboarding (1.7-1.11). ⚠️ **Contenu des 7 jours = brouillon**, à valider par Florian/Damien. |
+| 7.19 | Widget écran d'accueil Android | Widget du **launcher** Android (hors de l'app) : série, séance du jour, kcal restantes. Dernier candidat non démarré de la 2ᵉ salve d'enrichissements. | 🟡 | ⬜ | **LAUNCHER-01 — en validation** → [spec](../specs/functional/us/launcher01-widget-ecran-accueil.md) · [plan](../plans/launcher01-widget-ecran-accueil.md) · [maquette](../../design/launcher01-widget-ecran-accueil/launcher01-widget-ecran-accueil.html). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026), initialement estimée « le plus cher des 5 » (natif Kotlin). **Recherche technique du 03/08/2026 : révisé à la baisse** — `react-native-android-widget` (JSX → RemoteViews, config plugin Expo, aucun Kotlin à écrire) tient la promesse, compatibilité SDK 57 non confirmée nommément par la lib → spike de compatibilité en premier incrément. Distinct des 16 widgets **in-app** (WIDGETS-01, 7.13) — vocabulaire « widget launcher » explicitement pour ne pas confondre. |
 
 > **Ne figurent pas dans ce tableau, volontairement** :
 > - les **US d'analyse** (META-06/08/09, MN-03/06, MR-06, NUTR-10/11/17, RN-01/02, MUSC-04/05) —
@@ -437,16 +438,16 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 > **9.3** SQLite maison → PowerSync (8 h → 6 h) · **9.7** conflits délégués à PowerSync (6 h → 3 h) · **2.12** sync arrière-plan via PowerSync (6 h → 3 h) ·
 > **− 1.3** OAuth Apple (−3 h) et **− 9.1** App iOS déplacés en « Ultérieur — iOS » (hors décompte de lancement).
 
-**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 30/07/2026)** :
+**Avancement réel du code — périmètre de lancement (V0.1 → V1.1, réconcilié le 03/08/2026)** :
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 192 | ~88 % |
 | 🟡 Partiel | 14 | ~6 % |
-| ⬜ À faire | 5 | ~2 % |
+| ⬜ À faire | 6 | ~3 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **217** | |
+| **Total périmètre de lancement** | **218** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section

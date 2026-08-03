@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LAUNCHER-01 — Widget écran d'accueil Android</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:82ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:82ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:900px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.row{grid-template-columns:1fr}}
+
+  /* ── Cadre "écran d'accueil du téléphone" — pour bien montrer que c'est HORS de l'app ── */
+  .launcher{background:linear-gradient(180deg,#2b2a28,#1c1b19);border-radius:22px;padding:18px 14px;
+            box-shadow:0 6px 18px rgba(0,0,0,.25)}
+  .launcherlabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+          color:#d8cdb8;margin-bottom:10px;text-align:center}
+  .icons{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+  .icon{aspect-ratio:1;border-radius:16px;background:rgba(255,255,255,.12)}
+  .icon:nth-child(3n+1){background:rgba(177,79,43,.35)}
+  .icon:nth-child(3n+2){background:rgba(102,113,75,.3)}
+
+  /* ── Le widget lui-même ── */
+  .widget{background:var(--bg);border-radius:18px;padding:14px;
+          box-shadow:0 2px 6px rgba(0,0,0,.18)}
+  .wrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .wrow + .wrow{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+  .wlabel{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+          color:var(--muted)}
+  .wvalue{font-size:19px;font-weight:800;color:var(--text)}
+  .wsub{font-size:12px;color:var(--muted);margin-top:1px}
+  .wempty{font-size:13px;color:var(--muted);text-align:center;padding:14px 4px}
+  .wcta{font-size:12.5px;font-weight:700;color:var(--accent);text-align:center;
+        border-top:1px solid var(--border);margin-top:10px;padding-top:9px}
+
+  .phonelabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin:12px 0 8px;text-align:center}
+
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:90ch}
+  .warn{background:#fdf1e6;border-left:3px solid var(--warn);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:10px;font-size:13.5px;max-width:90ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>LAUNCHER-01 — Widget écran d'accueil Android (roadmap 7.19)</h1>
+<p class="sub">Widget de l'écran d'accueil du <strong>téléphone</strong> (le launcher Android) —
+distinct des 16 widgets du tableau de bord <strong>in-app</strong> (WIDGETS-01). Affiche la série,
+la séance du jour et les kcal restantes sans ouvrir l'application. Rendu via
+<code>react-native-android-widget</code> (JSX → image RemoteViews), pas de composants RN
+standards.</p>
+
+<h2>1 · Cas nominal — 3 piliers actifs</h2>
+<div class="row">
+  <div>
+    <div class="launcher">
+      <div class="launcherlabel">Écran d'accueil du téléphone</div>
+      <div class="icons">
+        <div class="icon"></div><div class="icon"></div><div class="icon"></div><div class="icon"></div>
+      </div>
+      <div class="widget">
+        <div class="wrow">
+          <div><div class="wlabel">Série</div><div class="wvalue">🔥 12 jours</div></div>
+        </div>
+        <div class="wrow">
+          <div><div class="wlabel">Aujourd'hui</div><div class="wvalue">Full Body B</div>
+          <div class="wsub">Musculation</div></div>
+        </div>
+        <div class="wrow">
+          <div><div class="wlabel">Restant</div><div class="wvalue">1 240 kcal</div></div>
+        </div>
+      </div>
+      <div class="icons" style="margin-top:10px">
+        <div class="icon"></div><div class="icon"></div><div class="icon"></div><div class="icon"></div>
+      </div>
+    </div>
+    <div class="phonelabel">Tap n'importe où → ouvre l'app (D8)</div>
+  </div>
+</div>
+
+<h2>2 · Pilier nutrition désactivé — la ligne « kcal restantes » disparaît (D6)</h2>
+<div class="row">
+  <div>
+    <div class="widget">
+      <div class="wrow">
+        <div><div class="wlabel">Série</div><div class="wvalue">🔥 12 jours</div></div>
+      </div>
+      <div class="wrow">
+        <div><div class="wlabel">Aujourd'hui</div><div class="wvalue">Sortie 8 km</div>
+        <div class="wsub">Course</div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="phonelabel">Aucun pilier actif — seule la série reste (D6)</div>
+    <div class="widget">
+      <div class="wrow">
+        <div><div class="wlabel">Série</div><div class="wvalue">🔥 12 jours</div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="phonelabel">Repos aujourd'hui — pas de séance/course prévue</div>
+    <div class="widget">
+      <div class="wrow">
+        <div><div class="wlabel">Série</div><div class="wvalue">🔥 12 jours</div></div>
+      </div>
+      <div class="wrow">
+        <div class="wempty">Repos aujourd'hui</div>
+      </div>
+      <div class="wrow">
+        <div><div class="wlabel">Restant</div><div class="wvalue">1 850 kcal</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>3 · État de repli — pas encore connecté / déconnecté (D10)</h2>
+<div class="row">
+  <div>
+    <div class="widget">
+      <div class="wempty" style="padding:22px 4px">Ouvre l'app pour voir tes stats</div>
+      <div class="wcta">Toucher pour ouvrir Wellness</div>
+    </div>
+  </div>
+</div>
+<div class="warn">
+  <strong>Angle mort trouvé en relecture de spec</strong> — la tâche de fond du widget peut se
+  déclencher (alarme périodique) <strong>avant</strong> que l'app n'ait jamais tourné sur
+  l'appareil, ou après une déconnexion. Dans ce cas : cet état neutre, jamais une requête sur un
+  <code>userId</code> vide, jamais un crash.
+
+</div>
+
+<h2>Les décisions qui gouvernent ce widget</h2>
+<div class="rules">
+  <div class="rule"><b>D1 — react-native-android-widget, zéro Kotlin écrit à la main</b>
+    JSX → RemoteViews (bitmap). Compatibilité SDK 57 non confirmée nommément par la lib → spike de
+    compatibilité en premier incrément du plan.</div>
+  <div class="rule"><b>D2 — une seule instance PowerSync</b>
+    La tâche de fond du widget réutilise le même singleton que l'app UI — jamais une seconde
+    connexion (risque documenté par PowerSync : verrous, watch queries cassées).</div>
+  <div class="rule"><b>D5 — rafraîchissement</b>
+    Périodique (plafond OS 30 min) + déclenché à chaque foreground/background de l'app et après
+    toute action qui change une métrique affichée.</div>
+  <div class="rule"><b>D7 — aucune donnée de santé</b>
+    Ni poids, ni mensuration, ni bien-être — visible sur l'écran d'accueil, potentiellement vu par
+    n'importe qui ayant le téléphone en main.</div>
+</div>
+
+<div class="note">
+  <strong>Point d'accessibilité à vérifier avant clôture (spec §6)</strong> — le rendu final du
+  widget est une <strong>image</strong> (bitmap), pas des éléments natifs typés. Si la librairie ne
+  permet pas de poser un <code>contentDescription</code> global reprenant les 3 valeurs en texte,
+  TalkBack ne pourra rien lire du tout : à traiter comme un vrai défaut, pas un « nice to have ».
+</div>
+
+</div></body></html>
