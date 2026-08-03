@@ -10,6 +10,55 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 1 terminé : records, objectifs, joker, mensurations
+
+Suite de `a9425b3`. **49 tests ajoutés**, le lot 1 est clos : les 7 repositories d'écriture qui
+sous-tendent les US en recette sont couverts sur du vrai SQL (146 tests au total pour ce lot).
+Outillage — aucune ligne de roadmap, aucun front-matter d'US avancé.
+
+#### Ajouté
+
+- **`records-sql.test.ts` — 17 tests** (`evaluateWorkoutRecords`). Un record est un **fait daté et
+  définitif** : une fausse insertion pollue l'historique de façon permanente et n'est pas
+  rattrapable côté UI, alors que la détecter en recette suppose d'enchaîner plusieurs séances
+  réelles. Couvre : trois types de record par série éligible, contexte (reps/charge) de la série
+  qui a produit la valeur, **égaler n'est pas battre** (strictement supérieur), comparaison au
+  `MAX(value)` et non au plus récent, exclusion des records supprimés et de ceux d'un autre
+  utilisateur, cloisonnement par exercice, horodatage commun à une même évaluation, idempotence
+  d'une ré-évaluation, et **conservation du libellé d'un exercice archivé** (US ADMIN-01 : un
+  record est un fait passé, son nom doit survivre à l'archivage au catalogue).
+- **`goal-joker-sql.test.ts` — 21 tests** (`goal-repository` + `streak-joker-repository`). Les deux
+  partagent le point dur testé ici : **le quota est relu en base au moment de l'écriture**, jamais
+  repris de l'affichage. Sans ça, un second appareil ou un écran resté ouvert laisserait passer un
+  4ᵉ objectif ou un 2ᵉ joker dans le mois — une divergence qu'une recette sur un seul téléphone ne
+  peut pas produire. Couvre aussi : plafond de 3 objectifs actifs avec échéance du jour comptée
+  comme active, suppression qui libère une place, `currentBest1RM` (meilleur estimé toutes séances,
+  hors séances non terminées / séries non validées / échauffements / supprimées / sans reps ou
+  charge), et pour le joker : idempotence sur un jour déjà couvert, quota par mois calendaire,
+  dates illisibles rejetées avant écriture, et le fait qu'un joker **n'écrit que dans
+  `streak_jokers`** — aucune séance ni sortie fabriquée pour « remplir » le jour (décision D3).
+- **`body-measurement-write.test.ts` — réécrit sur SQL, 11 tests** (était mock-based). La version
+  précédente vérifiait qu'on **appelait** `softDelete`, pas que la bonne ligne — et elle seule —
+  disparaissait : c'est pourtant exactement le critère de recette 4 de MESUR-01. Ajoute au passage
+  trois cas qu'un mock ne pouvait pas exprimer : vider une mesure ne touche pas la même mesure d'un
+  **autre jour**, une mesure retirée peut être **recréée**, et une ligne supprimée n'est pas
+  ressuscitée par une mise à jour.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — lot 1 marqué terminé (146 tests), chiffres
+  actualisés. Le lot 2 gagne un avertissement : les repositories de lecture passent par des hooks
+  `useQuery`, il faudra **d'abord décider** comment les brancher (extraire les constantes SQL ou
+  faire un faux `useQuery`) avant d'écrire quoi que ce soit.
+
+#### Technique / Notes
+
+- `weekly-review-repository` est sorti du lot 1 : il n'expose aucune écriture, uniquement des
+  hooks de lecture — il relève du lot 2.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre,
+  **1 405 (shared) + 414 (mobile) = 1 819 tests**. Couverture mobile 19,1 % → **19,9 %** ;
+  `src/data/repositories` 22 % → **25 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 1 : tests SQL des repositories d'écriture
 
 Suite directe du socle poussé juste avant (`5d75e94`). Outillage : aucune ligne de roadmap,
