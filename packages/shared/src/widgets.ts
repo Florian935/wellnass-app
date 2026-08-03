@@ -65,6 +65,12 @@ export const HOME_WIDGET_IDS = [
   // US TRI-12 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors des deux
   // signaux réunis (charge sans repos + déficit persistant) — même logique que `training-load`.
   'overtraining-guard',
+  // US ACTIV-01 — idem. **Widget conditionnel temporel** : visible seulement les 7 jours suivant
+  // la fin de l'onboarding (ou jusqu'à une fermeture explicite). Contrairement à `training-load`/
+  // `overtraining-guard`, sa condition doit être déclarée dans `isWidgetActive` côté écran —
+  // sans ça, il laisserait un trou dans la grille après le jour 7 (bug déjà constaté sur ces deux
+  // widgets, voir BACKLOG.md dette technique).
+  'activation-path',
 ] as const;
 
 /**
@@ -172,6 +178,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US TRI-12 : garde **tri-pilier**, la seule à en exiger 3 — le garde-fou combine charge
       // (muscu+course) et déficit nutritionnel, aucun des trois piliers n'est dispensable.
       'overtraining-guard': ['strength', 'running', 'nutrition'],
+      // US ACTIV-01 : transverse comme `streak`/`steps`/`wellbeing`/`review` — le parcours cible
+      // n'importe quel utilisateur les 7 premiers jours, quels que soient ses piliers actifs.
+      'activation-path': 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

@@ -71,10 +71,10 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 16, muscu 5, course 3 ; gardes pilier', () => {
-    // 16 depuis TRI-12 (02/08/2026). Le registre les **déclare** tous ; c'est
+  it('accueil 17, muscu 5, course 3 ; gardes pilier', () => {
+    // 17 depuis ACTIV-01 (03/08/2026). Le registre les **déclare** tous ; c'est
     // `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
-    expect(HOME_WIDGET_IDS).toHaveLength(16);
+    expect(HOME_WIDGET_IDS).toHaveLength(17);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -133,9 +133,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 16 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // 17 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(16);
+    expect(layout.widgets).toHaveLength(17);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -155,7 +155,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(15);
+    expect(r.widgets).toHaveLength(16);
     assertNoOverlap(r.widgets);
   });
 
@@ -193,8 +193,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 15 widgets historiques.
-    expect(r.widgets).toHaveLength(15);
+    // Et le hub garde donc exactement ses 16 widgets historiques (hors `cycle`).
+    expect(r.widgets).toHaveLength(16);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -205,7 +205,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(16);
+    expect(r.widgets).toHaveLength(17);
     assertNoOverlap(r.widgets);
   });
 

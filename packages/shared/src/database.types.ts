@@ -1306,6 +1306,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activation_path_dismissed_at: string | null
           birth_date: string | null
           created_at: string
           daily_step_goal: number | null
@@ -1324,6 +1325,7 @@ export type Database = {
           workout_display_level: string | null
         }
         Insert: {
+          activation_path_dismissed_at?: string | null
           birth_date?: string | null
           created_at?: string
           daily_step_goal?: number | null
@@ -1342,6 +1344,7 @@ export type Database = {
           workout_display_level?: string | null
         }
         Update: {
+          activation_path_dismissed_at?: string | null
           birth_date?: string | null
           created_at?: string
           daily_step_goal?: number | null

@@ -12,6 +12,7 @@ import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useDeficitVolumeAlert } from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -28,7 +29,15 @@ export default function HomeScreen() {
   // Alerte déficit = widget **conditionnel** : rendu `null` tant qu'elle n'est pas déclenchée.
   // On l'exclut de la grille dans ce cas (sinon elle réserve une cellule vide → trou).
   const deficitActive = useDeficitVolumeAlert().show;
-  const isWidgetActive = (id: WidgetId) => (id === 'deficit-volume' ? deficitActive : true);
+  // US ACTIV-01 : widget conditionnel temporel (7 jours après l'onboarding, ou jusqu'au dismiss).
+  // Même raison que `deficit-volume` : sans cette déclaration, `WidgetGrid` réserverait sa
+  // cellule après expiration au lieu de l'exclure (spec R4).
+  const activationPathActive = useActivationPath().show;
+  const isWidgetActive = (id: WidgetId) => {
+    if (id === 'deficit-volume') return deficitActive;
+    if (id === 'activation-path') return activationPathActive;
+    return true;
+  };
 
   const greeting = firstName ? t('home.greetingName', { name: firstName }) : t('home.greeting');
 

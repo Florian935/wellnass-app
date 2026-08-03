@@ -149,7 +149,7 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 | ~~**NUTR-16 — Répartition calorique par repas**~~ | roadmap 4.38 | — | ✅ **Livré le 02/08/2026**, en recette → [RECETTES.md](RECETTES.md). |
 | ~~**MUSC-09 — PR par plage de reps**~~ | roadmap 3.56 | — | ✅ **Livré le 02/08/2026**, en recette → [RECETTES.md](RECETTES.md). |
 | **Widget écran d'accueil Android** | [IDEAS.md](IDEAS.md) 13/07 | Séance du jour / streak / kcal restantes **sur l'écran d'accueil** — les widgets 7.x sont *in-app*. | 🔴 **Le plus cher du lot, et c'est du natif** : React Native ne rend pas de widget → AppWidget/Glance + pont vers la base locale. Atténuation : le plugin Expo maison écrit pour Health Connect prouve que le savoir-faire est là. Rétention passive dès le J1, sans historique. |
-| **Parcours « 7 jours pour démarrer »** | [IDEAS.md](IDEAS.md) 13/07 | Mini-programme d'activation guidé, tous piliers, pour atteindre vite le « aha moment ». | La **seule** feature de rétention qui fonctionne le jour du lancement : contrairement au bilan hebdo, aux souvenirs ou au wrapped, elle n'exige **aucun historique**. Surtout du **contenu FR+EN** + un écran de progression. À ne pas confondre avec l'onboarding (1.7-1.9) : activation, pas inscription. |
+| ~~**ACTIV-01 — Parcours « 7 jours pour démarrer »**~~ | roadmap 1.27 | — | ✅ **Livré le 03/08/2026**, en recette → [RECETTES.md](RECETTES.md). Widget d'accueil auto-masquant, une suggestion par jour pendant 7 jours après l'onboarding, piliers actifs lus en direct. ⚠️ **Contenu des 7 jours = brouillon** (spec R6), à valider par Florian/Damien. |
 
 > **Écarté de cette salve à la réconciliation du 28/07/2026** : **RUN-10 — splits par km** était le
 > candidat n°1 proposé… et il est **livré depuis le 25/07** (`computeKmSplits` + tableau sur le résumé
@@ -160,6 +160,14 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 ## 🧹 Dette & suivi technique
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
+
+- [ ] 🟢 **`training-load`/`overtraining-guard` laissent un trou dans la grille du dashboard
+      quand ils rendent `null`.** Trouvé le 03/08/2026 en préparant ACTIV-01 (cadrage) : ces deux
+      widgets Tier 2 (ADR-007) rendent bien `null` en interne hors de leur zone de risque, mais
+      `isWidgetActive` (`apps/mobile/src/app/(tabs)/index.tsx`) ne connaît que `deficit-volume` —
+      `WidgetGrid` réserve donc leur cellule même quand rien ne s'affiche. Correctif : ajouter les
+      deux mêmes conditions (déjà calculées ailleurs pour l'alerte) à `isWidgetActive`. Non
+      corrigé dans ACTIV-01 (widget différent, éviter le mélange des sujets).
 
 - [ ] 🟠 **Socle de tests unitaires — fin du lot 3, puis 5 et 6.** Chantier ouvert le 03/08/2026 :
       1 681 → **2 138 tests**, couverture mobile 15,0 % → **23,1 %**, `data/repositories`

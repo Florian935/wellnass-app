@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **03/08/2026** — 25 US en attente.
+> Dernière mise à jour : **03/08/2026** — 26 US en attente.
 
 ---
 
@@ -780,6 +780,42 @@ relecture de spec a identifié comme absent de la première version.
       pluriel des comptages.
 - [ ] 12. Une durée de récupération courte (ex. 30 s) est annoncée **en secondes**, pas arrondie à
       « 0 minute » ou « 1 minute ».
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 26. ACTIV-01 — Parcours « 7 jours pour démarrer »
+
+📄 [spec](docs/specs/functional/us/activ01-parcours-7-jours.md) · roadmap 1.27 ·
+**📱 device** · migration poussée (colonne additive), ✅ **aucune sync rule à déployer**,
+✅ aucune dépendance native — recettable sur l'APK existant.
+
+⚠️ **Le contenu des 7 jours est un brouillon** (spec R6) — avant de cocher les critères de
+contenu (11), relire les 7 titres/descriptions/CTA et les corriger si besoin plutôt que de juger
+l'US sur des mots qui ne sont pas encore les bons.
+
+- [ ] 1. Onboarding terminé aujourd'hui → le widget d'accueil affiche « Jour 1 sur 7 », ciblé sur
+      le pilier prioritaire actif (muscu＞running＞nutrition).
+- [ ] 2. Le lendemain (ou date système avancée) → « Jour 2 sur 7 », contenu universel.
+- [ ] 3. Sauter un jour sans ouvrir l'app puis rouvrir affiche le **jour calendaire réel**, pas le
+      jour suivant celui vu en dernier (aucun rattrapage).
+- [ ] 4. Faire l'action suggérée (ex. une séance) fait apparaître la coche « Déjà fait ! » sur le
+      jour concerné, sans changer le jour affiché.
+- [ ] 5. Un seul pilier actif (ex. nutrition seule) : les jours 3 et 5 basculent sur leur variante
+      universelle plutôt que de cibler un pilier absent.
+- [ ] 6. Désactiver un pilier au jour 3 (Réglages) change immédiatement le contenu proposé si ce
+      jour cible ce pilier — pas d'instantané figé à l'inscription.
+- [ ] 7. Bouton « Passer » : le widget disparaît immédiatement, **sans laisser de trou** dans la
+      grille du tableau de bord, et ne réapparaît pas même avant le jour 7.
+- [ ] 8. Au jour 8 (ou après), le widget a disparu de lui-même, **sans trou dans la grille**
+      (point technique le plus sensible de cette US — voir spec R4).
+- [ ] 9. Rejouer l'onboarding (Réglages) puis le reterminer relance un parcours neuf au jour 1.
+- [ ] 10. **Mode avion** : le widget, sa progression et le dismiss fonctionnent normalement.
+- [ ] 11. **Contenu** : les 7 titres/descriptions/CTA se lisent bien en FR et en EN — c'est le
+      critère qui compte le plus vu le statut brouillon (spec R6).
+- [ ] 12. TalkBack annonce le widget comme un seul bloc cohérent (jour + contenu + état).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

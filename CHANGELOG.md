@@ -140,6 +140,56 @@ roadmap, aucun front-matter d'US avancé.
 - Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre sur les
   3 workspaces, **1 416 (shared) + 517 (mobile) + 128 (admin) = 2 061 tests**.
 
+### 03/08/2026 — `feature/activ01-parcours-7-jours` — ACTIV-01 : parcours 7 jours pour démarrer (roadmap 1.27 → ✅)
+
+Implémentation complète. Idée promue depuis IDEAS.md (13/07/2026, différée après V0.9) — cadrée
+maintenant qu'aucune US n'est en cours. Spec/plan/maquette validés dans l'entrée précédente.
+
+#### Ajouté
+
+- **Nouvelle famille de fonctions pures** (`packages/shared/src/activation-path.ts`, testée
+  d'abord, 13 tests) : `activationPathDayIndex` (jour calendaire 1-7 depuis
+  `onboardingCompletedAt`, `null` hors fenêtre), `rankedActivePillars` (piliers actifs triés
+  muscu＞running＞nutrition), `activationDayTheme` (thème du jour — pilier ciblé ou repli
+  universel, calcul **structurel**, jamais dépendant de ce qui a été fait).
+- **Repository mobile** (`activation-path-repository.ts`, nouveau) : `useActivationPath` (jour,
+  thème, coche de complétion informative) + `useDayCompletion` (existence ciblée sur
+  `workouts`/`runs`/`food_entries`/`daily_wellbeing`/`personal_goals`, aucune nouvelle table de
+  suivi). `profile-repository.ts` : `activationPathDismissedAt` + `dismissActivationPath()`.
+- **Widget d'accueil** `ActivationPathCard.tsx` (3 formes, comme `TrainingLoadAlertCard`) :
+  progression « Jour N sur 7 », titre/description/action du jour, coche si déjà fait, bouton
+  « Passer ». Enregistré `'always'` dans `HOME_WIDGET_IDS` (fin de registre, zéro migration de
+  `dashboard_layout`) et dans `WIDGET_COMPONENTS`.
+- i18n `home.activationPath.*` (FR+EN, parité vérifiée) — **contenu brouillon** (7 thèmes), à
+  valider par Florian/Damien avant de le considérer figé (comme CONTENU-01).
+
+#### Modifié
+
+- `(tabs)/index.tsx` : `isWidgetActive` étend le prédicat déjà utilisé pour `deficit-volume`,
+  cette fois pour `activation-path` — **condition nécessaire** pour que le widget disparaisse
+  sans laisser de trou dans la grille après le jour 7 ou un dismiss (voir Technique/Notes).
+- Migration `20260803101009_activ01_dismiss` : `profiles.activation_path_dismissed_at
+  timestamptz null`, additive. **Aucune sync rule à redéployer** (`profiles` déjà publiée en
+  `select *`).
+- Roadmap 1.27 : ⬜ → ✅.
+
+#### Technique / Notes
+
+- Relecture (agent) sur la spec initiale : 2 corrections avant tout code — (1) le patron « widget
+  auto-masquant » cité comme déjà éprouvé (`training-load`/`overtraining-guard`) ne l'était qu'à
+  moitié : ces deux widgets rendent bien `null` mais ne sont **pas** déclarés dans
+  `isWidgetActive`, donc laissent déjà un trou dans la grille aujourd'hui — bug préexistant non
+  corrigé ici (widget différent), consigné en dette technique dans BACKLOG.md ; (2) « pilier non
+  encore couvert » (jours 3/5) était ambigu entre lecture comportementale et structurelle,
+  clarifié en calcul purement structurel (spec §2 ter), avec un exemple concret désormais dans
+  la spec et testé (`running-nutrition actifs, muscu désactivé`).
+- `widgets.test.ts` (packages/shared) : 5 assertions de comptage codées en dur (16/15 widgets
+  home) mises à jour pour le 17ᵉ widget — comportement attendu d'un ajout au registre, pas une
+  régression.
+- Quality gate vert : typecheck/lint propres, 55 tests admin + 517 tests mobile + 1429 tests
+  shared (dont les 13 nouveaux d'`activation-path.test.ts`), tous verts.
+- **Aucune notification, aucune nouvelle table de suivi** — périmètre délibérément borné (spec §4).
+
 ### 03/08/2026 — `feature/runf2d-guidage-fractionne-vocal` — RUN-F2d : guidage fractionné vocal (roadmap 5.18 → ✅)
 
 Implémentation complète, 4ᵉ et dernier candidat de la famille RUN-F2 (dépendait de RUN-F2a et
