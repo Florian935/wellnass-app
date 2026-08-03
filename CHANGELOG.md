@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 2 terminé : journal alimentaire et profil nutritionnel
+
+Suite de `68ff2e9`. **34 tests ajoutés**, le lot 2 est clos (103 tests sur les lectures).
+Outillage — aucune ligne de roadmap, aucun front-matter d'US avancé.
+
+#### Ajouté
+
+- **`journal-sql.test.ts` — 34 tests** (`journal-repository` + `nutrition-repository`). Le journal
+  est le repository le plus **manipulé** de l'app : on y ajoute, corrige, déplace, réassigne et
+  copie des entrées plusieurs fois par jour. Deux familles de défauts y sont coûteuses et
+  invisibles hors inspection de la base :
+  - **l'ordre** — `order_index` est porté par `(jour, repas)` et non global. Trois tests bornent
+    explicitement `moveEntry` : il ne cherche un voisin **que dans le même repas** et **que dans le
+    même jour**. Sans ces filtres, deux entrées de repas différents partageant `order_index = 0`
+    s'échangeraient à travers les repas — une entrée sauterait du déjeuner au dîner. Un quatrième
+    vérifie qu'un déplacement saute par-dessus une entrée supprimée.
+  - **la copie** — `copyMeal` / `duplicateDay` doivent reproduire le **snapshot**, pas une
+    référence. Un test vérifie que modifier la copie ne réécrit pas la source : sans ça, corriger
+    un aliment réécrirait rétroactivement tous les repas déjà journalisés.
+  - Couvre aussi : numérotation par repas, micronutriments sérialisés (y compris absents → `{}`),
+    quick add sans quantité, patch partiel de `updateEntry` (nom et micros préservés s'ils ne sont
+    pas fournis), `reassignEntryMeal` (récupération d'une entrée orpheline, no-op si déjà dans le
+    repas), copie qui **s'ajoute** à un repas déjà rempli au lieu de l'écraser, et les 4 requêtes
+    de lecture (`SELECT_DAY`, `SELECT_DAILY_TOTALS`, `SELECT_MEAL_TOTALS` — dont le groupement sur
+    une clé de repas **personnalisée**, `SELECT_FIRST_LOG_DATE` et son `null` sur journal vide).
+  - `upsertNutritionProfile` : création, mise à jour sans doublon, patch partiel, et absence de
+    résurrection d'un profil supprimé.
+
+#### Modifié
+
+- `journal-repository.ts` — `export` sur 4 constantes SQL, avec l'en-tête explicatif habituel.
+  **Aucun changement de comportement.**
+- `docs/specs/technical/strategie-tests.md` — lots 0/1/2 marqués terminés, chiffres actualisés, et
+  mention explicite que **le plus gros trou restant est `apps/admin`** (lot 4).
+
+#### Technique / Notes
+
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre,
+  **1 405 (shared) + 517 (mobile) = 1 922 tests**. Couverture mobile 20,7 % → **21,4 %** ;
+  `src/data/repositories` 29 % → **31 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 2 : tests SQL des lectures (bilan, dashboard, programmes)
 
 Suite de `17139aa`. **69 tests ajoutés** sur les requêtes de **lecture**. Outillage — aucune ligne

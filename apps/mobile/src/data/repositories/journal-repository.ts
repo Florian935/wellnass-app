@@ -45,7 +45,15 @@ type JournalDbRow = {
   created_at: string;
 };
 
-const SELECT_DAY = `
+// ─────────────────────────────────────────────────────────────────────────────
+// Requêtes — exportées pour être testables
+//
+// `export` **uniquement pour les tests** : hors d'ici, personne ne les consomme. Les hooks
+// `useQuery` qui les portent ne sont pas exécutables hors React ; les exécuter contre le harness
+// SQLite (`@/test-utils/sqlite-harness`) est le seul moyen de vérifier le SQL lui-même.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const SELECT_DAY = `
   SELECT id, meal_type, food_id, name, quantity_g, kcal, protein_g, carbs_g, fat_g, micronutrients, created_at
   FROM food_entries
   WHERE log_date = ? AND deleted_at IS NULL
@@ -77,7 +85,7 @@ export function useDayEntries(date: string): { entries: JournalEntry[]; isLoadin
 /** Total nutritionnel par jour renseigné depuis `sinceDate` (stats §7.2). */
 export type DailyTotal = { logDate: string; kcal: number; proteinG: number; carbsG: number; fatG: number };
 
-const SELECT_DAILY_TOTALS = `
+export const SELECT_DAILY_TOTALS = `
   SELECT log_date,
     SUM(kcal) AS kcal, SUM(protein_g) AS protein_g, SUM(carbs_g) AS carbs_g, SUM(fat_g) AS fat_g
   FROM food_entries
@@ -109,7 +117,7 @@ export function useDailyTotals(sinceDate: string): { totals: DailyTotal[]; isLoa
 /** Total de kcal par repas (clé réelle `meal_type`, pas `MEAL_TYPES` — voir spec NUTR-16 §0). */
 export type MealTotal = { mealKey: string; kcal: number };
 
-const SELECT_MEAL_TOTALS = `
+export const SELECT_MEAL_TOTALS = `
   SELECT meal_type, SUM(kcal) AS kcal
   FROM food_entries
   WHERE deleted_at IS NULL AND log_date >= ?
@@ -349,7 +357,7 @@ const daysAgo = (n: number): string => {
   return localDayKey(d);
 };
 
-const SELECT_FIRST_LOG_DATE =
+export const SELECT_FIRST_LOG_DATE =
   'SELECT MIN(log_date) AS first FROM food_entries WHERE deleted_at IS NULL';
 
 /**

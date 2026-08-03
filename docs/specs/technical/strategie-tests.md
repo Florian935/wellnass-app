@@ -141,7 +141,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 |---|---|---|---|
 | **0 — fait** | Harness SQLite, mock `expo-crypto`, Node 24, preuve CYCLE-01 (15 tests) | Sans le socle, rien d'autre n'est possible | ✅ |
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
-| **2 — en cours** | Repositories de **lecture** à SQL complexe. Faits : `weekly-review` (25), `dashboard` (20), `program` (24). Restent : `journal`, `nutrition` | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | 🟡 3/5 fichiers |
+| **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3** | `src/stores` + `src/lib` : `auth-store`, `notifications` (planification), `health-connect` (mapping des records, **pas** l'accès natif), `data-export`, `gpx-export` | Logique séquentielle isolable, aucun device requis | ~8 fichiers |
 | **4** | **`apps/admin`** : installer Vitest + jsdom + Testing Library, puis couvrir `src/lib` et `src/data` (import CSV / papaparse en tête) | 9 716 lignes, **zéro filet**, et c'est l'outil qui écrit dans la base de contenu | setup + ~6 fichiers |
 | **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
@@ -176,6 +176,10 @@ npm run test               # shared (vitest) + mobile (jest) — lire le code de
 npm run test:coverage      # rapport par fichier
 ```
 
-État au 03/08/2026, lots 0 et 1 terminés, lot 2 aux deux tiers : **1 405 (shared) + 483 (mobile)
-= 1 888 tests, tous verts**, typecheck et lint propres. Couverture mobile **15,0 % → 20,7 %**
-d'instructions, et surtout `src/data/repositories` **9 % → 29 %** — c'est là que porte l'effort.
+État au 03/08/2026, **lots 0, 1 et 2 terminés** : **1 405 (shared) + 517 (mobile) = 1 922 tests,
+tous verts**, typecheck et lint propres. Couverture mobile **15,0 % → 21,4 %** d'instructions, et
+surtout `src/data/repositories` **9 % → 31 %** — c'est là que portait l'effort.
+
+**Le plus gros trou restant est `apps/admin`** (lot 4) : 9 716 lignes, **aucun runner de test
+installé**, et c'est l'outil qui écrit dans la base de contenu partagée par tous les
+utilisateurs.
