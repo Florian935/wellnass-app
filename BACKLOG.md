@@ -161,13 +161,17 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
-- [ ] 🟢 **`training-load`/`overtraining-guard` laissent un trou dans la grille du dashboard
-      quand ils rendent `null`.** Trouvé le 03/08/2026 en préparant ACTIV-01 (cadrage) : ces deux
-      widgets Tier 2 (ADR-007) rendent bien `null` en interne hors de leur zone de risque, mais
-      `isWidgetActive` (`apps/mobile/src/app/(tabs)/index.tsx`) ne connaît que `deficit-volume` —
-      `WidgetGrid` réserve donc leur cellule même quand rien ne s'affiche. Correctif : ajouter les
-      deux mêmes conditions (déjà calculées ailleurs pour l'alerte) à `isWidgetActive`. Non
-      corrigé dans ACTIV-01 (widget différent, éviter le mélange des sujets).
+- [x] ~~🟢 **`training-load`/`overtraining-guard` laissent un trou dans la grille du dashboard
+      quand ils rendent `null`.**~~ — **corrigé le 03/08/2026** (`fix/dashboard-widgets-tier2-vides`).
+      `isWidgetActive` (`apps/mobile/src/app/(tabs)/index.tsx`) ne connaissait que `deficit-volume`
+      et `activation-path` ; ajout des deux mêmes conditions pour `training-load` et
+      `overtraining-guard`, réutilisant `useTrainingLoadAlert().show` /
+      `useOvertrainingGuardAlert().show` déjà calculés pour l'affichage des cartes elles-mêmes.
+      ⚠️ **Trouvé au passage** : `babel-plugin-dynamic-import-node` (ajouté à `package.json` par
+      ACTIV-01) n'était jamais **installé** dans `node_modules` — les 65 suites mobile échouaient
+      toutes à l'import du harness (`Cannot find module`). Résolu par un `npm install` (le
+      lockfile était déjà correct, seul `node_modules` était désynchronisé) ; aucune modification
+      de fichier suivi.
 
 - [ ] 🟠 **`packages/shared` n'atteint pas les 100 % de couverture exigés.** Réel au 03/08/2026 :
       **99,35 %** d'instructions et **95,12 % de branches**, alors que

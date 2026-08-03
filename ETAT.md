@@ -71,8 +71,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1058 · `main` a **1055** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1059 · `main` a **1056** commits de retard sur `dev` |
 | Specs d'US | 110 au total — 77 clôturées, 33 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -83,11 +83,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b14f287` test(mobile): lot 5 débloqué — le blocage annoncé n'en était pas un
 - `f328e3d` test(admin): lectures de liste + lot 5 bloqué (les effets React ne tournent pas)
 - `7db4a45` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `22c64a1` ci(tests): applique les seuils de couverture — lot 6
 - `12a17d2` fix(pas01,partage01): objectif de pas non enregistré + carte noire au partage
-- `bc04b58` fix(conf01): session_intervals manquait à l'export RGPD + lot 3 terminé
 
 ---
 
