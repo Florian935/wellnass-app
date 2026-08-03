@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 3 terminé + **trou trouvé dans l'export RGPD**
+
+Suite de `34e3012`. **25 tests ajoutés**, le lot 3 est clos (102 tests). Mais l'essentiel de cette
+passe n'est pas le compte : c'est **un manquement RGPD trouvé et corrigé**.
+
+#### Corrigé
+
+- 🔴 **`session_intervals` était absente de l'export de données personnelles (US CONF-01).**
+  Trouvé en écrivant un test qui compare `EXPORT_TABLES` au schéma PowerSync réel. La table a été
+  créée par RUN-F2c (blocs fractionné, miroir structurel d'`exercise_plans` — qui, lui, **est**
+  exporté) et n'a jamais rejoint la liste. Conséquence : un utilisateur exportant ses données
+  récupérait ses programmes de course **avec leurs séances mais sans leur contenu** — les blocs
+  d'intervalles disparaissaient.
+  Ce défaut ne produit **aucune erreur** : l'export réussit, le fichier se télécharge, il est
+  simplement incomplet. Ce n'est pas une finition oubliée, c'est un manquement au droit à la
+  portabilité, et rien dans l'app ne pouvait le signaler. Table ajoutée à `EXPORT_TABLES` +
+  test de non-régression nommé.
+
+#### Ajouté
+
+- **`EXPORT_EXCLUSIONS`** dans `data-export.ts` — registre des tables **volontairement** absentes
+  de l'export, avec leur raison. Sa seule fonction est de rendre l'omission délibérée : le test de
+  complétude échoue dès qu'une table du schéma n'est ni exportée, ni listée ici. Le silence n'est
+  plus une option.
+  ⚠️ **Une décision reste à prendre** : `analytics_events` y figure comme exclusion **héritée,
+  jamais arbitrée**. La table porte un `user_id` et vit sur nos serveurs, donc son inclusion dans
+  le droit à la portabilité est défendable. Signalé, pas tranché — arbitrage produit/juridique.
+- **`data-export.test.ts` — 15 tests.** Complétude (ci-dessus), plus : aucune table exportée qui
+  n'existe pas au schéma (une table renommée en migration ferait échouer l'export entier), aucune
+  exclusion périmée, aucun doublon, chaque exclusion documentée. Puis les trois issues
+  d'orchestration (`ok` / `unavailable` / `failed`) et le fait qu'un partage indisponible **ne
+  journalise pas** un export réussi.
+- **`gpx-export.test.ts` — 10 tests.** Les quatre issues produisent quatre messages différents à
+  l'écran : confondre « trace vide » avec « échec » enverrait l'utilisateur chercher une panne
+  inexistante. Couvre notamment la garde sur une **date de départ corrompue** — sans elle,
+  `toISOString()` sur un `NaN` lève et l'export part dans le `catch` générique, où aucun retry ne
+  peut aboutir. Plus le nommage daté du fichier (celui que verra Strava) : stable pour une même
+  course (un ré-export écrase au lieu d'empiler), distinct entre deux courses.
+- `EXPORT_TABLES` passe `export` — même motif qu'aux lots précédents : consommée nulle part
+  ailleurs, exportée pour être vérifiable.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — lot 3 marqué terminé, §8 réordonnée (le lot 6, seuils
+  CI, devient la prochaine étape maintenant que tout ce qui devait être couvert l'est), chiffres
+  actualisés. `BACKLOG.md` — entrée du chantier mise à jour.
+
+#### Technique / Notes
+
+- La trace GPS de test est construite avec **les vraies fonctions d'encodage** (`encodeSegment` +
+  `appendToTrack`) et non écrite à la main : le format est versionné et compressé, une trace
+  fabriquée à côté de l'encodeur cesserait d'être représentative au premier changement — le test
+  continuerait de passer en testant autre chose. Première tentative faite en JSON : rejetée par
+  `decodeTrack`, donc échec franc et immédiat.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre sur les
+  3 workspaces, **1 429 (shared) + 619 (mobile) + 128 (admin) = 2 176 tests**. Couverture mobile
+  23,1 % → **23,3 %** ; `src/lib` 48 % → **54 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 3 : notifications, Health Connect, store d'auth
 
 Suite de `523eafa`. **77 tests ajoutés** sur `src/lib` et `src/stores` du mobile, tous deux passés

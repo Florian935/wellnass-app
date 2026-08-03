@@ -72,7 +72,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1049 · `main` a **1048** commits de retard sur `dev` |
+| Commits | 1053 · `main` a **1050** commits de retard sur `dev` |
 | Specs d'US | 110 au total — 77 clôturées, 33 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -83,11 +83,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `34e3012` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `0129b4c` test(mobile): lot 3 — notifications, Health Connect, store d'authentification
+- `939cc62` merge: intègre ACTIV-01 (parcours 7 jours pour démarrer) dans dev
+- `c297b45` feat(activ01): parcours 7 jours pour démarrer (US ACTIV-01, roadmap 1.27)
 - `523eafa` test(admin): lot 4 terminé — programmes, utilisateurs, rôles, audit
-- `5aef9a5` chore: régénère ETAT.md après fusion RUN-F2d dans dev
-- `9c04688` merge: intègre RUN-F2d (guidage fractionné vocal) dans dev
-- `366be64` feat(runf2d): guidage fractionné vocal + vibration (US RUN-F2d, 5.18)
 
 ---
 

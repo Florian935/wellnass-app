@@ -169,15 +169,24 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       deux mêmes conditions (déjà calculées ailleurs pour l'alerte) à `isWidgetActive`. Non
       corrigé dans ACTIV-01 (widget différent, éviter le mélange des sujets).
 
-- [ ] 🟠 **Socle de tests unitaires — fin du lot 3, puis 5 et 6.** Chantier ouvert le 03/08/2026 :
-      1 681 → **2 138 tests**, couverture mobile 15,0 % → **23,1 %**, `data/repositories`
-      9 % → **31 %**, `lib` et `stores` ~20 % → **48 %**, et `apps/admin` passé de **aucun
-      runner** à **128 tests / 56 %**. Lots 0, 1, 2 et 4 terminés. Plan, technique et **point de
-      reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      Reste, par rentabilité décroissante : finir `src/lib` du mobile (`data-export`, `gpx-export`,
-      `analytics`) · seuils de couverture en CI · écrans · lectures de liste de l'admin.
+- [ ] 🟠 **Socle de tests unitaires — lots 5 et 6.** Chantier ouvert le 03/08/2026 :
+      1 681 → **2 176 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
+      9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de
+      **aucun runner** à **128 tests / 56 %**. **Lots 0 à 4 terminés.** Plan, technique et **point
+      de reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
+      Reste : seuils de couverture en CI (lot 6) · écrans (lot 5) · lectures de liste de l'admin.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
+
+- [ ] 🟠 **Décision RGPD — `analytics_events` doit-elle entrer dans l'export de données ?**
+      Soulevé le 03/08/2026 par le test de complétude de l'export (US CONF-01). La table est
+      aujourd'hui **exclue** — exclusion héritée, jamais arbitrée explicitement. Elle porte un
+      `user_id` et vit sur nos serveurs, donc son inclusion dans le droit à la portabilité est
+      défendable ; à l'inverse c'est de la télémétrie opt-in sans donnée identifiante (allowlist
+      stricte `ALLOWED_PROP_KEYS`). Décision produit/juridique → Damien/Florian. Le choix est
+      matérialisé dans `EXPORT_EXCLUSIONS` (`apps/mobile/src/lib/data-export.ts`) : basculer
+      revient à déplacer une ligne. **Trouvé au passage : `session_intervals` manquait vraiment**
+      (blocs fractionné absents de l'export d'un programme personnel) — corrigé le jour même.
 
 - [x] ~~**PAS-01 — l'en-tête de l'écran « Pas » est cassé**~~ — constaté puis **corrigé le
       30/07/2026** (`fix/pas01-entete-ecran-pas`). La route `steps` était **absente** de

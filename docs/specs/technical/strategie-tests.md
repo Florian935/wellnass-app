@@ -195,7 +195,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **0 — fait** | Harness SQLite, mock `expo-crypto`, Node 24, preuve CYCLE-01 (15 tests) | Sans le socle, rien d'autre n'est possible | ✅ |
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
-| **3 — en cours** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25). Restent : `data-export`, `gpx-export`, `analytics` | Logique séquentielle isolable, aucun device requis | 🟡 77 tests · `lib` et `stores` à **48 %** |
+| **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 128 tests · **56 %** |
 | **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
 | **6** | Garde-fous CI : seuils de couverture par dossier | Une fois les lots 1–4 passés, pour que ça ne redescende pas | petit |
@@ -229,14 +229,14 @@ npm run test               # shared (vitest) + mobile (jest) — lire le code de
 npm run test:coverage      # rapport par fichier
 ```
 
-État au 03/08/2026, **lots 0, 1, 2 et 4 terminés, lot 3 entamé** : **1 416 (shared) + 594
-(mobile) + 128 (admin) = 2 138 tests, tous verts**, typecheck et lint propres.
+État au 03/08/2026, **lots 0 à 4 terminés** (5 et 6 restants) : **1 429 (shared) + 619 (mobile)
++ 128 (admin) = 2 176 tests, tous verts**, typecheck et lint propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **23,1 %** |
+| Couverture mobile | 15,0 % | **23,3 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **31 %** |
-| `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **48 % · 48 %** |
+| `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **54 % · 48 %** |
 | `apps/admin` | aucun runner | **128 tests · 56 %** (`src/lib` à 100 %) |
 
 ## 8. Reprise — par où continuer
@@ -251,16 +251,13 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
 ### L'ordre conseillé
 
-1. **Finir le lot 3 — `src/lib` du mobile.** Restent `data-export.ts`, `gpx-export.ts` (branches
-   d'orchestration : trace vide, partage indisponible, écriture en échec — chacune produit un
-   message différent à l'écran) et `analytics.ts`. Le gros est fait : voir §3.5 avant d'écrire, le
-   piège des imports dynamiques est vicieux.
-2. **Lot 6 — seuils CI.** À poser une fois le lot 3 fini, sinon ils bloquent le travail en cours.
-   Seuils proposés au §5, **par chemin** — un seuil global ne veut rien dire.
-3. **Lot 5 — écrans.** Le moins rentable, et le seul qui demande une décision d'outillage :
+1. **Lot 6 — seuils CI.** Tout ce qui devait être couvert l'est ; poser les seuils maintenant
+   empêche la redescente. **Par chemin**, jamais un seuil global (§5). Attention : les fixer trop
+   haut sur `src/app` bloquerait tout ajout d'écran.
+2. **Lot 5 — écrans.** Le moins rentable, et le seul qui demande une décision d'outillage :
    `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
    `@testing-library/react-native` sont déjà là). Viser les écrans **à état**, pas le pourcentage.
-4. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
+3. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
    essentiellement des **lectures de liste** (`listEditorialPrograms`, `getProgram`,
    `listEditorialExercises`…) — moins risquées que les écritures déjà couvertes, à faire à
    l'occasion. Copier [`programs.test.ts`](../../../apps/admin/src/data/programs.test.ts).

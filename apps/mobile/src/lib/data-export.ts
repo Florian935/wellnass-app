@@ -25,13 +25,18 @@ import { powerSync } from '@/powersync/system';
  * exercice/aliment/programme créé sur mobile → `owner_id = utilisateur`). On les exporte donc en
  * `owner_id` : sans elles, un contenu perso ressortirait SANS son nom (complétude RGPD).
  */
-const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
+export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'profiles', col: 'user_id' }, { table: 'user_settings', col: 'user_id' },
   { table: 'nutrition_profiles', col: 'user_id' }, { table: 'running_profiles', col: 'user_id' },
   { table: 'workouts', col: 'user_id' }, { table: 'workout_sets', col: 'user_id' },
   { table: 'programs', col: 'owner_id' }, { table: 'program_translations', col: 'owner_id' },
   { table: 'sessions', col: 'owner_id' },
-  { table: 'exercise_plans', col: 'owner_id' }, { table: 'personal_records', col: 'user_id' },
+  { table: 'exercise_plans', col: 'owner_id' },
+  // US RUN-F2c — blocs fractionné d'une séance de course. Miroir structurel d'`exercise_plans` :
+  // sans eux, un programme fractionné personnel s'exportait avec ses séances mais **sans leur
+  // contenu**. Oubli de l'US d'origine, rattrapé le 03/08/2026 par le test de complétude.
+  { table: 'session_intervals', col: 'owner_id' },
+  { table: 'personal_records', col: 'user_id' },
   { table: 'exercise_notes', col: 'user_id' }, { table: 'workout_superset_pairs', col: 'user_id' },
   { table: 'workout_templates', col: 'user_id' }, { table: 'workout_template_exercises', col: 'user_id' },
   { table: 'planned_sessions', col: 'owner_id' }, { table: 'exercise_favorites', col: 'user_id' },
@@ -61,6 +66,22 @@ const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'menstrual_periods', col: 'user_id' },
   { table: 'menstrual_daily_logs', col: 'user_id' },
 ];
+
+/**
+ * Tables du schéma local **volontairement absentes** de l'export, avec leur raison.
+ *
+ * Existe pour que l'omission soit un **choix** et non un oubli : le test de complétude
+ * (`data-export.test.ts`) échoue dès qu'une table du schéma PowerSync n'est ni exportée, ni listée
+ * ici. Une table de données personnelles ajoutée sans y penser n'est pas une finition manquante,
+ * c'est un manquement RGPD — et il resterait invisible, l'export « réussissant » sans elle.
+ */
+export const EXPORT_EXCLUSIONS: Record<string, string> = {
+  // Télémétrie d'usage, opt-in et sans donnée identifiante (allowlist stricte `ALLOWED_PROP_KEYS`).
+  // ⚠️ À trancher : la table porte un `user_id` et vit sur nos serveurs, donc son inclusion dans le
+  // droit à la portabilité est défendable. Exclusion **héritée**, jamais arbitrée explicitement —
+  // signalée le 03/08/2026, décision produit/juridique à prendre.
+  analytics_events: 'télémétrie opt-in, sans donnée identifiante — inclusion à arbitrer',
+};
 
 export type DataExportResult = { ok: true } | { error: 'unavailable' | 'failed' };
 
