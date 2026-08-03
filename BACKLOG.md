@@ -161,14 +161,13 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
-- [ ] 🟠 **Socle de tests unitaires — lots 3, 5 et 6.** Chantier ouvert le 03/08/2026 :
-      1 681 → **2 061 tests**, couverture mobile 15,0 % → **21,4 %**, `data/repositories`
-      9 % → **31 %**, et `apps/admin` passé de **aucun runner** à **128 tests / 56 %**.
-      Lots 0, 1, 2 et 4 terminés. Plan, technique et **point de reprise §8** :
-      [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      Reste, par rentabilité décroissante : `src/stores` + `src/lib` du mobile (`health-connect`
-      997 l., `notifications`, `auth-store`) · seuils de couverture en CI · écrans · lectures de
-      liste de l'admin.
+- [ ] 🟠 **Socle de tests unitaires — fin du lot 3, puis 5 et 6.** Chantier ouvert le 03/08/2026 :
+      1 681 → **2 138 tests**, couverture mobile 15,0 % → **23,1 %**, `data/repositories`
+      9 % → **31 %**, `lib` et `stores` ~20 % → **48 %**, et `apps/admin` passé de **aucun
+      runner** à **128 tests / 56 %**. Lots 0, 1, 2 et 4 terminés. Plan, technique et **point de
+      reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
+      Reste, par rentabilité décroissante : finir `src/lib` du mobile (`data-export`, `gpx-export`,
+      `analytics`) · seuils de couverture en CI · écrans · lectures de liste de l'admin.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 

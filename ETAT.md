@@ -71,7 +71,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1047 · `main` a **1044** commits de retard sur `dev` |
+| Commits | 1048 · `main` a **1045** commits de retard sur `dev` |
 | Specs d'US | 109 au total — 77 clôturées, 32 en cours |
 | Migrations | 69/69 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -82,11 +82,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `523eafa` test(admin): lot 4 terminé — programmes, utilisateurs, rôles, audit
 - `5aef9a5` chore: régénère ETAT.md après fusion RUN-F2d dans dev
 - `9c04688` merge: intègre RUN-F2d (guidage fractionné vocal) dans dev
 - `366be64` feat(runf2d): guidage fractionné vocal + vibration (US RUN-F2d, 5.18)
 - `5ce41bb` docs(tests): point de reprise du chantier de tests unitaires
-- `cbab8a0` test(admin): lot 4 — le back-office sort du zéro absolu (55 tests)
 
 ---
 

@@ -10,6 +10,75 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 3 : notifications, Health Connect, store d'auth
+
+Suite de `523eafa`. **77 tests ajoutés** sur `src/lib` et `src/stores` du mobile, tous deux passés
+de ~20 % à **48 %**. Outillage — aucune ligne de roadmap, aucun front-matter d'US avancé.
+
+#### Corrigé
+
+- **Les tests d'un module à import dynamique passaient au vert en testant le chemin d'erreur.**
+  `health-connect.ts` charge son module natif par `await import('react-native-health-connect')` —
+  c'est ce qui permet à l'app de démarrer sans Health Connect installé. Jest ne sait pas exécuter
+  un `import()` non transpilé (« A dynamic import callback was invoked without
+  `--experimental-vm-modules` ») ; comme le module entoure ses appels de `try/catch`, il ne
+  plantait pas : il **partait dans son repli**. Un test écrit sans le savoir vérifiait donc le cas
+  dégradé en croyant couvrir le cas nominal — un faux positif qui ressemble à de la couverture.
+  Corrigé dans [`babel.config.js`](apps/mobile/babel.config.js) : plugin `dynamic-import-node`
+  activé **uniquement si `NODE_ENV=test`** (nouvelle devDep `babel-plugin-dynamic-import-node`).
+  `api.cache(true)` remplacé par `api.cache.using(() => process.env.NODE_ENV)`, sans quoi la config
+  serait figée pour tous les environnements. **Le bundle Metro n'est pas concerné** : le chargement
+  paresseux reste intact en production. Suite complète relancée après le changement, aucune
+  régression (594 tests mobile).
+
+#### Ajouté
+
+- **`notifications.test.ts` — 21 tests.** Ce module ne décide de rien (les règles vivent dans
+  `@wellness/shared`), mais il porte deux contrats invisibles à l'exécution. **Ne jamais lever** :
+  permission refusée, plateforme non prise en charge, module absent — tout doit finir en no-op,
+  sinon l'app crashe pour une notification, sur un APK où personne ne saura pourquoi. Et surtout
+  **le booléen de `presentNow`** (décision D14) : il n'existe que pour décider de consommer ou non
+  une unité du quota quotidien. S'il renvoyait `true` sur un échec, une notification jamais
+  affichée mangerait le plafond du jour et l'utilisateur perdrait des rappels sans trace. Couvre
+  aussi les identifiants stables (au plus un rappel en attente par type), le déclencheur
+  **récurrent** du bilan hebdomadaire, et l'identifiant **distinct par séance** du push de record
+  (décision D10 — deux records le même jour ne doivent pas s'écraser).
+- **`health-connect-state.test.ts` — 31 tests.** La machine d'état des Réglages : six états, et
+  c'est elle qui décide entre « installe Health Connect », « active la synchro » et « accorde les
+  permissions ». Se tromper d'état, c'est envoyer quelqu'un régler un problème qu'il n'a pas. Fixe
+  deux subtilités qui se sont déjà retournées contre nous : **`hasPermissions()` est un ET
+  logique** (ajouter `Steps` en PAS-01 a fait repasser tous les comptes existants en
+  `permissions_missing` — voulu, mais qui doit rester délibéré), et **les permissions du cycle sont
+  à part** (les mêler ferait basculer des comptes qui n'ont jamais activé le suivi, R20). Couvre
+  aussi les throttles d'import — dont le fait que la fenêtre des pas (1 h) est plus courte que
+  celle du poids (6 h), et qu'un curseur absent vaut « jamais importé » et non « à l'instant »,
+  sans quoi un appareil neuf n'importerait jamais rien. Aucun de ces cas n'est reproductible en
+  recette sans désinstaller Health Connect ou révoquer des permissions une par une.
+- **`auth-store.test.ts` — 25 tests.** Trois décisions dont **l'inverse ne se voit pas** sur
+  l'appareil qui agit : la **portée de la déconnexion** (`scope: 'local'` pour un logout ordinaire —
+  le défaut de `@supabase/auth-js` est `global`, donc sans l'argument explicite se déconnecter du
+  téléphone déconnecterait la tablette ; scope global **voulu** après une réinitialisation de mot de
+  passe, un test par cas) ; le **contrat d'erreur de Google**, qui renvoie une clé i18n là où
+  `signIn`/`signUp` renvoient le message brut de Supabase — l'écran fait `t(res.error)`, l'inverser
+  afficherait une clé technique ; et **l'ordre de la suppression de compte** (RPC → purge SQLite →
+  `signOut`), avec le fait qu'un échec de la RPC ne purge **rien**.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — nouvelle section **3.5** sur le piège des imports
+  dynamiques (avec le rappel de vider le cache Jest après un changement Babel), lot 3 marqué en
+  cours, §8 (reprise) actualisée, chiffres mis à jour.
+- `BACKLOG.md` — entrée du chantier actualisée.
+
+#### Technique / Notes
+
+- Un échec transitoire de 16 tests a été observé pendant la passe : **cache de transformation
+  périmé** après le changement de plugin Babel, pas un défaut du code. `npx jest --clearCache` puis
+  relance → 594 tests verts. Le piège est documenté en §3.5.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre sur les
+  3 workspaces, **1 416 (shared) + 594 (mobile) + 128 (admin) = 2 138 tests**. Couverture mobile
+  21,4 % → **23,1 %** ; `src/lib` 28 % → **48 %** ; `src/stores` 16 % → **48 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 4 terminé : programmes, utilisateurs, rôles, audit
 
 Suite de `5ce41bb`, après intégration de RUN-F2d (`5aef9a5`) dans la branche — la suite est restée
