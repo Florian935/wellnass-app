@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 4 terminé : programmes, utilisateurs, rôles, audit
+
+Suite de `5ce41bb`, après intégration de RUN-F2d (`5aef9a5`) dans la branche — la suite est restée
+verte, y compris les tests posés sur `run-repository` et `program-repository` que cette US touchait.
+**73 tests ajoutés**, le lot 4 est clos : **128 tests sur `apps/admin`, 56 % d'instructions et
+86,9 % de branches**, contre **aucun runner** il y a quelques heures. Outillage — aucune ligne de
+roadmap, aucun front-matter d'US avancé.
+
+#### Ajouté
+
+- **`src/data/programs.test.ts` — 37 tests** (1 140 l., le plus gros fichier de l'admin). Ce qui se
+  joue ici n'existe nulle part ailleurs dans le projet : **l'archivage et la restauration sont des
+  cascades séquentielles sur 5 tables, sans transaction** — supabase-js n'en propose pas côté
+  client, chaque étape est un aller-retour réseau qui peut échouer seul. Trois propriétés
+  compensent, et sont désormais tenues par des tests :
+  - **l'ordre** — l'archivage descend (plans → blocs → séances → traductions → entête), la
+    restauration remonte exactement en miroir. Ce n'est pas du style : un arrêt en cours ne doit
+    jamais laisser un enfant vivant sous un parent mort, ni l'inverse. Les tests comparent la
+    **séquence réelle des tables écrites** ;
+  - **l'idempotence** — `.is('deleted_at', null)` à l'archivage, `.not('deleted_at','is',null)` à
+    la restauration, sur chacun des 5 niveaux, pour que l'UI puisse retenter après une erreur ;
+  - **l'arrêt net sans journalisation** — un `program.archive` dans l'audit alors que la moitié
+    des lignes sont vivantes est pire que pas d'entrée.
+  Couvre aussi : `status` jamais touché par une restauration, relecture des séances **sans** filtre
+  `deleted_at` (volontaire), création en `draft` avec `id` renvoyé malgré un échec de traduction,
+  `upsert` sur `(program_id, lang)`, positionnement `max+1` des séances et plans, et
+  `reorderSessions` **borné au programme** — sans ce filtre, une liste d'ids mal formée réécrirait
+  l'ordre des séances d'un autre programme.
+- **`src/data/admin-users.test.ts` — 36 tests** (`users` + `roles` + `audit`). Les opérations les
+  plus sensibles du back-office. La sécurité est côté serveur (RPC `SECURITY DEFINER`, RLS) et
+  n'est pas testable ici ; ce qui l'est, c'est **ce que le client fait autour** : passer par la RPC
+  et **jamais** par une écriture directe (qui contournerait les garde-fous anti-self / anti-admin),
+  et **ne rien journaliser** quand l'opération a échoué. Couvre aussi les **trois** cas de
+  `grantRole` là où un `upsert` naïf n'en verrait que deux (déjà actif → ne rien écrire ; révoqué →
+  **réactiver** ; sinon insérer) — l'unicité reposant sur un **index partiel** que supabase-js ne
+  peut pas désigner comme arbitre de conflit, cette logique vit côté client et doit être juste.
+  Plus `parseActivePillars` (tolère le tableau natif **et** la chaîne JSON produite par le mobile),
+  la pagination et la recherche de `listUsers`, les filtres de `listAudit`, et le contrat
+  best-effort de `logAudit` : ne lève **jamais**, même session corrompue ou insertion refusée.
+
+#### Corrigé
+
+- **`supabase-mock.ts` — `hasFilter` comparait par identité (`Object.is`).** Un filtre à argument
+  objet (`order('created_at', { ascending: false })`, `in(col, [a, b])`) ne pouvait donc **jamais**
+  correspondre : l'assertion échouait en donnant l'impression que le filtre était absent du code.
+  Remplacé par une comparaison **structurelle**. Le défaut a été trouvé par deux tests rouges ; le
+  helper est corrigé plutôt que les tests, parce que le piège aurait resservi à chaque nouveau
+  fichier.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — lot 4 marqué terminé, chiffres actualisés, §8
+  (reprise) réordonnée : le lot 3 (stores + lib mobile) devient la prochaine étape, et le reliquat
+  de l'admin (lectures de liste, moins risquées que les écritures) passe en dernier.
+- `BACKLOG.md` — entrée du chantier mise à jour.
+
+#### Technique / Notes
+
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre sur les
+  3 workspaces, **1 416 (shared) + 517 (mobile) + 128 (admin) = 2 061 tests**.
+
 ### 03/08/2026 — `feature/runf2d-guidage-fractionne-vocal` — RUN-F2d : guidage fractionné vocal (roadmap 5.18 → ✅)
 
 Implémentation complète, 4ᵉ et dernier candidat de la famille RUN-F2 (dépendait de RUN-F2a et

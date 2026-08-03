@@ -41,6 +41,23 @@ export type RecordedQuery = {
 /** Clé de programmation d'une réponse : `'foods.select'`, `'foods.upsert'`… */
 type ResponseKey = string;
 
+/** Égalité structurelle, suffisante pour des arguments de filtre (scalaires, tableaux, objets plats). */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  const ka = Object.keys(a as Record<string, unknown>);
+  const kb = Object.keys(b as Record<string, unknown>);
+  if (ka.length !== kb.length) return false;
+
+  return ka.every(
+    (k) =>
+      Object.hasOwn(b as Record<string, unknown>, k) &&
+      deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+  );
+}
+
 const FILTER_METHODS = [
   'eq',
   'neq',
@@ -183,10 +200,17 @@ export function createSupabaseMock(options?: { user?: { id: string; email?: stri
   const lastQuery = (table: string, operation?: RecordedQuery['operation']) =>
     queriesOn(table, operation).at(-1);
 
-  /** `true` si la requête porte ce filtre exact (méthode + arguments). */
+  /**
+   * `true` si la requête porte ce filtre exact (méthode + arguments).
+   *
+   * Comparaison **structurelle** et non par identité : plusieurs filtres de supabase-js prennent
+   * un objet d'options (`order('created_at', { ascending: false })`, `in(col, [a, b])`). Comparer
+   * par référence rendrait ces assertions impossibles à écrire — et surtout, elles échoueraient en
+   * silence en donnant l'impression que le filtre est absent.
+   */
   const hasFilter = (query: RecordedQuery | undefined, ...expected: RecordedFilter) =>
     (query?.filters ?? []).some(
-      (f) => f.length === expected.length && f.every((v, i) => Object.is(v, expected[i])),
+      (f) => f.length === expected.length && f.every((v, i) => deepEqual(v, expected[i])),
     );
 
   /** Vide la trace entre deux scénarios sans recréer le client. */

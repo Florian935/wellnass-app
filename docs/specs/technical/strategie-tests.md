@@ -12,8 +12,9 @@
 | `apps/mobile` | 51 | 291 | **15,0 %** (branches 12,8 %) | ⚠️ le gros du risque est ici |
 | `apps/admin` | 0 | 0 | — (**aucun runner installé**) | ❌ 9 716 lignes non testées |
 
-> **Mise à jour du 03/08/2026** — `apps/admin` a désormais un runner (Vitest) et **55 tests** :
-> 21,6 % d'instructions sur `src/data` + `src/lib`, dont **100 % sur `src/lib`**. Voir §3.4.
+> **Mise à jour du 03/08/2026** — `apps/admin` a désormais un runner (Vitest) et **128 tests** :
+> **56 %** d'instructions et **86,9 % de branches** sur `src/data` + `src/lib`, dont **100 % sur
+> `src/lib`**. Voir §3.4.
 
 Détail mobile, par ordre de volume de code non couvert :
 
@@ -177,7 +178,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3** | `src/stores` + `src/lib` : `auth-store`, `notifications` (planification), `health-connect` (mapping des records, **pas** l'accès natif), `data-export`, `gpx-export` | Logique séquentielle isolable, aucun device requis | ~8 fichiers |
-| **4 — en cours** | **`apps/admin`** : Vitest installé, double de test Supabase, `foods` (29), `exercises` + `usage-counts` (19), `archive-confirm` (7). Restent : `programs` (1 140 l.), `users`, `roles`, `audit` | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | 🟡 3/7 fichiers |
+| **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 128 tests · **56 %** |
 | **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
 | **6** | Garde-fous CI : seuils de couverture par dossier | Une fois les lots 1–4 passés, pour que ça ne redescende pas | petit |
 
@@ -210,19 +211,19 @@ npm run test               # shared (vitest) + mobile (jest) — lire le code de
 npm run test:coverage      # rapport par fichier
 ```
 
-État au 03/08/2026, **lots 0, 1 et 2 terminés, lot 4 entamé** : **1 405 (shared) + 517 (mobile)
-+ 55 (admin) = 1 977 tests, tous verts**, typecheck et lint propres.
+État au 03/08/2026, **lots 0, 1, 2 et 4 terminés** : **1 416 (shared) + 517 (mobile) + 128
+(admin) = 2 061 tests, tous verts**, typecheck et lint propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
 | Couverture mobile | 15,0 % | **21,4 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **31 %** |
-| `apps/admin` | aucun runner | **55 tests** (`src/lib` à 100 %) |
+| `apps/admin` | aucun runner | **128 tests · 56 %** (`src/lib` à 100 %) |
 
 ## 8. Reprise — par où continuer
 
-> Point de reprise au **03/08/2026**. Branche `chore/socle-tests-unitaires`, intégrée sur `dev`
-> jusqu'à `cbab8a0`. Rien en cours, rien de non commité : on peut reprendre n'importe où.
+> Point de reprise au **03/08/2026**. Branche `chore/socle-tests-unitaires`, intégrée sur `dev`.
+> Rien en cours, rien de non commité : on peut reprendre n'importe où.
 
 ### ⚠️ À faire avant de lancer quoi que ce soit
 
@@ -231,20 +232,19 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
 ### L'ordre conseillé
 
-1. **Finir le lot 4 — `apps/admin`.** Le plus rentable : c'est l'outil qui écrit dans le contenu
-   **partagé par tous les utilisateurs**. Reste `programs.ts` (1 140 l., le plus gros fichier de
-   l'admin — duplication et archivage en cascade), puis `users.ts`, `roles.ts`, `audit.ts`.
-   L'outillage est en place : copier [`foods.test.ts`](../../../apps/admin/src/data/foods.test.ts),
-   voir §3.4 pour le double Supabase et **le piège des UUID**.
-2. **Lot 3 — `src/stores` + `src/lib` du mobile.** Aucun device requis, logique séquentielle
-   isolable. Par ordre de volume non couvert : `health-connect.ts` (997 l. — tester le **mapping
-   des records**, pas l'accès natif), `notifications.ts` (planification), `auth-store.ts` (216 l.),
-   `data-export.ts`, `gpx-export.ts`.
-3. **Lot 6 — seuils CI.** À poser une fois 3 et 4 finis, sinon ils bloquent le travail en cours.
+1. **Lot 3 — `src/stores` + `src/lib` du mobile.** Le seul gros bloc de logique encore nu, et il
+   ne demande aucun device. Par ordre de volume non couvert : `health-connect.ts` (997 l. —
+   tester le **mapping des records**, pas l'accès natif), `notifications.ts` (planification),
+   `auth-store.ts` (216 l.), `data-export.ts`, `gpx-export.ts`.
+2. **Lot 6 — seuils CI.** À poser une fois le lot 3 fini, sinon ils bloquent le travail en cours.
    Seuils proposés au §5, **par chemin** — un seuil global ne veut rien dire.
-4. **Lot 5 — écrans.** Le moins rentable des quatre, et le seul qui demande une décision
-   d'outillage : `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
+3. **Lot 5 — écrans.** Le moins rentable, et le seul qui demande une décision d'outillage :
+   `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
    `@testing-library/react-native` sont déjà là). Viser les écrans **à état**, pas le pourcentage.
+4. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
+   essentiellement des **lectures de liste** (`listEditorialPrograms`, `getProgram`,
+   `listEditorialExercises`…) — moins risquées que les écritures déjà couvertes, à faire à
+   l'occasion. Copier [`programs.test.ts`](../../../apps/admin/src/data/programs.test.ts).
 
 ### Ce qui n'est volontairement pas fait
 
