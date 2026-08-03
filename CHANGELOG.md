@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 1 : tests SQL des repositories d'écriture
+
+Suite directe du socle poussé juste avant (`5d75e94`). Outillage : aucune ligne de roadmap,
+aucun front-matter d'US avancé. **82 tests ajoutés** sur les trois repositories d'écriture qui
+sous-tendent le plus d'US en recette, tous exécutés sur du vrai SQLite via le harness.
+
+#### Ajouté
+
+- **`workout-sql.test.ts` — 44 tests** (`workout-repository`, 1 187 l.). Couvre : au plus une
+  séance active (y compris après annulation en soft delete), séries pré-remplies depuis un
+  programme avec `order_index` continu et `max(1, target_sets)`, `parseTargetReps`
+  (« 8-12 » → 8), héritage des valeurs de la série précédente et **remise à zéro après un
+  échauffement**, idempotence de `finishWorkout` (double-tap « Terminer »), durée jamais négative,
+  marquage de l'occurrence planifiée liée, clôture auto d'une séance périmée **datée sur la
+  dernière activité réelle** et non sur « maintenant » (spec 3.37), renumérotation des exercices
+  avec position absolue préservée pour les exercices validés, `replaceExercise` qui n'écrase que
+  les séries non validées, normalisation des notes, unicité des paires superset, et **atomicité
+  d'une transaction en échec**.
+- **`run-sql.test.ts` — 22 tests** (`run-repository`, 777 l.). Cible les gardes coûteuses à
+  reproduire sur device (il faut sortir courir) : au plus une course active, lien vers
+  l'occurrence planifiée posé une seule fois et jamais réécrit, **flush GPS tardif jeté** après
+  `finishRun`/`cancelRun` (le scénario de corruption le plus vicieux du pilier), **sérialisation
+  des flushs concurrents** (3 flushs en `Promise.all` → aucun segment perdu), chaîne de flush qui
+  survit à un échec, allure calculée depuis les scalaires flushés, distance manuelle appliquée
+  uniquement en `source='manual'`.
+- **`planned-session-sql.test.ts` — 16 tests** (`planned-session-repository`). `planProgram` est la
+  plus grosse transaction de l'app (8 étapes, 3 tables) et **l'ordre des étapes porte du sens** :
+  le retrait des occurrences futures de l'ancien programme doit précéder la désactivation, sinon
+  le sous-select `is_active = 1` ne trouve plus rien et l'ancien planning survit en silence — c'est
+  désormais tenu par un test. Couvre aussi : génération alignée au lundi avec `week_index`,
+  activation exclusive **par pilier**, re-planification qui remplace sans empiler et **conserve
+  l'historique fait/sauté**, gardes (programme sans séance, séance sans jour affecté, durée
+  nulle/négative/non entière rejetée par Zod **avant** toute écriture, séances d'un autre
+  propriétaire ignorées), et le cycle de vie report/saut/fait.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — lot 1 marqué en cours (4/7 fichiers), chiffres de
+  vérification actualisés.
+
+#### Technique / Notes
+
+- **Deux attentes de test étaient fausses, pas le code** — corrigées côté test après lecture :
+  (1) `nextOrderIndex` prend le `MAX` des séries **non supprimées**, donc l'index d'une série
+  retirée est réutilisé (voulu : sans ça l'ordre se creuserait de trous) ; (2) une séance annulée
+  étant en soft delete, il faut la relire avec `rowsOf(table, true)`.
+- Le harness a rejeté d'emblée trois colonnes inventées dans les seeds (`programs.user_id`,
+  `sessions.user_id`, `planned_sessions.user_id` — la vraie colonne est `owner_id`). C'est
+  exactement le garde-fou visé : avec un `powerSync` mocké, ces tests seraient passés au vert.
+- Effets de bord `fire-and-forget` mockés localement (`track`, `pushWorkout`/`pushRun`) : hors
+  périmètre, et Health Connect toucherait un module natif Android.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre,
+  **1 405 (shared) + 373 (mobile) = 1 778 tests**. Couverture mobile 15,0 % → **19,1 %** ;
+  `src/data/repositories` 9 % → **22 %**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Socle de tests des repositories (SQLite en mémoire)
 
 Outillage, pas une fonctionnalité produit : aucune ligne de roadmap, aucun front-matter d'US

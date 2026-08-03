@@ -70,7 +70,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1037 · `main` a **1034** commits de retard sur `dev` |
+| Commits | 1038 · `main` a **1035** commits de retard sur `dev` |
 | Specs d'US | 108 au total — 77 clôturées, 31 en cours |
 | Migrations | 68/68 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -81,11 +81,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5d75e94` chore(tests): socle de tests des repositories sur SQLite en mémoire
 - `7a8faa0` feat(runf2c): blocs fractionné / intervalles pour le running (US RUN-F2c, 5.9)
 - `3da1d6d` docs(runf2c): entrée en pipeline — spec, plan, maquette (roadmap 5.9)
 - `d0d339a` feat(runf2b): cible en direct pendant la course (roadmap 5.23)
 - `6111815` docs(runf2b): entrée en pipeline — spec, plan, maquette (roadmap 5.23)
-- `5e60144` feat(runf2a): annonces audio périodiques pendant une course (roadmap 5.19)
 
 ---
 

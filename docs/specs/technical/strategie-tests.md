@@ -124,7 +124,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | Lot | Périmètre | Pourquoi d'abord | Effort |
 |---|---|---|---|
 | **0 — fait** | Harness SQLite, mock `expo-crypto`, Node 24, preuve CYCLE-01 (15 tests) | Sans le socle, rien d'autre n'est possible | ✅ |
-| **1** | Repositories d'écriture des US **en recette** : `workout` (1 187 l.), `run` (777 l.), `records` (1 087 l.), `planned-session`, `menstrual-cycle` ✅, `body-measurement`, `weekly-review` | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ~6 fichiers, gros levier |
+| **1 — en cours** | Repositories d'écriture des US **en recette**. Faits : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16). Restent : `records` (1 087 l.), `body-measurement`, `weekly-review` | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | 🟡 4/7 fichiers |
 | **2** | Repositories de lecture à SQL complexe : `dashboard` (1 151 l.), `program` (1 150 l.), `journal`, `nutrition` | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ~5 fichiers |
 | **3** | `src/stores` + `src/lib` : `auth-store`, `notifications` (planification), `health-connect` (mapping des records, **pas** l'accès natif), `data-export`, `gpx-export` | Logique séquentielle isolable, aucun device requis | ~8 fichiers |
 | **4** | **`apps/admin`** : installer Vitest + jsdom + Testing Library, puis couvrir `src/lib` et `src/data` (import CSV / papaparse en tête) | 9 716 lignes, **zéro filet**, et c'est l'outil qui écrit dans la base de contenu | setup + ~6 fichiers |
@@ -160,4 +160,6 @@ npm run test               # shared (vitest) + mobile (jest) — lire le code de
 npm run test:coverage      # rapport par fichier
 ```
 
-État au 03/08/2026 après le lot 0 : **1 405 + 291 = 1 696 tests, tous verts**, typecheck propre.
+État au 03/08/2026, lot 0 + lot 1 partiel : **1 405 (shared) + 373 (mobile) = 1 778 tests, tous
+verts**, typecheck et lint propres. Couverture mobile **15,0 % → 19,1 %** d'instructions, et
+surtout `src/data/repositories` **9 % → 22 %** — c'est là que porte l'effort.
