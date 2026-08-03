@@ -822,6 +822,43 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 ---
 
+## 27. LAUNCHER-01 — Widget écran d'accueil Android
+
+📄 [spec](docs/specs/functional/us/launcher01-widget-ecran-accueil.md) · roadmap 7.19 ·
+**📱 device** · ✅ aucune sync rule (aucune nouvelle table/colonne) · ⚠️ **dépendance native
+neuve** (`react-native-android-widget`) — **build dédié déjà réalisé** (spike de compatibilité
+SDK 57/New Architecture confirmé), donc recettable directement sur cet APK, mais **pas** sur un
+APK antérieur à cette US.
+
+⚠️ **Distinct des 16 widgets du tableau de bord in-app** (WIDGETS-01) : celui-ci vit sur l'écran
+d'accueil **du téléphone** (le launcher Android), en dehors de l'application.
+
+- [ ] 1. Le widget « Wellness » est proposé dans le sélecteur de widgets du launcher (appui long
+      sur l'écran d'accueil → Widgets).
+- [ ] 2. Une fois posé, affiche la série, la séance du jour (ou « Repos aujourd'hui ») et les kcal
+      restantes — cohérents avec ce qu'affiche l'app au même moment.
+- [ ] 3. **Désactiver un pilier** (Réglages) fait disparaître sa métrique du widget au prochain
+      rafraîchissement (retour au premier plan de l'app) — jamais un trou visuel à moitié vide.
+- [ ] 4. **Aucun pilier actif** : seule la série reste affichée.
+- [ ] 5. Terminer une séance ou une course, revenir à l'écran d'accueil du téléphone : le widget
+      reflète le changement (au pire après le prochain passage de l'app au premier plan/arrière-plan).
+- [ ] 6. Ajouter un aliment au journal fait bouger les kcal restantes du widget de la même façon.
+- [ ] 7. **Mode avion** : le widget continue d'afficher les données locales, sans erreur.
+- [ ] 8. Tap n'importe où sur le widget : ouvre l'app.
+- [ ] 9. En **EN** (Réglages → langue) : tous les libellés du widget passent en anglais.
+- [ ] 10. **TalkBack** : appui long sur le widget puis balayage → une phrase unique et cohérente
+      est annoncée (série + séance du jour + kcal restantes).
+- [ ] 11. Widget redimensionné (si le launcher le permet) : reste lisible, texte non tronqué de
+      façon illisible.
+- [ ] 12. Suppression du widget puis ré-ajout : réapparaît avec des données à jour, sans crash.
+- [ ] 13. **Déconnexion** (Réglages → déconnexion) puis rafraîchissement du widget (retour au
+      premier plan) : affiche « Ouvre l'app pour voir tes stats », jamais un crash.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
 ## Comment procéder
 
 **Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
@@ -846,6 +883,12 @@ PARTAGE-01 et embarque le module (vérifié : `project :react-native-view-shot` 
 > build échoue sur une incohérence héritée (ici `minSdkVersion 24` contre les 26 exigés par
 > `androidx.health.connect`, alors que `expo-build-properties` déclarait bien 26). Le réflexe :
 > `npx expo prebuild --platform android --clean` avant de rebuilder.
+
+### ⚠️ LAUNCHER-01 exige son propre build (03/08/2026), distinct des dix ci-dessus
+
+`react-native-android-widget` est une **dépendance native neuve**, absente de tous les APK
+précédents. Un build dédié a été fait le 03/08/2026 (spike de compatibilité + contenu réel) —
+**c'est l'APK à utiliser pour recetter LAUNCHER-01**, pas un APK antérieur.
 
 **Quand une US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.

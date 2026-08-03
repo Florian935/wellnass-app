@@ -911,6 +911,17 @@
       "cta": "Terminé"
     }
   },
+  "homeWidget": {
+    "streakLabel": "Série",
+    "streakValue_one": "🔥 {{count}} jour",
+    "streakValue_other": "🔥 {{count}} jours",
+    "todayLabel": "Aujourd'hui",
+    "restLabel": "Repos aujourd'hui",
+    "kcalLabel": "Restant",
+    "kcalValue": "{{kcal}} kcal",
+    "noSession": "Ouvre l'app pour voir tes stats",
+    "openCta": "Toucher pour ouvrir Wellness"
+  },
   "onboarding": {
     "step": "Étape {{current}}/{{total}}",
     "skip": "Passer",

@@ -3,7 +3,7 @@ id: LAUNCHER-01
 titre: "Widget écran d'accueil Android"
 roadmap: [7.19]
 catalogue: []
-etape: validation
+etape: recette
 branche: feature/launcher01-widget-ecran-accueil
 maj: 03/08/2026
 ---
@@ -103,16 +103,14 @@ réseau. Le widget peut afficher des données légèrement périmées si l'app n
 récemment et que le filet périodique de 30 min n'a pas encore tourné (contrainte OS, pas un défaut
 applicatif) — jamais une valeur fausse, seulement une valeur pas encore rafraîchie.
 
-## 6. Accessibilité — point de vigilance spécifique à cette US
+## 6. Accessibilité — risque levé pendant l'implémentation
 
-**Risque identifié, pas encore résolu.** `react-native-android-widget` rend la UI du widget en
-**bitmap** (image statique affichée dans une `ImageView` du `RemoteViews`), pas en éléments
-natifs typés. Un lecteur d'écran (TalkBack) ne peut **pas** lire du texte à l'intérieur d'un bitmap
-sans qu'un `contentDescription` explicite soit posé sur la zone. **À vérifier pendant
-l'implémentation** (voir plan) : la lib expose-t-elle un moyen de poser un `contentDescription`
-global reprenant les 3 valeurs en texte (« Série de 5 jours. Séance du jour : Full Body. 1 200 kcal
-restantes. ») ? Si non, c'est un vrai defect d'accessibilité à traiter avant la clôture — pas un
-« nice to have ».
+**Risque initial (§1 de la recherche technique) : résolu.** `react-native-android-widget` rend la
+UI du widget en **bitmap**, mais expose bien un `accessibilityLabel` (`ClickActionProps`) posable
+sur le composant racine — appliqué à **tout le widget**. `HomeWidget.tsx` construit une phrase
+complète à partir des mêmes textes déjà résolus (« Série : 🔥 12 jours. Aujourd'hui : Full Body B
+(Musculation). Restant : 1 240 kcal. »), lue d'un bloc par TalkBack. Aucun defect d'accessibilité
+résiduel identifié pour cette US.
 
 ## 7. i18n
 
@@ -127,6 +125,19 @@ lib (D4) — jamais de texte en dur dans la couche natif/config plugin.
   pour la carte de partage (PARTAGE-01 hors périmètre équivalent).
 - **Zones cliquables distinctes par métrique** (D8) — un seul tap global en V1.
 - **Plusieurs tailles/layouts** (D9) — une seule taille au lancement.
+- **`previewImage`** (aperçu visuel dans le sélecteur de widgets Android) — non fourni en V1,
+  faute d'asset dédié ; Android affiche un repli générique. Ajout trivial plus tard (config
+  plugin déjà prêt à le recevoir).
+- **Séance du jour simplifiée** (implémentation) : contrairement à `useTodaySession`, ne
+  distingue pas une séance déjà **en cours** (`useActiveWorkout`) ni les replis riches (déjà
+  faite / prochaine à venir) — seulement « prévue aujourd'hui » ou « repos ».
+- **Kcal restantes sans bonus jour d'entraînement** (implémentation) : utilise l'objectif de
+  **base** (TDEE + objectif), sans le bonus de `useDayCalorieTarget` — sous-estime le restant les
+  jours de séance, jamais un sur-estimé. Évite de dupliquer toute la chaîne
+  profil/activité/courses du jour pour un gain marginal sur un widget « en un coup d'œil ».
+- **Description du sélecteur de widgets non traduite** (implémentation) : le config plugin
+  écrit une seule chaîne (`translatable: 'false'`), en français, quel que soit l'appareil — les
+  **textes du widget lui-même** (D4) restent, eux, entièrement FR/EN.
 - **iOS** : les widgets iOS (WidgetKit) sont une technologie et un code totalement différents —
   hors périmètre de lancement (décision E, Android d'abord).
 - **Widget de séance en cours** (affichage live pendant un entraînement/une course) — distinct,

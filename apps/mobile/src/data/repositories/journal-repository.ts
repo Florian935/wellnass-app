@@ -12,6 +12,7 @@ import { computeJournalCompletion, localDayKey, parseMicronutrients } from '@wel
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
+import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
 
 /** Entrée du journal telle qu'affichée. */
@@ -184,6 +185,9 @@ export async function addFoodEntry(
   // Analytics : ajout d'une entrée de repas (choke point unique — picker, scan, quick add,
   // repas type, copie de jour/repas convergent ici). Fire-and-forget.
   void track(ANALYTICS_EVENTS.foodLogged);
+
+  // US LAUNCHER-01 : rafraîchit le widget d'écran d'accueil (D5). Fire-and-forget.
+  refreshHomeWidget();
 
   return insertWithSyncFields('food_entries', {
     user_id: currentUserId(),

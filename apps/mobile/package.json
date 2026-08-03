@@ -73,6 +73,7 @@
     "react-dom": "19.2.3",
     "react-i18next": "^15.1.0",
     "react-native": "0.86.0",
+    "react-native-android-widget": "^0.21.0",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-gifted-charts": "^1.4.77",
     "react-native-health-connect": "^3.5.3",

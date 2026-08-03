@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `feature/launcher01-widget-ecran-accueil` — Widget écran d'accueil Android (US LAUNCHER-01, roadmap 7.19)
+
+Suite de `4c24843` (spec/plan/maquette validés par Florian). Dernier candidat non démarré de la
+2ᵉ salve d'enrichissements — code livré le jour même de la validation.
+
+#### Ajouté
+
+- **`react-native-android-widget`** (dépendance native, config plugin Expo) : rend la UI du widget
+  en JSX (`FlexWidget`/`TextWidget`), zéro Kotlin écrit à la main. Révision à la baisse du coût
+  initialement estimé « le plus cher des 5 » (natif Kotlin/Glance) — voir spec §1.
+- **`apps/mobile/src/widgets/home-widget-data.ts`** — `computeHomeWidgetSnapshot()`, orchestration
+  **hors contexte React** (D2/D3) : la tâche Headless JS du widget peut s'exécuter sans qu'aucun
+  arbre React ne soit monté, même contrainte déjà documentée pour la tâche de fond GPS
+  (`@/running/tracker-task`). Réutilise le **même singleton PowerSync** que l'app UI (jamais une
+  seconde connexion — PowerSync documente explicitement le risque de verrous/`watch()` cassé sur
+  ce point) et les **mêmes fonctions pures déjà testées** de `@wellness/shared`
+  (`computeStreakWithJokers`, `tdee`, `targetCalories`...), jamais une logique dupliquée. 12 tests
+  sur harness SQLite réel (`@/test-utils/sqlite-harness`).
+- **`apps/mobile/src/widgets/home-widget-texts.ts`** — résout tout le texte affiché **avant** de le
+  passer au widget natif (D4, même patron que `notification-repository.ts`/`notifications.ts` :
+  l'orchestration résout via `i18n.t()`, l'affichage ne fait que peindre). 5 tests.
+- **`apps/mobile/src/widgets/HomeWidget.tsx`** — composant JSX du widget (streak / séance du jour /
+  kcal restantes), fond/accent repris de la charte (`#1c130c`/`#dd6e40`, comme PARTAGE-01).
+  `accessibilityLabel` posé sur la racine, lu d'un bloc par TalkBack — **le risque d'accessibilité
+  soulevé en spec (rendu bitmap, pas d'éléments natifs typés) est levé** : la lib expose bien cette
+  API.
+- **Rafraîchissement (D5)** : `apps/mobile/src/widgets/refresh-home-widget.ts` +
+  `useHomeWidgetRefresh` (foreground/background de l'app, même patron que
+  `useAppOpenedAnalytics`), déclenché aussi depuis `finishWorkout`, `finishRun`/`finishManualRun`
+  et `addFoodEntry` (fire-and-forget, jamais bloquant pour l'action réelle).
+- **i18n** : famille `homeWidget.*` (FR+EN), réutilise `pillars.strength`/`pillars.running` déjà
+  existants pour le sous-titre de la séance du jour.
+
+#### Simplifications assumées (V1, hors périmètre — spec §8)
+
+- **Séance du jour** : ne distingue pas une séance déjà **en cours** ni les replis riches de
+  `useTodaySession` — seulement « prévue aujourd'hui » ou « repos ».
+- **Kcal restantes** : objectif de **base** (TDEE + objectif), sans le bonus jour d'entraînement de
+  `useDayCalorieTarget` — sous-estime le restant les jours de séance, jamais un sur-estimé.
+- **`previewImage`** non fourni (aucun asset dédié) ; description du sélecteur de widgets en
+  français uniquement (limitation du config plugin, `translatable: 'false'`) — les textes du
+  widget lui-même restent, eux, entièrement FR/EN.
+
+#### Technique / Notes
+
+- **Spike de compatibilité confirmé sur device** (Pixel 6a) avant d'investir dans le contenu réel :
+  Expo SDK 57 / RN 0.86 / New Architecture (TurboModule `AndroidWidget`) — build + widget statique
+  affiché et posé sur l'écran d'accueil.
+- ⚠️ **Dépendance native neuve : second build requis** avant recette, comme
+  `react-native-view-shot`/`expo-haptics`/`expo-speech` avant elle.
+- Qualité au moment du commit : `typecheck` ✅ · `lint` ✅ (0 erreur, warnings préexistants
+  inchangés) · `test` ✅ **69 shared + 68 suites mobile (646 tests) + 6 admin, 0 échec**.
+- `npm install` déjà fait plus tôt dans la session (dépendance déjà matérialisée) ; build Gradle
+  final vérifié — bundle réellement régénéré (piège monorepo déjà documenté : contrôlé en
+  extrayant `assets/index.android.bundle` de l'APK et en y cherchant le texte résolu du widget).
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 5 débloqué : **le blocage annoncé n'en était pas un**
 
 Suite de `f328e3d`, qui déclarait le lot 5 bloqué par « les effets React ne s'exécutent pas ».

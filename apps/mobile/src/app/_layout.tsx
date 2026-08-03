@@ -14,6 +14,9 @@ import i18n from '@/i18n';
 // Enregistre la tâche de fond de suivi GPS (side-effect) dès le chargement du JS
 // (portée globale requise par expo-task-manager — voir running/tracker-task.ts).
 import '@/running/tracker-task';
+// US LAUNCHER-01 — enregistre la tâche de fond du widget d'écran d'accueil (side-effect), même
+// raison que ci-dessus : Android peut invoquer ce module hors de tout arbre React monté.
+import '@/widgets/register-home-widget';
 // Configure Google Sign-In (side-effect) au chargement du JS (US 1.2).
 import '@/lib/google-signin';
 import { useDeletionStore } from '@/stores/deletion-store';
@@ -26,6 +29,7 @@ import {
   useWeeklyReviewScheduler,
 } from '@/data/repositories/notification-repository';
 import { useAppOpenedAnalytics } from '@/hooks/useAppOpenedAnalytics';
+import { useHomeWidgetRefresh } from '@/widgets/useHomeWidgetRefresh';
 import { useHealthConnectImports } from '@/hooks/useHealthConnectImports';
 import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
@@ -186,6 +190,9 @@ function RootNavigator() {
 
   // Analytics : émet `app_opened` au démarrage et au retour au premier plan (throttlé 30 min).
   useAppOpenedAnalytics();
+
+  // US LAUNCHER-01 : rafraîchit le widget d'écran d'accueil à chaque foreground/background (D5).
+  useHomeWidgetRefresh();
 
   // Health Connect : importe les pesées d'une balance connectée (US CONF-06, throttle 6 h) **et**
   // les pas quotidiens (US PAS-01, throttle 1 h — un compteur de pas évolue toute la journée).

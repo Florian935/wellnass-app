@@ -50,6 +50,7 @@ import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import i18n from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
+import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
 import { pushRun } from '@/lib/health-connect';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 import {
@@ -774,6 +775,9 @@ export async function finishRun(
 
   // Analytics : course terminée et enregistrée. Fire-and-forget.
   void track(ANALYTICS_EVENTS.runCompleted);
+
+  // US LAUNCHER-01 : rafraîchit le widget d'écran d'accueil (D5). Fire-and-forget.
+  refreshHomeWidget();
 
   // Health Connect (US CONF-06) : session + distance dans le hub santé d'Android. Fire-and-forget,
   // no-op si l'opt-in est OFF / permissions absentes / hors Android. Ne jette jamais.

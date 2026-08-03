@@ -72,6 +72,24 @@
       "@react-native-google-signin/google-signin",
       "./plugins/withHealthConnect",
       [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "HomeWidget",
+              "label": "Wellness",
+              "description": "Série, séance du jour et kcal restantes.",
+              "minWidth": "250dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 4,
+              "targetCellHeight": 2,
+              "resizeMode": "none",
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
