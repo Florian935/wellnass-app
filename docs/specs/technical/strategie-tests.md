@@ -12,6 +12,9 @@
 | `apps/mobile` | 51 | 291 | **15,0 %** (branches 12,8 %) | ⚠️ le gros du risque est ici |
 | `apps/admin` | 0 | 0 | — (**aucun runner installé**) | ❌ 9 716 lignes non testées |
 
+> **Mise à jour du 03/08/2026** — `apps/admin` a désormais un runner (Vitest) et **55 tests** :
+> 21,6 % d'instructions sur `src/data` + `src/lib`, dont **100 % sur `src/lib`**. Voir §3.4.
+
 Détail mobile, par ordre de volume de code non couvert :
 
 | Dossier | Couverture | Instructions | Ce qu'on ne teste pas |
@@ -109,6 +112,37 @@ Ce que ces tests attrapent et qu'un device de recette ne peut pas produire : plu
 **propriétaires**, plusieurs **piliers** et plusieurs **langues** en base — un téléphone n'a
 qu'un compte, un programme actif et une langue.
 
+### 3.4 Côté back-office — double de test Supabase
+
+`apps/admin` ne parle **pas** à une base locale : il passe par le réseau (supabase-js + RLS). Il
+n'y a donc pas d'équivalent au harness SQLite. Ce qu'on teste sans réseau, c'est **la requête
+émise** et **ce qu'on fait de la réponse** — et c'est précisément là que vivent les défauts qui
+coûtent cher ici : l'admin écrit dans le contenu **partagé par tous les utilisateurs**, un filtre
+oublié ne casse pas un compte, il en casse des milliers.
+
+[`src/test-utils/supabase-mock.ts`](../../../apps/admin/src/test-utils/supabase-mock.ts) fournit un
+client simulé qui enregistre, pour chaque requête : la **table**, l'**opération**, **tous les
+filtres dans l'ordre** (`eq`, `is`, `in`, `not`…), les **lignes** écrites et les **options**
+(`onConflict`). Le builder est *thenable*, donc insensible à la longueur de la chaîne.
+
+```ts
+const mock = createSupabaseMock();
+vi.mock('../lib/supabase', () => ({ supabase: mock.client }));
+// `await import()` APRÈS le mock : le module testé capture `supabase` à son chargement.
+const { archiveFood } = await import('./foods');
+
+mock.setResponse('foods.update', { error: new Error('rls') }); // réponse programmée
+expect(mock.hasFilter(mock.lastQuery('foods', 'update'), 'is', 'owner_id', null)).toBe(true);
+```
+
+⚠️ **Les identifiants de test doivent être des UUID valides.** `auditEntrySchema` valide `targetId`
+en `z.string().uuid()` et `logAudit` est best-effort : un id fantaisiste ne fait pas échouer le
+test, il fait **disparaître l'entrée d'audit** — l'assertion passe alors au vert pour la mauvaise
+raison. Constaté en écrivant `foods.test.ts`.
+
+Environnement `node` : on teste la couche data et les briques pures. Les **écrans** demanderont
+`jsdom` + Testing Library — à ajouter le jour où on les couvre, pas avant.
+
 ### 3.2 Corrections apportées en même temps
 
 - **`expo-crypto` mocké** dans `jest.setup.ts`. Sans lui, `generateId()` renvoyait `undefined` en
@@ -143,7 +177,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3** | `src/stores` + `src/lib` : `auth-store`, `notifications` (planification), `health-connect` (mapping des records, **pas** l'accès natif), `data-export`, `gpx-export` | Logique séquentielle isolable, aucun device requis | ~8 fichiers |
-| **4** | **`apps/admin`** : installer Vitest + jsdom + Testing Library, puis couvrir `src/lib` et `src/data` (import CSV / papaparse en tête) | 9 716 lignes, **zéro filet**, et c'est l'outil qui écrit dans la base de contenu | setup + ~6 fichiers |
+| **4 — en cours** | **`apps/admin`** : Vitest installé, double de test Supabase, `foods` (29), `exercises` + `usage-counts` (19), `archive-confirm` (7). Restent : `programs` (1 140 l.), `users`, `roles`, `audit` | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | 🟡 3/7 fichiers |
 | **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
 | **6** | Garde-fous CI : seuils de couverture par dossier | Une fois les lots 1–4 passés, pour que ça ne redescende pas | petit |
 
@@ -176,10 +210,11 @@ npm run test               # shared (vitest) + mobile (jest) — lire le code de
 npm run test:coverage      # rapport par fichier
 ```
 
-État au 03/08/2026, **lots 0, 1 et 2 terminés** : **1 405 (shared) + 517 (mobile) = 1 922 tests,
-tous verts**, typecheck et lint propres. Couverture mobile **15,0 % → 21,4 %** d'instructions, et
-surtout `src/data/repositories` **9 % → 31 %** — c'est là que portait l'effort.
+État au 03/08/2026, **lots 0, 1 et 2 terminés, lot 4 entamé** : **1 405 (shared) + 517 (mobile)
++ 55 (admin) = 1 977 tests, tous verts**, typecheck et lint propres.
 
-**Le plus gros trou restant est `apps/admin`** (lot 4) : 9 716 lignes, **aucun runner de test
-installé**, et c'est l'outil qui écrit dans la base de contenu partagée par tous les
-utilisateurs.
+| | Départ | Maintenant |
+|---|---:|---:|
+| Couverture mobile | 15,0 % | **21,4 %** |
+| `apps/mobile/src/data/repositories` | 9 % | **31 %** |
+| `apps/admin` | aucun runner | **55 tests** (`src/lib` à 100 %) |

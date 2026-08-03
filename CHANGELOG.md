@@ -10,6 +10,69 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 4 : le back-office sort du zéro absolu
+
+Suite de `4dfc32f`. `apps/admin` n'avait **aucun runner de test** — 9 716 lignes sans le moindre
+filet, alors que c'est l'outil qui écrit dans le **contenu partagé par tous les utilisateurs** :
+une erreur n'y casse pas un compte, elle en casse des milliers. **55 tests** posés. Outillage —
+aucune ligne de roadmap, aucun front-matter d'US avancé.
+
+#### Ajouté
+
+- **Runner Vitest sur `apps/admin`** : `vitest` + `@vitest/coverage-v8` en devDeps,
+  `vitest.config.ts`, scripts `test` / `test:watch` / `test:coverage`. La CI les exécute déjà —
+  `npm run test` à la racine délègue à tous les workspaces. Environnement `node` (couche data +
+  briques pures) ; `jsdom` + Testing Library restent à ajouter le jour où on couvrira les écrans,
+  pas avant (un jsdom chargé pour rien ralentit chaque exécution). `vitest.config.ts` injecte les
+  variables `VITE_SUPABASE_*` car `src/lib/supabase.ts` **lève au chargement** sans elles.
+- **`src/test-utils/supabase-mock.ts`** — double de test du client Supabase. L'admin parle au
+  réseau (supabase-js + RLS), pas à une base locale : il n'y a pas d'équivalent au harness SQLite.
+  Ce qu'on peut tester sans réseau, c'est **la requête émise** et **ce qu'on fait de la réponse**.
+  Le double enregistre, par requête : table, opération, **tous les filtres dans l'ordre**
+  (`eq`/`is`/`in`/`not`…), lignes écrites et options (`onConflict`). Builder *thenable*, donc
+  insensible à la longueur de la chaîne. Réponses programmables par `table.operation`, en valeur
+  fixe ou en file. Aides d'assertion : `lastQuery`, `queriesOn`, `hasFilter`, `reset`.
+- **`src/data/foods.test.ts` — 29 tests.** Cible l'import d'aliments, l'opération qui écrit le plus
+  de lignes d'un coup. Vérifie le **décompte à trois branches** créé / mis à jour / **réactivé**
+  (US ADMIN-01, D7) : `import_key` étant unique, l'upsert mettait auparavant à jour une ligne
+  archivée sans remettre `deleted_at` à null — l'aliment restait invisible partout et le rapport
+  annonçait un succès. Vérifie aussi `onConflict: 'import_key'` (ce qui rend l'import rejouable),
+  `owner_id: null` + `source: 'library'` sur chaque ligne, la déduplication d'une clé répétée dans
+  le CSV, l'absence de traduction orpheline si l'upsert ne renvoie pas d'id, les trois chemins
+  d'échec (lecture, upsert aliments, upsert traductions) et le fait qu'**aucun faux succès n'est
+  journalisé**. Plus `saveFood` (filtre éditorial sur l'update, `id` renvoyé malgré un échec de
+  traduction pour permettre un ré-essai), `archiveFood`, `restoreFood` et `buildCsvTemplate`.
+- **`src/data/exercises.test.ts` — 19 tests.** Trois invariants invisibles à l'écran :
+  `owner_id IS NULL` sur chaque écriture (sans quoi une action d'admin déborde sur les exercices
+  **créés par les utilisateurs**) ; **`status` jamais touché** par un archivage ou une restauration
+  (les mélanger republierait un brouillon par accident, pour tout le monde) ; restauration bornée
+  aux lignes archivées, donc rejouable. Couvre aussi `setStatus` (la dépublication n'est
+  volontairement **pas** journalisée) et `fetchUsageSummary` — dont le contrat central : en cas
+  d'erreur, renvoyer « indisponible » et **jamais un zéro**, un décompte faux étant plus dangereux
+  que pas de décompte puisqu'il donne confiance.
+- **`src/lib/archive-confirm.test.ts` — 7 tests**, `src/lib` à **100 %**. Vérifie que les trois
+  messages (usages listés / aucun usage / décompte indisponible) restent **deux à deux distincts**
+  — s'ils convergeaient, l'admin archiverait un contenu référencé partout en croyant qu'il ne sert
+  à rien. Un rendu vert dans le navigateur ne dit pas lequel des trois s'est affiché.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — nouvelle section **3.4** (double Supabase, usage,
+  piège des UUID), constat mis à jour, lot 4 marqué en cours (3/7).
+
+#### Technique / Notes
+
+- **Piège découvert en écrivant les tests** : `auditEntrySchema` valide `targetId` en
+  `z.string().uuid()` et `logAudit` est **best-effort**. Un identifiant de test fantaisiste
+  (`'food-1'`) ne fait donc pas échouer l'appel — il fait **disparaître l'entrée d'audit**, et
+  l'assertion passe au vert pour la mauvaise raison. Les fixtures utilisent désormais de vrais
+  UUID, et le piège est documenté dans la spec et en commentaire.
+- Le mock doit être posé **avant** l'import du module testé (`await import('./foods')` après
+  `vi.mock`) : la couche data capture `supabase` à son chargement.
+- Quality gate au vert, codes de sortie lus **sans pipe** : lint 0 erreur, typecheck propre sur les
+  3 workspaces, **1 405 (shared) + 517 (mobile) + 55 (admin) = 1 977 tests**. Couverture admin :
+  21,6 % d'instructions sur `src/data` + `src/lib`, dont **100 % sur `src/lib`**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 2 terminé : journal alimentaire et profil nutritionnel
 
 Suite de `68ff2e9`. **34 tests ajoutés**, le lot 2 est clos (103 tests sur les lectures).
