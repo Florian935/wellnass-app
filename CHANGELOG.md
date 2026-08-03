@@ -10,6 +10,32 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `fix/dashboard-widgets-tier2-vides` — Dette technique : trou dans la grille du dashboard
+
+Suite de `12a17d2`. Correctif d'une ligne du backlog (§Dette & suivi technique), trouvé en préparant
+ACTIV-01.
+
+#### Corrigé
+
+- 🟢 **`training-load`/`overtraining-guard` laissaient un trou dans la grille du dashboard quand ils
+  rendent `null`.** Ces deux widgets Tier 2 (ADR-007, garde-fous META-19/TRI-12) rendent `null` en
+  interne hors de leur zone de risque, mais `isWidgetActive` (`apps/mobile/src/app/(tabs)/index.tsx`)
+  ne connaissait que `deficit-volume` et `activation-path` — `WidgetGrid` réservait donc leur cellule
+  même vide. Ajout des deux mêmes conditions, en réutilisant `useTrainingLoadAlert().show` /
+  `useOvertrainingGuardAlert().show`, déjà calculés par les cartes elles-mêmes pour décider de leur
+  propre rendu — aucun nouveau calcul.
+
+#### Technique / Notes
+
+- ⚠️ **Trouvé en lançant les tests** : les 65 suites mobile échouaient toutes à l'import du harness
+  (`Cannot find module 'babel-plugin-dynamic-import-node'`). Le plugin avait été ajouté à
+  `apps/mobile/babel.config.js` par ACTIV-01 (transpile les `import()` dynamiques en `require` sous
+  Jest, CommonJS) et déclaré dans `package.json`/`package-lock.json`, mais **jamais matérialisé** dans
+  `node_modules` (pas de `npm install` relancé après ce commit). Résolu par un `npm install` à la
+  racine — le lockfile était déjà correct, donc **aucun fichier suivi modifié** par cette réinstallation.
+- Qualité au moment du commit : `typecheck` ✅ · `lint` ✅ (0 erreur, 45 warnings préexistants) ·
+  `test` ✅ **69 shared + 65 suites mobile (619 tests) + 5 admin (128 tests), 0 échec**.
+
 ### 03/08/2026 — `fix/objectif-pas-et-partage-course` — Deux bugs remontés par Florian en usage réel
 
 Suite de `bc04b58`. Deux corrections indépendantes, trouvées en testant l'app sur device.

@@ -10,7 +10,11 @@ import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
-import { useDeficitVolumeAlert } from '@/data/repositories/dashboard-repository';
+import {
+  useDeficitVolumeAlert,
+  useOvertrainingGuardAlert,
+  useTrainingLoadAlert,
+} from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -33,9 +37,16 @@ export default function HomeScreen() {
   // Même raison que `deficit-volume` : sans cette déclaration, `WidgetGrid` réserverait sa
   // cellule après expiration au lieu de l'exclure (spec R4).
   const activationPathActive = useActivationPath().show;
+  // META-19 / TRI-12 : même défaut que `deficit-volume` — ces deux widgets Tier 2 rendent `null`
+  // hors de leur zone de risque, mais `isWidgetActive` les ignorait, donc `WidgetGrid` réservait
+  // leur cellule même vide (trouvé en préparant ACTIV-01, cf. BACKLOG.md).
+  const trainingLoadActive = useTrainingLoadAlert().show;
+  const overtrainingGuardActive = useOvertrainingGuardAlert().show;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
+    if (id === 'training-load') return trainingLoadActive;
+    if (id === 'overtraining-guard') return overtrainingGuardActive;
     return true;
   };
 
