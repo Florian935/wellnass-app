@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ACTIV-01 — Parcours 7 jours pour démarrer</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:82ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:82ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:900px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.row{grid-template-columns:1fr}}
+  .phone{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:16px}
+  .phonelabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:10px}
+  .widget{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .progress{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;
+            letter-spacing:.05em;margin-bottom:6px}
+  .wtitle{font-size:15px;font-weight:700;margin-bottom:4px}
+  .wdesc{font-size:13px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+  .wrowbtns{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .cta{background:var(--accent);color:#fff;font-size:12.5px;font-weight:700;padding:8px 14px;
+       border-radius:10px}
+  .dismiss{font-size:12px;color:var(--muted);text-decoration:underline}
+  .badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;
+         color:var(--success);background:rgba(102,113,75,.14);padding:3px 8px;border-radius:8px;
+         margin-bottom:8px}
+  .gone{background:var(--surf);border:1px dashed var(--bstrong);border-radius:14px;padding:18px;
+        text-align:center;color:var(--muted);font-size:13px}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:90ch}
+  .draft{background:#fdf1e6;border-left:3px solid var(--warn);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:10px;font-size:13.5px;max-width:90ch}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>ACTIV-01 — Parcours « 7 jours pour démarrer » (roadmap 1.27)</h1>
+<p class="sub">Idée promue depuis IDEAS.md (13/07/2026), différée après V0.9. Widget d'accueil qui
+propose une suggestion par jour pendant 7 jours après l'onboarding, puis disparaît de lui-même.
+Aucune notification, aucun nouvel écran — tout le contenu vit dans le widget.</p>
+
+<h2>1 · Trois jours de la séquence (utilisateur muscu + course actifs)</h2>
+<div class="row">
+  <div class="phone">
+    <div class="phonelabel">Jour 1 — juste après l'onboarding</div>
+    <div class="widget">
+      <div class="progress">Jour 1 sur 7</div>
+      <div class="wtitle">Bienvenue ! Prêt pour ta première séance ?</div>
+      <div class="wdesc">On te propose de commencer simple : une première séance de musculation
+      pour prendre tes marques.</div>
+      <div class="wrowbtns">
+        <span class="cta">Voir mes programmes</span>
+        <span class="dismiss">Passer</span>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <div class="phonelabel">Jour 3 — séance faite entre-temps</div>
+    <div class="widget">
+      <div class="progress">Jour 3 sur 7</div>
+      <span class="badge">✓ Déjà fait !</span>
+      <div class="wtitle">À ton tour de courir</div>
+      <div class="wdesc">Ta première séance est dans la boîte. Direction le pilier course pour
+      une sortie tranquille.</div>
+      <div class="wrowbtns">
+        <span class="cta">Démarrer une course</span>
+        <span class="dismiss">Passer</span>
+      </div>
+    </div>
+  </div>
+  <div class="phone">
+    <div class="phonelabel">Jour 7 — clôture</div>
+    <div class="widget">
+      <div class="progress">Jour 7 sur 7 — dernier jour</div>
+      <div class="wtitle">Une semaine, déjà !</div>
+      <div class="wdesc">Bravo pour cette première semaine. Continue sur ta lancée — le reste de
+      l'app t'attend, sans plus besoin de guide.</div>
+      <div class="wrowbtns">
+        <span class="cta">Voir mon profil</span>
+        <span class="dismiss">Passer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Après le jour 7 (ou après « Passer ») — aucun trou dans la grille</h2>
+<div class="row">
+  <div class="phone">
+    <div class="phonelabel">Jour 8 : le widget a disparu</div>
+    <div class="gone">— aucun widget ici, le tableau de bord se repacke sans trou —</div>
+  </div>
+</div>
+<div class="note">
+  <strong>Point technique déterminant (trouvé en relecture de spec)</strong> : rendre le composant
+  <code>null</code> ne suffit pas à éviter une cellule vide dans la grille — deux widgets déjà
+  livrés (<code>training-load</code>, <code>overtraining-guard</code>) ont ce défaut latent
+  aujourd'hui. Ce widget doit être explicitement déclaré dans <code>isWidgetActive</code>
+  (<code>(tabs)/index.tsx</code>), pas seulement rendre <code>null</code> en interne.
+</div>
+
+<h2>3 · Un seul pilier actif — les jours pilier-spécifiques basculent en universel</h2>
+<div class="row">
+  <div class="phone">
+    <div class="phonelabel">Utilisateur nutrition seule — jour 5</div>
+    <div class="widget">
+      <div class="progress">Jour 5 sur 7</div>
+      <div class="wtitle">Regarde ta série</div>
+      <div class="wdesc">Le rang 3 de piliers actifs est vide pour toi — voici plutôt un rappel
+      utile : ta série (streak) t'attend sur le tableau de bord.</div>
+      <div class="wrowbtns">
+        <span class="cta">Voir ma série</span>
+        <span class="dismiss">Passer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Les règles qui gouvernent le parcours</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Fenêtre calendaire stricte</b>
+    Jour = jours écoulés depuis la fin de l'onboarding + 1, borné 1-7. Aucun rattrapage d'un jour
+    manqué.</div>
+  <div class="rule"><b>R2 — Piliers lus en direct</b>
+    Jamais un instantané figé à l'inscription — désactiver un pilier change le contenu du jour
+    immédiatement.</div>
+  <div class="rule"><b>R5 — La coche n'est jamais une porte</b>
+    Le calendrier avance qu'on ait fait l'action suggérée ou pas — c'est un retour visuel, pas un
+    gardien.</div>
+  <div class="rule"><b>R7 — Priorité muscu ＞ running ＞ nutrition</b>
+    Pour les jours pilier-spécifiques, quand plusieurs piliers sont actifs (calcul structurel,
+    jamais lié à ce qui a été fait — spec §2 ter).</div>
+</div>
+
+<div class="draft">
+  <strong>⚠️ Contenu brouillon (spec R6)</strong> — les 7 thèmes et leurs libellés exacts sont ma
+  rédaction, pas celle d'un coach produit. À valider ou corriger avant que le texte soit considéré
+  figé, comme pour CONTENU-01.
+</div>
+
+</div></body></html>

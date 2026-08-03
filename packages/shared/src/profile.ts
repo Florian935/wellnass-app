@@ -53,6 +53,12 @@ export const profileRowSchema = syncFieldsSchema.extend({
 
   /** Horodatage de fin d'onboarding (null = onboarding non terminé). */
   onboardingCompletedAt: utcTimestampSchema.nullable().default(null),
+
+  /**
+   * US ACTIV-01 (1.27) : fermeture explicite du widget « Parcours 7 jours pour démarrer »
+   * (null = jamais fermé). Distinct de l'expiration naturelle au jour 7 (calculée, pas stockée).
+   */
+  activationPathDismissedAt: utcTimestampSchema.nullable().default(null),
 });
 
 export type ProfileRow = z.infer<typeof profileRowSchema>;

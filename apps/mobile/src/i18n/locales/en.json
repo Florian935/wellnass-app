@@ -871,6 +871,46 @@
       "recommend": "A rest day and a more complete meal can help you bounce back."
     }
   },
+  "activationPath": {
+    "progress": "Day {{day}} of {{total}}",
+    "dismiss": "Skip",
+    "doneBadge": "✓ Already done!",
+    "day1": {
+      "title": "Welcome! Ready for your first session?",
+      "description": "Let's start simple: a first action to get you going.",
+      "cta": "Let's go"
+    },
+    "day2": {
+      "title": "Discover your dashboard",
+      "description": "Every card can be moved, resized, or hidden — make this space your own.",
+      "cta": "Customize"
+    },
+    "day3": {
+      "title": "Time to try something else",
+      "description": "Here's a second action on another pillar — or set your first goal.",
+      "cta": "Continue"
+    },
+    "day4": {
+      "title": "How are you feeling?",
+      "description": "A quick check-in (mood, energy, stress) helps you track how you're doing day to day.",
+      "cta": "Do my check-in"
+    },
+    "day5": {
+      "title": "A bit more to explore",
+      "description": "One last suggestion to explore the app — or a reminder: check how your streak is doing.",
+      "cta": "Continue"
+    },
+    "day6": {
+      "title": "Share your progress",
+      "description": "A finished session or run can be shared as an image, ready for your feed.",
+      "cta": "View my history"
+    },
+    "day7": {
+      "title": "A week already!",
+      "description": "Well done for this first week. Keep it going — the rest of the app is ready for you, no more guide needed.",
+      "cta": "Done"
+    }
+  },
   "onboarding": {
     "step": "Step {{current}}/{{total}}",
     "skip": "Skip",

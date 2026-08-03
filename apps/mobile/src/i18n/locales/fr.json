@@ -871,6 +871,46 @@
       "recommend": "Un jour de repos et un repas plus complet peuvent t'aider à repartir du bon pied."
     }
   },
+  "activationPath": {
+    "progress": "Jour {{day}} sur {{total}}",
+    "dismiss": "Passer",
+    "doneBadge": "✓ Déjà fait !",
+    "day1": {
+      "title": "Bienvenue ! Prêt pour ta première séance ?",
+      "description": "On te propose de commencer simple : une première action pour prendre tes marques.",
+      "cta": "C'est parti"
+    },
+    "day2": {
+      "title": "Découvre ton tableau de bord",
+      "description": "Chaque carte peut être déplacée, redimensionnée ou masquée — fais-en un espace qui te ressemble.",
+      "cta": "Personnaliser"
+    },
+    "day3": {
+      "title": "À ton tour d'essayer autre chose",
+      "description": "On te propose une deuxième action, sur un autre pilier — ou de te fixer un premier objectif.",
+      "cta": "Continuer"
+    },
+    "day4": {
+      "title": "Comment tu te sens ?",
+      "description": "Un check-in rapide (humeur, énergie, stress) t'aide à suivre ta forme au fil des jours.",
+      "cta": "Faire mon check-in"
+    },
+    "day5": {
+      "title": "Encore un peu de découverte",
+      "description": "Une dernière suggestion pour explorer l'app — ou un rappel : regarde où en est ta série.",
+      "cta": "Continuer"
+    },
+    "day6": {
+      "title": "Partage ta progression",
+      "description": "Une séance ou une course terminée peut se partager en une image, prête pour tes réseaux.",
+      "cta": "Voir mon historique"
+    },
+    "day7": {
+      "title": "Une semaine, déjà !",
+      "description": "Bravo pour cette première semaine. Continue sur ta lancée — le reste de l'app t'attend, sans plus besoin de guide.",
+      "cta": "Terminé"
+    }
+  },
   "onboarding": {
     "step": "Étape {{current}}/{{total}}",
     "skip": "Passer",
