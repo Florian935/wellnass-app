@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 6 : les seuils de couverture deviennent réels
+
+Suite de `bc04b58`. Le chantier ne s'arrête plus à « on a ajouté des tests » : la CI **applique**
+désormais des seuils. Et en les posant, une découverte qui vaut à elle seule le lot.
+
+#### Corrigé
+
+- 🔴 **Les seuils de couverture de `packages/shared` n'étaient appliqués nulle part.** Le paquet
+  déclarait `thresholds: 100` sur les quatre métriques depuis des mois — mais l'étape « Tests » de
+  la CI lançait `npm run test`, **sans `--coverage`**. Un seuil sans mesure est du texte mort : il
+  n'a jamais échoué, et personne ne pouvait voir que **le réel était à 99,17 % / 95,13 %**, donc
+  que la règle des 100 % de [bonnes-pratiques §4](docs/specs/technical/bonnes-pratiques.md)
+  n'était pas tenue. L'étape CI passe à `npm run test:coverage`.
+- **`src/database.types.ts` sorti de la mesure de `shared`** : 2 589 lignes **générées** par
+  `npm run db:types`, à 0 % de couverture par construction (types purs + un objet `Constants`
+  vide). Les compter n'apprenait rien et faussait le total du paquet.
+
+#### Ajouté
+
+- **Seuils par périmètre**, calés **sous le réel du jour** :
+
+  | Périmètre | Instructions | Branches | Fonctions |
+  |---|---:|---:|---:|
+  | `packages/shared` | 99 | 95 | 99 |
+  | `apps/mobile/src/data/repositories/` | 28 | 20 | 23 |
+  | `apps/mobile/src/lib/` | 50 | 48 | 64 |
+  | `apps/mobile/src/stores/` | 45 | 34 | 44 |
+  | `apps/mobile` — reste (écrans, composants) | 12 | 8 | 10 |
+  | `apps/admin` (`src/data` + `src/lib`) | 54 | 84 | 55 |
+
+  **Par chemin, jamais un seuil global unique** : la moyenne d'un dossier d'écrans à 6 % et d'une
+  couche data à 31 % ne veut rien dire, et un seuil global se satisfait de n'importe quel équilibre
+  entre les deux — on pourrait laisser pourrir le SQL en couvrant des composants. Le seuil du
+  « reste » est volontairement bas : le monter bloquerait l'ajout de tout nouvel écran, et **un
+  garde-fou qu'on désactive ne protège rien**.
+- Mécanisme **vérifié**, pas supposé : un seuil volontairement inatteignable a été passé en ligne
+  de commande pour confirmer que Jest échoue bien et rapporte la vraie valeur
+  (`"./src/data/repositories/" coverage threshold for statements (99%) not met: 30.73%`). Un
+  seuil sur un chemin qui ne matche rien serait ignoré **en silence** — pire qu'aucun seuil.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — nouvelle section **§5 bis** (le tableau des seuils,
+  les trois principes, et l'avertissement sur l'écart de `shared`), lot 6 marqué fait, §7 et §8
+  actualisées.
+- `BACKLOG.md` — **nouvelle entrée** : `packages/shared` n'atteint pas les 100 % exigés (99,35 % /
+  95,12 %). Deux issues à trancher — couvrir les branches manquantes (`geo.ts` 85,7 %,
+  `pace-records.ts` 94,1 %, `menstrual-cycle.ts`, `widgets.ts`, `workout.ts` : surtout des gardes
+  défensives) ou ré-arbitrer la règle si elle n'est pas tenable. **Ne pas rebaisser le seuil** :
+  c'est le seul garde-fou du paquet.
+
+#### Technique / Notes
+
+- Les seuils sont des **cliquets**, pas des objectifs. Une PR qui les fait rougir a **retiré** de
+  la couverture ; la réponse est d'en ajouter. C'est écrit dans les trois fichiers de config et
+  dans le workflow, à l'endroit où quelqu'un sera tenté de baisser le chiffre.
+- `src/test-utils/**` exclu de la collecte mobile : l'outillage de test ne se mesure pas lui-même.
+- Quality gate au vert, codes de sortie lus **sans pipe** : typecheck, lint, `npm run test` **et
+  `npm run test:coverage`** (nouveau) propres sur les 3 workspaces. **2 176 tests.**
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 3 terminé + **trou trouvé dans l'export RGPD**
 
 Suite de `34e3012`. **25 tests ajoutés**, le lot 3 est clos (102 tests). Mais l'essentiel de cette

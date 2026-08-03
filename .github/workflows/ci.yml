@@ -36,5 +36,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests
-        run: npm run test
+      # Couverture et non `npm run test` : c'est elle qui applique les seuils déclarés dans
+      # `jest.config.js` (mobile, par chemin) et les `vitest.config.ts` (shared, admin). Sans ce
+      # `--coverage`, les seuils sont du texte mort — `packages/shared` en déclarait à 100 %
+      # depuis des mois sans les tenir, et rien ne l'a jamais signalé.
+      #
+      # Les seuils sont des cliquets posés sur le réel : une PR qui les fait rougir a **retiré**
+      # de la couverture. La réponse est d'en ajouter, pas de baisser le seuil.
+      - name: Tests + seuils de couverture
+        run: npm run test:coverage

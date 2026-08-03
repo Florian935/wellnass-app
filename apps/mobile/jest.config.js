@@ -32,5 +32,25 @@ module.exports = {
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 
   // Collecte de couverture (activée via --coverage)
-  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/test-utils/**'],
+
+  // ── Seuils de couverture (lot 6, 03/08/2026) ────────────────────────────────
+  //
+  // **Par chemin, jamais un seuil global unique** : la moyenne d'un dossier d'écrans à 6 % et
+  // d'une couche data à 31 % ne veut rien dire, et un seuil global se satisfait de n'importe quel
+  // équilibre entre les deux — on pourrait laisser pourrir le SQL en couvrant des composants.
+  //
+  // Les chiffres sont des **cliquets** posés légèrement sous le réel du jour : leur rôle est
+  // d'interdire la régression, pas de fixer un objectif. Une PR qui les fait rougir a retiré de la
+  // couverture ; la réponse est d'en ajouter, pas de baisser le seuil.
+  //
+  // ⚠️ `global` porte sur ce qui reste APRÈS déduction des chemins ci-dessous — donc surtout
+  // `src/app` (écrans, ~6 %) et `src/components` (~27 %). Il est bas volontairement : le monter
+  // bloquerait l'ajout de tout nouvel écran, ce qui pousserait à contourner le garde-fou.
+  coverageThreshold: {
+    './src/data/repositories/': { statements: 28, branches: 20, functions: 23 },
+    './src/lib/': { statements: 50, branches: 48, functions: 64 },
+    './src/stores/': { statements: 45, branches: 34, functions: 44 },
+    global: { statements: 12, branches: 8, functions: 10 },
+  },
 };

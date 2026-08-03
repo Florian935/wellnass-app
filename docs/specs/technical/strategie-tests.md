@@ -198,11 +198,44 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 128 tests · **56 %** |
 | **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
-| **6** | Garde-fous CI : seuils de couverture par dossier | Une fois les lots 1–4 passés, pour que ça ne redescende pas | petit |
+| **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
-**Seuils proposés pour le lot 6** (`coverageThreshold` par chemin, pas un seuil global qui ne veut
-rien dire) : `packages/shared` 95 % · `apps/mobile/src/data/repositories` 80 % ·
-`apps/mobile/src/lib` + `src/stores` 70 % · reste non contraint.
+### 5 bis. Les seuils — des cliquets, pas des objectifs
+
+Posés le **03/08/2026**, et **appliqués par la CI** : l'étape « Tests » du
+[workflow](../../../.github/workflows/ci.yml) lance `npm run test:coverage` et non `npm run test`.
+Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement ce qui s'était produit
+(voir l'avertissement plus bas).
+
+| Périmètre | Instructions | Branches | Fonctions |
+|---|---:|---:|---:|
+| `packages/shared` | 99 | 95 | 99 |
+| `apps/mobile/src/data/repositories/` | 28 | 20 | 23 |
+| `apps/mobile/src/lib/` | 50 | 48 | 64 |
+| `apps/mobile/src/stores/` | 45 | 34 | 44 |
+| `apps/mobile` — reste (écrans, composants) | 12 | 8 | 10 |
+| `apps/admin` (`src/data` + `src/lib`) | 54 | 84 | 55 |
+
+Trois principes derrière ces chiffres :
+
+- **Par chemin, jamais un seuil global unique.** La moyenne d'un dossier d'écrans à 6 % et d'une
+  couche data à 31 % ne veut rien dire, et un seuil global se satisfait de n'importe quel équilibre
+  entre les deux : on pourrait laisser pourrir le SQL en couvrant des composants.
+- **Calés sous le réel du jour.** Leur rôle est d'interdire la régression, pas de fixer une cible.
+  Une PR qui les fait rougir a **retiré** de la couverture ; la réponse est d'en ajouter, **pas de
+  baisser le seuil**.
+- **Le seuil du reste est volontairement bas.** Le monter bloquerait l'ajout de tout nouvel écran,
+  ce qui pousserait à contourner le garde-fou — un seuil qu'on désactive ne protège rien.
+
+> ⚠️ **`packages/shared` n'atteint pas les 100 % exigés** par
+> [bonnes-pratiques §4](./bonnes-pratiques.md) : le réel est 99,35 % d'instructions et **95,12 %
+> de branches**. Le seuil à 100 % était pourtant déclaré depuis longtemps — mais la CI ne lançait
+> jamais la couverture, donc **il n'échouait nulle part**. L'écart est désormais visible et
+> inscrit au [BACKLOG](../../../BACKLOG.md) : le combler ou ré-arbitrer la règle est une décision
+> à part, pas quelque chose à régler en rebaissant un chiffre.
+>
+> Au passage, `src/database.types.ts` (2 589 lignes **générées** par `npm run db:types`) est sorti
+> de la mesure : la compter n'apprenait rien et faussait le total.
 
 ## 6. Ce qui reste au téléphone — et pourquoi
 
@@ -225,12 +258,13 @@ est justement d'avoir moins souvent besoin de l'utiliser.
 
 ```bash
 npm run typecheck          # 3 workspaces
-npm run test               # shared (vitest) + mobile (jest) — lire le code de sortie, sans pipe
-npm run test:coverage      # rapport par fichier
+npm run test               # shared + mobile + admin — lire le code de sortie, SANS pipe
+npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 03/08/2026, **lots 0 à 4 terminés** (5 et 6 restants) : **1 429 (shared) + 619 (mobile)
-+ 128 (admin) = 2 176 tests, tous verts**, typecheck et lint propres.
+État au 03/08/2026, **lots 0 à 4 et 6 terminés** (seul le lot 5 reste) : **1 429 (shared) + 619
+(mobile) + 128 (admin) = 2 176 tests, tous verts**, typecheck, lint et **seuils de couverture**
+propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
@@ -251,16 +285,18 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
 ### L'ordre conseillé
 
-1. **Lot 6 — seuils CI.** Tout ce qui devait être couvert l'est ; poser les seuils maintenant
-   empêche la redescente. **Par chemin**, jamais un seuil global (§5). Attention : les fixer trop
-   haut sur `src/app` bloquerait tout ajout d'écran.
-2. **Lot 5 — écrans.** Le moins rentable, et le seul qui demande une décision d'outillage :
+1. **Lot 5 — écrans.** Le seul lot restant, et le seul qui demande une décision d'outillage :
    `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
    `@testing-library/react-native` sont déjà là). Viser les écrans **à état**, pas le pourcentage.
-3. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
+2. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
    essentiellement des **lectures de liste** (`listEditorialPrograms`, `getProgram`,
    `listEditorialExercises`…) — moins risquées que les écritures déjà couvertes, à faire à
    l'occasion. Copier [`programs.test.ts`](../../../apps/admin/src/data/programs.test.ts).
+3. **Combler l'écart aux 100 % de `packages/shared`** (99,35 % / 95,12 %), ou ré-arbitrer la
+   règle — décision inscrite au [BACKLOG](../../../BACKLOG.md), voir l'avertissement du §5 bis.
+
+⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
+signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.
 
 ### Ce qui n'est volontairement pas fait
 

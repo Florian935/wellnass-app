@@ -169,12 +169,26 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       deux mêmes conditions (déjà calculées ailleurs pour l'alerte) à `isWidgetActive`. Non
       corrigé dans ACTIV-01 (widget différent, éviter le mélange des sujets).
 
-- [ ] 🟠 **Socle de tests unitaires — lots 5 et 6.** Chantier ouvert le 03/08/2026 :
+- [ ] 🟠 **`packages/shared` n'atteint pas les 100 % de couverture exigés.** Réel au 03/08/2026 :
+      **99,35 %** d'instructions et **95,12 % de branches**, alors que
+      [bonnes-pratiques §4](docs/specs/technical/bonnes-pratiques.md) exige 100 % sur ce paquet
+      (« logique pure, aucune excuse »). Le seuil à 100 % **était déclaré** dans
+      `packages/shared/vitest.config.ts` — mais la CI ne lançait jamais la couverture, donc il
+      n'échouait nulle part. Découvert le 03/08/2026 en posant les seuils (lot 6) ; un cliquet a
+      été mis à la valeur réelle pour interdire la régression, l'écart reste entier.
+      Deux issues, à trancher : **couvrir les branches manquantes** (`geo.ts` 85,7 %,
+      `pace-records.ts` 94,1 %, `menstrual-cycle.ts`, `widgets.ts`, `workout.ts` — surtout des
+      gardes défensives) ou **ré-arbitrer la règle des 100 %** si elle n'est pas tenable. Ne pas
+      se contenter de rebaisser le seuil : c'est le seul garde-fou du paquet.
+
+- [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 176 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
       9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de
-      **aucun runner** à **128 tests / 56 %**. **Lots 0 à 4 terminés.** Plan, technique et **point
-      de reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      Reste : seuils de couverture en CI (lot 6) · écrans (lot 5) · lectures de liste de l'admin.
+      **aucun runner** à **128 tests / 56 %**. **Lots 0 à 4 et 6 terminés** — les seuils de
+      couverture sont désormais **appliqués par la CI** (`npm run test:coverage`). Plan, technique
+      et **point de reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
+      Reste : les **écrans** (demande `jsdom` + Testing Library côté admin) · les lectures de liste
+      de l'admin.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 

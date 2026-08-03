@@ -24,6 +24,22 @@ export default defineConfig({
       provider: 'v8',
       include: ['src/data/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['src/**/*.test.ts', 'src/lib/supabase.ts'],
+      // ── Seuils (lot 6, 03/08/2026) ──────────────────────────────────────────
+      //
+      // **Cliquets** posés sous le réel du jour (56 % d'instructions, 86,9 % de branches) : ils
+      // interdisent la régression, ils ne fixent pas d'objectif. L'écart entre les deux chiffres
+      // est normal ici et mérite d'être compris : les **écritures** sont couvertes avec leurs
+      // chemins d'échec (d'où les branches hautes), les **lectures de liste** ne le sont pas
+      // encore (d'où les instructions plus basses).
+      //
+      // Le périmètre s'arrête à `src/data` et `src/lib` : les écrans React ne sont pas mesurés
+      // tant qu'ils ne sont pas testés (lot 5), sinon le seuil ne dirait plus rien.
+      thresholds: {
+        statements: 54,
+        branches: 84,
+        functions: 55,
+        lines: 54,
+      },
     },
   },
 });
