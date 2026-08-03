@@ -71,10 +71,10 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 17, muscu 5, course 3 ; gardes pilier', () => {
-    // 17 depuis ACTIV-01 (03/08/2026). Le registre les **déclare** tous ; c'est
+  it('accueil 18, muscu 5, course 3 ; gardes pilier', () => {
+    // 18 depuis TRI-03 (03/08/2026). Le registre les **déclare** tous ; c'est
     // `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
-    expect(HOME_WIDGET_IDS).toHaveLength(17);
+    expect(HOME_WIDGET_IDS).toHaveLength(18);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -116,6 +116,13 @@ describe('WIDGET_REGISTRY', () => {
     // course, alors qu'un bilan « nutrition seule » a du contenu (jours journalisés, adhérence).
     expect(WIDGET_REGISTRY.home.pillars['review']).toBe('always');
   });
+
+  it('garde le readiness (TRI-03) en transverse — dégradation par composante, pas par pilier', () => {
+    // Contrairement à `training-load`/`overtraining-guard` (gardés par pilier, tout ou rien),
+    // TRI-03 dégrade par composante en interne (spec D2) : même un utilisateur mono-pilier avec des
+    // check-ins peut avoir un verdict partiel. La garde reste donc `'always'`, comme `wellbeing`.
+    expect(WIDGET_REGISTRY.home.pillars['readiness']).toBe('always');
+  });
 });
 
 describe('coerceSize (migration full/compact)', () => {
@@ -133,9 +140,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 17 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // 18 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(17);
+    expect(layout.widgets).toHaveLength(18);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -155,7 +162,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(16);
+    expect(r.widgets).toHaveLength(17);
     assertNoOverlap(r.widgets);
   });
 
@@ -193,8 +200,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 16 widgets historiques (hors `cycle`).
-    expect(r.widgets).toHaveLength(16);
+    // Et le hub garde donc exactement ses 17 widgets historiques (hors `cycle`).
+    expect(r.widgets).toHaveLength(17);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -205,7 +212,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(17);
+    expect(r.widgets).toHaveLength(18);
     assertNoOverlap(r.widgets);
   });
 
@@ -238,6 +245,7 @@ describe('resolveScreenLayout', () => {
     expect(ids).toContain('wellbeing');
     expect(ids).toContain('streak');
     expect(ids).toContain('steps');
+    expect(ids).toContain('readiness');
     // Contrôle négatif : les widgets gardés par un pilier inactif, eux, disparaissent bien.
     expect(ids).not.toContain('muscle-volume');
     expect(ids).not.toContain('running-week');

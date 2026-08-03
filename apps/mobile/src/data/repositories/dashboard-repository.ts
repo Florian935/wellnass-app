@@ -24,12 +24,17 @@ import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
 import {
   activeDayKeys,
+  averageIntake,
+  classifyLoadComponent,
+  classifyNutritionComponent,
+  classifyWellbeingComponent,
   computeAcwr,
   computeAge,
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
   computeOvertrainingGuard,
+  computeReadiness,
   computeStreak,
   computeStreakWithJokers,
   countDeficitDaysInWindow,
@@ -48,10 +53,12 @@ import {
   targetCalories,
   tdee,
   trainingDayCalories,
+  wellbeingAverages,
   type DayActivity,
   type RestorableGap,
   type DeficitVolumeAlert,
   type Pillar,
+  type ReadinessResult,
   type RecordDistanceKey,
   type RecordType,
   type TrainingBonusMode,
@@ -61,6 +68,7 @@ import { useProfile } from './profile-repository';
 import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
 import { useDailySteps, useStepGoal } from './daily-steps-repository';
+import { useWellbeingRows } from './daily-wellbeing-repository';
 import { useJokerDays } from './streak-joker-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
@@ -1047,6 +1055,87 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
   );
 
   return computeOvertrainingGuard({ loadStreakDays, deficitDaysCount });
+}
+
+// ---------------------------------------------------------------------------
+// useReadiness — widget transverse (US TRI-03, score de forme / readiness)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre nutrition (spec R2) — fixe, 7 j calendaires, indépendante des fenêtres ACWR. */
+const READINESS_NUTRITION_WINDOW_DAYS = 7;
+
+/** Fenêtre bien-être (spec R3/D5) — 3 derniers jours renseignés, énergie + stress seulement. */
+const READINESS_WELLBEING_WINDOW_DAYS = 3;
+
+/**
+ * Expose le score de forme transverse (US TRI-03) : verdict + détail des 3 composantes
+ * (charge / nutrition / bien-être). **Dégradation par composante** (spec D2), pas de garde
+ * tout-ou-rien comme `useTrainingLoadAlert`/`useOvertrainingGuardAlert` — un pilier inactif ou une
+ * composante sans historique suffisant devient `unavailable`, elle ne bloque pas les autres.
+ *
+ * Composition : `computeAcwr` sur les séances des piliers actifs (R1), `averageIntake` sur les
+ * jours loggés de la semaine comparée à `useNutritionSummary().target` (R2), `wellbeingAverages`
+ * (énergie + stress seulement, D5) sur les 3 derniers jours de check-in (R3, `daily_wellbeing`,
+ * US BIEN-01). Combinaison par `computeReadiness` (R4/R5, `@wellness/shared`). Tous les hooks
+ * sous-jacents sont appelés inconditionnellement (règle des hooks React).
+ */
+export function useReadiness(): ReadinessResult {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+  const nutritionActive = activePillars.includes('nutrition');
+
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+  const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
+  const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
+
+  const nutritionWindowKey = useWindowStartKey(READINESS_NUTRITION_WINDOW_DAYS);
+  const { totals } = useDailyTotals(nutritionWindowKey);
+  const { target } = useNutritionSummary();
+
+  const todayKey = useTodayKey();
+  const wellbeingWindowKey = useWindowStartKey(READINESS_WELLBEING_WINDOW_DAYS);
+  const { rows: wellbeingRows } = useWellbeingRows(wellbeingWindowKey);
+
+  // R1 — charge : séances des seuls piliers actifs (dégradation par pilier, contrairement au
+  // gating tout-ou-rien de `useTrainingLoadAlert`).
+  const sessions = [
+    ...(strengthActive
+      ? workouts.map((w) => ({
+          rpe: w.rpe,
+          durationSeconds: w.durationSeconds,
+          finishedAt: w.finishedAt,
+        }))
+      : []),
+    ...(runningActive
+      ? runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt }))
+      : []),
+  ];
+  const byWindow = (startKey: string) =>
+    sessions.filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= startKey);
+  const acwr = computeAcwr({
+    acuteSessions: byWindow(acuteStartKey),
+    chronicSessions: byWindow(chronicStartKey),
+  });
+  const load = classifyLoadComponent(acwr);
+
+  // R2 — nutrition : pilier inactif traité comme aucun jour loggé (même dégradation naturelle).
+  const nutrition = classifyNutritionComponent({
+    loggedDaysCount: nutritionActive ? totals.length : 0,
+    avgKcal: averageIntake(totals).kcal,
+    targetKcal: target ?? 0,
+  });
+
+  // R3/D5 — bien-être : transverse, jamais gardé par pilier (comme le widget lui-même).
+  const wellbeingAvg = wellbeingAverages(wellbeingRows, READINESS_WELLBEING_WINDOW_DAYS, todayKey);
+  const wellbeing = classifyWellbeingComponent({
+    energy: wellbeingAvg.energy,
+    stress: wellbeingAvg.stress,
+  });
+
+  return computeReadiness({ load, nutrition, wellbeing });
 }
 
 // ---------------------------------------------------------------------------

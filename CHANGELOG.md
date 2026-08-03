@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `feature/tri03-score-readiness` — Score de forme / readiness global (US TRI-03, catalogue d'analyses)
+
+Suite de `48356e2`. Candidat piochée dans le [catalogue d'analyses](docs/product/analyses-donnees.md)
+pendant la fenêtre de recette de LAUNCHER-01 (rien d'autre n'était en état d'être codé : les 34 US en
+cours attendaient toutes une recette device, et les 2 P0 restants — LANCE-00/01 — sont administratifs).
+Cycle complet en une session : `/us` (spec + plan + maquette) → validation Florian → implémentation TDD
+→ revue de code → correctifs.
+
+#### Ajouté
+
+- **`packages/shared/src/readiness.ts`** (+ `readiness.test.ts`, 22 tests) : `classifyLoadComponent`,
+  `classifyNutritionComponent`, `classifyWellbeingComponent`, `computeReadiness`. Composition **pure**
+  de 3 briques déjà existantes — `computeAcwr` (META-19/RUN-18), `averageIntake`/`DEFICIT_ALERT_RATIO`/
+  `MIN_LOGGED_DAYS` (MN-02), `wellbeingAverages` (BIEN-01) — aucune donnée nouvelle, aucune migration.
+- Widget dashboard **transverse** `readiness` (`'always'`, comme `wellbeing`/`review` — pas un gating
+  tout-ou-rien par pilier comme `training-load`/`overtraining-guard`) : `HOME_WIDGET_IDS` 17 → 18,
+  hook `useReadiness` (`dashboard-repository.ts`), composant `ReadinessCard.tsx` (3 formes + détail des
+  3 composantes en forme `large`, jamais un verdict nu) + son smoke test.
+- i18n FR + EN complètes, famille `home.readiness.*` (verdicts, libellés de composantes, raisons
+  d'indisponibilité).
+- Spec + plan + maquette : [tri03-score-readiness.md](docs/specs/functional/us/tri03-score-readiness.md),
+  [plan](docs/plans/tri03-score-readiness.md), [maquette](design/tri03-score-readiness/tri03-score-readiness.html).
+
+#### Corrigé
+
+- 🔴 **Bug de conception trouvé pendant le TDD (RED, avant tout code applicatif)** : la règle R4
+  initiale exigeait que *toutes* les composantes disponibles soient positives pour afficher
+  « Prêt à pousser ». Or la composante nutrition (R2) ne produit **jamais** l'état positif (pas de
+  symétrie sur le surplus, décision assumée) — avec cette règle, un utilisateur nutrition active
+  n'aurait **jamais** pu voir ce verdict, quelle que soit sa forme réelle. Corrigé en symétrisant R4 :
+  un seul signal positif suffit pour « push », comme un seul signal négatif suffit pour « rest ».
+  Spec, plan et maquette mis à jour avec la correction documentée.
+- 🟠 **Trouvé en revue de code (`superpowers:code-reviewer`), avant commit** : le texte i18n du
+  verdict « push » (FR/EN) reflétait encore l'ancienne règle (« tous vos signaux sont au vert »),
+  en contradiction avec le détail des composantes juste en dessous (qui n'affiche jamais
+  « Nutrition : positive »). Reformulé (« un signal positif se distingue aujourd'hui, sans rien à
+  signaler ailleurs ») ; même correction apportée à la maquette HTML, qui illustrait encore un état
+  « Nutrition : positive » impossible à produire par le code livré.
+- 🟢 Revue additionnelle : absence de smoke test pour `ReadinessCard` relevée (contrairement à
+  `WellbeingCard`/`ReviewCard`, le précédent le plus proche pour un widget transverse) — ajouté
+  après coup (5 tests : masquage R5, verdicts rest/push, forme small sans détail, forme large avec
+  composante indisponible + raison).
+
+#### Technique / Notes
+
+- **MR-23** (« Score de récupération/readiness croisé », catalogue) marquée **absorbée par TRI-03**
+  dans `analyses-donnees.md` (même précédent que MR-10 → META-19) : la dégradation par composante de
+  TRI-03 couvre déjà le scénario muscu+course « sans wearable » que MR-23 décrivait séparément.
+  `weightTrend` (listé par le jet initial du catalogue) volontairement hors périmètre v1 (décision D4).
+- US d'analyse catalogue-only (`roadmap: []`, comme TRI-12/META-19/RUN-18) : aucune ligne de roadmap
+  touchée, pas d'entrée RECETTES.md (les critères de recette vivent dans la spec elle-même, §11).
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1452 tests
+  shared (70 fichiers) + 651 tests mobile (69 suites), 0 échec**.
+
 ### 03/08/2026 — `feature/launcher01-widget-ecran-accueil` — LAUNCHER-01 : widget transparent en recette, deux causes racines trouvées et corrigées
 
 Suite de `55db491`. Constaté en recette device (Pixel 6a) le soir même : le widget s'ajoutait à

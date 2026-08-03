@@ -869,6 +869,48 @@
       "title": "Overload signal",
       "message": "You've been training without rest for several days, with intake regularly below your target.",
       "recommend": "A rest day and a more complete meal can help you bounce back."
+    },
+    "readiness": {
+      "eyebrow": "Today's form",
+      "verdict": {
+        "rest": {
+          "title": "Rest recommended",
+          "message": "At least one signal suggests taking it easier today."
+        },
+        "ok": {
+          "title": "Feeling okay",
+          "message": "Nothing stands out in particular, either way."
+        },
+        "push": {
+          "title": "Ready to push",
+          "message": "A positive signal stands out today, with nothing else to flag."
+        }
+      },
+      "component": {
+        "load": "Load",
+        "nutrition": "Nutrition",
+        "wellbeing": "Wellbeing"
+      },
+      "load": {
+        "positive": "fresh",
+        "neutral": "stable",
+        "negative": "loaded"
+      },
+      "nutrition": {
+        "neutral": "stable",
+        "negative": "below target"
+      },
+      "wellbeing": {
+        "positive": "good energy, low stress",
+        "neutral": "neutral",
+        "negative": "fatigue or high stress"
+      },
+      "unavailable": "unavailable",
+      "reason": {
+        "insufficientHistory": "not enough history yet",
+        "insufficientLoggedDays": "not enough logged days",
+        "noRecentCheckin": "no recent check-in"
+      }
     }
   },
   "activationPath": {

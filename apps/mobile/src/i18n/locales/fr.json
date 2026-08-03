@@ -869,6 +869,48 @@
       "title": "Signal de surcharge",
       "message": "Tu enchaînes les séances sans repos depuis plusieurs jours, avec des apports régulièrement sous ta cible.",
       "recommend": "Un jour de repos et un repas plus complet peuvent t'aider à repartir du bon pied."
+    },
+    "readiness": {
+      "eyebrow": "Forme du jour",
+      "verdict": {
+        "rest": {
+          "title": "Repos conseillé",
+          "message": "Au moins un signal suggère de lever le pied aujourd'hui."
+        },
+        "ok": {
+          "title": "Forme correcte",
+          "message": "Rien ne ressort en particulier, dans un sens comme dans l'autre."
+        },
+        "push": {
+          "title": "Prêt à pousser",
+          "message": "Un signal positif se distingue aujourd'hui, sans rien à signaler ailleurs."
+        }
+      },
+      "component": {
+        "load": "Charge",
+        "nutrition": "Nutrition",
+        "wellbeing": "Bien-être"
+      },
+      "load": {
+        "positive": "fraîche",
+        "neutral": "stable",
+        "negative": "chargée"
+      },
+      "nutrition": {
+        "neutral": "stable",
+        "negative": "sous ta cible"
+      },
+      "wellbeing": {
+        "positive": "bonne énergie, stress bas",
+        "neutral": "neutre",
+        "negative": "fatigue ou stress élevé"
+      },
+      "unavailable": "indisponible",
+      "reason": {
+        "insufficientHistory": "pas encore assez d'historique",
+        "insufficientLoggedDays": "pas assez de jours loggés",
+        "noRecentCheckin": "aucun check-in récent"
+      }
     }
   },
   "activationPath": {

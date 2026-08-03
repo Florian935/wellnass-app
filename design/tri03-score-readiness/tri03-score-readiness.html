@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRI-03 — Score de forme / readiness global</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419;--well:#7a5c8f;
+        --ok:#eef4e6;--okborder:#cddab8;--oktext:#4f6a34;
+        --push:#e7f1f4;--pushborder:#bcd8e0;--pushtext:#2f6f8f}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:920px){.row{grid-template-columns:1fr}}
+  .row2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:800px){.row2{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;margin-top:6px}
+  .cardmsg{font-size:13.5px;margin-top:4px;line-height:1.4}
+  .rest{background:var(--warn);border:1px solid var(--warnborder)}
+  .rest .eyebrow,.rest .cardtitle,.rest .cardmsg{color:var(--warntext)}
+  .ok{background:var(--ok);border:1px solid var(--okborder)}
+  .ok .eyebrow,.ok .cardtitle,.ok .cardmsg{color:var(--oktext)}
+  .push{background:var(--push);border:1px solid var(--pushborder)}
+  .push .eyebrow,.push .cardtitle,.push .cardmsg{color:var(--pushtext)}
+  .detail{margin-top:12px;border-top:1px dashed rgba(0,0,0,.12);padding-top:10px}
+  .comp{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 0}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot-positive{background:var(--success)}
+  .dot-neutral{background:var(--bstrong)}
+  .dot-negative{background:var(--accent)}
+  .dot-unavailable{background:var(--track);border:1px solid var(--bstrong)}
+  .compname{font-weight:700;min-width:80px}
+  .compreason{color:var(--muted);font-style:italic}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .well{color:var(--well)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>TRI-03 — Score de forme / readiness global</h1>
+<p class="sub">Widget <strong>transverse</strong> du dashboard (Tier 0, ADR-007), sur le même
+modèle que <code>wellbeing</code>/<code>review</code> — pas un widget conditionnel Tier 2 comme
+META-19/TRI-12 : celui-ci a quelque chose à dire <strong>la plupart des jours</strong>, pas
+seulement quand ça va mal.</p>
+<div class="flag">✅ Décisions D1-D7 arbitrées par Florian le 03/08/2026, code livré (TDD) le même jour —
+cette maquette reflète la règle R4 telle qu'implémentée (voir §3.1 pour la correction découverte
+pendant le TDD).</div>
+
+<h2>La méthode : 3 composantes, jamais moyennées — le pire signal l'emporte</h2>
+<p class="why">Pas un indice 0-100 fabriqué (aucune brique de l'app n'en produit) : un verdict à 3
+états + un détail toujours traçable jusqu'à sa source, cohérent avec le reste de l'app (zones ACWR,
+échelle 1-5 avec libellé).</p>
+<div class="note" style="margin-top:0">
+  <code>charge = zone ACWR (computeAcwr, déjà posée par META-19/RUN-18)</code><br>
+  <code>nutrition = écart à la cible sur les jours loggés (≥ 4/7), seuil DEFICIT_ALERT_RATIO</code><br>
+  <code>bien-être = énergie + stress moyens sur 3 jours (daily_wellbeing, BIEN-01)</code><br>
+  <code>verdict = « Repos conseillé » si une composante est négative, sinon « Prêt à pousser » si
+  au moins une composante est positive, sinon « Forme correcte »</code>
+</div>
+<div class="note">
+  ⚠️ <strong>Corrigé pendant le TDD (03/08/2026)</strong> : la première version exigeait que
+  <em>toutes</em> les composantes disponibles soient positives pour « Prêt à pousser ». Or la
+  nutrition (règle R2) ne produit <strong>jamais</strong> l'état positif (pas de symétrie sur le
+  surplus) — avec l'ancienne règle, un utilisateur nutrition active n'aurait <strong>jamais</strong>
+  pu voir « Prêt à pousser ». Un seul signal positif suffit désormais, symétrique du « un seul
+  négatif suffit ».
+</div>
+
+<h2>1 · Les 3 verdicts (forme wide, dashboard)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Repos conseillé</div>
+    <div class="card rest">
+      <div class="cardhead"><span class="eyebrow">Forme du jour</span><span class="emoji">🌙</span></div>
+      <div class="cardtitle">Repos conseillé</div>
+      <div class="cardmsg">Au moins un signal suggère de lever le pied aujourd'hui.</div>
+      <div class="detail">
+        <div class="comp"><span class="dot dot-negative"></span><span class="compname">Charge</span> chargée (ACWR zone risque)</div>
+        <div class="comp"><span class="dot dot-neutral"></span><span class="compname">Nutrition</span> stable</div>
+        <div class="comp"><span class="dot dot-positive"></span><span class="compname">Bien-être</span> bonne énergie</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme correcte</div>
+    <div class="card ok">
+      <div class="cardhead"><span class="eyebrow">Forme du jour</span><span class="emoji">🙂</span></div>
+      <div class="cardtitle">Forme correcte</div>
+      <div class="cardmsg">Rien ne ressort en particulier, dans un sens comme dans l'autre.</div>
+      <div class="detail">
+        <div class="comp"><span class="dot dot-neutral"></span><span class="compname">Charge</span> stable</div>
+        <div class="comp"><span class="dot dot-unavailable"></span><span class="compname">Nutrition</span> <span class="compreason">indisponible — pas assez de jours loggés</span></div>
+        <div class="comp"><span class="dot dot-positive"></span><span class="compname">Bien-être</span> bonne énergie</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Prêt à pousser</div>
+    <div class="card push">
+      <div class="cardhead"><span class="eyebrow">Forme du jour</span><span class="emoji">⚡</span></div>
+      <div class="cardtitle">Prêt à pousser</div>
+      <div class="cardmsg">Un signal positif se distingue aujourd'hui, sans rien à signaler ailleurs.</div>
+      <div class="detail">
+        <div class="comp"><span class="dot dot-positive"></span><span class="compname">Charge</span> fraîche (ACWR zone basse)</div>
+        <div class="comp"><span class="dot dot-neutral"></span><span class="compname">Nutrition</span> stable (jamais « positive », R2 — pas de symétrie sur le surplus)</div>
+        <div class="comp"><span class="dot dot-positive"></span><span class="compname">Bien-être</span> bonne énergie, stress bas</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Dégradation par composante (D2) — jamais un calcul sur donnée absente</h2>
+<div class="row2">
+  <div class="screen">
+    <div class="screenlabel">Utilisateur « nutrition seule » (avec check-ins)</div>
+    <div class="card ok">
+      <div class="cardhead"><span class="eyebrow">Forme du jour</span><span class="emoji">🙂</span></div>
+      <div class="cardtitle">Forme correcte</div>
+      <div class="cardmsg">Basé sur ton bien-être — active la muscu ou la course pour un signal
+      plus complet.</div>
+      <div class="detail">
+        <div class="comp"><span class="dot dot-unavailable"></span><span class="compname">Charge</span> <span class="compreason">indisponible — aucun pilier d'entraînement actif</span></div>
+        <div class="comp"><span class="dot dot-neutral"></span><span class="compname">Nutrition</span> stable</div>
+        <div class="comp well"><span class="dot dot-neutral"></span><span class="compname well">Bien-être</span> neutre</div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Compte tout neuf — aucune donnée nulle part</div>
+    <div class="hiddenbox">Aucun widget affiché ici (R5) — comme n'importe quel widget conditionnel
+    masqué. Réapparaît dès qu'une composante a des données (un check-in suffit).</div>
+  </div>
+</div>
+
+<h2>3 · MR-23 absorbée, MUSC-23 distincte</h2>
+<div class="note" style="margin-top:0">
+  <strong>MR-23</strong> (« Score de récupération/readiness croisé », muscu+course « sans
+  wearable ») décrivait exactement le cas de gauche ci-dessus <em>sans</em> le bien-être ni la
+  nutrition — la dégradation par composante (D2) couvre déjà ce scénario, MR-23 est donc absorbée
+  par TRI-03 dans le catalogue (même précédent que MR-10 → TRI-12), pas construite séparément.
+  <strong>MUSC-23</strong> (tendance du RPE dans le temps, par exercice) reste un candidat distinct
+  : une courbe intra-muscu, pas un verdict transverse du jour.
+</div>
+
+<h2>Les règles qui gouvernent le verdict</h2>
+<div class="rules">
+  <div class="rule"><b>R4 — Un seul signal suffit, dans les deux sens</b>
+    Une seule composante négative suffit pour « Repos conseillé », même si les deux autres sont
+    excellentes — jamais compensé. Symétriquement, une seule positive suffit pour « Prêt à
+    pousser » (corrigé pendant le TDD, §3.1) — la nutrition ne produisant jamais l'état positif,
+    exiger que <em>toutes</em> le soient aurait rendu ce verdict inatteignable dès qu'elle est
+    active.</div>
+  <div class="rule"><b>R5 — Aucune composante disponible → widget masqué</b>
+    Pas de verdict par défaut sur une absence totale de données (cas 2 ci-dessus).</div>
+  <div class="rule"><b>D5 — Bien-être : énergie + stress seulement, jamais l'humeur</b>
+    Un check-in où seule l'humeur est renseignée compte comme composante bien-être
+    <em>indisponible</em>, pas neutre.</div>
+  <div class="rule"><b>R8 — Détail toujours traçable</b>
+    Jamais un verdict nu : chaque composante et sa raison d'indisponibilité éventuelle restent
+    consultables dans le détail déplié.</div>
+</div>
+
+</div></body></html>

@@ -71,6 +71,11 @@ export const HOME_WIDGET_IDS = [
   // sans ça, il laisserait un trou dans la grille après le jour 7 (bug déjà constaté sur ces deux
   // widgets, voir BACKLOG.md dette technique).
   'activation-path',
+  // US TRI-03 — idem. **Transverse comme `wellbeing`/`review`**, pas conditionnel par pilier
+  // (contrairement à `training-load`/`overtraining-guard`) : la dégradation se fait par composante
+  // à l'intérieur du hook (spec D2), pas par une garde tout-ou-rien. Rendu `null` seulement si
+  // aucune des 3 composantes n'a de données (spec R5).
+  'readiness',
 ] as const;
 
 /**
@@ -181,6 +186,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US ACTIV-01 : transverse comme `streak`/`steps`/`wellbeing`/`review` — le parcours cible
       // n'importe quel utilisateur les 7 premiers jours, quels que soient ses piliers actifs.
       'activation-path': 'always',
+      // US TRI-03 : transverse — la dégradation par composante (charge / nutrition / bien-être)
+      // vit dans le hook, pas dans cette garde. Un utilisateur mono-pilier avec des check-ins doit
+      // pouvoir avoir un verdict partiel, comme `wellbeing`.
+      readiness: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

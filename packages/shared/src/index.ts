@@ -67,6 +67,7 @@ export * from './training-day';
 export * from './audit';
 export * from './training-nutrition';
 export * from './training-time';
+export * from './readiness';
 export * from './regression';
 export * from './moving-average';
 export * from './data-export';
