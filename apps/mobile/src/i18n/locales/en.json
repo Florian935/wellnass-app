@@ -1501,7 +1501,10 @@
       "announcements": "Voice announcements",
       "announcementsToggle": "Voice announcements during the run",
       "announcementsHint": "Distance, time, and pace announced out loud at a regular interval. May interrupt music playing in the background.",
-      "announcementsInterval": "Frequency"
+      "announcementsInterval": "Frequency",
+      "intervalGuidance": "Interval guidance",
+      "intervalGuidanceToggle": "Interval guidance (voice + vibration)",
+      "intervalGuidanceHint": "Only kicks in during a planned structured interval session. May interrupt music playing in the background."
     },
     "objective": {
       "5k": "5 km",
@@ -1764,6 +1767,19 @@
       "minutes_other": "{{count}} minutes",
       "pacePart": "pace {{pace}} per kilometer",
       "template": "{{distance}}, {{time}}, {{pace}}."
+    },
+    "guidance": {
+      "distanceKm_one": "{{count}} kilometer",
+      "distanceKm_other": "{{count}} kilometers",
+      "distanceM_other": "{{count}} meters",
+      "durationSeconds_one": "{{count}} second",
+      "durationSeconds_other": "{{count}} seconds",
+      "durationMinutes_one": "{{count}} minute",
+      "durationMinutes_other": "{{count}} minutes",
+      "fastStart": "Go, {{amount}}.",
+      "fastStartWithPace": "Go, {{amount}} at {{pct}}% VMA.",
+      "recoveryStart": "Recovery, {{amount}}.",
+      "sessionComplete": "Interval session complete!"
     }
   },
   "planning": {

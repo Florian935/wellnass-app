@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RUN-F2d — Guidage fractionné vocal</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#f7ead6;--warnborder:#e9cfa0;--warntext:#8a6419;--fast:#b14f2b;--rec:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:82ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:82ch}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:20px;
+         text-align:center}
+  .distval{font-size:40px;font-weight:800;letter-spacing:-1px}
+  .distunit{font-size:14px;color:var(--muted);margin-bottom:10px}
+  .bubble{border-radius:14px;padding:12px 14px;margin-top:14px;font-size:13.5px;display:flex;
+          gap:8px;align-items:flex-start;text-align:left}
+  .bubble.fast{background:rgba(177,79,43,.12);border:1px solid var(--fast)}
+  .bubble.rec{background:rgba(102,113,75,.12);border:1px solid var(--rec)}
+  .bubble .icon{font-size:18px}
+  .settingrow{display:flex;align-items:center;justify-content:space-between;
+              background:var(--bg);border:1px solid var(--border);border-radius:12px;
+              padding:12px 14px;margin-bottom:10px}
+  .settingrow .lbl{font-weight:600}
+  .settingrow .hint{font-size:12px;color:var(--muted);margin-top:2px;max-width:46ch}
+  .switch{width:44px;height:24px;border-radius:12px;background:var(--accent);position:relative;flex:none}
+  .switch .knob{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:10px;
+                background:#fff}
+  .switch.off{background:var(--border)}
+  .switch.off .knob{left:2px;right:auto}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:90ch}
+  .note.good{border-left-color:var(--success)}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+
+  /* Timeline des phases */
+  .timeline{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+  .phase{flex:1;min-width:52px;text-align:center;padding:10px 4px;border-radius:8px;
+         font-size:11px;font-weight:700;color:#fff;position:relative}
+  .phase.fast{background:var(--fast)}
+  .phase.rec{background:var(--rec)}
+  .phase .n{display:block;font-size:9px;font-weight:500;opacity:.85;margin-top:2px}
+  .phase .mark{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:13px}
+  .legend{display:flex;gap:18px;margin-top:10px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RUN-F2d — Guidage fractionné vocal (roadmap 5.18)</h1>
+<p class="sub">Dernier des 4 candidats issus du découpage de RUN-F2. Combine <code>expo-speech</code>
+(RUN-F2a) et la structure de blocs <code>session_intervals</code> (RUN-F2c) : à chaque changement
+de phase (rapide ↔ récupération), une annonce vocale et une vibration, sans qu'il faille regarder
+l'écran. Aucun nouveau composant natif — recettable sur l'APK existant.</p>
+
+<h2>1 · Ce que ça donne pendant la course — « 6×400 m à 95 % VMA, récup 200 m »</h2>
+<p class="why">Un seul bloc en base (<code>reps=6</code>), mais <strong>12 transitions</strong>
+annoncées au fil de l'effort — pas 2. C'est ce qui rend le guidage réellement utile (R1).</p>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Début d'une phase rapide (rep 3/6)</div>
+    <div class="phone">
+      <div class="distval">2.14</div>
+      <div class="distunit">km parcourus</div>
+      <div class="bubble fast">
+        <span class="icon">🔊</span>
+        <span>« C'est parti, 400 mètres à 95 % VMA. » <em>+ vibration</em></span>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Début de la récupération qui suit</div>
+    <div class="phone">
+      <div class="distval">2.54</div>
+      <div class="distunit">km parcourus</div>
+      <div class="bubble rec">
+        <span class="icon">🔊</span>
+        <span>« Récupération, 200 mètres. » <em>+ vibration</em></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · La séquence linéarisée (spec §1)</h2>
+<p class="why">Le bloc « 6×400 m / récup 200 m » se déroule comme 12 phases consécutives. Chaque
+carré ci-dessous = une annonce + une vibration à son démarrage.</p>
+<div class="timeline">
+  <div class="phase fast"><span class="mark">🔊</span>Rapide<span class="n">rep 1</span></div>
+  <div class="phase rec"><span class="mark">🔊</span>Récup<span class="n">rep 1</span></div>
+  <div class="phase fast"><span class="mark">🔊</span>Rapide<span class="n">rep 2</span></div>
+  <div class="phase rec"><span class="mark">🔊</span>Récup<span class="n">rep 2</span></div>
+  <div class="phase fast" style="opacity:.45"><span class="mark">…</span>Rapide<span class="n">rep 3-6</span></div>
+  <div class="phase rec" style="opacity:.45"><span class="mark">…</span>Récup<span class="n">rep 3-6</span></div>
+</div>
+<div class="legend">
+  <span><span class="sw" style="background:var(--fast)"></span>Phase rapide (distance ou durée, jamais les deux — RUN-F2c R2)</span>
+  <span><span class="sw" style="background:var(--rec)"></span>Récupération (entièrement optionnelle — RUN-F2c R3)</span>
+</div>
+<div class="note good">
+  <strong>La toute première phase (rep 1, rapide) est annoncée dès le démarrage de la course</strong>
+  — avant même le premier mètre parcouru, comme le ferait une montre de fractionné (spec §1).
+  Et un bloc échauffement (<code>reps=1</code>, pas de récup) ne produit qu'**une seule** phase :
+  aucune annonce de récupération fantôme.
+</div>
+
+<h2>3 · Le réglage (écran profil coureur) — indépendant de RUN-F2a</h2>
+<div class="screen" style="max-width:520px">
+  <div class="settingrow">
+    <span>Annonces vocales <span style="color:var(--muted);font-weight:400">(RUN-F2a, existant)</span></span>
+    <div class="switch off"><div class="knob"></div></div>
+  </div>
+  <div class="settingrow">
+    <div>
+      <div class="lbl">Guidage fractionné (voix + vibration)</div>
+      <div class="hint">S'active uniquement pendant une séance fractionné structurée planifiée.
+      Peut interrompre une musique en cours.</div>
+    </div>
+    <div class="switch off"><div class="knob"></div></div>
+  </div>
+</div>
+<div class="note">
+  <strong>Deux réglages bien séparés, tous deux désactivés par défaut</strong> (R3) — activer l'un
+  sans l'autre doit fonctionner : les annonces périodiques par distance (RUN-F2a) répondent à un
+  besoin différent (repères sur une sortie libre) du guidage structuré d'un fractionné.
+</div>
+
+<h2>4 · Le point délicat — reprendre l'écran sans se tromper de phase (R8 / R8 bis)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">❌ Sans la correction de cette spec</div>
+    <p style="font-size:13.5px;margin:0">Changer d'onglet pendant une phase de récupération, puis
+    revenir : la séquence reprendrait naïvement à la phase 0 et pourrait annoncer <em>« C'est
+    parti, rapide ! »</em> — alors que le coureur est en réalité en pleine récupération. Pire
+    qu'une absence d'annonce (RUN-F2a s'en contentait ; pas acceptable ici).</p>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">✅ Comportement retenu</div>
+    <p style="font-size:13.5px;margin:0">La progression (index de phase + point de départ) est
+    <strong>persistée sur la course</strong> (3 colonnes additives sur <code>runs</code>, aucune
+    sync rule à redéployer). Au remontage, l'algorithme <strong>rattrape en silence</strong>
+    toutes les phases déjà franchies pendant l'absence, sans rafale d'annonces obsolètes — seule la
+    phase réellement en cours au retour est signalée une fois.</p>
+  </div>
+</div>
+
+<h2>5 · Ce qui reste hors périmètre (R9)</h2>
+<div class="note">
+  <strong>Aucun indicateur visuel de la phase courante</strong> sur l'écran de suivi — le roadmap
+  ne demande que « annonce vocale + vibration ». Un affichage temps réel (façon carte objectif de
+  RUN-F2b) serait une surface neuve non demandée ; à proposer séparément si le besoin se confirme
+  à l'usage. Le mode manuel (sans GPS) et une coordination fine avec les annonces de RUN-F2a
+  restent hors périmètre également (spec §4).
+</div>
+
+<h2>Les règles qui gouvernent le guidage</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — Granularité : chaque phase, pas chaque ligne de bloc</b>
+    Un bloc <code>reps=6</code> produit 12 transitions annoncées, pas 2 — sinon le guidage serait
+    quasi inutile sur un fractionné réel.</div>
+  <div class="rule"><b>R2 — GPS uniquement</b>
+    En mode manuel, la distance n'est connue qu'à la fin de la course — aucune détection de
+    franchissement possible en direct.</div>
+  <div class="rule"><b>R6 — Distance : km entier si multiple de 1000 m, mètres sinon</b>
+    Même règle que RUN-F2a (R3 bis) — un échauffement « 1 km » s'annonce bien « un kilomètre »,
+    pas « 1000 mètres ».</div>
+  <div class="rule"><b>R7 — Durée : secondes sous 90 s, minutes arrondies au-delà</b>
+    Une récup de 30 s s'annonce « 30 secondes », jamais arrondie à « 0 minute ».</div>
+</div>
+
+</div></body></html>

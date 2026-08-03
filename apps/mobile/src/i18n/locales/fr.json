@@ -1501,7 +1501,10 @@
       "announcements": "Annonces vocales",
       "announcementsToggle": "Annonces vocales pendant la course",
       "announcementsHint": "Distance, temps et allure annoncés à voix haute à intervalle régulier. Peut interrompre une musique en cours.",
-      "announcementsInterval": "Fréquence"
+      "announcementsInterval": "Fréquence",
+      "intervalGuidance": "Guidage fractionné",
+      "intervalGuidanceToggle": "Guidage fractionné (voix + vibration)",
+      "intervalGuidanceHint": "S'active uniquement pendant une séance fractionné structurée planifiée. Peut interrompre une musique en cours."
     },
     "objective": {
       "5k": "5 km",
@@ -1764,6 +1767,19 @@
       "minutes_other": "{{count}} minutes",
       "pacePart": "allure {{pace}} au kilomètre",
       "template": "{{distance}}, {{time}}, {{pace}}."
+    },
+    "guidance": {
+      "distanceKm_one": "{{count}} kilomètre",
+      "distanceKm_other": "{{count}} kilomètres",
+      "distanceM_other": "{{count}} mètres",
+      "durationSeconds_one": "{{count}} seconde",
+      "durationSeconds_other": "{{count}} secondes",
+      "durationMinutes_one": "{{count}} minute",
+      "durationMinutes_other": "{{count}} minutes",
+      "fastStart": "C'est parti, {{amount}}.",
+      "fastStartWithPace": "C'est parti, {{amount}} à {{pct}} % VMA.",
+      "recoveryStart": "Récupération, {{amount}}.",
+      "sessionComplete": "Séance fractionné terminée !"
     }
   },
   "planning": {

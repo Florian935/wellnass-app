@@ -1637,6 +1637,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          interval_guidance_enabled: boolean
           level: string | null
           objective: string | null
           ref_5k_pace_s_per_km: number | null
@@ -1650,6 +1651,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id: string
+          interval_guidance_enabled?: boolean
           level?: string | null
           objective?: string | null
           ref_5k_pace_s_per_km?: number | null
@@ -1663,6 +1665,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          interval_guidance_enabled?: boolean
           level?: string | null
           objective?: string | null
           ref_5k_pace_s_per_km?: number | null
@@ -1694,6 +1697,9 @@ export type Database = {
           finished_at: string | null
           gps_track: string | null
           id: string
+          interval_phase_index: number | null
+          interval_phase_start_distance_m: number | null
+          interval_phase_start_duration_s: number | null
           notes: string | null
           planned_session_id: string | null
           rpe: number | null
@@ -1715,6 +1721,9 @@ export type Database = {
           finished_at?: string | null
           gps_track?: string | null
           id: string
+          interval_phase_index?: number | null
+          interval_phase_start_distance_m?: number | null
+          interval_phase_start_duration_s?: number | null
           notes?: string | null
           planned_session_id?: string | null
           rpe?: number | null
@@ -1736,6 +1745,9 @@ export type Database = {
           finished_at?: string | null
           gps_track?: string | null
           id?: string
+          interval_phase_index?: number | null
+          interval_phase_start_distance_m?: number | null
+          interval_phase_start_duration_s?: number | null
           notes?: string | null
           planned_session_id?: string | null
           rpe?: number | null

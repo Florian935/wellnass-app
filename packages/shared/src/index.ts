@@ -50,6 +50,7 @@ export * from './running';
 export * from './run-target';
 export * from './gpx';
 export * from './running-paces';
+export * from './running-intervals';
 export * from './pace-records';
 export * from './geo';
 export * from './date';
