@@ -19,6 +19,23 @@ import { shareCardFileName, SHARE_CARD_SIZE } from '@wellness/shared';
 export type ShareCardResult = { ok: true } | { error: 'unavailable' | 'failed' };
 
 /**
+ * Attend deux frames avant de continuer.
+ *
+ * `ShareCardSheet.share()` appelle `setBusy(true)` juste avant `shareCardImage` : ça redéclenche un
+ * rendu de la feuille (le bouton passe en `loading`). Sans cette pause, `captureRef` peut s'exécuter
+ * pendant que ce rendu est encore en train de se propager côté natif Android, et la capture du
+ * `<Svg>` du tracé sort **noire** alors que l'aperçu affichait le tracé correctement l'instant
+ * d'avant (constaté en recette le 03/08/2026) — contrairement au composant `<ViewShot>` de la
+ * librairie, qui attend lui-même le premier `onLayout` avant de capturer, un appel direct à
+ * `captureRef` n'a aucune garantie de ce genre.
+ */
+function waitForNextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
+/**
  * Capture la carte référencée et ouvre la feuille de partage OS.
  *
  * La capture est demandée en **1080 × 1080 indépendamment de la taille d'affichage** : la carte est
@@ -39,6 +56,7 @@ export async function shareCardImage(
   if (Number.isNaN(startedAtMs)) return { error: 'failed' };
 
   try {
+    await waitForNextFrame();
     const captured = await captureRef(ref, {
       format: 'png',
       quality: 1,

@@ -70,6 +70,43 @@ désormais des seuils. Et en les posant, une découverte qui vaut à elle seule 
 - Quality gate au vert, codes de sortie lus **sans pipe** : typecheck, lint, `npm run test` **et
   `npm run test:coverage`** (nouveau) propres sur les 3 workspaces. **2 176 tests.**
 
+### 03/08/2026 — `fix/objectif-pas-et-partage-course` — Deux bugs remontés par Florian en usage réel
+
+Suite de `bc04b58`. Deux corrections indépendantes, trouvées en testant l'app sur device.
+
+#### Corrigé
+
+- 🔴 **Objectif de pas quotidien jamais enregistré (US PAS-01, 9.15).** `daily_step_goal` existait
+  côté Supabase (migration `20260728132424_pas01_daily_steps.sql`) et dans tout le code applicatif
+  (`profile-repository.ts`, `daily-steps-repository.ts`) depuis la clôture de PAS-01, mais n'avait
+  jamais été déclarée dans le **schéma client** PowerSync (`schema.ts`) — même anti-pattern que celui
+  déjà documenté pour `cycle_tracking_enabled`. Conséquence : toute lecture/écriture SQL locale de
+  cette colonne échouait silencieusement (`void upsertProfile(...)` sans erreur visible) ; l'UI
+  affichait le changement (state local `draftGoal`) mais rien n'était persisté, et l'objectif
+  retombait à 8 000 (défaut) à tout remontage de l'écran. Colonne ajoutée au schéma. Aucune action
+  sur le dashboard PowerSync : les sync rules font déjà `select * from profiles`.
+- 🟡 **Carte noire à l'export du partage de course (US PARTAGE-01, 7.17 — reste en recette).**
+  L'aperçu affiché dans l'app rend le tracé SVG correctement (vérifié sur capture d'écran), mais
+  l'image produite par `captureRef` (react-native-view-shot) après un appui sur « Partager » sortait
+  avec la zone du tracé noire. Hypothèse retenue après lecture du code natif Android de la
+  librairie : `ShareCardSheet.share()` appelle `setBusy(true)` (donc un re-rendu React) immédiatement
+  avant `captureRef`, sans laisser ce re-rendu se stabiliser côté natif — contrairement au composant
+  `<ViewShot>` de la librairie, qui attend lui-même le premier `onLayout` avant de capturer, mais que
+  ce code n'utilise pas (appel direct à `captureRef`). Un délai de deux frames (`requestAnimationFrame`
+  ×2) a été ajouté avant la capture. ⚠️ **Non vérifié sur device** (pas d'appareil disponible dans cet
+  environnement) : c'est l'hypothèse la mieux étayée par le code, à confirmer par Florian. Si le bug
+  persiste après ce correctif, il faudra instrumenter la capture (logs natifs) pour aller plus loin.
+
+#### Technique / Notes
+
+- Qualité au moment du commit : `typecheck` ✅ · `lint` ✅ (0 erreur, 40 warnings préexistants) ·
+  `test` ✅ **1416 shared + 517 mobile, 0 échec**.
+- Revue de code (agent `superpowers:code-reviewer`) : aucun problème bloquant. Point mineur relevé :
+  le null-check de `cardRef.current` n'est pas refait après l'attente de 2 frames — si l'utilisateur
+  ferme la feuille en tapant le fond pendant cette fenêtre, `captureRef` échoue proprement
+  (`{ error: 'failed' }`, déjà géré par le `catch` existant) plutôt que de planter. Pas de correctif
+  nécessaire.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 3 terminé + **trou trouvé dans l'export RGPD**
 
 Suite de `34e3012`. **25 tests ajoutés**, le lot 3 est clos (102 tests). Mais l'essentiel de cette

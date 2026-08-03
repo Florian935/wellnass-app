@@ -506,6 +506,13 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
 
+**03/08/2026 — Deux bugs remontés en usage corrigés : objectif de pas (9.15, reste ✅) et partage de
+course (7.17, reste 🟡)**
+`daily_step_goal` manquait au **schéma client** PowerSync (colonne existante côté Supabase et dans
+le code depuis PAS-01, jamais déclarée en local) : lecture/écriture silencieusement en échec. Carte
+de partage : capture différée de deux frames pour laisser le re-rendu se stabiliser avant de saisir
+le tracé SVG — hypothèse non confirmée sur device, à valider par Florian.
+
 **03/08/2026 — ACTIV-01 : parcours 7 jours pour démarrer livré (1.27 ⬜ → ✅)**
 Widget d'accueil auto-masquant (7 jours après l'onboarding, ou jusqu'au dismiss), piliers actifs
 lus en direct (jamais un instantané), aucune notification. ⚠️ **Contenu des 7 jours = brouillon**,

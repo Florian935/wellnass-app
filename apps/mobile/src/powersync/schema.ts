@@ -34,6 +34,12 @@ const profiles = new Table({
   start_weight_kg: column.real,
   main_goal: column.text,
   workout_display_level: column.text,
+  // US PAS-01 — objectif de pas quotidien (1000-50000). Migration :
+  // 20260728132424_pas01_daily_steps.sql. ⚠️ Ajoutée après coup : la colonne existait déjà côté
+  // Supabase et dans `profile-repository.ts` sans être déclarée ici, donc toute lecture/écriture
+  // locale de `daily_step_goal` échouait silencieusement (même anti-pattern que
+  // `cycle_tracking_enabled` ci-dessous — constaté en recette le 03/08/2026).
+  daily_step_goal: column.integer,
   onboarding_completed_at: column.text,
   // US ACTIV-01 (1.27) : fermeture explicite du widget « Parcours 7 jours pour démarrer ».
   activation_path_dismissed_at: column.text,
