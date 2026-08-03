@@ -70,23 +70,21 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf2d-guidage-fractionne-vocal` (modifications non commitées) |
-| Commits | 1044 · `main` a **1041** commits de retard sur `dev` |
+| Branche courante | `dev` (propre) |
+| Commits | 1046 · `main` a **1041** commits de retard sur `dev` |
 | Specs d'US | 109 au total — 77 clôturées, 32 en cours |
 | Migrations | 69/69 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
-### ⚠️ Alertes
-
-- ⚠️ Working tree : modifications non commitées
+✅ Aucune alerte.
 
 ## 🕒 Derniers commits
 
+- `9c04688` merge: intègre RUN-F2d (guidage fractionné vocal) dans dev
+- `366be64` feat(runf2d): guidage fractionné vocal + vibration (US RUN-F2d, 5.18)
 - `5ce41bb` docs(tests): point de reprise du chantier de tests unitaires
 - `cbab8a0` test(admin): lot 4 — le back-office sort du zéro absolu (55 tests)
 - `4dfc32f` test(repositories): lot 2 terminé — journal alimentaire et profil nutritionnel
-- `68ff2e9` test(repositories): lot 2 — tests SQL des lectures (bilan, dashboard, programmes)
-- `17139aa` test(repositories): lot 1 terminé — records, objectifs, joker, mensurations
 
 ---
 
