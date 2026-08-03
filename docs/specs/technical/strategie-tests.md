@@ -12,8 +12,8 @@
 | `apps/mobile` | 51 | 291 | **15,0 %** (branches 12,8 %) | ⚠️ le gros du risque est ici |
 | `apps/admin` | 0 | 0 | — (**aucun runner installé**) | ❌ 9 716 lignes non testées |
 
-> **Mise à jour du 03/08/2026** — `apps/admin` a désormais un runner (Vitest) et **128 tests** :
-> **56 %** d'instructions et **86,9 % de branches** sur `src/data` + `src/lib`, dont **100 % sur
+> **Mise à jour du 03/08/2026** — `apps/admin` a désormais un runner (Vitest) et **157 tests** :
+> **61,3 %** d'instructions et **87,4 % de branches** sur `src/data` + `src/lib`, dont **100 % sur
 > `src/lib`**. Voir §3.4.
 
 Détail mobile, par ordre de volume de code non couvert :
@@ -162,6 +162,34 @@ bundle Metro n'est pas concerné, le chargement paresseux reste intact en produc
 ⚠️ Après un changement de configuration Babel, **vider le cache** (`npx jest --clearCache`) : une
 transformation périmée produit des échecs qui n'ont rien à voir avec le code.
 
+### 3.6 🔴 Blocage du lot 5 — les effets React ne s'exécutent pas
+
+**Constaté le 03/08/2026**, en tentant d'écrire le premier test de hook à effet.
+
+`render()` et `renderHook()` montent bien le composant, mais **aucun `useEffect` ne tourne**.
+Vérifié au plus simple : un composant dont le seul rôle est d'appeler un espion dans un
+`useEffect(() => …, [])` laisse l'espion à zéro appel. React émet bien
+« The current testing environment is not configured to support act(…) » dans la console — mais le
+test **passe**.
+
+C'est le même mode d'échec que §3.5, en pire : un test qui vérifie « l'écran s'abonne au retour au
+premier plan », « le hook émet l'événement au montage » ou « le formulaire se pré-remplit » passe
+au vert **en n'ayant rien exécuté**. Il ne protège rien tout en occupant la place d'un vrai test.
+
+**Ce qui a été essayé et n'a PAS suffi** : poser `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans
+`jest.setup.ts` (l'exigence documentée de React 19). L'avertissement persiste et les effets ne
+tournent toujours pas — le changement a donc été retiré plutôt que laissé en place avec un
+commentaire faux.
+
+**Piste à explorer** : compatibilité `@testing-library/react-native@14` × `react@19.2` ×
+`react-test-renderer@19.2` sous le preset `jest-expo@57`. Vérifier si RNTL 14 est bien la version
+prévue pour ce triplet, et comment elle décide d'envelopper le rendu dans `act`.
+
+> **Conséquence à connaître pour lire l'existant** : les tests d'écran déjà présents
+> (`*-smoke.test.tsx`) n'assertent que du **rendu statique**. Ce n'est pas un oubli de leurs
+> auteurs — c'est tout ce que l'outillage permet aujourd'hui. Ne pas conclure d'un smoke test vert
+> que le comportement de l'écran est couvert.
+
 ### 3.2 Corrections apportées en même temps
 
 - **`expo-crypto` mocké** dans `jest.setup.ts`. Sans lui, `generateId()` renvoyait `undefined` en
@@ -196,8 +224,8 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
-| **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 128 tests · **56 %** |
-| **5** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | Niveau 3 — viser les écrans **à état**, pas le pourcentage | continu |
+| **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
+| **5 — 🔴 bloqué** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | **Les effets React ne s'exécutent pas** dans les tests (§3.6) : tout test d'effet passerait au vert sans rien exécuter | à débloquer avant d'écrire |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs
@@ -214,7 +242,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/lib/` | 50 | 48 | 64 |
 | `apps/mobile/src/stores/` | 45 | 34 | 44 |
 | `apps/mobile` — reste (écrans, composants) | 12 | 8 | 10 |
-| `apps/admin` (`src/data` + `src/lib`) | 54 | 84 | 55 |
+| `apps/admin` (`src/data` + `src/lib`) | 60 | 86 | 64 |
 
 Trois principes derrière ces chiffres :
 
@@ -262,16 +290,16 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 03/08/2026, **lots 0 à 4 et 6 terminés** (seul le lot 5 reste) : **1 429 (shared) + 619
-(mobile) + 128 (admin) = 2 176 tests, tous verts**, typecheck, lint et **seuils de couverture**
-propres.
+État au 03/08/2026, **lots 0 à 4 et 6 terminés** ; le **lot 5 est bloqué** (§3.6) : **1 429
+(shared) + 619 (mobile) + 157 (admin) = 2 205 tests, tous verts**, typecheck, lint et **seuils de
+couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
 | Couverture mobile | 15,0 % | **23,3 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **31 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **54 % · 48 %** |
-| `apps/admin` | aucun runner | **128 tests · 56 %** (`src/lib` à 100 %) |
+| `apps/admin` | aucun runner | **157 tests · 61 %** (`src/lib` à 100 %) |
 
 ## 8. Reprise — par où continuer
 
@@ -285,15 +313,17 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
 ### L'ordre conseillé
 
-1. **Lot 5 — écrans.** Le seul lot restant, et le seul qui demande une décision d'outillage :
-   `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
-   `@testing-library/react-native` sont déjà là). Viser les écrans **à état**, pas le pourcentage.
-2. **Reliquat du lot 4**, si besoin : les 44 % non couverts de `apps/admin/src/data` sont
-   essentiellement des **lectures de liste** (`listEditorialPrograms`, `getProgram`,
-   `listEditorialExercises`…) — moins risquées que les écritures déjà couvertes, à faire à
-   l'occasion. Copier [`programs.test.ts`](../../../apps/admin/src/data/programs.test.ts).
+1. **Débloquer le lot 5 — faire tourner les effets React** (§3.6). C'est un préalable, pas une
+   étape parmi d'autres : tant que les effets ne s'exécutent pas, écrire des tests d'écran
+   produirait des verts qui ne vérifient rien. Chercher du côté de la compatibilité
+   `@testing-library/react-native@14` × `react@19.2` sous `jest-expo@57`.
+2. **Lot 5 — écrans**, une fois §3.6 réglé. Viser les écrans **à état**, pas le pourcentage.
+   Côté admin, il faudra en plus `jsdom` + Testing Library.
 3. **Combler l'écart aux 100 % de `packages/shared`** (99,35 % / 95,12 %), ou ré-arbitrer la
    règle — décision inscrite au [BACKLOG](../../../BACKLOG.md), voir l'avertissement du §5 bis.
+4. **Reste de `apps/admin/src/data`** (~39 %) : `getProgram`, `getExercise`, `getFood`, et les
+   écritures de variantes. Copier
+   [`listings.test.ts`](../../../apps/admin/src/data/listings.test.ts).
 
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.

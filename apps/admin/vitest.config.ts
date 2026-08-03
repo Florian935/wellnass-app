@@ -34,11 +34,13 @@ export default defineConfig({
       //
       // Le périmètre s'arrête à `src/data` et `src/lib` : les écrans React ne sont pas mesurés
       // tant qu'ils ne sont pas testés (lot 5), sinon le seuil ne dirait plus rien.
+      // Relevé le 03/08/2026 (54 → 60) après couverture des lectures de liste : un cliquet ne
+      // sert à rien s'il reste sous le réel — on le remonte à chaque palier gagné.
       thresholds: {
-        statements: 54,
-        branches: 84,
-        functions: 55,
-        lines: 54,
+        statements: 60,
+        branches: 86,
+        functions: 64,
+        lines: 60,
       },
     },
   },

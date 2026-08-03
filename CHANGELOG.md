@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 5 **bloqué** (effets React) + lectures admin
+
+Suite de `7db4a45`. Le lot 5 (écrans) devait suivre. Il ne suivra pas encore : **les effets React
+ne s'exécutent pas dans les tests**. Ce qui était prévu pour ce lot a donc été remplacé par le
+reliquat du lot 4, réellement testable.
+
+#### 🔴 Blocage documenté — les effets React ne tournent pas
+
+Constaté en écrivant le premier test de hook à effet. `render()` et `renderHook()` montent bien le
+composant, mais **aucun `useEffect` ne s'exécute** : un composant dont le seul rôle est d'appeler
+un espion dans un `useEffect(() => …, [])` laisse l'espion à zéro appel. React signale bien
+« The current testing environment is not configured to support act(…) » — et le test **passe**.
+
+C'est le même mode d'échec que celui du §3.5 (imports dynamiques), en pire : un test vérifiant
+« l'écran s'abonne au retour au premier plan », « le hook émet l'événement au montage » ou « le
+formulaire se pré-remplit » passerait au vert **en n'ayant rien exécuté**. Écrire le lot 5 dans
+cet état aurait produit des tests qui ne protègent rien tout en occupant la place de vrais tests.
+
+- **Tenté et insuffisant** : `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans `jest.setup.ts`
+  (l'exigence documentée de React 19). L'avertissement persiste, les effets ne tournent toujours
+  pas. Le changement a été **retiré** plutôt que laissé en place avec un commentaire faux.
+- **Piste** : compatibilité `@testing-library/react-native@14` × `react@19.2` ×
+  `react-test-renderer@19.2` sous `jest-expo@57`.
+- **À savoir pour lire l'existant** : les `*-smoke.test.tsx` d'écran n'assertent que du **rendu
+  statique**. Ce n'est pas un oubli de leurs auteurs, c'est tout ce que l'outillage permet — ne pas
+  conclure d'un smoke test vert que le comportement de l'écran est couvert.
+
+Documenté en **§3.6** de `strategie-tests.md`, avec le lot 5 marqué 🔴 et le déblocage inscrit
+comme **préalable** en tête de la §8 (reprise).
+
+#### Ajouté
+
+- **`src/data/listings.test.ts` — 29 tests** (reliquat du lot 4). Les lectures de liste sont moins
+  risquées que les écritures — une liste fausse se voit — mais deux choses ne se voient pas sur un
+  back-office de recette :
+  - **la portée `active` / `archived` / `all`**, construite par une chaîne conditionnelle. Se
+    tromper de branche affiche les contenus **archivés** dans la liste active, donc republie
+    visuellement ce qu'un admin avait retiré. Sur un jeu de données sans archive, les trois
+    portées rendent exactement la même chose : le défaut est invisible. Testé sur les trois listes
+    (programmes, exercices, aliments) × quatre portées, plus le défaut (`active`), le
+    cloisonnement éditorial (`owner_id IS NULL`) et le tri ;
+  - **`deleted_at` sur les traductions, indépendamment du programme** : une traduction archivée
+    seule doit faire tomber le libellé à `null` (« sans nom ») et non ressortir. Le commentaire du
+    code l'affirmait, rien ne le vérifiait.
+
+#### Modifié
+
+- `apps/admin/vitest.config.ts` — seuils relevés **54 → 60** (instructions), 84 → 86 (branches),
+  55 → 64 (fonctions), après le gain de couverture. Un cliquet laissé sous le réel ne sert à rien :
+  on le remonte à chaque palier gagné.
+- `docs/specs/technical/strategie-tests.md` — §3.6 (le blocage), lot 5 marqué bloqué, §8 réordonnée
+  (débloquer les effets devient le point 1), chiffres actualisés.
+
+#### Technique / Notes
+
+- Quality gate au vert : typecheck, lint et `npm run test:coverage` (seuils inclus) propres sur les
+  3 workspaces. **1 429 (shared) + 619 (mobile) + 157 (admin) = 2 205 tests.** `apps/admin` :
+  56 % → **61,3 %** d'instructions.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 6 : les seuils de couverture deviennent réels
 
 Suite de `bc04b58`. Le chantier ne s'arrête plus à « on a ajouté des tests » : la CI **applique**
