@@ -181,27 +181,16 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       gardes défensives) ou **ré-arbitrer la règle des 100 %** si elle n'est pas tenable. Ne pas
       se contenter de rebaisser le seuil : c'est le seul garde-fou du paquet.
 
-- [ ] 🔴 **Les effets React ne s'exécutent pas dans les tests — bloque le lot 5 (écrans).**
-      Constaté le 03/08/2026 : `render()` / `renderHook()` montent le composant mais **aucun
-      `useEffect` ne tourne** (vérifié au plus simple : un espion dans un `useEffect(…, [])` reste
-      à zéro appel). React signale « The current testing environment is not configured to support
-      act(…) » **et le test passe**. Conséquence : tout test d'écran ou de hook portant sur un
-      effet passerait au vert **sans rien exécuter** — il ne protège rien et occupe la place d'un
-      vrai test. `globalThis.IS_REACT_ACT_ENVIRONMENT = true` a été essayé : insuffisant, et
-      retiré. Piste : compatibilité `@testing-library/react-native@14` × `react@19.2` ×
-      `react-test-renderer@19.2` sous `jest-expo@57`. Détail et conséquences en **§3.6** de
-      [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      ⚠️ **À savoir en attendant** : les `*-smoke.test.tsx` d'écran n'assertent que du rendu
-      statique — un smoke test vert ne dit rien du comportement de l'écran.
-
-- [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans), bloqué par l'entrée ci-dessus.**
-      Chantier ouvert le 03/08/2026 :
-      1 681 → **2 205 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
+- [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
+      1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
       9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de
       **aucun runner** à **157 tests / 61 %**. **Lots 0 à 4 et 6 terminés** — les seuils de
       couverture sont désormais **appliqués par la CI** (`npm run test:coverage`). Plan, technique
       et **point de reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      Reste : les **écrans** — bloqués tant que les effets React ne tournent pas (voir ci-dessus).
+      Reste : les **écrans à état**, et surtout la **reprise des `*-smoke.test.tsx` existants** —
+      écrits sans attendre de tour de boucle, leurs effets n'ont jamais tourné : ils n'assertent
+      que du rendu statique (§3.6). C'est là que se cache le plus gros écart entre couverture
+      affichée et couverture réelle.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 

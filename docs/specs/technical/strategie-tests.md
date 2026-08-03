@@ -162,33 +162,54 @@ bundle Metro n'est pas concerné, le chargement paresseux reste intact en produc
 ⚠️ Après un changement de configuration Babel, **vider le cache** (`npx jest --clearCache`) : une
 transformation périmée produit des échecs qui n'ont rien à voir avec le code.
 
-### 3.6 🔴 Blocage du lot 5 — les effets React ne s'exécutent pas
+### 3.6 Tester un effet — **rendre à l'intérieur d'un `await act`**
 
-**Constaté le 03/08/2026**, en tentant d'écrire le premier test de hook à effet.
+Le symptôme, constaté le 03/08/2026 : après `render()` ou `renderHook()`, **aucun `useEffect` n'a
+tourné**. Un composant dont le seul rôle est d'appeler un espion dans un `useEffect(() => …, [])`
+laisse l'espion à zéro appel — et le test **passe**.
 
-`render()` et `renderHook()` montent bien le composant, mais **aucun `useEffect` ne tourne**.
-Vérifié au plus simple : un composant dont le seul rôle est d'appeler un espion dans un
-`useEffect(() => …, [])` laisse l'espion à zéro appel. React émet bien
-« The current testing environment is not configured to support act(…) » dans la console — mais le
-test **passe**.
+La cause n'est pas une incompatibilité : RNTL 14 enveloppe le montage dans un `act`
+**asynchrone**. Au retour de `render()`, le composant est monté mais les effets ne sont que
+**planifiés** ; ils partent au tour de boucle suivant. Il faut donc en laisser passer un.
 
-C'est le même mode d'échec que §3.5, en pire : un test qui vérifie « l'écran s'abonne au retour au
-premier plan », « le hook émet l'événement au montage » ou « le formulaire se pré-remplit » passe
-au vert **en n'ayant rien exécuté**. Il ne protège rien tout en occupant la place d'un vrai test.
+L'idiome qui marche, et le seul :
 
-**Ce qui a été essayé et n'a PAS suffi** : poser `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans
-`jest.setup.ts` (l'exigence documentée de React 19). L'avertissement persiste et les effets ne
-tournent toujours pas — le changement a donc été retiré plutôt que laissé en place avec un
-commentaire faux.
+```ts
+let view!: ReturnType<typeof renderHook<void, undefined>>;
+// Le rendu est fait DANS l'act, pas avant : `renderHook` ouvre déjà son propre scope `act` sans
+// l'attendre, et un second act ouvert par-dessus déclenche « overlapping act() calls ».
+await act(async () => {
+  view = renderHook(() => useMonHook());
+});
 
-**Piste à explorer** : compatibilité `@testing-library/react-native@14` × `react@19.2` ×
-`react-test-renderer@19.2` sous le preset `jest-expo@57`. Vérifier si RNTL 14 est bien la version
-prévue pour ce triplet, et comment elle décide d'envelopper le rendu dans `act`.
+// Toute interaction qui déclenche un effet passe aussi par un act :
+await act(async () => {
+  handler({ url: 'wellness://…' });
+});
+```
 
-> **Conséquence à connaître pour lire l'existant** : les tests d'écran déjà présents
-> (`*-smoke.test.tsx`) n'assertent que du **rendu statique**. Ce n'est pas un oubli de leurs
-> auteurs — c'est tout ce que l'outillage permet aujourd'hui. Ne pas conclure d'un smoke test vert
-> que le comportement de l'écran est couvert.
+`waitFor` **ne suffit pas** ici (essayé : l'assertion échoue), et `unmount()` doit lui aussi être
+enveloppé pour que l'effet de nettoyage s'exécute.
+
+**Pourquoi ça compte plus qu'une astuce d'écriture** : sans ce tour de boucle, un test qui vérifie
+« l'écran s'abonne au retour au premier plan », « le hook émet l'événement au montage » ou « le
+formulaire se pré-remplit » passe au vert **en n'ayant rien exécuté**. Même famille que §3.5 : il
+ne protège rien tout en occupant la place d'un vrai test.
+
+Référence :
+[`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx).
+
+> **Bruit résiduel connu** : 3 avertissements « overlapping act() calls » subsistent, émis par les
+> internes de RNTL (montage et nettoyage). Ils n'affectent aucune assertion — ne pas chercher à
+> les faire taire en retirant les `act`.
+
+> ⚠️ **Conséquence pour lire l'existant** : les tests d'écran déjà présents (`*-smoke.test.tsx`)
+> n'attendent aucun tour de boucle — ils n'assertent donc que du **rendu statique**, effets non
+> exécutés. Ne pas conclure d'un smoke test vert que le comportement de l'écran est couvert.
+> Les reprendre avec l'idiome ci-dessus est un chantier à part entière.
+
+> 🕳️ **Fausse piste écartée** : `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans `jest.setup.ts`
+> ne change rien (RNTL le pose déjà elle-même autour de chaque `act`). Ne pas le rajouter.
 
 ### 3.2 Corrections apportées en même temps
 
@@ -225,7 +246,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
-| **5 — 🔴 bloqué** | Écrans mobiles à état : séance en cours, saisie nutrition, résumé de course, onboarding | **Les effets React ne s'exécutent pas** dans les tests (§3.6) : tout test d'effet passerait au vert sans rien exécuter | à débloquer avant d'écrire |
+| **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10). Restent : écrans à état, et **reprise des `*-smoke.test.tsx`** dont les effets n'ont jamais tourné (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 débloqué le 03/08/2026 |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs
@@ -290,8 +311,8 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 03/08/2026, **lots 0 à 4 et 6 terminés** ; le **lot 5 est bloqué** (§3.6) : **1 429
-(shared) + 619 (mobile) + 157 (admin) = 2 205 tests, tous verts**, typecheck, lint et **seuils de
+État au 03/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 entamé : **1 429
+(shared) + 629 (mobile) + 157 (admin) = 2 215 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -313,12 +334,12 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
 ### L'ordre conseillé
 
-1. **Débloquer le lot 5 — faire tourner les effets React** (§3.6). C'est un préalable, pas une
-   étape parmi d'autres : tant que les effets ne s'exécutent pas, écrire des tests d'écran
-   produirait des verts qui ne vérifient rien. Chercher du côté de la compatibilité
-   `@testing-library/react-native@14` × `react@19.2` sous `jest-expo@57`.
-2. **Lot 5 — écrans**, une fois §3.6 réglé. Viser les écrans **à état**, pas le pourcentage.
+1. **Lot 5 — écrans et hooks à état.** L'idiome est établi (§3.6) : rendre **dans** un
+   `await act`. Copier [`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx).
    Côté admin, il faudra en plus `jsdom` + Testing Library.
+2. **Reprendre les `*-smoke.test.tsx` existants** : leurs effets n'ont jamais tourné, ils
+   n'assertent que du rendu statique (§3.6). Chantier à part, mais c'est là que se cache le plus
+   gros écart entre couverture affichée et couverture réelle.
 3. **Combler l'écart aux 100 % de `packages/shared`** (99,35 % / 95,12 %), ou ré-arbitrer la
    règle — décision inscrite au [BACKLOG](../../../BACKLOG.md), voir l'avertissement du §5 bis.
 4. **Reste de `apps/admin/src/data`** (~39 %) : `getProgram`, `getExercise`, `getFood`, et les

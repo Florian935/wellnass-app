@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 5 débloqué : **le blocage annoncé n'en était pas un**
+
+Suite de `f328e3d`, qui déclarait le lot 5 bloqué par « les effets React ne s'exécutent pas ».
+**Ce diagnostic était faux, et il est corrigé ici.**
+
+#### Correction du diagnostic
+
+Les effets **s'exécutent** : RNTL 14 enveloppe le montage dans un `act` **asynchrone**. Au retour
+de `render()` / `renderHook()`, le composant est monté mais les effets ne sont que **planifiés** —
+ils partent au tour de boucle suivant. Il suffit d'en laisser passer un.
+
+Établi par une mesure et non par déduction : après `render()`, l'espion d'un `useEffect` est à 0 ;
+après un `await act(async () => {})`, il est à 1.
+
+**L'idiome, et le seul qui fonctionne** — rendre **à l'intérieur** de l'`act` :
+
+```ts
+await act(async () => { view = renderHook(() => useMonHook()); });
+```
+
+Rendre puis envelopper séparément déclenche « overlapping act() calls » : `renderHook` ouvre déjà
+son propre scope sans l'attendre. `waitFor` ne suffit pas (essayé, l'assertion échoue), et
+`unmount()` doit lui aussi être enveloppé pour que l'effet de nettoyage parte.
+
+#### Ajouté
+
+- **`useAuthDeepLink.test.tsx` — 10 tests**, premier test à effet du dépôt. Ce hook décide de ce
+  qui se passe quand l'app s'ouvre sur un lien d'e-mail. Trois choses y sont verrouillées :
+  - **l'ordre `recoveryPending` AVANT `setSession`**, documenté dans le code comme « exactement le
+    bug qu'on veut éviter » — inversé, un rendu intermédiaire voit la session sans le drapeau et
+    redirige vers l'app au lieu de l'écran « nouveau mot de passe ». Le test enregistre l'ordre
+    **réel** des deux appels, pas seulement l'état final : une race de rendu ne se reproduit pas à
+    la demande sur un téléphone, l'ordre des appels si ;
+  - **un lien refusé n'ouvre AUCUNE session** — la frontière entre « lien expiré, redemande-en un »
+    et « te voilà connecté par un lien mort » ;
+  - **les deux chemins d'entrée** (app lancée par le lien / app déjà ouverte) et le retrait de
+    l'abonnement au démontage, sans quoi chaque remontage empilerait un gestionnaire.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — **§3.6 réécrite** : le titre passe de « 🔴 Blocage »
+  à « Tester un effet », avec l'idiome, le bruit résiduel connu (3 avertissements « overlapping
+  act » émis par les internes de RNTL, sans effet sur les assertions) et la **fausse piste écartée**
+  (`IS_REACT_ACT_ENVIRONMENT`, que RNTL pose déjà elle-même — ne pas le rajouter). Lot 5 marqué en
+  cours, §8 réordonnée.
+- `BACKLOG.md` — l'entrée 🔴 de blocage est **retirée** ; ce qui reste au lot 5 est reformulé.
+
+#### Technique / Notes
+
+- ⚠️ **Le constat qui survit à la correction** : les `*-smoke.test.tsx` d'écran existants n'attendent
+  aucun tour de boucle. Leurs effets n'ont donc **jamais tourné** — ils n'assertent que du rendu
+  statique. Un smoke test vert ne dit rien du comportement de l'écran, et les reprendre est le
+  chantier où se cache le plus gros écart entre couverture affichée et couverture réelle.
+- Quality gate au vert : typecheck, lint et `npm run test:coverage` (seuils inclus) propres sur les
+  3 workspaces. **1 429 (shared) + 629 (mobile) + 157 (admin) = 2 215 tests.**
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 5 **bloqué** (effets React) + lectures admin
 
 Suite de `7db4a45`. Le lot 5 (écrans) devait suivre. Il ne suivra pas encore : **les effets React
