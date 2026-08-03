@@ -70,7 +70,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1042 · `main` a **1039** commits de retard sur `dev` |
+| Commits | 1043 · `main` a **1040** commits de retard sur `dev` |
 | Specs d'US | 108 au total — 77 clôturées, 31 en cours |
 | Migrations | 68/68 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -81,11 +81,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `cbab8a0` test(admin): lot 4 — le back-office sort du zéro absolu (55 tests)
 - `4dfc32f` test(repositories): lot 2 terminé — journal alimentaire et profil nutritionnel
 - `68ff2e9` test(repositories): lot 2 — tests SQL des lectures (bilan, dashboard, programmes)
 - `17139aa` test(repositories): lot 1 terminé — records, objectifs, joker, mensurations
 - `a9425b3` test(repositories): lot 1 — tests SQL des écritures muscu, running et planning
-- `5d75e94` chore(tests): socle de tests des repositories sur SQLite en mémoire
 
 ---
 

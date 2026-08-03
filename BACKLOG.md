@@ -161,6 +161,16 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
+- [ ] 🟠 **Socle de tests unitaires — lots 3, 4 (fin), 5 et 6.** Chantier ouvert le 03/08/2026,
+      **6 commits déjà sur `dev`** (`5d75e94` → `cbab8a0`) : 1 681 → **1 977 tests**, couverture
+      mobile 15,0 % → **21,4 %**, `data/repositories` 9 % → **31 %**, et `apps/admin` passé de
+      **aucun runner** à 55 tests. Plan, technique et **point de reprise §8** :
+      [strategie-tests.md](docs/specs/technical/strategie-tests.md).
+      Reste, par rentabilité décroissante : finir `apps/admin` (`programs.ts` 1 140 l., `users`,
+      `roles`, `audit`) · `src/stores` + `src/lib` du mobile · seuils de couverture en CI · écrans.
+      ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
+      sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
+
 - [x] ~~**PAS-01 — l'en-tête de l'écran « Pas » est cassé**~~ — constaté puis **corrigé le
       30/07/2026** (`fix/pas01-entete-ecran-pas`). La route `steps` était **absente** de
       [_layout.tsx](apps/mobile/src/app/_layout.tsx) : sans `Stack.Screen`, aucun en-tête de

@@ -218,3 +218,40 @@ npm run test:coverage      # rapport par fichier
 | Couverture mobile | 15,0 % | **21,4 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **31 %** |
 | `apps/admin` | aucun runner | **55 tests** (`src/lib` à 100 %) |
+
+## 8. Reprise — par où continuer
+
+> Point de reprise au **03/08/2026**. Branche `chore/socle-tests-unitaires`, intégrée sur `dev`
+> jusqu'à `cbab8a0`. Rien en cours, rien de non commité : on peut reprendre n'importe où.
+
+### ⚠️ À faire avant de lancer quoi que ce soit
+
+**`nvm use 24`.** `.nvmrc` est passé de 20 à 24 (`node:sqlite` n'existe pas en Node 20). Sur une
+version antérieure, la suite mobile échoue à l'import du harness — l'erreur ne dit pas pourquoi.
+
+### L'ordre conseillé
+
+1. **Finir le lot 4 — `apps/admin`.** Le plus rentable : c'est l'outil qui écrit dans le contenu
+   **partagé par tous les utilisateurs**. Reste `programs.ts` (1 140 l., le plus gros fichier de
+   l'admin — duplication et archivage en cascade), puis `users.ts`, `roles.ts`, `audit.ts`.
+   L'outillage est en place : copier [`foods.test.ts`](../../../apps/admin/src/data/foods.test.ts),
+   voir §3.4 pour le double Supabase et **le piège des UUID**.
+2. **Lot 3 — `src/stores` + `src/lib` du mobile.** Aucun device requis, logique séquentielle
+   isolable. Par ordre de volume non couvert : `health-connect.ts` (997 l. — tester le **mapping
+   des records**, pas l'accès natif), `notifications.ts` (planification), `auth-store.ts` (216 l.),
+   `data-export.ts`, `gpx-export.ts`.
+3. **Lot 6 — seuils CI.** À poser une fois 3 et 4 finis, sinon ils bloquent le travail en cours.
+   Seuils proposés au §5, **par chemin** — un seuil global ne veut rien dire.
+4. **Lot 5 — écrans.** Le moins rentable des quatre, et le seul qui demande une décision
+   d'outillage : `jsdom` + Testing Library côté admin (côté mobile, `jest-expo` et
+   `@testing-library/react-native` sont déjà là). Viser les écrans **à état**, pas le pourcentage.
+
+### Ce qui n'est volontairement pas fait
+
+- **`weekly-review-repository` n'a pas de test d'écriture** : il n'en expose aucune, le bilan est
+  entièrement dérivé (D1/D7).
+- **Aucune ligne de RECETTES.md n'a été cochée.** Un test unitaire ne vaut pas recette : il
+  couvre la règle, pas le rendu ni le device. Les tests posés **réduisent le risque** derrière ces
+  recettes, ils ne les remplacent pas.
+- **Aucun front-matter d'US ni statut de roadmap n'a bougé** — ce chantier est de l'outillage, il
+  ne livre aucune fonctionnalité produit.

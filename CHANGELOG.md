@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 03/08/2026 — `chore/socle-tests-unitaires` — Point de reprise du chantier de tests
+
+Documentation seule, aucun code. Le chantier des lots 0→4 était traçable dans le CHANGELOG et
+dans `strategie-tests.md`, mais **rien ne disait par quoi reprendre** ni ne le rendait visible
+depuis les fichiers de suivi. Corrigé avant de refermer la session.
+
+#### Ajouté
+
+- **`strategie-tests.md` §8 « Reprise — par où continuer »** : branche et dernier commit intégré
+  (`cbab8a0`), le prérequis `nvm use 24` **en tête** (sur Node 20 la suite mobile échoue à
+  l'import du harness sans dire pourquoi), puis l'ordre conseillé par rentabilité — finir
+  `apps/admin` (`programs.ts` 1 140 l., `users`, `roles`, `audit`), lot 3 (`src/stores` +
+  `src/lib` mobile, avec le volume non couvert par fichier), lot 6 (seuils CI, **après** 3 et 4
+  sinon ils bloquent le travail en cours), lot 5 (écrans, le moins rentable et le seul qui demande
+  une décision d'outillage).
+- **§8 « Ce qui n'est volontairement pas fait »**, pour qu'aucune de ces trois absences ne soit
+  relue plus tard comme un oubli : `weekly-review` n'a pas de test d'écriture (il n'en expose
+  aucune, le bilan est dérivé — D1/D7) ; **aucune ligne de RECETTES.md n'a été cochée** (un test
+  unitaire couvre la règle, pas le rendu ni le device : il réduit le risque derrière une recette,
+  il ne la remplace pas) ; aucun front-matter d'US ni statut de roadmap n'a bougé, ce chantier
+  étant de l'outillage.
+- **Entrée dans `BACKLOG.md` § Dette & suivi technique** — le chantier n'apparaissait dans aucun
+  fichier de suivi alors que 6 commits étaient déjà sur `dev`. Porte les chiffres (1 681 →
+  1 977 tests, mobile 15,0 % → 21,4 %, `data/repositories` 9 % → 31 %, admin 0 → 55), le reste à
+  faire par rentabilité décroissante, et l'avertissement Node 24.
+
+#### Technique / Notes
+
+- Quality gate au vert, codes de sortie lus **sans pipe** : typecheck et lint propres sur les
+  3 workspaces, **1 405 (shared) + 517 (mobile) + 55 (admin) = 1 977 tests**.
+
 ### 03/08/2026 — `chore/socle-tests-unitaires` — Lot 4 : le back-office sort du zéro absolu
 
 Suite de `4dfc32f`. `apps/admin` n'avait **aucun runner de test** — 9 716 lignes sans le moindre
