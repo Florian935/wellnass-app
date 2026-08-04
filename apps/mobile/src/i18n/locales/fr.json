@@ -2410,7 +2410,8 @@
       "removeA11y": "Retirer {{name}} du planning"
     },
     "duplicateWeek": {
-      "action": "Dupliquer la semaine précédente"
+      "action": "Dupliquer la semaine précédente",
+      "emptySource": "Rien à dupliquer : la semaine précédente est vide."
     },
     "add": {
       "title": "Ajouter à {{meal}}",

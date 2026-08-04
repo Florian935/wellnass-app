@@ -82,7 +82,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/repas01-planning-repas-liste-courses` (modifications non commitées) |
-| Commits | 1074 · `main` a **1071** commits de retard sur `dev` |
+| Commits | 1075 · `main` a **1072** commits de retard sur `dev` |
 | Specs d'US | 122 au total — 79 clôturées, 43 en cours |
 | Migrations | 72/72 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -93,11 +93,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b94277d` feat(repas01): planning repas à la semaine, liste de courses et partage (US REPAS-01)
 - `f9ee91e` refactor(garde01): fusionne TRI-12 et MR-14 en un garde-fou unifié (US GARDE-01)
 - `c33db5c` feat(mr14): jours consécutifs sans repos (US MR-14, catalogue d'analyses)
 - `a68a958` feat(mr08): interférence concurrent training (US MR-08, catalogue d'analyses)
 - `902143b` feat(nutr18): bilan calorique hebdomadaire (US NUTR-18, catalogue d'analyses)
-- `94fe516` feat(musc20): régularité & consistance d'entraînement (US MUSC-20, catalogue d'analyses)
 
 ---
 

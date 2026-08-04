@@ -36,6 +36,7 @@ import {
   removePlannedEntry,
   undoConsumedEntry,
   useWeekMealPlan,
+  useWeekMealPlanCount,
 } from '@/data/repositories/meal-plan-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -65,6 +66,12 @@ export default function MealPlanScreen() {
 
   const { entries } = useWeekMealPlan(weekStart);
   const { items: sessions } = useWeekPlan(weekStart);
+  // Semaine source de la duplication : on ne propose l'action que si elle a du contenu.
+  const previousWeekStart = useMemo(
+    () => localDayKey(addDays(localDateFromDayKey(weekStart), -7)),
+    [weekStart],
+  );
+  const { count: previousWeekCount } = useWeekMealPlanCount(previousWeekStart);
   const { nutritionProfile } = useNutritionProfile();
   const { profile } = useProfile();
   const { settings } = useSettings();
@@ -234,12 +241,22 @@ export default function MealPlanScreen() {
           );
         })}
 
-        <Button
-          label={t('mealPlan.duplicateWeek.action')}
-          variant="ghost"
-          onPress={() => void onDuplicatePreviousWeek()}
-          loading={busy}
-        />
+        {/* Dupliquer n'est proposé que si la semaine précédente a du contenu (arbitrage Florian du
+            04/08/2026). Sinon l'appel « réussissait » en ne copiant rien, sans le moindre retour.
+            Le bouton est remplacé par une explication, jamais retiré en silence — même principe
+            que le bouton « liste de courses » ci-dessous. */}
+        {previousWeekCount > 0 ? (
+          <Button
+            label={t('mealPlan.duplicateWeek.action')}
+            variant="ghost"
+            onPress={() => void onDuplicatePreviousWeek()}
+            loading={busy}
+          />
+        ) : (
+          <Text style={[styles.duplicateEmpty, { color: colors.textMuted }]}>
+            {t('mealPlan.duplicateWeek.emptySource')}
+          </Text>
+        )}
 
         {/* Le bouton n'apparaît que si la semaine a du contenu : générer une liste vide n'a aucun
             sens, et un bouton grisé sans explication est pire qu'un bouton absent. */}
@@ -499,6 +516,14 @@ const styles = StyleSheet.create({
   weekLabel: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
   weekSub: { fontFamily: fontFamily.body, fontSize: 12 },
   list: { paddingBottom: 32, gap: 0 },
+  duplicateEmpty: {
+    fontFamily: fontFamily.body,
+    fontSize: 12.5,
+    lineHeight: 17,
+    textAlign: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
   empty: { alignItems: 'center', paddingVertical: 20, gap: 5 },
   emptyTitle: { fontFamily: fontFamily.displayBold, fontSize: 16, textAlign: 'center' },
   emptyText: { fontFamily: fontFamily.body, fontSize: 13.5, textAlign: 'center', maxWidth: 300 },

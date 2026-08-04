@@ -62,6 +62,16 @@ export const SELECT_PLAN_DAY = `
   ORDER BY meal_key, order_index
 `;
 
+/**
+ * Nombre d'entrées d'une semaine. Sert à savoir s'il y a **quelque chose à dupliquer** sans
+ * charger les entrées elles-mêmes : l'écran n'en affiche aucune, il a seulement besoin de
+ * décider s'il propose l'action.
+ */
+export const COUNT_PLAN_BETWEEN = `
+  SELECT COUNT(*) AS n FROM meal_plan_entries
+  WHERE user_id = ? AND plan_date >= ? AND plan_date <= ? AND deleted_at IS NULL
+`;
+
 function rowToEntry(r: PlanDbRow): PlannedMealEntry {
   return {
     id: r.id,
@@ -102,6 +112,29 @@ export function useWeekMealPlan(weekStartDate: string): {
   ]);
 
   return { entries: data.map(rowToEntry), isLoading };
+}
+
+/**
+ * Nombre d'entrées planifiées sur une semaine, réactif aux changements locaux.
+ *
+ * Utilisé pour n'offrir « Dupliquer la semaine précédente » que quand cette semaine a réellement
+ * du contenu : une action qui ne peut rien faire ne doit pas être proposée (elle réussirait en
+ * silence sans rien copier).
+ */
+export function useWeekMealPlanCount(weekStartDate: string): {
+  count: number;
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const weekEnd = localDayKey(addDays(localDateFromDayKey(weekStartDate), 6));
+
+  const { data, isLoading } = useQuery<{ n: number }>(COUNT_PLAN_BETWEEN, [
+    userId,
+    weekStartDate,
+    weekEnd,
+  ]);
+
+  return { count: data[0]?.n ?? 0, isLoading };
 }
 
 /** Entrées de planning d'un jour donné. */

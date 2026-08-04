@@ -223,7 +223,7 @@ précédentes. Une contrainte d'unicité sur une table synchronisée est un piè
 | **D9** | Quantité manquante ? | **Ligne conservée + compteur explicite** (R7). | Ni silence, ni zéro : les deux mènent à des courses incomplètes. |
 | **D10** | Regroupement par rayon ? | **`foods.category` existante**, ordre de parcours fixe (R13). | Aucune taxonomie à créer, libellés déjà bilingues. |
 | **D11** | Horizon planifiable ? | **Illimité** dans les deux sens, navigation semaine par semaine. | Cohérent avec la navigation du journal ; aucune raison de brider. |
-| **D12** | Copier une semaine sur la suivante ? | **Oui, inclus** — « Dupliquer la semaine précédente ». | Sans ça, le planning est un travail de saisie que personne ne refait chaque dimanche. `duplicateDay`/`copyMeal` du journal donnent déjà l'idiome. |
+| **D12** | Copier une semaine sur la suivante ? | **Oui, inclus** — « Dupliquer la semaine précédente ». **L'action n'est proposée que si la semaine source a du contenu** ; sinon le bouton est remplacé par une explication (tranché par Florian le 04/08/2026, après revue). | Sans ça, le planning est un travail de saisie que personne ne refait chaque dimanche. `duplicateDay`/`copyMeal` du journal donnent déjà l'idiome. Un bouton actif sur une semaine source vide « réussissait » sans rien copier et **sans aucun retour visuel** — le pire des trois cas possibles (agir, expliquer, mentir). |
 
 **Tranchés par Florian le 04/08/2026** (les deux points ouverts à la rédaction) :
 
@@ -253,6 +253,7 @@ Accessibilité : `accessibilityRole="button"`, libellé annonçant le rayon **et
 | Situation | Comportement attendu |
 |---|---|
 | Semaine entièrement vide | Vue semaine avec ses cases vides + invitation à planifier. **Le bouton « générer la liste » est absent**, pas grisé sans explication. |
+| **Semaine précédente vide** (source de duplication) | Le bouton « Dupliquer la semaine précédente » est **remplacé par un message** l'expliquant (« Rien à dupliquer : la semaine précédente est vide »). Jamais un bouton actif qui ne copie rien en silence — D12. Vrai aussi en reculant dans le passé, où les semaines antérieures sont vides. |
 | Génération d'une liste sur une semaine vide | Impossible (bouton absent). Aucune liste vide n'est créée en base. |
 | Recette sans aucun ingrédient | Planifiable (elle a des macros à 0). Compte dans les « entrées sans ingrédient exploitable » de R12. |
 | Recette supprimée après planification | R11 : entrée conservée avec label et macros, exclue de la liste, signalée. |
@@ -315,6 +316,9 @@ dépendance native).
    désactivant les piliers muscu et course, la mention d'entraînement disparaît.
 6. ◀ ▶ naviguent de semaine en semaine sans décalage de date (vérifier autour d'un changement de mois).
 7. « Dupliquer la semaine précédente » recopie toutes les entrées, et **rien** dans le journal.
+7 bis. Sur une semaine dont la **précédente est vide**, le bouton de duplication est **absent** et
+    remplacé par « Rien à dupliquer… ». Il **réapparaît** dès qu'on planifie quelque chose la
+    semaine d'avant (à vérifier sans quitter l'écran : la requête est réactive).
 8. **Le journal du jour reste inchangé** après avoir planifié : totaux, barres de macros, streak.
 9. « J'ai mangé ça » crée les lignes dans le bon repas du bon jour ; le total du journal bouge alors.
 10. La même entrée ne peut pas être portée deux fois ; annuler retire bien les lignes créées.

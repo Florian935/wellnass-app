@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/repas01-planning-repas-liste-courses` — Duplication de semaine : action masquée et expliquée quand la source est vide (US REPAS-01, D12)
+
+Suite de `b94277d`. Solde le **point d'attention** que la revue de ce commit avait laissé ouvert
+pour la recette : « Dupliquer la semaine précédente » restait actif même quand la semaine source
+était vide. L'appel « réussissait » alors en ne copiant **rien**, et **sans aucun retour visuel** —
+le pire des trois comportements possibles (agir, expliquer, ou laisser croire qu'on a agi).
+**Tranché par Florian** : masquer le bouton **et** afficher un message.
+
+#### Modifié
+
+- **`meal-plan-repository.ts`** — `COUNT_PLAN_BETWEEN` + hook `useWeekMealPlanCount(weekStart)`.
+  Un `COUNT` et non un `useWeekMealPlan(semainePrécédente)` : l'écran n'affiche aucune de ces
+  entrées, il a seulement besoin de savoir s'il y en a. Requête réactive, donc le bouton
+  réapparaît dès qu'on planifie quelque chose la semaine d'avant, **sans quitter l'écran**.
+- **`app/meal-plan/index.tsx`** — le bouton n'est rendu que si `previousWeekCount > 0` ; sinon un
+  message prend sa place. **Même principe que le bouton « liste de courses »** de cet écran : une
+  action absente est expliquée, jamais retirée en silence.
+- **i18n** `mealPlan.duplicateWeek.emptySource` (FR + EN, parité vérifiée : 1870 clés de chaque côté).
+- Spec : cas limite ajouté au §5, décision **D12** complétée, **critère de recette 7 bis**.
+  [RECETTES.md §28](RECETTES.md) : critère **11 bis**.
+
+#### Technique — Notes
+
+- **6 tests au harness SQLite** sur le comptage (42 au total pour ce repository) : bornes de semaine
+  incluses, semaine voisine exclue, entrées archivées et entrées d'un autre utilisateur non comptées.
+  Plus un cas qui dit une intention produit : **une semaine entièrement portée au journal reste
+  duplicable** — c'est même le cas d'usage principal (« refais-moi la semaine dernière »).
+- Le comportement vaut aussi **en reculant dans le passé**, où les semaines antérieures sont vides :
+  le message y remplace le bouton, ce qui explique l'absence au lieu de la subir.
+- Qualité : `typecheck` 0, `lint` **0 erreur**, `test` **exit 0** — 756 tests Jest (+6), 1559 Vitest.
+
 ### 04/08/2026 — `feature/repas01-planning-repas-liste-courses` — Planning repas, liste de courses et partage (US REPAS-01, roadmap 4.27 / 4.28 / 4.29)
 
 Suite de `f9ee91e`. Trois lignes de roadmap **remontées de V1.1 dans le périmètre courant** puis

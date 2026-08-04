@@ -18,6 +18,7 @@
 
 import {
   consumePlannedEntry,
+  COUNT_PLAN_BETWEEN,
   duplicateWeek,
   planRecipe,
   planTemplate,
@@ -363,6 +364,73 @@ describe('lecture du planning', () => {
     const recipeId = seedRecipe();
     await planRecipe('2026-08-04', 'pre-workout', recipeId, 1);
     expect(plans()[0]!.meal_key).toBe('pre-workout');
+  });
+});
+
+describe('comptage d’une semaine (source de duplication)', () => {
+  /**
+   * L'écran s'appuie sur ce comptage pour n'offrir « Dupliquer la semaine précédente » que quand
+   * cette semaine a du contenu (arbitrage Florian du 04/08/2026). Un comptage faux, et le bouton
+   * apparaît pour ne rien copier — ou disparaît alors qu'il y avait quelque chose.
+   */
+  const countWeek = async (weekStart: string) => {
+    const end = weekStart === '2026-08-03' ? '2026-08-09' : '2026-08-16';
+    const row = await testPowerSync.getOptional<{ n: number }>(COUNT_PLAN_BETWEEN, [
+      'user-1',
+      weekStart,
+      end,
+    ]);
+    return row?.n ?? 0;
+  };
+
+  it('rend 0 sur une semaine vide', async () => {
+    expect(await countWeek('2026-08-03')).toBe(0);
+  });
+
+  it('compte les entrées de la semaine, bornes incluses', async () => {
+    const recipeId = seedRecipe();
+    await planRecipe('2026-08-03', 'lunch', recipeId, 1); // borne basse
+    await planRecipe('2026-08-09', 'dinner', recipeId, 1); // borne haute
+    expect(await countWeek('2026-08-03')).toBe(2);
+  });
+
+  it('ne compte pas la semaine voisine', async () => {
+    const recipeId = seedRecipe();
+    await planRecipe('2026-08-02', 'lunch', recipeId, 1);
+    await planRecipe('2026-08-10', 'lunch', recipeId, 1);
+    expect(await countWeek('2026-08-03')).toBe(0);
+  });
+
+  it('ne compte pas les entrées archivées', async () => {
+    const recipeId = seedRecipe();
+    const id = await planRecipe('2026-08-04', 'lunch', recipeId, 1);
+    await removePlannedEntry(id);
+    expect(await countWeek('2026-08-03')).toBe(0);
+  });
+
+  it('ne compte pas les entrées d’un autre utilisateur', async () => {
+    seed('meal_plan_entries', [
+      {
+        user_id: 'user-2',
+        plan_date: '2026-08-04',
+        meal_key: 'lunch',
+        order_index: 0,
+        source_type: 'recipe',
+        servings: 1,
+        label: 'Ailleurs',
+        kcal: 500,
+      },
+    ]);
+    expect(await countWeek('2026-08-03')).toBe(0);
+  });
+
+  it('compte les entrées déjà portées au journal', async () => {
+    // Une semaine entièrement consommée reste duplicable : c'est même le cas d'usage principal
+    // (« refais-moi la semaine dernière »).
+    const recipeId = seedRecipe();
+    const id = await planRecipe('2026-08-04', 'lunch', recipeId, 1);
+    await consumePlannedEntry(id);
+    expect(await countWeek('2026-08-03')).toBe(1);
   });
 });
 

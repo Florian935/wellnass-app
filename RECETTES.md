@@ -907,6 +907,9 @@ déjà oubliée deux fois (BIEN-01, RUN-F2c).
       chose).
 - [ ] 11. « Dupliquer la semaine précédente » recopie toutes les entrées, **et rien dans le journal**.
       Une entrée déjà portée arrive dans la copie **non portée**.
+- [ ] 11 bis. Sur une semaine dont la **précédente est vide**, le bouton de duplication est **absent**,
+      remplacé par « Rien à dupliquer : la semaine précédente est vide ». Il **réapparaît** dès qu'on
+      planifie quelque chose la semaine d'avant, **sans quitter l'écran** (la requête est réactive).
 - [ ] 12. Générer la liste : deux recettes partageant un aliment donnent **une seule ligne**, quantité
       sommée.
 - [ ] 13. Une recette de **4 portions planifiée pour 2** contribue **la moitié** de ses ingrédients —

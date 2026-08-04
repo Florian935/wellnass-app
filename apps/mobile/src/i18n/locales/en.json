@@ -2410,7 +2410,8 @@
       "removeA11y": "Remove {{name}} from the plan"
     },
     "duplicateWeek": {
-      "action": "Copy last week"
+      "action": "Copy last week",
+      "emptySource": "Nothing to copy: last week is empty."
     },
     "add": {
       "title": "Add to {{meal}}",
