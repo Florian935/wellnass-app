@@ -18,6 +18,7 @@ import {
   emptySbdLifts,
   SBD_LIFTS,
   sbdHistory,
+  sessionRelativeIntensity,
   sbdTotal,
   type BodyweightEntry,
   type DatedOneRm,
@@ -198,4 +199,79 @@ export async function setSbdLift(
   current: SbdLifts,
 ): Promise<void> {
   await updateSettings({ sbdLifts: { ...current, [lift]: exerciseId } });
+}
+
+// ---------------------------------------------------------------------------
+// Intensité relative d'un exercice (catalogue MUSC-16)
+// ---------------------------------------------------------------------------
+
+/** Séries de la dernière séance ayant travaillé l'exercice, hors échauffement. */
+export const SELECT_LAST_SESSION_SETS = `
+  SELECT ws.reps, ws.weight_kg, ws.set_type
+  FROM workout_sets ws
+  WHERE ws.exercise_id = ? AND ws.user_id = ? AND ws.deleted_at IS NULL
+    AND ws.workout_id = (
+      SELECT w.id FROM workouts w
+      JOIN workout_sets s ON s.workout_id = w.id AND s.exercise_id = ? AND s.deleted_at IS NULL
+      WHERE w.user_id = ? AND w.status = 'finished' AND w.deleted_at IS NULL
+      ORDER BY COALESCE(w.finished_at, w.started_at) DESC
+      LIMIT 1
+    )
+  ORDER BY ws.order_index
+`;
+
+/** 1RM estimé le plus élevé pour un exercice — le meilleur connu, pas le dernier (règle R1). */
+export const SELECT_BEST_1RM_FOR_EXERCISE = `
+  SELECT MAX(value) AS best
+  FROM personal_records
+  WHERE user_id = ? AND exercise_id = ? AND type = 'estimated_1rm' AND deleted_at IS NULL
+`;
+
+export type ExerciseIntensity = {
+  /** Meilleur 1RM estimé connu, ou `null` → aucune intensité relative affichable (R2). */
+  oneRmKg: number | null;
+  lastSession: {
+    averagePercent: number;
+    sets: { reps: number | null; weightKg: number | null; setType: string }[];
+  } | null;
+  isLoading: boolean;
+};
+
+/**
+ * Intensité relative de la **dernière séance** ayant travaillé cet exercice (catalogue MUSC-16).
+ *
+ * Rend `oneRmKg: null` s'il n'existe aucun 1RM : pas d'estimation de secours à partir d'une série
+ * isolée (règle R2). `lastSession` est `null` si aucune série ne qualifie — les échauffements sont
+ * exclus (R5), donc une séance qui n'en contenait que ne produit rien plutôt que 0 %.
+ */
+export function useExerciseRelativeIntensity(exerciseId: string): ExerciseIntensity {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+
+  const { data: bestRows, isLoading: bestLoading } = useQuery<{ best: number | null }>(
+    SELECT_BEST_1RM_FOR_EXERCISE,
+    [userId, exerciseId],
+  );
+  const { data: setRows, isLoading: setsLoading } = useQuery<{
+    reps: number | null;
+    weight_kg: number | null;
+    set_type: string;
+  }>(SELECT_LAST_SESSION_SETS, [exerciseId, userId, exerciseId, userId]);
+
+  const oneRmKg = bestRows[0]?.best ?? null;
+  const sets = setRows.map((r) => ({
+    reps: r.reps,
+    weightKg: r.weight_kg,
+    setType: r.set_type,
+  }));
+
+  const averagePercent = sessionRelativeIntensity(sets, oneRmKg);
+
+  return {
+    oneRmKg,
+    lastSession:
+      averagePercent === null
+        ? null
+        : { averagePercent, sets: sets.filter((s) => s.setType !== 'warmup') },
+    isLoading: bestLoading || setsLoading,
+  };
 }

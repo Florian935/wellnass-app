@@ -58,6 +58,7 @@ import {
 } from '@/data/repositories/records-repository';
 import { useExercise, type ExerciseListItem } from '@/data/repositories/exercise-repository';
 import { useTrainingRegularity } from '@/data/repositories/planned-session-repository';
+import { StrengthSection } from '@/components/strength/StrengthSection';
 import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -161,6 +162,15 @@ export default function ProgressScreen() {
           </Text>
         </Text>
         <MuscleBalanceSection onStartWorkout={() => router.push('/workout')} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* US MUSCPWR-01 — module force (%1RM, DOTS, total SBD).             */}
+        {/* Tier 1 CONDITIONNEL et REPLIÉ par défaut (ADR-007, spec D4) :     */}
+        {/* cet écran compte déjà cinq sections, et ce module ne sert qu'aux  */}
+        {/* pratiquants de force — il rend `null` tant que rien n'est          */}
+        {/* désigné ni calculable, donc il ne coûte rien aux autres.          */}
+        {/* ---------------------------------------------------------------- */}
+        <StrengthSection />
 
         {/* ---------------------------------------------------------------- */}
         {/* US MESUR-01 — entrée vers les mensurations.                       */}

@@ -11,8 +11,9 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **04/08/2026** — 28 sections, dont **REPAS-01** (§28, planning repas et
-> liste de courses) qui exige **3 sync rules PowerSync déployées à la main avant toute recette**.
+> Dernière mise à jour : **04/08/2026** — 29 sections. **REPAS-01** (§28) exige 3 sync rules
+> PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
+> relecture par un pratiquant, pas une manipulation.
 
 ---
 
@@ -943,6 +944,51 @@ déjà oubliée deux fois (BIEN-01, RUN-F2c).
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap 4.27/4.28/4.29 à ✅,
 et **on supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 29. MUSCPWR-01 — Module force (%1RM, DOTS, total SBD)
+
+📄 [spec](docs/specs/functional/us/muscpwr01-module-force.md) · catalogue **MUSC-16 / MUSC-27 /
+MUSC-29** · **📱 device** · ✅ **aucune sync rule** (`user_settings` déjà publiée) · ✅ **aucune
+dépendance native → recettable sur l'APK existant**.
+
+> 🔴 **Le critère 21 ne peut pas être coché par moi.** Les coefficients du DOTS viennent de
+> l'extérieur du projet et n'ont pas pu être confrontés à une source officielle. Un coefficient faux
+> produit un score **plausible mais faux** — donc invisible en recette ordinaire. Il faut que
+> quelqu'un qui pratique regarde si les valeurs sont crédibles pour des totaux connus.
+
+- [ ] 1. Compte neuf, sans séance : la section « Force » est **absente** de Progression (pas vide).
+- [ ] 2. Après une séance sur un exercice, la fiche de cet exercice affiche l'intensité relative.
+- [ ] 3. Le %1RM se calcule contre le **meilleur** 1RM connu, pas le dernier : faire une séance
+      légère après une lourde, les pourcentages ne doivent **pas** bondir.
+- [ ] 4. Une série qui dépasse le 1RM connu affiche **plus de 100 %** (barre verte), pas 100 %.
+- [ ] 5. Les séries d'échauffement ne tirent pas la moyenne de séance vers le bas.
+- [ ] 6. Profil **sans sexe renseigné** : le DOTS est masqué avec l'invitation à compléter le profil ;
+      le renseigner le fait apparaître.
+- [ ] 7. **Sans poids de corps** : DOTS masqué, mais le total SBD reste affiché.
+- [ ] 8. Le DOTS affiche **à quel poids et à quelle date** il a été calculé.
+- [ ] 9. Désigner les 3 mouvements : le total apparaît, égal à la somme des 3 e1RM.
+- [ ] 10. N'en désigner que 2 : le total **n'est pas affiché**, et l'écran dit lequel manque.
+- [ ] 11. Archiver un exercice désigné : signalé « exercice archivé », les autres analyses continuent.
+- [ ] 12. Avec 2 mesures de total seulement : **pas de projection**, et la raison est affichée.
+- [ ] 13. Avec ≥ 3 mesures sur ≥ 8 semaines : projection affichée, **libellée comme une estimation**,
+      à 12 semaines maximum.
+- [ ] 14. Progression en baisse : la projection **descend** au lieu de disparaître.
+- [ ] 15. Corriger une série passée met à jour les trois analyses **immédiatement**.
+- [ ] 16. Unités impériales : les charges s'affichent en lb, **le DOTS ne change pas** (calculé en kg).
+- [ ] 17. **Mode avion** : tout est calculé et affiché normalement (rien n'est stocké, tout est dérivé).
+- [ ] 18. FR → EN : tous les libellés changent ; « DOTS » et « SBD » restent tels quels.
+- [ ] 19. Police 1,5× : la section reste lisible, aucune troncature sur les scores.
+- [ ] 20. TalkBack : la section repliable annonce son état, les scores et la projection sont annoncés.
+- [ ] 21. 🔴 **Relecture par un pratiquant** : les valeurs de DOTS sont-elles crédibles pour des
+      totaux connus ? (Point de vigilance de la spec §4.)
+- [ ] 22. La section est **repliée par défaut** — l'écran Progression compte déjà cinq sections.
+- [ ] 23. Le réglage des mouvements survit à une **fermeture complète de l'app** (c'est ce que les
+      pannes de CYCLE-01 et PAS-01 avaient cassé silencieusement).
+
+**Quand l'US passe** : `etape: close`, catalogue MUSC-16/27/29 déjà à ✅, et **on supprime cette
+section**. Passe par [`/commit`](.claude/commands/commit.md).
 
 ---
 

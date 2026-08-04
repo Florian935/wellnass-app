@@ -2462,5 +2462,65 @@
         "uncheckConfirm": "Untick"
       }
     }
+  },
+  "strength": {
+    "section": {
+      "title": "Strength",
+      "subtitle": "Relative intensity · DOTS · SBD total"
+    },
+    "dots": {
+      "title": "Relative strength score (DOTS)",
+      "atBodyweight": "at {{weight}} kg on {{date}} · normalised to bodyweight",
+      "missingSex": "Unavailable: DOTS is normalised by sex, and there is no neutral value.",
+      "missingWeight": "Unavailable: no weigh-in recorded around the date of the total.",
+      "missingTotal": "Unavailable: the three-lift total is incomplete.",
+      "completeProfile": "Complete my profile"
+    },
+    "sbd": {
+      "title": "SBD total",
+      "total": "Total",
+      "oneRm": "{{value}} kg",
+      "noRecord": "no record",
+      "notDesignated": "not set",
+      "archived": "exercise archived",
+      "summary": "{{total}} kg",
+      "incomplete_one": "{{count}} lift to set",
+      "incomplete_other": "{{count}} lifts to set",
+      "missingLifts_one": "Total unavailable: {{count}} lift to set.",
+      "missingLifts_other": "Total unavailable: {{count}} lifts to set.",
+      "designate": "Set my lifts",
+      "lifts": {
+        "squat": "Squat",
+        "bench": "Bench press",
+        "deadlift": "Deadlift"
+      }
+    },
+    "projection": {
+      "title": "Projection · at current rate",
+      "value": "≈ {{value}} kg",
+      "atCurrentRate": "in {{weeks}} weeks · {{rate}} kg / week",
+      "disclaimer": "Estimate at the observed rate, not a target.",
+      "needPoints_one": "No projection yet: {{count}} more total measurement needed.",
+      "needPoints_other": "No projection yet: {{count}} more total measurements needed.",
+      "needDays_one": "No projection yet: {{count}} more day of history needed.",
+      "needDays_other": "No projection yet: {{count}} more days of history needed."
+    },
+    "designate": {
+      "title": "My strength lifts",
+      "subtitle": "The SBD total and its projection rely on these three exercises.",
+      "none": "to choose",
+      "hint": "Pre-filled with library exercises. Replaceable by any of your own exercises, including custom ones — essential for competition variants.",
+      "pickFor": "Choose — {{lift}}",
+      "pickA11y": "{{lift}}: {{current}}. Change",
+      "clear": "Clear selection",
+      "custom": "custom"
+    },
+    "intensity": {
+      "title": "Relative intensity · last session",
+      "percent": "{{percent}}%",
+      "basis": "of estimated 1RM ({{oneRm}} kg)",
+      "setLabel": "{{reps}} × {{weight}} kg",
+      "warmupExcluded": "Warm-up sets excluded."
+    }
   }
 }

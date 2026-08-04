@@ -2462,5 +2462,65 @@
         "uncheckConfirm": "Décocher"
       }
     }
+  },
+  "strength": {
+    "section": {
+      "title": "Force",
+      "subtitle": "Intensité relative · DOTS · total SBD"
+    },
+    "dots": {
+      "title": "Score de force relative (DOTS)",
+      "atBodyweight": "à {{weight}} kg le {{date}} · normalisé au poids de corps",
+      "missingSex": "Indisponible : le DOTS se normalise selon le sexe, et il n’existe pas de valeur neutre.",
+      "missingWeight": "Indisponible : aucune pesée enregistrée à la date du total.",
+      "missingTotal": "Indisponible : le total des trois mouvements est incomplet.",
+      "completeProfile": "Compléter mon profil"
+    },
+    "sbd": {
+      "title": "Total SBD",
+      "total": "Total",
+      "oneRm": "{{value}} kg",
+      "noRecord": "aucun record",
+      "notDesignated": "non désigné",
+      "archived": "exercice archivé",
+      "summary": "{{total}} kg",
+      "incomplete_one": "{{count}} mouvement à renseigner",
+      "incomplete_other": "{{count}} mouvements à renseigner",
+      "missingLifts_one": "Total indisponible : {{count}} mouvement à renseigner.",
+      "missingLifts_other": "Total indisponible : {{count}} mouvements à renseigner.",
+      "designate": "Désigner mes mouvements",
+      "lifts": {
+        "squat": "Squat",
+        "bench": "Développé couché",
+        "deadlift": "Soulevé de terre"
+      }
+    },
+    "projection": {
+      "title": "Projection · au rythme actuel",
+      "value": "≈ {{value}} kg",
+      "atCurrentRate": "dans {{weeks}} semaines · {{rate}} kg / semaine",
+      "disclaimer": "Estimation au rythme observé, pas un objectif.",
+      "needPoints_one": "Pas encore de projection : il manque {{count}} mesure de total.",
+      "needPoints_other": "Pas encore de projection : il manque {{count}} mesures de total.",
+      "needDays_one": "Pas encore de projection : il manque {{count}} jour d’historique.",
+      "needDays_other": "Pas encore de projection : il manque {{count}} jours d’historique."
+    },
+    "designate": {
+      "title": "Mes mouvements de force",
+      "subtitle": "Le total SBD et sa projection s’appuient sur ces trois exercices.",
+      "none": "à choisir",
+      "hint": "Pré-rempli avec les exercices de la bibliothèque. Remplaçable par n’importe lequel de tes exercices, y compris perso — indispensable pour les variantes de compétition.",
+      "pickFor": "Choisir — {{lift}}",
+      "pickA11y": "{{lift}} : {{current}}. Modifier",
+      "clear": "Retirer la désignation",
+      "custom": "perso"
+    },
+    "intensity": {
+      "title": "Intensité relative · dernière séance",
+      "percent": "{{percent}} %",
+      "basis": "du 1RM estimé ({{oneRm}} kg)",
+      "setLabel": "{{reps}} × {{weight}} kg",
+      "warmupExcluded": "Séries d’échauffement exclues."
+    }
   }
 }

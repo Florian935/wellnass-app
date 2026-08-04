@@ -14,6 +14,7 @@ import {
 } from '@/data/repositories/exercise-repository';
 import { useExerciseVariants, removeExerciseVariant } from '@/data/repositories/exercise-variant-repository';
 import { useExerciseFicheRecords } from '@/data/repositories/records-repository';
+import { RelativeIntensityCard } from '@/components/strength/RelativeIntensityCard';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -223,6 +224,11 @@ export default function ExerciseDetailScreen() {
               {exercise.instructions ?? t('exercises.detail.notSet')}
             </Text>
           </View>
+
+          {/* US MUSCPWR-01 (catalogue MUSC-16) — intensité relative de la dernière séance.
+              Ici et non sur l'écran de séance (décision D5) : celui-ci est déjà dense, et le %1RM
+              est une analyse de fond. Rend `null` sans 1RM connu (R2). */}
+          <RelativeIntensityCard exerciseId={exerciseId} />
 
           <View style={styles.records}>
             <Text style={[styles.recordsTitle, { color: colors.text }]}>

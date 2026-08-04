@@ -10,6 +10,55 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/muscpwr01-module-force` — Module force livré : %1RM, DOTS et total SBD (MUSC-16 / MUSC-27 / MUSC-29)
+
+Suite de `76797b5` (socle). Lots 5 et 6 : l'UI et le transverse. **782 tests mobile** (+16),
+**1680 tests shared**, i18n à parité (1 914 clés).
+
+#### Ajouté
+
+- **`StrengthSection.tsx`** — une **seule** section, **repliée par défaut**, sur Progression
+  (ADR-007, D4). Elle rend `null` tant que rien n'est calculable : ce module ne sert qu'aux
+  pratiquants de force et ne doit **rien coûter** aux autres. **16 tests de rendu.**
+- **`RelativeIntensityCard.tsx`** + `useExerciseRelativeIntensity` — %1RM par série de la dernière
+  séance sur la **fiche exercice**, avec moyenne pondérée par les répétitions.
+- **`app/strength-lifts.tsx`** — désignation des 3 mouvements, exercices **perso inclus**
+  (indispensable pour les variantes de compétition). Route déclarée dans `_layout.tsx`.
+- **i18n `strength.*`** FR + EN (44 clés), namespace `strength` et non `powerlifting` : le module sert
+  aussi qui suit un programme en pourcentages sans faire de compétition.
+
+#### Modifié
+
+- Catalogue : **MUSC-16 / MUSC-27 / MUSC-29 → ✅**. Le catalogue passe de **19 à 8 items ⏳** sur la
+  journée, dont **2 seulement réellement faisables** (RUN-07, META-18) — les 6 autres attendent des
+  données (FC, hydratation) ou sont hors périmètre (espace coach).
+- `progress/index.tsx`, `exercises/[id].tsx`, `_layout.tsx` : branchements.
+
+#### Technique — Notes
+
+**Un écart avec ma propre spec, trouvé au moment de clôturer.** J'avais codé et testé les briques de
+MUSC-16 (lot 1) mais **aucune UI ne les utilisait** : la section Force n'affichait que le DOTS et le
+total SBD. La spec place le %1RM sur la **fiche exercice** (D5 : pas sur l'écran de séance, déjà
+dense). Marquer MUSC-16 « livré » aurait été faux — d'où `RelativeIntensityCard`, ajoutée avant de
+cocher quoi que ce soit. Un lot de briques pures sans consommateur reste du code mort, quelle que
+soit sa couverture.
+
+**Trois pièges de test rencontrés, tous documentés dans la doc du projet** :
+1. `CollapsibleCard` porte `accessibilityLabel={title}` sur son `Pressable` : presser le `<Text>`
+   interne ne déclenche rien. Il faut cibler **le label**.
+2. Le dépli exige **`await act`** — sans lui, l'assertion porte sur la version repliée et échoue en
+   annonçant un texte introuvable (§3.6 de strategie-tests.md, piège connu).
+3. Deux mouvements valant 195 kg dans la fixture → `getByText` échoue sur « Found multiple ».
+   `getAllByText` avec un décompte explicite est plus juste que de tordre la fixture.
+
+⚠️ **Le critère de recette 21 ne peut pas être coché par un agent** : les coefficients du DOTS
+viennent de l'extérieur du projet. Un coefficient faux produit un score **plausible**, donc
+indétectable en recette ordinaire. Les tests séparent explicitement les **propriétés structurelles**
+(monotonie, sens de la normalisation, bornes — vraies quels que soient les coefficients) des
+**valeurs figées**, qui ne détectent qu'une régression. La validation de justesse est humaine.
+
+Qualité : `typecheck` 0, `lint` **0 erreur**, `test` et `test:coverage` **exit 0**.
+
 ### 04/08/2026 — `feature/import01-import-donnees-externes` — IMPORT-01 cadrée puis mise en pause sur dépendance externe (roadmap 1.20)
 
 Suite de `d4c2634`. **Aucun code applicatif** — cette entrée consigne un cadrage complet et un arrêt
