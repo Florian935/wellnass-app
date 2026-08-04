@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/mr14-jours-consecutifs-sans-repos` — Jours consécutifs sans repos (US MR-14, catalogue d'analyses)
+
+Suite de `a68a958`. Neuvième candidat catalogue de la session. **US à haut risque de doublon** :
+TRI-12 (livrée) calcule déjà le même streak avec le même seuil. Vérification faite au cadrage
+(après MR-10 → META-19 et MR-23 → TRI-03, deux absorptions cette semaine) : MR-14 reste distincte
+car elle change de **portée** — 2 piliers au lieu de 3, streak **seul** au lieu de « streak ET
+déficit » — et couvre donc l'utilisateur muscu+course sans nutrition activée, que TRI-12 ne peut
+structurellement pas voir. Cycle complet : `/us` → validation Florian (D1) → implémentation TDD →
+revue de code → correctif.
+
+#### Ajouté
+
+- **`packages/shared/src/training-time.ts`** (+ 8 tests) : `computeLoadStreakAlert` — réutilise le
+  seuil `OVERTRAINING_LOAD_STREAK_DAYS` (6 j) **déjà établi par TRI-12**, pas un nouveau chiffre.
+  Porte aussi la règle D1 (masquage mutuel).
+- Hook `useLoadStreakAlert` (`dashboard-repository.ts`), gating `['strength','running']` (2
+  piliers, contre 3 pour TRI-12 — c'est la distinction qui justifie l'US).
+- Widget `LoadStreakAlertCard` (3 formes), Tier 2 conditionnel (render-null), ton `"warn"`, titre
+  interpolé avec le nombre réel de jours. Enregistré dans `widgets.ts`/`dashboard-widgets.tsx`
+  (`HOME_WIDGET_IDS` 20 → 21) et dans `isWidgetActive` **dès cet incrément**.
+- Nouveau test de registre assertant explicitement la garde 2-vs-3 piliers face à
+  `overtraining-guard` : si ces deux gardes deviennent un jour identiques, l'une des deux US est
+  un doublon — le test le fera savoir.
+- i18n FR + EN (`home.loadStreakAlert.*`, 4 clés, eyebrow volontairement distinct de TRI-12).
+
+#### Corrigé
+
+- 🔴 **Trouvé en revue de code, avant commit : la règle D1 n'avait aucun test.** Elle vivait en
+  post-traitement dans le hook (`if (guard.show) return …`) ; inverser la condition laissait les
+  **2169 tests verts**. Déplacée dans la fonction pure (`overtrainingGuardShown` en paramètre) et
+  couverte par 3 tests. **Validité prouvée par mutation** : condition inversée → 2 tests rouges,
+  restaurée → 38 verts.
+- Spec §7 amendée : l'appel imbriqué `useOvertrainingGuardAlert()` instancie une seconde fois les
+  requêtes surveillées de TRI-12 (aucune requête *nouvelle*, mais des abonnements en plus).
+- Spec §9 complétée d'un cas limite manquant : `computeStreak` tolérant « hier », l'alerte reste
+  visible toute la journée où l'utilisateur se repose enfin. **Assumé** — exiger `activeToday`
+  changerait la sémantique du streak pour TRI-01/TRI-12 aussi.
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- **`useOvertrainingGuardAlert`/TRI-12 non modifiée** (vérifié en revue) : le calcul du streak est
+  **volontairement dupliqué** plutôt qu'extrait — TRI-12 est déjà à `etape: recette`, on ne
+  réorganise pas son code pour une US sans rapport. Les deux copies sont strictement identiques
+  (vérifié par diff en revue) ; **si le seuil ou `sessionLoad` change, penser aux deux endroits**.
+- ⚠️ **Conséquence de conception tracée dans [IDEAS.md](IDEAS.md)** : l'union TRI-12 ∪ MR-14 vaut
+  « muscu+course actifs ∧ streak ≥ 6 » — depuis MR-14, une carte s'affiche donc **toujours** dans
+  ce cas, le déficit ne décidant plus que *laquelle*. Un utilisateur dont le déficit repasse sous
+  son seuil voit la carte changer de titre **et de position**. Candidat de **fusion des deux
+  cartes** en un widget à message variable, à reprendre après la recette device de TRI-12 —
+  hors périmètre ici (modifierait TRI-12).
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1505 tests
+  shared (70 fichiers) + 667 tests mobile (72 suites) + admin, 0 échec**.
+
 ### 04/08/2026 — `feature/mr08-interference-concurrent-training` — Interférence concurrent training (US MR-08, catalogue d'analyses)
 
 Suite de `902143b`. Huitième candidat catalogue de la session, décision D1 (seuils de détection)

@@ -14,6 +14,7 @@
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
  *  - `useTrainingLoadAlert` → widget conditionnel Tier 2 (garde-fou ACWR, US META-19)
  *  - `useOvertrainingGuardAlert` → widget conditionnel Tier 2 (garde-fou tri-pilier, US TRI-12)
+ *  - `useLoadStreakAlert`   → widget conditionnel Tier 2 (jours consécutifs sans repos, US MR-14)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -35,6 +36,7 @@ import {
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
+  computeLoadStreakAlert,
   computeOvertrainingGuard,
   computeReadiness,
   computeStreak,
@@ -62,6 +64,7 @@ import {
   type DayActivity,
   type RestorableGap,
   type DeficitVolumeAlert,
+  type LoadStreakAlert,
   type Pillar,
   type ReadinessResult,
   type RecordDistanceKey,
@@ -1116,6 +1119,65 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
   );
 
   return computeOvertrainingGuard({ loadStreakDays, deficitDaysCount });
+}
+
+// ---------------------------------------------------------------------------
+// useLoadStreakAlert — widget conditionnel (US MR-14, jours consécutifs sans repos)
+// ---------------------------------------------------------------------------
+
+/**
+ * Expose l'alerte « jours consécutifs sans repos » (widget conditionnel Tier 2, US MR-14).
+ *
+ * ⚠️ **Le calcul du streak est volontairement dupliqué** depuis `useOvertrainingGuardAlert`
+ * ci-dessus (spec §3/§5, décision explicite au cadrage) : TRI-12 est déjà à `etape: recette`, en
+ * attente de test device — on ne réorganise pas son code pour une US sans rapport. C'est aussi la
+ * convention déjà appliquée par les autres hooks Tier 2 de ce fichier (`useTrainingLoadAlert`,
+ * `useConcurrentTrainingInterference`), qui refont chacun leur propre filtrage par fenêtre.
+ * Si le seuil ou `sessionLoad` change un jour, **penser aux deux endroits**.
+ *
+ * **Gating piliers** : `strength` ET `running` (2 piliers, contrairement aux 3 de TRI-12 — c'est
+ * précisément ce qui distingue cette US, spec §0). **Condition D1** : masquée si TRI-12 est déjà
+ * affiché, pour ne pas doubler le signal sur le même symptôme (spec R3).
+ */
+export function useLoadStreakAlert(): LoadStreakAlert {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+  const todayKey = useTodayKey();
+  const loadLookbackKey = useWindowStartKey(LOAD_STREAK_LOOKBACK_DAYS);
+  const overtrainingGuard = useOvertrainingGuardAlert();
+
+  if (!(strengthActive && runningActive)) {
+    return { show: false, streakDays: 0 };
+  }
+
+  const sessions = [
+    ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
+    ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
+  ].filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= loadLookbackKey);
+
+  const loadByDay = new Map<string, number>();
+  for (const s of sessions) {
+    const dayKey = localDayKey(new Date(s.finishedAt as string));
+    loadByDay.set(dayKey, (loadByDay.get(dayKey) ?? 0) + sessionLoad(s));
+  }
+  const chargeDays = new Set(
+    Array.from(loadByDay.entries())
+      .filter(([, load]) => load > 0)
+      .map(([dayKey]) => dayKey),
+  );
+  const streakDays = computeStreak(chargeDays, todayKey).current;
+
+  // D1 (masquage mutuel, TRI-12 prime) est porté par la fonction pure, pas par un post-traitement
+  // ici — c'est ce qui rend la règle testable unitairement (cf. `computeLoadStreakAlert`).
+  return computeLoadStreakAlert({
+    streakDays,
+    overtrainingGuardShown: overtrainingGuard.show,
+  });
 }
 
 // ---------------------------------------------------------------------------

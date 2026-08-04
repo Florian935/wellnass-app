@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MR-14 — Jours consécutifs sans repos</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#a63b2e;--warnbg:#f7ddd6;--warnborder:#e2b3a6}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px;background:var(--warnbg);border:1px solid var(--warnborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--warn)}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;color:var(--warn);margin-top:6px}
+  .cardmsg{font-size:13.5px;color:#5c2a22;margin-top:4px;line-height:1.4}
+  .band{margin-top:10px;background:rgba(166,59,46,.1);border:1px solid var(--warnborder);
+        border-radius:10px;padding:9px 12px;font-size:12.5px;color:var(--warn)}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MR-14 — Jours consécutifs sans repos</h1>
+<p class="sub">Widget <strong>conditionnel</strong> du dashboard (Tier 2, ADR-007), gardé par
+<code>strength</code> <strong>et</strong> <code>running</code> — alerte douce (ton
+<code>"warn"</code>, comme TRI-12/META-19 : un vrai signal de récupération, pas un simple constat
+d'arbitrage comme MR-08).</p>
+<div class="flag">✅ Décision D1 arbitrée par Florian le 04/08/2026 (masquage mutuel avec TRI-12),
+code livré (TDD) le même jour.</div>
+
+<h2>Pourquoi ce n'est pas un doublon de TRI-12</h2>
+<p class="why">TRI-12 (déjà livrée) n'alerte que si <strong>streak de charge ET déficit
+calorique persistant</strong> sont réunis, et exige les <strong>3 piliers</strong> actifs. MR-14
+regarde le streak <strong>seul</strong>, gardé par <strong>2 piliers</strong> — elle couvre la
+population que TRI-12 ne peut structurellement pas voir (nutrition inactive), et le cas où le
+streak est là sans souci calorique.</p>
+<div class="note" style="margin-top:0">
+  <code>streak = plus longue série de jours consécutifs avec charge sRPE > 0 (muscu ∪ course)</code><br>
+  <code>alerte si streak ≥ 6 jours (seuil déjà établi par TRI-12, pas un nouveau chiffre)</code><br>
+  <code>masquée si TRI-12 est déjà affiché (D1) — évite le double signal</code>
+</div>
+
+<h2>1 · Le widget visible — streak ≥ 6 jours, TRI-12 pas actif</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Forme wide</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Repos &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">8 jours sans repos</div>
+      <div class="cardmsg">Tu t'entraînes (muscu et course confondues) depuis plusieurs jours sans
+      jour de repos.</div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme large — avec la recommandation</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Repos &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">8 jours sans repos</div>
+      <div class="cardmsg">Tu t'entraînes (muscu et course confondues) depuis plusieurs jours sans
+      jour de repos.</div>
+      <div class="band">Un jour de repos peut aider ta récupération.</div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Quand le widget reste masqué</h2>
+<div class="row3">
+  <div class="zonecard">
+    <b>Streak &lt; 6 jours (R2)</b>
+    <p>4 jours d'affilée avec séance/course : sous le seuil, rien à signaler.</p>
+  </div>
+  <div class="zonecard">
+    <b>TRI-12 déjà affiché (D1)</b>
+    <p>3 piliers actifs, déficit persistant en plus du streak : TRI-12 s'affiche seul — pas de
+    doublon sur le même symptôme.</p>
+  </div>
+  <div class="zonecard">
+    <b>Muscu ou course inactif</b>
+    <p>Sans les deux piliers, aucun streak combiné n'a de sens — le widget ne s'affiche jamais.</p>
+  </div>
+</div>
+<div class="hiddenbox" style="margin-top:14px">Dans les 3 cas ci-dessus : rien à cet endroit du
+dashboard.</div>
+
+<h2>3 · Ce que TRI-12 ne peut pas voir, et que MR-14 couvre</h2>
+<div class="note" style="margin-top:0">
+  Un utilisateur <strong>muscu + course, sans nutrition activée</strong> : TRI-12 ne s'affichera
+  <strong>jamais</strong> pour lui (gating à 3 piliers). Un streak de 9 jours sans repos, pourtant
+  un vrai risque de blessure/surmenage, resterait invisible sans MR-14. Même chose pour un
+  utilisateur aux 3 piliers actifs mais dont les apports sont corrects : TRI-12 reste silencieux
+  (pas de déficit), MR-14 alerte quand même sur le streak seul.
+</div>
+
+<h2>Les règles qui gouvernent l'alerte</h2>
+<div class="rules">
+  <div class="rule"><b>R1/R2 — Même définition et même seuil que TRI-12</b>
+    Streak de jours à charge combinée &gt; 0, seuil 6 jours (<code>OVERTRAINING_LOAD_STREAK_DAYS</code>)
+    — aucun nouveau chiffre inventé.</div>
+  <div class="rule"><b>R3/D1 — Masquage mutuel avec TRI-12</b>
+    Si le garde-fou tri-pilier est déjà visible, MR-14 se tait — un seul signal à la fois sur le
+    même symptôme.</div>
+  <div class="rule"><b>R4 — Indépendante de la nutrition</b>
+    Aucune lecture de <code>food_entries</code>/objectif calorique, contrairement à TRI-12.</div>
+  <div class="rule"><b>R5 — Ton d'alerte douce</b>
+    Un constat + une suggestion générique, jamais un jugement sur l'intensité choisie.</div>
+</div>
+
+</div></body></html>

@@ -28,6 +28,7 @@ avant de pouvoir publier.
 | **META-19** — Garde-fou surentraînement (ACWR combiné) | `recette` | `feature/meta19-acwr-garde-fou` | — |
 | **MN-04** — Macros ajustées jours muscu (glucides péri-séance) | `recette` | `feature/mn04-glucides-peri-seance` | — |
 | **MR-08** — Interférence concurrent training | `recette` | `feature/mr08-interference-concurrent-training` | — |
+| **MR-14** — Jours consécutifs sans repos | `recette` | `feature/mr14-jours-consecutifs-sans-repos` | — |
 | **MUSC-09** — Record personnel par plage de répétitions | `recette` | `feature/musc09-record-plage-reps` | [3.56] |
 | **MUSC-12** — Densité d'entraînement (volume/temps) | `recette` | `feature/musc12-densite-entrainement` | — |
 | **MUSC-19** — Tonnage cumulé (lifetime/annuel) | `recette` | `feature/musc19-tonnage-cumule` | — |
@@ -59,7 +60,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **42 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **43 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MR-14, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -80,9 +81,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/mr08-interference-concurrent-training` (modifications non commitées) |
-| Commits | 1071 · `main` a **1068** commits de retard sur `dev` |
-| Specs d'US | 119 au total — 77 clôturées, 42 en cours |
+| Branche courante | `feature/mr14-jours-consecutifs-sans-repos` (modifications non commitées) |
+| Commits | 1072 · `main` a **1069** commits de retard sur `dev` |
+| Specs d'US | 120 au total — 77 clôturées, 43 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -92,11 +93,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a68a958` feat(mr08): interférence concurrent training (US MR-08, catalogue d'analyses)
 - `902143b` feat(nutr18): bilan calorique hebdomadaire (US NUTR-18, catalogue d'analyses)
 - `94fe516` feat(musc20): régularité & consistance d'entraînement (US MUSC-20, catalogue d'analyses)
 - `a91dc42` feat(musc12): densité d'entraînement volume/temps (US MUSC-12, catalogue d'analyses)
 - `ecd3da4` feat(musc19): tonnage cumulé lifetime/annuel (US MUSC-19, catalogue d'analyses)
-- `06752c6` feat(mn04): macros ajustées jours muscu, glucides péri-séance (US MN-04, catalogue d'analyses)
 
 ---
 

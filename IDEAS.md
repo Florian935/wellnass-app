@@ -22,6 +22,21 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [04/08/2026] 🔍 **Fusionner les cartes TRI-12 et MR-14 en un seul widget à message variable**
+  — _remontée par la revue de code de [MR-14](docs/specs/functional/us/mr14-jours-consecutifs-sans-repos.md),
+  à reprendre **après la recette device de TRI-12**._ Constat algébrique : avec P = muscu∧course,
+  S = streak ≥ 6 j, N = nutrition active, D = déficit persistant → TRI-12 s'affiche si `P∧N∧S∧D`,
+  MR-14 si `P∧S∧¬(P∧N∧S∧D)`, donc **l'union vaut `P∧S`**. Autrement dit : depuis MR-14, une carte
+  d'alerte s'affiche **toujours** dès que muscu+course sont actifs et le streak atteint 6 j — le
+  déficit ne décide plus *si* une carte apparaît, seulement **laquelle**. Effet de bord concret :
+  un utilisateur 3 piliers dont le déficit repasse sous son seuil (il log son dîner) voit TRI-12
+  disparaître et MR-14 apparaître **dans la même session, sans qu'aucune donnée d'entraînement
+  n'ait bougé** ; et comme les deux cartes sont des clones visuels à des positions différentes du
+  registre, ça se lit comme « mon alerte a changé de titre et de place ». Une carte unique dont le
+  texte s'enrichit quand le déficit s'ajoute réglerait le swap, le saut de position et la double
+  instanciation des requêtes (spec MR-14 §7). **Pourquoi pas fait maintenant** : ça modifie TRI-12,
+  explicitement hors périmètre de MR-14 (spec §5) car déjà en attente de recette device.
+
 - [25/07/2026] 🔍 **Note — benchmark « 4 modèles IA » (source de la salve du 25/07)** : les 4 dumps
   (Gemini, ChatGPT, Qwen-3.7-plus, Qwen-3.8-max — ~93 propositions au total) ont été croisés avec ce
   fichier le 24/07. _Les dumps bruts vivent dans `_inbox-ia/`, **dossier local non versionné** (gitignoré,

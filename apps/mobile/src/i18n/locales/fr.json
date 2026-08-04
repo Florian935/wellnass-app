@@ -928,6 +928,12 @@
       "strengthLabel": "tonnage muscu",
       "message": "Ton {{up}} est nettement au-dessus de ta moyenne des 4 dernières semaines, pendant que ton {{down}} est nettement en dessous.",
       "hint": "Peut expliquer une stagnation sur l'un des deux — pas forcément un problème si c'est voulu."
+    },
+    "loadStreakAlert": {
+      "eyebrow": "Repos & récupération",
+      "title": "{{days}} jours sans repos",
+      "message": "Tu t'entraînes (muscu et course confondues) depuis plusieurs jours sans jour de repos.",
+      "recommend": "Un jour de repos peut aider ta récupération."
     }
   },
   "activationPath": {

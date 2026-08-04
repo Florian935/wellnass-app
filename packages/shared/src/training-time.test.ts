@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeAcwr,
   computeConcurrentTrainingInterference,
+  computeLoadStreakAlert,
   computeOvertrainingGuard,
   computeTrainingTime,
   countDeficitDaysInWindow,
@@ -258,5 +259,69 @@ describe('computeOvertrainingGuard (US TRI-12)', () => {
     expect(computeOvertrainingGuard({ loadStreakDays: 8, deficitDaysCount: 7 })).toEqual({
       show: true,
     });
+  });
+});
+
+describe('computeLoadStreakAlert (US MR-14, spec R2/R3)', () => {
+  const noGuard = { overtrainingGuardShown: false };
+
+  it('streak 5 → masqué (sous le seuil de 6)', () => {
+    expect(computeLoadStreakAlert({ streakDays: 5, ...noGuard })).toEqual({
+      show: false,
+      streakDays: 5,
+    });
+  });
+
+  it('streak 6 → visible (borne incluse, même seuil que TRI-12 — pas un nouveau chiffre)', () => {
+    expect(computeLoadStreakAlert({ streakDays: 6, ...noGuard })).toEqual({
+      show: true,
+      streakDays: 6,
+    });
+  });
+
+  it('streak 10 → visible, streakDays remonté tel quel pour le message interpolé', () => {
+    expect(computeLoadStreakAlert({ streakDays: 10, ...noGuard })).toEqual({
+      show: true,
+      streakDays: 10,
+    });
+  });
+
+  it('streak 0 (compte neuf, aucun historique) → masqué', () => {
+    expect(computeLoadStreakAlert({ streakDays: 0, ...noGuard })).toEqual({
+      show: false,
+      streakDays: 0,
+    });
+  });
+
+  it('ne regarde aucune donnée nutrition (spec R4) — le streak seul décide du seuil', () => {
+    // Contraste explicite avec `computeOvertrainingGuard`, qui exige deux signaux : à streak égal
+    // et sans déficit, TRI-12 se taît et MR-14 parle — c'est exactement le résidu que cette US
+    // couvre (spec §0).
+    expect(computeLoadStreakAlert({ streakDays: 7, ...noGuard }).show).toBe(true);
+    expect(computeOvertrainingGuard({ loadStreakDays: 7, deficitDaysCount: 0 }).show).toBe(false);
+  });
+
+  // -------------------------------------------------------------------------
+  // D1 — masquage mutuel avec TRI-12 (règle sans aucun test avant la revue de code)
+  // -------------------------------------------------------------------------
+
+  it('D1 — streak au-dessus du seuil MAIS TRI-12 affiché → masqué (TRI-12 prime)', () => {
+    expect(
+      computeLoadStreakAlert({ streakDays: 9, overtrainingGuardShown: true }),
+    ).toEqual({ show: false, streakDays: 9 });
+  });
+
+  it('D1 — `streakDays` reste renseigné même masqué (seul `show` est neutralisé)', () => {
+    // Garde-fou contre une implémentation qui remettrait le compte à 0 en même temps que `show` :
+    // la valeur reste juste, seule la décision d'affichage change.
+    const masked = computeLoadStreakAlert({ streakDays: 12, overtrainingGuardShown: true });
+    expect(masked.streakDays).toBe(12);
+    expect(masked.show).toBe(false);
+  });
+
+  it('D1 — sous le seuil ET TRI-12 affiché → masqué (les deux raisons cumulées)', () => {
+    expect(
+      computeLoadStreakAlert({ streakDays: 3, overtrainingGuardShown: true }),
+    ).toEqual({ show: false, streakDays: 3 });
   });
 });

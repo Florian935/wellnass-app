@@ -84,6 +84,11 @@ export const HOME_WIDGET_IDS = [
   // (même garde tout-ou-rien que `training-load`) — rendu `null` hors divergence détectée entre
   // les deux piliers (spec R2).
   'concurrent-training-interference',
+  // US MR-14 — idem. **Conditionnel Tier 2**, gardé par `strength`+`running` (2 piliers, pas 3 :
+  // c'est ce qui le distingue d'`overtraining-guard`/TRI-12, qui exige aussi la nutrition et le
+  // déficit calorique). Rendu `null` sous le seuil de streak **ou** quand TRI-12 est déjà affiché
+  // (masquage mutuel, spec R3/D1 — appliqué dans le hook).
+  'load-streak-alert',
 ] as const;
 
 /**
@@ -205,6 +210,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US MR-08 : même garde que `training-load` — la divergence compare les deux piliers, un
       // seul actif ne donnerait qu'une moitié de la comparaison.
       'concurrent-training-interference': ['strength', 'running'],
+      // US MR-14 : 2 piliers, **pas 3** comme `overtraining-guard` — c'est précisément la raison
+      // d'être de cette US (couvrir l'utilisateur muscu+course sans nutrition activée, que le
+      // garde-fou tri-pilier ne peut structurellement pas voir).
+      'load-streak-alert': ['strength', 'running'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

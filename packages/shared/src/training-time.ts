@@ -189,3 +189,37 @@ export function computeOvertrainingGuard(input: {
       input.deficitDaysCount >= OVERTRAINING_DEFICIT_DAYS_REQUIRED,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Jours consécutifs sans repos — streak de charge seul (US MR-14, catalogue)
+// ---------------------------------------------------------------------------
+
+/** Résultat de l'alerte streak seul — `streakDays` remonté pour le message interpolé (spec §6). */
+export type LoadStreakAlert = { show: boolean; streakDays: number };
+
+/**
+ * Alerte « jours consécutifs sans repos » (US MR-14, spec R2/R3) : réutilise le seuil
+ * `OVERTRAINING_LOAD_STREAK_DAYS` **déjà établi par TRI-12** (6 j, la fourchette 6-7 j du
+ * catalogue), pas un nouveau chiffre.
+ *
+ * ⚠️ **Pas un doublon de `computeOvertrainingGuard`** (spec §0, vérifié au cadrage) : celle-ci
+ * exige **deux** signaux (streak **et** déficit calorique) et n'est gardée qu'aux 3 piliers ;
+ * MR-14 ne regarde **que** le streak (spec R4, aucune donnée nutrition ici) et couvre donc la
+ * population que TRI-12 ne peut structurellement pas voir (nutrition inactive), ainsi que le cas
+ * « streak sans déficit ».
+ *
+ * `overtrainingGuardShown` porte le **masquage mutuel** (spec R3/D1) : TRI-12 prime, son signal
+ * étant le plus complet. Ce paramètre vit ici plutôt qu'en post-traitement dans le hook pour que
+ * la règle D1 soit **testable unitairement** — sans lui, inverser la condition ne cassait aucun
+ * test (trouvé en revue de code).
+ */
+export function computeLoadStreakAlert(input: {
+  streakDays: number;
+  overtrainingGuardShown: boolean;
+}): LoadStreakAlert {
+  const reachedThreshold = input.streakDays >= OVERTRAINING_LOAD_STREAK_DAYS;
+  return {
+    show: reachedThreshold && !input.overtrainingGuardShown,
+    streakDays: input.streakDays,
+  };
+}
