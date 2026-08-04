@@ -1327,6 +1327,12 @@
       "emptyTitle": "No volume in 7 days",
       "emptyMessage": "Complete a workout to see volume broken down by muscle group."
     },
+    "lifetimeTonnage": {
+      "title": "Total tonnage",
+      "lifetime": "Lifetime",
+      "thisYear": "This year",
+      "milestone": "🏆 Over {{weight}} lifted in total!"
+    },
     "balance": {
       "title": "Muscle balance",
       "subtitle": "over 14 days",

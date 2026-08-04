@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-19 — Tonnage cumulé (lifetime/annuel)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --gold:#a67c1f;--goldbg:#fbf1dd;--goldborder:#e4c988}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .card{border-radius:16px;padding:16px;background:var(--surf);border:1px solid var(--border)}
+  .cardtitle{font-weight:700;font-size:15px;margin-bottom:12px}
+  .stats{display:flex;gap:22px}
+  .stat{flex:1}
+  .statlabel{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+             margin-bottom:4px}
+  .statvalue{font-size:24px;font-weight:800;font-family:Georgia,serif}
+  .statunit{font-size:13px;font-weight:400;color:var(--muted)}
+  .badge{margin-top:14px;background:var(--goldbg);border:1px solid var(--goldborder);
+         border-radius:10px;padding:9px 12px;font-size:13px;color:var(--gold);font-weight:600}
+  .placeholder{color:var(--muted);font-style:italic;font-size:13px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  .screenmock{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:14px}
+  .sectionlabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+                margin:14px 0 6px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-19 — Tonnage cumulé (lifetime/annuel)</h1>
+<p class="sub">Nouvelle section <strong>Tier 1</strong> sur l'écran Progression (<code>/progress</code>)
+— pas un widget dashboard. Rétrospectif pur, aucune donnée nouvelle.</p>
+<div class="flag">✅ Décisions D1-D4 arbitrées par Florian le 04/08/2026, code livré (TDD) le même jour —
+cette maquette reflète les règles telles qu'implémentées.</div>
+
+<h2>Position sur l'écran existant</h2>
+<p class="why">4ᵉ section, ajoutée après le volume hebdomadaire — l'écran reste sous le seuil de
+repli ADR-007 (~4-5 sections avant de passer en repliable).</p>
+<div class="screenmock">
+  <div class="sectionlabel">1 · Volume · 7 derniers jours (existant)</div>
+  <div class="placeholder">— histogramme par groupe musculaire, inchangé —</div>
+  <div class="sectionlabel">2 · Tonnage cumulé (nouveau, cette US)</div>
+  <div class="card">
+    <div class="cardtitle">Tonnage cumulé</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="statlabel">À vie</div>
+        <div class="statvalue">1 247 500 <span class="statunit">kg</span></div>
+      </div>
+      <div class="stat">
+        <div class="statlabel">Cette année</div>
+        <div class="statvalue">312 400 <span class="statunit">kg</span></div>
+      </div>
+    </div>
+    <div class="badge">🏆 Plus d'1 000 000 kg soulevés au total !</div>
+  </div>
+  <div class="sectionlabel">3 · Équilibre musculaire (existant)</div>
+  <div class="placeholder">— sur 14 jours, inchangé —</div>
+  <div class="sectionlabel">4 · Par exercice (existant)</div>
+  <div class="placeholder">— sélecteur + records + courbe, inchangé —</div>
+</div>
+
+<h2>États</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Sous le jalon — pas de barre de progression (D3)</div>
+    <div class="card">
+      <div class="cardtitle">Tonnage cumulé</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="statlabel">À vie</div>
+          <div class="statvalue">684 200 <span class="statunit">kg</span></div>
+        </div>
+        <div class="stat">
+          <div class="statlabel">Cette année</div>
+          <div class="statvalue">198 000 <span class="statunit">kg</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="placeholder" style="margin-top:8px">Aucune indication de « distance au jalon » —
+    ce ne serait pas cohérent avec l'absence de mécanique de progression (arbitrage C).</div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Compte neuf — 0 explicite, pas de section absente (R4)</div>
+    <div class="card">
+      <div class="cardtitle">Tonnage cumulé</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="statlabel">À vie</div>
+          <div class="statvalue">0 <span class="statunit">kg</span></div>
+        </div>
+        <div class="stat">
+          <div class="statlabel">Cette année</div>
+          <div class="statvalue">0 <span class="statunit">kg</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Les règles</h2>
+<div class="rules">
+  <div class="rule"><b>R2 — « Cette année » = année civile locale (D1)</b>
+    1er janvier minuit local → aujourd'hui. Repart à 0 le 1er janvier, sans affecter le total à vie.</div>
+  <div class="rule"><b>R3 — Un seul jalon, badge silencieux (D3/D4)</b>
+    <code>lifetimeKg &gt;= 1 000 000</code>, recalculé à chaque affichage — aucun état « déjà vu »
+    à mémoriser, aucune notification.</div>
+  <div class="rule"><b>R4 — Jamais un trou visuel</b>
+    Un compte sans séance affiche 0 kg explicitement, pas une section masquée.</div>
+  <div class="rule"><b>D2 — Tier 1, pas Tier 0</b>
+    Pas une stat du jour actionnable : une consultation occasionnelle, pas de place au dashboard
+    plafonné.</div>
+</div>
+
+</div></body></html>

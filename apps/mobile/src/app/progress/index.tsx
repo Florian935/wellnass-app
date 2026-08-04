@@ -30,7 +30,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   formatDayFull,
+  hasReachedTonnageMilestone,
   percentChange,
+  TONNAGE_MILESTONE_KG,
   type MuscleGroup,
   type MuscleBalance,
 } from '@wellness/shared';
@@ -47,6 +49,7 @@ import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import {
   useExerciseRecords,
   useExerciseProgression,
+  useLifetimeTonnage,
   useMuscleBalance,
   useMuscleVolumeThisWeek,
   useWeeklyVolumeComparison,
@@ -129,7 +132,15 @@ export default function ProgressScreen() {
         <WeeklyVolumeSection onStartWorkout={() => router.push('/workout')} />
 
         {/* ---------------------------------------------------------------- */}
-        {/* Section 1bis — Équilibre musculaire (14 j)                        */}
+        {/* Section 1bis — Tonnage cumulé (lifetime/annuel, US MUSC-19)        */}
+        {/* ---------------------------------------------------------------- */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('progress.lifetimeTonnage.title')}
+        </Text>
+        <LifetimeTonnageSection />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Section 1ter — Équilibre musculaire (14 j)                        */}
         {/* ---------------------------------------------------------------- */}
         <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
           {t('progress.balance.title')}
@@ -286,6 +297,66 @@ function WeeklyVolumeSection({ onStartWorkout }: { onStartWorkout: () => void })
         title={t('progress.weeklyVolume.chartTitle')}
         unit={units.weightSymbol}
       />
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section tonnage cumulé (lifetime/annuel, US MUSC-19)
+// ---------------------------------------------------------------------------
+
+function LifetimeTonnageSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+  const { lifetimeKg, thisYearKg, isLoading } = useLifetimeTonnage();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingRow}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+
+  const lifetimeLabel = units.formatWeight(lifetimeKg);
+  const thisYearLabel = units.formatWeight(thisYearKg);
+  const milestoneReached = hasReachedTonnageMilestone(lifetimeKg);
+  const milestoneText = milestoneReached
+    ? t('progress.lifetimeTonnage.milestone', { weight: units.formatWeight(TONNAGE_MILESTONE_KG) })
+    : null;
+
+  const a11yLabel = [
+    `${t('progress.lifetimeTonnage.lifetime')} ${lifetimeLabel}`,
+    `${t('progress.lifetimeTonnage.thisYear')} ${thisYearLabel}`,
+    milestoneText,
+  ]
+    .filter(Boolean)
+    .join('. ');
+
+  return (
+    <Card>
+      <View accessible accessibilityLabel={a11yLabel}>
+        <View style={styles.tonnageRow}>
+          <View style={styles.tonnageStat}>
+            <Text style={[styles.tonnageLabel, { color: colors.textMuted }]}>
+              {t('progress.lifetimeTonnage.lifetime')}
+            </Text>
+            <Text style={[styles.tonnageValue, { color: colors.text }]}>{lifetimeLabel}</Text>
+          </View>
+          <View style={styles.tonnageStat}>
+            <Text style={[styles.tonnageLabel, { color: colors.textMuted }]}>
+              {t('progress.lifetimeTonnage.thisYear')}
+            </Text>
+            <Text style={[styles.tonnageValue, { color: colors.text }]}>{thisYearLabel}</Text>
+          </View>
+        </View>
+        {milestoneText && (
+          <View style={[styles.tonnageBadge, { backgroundColor: colors.surfaceAlt }]}>
+            <Text style={[styles.tonnageBadgeText, { color: colors.accent }]}>{milestoneText}</Text>
+          </View>
+        )}
+      </View>
     </Card>
   );
 }
@@ -603,6 +674,35 @@ const styles = StyleSheet.create({
   weeklyTotalDeltaLabel: {
     fontFamily: fontFamily.body,
     fontSize: 11,
+  },
+  tonnageRow: {
+    flexDirection: 'row',
+    gap: 22,
+  },
+  tonnageStat: {
+    flex: 1,
+    gap: 2,
+  },
+  tonnageLabel: {
+    fontFamily: fontFamily.body,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  tonnageValue: {
+    fontFamily: fontFamily.displaySemi,
+    fontSize: 22,
+    letterSpacing: -0.3,
+  },
+  tonnageBadge: {
+    marginTop: 14,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  tonnageBadgeText: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 13,
   },
   emptyCard: {
     padding: 20,

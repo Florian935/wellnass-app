@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/musc19-tonnage-cumule` — Tonnage cumulé lifetime/annuel (US MUSC-19, catalogue d'analyses)
+
+Suite de `06752c6`. Quatrième candidat piochée dans le catalogue d'analyses. **Pas un widget
+dashboard** : une 4ᵉ section sur l'écran Progression existant (`/progress`) — total de kg soulevés
+à vie et sur l'année civile en cours, plus un jalon symbolique (1 000 000 kg) affiché en badge
+silencieux, sans notification (arbitrage C, gamification hors V1). Cycle complet : `/us` →
+validation Florian (4 décisions) → implémentation TDD → revue de code → correctifs.
+
+#### Ajouté
+
+- **`packages/shared/src/date.ts`** (+ 3 tests) : `localStartOfYear` — minuit local du 1er janvier,
+  même patron que `localMidnightDaysAgo`.
+- **`packages/shared/src/workout.ts`** (+ 4 tests) : `TONNAGE_MILESTONE_KG`, `hasReachedTonnageMilestone`
+  — un seul jalon (décision D3), pas une échelle de paliers.
+- Hook `useLifetimeTonnage` (`records-repository.ts`) : même patron SQL que `useMuscleBalance`
+  (`SUM(s.reps * s.weight_kg)`, mêmes filtres), sans `GROUP BY` — deux sommes (à vie, cette année)
+  dans une seule requête.
+- Section `LifetimeTonnageSection` sur `/progress`, i18n FR + EN (`progress.lifetimeTonnage.*`).
+- Spec + plan + maquette : [musc19-tonnage-cumule.md](docs/specs/functional/us/musc19-tonnage-cumule.md),
+  [plan](docs/plans/musc19-tonnage-cumule.md), [maquette](design/musc19-tonnage-cumule/musc19-tonnage-cumule.html).
+
+#### Corrigé
+
+- 🟠 **Trouvé en revue de code (`superpowers:code-reviewer`), avant commit** — 4 points :
+  1. Le badge du jalon était rendu **hors** du bloc `accessible` de la section : TalkBack l'aurait
+     énoncé deux fois. Déplacé à l'intérieur (même patron que `GoalCard`).
+  2. Formatage des nombres en `toLocaleString()` nu, sans locale explicite — alors que
+     `useUnits().formatWeight()` existe déjà (utilisé par `WeeklyVolumeSection`, même écran) et gère
+     conversion kg/lb + locale + décimales en un seul appel. Les deux totaux et le message du jalon
+     l'utilisent désormais.
+  3. **Déviation de la maquette validée** : le message du jalon interpolait le total à vie courant
+     (qui grandit avec chaque séance) au lieu du **seuil fixe** (1 000 000 kg) montré dans la
+     maquette. Corrigé — `{{weight}}` reçoit maintenant `TONNAGE_MILESTONE_KG`, jamais le total live.
+  4. `docs/product/analyses-donnees.md` et la maquette affichaient encore « décisions non
+     arbitrées » après la validation de Florian — même défaut mineur que sur RN-03/MN-04,
+     resynchronisé.
+- 🟢 Nit cosmétique : les commentaires de sections dans `progress/index.tsx` numérotaient la
+  nouvelle section « 1ter » alors qu'elle est rendue **avant** la section « 1bis » existante —
+  renumérotées dans l'ordre réel d'affichage.
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- Distincte de l'idée « Il y a 1 an » / souvenirs (`IDEAS.md`, différée le 13/07/2026 car elle exige
+  un an d'historique) — le tonnage cumulé n'a aucune dépendance de ce type.
+- Avertissement pré-existant, non lié à ce diff (vérifié par `git diff`) : `localMidnightDaysAgo`
+  importé mais jamais appelé dans `records-repository.ts` (seulement mentionné en commentaire) —
+  hors périmètre de cette US, non corrigé.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, 1 warning pré-existant sans lien) · `test` ✅
+  **1475 tests shared (70 fichiers) + 655 tests mobile (70 suites), 0 échec**.
+
 ### 04/08/2026 — `feature/mn04-glucides-peri-seance` — Macros ajustées jours muscu (US MN-04, catalogue d'analyses)
 
 Suite de `3c390b5`. Troisième candidat piochée dans le catalogue d'analyses pendant la fenêtre de

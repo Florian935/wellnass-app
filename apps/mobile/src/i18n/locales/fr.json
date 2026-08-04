@@ -1327,6 +1327,12 @@
       "emptyTitle": "Aucun volume sur 7 jours",
       "emptyMessage": "Termine une séance pour voir le volume réparti par groupe musculaire."
     },
+    "lifetimeTonnage": {
+      "title": "Tonnage cumulé",
+      "lifetime": "À vie",
+      "thisYear": "Cette année",
+      "milestone": "🏆 Plus de {{weight}} soulevés au total !"
+    },
     "balance": {
       "title": "Équilibre musculaire",
       "subtitle": "sur 14 jours",

@@ -37,6 +37,7 @@ import {
   computeWorkoutRecords,
   localDayKey,
   localMidnightDaysAgo,
+  localStartOfYear,
   rollingWeekStarts,
   ROLLING_WEEK_DAYS,
   resolveActivePillars,
@@ -849,6 +850,44 @@ export function useMuscleBalance(): {
   );
 
   return { balance, volumes, isLoading };
+}
+
+/**
+ * Tonnage cumulé à vie et sur l'année civile en cours (US MUSC-19), réactif.
+ *
+ * Même patron SQL que `useMuscleBalance` (`SUM(s.reps * s.weight_kg)`, mêmes filtres — séries
+ * validées non-échauffement de séances terminées), sans `GROUP BY` : deux sommes globales dans
+ * une seule requête (`this_year` conditionné par `w.finished_at >= ?`, `lifetime` sans borne
+ * basse). Borne « cette année » : minuit local du 1er janvier (spec D1/R2), jamais de comparaison
+ * `date()` SQL sur de l'UTC (voir en-tête de fichier).
+ */
+export function useLifetimeTonnage(): {
+  lifetimeKg: number;
+  thisYearKg: number;
+  isLoading: boolean;
+} {
+  const today = useTodayDate();
+  const yearStartIso = localStartOfYear(today).toISOString();
+
+  const sql = `
+    SELECT
+      SUM(s.reps * s.weight_kg) AS lifetime,
+      SUM(CASE WHEN w.finished_at >= ? THEN s.reps * s.weight_kg ELSE 0 END) AS this_year
+    FROM workout_sets s
+    JOIN workouts w ON w.id = s.workout_id
+      AND w.status = 'completed' AND w.deleted_at IS NULL
+    WHERE s.deleted_at IS NULL
+      AND s.done = 1 AND s.set_type <> 'warmup'
+      AND s.reps IS NOT NULL AND s.weight_kg IS NOT NULL
+  `;
+
+  const { data, isLoading } = useQuery<{ lifetime: number | null; this_year: number | null }>(
+    sql,
+    [yearStartIso],
+  );
+  const row = data[0];
+
+  return { lifetimeKg: row?.lifetime ?? 0, thisYearKg: row?.this_year ?? 0, isLoading };
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   daysBetween,
   ROLLING_WEEK_DAYS,
   localMidnightDaysAgo,
+  localStartOfYear,
   rollingWeekStarts,
 } from './date';
 
@@ -35,6 +36,27 @@ describe('localMidnightDaysAgo / rollingWeekStarts (fenêtre glissante 7 jours)'
   it('rollingWeekStarts : bornes récentes→anciennes espacées de 7 jours', () => {
     const starts = rollingWeekStarts(3, ref).map(localDayKey);
     expect(starts).toEqual(['2026-07-14', '2026-07-07', '2026-06-30']);
+  });
+});
+
+describe('localStartOfYear (US MUSC-19, spec D1/R2)', () => {
+  it('un 15 juillet → 1er janvier de la même année, heure zérotée', () => {
+    const ref = new Date(2026, 6, 15, 23, 45);
+    const start = localStartOfYear(ref);
+    expect(localDayKey(start)).toBe('2026-01-01');
+    expect(start.getHours()).toBe(0);
+    expect(start.getMinutes()).toBe(0);
+    expect(start.getSeconds()).toBe(0);
+  });
+
+  it('un 1er janvier à 23h59 → reste le 1er janvier (pas de décalage de jour)', () => {
+    const ref = new Date(2026, 0, 1, 23, 59);
+    expect(localDayKey(localStartOfYear(ref))).toBe('2026-01-01');
+  });
+
+  it('année bissextile (2028) → même comportement, aucun cas particulier', () => {
+    const ref = new Date(2028, 5, 10);
+    expect(localDayKey(localStartOfYear(ref))).toBe('2028-01-01');
   });
 });
 

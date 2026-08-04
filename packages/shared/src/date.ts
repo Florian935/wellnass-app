@@ -52,6 +52,11 @@ export function localMidnightDaysAgo(daysAgo: number, ref: Date = new Date()): D
   return new Date(ref.getFullYear(), ref.getMonth(), ref.getDate() - daysAgo, 0, 0, 0, 0);
 }
 
+/** Minuit local du 1er janvier de l'année de `ref` (US MUSC-19, spec D1/R2). */
+export function localStartOfYear(ref: Date = new Date()): Date {
+  return new Date(ref.getFullYear(), 0, 1, 0, 0, 0, 0);
+}
+
 /**
  * Bornes basses (minuit local) des `count` fenêtres glissantes de 7 jours consécutives,
  * la plus récente en premier : `[aujourd'hui−6, aujourd'hui−13, …]`. Pour les graphiques

@@ -146,6 +146,14 @@ export function computeVolume(
   }, 0);
 }
 
+/** Jalon symbolique du tonnage à vie (US MUSC-19, spec D3) — un seul seuil, pas une échelle. */
+export const TONNAGE_MILESTONE_KG = 1_000_000;
+
+/** `true` dès que le tonnage à vie atteint le jalon (spec R3), recalculé à chaque affichage. */
+export function hasReachedTonnageMilestone(lifetimeKg: number): boolean {
+  return lifetimeKg >= TONNAGE_MILESTONE_KG;
+}
+
 export type ReorderOperation =
   | { type: 'swap'; exerciseId: string; direction: 'up' | 'down' }
   | { type: 'toEnd'; exerciseId: string };

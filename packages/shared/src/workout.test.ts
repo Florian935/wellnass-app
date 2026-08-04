@@ -9,6 +9,8 @@ import {
   workoutRowSchema,
   workoutSetRowSchema,
   computeVolume,
+  hasReachedTonnageMilestone,
+  TONNAGE_MILESTONE_KG,
   computeReorderedExerciseOrder,
   computeProgressionSuggestion,
   computeWeekCompletionRate,
@@ -353,6 +355,25 @@ describe('computeVolume', () => {
   it('compte reps × lest pour une série bodyweight lestée', () => {
     const sets = [{ setType: 'bodyweight', reps: 8, weightKg: 15, done: true }];
     expect(computeVolume(sets)).toBe(120);
+  });
+});
+
+describe('hasReachedTonnageMilestone (US MUSC-19, spec D3/R3)', () => {
+  it('sous le seuil → false', () => {
+    expect(hasReachedTonnageMilestone(999_999)).toBe(false);
+  });
+
+  it('pile au seuil → true (borne incluse)', () => {
+    expect(TONNAGE_MILESTONE_KG).toBe(1_000_000);
+    expect(hasReachedTonnageMilestone(1_000_000)).toBe(true);
+  });
+
+  it('au-dessus du seuil → true', () => {
+    expect(hasReachedTonnageMilestone(1_500_000)).toBe(true);
+  });
+
+  it('zéro → false', () => {
+    expect(hasReachedTonnageMilestone(0)).toBe(false);
   });
 });
 
