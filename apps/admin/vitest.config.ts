@@ -36,11 +36,16 @@ export default defineConfig({
       // tant qu'ils ne sont pas testés (lot 5), sinon le seuil ne dirait plus rien.
       // Relevé le 03/08/2026 (54 → 60) après couverture des lectures de liste : un cliquet ne
       // sert à rien s'il reste sous le réel — on le remonte à chaque palier gagné.
+      //
+      // Relevé de nouveau le **04/08/2026** (60 → 68) après couverture de `exercise-variants.ts`,
+      // qui était à **0 %** — 172 lignes de couche data sans un seul test, le plus gros trou du
+      // paquet. Réel : 68,88 % d'instructions, 87,86 % de branches, 70,17 % de fonctions.
+      // Restent `exercises.ts` (49,8 %) et `programs.ts` (57,8 %), les deux plus gros fichiers.
       thresholds: {
-        statements: 60,
-        branches: 86,
-        functions: 64,
-        lines: 60,
+        statements: 68,
+        branches: 87,
+        functions: 70,
+        lines: 68,
       },
     },
   },

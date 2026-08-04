@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `chore/socle-tests-lot5-ecrans` — Back-office : `exercise-variants.ts` de 0 % à 100 %, et un point de reprise corrigé
+
+Suite de `f730ac4`. Dernier lot du chantier tests. **157 → 181 tests** sur `apps/admin`,
+couverture **61,33 % → 68,88 %** d'instructions.
+
+#### Ajouté
+
+- **`apps/admin/src/data/exercise-variants.test.ts`** (24 tests) — le fichier couvert était à
+  **0 %** : 172 lignes de couche data sans un seul test, le plus gros trou du paquet. Il passe à
+  **100 % d'instructions et de fonctions** (branches 89,1 %).
+
+#### Modifié
+
+- `apps/admin/vitest.config.ts` — cliquet relevé 60/86/64 → **68/87/70**.
+- [strategie-tests.md](docs/specs/technical/strategie-tests.md) §5 bis et §8.
+
+#### Technique — Notes
+
+Ce que ces liens ont de particulier, et pourquoi les tester valait mieux qu'une recette navigateur :
+ils vivent dans le **contenu partagé par tous les utilisateurs**, sur une table à **paire canonique**
+(`exercise_id_a < exercise_id_b`) avec un unique `(owner_id, a, b) nulls not distinct`. Trois défauts
+y sont invisibles à l'écran, et les trois sont désormais couverts :
+
+1. **oublier `owner_id IS NULL`** → l'écran d'admin lirait ou écraserait les liens **personnels** des
+   utilisateurs, créés depuis le mobile. Une fuite de données privées, pas un bug d'affichage.
+2. **oublier la canonisation** → lier B↔A après A↔B viole l'unique, ou crée un doublon que la lecture
+   affiche deux fois.
+3. **insérer au lieu de réactiver** une ligne soft-deletée → violation de l'unique, donc un lien
+   **impossible à recréer** une fois retiré. C'est le défaut qui casse durablement.
+
+Chaque écriture est aussi vérifiée sur son chemin d'échec : **aucun audit n'est journalisé quand
+l'écriture a échoué** — une trace mensongère dans le journal d'admin est pire que pas de trace.
+`./audit` n'est volontairement **pas** mocké : on observe la ligne réellement insérée dans
+`audit_log` via le double Supabase, comme `admin-users.test.ts`. Ça vérifie qu'on journalise **la
+bonne action sur la bonne cible**, pas seulement qu'on appelle une fonction.
+
+⚠️ **Point de reprise corrigé — le §8 envoyait sur un chantier qui n'existe plus.** Il annonçait
+« reprendre les `*-smoke.test.tsx` : leurs effets n'ont jamais tourné ». Vérification faite fichier
+par fichier : les **15** smoke tests utilisent tous `await render` ou `await act` (47 appels sur 47),
+et plusieurs assertent explicitement des effets — `cycle-index-smoke` vérifie une redirection, qui
+échouerait si les effets ne partaient pas. Le constat décrivait l'état du 03/08 au matin ; les tests
+ont été écrits ou corrigés avec l'idiome depuis. La note a été remplacée par un avertissement
+explicite pour ne pas y renvoyer un troisième lecteur.
+
+⚠️ Une erreur de typage introduite puis corrigée : `vi.mock('./audit', () => ({ logAudit: (...args:
+unknown[]) => … }))` ne type pas le spread. Résolu en supprimant le mock au profit de la convention
+du dépôt (observer `audit_log`) — meilleure au passage.
+
+Qualité : `typecheck` 0, `lint` **0 erreur**, `test` et `test:coverage` **exit 0**.
+
 ### 04/08/2026 — `chore/socle-tests-lot5-ecrans` — `packages/shared` à 100 % (instructions, fonctions, lignes) et arbitrage du seuil de branches
 
 Suite de `1aebbbc`. Ferme la dette « `packages/shared` n'atteint pas les 100 % exigés » inscrite au

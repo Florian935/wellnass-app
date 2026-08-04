@@ -82,7 +82,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-lot5-ecrans` (modifications non commitées) |
-| Commits | 1077 · `main` a **1073** commits de retard sur `dev` |
+| Commits | 1078 · `main` a **1075** commits de retard sur `dev` |
 | Specs d'US | 122 au total — 79 clôturées, 43 en cours |
 | Migrations | 72/72 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -93,11 +93,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `f730ac4` test(shared): 100 % instructions/fonctions/lignes et arbitrage du seuil de branches à 97 %
 - `1aebbbc` test(shared): 100 % d'instructions et de fonctions sur packages/shared
 - `a2e6d81` fix(repas01): masque et explique la duplication quand la semaine source est vide (US REPAS-01, D12)
 - `b94277d` feat(repas01): planning repas à la semaine, liste de courses et partage (US REPAS-01)
 - `f9ee91e` refactor(garde01): fusionne TRI-12 et MR-14 en un garde-fou unifié (US GARDE-01)
-- `c33db5c` feat(mr14): jours consécutifs sans repos (US MR-14, catalogue d'analyses)
 
 ---
 

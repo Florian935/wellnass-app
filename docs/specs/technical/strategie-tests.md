@@ -267,7 +267,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/lib/` | 50 | 48 | 64 |
 | `apps/mobile/src/stores/` | 45 | 34 | 44 |
 | `apps/mobile` — reste (écrans, composants) | 12 | 8 | 10 |
-| `apps/admin` (`src/data` + `src/lib`) | 60 | 86 | 64 |
+| `apps/admin` (`src/data` + `src/lib`) | **68** | **87** | **70** |
 
 Trois principes derrière ces chiffres :
 
@@ -362,17 +362,26 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 1. **Lot 5 — écrans et hooks à état.** L'idiome est établi (§3.6) : rendre **dans** un
    `await act`. Copier [`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx).
    Côté admin, il faudra en plus `jsdom` + Testing Library.
-2. **Reprendre les `*-smoke.test.tsx` existants** : leurs effets n'ont jamais tourné, ils
-   n'assertent que du rendu statique (§3.6). Chantier à part, mais c'est là que se cache le plus
-   gros écart entre couverture affichée et couverture réelle.
+2. ~~**Reprendre les `*-smoke.test.tsx` existants**~~ — ⚠️ **constat périmé, vérifié le 04/08/2026 :
+   ce chantier n'existe plus.** Les **15** fichiers `*-smoke.test.tsx` utilisent tous `await render`
+   ou `await act` (vérifié fichier par fichier, 47 appels sur 47), et plusieurs assertent
+   explicitement des effets — `cycle-index-smoke` vérifie une redirection, ce qui échouerait si les
+   effets ne tournaient pas. L'avertissement du §3.6 décrit l'état du 03/08/2026 au matin ; les
+   tests ont été écrits ou corrigés avec l'idiome depuis. **Ne pas repartir sur cette piste** : le
+   vrai manque côté mobile est ailleurs (écrans **sans aucun** test, pas smoke tests à reprendre).
 3. ~~**Combler l'écart aux 100 % de `packages/shared`**~~ — ✅ **fait le 04/08/2026.** Instructions,
    fonctions et lignes à **100 %** (verrouillées) ; branches à **97,35 %**, seuil arbitré à 97 avec
    la justification détaillée au §5 bis. Trois vrais trous fonctionnels trouvés au passage
    (suggestions de glucides, fractionnés en durée, throttle d'import du cycle) et deux défauts de
    code corrigés (`NaN` retourné comme record de course, code mort prouvé).
-4. **Reste de `apps/admin/src/data`** (~39 %) : `getProgram`, `getExercise`, `getFood`, et les
-   écritures de variantes. Copier
-   [`listings.test.ts`](../../../apps/admin/src/data/listings.test.ts).
+4. **Reste de `apps/admin/src/data`** — avancé le 04/08/2026 : **61,33 % → 68,88 %** (157 → 181
+   tests), cliquet relevé à 68/87/70. **`exercise-variants.ts` est passé de 0 % à 100 %**
+   d'instructions et de fonctions : 172 lignes de couche data sans un seul test, le plus gros trou
+   du paquet. Restent les deux plus gros fichiers : **`exercises.ts` (49,8 %)** et
+   **`programs.ts` (57,8 %)** — surtout `getProgram` / `getExercise` et les écritures de programme.
+   Copier [`exercise-variants.test.ts`](../../../apps/admin/src/data/exercise-variants.test.ts),
+   qui montre le patron complet (canonisation, réactivation d'un soft delete, audit non journalisé
+   quand l'écriture échoue).
 
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.
