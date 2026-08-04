@@ -2376,5 +2376,90 @@
         "pace": "Allure de course"
       }
     }
+  },
+  "mealPlan": {
+    "title": "Planning repas",
+    "subtitle": "Prépare ta semaine, puis tes courses.",
+    "hubTeaser": "Planifie tes repas et génère ta liste de courses.",
+    "week": {
+      "range": "{{from}} – {{to}}",
+      "current": "Cette semaine",
+      "next": "Semaine prochaine",
+      "previousA11y": "Semaine précédente",
+      "nextA11y": "Semaine suivante"
+    },
+    "empty": {
+      "title": "Rien de planifié cette semaine",
+      "message": "Ajoute une recette ou un repas type dans un repas pour préparer tes courses."
+    },
+    "day": {
+      "plannedOnly": "{{kcal}} kcal prévues",
+      "trainingBonus": "Séance prévue — objectif +{{kcal}} kcal",
+      "otherMeal": "Autre",
+      "add": "Ajouter",
+      "addToMealA11y": "Ajouter à {{meal}}, {{day}}"
+    },
+    "entry": {
+      "consumed": "Porté au journal",
+      "servings_one": "{{count}} portion",
+      "servings_other": "{{count}} portions",
+      "template": "Repas type",
+      "kcal": "{{kcal}} kcal",
+      "consumeA11y": "J'ai mangé {{name}}",
+      "undoA11y": "Annuler le portage de {{name}}",
+      "removeA11y": "Retirer {{name}} du planning"
+    },
+    "duplicateWeek": {
+      "action": "Dupliquer la semaine précédente"
+    },
+    "add": {
+      "title": "Ajouter à {{meal}}",
+      "recipes": "Recettes",
+      "templates": "Repas types",
+      "noRecipe": "Aucune recette enregistrée. Crée-en une depuis le journal alimentaire.",
+      "noTemplate": "Aucun repas type enregistré. Enregistre un repas du journal pour le réutiliser.",
+      "recipeMeta": "{{servings}} portions · {{kcal}} kcal / portion",
+      "templateMeta_one": "{{count}} aliment · {{kcal}} kcal",
+      "templateMeta_other": "{{count}} aliments · {{kcal}} kcal",
+      "servings": "Portions",
+      "servingsMinus": "Une portion en moins",
+      "servingsPlus": "Une portion en plus",
+      "portionHint": "{{servings}} portions sur les {{total}} de la recette : les courses seront calculées au prorata.",
+      "confirm": "Ajouter · {{kcal}} kcal"
+    },
+    "shopping": {
+      "open": "Liste de courses",
+      "title": "Liste de courses",
+      "generate": "Générer la liste",
+      "empty": {
+        "title": "Pas encore de liste",
+        "message": "Génère la liste des ingrédients de tous les repas planifiés cette semaine."
+      },
+      "summary": "{{meals}} repas planifiés · {{items}} ingrédients",
+      "unresolved_one": "{{count}} repas planifié n'a pas d'ingrédients — sa recette a été supprimée depuis. Ses courses ne sont pas dans cette liste.",
+      "unresolved_other": "{{count}} repas planifiés n'ont pas d'ingrédients — leur recette a été supprimée depuis. Leurs courses ne sont pas dans cette liste.",
+      "noItems": "Aucun ingrédient à acheter pour cette semaine.",
+      "quantity": "{{grams}} g",
+      "noQuantity": "quantité non précisée",
+      "plusUnquantified_one": "(+ {{count}} sans quantité)",
+      "plusUnquantified_other": "(+ {{count}} sans quantité)",
+      "share": "Partager la liste",
+      "shareTitle": "Liste de courses — {{date}}",
+      "regenerate": {
+        "action": "Régénérer depuis le planning",
+        "title": "Régénérer la liste ?",
+        "body": "La liste sera recalculée depuis le planning de la semaine.",
+        "bodyChecked_one": "La liste sera recalculée depuis le planning de la semaine. {{count}} article déjà coché sera décoché.",
+        "bodyChecked_other": "La liste sera recalculée depuis le planning de la semaine. Les {{count}} articles déjà cochés seront décochés.",
+        "confirm": "Régénérer"
+      },
+      "aisle": {
+        "a11y": "{{aisle}}, {{checked}} sur {{total}} cochés",
+        "uncheckTitle": "Décocher tout le rayon ?",
+        "uncheckBody_one": "{{count}} article de {{aisle}} sera décoché.",
+        "uncheckBody_other": "Les {{count}} articles de {{aisle}} seront décochés.",
+        "uncheckConfirm": "Décocher"
+      }
+    }
   }
 }

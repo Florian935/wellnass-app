@@ -36,6 +36,8 @@ export * from './workout';
 export * from './workout-display';
 export * from './program';
 export * from './nutrition';
+export * from './meal-plan';
+export * from './shopping-list';
 export * from './protein-target';
 export * from './records';
 export * from './food';

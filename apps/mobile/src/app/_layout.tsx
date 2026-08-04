@@ -526,6 +526,9 @@ function RootNavigator() {
         />
         <Stack.Screen name="history" options={{ headerShown: false }} />
         <Stack.Screen name="run" options={{ headerShown: false }} />
+        {/* US REPAS-01 : planning repas + liste de courses. Une route de dossier non déclarée ici
+            n'échoue ni au typecheck ni aux tests — seul l'œil voit l'en-tête manquant (cf. PAS-01). */}
+        <Stack.Screen name="meal-plan" options={{ headerShown: false }} />
         <Stack.Screen name="progress" options={{ headerShown: false }} />
         <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />

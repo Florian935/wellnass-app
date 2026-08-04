@@ -187,21 +187,44 @@ Permet de composer un « plat » à partir de plusieurs aliments, puis de le ré
 
 Module **optionnel**. Permet de planifier les repas de la semaine à l'avance.
 
+> **Livré par l'US REPAS-01 le 04/08/2026** (roadmap 4.27 / 4.28 / 4.29) →
+> [spec](./us/repas01-planning-repas-liste-courses.md). Deux points de cette section, écrits au
+> cadrage initial, étaient **périmés** et ont été corrigés ci-dessous : le nombre de repas et le
+> format d'export.
+
 ### 6.1 Création du planning
-- Vue calendrier semaine avec 4 cases par jour (repas).
-- Remplir chaque case avec une recette ou un repas type.
+- Vue calendrier semaine, une case par **repas configuré par l'utilisateur**.
+  ⚠️ Et non « 4 cases par jour » comme annoncé jusqu'au 04/08/2026 : depuis l'**US 4.15**, les repas
+  sont **personnalisables** (`nutrition_profiles.meals`) — renommables, ajoutables, supprimables.
+  Coder quatre cases en dur ferait régresser une fonctionnalité livrée.
+- Remplir chaque case avec une recette (avec un nombre de portions) ou un repas type.
 - Valeurs nutritionnelles de la journée calculées en temps réel.
+- 🔴 **Le planning n'écrit jamais dans le journal.** C'est une intention : les totaux du jour,
+  l'adhérence, le streak, le bilan hebdo et les analyses inter-piliers ne voient que le consommé
+  réel. Porter un repas planifié au journal est un **geste explicite** et réversible
+  (REPAS-01, règles R1 à R3).
 
 ### 6.2 Lien avec le planning d'entraînement (intégration opt-in, décision H)
-- Les jours d'entraînement (muscu ou running) affichent un objectif calorique adapté (+100 à +300 kcal selon intensité).
+- Les jours d'entraînement (muscu ou running) affichent un objectif calorique adapté.
 - Les jours de repos affichent l'objectif standard.
 - Visualisation claire de l'adaptation jour d'entraînement vs repos.
+- Le bonus appliqué est le **forfait fixe** du profil (`trainingDayBonus`), pas le mode `auto` de
+  RN-02 : celui-ci dérive le bonus de la dépense d'une course **déjà enregistrée**, notion qui n'a
+  pas de sens pour un jour futur — c'est-à-dire pour tout planning.
+- Aucun pilier d'entraînement actif → aucune mention d'entraînement (décision H).
 
 ### 6.3 Liste de courses générée
 - À partir du planning de la semaine, génère la liste de tous les ingrédients nécessaires.
-- Regroupés par catégorie (légumes, féculents, protéines…).
-- Cases à cocher pour faire les courses.
-- Exportable / partageable (texte ou PDF).
+- Regroupés par **rayon**, dans un ordre de parcours de magasin — les 9 catégories de
+  `foods.category`, déjà bilingues.
+- Cases à cocher pour faire les courses, persistées. Un tap sur un en-tête de rayon coche tout le
+  rayon ; le dé-cocher entièrement demande confirmation (REPAS-01, décision D13).
+- Exportable / partageable en **texte brut** via la feuille de partage du système.
+  ⚠️ Et non « texte ou PDF » : un PDF imposerait `expo-print`, donc une dépendance native, donc un
+  nouveau build avant toute recette — pour un gain nul sur une liste lue dans un magasin
+  (REPAS-01, décision D8).
+- Une quantité manquante n'est **jamais comptée 0** : elle est signalée en clair, sans quoi la liste
+  serait incomplète sans le dire (règle R7).
 
 ---
 

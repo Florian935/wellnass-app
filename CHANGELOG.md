@@ -10,6 +10,83 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/repas01-planning-repas-liste-courses` — Planning repas, liste de courses et partage (US REPAS-01, roadmap 4.27 / 4.28 / 4.29)
+
+Suite de `f9ee91e`. Trois lignes de roadmap **remontées de V1.1 dans le périmètre courant** puis
+livrées le jour même (arbitrage Florian) : le code est en avance sur le cahier des charges pendant
+les délais externes de Google. **Aucun impact sur le chemin critique du lancement** — pas de
+dépendance Play, pas de donnée de santé, pas de service tiers.
+
+**Le lot était bien plus petit que les 10 h estimées** : `recipes`, `recipe_ingredients`,
+`meal_templates`, `meal_template_items` et `applyTemplate()` existaient déjà avec leurs repositories
+complets, et `foods.category` portait déjà 9 rayons **traduits FR+EN**. Seule la table de planning
+manquait ; le regroupement par rayon de la liste de courses était littéralement gratuit.
+
+#### Ajouté
+
+- **3 tables** (`20260804145909`) : `meal_plan_entries`, `shopping_lists`, `shopping_list_items` —
+  RLS utilisateur (patron `personal_goals`, pas de `delete`, soft delete), triggers `updated_at`,
+  index partiels, publication PowerSync. + **1 migration additive** (`20260804150934`) :
+  `meal_plan_entries.consumed_entry_ids jsonb`.
+- **`packages/shared/src/meal-plan.ts`** — `portionFactor`, `sumPlannedDay`, `dayTargetKcal`,
+  `groupEntriesByMeal`, `weekDayKeys`. **24 tests, 100 % instructions et branches.**
+- **`packages/shared/src/shopping-list.ts`** — `normalizeIngredientName`, `aggregateShoppingList`,
+  `sortShoppingLines`, `aisleToggleAction`, `formatShoppingListText`. **32 tests, 100 %.**
+- **`meal-plan-repository.ts`** (planification, duplication de semaine, portage au journal) et
+  **`shopping-list-repository.ts`** (génération, régénération, cochage par article et par rayon) —
+  **36 + 28 tests au harness SQLite**.
+- **Écrans** `app/meal-plan/index.tsx` (vue semaine + feuille d'ajout) et `shopping.tsx`,
+  **`MealPlanDayCard.tsx`** (16 tests de rendu), **carte dédiée sur le hub Nutrition** (point P1
+  tranché par Florian : le module demande un investissement de saisie, caché il ne serait pas adopté).
+- **Namespace i18n `mealPlan.*`** FR + EN (parité vérifiée : 1869 clés de chaque côté).
+- 3 tables ajoutées à l'**export RGPD** — c'est le test de complétude de `data-export` qui l'impose,
+  celui qui avait rattrapé l'oubli de `session_intervals` le 03/08.
+
+#### Modifié
+
+- **`docs/specs/functional/alimentation.md` §6 — deux points du cadrage d'origine étaient périmés** :
+  il annonçait « **4 cases par jour** » alors que l'US 4.15 a rendu les repas **personnalisables**
+  (`nutrition_profiles.meals`) — coder 4 en dur aurait fait **régresser du livré**, sans qu'aucun test
+  pur ne le voie (d'où un test de rendu dédié). Et son export « texte ou **PDF** » : écarté (D8).
+- `powersync-sync-rules.yaml` (+3 règles), `powersync/schema.ts` (+3 tables), `_layout.tsx` (route
+  `meal-plan`), `database.types.ts` régénéré.
+
+#### Technique — Notes
+
+- 🔴 **Le garde-fou central est R1 : le planning n'écrit JAMAIS dans `food_entries`.** Des calories
+  planifiées comptées comme consommées auraient faussé les totaux du jour, l'adhérence, la série, le
+  bilan hebdo et les analyses inter-piliers — **silencieusement**, et l'historique pollué aurait été
+  irrattrapable. Matérialisé par une assertion « le journal est vide après planification » ; le
+  portage est un geste explicite, idempotent et réversible (R2/R3).
+- **Piège de modèle neutralisé** : `recipe_ingredients.quantity_g` porte la quantité **totale de la
+  recette** (`portion = total / servings`). Planifier 2 portions d'une recette qui en produit 4
+  demande donc `P/S = 0,5`, pas `P`. Testé deux fois — unitairement et **bout-en-bout jusqu'aux
+  grammes en base**, parce qu'un facteur juste en théorie peut se perdre dans les jointures.
+- **`quantity_g` est nullable, et un `null` compté comme 0 est le cas dangereux** : il produit une
+  liste de courses incomplète **sans le dire**, et on s'en aperçoit au magasin. Les contributions non
+  quantifiées sont donc comptées à part (`unquantified_count`) et restituées en clair.
+- ⚠️ **Aucune contrainte `unique (user_id, week_start_date)` sur `shopping_lists`, délibérément**
+  (D6) : deux appareils générant la même semaine hors réseau produiraient une violation d'unicité qui
+  **fait échouer l'upload PowerSync et bloque la file d'écriture**. La liste active est la plus
+  récente par `generated_at`. Une contrainte d'unicité sur une table synchronisée est un piège.
+- **Liste matérialisée et non dérivée** (D5) : recalculée en continu, elle changerait de lignes et de
+  quantités **pendant qu'on est au rayon**, et perdrait les cases cochées à chaque édition de recette.
+  En revanche la **génération** lit les ingrédients vivants (R6) — on achète ce qu'on va cuisiner.
+- **Export en texte brut via `Share.share()`** (D8) → **aucune dépendance native, donc recettable sur
+  l'APK existant**, contrairement à PARTAGE-01 / RUN-F2a / MUSC-F9 / LAUNCHER-01 qui attendent un build.
+- **Bonus des jours d'entraînement : forfait fixe seulement**, jamais le mode `auto` de RN-02 — celui-ci
+  dérive le bonus de la dépense d'une course **déjà enregistrée**, notion sans objet pour un jour futur.
+- **Trouvé en revue de mon propre diff** : `new Date().toLocaleDateString('fr-FR')` dans le titre du
+  texte partagé — locale en dur, faux en EN. Remplacé par `formatDayFull` (JJ/MM/AAAA, indépendant du
+  système), qui existait déjà dans `shared`.
+- 🟠 **Point d'attention pour la recette** : « Dupliquer la semaine précédente » reste actif même
+  quand la semaine source est vide — l'appel retourne alors 0 sans aucun retour visuel. À trancher en
+  recette (masquer le bouton, ou afficher un message).
+- ⚠️ **3 sync rules PowerSync à déployer à la main** avant toute recette : sans elles le planning
+  saisi **ne survit pas à une resynchro**. Étape déjà oubliée deux fois (BIEN-01, RUN-F2c).
+- Qualité : `typecheck` 0, `lint` **0 erreur**, `test` **exit 0** — 1559 tests Vitest (+56) et
+  750 tests Jest (+80) sur 75 suites.
+
 ### 04/08/2026 — `refactor/garde01-fusion-garde-fou` — Garde-fou unifié charge & récupération (US GARDE-01, fusion TRI-12 + MR-14)
 
 Suite de `c33db5c`. **Refactor de résolution de contradiction**, pas une feature : la revue de code

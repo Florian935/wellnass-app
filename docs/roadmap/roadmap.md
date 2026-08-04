@@ -366,9 +366,9 @@ l'historique long ou une base d'utilisateurs est resté en post-V1.*
 | # | Fonctionnalité | Description | Difficulté | Temps | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|:---:|:---:|---|
 | 1.20 | Import de données | GPX (Strava), CSV (Hevy, Strong, MyFitnessPal). | Difficile | 8h | 🟢 | ⬜ | Clé d'adoption pour la cible "multi-apps" — à remonter en V0.8 si la bêta le réclame. |
-| 4.27 | Planning repas à la semaine | Vue calendrier des repas planifiés. | Difficile | 6h | 🟢 | ⬜ | |
-| 4.28 | Liste de courses générée | Tous les ingrédients depuis le planning. | Moyen | 3h | 🟢 | ⬜ | Dépend de 4.27. |
-| 4.29 | Export / partage liste de courses | Message, email ou texte brut. | Facile | 1h | 🟢 | ⬜ | Dépend de 4.27. |
+| 4.27 | Planning repas à la semaine | — | Difficile | 6h | 🟢 | 🟡 | ⬆️ **Remontée de V1.1 dans le périmètre courant le 04/08/2026 (arbitrage Florian)** puis **livrée le jour même** — US **REPAS-01**, en recette → [spec](../specs/functional/us/repas01-planning-repas-liste-courses.md) · [plan](../plans/repas01-planning-repas-liste-courses.md) · [maquette](../../design/repas01-planning-repas-liste-courses/repas01-planning-repas-liste-courses.html) · [RECETTES.md](../../RECETTES.md) §28. **Aucun impact sur le chemin critique du lancement** (pas de dépendance Play, pas de donnée de santé, pas de service tiers). Coût réel très inférieur aux 6h estimées : `recipes`/`recipe_ingredients`/`meal_templates`/`meal_template_items` et `applyTemplate()` existaient déjà — seule la table de planning manquait. **Cadrage corrigé au passage** : la spec annonçait « 4 cases par jour », périmé depuis l'US 4.15 (repas personnalisables) — coder 4 en dur aurait fait régresser du livré. 🔴 **Garde-fou central** : le planning n'écrit **jamais** dans `food_entries` (règle R1) — un planning compté comme consommé aurait faussé totaux, adhérence, série, bilan hebdo et analyses croisées, silencieusement. Assertion dédiée en CI. 🟡 : **3 sync rules à déployer à la main** + recette device (26 critères). |
+| 4.28 | Liste de courses générée | — | Moyen | 3h | 🟢 | 🟡 | ✅ **Livrée le 04/08/2026** (REPAS-01), en recette. Liste **matérialisée** et non dérivée (D5) : une liste recalculée en continu changerait de lignes pendant qu'on est au rayon et perdrait les cases cochées. Regroupement par rayon **gratuit** — `foods.category` (9 valeurs) et ses libellés FR+EN existaient déjà. Deux pièges neutralisés : `recipe_ingredients.quantity_g` est la quantité **totale de la recette** (donc facteur `P/S`, pas `P` — planifier 2 portions d'une recette de 4 ne prend que la moitié), et `quantity_g` est **nullable** — un `null` compté comme 0 aurait produit des courses incomplètes sans le dire. ⚠️ **Pas de contrainte unique `(user_id, week_start_date)`, délibérément** (D6) : deux appareils générant la même semaine hors réseau bloqueraient la file d'upload PowerSync. |
+| 4.29 | Export / partage liste de courses | — | Facile | 1h | 🟢 | 🟡 | ✅ **Livrée le 04/08/2026** (REPAS-01), en recette. **Texte brut** via `Share.share()` de React Native. Le « PDF » du cadrage d'origine est **écarté** (D8) : `expo-print` est une dépendance native, donc un nouveau build avant toute recette, pour un gain nul sur une liste lue en magasin. Conséquence utile : cette US est **recettable sur l'APK existant**, contrairement à PARTAGE-01 / RUN-F2a / MUSC-F9 / LAUNCHER-01 qui attendent tous un build. |
 
 **Et au-delà (rappel du périmètre)** : V2 = wearables + zones FC, social / défis entre amis, hydratation, web app · **V3/V4 = gamification** (mini-jeu / boucle type Walkr — **réévaluée selon les analytics de rétention**, cf. [ADR-005](../adr/ADR-005-gamification.md)).
 
@@ -443,8 +443,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | Statut | Nombre | % |
 |---|:---:|:---:|
 | ✅ Livré | 193 | ~89 % |
-| 🟡 Partiel | 14 | ~6 % |
-| ⬜ À faire | 5 | ~2 % |
+| 🟡 Partiel | 17 | ~8 % |
+| ⬜ À faire | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
 | **Total périmètre de lancement** | **218** | |
@@ -476,7 +476,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.8 (10) | 10 | 0 | 0 | 0 | 0 | ✅ **Complet.** 1.19 (CONF-02) + 1.18 (CONF-01) + 1.22 (aide & support) + 9.10 (analytics) + 1.2 (OAuth Google) + 9.9 (Health Connect, recetté le 28/07) + 9.16 (REFACTO-01, clôturée le 31/07) + **9.11/9.12 (CONF-07, code livré le 01/08, en recette)** livrés. |
 | V0.9 (16) | 4 | 7 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
-| V1.1 (4) | 0 | 0 | 4 | 0 | 0 | Post-lancement |
+| V1.1 (4) | 0 | 3 | 1 | 0 | 0 | **3 des 4 items livrés le 04/08/2026** (4.27 / 4.28 / 4.29, US REPAS-01) : remontés de V1.1 dans le périmètre courant par arbitrage Florian, le code étant en avance sur le cahier des charges pendant les délais externes de Google. Reste **1.20** (import GPX/CSV), seul item encore ⬜ de cette version. |
 | Hors cadrage (17) | 17 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… |
 
 - **~210 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 17 nées en cours de route + 14 de V0.9).
@@ -506,6 +506,12 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**04/08/2026 — REPAS-01 : planning repas, liste de courses et partage (4.27 / 4.28 / 4.29 ⬜ → 🟡),
+remontés de V1.1 dans le périmètre courant (arbitrage Florian)**
+Compteurs : **193 livré / 17 partiel / 2 à faire** — V1.1 passe de 0/0/4 à 0/3/1, il n'y reste que
+**1.20** (import GPX/CSV). Le cadrage d'origine (alimentation.md §6) était périmé sur deux points :
+« 4 repas par jour » (l'US 4.15 les a rendus personnalisables) et l'export PDF (écarté, D8).
 
 **03/08/2026 — LAUNCHER-01 : widget écran d'accueil Android livré (7.19 ⬜ → ✅, entrée créée le
 même jour)**

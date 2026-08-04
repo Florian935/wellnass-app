@@ -2376,5 +2376,90 @@
         "pace": "Running pace"
       }
     }
+  },
+  "mealPlan": {
+    "title": "Meal plan",
+    "subtitle": "Plan your week, then your shopping.",
+    "hubTeaser": "Plan your meals and generate your shopping list.",
+    "week": {
+      "range": "{{from}} – {{to}}",
+      "current": "This week",
+      "next": "Next week",
+      "previousA11y": "Previous week",
+      "nextA11y": "Next week"
+    },
+    "empty": {
+      "title": "Nothing planned this week",
+      "message": "Add a recipe or a saved meal to a slot to prepare your shopping."
+    },
+    "day": {
+      "plannedOnly": "{{kcal}} kcal planned",
+      "trainingBonus": "Workout planned — target +{{kcal}} kcal",
+      "otherMeal": "Other",
+      "add": "Add",
+      "addToMealA11y": "Add to {{meal}}, {{day}}"
+    },
+    "entry": {
+      "consumed": "Logged",
+      "servings_one": "{{count}} serving",
+      "servings_other": "{{count}} servings",
+      "template": "Saved meal",
+      "kcal": "{{kcal}} kcal",
+      "consumeA11y": "I ate {{name}}",
+      "undoA11y": "Undo logging {{name}}",
+      "removeA11y": "Remove {{name}} from the plan"
+    },
+    "duplicateWeek": {
+      "action": "Copy last week"
+    },
+    "add": {
+      "title": "Add to {{meal}}",
+      "recipes": "Recipes",
+      "templates": "Saved meals",
+      "noRecipe": "No recipe saved yet. Create one from the food journal.",
+      "noTemplate": "No saved meal yet. Save a meal from the journal to reuse it.",
+      "recipeMeta": "{{servings}} servings · {{kcal}} kcal / serving",
+      "templateMeta_one": "{{count}} food · {{kcal}} kcal",
+      "templateMeta_other": "{{count}} foods · {{kcal}} kcal",
+      "servings": "Servings",
+      "servingsMinus": "One serving fewer",
+      "servingsPlus": "One serving more",
+      "portionHint": "{{servings}} of the recipe's {{total}} servings: shopping quantities are scaled accordingly.",
+      "confirm": "Add · {{kcal}} kcal"
+    },
+    "shopping": {
+      "open": "Shopping list",
+      "title": "Shopping list",
+      "generate": "Generate the list",
+      "empty": {
+        "title": "No list yet",
+        "message": "Generate the ingredient list for every meal planned this week."
+      },
+      "summary": "{{meals}} meals planned · {{items}} ingredients",
+      "unresolved_one": "{{count}} planned meal has no ingredients — its recipe was deleted since. Its shopping is not in this list.",
+      "unresolved_other": "{{count}} planned meals have no ingredients — their recipes were deleted since. Their shopping is not in this list.",
+      "noItems": "Nothing to buy for this week.",
+      "quantity": "{{grams}} g",
+      "noQuantity": "quantity not specified",
+      "plusUnquantified_one": "(+ {{count}} without quantity)",
+      "plusUnquantified_other": "(+ {{count}} without quantity)",
+      "share": "Share the list",
+      "shareTitle": "Shopping list — {{date}}",
+      "regenerate": {
+        "action": "Regenerate from the plan",
+        "title": "Regenerate the list?",
+        "body": "The list will be recalculated from this week's plan.",
+        "bodyChecked_one": "The list will be recalculated from this week's plan. {{count}} item already ticked will be unticked.",
+        "bodyChecked_other": "The list will be recalculated from this week's plan. The {{count}} items already ticked will be unticked.",
+        "confirm": "Regenerate"
+      },
+      "aisle": {
+        "a11y": "{{aisle}}, {{checked}} of {{total}} ticked",
+        "uncheckTitle": "Untick the whole aisle?",
+        "uncheckBody_one": "{{count}} item in {{aisle}} will be unticked.",
+        "uncheckBody_other": "The {{count}} items in {{aisle}} will be unticked.",
+        "uncheckConfirm": "Untick"
+      }
+    }
   }
 }

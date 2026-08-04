@@ -11,7 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **03/08/2026** — 26 US en attente.
+> Dernière mise à jour : **04/08/2026** — 28 sections, dont **REPAS-01** (§28, planning repas et
+> liste de courses) qui exige **3 sync rules PowerSync déployées à la main avant toute recette**.
 
 ---
 
@@ -862,6 +863,83 @@ d'accueil **du téléphone** (le launcher Android), en dehors de l'application.
 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
 supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 28. REPAS-01 — Planning repas, liste de courses et partage
+
+📄 [spec](docs/specs/functional/us/repas01-planning-repas-liste-courses.md) · roadmap 4.27 / 4.28 /
+4.29 · **📱 device** · ⚠️ **3 sync rules à déployer** (tables neuves `meal_plan_entries`,
+`shopping_lists`, `shopping_list_items`) · ✅ **aucune dépendance native neuve → recettable sur
+l'APK existant** (le partage passe par `Share.share()` de React Native, décision D8).
+
+🔴 **À faire AVANT de recetter** : coller
+[powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
+PowerSync et déployer. Sans ça le planning saisi **ne survit pas à une resynchro** — étape manuelle
+déjà oubliée deux fois (BIEN-01, RUN-F2c).
+
+> **Le critère 8 est le plus important du lot.** Toute la valeur du planning repose sur le fait
+> qu'il n'est **pas** le journal : si planifier faisait bouger les totaux consommés, l'adhérence,
+> la série et le bilan hebdo seraient faussés silencieusement, et l'historique pollué serait
+> irrattrapable. C'est testé en CI (assertion « `food_entries` vide après planification »), mais
+> c'est aussi ce qu'il faut vérifier de ses yeux en premier.
+
+- [ ] 1. Le planning s'ouvre depuis la **carte « Planning repas »** du hub Nutrition, et affiche la
+      semaine courante, lundi en premier.
+- [ ] 2. Les cases de chaque jour correspondent **exactement** aux repas configurés — à tester avec
+      une config personnalisée : un repas renommé, un ajouté, un supprimé (Réglages → Gérer les repas).
+- [ ] 3. Déposer une recette en choisissant **2 portions** : le total du jour augmente des macros de
+      2 portions (et non du rendement complet de la recette).
+- [ ] 4. Déposer un repas type : total cohérent avec le template, et **aucun sélecteur de portions**
+      proposé (un repas type n'a pas cette notion).
+- [ ] 5. Un jour avec **séance muscu planifiée** affiche un objectif supérieur à un jour de repos,
+      avec la mention du bonus.
+- [ ] 6. Désactiver les piliers **muscu et course** (Réglages) : la mention d'entraînement disparaît
+      complètement du planning.
+- [ ] 7. ◀ ▶ naviguent de semaine en semaine **sans décalage de date** — à vérifier autour d'un
+      changement de mois.
+- [ ] 8. 🔴 **Planifier ne touche pas au journal** : après avoir rempli une journée, le journal
+      alimentaire du même jour est **inchangé** (totaux, barres de macros), et la série n'a pas bougé.
+- [ ] 9. « J'ai mangé ça » crée les lignes dans **le bon repas du bon jour** ; le total du journal
+      bouge alors, et l'entrée du planning s'affiche « Porté au journal ».
+- [ ] 10. La même entrée **ne peut pas être portée deux fois** ; « Annuler » retire bien les lignes
+      créées — et **rien d'autre** du journal du jour (tester avec un repas qui contenait déjà autre
+      chose).
+- [ ] 11. « Dupliquer la semaine précédente » recopie toutes les entrées, **et rien dans le journal**.
+      Une entrée déjà portée arrive dans la copie **non portée**.
+- [ ] 12. Générer la liste : deux recettes partageant un aliment donnent **une seule ligne**, quantité
+      sommée.
+- [ ] 13. Une recette de **4 portions planifiée pour 2** contribue **la moitié** de ses ingrédients —
+      à vérifier au gramme sur un cas préparé exprès.
+- [ ] 14. Un ingrédient **sans quantité** produit une ligne portant la mention « quantité non
+      précisée » ou « + N sans quantité », et **n'est pas compté 0**.
+- [ ] 15. Les lignes sont groupées par rayon dans l'ordre du parcours de magasin (légumes, fruits,
+      viandes, poissons, laitiers, féculents, oléagineux, boissons, autre), alphabétique à l'intérieur.
+- [ ] 16. Supprimer une recette **après** l'avoir planifiée, puis régénérer : la liste **annonce**
+      les repas sans ingrédients au lieu de les taire.
+- [ ] 17. Cocher des articles, **fermer complètement l'app**, rouvrir : les cases restent cochées.
+- [ ] 18. **D13** — tap sur un en-tête de rayon partiellement coché : coche le reste **sans
+      confirmation**. Re-tap sur le rayon désormais complet : **demande confirmation** avant de
+      dé-cocher, et « Annuler » ne dé-coche rien.
+- [ ] 19. « Régénérer » **avertit de la perte des cases cochées** (avec leur nombre) ; annuler ne
+      régénère rien.
+- [ ] 20. « Partager la liste » ouvre la feuille Android ; le texte collé dans une note est lisible,
+      complet, groupé par rayon, sans émoji ni lien.
+- [ ] 21. **Sans profil nutritionnel** : le planning fonctionne et la ligne d'objectif est **masquée**
+      (jamais « / 0 kcal »).
+- [ ] 22. **Mode avion** : planifier, générer, cocher, partager — tout fonctionne. Retour en ligne :
+      tout remonte (à vérifier sur un **second appareil**, c'est aussi ce qui valide les sync rules).
+- [ ] 23. Basculer **FR → EN** : tous les libellés changent, **y compris les rayons et le texte
+      partagé**.
+- [ ] 24. **Police système à 1,5×** : aucune troncature ni chevauchement sur la vue semaine (l'écran
+      le plus dense de l'US).
+- [ ] 25. **TalkBack** : les cases à cocher annoncent leur état, et un en-tête de rayon annonce son
+      décompte (« Légumes, 3 sur 5 cochés »).
+- [ ] 26. **Export RGPD** (Réglages → exporter mes données) : le fichier contient bien les entrées de
+      planning et la liste de courses.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap 4.27/4.28/4.29 à ✅,
+et **on supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md).
 
 ---
 

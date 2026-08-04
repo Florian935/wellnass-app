@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>REPAS-01 — Planning repas & liste de courses</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;
+        --warn:#f7ead6;--warnb:#e9cfa0;--warnt:#8a6419;--track:#eadcc6;--panel:#33291f;--panelt:#f0e4d0}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  .row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:660px){.row,.row2{grid-template-columns:1fr}}
+
+  /* ── Cadre téléphone ── */
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.13)}
+  .nav{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surf);
+       border-bottom:1px solid var(--border)}
+  .back{color:var(--accent);font-weight:700;font-size:17px;line-height:1}
+  .navtitle{font-weight:700;font-size:15px}
+  .body{padding:12px}
+  .phonelabel{font-size:12px;color:#6a5d4d;text-align:center;margin-top:9px;line-height:1.4}
+
+  /* ── Sélecteur de semaine ── */
+  .weeknav{display:flex;align-items:center;justify-content:space-between;background:var(--surf);
+           border:1px solid var(--border);border-radius:12px;padding:9px 11px;margin-bottom:11px}
+  .weeknav .arrow{color:var(--accent);font-weight:800;font-size:16px;padding:0 4px}
+  .weeknav .label{font-weight:700;font-size:13.5px;text-align:center;line-height:1.3}
+  .weeknav .label small{display:block;font-weight:500;color:var(--muted);font-size:11.5px}
+
+  /* ── Carte jour ── */
+  .day{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:11px;margin-bottom:9px}
+  .day.today{border-color:var(--accent);border-width:1.5px}
+  .dhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .dname{font-weight:800;font-size:13.5px}
+  .dname .chip{font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+        color:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:1px 4px;margin-left:6px}
+  .dkcal{font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .dkcal b{color:var(--text);font-size:13.5px}
+  .bonus{color:var(--warnt);font-weight:700}
+  .bar{height:5px;background:var(--track);border-radius:3px;overflow:hidden;margin:-2px 0 9px}
+  .bar i{display:block;height:100%;background:var(--success);border-radius:3px}
+  .meal{border-top:1px solid var(--border);padding-top:7px;margin-top:7px}
+  .meal:first-of-type{border-top:0;padding-top:0;margin-top:0}
+  .mlabel{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+          color:var(--muted);margin-bottom:4px}
+  .entry{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);
+         border-radius:9px;padding:7px 9px;margin-bottom:4px}
+  .entry .ename{flex:1;font-size:13px;font-weight:600;line-height:1.3}
+  .entry .ename em{display:block;font-style:normal;font-weight:500;font-size:11.5px;color:var(--muted)}
+  .entry .ek{font-size:12px;color:var(--muted);white-space:nowrap}
+  .entry.done{background:#eef0e6;border-color:#ccd3bd}
+  .tick{color:var(--success);font-weight:800;font-size:13px}
+  .addcase{display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--bstrong);
+     border-radius:9px;padding:7px;font-size:12.5px;color:var(--muted);font-weight:600}
+
+  /* ── Boutons ── */
+  .btn{display:block;text-align:center;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+       border-radius:11px;padding:12px;margin-top:11px}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.small{padding:9px;font-size:13px}
+
+  /* ── États vides / avertissements ── */
+  .empty{text-align:center;padding:26px 14px;color:var(--muted)}
+  .empty .big{font-weight:700;color:var(--text);font-size:14.5px;margin-bottom:5px}
+  .empty .txt{font-size:13px;line-height:1.5}
+  .note{background:var(--warn);border:1px solid var(--warnb);border-radius:10px;padding:9px 11px;
+        font-size:12.5px;color:var(--warnt);line-height:1.45}
+  .note b{color:#6d4f12}
+
+  /* ── Feuille modale ── */
+  .sheet{background:var(--surf);border:1px solid var(--border);border-top-left-radius:18px;
+         border-top-right-radius:18px;padding:14px;box-shadow:0 -3px 14px rgba(0,0,0,.1)}
+  .grab{width:36px;height:4px;border-radius:2px;background:var(--bstrong);opacity:.45;margin:0 auto 12px}
+  .sheettitle{font-weight:800;font-size:15px;margin-bottom:3px}
+  .seg{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:11px 0}
+  .seg div{flex:1;text-align:center;padding:8px;font-size:12.5px;font-weight:700;color:var(--muted);background:var(--bg)}
+  .seg div.on{background:var(--accent);color:#fff}
+  .opt{display:flex;align-items:center;gap:9px;padding:9px;border:1px solid var(--border);
+       border-radius:10px;margin-bottom:5px;background:var(--bg)}
+  .opt.sel{border-color:var(--accent);border-width:1.5px;background:var(--surf)}
+  .opt .oname{flex:1;font-size:13.5px;font-weight:600}
+  .opt .oname em{display:block;font-style:normal;font-weight:500;font-size:11.5px;color:var(--muted)}
+  .stepper{display:flex;align-items:center;gap:11px;justify-content:space-between;background:var(--bg);
+           border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin:9px 0 2px}
+  .stepper .lab{font-size:13px;font-weight:600}
+  .stepper .ctl{display:flex;align-items:center;gap:13px}
+  .stepper .pm{width:26px;height:26px;border-radius:13px;background:var(--accent);color:#fff;
+       font-weight:800;text-align:center;line-height:26px;font-size:15px}
+  .stepper .val{font-weight:800;font-size:15px;min-width:52px;text-align:center}
+  .hint{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:4px}
+
+  /* ── Liste de courses ── */
+  .summary{background:var(--surf);border:1px solid var(--border);border-radius:11px;padding:10px 11px;margin-bottom:10px}
+  .summary .s1{font-size:13px;font-weight:700}
+  .summary .s2{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .aisle{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:var(--accent);
+         margin:13px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--border)}
+  .item{display:flex;align-items:center;gap:10px;padding:8px 2px}
+  .box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--bstrong);flex:0 0 auto}
+  .box.on{background:var(--success);border-color:var(--success);color:#fff;font-weight:800;
+          font-size:13px;text-align:center;line-height:18px}
+  .iname{flex:1;font-size:13.5px;line-height:1.35}
+  .iname em{display:block;font-style:normal;font-size:11.5px;color:var(--muted)}
+  .item.on .iname{color:var(--muted);text-decoration:line-through}
+  .iqty{font-size:13px;font-weight:700;white-space:nowrap}
+  .item.on .iqty{color:var(--muted);font-weight:600}
+
+  /* ── Aperçu du texte partagé ── */
+  .share{background:var(--panel);color:var(--panelt);border-radius:12px;padding:13px;
+     font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap}
+
+  /* ── Dialogue ── */
+  .dialog{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px;
+          box-shadow:0 6px 20px rgba(0,0,0,.14)}
+  .dialog .dt{font-weight:800;font-size:15px;margin-bottom:6px}
+  .dialog .db{font-size:13px;color:var(--muted);line-height:1.5}
+  .dialog .acts{display:flex;gap:9px;margin-top:13px}
+  .dialog .acts div{flex:1;text-align:center;padding:10px;border-radius:10px;font-weight:700;font-size:13.5px}
+  .dialog .acts .cancel{border:1.5px solid var(--bstrong);color:var(--text)}
+  .dialog .acts .ok{background:var(--accent);color:#fff}
+
+  /* ── Tableau de décisions ── */
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;background:var(--surf);
+        border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:12.5px;letter-spacing:.03em}
+  tr:last-child td{border-bottom:0}
+  td code{background:var(--bg);padding:1px 4px;border-radius:4px;font-size:12.5px}
+  .foot{margin-top:34px;padding-top:16px;border-top:1px solid #cfc0a9;color:#6a5d4d;font-size:13px;max-width:84ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>REPAS-01 — Planning repas à la semaine, liste de courses & partage</h1>
+<p class="sub">Roadmap <b>4.27</b> · <b>4.28</b> · <b>4.29</b>. Palette réelle de l'app (crème / terracotta,
+contrastes CONF-07). Chaque écran est annoté par la règle ou la décision qu'il applique — les
+références <code>Rn</code> / <code>Dn</code> renvoient à la
+<a href="../../docs/specs/functional/us/repas01-planning-repas-liste-courses.md">spec</a>.</p>
+
+<h2>1 · Vue semaine — le cœur de 4.27</h2>
+<p class="why">Une carte par jour, <b>une case par repas configuré</b> et non quatre en dur (<b>D2</b> —
+les repas sont personnalisables depuis l'US 4.15). Le total planifié se lit face à l'objectif du jour.
+Rien ici n'est « consommé » : le journal est intact (<b>R1</b>).</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Planning repas</span></div>
+      <div class="body">
+        <div class="weeknav"><span class="arrow">◀</span>
+          <span class="label">3 – 9 août<small>Cette semaine</small></span>
+          <span class="arrow">▶</span></div>
+
+        <div class="day today">
+          <div class="dhead"><div class="dname">Lundi 4<span class="chip">Auj.</span></div>
+            <div class="dkcal"><b>1 980</b> / 2 350 kcal</div></div>
+          <div class="bar"><i style="width:84%"></i></div>
+          <div class="meal"><div class="mlabel">Petit-déjeuner</div>
+            <div class="entry"><span class="ename">Porridge banane<em>1 portion</em></span><span class="ek">420 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Déjeuner</div>
+            <div class="entry"><span class="ename">Poulet riz brocoli<em>2 portions</em></span><span class="ek">760 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Dîner</div>
+            <div class="entry"><span class="ename">Chili sin carne<em>1 portion</em></span><span class="ek">610 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Collation</div>
+            <div class="addcase">＋ Ajouter</div></div>
+        </div>
+
+        <div class="day">
+          <div class="dhead"><div class="dname">Mardi 5</div>
+            <div class="dkcal"><b>2 240</b> / <span class="bonus">2 650</span> kcal</div></div>
+          <div class="bar"><i style="width:85%"></i></div>
+          <div class="note" style="margin-bottom:8px">🏋 Séance muscu prévue — objectif <b>+300 kcal</b></div>
+          <div class="meal"><div class="mlabel">Petit-déjeuner</div>
+            <div class="entry"><span class="ename">Œufs brouillés pain<em>1 portion</em></span><span class="ek">480 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Déjeuner</div>
+            <div class="entry"><span class="ename">Mon déj' habituel<em>Repas type</em></span><span class="ek">870 kcal</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel">Nominal — mardi porte le bonus jour d'entraînement (<b>R5</b>)</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Planning repas</span></div>
+      <div class="body">
+        <div class="weeknav"><span class="arrow">◀</span>
+          <span class="label">10 – 16 août<small>Semaine prochaine</small></span>
+          <span class="arrow">▶</span></div>
+        <div class="empty">
+          <div class="big">Rien de planifié cette semaine</div>
+          <div class="txt">Déposez une recette ou un repas type dans un repas
+            pour préparer vos courses.</div>
+        </div>
+        <div class="btn ghost small">Dupliquer la semaine précédente</div>
+      </div>
+    </div>
+    <div class="phonelabel">Semaine vide — <b>pas de bouton « générer la liste »</b> (absent, pas grisé
+      sans explication). « Dupliquer » est là, sinon personne ne resaisit un planning chaque dimanche (<b>D12</b>).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Planning repas</span></div>
+      <div class="body">
+        <div class="weeknav"><span class="arrow">◀</span>
+          <span class="label">3 – 9 août<small>Cette semaine</small></span><span class="arrow">▶</span></div>
+        <div class="day">
+          <div class="dhead"><div class="dname">Jeudi 7</div>
+            <div class="dkcal"><b>1 450</b> kcal</div></div>
+          <div class="meal"><div class="mlabel">Déjeuner</div>
+            <div class="entry"><span class="ename">Salade lentilles<em>1 portion</em></span><span class="ek">520 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Dîner</div>
+            <div class="entry"><span class="ename">Curry pois chiches<em>2 portions</em></span><span class="ek">930 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Autre</div>
+            <div class="entry"><span class="ename">Barre maison<em>Repas supprimé de vos réglages</em></span><span class="ek">180 kcal</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel">Sans profil nutritionnel, <b>la ligne d'objectif disparaît</b> — jamais « / 0 kcal ».
+      Et une entrée dont le repas n'existe plus tombe dans « Autre », jamais masquée (<b>R10</b>).</div>
+  </div>
+</div>
+
+<h2>2 · Remplir une case — recette (avec portions) ou repas type</h2>
+<p class="why">Deux sources seulement (<b>D1</b>) : un aliment isolé se note plus vite dans le journal.
+Le sélecteur de portions est ce qui pilote ensuite les quantités de courses — une recette de 4 portions
+planifiée pour 2 ne fera acheter que la moitié des ingrédients (<b>R8</b>).</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Lundi 4 · Collation</span></div>
+      <div class="body" style="padding:0">
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sheettitle">Ajouter au repas</div>
+          <div class="seg"><div class="on">Recettes</div><div>Repas types</div></div>
+          <div class="opt sel"><span class="oname">Porridge banane<em>4 portions · 420 kcal / portion</em></span><span class="tick">✓</span></div>
+          <div class="opt"><span class="oname">Chili sin carne<em>6 portions · 610 kcal / portion</em></span></div>
+          <div class="opt"><span class="oname">Curry pois chiches<em>4 portions · 465 kcal / portion</em></span></div>
+          <div class="stepper"><span class="lab">Portions</span>
+            <span class="ctl"><span class="pm">−</span><span class="val">2</span><span class="pm">＋</span></span></div>
+          <div class="hint">2 portions sur les 4 de la recette → <b>la moitié</b> des ingrédients
+            partira en liste de courses.</div>
+          <div class="btn">Ajouter · 840 kcal</div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel">Le facteur de portion est <b>annoncé à la saisie</b>, pas découvert au magasin.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Lundi 4 · Déjeuner</span></div>
+      <div class="body" style="padding:0">
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sheettitle">Ajouter au repas</div>
+          <div class="seg"><div>Recettes</div><div class="on">Repas types</div></div>
+          <div class="opt sel"><span class="oname">Mon déj' habituel<em>4 aliments · 870 kcal</em></span><span class="tick">✓</span></div>
+          <div class="opt"><span class="oname">Petit-déj express<em>3 aliments · 465 kcal</em></span></div>
+          <div class="hint">Un repas type n'a pas de portions : il s'ajoute tel quel.</div>
+          <div class="btn">Ajouter · 870 kcal</div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel">Pas de sélecteur de portions pour un repas type — il n'en a pas la notion.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Planning repas</span></div>
+      <div class="body">
+        <div class="day today">
+          <div class="dhead"><div class="dname">Lundi 4<span class="chip">Auj.</span></div>
+            <div class="dkcal"><b>1 980</b> / 2 350 kcal</div></div>
+          <div class="meal"><div class="mlabel">Petit-déjeuner</div>
+            <div class="entry done"><span class="tick">✓</span>
+              <span class="ename">Porridge banane<em>Porté au journal · Annuler</em></span><span class="ek">420 kcal</span></div></div>
+          <div class="meal"><div class="mlabel">Déjeuner</div>
+            <div class="entry"><span class="ename">Poulet riz brocoli<em>2 portions</em></span><span class="ek">760 kcal</span></div>
+            <div class="btn ghost small" style="margin-top:5px">J'ai mangé ça</div></div>
+        </div>
+        <div class="note">Planifier n'ajoute <b>rien</b> au journal. Seul « J'ai mangé ça »
+          crée les lignes — et une même entrée ne peut pas être portée deux fois.</div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>R1 / R2 / R3</b> — le garde-fou central : totaux, adhérence, streak et
+      analyses ne voient que le consommé réel.</div>
+  </div>
+</div>
+
+<h2>3 · Liste de courses — 4.28</h2>
+<p class="why">Figée à la génération (<b>D5</b>) : une liste qui bougerait pendant qu'on est au rayon ne
+sert à rien. Groupée par rayon dans un ordre de parcours de magasin (<b>R13</b>), avec les libellés
+<code>food.categories.*</code> déjà traduits. Elle <b>dit ce qu'elle ne sait pas</b> plutôt que de
+sous-estimer en silence.</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Liste de courses</span></div>
+      <div class="body">
+        <div class="summary"><div class="s1">Semaine du 3 au 9 août</div>
+          <div class="s2">14 repas planifiés · 23 ingrédients</div></div>
+        <div class="aisle">Légumes</div>
+        <div class="item"><span class="box"></span><span class="iname">Brocoli</span><span class="iqty">600 g</span></div>
+        <div class="item on"><span class="box on">✓</span><span class="iname">Carotte</span><span class="iqty">250 g</span></div>
+        <div class="item"><span class="box"></span><span class="iname">Oignon<em>+ 2 sans quantité</em></span><span class="iqty">150 g</span></div>
+        <div class="item"><span class="box"></span><span class="iname">Tomate</span><span class="iqty">400 g</span></div>
+        <div class="item"><span class="box"></span><span class="iname">Tomates cerises</span><span class="iqty">200 g</span></div>
+        <div class="aisle">Fruits</div>
+        <div class="item on"><span class="box on">✓</span><span class="iname">Banane</span><span class="iqty">360 g</span></div>
+        <div class="aisle">Viandes</div>
+        <div class="item"><span class="box"></span><span class="iname">Poulet (filet)</span><span class="iqty">700 g</span></div>
+        <div class="aisle">Féculents</div>
+        <div class="item"><span class="box"></span><span class="iname">Riz basmati</span><span class="iqty">450 g</span></div>
+        <div class="item"><span class="box"></span><span class="iname">Flocons d'avoine</span><span class="iqty">240 g</span></div>
+        <div class="btn">Partager la liste</div>
+        <div class="btn ghost small">Régénérer depuis le planning</div>
+      </div>
+    </div>
+    <div class="phonelabel">« Tomate » et « Tomates cerises » restent <b>deux lignes</b> : aucun pluriel
+      deviné, aucune fusion fausse (<b>R9</b>).</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Liste de courses</span></div>
+      <div class="body">
+        <div class="summary"><div class="s1">Semaine du 3 au 9 août</div>
+          <div class="s2">14 repas planifiés · 23 ingrédients</div></div>
+        <div class="note" style="margin-bottom:11px"><b>2 repas planifiés n'ont pas d'ingrédients</b> —
+          leur recette a été supprimée depuis. Leurs courses ne sont pas dans cette liste.</div>
+        <div class="aisle">Légumes</div>
+        <div class="item"><span class="box"></span><span class="iname">Brocoli</span><span class="iqty">600 g</span></div>
+        <div class="item"><span class="box"></span><span class="iname">Ail<em>quantité non précisée</em></span><span class="iqty">—</span></div>
+        <div class="aisle">Laitiers</div>
+        <div class="item"><span class="box"></span><span class="iname">Lait demi-écrémé</span><span class="iqty">1 000 g</span></div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>R7 / R11 / R12</b> — une quantité absente n'est <b>jamais zéro</b>, et une
+      recette supprimée est signalée au lieu d'amputer la liste en silence.</div>
+  </div>
+
+  <div>
+    <div class="row2" style="grid-template-columns:1fr;gap:14px">
+      <div>
+        <div class="dialog">
+          <div class="dt">Régénérer la liste ?</div>
+          <div class="db">La liste sera recalculée depuis le planning de la semaine.
+            <b>Les 6 articles déjà cochés seront décochés.</b></div>
+          <div class="acts"><div class="cancel">Annuler</div><div class="ok">Régénérer</div></div>
+        </div>
+        <div class="phonelabel">La perte des cases cochées est <b>annoncée avant</b>, jamais subie.</div>
+      </div>
+      <div>
+        <div class="share">Liste de courses — 04/08/2026
+Semaine du 3 au 9 août
+
+LÉGUMES
+- Brocoli : 600 g
+- Carotte : 250 g
+- Oignon : 150 g (+ 2 sans quantité)
+
+FRUITS
+- Banane : 360 g
+
+VIANDES
+- Poulet (filet) : 700 g
+
+FÉCULENTS
+- Riz basmati : 450 g
+- Flocons d'avoine : 240 g</div>
+        <div class="phonelabel">4.29 — texte brut via la feuille de partage Android (<b>D8</b>).
+          Aucun émoji, aucun lien, aucune mention de l'app : collable dans n'importe quoi.
+          <b>Zéro dépendance native → aucun nouveau build.</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Les décisions que ces écrans matérialisent</h2>
+<table>
+  <tr><th style="width:62px">#</th><th>Décision</th><th>Où on la voit</th></tr>
+  <tr><td><b>D2</b></td><td>Cases = repas <b>configurés</b>, pas 4 en dur</td><td>§1 — « Collation » présente ici, absente d'un profil qui l'a supprimée</td></tr>
+  <tr><td><b>D3</b></td><td>Le planning n'écrit <b>jamais</b> dans le journal</td><td>§2, 3ᵉ écran — « J'ai mangé ça » est le seul chemin</td></tr>
+  <tr><td><b>D5</b></td><td>Liste <b>figée</b>, régénération explicite</td><td>§3 — bouton « Régénérer » + dialogue d'avertissement</td></tr>
+  <tr><td><b>D8</b></td><td>Export <b>texte brut</b>, pas de PDF</td><td>§3 — aperçu du texte partagé</td></tr>
+  <tr><td><b>D9</b></td><td>Quantité manquante ≠ zéro</td><td>§3 — « Oignon · + 2 sans quantité » et « Ail · — »</td></tr>
+  <tr><td><b>D12</b></td><td>Dupliquer la semaine précédente</td><td>§1, écran vide — sinon le planning ne se refait pas</td></tr>
+  <tr><td><b>R5</b></td><td>Objectif majoré les jours d'entraînement</td><td>§1 — mardi : 2 650 au lieu de 2 350</td></tr>
+  <tr><td><b>R8</b></td><td>Facteur <code>P / S</code> sur les ingrédients</td><td>§2 — l'astuce sous le sélecteur de portions</td></tr>
+  <tr><td><b>R10</b></td><td>Repas orphelin → bucket « Autre »</td><td>§1, 3ᵉ écran</td></tr>
+</table>
+
+<p class="foot"><b>Deux points restent à trancher</b> (spec §4) et n'apparaissent donc pas ici comme
+définitifs : <b>P1</b> — la porte d'entrée depuis le hub Nutrition (carte dédiée proposée, mais le hub
+est déjà chargé) · <b>P2</b> — cocher un rayon entier d'un geste (proposition : non, l'action de masse
+invite au dé-cochage accidentel). Aucun des deux ne bloque le démarrage du code.</p>
+
+</div>
+</body>
+</html>

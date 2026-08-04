@@ -65,6 +65,14 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // possible, et ce qui est gardé reste exportable).
   { table: 'menstrual_periods', col: 'user_id' },
   { table: 'menstrual_daily_logs', col: 'user_id' },
+  // US REPAS-01 — planning repas et listes de courses. Le planning est une **intention**, pas du
+  // consommé (règle R1), mais c'est une donnée personnelle saisie par l'utilisateur et synchronisée :
+  // elle relève de la portabilité au même titre que le journal. Les listes de courses sont dérivées
+  // du planning, mais leur état coché est un travail de l'utilisateur qui n'est reconstituable
+  // nulle part ailleurs.
+  { table: 'meal_plan_entries', col: 'user_id' },
+  { table: 'shopping_lists', col: 'user_id' },
+  { table: 'shopping_list_items', col: 'user_id' },
 ];
 
 /**

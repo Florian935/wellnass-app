@@ -485,6 +485,70 @@ const meal_template_items = new Table({
   deleted_at: column.text,
 });
 
+// ── US REPAS-01 : planning repas (4.27) + liste de courses (4.28/4.29) ─────
+// Migration : supabase/migrations/20260804145909_repas01_meal_plan_shopping_list.sql
+// ⚠️ Toute colonne oubliée ici fait échouer l'écriture EN SILENCE (`void updateSettings` avale
+// l'erreur) : c'est exactement la panne de CYCLE-01 constatée en recette le 31/07/2026, où
+// l'interrupteur restait éteint sans message. Les 3 tables sont relues colonne par colonne.
+//
+// `meal_plan_entries` porte un SNAPSHOT (`label`, `kcal`, macros) : le planning déjà posé ne bouge
+// pas quand la recette source change ensuite. Les ingrédients, eux, sont relus vivants à la
+// génération de la liste (règle R6). `consumed_at` non nul = entrée déjà portée au journal.
+const meal_plan_entries = new Table({
+  user_id: column.text,
+  plan_date: column.text,
+  meal_key: column.text,
+  order_index: column.integer,
+  source_type: column.text,
+  recipe_id: column.text,
+  template_id: column.text,
+  servings: column.real,
+  label: column.text,
+  kcal: column.integer,
+  protein_g: column.real,
+  carbs_g: column.real,
+  fat_g: column.real,
+  consumed_at: column.text,
+  // JSON [id] des food_entries créées par « J'ai mangé ça » (règle R3) : « Annuler » retire
+  // exactement ces lignes. Les retrouver par (jour, repas, nom) supprimerait la mauvaise ligne
+  // dès qu'on a mangé deux fois la même chose.
+  consumed_entry_ids: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// Liste MATÉRIALISÉE (décision D5), pas dérivée : elle est figée à la génération pour ne pas bouger
+// pendant qu'on est au rayon. `unresolved_count` / `planned_count` permettent à l'écran d'annoncer
+// ce que la liste ne sait pas (règle R12) sans relire tout le planning.
+const shopping_lists = new Table({
+  user_id: column.text,
+  week_start_date: column.text,
+  generated_at: column.text,
+  unresolved_count: column.integer,
+  planned_count: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// `quantity_g` reste nullable jusqu'ici : une quantité absente n'est JAMAIS 0 (règle R7), elle est
+// comptée dans `unquantified_count` et affichée en clair. `checked` est un booléen Postgres → 0/1.
+const shopping_list_items = new Table({
+  list_id: column.text,
+  user_id: column.text,
+  food_id: column.text,
+  name: column.text,
+  category: column.text,
+  quantity_g: column.real,
+  unquantified_count: column.integer,
+  checked: column.integer, // 0/1
+  order_index: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 const body_weight_entries = new Table({
   user_id: column.text,
   log_date: column.text,
@@ -644,6 +708,9 @@ export const AppSchema = new Schema({
   recipe_ingredients,
   meal_templates,
   meal_template_items,
+  meal_plan_entries,
+  shopping_lists,
+  shopping_list_items,
   body_weight_entries,
   daily_steps,
   daily_wellbeing,

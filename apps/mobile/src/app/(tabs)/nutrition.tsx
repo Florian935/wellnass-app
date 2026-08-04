@@ -386,6 +386,27 @@ export default function NutritionScreen() {
           />
         ) : null}
 
+        {/* US REPAS-01 (4.27) — carte dédiée, arbitrage Florian du 04/08/2026 (point P1) : le
+            planning repas demande un investissement de saisie avant de rendre sa valeur. Rangé
+            dans un sous-menu, il ne serait jamais adopté. */}
+        <Pressable
+          onPress={() => router.push('/meal-plan')}
+          accessibilityRole="button"
+          accessibilityLabel={t('mealPlan.title')}
+          style={[styles.mealPlanCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <View style={[styles.mealPlanIcon, { backgroundColor: colors.surfaceAlt }]}>
+            <Ionicons name="calendar-outline" size={20} color={colors.accent} />
+          </View>
+          <View style={styles.mealPlanTexts}>
+            <Text style={[styles.mealPlanTitle, { color: colors.text }]}>{t('mealPlan.title')}</Text>
+            <Text style={[styles.mealPlanSubtitle, { color: colors.textMuted }]}>
+              {t('mealPlan.hubTeaser')}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+        </Pressable>
+
         <Pressable onPress={() => router.push('/nutrition-meals')} style={styles.manageMeals}>
           <Ionicons name="create-outline" size={16} color={colors.textMuted} />
           <Text style={[styles.manageMealsLabel, { color: colors.textMuted }]}>{t('meals.manage')}</Text>
@@ -1058,4 +1079,18 @@ const styles = StyleSheet.create({
   addLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   manageMeals: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
   manageMealsLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  // US REPAS-01 — carte d'accès au planning repas (P1).
+  mealPlanCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 12,
+  },
+  mealPlanIcon: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  mealPlanTexts: { flex: 1, gap: 2 },
+  mealPlanTitle: { fontFamily: fontFamily.displayBold, fontSize: 15 },
+  mealPlanSubtitle: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
 });

@@ -861,6 +861,94 @@ export type Database = {
           },
         ]
       }
+      meal_plan_entries: {
+        Row: {
+          carbs_g: number
+          consumed_at: string | null
+          consumed_entry_ids: Json | null
+          created_at: string
+          deleted_at: string | null
+          fat_g: number
+          id: string
+          kcal: number
+          label: string
+          meal_key: string
+          order_index: number
+          plan_date: string
+          protein_g: number
+          recipe_id: string | null
+          servings: number
+          source_type: string
+          template_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carbs_g?: number
+          consumed_at?: string | null
+          consumed_entry_ids?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          fat_g?: number
+          id: string
+          kcal?: number
+          label: string
+          meal_key: string
+          order_index?: number
+          plan_date: string
+          protein_g?: number
+          recipe_id?: string | null
+          servings?: number
+          source_type: string
+          template_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carbs_g?: number
+          consumed_at?: string | null
+          consumed_entry_ids?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          fat_g?: number
+          id?: string
+          kcal?: number
+          label?: string
+          meal_key?: string
+          order_index?: number
+          plan_date?: string
+          protein_g?: number
+          recipe_id?: string | null
+          servings?: number
+          source_type?: string
+          template_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_entries_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "meal_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_template_items: {
         Row: {
           carbs_g: number
@@ -1887,6 +1975,120 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_list_items: {
+        Row: {
+          category: string
+          checked: boolean
+          created_at: string
+          deleted_at: string | null
+          food_id: string | null
+          id: string
+          list_id: string
+          name: string
+          order_index: number
+          quantity_g: number | null
+          unquantified_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          checked?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          food_id?: string | null
+          id: string
+          list_id: string
+          name: string
+          order_index?: number
+          quantity_g?: number | null
+          unquantified_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          checked?: boolean
+          created_at?: string
+          deleted_at?: string | null
+          food_id?: string | null
+          id?: string
+          list_id?: string
+          name?: string
+          order_index?: number
+          quantity_g?: number | null
+          unquantified_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shopping_list_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_lists: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          generated_at: string
+          id: string
+          planned_count: number
+          unresolved_count: number
+          updated_at: string
+          user_id: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          generated_at?: string
+          id: string
+          planned_count?: number
+          unresolved_count?: number
+          updated_at?: string
+          user_id: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          generated_at?: string
+          id?: string
+          planned_count?: number
+          unresolved_count?: number
+          updated_at?: string
+          user_id?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_lists_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },
         ]
