@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSCPWR-01 — Module force</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--accentt:#fff;--success:#66714b;
+        --danger:#b23b2e;--warn:#f7ead6;--warnb:#e9cfa0;--warnt:#8a6419;--track:#eadcc6}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:660px){.row{grid-template-columns:1fr}}
+
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.13)}
+  .nav{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surf);
+       border-bottom:1px solid var(--border)}
+  .back{color:var(--accent);font-weight:700;font-size:17px;line-height:1}
+  .navtitle{font-weight:700;font-size:15px}
+  .body{padding:12px}
+  .phonelabel{font-size:12px;color:#6a5d4d;text-align:center;margin-top:9px;line-height:1.45}
+
+  /* Section repliable */
+  .sec{background:var(--surf);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:9px}
+  .sechead{display:flex;align-items:center;gap:10px;padding:12px}
+  .sectexts{flex:1}
+  .sectitle{font-weight:800;font-size:14.5px}
+  .secsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .caret{color:var(--muted);font-weight:800;font-size:13px}
+  .secbody{padding:0 12px 12px;border-top:1px solid var(--border);padding-top:11px}
+
+  .other{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:11px;
+     margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .other .t{flex:1;font-weight:700;font-size:13.5px;color:var(--muted)}
+
+  /* Cartes d'analyse */
+  .an{background:var(--bg);border:1px solid var(--border);border-radius:11px;padding:11px;margin-bottom:8px}
+  .antitle{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+     color:var(--muted);margin-bottom:7px}
+  .big{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:27px;line-height:1.05}
+  .bigsub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
+  .inline{display:flex;align-items:baseline;gap:8px}
+  .delta{font-size:12px;font-weight:800;color:var(--success)}
+  .delta.down{color:var(--danger)}
+
+  /* Barres %1RM */
+  .bar{display:flex;align-items:center;gap:8px;margin:5px 0}
+  .barlab{font-size:11.5px;color:var(--muted);flex:0 0 62px}
+  .bartrack{flex:1;height:16px;background:var(--track);border-radius:4px;overflow:hidden;position:relative}
+  .barfill{height:100%;background:var(--accent);border-radius:4px}
+  .barfill.over{background:var(--success)}
+  .barval{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;font-weight:800;flex:0 0 46px;text-align:right}
+
+  /* Lignes SBD */
+  .lift{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .lift:last-of-type{border-bottom:0}
+  .liftname{flex:1}
+  .liftval{font-family:ui-monospace,Menlo,monospace;font-weight:800}
+  .liftmiss{color:var(--warnt);font-size:12px;font-style:italic}
+  .total{display:flex;align-items:baseline;justify-content:space-between;margin-top:9px;
+     padding-top:9px;border-top:1.5px solid var(--bstrong)}
+  .totlab{font-weight:800;font-size:13.5px}
+  .totval{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:22px}
+
+  .note{background:var(--warn);border:1px solid var(--warnb);border-radius:10px;padding:9px 11px;
+        font-size:12.5px;color:var(--warnt);line-height:1.45;margin:8px 0 0}
+  .note b{color:#6d4f12}
+  .link{color:var(--accent);font-weight:700;text-decoration:underline}
+  .disc{font-size:11px;color:var(--muted);font-style:italic;margin-top:7px;line-height:1.4}
+
+  /* Sparkline projection */
+  .spark{height:56px;margin:8px 0 2px;position:relative}
+  .spark svg{width:100%;height:100%;display:block}
+
+  .btn{display:block;text-align:center;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+       border-radius:11px;padding:12px;margin-top:11px}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.small{padding:9px;font-size:13px}
+
+  .pick{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);
+     border-radius:11px;padding:11px;margin-bottom:6px}
+  .pick .pl{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+     color:var(--muted);flex:0 0 62px}
+  .pick .pv{flex:1;font-weight:700;font-size:13.5px}
+  .pick .pv.empty{color:var(--warnt);font-weight:600;font-style:italic}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;background:var(--surf);
+        border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:12.5px}
+  tr:last-child td{border-bottom:0}
+  td code{background:var(--bg);padding:1px 4px;border-radius:4px;font-size:12.5px}
+  .foot{margin-top:34px;padding-top:16px;border-top:1px solid #cfc0a9;color:#6a5d4d;font-size:13px;max-width:84ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>MUSCPWR-01 — Module force</h1>
+<p class="sub">Catalogue <b>MUSC-16</b> (%1RM) · <b>MUSC-27</b> (DOTS) · <b>MUSC-29</b> (total SBD +
+projection). <b>Tier 1</b> selon <a href="../../docs/adr/ADR-007-surfacage-analyses.md">ADR-007</a> :
+une <b>seule section repliable</b> sur l'écran Progression, jamais un widget de dashboard. Références
+<code>Rn</code>/<code>Dn</code> → <a href="../../docs/specs/functional/us/muscpwr01-module-force.md">spec</a>.</p>
+
+<h2>1 · La section « Force » — conditionnelle par défaut</h2>
+<p class="why">Ce module sert une minorité (pratiquants de force). Il ne doit <b>rien coûter</b> à
+quelqu'un qui fait du renforcement général : la section est <b>absente</b>, pas vide, tant qu'aucune
+analyse n'est calculable (<b>D4</b>).</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Progression</span></div>
+      <div class="body">
+        <div class="other"><span class="t">Poids corporel</span><span class="caret">›</span></div>
+        <div class="other"><span class="t">Mensurations</span><span class="caret">›</span></div>
+        <div class="other"><span class="t">Records personnels</span><span class="caret">›</span></div>
+        <div class="other"><span class="t">Tonnage cumulé</span><span class="caret">›</span></div>
+        <div class="phonelabel" style="text-align:left;margin-top:14px">Compte sans donnée de force :
+          <b>aucune section « Force »</b>. Pas de section vide, pas de « — », pas d'invitation.</div>
+      </div>
+    </div>
+    <div class="phonelabel">ADR-007, règle 4 : une analyse ne « monte » que si elle sert. Sinon elle
+      reste au catalogue — et ici, elle disparaît de l'écran.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Progression</span></div>
+      <div class="body">
+        <div class="other"><span class="t">Records personnels</span><span class="caret">›</span></div>
+        <div class="sec">
+          <div class="sechead"><div class="sectexts"><div class="sectitle">Force</div>
+            <div class="secsub">Intensité relative · DOTS · total SBD</div></div>
+            <span class="caret">▾</span></div>
+          <div class="secbody">
+            <div class="an">
+              <div class="antitle">Score de force relative (DOTS)</div>
+              <div class="inline"><span class="big">387,4</span><span class="delta">+11,2</span></div>
+              <div class="bigsub">à <b>82,4 kg</b> le 28/07/2026 · total 512,5 kg</div>
+            </div>
+            <div class="an">
+              <div class="antitle">Total SBD</div>
+              <div class="lift"><span class="liftname">Squat</span><span class="liftval">195 kg</span></div>
+              <div class="lift"><span class="liftname">Développé couché</span><span class="liftval">122,5 kg</span></div>
+              <div class="lift"><span class="liftname">Soulevé de terre</span><span class="liftval">195 kg</span></div>
+              <div class="total"><span class="totlab">Total</span><span class="totval">512,5 kg</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="other"><span class="t">Tonnage cumulé</span><span class="caret">›</span></div>
+      </div>
+    </div>
+    <div class="phonelabel">Cas nominal, section dépliée. Le DOTS annonce <b>à quel poids et à quelle
+      date</b> il est calculé (<b>R7</b>) — sinon le score paraît sorti de nulle part.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Développé couché</span></div>
+      <div class="body">
+        <div class="an">
+          <div class="antitle">Intensité relative · séance du 03/08</div>
+          <div class="inline"><span class="big">78 %</span><span class="delta">du max</span></div>
+          <div class="bigsub">moyenne pondérée par les répétitions · 1RM estimé <b>122,5 kg</b></div>
+          <div class="bar"><span class="barlab">5 × 95 kg</span>
+            <span class="bartrack"><span class="barfill" style="width:78%"></span></span>
+            <span class="barval">78 %</span></div>
+          <div class="bar"><span class="barlab">5 × 100 kg</span>
+            <span class="bartrack"><span class="barfill" style="width:82%"></span></span>
+            <span class="barval">82 %</span></div>
+          <div class="bar"><span class="barlab">1 × 125 kg</span>
+            <span class="bartrack"><span class="barfill over" style="width:100%"></span></span>
+            <span class="barval">102 %</span></div>
+          <div class="disc">Séries d'échauffement exclues (R5).</div>
+        </div>
+        <div class="note">La dernière série dépasse le 1RM connu : elle affiche <b>102 %</b> et non
+          100 % — c'est un nouveau record, l'information est juste (<b>R3</b>).</div>
+      </div>
+    </div>
+    <div class="phonelabel">%1RM contre le <b>meilleur</b> 1RM connu, jamais le dernier (<b>R1</b>) :
+      sinon les pourcentages bondiraient après chaque séance légère.</div>
+  </div>
+</div>
+
+<h2>2 · Ce qui manque se dit, jamais ne se devine</h2>
+<p class="why">Trois façons pour ce module d'être incomplet — et trois refus explicites plutôt qu'une
+valeur inventée.</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Force</span></div>
+      <div class="body">
+        <div class="an">
+          <div class="antitle">Score de force relative (DOTS)</div>
+          <div class="note" style="margin:0"><b>Indisponible.</b> Le DOTS se normalise selon le sexe,
+            et il n'existe pas de valeur neutre. <span class="link">Compléter mon profil</span></div>
+        </div>
+        <div class="an">
+          <div class="antitle">Total SBD</div>
+          <div class="lift"><span class="liftname">Squat</span><span class="liftval">195 kg</span></div>
+          <div class="lift"><span class="liftname">Développé couché</span><span class="liftval">122,5 kg</span></div>
+          <div class="lift"><span class="liftname">Soulevé de terre</span><span class="liftval">195 kg</span></div>
+          <div class="total"><span class="totlab">Total</span><span class="totval">512,5 kg</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>R6</b> — sexe non renseigné : le DOTS est masqué, le total SBD reste.
+      Inventer un sexe pour produire un score serait à la fois faux et intrusif.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Force</span></div>
+      <div class="body">
+        <div class="an">
+          <div class="antitle">Total SBD</div>
+          <div class="lift"><span class="liftname">Squat</span><span class="liftval">195 kg</span></div>
+          <div class="lift"><span class="liftname">Développé couché</span><span class="liftmiss">non désigné</span></div>
+          <div class="lift"><span class="liftname">Soulevé de terre</span><span class="liftmiss">exercice archivé</span></div>
+          <div class="note" style="margin-top:9px">Total indisponible : <b>2 mouvements</b> à
+            renseigner. <span class="link">Désigner mes mouvements</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>R11 / R12</b> — un total partiel annoncé comme total serait faux. Et un
+      exercice archivé est <b>signalé</b>, pas silencieusement retiré.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Force</span></div>
+      <div class="body">
+        <div class="an">
+          <div class="antitle">Projection</div>
+          <div class="note" style="margin:0"><b>Pas encore de projection.</b> Il faut au moins
+            3 mesures de total réparties sur 8 semaines. Tu en as <b>2</b>, sur 5 semaines.</div>
+          <div class="disc">Une droite tracée sur deux points est une illusion de précision.</div>
+        </div>
+        <div class="an">
+          <div class="antitle">Projection · au rythme actuel</div>
+          <div class="spark">
+            <svg viewBox="0 0 300 56" preserveAspectRatio="none">
+              <polyline points="4,44 70,38 140,30 205,22" fill="none" stroke="#b14f2b" stroke-width="2.5"/>
+              <polyline points="205,22 292,10" fill="none" stroke="#66714b" stroke-width="2.5" stroke-dasharray="5 4"/>
+              <circle cx="4" cy="44" r="3" fill="#b14f2b"/><circle cx="70" cy="38" r="3" fill="#b14f2b"/>
+              <circle cx="140" cy="30" r="3" fill="#b14f2b"/><circle cx="205" cy="22" r="3" fill="#b14f2b"/>
+              <circle cx="292" cy="10" r="3.5" fill="#66714b"/>
+            </svg>
+          </div>
+          <div class="inline"><span class="big" style="font-size:22px">≈ 535 kg</span></div>
+          <div class="bigsub">dans <b>12 semaines</b> · +1,9 kg / semaine</div>
+          <div class="disc">Estimation au rythme des 4 derniers mois, pas un objectif (R9).</div>
+        </div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>R8/R9</b> — seuils d'entrée, plafond à 12 semaines, et le refus
+      <b>dit ce qui manque</b> (« 2 mesures sur 5 semaines »), il ne masque pas.</div>
+  </div>
+</div>
+
+<h2>3 · Désigner ses mouvements — l'opt-in du module</h2>
+<p class="why">La correspondance par nom échouerait sur « Squat barre basse », « Bench avec pause » ou
+tout exercice perso — or c'est exactement ce que fait un pratiquant de force (<b>D3</b>). La
+désignation gère tous les cas, et sert d'<b>opt-in</b> : sans elle, pas de total SBD.</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Mes mouvements de force</span></div>
+      <div class="body">
+        <p style="font-size:13px;color:var(--muted);line-height:1.5;margin:2px 0 12px">Choisis les
+          exercices qui comptent comme <b>tes</b> trois mouvements. Le total SBD et sa projection s'y
+          appuient.</p>
+        <div class="pick"><span class="pl">Squat</span><span class="pv">Squat</span><span class="caret">›</span></div>
+        <div class="pick"><span class="pl">Bench</span><span class="pv">Développé couché</span><span class="caret">›</span></div>
+        <div class="pick"><span class="pl">Deadlift</span><span class="pv empty">à choisir</span><span class="caret">›</span></div>
+        <div class="disc">Pré-rempli avec les exercices de la bibliothèque ; remplaçable par n'importe
+          lequel de tes exercices, y compris perso.</div>
+      </div>
+    </div>
+    <div class="phonelabel">Une seule migration de toute l'US : <code>user_settings.sbd_lifts</code>
+      (JSON). Tout le reste est <b>dérivé</b>.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Choisir — Deadlift</span></div>
+      <div class="body">
+        <div class="pick"><span class="pv">Soulevé de terre</span><span class="caret">✓</span></div>
+        <div class="pick"><span class="pv">Soulevé de terre roumain</span></div>
+        <div class="pick"><span class="pv">Soulevé de terre sumo <span style="font-size:10.5px;
+          font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);
+          border:1px solid var(--accent);border-radius:5px;padding:1px 4px;margin-left:5px">perso</span></span></div>
+        <div class="pick"><span class="pv">Hip thrust</span></div>
+      </div>
+    </div>
+    <div class="phonelabel">Les exercices <b>perso</b> sont sélectionnables : c'est indispensable pour
+      les variantes de compétition, que la bibliothèque ne contient pas.</div>
+  </div>
+
+  <div>
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px">
+      <div style="font-weight:800;font-size:14.5px;margin-bottom:8px">Pourquoi une seule section, et
+        pas trois</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.55;margin:0 0 10px">ADR-007 fixe la
+        doctrine : le <b>Tier 0</b> (dashboard) est plafonné à 4-6 widgets et réservé à
+        l'<b>actionnable du jour</b> — un score DOTS ne se regarde pas chaque matin. Et dès qu'un
+        écran <b>Tier 1</b> dépasse ~4-5 sections, il passe en repliable.</p>
+      <p style="font-size:13px;color:var(--muted);line-height:1.55;margin:0">Trois US séparées auraient
+        produit <b>trois sections concurrentes</b> sur un écran Progression qui en compte déjà quatre.
+        C'est la raison principale du regroupement (<b>D1</b>) — au-delà du fait qu'elles partagent
+        toutes le 1RM comme socle.</p>
+    </div>
+    <div class="phonelabel">Le regroupement n'est pas un raccourci de livraison : c'est une contrainte
+      d'architecture d'écran.</div>
+  </div>
+</div>
+
+<h2>Les décisions que ces écrans matérialisent</h2>
+<table>
+  <tr><th style="width:62px">#</th><th>Décision</th><th>Où on la voit</th></tr>
+  <tr><td><b>D1</b></td><td>Une US, une section</td><td>§1 et §3, 3ᵉ encadré</td></tr>
+  <tr><td><b>D2</b></td><td><b>DOTS seul</b> (Wilks déprécié, IPF GL exige des données absentes)</td><td>§1 — un seul score affiché</td></tr>
+  <tr><td><b>D3</b></td><td>Mouvements <b>désignés</b>, pas devinés</td><td>§3 en entier</td></tr>
+  <tr><td><b>D4</b></td><td>Tier 1, section repliable, conditionnelle</td><td>§1 — 1ᵉʳ écran : section absente</td></tr>
+  <tr><td><b>D5</b></td><td>Pas de %1RM pendant la séance</td><td>§1, 3ᵉ écran — l'analyse vit sur la fiche exercice, pas dans le suivi de série</td></tr>
+  <tr><td><b>R1</b></td><td>Meilleur 1RM connu, pas le dernier</td><td>§1, 3ᵉ écran</td></tr>
+  <tr><td><b>R3</b></td><td>Au-delà de 100 %, on l'affiche</td><td>§1, 3ᵉ écran — barre verte à 102 %</td></tr>
+  <tr><td><b>R6</b></td><td>Sans sexe, pas de DOTS</td><td>§2, 1ᵉʳ écran</td></tr>
+  <tr><td><b>R7</b></td><td>Poids de corps <b>daté</b>, le plus proche du record</td><td>§1, 2ᵉ écran</td></tr>
+  <tr><td><b>R8/R9</b></td><td>Projection : seuils, plafond, mention d'estimation</td><td>§2, 3ᵉ écran</td></tr>
+  <tr><td><b>R11/R12</b></td><td>Total partiel refusé, exercice archivé signalé</td><td>§2, 2ᵉ écran</td></tr>
+</table>
+
+<p class="foot">🔴 <b>Point de vigilance, à lever avant clôture</b> : les <b>coefficients du DOTS</b>
+sont des constantes publiques que je <b>ne peux pas vérifier depuis ce poste</b>. Ils seront inscrits
+en clair, commentés, et ancrés par des <b>tests à valeurs de référence</b> (un total connu → un score
+connu) plutôt que par des cas inventés. <b>À faire relire par quelqu'un qui pratique</b> : un
+coefficient faux produit un score <b>plausible mais faux</b>, donc invisible en recette. Même
+précaution que pour les alias de colonnes d'IMPORT-01 — quand une constante vient de l'extérieur, on
+l'ancre sur une référence externe.
+<br><br><b>Deux points à trancher</b> (spec §4) : <b>P1</b> — afficher le DOTS aussi <b>par
+mouvement</b> (utile pour se comparer à quelqu'un de plus lourd) et pas seulement sur le total ? Je
+propose les deux, le coût est nul · <b>P2</b> — garder le libellé technique « DOTS » avec un
+sous-titre explicatif, ou trouver un nom plus parlant ?</p>
+
+</div>
+</body>
+</html>
