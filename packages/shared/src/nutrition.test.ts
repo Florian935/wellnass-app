@@ -26,6 +26,7 @@ import {
   targetCalories,
   tdee,
   trainingDayCalories,
+  trainingDayMacroGrams,
 } from './nutrition';
 
 describe('enums', () => {
@@ -244,6 +245,57 @@ describe('macros', () => {
       carbs: 0,
       fat: 0,
     });
+  });
+});
+
+describe('trainingDayMacroGrams (US MN-04, spec R1/R4)', () => {
+  it('sans bonus (effectiveTarget === targetBase) → identique à macroGramsFromCalories seul (R4)', () => {
+    const base = macroGramsFromCalories(2000, defaultMacroRatios('maintain'));
+    expect(
+      trainingDayMacroGrams({ targetBase: 2000, effectiveTarget: 2000, objective: 'maintain' }),
+    ).toEqual(base);
+  });
+
+  it('bonus de 400 kcal → +100 g de glucides seulement, protéines/lipides inchangés (R1)', () => {
+    const base = macroGramsFromCalories(2000, defaultMacroRatios('bulk'));
+    const result = trainingDayMacroGrams({
+      targetBase: 2000,
+      effectiveTarget: 2400,
+      objective: 'bulk',
+    });
+    expect(result.carbs).toBe(base.carbs + 100);
+    expect(result.protein).toBe(base.protein);
+    expect(result.fat).toBe(base.fat);
+  });
+
+  it('bonus impair (dépense de course réelle, 137 kcal) → arrondi correct, pas de NaN', () => {
+    const result = trainingDayMacroGrams({
+      targetBase: 2000,
+      effectiveTarget: 2137,
+      objective: 'cut',
+    });
+    expect(Number.isNaN(result.carbs)).toBe(false);
+    expect(result.carbs).toBe(macroGramsFromCalories(2000, defaultMacroRatios('cut')).carbs + 34); // round(137/4)
+  });
+
+  it('effectiveTarget < targetBase (ne devrait jamais arriver) → jamais de glucides négatifs', () => {
+    const base = macroGramsFromCalories(2000, defaultMacroRatios('maintain'));
+    const result = trainingDayMacroGrams({
+      targetBase: 2000,
+      effectiveTarget: 1800,
+      objective: 'maintain',
+    });
+    expect(result).toEqual(base);
+  });
+
+  it('le total en kcal du résultat correspond à effectiveTarget, à l’arrondi près', () => {
+    const result = trainingDayMacroGrams({
+      targetBase: 2000,
+      effectiveTarget: 2400,
+      objective: 'bulk',
+    });
+    expect(caloriesFromMacros(result)).toBeGreaterThanOrEqual(2396);
+    expect(caloriesFromMacros(result)).toBeLessThanOrEqual(2404);
   });
 });
 

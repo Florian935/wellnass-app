@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MN-04 — Macros ajustées jours muscu (glucides péri-séance)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --protein:#b14f2b;--carbs:#c98a2e;--fat:#5c7a5a;--bad:#b3261e;--badbg:#fbeae8}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:940px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          margin-bottom:14px}
+  .before .screenlabel{color:var(--bad)} .after .screenlabel{color:var(--success)}
+  .kcalline{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .kcalline b{color:var(--text)}
+  .macro{margin-bottom:12px}
+  .macrohead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);
+             margin-bottom:4px}
+  .macrotrack{height:8px;border-radius:5px;background:var(--track);overflow:hidden}
+  .macrobar{height:100%;border-radius:5px}
+  .sumline{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border);font-size:12.5px}
+  .before .sumline{color:var(--bad);background:var(--badbg);border-radius:8px;padding:8px 10px;
+                    border-top:none}
+  .after .sumline{color:var(--success)}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MN-04 — Macros ajustées jours muscu (glucides péri-séance)</h1>
+<p class="sub"><strong>Pas un nouveau widget</strong> — correction du calcul des cibles macro déjà
+affichées sur <code>NutritionSummaryCard</code> (dashboard) et l'écran Nutrition. Le trou était déjà
+documenté dans un commentaire du code : « les macros cibles restent calées sur l'objectif de base
+(bonus non ventilé) ».</p>
+<div class="flag">✅ Décision D1 arbitrée par Florian le 04/08/2026 (100 % du bonus vers les glucides), code
+livré le même jour — cette maquette reflète la règle telle qu'implémentée.</div>
+
+<h2>Le trou, en image — jour de séance muscu, bonus +400 kcal</h2>
+<p class="why">L'anneau de calories (non montré ici, inchangé) affiche déjà l'objectif effectif
+(base + bonus). Les 3 barres macro juste en dessous, elles, ne bougent pas avec lui aujourd'hui.</p>
+
+<div class="row">
+  <div class="screen before">
+    <div class="screenlabel">Avant — bonus invisible</div>
+    <div class="kcalline">Objectif affiché en haut : <b>2 400 kcal</b> (2 000 base + 400 bonus séance)</div>
+
+    <div class="macro">
+      <div class="macrohead"><span>Protéines</span><span>150 g cible</span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:60%;background:var(--protein)"></div></div>
+    </div>
+    <div class="macro">
+      <div class="macrohead"><span>Glucides</span><span>225 g cible</span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:60%;background:var(--carbs)"></div></div>
+    </div>
+    <div class="macro">
+      <div class="macrohead"><span>Lipides</span><span>56 g cible</span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:60%;background:var(--fat)"></div></div>
+    </div>
+
+    <div class="sumline">150×4 + 225×4 + 56×9 = 2 004 kcal — <strong>ne totalise pas</strong> les
+    2 400 affichés en haut. Les 400 kcal de bonus n'apparaissent nulle part dans le détail.</div>
+  </div>
+
+  <div class="screen after">
+    <div class="screenlabel">Après — bonus vers les glucides</div>
+    <div class="kcalline">Objectif affiché en haut : <b>2 400 kcal</b> (inchangé)</div>
+
+    <div class="macro">
+      <div class="macrohead"><span>Protéines</span><span>150 g cible</span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:60%;background:var(--protein)"></div></div>
+    </div>
+    <div class="macro">
+      <div class="macrohead"><span>Glucides</span><span>325 g cible <em style="color:var(--success);font-style:normal">(+100)</em></span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:80%;background:var(--carbs)"></div></div>
+    </div>
+    <div class="macro">
+      <div class="macrohead"><span>Lipides</span><span>56 g cible</span></div>
+      <div class="macrotrack"><div class="macrobar" style="width:60%;background:var(--fat)"></div></div>
+    </div>
+
+    <div class="sumline">150×4 + 325×4 + 56×9 = 2 404 kcal — cohérent avec les 2 400 affichés
+    (arrondis). Les glucides absorbent exactement le bonus (400 kcal ÷ 4 = 100 g).</div>
+  </div>
+</div>
+
+<h2>Jour de repos — rien ne change (règle R4)</h2>
+<div class="note" style="margin-top:0">
+  <code>effectiveTarget === targetBase</code> (aucun bonus) → <code>trainingDayMacroGrams</code>
+  retourne exactement le même résultat que le calcul actuel. Cette US ne modifie **aucun** affichage
+  hors jour de séance/course avec bonus.
+</div>
+
+<h2>Les règles</h2>
+<div class="rules">
+  <div class="rule"><b>R1 — 100 % du bonus vers les glucides (D1)</b>
+    Pas de répartition avec les protéines — MN-06 couvre déjà une cible protéines indépendante,
+    en g/kg. Scinder le bonus inventerait un ratio non sourcé.</div>
+  <div class="rule"><b>R2 — Mode manuel toujours prioritaire</b>
+    Si l'utilisateur a fixé ses macros à la main, le bonus reste invisible pour lui — comportement
+    inchangé, aucune recombinaison automatique.</div>
+  <div class="rule"><b>R3 — Agnostique de l'origine du bonus</b>
+    Forfait fixe (jour muscu) ou dépense réelle de course (mode auto, RN-02) : même règle, aucune
+    distinction par pilier.</div>
+  <div class="rule"><b>R4 — Jour sans bonus = comportement inchangé</b>
+    Le calcul actuel n'est pas remplacé, seulement complété pour le cas où un bonus existe.</div>
+</div>
+
+</div></body></html>

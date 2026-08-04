@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/mn04-glucides-peri-seance` — Macros ajustées jours muscu (US MN-04, catalogue d'analyses)
+
+Suite de `3c390b5`. Troisième candidat piochée dans le catalogue d'analyses pendant la fenêtre de
+recette. **Périmètre volontairement petit** : pas un nouveau widget — corrige un trou déjà
+**documenté dans un commentaire du code** (`nutrition.tsx`, « les macros cibles restent calées sur
+l'objectif de base — bonus non ventilé ») : les 3 barres macro (protéines/glucides/lipides) ne
+totalisaient jamais l'objectif calorique effectif affiché juste au-dessus, un jour d'entraînement,
+parce qu'elles étaient calculées depuis l'objectif de **base** au lieu de l'objectif **effectif**
+(base + bonus MN-01/RN-02). Cycle complet : `/us` → validation Florian (1 seule décision, D1) →
+implémentation TDD → revue de code.
+
+#### Ajouté
+
+- **`packages/shared/src/nutrition.ts`** (+ 5 tests) : `trainingDayMacroGrams`. Redirige le bonus
+  calorique du jour (déjà calculé par MN-01/RN-02, jamais recalculé ici) intégralement vers les
+  glucides — décision D1, validée par Florian : pas de répartition avec les protéines, déjà
+  couvertes indépendamment par MN-06 (g/kg par objectif). Sans bonus, résultat strictement
+  identique au calcul précédent (R4, non-régression jour de repos).
+- Spec + plan + maquette : [mn04-glucides-peri-seance.md](docs/specs/functional/us/mn04-glucides-peri-seance.md),
+  [plan](docs/plans/mn04-glucides-peri-seance.md), [maquette](design/mn04-glucides-peri-seance/mn04-glucides-peri-seance.html)
+  (avant/après chiffré : 2 004 kcal de macros affichées vs 2 400 annoncés → 2 404 après correction).
+
+#### Corrigé
+
+- 🟠 **`NutritionSummaryCard.tsx` et `(tabs)/nutrition.tsx`** appelaient tous les deux
+  `macroGramsFromCalories(target, …)` avec l'objectif de **base**, jamais l'objectif **effectif** —
+  bug pré-existant, déjà repéré et documenté en commentaire par un dev précédent mais jamais corrigé.
+  Les deux écrans utilisent désormais `trainingDayMacroGrams({ targetBase, effectiveTarget,
+  objective })`. Un 3ᵉ appel (`apps/mobile/src/app/nutrition-profile.tsx`, écran de configuration du
+  profil, aucune notion de jour/bonus) est resté inchangé à bon droit — vérifié en revue de code.
+- 🟢 **Trouvé en revue de code, avant commit** : le catalogue d'analyses et la maquette affichaient
+  encore « décision D1 non arbitrée » après la validation de Florian — resynchronisés (même défaut
+  mineur que sur RN-03, la relecture systématique après validation paie).
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- Aucune fonction de MN-01/RN-02/RN-03/MN-06 modifiée — MN-04 consomme uniquement leur résultat déjà
+  calculé (`effectiveTarget - target`), aucun risque de double-comptage calorique.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning, imports morts retirés) ·
+  `test` ✅ **1468 tests shared (70 fichiers) + 655 tests mobile (70 suites), 0 échec**.
+
 ### 04/08/2026 — `feature/rn03-tdee-ajuste-course` — Ajustement auto du TDEE selon le volume de course (US RN-03, catalogue d'analyses)
 
 Suite de `cadaf56`. Deuxième candidat piochée dans le catalogue d'analyses pendant la fenêtre de

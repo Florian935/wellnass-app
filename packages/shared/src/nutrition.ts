@@ -318,6 +318,23 @@ export function caloriesFromMacros(grams: MacroGrams): number {
 }
 
 /**
+ * Cibles macro d'un jour, bonus calorique (MN-01/RN-02) redirigé vers les glucides plutôt
+ * qu'invisible (US MN-04, spec R1, décision D1 — 100 % glucides, aucune répartition avec les
+ * protéines : déjà couvertes indépendamment par MN-06). `effectiveTarget === targetBase` (jour
+ * sans bonus) → résultat identique à `macroGramsFromCalories(targetBase, ...)` seul (spec R4).
+ */
+export function trainingDayMacroGrams(params: {
+  targetBase: number;
+  effectiveTarget: number;
+  objective: NutritionObjective;
+}): MacroGrams {
+  const base = macroGramsFromCalories(params.targetBase, defaultMacroRatios(params.objective));
+  const bonusKcal = Math.max(0, params.effectiveTarget - params.targetBase);
+  const bonusCarbs = Math.round(bonusKcal / CARBS_KCAL_PER_G);
+  return { protein: base.protein, carbs: base.carbs + bonusCarbs, fat: base.fat };
+}
+
+/**
  * Ratios (%) dérivés d'une répartition en grammes — les grammes priment (spec §8).
  * Renvoie 0/0/0 si l'apport calorique dérivé est nul (aucune division par zéro).
  */

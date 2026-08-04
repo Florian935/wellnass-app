@@ -6,7 +6,8 @@
  *  - `large` : anneau kcal (consommé/objectif) + budget restant + 3 barres macro (consommé/cible).
  *
  * Données : `useNutritionSummary` (kcal, objectif effectif, macros, bonus séance). Cibles macro
- * calculées comme l'écran nutrition (`macroGramsFromCalories` + manuel prioritaire).
+ * calculées comme l'écran nutrition (`trainingDayMacroGrams` + manuel prioritaire, US MN-04 — le
+ * bonus du jour est redirigé vers les glucides plutôt que d'être invisible dans le détail).
  * États sans profil → CTA « Définir mon objectif ».
  */
 
@@ -14,9 +15,8 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  defaultMacroRatios,
-  macroGramsFromCalories,
   objectiveFromGoal,
+  trainingDayMacroGrams,
   type WidgetSize,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -106,8 +106,8 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
         carbs: nutritionProfile?.manualCarbsG ?? 0,
         fat: nutritionProfile?.manualFatG ?? 0,
       }
-    : target != null && objective != null
-      ? macroGramsFromCalories(target, defaultMacroRatios(objective))
+    : target != null && effectiveTarget != null && objective != null
+      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
       : null;
 
   // ── Petit carré ────────────────────────────────────────────────────────────

@@ -7,8 +7,6 @@ import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
   computeAge,
-  defaultMacroRatios,
-  macroGramsFromCalories,
   objectiveFromGoal,
   rescaleEntryNutrition,
   resolveMealConfig,
@@ -17,6 +15,7 @@ import {
   sumNutrients,
   targetCalories,
   tdee,
+  trainingDayMacroGrams,
   type MicronutrientKey,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -122,9 +121,10 @@ export default function NutritionScreen() {
 
   // Objectif effectif + bonus du jour SÉLECTIONNÉ : centralisés dans useDayCalorieTarget
   // (RN-02, mode forfait/auto + dépense des courses). Paramétré par `day` → la navigation
-  // par jour reste correcte. Les macros cibles restent calées sur l'objectif de base
-  // (bonus non ventilé). `bonusSource` pilote le libellé du badge ci-dessous (course vs
-  // jour de séance forfait) ; `isLoading` évite un badge transitoire pendant le chargement.
+  // par jour reste correcte. Les macros cibles redirigent ce bonus vers les glucides
+  // (US MN-04, `trainingDayMacroGrams`) — il n'est plus invisible dans le détail comme avant.
+  // `bonusSource` pilote le libellé du badge ci-dessous (course vs jour de séance forfait) ;
+  // `isLoading` évite un badge transitoire pendant le chargement.
   const {
     effectiveTarget,
     trainingBonus,
@@ -143,8 +143,8 @@ export default function NutritionScreen() {
         carbs: nutritionProfile?.manualCarbsG ?? 0,
         fat: nutritionProfile?.manualFatG ?? 0,
       }
-    : target != null
-      ? macroGramsFromCalories(target, defaultMacroRatios(objective))
+    : target != null && effectiveTarget != null
+      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
       : null;
 
   const totals = sumNutrients(entries);
