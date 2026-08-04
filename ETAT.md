@@ -59,8 +59,8 @@ avant de pouvoir publier.
 | **TRI-03** — Score de forme / readiness global | `recette` | `feature/tri03-score-readiness` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **MUSCPWR-01** — Module force — intensité relative (%1RM), force relative (DOTS) et total SBD avec projection | `code` | `feature/muscpwr01-module-force` | — |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
-| **MUSCPWR-01** — Module force — intensité relative (%1RM), force relative (DOTS) et total SBD avec projection | `validation` | `feature/muscpwr01-module-force` | — |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
@@ -87,9 +87,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscpwr01-module-force` (modifications non commitées) |
-| Commits | 1081 · `main` a **1078** commits de retard sur `dev` |
+| Commits | 1082 · `main` a **1079** commits de retard sur `dev` |
 | Specs d'US | 124 au total — 79 clôturées, 45 en cours |
-| Migrations | 72/72 poussées sur le cloud |
+| Migrations | 73/73 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -98,11 +98,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `578ec6b` docs(muscpwr01): cadre le module force — %1RM, DOTS et total SBD (MUSC-16/27/29)
 - `c5b68cf` docs(catalogue): réconcilie 8 lignes du catalogue d'analyses (19 ⏳ → 11)
 - `19373b1` docs(import01): cadre l'import de données externes puis met l'US en pause (roadmap 1.20)
 - `d4c2634` test(admin): exercise-variants.ts de 0 % à 100 %, et correction d'un point de reprise périmé
 - `f730ac4` test(shared): 100 % instructions/fonctions/lignes et arbitrage du seuil de branches à 97 %
-- `1aebbbc` test(shared): 100 % d'instructions et de fonctions sur packages/shared
 
 ---
 

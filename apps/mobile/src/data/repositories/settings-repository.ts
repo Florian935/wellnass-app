@@ -26,6 +26,7 @@ import {
   parseJsonColumn,
   parseIntensityScale,
   parseNotificationPrefs,
+  sbdLiftsSchema,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -52,6 +53,7 @@ export type SettingsInput = Pick<
   | 'healthConnectEnabled'
   | 'cycleTrackingEnabled'
   | 'cycleHealthConnectEnabled'
+  | 'sbdLifts'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -77,6 +79,8 @@ type SettingsDbRow = {
   cycle_tracking_enabled: number | null;
   /** 0/1 (synchro cycle ↔ Health Connect) ou null sur les lignes locales antérieures. */
   cycle_health_connect_enabled: number | null;
+  /** Stockée en TEXT (JSON sérialisé) — mouvements de force désignés (US MUSCPWR-01). */
+  sbd_lifts: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -143,6 +147,9 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     healthConnectEnabled: decodeHealthConnectEnabled(row),
     cycleTrackingEnabled: decodeCycleTrackingEnabled(row),
     cycleHealthConnectEnabled: decodeCycleHealthConnectEnabled(row),
+    // Parse tolérant (`sbdLiftsSchema` a un `catch`) : une valeur illisible ou absente retombe sur
+    // « rien de désigné », ce qui masque le module force sans casser la lecture des réglages.
+    sbdLifts: sbdLiftsSchema.parse(parseJsonColumn<unknown>(row.sbd_lifts, null) ?? {}),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -167,6 +174,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
       input.dashboardLayout !== null && input.dashboardLayout !== undefined
         ? JSON.stringify(input.dashboardLayout)
         : null;
+  }
+  if ('sbdLifts' in input) {
+    columns['sbd_lifts'] = JSON.stringify(input.sbdLifts);
   }
   if ('analyticsEnabled' in input) {
     columns['analytics_enabled'] = input.analyticsEnabled ? 1 : 0;

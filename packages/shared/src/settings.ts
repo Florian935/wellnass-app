@@ -41,6 +41,39 @@ export const themeSchema = z.enum(THEMES);
 export const intensityScaleSchema = z.enum(INTENSITY_SCALES);
 export type Theme = z.infer<typeof themeSchema>;
 
+// ── Mouvements de force (US MUSCPWR-01, décision D3) ──────────────────────────────────────────────
+
+/** Les trois mouvements du total de force. L'ordre est celui de la convention (squat, bench, deadlift). */
+export const SBD_LIFTS = ['squat', 'bench', 'deadlift'] as const;
+export type SbdLift = (typeof SBD_LIFTS)[number];
+
+/**
+ * Exercice désigné pour chaque mouvement — `null` = non désigné.
+ *
+ * Parse **tolérant** (`catch`) et non strict, pour la même raison que `notifications` : la colonne
+ * est un JSON qui peut s'enrichir (strict-curl, overhead press) sans migration, et aucune ligne
+ * existante ne la contient. Une valeur illisible retombe sur « rien de désigné » plutôt que de
+ * faire lever la lecture des réglages — le module force disparaît, le reste de l'app fonctionne.
+ */
+export const sbdLiftsSchema = z
+  .object({
+    squat: z.string().nullable().catch(null),
+    bench: z.string().nullable().catch(null),
+    deadlift: z.string().nullable().catch(null),
+  })
+  .partial()
+  .catch({})
+  .transform((v): Record<SbdLift, string | null> => ({
+    squat: v.squat ?? null,
+    bench: v.bench ?? null,
+    deadlift: v.deadlift ?? null,
+  }));
+
+export type SbdLifts = Record<SbdLift, string | null>;
+
+/** Aucun mouvement désigné — l'état par défaut, qui masque le total SBD (R11). */
+export const emptySbdLifts = (): SbdLifts => ({ squat: null, bench: null, deadlift: null });
+
 /**
  * Réglages utilisateur — une ligne par compte, synchronisée via PowerSync.
  * Tous les champs applicatifs ont une valeur par défaut : la ligne peut être
@@ -117,6 +150,18 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * permission système, pour qu'une écriture ait lieu. Aucune écriture silencieuse.
    */
   cycleHealthConnectEnabled: z.boolean().default(false),
+
+  /**
+   * Mouvements de force désignés par l'utilisateur (US MUSCPWR-01, décision D3) — la clé du module
+   * force, et son **opt-in** : sans désignation, pas de total SBD.
+   *
+   * Pourquoi désigner plutôt que reconnaître par nom : une correspondance échouerait sur toute
+   * variante (« Squat barre basse », « Bench avec pause ») et sur les exercices perso — or c'est
+   * exactement ce qu'utilise un pratiquant de force.
+   *
+   * Chaque clé est **facultative** : un total partiel n'est jamais présenté comme un total (R11).
+   */
+  sbdLifts: sbdLiftsSchema.default(emptySbdLifts()),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

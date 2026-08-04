@@ -1,0 +1,23 @@
+-- US MUSCPWR-01 (catalogue MUSC-16 / MUSC-27 / MUSC-29) — module force.
+-- Réf. : docs/specs/functional/us/muscpwr01-module-force.md
+--
+-- Désignation par l'utilisateur de SES trois mouvements de force (décision D3).
+--
+-- Pourquoi une désignation et pas une correspondance par nom : celle-ci échouerait sur toute
+-- variante (« Squat barre basse », « Bench avec pause ») et sur les exercices perso — or c'est
+-- précisément ce qu'utilise un pratiquant de force. La désignation gère tous les cas, et sert
+-- d'opt-in au module (sans elle, pas de total SBD).
+--
+-- JSON et non trois colonnes : la liste des mouvements peut s'étendre (strict-curl, overhead press)
+-- sans nouvelle migration. Forme : {"squat": "<uuid>", "bench": "<uuid>", "deadlift": "<uuid>"} —
+-- chaque clé est facultative, un total partiel n'est jamais présenté comme un total (règle R11).
+--
+-- ⚠️ SEULE écriture de toute l'US : les trois analyses (%1RM, DOTS, total SBD + projection) sont
+-- entièrement DÉRIVÉES de personal_records, workout_sets, body_weight_entries et profiles. Aucun
+-- score n'est stocké, donc rien à recalculer après coup — corriger une série passée corrige
+-- immédiatement l'analyse (règle R13).
+--
+-- ✅ Aucune sync rule à redéployer : `user_settings` est déjà publiée et lue en `select *` — même
+-- situation que `intensity_scale` (UX-05) et `cycle_tracking_enabled` (CYCLE-01).
+alter table public.user_settings
+  add column if not exists sbd_lifts jsonb;

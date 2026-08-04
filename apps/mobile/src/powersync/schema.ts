@@ -67,6 +67,11 @@ const user_settings = new Table({
   // device du 31/07/2026).
   cycle_tracking_enabled: column.integer, // 0/1
   cycle_health_connect_enabled: column.integer, // 0/1
+  // US MUSCPWR-01 — mouvements de force désignés, JSON {squat,bench,deadlift} sérialisé.
+  // ⚠️ Troisième colonne de cette table à devoir être déclarée ici : les deux précédentes
+  // (`cycle_tracking_enabled`, `daily_step_goal` sur `profiles`) ont causé des pannes SILENCIEUSES
+  // — écriture en échec, erreur avalée, réglage qui ne s'enregistre pas sans le moindre message.
+  sbd_lifts: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

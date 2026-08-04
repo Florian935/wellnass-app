@@ -2251,6 +2251,7 @@ export type Database = {
           intensity_scale: string
           language: string
           notifications: Json
+          sbd_lifts: Json | null
           theme: string
           units: string
           updated_at: string
@@ -2269,6 +2270,7 @@ export type Database = {
           intensity_scale?: string
           language?: string
           notifications?: Json
+          sbd_lifts?: Json | null
           theme?: string
           units?: string
           updated_at?: string
@@ -2287,6 +2289,7 @@ export type Database = {
           intensity_scale?: string
           language?: string
           notifications?: Json
+          sbd_lifts?: Json | null
           theme?: string
           units?: string
           updated_at?: string
