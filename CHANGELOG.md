@@ -10,6 +10,53 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/rn03-tdee-ajuste-course` — Ajustement auto du TDEE selon le volume de course (US RN-03, catalogue d'analyses)
+
+Suite de `cadaf56`. Deuxième candidat piochée dans le catalogue d'analyses pendant la fenêtre de
+recette. Comble un trou identifié dans [alimentation.md §2.2](docs/specs/functional/alimentation.md)
+(« ajustement automatique selon le planning d'entraînement », jamais construit) : le facteur
+d'activité (`nutrition_profiles.activity_level`) reste figé depuis l'onboarding, même quand le
+volume réel de course change durablement — distinct de RN-02 (déjà livrée), qui n'ajuste que le
+**jour** de séance/course, jamais le **socle**. Cycle complet : `/us` → validation Florian →
+implémentation TDD → revue de code → correctifs.
+
+#### Ajouté
+
+- **`packages/shared/src/nutrition.ts`** (+ 10 tests) : `activityLevelFromRunningFrequency`,
+  `suggestActivityLevel`. Compare la fréquence de course réelle sur 14 j glissants au palier
+  `activity_level` déclaré ; bidirectionnelle (hausse et baisse), plafonnée à `active` (aucun seuil
+  sourcé pour `very_active` dans la spec d'origine). Aucune modification de
+  `dayCalorieBonus`/`trainingBonusMode`/`computeEffectiveTargetForDay` (RN-02) — vérifié en revue.
+- Widget dashboard **conditionnel** (Tier 2) `activity-level-suggestion` : `HOME_WIDGET_IDS` 18 →
+  19, gating registre `['running', 'nutrition']` (sémantique **OU** au niveau grille — le vrai ET
+  est appliqué dans le hook, comme `training-load`), hook `useActivityLevelSuggestion`
+  (`dashboard-repository.ts`), composant `ActivityLevelSuggestionCard.tsx` (3 formes) + son smoke
+  test (écrit avec le composant cette fois, contrairement à TRI-03).
+- i18n FR + EN, famille `home.activityLevelSuggestion.*` — réutilise les libellés de palier
+  existants (`nutrition.activity.options.*`) plutôt que de les dupliquer.
+- Spec + plan + maquette : [rn03-tdee-ajuste-course.md](docs/specs/functional/us/rn03-tdee-ajuste-course.md),
+  [plan](docs/plans/rn03-tdee-ajuste-course.md), [maquette](design/rn03-tdee-ajuste-course/rn03-tdee-ajuste-course.html).
+  **Aucun bouton d'application directe** (décision D5) : texte seul, renvoi vers l'écran profil
+  nutrition existant — même patron que toutes les suggestions déjà livrées (MUSC-F7).
+
+#### Corrigé
+
+- 🔴 **Trouvé en revue de code (`superpowers:code-reviewer`), avant commit** : `isWidgetActive`
+  (`apps/mobile/src/app/(tabs)/index.tsx`) n'avait pas été mis à jour pour le nouveau widget —
+  `WidgetGrid` réservait une cellule vide dès qu'il rendait `null` (palier déjà cohérent, ou
+  gating incomplet), **même défaut** déjà corrigé une fois pour `training-load`/`overtraining-guard`
+  (commit `1b112de`). La revue a aussi révélé que **`readiness` (US TRI-03) avait le même trou**,
+  jamais câblé dans `isWidgetActive` lors de sa livraison — corrigé pour les deux d'un coup, même
+  fichier, même fonction.
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`, comme TRI-03/TRI-12/META-19/RUN-18) : aucune ligne de
+  roadmap touchée, pas d'entrée RECETTES.md.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1463 tests
+  shared (70 fichiers) + 655 tests mobile (70 suites), 0 échec** — inclut le correctif
+  `isWidgetActive`, revérifié après coup.
+
 ### 03/08/2026 — `feature/tri03-score-readiness` — Score de forme / readiness global (US TRI-03, catalogue d'analyses)
 
 Suite de `48356e2`. Candidat piochée dans le [catalogue d'analyses](docs/product/analyses-donnees.md)

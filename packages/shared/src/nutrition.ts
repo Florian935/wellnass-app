@@ -70,6 +70,36 @@ export function activityFactor(level: ActivityLevel): number {
   return ACTIVITY_FACTORS[level];
 }
 
+// --- Ajustement auto du TDEE selon le volume de course (US RN-03, catalogue) -
+
+/** Fenêtre de mesure de la fréquence (spec D1) — 14 j, pas 7 : lisse une semaine anormale. */
+const RUNNING_FREQUENCY_WINDOW_DAYS = 14;
+
+/**
+ * Palier suggéré par la fréquence de course (spec R2) — reprend telles quelles les fourchettes
+ * jours/semaine de la spec §2.2. Plafonné à `active` : `very_active` n'a aucun seuil sourcé pour
+ * ce palier (spec D4), l'inventer serait un chiffre non défendable.
+ */
+export function activityLevelFromRunningFrequency(runningDaysInWindow: number): ActivityLevel {
+  const perWeek = runningDaysInWindow / (RUNNING_FREQUENCY_WINDOW_DAYS / 7);
+  if (perWeek <= 0) return 'sedentary';
+  if (perWeek <= 2) return 'light';
+  if (perWeek <= 5) return 'moderate';
+  return 'active';
+}
+
+/**
+ * Suggestion RN-03 : compare le niveau déclaré au niveau qu'impliquerait la fréquence de course
+ * réelle sur les 14 derniers jours. `null` si identiques (spec R3 — rien à afficher).
+ */
+export function suggestActivityLevel(input: {
+  currentLevel: ActivityLevel;
+  runningDaysInWindow: number;
+}): ActivityLevel | null {
+  const suggested = activityLevelFromRunningFrequency(input.runningDaysInWindow);
+  return suggested === input.currentLevel ? null : suggested;
+}
+
 // --- Restrictions / préférences (spec §2.4) ----------------------------------
 
 export const DIET_RESTRICTIONS = [

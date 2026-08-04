@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RN-03 — Ajustement auto du TDEE selon le volume de course</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --run:#2f6f8f;--runbg:#e7f1f4;--runborder:#bcd8e0}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px;background:var(--runbg);border:1px solid var(--runborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--run)}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;color:var(--run);margin-top:6px}
+  .cardmsg{font-size:13.5px;color:#3a5763;margin-top:4px;line-height:1.4}
+  .hint{margin-top:10px;font-size:12px;color:var(--run);font-style:italic}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>RN-03 — Ajustement auto du TDEE selon le volume de course</h1>
+<p class="sub">Widget <strong>conditionnel</strong> du dashboard (Tier 2, ADR-007), gardé par
+<code>running</code> <strong>et</strong> <code>nutrition</code> — un insight, pas une alerte de
+sécurité (ton neutre, tuile course plutôt qu'ambre).</p>
+<div class="flag">✅ Décisions D1-D5 arbitrées par Florian le 04/08/2026, code livré (TDD) le même jour —
+cette maquette reflète les règles telles qu'implémentées.</div>
+
+<h2>Le trou que ça comble : RN-02 ajuste le jour, RN-03 ajuste le socle</h2>
+<p class="why"><code>nutrition_profiles.activity_level</code> est choisi une fois à l'onboarding et
+ne bouge plus jamais tout seul — même si le volume de course change durablement pendant des mois.
+RN-02 (livrée) compense un <em>jour</em> de séance ; RN-03 propose de corriger le <em>socle</em>
+utilisé tous les jours, course ou pas.</p>
+<div class="note" style="margin-top:0">
+  <code>fréquence = jours distincts avec course terminée sur les 14 derniers jours calendaires</code><br>
+  <code>palier suggéré = fréquence convertie en moyenne j/semaine, mappée aux bornes de la spec §2.2</code><br>
+  <code>suggestion émise seulement si palier suggéré ≠ palier déclaré</code>
+</div>
+
+<h2>1 · Le widget visible — un écart existe</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Forme wide — suggestion à la hausse</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Suggestion nutrition</span><span class="emoji">🏃</span></div>
+      <div class="cardtitle">Niveau d'activité à réviser ?</div>
+      <div class="cardmsg">Tu as couru 6 j sur les 2 dernières semaines — plus proche de
+      « Très actif » que de ton niveau actuel « Sédentaire ».</div>
+      <div class="hint">Modifiable dans ton profil nutrition.</div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme wide — suggestion à la baisse (D2, bidirectionnel)</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Suggestion nutrition</span><span class="emoji">🏃</span></div>
+      <div class="cardtitle">Niveau d'activité à réviser ?</div>
+      <div class="cardmsg">Tu as couru 0 j sur les 2 dernières semaines — plus proche de
+      « Sédentaire » que de ton niveau actuel « Très actif ».</div>
+      <div class="hint">Modifiable dans ton profil nutrition.</div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Quand le widget reste masqué</h2>
+<div class="row3">
+  <div class="zonecard">
+    <b>Palier déjà cohérent (R3)</b>
+    <p>3 courses/2 semaines, profil déjà « Modérément actif » → rien à signaler, pas un état
+    « à jour » affiché : le widget disparaît comme n'importe quel widget conditionnel.</p>
+  </div>
+  <div class="zonecard">
+    <b>Course ou nutrition inactif</b>
+    <p>Sans les deux piliers, ni la fréquence ni le niveau déclaré ne sont disponibles — le widget
+    ne s'affiche jamais, quel que soit l'historique.</p>
+  </div>
+  <div class="zonecard">
+    <b>Plafond « Très actif » (D4)</b>
+    <p>7 courses/semaine sur toute la fenêtre : suggestion plafonnée à « Très actif », jamais
+    « Extrêmement actif » — aucun seuil sourcé pour ce palier dans la spec §2.2.</p>
+  </div>
+</div>
+<div class="hiddenbox" style="margin-top:14px">Dans les 3 cas ci-dessus : rien à cet endroit du
+dashboard.</div>
+
+<h2>3 · Coexistence avec RN-02 (bonus du jour)</h2>
+<div class="note" style="margin-top:0">
+  RN-02 (<code>dayCalorieBonus</code>) et RN-03 (cette US) répondent à deux questions différentes,
+  sur deux échelles différentes : RN-02 = « combien manger <strong>aujourd'hui</strong>, jour de
+  course ? » (déjà livré, inchangé) · RN-03 = « mon niveau <strong>déclaré</strong>, valable tous
+  les jours y compris de repos, reflète-t-il encore mes deux dernières semaines ? ». Aucune donnée
+  ni fonction partagée entre les deux au-delà de la lecture de <code>runs</code>.
+</div>
+
+<h2>Les règles qui gouvernent la suggestion</h2>
+<div class="rules">
+  <div class="rule"><b>R2 — Bornes reprises telles quelles de la spec §2.2</b>
+    <table>
+      <tr><th>Moyenne j/sem</th><th>Palier</th></tr>
+      <tr><td>0</td><td>Sédentaire</td></tr>
+      <tr><td>]0 ; 2]</td><td>Légèrement actif</td></tr>
+      <tr><td>]2 ; 5]</td><td>Modérément actif</td></tr>
+      <tr><td>]5 ; 7]</td><td>Très actif</td></tr>
+      <tr><td>—</td><td>jamais Extrêmement actif</td></tr>
+    </table>
+  </div>
+  <div class="rule"><b>R3 — Rien à afficher si déjà cohérent</b>
+    Pas un état « niveau à jour » affiché en permanence — la norme silencieuse, comme tout widget
+    Tier 2.</div>
+  <div class="rule"><b>R5 — Aucune écriture</b>
+    Jamais de modification directe de <code>activity_level</code> — un texte + un renvoi vers
+    l'écran existant, jamais un bouton « Appliquer » (même patron que MUSC-F7 deload).</div>
+  <div class="rule"><b>R6/D3 — Indifférent à la surcharge manuelle</b>
+    Visible même si <code>manualCalories</code> est actif : la suggestion porte sur le profil
+    déclaré, pas sur l'objectif effectif du jour.</div>
+</div>
+
+</div></body></html>

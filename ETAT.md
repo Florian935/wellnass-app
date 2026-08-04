@@ -1,4 +1,4 @@
-# État du projet — 03/08/2026
+# État du projet — 04/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -38,6 +38,7 @@ avant de pouvoir publier.
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
+| **RN-03** — Ajustement auto du TDEE selon le volume de course | `recette` | `feature/rn03-tdee-ajuste-course` | — |
 | **RUN-14** — Prédiction de temps de course (formule de Riegel) | `recette` | `feature/run14-prediction-riegel` | [5.34] |
 | **RUN-18** — Charge d'entraînement & ACWR (running seul) | `recette` | `feature/run18-acwr-running` | — |
 | **RUN-F1b** — Dénivelé cumulé | `recette` | `feature/runf1b-denivele-cumule` | [5.32] |
@@ -52,7 +53,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **35 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **36 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MUSC-09, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -73,9 +74,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/tri03-score-readiness` (modifications non commitées) |
-| Commits | 1064 · `main` a **1061** commits de retard sur `dev` |
-| Specs d'US | 112 au total — 77 clôturées, 35 en cours |
+| Branche courante | `feature/rn03-tdee-ajuste-course` (modifications non commitées) |
+| Commits | 1065 · `main` a **1062** commits de retard sur `dev` |
+| Specs d'US | 113 au total — 77 clôturées, 36 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -85,11 +86,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `cadaf56` feat(tri03): score de forme / readiness global (US TRI-03, catalogue d'analyses)
 - `48356e2` fix(launcher01): widget transparent en recette — deux causes racines
 - `55db491` feat(launcher01): widget écran d'accueil Android (US LAUNCHER-01, roadmap 7.19)
 - `4c24843` docs(launcher01): spec, plan et maquette du widget écran d'accueil Android
 - `70d6f26` merge: intègre fix/dashboard-widgets-tier2-vides dans dev
-- `1b112de` fix(dashboard): trou dans la grille quand training-load/overtraining-guard sont vides
 
 ---
 

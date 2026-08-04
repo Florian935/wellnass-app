@@ -911,6 +911,12 @@
         "insufficientLoggedDays": "not enough logged days",
         "noRecentCheckin": "no recent check-in"
       }
+    },
+    "activityLevelSuggestion": {
+      "eyebrow": "Nutrition suggestion",
+      "title": "Activity level worth revisiting?",
+      "message": "You ran {{days}} d over the last 2 weeks — closer to \"{{suggested}}\" than your current level \"{{current}}\".",
+      "hint": "Editable in your nutrition profile."
     }
   },
   "activationPath": {

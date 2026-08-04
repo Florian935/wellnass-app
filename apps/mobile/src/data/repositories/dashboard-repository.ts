@@ -50,10 +50,12 @@ import {
   ROLLING_WEEK_DAYS,
   sessionLoad,
   stepsActiveDays,
+  suggestActivityLevel,
   targetCalories,
   tdee,
   trainingDayCalories,
   wellbeingAverages,
+  type ActivityLevel,
   type DayActivity,
   type RestorableGap,
   type DeficitVolumeAlert,
@@ -1136,6 +1138,62 @@ export function useReadiness(): ReadinessResult {
   });
 
   return computeReadiness({ load, nutrition, wellbeing });
+}
+
+// ---------------------------------------------------------------------------
+// useActivityLevelSuggestion — widget conditionnel (US RN-03, TDEE ↔ volume de course)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre de fréquence (spec D1) — 14 j, distincte des fenêtres ACWR (7 j / 28 j). */
+const ACTIVITY_LEVEL_WINDOW_DAYS = 14;
+
+export type ActivityLevelSuggestion =
+  | { show: false }
+  | { show: true; current: ActivityLevel; suggested: ActivityLevel; runningDays: number };
+
+/**
+ * Expose la suggestion de niveau d'activité TDEE selon la fréquence de course réelle (US RN-03).
+ * **Ne touche jamais** `dayCalorieBonus`/`trainingBonusMode` (RN-02) — cette US ajuste le socle
+ * (`activityLevel`), RN-02 ajuste le jour ; les deux restent indépendantes (spec §0).
+ *
+ * Composition : `useRunHistory()` (déjà chargée ailleurs) filtrée aux 14 derniers jours
+ * calendaires, jours distincts comptés via un `Set` de `localDayKey` (spec R1), puis
+ * `suggestActivityLevel` (règle pure, `@wellness/shared`) contre le niveau déclaré
+ * (`useNutritionProfile()`).
+ *
+ * **Gating registre** (`widgets.ts`) : `['running', 'nutrition']`, évalué en OU (candidat de
+ * grille). Le véritable ET est appliqué **ici** : sans les deux piliers actifs, retour anticipé
+ * `{ show: false }` — même patron que `useTrainingLoadAlert`. Tous les hooks sous-jacents sont
+ * appelés inconditionnellement (règle des hooks React). **N'inspecte jamais** `manualCalories`
+ * (spec R6/D3 — visible même en surcharge manuelle).
+ */
+export function useActivityLevelSuggestion(): ActivityLevelSuggestion {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const runningActive = activePillars.includes('running');
+  const nutritionActive = activePillars.includes('nutrition');
+
+  const { runs } = useRunHistory();
+  const { nutritionProfile } = useNutritionProfile();
+  const windowStartKey = useWindowStartKey(ACTIVITY_LEVEL_WINDOW_DAYS);
+
+  if (!(runningActive && nutritionActive) || !nutritionProfile) {
+    return { show: false };
+  }
+
+  const runningDays = new Set(
+    runs
+      .filter((r) => r.finishedAt != null && localDayKey(new Date(r.finishedAt)) >= windowStartKey)
+      .map((r) => localDayKey(new Date(r.finishedAt as string))),
+  ).size;
+
+  const suggested = suggestActivityLevel({
+    currentLevel: nutritionProfile.activityLevel,
+    runningDaysInWindow: runningDays,
+  });
+
+  if (suggested == null) return { show: false };
+  return { show: true, current: nutritionProfile.activityLevel, suggested, runningDays };
 }
 
 // ---------------------------------------------------------------------------

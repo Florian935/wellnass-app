@@ -4,6 +4,7 @@ import {
   DIET_RESTRICTIONS,
   NUTRITION_OBJECTIVES,
   activityFactor,
+  activityLevelFromRunningFrequency,
   activityLevelSchema,
   basalMetabolicRate,
   caloriesFromMacros,
@@ -21,6 +22,7 @@ import {
   OTHER_MEAL_KEY,
   resolveMealConfig,
   resolveMealSplit,
+  suggestActivityLevel,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -65,6 +67,59 @@ describe('activityFactor', () => {
     expect(activityFactor('moderate')).toBe(1.55);
     expect(activityFactor('active')).toBe(1.725);
     expect(activityFactor('very_active')).toBe(1.9);
+  });
+});
+
+describe('activityLevelFromRunningFrequency (US RN-03, spec R2)', () => {
+  it('0 jour sur 14 → sedentary', () => {
+    expect(activityLevelFromRunningFrequency(0)).toBe('sedentary');
+  });
+
+  it('3 jours sur 14 (1,5 j/sem) → light', () => {
+    expect(activityLevelFromRunningFrequency(3)).toBe('light');
+  });
+
+  it('4 jours sur 14 (2 j/sem pile) → light (borne haute incluse)', () => {
+    expect(activityLevelFromRunningFrequency(4)).toBe('light');
+  });
+
+  it('7 jours sur 14 (3,5 j/sem) → moderate', () => {
+    expect(activityLevelFromRunningFrequency(7)).toBe('moderate');
+  });
+
+  it('10 jours sur 14 (5 j/sem pile) → moderate (borne haute incluse)', () => {
+    expect(activityLevelFromRunningFrequency(10)).toBe('moderate');
+  });
+
+  it('11 jours sur 14 (5,5 j/sem) → active', () => {
+    expect(activityLevelFromRunningFrequency(11)).toBe('active');
+  });
+
+  it('14 jours sur 14 (7 j/sem, tous les jours) → active, jamais very_active (spec D4)', () => {
+    expect(activityLevelFromRunningFrequency(14)).toBe('active');
+  });
+});
+
+describe('suggestActivityLevel (US RN-03, spec R3/R4)', () => {
+  it('palier suggéré identique au palier déclaré → null (rien à afficher)', () => {
+    expect(
+      suggestActivityLevel({ currentLevel: 'sedentary', runningDaysInWindow: 0 }),
+    ).toBeNull();
+    expect(
+      suggestActivityLevel({ currentLevel: 'moderate', runningDaysInWindow: 7 }),
+    ).toBeNull();
+  });
+
+  it('suggestion à la hausse quand la fréquence réelle dépasse le palier déclaré', () => {
+    expect(
+      suggestActivityLevel({ currentLevel: 'sedentary', runningDaysInWindow: 12 }),
+    ).toBe('active');
+  });
+
+  it('suggestion à la baisse quand la fréquence réelle est sous le palier déclaré (spec D2, bidirectionnel)', () => {
+    expect(
+      suggestActivityLevel({ currentLevel: 'active', runningDaysInWindow: 0 }),
+    ).toBe('sedentary');
   });
 });
 

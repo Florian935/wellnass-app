@@ -25,6 +25,7 @@ import { TrainingLoadAlertCard } from '@/components/dashboard/TrainingLoadAlertC
 import { OvertrainingGuardCard } from '@/components/dashboard/OvertrainingGuardCard';
 import { ActivationPathCard } from '@/components/dashboard/ActivationPathCard';
 import { ReadinessCard } from '@/components/dashboard/ReadinessCard';
+import { ActivityLevelSuggestionCard } from '@/components/dashboard/ActivityLevelSuggestionCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
@@ -47,6 +48,7 @@ const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   'overtraining-guard': OvertrainingGuardCard,
   'activation-path': ActivationPathCard,
   readiness: ReadinessCard,
+  'activity-level-suggestion': ActivityLevelSuggestionCard,
 };
 
 /** Rend le widget `id` à la taille demandée. */

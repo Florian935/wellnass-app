@@ -11,8 +11,10 @@ import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
+  useActivityLevelSuggestion,
   useDeficitVolumeAlert,
   useOvertrainingGuardAlert,
+  useReadiness,
   useTrainingLoadAlert,
 } from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
@@ -42,11 +44,18 @@ export default function HomeScreen() {
   // leur cellule même vide (trouvé en préparant ACTIV-01, cf. BACKLOG.md).
   const trainingLoadActive = useTrainingLoadAlert().show;
   const overtrainingGuardActive = useOvertrainingGuardAlert().show;
+  // TRI-03 / RN-03 : même défaut, repéré en revue de code en préparant RN-03 — `readiness` (R5) et
+  // `activity-level-suggestion` (spec R3) rendent aussi `null` hors condition et avaient été
+  // omis ici lors de leur livraison respective, laissant `WidgetGrid` réserver leur cellule vide.
+  const readinessActive = useReadiness().show;
+  const activityLevelSuggestionActive = useActivityLevelSuggestion().show;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
     if (id === 'training-load') return trainingLoadActive;
     if (id === 'overtraining-guard') return overtrainingGuardActive;
+    if (id === 'readiness') return readinessActive;
+    if (id === 'activity-level-suggestion') return activityLevelSuggestionActive;
     return true;
   };
 

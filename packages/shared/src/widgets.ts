@@ -76,6 +76,10 @@ export const HOME_WIDGET_IDS = [
   // à l'intérieur du hook (spec D2), pas par une garde tout-ou-rien. Rendu `null` seulement si
   // aucune des 3 composantes n'a de données (spec R5).
   'readiness',
+  // US RN-03 — idem. **Conditionnel Tier 2**, gardé par les deux piliers `running`+`nutrition` (la
+  // fréquence de course vient de l'un, le niveau d'activité déclaré à comparer de l'autre) — rendu
+  // `null` si le palier suggéré est déjà celui déclaré (spec R3).
+  'activity-level-suggestion',
 ] as const;
 
 /**
@@ -190,6 +194,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // vit dans le hook, pas dans cette garde. Un utilisateur mono-pilier avec des check-ins doit
       // pouvoir avoir un verdict partiel, comme `wellbeing`.
       readiness: 'always',
+      // US RN-03 : garde à 2 piliers, comme `training-load` — contrairement à `readiness`, cette
+      // suggestion a strictement besoin des deux données à la fois (pas de dégradation partielle
+      // possible : sans `running`, aucune fréquence ; sans `nutrition`, aucun niveau à comparer).
+      'activity-level-suggestion': ['running', 'nutrition'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

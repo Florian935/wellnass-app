@@ -71,10 +71,10 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 18, muscu 5, course 3 ; gardes pilier', () => {
-    // 18 depuis TRI-03 (03/08/2026). Le registre les **déclare** tous ; c'est
+  it('accueil 19, muscu 5, course 3 ; gardes pilier', () => {
+    // 19 depuis RN-03 (04/08/2026). Le registre les **déclare** tous ; c'est
     // `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
-    expect(HOME_WIDGET_IDS).toHaveLength(18);
+    expect(HOME_WIDGET_IDS).toHaveLength(19);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -123,6 +123,17 @@ describe('WIDGET_REGISTRY', () => {
     // check-ins peut avoir un verdict partiel. La garde reste donc `'always'`, comme `wellbeing`.
     expect(WIDGET_REGISTRY.home.pillars['readiness']).toBe('always');
   });
+
+  it("garde la suggestion de niveau d'activité (RN-03) derrière course ou nutrition (candidat de grille)", () => {
+    // Registre = OU (guard.some(...), même sémantique que `overtraining-guard`) : décide si le
+    // widget est un candidat de grille, pas le véritable ET. Le hook `useActivityLevelSuggestion`
+    // applique le vrai ET (course + nutrition ensemble) et rend `null` sinon — même patron que
+    // `useTrainingLoadAlert`.
+    expect(WIDGET_REGISTRY.home.pillars['activity-level-suggestion']).toEqual([
+      'running',
+      'nutrition',
+    ]);
+  });
 });
 
 describe('coerceSize (migration full/compact)', () => {
@@ -140,9 +151,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 18 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // 19 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(18);
+    expect(layout.widgets).toHaveLength(19);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -162,7 +173,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(17);
+    expect(r.widgets).toHaveLength(18);
     assertNoOverlap(r.widgets);
   });
 
@@ -200,8 +211,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 17 widgets historiques (hors `cycle`).
-    expect(r.widgets).toHaveLength(17);
+    // Et le hub garde donc exactement ses 18 widgets historiques (hors `cycle`).
+    expect(r.widgets).toHaveLength(18);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -212,7 +223,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(18);
+    expect(r.widgets).toHaveLength(19);
     assertNoOverlap(r.widgets);
   });
 
@@ -249,6 +260,12 @@ describe('resolveScreenLayout', () => {
     // Contrôle négatif : les widgets gardés par un pilier inactif, eux, disparaissent bien.
     expect(ids).not.toContain('muscle-volume');
     expect(ids).not.toContain('running-week');
+    // Note : `activity-level-suggestion` reste dans le layout ici — la garde `Pillar[]` du
+    // registre est un OU (`guard.some(...)`, même sémantique que `overtraining-guard` qui liste
+    // 3 piliers) : elle décide seulement si le widget est un **candidat de grille**. Le véritable
+    // ET (course + nutrition ensemble) est appliqué par le hook `useActivityLevelSuggestion`, qui
+    // rend `null` hors des deux — même patron que `useTrainingLoadAlert`/`useOvertrainingGuardAlert`,
+    // vérifié à ce niveau-là, pas ici (`widgets.ts` ne connaît aucune donnée applicative).
   });
 
   it('borne une colonne invalide (wide en col 1 → col 0)', () => {
