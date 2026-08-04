@@ -71,10 +71,11 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 21, muscu 5, course 3 ; gardes pilier', () => {
-    // 21 depuis MR-14 (04/08/2026). Le registre les **déclare** tous ; c'est
-    // `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
-    expect(HOME_WIDGET_IDS).toHaveLength(21);
+  it('accueil 20, muscu 5, course 3 ; gardes pilier', () => {
+    // 20 depuis GARDE-01 (04/08/2026) : `load-streak-alert` retiré, fusionné dans
+    // `overtraining-guard` — **première baisse** de ce compteur. Le registre les **déclare** tous ;
+    // c'est `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
+    expect(HOME_WIDGET_IDS).toHaveLength(20);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -87,26 +88,24 @@ describe('WIDGET_REGISTRY', () => {
     expect(WIDGET_REGISTRY.home.pillars['training-load']).toEqual(['strength', 'running']);
   });
 
-  it('garde le garde-fou tri-pilier (TRI-12) derrière les 3 piliers — le seul cas à 3', () => {
-    // Contrairement à `training-load` (2 piliers), TRI-12 combine charge (muscu+course) et
-    // déficit nutritionnel : aucun des trois n'est dispensable.
-    expect(WIDGET_REGISTRY.home.pillars['overtraining-guard']).toEqual([
-      'strength',
-      'running',
-      'nutrition',
-    ]);
+  it('garde le garde-fou unifié (GARDE-01) derrière 2 piliers, plus 3 — la nutrition dégrade', () => {
+    // GARDE-01 D2 : ramené de 3 à 2 piliers. Le déficit nutritionnel ne décide plus de
+    // l'affichage mais du **niveau** de sévérité (`useOvertrainingGuardAlert` passe
+    // `deficitDaysCount: 0` si le pilier est inactif). Plus aucun widget n'exige 3 piliers.
+    expect(WIDGET_REGISTRY.home.pillars['overtraining-guard']).toEqual(['strength', 'running']);
+    expect(
+      Object.values(WIDGET_REGISTRY.home.pillars).filter(
+        (guard) => Array.isArray(guard) && guard.length === 3,
+      ),
+    ).toHaveLength(0);
   });
 
-  it('garde MR-14 à 2 piliers, là où TRI-12 en exige 3 — la distinction qui justifie l’US', () => {
-    // Spec MR-14 §0 : `overtraining-guard` (TRI-12) est invisible pour un utilisateur muscu+course
-    // sans nutrition activée ; `load-streak-alert` (MR-14) couvre exactement cette population.
-    // Si un jour ces deux gardes deviennent identiques, l'une des deux US est un doublon.
-    expect(WIDGET_REGISTRY.home.pillars['load-streak-alert']).toEqual(['strength', 'running']);
-    expect(WIDGET_REGISTRY.home.pillars['overtraining-guard']).toEqual([
-      'strength',
-      'running',
-      'nutrition',
-    ]);
+  it('`load-streak-alert` (MR-14) n’est plus dans le registre — fusionné par GARDE-01', () => {
+    // Le test qu'il remplace assertait la distinction 2-vs-3 piliers entre MR-14 et TRI-12, en
+    // avertissant : « si ces deux gardes deviennent identiques, l'une des deux US est un doublon ».
+    // Elles l'étaient devenues (union = muscu∧course∧streak) ; la réponse a été la **fusion**.
+    expect(HOME_WIDGET_IDS as readonly string[]).not.toContain('load-streak-alert');
+    expect(WIDGET_REGISTRY.home.pillars['load-streak-alert']).toBeUndefined();
   });
 
   it('garde le cycle (CYCLE-01) par un RÉGLAGE — ni pilier, ni « always »', () => {
@@ -163,9 +162,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 21 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // 20 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(21);
+    expect(layout.widgets).toHaveLength(20);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -185,7 +184,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(20);
+    expect(r.widgets).toHaveLength(19);
     assertNoOverlap(r.widgets);
   });
 
@@ -223,8 +222,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 20 widgets historiques (hors `cycle`).
-    expect(r.widgets).toHaveLength(20);
+    // Et le hub garde donc exactement ses 19 widgets historiques (hors `cycle`).
+    expect(r.widgets).toHaveLength(19);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -235,7 +234,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(21);
+    expect(r.widgets).toHaveLength(20);
     assertNoOverlap(r.widgets);
   });
 
@@ -255,6 +254,36 @@ describe('resolveScreenLayout', () => {
     };
     const r = resolveScreenLayout(stored, 'home', [...all], { cycleTrackingEnabled: false });
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
+    assertNoOverlap(r.widgets);
+    assertNoEmptyRow(r.widgets);
+  });
+
+  it('GARDE-01 — un layout stocké mentionnant `load-streak-alert` se résout sans trou ni doublon', () => {
+    // Preuve concrète de la promesse « aucune migration » de D1 : l'utilisateur qui aurait rangé le
+    // widget MR-14 dans son dashboard avant la fusion ne doit ni voir une cellule vide, ni perdre
+    // ses autres widgets. `resolveScreenLayout` ignore l'id inconnu via son filtre `known.has`.
+    // Layout **complet** (les 20 widgets du registre, positionnés), + l'id retiré inséré au milieu :
+    // c'est le cas réel d'un utilisateur qui avait personnalisé son dashboard avant la fusion. Un
+    // layout de 3 entrées ne prouverait pas grand-chose (le first-fit a trop de place libre).
+    const full = defaultScreenLayout('home').widgets;
+    const stored: ScreenLayout = {
+      widgets: [
+        ...full.slice(0, 4),
+        { id: 'load-streak-alert' as WidgetLayoutEntry['id'], visible: true, size: 'wide', col: 0, row: 99 },
+        ...full.slice(4),
+      ],
+    };
+    const r = resolveScreenLayout(stored, 'home', [...all]);
+    const ids = r.widgets.map((w) => w.id);
+
+    expect(ids).not.toContain('load-streak-alert');
+    // Le garde-fou fusionné est conservé, et rien d'autre n'a été perdu au passage : on retrouve
+    // exactement les widgets autorisés du registre, ni un de plus (doublon) ni un de moins.
+    expect(ids).toContain('overtraining-guard');
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toHaveLength(
+      resolveScreenLayout(null, 'home', [...all]).widgets.length,
+    );
     assertNoOverlap(r.widgets);
     assertNoEmptyRow(r.widgets);
   });

@@ -1,16 +1,22 @@
 /**
- * Widget conditionnel Tier 2 — Garde-fou tri-pilier (charge sans repos + déficit persistant,
- * US TRI-12), 3 formes.
+ * Widget conditionnel Tier 2 — Garde-fou unifié charge & récupération (US GARDE-01, fusion de
+ * TRI-12 et MR-14), 3 formes, **2 niveaux de sévérité**.
  *
- * Widget **conditionnel** : rendu seulement si `useOvertrainingGuardAlert().show` (les deux
- * signaux réunis — enchaînement de jours à charge sans repos ET déficit calorique persistant).
- * Ton « alerte douce » (warn), même patron que `TrainingLoadAlertCard` (META-19).
+ * Widget **conditionnel** : rendu seulement si `useOvertrainingGuardAlert().show` (streak de charge
+ * combinée muscu ∪ course ≥ 6 jours). Ton « alerte douce » (warn), même patron que
+ * `TrainingLoadAlertCard` (META-19).
  *  - `small` : eyebrow + ⚠️ + titre ;
  *  - `wide`  : tuile ⚠️ + titre + message ;
  *  - `large` : eyebrow + titre + message + bandeau recommandation.
  *
- * Gardé par pilier dans le hook (`strength`, `running` ET `nutrition` actifs — les trois).
- * Accessibilité (spec §7) : un seul bloc `accessible`, pas des `Text` disjoints.
+ * **Deux niveaux, une seule carte** (spec R1/R3) : `streak` (repos seul, textes de feu MR-14) et
+ * `streakAndDeficit` (charge + déficit, textes de TRI-12 conservés mot pour mot). Seul le
+ * **contenu** varie — l'eyebrow, la position et l'identité du widget restent identiques, ce qui
+ * supprime le swap de carte entre deux widgets clones (spec §0).
+ *
+ * Gardé par pilier dans le hook (`strength` ET `running` — 2 piliers ; la nutrition dégrade la
+ * composante déficit au lieu de masquer le widget, spec D2).
+ * Accessibilité : un seul bloc `accessible`, pas des `Text` disjoints.
  */
 
 import { StyleSheet, Text, View } from 'react-native';
@@ -27,11 +33,18 @@ export function OvertrainingGuardCard({ size = 'wide' }: { size?: WidgetSize }) 
   const { colors } = useTheme();
   const alert = useOvertrainingGuardAlert();
 
-  if (!alert.show) return null;
+  // `severity === null` avec `show` vrai ne devrait pas arriver (`computeOvertrainingGuard` les
+  // pose ensemble) ; on le traite quand même comme « rien à afficher » plutôt que d'interpoler une
+  // clé i18n incomplète.
+  if (!alert.show || alert.severity === null) return null;
 
-  const title = t('home.overtrainingGuard.title');
-  const message = t('home.overtrainingGuard.message');
-  const recommend = t('home.overtrainingGuard.recommend');
+  // Un seul aiguillage : le préfixe de clé. Les 3 formes ci-dessous n'en savent rien.
+  const level = alert.severity === 'streakAndDeficit' ? 'deficit' : 'streak';
+  // `days` n'est interpolé que par `streak.title` ; i18next ignore une variable non utilisée par la
+  // chaîne, ce qui évite un branchement sur le passage des options.
+  const title = t(`home.overtrainingGuard.${level}.title`, { days: alert.streakDays });
+  const message = t(`home.overtrainingGuard.${level}.message`);
+  const recommend = t(`home.overtrainingGuard.${level}.recommend`);
   const a11yLabel = `${title}. ${message} ${recommend}`;
 
   // ── Petit carré ────────────────────────────────────────────────────────────

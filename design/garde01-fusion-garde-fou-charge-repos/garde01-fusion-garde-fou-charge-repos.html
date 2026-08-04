@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GARDE-01 — Garde-fou unifié charge & récupération</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b;
+        --warn:#a63b2e;--warnbg:#f7ddd6;--warnborder:#e2b3a6;--bad:#8f2f22;--good:#4d6b45}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1060px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:82ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:82ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:860px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:880px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screen.bad{border-color:#dba79c;background:#fdf4f1}
+  .screen.good{border-color:#bcc9b0;background:#f7faf4}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .screen.bad .screenlabel{color:var(--bad)} .screen.good .screenlabel{color:var(--good)}
+  .card{border-radius:16px;padding:15px;background:var(--warnbg);border:1px solid var(--warnborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--warn)}
+  .emoji{font-size:19px}
+  .cardtitle{font-weight:700;font-size:15.5px;color:var(--warn);margin-top:6px}
+  .cardmsg{font-size:13px;color:#5c2a22;margin-top:4px;line-height:1.4}
+  .band{margin-top:9px;background:rgba(166,59,46,.1);border:1px solid var(--warnborder);
+        border-radius:10px;padding:8px 11px;font-size:12px;color:var(--warn)}
+  .ghost{border:1px dashed var(--bstrong);border-radius:14px;padding:12px;color:var(--muted);
+         font-size:12.5px;background:var(--bg);text-align:center}
+  .slot{border:1px dashed #c9bca6;border-radius:12px;padding:9px;color:#9a8c76;font-size:11.5px;
+        background:#fdfaf4;text-align:center;margin:7px 0}
+  .arrow{text-align:center;font-size:22px;color:var(--muted);margin:8px 0}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:90ch}
+  .note.bad{background:#fdf1ee;border-left-color:var(--bad)}
+  code{font:12.5px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;
+       text-transform:uppercase;letter-spacing:.04em}
+  .tag.k{background:#e6efe1;color:var(--good)} .tag.x{background:#f7ddd6;color:var(--bad)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>GARDE-01 — Garde-fou unifié charge &amp; récupération</h1>
+<p class="sub"><strong>Fusion de TRI-12 et MR-14</strong> en un seul widget à deux niveaux de
+sévérité. US de <strong>refactor</strong> : aucune fonctionnalité nouvelle, aucun seuil ni texte
+modifié — on supprime plus de code qu'on n'en ajoute, et le registre passe de <strong>21 à 20</strong>
+widgets.</p>
+<div class="flag">✅ Décisions D1-D4 arbitrées par Florian le 04/08/2026, code livré (TDD) le même jour.</div>
+
+<h2>Le défaut corrigé : une carte qui change d'identité et de place</h2>
+<p class="why">Aujourd'hui, deux cartes clones se relaient selon un signal <em>nutritionnel</em>.
+L'utilisateur log son dîner, son déficit repasse sous le seuil — et son alerte d'entraînement change
+de titre <strong>et descend de ~4 cases</strong>, sans qu'aucune donnée d'entraînement n'ait bougé.</p>
+
+<div class="row">
+  <div class="screen bad">
+    <div class="screenlabel">✗ Aujourd'hui — avant le repas loggé</div>
+    <div class="slot">… autres widgets …</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Charge &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">Signal de surcharge</div>
+      <div class="cardmsg">Tu enchaînes les séances sans repos depuis plusieurs jours, avec des
+      apports régulièrement sous ta cible.</div>
+    </div>
+    <div class="slot">… 4 widgets plus bas …</div>
+    <div class="ghost">rien ici</div>
+  </div>
+  <div class="screen bad">
+    <div class="screenlabel">✗ Aujourd'hui — après le repas loggé</div>
+    <div class="slot">… autres widgets …</div>
+    <div class="ghost">la carte a disparu d'ici</div>
+    <div class="slot">… 4 widgets plus bas …</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Repos &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">8 jours sans repos</div>
+      <div class="cardmsg">Tu t'entraînes (muscu et course confondues) depuis plusieurs jours sans
+      jour de repos.</div>
+    </div>
+  </div>
+</div>
+<div class="note bad" style="margin-top:14px">
+  <strong>Même symptôme, deux cartes, deux emplacements.</strong> Et comme MR-14 dépend de la
+  <em>négation</em> d'un signal asynchrone, c'est le premier widget capable de passer vrai → faux
+  pendant l'hydratation PowerSync : flash + saut de mise en page à chaque ouverture de l'accueil.
+</div>
+
+<div class="arrow">↓</div>
+
+<h2>Après : une seule carte, une seule place, deux niveaux</h2>
+<div class="row">
+  <div class="screen good">
+    <div class="screenlabel">✓ Niveau surcharge — streak + déficit</div>
+    <div class="slot">… autres widgets …</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Charge &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">Signal de surcharge</div>
+      <div class="cardmsg">Tu enchaînes les séances sans repos depuis plusieurs jours, avec des
+      apports régulièrement sous ta cible.</div>
+      <div class="band">Un jour de repos et un repas plus complet peuvent t'aider à repartir du bon pied.</div>
+    </div>
+    <div class="slot">… suite du dashboard …</div>
+  </div>
+  <div class="screen good">
+    <div class="screenlabel">✓ Niveau repos — streak seul (après le repas loggé)</div>
+    <div class="slot">… autres widgets …</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Charge &amp; récupération</span><span class="emoji">⚠️</span></div>
+      <div class="cardtitle">8 jours sans repos</div>
+      <div class="cardmsg">Tu t'entraînes (muscu et course confondues) depuis plusieurs jours sans
+      jour de repos.</div>
+      <div class="band">Un jour de repos peut aider ta récupération.</div>
+    </div>
+    <div class="slot">… suite du dashboard …</div>
+  </div>
+</div>
+<div class="note" style="margin-top:14px">
+  <strong>La carte ne bouge plus.</strong> Le déficit ne décide plus <em>si</em> l'alerte apparaît,
+  seulement <em>à quel niveau</em> elle parle. <code>show</code> ne dépend que du streak, donc il
+  redevient monotone : plus de flash, plus de saut. Les deux jeux de textes sont conservés
+  <strong>mot pour mot</strong>.
+</div>
+
+<h2>La contradiction qu'on résout (le vrai sujet)</h2>
+<p class="why">Ce n'est pas qu'un défaut d'affichage : les deux US livrées se contredisent sur le
+fond, et les deux positions ont été validées à deux jours d'écart.</p>
+<table>
+  <tr><th>Question</th><th>TRI-12 (02/08)</th><th>MR-14 (04/08)</th><th>GARDE-01</th></tr>
+  <tr>
+    <td>Un streak <strong>seul</strong> justifie-t-il une alerte ?</td>
+    <td><span class="tag x">non</span> R4</td>
+    <td><span class="tag k">oui</span> toute sa thèse</td>
+    <td><strong>Oui</strong> → niveau <code>streak</code></td>
+  </tr>
+  <tr>
+    <td>Un widget doit-il en masquer un autre ?</td>
+    <td><span class="tag x">non</span> §1, « masquerait un vrai signal »</td>
+    <td><span class="tag k">oui</span> D1</td>
+    <td><strong>Sans objet</strong> — un seul widget</td>
+  </tr>
+  <tr>
+    <td>Gating</td>
+    <td>3 piliers, « pas de dégradation partielle »</td>
+    <td>2 piliers</td>
+    <td><strong>2 piliers</strong>, nutrition en composante</td>
+  </tr>
+</table>
+<div class="note" style="margin-top:16px">
+  <code>TRI-12 ⟺ P∧N∧S∧D</code> &nbsp;·&nbsp; <code>MR-14 ⟺ P∧S∧¬(P∧N∧S∧D)</code> &nbsp;→&nbsp;
+  <code>union ⟺ P∧S</code><br>
+  Autrement dit : une carte s'affiche <strong>déjà toujours</strong> dès que muscu+course sont actifs
+  et le streak atteint 6 jours. GARDE-01 ne change pas ce périmètre — il l'<strong>exprime
+  directement</strong> au lieu de le laisser émerger de deux règles opposées.
+</div>
+
+<h2>Ce que ça change pour l'utilisateur</h2>
+<div class="row3">
+  <div class="zonecard">
+    <b>3 piliers, apports corrects</b>
+    <p>Avant : TRI-12 muet (R4), MR-14 affiché. Après : niveau <strong>repos</strong>, à la place
+    stable de la carte. <em>Le seul vrai changement de contenu de cette US.</em></p>
+  </div>
+  <div class="zonecard">
+    <b>Nutrition désactivée</b>
+    <p>Avant comme après : niveau <strong>repos</strong>. Le niveau surcharge devient simplement
+    inatteignable, sans masquer le widget (dégradation par composante, comme TRI-03).</p>
+  </div>
+  <div class="zonecard">
+    <b>Dashboard personnalisé</b>
+    <p>L'id <code>overtraining-guard</code> est conservé → la position choisie par l'utilisateur est
+    préservée. <code>load-streak-alert</code> (ajouté le matin même) est ignoré silencieusement,
+    <strong>sans migration</strong>.</p>
+  </div>
+</div>
+
+<h2>Bilan du refactor</h2>
+<table>
+  <tr><th>Effet</th><th>Détail</th></tr>
+  <tr><td>Widgets du registre</td><td>21 → <strong>20</strong> — première baisse du compteur Tier 0</td></tr>
+  <tr><td>Code supprimé</td><td><code>computeLoadStreakAlert</code>, <code>useLoadStreakAlert</code>, <code>LoadStreakAlertCard</code> + son test</td></tr>
+  <tr><td>Duplication éliminée</td><td>La seconde copie du calcul de streak (MR-14 §3) disparaît</td></tr>
+  <tr><td>Abonnements PowerSync</td><td>La double instanciation des requêtes de TRI-12 disparaît</td></tr>
+  <tr><td>Seuils, formules, textes</td><td><strong>Aucun modifié</strong> — seules les clés i18n bougent</td></tr>
+</table>
+
+</div></body></html>

@@ -84,11 +84,9 @@ export const HOME_WIDGET_IDS = [
   // (même garde tout-ou-rien que `training-load`) — rendu `null` hors divergence détectée entre
   // les deux piliers (spec R2).
   'concurrent-training-interference',
-  // US MR-14 — idem. **Conditionnel Tier 2**, gardé par `strength`+`running` (2 piliers, pas 3 :
-  // c'est ce qui le distingue d'`overtraining-guard`/TRI-12, qui exige aussi la nutrition et le
-  // déficit calorique). Rendu `null` sous le seuil de streak **ou** quand TRI-12 est déjà affiché
-  // (masquage mutuel, spec R3/D1 — appliqué dans le hook).
-  'load-streak-alert',
+  // US GARDE-01 : `load-streak-alert` (MR-14) **retiré** ici — fusionné dans `overtraining-guard`,
+  // qui porte désormais 2 niveaux de sévérité. Aucune migration de `dashboard_layout` nécessaire :
+  // `resolveScreenLayout` ignore les ids inconnus d'un layout stocké (voir son filtre `known.has`).
 ] as const;
 
 /**
@@ -193,9 +191,12 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US META-19 : même garde que `training-time` — l'ACWR combine muscu et course, un seul
       // pilier actif ne donnerait qu'une moitié du calcul.
       'training-load': ['strength', 'running'],
-      // US TRI-12 : garde **tri-pilier**, la seule à en exiger 3 — le garde-fou combine charge
-      // (muscu+course) et déficit nutritionnel, aucun des trois piliers n'est dispensable.
-      'overtraining-guard': ['strength', 'running', 'nutrition'],
+      // US GARDE-01 (ex-TRI-12) : garde ramenée de 3 à **2 piliers**. Le garde-fou combine toujours
+      // charge et déficit, mais le déficit ne décide plus que du **niveau** de sévérité : la
+      // nutrition dégrade sa composante dans le hook au lieu de masquer le widget (spec D2, même
+      // patron que `readiness`). Sans ça, un utilisateur muscu+course ne voyait jamais l'alerte —
+      // c'était toute la raison d'être de feu MR-14, désormais fusionnée ici.
+      'overtraining-guard': ['strength', 'running'],
       // US ACTIV-01 : transverse comme `streak`/`steps`/`wellbeing`/`review` — le parcours cible
       // n'importe quel utilisateur les 7 premiers jours, quels que soient ses piliers actifs.
       'activation-path': 'always',
@@ -210,10 +211,6 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US MR-08 : même garde que `training-load` — la divergence compare les deux piliers, un
       // seul actif ne donnerait qu'une moitié de la comparaison.
       'concurrent-training-interference': ['strength', 'running'],
-      // US MR-14 : 2 piliers, **pas 3** comme `overtraining-guard` — c'est précisément la raison
-      // d'être de cette US (couvrir l'utilisateur muscu+course sans nutrition activée, que le
-      // garde-fou tri-pilier ne peut structurellement pas voir).
-      'load-streak-alert': ['strength', 'running'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

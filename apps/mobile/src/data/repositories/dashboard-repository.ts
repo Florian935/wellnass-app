@@ -13,8 +13,8 @@
  *  - `useMostRecentRecord`  → widget 7.8 (dernier record battu, muscu ou course)
  *  - `useTrainingTime`      → widget MR-06 (temps d'entraînement muscu + course, semaine)
  *  - `useTrainingLoadAlert` → widget conditionnel Tier 2 (garde-fou ACWR, US META-19)
- *  - `useOvertrainingGuardAlert` → widget conditionnel Tier 2 (garde-fou tri-pilier, US TRI-12)
- *  - `useLoadStreakAlert`   → widget conditionnel Tier 2 (jours consécutifs sans repos, US MR-14)
+ *  - `useOvertrainingGuardAlert` → widget conditionnel Tier 2 (garde-fou unifié charge & repos,
+ *    US GARDE-01 — fusion de TRI-12 et MR-14, à 2 niveaux de sévérité)
  *
  * Règles d'appel des hooks :
  *  - Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React).
@@ -36,7 +36,6 @@ import {
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
-  computeLoadStreakAlert,
   computeOvertrainingGuard,
   computeReadiness,
   computeStreak,
@@ -64,7 +63,7 @@ import {
   type DayActivity,
   type RestorableGap,
   type DeficitVolumeAlert,
-  type LoadStreakAlert,
+  type OvertrainingGuardResult,
   type Pillar,
   type ReadinessResult,
   type RecordDistanceKey,
@@ -1052,32 +1051,35 @@ export function useConcurrentTrainingInterference(): ConcurrentTrainingInterfere
 }
 
 // ---------------------------------------------------------------------------
-// useOvertrainingGuardAlert — widget conditionnel (US TRI-12, garde-fou tri-pilier)
+// useOvertrainingGuardAlert — widget conditionnel (US GARDE-01, fusion TRI-12 + MR-14)
 // ---------------------------------------------------------------------------
 
 /** Fenêtre de recherche du streak de charge — large mais bornée (le seuil d'alerte n'est que 6 j). */
 const LOAD_STREAK_LOOKBACK_DAYS = 30;
 
-/** Fenêtre du compte de jours en déficit — fixe, 7 j calendaires (spec R3). */
+/** Fenêtre du compte de jours en déficit — fixe, 7 j calendaires (TRI-12 R3, inchangée). */
 const DEFICIT_WINDOW_DAYS = 7;
 
-export type OvertrainingGuardAlert = { show: boolean };
-
 /**
- * Expose le garde-fou tri-pilier (charge sans repos + déficit persistant, US TRI-12).
+ * Expose le garde-fou unifié charge & récupération (widget conditionnel Tier 2, US GARDE-01 —
+ * fusion de TRI-12 et MR-14, qui se contredisaient : voir spec GARDE-01 §0).
  *
  * Composition : `useWorkoutHistory()` + `useRunHistory()` (déjà chargées ailleurs sur le
- * dashboard) agrégées en jours à charge non nulle (R1), passées à `computeStreak` (même primitive
- * que le streak d'activité, TRI-01, réutilisée sur un ensemble de jours différent) pour le streak
- * (R2). `useDailyTotals()` + `useNutritionSummary().target` (même source que
- * `useDeficitVolumeAlert`) donnent le compte de jours en déficit (R3). `computeOvertrainingGuard`
- * applique R4 (les deux signaux, jamais un seul).
+ * dashboard) agrégées en jours à charge non nulle (TRI-12 R1), passées à `computeStreak` (même
+ * primitive que le streak d'activité, TRI-01) pour le streak. `useDailyTotals()` +
+ * `useNutritionSummary().target` (même source que `useDeficitVolumeAlert`) donnent le compte de
+ * jours en déficit (TRI-12 R3, inchangé). `computeOvertrainingGuard` en déduit le **niveau**.
  *
- * **Gating tri-pilier** : `strength`, `running` ET `nutrition` tous actifs — sans les trois, le
- * diagnostic n'est plus « global » (spec R5). Tous les hooks sous-jacents sont appelés
- * inconditionnellement (règle des hooks React) ; le gating n'intervient qu'au retour.
+ * **Gating à 2 piliers** (`strength` + `running`, GARDE-01 D2) : la nutrition ne garde **plus** le
+ * widget, elle **dégrade sa composante** — inactive, elle passe `deficitDaysCount: 0`, rendant le
+ * niveau `streakAndDeficit` inatteignable sans masquer l'alerte de repos. Même patron que
+ * `useReadiness` (TRI-03 D2). Remplace le gating tri-pilier de TRI-12 R5, qui rendait le garde-fou
+ * structurellement invisible aux utilisateurs muscu+course — la raison d'être de feu MR-14.
+ *
+ * Tous les hooks sous-jacents sont appelés inconditionnellement (règle des hooks React) ; le gating
+ * n'intervient qu'au retour.
  */
-export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
+export function useOvertrainingGuardAlert(): OvertrainingGuardResult {
   const { settings } = useSettings();
   const activePillars = resolveActivePillars(settings?.activePillars);
   const strengthActive = activePillars.includes('strength');
@@ -1092,8 +1094,8 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
   const { totals } = useDailyTotals(deficitWindowKey);
   const { target } = useNutritionSummary();
 
-  if (!(strengthActive && runningActive && nutritionActive)) {
-    return { show: false };
+  if (!(strengthActive && runningActive)) {
+    return { show: false, severity: null, streakDays: 0 };
   }
 
   const sessions = [
@@ -1113,72 +1115,21 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardAlert {
   );
   const loadStreakDays = computeStreak(chargeDays, todayKey).current;
 
-  const deficitDaysCount = countDeficitDaysInWindow(
-    totals.map((t) => ({ kcal: t.kcal })),
-    target ?? 0,
-  );
+  // Nutrition inactive → composante neutralisée (D2), pas de garde qui masquerait tout le widget.
+  const deficitDaysCount = nutritionActive
+    ? countDeficitDaysInWindow(
+        totals.map((t) => ({ kcal: t.kcal })),
+        target ?? 0,
+      )
+    : 0;
 
   return computeOvertrainingGuard({ loadStreakDays, deficitDaysCount });
 }
 
-// ---------------------------------------------------------------------------
-// useLoadStreakAlert — widget conditionnel (US MR-14, jours consécutifs sans repos)
-// ---------------------------------------------------------------------------
-
-/**
- * Expose l'alerte « jours consécutifs sans repos » (widget conditionnel Tier 2, US MR-14).
- *
- * ⚠️ **Le calcul du streak est volontairement dupliqué** depuis `useOvertrainingGuardAlert`
- * ci-dessus (spec §3/§5, décision explicite au cadrage) : TRI-12 est déjà à `etape: recette`, en
- * attente de test device — on ne réorganise pas son code pour une US sans rapport. C'est aussi la
- * convention déjà appliquée par les autres hooks Tier 2 de ce fichier (`useTrainingLoadAlert`,
- * `useConcurrentTrainingInterference`), qui refont chacun leur propre filtrage par fenêtre.
- * Si le seuil ou `sessionLoad` change un jour, **penser aux deux endroits**.
- *
- * **Gating piliers** : `strength` ET `running` (2 piliers, contrairement aux 3 de TRI-12 — c'est
- * précisément ce qui distingue cette US, spec §0). **Condition D1** : masquée si TRI-12 est déjà
- * affiché, pour ne pas doubler le signal sur le même symptôme (spec R3).
- */
-export function useLoadStreakAlert(): LoadStreakAlert {
-  const { settings } = useSettings();
-  const activePillars = resolveActivePillars(settings?.activePillars);
-  const strengthActive = activePillars.includes('strength');
-  const runningActive = activePillars.includes('running');
-
-  const { workouts } = useWorkoutHistory();
-  const { runs } = useRunHistory();
-  const todayKey = useTodayKey();
-  const loadLookbackKey = useWindowStartKey(LOAD_STREAK_LOOKBACK_DAYS);
-  const overtrainingGuard = useOvertrainingGuardAlert();
-
-  if (!(strengthActive && runningActive)) {
-    return { show: false, streakDays: 0 };
-  }
-
-  const sessions = [
-    ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
-    ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
-  ].filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= loadLookbackKey);
-
-  const loadByDay = new Map<string, number>();
-  for (const s of sessions) {
-    const dayKey = localDayKey(new Date(s.finishedAt as string));
-    loadByDay.set(dayKey, (loadByDay.get(dayKey) ?? 0) + sessionLoad(s));
-  }
-  const chargeDays = new Set(
-    Array.from(loadByDay.entries())
-      .filter(([, load]) => load > 0)
-      .map(([dayKey]) => dayKey),
-  );
-  const streakDays = computeStreak(chargeDays, todayKey).current;
-
-  // D1 (masquage mutuel, TRI-12 prime) est porté par la fonction pure, pas par un post-traitement
-  // ici — c'est ce qui rend la règle testable unitairement (cf. `computeLoadStreakAlert`).
-  return computeLoadStreakAlert({
-    streakDays,
-    overtrainingGuardShown: overtrainingGuard.show,
-  });
-}
+// `useLoadStreakAlert` (US MR-14) supprimée par GARDE-01 : son niveau d'alerte est devenu le palier
+// `streak` de `useOvertrainingGuardAlert` ci-dessus. La **seconde copie du calcul de streak**
+// disparaît avec elle (elle était assumée mais fragile), ainsi que l'appel imbriqué qui instanciait
+// une deuxième fois les requêtes surveillées du garde-fou.
 
 // ---------------------------------------------------------------------------
 // useReadiness — widget transverse (US TRI-03, score de forme / readiness)

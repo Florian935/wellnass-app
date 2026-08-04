@@ -14,7 +14,6 @@ import {
   useActivityLevelSuggestion,
   useConcurrentTrainingInterference,
   useDeficitVolumeAlert,
-  useLoadStreakAlert,
   useOvertrainingGuardAlert,
   useReadiness,
   useTrainingLoadAlert,
@@ -55,9 +54,6 @@ export default function HomeScreen() {
   // détectée, déclaré ici dès l'implémentation (pas laissé à la revue, contrairement aux 4
   // précédents ci-dessus qui avaient chacun oublié cette étape une fois).
   const concurrentTrainingInterferenceActive = useConcurrentTrainingInterference().show;
-  // MR-14 : idem — conditionnel sur le seuil de streak **et** sur le masquage mutuel avec TRI-12
-  // (spec R3/D1, appliqué dans le hook), donc capable de rendre `null` de deux façons.
-  const loadStreakAlertActive = useLoadStreakAlert().show;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
@@ -66,7 +62,6 @@ export default function HomeScreen() {
     if (id === 'readiness') return readinessActive;
     if (id === 'activity-level-suggestion') return activityLevelSuggestionActive;
     if (id === 'concurrent-training-interference') return concurrentTrainingInterferenceActive;
-    if (id === 'load-streak-alert') return loadStreakAlertActive;
     return true;
   };
 

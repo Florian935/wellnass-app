@@ -27,7 +27,6 @@ import { ActivationPathCard } from '@/components/dashboard/ActivationPathCard';
 import { ReadinessCard } from '@/components/dashboard/ReadinessCard';
 import { ActivityLevelSuggestionCard } from '@/components/dashboard/ActivityLevelSuggestionCard';
 import { ConcurrentTrainingInterferenceCard } from '@/components/dashboard/ConcurrentTrainingInterferenceCard';
-import { LoadStreakAlertCard } from '@/components/dashboard/LoadStreakAlertCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
@@ -52,7 +51,6 @@ const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   readiness: ReadinessCard,
   'activity-level-suggestion': ActivityLevelSuggestionCard,
   'concurrent-training-interference': ConcurrentTrainingInterferenceCard,
-  'load-streak-alert': LoadStreakAlertCard,
 };
 
 /** Rend le widget `id` à la taille demandée. */

@@ -3,16 +3,30 @@ id: MR-14
 titre: "Jours consécutifs sans repos"
 roadmap: []
 catalogue: [MR-14]
-etape: recette
+etape: close
 branche: feature/mr14-jours-consecutifs-sans-repos
 maj: 04/08/2026
 ---
 
 # US MR-14 — Jours consécutifs sans repos
 
-> **Spec fonctionnelle — ✅ validée par Florian le 04/08/2026** (spec + plan + maquette, D1
-> tranchée conformément à la recommandation : MR-14 masquée quand TRI-12 est déjà affiché).
-> **Code livré (TDD) le 04/08/2026** — reste la recette device (§11).
+> ## 🔀 Comportement repris par [GARDE-01](garde01-fusion-garde-fou-charge-repos.md) le 04/08/2026
+>
+> **Livrée puis fusionnée le même jour, sans recette device propre.** La revue de code a montré que
+> son D1 (masquage mutuel) introduisait précisément le mécanisme que
+> [TRI-12 §1](tri12-garde-fou-global.md) avait écarté par principe, et que l'union des deux widgets
+> valait simplement « muscu+course actifs ∧ streak ≥ 6 j ». Voir
+> [GARDE-01 §0](garde01-fusion-garde-fou-charge-repos.md) pour l'algèbre complète.
+>
+> **Ce qui survit** : sa thèse (« le streak seul mérite une alerte ») **l'emporte** sur R4 de TRI-12
+> et devient le **niveau de sévérité `streak`** du garde-fou unifié. Ses trois textes sont conservés
+> **mot pour mot**, et son gating à 2 piliers devient celui du widget fusionné.
+>
+> **Ce qui disparaît** : D1/R3 (masquage mutuel — sans objet, il n'y a plus qu'un widget), son id de
+> widget `load-streak-alert`, sa carte et son eyebrow propre.
+>
+> **Les règles ci-dessous sont conservées comme trace de la décision d'origine.** Critères de
+> recette : voir [GARDE-01 §11](garde01-fusion-garde-fou-charge-repos.md) (liste consolidée).
 >
 > **US d'analyse — aucune ligne roadmap.** Comme [MR-08](mr08-interference-concurrent-training.md)/
 > [NUTR-18](nutr18-bilan-calorique-hebdo.md), cette US vit **uniquement** dans le
@@ -176,18 +190,15 @@ Bloc `accessible` unique par forme de widget (titre + message + recommandation),
 - [x] Aucune ligne roadmap à toucher (US d'analyse, catalogue seul).
 - [x] Conséquence de conception relevée en revue (l'union TRI-12 ∪ MR-14 vaut `P∧S`, donc une
       carte s'affiche toujours dès muscu+course actifs et streak ≥ 6 ; swap de carte possible si
-      le déficit franchit son seuil) **tracée dans [IDEAS.md](../../../../IDEAS.md)** comme
-      candidat de fusion post-recette TRI-12 — pas traitée ici (modifierait TRI-12, hors périmètre §5).
+      le déficit franchit son seuil) tracée dans IDEAS.md, **puis traitée le jour même** par
+      [GARDE-01](garde01-fusion-garde-fou-charge-repos.md) — Florian a demandé de reprendre le
+      sujet immédiatement plutôt que d'attendre la recette de TRI-12.
 
-## 11. Critères d'acceptation (recette device)
+## 11. Critères d'acceptation (recette device) — ⚠️ REMPLACÉS
 
-1. 6 jours consécutifs ou plus avec au moins une séance/course chaque jour → widget visible,
-   nombre de jours cohérent dans le message.
-2. TRI-12 également actif en même temps (3 piliers, déficit persistant) → seul TRI-12 s'affiche,
-   MR-14 masqué (D1).
-3. `nutrition` inactive, streak ≥ 6 jours → MR-14 visible (TRI-12 structurellement invisible).
-4. Streak < 6 jours → aucun widget.
-5. `strength` ou `running` désactivé → aucun widget, quel que soit le streak.
-6. Mode avion : fonctionne normalement.
-7. En EN : message grammatical, cohérent.
-8. TalkBack énonce le widget comme un bloc cohérent.
+**Ne pas recetter depuis cette liste** : son critère 2 (masquage mutuel) décrit une règle supprimée,
+et les critères 1/3/5 parlent d'un widget qui n'existe plus sous cet id.
+
+👉 **Liste consolidée : [GARDE-01 §11](garde01-fusion-garde-fou-charge-repos.md)** — le critère 6 de
+cette nouvelle liste (« le déficit passe sous son seuil → la carte ne bouge pas ») est précisément
+celui qui vérifie la correction du défaut introduit ici.

@@ -170,56 +170,50 @@ export function countDeficitDaysInWindow(
   return loggedDays.filter((d) => (targetKcal - d.kcal) / targetKcal >= DEFICIT_ALERT_RATIO).length;
 }
 
-/** Résultat du garde-fou tri-pilier — `show` uniquement si les deux signaux sont vrais (spec R4). */
-export type OvertrainingGuardResult = { show: boolean };
+/**
+ * Niveau de sévérité du garde-fou (US GARDE-01, spec R3) — deux paliers dans **une seule** carte,
+ * au lieu des deux widgets concurrents de TRI-12 et MR-14.
+ */
+export type OvertrainingSeverity = 'streak' | 'streakAndDeficit';
+
+/** Résultat du garde-fou unifié — `streakDays` sert le titre du niveau `streak` (spec §6). */
+export type OvertrainingGuardResult = {
+  show: boolean;
+  severity: OvertrainingSeverity | null;
+  streakDays: number;
+};
 
 /**
- * Garde-fou combinant enchaînement de jours à charge sans repos (R2) et déficit calorique
- * persistant (R3). Reçoit les deux résultats **déjà calculés** par l'appelant
- * (`computeStreak(...).current` pour le streak, `countDeficitDaysInWindow(...)` pour le compte) —
- * n'agrège rien elle-même, applique seulement R4 : un seul des deux signaux ne suffit jamais.
+ * Garde-fou unifié charge & récupération (US GARDE-01, fusion de TRI-12 et MR-14).
+ *
+ * Reçoit les deux signaux **déjà calculés** par l'appelant (`computeStreak(...).current` pour le
+ * streak, `countDeficitDaysInWindow(...)` pour le déficit) — n'agrège rien elle-même.
+ *
+ * ⚠️ **`show` ne dépend que du streak** (spec R2). C'est l'arbitrage de la contradiction relevée au
+ * §0 de la spec : R4 de TRI-12 (« un seul des deux signaux ne suffit jamais ») est **remplacée** par
+ * la position de MR-14 (le streak seul mérite une alerte). Le déficit ne décide plus de l'affichage,
+ * seulement du **niveau** — ce qui rend `show` monotone et supprime le swap de carte entre les deux
+ * anciens widgets.
+ *
+ * `deficitDaysCount` vaut 0 quand le pilier nutrition est inactif : le niveau `streakAndDeficit`
+ * devient alors inatteignable **sans masquer le widget** (spec R4/D2, dégradation par composante —
+ * même patron que `computeReadiness`/`useReadiness`, TRI-03 D2).
  */
 export function computeOvertrainingGuard(input: {
   loadStreakDays: number;
   deficitDaysCount: number;
 }): OvertrainingGuardResult {
+  if (input.loadStreakDays < OVERTRAINING_LOAD_STREAK_DAYS) {
+    return { show: false, severity: null, streakDays: input.loadStreakDays };
+  }
+  const hasPersistentDeficit = input.deficitDaysCount >= OVERTRAINING_DEFICIT_DAYS_REQUIRED;
   return {
-    show:
-      input.loadStreakDays >= OVERTRAINING_LOAD_STREAK_DAYS &&
-      input.deficitDaysCount >= OVERTRAINING_DEFICIT_DAYS_REQUIRED,
+    show: true,
+    severity: hasPersistentDeficit ? 'streakAndDeficit' : 'streak',
+    streakDays: input.loadStreakDays,
   };
 }
 
-// ---------------------------------------------------------------------------
-// Jours consécutifs sans repos — streak de charge seul (US MR-14, catalogue)
-// ---------------------------------------------------------------------------
-
-/** Résultat de l'alerte streak seul — `streakDays` remonté pour le message interpolé (spec §6). */
-export type LoadStreakAlert = { show: boolean; streakDays: number };
-
-/**
- * Alerte « jours consécutifs sans repos » (US MR-14, spec R2/R3) : réutilise le seuil
- * `OVERTRAINING_LOAD_STREAK_DAYS` **déjà établi par TRI-12** (6 j, la fourchette 6-7 j du
- * catalogue), pas un nouveau chiffre.
- *
- * ⚠️ **Pas un doublon de `computeOvertrainingGuard`** (spec §0, vérifié au cadrage) : celle-ci
- * exige **deux** signaux (streak **et** déficit calorique) et n'est gardée qu'aux 3 piliers ;
- * MR-14 ne regarde **que** le streak (spec R4, aucune donnée nutrition ici) et couvre donc la
- * population que TRI-12 ne peut structurellement pas voir (nutrition inactive), ainsi que le cas
- * « streak sans déficit ».
- *
- * `overtrainingGuardShown` porte le **masquage mutuel** (spec R3/D1) : TRI-12 prime, son signal
- * étant le plus complet. Ce paramètre vit ici plutôt qu'en post-traitement dans le hook pour que
- * la règle D1 soit **testable unitairement** — sans lui, inverser la condition ne cassait aucun
- * test (trouvé en revue de code).
- */
-export function computeLoadStreakAlert(input: {
-  streakDays: number;
-  overtrainingGuardShown: boolean;
-}): LoadStreakAlert {
-  const reachedThreshold = input.streakDays >= OVERTRAINING_LOAD_STREAK_DAYS;
-  return {
-    show: reachedThreshold && !input.overtrainingGuardShown,
-    streakDays: input.streakDays,
-  };
-}
+// `computeLoadStreakAlert` / `LoadStreakAlert` (US MR-14) supprimées par GARDE-01 : le seuil de
+// streak et le titre interpolé vivent désormais dans `computeOvertrainingGuard` (niveau `streak`),
+// et la règle de masquage mutuel n'a plus d'objet — il n'y a plus qu'un widget.

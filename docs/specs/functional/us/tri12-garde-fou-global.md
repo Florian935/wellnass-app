@@ -3,13 +3,34 @@ id: TRI-12
 titre: "Détection de surcharge / sous-récupération globale"
 roadmap: []
 catalogue: [TRI-12]
-etape: recette
+etape: close
 branche: feature/tri12-garde-fou-global
-maj: 02/08/2026
+maj: 04/08/2026
 ---
 
 # US TRI-12 — Détection de surcharge / sous-récupération globale
 
+> ## 🔀 Comportement repris par [GARDE-01](garde01-fusion-garde-fou-charge-repos.md) le 04/08/2026
+>
+> **Clôturée sans recette device propre.** Son widget a été **fusionné** avec celui de
+> [MR-14](mr14-jours-consecutifs-sans-repos.md) : les deux se contredisaient (R4 ci-dessous disait
+> « un seul signal ne suffit jamais », MR-14 affirmait l'inverse — les deux positions ont été
+> validées à deux jours d'écart). Voir [GARDE-01 §0](garde01-fusion-garde-fou-charge-repos.md) pour
+> l'analyse complète.
+>
+> **Ce qui survit** : le diagnostic composite (charge sans repos **+** déficit persistant) est
+> devenu le **niveau de sévérité `streakAndDeficit`** du garde-fou unifié. Ses règles R1 et R3
+> (jour à charge, déficit persistant sur fenêtre fixe) et ses trois textes sont conservés **mot pour
+> mot**.
+>
+> **Ce qui change** : R4 (« les deux signaux, jamais un seul ») est remplacée par le seuil de streak
+> seul, et R5 (gating tri-pilier, « pas de dégradation partielle ») par un gating à 2 piliers avec
+> la nutrition en dégradation par composante.
+>
+> **Les règles ci-dessous sont conservées comme trace de la décision d'origine** — elles ne
+> décrivent plus le comportement courant. Critères de recette : voir
+> [GARDE-01 §11](garde01-fusion-garde-fou-charge-repos.md) (liste consolidée).
+>
 > **US d'analyse — aucune ligne roadmap.** Comme [META-19](meta19-acwr-garde-fou.md) et
 > [RUN-18](run18-acwr-running.md), cette US vit **uniquement** dans le
 > [catalogue d'analyses](../../product/analyses-donnees.md).
@@ -158,23 +179,12 @@ synchronisées), agrégation pure. Aucun réseau.
 Bloc `accessible` unique par forme de widget (titre + message + recommandation), même patron que
 `TrainingLoadAlertCard` (META-19 §7) — pas des `Text` disjoints. Ton factuel, jamais alarmiste (R6).
 
-## 8. Critères de recette
+## 8. Critères de recette — ⚠️ REMPLACÉS
 
-- [ ] 1. ≥ 6 jours consécutifs avec au moins une séance à charge non nulle (RPE **et** durée
-      renseignés, R1) **et** ≥ 4 jours sur les 7 derniers jours calendaires loggés en déficit ≥ 15 %
-      → le widget s'affiche avec le message + la recommandation.
-- [ ] 2. ≥ 6 jours consécutifs de charge, mais apports dans la cible → le widget **ne s'affiche
-      pas** (R4, un seul signal ne suffit pas).
-- [ ] 3. Déficit persistant, mais un jour de repos rompt la série de charge → le widget **ne
-      s'affiche pas** (R4).
-- [ ] 4. Les trois piliers ne sont pas tous actifs (ex. nutrition désactivée) → le widget ne
-      s'affiche jamais, quelle que soit la charge ou les apports (R5).
-- [ ] 5. Un jour sans RPE renseigné sur une séance ne compte pas comme un jour de repos artificiel
-      s'il existe une autre séance ce jour-là avec RPE — seule l'absence totale de séance charge
-      compte comme repos (R1).
-- [ ] 6. Un jour de nutrition non loggé au milieu de la fenêtre de 7 jours ne fait pas à lui seul
-      retomber sous le seuil de 4 si les 4 jours en déficit sont par ailleurs bien loggés (R3, compte
-      absolu sur fenêtre fixe, pas un streak strict).
-- [ ] 7. **Mode avion** : le widget s'affiche normalement s'il y a lieu (aucun réseau requis).
-- [ ] 8. En **EN** : le message et la recommandation sont grammaticaux.
-- [ ] 9. TalkBack énonce le widget comme un bloc cohérent, pas des fragments disjoints.
+**Ne pas recetter depuis cette liste** : elle décrit deux widgets distincts et une règle « les deux
+signaux, jamais un seul » qui n'existent plus depuis la fusion du 04/08/2026. Ses critères 2, 3 et 4
+attendent explicitement l'inverse du comportement livré.
+
+👉 **Liste consolidée : [GARDE-01 §11](garde01-fusion-garde-fou-charge-repos.md)** — elle couvre les
+deux niveaux de sévérité et reprend les critères de R1/R3 encore valables (les points 5 et 6
+ci-dessous, devenus les points 8 et 9 de la nouvelle liste).

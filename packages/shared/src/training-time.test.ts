@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   computeAcwr,
   computeConcurrentTrainingInterference,
-  computeLoadStreakAlert,
   computeOvertrainingGuard,
   computeTrainingTime,
   countDeficitDaysInWindow,
@@ -236,92 +235,88 @@ describe('countDeficitDaysInWindow (US TRI-12)', () => {
   });
 });
 
-describe('computeOvertrainingGuard (US TRI-12)', () => {
-  it('streak 6 + déficit 4 → show true (les deux bornes pile atteintes)', () => {
+describe('computeOvertrainingGuard (US TRI-12, fusionnée par GARDE-01)', () => {
+  // Les 4 tests d'origine de TRI-12 sont **conservés et adaptés** (GARDE-01 plan étape 1) : ils
+  // restent la preuve de non-régression du diagnostic composite. Seule la forme du retour change…
+  // …sauf le deuxième, dont la **valeur attendue** change volontairement (voir son commentaire).
+
+  it('streak 6 + déficit 4 → niveau surcharge (les deux bornes pile atteintes)', () => {
     expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 4 })).toEqual({
       show: true,
-    });
-  });
-
-  it('streak 6 + déficit 3 → show false (R4, un seul signal ne suffit pas)', () => {
-    expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 3 })).toEqual({
-      show: false,
-    });
-  });
-
-  it('streak 5 + déficit 4 → show false', () => {
-    expect(computeOvertrainingGuard({ loadStreakDays: 5, deficitDaysCount: 4 })).toEqual({
-      show: false,
-    });
-  });
-
-  it('streak 8 + déficit 7 → show true (au-delà des deux seuils)', () => {
-    expect(computeOvertrainingGuard({ loadStreakDays: 8, deficitDaysCount: 7 })).toEqual({
-      show: true,
-    });
-  });
-});
-
-describe('computeLoadStreakAlert (US MR-14, spec R2/R3)', () => {
-  const noGuard = { overtrainingGuardShown: false };
-
-  it('streak 5 → masqué (sous le seuil de 6)', () => {
-    expect(computeLoadStreakAlert({ streakDays: 5, ...noGuard })).toEqual({
-      show: false,
-      streakDays: 5,
-    });
-  });
-
-  it('streak 6 → visible (borne incluse, même seuil que TRI-12 — pas un nouveau chiffre)', () => {
-    expect(computeLoadStreakAlert({ streakDays: 6, ...noGuard })).toEqual({
-      show: true,
+      severity: 'streakAndDeficit',
       streakDays: 6,
     });
   });
 
-  it('streak 10 → visible, streakDays remonté tel quel pour le message interpolé', () => {
-    expect(computeLoadStreakAlert({ streakDays: 10, ...noGuard })).toEqual({
+  it('streak 6 + déficit 3 → visible au niveau repos (R2 de GARDE-01 remplace R4 de TRI-12)', () => {
+    // ⚠️ **Changement de comportement assumé, pas une régression.** TRI-12 R4 disait « un seul
+    // signal ne suffit jamais » → `{show: false}`. MR-14 affirmait l'inverse ; GARDE-01 arbitre la
+    // contradiction (spec §0) en faveur de MR-14 : le streak seul suffit à afficher, le déficit ne
+    // décide plus que du **niveau**. C'est LE test à ne pas confondre avec une régression en revue.
+    expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 3 })).toEqual({
       show: true,
-      streakDays: 10,
+      severity: 'streak',
+      streakDays: 6,
     });
   });
 
-  it('streak 0 (compte neuf, aucun historique) → masqué', () => {
-    expect(computeLoadStreakAlert({ streakDays: 0, ...noGuard })).toEqual({
+  it('streak 5 + déficit 4 → masqué (sous le seuil de streak, le déficit ne rattrape pas)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 5, deficitDaysCount: 4 })).toEqual({
       show: false,
+      severity: null,
+      streakDays: 5,
+    });
+  });
+
+  it('streak 8 + déficit 7 → niveau surcharge (au-delà des deux seuils)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 8, deficitDaysCount: 7 })).toEqual({
+      show: true,
+      severity: 'streakAndDeficit',
+      streakDays: 8,
+    });
+  });
+
+  // ---- Niveaux de sévérité (GARDE-01, spec R3) ----------------------------------
+
+  it('streak 6 pile + aucun déficit → niveau repos (borne basse du streak incluse)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 6, deficitDaysCount: 0 })).toEqual({
+      show: true,
+      severity: 'streak',
+      streakDays: 6,
+    });
+  });
+
+  it('déficit 4 pile avec streak suffisant → niveau surcharge (borne basse du déficit incluse)', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 7, deficitDaysCount: 4 }).severity).toBe(
+      'streakAndDeficit',
+    );
+  });
+
+  it('nutrition inactive (vue de la fonction : deficitDaysCount 0) → niveau repos, jamais surcharge', () => {
+    // Spec R4/D2 : la nutrition **dégrade la composante** au lieu de garder le widget. Le hook
+    // passe 0 quand le pilier est inactif ; le niveau surcharge devient alors inatteignable.
+    const result = computeOvertrainingGuard({ loadStreakDays: 9, deficitDaysCount: 0 });
+    expect(result.show).toBe(true);
+    expect(result.severity).toBe('streak');
+  });
+
+  it('streak 0 → masqué, severity null', () => {
+    expect(computeOvertrainingGuard({ loadStreakDays: 0, deficitDaysCount: 0 })).toEqual({
+      show: false,
+      severity: null,
       streakDays: 0,
     });
   });
 
-  it('ne regarde aucune donnée nutrition (spec R4) — le streak seul décide du seuil', () => {
-    // Contraste explicite avec `computeOvertrainingGuard`, qui exige deux signaux : à streak égal
-    // et sans déficit, TRI-12 se taît et MR-14 parle — c'est exactement le résidu que cette US
-    // couvre (spec §0).
-    expect(computeLoadStreakAlert({ streakDays: 7, ...noGuard }).show).toBe(true);
-    expect(computeOvertrainingGuard({ loadStreakDays: 7, deficitDaysCount: 0 }).show).toBe(false);
-  });
-
-  // -------------------------------------------------------------------------
-  // D1 — masquage mutuel avec TRI-12 (règle sans aucun test avant la revue de code)
-  // -------------------------------------------------------------------------
-
-  it('D1 — streak au-dessus du seuil MAIS TRI-12 affiché → masqué (TRI-12 prime)', () => {
-    expect(
-      computeLoadStreakAlert({ streakDays: 9, overtrainingGuardShown: true }),
-    ).toEqual({ show: false, streakDays: 9 });
-  });
-
-  it('D1 — `streakDays` reste renseigné même masqué (seul `show` est neutralisé)', () => {
-    // Garde-fou contre une implémentation qui remettrait le compte à 0 en même temps que `show` :
-    // la valeur reste juste, seule la décision d'affichage change.
-    const masked = computeLoadStreakAlert({ streakDays: 12, overtrainingGuardShown: true });
-    expect(masked.streakDays).toBe(12);
-    expect(masked.show).toBe(false);
-  });
-
-  it('D1 — sous le seuil ET TRI-12 affiché → masqué (les deux raisons cumulées)', () => {
-    expect(
-      computeLoadStreakAlert({ streakDays: 3, overtrainingGuardShown: true }),
-    ).toEqual({ show: false, streakDays: 3 });
+  it('`streakDays` est remonté fidèlement dans les trois états (masqué / repos / surcharge)', () => {
+    // Sert le titre interpolé du niveau repos (spec §6) — doit rester juste même quand masqué.
+    expect(computeOvertrainingGuard({ loadStreakDays: 4, deficitDaysCount: 9 }).streakDays).toBe(4);
+    expect(computeOvertrainingGuard({ loadStreakDays: 11, deficitDaysCount: 0 }).streakDays).toBe(11);
+    expect(computeOvertrainingGuard({ loadStreakDays: 11, deficitDaysCount: 5 }).streakDays).toBe(11);
   });
 });
+
+// `computeLoadStreakAlert` (US MR-14) et ses 8 tests ont été **supprimés** par GARDE-01 : la
+// fonction est entièrement absorbée par `computeOvertrainingGuard` ci-dessus (niveau `streak`).
+// Les 3 tests qui couvraient sa règle D1 (masquage mutuel) disparaissent avec la règle elle-même ;
+// leur remplaçant est « streak 6 + déficit 3 → niveau repos » (spec §0, arbitrage de la contradiction).

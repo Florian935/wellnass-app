@@ -10,6 +10,77 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `refactor/garde01-fusion-garde-fou` — Garde-fou unifié charge & récupération (US GARDE-01, fusion TRI-12 + MR-14)
+
+Suite de `c33db5c`. **Refactor de résolution de contradiction**, pas une feature : la revue de code
+de MR-14 (livrée quelques heures plus tôt) avait montré que les deux US **se contredisaient sur le
+fond**, et que les deux positions avaient été validées à deux jours d'écart.
+
+| Question | TRI-12 (02/08) | MR-14 (04/08) | GARDE-01 |
+|---|---|---|---|
+| Un streak seul justifie une alerte ? | Non (R4) | Oui (sa thèse) | **Oui** → niveau `streak` |
+| Un widget doit-il en masquer un autre ? | Non (§1, « masquerait un vrai signal ») | Oui (D1) | **Sans objet** — un seul widget |
+| Gating | 3 piliers | 2 piliers | **2**, nutrition en composante |
+
+Algèbre du constat (P = muscu∧course, N = nutrition, S = streak ≥ 6 j, D = déficit) : TRI-12 ⟺
+`P∧N∧S∧D`, MR-14 ⟺ `P∧S∧¬(P∧N∧S∧D)`, donc **union = `P∧S`**. Le déficit ne décidait plus *si* une
+carte s'affiche mais **laquelle** — et deux cartes visuellement identiques se relayaient à des
+positions différentes du registre (index 16 vs 20), ce qui se lisait comme « mon alerte a changé de
+titre et de place » quand l'utilisateur loggait un repas. GARDE-01 assume ce périmètre et
+l'**exprime directement**. Sujet repris immédiatement à la demande de Florian, les deux US
+n'ayant pas encore été recettées sur device.
+
+#### Modifié
+
+- **`computeOvertrainingGuard`** (`training-time.ts`) renvoie désormais
+  `{ show, severity, streakDays }` avec `severity ∈ 'streak' | 'streakAndDeficit'`. **`show` ne
+  dépend que du streak** : R2 remplace R4 de TRI-12, le déficit ne détermine plus que le niveau —
+  ce qui rend `show` **monotone** (il ne dépend plus de la négation d'un signal asynchrone) et
+  supprime le flash + saut de mise en page pendant l'hydratation PowerSync.
+- **`useOvertrainingGuardAlert`** : gating **3 → 2 piliers**. La nutrition **dégrade sa composante**
+  (`deficitDaysCount: 0` si inactive) au lieu de masquer le widget — patron déjà posé par TRI-03 D2
+  (`useReadiness`). Remplace R5 de TRI-12, qui rendait le garde-fou structurellement invisible aux
+  utilisateurs muscu+course : la raison d'être de feu MR-14.
+- **`OvertrainingGuardCard`** : message variable selon le niveau, **eyebrow commun aux deux** (c'est
+  ce qui fait percevoir une carte qui change de contenu, et non deux cartes). + smoke test (7 tests).
+- **i18n** `home.overtrainingGuard.*` réorganisée en sous-objets `streak`/`deficit`. Les 7 chaînes
+  sont **déplacées, pas réécrites** — vérifié octet par octet en revue (R6).
+
+#### Supprimé
+
+- `computeLoadStreakAlert` / `LoadStreakAlert` (+ 8 tests), `useLoadStreakAlert`,
+  `LoadStreakAlertCard` (+ son test), famille i18n `home.loadStreakAlert.*`.
+- `load-streak-alert` retiré de `HOME_WIDGET_IDS` : **21 → 20 widgets, première baisse du compteur
+  Tier 0**. Aucune migration de `user_settings.dashboard_layout` — `resolveScreenLayout` ignore les
+  ids inconnus ; couvert par un test dédié sur un layout **complet** de 20 widgets.
+- **La duplication du calcul de streak** (assumée par MR-14 §3) et **l'appel imbriqué** qui
+  instanciait une seconde fois les requêtes surveillées du garde-fou : les abonnements PowerSync
+  passent de 6 à 2 instanciations.
+
+#### Technique / Notes
+
+- ⚠️ **Le test « streak 6 + déficit 3 » change volontairement de valeur attendue** (`{show:false}` →
+  `{show:true, severity:'streak'}`) : c'est R2 qui remplace R4, **pas une régression**. Documenté sur
+  place en 4 lignes. Les 3 autres tests d'origine de TRI-12 sont conservés et prouvent la
+  non-régression du diagnostic composite.
+- **Aucune régression de couverture** (recalculée en revue) : l'union des deux anciens widgets valait
+  `P∧S`, le widget fusionné s'affiche exactement à `P∧S`. Seul changement de contenu voulu : un
+  utilisateur 3 piliers avec un streak mais des apports corrects passe du **silence** de TRI-12 au
+  niveau `streak`.
+- Aucun seuil, aucune formule modifiés (`OVERTRAINING_LOAD_STREAK_DAYS`=6,
+  `OVERTRAINING_DEFICIT_DAYS_REQUIRED`=4, `DEFICIT_ALERT_RATIO`=15 % inchangés).
+- **Point de recette à connaître** : au niveau surcharge, le titre n'a **pas** de compteur de jours
+  (« Signal de surcharge » vs « 8 jours sans repos ») — conséquence de D3 (titres conservés tels
+  quels), tracé en spec §9 et §11 pt 7 pour éviter qu'il soit remonté comme un bug.
+- Specs [TRI-12](docs/specs/functional/us/tri12-garde-fou-global.md) et
+  [MR-14](docs/specs/functional/us/mr14-jours-consecutifs-sans-repos.md) passées à `etape: close`
+  avec bandeau de fusion ; leurs listes de critères de recette marquées ⚠️ REMPLACÉES (elles
+  attendaient l'inverse du comportement livré) et renvoyant vers
+  [GARDE-01 §11](docs/specs/functional/us/garde01-fusion-garde-fou-charge-repos.md) — **liste
+  consolidée unique**. Idée IDEAS.md promue ✅ et archivée.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, 47 warnings **strictement identiques** au baseline) ·
+  `test` ✅ **1503 tests shared (70 fichiers) + 670 tests mobile (72 suites) + 157 admin, 0 échec**.
+
 ### 04/08/2026 — `feature/mr14-jours-consecutifs-sans-repos` — Jours consécutifs sans repos (US MR-14, catalogue d'analyses)
 
 Suite de `a68a958`. Neuvième candidat catalogue de la session. **US à haut risque de doublon** :

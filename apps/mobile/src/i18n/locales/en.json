@@ -869,9 +869,16 @@
     },
     "overtrainingGuard": {
       "eyebrow": "Load & recovery",
-      "title": "Overload signal",
-      "message": "You've been training without rest for several days, with intake regularly below your target.",
-      "recommend": "A rest day and a more complete meal can help you bounce back."
+      "streak": {
+        "title": "{{days}} days without rest",
+        "message": "You've been training (strength and running combined) for several days without a rest day.",
+        "recommend": "A rest day can help your recovery."
+      },
+      "deficit": {
+        "title": "Overload signal",
+        "message": "You've been training without rest for several days, with intake regularly below your target.",
+        "recommend": "A rest day and a more complete meal can help you bounce back."
+      }
     },
     "readiness": {
       "eyebrow": "Today's form",
@@ -928,12 +935,6 @@
       "strengthLabel": "strength tonnage",
       "message": "Your {{up}} is well above your 4-week average, while your {{down}} is well below.",
       "hint": "May explain a plateau on one side — not necessarily an issue if intentional."
-    },
-    "loadStreakAlert": {
-      "eyebrow": "Rest & recovery",
-      "title": "{{days}} days without rest",
-      "message": "You've been training (strength and running combined) for several days without a rest day.",
-      "recommend": "A rest day can help your recovery."
     }
   },
   "activationPath": {
