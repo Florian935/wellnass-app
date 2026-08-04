@@ -29,8 +29,12 @@ export function computeWeeklyTrainingNutrition(input: {
 
   const bucketOf = (dayKey: string): string | null => {
     if (oldest == null || dayKey < oldest) return null; // hors fenêtre
-    for (const ws of weekStarts) if (ws <= dayKey) return ws;
-    return null;
+    // Passé cette garde, `oldest` est non nul, appartient à `weekStarts` (c'est son dernier
+    // élément) et vérifie `oldest <= dayKey` : la recherche trouve donc **toujours** au moins ce
+    // lundi-là. Le `return null` qui terminait cette fonction était du code mort — c'est ce qui
+    // empêchait le paquet d'atteindre les 100 % exigés sans écrire un test impossible à satisfaire.
+    // `find` conserve la sémantique de la boucle qu'il remplace : le premier lundi ≤ `dayKey`.
+    return weekStarts.find((ws) => ws <= dayKey)!;
   };
 
   const sessions = new Map<string, number>();

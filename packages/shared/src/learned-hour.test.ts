@@ -209,6 +209,23 @@ describe('resolveLearnedDeadline', () => {
     ];
     expect(resolveLearnedDeadline(samples, 13)).toEqual({ hour: 13, learned: false });
   });
+
+  it('retombe sur le repli avec un seuil à 0 et aucun échantillon', () => {
+    // `minSamples = 0` fait passer la garde de volume (0 >= 0) alors qu'il n'y a **rien** à
+    // apprendre : le percentile d'un échantillon vide est `null`. Sans la garde qui suit, on
+    // renverrait `{ hour: null, learned: true }` — une échéance nulle annoncée comme apprise,
+    // donc un rappel planifié à une heure indéfinie.
+    expect(resolveLearnedDeadline([], 13, 0)).toEqual({ hour: 13, learned: false });
+  });
+
+  it('apprend dès un seul échantillon si le seuil le permet', () => {
+    // Contre-épreuve du cas ci-dessus : le seuil abaissé doit bien apprendre quand il y a de la
+    // matière — sinon la garde défensive masquerait un vrai apprentissage.
+    expect(resolveLearnedDeadline([sameDay(2026, 7, 1, 9)], 13, 1)).toEqual({
+      hour: 9,
+      learned: true,
+    });
+  });
 });
 
 describe('resolveReminderDeadline', () => {

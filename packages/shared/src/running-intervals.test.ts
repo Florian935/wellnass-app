@@ -115,4 +115,56 @@ describe('resyncIntervalPhase', () => {
     expect(result.index).toBe(phases.length);
     expect(result.advanced).toBe(true);
   });
+
+  // ── Blocs définis en DURÉE (« 30/30 ») ────────────────────────────────────────────
+  //
+  // Tous les cas ci-dessus portent sur des blocs en **distance** : l'axe temporel de la baseline
+  // n'était donc jamais avancé en test, alors que le fractionné en temps est au moins aussi
+  // courant (« 30 s vite / 30 s lent », « 10 × 1 min »). Une erreur sur cet axe décalerait toutes
+  // les annonces vocales de la séance sans qu'aucun test ne bronche.
+  describe('blocs en durée', () => {
+    const thirtyThirty: IntervalPhaseBlockInput = {
+      reps: 4,
+      fastDistanceM: null,
+      fastDurationSeconds: 30,
+      fastPacePctVma: null,
+      recoveryDistanceM: null,
+      recoveryDurationSeconds: 30,
+    };
+    const timePhases = expandIntervalPhases([thirtyThirty]); // 8 phases de 30 s
+
+    it('avance la baseline TEMPORELLE, pas la distance', () => {
+      const result = resyncIntervalPhase(timePhases, 0, 0, 30, 0, 0);
+      expect(result.index).toBe(1);
+      expect(result.advanced).toBe(true);
+      expect(result.phaseStartDurationS).toBe(30);
+      // L'axe distance n'est pas touché par une phase définie en temps.
+      expect(result.phaseStartDistanceM).toBe(0);
+    });
+
+    it('franchit plusieurs phases sans effacer la progression de la phase courante', () => {
+      // 70 s écoulées : phase 0 (30 s) et phase 1 (30 s) franchies → baseline à 60 s exactement,
+      // pas 70 — les 10 s déjà courues dans la phase 2 doivent être conservées.
+      const result = resyncIntervalPhase(timePhases, 0, 0, 70, 0, 0);
+      expect(result.index).toBe(2);
+      expect(result.phaseStartDurationS).toBe(60);
+    });
+
+    it('ne franchit rien sous le seuil temporel', () => {
+      const result = resyncIntervalPhase(timePhases, 0, 0, 29, 0, 0);
+      expect(result).toEqual({
+        index: 0,
+        phaseStartDistanceM: 0,
+        phaseStartDurationS: 0,
+        advanced: false,
+      });
+    });
+
+    it('reprend depuis une baseline temporelle non nulle', () => {
+      // Cas du remontage d'écran en cours de séance : 100 s au compteur, baseline à 60 s.
+      const result = resyncIntervalPhase(timePhases, 2, 0, 100, 0, 60);
+      expect(result.index).toBe(3);
+      expect(result.phaseStartDurationS).toBe(90);
+    });
+  });
 });

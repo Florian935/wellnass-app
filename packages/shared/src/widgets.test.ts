@@ -11,6 +11,7 @@ import {
   defaultScreenLayout,
   resolveScreenLayout,
   moveWidgetToCell,
+  compactLayout,
   gridRowCount,
   parseMultiScreenLayout,
   type ScreenLayout,
@@ -420,6 +421,91 @@ describe('gridRowCount', () => {
         { id: 'weight', visible: true, size: 'large', col: 0, row: 2 },
       ]),
     ).toBe(4); // large en row 2, hauteur 2 → 4
+  });
+});
+
+// ---------------------------------------------------------------------------
+// compactLayout — compaction du sous-ensemble VISIBLE, à l'affichage
+// ---------------------------------------------------------------------------
+//
+// Fonction publique qui n'était **appelée par aucun test** : c'est elle qui empêche un widget
+// masqué de laisser un trou dans la grille (les positions stockées, elles, ne bougent pas). Un
+// défaut ici se voit immédiatement à l'écran — et c'est exactement le symptôme qui a été corrigé
+// le 03/08/2026 sur `training-load`/`overtraining-guard` (trou dans la grille quand la carte rend
+// `null`).
+describe('compactLayout', () => {
+  it('remonte les widgets pour ne laisser aucune ligne vide', () => {
+    const out = compactLayout([
+      { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+      { id: 'weight', visible: true, size: 'small', col: 0, row: 5 },
+    ]);
+    expect(out.map((w) => [w.id, w.row])).toEqual([
+      ['streak', 0],
+      ['weight', 1],
+    ]);
+  });
+
+  it('conserve les colonnes — la compaction est verticale, pas un réagencement', () => {
+    const out = compactLayout([
+      { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
+      { id: 'weight', visible: true, size: 'small', col: 0, row: 7 },
+    ]);
+    expect(out.find((w) => w.id === 'streak')!.col).toBe(1);
+    expect(out.find((w) => w.id === 'weight')!.col).toBe(0);
+    // Deux colonnes distinctes → les deux peuvent tenir sur la première ligne.
+    expect(out.every((w) => w.row === 0)).toBe(true);
+  });
+
+  it('ne modifie pas le tableau reçu (copie défensive)', () => {
+    const input: WidgetLayoutEntry[] = [
+      { id: 'streak', visible: true, size: 'small', col: 0, row: 4 },
+    ];
+    const out = compactLayout(input);
+    expect(input[0]!.row).toBe(4);
+    expect(out[0]!.row).toBe(0);
+    expect(out[0]).not.toBe(input[0]);
+  });
+
+  it('accepte une disposition vide', () => {
+    expect(compactLayout([])).toEqual([]);
+  });
+
+  it('résout un chevauchement en descendant le widget chevauché', () => {
+    // Deux `wide` (pleine largeur) déclarés sur la même ligne : le second doit descendre.
+    const out = compactLayout([
+      { id: 'today-session', visible: true, size: 'wide', col: 0, row: 0 },
+      { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+    ]);
+    expect(out.map((w) => w.row).sort()).toEqual([0, 1]);
+  });
+});
+
+// Le comparateur de `compactVertical` privilégie le widget déplacé à ligne égale, dans les DEUX
+// sens de comparaison. Le sens « le prioritaire est le second opérande » n'était jamais exercé :
+// il faut que le widget déplacé apparaisse **après** son voisin dans le tableau.
+describe('moveWidgetToCell — priorité du widget déplacé à ligne égale', () => {
+  it('donne la ligne la plus haute au widget déplacé, même s’il est en fin de liste', () => {
+    const base: ScreenLayout = {
+      widgets: [
+        { id: 'today-session', visible: true, size: 'wide', col: 0, row: 0 },
+        // `streak` est APRÈS dans le tableau : c'est lui qu'on déplace sur la même ligne.
+        { id: 'streak', visible: true, size: 'wide', col: 0, row: 1 },
+      ],
+    };
+    const r = moveWidgetToCell(base, 'streak', 0, 0);
+
+    // Le widget déplacé gagne le slot du haut ; l'autre est repoussé dessous.
+    expect(r.widgets.find((w) => w.id === 'streak')!.row).toBe(0);
+    expect(r.widgets.find((w) => w.id === 'today-session')!.row).toBe(1);
+    assertNoOverlap(r.widgets);
+  });
+
+  it('id inconnu → disposition inchangée', () => {
+    const base: ScreenLayout = {
+      widgets: [{ id: 'streak', visible: true, size: 'small', col: 0, row: 3 }],
+    };
+    const r = moveWidgetToCell(base, 'weight', 0, 0);
+    expect(r.widgets).toEqual(base.widgets);
   });
 });
 

@@ -7,6 +7,7 @@ import {
   cycleLengths,
   phaseForDate,
   predictNextPeriod,
+  shouldImportCycleData,
   staleOpenPeriods,
   usableCycleLengths,
   type MenstrualPeriod,
@@ -314,5 +315,52 @@ describe('crossPhaseAverages (R13/R14)', () => {
     expect(res.status).toBe('insufficient');
     if (res.status !== 'insufficient') return;
     expect(res.missingByPhase.luteal).toBe(10);
+  });
+});
+
+// ── Throttle de la synchro Health Connect (§4, D) ────────────────────────────────
+//
+// Fonction publique qui n'était appelée par **aucun test**. Sa règle de repli est délibérément
+// permissive : en cas de doute (curseur illisible, horloge en avance), on autorise l'import — mieux
+// vaut un import de trop, idempotent, qu'une utilisatrice définitivement enfermée hors synchro.
+// C'est précisément ce genre de décision qu'un test doit figer, sinon un « durcissement » bien
+// intentionné la renverse sans qu'on le voie.
+describe('shouldImportCycleData', () => {
+  const now = Date.parse('2026-08-04T12:00:00.000Z');
+
+  it('autorise quand aucun import n’a encore eu lieu', () => {
+    expect(shouldImportCycleData(null, now, 6)).toBe(true);
+    expect(shouldImportCycleData(undefined, now, 6)).toBe(true);
+    expect(shouldImportCycleData('', now, 6)).toBe(true);
+  });
+
+  it('refuse tant que la fenêtre de throttle n’est pas écoulée', () => {
+    expect(shouldImportCycleData('2026-08-04T09:00:00.000Z', now, 6)).toBe(false);
+  });
+
+  it('autorise dès que la fenêtre est atteinte, bord inclus', () => {
+    expect(shouldImportCycleData('2026-08-04T06:00:00.000Z', now, 6)).toBe(true);
+    expect(shouldImportCycleData('2026-08-03T00:00:00.000Z', now, 6)).toBe(true);
+  });
+
+  it('accepte un horodatage SQLite sans « T » (espace séparateur)', () => {
+    // PowerSync/SQLite stocke parfois « AAAA-MM-JJ HH:MM:SS » : sans la normalisation, `Date.parse`
+    // échoue et le throttle deviendrait un blocage permanent… ou une autorisation permanente.
+    expect(shouldImportCycleData('2026-08-04 09:00:00', now, 6)).toBe(false);
+    expect(shouldImportCycleData('2026-08-03 00:00:00', now, 6)).toBe(true);
+  });
+
+  it('autorise en cas de curseur illisible', () => {
+    expect(shouldImportCycleData('pas une date', now, 6)).toBe(true);
+  });
+
+  it('autorise si le dernier import est daté dans le futur (horloge décalée)', () => {
+    // Sans cette garde, une horloge avancée d'un jour bloquerait la synchro pendant 24 h.
+    expect(shouldImportCycleData('2026-08-05T12:00:00.000Z', now, 6)).toBe(true);
+  });
+
+  it('un throttle nul ou négatif n’interdit jamais rien', () => {
+    expect(shouldImportCycleData('2026-08-04T11:59:59.000Z', now, 0)).toBe(true);
+    expect(shouldImportCycleData('2026-08-04T11:59:59.000Z', now, -1)).toBe(true);
   });
 });

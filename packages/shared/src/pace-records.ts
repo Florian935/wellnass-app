@@ -28,25 +28,37 @@ export function cumulativeDistances(points: ReadonlyArray<GpsPoint>): number[] {
 
 /**
  * Temps minimal (s) pour couvrir >= `targetDistanceM` sur des échantillons (distance cumulée `cum`,
- * temps `t`). Interpolation linéaire de `t` à exactement D côté départ. `null` si trace trop courte.
+ * temps `t`). Interpolation linéaire de `t` à exactement D côté départ. `null` si trace trop courte
+ * ou si la distance demandée n'est pas strictement positive.
+ *
+ * ⚠️ **`targetDistanceM <= 0` est rejeté en entrée**, et ce n'est pas cosmétique : c'était le seul
+ * cas où `k` sortait du tableau (`s0` valant alors `cum[j]`, la boucle avançait jusqu'au dernier
+ * indice), d'où un `span` à `NaN` propagé jusqu'au temps retourné. La fonction rendait donc
+ * `NaN` — soit un « record » de NaN seconde écrit en base — au lieu de refuser l'appel.
+ * Corrigé le 04/08/2026 en comblant la couverture de branches du paquet.
  */
 export function bestSegmentTimeFromSamples(
   cum: ReadonlyArray<number>, t: ReadonlyArray<number>, targetDistanceM: number,
 ): number | null {
   const n = cum.length;
-  if (n < 2 || cum[n - 1]! < targetDistanceM) return null;
+  if (n < 2 || targetDistanceM <= 0 || cum[n - 1]! < targetDistanceM) return null;
   let best = Infinity;
   let k = 0;
   for (let j = 1; j < n; j++) {
     if (cum[j]! < targetDistanceM) continue;
     const s0 = cum[j]! - targetDistanceM;
+    // Invariant garanti par la garde d'entrée : `cum[n-1] >= targetDistanceM > 0`, donc
+    // `s0 < cum[n-1]`. La boucle s'arrête sur `cum[k+1] > s0` **avant** de sortir du tableau →
+    // `k <= n-2`, `cum[k+1]` est défini, et `span > 0` strictement. Pas de garde nécessaire.
     while (k + 1 < n && cum[k + 1]! <= s0) k++;
     const span = cum[k + 1]! - cum[k]!;
-    const frac = span > 0 ? (s0 - cum[k]!) / span : 0;
+    const frac = (s0 - cum[k]!) / span;
     const tStart = t[k]! + frac * (t[k + 1]! - t[k]!);
     best = Math.min(best, t[j]! - tStart);
   }
-  return best === Infinity ? null : best;
+  // `j = n-1` satisfait toujours `cum[j] >= targetDistanceM` (même garde d'entrée) : `best` a donc
+  // forcément été assigné. Un `best === Infinity ? null` ici serait du code mort.
+  return best;
 }
 
 export function bestSegmentTime(points: ReadonlyArray<GpsPoint>, targetDistanceM: number): number | null {

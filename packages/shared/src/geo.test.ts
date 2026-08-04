@@ -31,4 +31,42 @@ describe('simplifyTrack (Douglas-Peucker)', () => {
     expect(out[out.length - 1]).toEqual(pts[pts.length - 1]);
     expect(out.map((x) => x.t)).toEqual([...out.map((x) => x.t)].sort((a, b) => a - b));
   });
+
+  // ── Segment dégénéré : les extrémités du segment de référence sont confondues ──────
+  //
+  // Cas **réel et fréquent** : une boucle qui revient à son point de départ (un tour de parc,
+  // un aller-retour). Douglas-Peucker compare alors chaque point intermédiaire à un segment de
+  // longueur nulle — la projection sur la droite porteuse diviserait par zéro. La branche
+  // dédiée retombe sur la distance euclidienne au point, et c'est ce qui est vérifié ici.
+  describe('boucle fermée (segment de référence dégénéré)', () => {
+    const start = p(48.85, 2.35, 0);
+    const sameAsStart = p(48.85, 2.35, 60);
+
+    it('mesure la distance au point de départ, sans produire NaN', () => {
+      // Le point du milieu est à ~111 m au nord du départ (0,001° de latitude).
+      const far = p(48.851, 2.35, 30);
+      const out = simplifyTrack([start, far, sameAsStart], 10);
+
+      // 111 m > ε = 10 m → le sommet de la boucle est conservé.
+      expect(out).toHaveLength(3);
+      expect(out.every((x) => Number.isFinite(x.lat) && Number.isFinite(x.lng))).toBe(true);
+    });
+
+    it('supprime un point intermédiaire réellement confondu avec le départ', () => {
+      // Un point à ~1 m du départ, sur une boucle : sous le seuil, donc écarté.
+      const nearlySame = p(48.850009, 2.35, 30);
+      const out = simplifyTrack([start, nearlySame, sameAsStart], 10);
+
+      expect(out).toHaveLength(2);
+      expect(out[0]).toEqual(start);
+      expect(out[1]).toEqual(sameAsStart);
+    });
+
+    it('traite une trace entièrement immobile (tous les points confondus)', () => {
+      // GPS figé : trois relevés identiques. Rien à conserver au milieu, et surtout pas de NaN
+      // qui se propagerait dans la trace enregistrée.
+      const out = simplifyTrack([start, p(48.85, 2.35, 30), sameAsStart], 5);
+      expect(out).toEqual([start, sameAsStart]);
+    });
+  });
 });

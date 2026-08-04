@@ -348,4 +348,71 @@ describe('suggestFoodsForMacro', () => {
       expect(out.map((s) => s.foodId)).toEqual(['poulet']);
     });
   });
+
+  // ── Les trois macros, et pas seulement deux ──────────────────────────────────────
+  //
+  // L'ensemble des cas ci-dessus porte sur `protein` et `fat` : la lecture de la densité en
+  // **glucides** n'était exercée nulle part. Un mauvais aiguillage dans `per100g` (copier-coller
+  // entre les trois macros est l'erreur classique) aurait suggéré des aliments sur la base du
+  // mauvais nutriment — une suggestion plausible, donc invisible en relecture, et fausse.
+  describe('aiguillage par macro', () => {
+    const riz: SuggestionCandidate = {
+      id: 'riz',
+      name: 'Riz cuit',
+      kcalPer100g: 130,
+      proteinPer100g: 2.7,
+      carbsPer100g: 28,
+      fatPer100g: 0.3,
+    };
+
+    it('suggère sur les glucides quand le macro visé est « carbs »', () => {
+      const out = suggestFoodsForMacro({
+        macro: 'carbs',
+        gapG: 30,
+        kcalBudget: 800,
+        candidates: [riz],
+      });
+      expect(out).toHaveLength(1);
+      expect(out[0]!.foodId).toBe('riz');
+      // L'apport annoncé se calcule bien sur les 28 g/100 g de GLUCIDES, pas sur un autre macro.
+      const expectedCarbs = (out[0]!.quantityG * 28) / 100;
+      expect(out[0]!.macroG).toBeCloseTo(expectedCarbs, 1);
+    });
+
+    it('écarte un aliment dont le macro visé est absent de la base', () => {
+      // Même aliment, mais la colonne glucides est vide : on ne devine pas, on n'écarte pas non
+      // plus les deux autres macros par erreur.
+      const sansGlucides: SuggestionCandidate = { ...riz, id: 'inconnu', carbsPer100g: null };
+      expect(
+        suggestFoodsForMacro({
+          macro: 'carbs',
+          gapG: 30,
+          kcalBudget: 800,
+          candidates: [sansGlucides],
+        }),
+      ).toEqual([]);
+      // …mais il reste suggérable sur un macro qu'il renseigne.
+      expect(
+        suggestFoodsForMacro({
+          macro: 'protein',
+          gapG: 10,
+          kcalBudget: 800,
+          candidates: [sansGlucides],
+        }),
+      ).toHaveLength(1);
+    });
+
+    it('écarte une densité nulle ou négative en base', () => {
+      const zero: SuggestionCandidate = { ...riz, id: 'zero', carbsPer100g: 0 };
+      const negative: SuggestionCandidate = { ...riz, id: 'neg', carbsPer100g: -5 };
+      expect(
+        suggestFoodsForMacro({
+          macro: 'carbs',
+          gapG: 30,
+          kcalBudget: 800,
+          candidates: [zero, negative],
+        }),
+      ).toEqual([]);
+    });
+  });
 });

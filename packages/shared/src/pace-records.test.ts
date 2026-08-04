@@ -23,10 +23,61 @@ describe('bestSegmentTimeFromSamples', () => {
     expect(bestSegmentTimeFromSamples([0, 1000, 2000], [0, 300, 600], 1500)).toBe(450));
   it('trace trop courte → null', () =>
     expect(bestSegmentTimeFromSamples([0, 1000], [0, 300], 5000)).toBeNull());
+  it('moins de deux échantillons → null', () => {
+    expect(bestSegmentTimeFromSamples([0], [0], 1000)).toBeNull();
+    expect(bestSegmentTimeFromSamples([], [], 1000)).toBeNull();
+  });
+  it('distance cible nulle ou négative → null, jamais NaN', () => {
+    // Régression : avant le 04/08/2026 ces appels renvoyaient **NaN** (l'index de départ sortait
+    // du tableau, `span` devenait NaN et se propageait) — soit un record de « NaN seconde »
+    // écrivable en base. Une cible non strictement positive n'est pas un record.
+    expect(bestSegmentTimeFromSamples(cum, t, 0)).toBeNull();
+    expect(bestSegmentTimeFromSamples(cum, t, -500)).toBeNull();
+    expect(bestSegmentTimeFromSamples([0, 0, 0], [0, 10, 20], 0)).toBeNull();
+  });
   it('segment sur zone outlier (0 m) pénalisé en temps', () => {
     // j=3 (cum=1500≥1000) : s0=500 ; while avance k à 2 (cum[1]=500 et cum[2]=500 ≤ 500) ;
     // frac=0, tStart=t[2]=250, seg=550-250=300.
     expect(bestSegmentTimeFromSamples([0, 500, 500, 1500], [0, 150, 250, 550], 1000)).toBe(300);
+  });
+});
+
+// `bestSegmentTime` était **importée par ce fichier sans être jamais appelée** — d'où 85,7 % de
+// fonctions couvertes sur le module. C'est le point d'entrée réellement utilisé par l'app (elle
+// part de points GPS, pas de distances cumulées déjà calculées) : sa composition
+// `cumulativeDistances` → `bestSegmentTimeFromSamples` n'était vérifiée nulle part.
+describe('bestSegmentTime (depuis des points GPS)', () => {
+  // À l'équateur, 0,001° de longitude ≈ 111,3 m. 0,009° ≈ 1 001 m, donc le kilomètre est atteint.
+  const km: GpsPoint[] = [
+    { lat: 0, lng: 0, t: 0 },
+    { lat: 0, lng: 0.009, t: 300 },
+  ];
+
+  it('rend le temps du segment quand la distance est atteinte', () => {
+    const seconds = bestSegmentTime(km, 1000);
+    expect(seconds).not.toBeNull();
+    // Interpolation au franchissement exact des 1 000 m : légèrement sous les 300 s du point final.
+    expect(seconds!).toBeGreaterThan(290);
+    expect(seconds!).toBeLessThanOrEqual(300);
+  });
+
+  it('rend null quand la trace est plus courte que la cible', () => {
+    expect(bestSegmentTime(km, 5000)).toBeNull();
+  });
+
+  it('rend null sous deux points — une trace d’un seul relevé n’a pas de segment', () => {
+    expect(bestSegmentTime([{ lat: 0, lng: 0, t: 0 }], 1000)).toBeNull();
+    expect(bestSegmentTime([], 1000)).toBeNull();
+  });
+
+  it('ignore un saut GPS aberrant au lieu de fabriquer un record impossible', () => {
+    // Un point téléporté à ~111 km en 1 s dépasse MAX_PLAUSIBLE_SPEED_MS : `cumulativeDistances`
+    // compte 0 m pour ce bond. Sans ce filtre, la trace afficherait un « record » de 1 km en 1 s.
+    const withJump: GpsPoint[] = [
+      { lat: 0, lng: 0, t: 0 },
+      { lat: 1, lng: 0, t: 1 },
+    ];
+    expect(bestSegmentTime(withJump, 1000)).toBeNull();
   });
 });
 
