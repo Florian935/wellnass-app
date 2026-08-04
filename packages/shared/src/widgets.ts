@@ -80,6 +80,10 @@ export const HOME_WIDGET_IDS = [
   // fréquence de course vient de l'un, le niveau d'activité déclaré à comparer de l'autre) — rendu
   // `null` si le palier suggéré est déjà celui déclaré (spec R3).
   'activity-level-suggestion',
+  // US MR-08 — idem. **Conditionnel Tier 2**, gardé par les deux piliers `strength`+`running`
+  // (même garde tout-ou-rien que `training-load`) — rendu `null` hors divergence détectée entre
+  // les deux piliers (spec R2).
+  'concurrent-training-interference',
 ] as const;
 
 /**
@@ -198,6 +202,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // suggestion a strictement besoin des deux données à la fois (pas de dégradation partielle
       // possible : sans `running`, aucune fréquence ; sans `nutrition`, aucun niveau à comparer).
       'activity-level-suggestion': ['running', 'nutrition'],
+      // US MR-08 : même garde que `training-load` — la divergence compare les deux piliers, un
+      // seul actif ne donnerait qu'une moitié de la comparaison.
+      'concurrent-training-interference': ['strength', 'running'],
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

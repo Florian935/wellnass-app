@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/mr08-interference-concurrent-training` — Interférence concurrent training (US MR-08, catalogue d'analyses)
+
+Suite de `902143b`. Huitième candidat catalogue de la session, décision D1 (seuils de détection)
+laissée à mon jugement par Florian (« Fais ce qu'il te semble le plus logique ») — tranchée en
+réutilisant **exactement** les seuils ACWR déjà validés (META-19/RUN-18 : ratio 7j/28j > 1,3 =
+hausse, < 0,8 = chute), plutôt qu'un nouveau chiffre non sourcé. Cycle complet : `/us` →
+validation → implémentation TDD → revue de code (`superpowers:code-reviewer`, aucun finding
+bloquant).
+
+#### Ajouté
+
+- **`packages/shared/src/training-time.ts`** (+ 8 tests) : `computeConcurrentTrainingInterference`
+  — divergence muscu/course, deux ratios acute(7j)/chronique(28j) calculés séparément dans leur
+  unité native (`volumeKg` muscu, `distanceM` course), **pas** la charge sRPE combinée de
+  `computeAcwr` (ça, c'est META-19 — pas de doublon, cf. spec §1). Réutilise les constantes de
+  module déjà présentes dans ce fichier (`ACUTE_WINDOW_DAYS`, `CHRONIC_WINDOW_DAYS`,
+  `ACWR_RISK_THRESHOLD`, `ACWR_LOW_THRESHOLD`), aucun nouveau chiffre.
+- Hook `useConcurrentTrainingInterference` (`dashboard-repository.ts`), gating tout-ou-rien
+  `['strength','running']`, composé de `useWorkoutHistory()`/`useRunHistory()` déjà chargées
+  ailleurs sur le dashboard — aucune nouvelle requête.
+- Widget `ConcurrentTrainingInterferenceCard` (3 formes), Tier 2 conditionnel (render-null), ton
+  neutre `"card"` (pas `"warn"` — un constat factuel, pas une alerte de sécurité, même patron que
+  `ActivityLevelSuggestionCard`). Enregistré dans `widgets.ts`/`dashboard-widgets.tsx`
+  (`HOME_WIDGET_IDS` 19 → 20) et dans `isWidgetActive` (`(tabs)/index.tsx`) **dès cet incrément**
+  — pas laissé à la revue, contrairement à 3 widgets conditionnels précédents cette session.
+- i18n FR + EN (`home.concurrentTrainingInterference.*`, 6 clés, message symétrique
+  bidirectionnel via `{{up}}`/`{{down}}`).
+- Spec + plan + maquette : [mr08-interference-concurrent-training.md](docs/specs/functional/us/mr08-interference-concurrent-training.md),
+  [plan](docs/plans/mr08-interference-concurrent-training.md), [maquette](design/mr08-interference-concurrent-training/mr08-interference-concurrent-training.html).
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- Diff strictement additif : `computeAcwr`/`sessionLoad` (META-19) non touchés, vérifié en revue.
+- Catalogue et maquette resynchronisés dès la validation, avant l'implémentation.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1496 tests
+  shared (70 fichiers) + 663 tests mobile (71 suites) + admin, 0 échec**.
+
 ### 04/08/2026 — `feature/nutr18-bilan-calorique-hebdo` — Bilan calorique hebdomadaire (US NUTR-18, catalogue d'analyses)
 
 Suite de `94fe516`. Septième candidat catalogue de la session — pas de nouvelle carte : ADR-007

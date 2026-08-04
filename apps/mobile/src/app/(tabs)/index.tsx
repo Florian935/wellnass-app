@@ -12,6 +12,7 @@ import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
   useActivityLevelSuggestion,
+  useConcurrentTrainingInterference,
   useDeficitVolumeAlert,
   useOvertrainingGuardAlert,
   useReadiness,
@@ -49,6 +50,10 @@ export default function HomeScreen() {
   // omis ici lors de leur livraison respective, laissant `WidgetGrid` réserver leur cellule vide.
   const readinessActive = useReadiness().show;
   const activityLevelSuggestionActive = useActivityLevelSuggestion().show;
+  // MR-08 : même défaut à éviter — widget conditionnel Tier 2, rendu `null` hors divergence
+  // détectée, déclaré ici dès l'implémentation (pas laissé à la revue, contrairement aux 4
+  // précédents ci-dessus qui avaient chacun oublié cette étape une fois).
+  const concurrentTrainingInterferenceActive = useConcurrentTrainingInterference().show;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
@@ -56,6 +61,7 @@ export default function HomeScreen() {
     if (id === 'overtraining-guard') return overtrainingGuardActive;
     if (id === 'readiness') return readinessActive;
     if (id === 'activity-level-suggestion') return activityLevelSuggestionActive;
+    if (id === 'concurrent-training-interference') return concurrentTrainingInterferenceActive;
     return true;
   };
 

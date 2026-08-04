@@ -31,6 +31,7 @@ import {
   computeAcwr,
   computeAge,
   computeCaloricBalance,
+  computeConcurrentTrainingInterference,
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
@@ -57,6 +58,7 @@ import {
   trainingDayCalories,
   wellbeingAverages,
   type ActivityLevel,
+  type ConcurrentTrainingInterference,
   type DayActivity,
   type RestorableGap,
   type DeficitVolumeAlert,
@@ -988,6 +990,62 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
   });
 
   return { show: result?.showAlert ?? false };
+}
+
+// ---------------------------------------------------------------------------
+// useConcurrentTrainingInterference — widget conditionnel (US MR-08, divergence muscu/course)
+// ---------------------------------------------------------------------------
+
+/**
+ * Expose la divergence muscu/course (widget conditionnel Tier 2, US MR-08).
+ *
+ * Composition : `useWorkoutHistory()` + `useRunHistory()` (déjà chargées ailleurs sur le
+ * dashboard, aucune nouvelle requête), sommées séparément par pilier sur les fenêtres 7 j / 28 j
+ * déjà définies pour `useTrainingLoadAlert` (`ACUTE_WINDOW_DAYS`/`CHRONIC_WINDOW_DAYS`), puis
+ * délégation à `computeConcurrentTrainingInterference` (règle pure, `@wellness/shared`) — dans
+ * les unités natives de chaque pilier (`volumeKg`/`distanceM`), pas la charge sRPE combinée
+ * utilisée par `computeAcwr`.
+ *
+ * **Gating piliers** : nécessite `strength` ET `running` actifs, même patron tout-ou-rien que
+ * `useTrainingLoadAlert` — la comparaison n'a pas de sens à moitié.
+ */
+export function useConcurrentTrainingInterference(): ConcurrentTrainingInterference {
+  const { settings } = useSettings();
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+
+  const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
+  const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
+
+  if (!(strengthActive && runningActive)) {
+    return { show: false, direction: null };
+  }
+
+  const sumInWindow = (startKey: string) => {
+    const runDistanceM = runs.reduce((sum, r) => {
+      if (r.finishedAt == null || localDayKey(new Date(r.finishedAt)) < startKey) return sum;
+      return sum + (r.distanceM ?? 0);
+    }, 0);
+    const strengthVolumeKg = workouts.reduce((sum, w) => {
+      if (w.finishedAt == null || localDayKey(new Date(w.finishedAt)) < startKey) return sum;
+      return sum + w.volumeKg;
+    }, 0);
+    return { runDistanceM, strengthVolumeKg };
+  };
+
+  const acute = sumInWindow(acuteStartKey);
+  const chronic = sumInWindow(chronicStartKey);
+
+  return computeConcurrentTrainingInterference({
+    acuteRunDistanceM: acute.runDistanceM,
+    chronicRunDistanceM: chronic.runDistanceM,
+    acuteStrengthVolumeKg: acute.strengthVolumeKg,
+    chronicStrengthVolumeKg: chronic.strengthVolumeKg,
+  });
 }
 
 // ---------------------------------------------------------------------------

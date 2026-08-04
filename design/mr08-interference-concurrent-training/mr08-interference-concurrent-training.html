@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MR-08 — Interférence concurrent training</title>
+<style>
+  :root{--bg:#eef0f6;--surf:#fbfbfe;--surfalt:#e4e2f2;--border:#dcdbec;--bstrong:#8c8aa3;
+        --text:#26243a;--muted:#5f5d78;--accent:#4a3f8f;--track:#dedcf0;--success:#3f7a5e;
+        --bal:#4a3f8f;--balbg:#eae7f7;--balborder:#cfc9ea}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e2dff2;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#5c5a74;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cac7de}
+  .why{color:#5c5a74;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:860px){.row3{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:16px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:12px}
+  .card{border-radius:16px;padding:16px;background:var(--balbg);border:1px solid var(--balborder)}
+  .cardhead{display:flex;align-items:center;justify-content:space-between}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--bal)}
+  .emoji{font-size:20px}
+  .cardtitle{font-weight:700;font-size:16px;color:var(--bal);margin-top:6px}
+  .cardmsg{font-size:13.5px;color:#3a3763;margin-top:4px;line-height:1.4}
+  .hint{margin-top:10px;font-size:12px;color:var(--bal);font-style:italic}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .zonecard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .zonecard b{display:block;font-size:13px;margin-bottom:4px}
+  .zonecard p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4}
+  .note{background:#f5f3fc;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;width:100%;margin-top:10px;font-size:13px}
+  th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MR-08 — Interférence concurrent training</h1>
+<p class="sub">Widget <strong>conditionnel</strong> du dashboard (Tier 2, ADR-007), gardé par
+<code>strength</code> <strong>et</strong> <code>running</code> — un constat factuel, pas une
+alerte de sécurité (ton neutre <code>"card"</code>, comme la suggestion RN-03, pas
+<code>"warn"</code> comme META-19/TRI-12).</p>
+<div class="flag">✅ Décision D1 arbitrée par Florian le 04/08/2026 (seuils ACWR 1,3/0,8 réutilisés tels
+quels), code livré (TDD) le même jour.</div>
+
+<h2>Ce que ça détecte : deux piliers qui divergent, pas deux piliers qui bougent</h2>
+<p class="why">Un ratio (moyenne 7 j / moyenne 28 j) est calculé séparément pour le tonnage muscu
+et la distance de course. Le widget ne parle que si <strong>l'un est nettement au-dessus (&gt;
+1,3×) pendant que l'autre est nettement en dessous (&lt; 0,8×)</strong> — jamais si les deux
+montent ou descendent ensemble.</p>
+<div class="note" style="margin-top:0">
+  <code>runRatio = distanceM moy. 7j / distanceM moy. 28j</code><br>
+  <code>strengthRatio = volumeKg moy. 7j / volumeKg moy. 28j</code><br>
+  <code>divergence = (runRatio &gt; 1,3 ET strengthRatio &lt; 0,8) OU l'inverse</code>
+</div>
+
+<h2>1 · Le widget visible — une divergence est détectée</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Forme wide — course en hausse, muscu en baisse</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Muscu &amp; course</span><span class="emoji">⚖️</span></div>
+      <div class="cardtitle">Un pilier prend le pas sur l'autre</div>
+      <div class="cardmsg">Ton volume de course est nettement au-dessus de ta moyenne des 4
+      dernières semaines, pendant que ton tonnage muscu est nettement en dessous.</div>
+      <div class="hint">Peut expliquer une stagnation sur l'un des deux — pas forcément un
+      problème si c'est voulu.</div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Forme wide — muscu en hausse, course en baisse (symétrique, R4)</div>
+    <div class="card">
+      <div class="cardhead"><span class="eyebrow">Muscu &amp; course</span><span class="emoji">⚖️</span></div>
+      <div class="cardtitle">Un pilier prend le pas sur l'autre</div>
+      <div class="cardmsg">Ton tonnage muscu est nettement au-dessus de ta moyenne des 4
+      dernières semaines, pendant que ton volume de course est nettement en dessous.</div>
+      <div class="hint">Peut expliquer une stagnation sur l'un des deux — pas forcément un
+      problème si c'est voulu.</div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Quand le widget reste masqué</h2>
+<div class="row3">
+  <div class="zonecard">
+    <b>Les deux piliers bougent dans le même sens (R2)</b>
+    <p>Course et muscu en hausse ensemble (bloc de reprise généralisé), ou les deux en baisse
+    (semaine de repos) : pas une divergence, rien à signaler.</p>
+  </div>
+  <div class="zonecard">
+    <b>Historique insuffisant sur un pilier (R3)</b>
+    <p>Aucune course sur les 28 derniers jours (coureur débutant, blessure) : aucune ligne de base
+    course à comparer — le widget reste masqué même si la muscu diverge fortement.</p>
+  </div>
+  <div class="zonecard">
+    <b>Muscu ou course inactif (§2)</b>
+    <p>Sans les deux piliers actifs, la comparaison n'a pas de sens à moitié — le widget ne
+    s'affiche jamais, quel que soit l'historique disponible.</p>
+  </div>
+</div>
+<div class="hiddenbox" style="margin-top:14px">Dans les 3 cas ci-dessus : rien à cet endroit du
+dashboard.</div>
+
+<h2>3 · Pas un doublon de META-19 (charge combinée ACWR)</h2>
+<div class="note" style="margin-top:0">
+  META-19 combine muscu + course en <strong>une</strong> charge sRPE unique et alerte sur le
+  <strong>total</strong> (ton <code>"warn"</code>, garde-fou de sécurité). MR-08 compare
+  <strong>deux séries séparées, dans leurs unités natives</strong> (kg / mètres) et ne parle que
+  si elles <strong>divergent en sens opposé</strong> — un signal que la charge combinée ne peut
+  pas voir (elle peut rester stable alors qu'un fort transfert course↔muscu a lieu en interne).
+</div>
+
+<h2>Les règles qui gouvernent la divergence</h2>
+<div class="rules">
+  <div class="rule"><b>D1 — Seuils réutilisés, pas inventés</b>
+    <table>
+      <tr><th>Ratio 7j/28j</th><th>Zone</th></tr>
+      <tr><td>&gt; 1,3</td><td>en hausse</td></tr>
+      <tr><td>0,8 – 1,3</td><td>zone saine</td></tr>
+      <tr><td>&lt; 0,8</td><td>en chute</td></tr>
+    </table>
+    Exactement les seuils déjà validés pour l'ACWR (META-19/RUN-18), pas un 3ᵉ chiffre.
+  </div>
+  <div class="rule"><b>R2 — Divergence stricte, mutuellement exclusive</b>
+    Un seul des deux sens peut être vrai à la fois — jamais les deux directions en même temps
+    (mathématiquement impossible avec ces bornes).</div>
+  <div class="rule"><b>R3 — Historique minimal par pilier</b>
+    Même garde que <code>computeAcwr</code> : total chronique (28 j) nul sur un pilier → pas de
+    ratio calculable pour ce pilier, widget masqué.</div>
+  <div class="rule"><b>R5 — Ton factuel, aucun jugement</b>
+    Jamais une injonction à changer de comportement — l'arbitrage peut être volontaire (ex. bloc
+    de prépa marathon qui sacrifie temporairement la muscu, en connaissance de cause).</div>
+</div>
+
+</div></body></html>

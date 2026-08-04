@@ -920,6 +920,14 @@
       "title": "Niveau d'activité à réviser ?",
       "message": "Tu as couru {{days}} j sur les 2 dernières semaines — plus proche de « {{suggested}} » que de ton niveau actuel « {{current}} ».",
       "hint": "Modifiable dans ton profil nutrition."
+    },
+    "concurrentTrainingInterference": {
+      "eyebrow": "Muscu & course",
+      "title": "Un pilier prend le pas sur l'autre",
+      "runningLabel": "volume de course",
+      "strengthLabel": "tonnage muscu",
+      "message": "Ton {{up}} est nettement au-dessus de ta moyenne des 4 dernières semaines, pendant que ton {{down}} est nettement en dessous.",
+      "hint": "Peut expliquer une stagnation sur l'un des deux — pas forcément un problème si c'est voulu."
     }
   },
   "activationPath": {

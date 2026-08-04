@@ -90,6 +90,57 @@ export function computeAcwr(input: {
 }
 
 // ---------------------------------------------------------------------------
+// Interférence concurrent training — divergence muscu/course (US MR-08, catalogue)
+// ---------------------------------------------------------------------------
+
+/** Sens de la divergence détectée (US MR-08, spec R2) — les deux sont mutuellement exclusifs. */
+export type ConcurrentTrainingInterferenceDirection =
+  | 'runningUpStrengthDown'
+  | 'strengthUpRunningDown';
+
+export type ConcurrentTrainingInterference = {
+  show: boolean;
+  direction: ConcurrentTrainingInterferenceDirection | null;
+};
+
+/** Ratio aigu(7j)/chronique(28j), `null` si la base chronique est nulle (même garde que `computeAcwr`). */
+function acuteChronicRatio(acuteTotal: number, chronicTotal: number): number | null {
+  if (chronicTotal <= 0) return null;
+  const acuteAvg = acuteTotal / ACUTE_WINDOW_DAYS;
+  const chronicAvg = chronicTotal / CHRONIC_WINDOW_DAYS;
+  return acuteAvg / chronicAvg;
+}
+
+/**
+ * Divergence muscu/course (US MR-08, spec R1/R2) : deux ratios aigu/chronique calculés
+ * séparément par pilier, dans leur unité native (`volumeKg` muscu, `distanceM` course) — pas la
+ * charge sRPE combinée de `computeAcwr` (ça, c'est déjà META-19). Réutilise les mêmes seuils
+ * `ACWR_RISK_THRESHOLD`/`ACWR_LOW_THRESHOLD` et fenêtres 7j/28j (spec D1) : pas de nouveau chiffre.
+ * `show: false` si l'un des deux piliers manque de base chronique (spec R3), ou si les deux
+ * ratios évoluent dans le même sens / restent en zone saine (spec R2 — pas une divergence).
+ */
+export function computeConcurrentTrainingInterference(input: {
+  acuteRunDistanceM: number;
+  chronicRunDistanceM: number;
+  acuteStrengthVolumeKg: number;
+  chronicStrengthVolumeKg: number;
+}): ConcurrentTrainingInterference {
+  const runRatio = acuteChronicRatio(input.acuteRunDistanceM, input.chronicRunDistanceM);
+  const strengthRatio = acuteChronicRatio(input.acuteStrengthVolumeKg, input.chronicStrengthVolumeKg);
+
+  if (runRatio === null || strengthRatio === null) {
+    return { show: false, direction: null };
+  }
+  if (runRatio > ACWR_RISK_THRESHOLD && strengthRatio < ACWR_LOW_THRESHOLD) {
+    return { show: true, direction: 'runningUpStrengthDown' };
+  }
+  if (strengthRatio > ACWR_RISK_THRESHOLD && runRatio < ACWR_LOW_THRESHOLD) {
+    return { show: true, direction: 'strengthUpRunningDown' };
+  }
+  return { show: false, direction: null };
+}
+
+// ---------------------------------------------------------------------------
 // Garde-fou tri-pilier — charge sans repos + déficit persistant (US TRI-12, catalogue)
 // ---------------------------------------------------------------------------
 

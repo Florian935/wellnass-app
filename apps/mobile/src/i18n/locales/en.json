@@ -920,6 +920,14 @@
       "title": "Activity level worth revisiting?",
       "message": "You ran {{days}} d over the last 2 weeks — closer to \"{{suggested}}\" than your current level \"{{current}}\".",
       "hint": "Editable in your nutrition profile."
+    },
+    "concurrentTrainingInterference": {
+      "eyebrow": "Strength & running",
+      "title": "One pillar is taking over the other",
+      "runningLabel": "running volume",
+      "strengthLabel": "strength tonnage",
+      "message": "Your {{up}} is well above your 4-week average, while your {{down}} is well below.",
+      "hint": "May explain a plateau on one side — not necessarily an issue if intentional."
     }
   },
   "activationPath": {

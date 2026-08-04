@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeAcwr,
+  computeConcurrentTrainingInterference,
   computeOvertrainingGuard,
   computeTrainingTime,
   countDeficitDaysInWindow,
@@ -118,6 +119,88 @@ describe('computeAcwr — zone (US RUN-18, bornes inclusives)', () => {
     expect(result?.ratio).toBeCloseTo(1.3, 5);
     expect(result?.zone).toBe('safe');
     expect(result?.showAlert).toBe(false);
+  });
+});
+
+describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () => {
+  it('course en forte hausse + muscu en forte chute → runningUpStrengthDown', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 21000, // /7 = 3000/j
+      chronicRunDistanceM: 42000, // /28 = 1500/j → ratio = 2 (> 1,3)
+      acuteStrengthVolumeKg: 500, // /7 ≈ 71,4/j
+      chronicStrengthVolumeKg: 5600, // /28 = 200/j → ratio ≈ 0,357 (< 0,8)
+    });
+    expect(result).toEqual({ show: true, direction: 'runningUpStrengthDown' });
+  });
+
+  it('muscu en forte hausse + course en forte chute → strengthUpRunningDown (symétrique, R4)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 500,
+      chronicRunDistanceM: 5600, // ratio ≈ 0,357 (< 0,8)
+      acuteStrengthVolumeKg: 21000,
+      chronicStrengthVolumeKg: 42000, // ratio = 2 (> 1,3)
+    });
+    expect(result).toEqual({ show: true, direction: 'strengthUpRunningDown' });
+  });
+
+  it('les deux ratios montent ensemble → pas de divergence (R2)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 21000,
+      chronicRunDistanceM: 42000, // ratio = 2
+      acuteStrengthVolumeKg: 21000,
+      chronicStrengthVolumeKg: 42000, // ratio = 2
+    });
+    expect(result).toEqual({ show: false, direction: null });
+  });
+
+  it('les deux ratios chutent ensemble → pas de divergence (R2)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 500,
+      chronicRunDistanceM: 5600, // ratio ≈ 0,357
+      acuteStrengthVolumeKg: 500,
+      chronicStrengthVolumeKg: 5600, // ratio ≈ 0,357
+    });
+    expect(result).toEqual({ show: false, direction: null });
+  });
+
+  it('un ratio haut, l’autre en zone saine (pas franchement bas) → pas de divergence (R2)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 21000,
+      chronicRunDistanceM: 42000, // ratio = 2 (haut)
+      acuteStrengthVolumeKg: 2800, // /7 = 400/j
+      chronicStrengthVolumeKg: 11200, // /28 = 400/j → ratio = 1 (zone saine, pas < 0,8)
+    });
+    expect(result).toEqual({ show: false, direction: null });
+  });
+
+  it('aucune course sur 28 j (chronique nul) → historique insuffisant, masqué (R3)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 0,
+      chronicRunDistanceM: 0,
+      acuteStrengthVolumeKg: 500,
+      chronicStrengthVolumeKg: 5600,
+    });
+    expect(result).toEqual({ show: false, direction: null });
+  });
+
+  it('aucune séance muscu sur 28 j (chronique nul) → historique insuffisant, masqué (R3, symétrique)', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 21000,
+      chronicRunDistanceM: 42000,
+      acuteStrengthVolumeKg: 0,
+      chronicStrengthVolumeKg: 0,
+    });
+    expect(result).toEqual({ show: false, direction: null });
+  });
+
+  it('ratios pile aux bornes (1,3 et 0,8 exacts) → zone saine côté bornes, pas de divergence', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 5460, // /7 = 780
+      chronicRunDistanceM: 16800, // /28 = 600 → ratio = 1,3 exact
+      acuteStrengthVolumeKg: 3360, // /7 = 480
+      chronicStrengthVolumeKg: 16800, // /28 = 600 → ratio = 0,8 exact
+    });
+    expect(result).toEqual({ show: false, direction: null });
   });
 });
 
