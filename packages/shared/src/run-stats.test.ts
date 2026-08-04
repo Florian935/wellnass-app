@@ -36,6 +36,33 @@ describe('paceTrendPoints', () => {
       { dayKey: '2026-07-15', paceSPerKm: 400 },
     ]);
   });
+
+  it('conserve deux courses du même jour, dans un ordre déterministe', () => {
+    // Le comparateur de tri a un cas d'égalité qui n'était pas exercé. Deux sorties le même jour
+    // (fractionné le matin, footing le soir) doivent toutes les deux alimenter la tendance.
+    const sameDay: StatRun[] = [
+      {
+        finishedAtDayKey: '2026-07-15',
+        distanceM: 5000,
+        durationS: 2000,
+        paceSPerKm: 400,
+        elevationGainM: null,
+        elevationLossM: null,
+      },
+      {
+        finishedAtDayKey: '2026-07-15',
+        distanceM: 5000,
+        durationS: 1500,
+        paceSPerKm: 300,
+        elevationGainM: null,
+        elevationLossM: null,
+      },
+    ];
+    expect(paceTrendPoints(sameDay, 30, '2026-07-15')).toEqual([
+      { dayKey: '2026-07-15', paceSPerKm: 400 },
+      { dayKey: '2026-07-15', paceSPerKm: 300 },
+    ]);
+  });
 });
 
 describe('paceTrend', () => {
@@ -43,6 +70,39 @@ describe('paceTrend', () => {
   it('allure qui augmente = declining', () => expect(paceTrend([{dayKey:'2026-07-01',paceSPerKm:320},{dayKey:'2026-07-02',paceSPerKm:330},{dayKey:'2026-07-03',paceSPerKm:350},{dayKey:'2026-07-04',paceSPerKm:360}])).toBe('declining'));
   it('< 2 % = stable', () => expect(paceTrend([{dayKey:'2026-07-01',paceSPerKm:350},{dayKey:'2026-07-02',paceSPerKm:351},{dayKey:'2026-07-03',paceSPerKm:349},{dayKey:'2026-07-04',paceSPerKm:350}])).toBe('stable'));
   it('< 2 points = stable', () => expect(paceTrend([{dayKey:'2026-07-01',paceSPerKm:350}])).toBe('stable'));
+
+  it('plusieurs courses le MÊME jour → stable (aucune pente définissable)', () => {
+    // Variance nulle sur l'axe des jours : deux sorties dans la même journée ne dessinent pas une
+    // tendance. Sans la garde, la régression renverrait une pente arbitraire.
+    expect(
+      paceTrend([
+        { dayKey: '2026-07-01', paceSPerKm: 320 },
+        { dayKey: '2026-07-01', paceSPerKm: 400 },
+      ]),
+    ).toBe('stable');
+  });
+
+  it('allure moyenne nulle → stable, jamais une division par zéro', () => {
+    // Donnée aberrante (allure 0 s/km) : le ratio relatif diviserait par zéro et produirait
+    // Infinity, donc un verdict « declining » inventé de toutes pièces.
+    expect(
+      paceTrend([
+        { dayKey: '2026-07-01', paceSPerKm: 0 },
+        { dayKey: '2026-07-02', paceSPerKm: 0 },
+      ]),
+    ).toBe('stable');
+  });
+
+  it('donne le même verdict quel que soit l’ordre d’arrivée des points', () => {
+    const ascending = [
+      { dayKey: '2026-07-01', paceSPerKm: 360 },
+      { dayKey: '2026-07-05', paceSPerKm: 340 },
+      { dayKey: '2026-07-09', paceSPerKm: 320 },
+    ];
+    expect(paceTrend(ascending)).toBe('improving');
+    expect(paceTrend([...ascending].reverse())).toBe('improving');
+    expect(paceTrend([ascending[1]!, ascending[2]!, ascending[0]!])).toBe('improving');
+  });
 });
 
 // Oracle = ancien paceTrend (moyenne 2e moitié vs 1re moitié, diviseur m1, seuil ±2 %).

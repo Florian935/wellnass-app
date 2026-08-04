@@ -9,6 +9,10 @@
 | Workspace | Suites | Tests | Couverture (instructions) | Verdict |
 |---|---:|---:|---:|---|
 | `packages/shared` | 67 | 1 405 | **99,2 %** (branches 95,1 %) | ✅ conforme à l'objectif « 100 % sur le pur » |
+
+> **Mise à jour du 04/08/2026** — `packages/shared` est à **100 %** d'instructions, de fonctions et
+> de lignes (**1 615 tests**), branches à **97,35 %**. Voir §5 bis pour l'arbitrage du seuil de
+> branches et §8 pour ce qui reste.
 | `apps/mobile` | 51 | 291 | **15,0 %** (branches 12,8 %) | ⚠️ le gros du risque est ici |
 | `apps/admin` | 0 | 0 | — (**aucun runner installé**) | ❌ 9 716 lignes non testées |
 
@@ -258,7 +262,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 
 | Périmètre | Instructions | Branches | Fonctions |
 |---|---:|---:|---:|
-| `packages/shared` | 99 | 95 | 99 |
+| `packages/shared` | **100** | **97** | **100** |
 | `apps/mobile/src/data/repositories/` | 28 | 20 | 23 |
 | `apps/mobile/src/lib/` | 50 | 48 | 64 |
 | `apps/mobile/src/stores/` | 45 | 34 | 44 |
@@ -276,12 +280,33 @@ Trois principes derrière ces chiffres :
 - **Le seuil du reste est volontairement bas.** Le monter bloquerait l'ajout de tout nouvel écran,
   ce qui pousserait à contourner le garde-fou — un seuil qu'on désactive ne protège rien.
 
-> ⚠️ **`packages/shared` n'atteint pas les 100 % exigés** par
-> [bonnes-pratiques §4](./bonnes-pratiques.md) : le réel est 99,35 % d'instructions et **95,12 %
-> de branches**. Le seuil à 100 % était pourtant déclaré depuis longtemps — mais la CI ne lançait
-> jamais la couverture, donc **il n'échouait nulle part**. L'écart est désormais visible et
-> inscrit au [BACKLOG](../../../BACKLOG.md) : le combler ou ré-arbitrer la règle est une décision
-> à part, pas quelque chose à régler en rebaissant un chiffre.
+> ✅ **`packages/shared` atteint les 100 % exigés** par [bonnes-pratiques §4](./bonnes-pratiques.md)
+> **sur les instructions, les fonctions et les lignes**, depuis le **04/08/2026** (99,35 % → 100 %).
+> Ces trois axes sont désormais **verrouillés à 100 %** dans le cliquet, et ne doivent plus
+> redescendre. 1 503 → 1 615 tests.
+>
+> ⚠️ **Les branches sont arbitrées à 97 %** (réel : 97,35 %, contre 95,12 % avant), et c'est une
+> **décision** — celle que le BACKLOG demandait de prendre, pas un renoncement. Les ~2,5 % restants
+> ont été audités un par un : ils ne relèvent pas d'un manque de tests mais de **code défensif
+> inatteignable**, de deux familles seulement :
+>
+> 1. **cas d'égalité de comparateurs de tri appliqués à des clés de `Map`** — uniques par
+>    construction, donc l'égalité ne peut jamais survenir (`learned-hour.ts`, `steps.ts`) ;
+> 2. **replis `?? 0` sur des `Map.get`** dont la clé vient d'être écrite quelques lignes plus haut
+>    (`training-nutrition.ts`, `weekly-review.ts`, `workout.ts`).
+>
+> Les couvrir demanderait soit des tests figeant des comportements absurdes, soit de **retirer ces
+> filets** : on échangerait une métrique contre une protection réelle contre les évolutions futures.
+> **Là où supprimer du code mort corrigeait un vrai défaut, ça a été fait** — voir le lot du
+> 04/08/2026 : `bestSegmentTimeFromSamples` renvoyait `NaN` pour une distance cible ≤ 0 (soit un
+> record de « NaN seconde » écrivable en base), et le `return null` final de `bucketOf`
+> (`training-nutrition.ts`) était prouvé inatteignable.
+>
+> **La leçon de ce lot** : viser 100 % de branches sur du code écrit défensivement fait apparaître
+> une frontière utile. D'un côté les trous qui cachent un vrai défaut ou un cas métier oublié — et
+> il y en avait : les suggestions de **glucides** n'étaient exercées nulle part, ni les fractionnés
+> définis **en durée**, ni le throttle d'import du cycle. De l'autre, des gardes qu'aucun appel
+> sensé n'atteint. Le premier groupe justifie l'effort ; le second justifie un seuil < 100.
 >
 > Au passage, `src/database.types.ts` (2 589 lignes **générées** par `npm run db:types`) est sorti
 > de la mesure : la compter n'apprenait rien et faussait le total.
@@ -340,8 +365,11 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 2. **Reprendre les `*-smoke.test.tsx` existants** : leurs effets n'ont jamais tourné, ils
    n'assertent que du rendu statique (§3.6). Chantier à part, mais c'est là que se cache le plus
    gros écart entre couverture affichée et couverture réelle.
-3. **Combler l'écart aux 100 % de `packages/shared`** (99,35 % / 95,12 %), ou ré-arbitrer la
-   règle — décision inscrite au [BACKLOG](../../../BACKLOG.md), voir l'avertissement du §5 bis.
+3. ~~**Combler l'écart aux 100 % de `packages/shared`**~~ — ✅ **fait le 04/08/2026.** Instructions,
+   fonctions et lignes à **100 %** (verrouillées) ; branches à **97,35 %**, seuil arbitré à 97 avec
+   la justification détaillée au §5 bis. Trois vrais trous fonctionnels trouvés au passage
+   (suggestions de glucides, fractionnés en durée, throttle d'import du cycle) et deux défauts de
+   code corrigés (`NaN` retourné comme record de course, code mort prouvé).
 4. **Reste de `apps/admin/src/data`** (~39 %) : `getProgram`, `getExercise`, `getFood`, et les
    écritures de variantes. Copier
    [`listings.test.ts`](../../../apps/admin/src/data/listings.test.ts).

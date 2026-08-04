@@ -74,7 +74,9 @@ export function parseFoodCsv(rows: Record<string, string>[]): FoodCsvResult {
     const category = (row.category ?? '').trim();
 
     if (!importKey) err('import_key', 'requis');
-    else if ((keyCounts.get(importKey) ?? 0) > 1) err('import_key', 'dupliqué dans le fichier');
+    // `importKey` est non vide ici, et la première boucle a compté **toutes** les clés non vides :
+    // `get` renvoie donc au minimum 1. Un `?? 0` serait du code mort.
+    else if (keyCounts.get(importKey)! > 1) err('import_key', 'dupliqué dans le fichier');
     if (!nameFr) err('name_fr', 'requis');
     if (!nameEn) err('name_en', 'requis');
     if (!CATEGORIES.includes(category)) err('category', 'catégorie inconnue');

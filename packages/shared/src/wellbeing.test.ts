@@ -99,6 +99,22 @@ describe('wellbeingSeries', () => {
     ]);
   });
 
+  it('trie quel que soit l’ordre d’arrivée des lignes', () => {
+    // Toutes les autres fixtures arrivent en ordre décroissant (l'ordre naturel d'une requête
+    // SQL `ORDER BY log_date DESC`). Une source déjà croissante — un import, un test, une autre
+    // requête — doit produire exactement la même série.
+    const ascending = [
+      { logDate: '2026-07-25', mood: 5 },
+      { logDate: '2026-07-27', mood: 3 },
+      { logDate: '2026-07-28', mood: 4 },
+    ];
+    expect(wellbeingSeries(ascending, 'mood', 30, '2026-07-28')).toEqual([
+      { dayKey: '2026-07-25', value: 5 },
+      { dayKey: '2026-07-27', value: 3 },
+      { dayKey: '2026-07-28', value: 4 },
+    ]);
+  });
+
   it('laisse un TROU pour un jour non renseigné — jamais un zéro', () => {
     const series = wellbeingSeries(rows, 'mood', 30, '2026-07-28');
     expect(series.map((p) => p.dayKey)).not.toContain('2026-07-26');
@@ -161,5 +177,56 @@ describe('wellbeingAverages', () => {
       { logDate: '2026-07-10', mood: 1 },
     ];
     expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 5, days: 1 });
+  });
+
+  // Le filtre de fenêtre écarte quatre familles de lignes, et seules les plus banales étaient
+  // exercées. Ces rejets ne sont pas cosmétiques : une ligne supprimée qui reviendrait dans une
+  // moyenne, ou une date future qui compterait comme « aujourd'hui », faussent un indicateur que
+  // l'utilisateur lit comme une observation de lui-même.
+  describe('filtre de fenêtre', () => {
+    it('écarte une ligne supprimée (soft delete)', () => {
+      const rows = [
+        { logDate: '2026-07-28', mood: 5 },
+        { logDate: '2026-07-27', mood: 1, deletedAt: '2026-07-27T10:00:00.000Z' },
+      ];
+      expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 5, days: 1 });
+    });
+
+    it('écarte une date mal formée au lieu de la compter à zéro', () => {
+      const rows = [
+        { logDate: '2026-07-28', mood: 4 },
+        { logDate: 'pas-une-date', mood: 1 },
+        { logDate: '2026-7-3', mood: 1 },
+      ];
+      expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 4, days: 1 });
+    });
+
+    it('écarte une date dans le futur', () => {
+      // Horloge décalée ou saisie erronée : un jour à venir n'est pas une observation.
+      const rows = [
+        { logDate: '2026-07-28', mood: 4 },
+        { logDate: '2026-07-29', mood: 1 },
+      ];
+      expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 4, days: 1 });
+    });
+
+    it('accepte deux lignes du même jour sans perdre ni dupliquer (comparateur à l’égalité)', () => {
+      // Le modèle vise une ligne par jour, mais deux appareils hors réseau peuvent en produire
+      // deux : la moyenne doit les compter toutes les deux plutôt que d'en écarter une au hasard.
+      const rows = [
+        { logDate: '2026-07-28', mood: 5 },
+        { logDate: '2026-07-28', mood: 3 },
+      ];
+      expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 4, days: 2 });
+    });
+
+    it('inclut le bord ancien de la fenêtre et exclut le jour juste au-delà', () => {
+      // Fenêtre de 7 jours se terminant le 28 : le 22 est dedans (age 6), le 21 dehors (age 7).
+      const rows = [
+        { logDate: '2026-07-22', mood: 2 },
+        { logDate: '2026-07-21', mood: 5 },
+      ];
+      expect(wellbeingAverages(rows, 7, '2026-07-28').mood).toEqual({ average: 2, days: 1 });
+    });
   });
 });

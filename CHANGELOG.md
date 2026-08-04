@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `chore/socle-tests-lot5-ecrans` — `packages/shared` à 100 % (instructions, fonctions, lignes) et arbitrage du seuil de branches
+
+Suite de `1aebbbc`. Ferme la dette « `packages/shared` n'atteint pas les 100 % exigés » inscrite au
+[BACKLOG](BACKLOG.md) depuis le 03/08/2026. **1 503 → 1 615 tests.**
+
+| Axe | Avant | Après | Seuil CI |
+|---|---:|---:|---:|
+| Instructions | 99,35 % | **100 %** | **100** (verrouillé) |
+| Fonctions | 99,17 % | **100 %** | **100** (verrouillé) |
+| Lignes | 99,35 % | **100 %** | **100** (verrouillé) |
+| Branches | 95,12 % | **97,35 %** | **97** (arbitré) |
+
+#### Modifié
+
+- `packages/shared/vitest.config.ts` — seuils relevés, avec la justification de l'arbitrage.
+- 12 fichiers de tests complétés : `geo`, `pace-records`, `learned-hour`, `widgets`,
+  `running-intervals`, `macro-suggestion`, `menstrual-cycle`, `food-csv`, `food-form`, `date`,
+  `measurements`, `wellbeing`, `bodyweight`, `run-stats`.
+- [strategie-tests.md](docs/specs/technical/strategie-tests.md) §1, §5 bis et §8 · [BACKLOG.md](BACKLOG.md).
+
+#### Technique — Notes
+
+**L'arbitrage du seuil de branches à 97 %** est la décision que le BACKLOG demandait de prendre, pas
+un renoncement. Les ~2,5 % restants ont été audités un par un : ils ne relèvent pas d'un manque de
+tests mais de **code défensif inatteignable**, de deux familles seulement — (1) cas d'égalité de
+comparateurs de tri appliqués à des **clés de `Map`**, uniques par construction, donc l'égalité ne
+peut jamais survenir ; (2) replis `?? 0` sur des `Map.get` dont la clé vient d'être écrite quelques
+lignes plus haut. Les couvrir exigerait des tests figeant des comportements absurdes, ou de retirer
+ces filets : une métrique échangée contre une protection réelle.
+
+**Ce que viser 100 % a réellement fait apparaître** — et c'est l'argument pour l'avoir fait :
+
+- **trois vrais trous fonctionnels**, qu'aucun pourcentage ne signalait comme tels : les suggestions
+  de **glucides** n'étaient exercées nulle part (seuls protéines et lipides l'étaient — un
+  copier-coller entre les trois macros aurait suggéré des aliments sur le mauvais nutriment, donc
+  plausible et invisible en relecture) ; les fractionnés définis **en durée** (« 30/30 ») n'étaient
+  jamais resynchronisés en test, tous les cas portant sur la distance ; et `shouldImportCycleData`
+  n'était appelée par aucun test, alors que sa règle de repli est délibérément permissive.
+- **deux défauts de code**, corrigés plutôt que couverts par des tests complaisants :
+  `bestSegmentTimeFromSamples` renvoyait **`NaN`** pour une distance cible ≤ 0 (l'index de départ
+  sortait du tableau) — soit un record de « NaN seconde » écrivable en base ; et le `return null`
+  final de `bucketOf` (`training-nutrition.ts`) était **prouvé inatteignable** (`oldest` appartient à
+  `weekStarts` et `oldest <= dayKey`, donc la recherche aboutit toujours).
+- **deux fonctions publiques importées mais jamais appelées** par leur propre fichier de test :
+  `bestSegmentTime` (le point d'entrée réellement utilisé par l'app, qui part de points GPS) et
+  `compactLayout` (celle qui empêche un widget masqué de laisser un trou dans la grille — exactement
+  le symptôme corrigé le 03/08 sur `training-load`/`overtraining-guard`).
+- des cas limites métier désormais figés : boucle GPS revenant à son point de départ (segment
+  dégénéré), colonne **absente** d'un CSV d'import vs cellule vide, plusieurs pesées ou courses le
+  même jour (variance nulle → aucune tendance calculable), allure moyenne nulle (division par zéro).
+
+⚠️ Une erreur de typage a été introduite puis corrigée dans `run-stats.test.ts` : un `as typeof runs`
+masquait un mauvais nom de champ (`durationSeconds` au lieu de `durationS`). Le cast a été retiré au
+profit du type réel — un `as` sur une fixture de test, c'est le typecheck qu'on désactive là où il
+sert le plus.
+
+Qualité : `typecheck` 0, `lint` **0 erreur**, `test` et `test:coverage` **exit 0**.
+
 ### 04/08/2026 — `feature/repas01-planning-repas-liste-courses` — Duplication de semaine : action masquée et expliquée quand la source est vide (US REPAS-01, D12)
 
 Suite de `b94277d`. Solde le **point d'attention** que la revue de ce commit avait laissé ouvert

@@ -69,4 +69,65 @@ describe('parseFoodCsv', () => {
     expect(r.valid[0]!.importKey).toBe('CIQUAL_1');
     expect(r.errors[0]!).toMatchObject({ rowIndex: 2, field: 'category' });
   });
+
+  // ── Colonnes ABSENTES du fichier (et non simplement vides) ────────────────────────
+  //
+  // Distinction qui compte à l'import : une cellule vide, c'est `''` ; une colonne absente de
+  // l'en-tête, c'est `undefined`. Les tests ci-dessus ne couvraient que le premier cas. Or un
+  // fichier fourni par un client dont l'en-tête ne contient pas `name_en` est le scénario le plus
+  // probable d'un import raté — et sans repli, `.trim()` sur `undefined` lèverait une exception,
+  // faisant échouer tout l'import au lieu de rapporter la ligne fautive.
+  describe('colonne absente de l’en-tête', () => {
+    it('rapporte les champs requis manquants sans lever d’exception', () => {
+      // Objet volontairement nu : aucune des colonnes attendues.
+      const r = parseFoodCsv([{}]);
+      expect(r.valid).toHaveLength(0);
+      expect(r.errors.map((e) => e.field).sort()).toEqual([
+        'category',
+        'import_key',
+        'kcal_per_100g',
+        'name_en',
+        'name_fr',
+      ]);
+      expect(r.errors.every((e) => e.rowIndex === 1)).toBe(true);
+    });
+
+    it('accepte un fichier sans aucune colonne optionnelle', () => {
+      // `base` ne porte que les colonnes requises : macros et micros absentes, pas vides.
+      const r = parseFoodCsv([base]);
+      expect(r.errors).toEqual([]);
+      expect(r.valid[0]!).toMatchObject({
+        proteinPer100g: null,
+        micronutrients: {},
+      });
+    });
+
+    it('ne compte pas une colonne import_key absente comme un doublon', () => {
+      // Deux lignes sans `import_key` : deux erreurs « requis », et surtout PAS « dupliqué »
+      // (le comptage des doublons doit ignorer les clés vides, sinon toute ligne incomplète
+      // serait signalée deux fois pour deux raisons contradictoires).
+      const r = parseFoodCsv([{}, {}]);
+      const keyErrors = r.errors.filter((e) => e.field === 'import_key');
+      expect(keyErrors).toHaveLength(2);
+      expect(keyErrors.every((e) => e.reason === 'requis')).toBe(true);
+    });
+
+    it('rapporte un MICRONUTRIENT invalide, comme une macro invalide', () => {
+      // Les tests existants ne validaient que les macros : un micro non numérique passait sans
+      // qu'aucun test ne le vérifie, alors que c'est la même colonne libre dans un CSV client.
+      const r = parseFoodCsv([{ ...base, sodium_mg: 'beaucoup', vitamin_c_mg: '-3' }]);
+      expect(r.valid).toHaveLength(0);
+      expect(r.errors.map((e) => [e.field, e.reason])).toEqual([
+        ['sodium_mg', 'nombre ≥ 0 attendu'],
+        ['vitamin_c_mg', 'nombre ≥ 0 attendu'],
+      ]);
+    });
+
+    it('traite une valeur explicitement undefined comme absente', () => {
+      const r = parseFoodCsv([
+        { ...base, name_en: undefined as unknown as string, protein_per_100g: undefined as unknown as string },
+      ]);
+      expect(r.errors.map((e) => e.field)).toEqual(['name_en']);
+    });
+  });
 });

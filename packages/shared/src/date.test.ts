@@ -4,6 +4,7 @@ import {
   formatDayFull,
   weekdayIndex,
   startOfWeek,
+  localDateFromDayKey,
   localDayKey,
   daysBetween,
   ROLLING_WEEK_DAYS,
@@ -117,5 +118,31 @@ describe('formatDayFull', () => {
 
   it('entrée illisible → chaîne vide (jamais « NaN/NaN/NaN »)', () => {
     expect(formatDayFull('pas une date')).toBe('');
+  });
+});
+
+// `localDateFromDayKey` est la porte d'entrée de **toutes** les dates de l'app (elle existe pour
+// éviter `new Date('AAAA-MM-JJ')`, interprété UTC et donc décalé d'un jour). Une clé tronquée ne
+// doit pas produire une `Date` invalide qui se propagerait silencieusement dans un planning ou un
+// historique : les composants manquants retombent sur le 1er janvier.
+describe('localDateFromDayKey — clés partielles', () => {
+  it('clé complète : mois 1-based converti correctement', () => {
+    const d = localDateFromDayKey('2026-08-04');
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 7, 4]);
+  });
+
+  it('année seule → 1er janvier', () => {
+    const d = localDateFromDayKey('2026');
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 0, 1]);
+  });
+
+  it('année et mois sans jour → 1er du mois', () => {
+    const d = localDateFromDayKey('2026-08');
+    expect([d.getFullYear(), d.getMonth(), d.getDate()]).toEqual([2026, 7, 1]);
+  });
+
+  it('minuit local, jamais une heure UTC reportée', () => {
+    const d = localDateFromDayKey('2026-08-04');
+    expect([d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()]).toEqual([0, 0, 0, 0]);
   });
 });

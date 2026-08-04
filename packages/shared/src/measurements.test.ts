@@ -151,4 +151,30 @@ describe('measurementDeltas', () => {
   it('rend une liste vide sans données', () => {
     expect(measurementDeltas([], 'waist')).toEqual([]);
   });
+
+  // Le comparateur de tri traite trois cas (avant / après / égal) et le cas **égal** n'était pas
+  // exercé. Il est pourtant courant ici : le modèle est normalisé « une ligne par jour ET par
+  // mesure », mais rien n'interdit deux lignes du même jour pour la même mesure (saisie corrigée,
+  // ou deux appareils hors réseau). Le tri doit rester déterministe au lieu de dépendre du moteur.
+  it('deux mesures du même jour : ordre déterministe, aucune perte', () => {
+    const rows = [
+      { kind: 'waist' as const, logDate: '2026-08-04', valueCm: 80 },
+      { kind: 'waist' as const, logDate: '2026-08-04', valueCm: 81 },
+      { kind: 'waist' as const, logDate: '2026-08-01', valueCm: 82 },
+    ];
+    const out = measurementDeltas(rows, 'waist');
+
+    expect(out).toHaveLength(3);
+    // La liste est rendue du **plus récent au plus ancien** (`reverse()` final, pour l'affichage).
+    // Le tri interne étant croissant et stable, les deux relevés du 04 ressortent donc dans
+    // l'ordre inverse de leur arrivée.
+    expect(out.map((m) => [m.logDate, m.valueCm])).toEqual([
+      ['2026-08-04', 81],
+      ['2026-08-04', 80],
+      ['2026-08-01', 82],
+    ]);
+    // Le delta se calcule bien sur l'ordre chronologique, pas sur l'ordre affiché :
+    // 82 (01) → 80 (04) = −2, puis 80 → 81 = +1.
+    expect(out.map((m) => m.deltaCm)).toEqual([1, -2, null]);
+  });
 });

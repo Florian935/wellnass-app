@@ -173,17 +173,23 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       lockfile était déjà correct, seul `node_modules` était désynchronisé) ; aucune modification
       de fichier suivi.
 
-- [ ] 🟠 **`packages/shared` n'atteint pas les 100 % de couverture exigés.** Réel au 03/08/2026 :
-      **99,35 %** d'instructions et **95,12 % de branches**, alors que
-      [bonnes-pratiques §4](docs/specs/technical/bonnes-pratiques.md) exige 100 % sur ce paquet
-      (« logique pure, aucune excuse »). Le seuil à 100 % **était déclaré** dans
-      `packages/shared/vitest.config.ts` — mais la CI ne lançait jamais la couverture, donc il
-      n'échouait nulle part. Découvert le 03/08/2026 en posant les seuils (lot 6) ; un cliquet a
-      été mis à la valeur réelle pour interdire la régression, l'écart reste entier.
-      Deux issues, à trancher : **couvrir les branches manquantes** (`geo.ts` 85,7 %,
-      `pace-records.ts` 94,1 %, `menstrual-cycle.ts`, `widgets.ts`, `workout.ts` — surtout des
-      gardes défensives) ou **ré-arbitrer la règle des 100 %** si elle n'est pas tenable. Ne pas
-      se contenter de rebaisser le seuil : c'est le seul garde-fou du paquet.
+- [x] ~~🟠 **`packages/shared` n'atteint pas les 100 % de couverture exigés.**~~ — **traité et
+      arbitré le 04/08/2026** (`chore/socle-tests-lot5-ecrans`). **Instructions, fonctions et lignes
+      à 100 %** (99,35 % → 100 %), verrouillées dans le cliquet ; 1 503 → 1 615 tests. **Branches à
+      97,35 %, seuil arbitré à 97** — c'est la décision que cette entrée demandait de prendre : les
+      ~2,5 % restants ont été audités un par un et sont du **code défensif inatteignable**, de deux
+      familles (cas d'égalité de comparateurs sur des clés de `Map`, uniques par construction ;
+      replis `?? 0` sur des `Map.get` dont la clé vient d'être écrite). Les couvrir exigerait des
+      tests figeant des comportements absurdes, ou de retirer ces filets — une métrique échangée
+      contre une protection réelle. Justification complète dans
+      [strategie-tests.md §5 bis](docs/specs/technical/strategie-tests.md).
+      **Trois vrais trous fonctionnels trouvés au passage** : les suggestions de **glucides**
+      n'étaient exercées nulle part (seuls protéines et lipides l'étaient), ni les fractionnés
+      définis **en durée** (« 30/30 » — tous les tests portaient sur la distance), ni le throttle
+      d'import du cycle. **Et deux défauts de code corrigés** : `bestSegmentTimeFromSamples`
+      renvoyait `NaN` pour une distance cible ≤ 0, soit un record de « NaN seconde » écrivable en
+      base ; et le `return null` final de `bucketOf` (`training-nutrition.ts`) était prouvé
+      inatteignable.
 
 - [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`

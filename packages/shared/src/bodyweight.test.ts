@@ -44,6 +44,35 @@ describe('weightTrend (refacto régression, iso-comportement)', () => {
 
   it('un seul jour (variance x nulle possible) → stable', () =>
     expect(weightTrend([{ logDate: '2026-07-01', weightKg: 80 }])).toBe('stable'));
+
+  it('plusieurs pesées le MÊME jour → stable, sans division par zéro', () => {
+    // Variance nulle sur l'axe des jours : la régression n'a pas de pente définie. Cas réel — on
+    // se pèse deux fois le matin, ou deux appareils synchronisent la même journée. Sans la garde,
+    // une pente infinie déciderait d'une tendance à partir de rien.
+    expect(
+      weightTrend([
+        { logDate: '2026-07-01', weightKg: 80 },
+        { logDate: '2026-07-01', weightKg: 78 },
+        { logDate: '2026-07-01', weightKg: 82 },
+      ]),
+    ).toBe('stable');
+  });
+
+  it('donne le même verdict quel que soit l’ordre d’arrivée des pesées', () => {
+    // Les bornes de la fenêtre sont calculées par `reduce` min/max : un jeu déjà trié et un jeu
+    // mélangé doivent donner le même résultat, sinon la tendance dépendrait de l'ordre SQL.
+    const ascending = [
+      { logDate: '2026-07-01', weightKg: 80 },
+      { logDate: '2026-07-08', weightKg: 79 },
+      { logDate: '2026-07-15', weightKg: 78 },
+    ];
+    const shuffled = [ascending[1]!, ascending[2]!, ascending[0]!];
+    const descending = [...ascending].reverse();
+
+    expect(weightTrend(ascending)).toBe('down');
+    expect(weightTrend(shuffled)).toBe('down');
+    expect(weightTrend(descending)).toBe('down');
+  });
 });
 
 describe('computeDeficitVolumeAlert', () => {

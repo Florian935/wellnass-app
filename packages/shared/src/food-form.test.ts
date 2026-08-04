@@ -122,4 +122,29 @@ describe('validateFoodInput', () => {
       fiberPer100g: 6,
     });
   });
+
+  // Champs **absents** (`undefined`) et non simplement vides : c'est l'état réel d'un formulaire
+  // dont un champ n'a jamais été touché, ou d'un appel programmatique partiel. Sans repli,
+  // `.trim()` sur `undefined` lèverait — l'écran planterait au lieu d'afficher les erreurs.
+  it('champs absents → mêmes erreurs qu’un formulaire vide, sans exception', () => {
+    const r = validateFoodInput({} as FoodFormInput);
+    expect(r.values).toBeNull();
+    expect(r.errors.map((e) => e.field).sort()).toEqual([
+      'category',
+      'kcalPer100g',
+      'nameEn',
+      'nameFr',
+    ]);
+  });
+
+  it('macro absente → null, pas une erreur (les macros sont optionnelles)', () => {
+    const r = validateFoodInput({
+      nameFr: 'Pomme',
+      nameEn: 'Apple',
+      category: 'fruits',
+      kcalPer100g: '52',
+    } as FoodFormInput);
+    expect(r.errors).toEqual([]);
+    expect(r.values).toMatchObject({ proteinPer100g: null, fatPer100g: null });
+  });
 });
