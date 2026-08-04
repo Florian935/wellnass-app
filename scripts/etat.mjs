@@ -137,10 +137,25 @@ const tableauOuvertes = ouvertes.length
         .sort((a, b) => ETAPES.indexOf(b.etape) - ETAPES.indexOf(a.etape))
         .map(
           (s) =>
-            `| **${s.id}** — ${s.titre} | \`${s.etape}\` | \`${s.branche}\` | ${s.roadmap === '[]' ? '—' : s.roadmap} |`,
+            `| **${s.id}** — ${s.titre}${s.bloque ? ' ⏸️' : ''} | \`${s.etape}\`${s.bloque ? ' *(en pause)*' : ''} | \`${s.branche}\` | ${s.roadmap === '[]' ? '—' : s.roadmap} |`,
         ),
     ].join('\n')
   : '_Aucune US en cours. Le pipeline est vide — piocher dans [BACKLOG.md](BACKLOG.md)._';
+
+/**
+ * US en pause sur une **dépendance externe** (champ `bloque:` du front-matter).
+ *
+ * Ajouté le 04/08/2026 : une US arrêtée faute d'un élément qu'on ne peut pas produire soi-même
+ * (un fichier à fournir, un compte à créer, un arbitrage juridique) reste `etape: validation` ou
+ * `code` — donc **indistinguable d'une US qui avance** dans le tableau ci-dessus. C'est le meilleur
+ * moyen de la retrouver trois semaines plus tard sans savoir ce qu'on attendait.
+ */
+const bloquees = ouvertes.filter((s) => s.bloque);
+const renvoiBloquees = bloquees.length
+  ? `\n⏸️ **${bloquees.length} US en pause sur une dépendance externe** :\n` +
+    bloquees.map((s) => `- **${s.id}** — ${s.bloque}`).join('\n') +
+    '\n'
+  : '';
 
 // Les US à `recette` attendent une validation **humaine** : c'est la seule étape que le pipeline ne
 // peut pas franchir seul, donc celle qui se perd le plus facilement d'une session à l'autre.
@@ -180,7 +195,7 @@ avant de pouvoir publier.
 ## 🔨 En cours
 
 ${tableauOuvertes}
-${renvoiRecettes}
+${renvoiBloquees}${renvoiRecettes}
 ## ➡️ Prochain — P0 bloquant (${p0.length})
 
 ${liste(p0)}

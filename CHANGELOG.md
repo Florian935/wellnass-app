@@ -10,6 +10,72 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/import01-import-donnees-externes` — IMPORT-01 cadrée puis mise en pause sur dépendance externe (roadmap 1.20)
+
+Suite de `d4c2634`. **Aucun code applicatif** — cette entrée consigne un cadrage complet et un arrêt
+volontaire, pour que la reprise ne coûte rien.
+
+#### Ajouté
+
+- **Spec** [import01-import-donnees-externes.md](docs/specs/functional/us/import01-import-donnees-externes.md)
+  — 14 règles, 12 décisions, 16 cas limites, 23 critères de recette.
+- **Plan** [import01-import-donnees-externes.md](docs/plans/import01-import-donnees-externes.md)
+  — 10 lots, 5 jalons, 8 risques nommés.
+- **Maquette** 9 écrans : point d'entrée, aperçu avant écriture, mapping d'exercices, erreurs par
+  ligne, progression, rapport, annulation, réimport.
+- **[import-samples/README.md](docs/specs/technical/import-samples/README.md)** — le document qui
+  débloque l'US : ce qu'il faut fournir, où le trouver dans chaque app, et **ce que les données
+  doivent contenir** pour être utiles (l'unité de charge en tête, un exercice connu **et** un
+  exotique, une série au poids du corps, les 4 repas MFP…).
+
+#### Modifié
+
+- **`scripts/etat.mjs`** — support d'un champ `bloque:` dans le front-matter, rendu par une pastille
+  ⏸️ dans le tableau « En cours » **et** par un bloc dédié. Sans lui, une US arrêtée sur une
+  dépendance externe reste `etape: validation`, donc **indistinguable d'une US qui avance** — le
+  meilleur moyen de la retrouver trois semaines plus tard sans savoir ce qu'on attendait.
+- Roadmap **1.20** : reste **⬜** (rien de livré) avec le détail du cadrage et du blocage.
+
+#### Technique — Notes
+
+**Pourquoi s'arrêter avant de coder** plutôt que d'écrire le moteur sur des hypothèses de colonnes :
+chaque hypothèse fausse se paie deux fois — une fois pour le code, une fois pour le corriger avec ses
+tests. Sur trois formats d'une dizaine de colonnes, c'est l'essentiel du travail de mapping. Le
+cadrage, lui, est fait et ne se périme pas. Les lots 1 à 3 (tokenizer CSV, parsing GPX, détection de
+source) sont **indépendants des alias** et auraient pu démarrer ; décision de ne pas les entamer, une
+US livrée en deux moitiés à des semaines d'écart coûtant plus en reprise de contexte qu'elle ne fait
+gagner.
+
+**Trois découvertes de cadrage qui ont changé la conception** — et qui justifient à elles seules
+l'étape spec :
+
+- **`food_entries.food_id` est nullable** → une ligne MyFitnessPal devient un *quick add* portant son
+  nom et ses macros : **aucune correspondance d'aliment à tenter**. Le fichier contient déjà les
+  valeurs nutritionnelles ; une correspondance approximative substituerait des valeurs différentes de
+  ce que la personne a réellement mangé, pour zéro bénéfice.
+- **`workout_sets.exercise_id` est NOT NULL avec FK** → l'inverse : impossible d'importer une série
+  sans résoudre l'exercice. D'où trois passes (nom normalisé FR/EN → dictionnaire d'alias → création
+  en perso). La passe 3 seule polluerait la bibliothèque de doublons (« Bench Press » **et**
+  « Développé couché », avec des records séparés) ; les passes 1-2 seules **jetteraient des séries**.
+- **`personal_records` n'est pas dérivée** : elle est écrite par `evaluateWorkoutRecords`, appelée
+  uniquement depuis `workout.tsx`. Sans appel explicite, un historique importé n'aurait **aucun
+  record**. Et deux pièges en découlent : traiter les séances **dans l'ordre chronologique croissant**
+  (sinon un record de 2024 est écarté parce qu'une séance de 2026 fait mieux) et passer la **date de
+  la séance** en `achieved_at` (sinon « record établi le 04/08/2026 » pour une perf de 2024).
+  Bénéfice collatéral : `maybePushRecords` vivant ailleurs, le **silence des notifications pendant un
+  import est gratuit**.
+
+**Ajouté au périmètre sans être demandé : l'annulation d'un import.** Sans elle, la seule issue après
+un import raté serait de supprimer des milliers de lignes à la main — donc personne n'essaie, et la
+fonctionnalité ne sert à rien. Coût réel : une colonne (`import_batch_id`) et une requête. Elle retire
+aussi les `personal_records` créés par le lot, sinon annuler laisserait des **records fantômes** plus
+hauts que tout l'historique restant.
+
+**Deux garde-fous repris de REPAS-01** : aucun index unique sur `import_key` (une violation d'unicité
+bloque la file d'upload PowerSync en offline multi-appareils — la dédup est applicative), et une
+règle explicite « aucune valeur inventée » (un `0 kg` se lit comme une performance, un `null` comme
+une absence).
+
 ### 04/08/2026 — `chore/socle-tests-lot5-ecrans` — Back-office : `exercise-variants.ts` de 0 % à 100 %, et un point de reprise corrigé
 
 Suite de `f730ac4`. Dernier lot du chantier tests. **157 → 181 tests** sur `apps/admin`,

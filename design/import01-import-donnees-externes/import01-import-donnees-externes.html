@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMPORT-01 — Import de données externes</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--accentt:#ffffff;--success:#66714b;
+        --danger:#b23b2e;--warn:#f7ead6;--warnb:#e9cfa0;--warnt:#8a6419;--track:#eadcc6;
+        --panel:#33291f;--panelt:#f0e4d0}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:660px){.row{grid-template-columns:1fr}}
+
+  .phone{background:var(--bg);border:1px solid var(--border);border-radius:22px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.13)}
+  .nav{display:flex;align-items:center;gap:10px;padding:13px 14px;background:var(--surf);
+       border-bottom:1px solid var(--border)}
+  .back{color:var(--accent);font-weight:700;font-size:17px;line-height:1}
+  .navtitle{font-weight:700;font-size:15px}
+  .body{padding:12px}
+  .phonelabel{font-size:12px;color:#6a5d4d;text-align:center;margin-top:9px;line-height:1.45}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:11px;margin-bottom:9px}
+  .lead{font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:11px}
+
+  /* Sources */
+  .src{display:flex;align-items:center;gap:11px;background:var(--surf);border:1px solid var(--border);
+       border-radius:12px;padding:11px;margin-bottom:7px}
+  .srcicon{width:34px;height:34px;border-radius:10px;background:var(--surfalt);flex:0 0 auto;
+     display:flex;align-items:center;justify-content:center;font-size:17px}
+  .srctexts{flex:1;gap:2px}
+  .srcname{font-weight:700;font-size:13.5px}
+  .srcmeta{font-size:11.5px;color:var(--muted)}
+  .chev{color:var(--muted);font-weight:700}
+
+  .btn{display:block;text-align:center;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
+       border-radius:11px;padding:12px;margin-top:11px}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+  .btn.danger{background:transparent;color:var(--danger);border:1.5px solid var(--danger)}
+  .btn.small{padding:9px;font-size:13px}
+
+  /* Aperçu */
+  .sum{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:9px}
+  .sumhead{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .sumhead .f{flex:1}
+  .fname{font-weight:700;font-size:13.5px;word-break:break-all}
+  .fmeta{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .badge{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+     background:var(--surfalt);color:var(--accent);border-radius:6px;padding:3px 7px;white-space:nowrap}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+  .statv{font-family:ui-monospace,Menlo,monospace;font-weight:800;font-size:18px}
+  .statl{font-size:11px;color:var(--muted);line-height:1.3;margin-top:1px}
+  .statv.ok{color:var(--success)} .statv.warn{color:var(--warnt)} .statv.err{color:var(--danger)}
+
+  .note{background:var(--warn);border:1px solid var(--warnb);border-radius:10px;padding:9px 11px;
+        font-size:12.5px;color:var(--warnt);line-height:1.45;margin-bottom:9px}
+  .note b{color:#6d4f12}
+  .ok{background:#eef0e6;border:1px solid #ccd3bd;border-radius:10px;padding:9px 11px;
+      font-size:12.5px;color:#4a5336;line-height:1.45;margin-bottom:9px}
+
+  /* Mapping d'exercices */
+  .maprow{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px}
+  .maprow:last-child{border-bottom:0}
+  .from{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--muted)}
+  .arrow{color:var(--bstrong)}
+  .to{flex:1;font-weight:700}
+  .to.new{color:var(--warnt)}
+  .tag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+       border-radius:5px;padding:2px 5px;background:var(--warn);color:var(--warnt);border:1px solid var(--warnb)}
+  .tag.match{background:#eef0e6;color:#4a5336;border-color:#ccd3bd}
+
+  /* Erreurs par ligne */
+  .errrow{display:flex;gap:8px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
+  .errline{font-family:ui-monospace,Menlo,monospace;color:var(--danger);font-weight:700;flex:0 0 54px}
+  .errmsg{flex:1;color:var(--muted);line-height:1.4}
+
+  /* Lots récents */
+  .batch{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);
+     border-radius:11px;padding:10px;margin-bottom:6px}
+  .btexts{flex:1}
+  .bname{font-weight:700;font-size:13px}
+  .bmeta{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .undo{font-size:12px;font-weight:700;color:var(--danger);border:1px solid var(--danger);
+        border-radius:8px;padding:5px 9px;white-space:nowrap}
+
+  .dialog{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px;
+          box-shadow:0 6px 20px rgba(0,0,0,.14)}
+  .dt{font-weight:800;font-size:15px;margin-bottom:6px}
+  .db{font-size:13px;color:var(--muted);line-height:1.5}
+  .acts{display:flex;gap:9px;margin-top:13px}
+  .acts div{flex:1;text-align:center;padding:10px;border-radius:10px;font-weight:700;font-size:13.5px}
+  .cancel{border:1.5px solid var(--bstrong);color:var(--text)}
+  .okb{background:var(--accent);color:#fff}
+  .dangerb{background:var(--danger);color:#fff}
+
+  .prog{height:6px;background:var(--track);border-radius:3px;overflow:hidden;margin:10px 0 6px}
+  .prog i{display:block;height:100%;background:var(--accent);border-radius:3px}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;background:var(--surf);
+        border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:12.5px}
+  tr:last-child td{border-bottom:0}
+  td code{background:var(--bg);padding:1px 4px;border-radius:4px;font-size:12.5px}
+  .foot{margin-top:34px;padding-top:16px;border-top:1px solid #cfc0a9;color:#6a5d4d;font-size:13px;max-width:84ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>IMPORT-01 — Import de données depuis d'autres apps</h1>
+<p class="sub">Roadmap <b>1.20</b>, dernier item de dev non démarré. GPX (Strava) · CSV (Hevy, Strong,
+MyFitnessPal). Palette réelle de l'app. Les références <code>Rn</code> / <code>Dn</code> renvoient à la
+<a href="../../docs/specs/functional/us/import01-import-donnees-externes.md">spec</a>.</p>
+
+<h2>1 · Point d'entrée — Réglages, à côté de l'export</h2>
+<p class="why">On importe <b>une fois</b> : ça n'a pas sa place sur un hub quotidien (<b>D10</b>). Et
+c'est le voisin naturel de l'export RGPD, déjà présent dans les réglages.</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Importer mes données</span></div>
+      <div class="body">
+        <p class="lead">Reprends ton historique depuis une autre application. <b>Rien n'est écrasé</b> :
+          l'import ajoute, et tout est annulable.</p>
+        <div class="src"><div class="srcicon">🏃</div>
+          <div class="srctexts"><div class="srcname">Strava et autres traceurs</div>
+            <div class="srcmeta">Fichier .gpx · courses</div></div><span class="chev">›</span></div>
+        <div class="src"><div class="srcicon">🏋</div>
+          <div class="srctexts"><div class="srcname">Hevy · Strong</div>
+            <div class="srcmeta">Fichier .csv · séances de musculation</div></div><span class="chev">›</span></div>
+        <div class="src"><div class="srcicon">🍽</div>
+          <div class="srctexts"><div class="srcname">MyFitnessPal</div>
+            <div class="srcmeta">Fichier .csv · journal alimentaire</div></div><span class="chev">›</span></div>
+        <div class="btn">Choisir un fichier</div>
+        <div class="phonelabel" style="text-align:left;margin-top:14px">La source est <b>détectée
+          automatiquement</b> d'après les en-têtes ; ces trois entrées ne sont qu'un raccourci et une
+          promesse de ce qui est accepté (<b>D11</b>).</div>
+      </div>
+    </div>
+    <div class="phonelabel">Un <code>.csv</code> ne dit pas de quelle app il sort — deviner faux
+      écrirait des séances dans le journal alimentaire.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Importer mes données</span></div>
+      <div class="body">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+             color:var(--muted);margin:2px 0 7px">Imports récents</div>
+        <div class="batch"><div class="btexts"><div class="bname">Hevy · workouts.csv</div>
+          <div class="bmeta">Aujourd'hui 20:14 · 187 séances</div></div><span class="undo">Annuler</span></div>
+        <div class="batch"><div class="btexts"><div class="bname">MyFitnessPal · nutrition.csv</div>
+          <div class="bmeta">Aujourd'hui 20:09 · 2 431 entrées</div></div><span class="undo">Annuler</span></div>
+        <div class="batch"><div class="btexts"><div class="bname">Strava · activities.gpx</div>
+          <div class="bmeta">Hier 18:42 · 1 course</div></div><span class="undo">Annuler</span></div>
+        <div class="btn ghost small">Choisir un autre fichier</div>
+      </div>
+    </div>
+    <div class="phonelabel"><b>D8</b> — les 3 derniers lots restent annulables. C'est ce qui rend
+      l'essai possible : sans annulation, la seule issue après un import raté serait de supprimer
+      2 431 lignes à la main, donc personne n'essaie.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Source du fichier</span></div>
+      <div class="body">
+        <div class="note"><b>Source non reconnue.</b> Les en-têtes de <code>export.csv</code> ne
+          correspondent à aucun format connu.</div>
+        <p class="lead">Indique d'où vient ce fichier — ou vérifie qu'il s'agit bien d'un export
+          complet, non modifié.</p>
+        <div class="src"><div class="srcicon">🏋</div><div class="srctexts"><div class="srcname">Hevy</div></div></div>
+        <div class="src"><div class="srcicon">🏋</div><div class="srctexts"><div class="srcname">Strong</div></div></div>
+        <div class="src"><div class="srcicon">🍽</div><div class="srctexts"><div class="srcname">MyFitnessPal</div></div></div>
+        <div class="btn ghost small">Annuler</div>
+      </div>
+    </div>
+    <div class="phonelabel">Repli manuel (<b>D11</b>). Les formats de ces apps <b>changent</b> au fil
+      des versions : l'échec doit être explicite et rattrapable, jamais un import de travers.</div>
+  </div>
+</div>
+
+<h2>2 · L'aperçu — le cœur de l'US (R2)</h2>
+<p class="why"><b>Rien n'est écrit avant cette validation.</b> Écrire trois ans d'historique sans
+montrer ce qu'on a compris est le meilleur moyen de faire fuir quelqu'un à sa première utilisation.
+C'est le patron déjà éprouvé de l'import CIQUAL du back-office.</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Aperçu de l'import</span></div>
+      <div class="body">
+        <div class="sum">
+          <div class="sumhead"><div class="f"><div class="fname">workouts.csv</div>
+            <div class="fmeta">1 402 lignes · 240 Ko</div></div><span class="badge">Hevy</span></div>
+          <div class="stats">
+            <div class="stat"><div class="statv ok">187</div><div class="statl">séances à importer</div></div>
+            <div class="stat"><div class="statv">1 389</div><div class="statl">séries</div></div>
+            <div class="stat"><div class="statv warn">12</div><div class="statl">exercices à créer</div></div>
+            <div class="stat"><div class="statv err">13</div><div class="statl">lignes en erreur</div></div>
+          </div>
+        </div>
+        <div class="ok">Période couverte : <b>12/03/2024 → 02/08/2026</b>.</div>
+        <div class="note">13 lignes ne seront pas importées. <b>Le reste passe</b> (<b>R7</b>) —
+          voir le détail plus bas.</div>
+        <div class="btn">Importer 187 séances</div>
+        <div class="btn ghost small">Annuler</div>
+      </div>
+    </div>
+    <div class="phonelabel">Chiffres <b>avant</b> écriture. Le bouton dit ce qu'il va faire, pas
+      « Confirmer ».</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Exercices reconnus</span></div>
+      <div class="body">
+        <p class="lead">Ce que l'app a compris de tes exercices. Les nouveaux seront créés dans
+          <b>tes exercices perso</b>.</p>
+        <div class="card">
+          <div class="maprow"><span class="from">Bench Press</span><span class="arrow">→</span>
+            <span class="to">Développé couché</span><span class="tag match">alias</span></div>
+          <div class="maprow"><span class="from">Squat</span><span class="arrow">→</span>
+            <span class="to">Squat</span><span class="tag match">exact</span></div>
+          <div class="maprow"><span class="from">Deadlift</span><span class="arrow">→</span>
+            <span class="to">Soulevé de terre</span><span class="tag match">alias</span></div>
+          <div class="maprow"><span class="from">Cable Pullover</span><span class="arrow">→</span>
+            <span class="to new">Cable Pullover</span><span class="tag">nouveau</span></div>
+          <div class="maprow"><span class="from">Hack Squat Machine</span><span class="arrow">→</span>
+            <span class="to new">Hack Squat Machine</span><span class="tag">nouveau</span></div>
+        </div>
+        <div class="phonelabel" style="text-align:left">Trois passes (<b>D1</b>) : nom exact, puis
+          dictionnaire d'alias, puis création. <b>Aucune série n'est jamais perdue</b> —
+          <code>exercise_id</code> est obligatoire en base, donc l'alternative serait de jeter
+          les séries d'un exercice inconnu.</div>
+      </div>
+    </div>
+    <div class="phonelabel">Sans la passe « alias », on créerait « Bench Press » <b>en plus</b> de
+      « Développé couché » : deux exercices pour le même mouvement, et des records séparés.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Lignes non importées</span></div>
+      <div class="body">
+        <div class="card">
+          <div class="errrow"><span class="errline">L. 340</span><span class="errmsg">ni répétitions ni durée</span></div>
+          <div class="errrow"><span class="errline">L. 341</span><span class="errmsg">ni répétitions ni durée</span></div>
+          <div class="errrow"><span class="errline">L. 512</span><span class="errmsg">unité de charge indéterminable</span></div>
+          <div class="errrow"><span class="errline">L. 787</span><span class="errmsg">date dans le futur</span></div>
+          <div class="errrow"><span class="errline">L. 1 088</span><span class="errmsg">nom d'exercice vide</span></div>
+        </div>
+        <div class="note">L'unité de charge de la ligne 512 n'a pas pu être déterminée. La ligne est
+          <b>refusée plutôt que supposée</b> : une charge en livres prise pour des kilos fausserait
+          tous tes records.</div>
+      </div>
+    </div>
+    <div class="phonelabel">Numéro de ligne + raison (<b>R7</b>). Refuser tout un export de trois ans
+      pour une cellule vide serait absurde ; le taire serait pire.</div>
+  </div>
+</div>
+
+<h2>3 · Import, rapport, annulation</h2>
+<p class="why">Un import de plusieurs milliers de lignes ne doit ni figer l'app, ni mentir sur ce
+qu'il a fait (<b>R9</b>), ni être irréversible (<b>D8</b>).</p>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="navtitle">Import en cours</span></div>
+      <div class="body" style="padding:22px 14px">
+        <div style="text-align:center;font-weight:700;font-size:14px">Import de tes séances…</div>
+        <div class="prog"><i style="width:62%"></i></div>
+        <div style="text-align:center;font-size:12.5px;color:var(--muted)">116 séances sur 187</div>
+        <div class="note" style="margin-top:16px">Tu peux quitter cet écran : l'import continue.
+          <b>Aucune notification de record</b> ne sera envoyée (<b>D9</b>).</div>
+      </div>
+    </div>
+    <div class="phonelabel">Importer trois ans déclenche parfois <b>quarante</b> records. Les notifier
+      serait insupportable — le rattrapage est silencieux, comme le backfill de MUSC-F8.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="nav"><span class="back">‹</span><span class="navtitle">Import terminé</span></div>
+      <div class="body">
+        <div class="ok"><b>187 séances importées</b>, du 12/03/2024 au 02/08/2026.</div>
+        <div class="card">
+          <div class="maprow"><span class="from" style="font-family:inherit;font-size:12.5px">Séries enregistrées</span><span class="to" style="flex:0 0 auto">1 389</span></div>
+          <div class="maprow"><span class="from" style="font-family:inherit;font-size:12.5px">Exercices perso créés</span><span class="to" style="flex:0 0 auto">12</span></div>
+          <div class="maprow"><span class="from" style="font-family:inherit;font-size:12.5px">Doublons ignorés</span><span class="to" style="flex:0 0 auto">0</span></div>
+          <div class="maprow"><span class="from" style="font-family:inherit;font-size:12.5px">Lignes en erreur</span><span class="to" style="flex:0 0 auto">13</span></div>
+        </div>
+        <div class="note">Non repris faute de place dans le modèle : <b>supersets</b> et
+          <b>notes par série</b> (<b>R9</b>).</div>
+        <div class="btn ghost small">Voir mon historique</div>
+        <div class="btn danger small">Annuler cet import</div>
+      </div>
+    </div>
+    <div class="phonelabel">Un rapport qui annoncerait « 187 séances » en taisant 13 erreurs et
+      2 champs ignorés serait un <b>mensonge par omission</b>.</div>
+  </div>
+
+  <div>
+    <div style="display:grid;gap:14px">
+      <div>
+        <div class="dialog">
+          <div class="dt">Annuler cet import ?</div>
+          <div class="db">Les <b>187 séances</b> et <b>1 389 séries</b> de cet import seront retirées,
+            ainsi que les <b>9 records</b> qu'elles avaient établis. Ton historique redeviendra
+            exactement ce qu'il était avant.</div>
+          <div class="acts"><div class="cancel">Garder</div><div class="dangerb">Annuler l'import</div></div>
+        </div>
+        <div class="phonelabel">Les <b>records</b> sont retirés aussi — sinon annuler laisserait des
+          records fantômes plus hauts que tout l'historique restant.</div>
+      </div>
+      <div>
+        <div class="phone">
+          <div class="nav"><span class="back">‹</span><span class="navtitle">Aperçu de l'import</span></div>
+          <div class="body">
+            <div class="sum">
+              <div class="sumhead"><div class="f"><div class="fname">workouts.csv</div>
+                <div class="fmeta">1 402 lignes · déjà importé</div></div><span class="badge">Hevy</span></div>
+              <div class="stats">
+                <div class="stat"><div class="statv">0</div><div class="statl">à importer</div></div>
+                <div class="stat"><div class="statv warn">187</div><div class="statl">déjà présentes</div></div>
+              </div>
+            </div>
+            <div class="ok">Tout le contenu de ce fichier est <b>déjà dans ton historique</b>. Rien à
+              faire.</div>
+          </div>
+        </div>
+        <div class="phonelabel"><b>R3</b> — réimporter le même fichier ne crée rien. Le cas d'usage
+          réel est « je réexporte tous les mois » : seules les nouveautés entrent.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Les décisions que ces écrans matérialisent</h2>
+<table>
+  <tr><th style="width:62px">#</th><th>Décision</th><th>Où on la voit</th></tr>
+  <tr><td><b>R1</b></td><td>L'import n'écrase <b>jamais</b> rien</td><td>§1 — l'accroche le dit, §3 — l'annulation le prouve</td></tr>
+  <tr><td><b>R2</b></td><td>Aucune écriture sans aperçu validé</td><td>§2 en entier</td></tr>
+  <tr><td><b>R3</b></td><td>Dédup par clé déterministe</td><td>§3, 3ᵉ écran — 0 à importer, 187 déjà présentes</td></tr>
+  <tr><td><b>R7</b></td><td>Import partiel, erreurs listées par ligne</td><td>§2, 3ᵉ écran</td></tr>
+  <tr><td><b>R9</b></td><td>Le rapport dit ce qui n'a <b>pas</b> été repris</td><td>§3, 2ᵉ écran — supersets et notes</td></tr>
+  <tr><td><b>D1</b></td><td>Résolution d'exercice en 3 passes</td><td>§2, 2ᵉ écran — « alias », « exact », « nouveau »</td></tr>
+  <tr><td><b>D8</b></td><td>Annulation d'un import</td><td>§1 (2ᵉ écran) et §3</td></tr>
+  <tr><td><b>D9</b></td><td>Silence des notifications de record</td><td>§3, 1ᵉʳ écran</td></tr>
+  <tr><td><b>D11</b></td><td>Source inconnue → choix manuel</td><td>§1, 3ᵉ écran</td></tr>
+</table>
+
+<p class="foot">🔴 <b>Ce qui bloque le démarrage du code, et qui n'est pas un choix de design</b> : il
+faut <b>un export réel de Hevy, de Strong et de MyFitnessPal</b> pour figer les alias de colonnes
+(spec <b>D4</b>). Le moteur est conçu pour en dépendre le moins possible — les alias vivent dans une
+seule liste, et un fichier non reconnu échoue <b>en nommant la colonne manquante</b> plutôt que
+d'écrire de travers. Mais tant qu'aucun fichier réel n'a été vu, ces alias restent des
+<b>hypothèses documentées</b>. Le GPX, lui, est un standard : il ne pose pas ce problème.
+<br><br><b>Deux points restent à trancher</b> (spec §4) : <b>P1</b> — l'étendue du dictionnaire
+d'alias d'exercices (je propose de partir des 16 exercices de la bibliothèque ; aller à 100+ alias est
+du travail de coach) · <b>P2</b> — le plafond de 20 000 lignes par fichier.</p>
+
+</div>
+</body>
+</html>
