@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { computeVolume, formatDayFull } from '@wellness/shared';
+import { computeTrainingDensity, computeVolume, formatDayFull } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { CelebrationCard } from '@/components/CelebrationCard';
@@ -32,6 +32,7 @@ type Summary = {
   warmupSets: number;
   volume: number;
   durationMin: number;
+  density: number;
 };
 
 async function buildSummary(
@@ -46,10 +47,11 @@ async function buildSummary(
   const warmupSets = sets.filter((s) => s.done && s.setType === 'warmup').length;
   const volume = Math.round(computeVolume(sets));
   const durationMin = Math.max(1, Math.round((durationSeconds ?? 0) / 60));
+  const density = computeTrainingDensity(volume, durationMin);
   const exercises = new Set(
     sets.filter((s) => s.setType !== 'warmup').map((s) => s.exerciseId),
   ).size;
-  return { exercises, doneSets, warmupSets, volume, durationMin };
+  return { exercises, doneSets, warmupSets, volume, durationMin, density };
 }
 
 function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -315,6 +317,10 @@ export default function WorkoutSummaryScreen() {
             hint={summary.warmupSets > 0 ? t('workout.summary.warmupCount', { count: summary.warmupSets }) : undefined}
           />
           <Row label={t('workout.summary.volume')} value={units.formatWeight(summary.volume)} />
+          <Row
+            label={t('workout.summary.density')}
+            value={`${units.formatWeight(summary.density)}/min`}
+          />
         </Card>
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>

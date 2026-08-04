@@ -221,6 +221,7 @@
       "exercises": "Exercises",
       "sets": "Sets completed",
       "volume": "Total volume",
+      "density": "Density",
       "feeling": "How it felt",
       "starLabel_one": "{{count}} star",
       "starLabel_other": "{{count}} stars",

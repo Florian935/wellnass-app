@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/musc12-densite-entrainement` — Densité d'entraînement volume/temps (US MUSC-12, catalogue d'analyses)
+
+Suite de `ecd3da4`. Cinquième candidat de la session, le plus petit périmètre de la série : une
+ligne « Densité » (kg/min) ajoutée au résumé de fin de séance existant
+(`workout-summary.tsx`), qui calculait déjà volume et durée séparément sans jamais afficher leur
+rapport. Aucun nouveau widget, aucune nouvelle requête, aucun hook nouveau. Cycle complet : `/us` →
+validation Florian (1 décision) → implémentation TDD → revue de code.
+
+#### Ajouté
+
+- **`packages/shared/src/workout.ts`** (+ 4 tests) : `computeTrainingDensity` — volume ÷ durée,
+  arrondi à 1 décimale, garde contre une durée nulle.
+- `apps/mobile/src/app/workout-summary.tsx` : champ `density` dans `Summary`/`buildSummary`,
+  nouvelle `Row` juste après Volume, réutilisant `units.formatWeight()` (déjà en place pour cette
+  ligne) suffixé `/min`.
+- i18n FR + EN : clé `workout.summary.density`.
+- Spec + plan + maquette : [musc12-densite-entrainement.md](docs/specs/functional/us/musc12-densite-entrainement.md),
+  [plan](docs/plans/musc12-densite-entrainement.md), [maquette](design/musc12-densite-entrainement/musc12-densite-entrainement.html).
+  Décision D1 (périmètre v1 limité à la stat par séance, tendance historique différée) validée par
+  Florian.
+
+#### Corrigé
+
+- 🟢 **Trouvé en revue de code** : catalogue et maquette pas resynchronisés après la validation de
+  Florian (même réflexe oublié que sur RN-03/MN-04/MUSC-19 en tout début de commit, corrigé avant
+  celui-ci cette fois) ; DoD de la spec pas cochée malgré des critères déjà vérifiés vrais.
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- Carte de séance partageable (PARTAGE-01, `ShareCardSheet`) volontairement non modifiée (spec R4)
+  — vérifié en revue, la densité n'apparaît pas dans ce qui est partagé.
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1479 tests
+  shared (70 fichiers) + 655 tests mobile (70 suites), 0 échec**.
+
 ### 04/08/2026 — `feature/musc19-tonnage-cumule` — Tonnage cumulé lifetime/annuel (US MUSC-19, catalogue d'analyses)
 
 Suite de `06752c6`. Quatrième candidat piochée dans le catalogue d'analyses. **Pas un widget

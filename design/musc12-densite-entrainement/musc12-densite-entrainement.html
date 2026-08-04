@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-12 — Densité d'entraînement (volume/temps)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .phone{background:var(--surf);border:1px solid var(--border);border-radius:20px;padding:18px;
+         max-width:380px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;
+       border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:none}
+  .rowlabel{font-size:13px;color:var(--muted)}
+  .rowvalue{font-size:15px;font-weight:700}
+  .rownew .rowlabel,.rownew .rowvalue{color:var(--accent)}
+  .tag{display:inline-block;background:var(--surfalt);border-radius:6px;padding:2px 7px;
+       font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+       color:var(--accent);margin-left:8px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:80ch}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-12 — Densité d'entraînement (volume/temps)</h1>
+<p class="sub">Une ligne ajoutée au résumé de fin de séance existant — pas de nouvel écran, pas de
+nouveau widget. Le plus petit périmètre de la session.</p>
+<div class="flag">✅ Décision D1 arbitrée par Florian le 04/08/2026, code livré (TDD) le même jour —
+cette maquette reflète la règle telle qu'implémentée.</div>
+
+<h2>Le résumé de séance, avant/après</h2>
+<p class="why">Volume et Durée existent déjà côte à côte sans jamais montrer leur rapport.</p>
+
+<div class="phone">
+  <div class="row"><span class="rowlabel">Exercices</span><span class="rowvalue">5</span></div>
+  <div class="row"><span class="rowlabel">Séries</span><span class="rowvalue">18</span></div>
+  <div class="row"><span class="rowlabel">Durée</span><span class="rowvalue">52 min</span></div>
+  <div class="row"><span class="rowlabel">Volume</span><span class="rowvalue">4 250 kg</span></div>
+  <div class="row rownew">
+    <span class="rowlabel">Densité<span class="tag">Nouveau</span></span>
+    <span class="rowvalue">81,7 kg/min</span>
+  </div>
+</div>
+
+<div class="note">
+  <code>densité = volume ÷ durée (min), arrondie à 1 décimale</code><br>
+  <code>4 250 kg ÷ 52 min ≈ 81,7 kg/min</code><br>
+  Toujours affichée (R3), y compris à 0 — jamais une section conditionnelle comme les garde-fous
+  (TRI-12/META-19).
+</div>
+
+<h2>Périmètre v1 : la séance seule, pas encore la tendance (D1)</h2>
+<div class="note" style="margin-top:0">
+  Le catalogue mentionne « par séance, tendance ». Recommandation : livrer la stat par séance
+  maintenant (corrige le trou identifié), laisser la tendance historique (graphique sur
+  <code>/progress</code>, proche en effort de MUSC-04) comme candidat distinct, non cadré ici.
+</div>
+
+</div></body></html>

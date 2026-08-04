@@ -154,6 +154,12 @@ export function hasReachedTonnageMilestone(lifetimeKg: number): boolean {
   return lifetimeKg >= TONNAGE_MILESTONE_KG;
 }
 
+/** Densité d'entraînement (US MUSC-12, spec R1/R2) : volume ÷ durée, arrondie à 1 décimale. */
+export function computeTrainingDensity(volumeKg: number, durationMinutes: number): number {
+  if (durationMinutes <= 0) return 0;
+  return Math.round((volumeKg / durationMinutes) * 10) / 10;
+}
+
 export type ReorderOperation =
   | { type: 'swap'; exerciseId: string; direction: 'up' | 'down' }
   | { type: 'toEnd'; exerciseId: string };

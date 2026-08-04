@@ -8,6 +8,7 @@ import {
   workoutStatusSchema,
   workoutRowSchema,
   workoutSetRowSchema,
+  computeTrainingDensity,
   computeVolume,
   hasReachedTonnageMilestone,
   TONNAGE_MILESTONE_KG,
@@ -374,6 +375,24 @@ describe('hasReachedTonnageMilestone (US MUSC-19, spec D3/R3)', () => {
 
   it('zéro → false', () => {
     expect(hasReachedTonnageMilestone(0)).toBe(false);
+  });
+});
+
+describe('computeTrainingDensity (US MUSC-12, spec R1/R2)', () => {
+  it('cas nominal : 1200 kg en 60 min → 20 kg/min', () => {
+    expect(computeTrainingDensity(1200, 60)).toBe(20);
+  });
+
+  it('volume nul → 0 (spec R3, pas une erreur)', () => {
+    expect(computeTrainingDensity(0, 45)).toBe(0);
+  });
+
+  it('durée nulle → 0 (garde défensive, même si buildSummary planche déjà à 1 en amont)', () => {
+    expect(computeTrainingDensity(500, 0)).toBe(0);
+  });
+
+  it('arrondit correctement à 1 décimale', () => {
+    expect(computeTrainingDensity(100, 7)).toBe(14.3); // 100/7 = 14,2857...
   });
 });
 
