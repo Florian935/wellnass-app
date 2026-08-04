@@ -16,9 +16,11 @@ import {
   markPlannedSessionDone,
   planProgram,
   reschedulePlannedSession,
+  SELECT_COMPLETED_STRENGTH_IN_WINDOW,
+  SELECT_PLANNED_STRENGTH_IN_WINDOW,
   skipPlannedSession,
 } from '../planned-session-repository';
-import { resetTestDb, rowsOf, seed } from '@/test-utils/sqlite-harness';
+import { resetTestDb, rowsOf, seed, testPowerSync } from '@/test-utils/sqlite-harness';
 
 jest.mock('@/powersync/system', () => ({
   powerSync: require('@/test-utils/sqlite-harness').testPowerSync,
@@ -325,5 +327,89 @@ describe('cycle de vie d’une occurrence', () => {
 
     expect(planned()[0]?.status).toBe('done');
     expect(planned()[0]?.completed_at).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SELECT_PLANNED_STRENGTH_IN_WINDOW / SELECT_COMPLETED_STRENGTH_IN_WINDOW (US MUSC-20)
+// ---------------------------------------------------------------------------
+
+describe('SELECT_PLANNED_STRENGTH_IN_WINDOW (fenêtre bornée, spec R2/D1)', () => {
+  const WINDOW_START = '2026-07-06'; // 28 j avant TODAY
+  const TODAY = '2026-08-03';
+
+  const query = <T>(sql: string, params: unknown[]) => testPowerSync.getAll<T>(sql, params);
+
+  it('exclut les occurrences avant et APRÈS la fenêtre — bug trouvé en revue : la borne haute avait été perdue entre le plan et le code', async () => {
+    const { programId, sessionIds } = seedProgram(1);
+    seed('planned_sessions', [
+      {
+        owner_id: 'user-1',
+        program_id: programId,
+        session_id: sessionIds[0],
+        scheduled_date: '2026-06-01', // avant la fenêtre
+        status: 'planned',
+      },
+      {
+        owner_id: 'user-1',
+        program_id: programId,
+        session_id: sessionIds[0],
+        scheduled_date: '2026-07-20', // dans la fenêtre
+        status: 'done',
+      },
+      {
+        owner_id: 'user-1',
+        program_id: programId,
+        session_id: sessionIds[0],
+        scheduled_date: '2026-09-01', // après aujourd'hui — reste du programme généré à l'avance
+        status: 'planned',
+      },
+    ]);
+
+    const rows = await query<{ status: string }>(SELECT_PLANNED_STRENGTH_IN_WINDOW, [
+      'user-1',
+      WINDOW_START,
+      TODAY,
+    ]);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.status).toBe('done');
+  });
+
+  it('ignore le pilier course (programs.pillar différent de strength)', async () => {
+    const { programId, sessionIds } = seedProgram(1, { pillar: 'running' });
+    seed('planned_sessions', [
+      {
+        owner_id: 'user-1',
+        program_id: programId,
+        session_id: sessionIds[0],
+        scheduled_date: '2026-07-20',
+        status: 'done',
+      },
+    ]);
+
+    const rows = await query(SELECT_PLANNED_STRENGTH_IN_WINDOW, ['user-1', WINDOW_START, TODAY]);
+    expect(rows).toHaveLength(0);
+  });
+});
+
+describe('SELECT_COMPLETED_STRENGTH_IN_WINDOW (spec R1)', () => {
+  const WINDOW_START_UTC = '2026-07-06T00:00:00.000Z';
+
+  const query = <T>(sql: string, params: unknown[]) => testPowerSync.getAll<T>(sql, params);
+
+  it('ne retient que les séances terminées dans la fenêtre', async () => {
+    seed('workouts', [
+      { user_id: 'user-1', status: 'completed', finished_at: '2026-06-01T10:00:00.000Z' }, // avant
+      { user_id: 'user-1', status: 'completed', finished_at: '2026-07-20T10:00:00.000Z' }, // dedans
+      { user_id: 'user-1', status: 'active', finished_at: null }, // pas terminée
+    ]);
+
+    const rows = await query<{ finished_at: string }>(SELECT_COMPLETED_STRENGTH_IN_WINDOW, [
+      WINDOW_START_UTC,
+    ]);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.finished_at).toBe('2026-07-20T10:00:00.000Z');
   });
 });

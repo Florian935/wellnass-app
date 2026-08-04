@@ -160,6 +160,19 @@ export function computeTrainingDensity(volumeKg: number, durationMinutes: number
   return Math.round((volumeKg / durationMinutes) * 10) / 10;
 }
 
+/**
+ * Régularité des intervalles entre séances (US MUSC-20, spec R3/D3) : écart-type de population
+ * des écarts en jours, même formule que CYCLE-01 (`stdDev`, `menstrual-cycle.ts`, privée — reprise
+ * ici, pas importée). `null` sous 3 séances (2 intervalles, spec D3).
+ */
+export function computeIntervalRegularity(intervalDays: readonly number[]): number | null {
+  if (intervalDays.length < 2) return null;
+  const mean = intervalDays.reduce((a, b) => a + b, 0) / intervalDays.length;
+  const variance =
+    intervalDays.reduce((sum, d) => sum + (d - mean) ** 2, 0) / intervalDays.length;
+  return Math.round(Math.sqrt(variance) * 10) / 10;
+}
+
 export type ReorderOperation =
   | { type: 'swap'; exerciseId: string; direction: 'up' | 'down' }
   | { type: 'toEnd'; exerciseId: string };

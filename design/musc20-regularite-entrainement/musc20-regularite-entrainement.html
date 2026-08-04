@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MUSC-20 — Régularité & consistance d'entraînement</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--track:#eadcc6;--success:#66714b}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  @media(max-width:800px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .card{border-radius:16px;padding:16px;background:var(--surf);border:1px solid var(--border)}
+  .cardtitle{font-weight:700;font-size:15px;margin-bottom:12px}
+  .metrics{display:flex;flex-direction:column;gap:12px}
+  .metric{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;
+          border-bottom:1px solid var(--border)}
+  .metric:last-child{border-bottom:none;padding-bottom:0}
+  .metriclabel{font-size:13px;color:var(--muted)}
+  .metricvalue{font-size:17px;font-weight:700}
+  .metrichint{font-size:11px;color:var(--muted);display:block;margin-top:2px}
+  .unavailable{color:var(--bstrong);font-style:italic;font-size:13px}
+  .hiddenbox{background:var(--bg);border:1px dashed var(--bstrong);border-radius:12px;
+             padding:16px;color:var(--muted);font-size:13px;text-align:center}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:88ch}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:800px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+        font-size:14px}
+  .rule b{display:block;margin-bottom:3px}
+  .stack{display:flex;flex-direction:column;gap:10px}
+  .ministack{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;
+             letter-spacing:.05em;margin:0 0 4px}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>MUSC-20 — Régularité & consistance d'entraînement</h1>
+<p class="sub">5ᵉ section sur l'écran Progression — complément <strong>quantitatif</strong> du
+streak (TRI-01). Trois métriques, chacune indépendamment disponible ou non.</p>
+<div class="flag">✅ Décisions D1-D4 arbitrées par Florian le 04/08/2026, code livré (TDD) le même jour —
+cette maquette reflète les règles telles qu'implémentées.</div>
+
+<h2>1 · Profil complet — programme planifié + historique suffisant</h2>
+<div class="screen" style="max-width:420px">
+  <div class="card">
+    <div class="cardtitle">Régularité</div>
+    <div class="metrics">
+      <div class="metric">
+        <span class="metriclabel">Séances/semaine</span>
+        <span class="metricvalue">2,8<span class="metrichint">Objectif : 3/sem</span></span>
+      </div>
+      <div class="metric">
+        <span class="metriclabel">Régularité des intervalles</span>
+        <span class="metricvalue">± 1,2 j</span>
+      </div>
+      <div class="metric">
+        <span class="metriclabel">Séances tenues</span>
+        <span class="metricvalue">86 %</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>2 · Dégradation par composante (D2)</h2>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Séance libre, sans planning actif</div>
+    <div class="card">
+      <div class="cardtitle">Régularité</div>
+      <div class="metrics">
+        <div class="metric">
+          <span class="metriclabel">Séances/semaine</span>
+          <span class="unavailable">objectif indisponible</span>
+        </div>
+        <div class="metric">
+          <span class="metriclabel">Régularité des intervalles</span>
+          <span class="metricvalue">± 2,4 j</span>
+        </div>
+        <div class="metric">
+          <span class="metriclabel">Séances tenues</span>
+          <span class="unavailable">indisponible — aucun planning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Compte tout neuf — état vide (R6)</div>
+    <div class="hiddenbox">« Pas assez de données » — les 3 métriques sont indisponibles,
+    section affichée quand même (Tier 1, jamais masquée en silence).</div>
+  </div>
+</div>
+
+<h2>3 · Position sur l'écran — 5ᵉ section, seuil ADR-007 (D4)</h2>
+<div class="screen" style="max-width:420px">
+  <div class="stack">
+    <div><div class="ministack">1 · Volume · 7 derniers jours</div></div>
+    <div><div class="ministack">2 · Tonnage cumulé (MUSC-19)</div></div>
+    <div><div class="ministack" style="color:var(--text)">3 · Régularité (cette US) ← nouveau</div></div>
+    <div><div class="ministack">4 · Équilibre musculaire (14 j)</div></div>
+    <div><div class="ministack">5 · Par exercice</div></div>
+  </div>
+</div>
+<div class="note">
+  ADR-007 recommande un passage en sections repliables dès ~4-5 sections. Ce seuil est atteint
+  avec cette US (5ᵉ section) — <strong>signalé, pas résolu ici</strong> : un vrai refactor
+  toucherait les 4 sections existantes, hors périmètre d'une US d'analyse.
+</div>
+
+<h2>Les règles</h2>
+<div class="rules">
+  <div class="rule"><b>R2 — Objectif = le planning réel, pas un système à part</b>
+    Aucun champ « objectif de fréquence » n'existe ailleurs dans l'app — l'objectif est déduit du
+    nombre de <code>planned_sessions</code> déjà généré par l'utilisateur.</div>
+  <div class="rule"><b>R3/D3 — Écart-type, seuil et formule de CYCLE-01</b>
+    Même patron déjà arbitré et testé ailleurs : écart-type de population, indisponible sous 3
+    points de données.</div>
+  <div class="rule"><b>R4 — Réutilise `computeWeekCompletionRate` (MUSC-F15)</b>
+    Aucune nouvelle fonction d'adhérence — les séances futures de la fenêtre comptent comme non
+    tenues, convention déjà actée (MR-03 du catalogue).</div>
+  <div class="rule"><b>R5/R6 — Dégradation par composante, jamais masquée en silence</b>
+    Chaque métrique indépendamment disponible ou non ; la section reste visible tant qu'au moins
+    une métrique répond, avec un état vide explicite sinon.</div>
+</div>
+
+</div></body></html>

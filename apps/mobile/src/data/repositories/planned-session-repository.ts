@@ -37,7 +37,9 @@ import type {
 } from '@wellness/shared';
 import {
   addDays,
+  computeIntervalRegularity,
   computeWeekCompletionRate,
+  daysBetween,
   generatePlannedSessions,
   localDayKey,
   planProgramInputSchema,
@@ -45,7 +47,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { nowUtc, patch, txInsert } from './_sql';
-import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
+import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -521,4 +523,95 @@ export function usePriorWeekAdherence(
     data.map((row) => ({ status: row.status as PlannedSessionStatus })),
   );
   return rate == null ? null : rate >= 0.8;
+}
+
+// ---------------------------------------------------------------------------
+// useTrainingRegularity — section Progression (US MUSC-20)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre de mesure (spec D1) — 28 j glissants, distincte de la semaine de programme unique. */
+const REGULARITY_WINDOW_DAYS = 28;
+
+// `export` uniquement pour les tests (patron `dashboard-repository.ts`) : hors d'ici, personne ne
+// les consomme. La borne haute sur `scheduled_date` est ce qui a été perdue une fois entre le plan
+// et le code (trouvé en revue) — un test direct sur ces requêtes l'aurait attrapé plus tôt.
+export const SELECT_PLANNED_STRENGTH_IN_WINDOW = `
+  SELECT ps.status
+  FROM planned_sessions ps
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND p.pillar = 'strength'
+    AND ps.scheduled_date >= ? AND ps.scheduled_date <= ?
+`;
+
+export const SELECT_COMPLETED_STRENGTH_IN_WINDOW = `
+  SELECT finished_at FROM workouts
+  WHERE status = 'completed' AND deleted_at IS NULL AND finished_at >= ?
+  ORDER BY finished_at
+`;
+
+export type TrainingRegularity = {
+  sessionsPerWeek: number | null;
+  targetPerWeek: number | null;
+  intervalRegularityDays: number | null;
+  adherenceRate: number | null;
+  isLoading: boolean;
+};
+
+/**
+ * Régularité & consistance d'entraînement (US MUSC-20), sur une fenêtre de 28 j glissants.
+ *
+ * - `sessionsPerWeek`/`targetPerWeek` (spec R1/R2) : séances muscu terminées / `planned_sessions`
+ *   muscu (tous statuts) de la fenêtre, ramenés à une moyenne hebdomadaire. `targetPerWeek` est
+ *   `null` si aucune `planned_sessions` dans la fenêtre (D2 — pas de planning actif).
+ * - `intervalRegularityDays` (spec R3) : écart-type de population des écarts en jours entre
+ *   **jours distincts** de séance terminée (`computeIntervalRegularity`, `@wellness/shared`).
+ *   `null` sous 3 jours distincts (D3).
+ * - `adherenceRate` (spec R4) : `computeWeekCompletionRate` (déjà posée par MUSC-F15, non
+ *   modifiée) appliquée aux `planned_sessions` muscu de la fenêtre — `null` si aucune ligne.
+ *
+ * Chaque métrique dégrade indépendamment (spec R5) ; tous les hooks sous-jacents sont appelés
+ * inconditionnellement (règle des hooks React).
+ */
+export function useTrainingRegularity(): TrainingRegularity {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const todayKey = useTodayKey();
+  const windowStartKey = useWindowStartKey(REGULARITY_WINDOW_DAYS);
+  const windowStartUtc = useWindowStartUtc(REGULARITY_WINDOW_DAYS);
+
+  const { data: plannedRows, isLoading: plannedLoading } = useQuery<{ status: string }>(
+    SELECT_PLANNED_STRENGTH_IN_WINDOW,
+    [userId, windowStartKey, todayKey],
+  );
+  const { data: completedRows, isLoading: completedLoading } = useQuery<{
+    finished_at: string;
+  }>(SELECT_COMPLETED_STRENGTH_IN_WINDOW, [windowStartUtc]);
+
+  const weeksInWindow = REGULARITY_WINDOW_DAYS / 7;
+  const sessionsPerWeek =
+    completedRows.length > 0 ? Math.round((completedRows.length / weeksInWindow) * 10) / 10 : null;
+  const targetPerWeek =
+    plannedRows.length > 0 ? Math.round((plannedRows.length / weeksInWindow) * 10) / 10 : null;
+
+  // Jours distincts (pas le nombre brut de séances) : deux séances le même jour ne créent pas
+  // un intervalle de 0, même discipline que le « jour à charge » de TRI-12.
+  const distinctDays = Array.from(
+    new Set(completedRows.map((r) => localDayKey(new Date(r.finished_at)))),
+  ).sort();
+  const intervalDays = distinctDays
+    .slice(1)
+    .map((day, i) => daysBetween(distinctDays[i]!, day));
+  const intervalRegularityDays = computeIntervalRegularity(intervalDays);
+
+  const adherenceRate = computeWeekCompletionRate(
+    plannedRows.map((row) => ({ status: row.status as PlannedSessionStatus })),
+  );
+
+  return {
+    sessionsPerWeek,
+    targetPerWeek,
+    intervalRegularityDays,
+    adherenceRate: adherenceRate == null ? null : Math.round(adherenceRate * 100),
+    isLoading: plannedLoading || completedLoading,
+  };
 }

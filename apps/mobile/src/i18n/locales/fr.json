@@ -1334,6 +1334,18 @@
       "thisYear": "Cette année",
       "milestone": "🏆 Plus de {{weight}} soulevés au total !"
     },
+    "regularity": {
+      "title": "Régularité",
+      "perWeek": "Séances/semaine",
+      "target": "Objectif : {{value}}/sem",
+      "targetUnavailable": "objectif indisponible",
+      "intervalStdDev": "Régularité des intervalles",
+      "intervalValue": "± {{value}} j",
+      "adherenceRate": "Séances tenues",
+      "unavailable": "Pas assez de données",
+      "emptyTitle": "Pas encore assez de données",
+      "emptyMessage": "Termine quelques séances pour voir ta régularité d'entraînement."
+    },
     "balance": {
       "title": "Équilibre musculaire",
       "subtitle": "sur 14 jours",

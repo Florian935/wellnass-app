@@ -1334,6 +1334,18 @@
       "thisYear": "This year",
       "milestone": "🏆 Over {{weight}} lifted in total!"
     },
+    "regularity": {
+      "title": "Consistency",
+      "perWeek": "Sessions/week",
+      "target": "Target: {{value}}/wk",
+      "targetUnavailable": "target unavailable",
+      "intervalStdDev": "Interval regularity",
+      "intervalValue": "± {{value}} d",
+      "adherenceRate": "Sessions kept",
+      "unavailable": "Not enough data",
+      "emptyTitle": "Not enough data yet",
+      "emptyMessage": "Complete a few workouts to see your training consistency."
+    },
     "balance": {
       "title": "Muscle balance",
       "subtitle": "over 14 days",

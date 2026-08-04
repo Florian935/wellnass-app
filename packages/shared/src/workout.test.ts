@@ -8,6 +8,7 @@ import {
   workoutStatusSchema,
   workoutRowSchema,
   workoutSetRowSchema,
+  computeIntervalRegularity,
   computeTrainingDensity,
   computeVolume,
   hasReachedTonnageMilestone,
@@ -393,6 +394,25 @@ describe('computeTrainingDensity (US MUSC-12, spec R1/R2)', () => {
 
   it('arrondit correctement à 1 décimale', () => {
     expect(computeTrainingDensity(100, 7)).toBe(14.3); // 100/7 = 14,2857...
+  });
+});
+
+describe('computeIntervalRegularity (US MUSC-20, spec R3/D3)', () => {
+  it('un seul intervalle (2 séances) → null (D3, moins de 3 séances)', () => {
+    expect(computeIntervalRegularity([7])).toBeNull();
+  });
+
+  it('liste vide → null', () => {
+    expect(computeIntervalRegularity([])).toBeNull();
+  });
+
+  it('3 séances parfaitement régulières (intervalles [7, 7]) → écart-type 0', () => {
+    expect(computeIntervalRegularity([7, 7])).toBe(0);
+  });
+
+  it('intervalles irréguliers [2, 10, 3] → écart-type de population ≈ 3,6', () => {
+    // moyenne = 5 ; variance = ((2-5)² + (10-5)² + (3-5)²) / 3 = 38/3 ≈ 12,667 ; racine ≈ 3,559
+    expect(computeIntervalRegularity([2, 10, 3])).toBe(3.6);
   });
 });
 

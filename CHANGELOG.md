@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/musc20-regularite-entrainement` — Régularité & consistance d'entraînement (US MUSC-20, catalogue d'analyses)
+
+Suite de `a91dc42`. Sixième et dernier candidat catalogue de la session, le plus riche : 5ᵉ section
+sur l'écran Progression (`/progress`), 3 métriques indépendamment disponibles ou non (séances/sem
+vs objectif, écart-type des intervalles, taux de séances tenues). Cycle complet : `/us` →
+validation Florian (4 décisions) → implémentation TDD → revue de code → correctif.
+
+#### Ajouté
+
+- **`packages/shared/src/workout.ts`** (+ 4 tests) : `computeIntervalRegularity` — écart-type de
+  population des intervalles en jours entre séances, formule et seuil (< 3 séances → indisponible)
+  repris tels quels de CYCLE-01 (`stdDev`), aucun nouveau chiffre inventé.
+- Hook `useTrainingRegularity` (`planned-session-repository.ts`, 28 j glissants) : **réutilise
+  `computeWeekCompletionRate`** (posée par MUSC-F15) pour le taux de séances tenues plutôt que
+  d'écrire une nouvelle fonction — trouvaille faite pendant le cadrage.
+- Section `RegularitySection` sur `/progress`, i18n FR + EN (`progress.regularity.*`), état vide
+  explicite si les 3 métriques sont indisponibles.
+- Spec + plan + maquette : [musc20-regularite-entrainement.md](docs/specs/functional/us/musc20-regularite-entrainement.md),
+  [plan](docs/plans/musc20-regularite-entrainement.md), [maquette](design/musc20-regularite-entrainement/musc20-regularite-entrainement.html).
+  Décision structurante : « objectif » = le planning réel de l'utilisateur (`planned_sessions`),
+  pas un nouveau système de but — aucun champ de fréquence cible n'existe ailleurs dans l'app (ni
+  sur les programmes, ni dans OBJ-01).
+
+#### Corrigé
+
+- 🔴 **Bug critique trouvé en revue de code (`superpowers:code-reviewer`), avant commit** : la
+  requête `planned_sessions` (`useTrainingRegularity`) n'avait pas de borne haute sur
+  `scheduled_date` — perdue entre le plan (qui la prévoyait) et le code. `generatePlannedSessions`
+  générant tout le programme dès l'activation, tout utilisateur avec un programme actif faisait
+  remonter l'intégralité des séances **futures** dans le calcul, gonflant l'objectif hebdomadaire
+  et faisant chuter artificiellement le taux de séances tenues. Corrigé (`AND ps.scheduled_date <=
+  ?`, borne = aujourd'hui) et couvert par 3 nouveaux tests SQL directs sur du vrai SQLite
+  (`planned-session-sql.test.ts`) qui auraient attrapé le bug — vérifié en revert temporaire du
+  correctif (le test casse bien sans lui).
+- 🟢 Catalogue et maquette resynchronisés après validation (même réflexe que les US précédentes).
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- **Point de vigilance ADR-007 signalé, pas résolu** : `/progress` atteint 5 sections avec cette
+  US — le seuil de repli recommandé (~4-5 sections) est franchi. Accepté pour cette US (décision
+  D4) ; un refactor en sections repliables toucherait les 4 sections existantes et reste hors
+  périmètre d'une US d'analyse. À reprendre si la densité de l'écran s'avère gênante en usage réel.
+- Aucune fonction de MUSC-F15/CYCLE-01 modifiée — MUSC-20 consomme uniquement leurs sorties déjà
+  testées (`computeWeekCompletionRate`, formule d'écart-type).
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1483 tests
+  shared (70 fichiers) + 658 tests mobile (70 suites), 0 échec**.
+
 ### 04/08/2026 — `feature/musc12-densite-entrainement` — Densité d'entraînement volume/temps (US MUSC-12, catalogue d'analyses)
 
 Suite de `ecd3da4`. Cinquième candidat de la session, le plus petit périmètre de la série : une

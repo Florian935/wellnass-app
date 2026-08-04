@@ -57,6 +57,7 @@ import {
   type ProgressionPeriod,
 } from '@/data/repositories/records-repository';
 import { useExercise, type ExerciseListItem } from '@/data/repositories/exercise-repository';
+import { useTrainingRegularity } from '@/data/repositories/planned-session-repository';
 import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -140,7 +141,17 @@ export default function ProgressScreen() {
         <LifetimeTonnageSection />
 
         {/* ---------------------------------------------------------------- */}
-        {/* Section 1ter — Équilibre musculaire (14 j)                        */}
+        {/* Section 1ter — Régularité & consistance (US MUSC-20)               */}
+        {/* ⚠️ 5ᵉ section de cet écran — seuil de repli ADR-007 (~4-5 sections) */}
+        {/* atteint (spec D4), accepté tel quel, pas traité ici.                */}
+        {/* ---------------------------------------------------------------- */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+          {t('progress.regularity.title')}
+        </Text>
+        <RegularitySection onStartWorkout={() => router.push('/workout')} />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* Section 1quater — Équilibre musculaire (14 j)                     */}
         {/* ---------------------------------------------------------------- */}
         <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
           {t('progress.balance.title')}
@@ -356,6 +367,94 @@ function LifetimeTonnageSection() {
             <Text style={[styles.tonnageBadgeText, { color: colors.accent }]}>{milestoneText}</Text>
           </View>
         )}
+      </View>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section régularité & consistance (US MUSC-20)
+// ---------------------------------------------------------------------------
+
+function RegularitySection({ onStartWorkout }: { onStartWorkout: () => void }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const regularity = useTrainingRegularity();
+
+  if (regularity.isLoading) {
+    return (
+      <View style={styles.loadingRow}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    );
+  }
+
+  // Spec R6 : état vide seulement si les 3 métriques sont indisponibles — jamais une section
+  // masquée en silence sur un écran Tier 1 ouvert délibérément.
+  const allUnavailable =
+    regularity.sessionsPerWeek == null &&
+    regularity.intervalRegularityDays == null &&
+    regularity.adherenceRate == null;
+
+  if (allUnavailable) {
+    return (
+      <EmptyState
+        icon="calendar-outline"
+        title={t('progress.regularity.emptyTitle')}
+        message={t('progress.regularity.emptyMessage')}
+        cta={{ label: t('progress.cta.startWorkout'), onPress: onStartWorkout }}
+      />
+    );
+  }
+
+  const unavailable = t('progress.regularity.unavailable');
+  const perWeekLabel =
+    regularity.sessionsPerWeek != null ? String(regularity.sessionsPerWeek) : unavailable;
+  const targetLabel =
+    regularity.targetPerWeek != null
+      ? t('progress.regularity.target', { value: regularity.targetPerWeek })
+      : t('progress.regularity.targetUnavailable');
+  const intervalLabel =
+    regularity.intervalRegularityDays != null
+      ? t('progress.regularity.intervalValue', { value: regularity.intervalRegularityDays })
+      : unavailable;
+  const adherenceLabel =
+    regularity.adherenceRate != null ? `${regularity.adherenceRate} %` : unavailable;
+
+  const a11yLabel = [
+    `${t('progress.regularity.perWeek')} ${perWeekLabel}${
+      regularity.sessionsPerWeek != null ? `. ${targetLabel}` : ''
+    }`,
+    `${t('progress.regularity.intervalStdDev')} ${intervalLabel}`,
+    `${t('progress.regularity.adherenceRate')} ${adherenceLabel}`,
+  ].join('. ');
+
+  return (
+    <Card>
+      <View accessible accessibilityLabel={a11yLabel} style={styles.regularityStack}>
+        <View style={styles.metricRow}>
+          <Text style={[styles.metricLabel, { color: colors.textMuted }]}>
+            {t('progress.regularity.perWeek')}
+          </Text>
+          <View style={styles.metricValueGroup}>
+            <Text style={[styles.metricValue, { color: colors.text }]}>{perWeekLabel}</Text>
+            {regularity.sessionsPerWeek != null && (
+              <Text style={[styles.metricHint, { color: colors.textMuted }]}>{targetLabel}</Text>
+            )}
+          </View>
+        </View>
+        <View style={styles.metricRow}>
+          <Text style={[styles.metricLabel, { color: colors.textMuted }]}>
+            {t('progress.regularity.intervalStdDev')}
+          </Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{intervalLabel}</Text>
+        </View>
+        <View style={styles.metricRow}>
+          <Text style={[styles.metricLabel, { color: colors.textMuted }]}>
+            {t('progress.regularity.adherenceRate')}
+          </Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{adherenceLabel}</Text>
+        </View>
       </View>
     </Card>
   );
@@ -703,6 +802,30 @@ const styles = StyleSheet.create({
   tonnageBadgeText: {
     fontFamily: fontFamily.bodyBold,
     fontSize: 13,
+  },
+  regularityStack: {
+    gap: 12,
+  },
+  metricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  metricLabel: {
+    fontFamily: fontFamily.body,
+    fontSize: 13,
+  },
+  metricValueGroup: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  metricValue: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 15,
+  },
+  metricHint: {
+    fontFamily: fontFamily.body,
+    fontSize: 11,
   },
   emptyCard: {
     padding: 20,
