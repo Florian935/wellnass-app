@@ -42,13 +42,23 @@ const shortLabel = (iso: string) => {
   return `${d}/${m}`;
 };
 
+/**
+ * Bilan calorique signé (US NUTR-18), toujours avec un signe explicite (+/−) — `Intl.NumberFormat`
+ * plutôt qu'une concaténation manuelle, séparateur de milliers correct selon la langue (même
+ * patron que `formatSteps`, `StepsCard.tsx`).
+ */
+const formatSignedKcal = (value: number, language: string): string =>
+  new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'fr-FR', { signDisplay: 'exceptZero' }).format(
+    value,
+  );
+
 const WEIGHT_RANGES = { '4w': 28, '3m': 90, '1y': 365 } as const;
 type WeightRange = keyof typeof WEIGHT_RANGES;
 const INTAKE_RANGES = { '7d': 7, '30d': 30 } as const;
 type IntakeRange = keyof typeof INTAKE_RANGES;
 
 export default function NutritionStatsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
 
@@ -219,6 +229,18 @@ export default function NutritionStatsScreen() {
             </Text>
             <Text style={[styles.macroLine, { color: colors.textMuted }]}>
               {t('stats.adherence.margin', { pct: adherence.marginPct })}
+            </Text>
+            {/* US NUTR-18 — regroupée ici plutôt qu'une nouvelle carte (ADR-007, voir spec §0) */}
+            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
+              {t('stats.adherence.balance', {
+                value: formatSignedKcal(adherence.balanceKcal, i18n.language),
+              })}
+            </Text>
+            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
+              {t('stats.adherence.aboveBelow', {
+                above: adherence.daysAbove,
+                below: adherence.daysBelow,
+              })}
             </Text>
           </>
         )}

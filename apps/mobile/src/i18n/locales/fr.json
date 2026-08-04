@@ -619,6 +619,8 @@
       "inTarget_one": "{{count}} / {{total}} jour dans la cible",
       "inTarget_other": "{{count}} / {{total}} jours dans la cible",
       "margin": "±{{pct}} % de l'objectif",
+      "balance": "Bilan : {{value}} kcal",
+      "aboveBelow": "{{above}} j au-dessus, {{below}} j en dessous",
       "empty": "Aucun jour renseigné",
       "noTarget": "Définis ton objectif calorique"
     },

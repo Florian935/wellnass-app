@@ -30,6 +30,7 @@ import {
   classifyWellbeingComponent,
   computeAcwr,
   computeAge,
+  computeCaloricBalance,
   computeDeficitVolumeAlert,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
@@ -1207,6 +1208,11 @@ export type GoalAdherence = {
   marginPct: number;
   hasTarget: boolean;
   isLoading: boolean;
+  /** US NUTR-18 — bilan cumulé signé (Σ kcal − Σ objectif effectif) sur les jours loggés. */
+  balanceKcal: number;
+  /** US NUTR-18 — décompte binaire, distinct de `daysInTarget` (marge de tolérance). */
+  daysAbove: number;
+  daysBelow: number;
 };
 
 /**
@@ -1305,5 +1311,16 @@ export function useGoalAdherenceForRange(
   }));
 
   const { loggedDays, daysInTarget, pct } = computeGoalAdherence(perDay, marginPct);
-  return { loggedDays, daysInTarget, pct, marginPct, hasTarget: targetBase != null, isLoading };
+  const { balanceKcal, daysAbove, daysBelow } = computeCaloricBalance(perDay);
+  return {
+    loggedDays,
+    daysInTarget,
+    pct,
+    marginPct,
+    hasTarget: targetBase != null,
+    isLoading,
+    balanceKcal,
+    daysAbove,
+    daysBelow,
+  };
 }

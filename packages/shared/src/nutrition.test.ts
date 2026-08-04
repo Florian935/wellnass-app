@@ -8,6 +8,7 @@ import {
   activityLevelSchema,
   basalMetabolicRate,
   caloriesFromMacros,
+  computeCaloricBalance,
   computeEffectiveTargetForDay,
   computeGoalAdherence,
   computeJournalCompletion,
@@ -487,6 +488,49 @@ describe('computeGoalAdherence', () => {
   });
   it('aucun jour loggé → pct 0 sans division par zéro', () => {
     expect(computeGoalAdherence([], 10)).toEqual({ loggedDays: 0, daysInTarget: 0, pct: 0 });
+  });
+});
+
+describe('computeCaloricBalance (US NUTR-18, spec R1/R2)', () => {
+  it('jours en surplus → bilan positif, tous au-dessus', () => {
+    const r = computeCaloricBalance([
+      { kcal: 2200, effectiveTarget: 2000 },
+      { kcal: 2100, effectiveTarget: 2000 },
+    ]);
+    expect(r).toEqual({ balanceKcal: 300, daysAbove: 2, daysBelow: 0 });
+  });
+
+  it('jours en déficit → bilan négatif, tous en dessous', () => {
+    const r = computeCaloricBalance([
+      { kcal: 1700, effectiveTarget: 2000 },
+      { kcal: 1900, effectiveTarget: 2000 },
+    ]);
+    expect(r).toEqual({ balanceKcal: -400, daysAbove: 0, daysBelow: 2 });
+  });
+
+  it('bilan exactement nul, égalité exacte → ni au-dessus ni en dessous (spec R2)', () => {
+    const r = computeCaloricBalance([
+      { kcal: 2000, effectiveTarget: 2000 },
+      { kcal: 2000, effectiveTarget: 2000 },
+    ]);
+    expect(r).toEqual({ balanceKcal: 0, daysAbove: 0, daysBelow: 0 });
+  });
+
+  it('aucun jour avec objectif valide (null ou <= 0) → tout à zéro', () => {
+    const r = computeCaloricBalance([
+      { kcal: 2000, effectiveTarget: null },
+      { kcal: 1800, effectiveTarget: 0 },
+    ]);
+    expect(r).toEqual({ balanceKcal: 0, daysAbove: 0, daysBelow: 0 });
+  });
+
+  it('mélange surplus/déficit → bilan net correct', () => {
+    const r = computeCaloricBalance([
+      { kcal: 2200, effectiveTarget: 2000 }, // +200
+      { kcal: 1700, effectiveTarget: 2000 }, // -300
+      { kcal: 2000, effectiveTarget: 2000 }, // 0
+    ]);
+    expect(r).toEqual({ balanceKcal: -100, daysAbove: 1, daysBelow: 1 });
   });
 });
 

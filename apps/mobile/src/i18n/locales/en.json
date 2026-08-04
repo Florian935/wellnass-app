@@ -619,6 +619,8 @@
       "inTarget_one": "{{count}} / {{total}} day on target",
       "inTarget_other": "{{count}} / {{total}} days on target",
       "margin": "±{{pct}}% of the goal",
+      "balance": "Balance: {{value}} kcal",
+      "aboveBelow": "{{above}} d above, {{below}} d below",
       "empty": "No day logged",
       "noTarget": "Set your calorie goal"
     },

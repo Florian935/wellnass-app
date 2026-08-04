@@ -38,6 +38,7 @@ avant de pouvoir publier.
 | **MUSC-F8** — Notifications muscu — push de record agrégé, célébration animée, rappel de séance | `recette` | `feature/muscf8-notifications-muscu` | [3.42, 2.7, 2.4] |
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `recette` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
+| **NUTR-18** — Bilan calorique hebdomadaire | `recette` | `feature/nutr18-bilan-calorique-hebdo` | — |
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
@@ -57,7 +58,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 
-⏳ **40 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **41 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, CONF-07, CONTENU-01, CYCLE-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, TRI-12, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -78,9 +79,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/musc20-regularite-entrainement` (modifications non commitées) |
-| Commits | 1069 · `main` a **1066** commits de retard sur `dev` |
-| Specs d'US | 117 au total — 77 clôturées, 40 en cours |
+| Branche courante | `feature/nutr18-bilan-calorique-hebdo` (modifications non commitées) |
+| Commits | 1070 · `main` a **1067** commits de retard sur `dev` |
+| Specs d'US | 118 au total — 77 clôturées, 41 en cours |
 | Migrations | 70/70 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -90,11 +91,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `94fe516` feat(musc20): régularité & consistance d'entraînement (US MUSC-20, catalogue d'analyses)
 - `a91dc42` feat(musc12): densité d'entraînement volume/temps (US MUSC-12, catalogue d'analyses)
 - `ecd3da4` feat(musc19): tonnage cumulé lifetime/annuel (US MUSC-19, catalogue d'analyses)
 - `06752c6` feat(mn04): macros ajustées jours muscu, glucides péri-séance (US MN-04, catalogue d'analyses)
 - `3c390b5` feat(rn03): ajustement auto du TDEE selon le volume de course (US RN-03, catalogue d'analyses)
-- `cadaf56` feat(tri03): score de forme / readiness global (US TRI-03, catalogue d'analyses)
 
 ---
 

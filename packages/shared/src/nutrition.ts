@@ -235,6 +235,25 @@ export function computeGoalAdherence(
 }
 
 /**
+ * Bilan calorique cumulé (US NUTR-18, spec R1/R2) : somme signée des écarts (kcal − objectif
+ * effectif) sur les jours loggés avec un objectif valide, + décompte binaire au-dessus/en dessous
+ * (distinct de la marge de tolérance de `computeGoalAdherence`). Même filtre de jours exploitables
+ * que `computeGoalAdherence` — pas de nouvelle convention.
+ */
+export function computeCaloricBalance(
+  perDay: { kcal: number; effectiveTarget: number | null }[],
+): { balanceKcal: number; daysAbove: number; daysBelow: number } {
+  const days = perDay.filter(
+    (d): d is { kcal: number; effectiveTarget: number } =>
+      d.effectiveTarget != null && d.effectiveTarget > 0,
+  );
+  const balanceKcal = Math.round(days.reduce((sum, d) => sum + (d.kcal - d.effectiveTarget), 0));
+  const daysAbove = days.filter((d) => d.kcal > d.effectiveTarget).length;
+  const daysBelow = days.filter((d) => d.kcal < d.effectiveTarget).length;
+  return { balanceKcal, daysAbove, daysBelow };
+}
+
+/**
  * Régularité du journal (item NUTR-17) : part des jours renseignés sur la fenêtre des `windowDays`
  * jours ÉCOULÉS (`[J-windowDays … J-1]`, aujourd'hui exclu), dénominateur borné à l'ancienneté du
  * compte (`min(fenêtre, jours depuis la 1ʳᵉ entrée)`). Pur. Reçoit un `Date` `today` (jamais une clé —

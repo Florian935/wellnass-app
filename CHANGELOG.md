@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 04/08/2026 — `feature/nutr18-bilan-calorique-hebdo` — Bilan calorique hebdomadaire (US NUTR-18, catalogue d'analyses)
+
+Suite de `94fe516`. Septième candidat catalogue de la session — pas de nouvelle carte : ADR-007
+avait explicitement anticipé la saturation de l'écran Stats nutrition (déjà 8 blocs) et prescrit
+le regroupement à la prochaine analyse qui s'y ajoute. NUTR-18 applique ce remède : deux lignes
+ajoutées à la carte Adhérence (NUTR-10) déjà existante, pas une 9ᵉ carte. Cycle complet : `/us` →
+validation Florian (D1 : suit le sélecteur 7j/30j existant) → implémentation TDD → revue de code
+(`superpowers:code-reviewer`, aucun finding bloquant).
+
+#### Ajouté
+
+- **`packages/shared/src/nutrition.ts`** (+ 5 tests) : `computeCaloricBalance` — bilan cumulé
+  signé (Σ kcal − Σ objectif effectif) + décompte binaire jours au-dessus/en dessous, sur le
+  **même filtre** de jours exploitables que `computeGoalAdherence` (pas de 2ᵉ convention).
+- `GoalAdherence` (`dashboard-repository.ts`) étendu avec `balanceKcal`/`daysAbove`/`daysBelow` —
+  extension purement additive de `useGoalAdherenceForRange`, sur le `perDay` déjà construit
+  (aucune requête supplémentaire). Confirmé sans régression pour le 2ᵉ consommateur du hook
+  (BILAN-01, `weekly-review-repository.ts`) par le typecheck + la suite Jest complète.
+- Carte Adhérence (`nutrition-stats.tsx`) : 2 nouvelles lignes, `formatSignedKcal` (`Intl.
+  NumberFormat`, `signDisplay: 'exceptZero'`, patron déjà utilisé par `formatSteps` dans
+  `StepsCard.tsx`), i18n FR + EN (`stats.adherence.balance`/`aboveBelow`).
+- Spec + plan + maquette : [nutr18-bilan-calorique-hebdo.md](docs/specs/functional/us/nutr18-bilan-calorique-hebdo.md),
+  [plan](docs/plans/nutr18-bilan-calorique-hebdo.md), [maquette](design/nutr18-bilan-calorique-hebdo/nutr18-bilan-calorique-hebdo.html).
+
+#### Technique / Notes
+
+- US d'analyse catalogue-only (`roadmap: []`) : aucune ligne de roadmap touchée.
+- Catalogue et maquette resynchronisés dès la validation, avant l'implémentation (plutôt qu'après
+  coup en revue, comme les 6 US précédentes de la session).
+- Qualité : `typecheck` ✅ · `lint` ✅ (0 erreur, aucun nouveau warning) · `test` ✅ **1488 tests
+  shared (70 fichiers) + 658 tests mobile (70 suites) + admin, 0 échec**.
+
 ### 04/08/2026 — `feature/musc20-regularite-entrainement` — Régularité & consistance d'entraînement (US MUSC-20, catalogue d'analyses)
 
 Suite de `a91dc42`. Sixième et dernier candidat catalogue de la session, le plus riche : 5ᵉ section
