@@ -20,6 +20,8 @@ import {
 } from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
+import { useInsights } from '@/data/repositories/insights-repository';
+import { InsightsProvider } from '@/data/repositories/insights-context';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -54,6 +56,14 @@ export default function HomeScreen() {
   // détectée, déclaré ici dès l'implémentation (pas laissé à la revue, contrairement aux 4
   // précédents ci-dessus qui avaient chacun oublié cette étape une fois).
   const concurrentTrainingInterferenceActive = useConcurrentTrainingInterference().show;
+  // US INSIGHTS-01 : la porte d'entrée de l'écran « Insights » rend `null` quand le moteur ne
+  // retient aucune carte. Déclarée ici **dès l'implémentation**, comme MR-08 et contrairement aux
+  // quatre widgets ci-dessus qui avaient chacun oublié cette étape une fois.
+  // Calculé **une seule fois** ici, puis diffusé au widget via `InsightsProvider` (voir
+  // `insights-context.tsx`) : un second appel dans `InsightsCard` remonterait l'union de huit hooks
+  // sur l'écran le plus ouvert de l'app.
+  const insightsValue = useInsights();
+  const insightsActive = insightsValue.insights.length > 0;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
@@ -62,6 +72,7 @@ export default function HomeScreen() {
     if (id === 'readiness') return readinessActive;
     if (id === 'activity-level-suggestion') return activityLevelSuggestionActive;
     if (id === 'concurrent-training-interference') return concurrentTrainingInterferenceActive;
+    if (id === 'insights') return insightsActive;
     return true;
   };
 
@@ -151,13 +162,17 @@ export default function HomeScreen() {
         // Neutralise le défilement pendant un drag actif (maquette / spec 7.2).
         scrollEnabled={!dragging}
       >
-        <WidgetGrid
-          screen="home"
-          editing={editing}
-          renderWidget={renderWidget}
-          onDragActiveChange={setDragging}
-          isActive={isWidgetActive}
-        />
+        {/* US INSIGHTS-01 — un seul provider autour de la grille, pas un par cellule : le widget
+            `insights` lit la sélection déjà calculée ligne 63 au lieu de remonter l'agrégateur. */}
+        <InsightsProvider value={insightsValue}>
+          <WidgetGrid
+            screen="home"
+            editing={editing}
+            renderWidget={renderWidget}
+            onDragActiveChange={setDragging}
+            isActive={isWidgetActive}
+          />
+        </InsightsProvider>
       </ScrollView>
     </Screen>
   );

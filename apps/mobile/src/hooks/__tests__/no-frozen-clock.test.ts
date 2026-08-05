@@ -75,6 +75,11 @@ const WATCHED = [
   'src/data/repositories/daily-wellbeing-repository.ts',
   'src/data/repositories/reminder-habits-repository.ts',
   'src/data/repositories/notification-repository.ts',
+  // US INSIGHTS-01 : l'agrégateur porte une décision « aujourd'hui » — la porte des 14 jours du
+  // moteur (`isStale`) — et vit tant que l'écran d'accueil est monté. Une horloge lue dans son
+  // corps serait gelée par React Compiler et la sélection ne bougerait plus jusqu'au redémarrage
+  // de l'app : exactement le défaut que le critère de recette 14 cherche.
+  'src/data/repositories/insights-repository.ts',
   'src/components/dashboard/WellbeingCard.tsx',
   'src/components/dashboard/NutritionSummaryCard.tsx',
 ];

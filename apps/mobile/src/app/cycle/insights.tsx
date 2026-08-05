@@ -1,6 +1,11 @@
 /**
  * US CYCLE-01 (roadmap 1.26) — écran « Croisement ».
  *
+ * ⚠️ **Homonyme, mais sans rapport avec `app/insights.tsx`** (US INSIGHTS-01), qui est l'écran
+ * « Insights » transverse du Tier 3 d'ADR-007. Celui-ci porte les moyennes par phase du cycle et
+ * s'affiche sous le titre « Croisement ». Cohabitation délibérée (INSIGHTS-01, décision D4) :
+ * renommer un écran déjà en recette pour une question de vocabulaire aurait été disproportionné.
+ *
  * ⚠️ **Des observations, jamais des conseils.** Chaque bloc affiche des **moyennes constatées** par
  * phase et le nombre de cycles réellement observés. Aucune phrase causale n'est construite ici :
  * tout vient de l'i18n, où les formulations se relisent d'un coup (critère de recette 14).

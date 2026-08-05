@@ -947,7 +947,15 @@ export function useTrainingTime(): TrainingTime {
 const ACUTE_WINDOW_DAYS = 7;
 const CHRONIC_WINDOW_DAYS = 28;
 
-export type TrainingLoadAlert = { show: boolean };
+/**
+ * `ratio` ajouté par **US INSIGHTS-01** : `computeAcwr` le calculait déjà et il était **jeté**, ce
+ * qui rendait l'alerte inaffichable sur l'écran « Insights » (une carte doit toujours porter le
+ * chiffre qui la justifie). Ce n'est donc pas une analyse nouvelle — on cesse de perdre une valeur
+ * existante. `null` quand l'ACWR n'est pas calculable ou que la garde pilier coupe.
+ *
+ * Le widget `training-load` ne lit que `show` et n'est pas modifié.
+ */
+export type TrainingLoadAlert = { show: boolean; ratio: number | null };
 
 /**
  * Expose l'alerte de surcharge combinée (ACWR, widget conditionnel Tier 2, US META-19).
@@ -975,7 +983,7 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
   const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
 
   if (!(strengthActive && runningActive)) {
-    return { show: false };
+    return { show: false, ratio: null };
   }
 
   const sessions = [
@@ -991,7 +999,7 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
     chronicSessions: byWindow(chronicStartKey),
   });
 
-  return { show: result?.showAlert ?? false };
+  return { show: result?.showAlert ?? false, ratio: result?.ratio ?? null };
 }
 
 // ---------------------------------------------------------------------------

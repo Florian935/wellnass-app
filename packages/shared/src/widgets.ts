@@ -84,6 +84,11 @@ export const HOME_WIDGET_IDS = [
   // (même garde tout-ou-rien que `training-load`) — rendu `null` hors divergence détectée entre
   // les deux piliers (spec R2).
   'concurrent-training-interference',
+  // US INSIGHTS-01 — idem, en fin de registre. **Porte d'entrée** de l'écran « Insights »
+  // (Tier 3, ADR-007) : rend la carte de tête, ou `null` quand le moteur ne retient rien.
+  // Conditionnel, donc **déclaré dans `isWidgetActive`** — la ligne part dans le même commit que
+  // ce registre, le défaut inverse s'étant produit quatre fois (voir `(tabs)/index.tsx`).
+  'insights',
   // US GARDE-01 : `load-streak-alert` (MR-14) **retiré** ici — fusionné dans `overtraining-guard`,
   // qui porte désormais 2 niveaux de sévérité. Aucune migration de `dashboard_layout` nécessaire :
   // `resolveScreenLayout` ignore les ids inconnus d'un layout stocké (voir son filtre `known.has`).
@@ -211,6 +216,10 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // US MR-08 : même garde que `training-load` — la divergence compare les deux piliers, un
       // seul actif ne donnerait qu'une moitié de la comparaison.
       'concurrent-training-interference': ['strength', 'running'],
+      // US INSIGHTS-01 : transverse, comme `review` — le moteur agrège des signaux des trois
+      // piliers et applique lui-même le gating candidat par candidat (spec R5). Une garde par
+      // pilier ici masquerait la porte d'entrée à un mono-pilier qui a pourtant des insights.
+      insights: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

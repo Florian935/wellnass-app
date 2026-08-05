@@ -2522,5 +2522,68 @@
       "setLabel": "{{reps}} × {{weight}} kg",
       "warmupExcluded": "Séries d’échauffement exclues."
     }
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "Ce qui compte pour toi, maintenant",
+    "lead": "Au plus trois analyses, choisies parmi tes signaux du moment.",
+    "empty": {
+      "title": "Rien à signaler aujourd’hui",
+      "body": "Tout est dans les clous. Reviens après ta prochaine séance, ou consulte ton bilan de la semaine."
+    },
+    "families": {
+      "alert": "À surveiller",
+      "change": "Ça a bougé",
+      "celebration": "Bravo"
+    },
+    "widget": {
+      "title": "Insight du jour",
+      "seeAll": "Tout voir ›",
+      "more_one": "+{{count}} autre insight",
+      "more_other": "+{{count}} autres insights"
+    },
+    "cards": {
+      "overtraining_guard": {
+        "title": "Charge & récupération",
+        "body_streak": "{{streakDays}} jours d’affilée avec au moins une séance, muscu et course confondues. Un jour de repos peut aider ta récupération.",
+        "body_streakAndDeficit": "{{streakDays}} jours d’affilée sans repos, avec des apports régulièrement sous ta cible. Un jour de repos et un repas plus complet peuvent t’aider à repartir du bon pied."
+      },
+      "training_load": {
+        "title": "Charge élevée cette semaine",
+        "body": "Ratio charge aiguë / chronique à {{ratio}} — nettement au-dessus de ta moyenne des 4 dernières semaines."
+      },
+      "deficit_volume": {
+        "title": "Apports bas pour ton volume",
+        "body": "Tu es à {{deficitPct}} % sous ta cible calorique sur {{loggedDays}} jours journalisés, alors que ton volume de musculation est élevé."
+      },
+      "record_recent": {
+        "title": "Nouveau record — {{subject}}",
+        "body_max_weight": "Charge max portée à {{value}}.",
+        "body_estimated_1rm": "1RM estimé porté à {{value}}.",
+        "body_best_volume": "Meilleur volume sur une série : {{value}}."
+      },
+      "goal_achieved": {
+        "title": "Objectif atteint — {{subject}}",
+        "body_run_distance": "{{achievedValue}} parcourus pour une cible de {{targetValue}}.",
+        "body_exercise_1rm": "{{achievedValue}} atteints pour une cible de {{targetValue}}."
+      },
+      "weekly_decision": {
+        "title": "Ta décision de la semaine"
+      },
+      "muscle_neglected": {
+        "title": "{{subject}} sous-travaillé",
+        "body": "{{sharePct}} % de tes séries sur 14 jours ({{sets}} séries), contre {{evenSharePct}} % pour une répartition équilibrée."
+      },
+      "tonnage_change": {
+        "title": "Tonnage de la semaine",
+        "body_up": "En hausse de {{pct}} % par rapport à la semaine précédente.",
+        "body_down": "En baisse de {{pct}} % par rapport à la semaine précédente."
+      },
+      "distance_change": {
+        "title": "Distance de la semaine",
+        "body_up": "En hausse de {{pct}} % par rapport à la semaine précédente.",
+        "body_down": "En baisse de {{pct}} % par rapport à la semaine précédente."
+      }
+    }
   }
 }

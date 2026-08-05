@@ -11,9 +11,10 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **04/08/2026** — 29 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **05/08/2026** — 30 sections. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
-> relecture par un pratiquant, pas une manipulation.
+> relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
+> rule ni nouveau build** — recettable sur l'APK existant.
 
 ---
 
@@ -989,6 +990,56 @@ dépendance native → recettable sur l'APK existant**.
 
 **Quand l'US passe** : `etape: close`, catalogue MUSC-16/27/29 déjà à ✅, et **on supprime cette
 section**. Passe par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 30. INSIGHTS-01 — Écran « Insights » (Tier 3)
+
+📄 [spec](docs/specs/functional/us/insights01-ecran-insights.md) · roadmap **7.20** · **📱 device** ·
+✅ **aucune migration, aucune sync rule** · ✅ **aucune dépendance native → recettable sur l'APK
+existant**.
+
+> **Comment provoquer des insights.** L'écran ne montre que ce qui est vrai : sur un compte propre,
+> il sera vide, et c'est le critère 6. Pour voir des cartes, le plus simple est d'enchaîner
+> quelques séances (charge → alerte), de battre un record (célébration), ou d'attendre la clôture
+> d'une semaine ISO (bilan + variations).
+
+- [ ] 1. Le widget « Insight du jour » apparaît sur l'accueil **quand il y a quelque chose à dire**,
+      et ouvre l'écran.
+- [ ] 2. **L'en-tête de l'écran s'affiche correctement** (titre au-dessus de la barre d'état, pas
+      dessous) — c'est le défaut PAS-01, invisible au typecheck comme aux tests.
+- [ ] 3. Chaque carte affiche **au moins un chiffre**. Une carte sans nombre est un défaut bloquant.
+- [ ] 4. Aucune carte n'énonce une **causalité** ni un conseil de santé qui ne soit pas déjà validé
+      ailleurs dans l'app.
+- [ ] 5. Les nombres sont **formatés** : pas de `41.2000001`, pas de séparateur décimal anglais en FR.
+- [ ] 6. Compte sans donnée → **état vide lisible**, aucune carte inventée.
+- [ ] 7. Désactiver un pilier → ses insights disparaissent ; le réactiver → ils reviennent.
+- [ ] 8. **Mode avion** → écran identique, aucun indicateur d'erreur réseau.
+- [ ] 9. FR ⇄ EN → aucune chaîne non traduite, **aucun `insights.` brut** à l'écran.
+- [ ] 10. Unités impériales → charges et distances converties. ⚠️ Vérifier en particulier un
+      **objectif de course atteint** : la cible est stockée en mètres, « 50 km » ne doit pas
+      s'afficher « 50 000 ».
+- [ ] 11. Police système 1,5× → aucun texte tronqué ni chevauché.
+- [ ] 12. Thème sombre → contrastes corrects (CONF-07 vient de solder ce chantier).
+- [ ] 13. TalkBack → chaque carte est annoncée d'un bloc, famille puis titre puis corps, dans
+      l'ordre visuel.
+- [ ] 14. 🔴 **La sélection n'est pas gelée** : terminer une séance, puis rouvrir l'écran **sans
+      redémarrer l'app** — le contenu doit refléter le nouvel état. *(Ce critère remplace un
+      « même résultat en rouvrant dans la minute » qui aurait aussi été vert si la sélection était
+      figée à vie par React Compiler — précisément le bug qu'il faut détecter.)*
+- [ ] 15. 🔴 **Aucun trou dans la grille de l'accueil** quand le widget est muet — le défaut qui
+      s'est produit quatre fois sur ce dashboard.
+- [ ] 16. L'accueil **ne devient pas sensiblement plus lent** à l'ouverture (l'agrégateur monte 8
+      hooks ; il est mutualisé, mais ça se vérifie à l'usage).
+- [ ] 17. La carte du **bilan hebdomadaire**, si elle sort, affiche le **même texte** que l'écran
+      « Bilan de la semaine » — les deux partagent volontairement la même clé i18n.
+
+> Les plafonds « au plus 3 cartes » et « au plus 2 par famille » **ne sont pas ici** : difficiles à
+> provoquer à la main, ils sont prouvés exhaustivement par les tests unitaires du moteur. Les
+> inscrire donnerait l'illusion d'une vérification qui n'aurait pas lieu.
+
+**Quand l'US passe** : `etape: close`, roadmap 7.20 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
 
 ---
 

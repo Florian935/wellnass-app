@@ -76,4 +76,7 @@ export * from './readiness';
 export * from './regression';
 export * from './moving-average';
 export * from './data-export';
+// US INSIGHTS-01 (roadmap 7.20) — moteur de sélection Tier 3 (ADR-007) et ses adaptateurs.
+export * from './insights';
+export * from './insight-adapters';
 export type { Database, Json } from './database.types';

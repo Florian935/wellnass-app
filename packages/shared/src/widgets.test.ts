@@ -72,11 +72,13 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 20, muscu 5, course 3 ; gardes pilier', () => {
-    // 20 depuis GARDE-01 (04/08/2026) : `load-streak-alert` retiré, fusionné dans
-    // `overtraining-guard` — **première baisse** de ce compteur. Le registre les **déclare** tous ;
-    // c'est `resolveScreenLayout` qui filtre — `cycle` reste masqué tant que l'opt-in est faux.
-    expect(HOME_WIDGET_IDS).toHaveLength(20);
+  it('accueil 21, muscu 5, course 3 ; gardes pilier', () => {
+    // 21 depuis INSIGHTS-01 (05/08/2026) : ajout d'`insights`, porte d'entrée de l'écran Tier 3.
+    // Était 20 depuis GARDE-01 (`load-streak-alert` fusionné dans `overtraining-guard`). Le
+    // registre les **déclare** tous ; c'est `resolveScreenLayout` qui filtre — `cycle` reste
+    // masqué tant que l'opt-in est faux.
+    // ⚠️ 21 contre les 4-6 du plafond d'ADR-007 §2 : le dégonflage est l'objet d'INSIGHTS-02.
+    expect(HOME_WIDGET_IDS).toHaveLength(21);
     expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
     expect(RUNNING_WIDGET_IDS).toHaveLength(3);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
@@ -163,9 +165,9 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 20 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
+    // 21 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(20);
+    expect(layout.widgets).toHaveLength(21);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -185,7 +187,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(19);
+    expect(r.widgets).toHaveLength(20);
     assertNoOverlap(r.widgets);
   });
 
@@ -223,8 +225,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 19 widgets historiques (hors `cycle`).
-    expect(r.widgets).toHaveLength(19);
+    // Et le hub garde donc exactement ses 20 autres widgets (hors `cycle`).
+    expect(r.widgets).toHaveLength(20);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -235,7 +237,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(20);
+    expect(r.widgets).toHaveLength(21);
     assertNoOverlap(r.widgets);
   });
 
@@ -263,7 +265,7 @@ describe('resolveScreenLayout', () => {
     // Preuve concrète de la promesse « aucune migration » de D1 : l'utilisateur qui aurait rangé le
     // widget MR-14 dans son dashboard avant la fusion ne doit ni voir une cellule vide, ni perdre
     // ses autres widgets. `resolveScreenLayout` ignore l'id inconnu via son filtre `known.has`.
-    // Layout **complet** (les 20 widgets du registre, positionnés), + l'id retiré inséré au milieu :
+    // Layout **complet** (les 21 widgets du registre, positionnés), + l'id retiré inséré au milieu :
     // c'est le cas réel d'un utilisateur qui avait personnalisé son dashboard avant la fusion. Un
     // layout de 3 entrées ne prouverait pas grand-chose (le first-fit a trop de place libre).
     const full = defaultScreenLayout('home').widgets;

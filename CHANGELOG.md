@@ -10,6 +10,106 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 05/08/2026 — `feature/insights01-ecran-insights` — Écran « Insights » (Tier 3, ADR-007) : moteur de sélection des analyses pertinentes
+
+Suite de `ca95ec6`. Dernier morceau non construit d'[ADR-007](docs/adr/ADR-007-surfacage-analyses.md),
+qui le nommait explicitement « US à cadrer ». **2 721 tests** (1 750 shared `+70`, 790 mobile `+8`,
+181 admin), typecheck et lint verts, cliquet de couverture `packages/shared` tenu
+(100 / 97,44 / 100 / 100).
+
+**Aucune migration, aucune sync rule, aucune dépendance native** → **recettable sur l'APK
+existant**, contrairement à PARTAGE-01 / RUN-F2a / MUSC-F9 / RUN-F2c / LAUNCHER-01.
+
+#### Ajouté
+
+- **Moteur de sélection pur** — `packages/shared/src/insights.ts` (+ 29 tests). Choisit **1 à 3**
+  insights parmi les candidats, **au plus 2 par famille** (`alert` / `change` / `celebration`).
+  Classement par **table ordonnée `INSIGHT_ORDER`**, sans arithmétique. `todayKey` entre par
+  paramètre : aucune lecture d'horloge dans le moteur.
+- **9 adaptateurs purs** — `packages/shared/src/insight-adapters.ts` (+ 41 tests). Un par signal,
+  plus `buildInsightCandidates()` qui compose l'ensemble. Aucune analyse nouvelle calculée.
+- **Agrégateur** — `apps/mobile/src/data/repositories/insights-repository.ts`. Compose 8 hooks
+  déjà livrés. Expose `canAccessInsights()`, **point de gating unique** (retourne `true`).
+- **Contexte de mutualisation** — `insights-context.tsx`. Voir Technique-Notes.
+- **Écran** — `apps/mobile/src/app/insights.tsx` + `components/insights/InsightCard.tsx` (+ 8 tests
+  d'écran). Route déclarée dans `_layout.tsx`.
+- **Widget d'accueil conditionnel** — `components/dashboard/InsightsCard.tsx`, id `insights` en fin
+  de `HOME_WIDGET_IDS`, garde `'always'`, **déclaré dans `isWidgetActive` dans le même commit**.
+- **i18n** — 35 clés FR + EN, symétrie vérifiée.
+
+#### Modifié
+
+- **`useTrainingLoadAlert` cesse de jeter son ratio** — `dashboard-repository.ts`.
+  `TrainingLoadAlert` passe de `{ show }` à `{ show, ratio }`. `computeAcwr` le calculait déjà et il
+  était perdu, ce qui rendait l'alerte de charge inaffichable (une carte doit porter le chiffre qui
+  la justifie). **Seule modification de code livré de l'US.** Le widget `training-load` ne lit que
+  `show` : aucune régression.
+- **`ADR-007` amendé et daté** — le §2 disait le Tier 3 « derrière le paywall » ; l'écran est livré
+  **gratuit**, SOCLE-01/RevenueCat étant différée (aucun entitlement, aucun produit configurable,
+  donc un écran gaté aurait été un écran invisible). La conséquence « US à cadrer » est cochée.
+- **`widgets.test.ts`** — compteurs 20 → 21 (accueil), 19 → 20 et 20 → 21 (layouts résolus).
+- **`cycle/insights.tsx`** — commentaire d'en-tête croisé : deux écrans homonymes cohabitent
+  délibérément (décision D4), celui-ci s'affichant sous le titre « Croisement ».
+
+#### Technique-Notes
+
+- 🔴 **Le plafond Tier 0 d'ADR-007 s'éloigne** : l'accueil passe de **20 à 21 widgets** contre les
+  **4-6** du §2. C'est le périmètre convenu — cette US crée l'endroit où faire vivre les signaux
+  conditionnels, **INSIGHTS-02** dégonflera après la recette. Consigné dans l'ADR et dans le test.
+- **Duplication de montage repérée puis mutualisée — et une dette résiduelle, mesurée.** Avec le
+  widget sur l'accueil, `useInsights()` était appelé **deux fois** (`isWidgetActive` + la carte).
+  L'accueil calcule désormais **une fois** et diffuse via `InsightsProvider`, posé **une seule fois
+  autour de `WidgetGrid`**. Le contexte n'a **aucun repli calculant** : hors provider,
+  `useSharedInsights()` rend `null` — un repli aurait rétabli le double montage en silence.
+  🟠 **Reste une duplication réelle, non résolue** : `useWeeklyReview`, `useMuscleBalance`,
+  `useGoals` et `useRecentStrengthRecords` sont **déjà montés** sur l'accueil par les widgets
+  `review`, `muscle-volume`, `goals` et `record-recent`. `useQuery` de `@powersync/react` ouvre une
+  souscription **par instance**, sans déduplication : l'accueil passe donc de 1 à 2 instances de
+  chacun, soit **~15 requêtes surveillées de plus**. Le critère de recette 16 le vérifie à l'usage ;
+  la vraie résolution appartient à **INSIGHTS-02**, qui touchera de toute façon ces widgets.
+  *(Une première rédaction de cette entrée affirmait ces hooks « absents de l'accueil jusqu'ici » —
+  c'était faux, corrigé après revue de code.)*
+- **Champ `variant` ajouté au candidat**, absent du cadrage. Trois sources recouvrent plusieurs
+  messages sous un même id (2 niveaux de gravité, 3 types de record qui ne se formatent pas pareil,
+  6 natures de décision hebdo). Effet de bord utile : la carte du bilan rend
+  `review.decisions.<kind>`, **la clé même de BILAN-01** — aucune retraduction, donc aucune
+  divergence possible entre les deux écrans.
+- **La spec a été relue contre le code avant d'écrire une ligne, et 8 affirmations étaient
+  fausses** (§11 de la spec). Trois conséquences de conception : le moteur à **score pondéré a été
+  abandonné** (la `severity` qu'il exigeait n'existe dans aucune source, et la décote de fraîcheur
+  faisait passer les alertes **derrière** les célébrations) ; **4 sources sur 13 retirées** faute de
+  porter le moindre nombre (`readiness`, `concurrent_interference`, `activity_level`, jalons de
+  série) ; et `goal_milestone` **remplacé par `goal_achieved`** — `GOAL_MILESTONES` est documenté
+  « des repères, **pas des récompenses** » (OBJ-01 D4), en faire une célébration aurait inversé un
+  arbitrage produit daté.
+#### Corrigé
+
+- **Clé de groupe musculaire affichée brute sur l'accueil** — `InsightsCard.tsx`. Le widget
+  interpolait `subject` tel quel dans son titre, alors que le moteur y transporte une **clé métier**
+  (`back`), pas du texte : l'accueil affichait **« back sous-travaillé »** pendant que l'écran
+  affichait « Dos sous-travaillé ». Les deux surfaces passent désormais par
+  `resolveInsightSubject()`, exportée de `InsightCard.tsx` et couverte par 5 tests. Cas courant :
+  `muscle_neglected` arrive en tête dès qu'aucune alerte ni célébration récente ne concourt.
+  **Trouvé en revue de code**, invisible aux tests d'écran qui ne couvraient que `app/insights.tsx`.
+- **Même défaut sur la décision hebdo `muscle_imbalance`**, dont le sujet vient aussi de
+  `balance.neglected[0]` — traité par la même fonction.
+- **Ligne 7.20 hors de son tableau** — `docs/roadmap/roadmap.md`. Une ligne vide la séparait du
+  tableau, ce qui en Markdown **ferme le tableau** : elle se serait rendue en texte brut avec des
+  barres verticales. Invisible dans ETAT.md, dont le script la comptait correctement.
+- **`insights-repository.ts` ajouté au garde-fou `no-frozen-clock`** — sa liste `WATCHED` est
+  explicite, et l'agrégateur porte une décision « aujourd'hui » (la porte des 14 jours). Le code
+  était correct ; rien ne protégeait la modification suivante.
+
+#### Technique-Notes (suite)
+
+- **Écarts documentaires relevés, non corrigés** (hors périmètre) : le catalogue d'analyses annonce
+  **11 ⏳ alors qu'il en reste 8**, et **7.14 est en collision** dans la roadmap (« Joker de série »
+  en V0.9 vs « Cercle d'accent sur les cartes » hors cadrage) — 3ᵉ collision après 4.5/4.36 et 4.37.
+  À traiter via [`/reconcilier`](.claude/commands/reconcilier.md).
+- **Audit d'ouverture de session** : les **17 🟡** de la roadmap sont à **15/17 de la dette de
+  recette ou de sync rule**, pas du code incomplet. Seuls **2.4**, **3.52** et **4.37** ont un vrai
+  trou fonctionnel.
+
 ### 04/08/2026 — `feature/muscpwr01-module-force` — Module force livré : %1RM, DOTS et total SBD (MUSC-16 / MUSC-27 / MUSC-29)
 
 Suite de `76797b5` (socle). Lots 5 et 6 : l'UI et le transverse. **782 tests mobile** (+16),

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INSIGHTS-01 — Écran « Insights » (Tier 3)</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  /* ── Cadre téléphone ── */
+  .phone{background:var(--bg);border-radius:26px;padding:0;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .statusbar{height:26px;background:var(--bg)}
+  .navbar{padding:10px 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);
+          display:flex;align-items:center;gap:10px}
+  .back{font-size:17px;color:var(--muted)}
+  .navtitle{font-size:16px;font-weight:800}
+  .screen{padding:16px 14px 22px;min-height:300px}
+  .lead{font-size:13px;color:var(--muted);margin:0 0 14px}
+
+  /* ── Carte d'insight ── */
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:16px;
+        padding:13px 14px;margin-bottom:11px;position:relative;overflow:hidden}
+  .card.alert{border-left:3px solid var(--accent)}
+  .card.change{border-left:3px solid var(--bstrong)}
+  .card.celebration{border-left:3px solid var(--success)}
+  .chip{display:inline-block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+        font-weight:800;padding:3px 8px;border-radius:999px;margin-bottom:7px}
+  .chip.alert{background:rgba(177,79,43,.13);color:#8f3d20}
+  .chip.change{background:rgba(144,137,125,.18);color:#5d564c}
+  .chip.celebration{background:rgba(102,113,75,.16);color:#4d5638}
+  .ctitle{font-size:15px;font-weight:800;margin:0 0 4px;line-height:1.3}
+  .cbody{font-size:13.5px;color:#54473a;margin:0}
+  .cbody b{color:var(--text);font-weight:800}
+  .accentdot{position:absolute;width:74px;height:74px;border-radius:50%;
+             background:rgba(177,79,43,.06);top:-30px;right:-22px}
+
+  /* ── État vide ── */
+  .empty{text-align:center;padding:38px 18px}
+  .emptyicon{font-size:30px;opacity:.55;margin-bottom:10px}
+  .emptytitle{font-size:15px;font-weight:800;margin:0 0 6px}
+  .emptybody{font-size:13px;color:var(--muted);margin:0;max-width:34ch;
+             margin-left:auto;margin-right:auto}
+
+  /* ── Widget d'accueil ── */
+  .widget{background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:13px 14px}
+  .wtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .wlabel{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+  .wseeall{font-size:12px;color:var(--accent);font-weight:700}
+  .homectx{font-size:11.5px;color:#8a7c69;text-align:center;padding:7px;
+           border:1px dashed #cfc0a9;border-radius:10px;margin-bottom:10px}
+
+  /* ── Ligne d'entrée Progression (D3-B) ── */
+  .navrow{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+          padding:14px;display:flex;align-items:center;justify-content:space-between}
+  .navrowtitle{font-size:14.5px;font-weight:700}
+  .navrowsub{font-size:12px;color:var(--muted);margin-top:2px}
+  .chev{color:var(--muted);font-size:18px}
+
+  /* ── Thème sombre ── */
+  .dark{--bg:#1f1b17;--surf:#2a2521;--border:#3a332c;--text:#f2e9dc;--muted:#a8998a;
+        --accent:#d4703f;--success:#8fa06a}
+  .dark .phone{border-color:#3a332c}
+  .dark .cbody{color:#cdbfae}
+  .dark .chip.alert{background:rgba(212,112,63,.18);color:#e79a70}
+  .dark .chip.change{background:rgba(168,153,138,.18);color:#c2b3a3}
+  .dark .chip.celebration{background:rgba(143,160,106,.18);color:#a9bc80}
+  .dark .homectx{border-color:#4a4038;color:#a8998a}
+
+  /* ── Annotation ── */
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ol{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  .anno code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .flag{background:#fdf3e2;border:1px solid #e7d3a8;border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>INSIGHTS-01 — Écran « Insights »</h1>
+<p class="sub">Tier 3 d'<b>ADR-007</b> : un moteur de sélection choisit les <b>1 à 3 analyses les
+plus pertinentes de l'instant</b> parmi les signaux déjà livrés, au lieu de tous les empiler sur
+l'accueil. Aucune analyse nouvelle n'est calculée — uniquement de la sélection.
+Palette et composants repris de l'app (crème / terracotta).</p>
+
+<h2>1. L'écran — cas nominal</h2>
+<p class="why">Trois familles, au plus 3 cartes, <b>au plus 2 par famille</b> : un troisième
+emplacement occupé apporte forcément un autre point de vue. Chaque carte porte ses chiffres — une
+carte sans nombre est un défaut bloquant.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="statusbar"></div>
+      <div class="navbar"><span class="back">‹</span><span class="navtitle">Insights</span></div>
+      <div class="screen">
+        <p class="lead">Ce qui compte pour toi, maintenant.</p>
+
+        <div class="card alert">
+          <div class="accentdot"></div>
+          <span class="chip alert">À surveiller</span>
+          <p class="ctitle">Ta charge grimpe vite</p>
+          <p class="cbody">Ratio charge aiguë / chronique à <b>1,42</b> — au-dessus du seuil de
+            <b>1,30</b>. <b>9 jours</b> d'affilée avec au moins une séance.</p>
+        </div>
+
+        <div class="card celebration">
+          <span class="chip celebration">Bravo</span>
+          <p class="ctitle">Record au développé couché</p>
+          <p class="cbody"><b>82,5 kg</b> × 5 — soit <b>+2,5 kg</b> sur ton précédent record,
+            il y a 3 semaines.</p>
+        </div>
+
+        <div class="card change">
+          <span class="chip change">Ça a bougé</span>
+          <p class="ctitle">Tonnage en baisse</p>
+          <p class="cbody"><b>−22 %</b> cette semaine (<b>11 240 kg</b> contre
+            <b>14 400 kg</b>), pour <b>3 séances</b> au lieu de 4.</p>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>3 cartes.</b> L'ordre vient d'une <b>table de priorité fixe</b>
+      (<code>INSIGHT_ORDER</code>), pas d'un score : aucun nombre arbitraire à défendre, et le
+      résultat est prouvable par test plutôt qu'observable au jugé.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="statusbar"></div>
+      <div class="navbar"><span class="back">‹</span><span class="navtitle">Insights</span></div>
+      <div class="screen">
+        <p class="lead">Ce qui compte pour toi, maintenant.</p>
+
+        <div class="card celebration">
+          <span class="chip celebration">Bravo</span>
+          <p class="ctitle">Objectif atteint</p>
+          <p class="cbody">« 50 km en août » — <b>52,4 km</b> parcourus pour une cible de
+            <b>50 km</b>.</p>
+        </div>
+
+        <div class="card change">
+          <span class="chip change">Ça a bougé</span>
+          <p class="ctitle">Dos sous-travaillé</p>
+          <p class="cbody"><b>7 %</b> de tes séries sur 4 semaines, contre <b>17 %</b> pour une
+            répartition équilibrée.</p>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>2 cartes.</b> Aucune alerte active : on ne remplit pas le troisième
+      emplacement pour faire nombre.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="statusbar"></div>
+      <div class="navbar"><span class="back">‹</span><span class="navtitle">Insights</span></div>
+      <div class="screen">
+        <div class="empty">
+          <div class="emptyicon">◍</div>
+          <p class="emptytitle">Rien à signaler aujourd'hui</p>
+          <p class="emptybody">Tout est dans les clous. Reviens après ta prochaine séance —
+            ou consulte ton bilan de la semaine.</p>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>État vide.</b> Zéro est une réponse valable : l'écran n'invente jamais un
+      insight pour remplir la page.</p>
+  </div>
+
+</div>
+
+<h2>2. La porte d'entrée — D3, arbitrage demandé</h2>
+<p class="why">Deux options. La <b>A</b> est la proposition ; la <b>B</b> ne touche pas l'accueil.
+C'est le seul point de la spec qui attend une décision de Florian avant le lot 4.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="statusbar"></div>
+      <div class="navbar"><span class="navtitle">Bonjour Florian</span></div>
+      <div class="screen">
+        <div class="homectx">↑ widgets de l'accueil au-dessus ↑</div>
+        <div class="widget">
+          <div class="wtop">
+            <span class="wlabel">Insight du jour</span>
+            <span class="wseeall">Tout voir ›</span>
+          </div>
+          <div class="card alert" style="margin:0;border-radius:12px">
+            <span class="chip alert">À surveiller</span>
+            <p class="ctitle">Ta charge grimpe vite</p>
+            <p class="cbody">Ratio à <b>1,42</b>, au-dessus de <b>1,30</b>.</p>
+          </div>
+        </div>
+        <div class="homectx" style="margin-top:10px">↓ suite de l'accueil ↓</div>
+      </div>
+    </div>
+    <p class="caption"><b>D3-A (proposition).</b> Widget <code>wide</code> en fin de registre :
+      aucune migration de <code>dashboard_layout</code>. Rend la carte de tête, ou <b>rien</b> s'il
+      n'y a aucun insight.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="statusbar"></div>
+      <div class="navbar"><span class="back">‹</span><span class="navtitle">Progression</span></div>
+      <div class="screen">
+        <div class="homectx">↑ volume, tonnage, régularité, équilibre ↑</div>
+        <div class="navrow">
+          <div>
+            <div class="navrowtitle">Insights</div>
+            <div class="navrowsub">Ce qui compte pour toi, maintenant</div>
+          </div>
+          <span class="chev">›</span>
+        </div>
+        <div class="homectx" style="margin-top:10px">↓ mensurations, exercices ↓</div>
+      </div>
+    </div>
+    <p class="caption"><b>D3-B (repli).</b> Patron exact de l'entrée <code>/measurements</code>.
+      Zéro modification de l'accueil — mais Progression est orienté musculation, alors qu'Insights
+      est transverse.</p>
+  </div>
+
+  <div>
+    <div class="anno">
+      <p style="margin:0 0 8px;font-weight:800;font-size:14px">Le piège du widget conditionnel</p>
+      <p style="margin:0;font-size:13.5px">Un widget qui rend <code>null</code> doit être déclaré
+        dans <code>isWidgetActive</code>, sinon la grille <b>réserve sa cellule vide</b> et laisse un
+        trou sur l'accueil.</p>
+      <div class="flag"><b>Ce défaut s'est produit quatre fois</b> — sur
+        <code>training-load</code>, <code>overtraining-guard</code>, <code>readiness</code> et
+        <code>activity-level-suggestion</code>. (<code>deficit-volume</code> est le patron d'origine
+        et <code>activation-path</code> a été déclaré sciemment : ni l'un ni l'autre n'a été
+        oublié.) Si D3-A est retenu, la ligne <code>isWidgetActive</code> part <b>dans le même
+        commit</b> que le widget, et le critère de recette 15 la vérifie.</div>
+    </div>
+  </div>
+
+</div>
+
+<h2>3. Thème sombre</h2>
+<p class="why">CONF-07 vient de solder les non-conformités WCAG AA. Le nouvel écran naît conforme —
+contrastes vérifiés en clair <b>et</b> en sombre, hauteurs libres pour la police système 1,5×.</p>
+<div class="row">
+
+  <div class="dark">
+    <div class="phone" style="background:var(--bg)">
+      <div class="statusbar" style="background:var(--bg)"></div>
+      <div class="navbar" style="background:var(--bg)">
+        <span class="back">‹</span><span class="navtitle" style="color:var(--text)">Insights</span>
+      </div>
+      <div class="screen">
+        <p class="lead">Ce qui compte pour toi, maintenant.</p>
+        <div class="card alert" style="background:var(--surf)">
+          <span class="chip alert">À surveiller</span>
+          <p class="ctitle" style="color:var(--text)">Ta charge grimpe vite</p>
+          <p class="cbody">Ratio à <b style="color:var(--text)">1,42</b>, au-dessus de
+            <b style="color:var(--text)">1,30</b>.</p>
+        </div>
+        <div class="card celebration" style="background:var(--surf)">
+          <span class="chip celebration">Bravo</span>
+          <p class="ctitle" style="color:var(--text)">Record au développé couché</p>
+          <p class="cbody"><b style="color:var(--text)">82,5 kg</b> × 5, soit
+            <b style="color:var(--text)">+2,5 kg</b>.</p>
+        </div>
+      </div>
+    </div>
+    <p class="caption" style="color:#6a5d4d"><b>Sombre.</b> Même hiérarchie, mêmes chiffres en
+      gras.</p>
+  </div>
+
+  <div>
+    <div class="anno">
+      <p style="margin:0 0 8px;font-weight:800;font-size:14px">Anatomie d'une carte</p>
+      <ol>
+        <li><b>Chip de famille</b> — <code>alert</code> / <code>change</code> /
+          <code>celebration</code>. Libellé en i18n, jamais construit par code.</li>
+        <li><b>Titre</b> — clé <code>insights.cards.&lt;id&gt;.title</code>.</li>
+        <li><b>Corps</b> — clé <code>.body</code>, avec les <code>metrics</code> interpolés.</li>
+        <li><b>Les chiffres en gras</b> — obligatoires. Le type
+          <code>InsightCandidate</code> rend <code>metrics</code> non optionnel : une carte sans
+          nombre ne compile pas.</li>
+        <li><b>Liseré de gauche</b> — 3 px, couleur de famille. Redondant avec le chip
+          <em>volontairement</em> : la couleur seule ne porte jamais l'information (WCAG AA).</li>
+      </ol>
+    </div>
+  </div>
+
+  <div>
+    <div class="anno">
+      <p style="margin:0 0 8px;font-weight:800;font-size:14px">Ce que la maquette ne montre pas</p>
+      <ol>
+        <li><b>Aucun paywall.</b> ADR-007 range le Tier 3 derrière la frontière payante, mais
+          RevenueCat (SOCLE-01) est différé : le livrer gaté reviendrait à le livrer invisible.
+          Gratuit en V1, avec un unique <code>canAccessInsights()</code> comme point d'accroche
+          futur. <b>L'amendement daté d'ADR-007 §2 est écrit dans cette US</b> (lot 7), pas promis
+          pour plus tard — sinon le prochain lecteur de l'ADR reconstruira un gating.</li>
+        <li><b>Aucune notification.</b> L'écran est consulté, jamais poussé.</li>
+        <li><b>Aucun rejet de carte.</b> Un « ne plus me montrer ça » exigerait une table et une
+          sync rule PowerSync à déployer à la main — étape déjà oubliée une fois sur ce projet.
+          La fraîcheur est une <b>porte</b>, pas un coefficient : un fait <em>daté</em> de plus de
+          14 jours est écarté, point. Conséquence assumée : un déséquilibre musculaire, qui n'a pas
+          de date d'événement, insistera tant qu'il persiste.</li>
+        <li><b>Aucun dégonflage de l'accueil.</b> Passer le registre de 20 widgets aux 4-6
+          d'ADR-007 est la suite logique — <b>après</b> la recette, pour ne pas déplacer la cible
+          en cours de route.</li>
+      </ol>
+    </div>
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>

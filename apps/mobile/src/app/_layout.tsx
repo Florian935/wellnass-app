@@ -440,6 +440,21 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US INSIGHTS-01 — écran « Insights » (Tier 3, ADR-007). Ouvert depuis le widget
+            d'accueil. ⚠️ Sans cette déclaration, l'écran s'afficherait sans en-tête et son titre
+            se dessinerait sous la barre d'état — défaut invisible au typecheck comme aux tests
+            (leçon PAS-01, corrigée le 30/07/2026). Distinct de `cycle/insights` (CYCLE-01). */}
+        <Stack.Screen
+          name="insights"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('insights.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         {/* US OBJ-01 — objectifs à échéance. Ouvert depuis le widget d'accueil. */}
         <Stack.Screen
           name="goals"

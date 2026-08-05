@@ -402,6 +402,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
 | 1.27 | Parcours « 7 jours pour démarrer » | Mini-programme d'activation guidé (7 jours, tous piliers actifs), pour atteindre vite le « aha moment » sans exiger d'historique. | 🟢 | ✅ | **ACTIV-01 — code livré le 03/08/2026** → [spec](../specs/functional/us/activ01-parcours-7-jours.md) · [plan](../plans/activ01-parcours-7-jours.md) · [maquette](../../design/activ01-parcours-7-jours/activ01-parcours-7-jours.html), en recette → [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026). Widget d'accueil auto-masquant (`'always'`, wiré dans `isWidgetActive`), aucune notification, 1 colonne additive (`profiles.activation_path_dismissed_at`), aucune sync rule. Distinct de l'onboarding (1.7-1.11). ⚠️ **Contenu des 7 jours = brouillon**, à valider par Florian/Damien. |
 | 7.19 | Widget écran d'accueil Android | Widget du **launcher** Android (hors de l'app) : série, séance du jour, kcal restantes. Dernier candidat non démarré de la 2ᵉ salve d'enrichissements. | 🟡 | ✅ | **LAUNCHER-01 — code livré le 03/08/2026**, en recette → [spec](../specs/functional/us/launcher01-widget-ecran-accueil.md) · [plan](../plans/launcher01-widget-ecran-accueil.md) · [maquette](../../design/launcher01-widget-ecran-accueil/launcher01-widget-ecran-accueil.html) · [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026), initialement estimée « le plus cher des 5 » (natif Kotlin). **Recherche technique : révisée à la baisse** — `react-native-android-widget` (JSX → RemoteViews, config plugin Expo, aucun Kotlin écrit à la main) tient la promesse ; spike de compatibilité SDK 57/New Architecture **confirmé sur device** (build + widget affiché). Distinct des 16 widgets **in-app** (WIDGETS-01, 7.13) — vocabulaire « widget launcher » explicitement pour ne pas confondre. Données recalculées hors React (Headless JS, singleton PowerSync partagé), aucune duplication de logique métier (streak/TDEE réutilisés de `@wellness/shared`). ⚠️ **Dépendance native neuve : second build requis** avant recette (comme PARTAGE-01/RUN-F2a/MUSC-F9). |
+| 7.20 | Écran « Insights » — moteur de sélection des analyses | Tier 3 d'[ADR-007](../adr/ADR-007-surfacage-analyses.md) : un moteur **déterministe** choisit les **1 à 3 analyses les plus pertinentes de l'instant** parmi 3 familles (alerte / changement / célébration) et les présente sur un écran dédié, à la demande. | 🟢 | ✅ | **INSIGHTS-01 — code livré le 05/08/2026**, en recette → [spec](../specs/functional/us/insights01-ecran-insights.md) · [plan](../plans/insights01-ecran-insights.md) · [maquette](../../design/insights01-ecran-insights/insights01-ecran-insights.html) · [RECETTES.md](../../RECETTES.md) §30 (17 critères). ✅ et non 🟡 : le code est **complet**, comme 7.19 et 1.27 dans le même état — 🟡 signalerait un socle incomplet. **Aucune migration ni sync rule**, donc recettable sur l'APK existant. Dernier morceau non construit d'ADR-007, qui la nomme explicitement « US à cadrer ». **Aucune analyse nouvelle n'est calculée** : uniquement de la sélection au-dessus de **9 signaux** déjà livrés et testés (ADR-007 §3, « des briques, pas 180 variantes »). ⚠️ **La spec a été relue contre le code et corrigée en profondeur** (révision 2, §11) : la 1ʳᵉ rédaction annonçait 13 sources et un moteur à score pondéré — **4 sources ne fournissaient aucun nombre** (donc ne pouvaient pas satisfaire la règle « jamais d'affirmation sans chiffre »), la `severity` du score **n'existait nulle part**, et la décote de fraîcheur faisait passer les alertes **derrière** les célébrations. Le moteur est désormais une **table ordonnée** (patron `SIGNAL_ORDER` de BILAN-01), sans arithmétique. **Aucune migration, aucune sync rule, aucune dépendance native** → **recettable sur l'APK existant**, contrairement à PARTAGE-01 / RUN-F2a / MUSC-F9 / RUN-F2c / LAUNCHER-01. Le moteur hebdomadaire de BILAN-01 (`decide()`) **n'est pas réimplémenté** : sa décision entre comme un candidat parmi les autres. ⚠️ **2 arbitrages ouverts** : gratuit vs gaté premium (proposition **gratuit** — SOCLE-01/RevenueCat étant différée, le livrer gaté reviendrait à le livrer invisible ; **exige un amendement daté d'ADR-007 §2**), et la porte d'entrée (widget d'accueil conditionnel vs ligne sur Progression). **Ne dégonfle pas le dashboard** — le passage des 20 widgets actuels aux 4-6 du plafond ADR-007 est une **US de suite**, délibérément placée après la recette en cours pour ne pas déplacer la cible. |
 
 > **Ne figurent pas dans ce tableau, volontairement** :
 > - les **US d'analyse** (META-06/08/09, MN-03/06, MR-06, NUTR-10/11/17, RN-01/02, MUSC-04/05) —
@@ -442,12 +443,12 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 193 | ~89 % |
+| ✅ Livré | 194 | ~89 % |
 | 🟡 Partiel | 17 | ~8 % |
 | ⬜ À faire | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **218** | |
+| **Total périmètre de lancement** | **219** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **Le total est passé de 179 à 194** le 26/07/2026 : les **15 fonctionnalités** de la section
@@ -477,7 +478,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.9 (16) | 4 | 7 | 5 | 0 | 0 | 🆕 **Créée le 28/07/2026** — **+2 le 30/07** (1.25 / 1.26, CYCLE-01, cadrée et en attente de validation). — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. ✅ = **9.15 PAS-01** (livré et recetté le 28/07) · 🟡 = **1.24 BIEN-01** (code livré le 28/07 ; reste la sync rule PowerSync et la recette device) |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 0 | 3 | 1 | 0 | 0 | **3 des 4 items livrés le 04/08/2026** (4.27 / 4.28 / 4.29, US REPAS-01) : remontés de V1.1 dans le périmètre courant par arbitrage Florian, le code étant en avance sur le cahier des charges pendant les délais externes de Google. Reste **1.20** (import GPX/CSV), seul item encore ⬜ de cette version. |
-| Hors cadrage (17) | 17 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… |
+| Hors cadrage (18) | 18 | 0 | 0 | 0 | 0 | **100 % livré** — refonte muscu, widgets multi-formes, micronutriments, refonte nutrition, **7.20 écran « Insights »** (INSIGHTS-01, 05/08/2026, en recette). |
 
 - **~210 fonctionnalités** dans le périmètre de lancement (179 du cadrage + 17 nées en cours de route + 14 de V0.9).
 - **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 17 items hors cadrage.
@@ -506,6 +507,15 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**05/08/2026 — INSIGHTS-01 : écran « Insights » livré (7.20 créée puis ✅)**
+Compteurs : **194 livré / 17 partiel / 2 à faire sur 219** (section Hors cadrage 17 → 18).
+⚠️ L'accueil passe de **20 à 21 widgets** contre les 4-6 du plafond ADR-007 §2 : cette US crée
+l'endroit où faire vivre les signaux conditionnels, **INSIGHTS-02 dégonflera** après la recette.
+Audit d'ouverture : les **17 🟡** d'alors étaient à **15/17 de la dette de recette ou de sync
+rule**, pas du code incomplet — seuls 2.4, 3.52 et 4.37 ont un vrai trou. Écarts relevés et **non
+corrigés** : le catalogue annonce **11 ⏳ alors qu'il en reste 8**, et **7.14 est en collision**
+(« Joker de série » V0.9 vs « Cercle d'accent » hors cadrage) — 3ᵉ après 4.5/4.36 et 4.37.
 
 **04/08/2026 — REPAS-01 : planning repas, liste de courses et partage (4.27 / 4.28 / 4.29 ⬜ → 🟡),
 remontés de V1.1 dans le périmètre courant (arbitrage Florian)**

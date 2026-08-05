@@ -63,6 +63,24 @@ On adopte l'**option C**. Principes normatifs :
   empiler. Les **analyses poussées** (corrélations, moteur causal) vivent là, **à la demande** et
   **derrière le paywall** (ADR-003 : l'intelligence de croisement est la frontière payante).
 
+  > 📌 **Amendement du 05/08/2026 — l'écran « Insights » est livré GRATUIT en V1** (US INSIGHTS-01,
+  > roadmap 7.20, validé par Florian).
+  >
+  > La phrase « derrière le paywall » ci-dessus **ne décrit pas le code livré**. Motif : **SOCLE-01**
+  > (câblage RevenueCat) est **différée** depuis le 30/07/2026 — aucun entitlement n'est défini,
+  > LANCE-00 n'est pas fait donc aucun produit n'est configurable, et il n'existe aucun paywall.
+  > Livrer l'écran gaté dans ces conditions reviendrait à **le livrer invisible**.
+  >
+  > Le gating n'est pas abandonné, il est **isolé en un seul point** : `canAccessInsights()` dans
+  > [insights-repository.ts](../../apps/mobile/src/data/repositories/insights-repository.ts),
+  > qui retourne `true` en dur. Brancher la lecture d'un entitlement RevenueCat à cet endroit suffira
+  > à refermer l'accès, sans toucher au moteur, à l'écran ni au widget. **À reprendre avec la
+  > première US premium / IA**, celle-là même qui débloquera SOCLE-01.
+  >
+  > Ce qui reste vrai de la décision d'origine : les **analyses poussées** (corrélations, moteur
+  > causal) ne sont **pas** dans INSIGHTS-01 — elles restent au catalogue, et c'est là que la
+  > frontière payante d'ADR-003 gardera tout son sens.
+
 ### 3. Construire des **briques**, pas 180 variantes
 Beaucoup d'analyses sont des déclinaisons d'un même patron. On mutualise en **~15-20 composants
 réutilisables** (courbe de tendance générique META-08/09 ; `DeltaBadge` déjà mutualisé ; carte de
@@ -87,9 +105,15 @@ sans arbitrage explicite.
 - **Écrans pilier hiérarchisés** : dès ~4-5 sections, passer en **sections repliables** / sous-onglets.
   ⚠️ **Point de vigilance immédiat** : **Nutrition → Stats** porte déjà poids + apports moyens + MN-03 +
   MN-06 → prévoir le regroupement/repli **à la prochaine analyse** qui s'y ajoute.
-- **Écran « Insights » (Tier 3)** = **US à cadrer** (post-V1) : moteur de sélection des analyses
-  pertinentes + porte d'entrée des analyses premium. Devient la vraie réponse à « où mettre les 150
-  autres ».
+- ~~**Écran « Insights » (Tier 3)** = **US à cadrer** (post-V1)~~ → ✅ **cadré et livré le
+  05/08/2026** (US INSIGHTS-01, roadmap 7.20). Moteur de sélection **déterministe** — une table
+  ordonnée (`INSIGHT_ORDER`), pas un score : ni sévérité à inventer, ni pondération à défendre,
+  même parti pris que le `SIGNAL_ORDER` de BILAN-01. Neuf signaux **déjà livrés** y concourent,
+  aucune analyse nouvelle n'a été calculée (§3 respecté). Livré **gratuit**, voir l'amendement ci-dessus.
+  ⚠️ **Le plafond du Tier 0 reste violé** : `HOME_WIDGET_IDS` compte **21 widgets** contre les 4-6
+  du §2. INSIGHTS-01 crée l'endroit où les faire vivre mais **ne dégonfle pas** le dashboard —
+  c'est l'objet d'**INSIGHTS-02**, délibérément placée après la recette pour ne pas refactorer des
+  écrans en cours de validation.
 - **Briques transverses** : privilégier des composants génériques (tendance, delta, jauge vs cible,
   record) réutilisés par configuration plutôt que du sur-mesure par analyse.
 - **Rétro-compatibilité** : les analyses déjà livrées (MN-02/4.32, MN-03, MN-06, META-06, RN-01/02) sont

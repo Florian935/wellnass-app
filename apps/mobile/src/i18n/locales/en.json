@@ -2522,5 +2522,68 @@
       "setLabel": "{{reps}} × {{weight}} kg",
       "warmupExcluded": "Warm-up sets excluded."
     }
+  },
+  "insights": {
+    "title": "Insights",
+    "subtitle": "What matters for you, right now",
+    "lead": "At most three analyses, picked from your current signals.",
+    "empty": {
+      "title": "Nothing to report today",
+      "body": "Everything looks on track. Come back after your next session, or check your weekly review."
+    },
+    "families": {
+      "alert": "Worth watching",
+      "change": "Something moved",
+      "celebration": "Well done"
+    },
+    "widget": {
+      "title": "Insight of the day",
+      "seeAll": "See all ›",
+      "more_one": "+{{count}} more insight",
+      "more_other": "+{{count}} more insights"
+    },
+    "cards": {
+      "overtraining_guard": {
+        "title": "Load & recovery",
+        "body_streak": "{{streakDays}} days in a row with at least one session, strength and running combined. A rest day may help your recovery.",
+        "body_streakAndDeficit": "{{streakDays}} days in a row without rest, with intake regularly below your target. A rest day and a fuller meal may help you get back on track."
+      },
+      "training_load": {
+        "title": "High load this week",
+        "body": "Acute-to-chronic load ratio at {{ratio}} — well above your 4-week average."
+      },
+      "deficit_volume": {
+        "title": "Low intake for your volume",
+        "body": "You are {{deficitPct}}% below your calorie target across {{loggedDays}} logged days, while your strength volume is high."
+      },
+      "record_recent": {
+        "title": "New record — {{subject}}",
+        "body_max_weight": "Max weight up to {{value}}.",
+        "body_estimated_1rm": "Estimated 1RM up to {{value}}.",
+        "body_best_volume": "Best single-set volume: {{value}}."
+      },
+      "goal_achieved": {
+        "title": "Goal reached — {{subject}}",
+        "body_run_distance": "{{achievedValue}} covered against a {{targetValue}} target.",
+        "body_exercise_1rm": "{{achievedValue}} reached against a {{targetValue}} target."
+      },
+      "weekly_decision": {
+        "title": "Your decision for the week"
+      },
+      "muscle_neglected": {
+        "title": "{{subject}} under-trained",
+        "body": "{{sharePct}}% of your sets over 14 days ({{sets}} sets), against {{evenSharePct}}% for an even split."
+      },
+      "tonnage_change": {
+        "title": "Tonnage this week",
+        "body_up": "Up {{pct}}% compared with the previous week.",
+        "body_down": "Down {{pct}}% compared with the previous week."
+      },
+      "distance_change": {
+        "title": "Distance this week",
+        "body_up": "Up {{pct}}% compared with the previous week.",
+        "body_down": "Down {{pct}}% compared with the previous week."
+      }
+    }
   }
 }
