@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INSIGHTS-02 — Dégonflage du Tier 0</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+  @media(max-width:840px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:14px 16px 12px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:17px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:180px}
+
+  .w{background:var(--surf);border:1px solid var(--border);border-radius:13px;
+     padding:10px 12px;margin-bottom:8px;font-size:12.5px;font-weight:700}
+  .w small{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:1px}
+  .w.keep{border-left:3px solid var(--success)}
+  .w.cut{border-left:3px solid var(--accent);opacity:.5;text-decoration:line-through;
+         text-decoration-color:rgba(177,79,43,.5)}
+  .w.cut small{text-decoration:none;display:block}
+  .w.cond{border-left:3px dashed var(--bstrong)}
+
+  .count{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;
+         text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:10px}
+  .count.bad{background:rgba(177,79,43,.14);color:#8f3d20}
+  .count.good{background:rgba(102,113,75,.16);color:#4d5638}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surfalt);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .tag{font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .tag.ins{background:rgba(177,79,43,.13);color:#8f3d20}
+  .tag.t1{background:rgba(144,137,125,.18);color:#5d564c}
+  .tag.home{background:rgba(102,113,75,.16);color:#4d5638}
+  .tag.q{background:rgba(138,100,25,.16);color:#6d4f14}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ol{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  .flag{background:#fdf3e2;border:1px solid #e7d3a8;border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>INSIGHTS-02 — Dégonflage du Tier 0</h1>
+<p class="sub"><b>ADR-007 §2 fixe l'accueil à 4-6 widgets. Il en compte 21</b> — 3,5 × le plafond.
+Cette US en retire 14 et donne à chacun une destination <b>permanente</b> explicite. <b>Aucun signal ne
+disparaît du produit</b> : c'est la règle R1, et elle est vérifiée par un test écrit <em>avant</em> tout
+retrait. ⚠️ <b>Une carte d'insight ne compte pas comme destination</b> — elle est conditionnelle
+(3 cartes au plus, quota par famille, fraîcheur 14 jours), donc elle ne garantit rien.</p>
+
+<h2>1. Avant / après</h2>
+<p class="why">À gauche l'accueil d'aujourd'hui, à droite celui d'après. Le trait vert = conservé,
+le trait pointillé = conditionnel (n'apparaît que s'il a quelque chose à dire).</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar">
+        <div class="navtitle">Accueil — aujourd'hui</div>
+        <div class="navsub">21 widgets déclarés, 8 conditionnels</div>
+      </div>
+      <div class="screen">
+        <span class="count bad">21 widgets</span>
+        <div class="w keep">Séance du jour</div>
+        <div class="w keep">Nutrition</div>
+        <div class="w keep">Série</div>
+        <div class="w cut">Poids<small>→ Mensurations</small></div>
+        <div class="w cut">Records récents<small>→ hub Muscu</small></div>
+        <div class="w cut">Volume musculaire<small>→ hub Muscu</small></div>
+        <div class="w cut">Semaine de course<small>→ hub Course</small></div>
+        <div class="w cut">Déficit + volume<small>→ Insights</small></div>
+        <div class="w cut">Temps d'entraînement<small>→ hub Muscu</small></div>
+        <div class="w keep">Pas</div>
+        <div class="w cut">Bien-être<small>→ écran Bien-être</small></div>
+        <div class="w cut">Objectifs<small>→ écran Objectifs</small></div>
+        <div class="w cut">Bilan hebdo<small>→ écran Bilan</small></div>
+        <div class="w keep">Cycle <small>gardé par réglage</small></div>
+        <div class="w cut">Charge d'entraînement<small>→ Insights</small></div>
+        <div class="w cut">Garde-fou surcharge<small>→ Insights</small></div>
+        <div class="w keep">Parcours 7 jours</div>
+        <div class="w cut">Score de forme<small>→ décision D3</small></div>
+        <div class="w cut">Niveau d'activité<small>→ Insights</small></div>
+        <div class="w cut">Interférence muscu/course<small>→ Insights</small></div>
+        <div class="w keep">Insight du jour</div>
+      </div>
+    </div>
+    <p class="caption"><b>Le problème n'est pas visuel</b> — 8 de ces widgets sont conditionnels et
+      restent souvent invisibles. Il est structurel : chacun doit être déclaré dans
+      <code>isWidgetActive</code>, et l'oubli laisse un trou dans la grille. C'est arrivé
+      <b>quatre fois</b>.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar">
+        <div class="navtitle">Accueil — après</div>
+        <div class="navsub">7 déclarés · 4 à 6 visibles en pratique</div>
+      </div>
+      <div class="screen">
+        <span class="count good">7 déclarés · 4 visibles</span>
+        <div class="w keep">Séance du jour<small>l'action du jour</small></div>
+        <div class="w keep">Nutrition<small>le chiffre consulté plusieurs fois par jour</small></div>
+        <div class="w keep">Série<small>le moteur de rétention</small></div>
+        <div class="w keep">Pas<small>live du jour — et son widget est le seul accès à /steps</small></div>
+        <div class="w cond">Insight du jour<small>conditionnel — la porte vers tout le reste</small></div>
+        <div class="w cond">Parcours 7 jours<small>conditionnel — 7 premiers jours seulement</small></div>
+        <div class="w cond">Cycle<small>gardé par réglage — opt-in explicite</small></div>
+      </div>
+    </div>
+    <p class="caption"><b>Un utilisateur installé tri-pilier voit 4 widgets</b> (5-6 avec un
+      insight du jour ou le cycle) — la fourchette exacte d'ADR-007. Le critère appliqué est celui de l'ADR — <em>« uniquement le
+      live/actionnable du jour »</em> — et non « ce qui est intéressant ».</p>
+  </div>
+
+</div>
+
+<h2>2. Où va chacun des 14</h2>
+<p class="why">C'est le vrai contenu de l'US. Une destination fausse ou inexistante serait une
+suppression déguisée — d'où un test qui l'exige, écrit avant tout retrait.</p>
+
+<table>
+  <tr><th>Widget retiré</th><th>Destination</th><th>Coût</th></tr>
+  <tr><td>Déficit + volume</td><td><span class="tag ins">Insights</span></td><td>déjà fait</td></tr>
+  <tr><td>Charge d'entraînement</td><td><span class="tag ins">Insights</span></td><td>déjà fait</td></tr>
+  <tr><td>Garde-fou surcharge</td><td><span class="tag ins">Insights</span></td><td>déjà fait</td></tr>
+  <tr><td>Niveau d'activité</td><td><span class="tag ins">Insights</span></td><td>adaptateur seul — <code>runningDays</code> existe déjà</td></tr>
+  <tr><td>Interférence muscu/course</td><td><span class="tag ins">Insights</span></td><td>adaptateur + 2 lignes pour cesser de jeter les ratios</td></tr>
+  <tr><td>Records récents</td><td><span class="tag q">à créer</span></td><td>🔴 Progression › Records est <b>par exercice</b> — contenu différent, 4 gestes</td></tr>
+  <tr><td>Volume musculaire</td><td><span class="tag t1">Progression</span></td><td>deux sections : Volume hebdo <b>et</b> Équilibre</td></tr>
+  <tr><td>Temps d'entraînement</td><td><span class="tag t1">hub Muscu</span></td><td>🔴 <b>destination à créer</b></td></tr>
+  <tr><td>Semaine de course</td><td><span class="tag t1">/running-history › Stats</span></td><td>pas le hub course, qui montre la dernière course</td></tr>
+  <tr><td>Poids</td><td><span class="tag t1">Mensurations</span></td><td>déjà présent</td></tr>
+  <tr><td>Bilan hebdo</td><td><span class="tag q">écran Bilan</span></td><td>🔴 <b>orphelin</b> — la notification n'y mène PAS (aucun handler de réponse dans l'app)</td></tr>
+  <tr><td>Pas</td><td><span class="tag home">reste sur l'accueil</span></td><td>live du jour, et évite un 4ᵉ orphelin</td></tr>
+  <tr><td>Bien-être</td><td><span class="tag q">écran Bien-être</span></td><td>🔴 <b>idem</b></td></tr>
+  <tr><td>Objectifs</td><td><span class="tag q">écran Objectifs</span></td><td>🔴 <b>idem</b></td></tr>
+  <tr><td>Score de forme</td><td><span class="tag q">décision D3</span></td><td>seul signal sans aucun chiffre</td></tr>
+</table>
+
+<div class="flag"><b>Quatre écrans risquent de devenir inatteignables.</b> Les widgets
+<code>wellbeing</code>, <code>goals</code> et <code>review</code> sont aujourd'hui le <b>seul</b>
+point d'entrée de leur écran — <code>steps</code> l'était aussi, d'où sa conservation sur l'accueil.
+Pour <code>review</code>, la relecture a démenti le cadrage : <b>aucun handler de réponse aux
+notifications n'existe dans l'app</b>, la notification hebdo ouvre donc l'accueil, pas le bilan. Les retirer sans les remplacer rendrait trois écrans livrés
+invisibles — exactement le défaut trouvé à la recette de CYCLE-01 le 01/08. <b>Décision D2</b> :
+proposition d'une section « Suivi » sur l'écran Profil, qui les regrouperait avec les mensurations.</div>
+
+<h2>3. Deux décisions, et une question de calendrier</h2>
+<div class="row">
+
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">D3 — que fait-on du score de forme ?</p>
+    <p style="margin:0 0 10px;font-size:13.5px">C'est le <b>seul</b> des 21 qui ne porte
+      strictement aucun nombre : trois composantes qualitatives. Il ne peut donc pas devenir une
+      carte d'Insights en l'état — une carte doit toujours porter le chiffre qui la justifie.</p>
+    <ol>
+      <li><b>Il reste sur l'accueil</b> (7ᵉ widget) — zéro travail, mais on affaiblit le plafond le
+        jour même où on le pose.</li>
+      <li><b>Il porte le compte de ses composantes</b> (« 2 des 3 signaux au rouge ») —
+        <em>proposition</em>. Un compte est un chiffre, dérivé de données déjà calculées.</li>
+      <li><b>Il descend en Tier 1</b> — cohérent avec les 9 autres, mais un score de forme est du
+        live du jour : le ranger dans une page de fond le rend inutile.</li>
+    </ol>
+  </div>
+
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Ce que l'audit a corrigé</p>
+    <p style="margin:0 0 10px;font-size:13.5px">Le cadrage annonçait <b>trois</b> signaux
+      irrécupérables faute de chiffre. Vérification faite dans le code, <b>deux étaient
+      récupérables</b> :</p>
+    <ol>
+      <li><code>activity_level</code> porte déjà <code>runningDays</code> — et c'est exactement le
+        chiffre qui justifie la suggestion. <b>La spec d'INSIGHTS-01 se trompait</b> en affirmant le
+        contraire ; la correction fait partie de cette US.</li>
+      <li><code>concurrent_interference</code> calcule deux ratios puis <b>les jette</b> — le défaut
+        exact déjà corrigé sur la charge d'entraînement, en deux lignes.</li>
+    </ol>
+    <div class="flag" style="margin-top:12px"><b>D4 — calendrier.</b> Cette US refactore l'accueil et
+      9 widgets appartenant à des US en recette. Si la recette du week-end tourne sur un APK déjà
+      construit, le code peut partir tout de suite ; sinon il attend lundi. <b>Seul Florian a cette
+      information.</b></div>
+  </div>
+
+</div>
+
+<h2>4. Le plafond devient exécutable</h2>
+<p class="why">Un plafond écrit dans un ADR que personne ne relit s'est fait dépasser de 350 %.
+Celui-ci cassera la CI.</p>
+<div class="anno" style="max-width:70ch">
+  <p style="margin:0 0 8px;font-size:13.5px"><code>expect(HOME_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_HOME_WIDGETS)</code></p>
+  <p style="margin:0;font-size:13.5px">Le dépasser reste <b>possible</b> — il faut modifier cette
+    ligne, donc en faire un arbitrage conscient. C'est précisément ce qu'ADR-007 §2 demandait depuis
+    le 16/07 (« ajouter un widget <em>coûte</em> un arbitrage, pas un simple +1 »), sans jamais
+    disposer du moyen de l'imposer.</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -48,27 +48,27 @@ describe('ConcurrentTrainingInterferenceCard', () => {
   });
 
   it('ne rend rien quand show est faux (pas de divergence, ou gating incomplet)', async () => {
-    mockInterference({ show: false, direction: null });
+    mockInterference({ show: false, direction: null, runRatio: null, strengthRatio: null });
     const { toJSON } = await render(<ConcurrentTrainingInterferenceCard size="wide" />);
     expect(toJSON()).toBeNull();
   });
 
   it('affiche le titre et le message en forme wide, direction course en hausse', async () => {
-    mockInterference({ show: true, direction: 'runningUpStrengthDown' });
+    mockInterference({ show: true, direction: 'runningUpStrengthDown', runRatio: 1.42, strengthRatio: 0.71 });
     const { getByText } = await render(<ConcurrentTrainingInterferenceCard size="wide" />);
     expect(getByText('home.concurrentTrainingInterference.title')).toBeTruthy();
     expect(getByText('home.concurrentTrainingInterference.message')).toBeTruthy();
   });
 
   it('affiche le titre et le message en forme wide, direction muscu en hausse (symétrique, R4)', async () => {
-    mockInterference({ show: true, direction: 'strengthUpRunningDown' });
+    mockInterference({ show: true, direction: 'strengthUpRunningDown', runRatio: 1.42, strengthRatio: 0.71 });
     const { getByText } = await render(<ConcurrentTrainingInterferenceCard size="wide" />);
     expect(getByText('home.concurrentTrainingInterference.title')).toBeTruthy();
     expect(getByText('home.concurrentTrainingInterference.message')).toBeTruthy();
   });
 
   it('forme small : titre seul', async () => {
-    mockInterference({ show: true, direction: 'runningUpStrengthDown' });
+    mockInterference({ show: true, direction: 'runningUpStrengthDown', runRatio: 1.42, strengthRatio: 0.71 });
     const { getByText, queryByText } = await render(
       <ConcurrentTrainingInterferenceCard size="small" />,
     );
@@ -77,7 +77,7 @@ describe('ConcurrentTrainingInterferenceCard', () => {
   });
 
   it('forme large : affiche le hint (jamais une action suggérée, spec R5)', async () => {
-    mockInterference({ show: true, direction: 'strengthUpRunningDown' });
+    mockInterference({ show: true, direction: 'strengthUpRunningDown', runRatio: 1.42, strengthRatio: 0.71 });
     const { getByText, queryByText } = await render(
       <ConcurrentTrainingInterferenceCard size="large" />,
     );

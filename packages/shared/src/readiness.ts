@@ -33,6 +33,16 @@ export interface ReadinessResult {
   load: ReadinessComponent;
   nutrition: ReadinessComponent;
   wellbeing: ReadinessComponent;
+  /**
+   * Comptes ajoutés par **US INSIGHTS-02** (décision D3-B). Le score de forme était le **seul** des
+   * 21 widgets d'accueil à ne porter aucun nombre : il ne pouvait donc pas devenir une carte
+   * d'insight, où une affirmation sans chiffre est un défaut bloquant. « 2 des 3 signaux sont au
+   * rouge » en est un — et il se **dérive** des trois composantes déjà classées, sans rien
+   * recalculer, ce qui respecte la règle « aucune analyse nouvelle ».
+   */
+  negativeCount: number;
+  /** Composantes réellement évaluables (ni `unavailable`) — le dénominateur du « X sur Y ». */
+  availableCount: number;
 }
 
 const WELLBEING_LOW_ENERGY = 2;
@@ -91,7 +101,15 @@ export function computeReadiness(input: {
   wellbeing: ReadinessComponent;
 }): ReadinessResult {
   const components = [input.load, input.nutrition, input.wellbeing];
-  const base = { load: input.load, nutrition: input.nutrition, wellbeing: input.wellbeing };
+  const negativeCount = components.filter((c) => c.state === 'negative').length;
+  const availableCount = components.filter((c) => c.state !== 'unavailable').length;
+  const base = {
+    load: input.load,
+    nutrition: input.nutrition,
+    wellbeing: input.wellbeing,
+    negativeCount,
+    availableCount,
+  };
 
   if (components.every((c) => c.state === 'unavailable')) {
     return { show: false, verdict: null, ...base };

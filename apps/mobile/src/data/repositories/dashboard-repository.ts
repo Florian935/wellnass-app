@@ -1032,7 +1032,7 @@ export function useConcurrentTrainingInterference(): ConcurrentTrainingInterfere
   const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
 
   if (!(strengthActive && runningActive)) {
-    return { show: false, direction: null };
+    return { show: false, direction: null, runRatio: null, strengthRatio: null };
   }
 
   const sumInWindow = (startKey: string) => {

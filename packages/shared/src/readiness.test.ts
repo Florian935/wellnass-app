@@ -145,7 +145,25 @@ describe('computeReadiness (US TRI-03, R4/R5)', () => {
       load: unavailable,
       nutrition: unavailable,
       wellbeing: unavailable,
+      // US INSIGHTS-02 : aucune composante évaluable, donc aucun « X sur Y » à annoncer.
+      negativeCount: 0,
+      availableCount: 0,
     });
+  });
+
+  // ── US INSIGHTS-02 (D3-B) — les comptes qui rendent le score citable dans une carte ──────────
+  it('compte les composantes négatives et les composantes évaluables', () => {
+    // Le score de forme était le seul widget d'accueil à ne porter aucun nombre : il ne pouvait
+    // donc pas devenir une carte d'insight, où une affirmation sans chiffre est un défaut.
+    const result = computeReadiness({ load: negative, nutrition: negative, wellbeing: positive });
+    expect(result.negativeCount).toBe(2);
+    expect(result.availableCount).toBe(3);
+  });
+
+  it('exclut les composantes indisponibles du dénominateur, pas du silence', () => {
+    const result = computeReadiness({ load: negative, nutrition: unavailable, wellbeing: neutral });
+    expect(result.negativeCount).toBe(1);
+    expect(result.availableCount).toBe(2);
   });
 
   it('une composante négative suffit → rest, même si les deux autres sont bonnes', () => {

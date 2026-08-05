@@ -25,8 +25,11 @@ import {
 } from '@wellness/shared';
 
 import {
+  useActivityLevelSuggestion,
+  useConcurrentTrainingInterference,
   useDeficitVolumeAlert,
   useOvertrainingGuardAlert,
+  useReadiness,
   useRecentStrengthRecords,
   useTrainingLoadAlert,
 } from '@/data/repositories/dashboard-repository';
@@ -67,6 +70,11 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
   // Tous les hooks sont appelés **inconditionnellement** (règle des hooks + React Compiler).
   const overtrainingGuard = useOvertrainingGuardAlert();
   const trainingLoad = useTrainingLoadAlert();
+  // US INSIGHTS-02 : ces trois signaux avaient leur propre widget d'accueil jusqu'au 05/08/2026.
+  // Ils vivent désormais ici — c'est ce qui a permis de ramener le registre de 21 à 7.
+  const readiness = useReadiness();
+  const interference = useConcurrentTrainingInterference();
+  const activityLevel = useActivityLevelSuggestion();
   const deficitVolume = useDeficitVolumeAlert();
   const { records, isLoading: recordsLoading } = useRecentStrengthRecords(4);
   const { finished, isLoading: goalsLoading } = useGoals();
@@ -102,6 +110,9 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
     const candidates = buildInsightCandidates({
       overtrainingGuard,
       trainingLoad,
+      readiness,
+      interference,
+      activityLevel,
       deficitVolume,
       records: recordInputs,
       goals: goalInputs,
@@ -121,6 +132,9 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
     isLoading,
     overtrainingGuard,
     trainingLoad,
+    readiness,
+    interference,
+    activityLevel,
     deficitVolume,
     records,
     finished,

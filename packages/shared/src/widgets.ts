@@ -38,60 +38,30 @@ export type WidgetScreen = (typeof WIDGET_SCREENS)[number];
  * (migration `full → wide`).
  */
 export const HOME_WIDGET_IDS = [
+  // ── US INSIGHTS-02 (roadmap 7.21) — registre ramené de 21 à 7 le 05/08/2026 ──────────────────
+  // ADR-007 §2 plafonne le Tier 0 à 4-6 widgets et pose qu'« ajouter un widget **coûte** un
+  // arbitrage ». L'arbitrage n'avait jamais eu lieu : le registre avait atteint **21**, soit 3,5 ×
+  // le plafond. Chacun des 14 retirés a une destination vérifiée par test
+  // (`widget-destinations.ts`) — aucun signal n'a disparu du produit.
+  //
+  // ⚠️ **Le plafond est désormais appliqué par un test** (`MAX_HOME_WIDGETS`) : le dépasser reste
+  // possible, mais impose de modifier ce test — donc d'en faire un arbitrage conscient, ce que
+  // l'ADR demandait depuis le 16/07/2026 sans disposer du moyen de l'imposer.
+  //
+  // Les 4 premiers sont **permanents**, les 3 derniers ne s'affichent jamais tous ensemble par
+  // défaut : le compte **visible** reste donc dans la fourchette 4-6 de l'ADR.
   'today-session',
   'nutrition-summary',
   'streak',
-  'weight',
-  'record-recent',
-  'muscle-volume',
-  'running-week',
-  'deficit-volume',
-  'training-time',
-  // US PAS-01 — ajouté en fin de registre : `resolveScreenLayout` complète les layouts déjà
-  // stockés avec les IDs manquants, donc aucune migration de `dashboard_layout` n'est nécessaire.
+  // Conservé bien qu'il ne soit pas au cœur des 3 piliers : c'est du live du jour, **et** son
+  // widget est le seul point d'entrée de `/steps` — le retirer créait un écran orphelin.
   'steps',
-  // US BIEN-01 — même raison, même place : en fin de registre.
-  'wellbeing',
-  // US OBJ-01 — même raison, même place : en fin de registre.
-  'goals',
-  // US BILAN-01 — idem.
-  'review',
-  // US CYCLE-01 — idem. **Pas d'onglet de navigation** (arbitrage du 31/07/2026) : ce widget est
-  // le seul point d'entrée du suivi de cycle, l'écran de détail s'ouvre en appuyant dessus.
-  'cycle',
-  // US META-19 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors de la zone de
-  // risque ACWR, comme `deficit-volume` — pas un ajout permanent au plafond Tier 0.
-  'training-load',
-  // US TRI-12 — idem. **Widget conditionnel** (Tier 2, ADR-007) : rendu `null` hors des deux
-  // signaux réunis (charge sans repos + déficit persistant) — même logique que `training-load`.
-  'overtraining-guard',
-  // US ACTIV-01 — idem. **Widget conditionnel temporel** : visible seulement les 7 jours suivant
-  // la fin de l'onboarding (ou jusqu'à une fermeture explicite). Contrairement à `training-load`/
-  // `overtraining-guard`, sa condition doit être déclarée dans `isWidgetActive` côté écran —
-  // sans ça, il laisserait un trou dans la grille après le jour 7 (bug déjà constaté sur ces deux
-  // widgets, voir BACKLOG.md dette technique).
-  'activation-path',
-  // US TRI-03 — idem. **Transverse comme `wellbeing`/`review`**, pas conditionnel par pilier
-  // (contrairement à `training-load`/`overtraining-guard`) : la dégradation se fait par composante
-  // à l'intérieur du hook (spec D2), pas par une garde tout-ou-rien. Rendu `null` seulement si
-  // aucune des 3 composantes n'a de données (spec R5).
-  'readiness',
-  // US RN-03 — idem. **Conditionnel Tier 2**, gardé par les deux piliers `running`+`nutrition` (la
-  // fréquence de course vient de l'un, le niveau d'activité déclaré à comparer de l'autre) — rendu
-  // `null` si le palier suggéré est déjà celui déclaré (spec R3).
-  'activity-level-suggestion',
-  // US MR-08 — idem. **Conditionnel Tier 2**, gardé par les deux piliers `strength`+`running`
-  // (même garde tout-ou-rien que `training-load`) — rendu `null` hors divergence détectée entre
-  // les deux piliers (spec R2).
-  'concurrent-training-interference',
-  // US INSIGHTS-01 — idem, en fin de registre. **Porte d'entrée** de l'écran « Insights »
-  // (Tier 3, ADR-007) : rend la carte de tête, ou `null` quand le moteur ne retient rien.
-  // Conditionnel, donc **déclaré dans `isWidgetActive`** — la ligne part dans le même commit que
-  // ce registre, le défaut inverse s'étant produit quatre fois (voir `(tabs)/index.tsx`).
+  // Conditionnel : rendu `null` quand le moteur ne retient aucune carte (US INSIGHTS-01).
   'insights',
-  // US GARDE-01 : `load-streak-alert` (MR-14) **retiré** ici — fusionné dans `overtraining-guard`,
-  // qui porte désormais 2 niveaux de sévérité. Aucune migration de `dashboard_layout` nécessaire :
-  // `resolveScreenLayout` ignore les ids inconnus d'un layout stocké (voir son filtre `known.has`).
+  // Conditionnel et temporaire : 7 jours après l'onboarding (US ACTIV-01).
+  'activation-path',
+  // Gardé par un réglage, invisible par défaut : opt-in strict sur une donnée de santé (CYCLE-01).
+  'cycle',
 ] as const;
 
 /**
@@ -105,6 +75,12 @@ export const STRENGTH_WIDGET_IDS = [
   'strength-planning',
   'strength-progress',
   'strength-templates',
+  // US INSIGHTS-02 — destinations **créées** pour deux widgets retirés de l'accueil :
+  //  - `strength-records` : `/progress` › Records est par **exercice sélectionné**, donc ni le
+  //    même contenu ni le même coût (4 gestes) — ce n'était pas une destination valable ;
+  //  - `strength-training-time` : n'en avait aucune.
+  'strength-records',
+  'strength-training-time',
 ] as const;
 
 /** Course : les 3 modules-aperçu du hub, widgetisés. Ordre = disposition par défaut (maquette validée). */
@@ -112,7 +88,24 @@ export const RUNNING_WIDGET_IDS = [
   'running-history',
   'running-programs',
   'running-planning',
+  // US INSIGHTS-02 — `training-time` se rend **pilier par pilier** (`tt.strengthActive ? … : null`)
+  // et les onglets sont gatés : le placer seulement côté muscu l'aurait retiré aux coureurs.
+  'running-training-time',
 ] as const;
+
+/**
+ * Plafond du Tier 0 (US INSIGHTS-02, roadmap 7.21), **appliqué par un test** dans `widgets.test.ts`.
+ *
+ * ADR-007 §2 fixe 4-6 widgets *visibles*. Le registre est plafonné à **7** parce que ses 3 dernières
+ * entrées ne s'affichent jamais toutes ensemble par défaut : `cycle` exige un opt-in,
+ * `activation-path` s'auto-détruit à J+7, `insights` ne paraît que s'il a quelque chose à dire. Le
+ * compte visible reste donc dans la fourchette de l'ADR.
+ *
+ * ⚠️ **Le dépasser reste possible — mais il faut modifier le test.** C'est exactement ce que l'ADR
+ * demandait depuis le 16/07/2026 (« ajouter un widget **coûte** un arbitrage, pas un simple `+1` »)
+ * sans jamais disposer du moyen de l'imposer. Le registre avait atteint **21**.
+ */
+export const MAX_HOME_WIDGETS = 7;
 
 export type HomeWidgetId = (typeof HOME_WIDGET_IDS)[number];
 export type StrengthWidgetId = (typeof STRENGTH_WIDGET_IDS)[number];
@@ -168,57 +161,19 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'today-session': ['strength'],
       'nutrition-summary': ['nutrition'],
       streak: 'always',
-      weight: ['nutrition'],
-      'record-recent': ['strength', 'running'],
-      'muscle-volume': ['strength'],
-      'running-week': ['running'],
-      'deficit-volume': ['strength', 'nutrition'],
-      'training-time': ['strength', 'running'],
       // Transverse comme `streak` : la marche n'appartient à aucun pilier, et un utilisateur
       // « nutrition seule » doit pouvoir suivre ses pas (US PAS-01).
       steps: 'always',
-      // Transverse aussi (US BIEN-01) : le bien-être est une 4ᵉ dimension, **pas** un 4ᵉ pilier
-      // activable — aucune entrée dans `active_pillars`, donc jamais filtré.
-      wellbeing: 'always',
-      // US OBJ-01 : **pas** `'always'`, contrairement à `steps` et `wellbeing`. Les 2 types
-      // d'objectif au lancement portent sur la course et la force ; un utilisateur « nutrition
-      // seule » n'en créerait aucun, le widget serait un vide permanent. Même garde que
-      // `record-recent` et `training-time`.
-      goals: ['strength', 'running'],
-      // US BILAN-01 : transverse, contrairement à `goals` juste au-dessus. Le bilan **agrège ce qui
-      // existe** — un utilisateur « nutrition seule » y trouve ses jours journalisés et son
-      // adhérence, donc la carte a du contenu quel que soit le pilier activé.
-      review: 'always',
-      // US CYCLE-01 : **ni pilier, ni `'always'`** — le seul widget gardé par un réglage.
-      // Pas une liste de piliers : le cycle n'appartient à aucun des trois. Pas `'always'` non
-      // plus : c'est une donnée de santé sensible, en opt-in strict, désactivé par défaut.
+      // US CYCLE-01 : **ni pilier, ni `'always'`** — le seul widget gardé par un réglage. Le cycle
+      // n'appartient à aucun des trois piliers, mais c'est une donnée de santé sensible, en opt-in
+      // strict et désactivée par défaut : elle ne peut donc pas être universelle non plus.
       cycle: { setting: 'cycleTrackingEnabled' },
-      // US META-19 : même garde que `training-time` — l'ACWR combine muscu et course, un seul
-      // pilier actif ne donnerait qu'une moitié du calcul.
-      'training-load': ['strength', 'running'],
-      // US GARDE-01 (ex-TRI-12) : garde ramenée de 3 à **2 piliers**. Le garde-fou combine toujours
-      // charge et déficit, mais le déficit ne décide plus que du **niveau** de sévérité : la
-      // nutrition dégrade sa composante dans le hook au lieu de masquer le widget (spec D2, même
-      // patron que `readiness`). Sans ça, un utilisateur muscu+course ne voyait jamais l'alerte —
-      // c'était toute la raison d'être de feu MR-14, désormais fusionnée ici.
-      'overtraining-guard': ['strength', 'running'],
-      // US ACTIV-01 : transverse comme `streak`/`steps`/`wellbeing`/`review` — le parcours cible
-      // n'importe quel utilisateur les 7 premiers jours, quels que soient ses piliers actifs.
+      // US ACTIV-01 : transverse — le parcours cible n'importe quel utilisateur les 7 premiers
+      // jours, quels que soient ses piliers actifs.
       'activation-path': 'always',
-      // US TRI-03 : transverse — la dégradation par composante (charge / nutrition / bien-être)
-      // vit dans le hook, pas dans cette garde. Un utilisateur mono-pilier avec des check-ins doit
-      // pouvoir avoir un verdict partiel, comme `wellbeing`.
-      readiness: 'always',
-      // US RN-03 : garde à 2 piliers, comme `training-load` — contrairement à `readiness`, cette
-      // suggestion a strictement besoin des deux données à la fois (pas de dégradation partielle
-      // possible : sans `running`, aucune fréquence ; sans `nutrition`, aucun niveau à comparer).
-      'activity-level-suggestion': ['running', 'nutrition'],
-      // US MR-08 : même garde que `training-load` — la divergence compare les deux piliers, un
-      // seul actif ne donnerait qu'une moitié de la comparaison.
-      'concurrent-training-interference': ['strength', 'running'],
-      // US INSIGHTS-01 : transverse, comme `review` — le moteur agrège des signaux des trois
-      // piliers et applique lui-même le gating candidat par candidat (spec R5). Une garde par
-      // pilier ici masquerait la porte d'entrée à un mono-pilier qui a pourtant des insights.
+      // US INSIGHTS-01 : transverse — le moteur agrège des signaux des trois piliers et applique
+      // lui-même le gating candidat par candidat (spec R5). Une garde par pilier ici masquerait la
+      // porte d'entrée à un mono-pilier qui a pourtant des insights.
       insights: 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
@@ -232,6 +187,11 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'strength-planning': 'wide',
       'strength-progress': 'large',
       'strength-templates': 'small',
+      // US INSIGHTS-02 : `wide`, comme sur l'accueil d'où elles viennent — ces deux cartes rendent
+      // une ligne d'information, pas une tuile. Déclaré explicitement : `defaultSizeOf` retombe sur
+      // `'wide'` en l'absence d'entrée, ce qui aurait donné le bon rendu **par accident**.
+      'strength-records': 'wide',
+      'strength-training-time': 'wide',
     },
   },
   running: {
@@ -241,6 +201,8 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'running-history': 'wide',
       'running-programs': 'small',
       'running-planning': 'small',
+      // US INSIGHTS-02 : idem côté course.
+      'running-training-time': 'wide',
     },
   },
 };
@@ -402,6 +364,32 @@ function compactVertical(widgets: WidgetLayoutEntry[], priorityId?: WidgetId): v
     }
     it.row = row;
     placed.push(it);
+  }
+
+  // ⚠️ La compaction verticale ne suffit pas : elle conserve `col`. US INSIGHTS-02 a retiré 14
+  // widgets d'un coup — si le `small` de gauche disparaît et que celui de droite reste, ce dernier
+  // ne glisse pas et laisse une **demi-cellule vide** visible. Défaut trouvé en relecture de
+  // cadrage, invisible tant qu'on ne retirait qu'un widget à la fois (précédent GARDE-01).
+  //
+  // **Jamais pendant un glisser-déposer** (`priorityId` défini) : là, la colonne choisie par
+  // l'utilisateur *est* l'intention, et la rabattre à gauche annulerait son geste.
+  if (priorityId === undefined) compactHorizontal(placed);
+}
+
+/**
+ * Rabat vers la gauche les widgets qui ont perdu leur voisin de colonne 0.
+ *
+ * Volontairement minimal : on ne re-range **que** ce qui laisse un trou sur sa propre ligne, on ne
+ * réorganise pas la grille. Un first-fit complet remonterait des widgets d'une ligne à l'autre et
+ * détruirait des dispositions que l'utilisateur a voulues — on corrige le défaut, on ne réécrit pas
+ * son écran. Idempotent : appliqué deux fois, il donne le même résultat.
+ */
+function compactHorizontal(widgets: WidgetLayoutEntry[]): void {
+  for (const it of widgets) {
+    if (it.col === 0) continue;
+    const others = widgets.filter((w) => w !== it);
+    const shifted = { ...entryRect(it), col: 0 };
+    if (!others.some((p) => rectsOverlap(shifted, entryRect(p)))) it.col = 0;
   }
 }
 

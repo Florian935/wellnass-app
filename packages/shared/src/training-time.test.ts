@@ -130,7 +130,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 500, // /7 ≈ 71,4/j
       chronicStrengthVolumeKg: 5600, // /28 = 200/j → ratio ≈ 0,357 (< 0,8)
     });
-    expect(result).toEqual({ show: true, direction: 'runningUpStrengthDown' });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: true, direction: 'runningUpStrengthDown' });
   });
 
   it('muscu en forte hausse + course en forte chute → strengthUpRunningDown (symétrique, R4)', () => {
@@ -140,7 +140,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 21000,
       chronicStrengthVolumeKg: 42000, // ratio = 2 (> 1,3)
     });
-    expect(result).toEqual({ show: true, direction: 'strengthUpRunningDown' });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: true, direction: 'strengthUpRunningDown' });
   });
 
   it('les deux ratios montent ensemble → pas de divergence (R2)', () => {
@@ -150,7 +150,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 21000,
       chronicStrengthVolumeKg: 42000, // ratio = 2
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
   });
 
   it('les deux ratios chutent ensemble → pas de divergence (R2)', () => {
@@ -160,7 +160,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 500,
       chronicStrengthVolumeKg: 5600, // ratio ≈ 0,357
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
   });
 
   it('un ratio haut, l’autre en zone saine (pas franchement bas) → pas de divergence (R2)', () => {
@@ -170,7 +170,35 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 2800, // /7 = 400/j
       chronicStrengthVolumeKg: 11200, // /28 = 400/j → ratio = 1 (zone saine, pas < 0,8)
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
+  });
+
+  // ── US INSIGHTS-02 (R3) — les ratios ne sont plus jetés ────────────────────────────────────
+  it('rend les deux ratios, même hors divergence — ils étaient calculés puis perdus', () => {
+    // Le défaut corrigé : la fonction calculait runRatio/strengthRatio pour décider, puis ne les
+    // exposait pas. La carte d'insight ne pouvait donc citer aucun chiffre.
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 7000,
+      chronicRunDistanceM: 28000,
+      acuteStrengthVolumeKg: 700,
+      chronicStrengthVolumeKg: 2800,
+    });
+    // 7000/7 ÷ 28000/28 = 1 des deux côtés : zone saine, aucune divergence, mais les chiffres sont là.
+    expect(result.runRatio).toBeCloseTo(1, 5);
+    expect(result.strengthRatio).toBeCloseTo(1, 5);
+    expect(result.show).toBe(false);
+  });
+
+  it('rend null pour un ratio non calculable, jamais 0 — une base vide n’est pas une charge nulle', () => {
+    const result = computeConcurrentTrainingInterference({
+      acuteRunDistanceM: 0,
+      chronicRunDistanceM: 0,
+      acuteStrengthVolumeKg: 500,
+      chronicStrengthVolumeKg: 5600,
+    });
+    expect(result.runRatio).toBeNull();
+    // L'autre reste calculable : on ne perd pas les deux parce qu'un seul manque.
+    expect(result.strengthRatio).not.toBeNull();
   });
 
   it('aucune course sur 28 j (chronique nul) → historique insuffisant, masqué (R3)', () => {
@@ -180,7 +208,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 500,
       chronicStrengthVolumeKg: 5600,
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
   });
 
   it('aucune séance muscu sur 28 j (chronique nul) → historique insuffisant, masqué (R3, symétrique)', () => {
@@ -190,7 +218,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 0,
       chronicStrengthVolumeKg: 0,
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
   });
 
   it('ratios pile aux bornes (1,3 et 0,8 exacts) → zone saine côté bornes, pas de divergence', () => {
@@ -200,7 +228,7 @@ describe('computeConcurrentTrainingInterference (US MR-08, spec R1/R2/R3)', () =
       acuteStrengthVolumeKg: 3360, // /7 = 480
       chronicStrengthVolumeKg: 16800, // /28 = 600 → ratio = 0,8 exact
     });
-    expect(result).toEqual({ show: false, direction: null });
+    expect({ show: result.show, direction: result.direction }).toEqual({ show: false, direction: null });
   });
 });
 

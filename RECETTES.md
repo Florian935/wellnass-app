@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **05/08/2026** — 30 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **05/08/2026** — 31 sections. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
 > relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
 > rule ni nouveau build** — recettable sur l'APK existant.
@@ -1039,6 +1039,50 @@ existant**.
 > inscrire donnerait l'illusion d'une vérification qui n'aurait pas lieu.
 
 **Quand l'US passe** : `etape: close`, roadmap 7.20 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 31. INSIGHTS-02 — Dégonflage du Tier 0 (accueil 21 → 7)
+
+📄 [spec](docs/specs/functional/us/insights02-degonflage-tier0.md) · roadmap **7.21** · **📱 device** ·
+✅ **aucune migration, aucune sync rule** · ✅ **aucune dépendance native → recettable sur l'APK
+existant**.
+
+> 🔴 **Le critère 4 est le seul qui compte vraiment.** Retirer 14 widgets de l'accueil n'a de sens
+> que si aucun signal n'a disparu du produit. Les destinations sont vérifiées par un test unitaire,
+> mais un test ne prouve pas qu'un humain les trouve : c'est ce que cette recette vérifie.
+
+- [ ] 1. Accueil d'un compte installé tri-pilier : **4 à 6 widgets**, jamais plus.
+- [ ] 2. 🔴 Compte ayant **personnalisé son accueil avant la mise à jour** : aucune cellule vide,
+      aucun doublon, aucun des 7 widgets restants perdu. *(À tester avec un compte réel qui avait
+      réorganisé sa grille — pas un compte neuf.)*
+- [ ] 3. Deux petits widgets côte à côte dont celui de **gauche** a été retiré → celui de droite
+      **glisse à gauche**, il ne reste pas une demi-cellule vide.
+- [ ] 4. 🔴 **Les 14 widgets retirés sont tous atteignables en 2 gestes**, un par un :
+      Réglages › Suivi → **Objectifs**, **Bien-être**, **Bilan de la semaine** ·
+      Muscu › hub → **Records récents**, **Temps d'entraînement** ·
+      Muscu › Progression → **Volume hebdomadaire**, **Équilibre**, **Mensurations** (poids) ·
+      Course › hub → **Temps d'entraînement** · Course › Historique › Stats → **semaine** ·
+      et les 5 alertes (déficit+volume, charge, garde-fou, score de forme, niveau d'activité,
+      interférence) sur l'écran **Insights** quand leur condition est réunie.
+- [ ] 5. Réordonner, redimensionner et masquer un widget conservé fonctionne comme avant.
+- [ ] 6. Le **glisser-déposer** place toujours le widget dans la colonne visée — la compaction
+      horizontale ne doit **pas** le rabattre à gauche pendant le geste.
+- [ ] 7. Les 3 nouvelles cartes d'insight s'affichent avec leurs chiffres : score de forme
+      (« 2 signaux sur 3 »), interférence (deux ratios), niveau d'activité (jours de course).
+- [ ] 8. **Pluriel du score de forme** : avec **1** signal au rouge, la phrase doit être au
+      singulier (« 1 signal **est** au rouge »), pas « 1 signaux sont ».
+- [ ] 9. Mono-pilier nutrition : l'accueil se réduit sans trou et reste utile.
+- [ ] 10. Cycle activé → widget présent ; désactivé → absent, sans cellule vide.
+- [ ] 11. Mode avion → identique. FR ⇄ EN → aucune chaîne brute (surveiller `settings.tracking.*`).
+- [ ] 12. Police 1,5× et thème sombre → aucune régression sur l'accueil réduit ni sur les hubs
+      élargis.
+- [ ] 13. TalkBack → accueil et hubs navigables, ordre de lecture = ordre visuel.
+- [ ] 14. **L'accueil s'ouvre au moins aussi vite qu'avant** — 7 hooks lourds cessent d'y être
+      montés en double, dont le bilan hebdo et ses ≥ 13 requêtes.
+
+**Quand l'US passe** : `etape: close`, roadmap 7.21 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).
 
 ---

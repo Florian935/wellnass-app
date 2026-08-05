@@ -48,7 +48,15 @@ export type InsightFamily = (typeof INSIGHT_FAMILIES)[number];
 export const INSIGHT_ORDER = [
   'overtraining_guard',
   'training_load',
+  // US INSIGHTS-02 — juste après le signal de charge pur : `readiness` l'agrège avec la nutrition
+  // et le bien-être, `concurrent_interference` en est une lecture plus fine (divergence entre
+  // piliers). Les deux passent donc derrière lui, et devant tout le reste.
+  'readiness',
+  'concurrent_interference',
   'deficit_volume',
+  // US INSIGHTS-02 — ferme le bloc `alert` : c'est une **suggestion de réglage**, pas un risque.
+  // Elle ne doit jamais passer devant une alerte de charge.
+  'activity_level',
   'record_recent',
   'goal_achieved',
   'weekly_decision',

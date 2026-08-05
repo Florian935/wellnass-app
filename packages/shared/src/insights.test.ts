@@ -38,9 +38,10 @@ describe('constantes', () => {
     expect(INSIGHT_FAMILIES).toEqual(['alert', 'change', 'celebration']);
   });
 
-  it('déclare 9 identifiants, tous distincts', () => {
-    expect(INSIGHT_ORDER).toHaveLength(9);
-    expect(new Set(INSIGHT_ORDER).size).toBe(9);
+  it('déclare 12 identifiants, tous distincts', () => {
+    // 12 depuis INSIGHTS-02 : +readiness, +concurrent_interference, +activity_level.
+    expect(INSIGHT_ORDER).toHaveLength(12);
+    expect(new Set(INSIGHT_ORDER).size).toBe(12);
   });
 
   it('place le garde-fou de surcharge en tête — rien ne passe devant le risque de blessure', () => {

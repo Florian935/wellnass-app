@@ -10,14 +10,6 @@ import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
-import {
-  useActivityLevelSuggestion,
-  useConcurrentTrainingInterference,
-  useDeficitVolumeAlert,
-  useOvertrainingGuardAlert,
-  useReadiness,
-  useTrainingLoadAlert,
-} from '@/data/repositories/dashboard-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { useInsights } from '@/data/repositories/insights-repository';
@@ -35,43 +27,23 @@ export default function HomeScreen() {
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
 
-  // Alerte déficit = widget **conditionnel** : rendu `null` tant qu'elle n'est pas déclenchée.
-  // On l'exclut de la grille dans ce cas (sinon elle réserve une cellule vide → trou).
-  const deficitActive = useDeficitVolumeAlert().show;
-  // US ACTIV-01 : widget conditionnel temporel (7 jours après l'onboarding, ou jusqu'au dismiss).
-  // Même raison que `deficit-volume` : sans cette déclaration, `WidgetGrid` réserverait sa
-  // cellule après expiration au lieu de l'exclure (spec R4).
+  // ── Widgets conditionnels : ils rendent `null` hors condition, il faut donc les exclure de la
+  // grille, sinon `WidgetGrid` réserve leur cellule et laisse un **trou**. Ce défaut s'est produit
+  // quatre fois avant qu'INSIGHTS-02 ne ramène le registre de 21 à 7 widgets — il n'en reste que
+  // deux à déclarer ici, et c'est le second bénéfice du dégonflage après la lisibilité.
+  //
+  // Les cinq autres (`deficit-volume`, `training-load`, `overtraining-guard`, `readiness`,
+  // `activity-level-suggestion`, `concurrent-training-interference`) sont partis vers l'écran
+  // « Insights » : leurs hooks ne sont donc plus montés ici, ce qui supprime au passage la double
+  // instanciation qu'ils partageaient avec l'agrégateur.
   const activationPathActive = useActivationPath().show;
-  // META-19 / TRI-12 : même défaut que `deficit-volume` — ces deux widgets Tier 2 rendent `null`
-  // hors de leur zone de risque, mais `isWidgetActive` les ignorait, donc `WidgetGrid` réservait
-  // leur cellule même vide (trouvé en préparant ACTIV-01, cf. BACKLOG.md).
-  const trainingLoadActive = useTrainingLoadAlert().show;
-  const overtrainingGuardActive = useOvertrainingGuardAlert().show;
-  // TRI-03 / RN-03 : même défaut, repéré en revue de code en préparant RN-03 — `readiness` (R5) et
-  // `activity-level-suggestion` (spec R3) rendent aussi `null` hors condition et avaient été
-  // omis ici lors de leur livraison respective, laissant `WidgetGrid` réserver leur cellule vide.
-  const readinessActive = useReadiness().show;
-  const activityLevelSuggestionActive = useActivityLevelSuggestion().show;
-  // MR-08 : même défaut à éviter — widget conditionnel Tier 2, rendu `null` hors divergence
-  // détectée, déclaré ici dès l'implémentation (pas laissé à la revue, contrairement aux 4
-  // précédents ci-dessus qui avaient chacun oublié cette étape une fois).
-  const concurrentTrainingInterferenceActive = useConcurrentTrainingInterference().show;
-  // US INSIGHTS-01 : la porte d'entrée de l'écran « Insights » rend `null` quand le moteur ne
-  // retient aucune carte. Déclarée ici **dès l'implémentation**, comme MR-08 et contrairement aux
-  // quatre widgets ci-dessus qui avaient chacun oublié cette étape une fois.
-  // Calculé **une seule fois** ici, puis diffusé au widget via `InsightsProvider` (voir
-  // `insights-context.tsx`) : un second appel dans `InsightsCard` remonterait l'union de huit hooks
-  // sur l'écran le plus ouvert de l'app.
+  // US INSIGHTS-01 : la porte d'entrée de l'écran « Insights ». Calculée **une seule fois** ici,
+  // puis diffusée au widget via `InsightsProvider` (voir `insights-context.tsx`) — un second appel
+  // dans `InsightsCard` remonterait l'union de huit hooks sur l'écran le plus ouvert de l'app.
   const insightsValue = useInsights();
   const insightsActive = insightsValue.insights.length > 0;
   const isWidgetActive = (id: WidgetId) => {
-    if (id === 'deficit-volume') return deficitActive;
     if (id === 'activation-path') return activationPathActive;
-    if (id === 'training-load') return trainingLoadActive;
-    if (id === 'overtraining-guard') return overtrainingGuardActive;
-    if (id === 'readiness') return readinessActive;
-    if (id === 'activity-level-suggestion') return activityLevelSuggestionActive;
-    if (id === 'concurrent-training-interference') return concurrentTrainingInterferenceActive;
     if (id === 'insights') return insightsActive;
     return true;
   };

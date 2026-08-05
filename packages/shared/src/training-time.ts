@@ -98,9 +98,20 @@ export type ConcurrentTrainingInterferenceDirection =
   | 'runningUpStrengthDown'
   | 'strengthUpRunningDown';
 
+/**
+ * `runRatio`/`strengthRatio` ajoutés par **US INSIGHTS-02** : ils étaient **calculés puis jetés**,
+ * ce qui rendait la divergence inaffichable sur l'écran « Insights » (une carte doit toujours
+ * porter le chiffre qui la justifie). Ce n'est pas une analyse nouvelle — on cesse de perdre deux
+ * valeurs existantes. Même correctif que celui appliqué à `useTrainingLoadAlert` par INSIGHTS-01.
+ *
+ * ⚠️ **Nullables, et ce n'est pas décoratif** : deux des quatre sites de retour sont atteints
+ * précisément quand un ratio n'est pas calculable (base chronique nulle).
+ */
 export type ConcurrentTrainingInterference = {
   show: boolean;
   direction: ConcurrentTrainingInterferenceDirection | null;
+  runRatio: number | null;
+  strengthRatio: number | null;
 };
 
 /** Ratio aigu(7j)/chronique(28j), `null` si la base chronique est nulle (même garde que `computeAcwr`). */
@@ -129,15 +140,15 @@ export function computeConcurrentTrainingInterference(input: {
   const strengthRatio = acuteChronicRatio(input.acuteStrengthVolumeKg, input.chronicStrengthVolumeKg);
 
   if (runRatio === null || strengthRatio === null) {
-    return { show: false, direction: null };
+    return { show: false, direction: null, runRatio, strengthRatio };
   }
   if (runRatio > ACWR_RISK_THRESHOLD && strengthRatio < ACWR_LOW_THRESHOLD) {
-    return { show: true, direction: 'runningUpStrengthDown' };
+    return { show: true, direction: 'runningUpStrengthDown', runRatio, strengthRatio };
   }
   if (strengthRatio > ACWR_RISK_THRESHOLD && runRatio < ACWR_LOW_THRESHOLD) {
-    return { show: true, direction: 'strengthUpRunningDown' };
+    return { show: true, direction: 'strengthUpRunningDown', runRatio, strengthRatio };
   }
-  return { show: false, direction: null };
+  return { show: false, direction: null, runRatio, strengthRatio };
 }
 
 // ---------------------------------------------------------------------------

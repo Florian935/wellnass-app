@@ -18,6 +18,7 @@ import {
   type WidgetSize,
 } from '@wellness/shared';
 import { PlanningPreview } from '@/components/PlanningPreview';
+import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 import { MiniBars, Sparkline } from '@/components/widgets/primitives';
 import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useActiveProgram } from '@/data/repositories/program-repository';
@@ -229,11 +230,14 @@ function Divider() {
 // ---------------------------------------------------------------------------
 export const RUNNING_WIDGETS: Record<
   RunningWidgetId,
-  (props: { size: WidgetSize }) => React.ReactElement
+  (props: { size: WidgetSize }) => React.ReactElement | null
 > = {
   'running-history': RunningHistoryWidget,
   'running-programs': RunningProgramsWidget,
   'running-planning': RunningPlanningWidget,
+  // US INSIGHTS-02 : même carte que sur le hub muscu — elle ventile les deux piliers et se rend
+  // partiellement, donc un coureur seul doit y avoir accès.
+  'running-training-time': TrainingTimeCard,
 };
 
 const styles = StyleSheet.create({

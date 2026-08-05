@@ -13,6 +13,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { percentChange, type StrengthWidgetId, type WidgetSize } from '@wellness/shared';
 import { PlanningPreview } from '@/components/PlanningPreview';
+import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
+import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 import { Sparkline } from '@/components/widgets/primitives';
 import { Chip, Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useActiveProgram } from '@/data/repositories/program-repository';
@@ -300,13 +302,17 @@ function StrengthTemplatesWidget({ size }: { size: WidgetSize }) {
 // ---------------------------------------------------------------------------
 export const STRENGTH_WIDGETS: Record<
   StrengthWidgetId,
-  (props: { size: WidgetSize }) => React.ReactElement
+  (props: { size: WidgetSize }) => React.ReactElement | null
 > = {
   'strength-programs': StrengthProgramsWidget,
   'strength-history': StrengthHistoryWidget,
   'strength-planning': StrengthPlanningWidget,
   'strength-progress': StrengthProgressWidget,
   'strength-templates': StrengthTemplatesWidget,
+  // US INSIGHTS-02 : réutilise les cartes telles quelles — elles acceptent déjà `size`. C'est un
+  // déplacement, pas une réécriture, donc rien de leur comportement ne change.
+  'strength-records': RecordRecentCard,
+  'strength-training-time': TrainingTimeCard,
 };
 
 const styles = StyleSheet.create({

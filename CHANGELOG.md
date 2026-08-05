@@ -10,6 +10,84 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 05/08/2026 — `feature/insights02-degonflage-tier0` — Dégonflage du Tier 0 : l'accueil passe de 21 à 7 widgets
+
+Suite de `547a8fa`. Solde la promesse d'INSIGHTS-01, qui avait créé l'écran « Insights » **sans**
+dégonfler l'accueil. **2 755 tests** (1 774 shared `+24`, 800 mobile, 181 admin), typecheck et lint
+verts, cliquet `packages/shared` tenu (100 / 97,46 / 100 / 100).
+
+**Aucune migration, aucune sync rule, aucune dépendance native** → recettable sur l'APK existant.
+
+#### Modifié
+
+- **`HOME_WIDGET_IDS` : 21 → 7** — `today-session`, `nutrition-summary`, `streak`, `steps`, plus
+  trois qui ne s'affichent **jamais tous ensemble par défaut** (`insights` conditionnel,
+  `activation-path` 7 jours, `cycle` opt-in). Compte **visible** : 4-6, la fourchette d'ADR-007 §2,
+  dépassée de 350 % depuis le 16/07/2026.
+- **Les hubs gagnent ce que l'accueil perd** : muscu 5 → 7, course 3 → 4.
+- **`isWidgetActive` retombe de 7 branches à 2.** C'est le second bénéfice : la classe de bug du
+  « trou dans la grille » s'était produite **quatre fois**, et sa surface d'exposition fond.
+- **7 hooks cessent d'être montés deux fois** sur l'écran le plus ouvert de l'app — dont
+  `useWeeklyReview` et ses **≥ 13 requêtes**. La dette consignée la veille est soldée.
+- **ADR-007 §2 amendé** : le plafond n'est plus déclaratif, il est **appliqué par un test**.
+- **`ConcurrentTrainingInterference` et `ReadinessResult` gagnent leurs chiffres** — deux ratios
+  calculés puis jetés d'un côté, deux comptes dérivés de composantes déjà classées de l'autre.
+  Aucune analyse nouvelle : on cesse de perdre ce qui existe.
+
+#### Ajouté
+
+- **`widget-destinations.ts`** (+ 12 tests) — la table qui rend R1 exécutable. Le type **interdit**
+  de compter une carte d'insight comme destination : `alert-insight` n'est acceptable que pour les
+  signaux conditionnels par nature. Une carte est du **surfaçage**, pas une destination — au plus 3
+  s'affichent, avec quota de famille et porte de fraîcheur.
+- **Section « Suivi » dans les Réglages** → `/goals`, `/wellbeing`, `/review`. Ces trois écrans
+  livrés n'avaient **que leur widget** comme point d'entrée.
+- **3 destinations de hub créées** : `strength-records`, `strength-training-time` et
+  **`running-training-time`** — cette dernière parce que `TrainingTimeCard` se rend pilier par
+  pilier : la placer seulement côté muscu l'aurait retirée aux coureurs.
+- **3 nouvelles cartes d'insight** : `readiness`, `concurrent_interference`, `activity_level`.
+- **Compaction horizontale** de la grille, et **`MAX_HOME_WIDGETS`** appliqué par test.
+- **35 clés i18n** FR + EN, symétrie vérifiée (1 962 clés au total).
+
+#### Corrigé
+
+- **§2.4 d'INSIGHTS-01 : une affirmation fausse, corrigée.** Il y était écrit qu'`activity_level`
+  ne portait « aucune quantité ». Faux — `runningDays` existe, et c'est précisément le chiffre qui
+  justifie la suggestion. Le signal pouvait donc devenir un insight dès la 7.20. La relecture de
+  l'époque avait reproduit l'erreur. La ligne est barrée et datée : une spec est une source de
+  vérité, pas un souvenir.
+
+#### Technique-Notes
+
+- 🔴 **Le lot 0 est ce qui rend cette US acceptable, et il a payé.** Écrire la table de destinations
+  **avant** tout retrait a transformé « aucun signal ne disparaît » d'une phrase de spec en une
+  assertion qui casse la CI. Sans lui, `/review` partait à la poubelle — voir ci-dessous.
+- **Le cadrage annonçait 3 signaux irrécupérables ; 2 l'étaient à tort** (`activity_level` avait
+  déjà son chiffre, `concurrent_interference` jetait les siens). Et la relecture de la spec a
+  démenti **7 affirmations**, dont deux qui auraient fait perdre une fonctionnalité : la
+  notification hebdomadaire **ne mène pas** à `/review` (l'app n'a aucun handler de réponse aux
+  notifications), et `/progress` › Records est **par exercice sélectionné**, donc pas l'équivalent
+  du widget de records.
+- **La compaction horizontale est volontairement conservatrice** : un widget ne se rabat à gauche
+  que si sa **propre ligne** a un trou. Un first-fit complet aurait remonté des widgets d'une ligne
+  à l'autre et détruit des dispositions voulues. Et jamais pendant un glisser-déposer : là, la
+  colonne choisie *est* l'intention de l'utilisateur.
+- **Aucune migration de `dashboard_layout`** : `resolveScreenLayout` ignore les ids inconnus
+  (filtre `known.has`, appliqué avant le branchement, donc sur les deux chemins).
+- **La carte `readiness` est la seule au pluriel variable** — i18next choisit la forme sur `count`,
+  qu'il faut lui passer explicitement, sinon les clés `_one`/`_other` ne se résolvent pas et la clé
+  brute s'affiche.
+- **Aucun `*Card.tsx` n'a été supprimé.** Un composant orphelin est du code mort visible ; un
+  composant supprimé trop tôt est une fonctionnalité perdue. Conséquence assumée : **~12 composants
+  deviennent du code mort**, inventoriés dans [BACKLOG.md](BACKLOG.md) pour un `chore/` dédié.
+  Les effacer ici, dans un commit qui touche déjà 31 fichiers, aurait été plus risqué qu'utile.
+- 🔴 **Deux défauts trouvés en revue de diff, corrigés avant commit.** (1) Les 3 destinations créées
+  sur les hubs **n'avaient aucune `defaultSize` déclarée** : `defaultSizeOf` retombant sur `'wide'`,
+  elles rendaient **correctement par accident** — le pire cas, celui qui ne se voit jamais.
+  (2) Le test « chaque widget a une garde » que cette US venait d'ajouter ne portait **que sur
+  l'accueil**, et c'est précisément pour ça qu'il n'a rien vu : il couvre désormais les **trois**
+  hubs, gardes **et** tailles.
+
 ### 05/08/2026 — `feature/insights01-ecran-insights` — BILAN-01 : le groupe musculaire s'affichait en clé brute
 
 Suite de `c079055`. Correctif demandé par Florian juste après la livraison d'INSIGHTS-01.

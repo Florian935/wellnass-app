@@ -214,6 +214,21 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       **trois** surfaces (`review.tsx`, `ReviewCard.tsx`, la carte `weekly_decision` de l'écran
       Insights) — c'est le savoir dupliqué qui avait laissé le défaut vivre. 4 tests.
 
+- [ ] 🟠 **~12 composants de carte devenus du code mort après INSIGHTS-02.** Le dégonflage du Tier 0
+      a ramené le dispatch d'accueil de 21 à 7 entrées ; les composants correspondants ne sont plus
+      référencés que par leurs propres tests et par des **mentions en commentaire** dans d'autres
+      cartes. Liste vérifiée le 05/08/2026 dans `apps/mobile/src/components/dashboard/` :
+      `DeficitVolumeAlertCard`, `TrainingLoadAlertCard`, `OvertrainingGuardCard`, `ReadinessCard`,
+      `ActivityLevelSuggestionCard`, `ConcurrentTrainingInterferenceCard` (leur signal vit
+      désormais en **carte d'insight**) · `GoalsCard`, `WellbeingCard`, `ReviewCard`,
+      `MuscleVolumeCard`, `RunningWeekCard`, `WeightCard` (leur **écran** existe et a sa propre
+      mise en page — la carte ne servait qu'à l'accueil).
+      ⚠️ **Volontairement non supprimés** : effacer 12 composants et leurs suites de tests dans un
+      commit qui en touche déjà 31 aurait été plus risqué qu'utile, et ce n'est pas le sujet de
+      l'US. Du code mort est visible et inoffensif ; une suppression prématurée ne l'est pas.
+      À faire en `chore/` dédié — vérifier au passage qu'aucun n'est destiné à un hub (candidats
+      plausibles : `MuscleVolumeCard` et `RunningWeekCard`).
+
 - [ ] 🟠 **Décision RGPD — `analytics_events` doit-elle entrer dans l'export de données ?**
       Soulevé le 03/08/2026 par le test de complétude de l'export (US CONF-01). La table est
       aujourd'hui **exclue** — exclusion héritée, jamais arbitrée explicitement. Elle porte un

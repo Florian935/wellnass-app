@@ -62,7 +62,7 @@ describe('ReadinessCard', () => {
   it('ne rend rien quand show est faux (R5, aucune composante disponible)', async () => {
     mockResult({
       show: false,
-      verdict: null,
+      verdict: null, negativeCount: 0, availableCount: 3,
       load: unavailable('insufficient-history'),
       nutrition: unavailable('insufficient-logged-days'),
       wellbeing: unavailable('no-recent-checkin'),
@@ -72,20 +72,20 @@ describe('ReadinessCard', () => {
   });
 
   it('affiche le titre et le message du verdict « rest » en forme wide', async () => {
-    mockResult({ show: true, verdict: 'rest', load: negative, nutrition: neutral, wellbeing: positive });
+    mockResult({ show: true, verdict: 'rest', negativeCount: 0, availableCount: 3, load: negative, nutrition: neutral, wellbeing: positive });
     const { getByText } = await render(<ReadinessCard size="wide" />);
     expect(getByText('home.readiness.verdict.rest.title')).toBeTruthy();
     expect(getByText('home.readiness.verdict.rest.message')).toBeTruthy();
   });
 
   it('affiche le titre du verdict « push » (un seul signal positif suffit, R4)', async () => {
-    mockResult({ show: true, verdict: 'push', load: positive, nutrition: neutral, wellbeing: neutral });
+    mockResult({ show: true, verdict: 'push', negativeCount: 0, availableCount: 3, load: positive, nutrition: neutral, wellbeing: neutral });
     const { getByText } = await render(<ReadinessCard size="wide" />);
     expect(getByText('home.readiness.verdict.push.title')).toBeTruthy();
   });
 
   it('forme small : titre seul, pas le détail des composantes', async () => {
-    mockResult({ show: true, verdict: 'ok', load: neutral, nutrition: neutral, wellbeing: neutral });
+    mockResult({ show: true, verdict: 'ok', negativeCount: 0, availableCount: 3, load: neutral, nutrition: neutral, wellbeing: neutral });
     const { getByText, queryByText } = await render(<ReadinessCard size="small" />);
     expect(getByText('home.readiness.verdict.ok.title')).toBeTruthy();
     expect(queryByText(/home\.readiness\.component/)).toBeNull();
@@ -94,7 +94,7 @@ describe('ReadinessCard', () => {
   it('forme large : détail des 3 composantes, une indisponible avec sa raison (R8)', async () => {
     mockResult({
       show: true,
-      verdict: 'ok',
+      verdict: 'ok', negativeCount: 0, availableCount: 3,
       load: neutral,
       nutrition: unavailable('insufficient-logged-days'),
       wellbeing: positive,

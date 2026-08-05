@@ -321,6 +321,37 @@ export default function SettingsScreen() {
         <Button label={t('settings.profile.relaunchOnboarding')} variant="ghost" onPress={() => void relaunchOnboarding()} />
       </View>
 
+      {/* Suivi — US INSIGHTS-02 (R5).
+          🔴 Ces trois écrans étaient atteignables **uniquement** par leur widget d'accueil. Le
+          dégonflage du Tier 0 les aurait rendus invisibles : trois écrans livrés, inatteignables,
+          sans que rien n'échoue. C'est le défaut trouvé à la recette de CYCLE-01 le 01/08/2026, et
+          la raison d'être de cette section.
+          ⚠️ Pour `/review`, la relecture de cadrage a démenti une hypothèse : la notification
+          hebdomadaire **n'y mène pas** — l'app n'a aucun handler de réponse aux notifications, et
+          la notification ne transporte aucun routage. Sans cette entrée, l'écran de bilan n'aurait
+          plus eu aucun point d'accès. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.tracking.title')}
+      </Text>
+      <View style={styles.stack}>
+        <Button
+          label={t('settings.tracking.goals')}
+          variant="ghost"
+          onPress={() => router.push('/goals')}
+        />
+        <Button
+          label={t('settings.tracking.wellbeing')}
+          variant="ghost"
+          onPress={() => router.push('/wellbeing')}
+        />
+        <Button
+          label={t('settings.tracking.review')}
+          variant="ghost"
+          onPress={() => router.push('/review')}
+        />
+      </View>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.tracking.hint')}</Text>
+
       {/* Piliers actifs (décision H) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.pillars.title')}

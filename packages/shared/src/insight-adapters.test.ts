@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildInsightCandidates,
+  candidateFromActivityLevel,
   candidateFromDeficitVolume,
+  candidateFromInterference,
+  candidateFromReadiness,
   candidateFromGoalAchieved,
   candidateFromMuscleBalance,
   candidateFromOvertrainingGuard,
@@ -16,6 +19,7 @@ import {
 } from './insight-adapters';
 import type { MuscleBalance, MuscleGroupBalance } from './muscle-balance';
 import type { MuscleGroup } from './exercise';
+import type { ReadinessResult } from './readiness';
 import type { PillarWeek, WeeklyReview } from './weekly-review';
 
 // ---------------------------------------------------------------------------
@@ -389,6 +393,96 @@ describe('candidatesFromWeeklyChanges', () => {
 });
 
 // ---------------------------------------------------------------------------
+// US INSIGHTS-02 — les trois signaux repris de l'accueil
+// ---------------------------------------------------------------------------
+
+const UNAVAILABLE = { state: 'unavailable' as const };
+
+function readiness(over: Partial<ReadinessResult> = {}): ReadinessResult {
+  return {
+    show: true,
+    verdict: 'rest',
+    load: { state: 'negative' },
+    nutrition: UNAVAILABLE,
+    wellbeing: { state: 'neutral' },
+    negativeCount: 1,
+    availableCount: 2,
+    ...over,
+  };
+}
+
+describe('candidateFromReadiness', () => {
+  it('rend null quand le score est masqué', () => {
+    expect(candidateFromReadiness(readiness({ show: false, verdict: null }))).toBeNull();
+  });
+
+  it('rend null sur un verdict « ok » — il n’y a rien à dire', () => {
+    expect(candidateFromReadiness(readiness({ verdict: 'ok' }))).toBeNull();
+  });
+
+  it('rend null sur « push » — être frais n’est pas un accomplissement', () => {
+    expect(candidateFromReadiness(readiness({ verdict: 'push' }))).toBeNull();
+  });
+
+  it('porte les deux comptes sur un verdict « rest »', () => {
+    const c = candidateFromReadiness(readiness({ negativeCount: 2, availableCount: 3 }));
+    expect(c).toEqual({
+      id: 'readiness',
+      family: 'alert',
+      metrics: { negativeCount: 2, availableCount: 3 },
+      occurredOn: null,
+      pillars: [],
+    });
+  });
+});
+
+describe('candidateFromInterference', () => {
+  it('rend null hors divergence', () => {
+    expect(
+      candidateFromInterference({ show: false, direction: null, runRatio: 1, strengthRatio: 1 }),
+    ).toBeNull();
+  });
+
+  it('rend null si un ratio manque — comparer une seule tendance n’a pas de sens', () => {
+    expect(
+      candidateFromInterference({
+        show: true,
+        direction: 'runningUpStrengthDown',
+        runRatio: 1.5,
+        strengthRatio: null,
+      }),
+    ).toBeNull();
+  });
+
+  it('arrondit les deux ratios et transporte le sens en variant', () => {
+    const c = candidateFromInterference({
+      show: true,
+      direction: 'strengthUpRunningDown',
+      runRatio: 0.7123,
+      strengthRatio: 1.4567,
+    });
+    expect(c!.variant).toBe('strengthUpRunningDown');
+    expect(c!.metrics).toEqual({ runRatio: 0.71, strengthRatio: 1.46 });
+    expect(c!.pillars).toEqual(['strength', 'running']);
+    expect(c!.occurredOn).toBeNull();
+  });
+});
+
+describe('candidateFromActivityLevel', () => {
+  it('rend null quand aucune suggestion n’est active', () => {
+    expect(candidateFromActivityLevel({ show: false })).toBeNull();
+  });
+
+  it('porte runningDays — le chiffre qu’INSIGHTS-01 croyait à tort inexistant', () => {
+    const c = candidateFromActivityLevel({ show: true, suggested: 'active', runningDays: 4 });
+    expect(c!.metrics).toEqual({ runningDays: 4 });
+    expect(c!.variant).toBe('active');
+    expect(c!.family).toBe('alert');
+    expect(c!.pillars).toEqual(['running', 'nutrition']);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Composition
 // ---------------------------------------------------------------------------
 
@@ -396,6 +490,17 @@ function sources(overrides: Partial<InsightSources> = {}): InsightSources {
   return {
     overtrainingGuard: { show: false, severity: null, streakDays: 0 },
     trainingLoad: { show: false, ratio: null },
+    readiness: {
+      show: false,
+      verdict: null,
+      load: { state: 'unavailable' },
+      nutrition: { state: 'unavailable' },
+      wellbeing: { state: 'unavailable' },
+      negativeCount: 0,
+      availableCount: 0,
+    },
+    interference: { show: false, direction: null, runRatio: null, strengthRatio: null },
+    activityLevel: { show: false },
     deficitVolume: { show: false, deficitPct: 0, loggedDays: 0 },
     records: [],
     goals: [],

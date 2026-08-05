@@ -120,7 +120,7 @@ vérifiée dans le code :
 |---|---|
 | `readiness_rest` | `ReadinessResult` ne porte **aucun nombre** — trois composantes `{ state, reason? }` qualitatives. Satisfaire R1 exigerait d'inventer une métrique. |
 | `concurrent_interference` | `ConcurrentTrainingInterference = { show, direction }` — `direction` est une chaîne, zéro nombre. Même motif. |
-| `activity_level` | `current` / `suggested` sont des `ActivityLevel` (chaînes). Deux valeurs qualitatives, aucune quantité. |
+| `activity_level` | ~~« chaînes, aucune quantité »~~ → ❌ **AFFIRMATION FAUSSE, corrigée le 05/08/2026** par le cadrage d'INSIGHTS-02. `ActivityLevelSuggestion` porte bien **`runningDays: number`** — et c'est exactement le chiffre qui justifie la suggestion (« 4 jours de course sur 14 »). Ce signal **pouvait** devenir un insight dès cette US ; il l'est devenu avec la 7.21. La relecture de l'époque avait reproduit l'erreur. |
 | `streak_milestone` | `computeStreak()` renvoie `{ current, activeToday }` et **aucune constante de jalon de série n'existe** dans le dépôt. Décider « à partir de combien de jours on célèbre, et une seule fois » serait une **analyse neuve** — interdit par §1.2. |
 
 ⚠️ **`goal_milestone` a été remplacé par `goal_achieved`, et ce n'est pas un détail.**

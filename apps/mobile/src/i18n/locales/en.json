@@ -1530,6 +1530,13 @@
       "subtitle": "Deletion is permanent after 30 days. Requires an active connection.",
       "delete": "Delete my account",
       "requiresConnection": "Requires an active connection."
+    },
+    "tracking": {
+      "title": "Tracking",
+      "goals": "Goals",
+      "wellbeing": "Well-being",
+      "review": "Weekly review",
+      "hint": "Your personal journals, available when you need them — without cluttering the home screen."
     }
   },
   "account": {
@@ -2583,6 +2590,20 @@
         "title": "Distance this week",
         "body_up": "Up {{pct}}% compared with the previous week.",
         "body_down": "Down {{pct}}% compared with the previous week."
+      },
+      "readiness": {
+        "title": "Readiness is down",
+        "body_one": "{{negativeCount}} of {{availableCount}} signals is in the red today.",
+        "body_other": "{{negativeCount}} of {{availableCount}} signals are in the red today."
+      },
+      "concurrent_interference": {
+        "title": "Your two pillars are diverging",
+        "body_runningUpStrengthDown": "Your running is ramping up (ratio {{runRatio}}) while your strength work slows down (ratio {{strengthRatio}}).",
+        "body_strengthUpRunningDown": "Your strength work is ramping up (ratio {{strengthRatio}}) while your running slows down (ratio {{runRatio}})."
+      },
+      "activity_level": {
+        "title": "Your activity level has shifted",
+        "body": "{{runningDays}} running days over the last 14 — your baseline calorie need has probably moved."
       }
     }
   }

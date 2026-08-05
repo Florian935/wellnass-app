@@ -19,9 +19,19 @@ import type { GoalKind, GoalStatus } from './goals';
 import { EVEN_SHARE, type MuscleBalance, type MuscleGroupBalance } from './muscle-balance';
 import { NOTABLE_CHANGE_PCT, type InsightCandidate } from './insights';
 import type { RecordType } from './records';
-import type { OvertrainingGuardResult } from './training-time';
+import type { ConcurrentTrainingInterference, OvertrainingGuardResult } from './training-time';
+import type { ReadinessResult } from './readiness';
 import type { DeficitVolumeAlert } from './bodyweight';
 import type { WeeklyReview } from './weekly-review';
+
+/**
+ * La suggestion de niveau d'activité, réduite à ce dont l'adaptateur a besoin. Type structurel
+ * plutôt qu'import : `ActivityLevelSuggestion` vit côté mobile (`dashboard-repository.ts`), et
+ * `shared` ne doit pas en dépendre.
+ */
+export type ActivityLevelSuggestionInput =
+  | { show: false }
+  | { show: true; suggested: string; runningDays: number };
 
 // ---------------------------------------------------------------------------
 // Famille `alert`
@@ -66,6 +76,71 @@ export function candidateFromTrainingLoad(alert: {
     metrics: { ratio: Math.round(alert.ratio * 100) / 100 },
     occurredOn: null,
     pillars: ['strength', 'running'],
+  };
+}
+
+/**
+ * Score de forme (TRI-03), converti en carte par **INSIGHTS-02** (décision D3-B).
+ *
+ * Ne se déclenche **que** sur le verdict `rest` : un `ok` n'a rien à dire, et un `push` serait une
+ * célébration qui n'en est pas une (l'utilisateur n'a rien accompli, il est juste frais).
+ *
+ * Les deux chiffres se dérivent des trois composantes déjà classées — aucune analyse nouvelle.
+ */
+export function candidateFromReadiness(result: ReadinessResult): InsightCandidate | null {
+  if (!result.show || result.verdict !== 'rest') return null;
+  return {
+    id: 'readiness',
+    family: 'alert',
+    metrics: { negativeCount: result.negativeCount, availableCount: result.availableCount },
+    occurredOn: null,
+    pillars: [],
+  };
+}
+
+/**
+ * Divergence muscu/course (MR-08). Les deux ratios n'existent que depuis la modification du §R3
+ * d'INSIGHTS-02 — ils étaient calculés puis jetés.
+ *
+ * `null` dès qu'**un** des deux manque : la carte compare deux tendances, en afficher une seule
+ * n'aurait aucun sens. C'est le cas réel où la base chronique d'un pilier est vide.
+ */
+export function candidateFromInterference(
+  result: ConcurrentTrainingInterference,
+): InsightCandidate | null {
+  if (!result.show || result.direction === null) return null;
+  if (result.runRatio === null || result.strengthRatio === null) return null;
+  return {
+    id: 'concurrent_interference',
+    family: 'alert',
+    variant: result.direction,
+    metrics: {
+      runRatio: Math.round(result.runRatio * 100) / 100,
+      strengthRatio: Math.round(result.strengthRatio * 100) / 100,
+    },
+    occurredOn: null,
+    pillars: ['strength', 'running'],
+  };
+}
+
+/**
+ * Suggestion de niveau d'activité TDEE (RN-03).
+ *
+ * ⚠️ La spec d'INSIGHTS-01 affirmait que ce signal ne portait « aucune quantité » — **c'était
+ * faux** : `runningDays` existe, et c'est exactement le chiffre qui justifie la suggestion
+ * (« 4 jours de course sur 14 »). L'erreur a été trouvée en cadrant INSIGHTS-02.
+ */
+export function candidateFromActivityLevel(
+  suggestion: ActivityLevelSuggestionInput,
+): InsightCandidate | null {
+  if (!suggestion.show) return null;
+  return {
+    id: 'activity_level',
+    family: 'alert',
+    variant: suggestion.suggested,
+    metrics: { runningDays: suggestion.runningDays },
+    occurredOn: null,
+    pillars: ['running', 'nutrition'],
   };
 }
 
@@ -252,6 +327,9 @@ export function candidatesFromWeeklyChanges(review: WeeklyReview): InsightCandid
 export type InsightSources = {
   overtrainingGuard: OvertrainingGuardResult;
   trainingLoad: { show: boolean; ratio: number | null };
+  readiness: ReadinessResult;
+  interference: ConcurrentTrainingInterference;
+  activityLevel: ActivityLevelSuggestionInput;
   deficitVolume: DeficitVolumeAlert;
   records: ReadonlyArray<RecordCandidateInput>;
   goals: ReadonlyArray<GoalCandidateInput>;
@@ -274,6 +352,9 @@ export function buildInsightCandidates(sources: InsightSources): InsightCandidat
   const candidates: Array<InsightCandidate | null> = [
     candidateFromOvertrainingGuard(sources.overtrainingGuard),
     candidateFromTrainingLoad(sources.trainingLoad),
+    candidateFromReadiness(sources.readiness),
+    candidateFromInterference(sources.interference),
+    candidateFromActivityLevel(sources.activityLevel),
     candidateFromDeficitVolume(sources.deficitVolume),
     candidateFromRecentRecord(sources.records),
     candidateFromGoalAchieved(sources.goals),

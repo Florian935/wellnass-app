@@ -110,10 +110,17 @@ sans arbitrage explicite.
   ordonnée (`INSIGHT_ORDER`), pas un score : ni sévérité à inventer, ni pondération à défendre,
   même parti pris que le `SIGNAL_ORDER` de BILAN-01. Neuf signaux **déjà livrés** y concourent,
   aucune analyse nouvelle n'a été calculée (§3 respecté). Livré **gratuit**, voir l'amendement ci-dessus.
-  ⚠️ **Le plafond du Tier 0 reste violé** : `HOME_WIDGET_IDS` compte **21 widgets** contre les 4-6
-  du §2. INSIGHTS-01 crée l'endroit où les faire vivre mais **ne dégonfle pas** le dashboard —
-  c'est l'objet d'**INSIGHTS-02**, délibérément placée après la recette pour ne pas refactorer des
-  écrans en cours de validation.
+  ✅ **Le plafond du Tier 0 est rétabli le 05/08/2026** par **INSIGHTS-02** (roadmap 7.21) :
+  `HOME_WIDGET_IDS` passe de **21 à 7**, dont 3 qui ne s'affichent jamais tous ensemble par défaut
+  — le compte **visible** revient donc dans la fourchette 4-6 du §2. Chacun des 14 widgets retirés
+  a une destination **permanente** vérifiée par test (`widget-destinations.ts`) : aucun signal n'a
+  disparu du produit.
+
+  📌 **Et le plafond n'est plus déclaratif : il est appliqué par un test** (`MAX_HOME_WIDGETS`,
+  `widgets.test.ts`). Le franchir reste possible, mais impose de modifier ce test — donc d'en faire
+  l'arbitrage conscient que ce §2 réclamait depuis le 16/07/2026 sans disposer du moyen de
+  l'imposer. C'est la leçon de l'épisode : une règle qui ne casse rien quand on la viole finit
+  violée de 350 %.
 - **Briques transverses** : privilégier des composants génériques (tendance, delta, jauge vs cible,
   record) réutilisés par configuration plutôt que du sur-mesure par analyse.
 - **Rétro-compatibilité** : les analyses déjà livrées (MN-02/4.32, MN-03, MN-06, META-06, RN-01/02) sont

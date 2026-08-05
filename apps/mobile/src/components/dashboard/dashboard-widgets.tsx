@@ -10,49 +10,25 @@ import type { HomeWidgetId, WidgetSize } from '@wellness/shared';
 import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
 import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
 import { StreakCard } from '@/components/dashboard/StreakCard';
-import { WeightCard } from '@/components/dashboard/WeightCard';
-import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
-import { MuscleVolumeCard } from '@/components/dashboard/MuscleVolumeCard';
-import { RunningWeekCard } from '@/components/dashboard/RunningWeekCard';
-import { DeficitVolumeAlertCard } from '@/components/dashboard/DeficitVolumeAlertCard';
-import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 import { StepsCard } from '@/components/dashboard/StepsCard';
-import { WellbeingCard } from '@/components/dashboard/WellbeingCard';
-import { GoalsCard } from '@/components/dashboard/GoalsCard';
-import { ReviewCard } from '@/components/dashboard/ReviewCard';
 import { CycleCard } from '@/components/dashboard/CycleCard';
-import { TrainingLoadAlertCard } from '@/components/dashboard/TrainingLoadAlertCard';
-import { OvertrainingGuardCard } from '@/components/dashboard/OvertrainingGuardCard';
 import { ActivationPathCard } from '@/components/dashboard/ActivationPathCard';
-import { ReadinessCard } from '@/components/dashboard/ReadinessCard';
-import { ActivityLevelSuggestionCard } from '@/components/dashboard/ActivityLevelSuggestionCard';
-import { ConcurrentTrainingInterferenceCard } from '@/components/dashboard/ConcurrentTrainingInterferenceCard';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
 const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
+  // US INSIGHTS-02 (05/08/2026) : 21 → 7 entrées. Les 14 autres ont chacune une destination
+  // vérifiée par test (`widget-destinations.ts`, `packages/shared`) — aucun signal n'a disparu.
+  // Le typage `Record<HomeWidgetId, …>` est ici un garde-fou : retirer un id du registre sans
+  // retirer son entrée casse la compilation.
   'today-session': TodaySessionCard,
   'nutrition-summary': NutritionSummaryCard,
   streak: StreakCard,
-  weight: WeightCard,
-  'record-recent': RecordRecentCard,
-  'muscle-volume': MuscleVolumeCard,
-  'running-week': RunningWeekCard,
-  'deficit-volume': DeficitVolumeAlertCard,
-  'training-time': TrainingTimeCard,
   steps: StepsCard,
-  wellbeing: WellbeingCard,
-  goals: GoalsCard,
-  review: ReviewCard,
-  cycle: CycleCard,
-  'training-load': TrainingLoadAlertCard,
-  'overtraining-guard': OvertrainingGuardCard,
-  'activation-path': ActivationPathCard,
-  readiness: ReadinessCard,
-  'activity-level-suggestion': ActivityLevelSuggestionCard,
-  'concurrent-training-interference': ConcurrentTrainingInterferenceCard,
   insights: InsightsCard,
+  'activation-path': ActivationPathCard,
+  cycle: CycleCard,
 };
 
 /** Rend le widget `id` à la taille demandée. */

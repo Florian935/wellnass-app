@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   HOME_WIDGET_IDS,
+  MAX_HOME_WIDGETS,
+  WIDGET_SCREENS,
   STRENGTH_WIDGET_IDS,
   RUNNING_WIDGET_IDS,
   WIDGET_REGISTRY,
@@ -72,30 +74,42 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 21, muscu 5, course 3 ; gardes pilier', () => {
-    // 21 depuis INSIGHTS-01 (05/08/2026) : ajout d'`insights`, porte d'entrée de l'écran Tier 3.
-    // Était 20 depuis GARDE-01 (`load-streak-alert` fusionné dans `overtraining-guard`). Le
-    // registre les **déclare** tous ; c'est `resolveScreenLayout` qui filtre — `cycle` reste
-    // masqué tant que l'opt-in est faux.
-    // ⚠️ 21 contre les 4-6 du plafond d'ADR-007 §2 : le dégonflage est l'objet d'INSIGHTS-02.
-    expect(HOME_WIDGET_IDS).toHaveLength(21);
-    expect(STRENGTH_WIDGET_IDS).toHaveLength(5);
-    expect(RUNNING_WIDGET_IDS).toHaveLength(3);
+  it('accueil 7, muscu 7, course 4 ; gardes pilier', () => {
+    // 7 depuis INSIGHTS-02 (05/08/2026), contre **21** la veille — 3,5x le plafond d'ADR-007 §2.
+    // Les 4 premiers sont permanents ; les 3 derniers ne s'affichent jamais tous ensemble par
+    // defaut (opt-in cycle, parcours 7 jours auto-detruit, insights conditionnel), donc le compte
+    // **visible** reste dans la fourchette 4-6 de l'ADR.
+    expect(HOME_WIDGET_IDS).toHaveLength(7);
+    // Les hubs **gagnent** ce que l accueil perd : INSIGHTS-02 y a cree les destinations de
+    // `record-recent` et `training-time`, qui n en avaient aucune de valable.
+    expect(STRENGTH_WIDGET_IDS).toHaveLength(7);
+    expect(RUNNING_WIDGET_IDS).toHaveLength(4);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
+    expect(WIDGET_REGISTRY.home.pillars['today-session']).toEqual(['strength']);
     expect(WIDGET_REGISTRY.strength.pillars['strength-programs']).toEqual(['strength']);
   });
 
-  it('garde la charge d\'entraînement (META-19) derrière muscu ET course — ACWR combiné', () => {
-    // Même garde que `training-time` : l'ACWR combine les deux piliers, un seul actif ne donnerait
-    // qu'une moitié du calcul.
-    expect(WIDGET_REGISTRY.home.pillars['training-load']).toEqual(['strength', 'running']);
+  it('ne depasse pas le plafond Tier 0 d ADR-007 §2', () => {
+    // Un plafond ecrit dans un ADR que personne ne relit s'est fait depasser de 350 %. Celui-ci
+    // casse la CI. Le depasser reste **possible** — il faut modifier cette ligne, donc en faire un
+    // arbitrage conscient : c'est exactement ce que l'ADR demandait depuis le 16/07/2026.
+    expect(HOME_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_HOME_WIDGETS);
   });
 
-  it('garde le garde-fou unifié (GARDE-01) derrière 2 piliers, plus 3 — la nutrition dégrade', () => {
-    // GARDE-01 D2 : ramené de 3 à 2 piliers. Le déficit nutritionnel ne décide plus de
-    // l'affichage mais du **niveau** de sévérité (`useOvertrainingGuardAlert` passe
-    // `deficitDaysCount: 0` si le pilier est inactif). Plus aucun widget n'exige 3 piliers.
-    expect(WIDGET_REGISTRY.home.pillars['overtraining-guard']).toEqual(['strength', 'running']);
+  it('declare une garde ET une taille pour chaque widget des TROIS hubs', () => {
+    // Portait d'abord sur le seul accueil — et n'a donc pas vu que les 3 destinations creees par
+    // INSIGHTS-02 sur les hubs muscu/course n'avaient aucune taille declaree. Trouve en revue.
+    // Un id sans garde s'affiche a tout le monde par accident ; un id sans taille retombe sur
+    // 'wide' via defaultSizeOf, donc rend **correctement par hasard** — plus insidieux encore.
+    for (const screen of WIDGET_SCREENS) {
+      for (const id of WIDGET_REGISTRY[screen].ids) {
+        expect(WIDGET_REGISTRY[screen].pillars[id]).toBeDefined();
+        expect(WIDGET_REGISTRY[screen].defaultSize[id]).toBeDefined();
+      }
+    }
+  });
+
+  it('n a plus aucune garde a 3 piliers', () => {
     expect(
       Object.values(WIDGET_REGISTRY.home.pillars).filter(
         (guard) => Array.isArray(guard) && guard.length === 3,
@@ -103,53 +117,37 @@ describe('WIDGET_REGISTRY', () => {
     ).toHaveLength(0);
   });
 
-  it('`load-streak-alert` (MR-14) n’est plus dans le registre — fusionné par GARDE-01', () => {
-    // Le test qu'il remplace assertait la distinction 2-vs-3 piliers entre MR-14 et TRI-12, en
-    // avertissant : « si ces deux gardes deviennent identiques, l'une des deux US est un doublon ».
-    // Elles l'étaient devenues (union = muscu∧course∧streak) ; la réponse a été la **fusion**.
-    expect(HOME_WIDGET_IDS as readonly string[]).not.toContain('load-streak-alert');
-    expect(WIDGET_REGISTRY.home.pillars['load-streak-alert']).toBeUndefined();
-  });
-
-  it('garde le cycle (CYCLE-01) par un RÉGLAGE — ni pilier, ni « always »', () => {
-    // La 3ᵉ forme de garde, ajoutée pour ce cas précis : le cycle n'appartient à aucun pilier
-    // (donc pas de liste) mais ne doit pas s'afficher pour tout le monde (donc pas `'always'`).
+  it('garde le cycle (CYCLE-01) par un REGLAGE — ni pilier, ni « always »', () => {
+    // La 3e forme de garde, ajoutee pour ce cas precis : le cycle n'appartient a aucun pilier
+    // (donc pas de liste) mais ne doit pas s'afficher pour tout le monde (donc pas 'always').
     expect(WIDGET_REGISTRY.home.pillars['cycle']).toEqual({ setting: 'cycleTrackingEnabled' });
   });
 
-  it('garde les objectifs (OBJ-01) derrière muscu OU course, et non « always »', () => {
-    // Les 2 types d'objectif portent sur la course et la force : un utilisateur « nutrition seule »
-    // ne pourrait en créer aucun, le widget serait un vide permanent. Contrairement à `steps` et
-    // `wellbeing`, qui sont eux réellement transverses.
-    expect(WIDGET_REGISTRY.home.pillars['goals']).toEqual(['strength', 'running']);
-    expect(WIDGET_REGISTRY.home.pillars['wellbeing']).toBe('always');
+  it('garde les pas (PAS-01) en transverse — la marche n appartient a aucun pilier', () => {
+    // Conserve par INSIGHTS-02 alors que la plupart de ses voisins partaient : c'est du live du
+    // jour, **et** son widget est le seul point d'entree de /steps.
+    expect(WIDGET_REGISTRY.home.pillars['steps']).toBe('always');
   });
 
-  it('garde le bilan (BILAN-01) en transverse, lui — il agrège ce qui existe', () => {
-    // La distinction avec `goals` est le point : un objectif de course n'a aucun sens sans le pilier
-    // course, alors qu'un bilan « nutrition seule » a du contenu (jours journalisés, adhérence).
-    expect(WIDGET_REGISTRY.home.pillars['review']).toBe('always');
+  it('a retire du registre les 14 widgets deplaces par INSIGHTS-02', () => {
+    // Leur garde partait avec eux : en laisser une derriere serait du code mort trompeur.
+    const retires = [
+      'weight', 'record-recent', 'muscle-volume', 'running-week', 'deficit-volume',
+      'training-time', 'wellbeing', 'goals', 'review', 'training-load',
+      'overtraining-guard', 'readiness', 'activity-level-suggestion',
+      'concurrent-training-interference',
+    ];
+    for (const id of retires) {
+      expect(HOME_WIDGET_IDS as readonly string[]).not.toContain(id);
+      expect(WIDGET_REGISTRY.home.pillars[id]).toBeUndefined();
+    }
   });
 
-  it('garde le readiness (TRI-03) en transverse — dégradation par composante, pas par pilier', () => {
-    // Contrairement à `training-load`/`overtraining-guard` (gardés par pilier, tout ou rien),
-    // TRI-03 dégrade par composante en interne (spec D2) : même un utilisateur mono-pilier avec des
-    // check-ins peut avoir un verdict partiel. La garde reste donc `'always'`, comme `wellbeing`.
-    expect(WIDGET_REGISTRY.home.pillars['readiness']).toBe('always');
-  });
-
-  it("garde la suggestion de niveau d'activité (RN-03) derrière course ou nutrition (candidat de grille)", () => {
-    // Registre = OU (guard.some(...), même sémantique que `overtraining-guard`) : décide si le
-    // widget est un candidat de grille, pas le véritable ET. Le hook `useActivityLevelSuggestion`
-    // applique le vrai ET (course + nutrition ensemble) et rend `null` sinon — même patron que
-    // `useTrainingLoadAlert`.
-    expect(WIDGET_REGISTRY.home.pillars['activity-level-suggestion']).toEqual([
-      'running',
-      'nutrition',
-    ]);
+  it('load-streak-alert (MR-14) n est plus dans le registre — fusionne par GARDE-01', () => {
+    expect(HOME_WIDGET_IDS as readonly string[]).not.toContain('load-streak-alert');
+    expect(WIDGET_REGISTRY.home.pillars['load-streak-alert']).toBeUndefined();
   });
 });
-
 describe('coerceSize (migration full/compact)', () => {
   it('full→wide, compact→small, sinon fallback', () => {
     expect(coerceSize('full', 'wide')).toBe('wide');
@@ -167,7 +165,7 @@ describe('defaultScreenLayout', () => {
     const layout = defaultScreenLayout('home');
     // 21 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
     // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(21);
+    expect(layout.widgets).toHaveLength(7);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -187,7 +185,7 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(20);
+    expect(r.widgets).toHaveLength(6);
     assertNoOverlap(r.widgets);
   });
 
@@ -195,7 +193,7 @@ describe('resolveScreenLayout', () => {
     const stored: ScreenLayout = {
       widgets: [
         { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
-        { id: 'weight', visible: true, size: 'small', col: 0, row: 5 },
+        { id: 'steps', visible: true, size: 'small', col: 0, row: 5 },
       ],
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
@@ -214,7 +212,9 @@ describe('resolveScreenLayout', () => {
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).toContain('steps');
-    expect(r.widgets.map((w) => w.id)).toContain('wellbeing');
+    // INSIGHTS-02 : `wellbeing` a quitté l'accueil ; `insights` est le nouveau venu que la
+    // forward-compat doit ajouter à un layout qui ne le connaît pas.
+    expect(r.widgets.map((w) => w.id)).toContain('insights');
     assertNoOverlap(r.widgets);
   });
 
@@ -226,7 +226,7 @@ describe('resolveScreenLayout', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
     // Et le hub garde donc exactement ses 20 autres widgets (hors `cycle`).
-    expect(r.widgets).toHaveLength(20);
+    expect(r.widgets).toHaveLength(6);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -237,7 +237,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(21);
+    expect(r.widgets).toHaveLength(7);
     assertNoOverlap(r.widgets);
   });
 
@@ -280,9 +280,9 @@ describe('resolveScreenLayout', () => {
     const ids = r.widgets.map((w) => w.id);
 
     expect(ids).not.toContain('load-streak-alert');
-    // Le garde-fou fusionné est conservé, et rien d'autre n'a été perdu au passage : on retrouve
+    // Rien n'a été perdu au passage : on retrouve
     // exactement les widgets autorisés du registre, ni un de plus (doublon) ni un de moins.
-    expect(ids).toContain('overtraining-guard');
+    expect(ids).toContain('insights');
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toHaveLength(
       resolveScreenLayout(null, 'home', [...all]).widgets.length,
@@ -291,19 +291,17 @@ describe('resolveScreenLayout', () => {
     assertNoEmptyRow(r.widgets);
   });
 
-  it('garde `wellbeing` visible pour un utilisateur « nutrition seule » (US BIEN-01)', () => {
-    // Le bien-être est une 4ᵉ dimension **transverse**, pas un 4ᵉ pilier activable : il ne doit
-    // jamais être filtré par `active_pillars`, exactement comme `streak` et `steps`.
+  it('garde les transverses visibles pour un utilisateur « nutrition seule »', () => {
+    // `streak`, `steps` et `insights` sont transverses : jamais filtrés par `active_pillars`.
+    // (`wellbeing` l'était aussi jusqu'à INSIGHTS-02, qui l'a déplacé vers Réglages › Suivi.)
     const r = resolveScreenLayout(null, 'home', ['nutrition']);
     const ids = r.widgets.map((w) => w.id);
 
-    expect(ids).toContain('wellbeing');
     expect(ids).toContain('streak');
     expect(ids).toContain('steps');
-    expect(ids).toContain('readiness');
+    expect(ids).toContain('insights');
     // Contrôle négatif : les widgets gardés par un pilier inactif, eux, disparaissent bien.
-    expect(ids).not.toContain('muscle-volume');
-    expect(ids).not.toContain('running-week');
+    expect(ids).not.toContain('today-session');
     // Note : `activity-level-suggestion` reste dans le layout ici — la garde `Pillar[]` du
     // registre est un OU (`guard.some(...)`, même sémantique que `overtraining-guard` qui liste
     // 3 piliers) : elle décide seulement si le widget est un **candidat de grille**. Le véritable
@@ -325,7 +323,7 @@ describe('resolveScreenLayout', () => {
       widgets: [
         { id: 'streak', visible: true, order: 0, size: 'compact' },
         { id: 'today-session', visible: true, order: 1, size: 'full' },
-        { id: 'weight', visible: true, order: 2, size: 'compact' },
+        { id: 'steps', visible: true, order: 2, size: 'compact' },
       ],
     } as unknown as ScreenLayout;
     const r = resolveScreenLayout(stored, 'home', [...all]);
@@ -363,16 +361,16 @@ describe('moveWidgetToCell', () => {
     const base: ScreenLayout = {
       widgets: [
         { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
-        { id: 'weight', visible: true, size: 'small', col: 1, row: 0 },
+        { id: 'steps', visible: true, size: 'small', col: 1, row: 0 },
         { id: 'today-session', visible: true, size: 'wide', col: 0, row: 1 },
       ],
     };
     // Déplace weight sous streak (col 0, row 1) → collision avec today-session (wide) → poussée.
-    const r = moveWidgetToCell(base, 'weight', 0, 1);
-    const weight = r.widgets.find((w) => w.id === 'weight')!;
-    expect({ col: weight.col, row: weight.row }).toEqual({ col: 0, row: 1 });
+    const r = moveWidgetToCell(base, 'steps', 0, 1);
+    const steps = r.widgets.find((w) => w.id === 'steps')!;
+    expect({ col: steps.col, row: steps.row }).toEqual({ col: 0, row: 1 });
     assertNoOverlap(r.widgets);
-    // today-session (wide) a été poussé sous weight.
+    // today-session (wide) a été poussé sous steps.
     expect(r.widgets.find((w) => w.id === 'today-session')!.row).toBeGreaterThanOrEqual(2);
   });
 
@@ -380,12 +378,12 @@ describe('moveWidgetToCell', () => {
     const base: ScreenLayout = {
       widgets: [
         { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
-        { id: 'weight', visible: true, size: 'small', col: 1, row: 0 },
+        { id: 'steps', visible: true, size: 'small', col: 1, row: 0 },
       ],
     };
-    const r = moveWidgetToCell(base, 'weight', 0, 1); // col 0, sous streak
-    const weight = r.widgets.find((w) => w.id === 'weight')!;
-    expect({ col: weight.col, row: weight.row }).toEqual({ col: 0, row: 1 });
+    const r = moveWidgetToCell(base, 'steps', 0, 1); // col 0, sous streak
+    const steps = r.widgets.find((w) => w.id === 'steps')!;
+    expect({ col: steps.col, row: steps.row }).toEqual({ col: 0, row: 1 });
     assertNoOverlap(r.widgets); // colonne droite laissée vide (trou autorisé)
   });
 
@@ -393,11 +391,11 @@ describe('moveWidgetToCell', () => {
     const base: ScreenLayout = {
       widgets: [
         { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
-        { id: 'weight', visible: true, size: 'wide', col: 0, row: 2 }, // trou en ligne 1
+        { id: 'steps', visible: true, size: 'wide', col: 0, row: 2 }, // trou en ligne 1
       ],
     };
-    const r = moveWidgetToCell(base, 'weight', 0, 2); // re-place → compaction
-    expect(r.widgets.find((w) => w.id === 'weight')!.row).toBe(1); // remontée en ligne 1
+    const r = moveWidgetToCell(base, 'steps', 0, 2); // re-place → compaction
+    expect(r.widgets.find((w) => w.id === 'steps')!.row).toBe(1); // remontée en ligne 1
     assertNoEmptyRow(r.widgets);
   });
 
@@ -420,7 +418,7 @@ describe('gridRowCount', () => {
     expect(
       gridRowCount([
         { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
-        { id: 'weight', visible: true, size: 'large', col: 0, row: 2 },
+        { id: 'steps', visible: true, size: 'large', col: 0, row: 2 },
       ]),
     ).toBe(4); // large en row 2, hauteur 2 → 4
   });
@@ -439,21 +437,21 @@ describe('compactLayout', () => {
   it('remonte les widgets pour ne laisser aucune ligne vide', () => {
     const out = compactLayout([
       { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
-      { id: 'weight', visible: true, size: 'small', col: 0, row: 5 },
+      { id: 'steps', visible: true, size: 'small', col: 0, row: 5 },
     ]);
     expect(out.map((w) => [w.id, w.row])).toEqual([
       ['streak', 0],
-      ['weight', 1],
+      ['steps', 1],
     ]);
   });
 
   it('conserve les colonnes — la compaction est verticale, pas un réagencement', () => {
     const out = compactLayout([
       { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
-      { id: 'weight', visible: true, size: 'small', col: 0, row: 7 },
+      { id: 'steps', visible: true, size: 'small', col: 0, row: 7 },
     ]);
     expect(out.find((w) => w.id === 'streak')!.col).toBe(1);
-    expect(out.find((w) => w.id === 'weight')!.col).toBe(0);
+    expect(out.find((w) => w.id === 'steps')!.col).toBe(0);
     // Deux colonnes distinctes → les deux peuvent tenir sur la première ligne.
     expect(out.every((w) => w.row === 0)).toBe(true);
   });
@@ -506,7 +504,7 @@ describe('moveWidgetToCell — priorité du widget déplacé à ligne égale', (
     const base: ScreenLayout = {
       widgets: [{ id: 'streak', visible: true, size: 'small', col: 0, row: 3 }],
     };
-    const r = moveWidgetToCell(base, 'weight', 0, 0);
+    const r = moveWidgetToCell(base, 'steps', 0, 0);
     expect(r.widgets).toEqual(base.widgets);
   });
 });

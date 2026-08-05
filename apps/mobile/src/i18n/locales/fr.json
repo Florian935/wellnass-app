@@ -1530,6 +1530,13 @@
       "subtitle": "La suppression est définitive après 30 jours. Nécessite une connexion.",
       "delete": "Supprimer mon compte",
       "requiresConnection": "Nécessite une connexion."
+    },
+    "tracking": {
+      "title": "Suivi",
+      "goals": "Objectifs",
+      "wellbeing": "Bien-être",
+      "review": "Bilan de la semaine",
+      "hint": "Vos journaux personnels, accessibles quand vous en avez besoin — sans encombrer l’accueil."
     }
   },
   "account": {
@@ -2583,6 +2590,20 @@
         "title": "Distance de la semaine",
         "body_up": "En hausse de {{pct}} % par rapport à la semaine précédente.",
         "body_down": "En baisse de {{pct}} % par rapport à la semaine précédente."
+      },
+      "readiness": {
+        "title": "Score de forme en baisse",
+        "body_one": "{{negativeCount}} signal sur {{availableCount}} est au rouge aujourd’hui.",
+        "body_other": "{{negativeCount}} signaux sur {{availableCount}} sont au rouge aujourd’hui."
+      },
+      "concurrent_interference": {
+        "title": "Tes deux piliers divergent",
+        "body_runningUpStrengthDown": "Ta course accélère (ratio {{runRatio}}) pendant que ta musculation ralentit (ratio {{strengthRatio}}).",
+        "body_strengthUpRunningDown": "Ta musculation accélère (ratio {{strengthRatio}}) pendant que ta course ralentit (ratio {{runRatio}})."
+      },
+      "activity_level": {
+        "title": "Ton niveau d’activité a changé",
+        "body": "{{runningDays}} jours de course sur les 14 derniers — ton besoin calorique de base a probablement bougé."
       }
     }
   }

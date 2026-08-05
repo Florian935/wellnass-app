@@ -117,8 +117,14 @@ export function InsightCard({ insight }: { insight: SelectedInsight }) {
   const subject = resolveInsightSubject(insight, t);
   if (subject !== undefined) values.subject = subject;
 
+  // US INSIGHTS-02 — le score de forme est la seule carte au pluriel variable (« 1 signal est »
+  // vs « 2 signaux sont »). i18next choisit la forme sur `count`, qu'il faut donc lui passer
+  // explicitement : sans lui, la clé `_one`/`_other` ne se résout pas.
+  const count =
+    insight.id === 'readiness' ? { count: insight.metrics.negativeCount ?? 0 } : undefined;
+
   const title = t(`insights.cards.${insight.id}.title`, values);
-  const body = t(bodyKey(insight), values);
+  const body = t(bodyKey(insight), { ...values, ...count });
 
   return (
     <View
