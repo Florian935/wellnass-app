@@ -90,7 +90,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/collis01-detecteur-collisions` (modifications non commitées) |
-| Commits | 1087 · `main` a **1084** commits de retard sur `dev` |
+| Commits | 1088 · `main` a **1085** commits de retard sur `dev` |
 | Specs d'US | 127 au total — 79 clôturées, 48 en cours |
 | Migrations | 74/74 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -101,11 +101,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `93747af` feat(collis01): détecteur de collisions entre séances — séquençage muscu ↔ course (roadmap 3.57)
 - `f764732` feat(insights02): dégonflage du Tier 0 — l'accueil passe de 21 à 7 widgets (roadmap 7.21)
 - `547a8fa` fix(bilan01): affiche le libellé du groupe musculaire, plus sa clé brute
 - `c079055` feat(insights01): écran « Insights » Tier 3 — moteur de sélection des analyses (roadmap 7.20)
 - `ca95ec6` feat(muscpwr01): module force livré — %1RM sur la fiche exercice, DOTS et total SBD (lots 5-6)
-- `76797b5` feat(muscpwr01): socle du module force — %1RM, DOTS et total SBD (lots 0 à 4)
 
 ---
 
