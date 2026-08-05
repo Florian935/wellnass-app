@@ -17,9 +17,10 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { InsightFamily, RecordType, SelectedInsight } from '@wellness/shared';
+import type { InsightFamily, RecordType, SelectedInsight, SignalKind } from '@wellness/shared';
 
 import { useUnits } from '@/hooks/useUnits';
+import { resolveDecisionSubject } from '@/lib/decision-subject';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
@@ -43,10 +44,14 @@ export function resolveInsightSubject(
   t: (key: string) => string,
 ): string | undefined {
   if (insight.subject === undefined) return undefined;
-  const isMuscle =
-    insight.id === 'muscle_neglected' ||
-    (insight.id === 'weekly_decision' && insight.variant === 'muscle_imbalance');
-  return isMuscle ? t(`muscle.${insight.subject}`) : insight.subject;
+  if (insight.id === 'muscle_neglected') return t(`muscle.${insight.subject}`);
+  // La décision hebdo délègue : `decision-subject.ts` est le seul endroit qui sait laquelle des six
+  // natures porte une clé de muscle. Le savoir en double, c'est ce qui a laissé le défaut vivre
+  // dans BILAN-01 jusqu'à ce qu'INSIGHTS-01 l'expose sur une 3ᵉ surface.
+  if (insight.id === 'weekly_decision') {
+    return resolveDecisionSubject(insight.variant as SignalKind, insight.subject, t);
+  }
+  return insight.subject;
 }
 
 /** Couleur de famille, prise dans le thème (donc correcte en clair comme en sombre). */

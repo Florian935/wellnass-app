@@ -22,6 +22,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useWeeklyMuscleTonnage, useWeeklyReview } from '@/data/repositories/weekly-review-repository';
 import { useUnits } from '@/hooks/useUnits';
+import { resolveDecisionSubject } from '@/lib/decision-subject';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -43,6 +44,15 @@ export default function ReviewScreen() {
   };
 
   const { current, changes, decision } = review;
+
+  // Résolu une fois : le texte visible et le libellé d'accessibilité doivent dire la même chose.
+  const decisionText =
+    decision === null
+      ? ''
+      : t(`review.decisions.${decision.kind}`, {
+          ...decision.metrics,
+          subject: resolveDecisionSubject(decision.kind, decision.subject, t),
+        });
 
   /**
    * Lignes de chiffres. Construites en **données** plutôt qu'en JSX pour que la bordure ne s'applique
@@ -108,18 +118,15 @@ export default function ReviewScreen() {
                 <Text style={[styles.decisionTitle, { color: colors.textMuted }]}>
                   {t('review.decisionTitle')}
                 </Text>
+                {/* `resolveDecisionSubject` et non `decision.subject` : la décision
+                    `muscle_imbalance` porte une **clé** de groupe musculaire, pas un libellé —
+                    l'écran affichait « Tu délaisses un groupe musculaire : back ». */}
                 <Text
                   style={[styles.decision, { color: colors.text }]}
                   accessibilityRole="text"
-                  accessibilityLabel={`${t('review.a11yDecision')} : ${t(
-                    `review.decisions.${decision.kind}`,
-                    { ...decision.metrics, subject: decision.subject ?? '' },
-                  )}`}
+                  accessibilityLabel={`${t('review.a11yDecision')} : ${decisionText}`}
                 >
-                  {t(`review.decisions.${decision.kind}`, {
-                    ...decision.metrics,
-                    subject: decision.subject ?? '',
-                  })}
+                  {decisionText}
                 </Text>
               </Card>
             )}

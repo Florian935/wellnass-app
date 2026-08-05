@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 05/08/2026 — `feature/insights01-ecran-insights` — BILAN-01 : le groupe musculaire s'affichait en clé brute
+
+Suite de `c079055`. Correctif demandé par Florian juste après la livraison d'INSIGHTS-01.
+**2 731 tests** (1 750 shared, 800 mobile `+4`, 181 admin), typecheck et lint verts.
+
+#### Corrigé
+
+- **« Tu délaisses un groupe musculaire : **back** » → « … : **Dos** ».**
+  `ReviewDecision.subject` vaut `balance.neglected[0]` pour la décision `muscle_imbalance` — une
+  **clé métier**, pas un libellé — et les trois surfaces qui rendent cette décision l'interpolaient
+  telle quelle : [review.tsx](apps/mobile/src/app/review.tsx),
+  [ReviewCard.tsx](apps/mobile/src/components/dashboard/ReviewCard.tsx) et la carte
+  `weekly_decision` de l'écran « Insights ».
+
+#### Ajouté
+
+- **[`lib/decision-subject.ts`](apps/mobile/src/lib/decision-subject.ts)** — `resolveDecisionSubject()`,
+  fonction **unique** désormais partagée par les trois surfaces (+ 4 tests). `resolveInsightSubject`
+  lui **délègue** le cas `weekly_decision` au lieu de reproduire la règle.
+
+#### Technique-Notes
+
+- **Le défaut est préexistant** (livré avec BILAN-01), pas introduit par INSIGHTS-01. Il a vécu sans
+  être vu parce qu'il n'existait qu'à un seul endroit ; c'est en l'exposant sur une **3ᵉ surface**
+  que la revue de code l'a fait apparaître. La leçon est la raison d'être du fichier ci-dessus :
+  **un seul endroit doit savoir** laquelle des six natures de décision porte une clé de muscle.
+- **Écran en recette touché, en connaissance de cause.** BILAN-01 est à `etape: recette` et la
+  recette a lieu ce week-end : le correctif change ce que Florian va tester. Décision explicitement
+  demandée par lui (« rajoute les deux conditions maintenant ») après avoir été prévenu du
+  compromis. Le rendu est **plus** conforme à la spec qu'avant, pas moins.
+- `review.tsx` calcule désormais le texte **une seule fois** : le libellé d'accessibilité et le
+  texte visible partaient de deux interpolations distinctes, qui auraient pu diverger.
+
 ### 05/08/2026 — `feature/insights01-ecran-insights` — Écran « Insights » (Tier 3, ADR-007) : moteur de sélection des analyses pertinentes
 
 Suite de `ca95ec6`. Dernier morceau non construit d'[ADR-007](docs/adr/ADR-007-surfacage-analyses.md),

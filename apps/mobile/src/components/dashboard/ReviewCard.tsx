@@ -21,6 +21,7 @@ import type { WidgetSize } from '@wellness/shared';
 import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { useWeeklyReview } from '@/data/repositories/weekly-review-repository';
 import { useUnits } from '@/hooks/useUnits';
+import { resolveDecisionSubject } from '@/lib/decision-subject';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -46,9 +47,11 @@ export function ReviewCard({ size = 'wide' }: { size?: WidgetSize }) {
   }
 
   const { decision, current } = review;
+  // `resolveDecisionSubject` et non `decision.subject` : la décision `muscle_imbalance` porte une
+  // **clé** de groupe musculaire (`back`), pas un libellé.
   const text = t(`review.decisions.${decision.kind}`, {
     ...decision.metrics,
-    subject: decision.subject ?? '',
+    subject: resolveDecisionSubject(decision.kind, decision.subject, t),
   });
 
   // ── Petit carré : le chiffre qui résume la semaine ──────────────────────────────────────────

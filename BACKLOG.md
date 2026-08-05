@@ -204,19 +204,15 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 
-- [ ] 🟠 **BILAN-01 affiche une clé de groupe musculaire brute.** Trouvé le 05/08/2026 en revue de
-      code d'INSIGHTS-01. La décision hebdo `muscle_imbalance` porte `subject = balance.neglected[0]`,
-      soit une **clé métier** (`back`), interpolée telle quelle dans
-      `review.decisions.muscle_imbalance` : l'écran affiche « Tu délaisses un groupe musculaire :
-      **back** » au lieu de « Dos ». Deux surfaces concernées : `apps/mobile/src/app/review.tsx`
-      (~ligne 119) et `apps/mobile/src/components/dashboard/ReviewCard.tsx` (~ligne 49).
-      **Défaut préexistant, pas introduit par INSIGHTS-01** — qui l'a en revanche neutralisé de son
-      côté via `resolveInsightSubject()`
-      ([InsightCard.tsx](apps/mobile/src/components/insights/InsightCard.tsx)) : la même fonction
-      corrige les deux surfaces de BILAN-01, à une condition près chacune.
-      ⚠️ **Volontairement non corrigé ici** : BILAN-01 est à `etape: recette` et Florian la recette
-      ce week-end — modifier son rendu maintenant déplacerait la cible. À faire juste après, ou à
-      signaler comme constat de recette.
+- [x] ~~🟠 **BILAN-01 affiche une clé de groupe musculaire brute.**~~ — **corrigé le 05/08/2026**
+      (même branche qu'INSIGHTS-01, sur demande de Florian). La décision hebdo `muscle_imbalance`
+      porte `subject = balance.neglected[0]`, soit une **clé métier** (`back`) : les écrans
+      affichaient « Tu délaisses un groupe musculaire : **back** » au lieu de « Dos ». Défaut
+      **préexistant**, resté invisible dans BILAN-01 jusqu'à ce qu'INSIGHTS-01 l'expose sur une
+      3ᵉ surface. Corrigé par une fonction unique,
+      [decision-subject.ts](apps/mobile/src/lib/decision-subject.ts), désormais partagée par les
+      **trois** surfaces (`review.tsx`, `ReviewCard.tsx`, la carte `weekly_decision` de l'écran
+      Insights) — c'est le savoir dupliqué qui avait laissé le défaut vivre. 4 tests.
 
 - [ ] 🟠 **Décision RGPD — `analytics_events` doit-elle entrer dans l'export de données ?**
       Soulevé le 03/08/2026 par le test de complétude de l'export (US CONF-01). La table est

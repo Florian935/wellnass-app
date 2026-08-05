@@ -88,7 +88,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/insights01-ecran-insights` (modifications non commitées) |
-| Commits | 1084 · `main` a **1081** commits de retard sur `dev` |
+| Commits | 1085 · `main` a **1082** commits de retard sur `dev` |
 | Specs d'US | 125 au total — 79 clôturées, 46 en cours |
 | Migrations | 73/73 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -99,11 +99,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `c079055` feat(insights01): écran « Insights » Tier 3 — moteur de sélection des analyses (roadmap 7.20)
 - `ca95ec6` feat(muscpwr01): module force livré — %1RM sur la fiche exercice, DOTS et total SBD (lots 5-6)
 - `76797b5` feat(muscpwr01): socle du module force — %1RM, DOTS et total SBD (lots 0 à 4)
 - `578ec6b` docs(muscpwr01): cadre le module force — %1RM, DOTS et total SBD (MUSC-16/27/29)
 - `c5b68cf` docs(catalogue): réconcilie 8 lignes du catalogue d'analyses (19 ⏳ → 11)
-- `19373b1` docs(import01): cadre l'import de données externes puis met l'US en pause (roadmap 1.20)
 
 ---
 
