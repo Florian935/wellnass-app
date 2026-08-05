@@ -66,6 +66,9 @@ const user_settings = new Table({
   // avale l'erreur — l'interrupteur reste éteint sans le moindre message (constaté en recette
   // device du 31/07/2026).
   cycle_tracking_enabled: column.integer, // 0/1
+  // US COLLIS-01 — opt-in du détecteur de collisions entre séances. 🔴 Sans cette ligne, l'écriture
+  // échoue et `void updateSettings()` avale l'erreur : l'interrupteur reste éteint sans message.
+  session_conflicts_enabled: column.integer, // 0/1
   cycle_health_connect_enabled: column.integer, // 0/1
   // US MUSCPWR-01 — mouvements de force désignés, JSON {squat,bench,deadlift} sérialisé.
   // ⚠️ Troisième colonne de cette table à devoir être déclarée ici : les deux précédentes

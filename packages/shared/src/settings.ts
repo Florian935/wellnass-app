@@ -143,6 +143,8 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * existant ne voit la fonctionnalité apparaître à la mise à jour.
    */
   cycleTrackingEnabled: z.boolean().default(false),
+  /** US COLLIS-01 — opt-in du détecteur de collisions entre séances (décision H). */
+  sessionConflictsEnabled: z.boolean().default(false),
 
   /**
    * Synchronisation du cycle avec Health Connect (US CYCLE-01, R20). **Indépendant** de

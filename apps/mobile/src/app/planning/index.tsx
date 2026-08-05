@@ -28,6 +28,7 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { SessionConflictBanner } from '@/components/planning/SessionConflictBanner';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
@@ -35,6 +36,7 @@ import {
   reschedulePlannedSession,
   skipPlannedSession,
   useMissedSessions,
+  useSessionConflicts,
   useWeekPlan,
   type PlannedSessionItem,
 } from '@/data/repositories/planned-session-repository';
@@ -107,6 +109,9 @@ export default function PlanningScreen() {
 
   /** Une ref de `View` par jour de la semaine affichée (indexée par `dateKey`). */
   const dayCardRefs = useRef<Record<string, View | null>>({});
+  // US COLLIS-01 — conflits de séquençage de la semaine affichée. Rend [] tant que le réglage
+  // opt-in est éteint (désactivé par défaut, décision H).
+  const { conflicts } = useSessionConflicts(weekStart);
   /** Zones mesurées à l'écran (coordonnées absolues) — fraîches à chaque début de geste. */
   const zonesRef = useRef<DropZone[]>([]);
   /** Id de la séance actuellement tirée (`null` = aucun geste en cours). */
@@ -364,6 +369,15 @@ export default function PlanningScreen() {
                     </View>
                   ) : null}
                 </View>
+                {conflicts
+                  .filter((c) => c.runDayKey === dayKey)
+                  .map((c) => (
+                    <SessionConflictBanner
+                      key={c.runSessionId}
+                      conflict={c}
+                      onSwap={(target) => void reschedulePlannedSession(c.runSessionId, target)}
+                    />
+                  ))}
                 {dayItems.length === 0 ? (
                   <Text style={[styles.restDay, { color: colors.textMuted }]}>
                     {t('planning.restDay')}

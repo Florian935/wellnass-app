@@ -1537,6 +1537,12 @@
       "wellbeing": "Well-being",
       "review": "Weekly review",
       "hint": "Your personal journals, available when you need them — without cluttering the home screen."
+    },
+    "conflicts": {
+      "title": "Session sequencing",
+      "toggle": "Detect difficult back-to-backs",
+      "subtitle": "Flags a heavy leg session the day before a long run or intervals, and suggests another day.",
+      "hint": "Your plan is never blocked: you stay in control, the app only flags and suggests."
     }
   },
   "account": {
@@ -1968,7 +1974,13 @@
     "generatedCount_one": "Plan · {{count}} session",
     "generatedCount_other": "Plan · {{count}} sessions",
     "planErrorTitle": "Planning failed",
-    "planErrorMessage": "Planning failed. Please try again."
+    "planErrorMessage": "Planning failed. Please try again.",
+    "conflict": {
+      "title": "Heavy leg session the day before",
+      "body": "{{legSets}} leg sets the day before, then “{{runType}}” the next day. Your legs will not have recovered.",
+      "swap": "Move to {{day}}",
+      "noSlot": "No other free day this week."
+    }
   },
   "notifications": {
     "streakDanger": {

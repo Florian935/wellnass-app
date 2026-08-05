@@ -1537,6 +1537,12 @@
       "wellbeing": "Bien-être",
       "review": "Bilan de la semaine",
       "hint": "Vos journaux personnels, accessibles quand vous en avez besoin — sans encombrer l’accueil."
+    },
+    "conflicts": {
+      "title": "Séquençage des séances",
+      "toggle": "Détecter les enchaînements difficiles",
+      "subtitle": "Signale une grosse séance de jambes la veille d’une sortie longue ou d’un fractionné, et propose un autre jour.",
+      "hint": "Le planning n’est jamais bloqué : tu gardes la main, l’app se contente de signaler et de proposer."
     }
   },
   "account": {
@@ -1968,7 +1974,13 @@
     "generatedCount_one": "Planifier · {{count}} séance",
     "generatedCount_other": "Planifier · {{count}} séances",
     "planErrorTitle": "Échec de la planification",
-    "planErrorMessage": "La planification a échoué. Réessaie."
+    "planErrorMessage": "La planification a échoué. Réessaie.",
+    "conflict": {
+      "title": "Séance jambes lourde la veille",
+      "body": "{{legSets}} séries sur les jambes la veille, puis « {{runType}} » le lendemain. Tes jambes n’auront pas récupéré.",
+      "swap": "Déplacer au {{day}}",
+      "noSlot": "Aucun autre jour libre cette semaine."
+    }
   },
   "notifications": {
     "streakDanger": {

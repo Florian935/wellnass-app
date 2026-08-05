@@ -44,7 +44,11 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   des revenus du secteur fitness, essai gratuit de 17-32 j = meilleure conversion médiane (~42 %), l'Europe
   accepte des prix plus élevés → utile pour la stratégie RevenueCat **post-V1**, à confronter aux sources.
 
-- [25/07/2026] 🔍 **Détecteur de collisions + séquençage intelligent des séances** (signal le plus fort du
+- [25/07/2026] ✅ **PROMUE le 05/08/2026 → US COLLIS-01 (roadmap 3.57).** Design brainstormé et validé par Florian le jour même ; **une seule règle en V1** (jambes majoritaires ET ≥ 8 séries, suivies le lendemain d une sortie longue ou d un fractionné), sortie = informe + échange en un tap, opt-in strict. Les 3 autres familles de conflit — course ↔ course, densité de semaine, charge ↔ nutrition — sont **écartées de la V1** et attendront que celle-ci ait fait ses preuves. Le point dur n° 2 de cette fiche (tolérance individuelle) a été tranché à la baisse : un seuil absolu, calibrable, plutôt qu une baseline personnelle qui serait muette pour un débutant. Spec : docs/specs/functional/us/collis01-detecteur-collisions.md.
+
+  <details><summary>Fiche d origine (conservée)</summary>
+
+  🔍 **Détecteur de collisions + séquençage intelligent des séances** (signal le plus fort du
   benchmark : **4/4 modèles**) : le planning ne se contente pas de **placer** les séances, il **repère les
   combinaisons qui s'auto-sabotent** et **propose une correction** — sortie longue au lendemain d'un gros
   soulevé de terre, fractionné la veille d'une séance jambes, déficit agressif pendant une semaine de
@@ -65,8 +69,9 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   sans imposition) ; **(5)** **100 % offline** (règles locales, aucune dépendance réseau). _Recoupe :_
   US 3.9, RN-17 / META-19, [[score-recuperation-readiness]], [[detection-plateau-deload]], garde-fou
   surentraînement (13/07), [[recommandations-explicables-contestables]], [[objectif-hybride-unifie]].
-  _Prochaine étape :_ **brainstorming** (fixer le jeu de règles V1 minimal — 3-4 règles lisibles suffisent)
-  puis spec → plan → design.
+  _Prochaine étape :_ ~~brainstorming~~ → **fait le 05/08/2026**, voir ci-dessus.
+
+  </details>
 
 - [25/07/2026] 🔍 **Mode « vie réelle » / journée minimale viable (dégradation gracieuse anti-abandon)**
   (3 modèles sur 4 ; désigné **cause n°1 d'abandon à 3-6 semaines**) : en **1 tap**, l'utilisateur déclare

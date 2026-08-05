@@ -52,6 +52,7 @@ export type SettingsInput = Pick<
   | 'analyticsEnabled'
   | 'healthConnectEnabled'
   | 'cycleTrackingEnabled'
+  | 'sessionConflictsEnabled'
   | 'cycleHealthConnectEnabled'
   | 'sbdLifts'
 >;
@@ -77,6 +78,7 @@ type SettingsDbRow = {
   health_connect_enabled: number | null;
   /** 0/1 (opt-in suivi du cycle, US CYCLE-01) ou null sur les lignes locales antérieures. */
   cycle_tracking_enabled: number | null;
+  session_conflicts_enabled: number | null;
   /** 0/1 (synchro cycle ↔ Health Connect) ou null sur les lignes locales antérieures. */
   cycle_health_connect_enabled: number | null;
   /** Stockée en TEXT (JSON sérialisé) — mouvements de force désignés (US MUSCPWR-01). */
@@ -146,6 +148,7 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     analyticsEnabled: decodeAnalyticsEnabled(row),
     healthConnectEnabled: decodeHealthConnectEnabled(row),
     cycleTrackingEnabled: decodeCycleTrackingEnabled(row),
+    sessionConflictsEnabled: row.session_conflicts_enabled === 1,
     cycleHealthConnectEnabled: decodeCycleHealthConnectEnabled(row),
     // Parse tolérant (`sbdLiftsSchema` a un `catch`) : une valeur illisible ou absente retombe sur
     // « rien de désigné », ce qui masque le module force sans casser la lecture des réglages.
@@ -183,6 +186,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('healthConnectEnabled' in input) {
     columns['health_connect_enabled'] = input.healthConnectEnabled ? 1 : 0;
+  }
+  if ('sessionConflictsEnabled' in input) {
+    columns['session_conflicts_enabled'] = input.sessionConflictsEnabled ? 1 : 0;
   }
   if ('cycleTrackingEnabled' in input) {
     columns['cycle_tracking_enabled'] = input.cycleTrackingEnabled ? 1 : 0;

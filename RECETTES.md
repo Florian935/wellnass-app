@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **05/08/2026** — 31 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **05/08/2026** — 32 sections. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
 > relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
 > rule ni nouveau build** — recettable sur l'APK existant.
@@ -1083,6 +1083,48 @@ existant**.
       montés en double, dont le bilan hebdo et ses ≥ 13 requêtes.
 
 **Quand l'US passe** : `etape: close`, roadmap 7.21 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 32. COLLIS-01 — Détecteur de collisions entre séances
+
+📄 [spec](docs/specs/functional/us/collis01-detecteur-collisions.md) · roadmap **3.57** ·
+**📱 device** · ⚠️ **1 migration poussée le 05/08/2026** · ✅ **aucune sync rule**
+(`user_settings` lue en `select *`) · ✅ **aucune dépendance native → recettable sur l'APK
+existant**.
+
+> **Comment provoquer un conflit.** Active le réglage, puis planifie sur deux jours consécutifs :
+> une séance de muscu où les **jambes dominent** avec **≥ 8 séries**, suivie d'une **sortie longue**
+> ou d'un **fractionné**. Sans ces deux conditions, rien ne s'affiche — et c'est voulu.
+
+- [ ] 1. Réglage **désactivé par défaut** sur un compte neuf ; aucun bandeau nulle part.
+- [ ] 2. Une fois activé, le conflit canonique affiche le bandeau **sur le jour de la course**.
+- [ ] 3. Le bandeau **affiche le nombre de séries** et le type de course.
+- [ ] 4. « Déplacer au {{jour}} » déplace **la course**, jamais la séance de muscu.
+- [ ] 5. Après déplacement, le bandeau **disparaît** et n'en crée pas un nouveau ailleurs.
+- [ ] 6. Semaine pleine → bandeau **sans bouton**, avec sa raison.
+- [ ] 7. Jambes minoritaires (full body) ou < 8 séries → **aucun bandeau**.
+- [ ] 8. Course `endurance` ou `récupération` le lendemain → **aucun bandeau**.
+- [ ] 9. Course ou séance de muscu déjà réalisée / sautée → **aucun bandeau**.
+- [ ] 10. Le repli proposé **n'est jamais un jour passé** : sur une semaine en cours, vérifier qu'il
+      ne propose pas un jour antérieur à aujourd'hui.
+- [ ] 11. Désactiver le réglage → les bandeaux disparaissent immédiatement.
+- [ ] 12. Mode avion → identique.
+- [ ] 13. FR ⇄ EN → aucune chaîne brute ; **le jour du repli est traduit** (« Déplacer au Thu » en
+      anglais, pas « Déplacer au jeu »).
+- [ ] 14. Police 1,5× et thème sombre → bandeau lisible, non tronqué, contrastes corrects.
+- [ ] 15. TalkBack → le bandeau est annoncé d'un bloc, le bouton est atteignable séparément.
+- [ ] 16. 🔴 **L'interrupteur survit à une réinstallation.** Activer, désinstaller, réinstaller, se
+      reconnecter : il doit revenir **activé**. C'est le seul test qui exerce **ensemble** la
+      migration et le schéma PowerSync local — et c'est la panne exacte de CYCLE-01, où
+      l'interrupteur restait éteint en silence parce que la colonne manquait au schéma local.
+- [ ] 17. 🔴 **Calibrage du seuil.** Sur ton propre planning : **8 séries** est-il le bon
+      déclencheur, ou est-ce trop bas (bruit) / trop haut (muet) ? C'est le **seul nombre inventé**
+      du dispositif, il ne repose sur rien de mesuré. Jugement de pratiquant, pas manipulation —
+      et le changer coûte une ligne (`LEG_SETS_CONFLICT_THRESHOLD`).
+
+**Quand l'US passe** : `etape: close`, roadmap 3.57 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).
 
 ---

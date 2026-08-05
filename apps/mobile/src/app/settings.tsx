@@ -783,6 +783,32 @@ export default function SettingsScreen() {
         healthConnectEnabled={settings?.cycleHealthConnectEnabled ?? false}
       />
 
+      {/* Détecteur de collisions — opt-in strict (US COLLIS-01, décision H).
+          Désactivé par défaut : l'intégration inter-piliers ne s'impose jamais. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.conflicts.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('settings.conflicts.toggle')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('settings.conflicts.subtitle')}
+            </Text>
+          </View>
+          <Switch
+            value={settings?.sessionConflictsEnabled ?? false}
+            onValueChange={(next) => void updateSettings({ sessionConflictsEnabled: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.conflicts.toggle')}
+          />
+        </View>
+      </View>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.conflicts.hint')}</Text>
+
       {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.analytics.title')}

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COLLIS-01 — Détecteur de collisions entre séances</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:230px}
+
+  .day{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+       padding:10px 12px;margin-bottom:9px}
+  .dayhead{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+           color:var(--muted);margin-bottom:6px}
+  .sess{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:3px 0}
+  .chip{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;
+        letter-spacing:.04em}
+  .chip.str{background:rgba(177,79,43,.13);color:#8f3d20}
+  .chip.run{background:rgba(102,113,75,.16);color:#4d5638}
+  .meta{font-size:11.5px;color:var(--muted);font-weight:400;margin-left:auto}
+  .day.flagged{border-color:var(--warnbd);background:var(--warnbg)}
+
+  .banner{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+          border-radius:12px;padding:11px 12px;margin-top:8px}
+  .btitle{font-size:13px;font-weight:800;color:#6d4f14;line-height:1.35}
+  .bbody{font-size:12px;color:#7a5c1c;margin-top:3px;line-height:1.45}
+  .bbody b{color:#5c4310}
+  .bbtn{display:inline-block;margin-top:9px;font-size:12.5px;font-weight:800;color:#fff;
+        background:var(--warn);border-radius:9px;padding:7px 13px}
+  .bnone{display:inline-block;margin-top:8px;font-size:11.5px;color:#7a5c1c;font-style:italic}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ol,.anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surfalt);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>COLLIS-01 — Détecteur de collisions entre séances</h1>
+<p class="sub">Le planning <b>place</b> les séances ; il ne dit rien de leur <b>enchaînement</b>.
+Une grosse séance de jambes la veille d'une sortie longue est une combinaison qui s'auto-sabote, et
+rien dans l'app ne le signale. <b>Une seule règle en V1</b>, opt-in strict, moteur déterministe,
+100 % hors ligne — et <b>jamais un blocage</b> : on informe et on propose, on n'empêche rien.</p>
+
+<h2>1. Les trois états du bandeau</h2>
+<p class="why">Le bandeau vit sur le jour de la <b>course</b> — c'est elle qu'on propose de
+déplacer. La séance de musculation ne bouge jamais : elle est l'ancre du programme.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div><div class="navsub">Semaine du 10 au 16 août</div></div>
+      <div class="screen">
+        <div class="day">
+          <div class="dayhead">Lundi 10</div>
+          <div class="sess"><span class="chip str">Muscu</span> Bas du corps <span class="meta">12 séries jambes</span></div>
+        </div>
+        <div class="day flagged">
+          <div class="dayhead">Mardi 11</div>
+          <div class="sess"><span class="chip run">Course</span> Sortie longue <span class="meta">18 km</span></div>
+          <div class="banner">
+            <div class="btitle">Séance jambes lourde la veille</div>
+            <div class="bbody"><b>12 séries</b> sur les jambes lundi, puis une <b>sortie longue</b>
+              mardi. Tes jambes n'auront pas récupéré.</div>
+            <div class="bbtn">Déplacer au jeudi</div>
+          </div>
+        </div>
+        <div class="day"><div class="dayhead">Mercredi 12</div>
+          <div class="sess"><span class="chip str">Muscu</span> Haut du corps</div></div>
+        <div class="day"><div class="dayhead">Jeudi 13</div>
+          <div class="sess" style="color:var(--muted);font-weight:400">Repos</div></div>
+      </div>
+    </div>
+    <p class="caption"><b>Cas nominal.</b> Le bandeau porte <b>ses chiffres</b> — « 12 séries »,
+      jamais une affirmation nue. Le repli proposé est le premier jour de la semaine qui résout le
+      conflit, en cherchant après puis avant.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div><div class="navsub">Semaine chargée</div></div>
+      <div class="screen">
+        <div class="day">
+          <div class="dayhead">Lundi 10</div>
+          <div class="sess"><span class="chip str">Muscu</span> Bas du corps <span class="meta">14 séries jambes</span></div>
+        </div>
+        <div class="day flagged">
+          <div class="dayhead">Mardi 11</div>
+          <div class="sess"><span class="chip run">Course</span> Fractionné <span class="meta">8 × 400 m</span></div>
+          <div class="banner">
+            <div class="btitle">Séance jambes lourde la veille</div>
+            <div class="bbody"><b>14 séries</b> sur les jambes lundi, puis un <b>fractionné</b>
+              mardi.</div>
+            <div class="bnone">Aucun autre jour libre cette semaine.</div>
+          </div>
+        </div>
+        <div class="day"><div class="dayhead">Mercredi → Dimanche</div>
+          <div class="sess" style="color:var(--muted);font-weight:400">5 séances déjà planifiées</div></div>
+      </div>
+    </div>
+    <p class="caption"><b>Aucun repli possible.</b> Le bandeau reste, <b>sans bouton</b>, et dit
+      pourquoi. C'est la dégradation propre : on informe même quand on ne peut rien proposer —
+      « jamais un blocage » ne veut pas dire « jamais rien dire ».</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div><div class="navsub">Rien à signaler</div></div>
+      <div class="screen">
+        <div class="day">
+          <div class="dayhead">Lundi 10</div>
+          <div class="sess"><span class="chip str">Muscu</span> Bas du corps <span class="meta">12 séries jambes</span></div>
+        </div>
+        <div class="day">
+          <div class="dayhead">Mardi 11</div>
+          <div class="sess"><span class="chip run">Course</span> Endurance <span class="meta">45 min</span></div>
+        </div>
+        <div class="day">
+          <div class="dayhead">Mercredi 12</div>
+          <div class="sess"><span class="chip str">Muscu</span> Full body <span class="meta">4 séries jambes</span></div>
+        </div>
+        <div class="day">
+          <div class="dayhead">Jeudi 13</div>
+          <div class="sess"><span class="chip run">Course</span> Sortie longue <span class="meta">16 km</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Deux non-conflits, et c'est le point.</b> Une <b>endurance</b> au
+      lendemain de jambes est neutre, voire bénéfique. Et un full body à <b>4 séries</b> de jambes
+      est sous le seuil : la sortie longue du jeudi ne déclenche rien.</p>
+  </div>
+
+</div>
+
+<h2>2. La règle, en entier</h2>
+<p class="why">Une seule, et c'est délibéré : quatre règles moyennes valent moins qu'une règle
+juste, et chacune multiplie les faux positifs. C'est le bruit qui fait désactiver ce genre de
+fonctionnalité.</p>
+<div class="anno" style="max-width:80ch">
+  <p style="margin:0 0 10px;font-size:14px"><b>Une séance de musculation où les jambes sont le
+    groupe majoritaire</b> et qui prévoit <b>au moins 8 séries</b> sur ce groupe, <b>suivie le
+    lendemain</b> d'une course de type <b>sortie longue</b> ou <b>fractionné</b>.</p>
+  <ul>
+    <li><b>Sens unique.</b> Les jambes compromettent la course du lendemain ; l'inverse est
+      marginal. L'app ne dira jamais « tu as couru hier, allège tes jambes ».</li>
+    <li><b>Deux conditions cumulatives.</b> La part dominante écarte les 3 séries de mollets d'un
+      full body ; le seuil écarte une séance jambes légère.</li>
+    <li><b>Les courses faciles ne comptent pas.</b> Endurance et récupération sont neutres.</li>
+    <li><b>Le passé ne se commente pas.</b> Une course déjà réalisée ne déclenche rien.</li>
+  </ul>
+  <div class="flag"><b>Le seuil de 8 séries est le seul nombre inventé du dispositif.</b> Il ne
+    repose sur rien de mesuré dans ce produit. Il est exporté comme constante nommée — pas enfoui
+    dans une condition — et le critère de recette 16 demande explicitement à un pratiquant de juger
+    s'il est trop bas ou trop haut.</div>
+</div>
+
+<h2>3. Le repli, et pourquoi pas les alternatives</h2>
+<table>
+  <tr><th>Approche</th><th>Ce qu'elle donne</th><th>Verdict</th></tr>
+  <tr><td><b>Décaler la course au plus près</b></td>
+      <td>Premier jour de la semaine ISO qui résout le conflit, après puis avant. La muscu ne bouge
+      jamais. Rien de valable → on informe sans proposer.</td>
+      <td><b>Retenue</b> — la seule qui reste explicable sur un planning dense, et qui dégrade
+      proprement.</td></tr>
+  <tr><td>Échanger les deux séances</td>
+      <td>Volume et densité de la semaine inchangés.</td>
+      <td>Écartée : peut <b>déplacer le problème sans le résoudre</b>, et c'est un mode d'échec
+      silencieux.</td></tr>
+  <tr><td>Reculer d'un jour, point</td>
+      <td>J+2 si libre, sinon rien.</td>
+      <td>Écartée : échoue précisément sur les plannings denses, ceux qui produisent les
+      conflits.</td></tr>
+</table>
+
+<h2>4. Ce que la maquette ne montre pas</h2>
+<div class="row">
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Contraintes du modèle de données</p>
+    <ul>
+      <li><b>Aucune notion horaire.</b> <code>scheduled_date</code> est un <b>jour sans heure</b> :
+        impossible de proposer « déplace la course au matin » ou de raisonner en heures de
+        récupération. Même limite qui avait fait recadrer l'US 2.4.</li>
+      <li><b>Les muscles d'une séance planifiée ne sont pas chargés</b> aujourd'hui :
+        <code>PlannedSessionItem</code> ne porte que <code>exerciseCount</code>. C'est la
+        <b>seule requête neuve</b> du chantier.</li>
+    </ul>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Opt-in, et ce qu'il coupe vraiment</p>
+    <p style="margin:0;font-size:13.5px">Réglage <b>désactivé par défaut</b> (décision H). Éteint,
+      ce n'est pas seulement l'affichage qui disparaît : <b>la requête d'enrichissement n'est même
+      pas montée</b>. On ne fait pas payer à tout le monde une fonctionnalité que personne n'a
+      demandée.</p>
+    <div class="flag"><b>Une migration et une sync rule.</b> Le réglage vit sur
+      <code>user_settings</code>. La sync rule PowerSync est <b>à redéployer à la main</b> — l'étape
+      déjà oubliée une fois, qui avait rendu le suivi de cycle impossible à activer (recette du
+      01/08). Elle est un critère de recette à part entière.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Le ton</p>
+    <p style="margin:0 0 8px;font-size:13.5px">Celui de GARDE-01, déjà validé : <b>on constate, on
+      ne prescrit pas</b>.</p>
+    <p style="margin:0;font-size:13.5px">« Séance jambes lourde la veille de ta sortie longue » —
+      et non « tu vas te blesser ». Le moteur ne rend que des identifiants, des dates et des
+      nombres ; toutes les formulations vivent en i18n, où elles se relisent d'un coup.</p>
+    <p style="margin:8px 0 0;font-size:13.5px"><b>Les trois autres familles de conflit</b> —
+      course ↔ course, densité de semaine, charge ↔ nutrition — sont écartées de la V1. Le moteur
+      est conçu pour les accueillir : une règle s'ajoute à une table, elle ne réécrit rien.</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -10,6 +10,87 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 05/08/2026 — `feature/collis01-detecteur-collisions` — Détecteur de collisions entre séances (roadmap 3.57)
+
+Suite de `f764732`. Le planning **plaçait** les séances sans rien dire de leur **enchaînement** :
+il détecte désormais les combinaisons qui s'auto-sabotent et **propose une correction — jamais un
+blocage**. Idée promue depuis IDEAS.md (25/07), **signal le plus fort du benchmark IA (4 modèles
+sur 4)**, design brainstormé et validé le 05/08.
+
+**2 799 tests** (1 806 shared `+32`, 812 mobile `+12`, 181 admin), typecheck et lint verts, cliquet
+`packages/shared` tenu (100 / 97,47 / 100 / 100).
+
+#### Ajouté
+
+- **Moteur pur** — `packages/shared/src/session-conflicts.ts` (+ 32 tests, 100 % couvert).
+  **UNE seule règle en V1** : jambes **strictement dominantes** ET **≥ 8 séries**, suivies **le
+  lendemain** d'une `sortie_longue` ou d'un `fractionne`. Sens unique. Aucune lecture d'horloge —
+  `todayKey` entre par paramètre.
+- **Repli déterministe** : premier jour de la semaine affichée qui résout le conflit, **après puis
+  avant**. La séance de muscu ne bouge jamais. Aucun jour valable → on informe sans proposer.
+- **Bandeau** sur `/planning`, sur le jour de la course, avec l'échange en un tap
+  (`reschedulePlannedSession`, déjà éprouvée par MUSC-F9).
+- **Réglage opt-in**, désactivé par défaut (décision H) — migration
+  `20260805081425_collis01_session_conflicts_opt_in`, **poussée et cochée** au registre.
+- **Requête d'enrichissement** du planning : séries par groupe musculaire d'une séance planifiée.
+  `PlannedSessionItem` ne portait que `exerciseCount`. **Seule donnée nouvelle du chantier.**
+- i18n FR + EN (1 970 clés, symétrie vérifiée).
+
+#### Technique-Notes
+
+- 🔴 **Un vrai bug trouvé par mes propres tests.** Le jour de repli pouvait être **celui de la
+  séance de jambes elle-même** : on aurait déplacé la course **sur** le problème au lieu de l'en
+  éloigner. Trois conditions sont désormais nécessaires — ni course, ni grosse séance de jambes ce
+  jour-là, ni la veille. Aucune relecture de spec n'attrape ça ; seule l'exécution le fait.
+- **Une garde prouvée inatteignable, supprimée** (`indexOf === -1` dans la recherche de repli :
+  l'appelant l'a déjà écartée via `previousDayKey`). Même traitement que `bucketOf` le 04/08 — on
+  retire le code mort plutôt que d'écrire un test qui fige un appel impossible.
+- ✅ **Aucune sync rule**, et c'est une correction : le premier cadrage en faisait son risque n° 1.
+  `user_settings` est lue en **`select *`**, donc y ajouter une colonne ne change pas une ligne du
+  YAML — la migration de la veille le disait déjà. 🔴 Le vrai risque, lui, est traité : la colonne
+  est déclarée dans le **schéma PowerSync local**, sans quoi l'écriture échoue et
+  `void updateSettings()` avale l'erreur — l'interrupteur reste éteint **sans message**, panne
+  exacte de CYCLE-01 (recette du 31/07).
+- **Six points d'édition** pour un booléen sur `user_settings`, pas quatre : migration, schéma
+  local, schéma Zod, `database.types`, et **quatre** endroits dans `settings-repository`. La
+  relecture de spec avait relevé les deux manquants avant qu'ils ne coûtent une session.
+- **Trois autres corrections de cadrage** issues de la relecture : le moteur ne recevait pas
+  `todayKey` alors que sa règle R1 l'exigeait (il aurait pu proposer un repli **dans le passé**,
+  rendant la course « manquée ») ; le raisonnement sur `target_sets` nullable **s'annulait
+  lui-même** (« `SUM` ignore les NULL » revient exactement à les compter 0) ; et la requête
+  n'était pas scopée par `owner_id` alors que les six autres du fichier le sont.
+- **Le `JOIN exercises` ne filtre volontairement pas `deleted_at`** : les exercices archivés sont
+  répliqués en local et l'utilisateur fera la séance quand même. Les exclure sous-compterait ses
+  jambes et masquerait un conflit réel.
+- ⚠️ **Le seuil de 8 séries ne repose sur rien de mesuré.** Constante exportée et nommée
+  (`LEG_SETS_CONFLICT_THRESHOLD`) ; le critère de recette 17 demande à un pratiquant de le juger.
+- **Trois familles de conflit écartées de la V1** (course ↔ course, densité de semaine, charge ↔
+  nutrition). Quatre règles moyennes valent moins qu'une règle juste : chacune multiplie les faux
+  positifs, et c'est le bruit qui fait désactiver ce genre de fonctionnalité. Le moteur est conçu
+  pour les accueillir — une règle s'ajoute, elle ne réécrit rien.
+#### Corrigé en revue de diff
+
+- 🔴 **Le bouton d'échange aurait été inatteignable sous TalkBack.** `accessible` était posé sur la
+  racine du bandeau, qui contient le `Pressable` : sur Android, un conteneur accessible **absorbe**
+  ses enfants focusables, qui perdent focus, rôle « bouton » et double-tap. Le bloc accessible ne
+  couvre plus que les deux textes. Contredisait le plan **et** le critère de recette 15.
+- **Le texte disait « hier » et « aujourd'hui »** — faux dès qu'on navigue vers une autre semaine,
+  c'est-à-dire le cas normal quand on planifie. Devenu « la veille » / « le lendemain ».
+- **R2 rétablie plutôt que la spec amendée** : le plan avait relâché « réglage éteint = requête non
+  montée » en la croyant coûteuse. Elle ne l'est pas — lier un `owner_id` vide suffit, sans
+  sentinelle SQL. La spec validée reste la source de vérité.
+- **`muscle_primary` NULL** produisait une clé `"null"` qui entrait dans le test de dominance comme
+  un groupe concurrent, et pouvait faire perdre aux jambes leur dominance — donc masquer un
+  conflit réel. Exclu par la requête.
+- **Les tests promis par le plan n'avaient pas été écrits** — dont celui qui garde exactement la
+  panne CYCLE-01. `SELECT_PLANNED_MUSCLE_SETS` était un export mort. **12 tests SQL ajoutés** :
+  owner-scoping, `target_sets` nul, exercice archivé compté, `muscle_primary` nul exclu, fenêtre de
+  dates, et surtout **écriture-relecture du réglage** sur un SQLite dont le DDL vient d'`AppSchema`.
+
+- ⚠️ **Le `db:push` a affiché une erreur SSL** (étape annexe du planificateur `pg-delta`) tout en
+  concluant « Finished ». Vérifié par `db:push:dry` : « Remote database is up to date ». La
+  migration **est** appliquée. À connaître, l'erreur est trompeuse.
+
 ### 05/08/2026 — `feature/insights02-degonflage-tier0` — Dégonflage du Tier 0 : l'accueil passe de 21 à 7 widgets
 
 Suite de `547a8fa`. Solde la promesse d'INSIGHTS-01, qui avait créé l'écran « Insights » **sans**

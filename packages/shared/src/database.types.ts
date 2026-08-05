@@ -2252,6 +2252,7 @@ export type Database = {
           language: string
           notifications: Json
           sbd_lifts: Json | null
+          session_conflicts_enabled: boolean
           theme: string
           units: string
           updated_at: string
@@ -2271,6 +2272,7 @@ export type Database = {
           language?: string
           notifications?: Json
           sbd_lifts?: Json | null
+          session_conflicts_enabled?: boolean
           theme?: string
           units?: string
           updated_at?: string
@@ -2290,6 +2292,7 @@ export type Database = {
           language?: string
           notifications?: Json
           sbd_lifts?: Json | null
+          session_conflicts_enabled?: boolean
           theme?: string
           units?: string
           updated_at?: string

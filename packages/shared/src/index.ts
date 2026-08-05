@@ -79,4 +79,6 @@ export * from './data-export';
 // US INSIGHTS-01 (roadmap 7.20) — moteur de sélection Tier 3 (ADR-007) et ses adaptateurs.
 export * from './insights';
 export * from './insight-adapters';
+// US COLLIS-01 (roadmap 3.57) — détecteur de collisions entre séances planifiées.
+export * from './session-conflicts';
 export type { Database, Json } from './database.types';

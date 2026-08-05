@@ -28,14 +28,19 @@
  *  - Toutes les valeurs SQL sont passées en paramètres liés (?), jamais interpolées.
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import type {
+  MuscleGroup,
+  ScheduledSession,
+  SessionConflict,
   Pillar,
   PlanProgramInput,
   PlanTemplateSession,
   ProgramSessionType,
 } from '@wellness/shared';
 import {
+  findSessionConflicts,
   addDays,
   computeIntervalRegularity,
   computeWeekCompletionRate,
@@ -46,6 +51,7 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { nowUtc, patch, txInsert } from './_sql';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
@@ -614,4 +620,96 @@ export function useTrainingRegularity(): TrainingRegularity {
     adherenceRate: adherenceRate == null ? null : Math.round(adherenceRate * 100),
     isLoading: plannedLoading || completedLoading,
   };
+}
+
+// ---------------------------------------------------------------------------
+// US COLLIS-01 — détection de collisions entre séances (roadmap 3.57)
+// ---------------------------------------------------------------------------
+
+/**
+ * Séries par groupe musculaire des séances de muscu d'une fenêtre de dates.
+ *
+ * ⚠️ **Pas de filtre `deleted_at` sur `exercises`**, contrairement au réflexe habituel : les
+ * exercices archivés sont volontairement répliqués en local, et l'utilisateur fera quand même la
+ * séance qui les contient. Les exclure sous-compterait ses jambes et masquerait un conflit réel.
+ *
+ * ⚠️ `muscle_primary` **nullable** est exclu : sans ce filtre, la clé `"null"` entrerait dans le
+ * test de dominance de `isHeavyLegSession` comme un groupe concurrent — et pourrait faire perdre
+ * aux jambes leur dominance, donc masquer un conflit réel.
+ *
+ * ⚠️ `target_sets` est **nullable** : un exercice planifié sans nombre de séries compte pour 0 —
+ * il ne rapproche pas du seuil. Conséquence à connaître : si tous les plans d'un muscle sont nuls,
+ * `SUM` renvoie `NULL` et non 0, d'où le type nullable côté TS.
+ */
+export const SELECT_PLANNED_MUSCLE_SETS = `
+  SELECT ps.id AS planned_session_id, e.muscle_primary AS muscle, SUM(ep.target_sets) AS sets
+  FROM planned_sessions ps
+  JOIN exercise_plans ep ON ep.session_id = ps.session_id AND ep.deleted_at IS NULL
+  JOIN exercises e       ON e.id = ep.exercise_id
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND ps.scheduled_date BETWEEN ? AND ?
+    AND e.muscle_primary IS NOT NULL
+  GROUP BY ps.id, e.muscle_primary
+`;
+
+type MuscleSetsRow = {
+  planned_session_id: string;
+  muscle: string;
+  sets: number | null;
+};
+
+/**
+ * Les conflits de séquençage de la semaine affichée (US COLLIS-01).
+ *
+ * ⚠️ **Réglage éteint = requête vide** (spec R2), obtenu en liant un `owner_id` vide plutôt qu'une
+ * sentinelle SQL. Le plan avait relâché cette règle en la croyant coûteuse ; elle ne l'est pas, et
+ * la spec validée reste donc la source de vérité.
+ *
+ * 🔴 `todayKey` vient du hook dédié : sans lui, le moteur pourrait proposer un repli **dans le
+ * passé**, et la course naîtrait « manquée ».
+ */
+export function useSessionConflicts(weekStartDate: string): {
+  conflicts: SessionConflict[];
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { settings } = useSettings();
+  const todayKey = useTodayKey();
+
+  const [y, m, d] = weekStartDate.split('-').map(Number);
+  const weekEnd = localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
+
+  const { items, isLoading: planLoading } = useWeekPlan(weekStartDate);
+  const enabled = settings?.sessionConflictsEnabled === true;
+
+  // Spec R2 — réglage éteint : la requête ne ramène rien. Le gate est un simple `owner_id` vide,
+  // aucune sentinelle SQL nécessaire (ce que la première version du commentaire affirmait à tort).
+  const { data: setsRows, isLoading: setsLoading } = useQuery<MuscleSetsRow>(
+    SELECT_PLANNED_MUSCLE_SETS,
+    [enabled ? userId : '', weekStartDate, weekEnd],
+  );
+  const isLoading = planLoading || setsLoading;
+
+  const conflicts = useMemo(() => {
+    if (!enabled || isLoading) return [];
+
+    const byPlannedSession = new Map<string, Partial<Record<MuscleGroup, number | null>>>();
+    for (const row of setsRows) {
+      const entry = byPlannedSession.get(row.planned_session_id) ?? {};
+      entry[row.muscle as MuscleGroup] = row.sets;
+      byPlannedSession.set(row.planned_session_id, entry);
+    }
+
+    const sessions: ScheduledSession[] = items.map((item) => ({
+      id: item.id,
+      dayKey: item.scheduledDate,
+      pillar: item.pillar,
+      status: item.status,
+      runType: item.sessionType,
+      setsByMuscle: item.pillar === 'strength' ? (byPlannedSession.get(item.id) ?? {}) : null,
+    }));
+
+    return findSessionConflicts({ sessions, weekStartKey: weekStartDate, todayKey });
+  }, [enabled, isLoading, items, setsRows, weekStartDate, todayKey]);
+
+  return { conflicts, isLoading };
 }
