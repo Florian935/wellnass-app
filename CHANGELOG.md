@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Records d'allure : l'idempotence par l'arrondi
+
+**19 tests** sur `running-record-repository`. Un record d'allure est un **fait définitif** dérivé
+d'une trace GPS, et il alimente en cascade l'allure de référence du profil coureur — donc les zones
+et les prédictions. Rien de tout cela n'est reproductible sans aller courir.
+
+#### Ajouté
+
+- **`running-record-sql.test.ts` — 19 tests.**
+  - **🔴 L'idempotence par l'arrondi.** Le temps est arrondi **une seule fois**, et la comparaison
+    se fait arrondi ↔ arrondi. Comparer le flottant brut au temps déjà stocké (entier) casserait
+    tout : 299,6 s stocké à 300 rebattrait 300 à chaque rejeu — donc **une re-célébration à chaque
+    ouverture de l'app**, sur un record vieux de six mois. Testé au rejeu simple, au triple rejeu
+    (aucun doublon) et via le backfill.
+  - **Le périmètre GPS.** Une course **manuelle** ne peut produire aucun record : sans cette garde,
+    une distance saisie à la main deviendrait un record d'allure. Idem pour une course non
+    terminée, sans trace, supprimée ou inconnue.
+  - **La cascade vers le profil.** Battre le 5 km met à jour l'allure de référence — et
+    **seulement** le 5 km : la dériver d'un 1 km la surestimerait nettement. Un test vérifie en
+    plus qu'elle est dérivée du temps **arrondi retenu**, donc cohérente avec le record stocké.
+  - Plus : un record n'est jamais **dégradé** par une course plus lente, et il est horodaté à la
+    **fin de la course** et non à « maintenant » — sans quoi un backfill d'historique daterait tous
+    les records du jour où on l'a lancé.
+
+#### Technique / Notes
+
+- Les traces de test sont générées par une fonction `track(km, allure)` qui produit un point tous
+  les 100 m et passe par **les vraies fonctions d'encodage** (`encodeSegment` + `appendToTrack`).
+  Écrire le format à la main le rendrait non représentatif au premier changement — le test
+  continuerait de passer en testant autre chose.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 986 (mobile) + 181 (admin) = 3 091 tests**. Mobile 27,3 % → **27,8 %** ;
+  `src/data/repositories` 40,0 % → **41,9 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Profil et recettes : le poids de départ
 
 **24 tests** sur `profile-repository` et `recipe-repository`.
