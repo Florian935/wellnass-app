@@ -12,6 +12,7 @@ import { render } from '@testing-library/react-native';
 
 import CycleScreen from '../index';
 import {
+  autoCloseStalePeriods,
   useMenstrualPeriods,
   useOpenPeriod,
   useTodayMenstrualLog,
@@ -79,6 +80,7 @@ const mockUseOpenPeriod = useOpenPeriod as jest.Mock;
 const mockUseTodayMenstrualLog = useTodayMenstrualLog as jest.Mock;
 const mockUseSettings = useSettings as unknown as jest.Mock;
 const mockRedirect = Redirect as unknown as jest.Mock;
+const mockAutoClose = autoCloseStalePeriods as jest.Mock;
 
 describe('CycleScreen — smoke', () => {
   beforeEach(() => {
@@ -148,5 +150,36 @@ describe('CycleScreen — smoke', () => {
     mockUseMenstrualPeriods.mockReturnValue({ periods: [], isLoading: true });
     const { toJSON } = await render(<CycleScreen />);
     expect(toJSON()).toBeNull();
+  });
+
+  /**
+   * R3 — la clôture d'office des périodes oubliées se déclenche **à l'ouverture de l'écran**, pas
+   * sur un minuteur : c'est une correction de saisie, pas un fait à horodater.
+   *
+   * ⚠️ L'`await` devant `render` n'est pas décoratif : `render` de RNTL 14 renvoie une **promesse**,
+   * et c'est lui qui exécute les effets de montage (§3.6). Sans `await`, l'écran serait monté sans
+   * avoir rien exécuté et ces deux assertions ne vérifieraient rien.
+   */
+  describe('clôture des périodes oubliées à l’ouverture (R3)', () => {
+    beforeEach(() => mockAutoClose.mockClear());
+
+    it('déclenche la clôture d’office avec le jour courant', async () => {
+      await render(<CycleScreen />);
+
+      expect(mockAutoClose).toHaveBeenCalledWith('2026-07-31');
+    });
+
+    it('ne la déclenche PAS quand le suivi est désactivé — l’écran redirige avant', async () => {
+      mockUseSettings.mockReturnValue({
+        settings: { cycleTrackingEnabled: false },
+        isLoading: false,
+      });
+
+      await render(<CycleScreen />);
+
+      // Écrire dans une donnée de santé sensible sur un écran auquel on n'a pas accès serait le
+      // pire des deux mondes : invisible et non consenti.
+      expect(mockAutoClose).not.toHaveBeenCalled();
+    });
   });
 });

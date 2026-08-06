@@ -1,9 +1,10 @@
 /**
  * Deep links d'authentification — ordre d'écriture et cycle de vie de l'abonnement.
  *
- * Lot 5 de [strategie-tests.md](../../../../../docs/specs/technical/strategie-tests.md), et
- * **premier test à effet du dépôt** : voir §3.6 pour l'idiome `await act(async () => {})`, sans
- * lequel aucun `useEffect` n'a encore tourné au moment des assertions.
+ * Lot 5 de [strategie-tests.md](../../../../../docs/specs/technical/strategie-tests.md). Les
+ * fonctions de rendu de RNTL 14 renvoient des **promesses** : c'est l'`await` qui exécute les
+ * effets de montage (§3.6). Un `act` explicite ne reste nécessaire que pour les déclencheurs
+ * **hors React**, comme le gestionnaire de deep link appelé à la main ci-dessous.
  *
  * Ce hook est monté une fois à la racine du navigateur et décide de ce qui se passe quand l'app
  * s'ouvre sur un lien d'e-mail. Trois raisons d'y poser des tests :
@@ -51,14 +52,10 @@ const setSession = jest.fn(async () => ({ data: {}, error: null }));
  * assertion porterait sur un hook qui n'a rien exécuté — et passerait au vert pour rien (§3.6).
  */
 async function mountHook() {
-  let view!: ReturnType<typeof renderHook<void, undefined>>;
-  // Le rendu est fait **dans** l'`act`, pas avant : `renderHook` ouvre déjà son propre scope
-  // `act` sans l'attendre, et un second `act` ouvert par-dessus déclenche « overlapping act()
-  // calls » — les effets ne partent alors pas dans le bon ordre.
-  await act(async () => {
-    view = renderHook(() => useAuthDeepLink());
-  });
-  return view;
+  // `renderHook` de RNTL 14 renvoie une **promesse** : c'est l'`await` qui exécute les effets de
+  // montage. Sans lui, le hook est monté mais n'a rien exécuté, et les assertions passent au vert
+  // sans rien vérifier (§3.6).
+  return renderHook(() => useAuthDeepLink());
 }
 
 /** Déclenche le gestionnaire « app déjà ouverte » avec l'URL fournie. */

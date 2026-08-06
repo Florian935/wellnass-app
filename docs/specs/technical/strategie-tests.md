@@ -166,54 +166,46 @@ bundle Metro n'est pas concerné, le chargement paresseux reste intact en produc
 ⚠️ Après un changement de configuration Babel, **vider le cache** (`npx jest --clearCache`) : une
 transformation périmée produit des échecs qui n'ont rien à voir avec le code.
 
-### 3.6 Tester un effet — **rendre à l'intérieur d'un `await act`**
+### 3.6 Tester un effet — **`await` le rendu, tout simplement**
 
-Le symptôme, constaté le 03/08/2026 : après `render()` ou `renderHook()`, **aucun `useEffect` n'a
-tourné**. Un composant dont le seul rôle est d'appeler un espion dans un `useEffect(() => …, [])`
-laisse l'espion à zéro appel — et le test **passe**.
-
-La cause n'est pas une incompatibilité : RNTL 14 enveloppe le montage dans un `act`
-**asynchrone**. Au retour de `render()`, le composant est monté mais les effets ne sont que
-**planifiés** ; ils partent au tour de boucle suivant. Il faut donc en laisser passer un.
-
-L'idiome qui marche, et le seul :
+`render()` et `renderHook()` de RNTL 14 renvoient des **promesses**. C'est l'`await` qui exécute
+les effets de montage :
 
 ```ts
-let view!: ReturnType<typeof renderHook<void, undefined>>;
-// Le rendu est fait DANS l'act, pas avant : `renderHook` ouvre déjà son propre scope `act` sans
-// l'attendre, et un second act ouvert par-dessus déclenche « overlapping act() calls ».
-await act(async () => {
-  view = renderHook(() => useMonHook());
-});
-
-// Toute interaction qui déclenche un effet passe aussi par un act :
-await act(async () => {
-  handler({ url: 'wellness://…' });
-});
+const { getByText } = await render(<MonEcran />);   // effets exécutés
+const { result }    = await renderHook(() => useMonHook());
 ```
 
-`waitFor` **ne suffit pas** ici (essayé : l'assertion échoue), et `unmount()` doit lui aussi être
-enveloppé pour que l'effet de nettoyage s'exécute.
+**Sans `await`, le composant est monté mais aucun `useEffect` n'a tourné** — et le test passe. Un
+composant dont le seul rôle est d'appeler un espion dans un `useEffect(() => …, [])` laisse
+l'espion à zéro appel. C'est la même famille de faux positif que §3.5 : le test ne protège rien
+tout en occupant la place d'un vrai test.
 
-**Pourquoi ça compte plus qu'une astuce d'écriture** : sans ce tour de boucle, un test qui vérifie
-« l'écran s'abonne au retour au premier plan », « le hook émet l'événement au montage » ou « le
-formulaire se pré-remplit » passe au vert **en n'ayant rien exécuté**. Même famille que §3.5 : il
-ne protège rien tout en occupant la place d'un vrai test.
+Un `act` explicite ne reste nécessaire que pour les déclencheurs **hors React** — appeler à la
+main un gestionnaire d'`AppState` ou de deep link :
 
-Référence :
-[`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx).
+```ts
+await act(async () => { handler({ url: 'wellness://…' }); });
+```
 
-> **Bruit résiduel connu** : 3 avertissements « overlapping act() calls » subsistent, émis par les
-> internes de RNTL (montage et nettoyage). Ils n'affectent aucune assertion — ne pas chercher à
-> les faire taire en retirant les `act`.
+`waitFor` ne convient pas pour ça (essayé : l'assertion échoue).
 
-> ⚠️ **Conséquence pour lire l'existant** : les tests d'écran déjà présents (`*-smoke.test.tsx`)
-> n'attendent aucun tour de boucle — ils n'assertent donc que du **rendu statique**, effets non
-> exécutés. Ne pas conclure d'un smoke test vert que le comportement de l'écran est couvert.
-> Les reprendre avec l'idiome ci-dessus est un chantier à part entière.
+Références :
+[`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx) ·
+[`app-state-hooks.test.tsx`](../../../apps/mobile/src/hooks/__tests__/app-state-hooks.test.tsx).
 
-> 🕳️ **Fausse piste écartée** : `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans `jest.setup.ts`
-> ne change rien (RNTL le pose déjà elle-même autour de chaque `act`). Ne pas le rajouter.
+> **Bruit résiduel connu** : quelques avertissements « overlapping act() calls » apparaissent quand
+> un `act` explicite coexiste avec celui de RNTL. Sans effet sur les assertions — ne pas chercher à
+> les faire taire en retirant les `act` autour des déclencheurs hors React.
+
+> 🕳️ **Deux fausses pistes écartées, à ne pas rouvrir.**
+> 1. `globalThis.IS_REACT_ACT_ENVIRONMENT = true` dans `jest.setup.ts` : sans effet, RNTL le pose
+>    déjà elle-même. Ne pas le rajouter.
+> 2. **Un helper « rendre dans un `act` »** a été écrit puis supprimé le 06/08/2026 : il
+>    contournait un problème qui n'existait pas. Le diagnostic initial (« RNTL enveloppe le montage
+>    dans un `act` asynchrone qu'il faut laisser passer ») était faux — il venait d'un `await`
+>    oublié dans la sonde. **Les `*-smoke.test.tsx` existants font tous `await render(...)` : leurs
+>    effets s'exécutent bel et bien.**
 
 ### 3.2 Corrections apportées en même temps
 
@@ -250,7 +242,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
-| **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17). Restent : écrans à état, et **reprise des `*-smoke.test.tsx`** dont les effets n'ont jamais tourné (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 27 tests |
+| **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17), effets de montage de `cycle` et `help` (4). Restent : écrans à état. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 31 tests |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs

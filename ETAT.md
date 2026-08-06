@@ -92,7 +92,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1093 · `main` a **1090** commits de retard sur `dev` |
+| Commits | 1094 · `main` a **1091** commits de retard sur `dev` |
 | Specs d'US | 129 au total — 79 clôturées, 50 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -103,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `7599be2` fix(lint): ancre la résolution des imports sur le node_modules de la racine
 - `46781a7` test(mobile,shared): hooks AppState + shared remis à 100 %
 - `e3b2f1a` docs(recettes): signale les 8 sections dont VIE-01 et DOUL-01 ont modifié le code
 - `b470d85` feat(doul01): journal des zones douloureuses — déclaration, historique et signal factuel (roadmap 1.29)
 - `a26d685` feat(vie01): mode « vie réelle » — dégradation gracieuse des objectifs (roadmap 1.28)
-- `a06e406` docs(collis01): consigne l'arbitrage non tranché du conflit dimanche → lundi
 
 ---
 

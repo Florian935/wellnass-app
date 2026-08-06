@@ -19,6 +19,7 @@
  */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import HelpScreen from '../help';
 
 // ---------------------------------------------------------------------------
@@ -125,5 +126,32 @@ describe('Écran Aide & support — smoke test', () => {
     // Re-presser la question ouverte la referme.
     await fireEvent.press(getByText('Q2'));
     expect(queryByText('Réponse 2')).toBeNull();
+  });
+
+  /**
+   * US 9.10 — l'ouverture de l'écran d'aide est mesurée.
+   *
+   * ⚠️ L'`await` devant `render` n'est pas décoratif : `render` de RNTL 14 renvoie une **promesse**,
+   * et c'est lui qui exécute les effets de montage (§3.6). Sans `await`, `track` ne serait jamais
+   * appelé et l'assertion ne vérifierait rien.
+   */
+  describe('mesure d’ouverture (US 9.10)', () => {
+    beforeEach(() => (track as jest.Mock).mockClear());
+
+    it('émet `help_opened` au montage', async () => {
+      await render(<HelpScreen />);
+
+      expect(track).toHaveBeenCalledWith(ANALYTICS_EVENTS.helpOpened);
+    });
+
+    it('ne l’émet qu’UNE fois, même après interaction avec la FAQ', async () => {
+      const { getByText } = await render(<HelpScreen />);
+
+      await fireEvent.press(getByText('Q1'));
+      await fireEvent.press(getByText('Q2'));
+
+      // L'effet est monté sur `[]` : ouvrir des questions ne doit pas regonfler la mesure.
+      expect(track).toHaveBeenCalledTimes(1);
+    });
   });
 });

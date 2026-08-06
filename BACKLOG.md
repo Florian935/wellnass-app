@@ -211,10 +211,9 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       **aucun runner** à **157 tests / 61 %**. **Lots 0 à 4 et 6 terminés** — les seuils de
       couverture sont désormais **appliqués par la CI** (`npm run test:coverage`). Plan, technique
       et **point de reprise §8** : [strategie-tests.md](docs/specs/technical/strategie-tests.md).
-      Reste : les **écrans à état**, et surtout la **reprise des `*-smoke.test.tsx` existants** —
-      écrits sans attendre de tour de boucle, leurs effets n'ont jamais tourné : ils n'assertent
-      que du rendu statique (§3.6). C'est là que se cache le plus gros écart entre couverture
-      affichée et couverture réelle.
+      Reste : les **écrans à état**. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le
+      03/08/2026 **n'a pas lieu d'être** : ils font tous `await render(...)`, donc leurs effets
+      s'exécutent bel et bien — le diagnostic initial était faux (§3.6).
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 

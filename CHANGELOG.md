@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Effets de montage de `cycle` et `help`, et **§3.6 corrigée**
+
+Reprise du lot 5. En voulant « rattraper » les `*-smoke.test.tsx`, j'ai découvert que le problème
+que j'avais documenté **n'existait pas** — et que la §3.6 disait deux choses fausses.
+
+#### Correction du diagnostic (2ᵉ passe sur le même sujet)
+
+`render()` et `renderHook()` de RNTL 14 renvoient des **promesses** : c'est l'`await` qui exécute
+les effets de montage. Rien d'autre n'est nécessaire.
+
+Le diagnostic du 03/08 (« RNTL enveloppe le montage dans un `act` asynchrone qu'il faut laisser
+passer », d'où un idiome `await act(async () => { view = render(...) })`) venait d'un **`await`
+oublié dans ma sonde**. Conséquences corrigées ici :
+
+- **Le helper `render-with-effects.tsx`, créé il y a une heure, est supprimé** : il contournait un
+  problème inexistant.
+- **Mes propres tests sont simplifiés** (`useAuthDeepLink`, `app-state-hooks`) : `await
+  renderHook(...)` remplace la danse autour d'`act`. Un `act` explicite ne subsiste que là où il
+  est réellement utile — les déclencheurs **hors React** (gestionnaire d'`AppState`, de deep link,
+  appelés à la main).
+- **L'affirmation « les `*-smoke.test.tsx` n'assertent que du rendu statique » était fausse.** Ils
+  font tous `await render(...)` : leurs effets s'exécutent. La « reprise » inscrite au plan et au
+  BACKLOG n'a pas lieu d'être et est retirée.
+
+Ce qui reste vrai, et qui est la seule chose à retenir : **sans `await`, un test d'effet passe au
+vert sans rien exécuter.**
+
+#### Ajouté
+
+Le vrai écart n'était pas l'outillage mais des **comportements que personne n'assertait**. Deux
+sont couverts (4 tests) :
+
+- **`cycle/index.tsx` déclenche `autoCloseStalePeriods` à l'ouverture** (US CYCLE-01, R3 : « à
+  appeler à l'ouverture de l'écran, pas sur un minuteur — c'est une correction de saisie, pas un
+  fait à horodater »). Vérifie aussi qu'elle **ne part pas** quand le suivi est désactivé : écrire
+  dans une donnée de santé sensible sur un écran auquel on n'a pas accès serait invisible **et**
+  non consenti.
+- **`help.tsx` émet `help_opened` au montage** (US 9.10), et **une seule fois** — ouvrir des
+  questions de la FAQ ne doit pas regonfler la mesure.
+
+#### Modifié
+
+- `docs/specs/technical/strategie-tests.md` — **§3.6 réécrite** (« `await` le rendu, tout
+  simplement »), avec les deux fausses pistes consignées pour qu'elles ne soient pas rouvertes :
+  `IS_REACT_ACT_ENVIRONMENT`, et le helper supprimé. Lot 5 actualisé.
+
+#### Technique / Notes
+
+- Mesure faite avant de conclure, cette fois : `await render(<C/>)` → l'espion du `useEffect` est à
+  **1** ; sans `await`, à **0**. Idem pour `renderHook`.
+- Sur les 16 `*-smoke.test.tsx`, **seuls 3 composants testés ont des effets** (`cycle/index`,
+  `help`, `CelebrationCard`) : l'écart réel était bien plus étroit que ce que ma formulation
+  laissait croire.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre sur les
+  3 workspaces — **1 924 (shared) + 863 (mobile) + 181 (admin) = 2 968 tests**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — La CI repasse au vert : résolution ESLint du monorepo
 
 Correctif du point 🔴 signalé dans l'entrée précédente (`46781a7`). **La cause n'était pas celle

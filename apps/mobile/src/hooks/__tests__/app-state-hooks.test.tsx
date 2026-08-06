@@ -65,13 +65,14 @@ let addEventListener: jest.SpyInstance;
  */
 let horloge = Date.now();
 
-/** Monte un hook en laissant tourner ses effets (§3.6). */
+/**
+ * Monte un hook en laissant tourner ses effets.
+ *
+ * `renderHook` de RNTL 14 renvoie une **promesse** : c'est l'`await` qui exécute les effets de
+ * montage (§3.6). Sans lui, le hook est monté mais n'a rien exécuté.
+ */
 async function mount<T>(hook: () => T) {
-  let view!: ReturnType<typeof renderHook<T, undefined>>;
-  await act(async () => {
-    view = renderHook(hook);
-  });
-  return view;
+  return renderHook(hook);
 }
 
 /** Rejoue un passage au premier plan sur tous les abonnés enregistrés. */
