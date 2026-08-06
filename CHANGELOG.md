@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Résumé de séance : la règle des échauffements
+
+Suite du lot 5. **11 tests** sur `buildSummary` (`workout-summary.tsx`), la fonction qui produit
+les chiffres du récapitulatif de fin de séance.
+
+#### Ajouté
+
+- **`workout-summary-build.test.ts` — 11 tests.** La règle des échauffements (spec Refonte-C2 §2.5)
+  est **invisible en recette** : pour constater qu'un exercice composé *uniquement* de séries
+  d'échauffement ne doit pas compter, il faudrait délibérément en faire un et recompter le résumé à
+  la main. Personne ne le fait — et si le filtre sautait, le résumé annoncerait simplement « 2
+  exercices » au lieu d'un, sans que rien ne cloche à l'œil.
+
+  Couvre les trois faces de la règle : les échauffements sont comptés **à part** (jamais dans les
+  séries validées), exclus du **tonnage**, et un exercice qui n'en a que ne compte pas comme
+  exercice. Plus les séries non validées (y compris un échauffement non validé, qui ne compte
+  nulle part), et la durée — arrondi à la minute, **plancher d'une minute** pour qu'une densité ne
+  se divise jamais par zéro.
+
+- `buildSummary` passe `export`, avec le motif habituel écrit en commentaire : consommée nulle part
+  ailleurs, exportée pour être vérifiable. **On teste la fonction plutôt que l'écran** : la règle
+  est une fonction pure au-dessus des séries, et l'écran n'y ajoute que de la mise en forme —
+  monter tout l'écran aurait coûté une dizaine de mocks pour la même assertion.
+
+#### Technique / Notes
+
+- Les briques de calcul (`computeVolume`, `computeTrainingDensity`) restent testées dans
+  `@wellness/shared` : ce qui est vérifié ici, c'est **ce qu'on leur donne à manger**.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre sur les
+  3 workspaces — **1 924 (shared) + 874 (mobile) + 181 (admin) = 2 979 tests**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Effets de montage de `cycle` et `help`, et **§3.6 corrigée**
 
 Reprise du lot 5. En voulant « rattraper » les `*-smoke.test.tsx`, j'ai découvert que le problème

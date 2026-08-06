@@ -35,7 +35,14 @@ type Summary = {
   density: number;
 };
 
-async function buildSummary(
+/**
+ * ⚠️ `export` **uniquement pour les tests** — personne ne l'importe ailleurs.
+ *
+ * La règle des échauffements ci-dessous est subtile et invisible en recette : il faudrait
+ * délibérément faire un exercice qui n'a **que** des séries d'échauffement pour constater qu'il ne
+ * doit pas compter. Elle mérite donc un test direct plutôt qu'un montage de tout l'écran.
+ */
+export async function buildSummary(
   workoutId: string,
   durationSeconds: number | null,
 ): Promise<Summary> {
