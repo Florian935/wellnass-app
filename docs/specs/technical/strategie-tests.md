@@ -250,7 +250,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
-| **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10). Restent : écrans à état, et **reprise des `*-smoke.test.tsx`** dont les effets n'ont jamais tourné (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 débloqué le 03/08/2026 |
+| **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17). Restent : écrans à état, et **reprise des `*-smoke.test.tsx`** dont les effets n'ont jamais tourné (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 27 tests |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs

@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Hooks `AppState` + `shared` remis à 100 %, et **la CI est rouge**
+
+Reprise du lot 5 après l'intégration de 33 commits sur `dev`. Le quality gate a été passé **avant**
+d'écrire quoi que ce soit : trois portes étaient rouges, dont une qui l'est encore.
+
+#### 🔴 À savoir en priorité — `npm run lint` échoue sur `dev`
+
+Les 3 imports de `src/widgets/` (LAUNCHER-01) déclenchent `import/no-unresolved` sur
+`react-native-android-widget`. **Ce n'est pas un défaut d'installation** : le paquet est au
+lockfile committé, `npm ci` l'installe, et `require.resolve` le trouve — seul le résolveur
+d'`eslint-plugin-import` échoue. La CI lançant `npm run lint`, **elle est rouge**. Inscrit au
+BACKLOG avec la piste (le paquet n'a ni `exports` ni extension dans `main`). **Non corrigé ici** :
+c'est de la config ESLint sur du code que je n'ai pas écrit, et le faire au passage mélangerait
+les sujets.
+
+Deux **fausses pistes** écartées au passage, pour que personne ne les rouvre :
+- **11 erreurs de typecheck** sur `/meal-plan`, `/pain`, `/insights`, `/strength-lifts` : dues à un
+  `.expo/types/router.d.ts` **local et périmé**, généré avant l'arrivée de ces écrans. Le dossier
+  est gitignoré donc absent en CI — le supprimer suffit, et le typecheck repasse au vert (0 erreur).
+- **`packages/shared` sous son seuil de 100 %** : celui-là était un **vrai** trou, corrigé ci-dessous.
+
+#### Corrigé
+
+- **`packages/shared` était retombé à 99,96 %**, sous le seuil de 100 % posé après l'avoir atteint.
+  Deux branches non couvertes, la même dans les deux cas : le `return winner` / `return best` d'un
+  `reduce` — celui qui **garde** le gagnant courant quand le candidat suivant est moins grave ou
+  plus ancien. 4 tests ajoutés (`pain-zones`, `real-life`), tous formulés comme le **miroir** d'un
+  test existant, ordre d'entrée inversé : le verdict ne doit pas dépendre de l'ordre des lignes
+  remontées par la base, qui n'est garanti par rien. Retour à **100 %**.
+
+#### Ajouté
+
+- **`app-state-hooks.test.tsx` — 17 tests** sur les trois hooks branchés sur `AppState`, montés une
+  fois à la racine :
+  - **`useAppOpenedAnalytics`** : le throttle de 30 min vit dans une variable de module pour
+    survivre aux remontages. Vérifier ça en vrai demande d'ouvrir et refermer l'app plusieurs fois
+    en surveillant `analytics_events`. Couvre l'invariant du code — **sans session, aucun jalon
+    n'est posé**, donc un démarrage déconnecté ne consomme pas la fenêtre et le premier
+    `app_opened` est capté dès l'arrivée de la session.
+  - **`useTodayKey`** : la garde d'idempotence (même référence quand le jour n'a pas changé) évite
+    de re-rendre tous les abonnés — c'est-à-dire l'essentiel du dashboard — à chaque retour au
+    premier plan. Et le rafraîchissement au passage de minuit.
+  - **`useHealthConnectImports`** : les trois imports partent **sans être sérialisés**, un import
+    qui traîne ne retenant pas les autres.
+
+#### Technique / Notes
+
+- Le test « l'échec de l'un ne bloque pas les autres » a été **réécrit** : il simulait un rejet que
+  le service ne produit **jamais** (il ne jette pas, par contrat) et provoquait une rejection non
+  gérée. Remplacé par un import qui **traîne** — ce qui teste le vrai invariant, l'absence de
+  sérialisation, au lieu d'un scénario impossible en production.
+- `jest.resetModules()` a été écarté pour rouvrir la fenêtre de throttle : il recharge React et
+  casse les hooks (« Cannot read properties of null »). Remplacé par une **horloge de test avancée
+  monotoniquement** entre les scénarios. `AppState.addEventListener` doit être espionné
+  explicitement : le preset ne le mocke pas, et sans espion **tous les tests de retour au premier
+  plan passeraient au vert sans rien déclencher**.
+- Quality gate : typecheck **0 erreur**, `npm run test:coverage` (seuils inclus) au vert sur les
+  3 workspaces — **1 924 (shared) + 859 (mobile) + 181 (admin) = 2 964 tests**. Lint : voir le
+  point 🔴 ci-dessus.
+
 ### 06/08/2026 — `feature/doul01-journal-zones-douloureuses` — Journal des zones douloureuses (roadmap 1.29)
 
 Suite de `a26d685`. Déclarer une zone sensible sur un schéma corporel, en garder l'historique, et

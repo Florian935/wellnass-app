@@ -187,6 +187,27 @@ describe('pickSessionPainSignal', () => {
     expect(signal?.daysAgo).toBe(1);
   });
 
+  it('garde la plus grave même si elle est déclarée en PREMIER', () => {
+    // Miroir du test précédent, ordre d'entrée inversé : le verdict ne doit pas dépendre de
+    // l'ordre des lignes remontées par la base, qui n'est garanti par rien.
+    const signal = pickSessionPainSignal({
+      reports: [report('biceps', 'blocking', 3), report('back', 'pain', 0)],
+      sessionMuscles: [...backSession],
+      todayKey: TODAY,
+    });
+    expect(signal?.zone).toBe('biceps');
+  });
+
+  it('à gravité égale, ignore une déclaration PLUS ANCIENNE arrivée ensuite', () => {
+    const signal = pickSessionPainSignal({
+      reports: [report('biceps', 'pain', 1), report('back', 'pain', 5)],
+      sessionMuscles: [...backSession],
+      todayKey: TODAY,
+    });
+    expect(signal?.zone).toBe('biceps');
+    expect(signal?.daysAgo).toBe(1);
+  });
+
   it('n’expose jamais un `daysAgo` négatif', () => {
     // Une déclaration future est légitime en base ; « il y a −2 jours » ne l'est pas à l'écran.
     const signal = pickSessionPainSignal({

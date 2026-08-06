@@ -112,6 +112,24 @@ describe('activeRealLifePeriod', () => {
     );
     expect(active?.id).toBe('longue');
   });
+
+  it('garde la plus récente même si elle arrive en PREMIER', () => {
+    // Miroir des deux tests ci-dessus, ordre d'entrée inversé : le verdict ne doit pas dépendre de
+    // l'ordre des lignes remontées par la base, qui n'est garanti par rien.
+    const active = activeRealLifePeriod(
+      [period('2026-08-04', '2026-08-06', 'recente'), period('2026-08-01', '2026-08-10', 'ancienne')],
+      '2026-08-05',
+    );
+    expect(active?.id).toBe('recente');
+  });
+
+  it('à début égal, ignore une période PLUS COURTE arrivée ensuite', () => {
+    const active = activeRealLifePeriod(
+      [period('2026-08-04', '2026-08-12', 'longue'), period('2026-08-04', '2026-08-06', 'courte')],
+      '2026-08-05',
+    );
+    expect(active?.id).toBe('longue');
+  });
 });
 
 describe('realLifeDaysRemaining', () => {
