@@ -66,6 +66,140 @@ sont couverts (4 tests) :
 - Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre sur les
   3 workspaces — **1 924 (shared) + 863 (mobile) + 181 (admin) = 2 968 tests**.
 
+### 06/08/2026 — `chore/reconciliation-06-08-2026` — Réconciliation code ↔ documentation (13 écarts)
+
+Commit précédent : `7599be2`. Audit `/reconcilier` complet (roadmap, catalogue, backlog, specs,
+migrations, git). **Diff 100 % documentaire — aucun fichier de code touché.** Vérifié :
+lint **0**, typecheck **0**, **2 943 tests verts** (181 admin + 842 mobile + 1 920 shared), codes de
+sortie lus sans pipe.
+
+**Deux arbitrages Florian du 06/08/2026** : (1) la convention ✅ — **option A** ; (2) le chantier
+Codex — **abandonné**. Et une confirmation : **les sync rules PowerSync sont à jour**.
+
+#### Modifié
+
+- **Convention de statut tranchée (roadmap, en-tête).** ✅ = **le code est complet** ; une recette
+  device en attente ne fait **plus** redescendre une ligne à 🟡, réservé à un socle réellement
+  incomplet. La règle était déjà écrite ligne à ligne (7.19, 7.20, 7.21, 1.27, 3.57) mais **15 autres
+  lignes appliquaient l'inverse** : la colonne mesurait deux choses à la fois.
+  → **15 lignes 🟡 → ✅** : 1.24, 1.25, 1.26, 3.51, 3.55, 7.14, 7.15, 7.16, 7.17, 8.11, 4.27, 4.28,
+  4.29, 1.28, 1.29. Restent **4 🟡**, les seuls trous réels : **2.4** (rappel 30 min impossible,
+  `scheduled_date` est un jour sans heure), **5.24** (météo, RUN-F3b), **3.52** (pas de parcours
+  « remplacer » dans l'éditeur de programme), **4.37** (vivier limité aux aliments récents).
+  Ce découpage confirme l'audit du 05/08 (« 15/17 des 🟡 sont de la dette de recette »).
+- **Compteurs : 196/19/2 → `211 livré / 4 partiel / 2 à faire` sur 223** (~89 % → **~95 %**).
+  L'agrégat était déjà juste ; c'est le **« Détail par version » qui ne s'additionnait plus**
+  (somme **219 ≠ 223**) avec **5 lignes fausses sur 12**, recalculées ligne à ligne :
+  · **V0.4** annoncé 32 ✅ / 2 ⬜ → **34 ✅** (la note « 2 notifs manquantes » était périmée : 1.14 et
+  2.5 livrées le 30/07 par NUTR-F1) · **V0.8** annoncé (10) → **9 lignes** (9.16 vit physiquement dans
+  le tableau V0.9, total faux depuis le 31/07) · **V0.9** annoncé (16) 4/7/5 → **17 lignes, 15 ✅ /
+  2 🟡** · **Hors cadrage** annoncé (20) → **24 lignes** (les 4 créées depuis le 05/08 — 7.20, 7.21,
+  1.28, 1.29 — n'avaient pas été comptées) · **V0.1** 1 ⬜ → **1 ⏳** (9.14 est reporté, pas à faire).
+  Contrôlé par script : lignes **223**, colonnes **211/4/2/2/4 = 223**.
+- **Périmètre : « ~210 fonctionnalités (179 + 17 + 14) » → 223, compté et non estimé.**
+  L'en-tête « réconcilié le 03/08 » redaté au 06/08.
+- 🔴 **Déclaration Google Play « Health apps » : 4 → 6 types.** Deux fichiers sur quatre étaient à
+  jour. `health-connect-play-declaration.md` §2 bis annonçait **6 types** depuis le 30/07/2026
+  (CYCLE-01 ajoute `READ_MENSTRUATION` / `WRITE_MENSTRUATION`), mais le **§4 de la fiche LANCE-00**
+  et le bullet « Décisions bloquantes » de la roadmap annonçaient encore **4**, et le backlog **4**
+  en tête et **3** dans les prérequis. **La déclaration se dépose une seule fois** : la déposer à 4
+  types imposait une re-déclaration complète et **~2 semaines de délai externe** sur le chemin
+  critique du lancement. L'écart le plus coûteux de l'audit.
+- **RECETTES.md — le « ⛔ Prérequis bloquant » devient une checklist par collage.** Il était coché
+  `[x]` (« fait le 29/07 ») et n'énumérait que les 4 changements de ce collage, alors que **6 lignes
+  de sync rule ont été ajoutées après** : `session_intervals` ×2 (03/08), `meal_plan_entries` /
+  `shopping_lists` / `shopping_list_items` (04/08), `real_life_periods` (05/08). Pendant deux
+  semaines l'encadré annonçait « prérequis levé » sans l'être. Florian confirme le déploiement à
+  jour → **les 8 mentions bloquantes du fichier sont levées, plus aucun ⛔**.
+- **CLAUDE.md — 6 compteurs périmés** : « ~194 fonctionnalités » ×2 → **223** · « 74 specs d'US » →
+  **129** · « 72 plans » → **120** · « migrations (44) » ×2 → **79**. Et le résumé d'état annonçait
+  **3 items bloquants** (9.9, 9.11/9.12, 9.2) alors que 9.9 est recetté depuis le 28/07 et 9.11/9.12
+  livrés le 01/08 → **il ne reste que 9.2**, dont tout le chemin critique est hors-code.
+- **Catalogue d'analyses : « 11 ⏳ » → 8.** Les 3 derniers ⏳ actionnables (**MUSC-16** %1RM,
+  **MUSC-27** DOTS, **MUSC-29** total SBD) ont été livrés le 04/08 par MUSCPWR-01 et leurs lignes
+  passées ✅ le jour même, mais le paragraphe de réconciliation n'avait pas suivi. Compté sur les
+  220 items : **71 ✅ · 131 🆕 · 9 🟡 · 8 ⏳ · 1 ❌**. Il ne reste **aucun ⏳ actionnable** hors
+  RUN-07 et META-18.
+
+#### Corrigé
+
+- **Deux collisions de numéro de roadmap, ouvertes depuis le 30/07/2026.** `7.14` désignait à la fois
+  « Joker de série » (V0.9) et « Cercle d'accent sur les cartes » (hors cadrage) ; `4.37` à la fois
+  « Substitution d'aliments » (V0.9) et « Refonte visuelle du journal alimentaire » (hors cadrage).
+  → les deux lignes **hors cadrage** sont renumérotées **7.22** et **4.39** : ce sont les specs qui
+  possèdent les numéros d'origine (`streak01-joker.md` → `roadmap: [7.14]`,
+  `nutrf2-substitution-aliments.md` → `roadmap: [4.37]`), donc **aucun front-matter à propager**.
+  Vérifié par script : **plus aucun numéro en double** dans le fichier.
+  Referme la dette ouverte au backlog le 02/08/2026.
+
+#### Supprimé
+
+- **BACKLOG.md purgé : 338 → 187 lignes.** **34 lignes de candidats barrées** (déjà livrés, donc
+  sortis du backlog par définition) et **11 entrées de dette cochées** retirées, avec les 3 sections
+  devenues vides (« Enrichissements V0.9 », « Finitions UX », « 2ᵉ salve »). Le fichier reproduisait
+  le défaut que la refonte du 26/07 devait supprimer : il ne faisait plus que grossir. La trace vit
+  dans ce CHANGELOG. Restent **5 candidats réels** (LANCE-00, LANCE-01, RUN-F3b, SOCLE-01) et
+  **9 dettes ouvertes**.
+- **CONTENU-01 sorti des candidats P1.** Il a une spec depuis le 28/07 (`etape: recette`) et devait
+  quitter le fichier en entrant dans le pipeline — il y était resté, **en contradiction avec ETAT.md**
+  qui l'excluait déjà. Ce qui reste ouvert dessus est une décision de contenu (travail de coach), pas
+  un candidat de dev.
+
+#### Ajouté
+
+- 🔴 **Dette nouvelle, la plus grave de l'audit : 15 US en recette sans aucun critère cochable.**
+  **49 US** sont à `etape: recette`, **34 sections** existent dans RECETTES.md. Manquent **GARDE-01,
+  META-19, MN-04, MR-08, MUSC-12, MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03, RUN-18, RUN-F1b,
+  RUN-F2a, RUN-F2b, TRI-03** — et **4 lignes du backlog pointaient vers ces sections inexistantes**.
+  Leurs critères vivent dans leur spec, mais rien n'est cochable : personne ne sait ce qu'il reste à
+  vérifier sur device. C'est exactement l'information que RECETTES.md existe pour empêcher de mourir
+  avec la session qui l'a produite. Consignée en tête de RECETTES.md **et** en P0 de la dette.
+- **IDEAS.md — archive du chantier Codex abandonné.** `chore/compatibilite-claude-codex`, **5 commits
+  / 1 318 insertions** (skill `/commit` partagé, `.codex/config.toml`, `docs/agent-workflows/`,
+  `scripts/check-agent-compat.mjs`, plan + design du 21/07/2026), **jamais mergé** — les 6 fichiers
+  sont absents de `dev` — et **cité nulle part** : zéro occurrence de « codex » dans BACKLOG.md,
+  IDEAS.md, la roadmap ou CLAUDE.md. Trois semaines durant, du travail réel n'existait dans aucun
+  fichier de suivi : **c'est l'angle mort que l'audit « code → roadmap » cherche**. Décision Florian :
+  on n'entretient pas deux outillages d'agent en parallèle. **La branche est conservée** (seule trace
+  du travail) et référencée dans la dette.
+
+#### Technique / Notes
+
+- **Méthode.** Chaque statut a été vérifié **contre le code**, jamais contre un fichier de suivi.
+  Confirmés exacts, donc **non touchés** : `9.2` et `1.20` en ⬜ (aucun code d'import — 0 occurrence
+  de `parseHevy`/`parseStrong`/MyFitnessPal ; `gpx.ts` n'expose que l'export de 5.33) · `5.24` en 🟡
+  (0 occurrence de `weather`) · `2.4` en 🟡 (recadrage réel, `notifications.ts:339`) · catalogue ⏳
+  **NUTR-12**/**RN-14** et **RUN-24** (aucune notion d'hydratation ni de fréquence cardiaque — les
+  occurrences de « hydrat » sont des `store.hydrate()` Zustand) · **registre des migrations 79/79**,
+  aucun écart dans les deux sens · **aucune spec livrée sans ligne de suivi** (les seules à
+  `roadmap: []` **et** `catalogue: []` sont les deux `fix-*`, explicitement exclues).
+- **Non vérifiable depuis le dépôt, dit comme tel** : le déploiement réel des sync rules sur le
+  dashboard PowerSync. Le YAML versionné est la **source**, pas l'état de l'instance. Retenu sur
+  **confirmation explicite de Florian**, pas sur une preuve de code.
+- **Signalé sans trancher** : **MUSC-17** (« Courbe de force SBD ») reste 🆕 au catalogue et c'est
+  défendable — mais la moitié de la brique existe et tourne déjà (`sbdHistory()`,
+  `strength-sbd.ts:78`, appelée par `strength-repository.ts:167`). Elle n'alimente que `projectSbd`,
+  **aucune courbe n'est rendue** et la comparaison des 3 lifts n'existe pas. L'item est bien moins
+  cher qu'il n'en a l'air.
+- **Branche.** Ce commit **n'est pas parti sur `feature/doul01-journal-zones-douloureuses`**, où la
+  session s'était ouverte : `HEAD` y était déjà à `dev` (DOUL-01 intégrée), une réconciliation n'a
+  rien à y faire. Branche dédiée `chore/reconciliation-06-08-2026`, patron de
+  `chore/reconcilier-catalogue-analyses`.
+- **Deux branches locales mortes** consignées en dette : `feature/1.15-unites-metrique-imperial`
+  (1 commit orphelin `5c4901b` ne touchant que `TODO.md`, fichier supprimé depuis) et
+  `chore/compatibilite-claude-codex` (conservée volontairement).
+- **Aucun front-matter d'US modifié** : ce commit ne fait avancer aucune US, il corrige la
+  documentation de suivi. `main` reste à **1 088 commits** de retard sur `dev` (dette ouverte,
+  à traiter à LANCE-01).
+- ⚠️ **Rebasé sur `7599be2`** : `origin/dev` avait avancé de 2 commits pendant l'audit
+  (`46781a7` hooks `AppState` + `shared` à 100 %, `7599be2` résolution ESLint du monorepo), qui
+  touchaient **les 3 mêmes fichiers de suivi**. Conflits résolus à la main : CHANGELOG **fusionné**
+  (mes entrées au-dessus des leurs, même journée), ETAT **régénéré**.
+  🔴 **Un arbitrage à signaler, pour qu'il ne passe pas pour une perte** : leur commit avait ajouté à
+  BACKLOG.md une entrée de dette **`[x]` close** (le faux positif `eslint-config-expo` /
+  `moduleDirectory` et ses 2 fausses pistes). La purge de ce commit la retire — **par la règle, pas
+  par accident** : ce fichier ne garde que ce qui reste à faire. Son contenu n'est **pas perdu**, il
+  est intégralement dans leur propre entrée de CHANGELOG ci-dessous, qui est sa place.
 ### 06/08/2026 — `chore/socle-tests-unitaires` — La CI repasse au vert : résolution ESLint du monorepo
 
 Correctif du point 🔴 signalé dans l'entrée précédente (`46781a7`). **La cause n'était pas celle

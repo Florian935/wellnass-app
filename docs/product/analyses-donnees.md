@@ -18,6 +18,14 @@ chaque ligne est un candidat à cadrer (spec → plan → design → validation)
 > déjà livrés**, ce qui le rendait trompeur comme source de candidats : on en tirait des US à cadrer
 > pour du code existant. Décompte réel passé de **19 ⏳ à 11**.
 >
+> 🔄 **Puis à 8, réconciliation du 06/08/2026.** Les **3 derniers ⏳ vraiment à faire** de la liste
+> ci-dessous — **MUSC-16** (%1RM), **MUSC-27** (DOTS) et **MUSC-29** (total SBD + projection) — ont été
+> **livrés le 04/08/2026** par MUSCPWR-01 et leurs lignes passées ✅ le jour même, mais **ce paragraphe
+> n'avait pas suivi**. Compté sur les 220 items : **71 ✅ · 131 🆕 · 9 🟡 · 8 ⏳ · 1 ❌**. Il ne reste
+> donc **aucun ⏳ actionnable** : les 8 restants sont tous reportés faute de données ou de périmètre
+> (voir la dernière phrase de ce bloc), **RUN-07** compris — la donnée `session_type` existe
+> (`running-paces.ts`) mais aucune agrégation par type n'est écrite.
+>
 > | Item | Était | Est | Livré par |
 > |---|---|---|---|
 > | MUSC-07, MUSC-08 | ⏳ | ✅ | MUSC-F7 (progression assistée + deload) |
@@ -28,8 +36,9 @@ chaque ligne est un candidat à cadrer (spec → plan → design → validation)
 > | MR-22 | ⏳ | ✅ | BILAN-01 (`buildWeeklyReview`) |
 > | TRI-10 | ⏳ | ❌ | — **écarté**, arbitrage C : des badges sont une boucle de jeu (V3/V4) |
 >
-> **Restent 5 items réellement à faire** : **MUSC-16** (%1RM), **MUSC-27** (Wilks/DOTS/IPF GL),
-> **MUSC-29** (total SBD + projection), **RUN-07** (séances par type), **META-18** (seuils adaptatifs).
+> ~~**Restent 5 items réellement à faire**~~ : **MUSC-16**, **MUSC-27** et **MUSC-29** sont livrés
+> depuis (MUSCPWR-01, 04/08/2026) ; restent **RUN-07** (séances par type) et **META-18** (seuils
+> adaptatifs), tous deux sans dépendance externe.
 > Les 6 autres ⏳ sont **reportés faute de données ou de périmètre**, pas faute de temps : RUN-24
 > (fréquence cardiaque → V2 wearables), NUTR-12 et RN-14 (hydratation → table dédiée, V2),
 > META-45/46/47 (espace coach → relation coach↔coaché inexistante, RGPD lourd, hors V1).

@@ -7,11 +7,15 @@ Guidage pour Claude Code (claude.ai/code) sur ce dépôt.
 👉 **Ne devine pas où on en est : lance [`/etat`](.claude/commands/etat.md)** (ou lis
 [ETAT.md](ETAT.md), qu'il régénère). C'est la **première chose à faire dans une session**.
 
-En résumé, au 26/07/2026 : **l'app est quasi complète**. Les 3 piliers (Musculation, Running,
-Nutrition) sont fonctionnels, l'app tourne **offline avec synchro cloud réelle** (PowerSync +
-Supabase), le **back-office** existe (15 écrans), le dev build EAS et le build local Android
-fonctionnent. Il reste **3 items bloquants** avant publication : Health Connect (9.9),
-accessibilité (9.11/9.12) et la publication Play Store (9.2).
+En résumé, au 06/08/2026 : **le code du périmètre de lancement est écrit à ~95 %** (211 lignes de
+roadmap livrées sur 223). Les 3 piliers (Musculation, Running, Nutrition) sont fonctionnels, l'app
+tourne **offline avec synchro cloud réelle** (PowerSync + Supabase), le **back-office** existe
+(15 écrans), le dev build EAS et le build local Android fonctionnent. **Health Connect (9.9) est
+recetté depuis le 28/07 et l'accessibilité (9.11/9.12) livrée le 01/08** : il ne reste plus qu'**un
+seul item bloquant**, la **publication Play Store (9.2)** — dont tout le chemin critique est
+hors-code (compte développeur, déclaration « Health apps » à 6 types, relecture juridique).
+⚠️ **95 % de code écrit ≠ validé** : **49 US attendent une recette humaine sur device**
+([RECETTES.md](RECETTES.md)) — c'est la seule étape qu'un agent ne peut pas franchir.
 
 ### Où se trouve quoi
 
@@ -21,7 +25,7 @@ accessibilité (9.11/9.12) et la publication Play Store (9.2).
 | **Ce qu'il reste à faire** | [BACKLOG.md](BACKLOG.md) | candidats priorisés P0/P1/P2, **sans spec encore** |
 | **Ce qui attend une recette humaine** | [RECETTES.md](RECETTES.md) | critères cochables des US à `etape: recette` |
 | **État d'une US précise** | le **front-matter** de sa [spec](docs/specs/functional/us/) | source de vérité par US |
-| **Le périmètre complet** | [roadmap](docs/roadmap/roadmap.md) | ~194 fonctionnalités, colonne Statut |
+| **Le périmètre complet** | [roadmap](docs/roadmap/roadmap.md) | 223 fonctionnalités, colonne Statut |
 | **Les analyses de données** | [catalogue](docs/product/analyses-donnees.md) | 2ᵉ backlog, 220 items |
 | **Les idées non cadrées** | [IDEAS.md](IDEAS.md) | boîte de dépôt, avant tout cadrage |
 | **L'historique** | [CHANGELOG.md](CHANGELOG.md) · [docs/journal/](docs/journal/) | trace par commit + archives gelées |
@@ -132,7 +136,7 @@ tout ça : **chaque information a un seul endroit, et cet endroit se remplace au
 3. **[BACKLOG.md](BACKLOG.md)** — *ce qu'il reste à faire*. Une ligne par candidat **sans spec
    encore**, priorisé P0 (bloquant lancement) / P1 (finition visible) / P2 (confort). Dès qu'un
    candidat entre dans le pipeline via [`/us`](.claude/commands/us.md), il quitte le backlog.
-4. **[roadmap](docs/roadmap/roadmap.md)** — *la photo d'ensemble du périmètre* (~194 fonctionnalités,
+4. **[roadmap](docs/roadmap/roadmap.md)** — *la photo d'ensemble du périmètre* (223 fonctionnalités,
    **MVP1 = V1.0 complète**). Colonne Statut ✅ 🟡 ⬜ ⏳ ❌. Audit périodique par
    [`/reconcilier`](.claude/commands/reconcilier.md).
 
@@ -218,17 +222,17 @@ Cycle **sans Docker** :
                               aliments, import CSV, utilisateurs, rôles, audit)
 /packages
   /shared                   → types + schémas Zod + briques pures testées (+ database.types générés)
-/supabase                   → config, migrations (44), seed. ⚠️ seed.sql n'est joué que par
+/supabase                   → config, migrations (79), seed. ⚠️ seed.sql n'est joué que par
                               `db:reset` (Docker) — non utilisé aujourd'hui, voir BACKLOG
 /docs
   /journal                  → 🧊 archives gelées du suivi (ancien TODO.md)
   /product                  → vision, prd, personas, metriques-succes, analyses-donnees (catalogue),
                               ia-integration-analyse
   /specs
-    /functional             → specs par pilier + /us : 74 specs d'US (front-matter = état de l'US)
+    /functional             → specs par pilier + /us : 129 specs d'US (front-matter = état de l'US)
     /technical              → architecture, offline-sync, modele-donnees, i18n, bonnes-pratiques,
                               powersync-sync-rules.yaml, dev-build-android-local, environnement-dev-local
-  /plans                    → 72 plans d'implémentation (1 par US)
+  /plans                    → 120 plans d'implémentation (1 par US)
   /adr                      → ADR-001 (sync) … ADR-007 (surfaçage des analyses)
   /roadmap                  → roadmap.md (V0.1 → V1.1 + hors cadrage)
 ```
@@ -289,7 +293,7 @@ chez les devs) ; les commandes `db:start`/`db:stop`/`db:reset` visent une stack 
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) et
 > [environnement-dev-local.md](docs/specs/technical/environnement-dev-local.md) — utile quand le
 > quota EAS est épuisé.
-> **Supabase** : projet **cloud** (`nsxzflxsgovriwwvflxe`), 44 migrations appliquées et suivies dans
+> **Supabase** : projet **cloud** (`nsxzflxsgovriwwvflxe`), 79 migrations appliquées et suivies dans
 > [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md). Dev directement sur le cloud (pas de base
 > locale — Docker non installé). Client typé mobile
 > ([src/lib/supabase.ts](apps/mobile/src/lib/supabase.ts), Auth).
