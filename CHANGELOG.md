@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Modèles de séance : la copie figée
+
+**20 tests** sur `workout-template-repository` (503 l., le plus gros repository encore nu).
+
+#### Ajouté
+
+- **`workout-template-sql.test.ts` — 20 tests.** Un template est une **copie figée** : c'est tout
+  l'intérêt du concept, et c'est aussi ce qui se casse sans bruit. Trois propriétés portent le
+  tout, aucune visible à l'écran :
+  - **`createTemplateFromWorkout` fige des cibles, pas des références.** Un test modifie la séance
+    d'origine *après* création du modèle et vérifie qu'il n'a pas bougé — un template qui suivrait
+    sa séance cesserait d'être un modèle.
+  - **`duplicateWorkoutTemplate` copie en transaction** : une source introuvable ne doit pas
+    laisser d'entête orpheline. Un template vide s'afficherait comme un template normal, avec des
+    exercices en moins — pire qu'une erreur franche.
+  - **`startWorkoutFromTemplate` respecte la garde « une seule séance active »**, comme
+    `startWorkout` et `startWorkoutFromSession`. Trois portes d'entrée, une seule règle : c'est le
+    genre d'invariant qu'on oublie de rejouer sur la troisième. Le test vérifie en plus qu'**aucune
+    série pré-remplie ne vient polluer la séance déjà en cours**.
+
+#### Technique / Notes
+
+- ⚠️ **Une divergence volontaire est désormais verrouillée par un test** : `buildSummary` (résumé
+  de fin de séance) **écarte** les échauffements du décompte — il rend compte de l'effort ;
+  `deriveTemplateTargetsFromWorkoutSets` les **garde** — un modèle sert à *reproduire* une séance,
+  échauffement compris. Deux fonctionnalités voisines, deux traitements opposés, faciles à
+  confondre. Le test existe pour que ça reste un choix : aligner les deux « pour faire propre »
+  casserait le modèle de quelqu'un.
+- J'avais d'abord écrit deux tests supposant que les échauffements étaient exclus **ici aussi**.
+  Ils ont rougi ; c'est la supposition qui était fausse, pas le code. Tests réécrits sur le
+  comportement réel — et la divergence documentée plutôt que gommée.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 894 (mobile) + 181 (admin) = 2 999 tests**. Mobile 25,7 % → **26,1 %** ;
+  `src/data/repositories` 33,9 % → **35,7 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Résumé de séance : la règle des échauffements
 
 Suite du lot 5. **11 tests** sur `buildSummary` (`workout-summary.tsx`), la fonction qui produit

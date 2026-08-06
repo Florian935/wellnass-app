@@ -92,7 +92,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1097 · `main` a **1094** commits de retard sur `dev` |
+| Commits | 1098 · `main` a **1095** commits de retard sur `dev` |
 | Specs d'US | 129 au total — 79 clôturées, 50 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -103,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `ada8182` test(mobile): résumé de séance — la règle des échauffements
 - `da6756f` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `9298b0b` test(mobile): effets de montage de cycle et help, et §3.6 corrigée
 - `29c8f11` chore(reconciliation): aligne la documentation de suivi sur le code réel (13 écarts)
 - `7599be2` fix(lint): ancre la résolution des imports sur le node_modules de la racine
-- `46781a7` test(mobile,shared): hooks AppState + shared remis à 100 %
 
 ---
 
