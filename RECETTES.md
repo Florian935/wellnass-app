@@ -11,9 +11,9 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **06/08/2026** — 34 sections. 🔴 **Commence par l'encadré du 06/08
-> ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections déjà écrites**,
-> dont les critères sont antérieurs à ces changements.
+> Dernière mise à jour : **06/08/2026** — **49 sections, une par US en recette**. 🔴 **Commence par
+> l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
+> déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
 > ✅ **Toutes les sync rules PowerSync sont déployées** (confirmé par Florian le 06/08/2026) : le
 > prérequis qui bloquait MESUR-01, STREAK-01, OBJ-01, ADMIN-01, RUN-F2c, REPAS-01, VIE-01 et DOUL-01
@@ -22,13 +22,14 @@
 > manipulation ; **INSIGHTS-01** (§30), **INSIGHTS-02** (§31), **COLLIS-01** (§32), **VIE-01** (§33) et
 > **DOUL-01** (§34) sont recettables **sur l'APK existant**.
 >
-> ⚠️ **Trou connu, ouvert le 06/08/2026 par [`/reconcilier`](.claude/commands/reconcilier.md)** :
-> **15 US sont à `etape: recette` sans section ici** — GARDE-01, META-19, MN-04, MR-08, MUSC-12,
-> MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, TRI-03. Leurs
-> critères vivent dans leur spec (`docs/specs/functional/us/`) mais **rien n'est cochable ici**, donc
-> personne ne sait ce qu'il reste à vérifier sur device. 49 US en recette, 34 sections. **À écrire
-> avant la prochaine campagne de recette** — c'est exactement le savoir que ce fichier existe pour
-> ne pas perdre.
+> ✅ **Trou comblé le 06/08/2026** (ouvert le matin par [`/reconcilier`](.claude/commands/reconcilier.md),
+> fermé l'après-midi) : les **15 US qui étaient à `etape: recette` sans aucun critère cochable** ont
+> désormais leur section — **§35 à §49** (GARDE-01, META-19, MN-04, MR-08, MUSC-12, MUSC-19, MUSC-20,
+> MUSC-F15, NUTR-18, RN-03, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, TRI-03). **49 US en recette,
+> 49 sections** : le fichier couvre à nouveau tout ce qu'il doit couvrir.
+> 🔴 **Lis l'encadré en tête des §35-49 avant de les dérouler** : cinq de ces signaux ont **changé
+> d'écran** (INSIGHTS-02 les a sortis de l'accueil), et le moteur d'insights n'en affiche que **2 par
+> famille** — recetter « le widget apparaît sur l'accueil » ferait remonter un faux défaut.
 
 ---
 
@@ -804,6 +805,10 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 📄 [spec](docs/specs/functional/us/runf2d-guidage-fractionne-vocal.md) · roadmap 5.18 ·
 **📱 device** · migration poussée (colonnes additives), ✅ **aucune sync rule à déployer**
 (contrairement à RUN-F2c) — dernier candidat de la famille RUN-F2, tous ses prérequis livrés.
+⚠️ **Précision ajoutée le 06/08/2026** : sa spec dit « aucun nouveau build », ce qui est vrai
+**relativement à RUN-F2a** — mais `interval-guidance.ts` importe bien `expo-speech`. Cette US exige
+donc, comme la §36, un **APK postérieur au 02/08/2026** ; sur un APK plus ancien, le guidage est
+muet **sans erreur**. Voir « Comment procéder » en bas de page.
 
 ⚠️ **Le point à vérifier en priorité** : le rattrapage silencieux après un changement d'onglet en
 cours de séance (critère 4 bis) — c'est le point le plus délicat de cette US, celui qu'une
@@ -1309,16 +1314,484 @@ par [`/commit`](.claude/commands/commit.md).
 
 ---
 
+## ⚠️ À lire avant de recetter les §35 à §49 — 5 de ces signaux ont changé d'écran
+
+Sections écrites le **06/08/2026** par [`/reconcilier`](.claude/commands/reconcilier.md) : ces 15 US
+étaient à `etape: recette` **sans aucun critère cochable ici**. Leurs critères viennent de la section
+« Critères d'acceptation » de chaque spec, **relus contre le code du 06/08** — et cinq d'entre eux
+étaient périmés.
+
+🔴 **META-19, GARDE-01, TRI-03, MR-08 et RN-03 ne sont plus des widgets d'accueil.** INSIGHTS-02
+(7.21, 05/08/2026) a ramené l'accueil de 21 à 7 widgets : leurs signaux sont devenus des **cartes
+d'insight** sur l'**écran Insights** (7.20). Vérifié dans
+[widget-destinations.ts](packages/shared/src/widget-destinations.ts) — `training_load`,
+`overtraining_guard`, `readiness`, `concurrent_interference`, `activity_level`. Recetter « le widget
+apparaît sur l'accueil » ferait remonter un faux défaut.
+
+🔴 **Et surtout : un signal armé n'est pas forcément affiché.** Le moteur d'insights plafonne à
+**3 cartes** (`MAX_INSIGHTS`) et **2 par famille** (`MAX_PER_FAMILY`). Or ces 5 signaux sont **tous
+de la famille `alert`**, avec `deficit_volume` : **au plus 2 peuvent s'afficher en même temps**, dans
+l'ordre de `INSIGHT_ORDER` — `overtraining_guard` › `training_load` › `readiness` ›
+`concurrent_interference` › `deficit_volume` › `activity_level`.
+⚠️ **L'absence d'une carte moins prioritaire, quand une alerte plus prioritaire est affichée, est le
+comportement voulu — ne pas la remonter comme un bug.** Pour recetter un signal en particulier, il
+faut donc l'isoler : vérifier d'abord qu'aucune alerte au-dessus de lui ne se déclenche.
+
+---
+
+## 35. RUN-F1b — Dénivelé cumulé
+
+📄 [spec](docs/specs/functional/us/runf1b-denivele-cumule.md) · roadmap 5.32 · **📱 device** ·
+1 migration poussée (`runs.elevation_gain_m` / `elevation_loss_m`, additives) · ✅ aucune sync rule
+(`runs` déjà lue en `select *`) · ✅ aucune dépendance native → recettable sur l'APK existant.
+
+- [ ] 1. Une sortie sur terrain vallonné affiche un dénivelé positif et négatif plausibles — à
+      comparer visuellement avec un tracé de référence (Strava / Garmin / IGN) sur le même parcours.
+      **Un ordre de grandeur cohérent, pas un chiffre exact** (R7).
+- [ ] 2. Une sortie sur terrain **plat** n'affiche pas un dénivelé qui grimpe anormalement au fil des
+      minutes — c'est ce qui vérifie que le filtre de bruit (R3) marche réellement, pas en théorie.
+- [ ] 3. Une pause manuelle suivie d'une reprise ne produit **aucun saut** de dénivelé au moment de
+      la reprise (R4).
+- [ ] 4. Une course **manuelle** (sans GPS) n'affiche **aucune ligne** de dénivelé (R5 : absent, pas
+      zéro).
+- [ ] 5. Une course enregistrée **avant** cette US n'affiche aucune ligne de dénivelé sur son résumé
+      (donnée absente) **mais** n'empêche pas les stats de période de sommer les autres courses.
+- [ ] 6. Le bloc stats par période (semaine / mois / depuis le début) affiche un dénivelé cumulé
+      cohérent avec la **somme** des sorties individuelles de la période.
+- [ ] 7. **Mode avion** : le dénivelé se calcule normalement pendant toute la course.
+- [ ] 8. En **EN** : les libellés `running.elevation.*` sont grammaticaux.
+- [ ] 9. TalkBack énonce les valeurs de dénivelé normalement — pas de régression sur le résumé ni sur
+      l'historique.
+
+⚠️ **Seuils GPS non validés terrain** (précision 30 m, bruit 3 m) : à juger en course réelle. Si le
+critère 2 échoue, c'est un réglage de seuil, pas un défaut de logique.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 36. RUN-F2a — Annonces audio périodiques
+
+📄 [spec](docs/specs/functional/us/runf2a-annonces-audio.md) · roadmap 5.19 · **📱 device** ·
+✅ aucune sync rule · 🔴 **`expo-speech` est une dépendance native neuve** : un APK antérieur au
+02/08/2026 n'a **aucune voix**, et l'échec serait silencieux. Le build LAUNCHER-01 du **03/08/2026**
+lui est postérieur et devrait l'embarquer — **à confirmer par le critère 2 avant de dérouler le
+reste** ; si aucune annonce ne sort réglage activé, c'est l'APK, pas le code.
+
+- [ ] 1. Réglage **désactivé** (défaut) → aucune annonce pendant toute une course GPS.
+- [ ] 2. Réglage activé, intervalle **1 km** → une annonce à 1, 2, 3 km… **jamais deux fois au même
+      kilomètre**. *(C'est aussi le test qui prouve que l'APK embarque `expo-speech`.)*
+- [ ] 3. Intervalle changé à **500 m** → annonces deux fois plus fréquentes.
+- [ ] 4. Rouvrir l'écran de suivi après avoir navigué ailleurs, **à 3,4 km**, ne redéclenche pas les
+      annonces de 1, 2 et 3 km (R2).
+- [ ] 5. Une course **manuelle** n'émet jamais d'annonce, quel que soit le réglage (R4).
+- [ ] 6. La phrase annoncée est **prononçable et grammaticale** en FR **et** en EN : pas de nombre à
+      rallonge, pas de décimale lue à voix haute.
+- [ ] 7. **Écran verrouillé pendant le suivi** : noter si les annonces continuent ou s'arrêtent.
+      Comportement **non garanti** (§1) — le critère est de **documenter l'observé**, pas de valider.
+- [ ] 8. **Changer d'onglet (ex. Nutrition) pendant la course puis revenir via « Reprendre »** :
+      aucune annonce pendant l'absence de l'écran, et **aucune rafale** au retour des seuils franchis
+      entre-temps (R2). *C'est le cas le plus probable en usage réel — à ne pas confondre avec le 7.*
+- [ ] 9. **Mode avion** : les annonces fonctionnent normalement (aucun réseau requis).
+- [ ] 10. Une **pause manuelle** suspend les annonces ; la reprise ne rattrape pas les seuils
+      « manqués » pendant l'arrêt — ils n'ont pas été franchis (R6).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 37. RUN-F2b — Prolonger ou raccourcir : cible visible en direct
+
+📄 [spec](docs/specs/functional/us/runf2b-cible-en-direct.md) · roadmap 5.23 · **📱 device** ·
+✅ aucune migration, aucune sync rule, aucune dépendance native → **recettable sur l'APK existant**
+(réutilise `compareToTarget` / `useRunTarget` / `running.target.*` de RUN-F3 tels quels).
+
+- [ ] 1. Une course démarrée **depuis une séance planifiée** avec cible de distance affiche
+      « X sur Y visés », qui **progresse en direct** pendant la course.
+- [ ] 2. La cible franchie fait passer le libellé à « objectif atteint », **sans interruption ni
+      couleur alarmante** (R4).
+- [ ] 3. Continuer à courir après la cible affiche « dépassé de Z », qui continue de progresser —
+      rien n'empêche ni ne signale négativement la poursuite (R5).
+- [ ] 4. Une course **libre** (sans séance planifiée) n'affiche **aucune** carte objectif.
+- [ ] 5. Une séance planifiée **sans cible chiffrée** n'affiche aucune carte objectif — pas un encart
+      vide.
+- [ ] 6. Une cible **de durée** ne s'affiche **jamais** comme « dépassée » dans les toutes premières
+      secondes, avant le premier flush GPS (R1 bis). *Le cas le plus facile à manquer.*
+- [ ] 7. Le bouton **Stop** fonctionne à tout moment, avant ou après la cible, sans changement de
+      comportement (R5 : « terminer avant la cible » était déjà natif).
+- [ ] 8. **Mode avion** : la carte objectif s'affiche normalement.
+- [ ] 9. En **EN** : aucune régression sur les clés `running.target.*` déjà traduites (R2).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 38. RUN-18 — Charge d'entraînement & ACWR (running seul)
+
+📄 [spec](docs/specs/functional/us/run18-acwr-running.md) · catalogue **RUN-18** · **📱 device** ·
+✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+ℹ️ **Section d'écran, pas un widget** : RUN-18 n'a pas été touchée par INSIGHTS-02 — contrairement à
+META-19, avec laquelle elle se confond facilement (voir le critère 6).
+
+- [ ] 1. ≥ 28 jours d'historique de course, ratio en **zone saine** → la section affiche le ratio et
+      « zone saine ».
+- [ ] 2. Ratio **> 1,3** → « zone de risque », **ton factuel** — pas de rouge alarmiste.
+- [ ] 3. Ratio **< 0,8** → « zone basse » **affichée**. ⚠️ Contrairement à META-19, elle **n'est pas
+      masquée** ici : c'est voulu, ne pas le remonter comme une incohérence entre les deux.
+- [ ] 4. **Aucune course** sur les 28 derniers jours (compte neuf) → section **absente**, pas de
+      ratio à 0, pas d'erreur (R5).
+- [ ] 5. Ajouter une course **sans RPE** à côté de courses avec RPE ne fait pas baisser le ratio de
+      façon disproportionnée : elle contribue **zéro**, elle n'est pas retirée du calcul.
+- [ ] 6. Le pilier **muscu actif ou non ne change rien** à cette section : elle ne lit que `runs`.
+      *C'est la différence de fond avec META-19, qui exige les deux piliers.*
+- [ ] 7. **Mode avion** : la section s'affiche normalement.
+- [ ] 8. En **EN** : les trois libellés de zone **et** l'état vide sont grammaticaux.
+- [ ] 9. TalkBack énonce chaque ligne comme un ensemble cohérent (libellé + zone + ratio), pas des
+      fragments disjoints.
+
+ℹ️ Le seuil 1,3 est une invariante de code couverte par les tests de `computeAcwr` — **pas** un
+critère de recette humaine.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 39. META-19 — Garde-fou surentraînement (ACWR combiné)
+
+📄 [spec](docs/specs/functional/us/meta19-acwr-garde-fou.md) · catalogue **META-19** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+🔴 **Surface déplacée par INSIGHTS-02** : ce signal n'est plus un widget d'accueil, c'est la carte
+d'insight `training_load` sur l'**écran Insights**. Elle est **2ᵉ** de `INSIGHT_ORDER` — donc masquée
+si `overtraining_guard` (§49) occupe déjà la famille avec un autre. Voir l'encadré en tête des §35-49.
+
+- [ ] 1. Charge des **7 derniers jours** nettement supérieure à la moyenne des **28** → la carte
+      apparaît sur l'écran Insights, avec son message **et** sa recommandation.
+- [ ] 2. Ratio en **zone saine (0,8-1,3)** → **aucune carte** : pas un affichage neutre, pas de
+      « tout va bien ».
+- [ ] 3. Ratio **bas (< 0,8)** → **aucune carte non plus** (R5, hors périmètre). ⚠️ RUN-18 (§38)
+      affiche, elle, sa zone basse — les deux comportements sont voulus.
+- [ ] 4. **Aucune séance** sur 28 jours (compte neuf) → pas de carte, pas d'erreur, **pas de division
+      par zéro** (R6).
+- [ ] 5. Une séance **sans RPE** ne fausse le calcul ni vers le haut ni vers le bas : elle contribue
+      **zéro** (R1).
+- [ ] 6. Un **seul** pilier actif (muscu **ou** course) → la carte n'apparaît **jamais**, quelle que
+      soit la charge.
+- [ ] 7. **Pendant une période « vie réelle »** (VIE-01) : le signal **reste armé** — les garde-fous
+      de charge ne sont jamais mis en sourdine (`REAL_LIFE_MUTED_INSIGHTS` ne les contient pas).
+      **Ce n'est pas un oubli**, c'est un principe : quelqu'un qui rattrape trop fort au retour est
+      précisément qui il faut prévenir.
+- [ ] 8. **Mode avion** : la carte s'affiche normalement s'il y a lieu.
+- [ ] 9. En **EN** : message et recommandation grammaticaux.
+- [ ] 10. TalkBack énonce la carte comme un bloc cohérent.
+- [ ] 11. Un dashboard **personnalisé avant INSIGHTS-02** contenant encore `training-load` se résout
+      **sans trou ni doublon** (id inconnu ignoré par `resolveScreenLayout`).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 40. MUSC-F15 — Progression au niveau du programme
+
+📄 [spec](docs/specs/functional/us/muscf15-progression-programme.md) · roadmap 3.7 ·
+**📱 device** · ✅ aucune donnée nouvelle, aucune migration, aucune sync rule → recettable sur
+l'APK existant.
+
+- [ ] 1. Semaine `N-1` du programme complétée à **100 %** → la séance de la semaine `N` propose une
+      **hausse de charge** (comportement inchangé).
+- [ ] 2. Semaine `N-1` complétée à **moins de 80 %** (ex. 2 séances sur 4 `done`) → la séance de la
+      semaine `N` affiche « Reste à P kg, essaie N reps… » (`weightHold`), **jamais** une hausse de
+      poids, **et le message explique la cause** (l'adhérence).
+- [ ] 3. **Première** semaine d'un programme (`week_index = 0`) → hausse pleine (R2, inchangé).
+- [ ] 4. **Séance libre** (non planifiée) → hausse pleine (R3, inchangé).
+- [ ] 5. Un exercice **en deload** (2 séances difficiles d'affilée, MUSC-F7) **reste en deload** même
+      si l'adhérence de la semaine précédente est bonne — R4 ne s'applique qu'à la branche de hausse.
+- [ ] 6. **Mode avion** : comportement identique (aucun réseau requis).
+- [ ] 7. En **EN** : `workout.suggestion.weightHold` est grammaticale **et distincte** de
+      `workout.suggestion.reps` — pas de confusion avec le cas « poids du corps ».
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 41. TRI-03 — Score de forme / readiness global
+
+📄 [spec](docs/specs/functional/us/tri03-score-readiness.md) · catalogue **TRI-03** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+🔴 **Surface déplacée par INSIGHTS-02** : carte d'insight `readiness` sur l'**écran Insights**, plus
+un widget d'accueil. Elle est **3ᵉ** de `INSIGHT_ORDER` : si `overtraining_guard` **et**
+`training_load` se déclenchent tous les deux, la famille `alert` est pleine et **readiness
+n'apparaît pas** — comportement voulu. Voir l'encadré en tête des §35-49.
+
+- [ ] 1. 3 piliers actifs + historique + check-ins récents → verdict **cohérent avec les 3
+      composantes** affichées dans le détail.
+- [ ] 2. **Nutrition seule** activée, check-ins faits → verdict basé sur le **bien-être seul** : pas
+      de trou, et **aucune composante muscu/course inventée**.
+- [ ] 3. Compte **tout neuf** → **aucune** carte readiness tant qu'aucune composante n'a de données.
+- [ ] 4. Une composante indisponible (ex. nutrition, faute de jours loggés) est explicitement dite
+      **« indisponible »** dans le détail — jamais confondue avec un état neutre.
+- [ ] 5. **Un seul** signal négatif suffit à afficher « Repos conseillé », même si les deux autres
+      sont bons.
+- [ ] 6. **Pendant une période « vie réelle »** : le signal **reste armé** (garde-fou de charge, cf.
+      §39 critère 7).
+- [ ] 7. **Mode avion** : la carte s'affiche normalement s'il y a lieu.
+- [ ] 8. TalkBack énonce la carte comme un bloc cohérent, **et le détail dépliable est atteignable**.
+- [ ] 9. En **EN** : verdicts et libellés de composantes grammaticaux.
+- [ ] 10. Un dashboard personnalisé contenant encore `readiness` se résout sans trou ni doublon.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 42. MN-04 — Macros ajustées jours muscu (glucides péri-séance)
+
+📄 [spec](docs/specs/functional/us/mn04-glucides-peri-seance.md) · catalogue **MN-04** ·
+**📱 device** · ✅ aucune migration (les colonnes `training_bonus_mode` / `training_day_bonus`
+préexistaient), aucune sync rule, **aucune nouvelle chaîne i18n** → recettable sur l'APK existant.
+
+- [ ] 1. **Jour de repos** : cibles macro **identiques à avant** cette US.
+- [ ] 2. **Jour de séance muscu** (bonus forfait) : la cible **glucides** augmente visiblement ;
+      **protéines et lipides ne bougent pas**.
+- [ ] 3. **Jour de course** (bonus auto) : même effet, cohérent avec la dépense réelle de la course.
+- [ ] 4. **Macros manuelles actives** → **aucun** changement, quel que soit le bonus du jour.
+- [ ] 5. Un jour de séance, les **3 barres macro** (grammes cibles) **totalisent** l'objectif
+      calorique affiché en haut de l'écran. *Ce n'était pas le cas avant cette US — critère central.*
+- [ ] 6. **Mode avion** : fonctionne normalement (calcul local).
+- [ ] 7. **Cohérence entre les deux surfaces** : le widget d'accueil « nutrition » et l'écran
+      Nutrition affichent **la même cible**.
+- [ ] 8. **Pendant une période « vie réelle »** (VIE-01) : la cible du jour suit la règle de VIE-01,
+      **mais l'écran de réglage de l'objectif continue d'afficher la cible du `cut`** — la
+      distinction cible-du-jour / réglage-de-l'objectif est voulue, pas un oubli.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 43. MR-08 — Interférence concurrent training
+
+📄 [spec](docs/specs/functional/us/mr08-interference-concurrent-training.md) · catalogue **MR-08** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+🔴 **Surface déplacée par INSIGHTS-02** : carte d'insight `concurrent_interference` sur l'**écran
+Insights**. **4ᵉ** de `INSIGHT_ORDER`, donc la plus facilement évincée des cinq — deux alertes
+au-dessus d'elle suffisent à la masquer légitimement. Voir l'encadré en tête des §35-49.
+
+- [ ] 1. Volume de course en **forte hausse** (> 1,3 × moyenne 4 sem) **et** tonnage muscu en **forte
+      baisse** (< 0,8 ×) → carte visible, message cohérent avec le sens « course en hausse ».
+- [ ] 2. Situation **inverse** (muscu en hausse, course en baisse) → carte visible, **message
+      inversé**. *Le sens du message est le vrai enjeu de cette recette.*
+- [ ] 3. Les deux piliers **stables**, ou évoluant **dans le même sens** → **aucune** carte.
+- [ ] 4. Un des deux piliers **sans historique** sur 28 j → aucune carte.
+- [ ] 5. `strength` **ou** `running` désactivé → aucune carte, quelle que soit la divergence
+      calculée.
+- [ ] 6. **Pendant une période « vie réelle »** : le signal **reste armé** (cf. §39 critère 7).
+- [ ] 7. **Mode avion** : fonctionne normalement.
+- [ ] 8. En **EN** : message grammatical **et sens cohérent** avec la direction détectée.
+- [ ] 9. TalkBack énonce la carte comme un bloc cohérent.
+- [ ] 10. Un dashboard personnalisé contenant encore `concurrent-training-interference` se résout
+      sans trou ni doublon.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 44. MUSC-12 — Densité d'entraînement (volume / temps)
+
+📄 [spec](docs/specs/functional/us/musc12-densite-entrainement.md) · catalogue **MUSC-12** ·
+**📱 device** · ✅ aucune migration, aucune sync rule, 1 clé i18n (`workout.summary.density`) →
+recettable sur l'APK existant.
+
+- [ ] 1. Après une séance terminée, le résumé affiche une ligne **Densité** cohérente avec les
+      **Volume ÷ Durée** affichés juste au-dessus. *Le calcul doit se vérifier à la main sur l'écran.*
+- [ ] 2. Une séance **sans série validée** affiche une densité de **0**, pas une ligne **absente**.
+- [ ] 3. La densité respecte la **préférence d'unité** (kg / lb) comme le reste de l'écran.
+- [ ] 4. **Mode avion** : fonctionne normalement.
+- [ ] 5. En **EN** : libellé **et formatage** cohérents (séparateur décimal compris).
+- [ ] 6. TalkBack énonce la ligne comme un ensemble cohérent (libellé + valeur + unité).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 45. MUSC-19 — Tonnage cumulé (lifetime / annuel)
+
+📄 [spec](docs/specs/functional/us/musc19-tonnage-cumule.md) · catalogue **MUSC-19** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+Surface : écran **Progression**, famille i18n `progress.lifetimeTonnage.*`.
+
+- [ ] 1. L'écran Progression affiche un total **à vie** et un total **« cette année »** cohérents
+      avec l'historique réel des séances **terminées**.
+- [ ] 2. Compte neuf sans séance → **`0 kg` aux deux endroits**, pas une section absente.
+- [ ] 3. Un compte au-delà de **1 000 000 kg** cumulés affiche le **badge** ; un compte en dessous
+      ne l'affiche pas.
+- [ ] 4. **Mode avion** : la section s'affiche normalement.
+- [ ] 5. En **EN** : libellés **et séparateurs de milliers** cohérents avec la langue.
+- [ ] 6. TalkBack énonce la section comme un bloc cohérent.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 46. MUSC-20 — Régularité & consistance d'entraînement
+
+📄 [spec](docs/specs/functional/us/musc20-regularite-entrainement.md) · catalogue **MUSC-20** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+Surface : écran **Progression**, famille i18n `progress.regularity.*`.
+
+- [ ] 1. Un utilisateur avec un **programme planifié** voit ses **3 métriques** cohérentes avec son
+      historique réel des 4 dernières semaines.
+- [ ] 2. Un utilisateur **« séance libre » sans planning** voit **uniquement l'écart-type des
+      intervalles**, les deux autres métriques marquées **indisponibles** — **jamais un chiffre
+      inventé**. *Critère le plus important : c'est la règle « aucune affirmation sans chiffre ».*
+- [ ] 3. Compte neuf → **état vide explicite**, pas une section absente ni un calcul sur zéro donnée.
+- [ ] 4. Un taux de séances tenues **bas** ne déclenche **aucune alerte** et **aucun ton négatif**.
+- [ ] 5. **Mode avion** : fonctionne normalement.
+- [ ] 6. En **EN** : libellés et pourcentages cohérents.
+- [ ] 7. TalkBack énonce la section comme un bloc cohérent.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 47. NUTR-18 — Bilan calorique hebdomadaire
+
+📄 [spec](docs/specs/functional/us/nutr18-bilan-calorique-hebdo.md) · catalogue **NUTR-18** ·
+**📱 device** · ✅ aucune migration, aucune sync rule, 2 clés i18n (`stats.adherence.balance`,
+`stats.adherence.aboveBelow`) → recettable sur l'APK existant.
+ℹ️ **Deux lignes ajoutées à la carte Adhérence existante** (NUTR-10), pas un écran neuf.
+
+- [ ] 1. La carte **Adhérence** affiche un bilan **cumulé** cohérent avec les apports et l'objectif
+      **effectif** des jours **loggés** de la fenêtre sélectionnée.
+- [ ] 2. Le décompte **jours au-dessus / en dessous** est cohérent avec les jours effectivement
+      au-dessus ou en dessous de l'**objectif** — ⚠️ **pas de la marge de NUTR-10**. *Les deux
+      chiffres peuvent donc légitimement diverger de l'adhérence affichée juste au-dessus : c'est
+      voulu, ne pas le remonter comme une incohérence.*
+- [ ] 3. Basculer **7 j ↔ 30 j** recalcule les deux nouvelles lignes **sans latence perceptible**.
+- [ ] 4. **Sans objectif configuré** : **aucune** des 2 lignes n'apparaît.
+- [ ] 5. **Mode avion** : fonctionne normalement.
+- [ ] 6. En **EN** : **signe** (+ / −) et libellés cohérents.
+- [ ] 7. **Pendant une période « vie réelle »** : les deux lignes restent **vraies et annotées**,
+      jamais amputées (décision D2 de VIE-01).
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 48. RN-03 — Ajustement auto du TDEE selon le volume de course
+
+📄 [spec](docs/specs/functional/us/rn03-tdee-ajuste-course.md) · catalogue **RN-03** ·
+**📱 device** · ✅ aucune migration, aucune sync rule → recettable sur l'APK existant.
+🔴 **Surface déplacée par INSIGHTS-02** : carte d'insight `activity_level` sur l'**écran Insights**.
+**Dernière** de la famille `alert` dans `INSIGHT_ORDER` — donc la plus souvent évincée. Et
+🔴 **la seule des cinq à être mise en sourdine pendant une période « vie réelle »**
+(`REAL_LIFE_MUTED_INSIGHTS`) : ce n'est pas un garde-fou de sécurité, et apprendre d'une fenêtre
+atypique proposerait un réglage à refaire au retour.
+
+- [ ] 1. Profil **`sedentary`**, ≥ 6 courses distinctes sur 14 j → suggestion vers un **palier
+      supérieur**, message cohérent avec le nombre de jours **réellement** courus.
+- [ ] 2. Profil **`active`**, **0 course** sur 14 j → suggestion **à la baisse**.
+- [ ] 3. Fréquence de course correspondant **déjà** au palier déclaré → **aucune** carte.
+- [ ] 4. **Nutrition désactivée** → aucune carte, quelle que soit la fréquence de course.
+- [ ] 5. **`manualCalories` actif** → la carte **reste visible** si l'écart existe (D3 / R6).
+      *Contre-intuitif : à vérifier explicitement.*
+- [ ] 6. **Jamais** de suggestion vers **`very_active`**, même à 7+ courses/semaine sur toute la
+      fenêtre.
+- [ ] 7. 🔴 **Pendant une période « vie réelle »** : la carte est **silencieuse**, et elle
+      **réapparaît** à la fin de la période si l'écart persiste. *C'est le comportement inverse des
+      §39, §41 et §43 — le distinguer est tout l'intérêt de ce critère.*
+- [ ] 8. **Mode avion** : fonctionne normalement.
+- [ ] 9. En **EN** : message grammatical, libellés de palier **cohérents avec l'écran profil
+      nutrition** (mêmes mots aux deux endroits).
+- [ ] 10. TalkBack énonce la carte comme un bloc cohérent.
+- [ ] 11. Un dashboard personnalisé contenant encore `activity-level-suggestion` se résout sans trou
+      ni doublon.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, roadmap à ✅, et **on
+supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qui fait les trois.
+
+---
+
+## 49. GARDE-01 — Garde-fou unifié charge & récupération (ex TRI-12 + MR-14)
+
+📄 [spec](docs/specs/functional/us/garde01-fusion-garde-fou-charge-repos.md) · catalogue **TRI-12** +
+**MR-14** · **📱 device** · ✅ aucune migration, aucune sync rule, **aucun seuil ni texte modifié** →
+recettable sur l'APK existant.
+🔴 **Surface déplacée par INSIGHTS-02** : carte d'insight `overtraining_guard`, **1ʳᵉ de
+`INSIGHT_ORDER`** — c'est celle qui évince les autres, jamais l'inverse.
+ℹ️ **Cette liste remplace celles de TRI-12 (§8) et MR-14 (§11)**, toutes deux passées à `close` :
+leurs critères décrivaient deux cartes et un masquage mutuel qui **n'existent plus**.
+
+- [ ] 1. Streak ≥ 6 j de charge **et** ≥ 4 jours sur 7 en déficit ≥ 15 % → niveau **surcharge**
+      (titre « Signal de surcharge », message et recommandation enrichis).
+- [ ] 2. Streak ≥ 6 j de charge, apports **dans la cible** → niveau **repos** (titre « N jours sans
+      repos »). *Comportement **nouveau** : TRI-12 seule n'affichait rien dans ce cas.*
+- [ ] 3. **Nutrition désactivée**, streak ≥ 6 j → niveau **repos**, **jamais** le niveau surcharge.
+- [ ] 4. Streak **< 6 j** → aucune carte, quel que soit le déficit.
+- [ ] 5. `strength` **ou** `running` désactivé → aucune carte.
+- [ ] 6. 🔴 **Le déficit passe sous son seuil pendant la session** (on log un repas) → la carte **ne
+      change pas de place** et **ne disparaît pas** : seul son **texte** retombe au niveau repos.
+      *C'est le défaut que cette US corrige — **le critère le plus important de la liste**.*
+- [ ] 7. Le nombre de jours affiché au niveau **repos** correspond au streak réel. ⚠️ **Au niveau
+      surcharge, il n'y a volontairement pas de compteur** (« Signal de surcharge ») : le titre de
+      TRI-12 n'en a jamais eu et D3 le conserve tel quel — **ce n'est pas un bug, ne pas le remonter
+      comme tel.**
+- [ ] 8. Un jour **sans RPE** renseigné ne compte pas comme repos s'il existe une autre séance à
+      charge ce jour-là.
+- [ ] 9. Un jour de nutrition **non loggé** ne fait pas à lui seul retomber sous le seuil de 4 jours.
+- [ ] 10. ⚠️ **Jour de repos en cours** (streak ≥ 6 jusqu'à hier, rien fait aujourd'hui) → la carte
+      est **encore visible**. **Comportement conservé tel quel** de MR-14 §9, hors périmètre : le
+      corriger demanderait de changer la sémantique de `computeStreak` pour TRI-01 aussi.
+      **Ne pas le remonter comme un défaut.**
+- [ ] 11. **Pendant une période « vie réelle »** : le signal **reste armé** (cf. §39 critère 7).
+- [ ] 12. Aucun trou dans la grille du dashboard, en affichage **et** en mode édition.
+- [ ] 13. Un dashboard personnalisé d'**avant** cette US (contenant `load-streak-alert`) ou d'avant
+      INSIGHTS-02 (contenant `overtraining-guard`) retrouve ses widgets, **sans trou ni doublon**.
+- [ ] 14. **Mode avion** : fonctionne normalement.
+- [ ] 15. En **EN** : les **deux niveaux** sont grammaticaux.
+- [ ] 16. TalkBack énonce la carte comme un bloc cohérent, **à chacun des deux niveaux**.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec **et** dans celles de TRI-12 /
+MR-14 si besoin, catalogue à ✅, et **on supprime sa section ici**. Passe par
+[`/commit`](.claude/commands/commit.md).
+
+---
+
 ## Comment procéder
 
-**Les dix US device se recettent sur le même APK** : BIEN-01, MESUR-01, NUTR-F2, STREAK-01,
-UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et
-**MUSC-F1b**/**RUN-14**/**NUTR-16**/**MUSC-09** (aucune dépendance native neuve,
-`react-native-svg`/calcul pur déjà en place)
-(+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
-déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
-rien à voir avec leur code. ✅ **Toutes les sync rules sont déployées au 06/08/2026** (voir le
-prérequis en tête, une case par collage).
+**La très grande majorité se recette sur le même APK.** Sans dépendance native neuve :
+BIEN-01, MESUR-01, NUTR-F2, STREAK-01, UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14,
+**PARTAGE-01**, **MUSC-F1b**, **RUN-14**, **NUTR-16**, **MUSC-09**, **INSIGHTS-01**, **INSIGHTS-02**,
+**COLLIS-01**, **VIE-01**, **DOUL-01**, **REPAS-01** — et les **14 sections ajoutées le 06/08/2026**
+sauf une : **RUN-F1b, RUN-F2b, RUN-18, META-19, MUSC-F15, TRI-03, MN-04, MR-08, MUSC-12, MUSC-19,
+MUSC-20, NUTR-18, RN-03, GARDE-01** (calcul pur, `react-native-svg` déjà en place)
+(+ les 2 critères navigateur d'ADMIN-01 et CONTENU-01).
+
+✅ **Toutes les sync rules sont déployées au 06/08/2026** (voir le prérequis en tête, une case par
+collage) : le piège qui faisait échouer MESUR-01, STREAK-01 et OBJ-01 pour une raison étrangère à
+leur code n'existe plus.
+
+⚠️ **Les trois exceptions, qui exigent un APK précis** :
+- **MUSC-F9** — `expo-haptics` (01/08/2026) ;
+- **RUN-F2a** (§36) et **RUN-F2d** — `expo-speech` (02/08/2026) ;
+- **LAUNCHER-01** — `react-native-android-widget` (voir l'encadré dédié ci-dessous).
+
+Les quatre paquets sont bien déclarés dans [`apps/mobile/package.json`](apps/mobile/package.json), et
+le build du **03/08/2026** est postérieur aux trois premiers — il **devrait** donc tous les embarquer.
+🔴 **« Devrait » n'est pas « embarque »** : les APK ne sont pas versionnés, le dépôt ne peut pas le
+prouver. **Vérifie-le en 30 secondes avant de dérouler une liste** — une annonce audio qui sort
+(§36 critère 2) et une vibration au glisser-déposer suffisent. Sans ça, on recette dix critères contre
+un module absent, et l'échec est **silencieux**.
 
 **ADMIN-01 se recette au navigateur**, indépendamment du build.
 

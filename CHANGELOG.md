@@ -10,6 +10,72 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `docs/recettes-15-us-sans-criteres` — Les 15 US en recette sans critères (RECETTES.md §35-49)
+
+Commit précédent : `a4e8f42`. Ferme la dette 🔴 ouverte le matin même par la réconciliation :
+**49 US étaient à `etape: recette`, RECETTES.md n'avait que 34 sections**. Diff documentaire, aucun
+fichier de code touché. Lint **0**, typecheck **0**, **2 960 tests verts**.
+
+#### Ajouté
+
+- **15 sections de recette, §35 à §49** — RUN-F1b, RUN-F2a, RUN-F2b, RUN-18, META-19, MUSC-F15,
+  TRI-03, MN-04, MR-08, MUSC-12, MUSC-19, MUSC-20, NUTR-18, RN-03, GARDE-01. Ordre de livraison
+  (02 → 04/08), format des 34 existantes. **565 critères cochables** au total dans le fichier.
+  Vérifié par script : **49 US en recette ↔ 49 sections**, numérotation **1 → 49 continue et sans
+  doublon**, tous les liens relatifs résolvent.
+  Chaque section porte son en-tête de prérequis — spec, roadmap **ou** catalogue, migration, sync
+  rule, dépendance native — établi **contre le code et le registre des migrations**, pas contre les
+  specs seules.
+
+#### Corrigé
+
+- 🔴 **Cinq listes de critères étaient périmées, et c'est le vrai gain de l'exercice.**
+  **META-19, GARDE-01, TRI-03, MR-08 et RN-03** décrivaient tous « le widget s'affiche sur
+  l'accueil ». Or **INSIGHTS-02** (7.21, 05/08/2026) a ramené l'accueil de 21 à 7 widgets : leurs
+  signaux sont devenus des **cartes d'insight** sur l'écran Insights
+  ([widget-destinations.ts](packages/shared/src/widget-destinations.ts) — `training_load`,
+  `overtraining_guard`, `readiness`, `concurrent_interference`, `activity_level`).
+  Les recetter tels quels aurait produit **5 faux défauts**.
+- 🔴 **Et un piège plus fin, ajouté en encadré commun aux §35-49** : un signal **armé n'est pas
+  forcément affiché**. Le moteur plafonne à **3 cartes** (`MAX_INSIGHTS`) et **2 par famille**
+  (`MAX_PER_FAMILY`), et ces 5 signaux sont **tous de la famille `alert`** avec `deficit_volume` :
+  **au plus 2 coexistent**, dans l'ordre `overtraining_guard` › `training_load` › `readiness` ›
+  `concurrent_interference` › `deficit_volume` › `activity_level`. L'absence d'une carte moins
+  prioritaire est donc **le comportement voulu** — dit explicitement, avec la consigne d'isoler un
+  signal avant de le recetter.
+- **RN-03 est le seul des cinq mis en sourdine pendant une période « vie réelle »**
+  (`REAL_LIFE_MUTED_INSIGHTS`) : les 4 autres sont des garde-fous de charge, volontairement armés en
+  permanence. Le contraste est posé comme critère dans les deux sens (§48 pt 7 vs §39 pt 7) — c'est
+  exactement le genre d'asymétrie qu'un recetteur remonte à tort.
+- **§25 RUN-F2d — précision de build.** Sa spec dit « aucun nouveau build », vrai **relativement à
+  RUN-F2a**, mais [interval-guidance.ts](apps/mobile/src/running/interval-guidance.ts) importe bien
+  `expo-speech` : sur un APK antérieur au 02/08/2026 le guidage est **muet sans erreur**. La section
+  le dit désormais.
+- **Encadré « Comment procéder » refait.** Il annonçait « les dix US device » et ne listait plus la
+  moitié du fichier. Remplacé par la liste réelle des **20 + 14 US recettables sur l'APK existant**
+  et les **3 exceptions** qui exigent un APK précis : MUSC-F9 (`expo-haptics`), RUN-F2a **et
+  RUN-F2d** (`expo-speech`), LAUNCHER-01 (`react-native-android-widget`).
+  🔴 **Dit comme tel** : les 4 paquets sont bien dans
+  [package.json](apps/mobile/package.json) et le build du 03/08 leur est postérieur, donc il
+  **devrait** les embarquer — mais les APK ne sont pas versionnés, **le dépôt ne peut pas le
+  prouver**. D'où une vérification de 30 secondes à faire avant de dérouler une liste, plutôt qu'une
+  affirmation.
+
+#### Technique / Notes
+
+- **Méthode** : les critères viennent de la section « Critères d'acceptation » de chaque spec, mais
+  **relus contre le code du 06/08** — c'est cette relecture qui a trouvé les 5 périmés. Les listes
+  minces ont été complétées des vérifications transverses du fichier (mode avion, EN, TalkBack) et,
+  là où la spec le fondait, d'un critère d'interaction avec VIE-01. **Rien n'a été inventé** : aucun
+  critère ne porte sur un comportement que le code ne montre pas.
+- **GARDE-01 (§49) porte 16 critères** : sa liste consolidée remplace celles de TRI-12 (§8) et MR-14
+  (§11), passées à `close` — leurs critères décrivaient deux cartes et un masquage mutuel qui
+  n'existent plus. Deux critères sont explicitement marqués **« ne pas remonter comme un bug »** (pas
+  de compteur au niveau surcharge, carte encore visible le jour de repos en cours) : les deux sont
+  des décisions tracées, pas des défauts.
+- **Aucun front-matter d'US modifié** : les 15 restent à `etape: recette` — ce commit leur donne de
+  quoi être recettées, il ne les fait pas avancer. Rien à changer non plus à la roadmap ni au
+  catalogue.
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Aliments : propriété et snapshot du journal
 
 **26 tests** sur `food-repository`. Un aliment est partagé entre trois sources — la bibliothèque
