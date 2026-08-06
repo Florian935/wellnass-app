@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Aliments : propriété et snapshot du journal
+
+**26 tests** sur `food-repository`. Un aliment est partagé entre trois sources — la bibliothèque
+CIQUAL (lecture seule, commune à tous), les aliments perso, et les produits OpenFoodFacts
+importés — d'où deux invariants invisibles à l'écran.
+
+#### Ajouté
+
+- **`food-sql.test.ts` — 26 tests.**
+  - **🔴 Le journal garde son snapshot (spec §8).** Un test seed une entrée de journal, modifie
+    l'aliment (nom **et** kcal), et vérifie que l'entrée n'a pas bougé. Sans cette garantie,
+    corriger la fiche d'un aliment réécrirait **rétroactivement des mois d'historique
+    nutritionnel** — et personne ne s'en apercevrait, puisque les chiffres resteraient plausibles.
+    Idem à la suppression : l'aliment sort de la recherche, le repas reste au journal.
+  - **`owner_id` sépare « mon aliment » de « l'aliment de tout le monde ».** La bibliothèque a
+    `owner_id = NULL` ; un oubli à l'écriture ferait apparaître un aliment perso dans la
+    bibliothèque partagée, donc chez tous les utilisateurs après synchro. Testé sur les deux
+    chemins de création (perso et import OFF), plus `isEditableFood` — la bibliothèque doit rester
+    en lecture seule, sinon un utilisateur corrigerait l'aliment des autres.
+  - **La recherche par code-barres existe pour éviter les doublons au rescan** : si elle rate, la
+    base se remplit d'un produit de plus à chaque scan. Couvre le code rogné, le code vide (sortie
+    avant toute requête), l'inconnu, et le fait qu'un aliment **supprimé** ne remonte pas — il est
+    donc réimportable.
+  - Plus : les macros absentes valent `null` et non `0` à l'import OFF (« on ne sait pas » ≠ « 0 g »,
+    la nuance compte quand on additionne une journée), la gestion des traductions (mise à jour sans
+    doublon, création si la langue courante manque, pas de résurrection d'une traduction supprimée)
+    et les favoris (bascule réversible, aucune accumulation, pas de mélange entre aliments).
+
+#### Technique / Notes
+
+- Trois catégories inventées dans mes fixtures (`grains`, `sweets`) ont été rejetées par le
+  typecheck : l'énumération réelle est `starchy` / `other`. Corrigé — c'est le genre d'écart que
+  seul le type attrape, un test peut très bien passer au vert sur une valeur qui n'existe pas.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 943 (mobile) + 181 (admin) = 3 048 tests**. Mobile 26,4 % → **26,8 %** ;
+  `src/data/repositories` 36,8 % → **38,2 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Réglages : le repository à l'origine de tout le chantier
 
 **23 tests** sur `settings-repository` — celui dont une colonne manquante a produit le bug de la
