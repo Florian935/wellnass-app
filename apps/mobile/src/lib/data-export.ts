@@ -59,6 +59,11 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // US OBJ-01 — objectifs à échéance. Seuls la cible et le point de départ sont stockés : la
   // progression est dérivée, donc absente de l'export par construction (elle se recalcule).
   { table: 'personal_goals', col: 'user_id' },
+  // US VIE-01 — périodes « mode vie réelle ». Donnée personnelle déclarée par l'utilisateur et
+  // synchronisée : exportable. Elle est aussi ce qui **explique** une semaine creuse dans le reste de
+  // l'export (décision D2 : les jours restent dans les données, la période les annote) — l'omettre
+  // rendrait l'archive exacte mais illisible.
+  { table: 'real_life_periods', col: 'user_id' },
   // US CYCLE-01 — cycle menstruel. **Catégorie sensible au sens du RGPD** : l'omettre de l'export
   // ne serait pas une finition oubliée mais un manquement réglementaire. Les deux tables sont
   // exportées même quand le suivi a été désactivé sans suppression (R17 : « garder » est un choix

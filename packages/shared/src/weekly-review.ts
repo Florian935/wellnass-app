@@ -103,6 +103,20 @@ export type WeeklyReviewInput = {
   underworkedMuscle: string | null;
   /** Piliers activés — un pilier inactif ne produit ni chiffre ni signal (arbitrage H). */
   activePillars: { strength: boolean; running: boolean; nutrition: boolean };
+  /**
+   * US VIE-01 (R7) — nombre de jours de la semaine couverts par une période « mode vie réelle ».
+   *
+   * Deux usages, et le second est le moins évident : il **annote** le bilan (« 4 jours en mode vie
+   * réelle »), et dès qu'il est `> 0` il fait **taire les décisions de reproche** de `decide()`.
+   *
+   * Un décompte plutôt qu'un booléen, parce que l'annotation a besoin du nombre et qu'une période à
+   * cheval sur deux semaines en donne un différent de chaque côté.
+   *
+   * **Optionnel, défaut `0`** : sans lui, le bilan est **exactement** celui d'avant VIE-01. Le champ est
+   * additif comme `pausedDays` (streak) et `inRealLifePeriod` (insights) — un seul appelant réel
+   * (`weekly-review-repository`), et le critère de recette 12b vérifie qu'il est bien renseigné.
+   */
+  realLifeDays?: number;
 };
 
 /** Nature de la décision de la semaine. L'ordre du tableau **est** la priorité (D2). */
@@ -150,6 +164,13 @@ export type WeeklyReview = {
   isEmpty: boolean;
   /** La décision de la semaine. `null` **seulement** si la semaine est vide. */
   decision: ReviewDecision | null;
+  /**
+   * US VIE-01 (R7) — jours de cette semaine passés en « mode vie réelle ». `0` = aucune période.
+   *
+   * Reporté ici plutôt que recalculé par l'écran : c'est ce qui garantit que l'annotation affichée et
+   * le filtrage des reproches parlent **du même nombre**.
+   */
+  realLifeDays: number;
 };
 
 /** Vrai si la semaine ne contient aucune activité, tous piliers confondus. */
@@ -185,6 +206,17 @@ function mostBehindGoal(goals: ReadonlyArray<ReviewGoal>): { goal: ReviewGoal; g
 function decide(input: WeeklyReviewInput): ReviewDecision {
   const { current, previous, goals, underworkedMuscle, activePillars } = input;
 
+  // ── US VIE-01 (R7) : une semaine déclarée « vie réelle » ne reçoit aucun reproche ────────────────
+  // Quatre des six natures de décision ci-dessous **reprochent d'avoir fait moins**. Or faire moins est
+  // exactement ce que l'utilisateur a déclaré : sans ce garde, le bilan aurait titré « ton volume a
+  // chuté de 40 % » sur une semaine assumée, ce qui vidait toute l'US de son sens.
+  //
+  // 🔴 `goal_behind` n'en fait PAS partie, et c'est une décision, pas un oubli (VIE-01, D6) : une
+  // période ne décale **pas** une échéance. Masquer qu'un objectif décroche serait donc un piège —
+  // l'utilisateur découvrirait l'échec le jour de la deadline. Puisqu'on ne protège pas les objectifs,
+  // on ne cache pas qu'ils glissent. **Ne pas « corriger » cette asymétrie.**
+  const muteReproaches = (input.realLifeDays ?? 0) > 0;
+
   // 1. Un engagement pris par l'utilisateur lui-même, avec une échéance : rien de plus actionnable.
   const behind = mostBehindGoal(goals);
   if (behind !== null) {
@@ -201,7 +233,7 @@ function decide(input: WeeklyReviewInput): ReviewDecision {
   // 2. La régularité prime sur la performance : une semaine à 1 jour actif mérite d'être nommée
   //    avant un déséquilibre musculaire.
   const activeDrop = previous === null ? 0 : previous.activeDays - current.activeDays;
-  if (current.activeDays === 0 || activeDrop >= CONSISTENCY_DROP_DAYS) {
+  if (!muteReproaches && (current.activeDays === 0 || activeDrop >= CONSISTENCY_DROP_DAYS)) {
     return {
       kind: 'consistency_drop',
       metrics: {
@@ -212,7 +244,7 @@ function decide(input: WeeklyReviewInput): ReviewDecision {
   }
 
   // 3. Concret, corrigeable en une séance, et c'est ce qui cause les blessures.
-  if (activePillars.strength && underworkedMuscle !== null) {
+  if (!muteReproaches && activePillars.strength && underworkedMuscle !== null) {
     return {
       kind: 'muscle_imbalance',
       subject: underworkedMuscle,
@@ -221,7 +253,7 @@ function decide(input: WeeklyReviewInput): ReviewDecision {
   }
 
   // 4. Décrochage réel, mais moins urgent que l'absence de régularité.
-  if (previous !== null) {
+  if (!muteReproaches && previous !== null) {
     const tonnage = percentChange(current.tonnageKg, previous.tonnageKg);
     if (activePillars.strength && tonnage.pct !== null && tonnage.pct <= VOLUME_DROP_PCT) {
       return {
@@ -240,6 +272,7 @@ function decide(input: WeeklyReviewInput): ReviewDecision {
 
   // 5. Dernier rang, et c'est délibéré : on ne veut pas ouvrir chaque semaine sur l'alimentation.
   if (
+    !muteReproaches &&
     activePillars.nutrition &&
     current.daysInTarget !== null &&
     current.loggedDays > 0 &&
@@ -291,5 +324,6 @@ export function buildWeeklyReview(input: WeeklyReviewInput): WeeklyReview {
     isEmpty: empty,
     // Semaine vide → aucune décision : il n'y a rien à conseiller, et surtout rien à reprocher (D4).
     decision: empty ? null : decide(input),
+    realLifeDays: input.realLifeDays ?? 0,
   };
 }

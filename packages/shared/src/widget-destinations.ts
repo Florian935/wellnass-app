@@ -52,6 +52,32 @@ export const HOME_WIDGET_IDS_V1 = [
 
 export type HomeWidgetIdV1 = (typeof HOME_WIDGET_IDS_V1)[number];
 
+/**
+ * Widgets d'accueil **ajoutés après le dégonflage**, qui doivent eux aussi déclarer une destination.
+ *
+ * Liste séparée, et non un `+1` dans `HOME_WIDGET_IDS_V1` : celle-ci est un **snapshot figé** de
+ * l'état d'avant INSIGHTS-02 (21 entrées, figées par un test). Y ajouter une entrée née après
+ * réécrirait l'histoire et ferait mentir le décompte.
+ *
+ * La garantie que le test doit tenir n'est pas « tout le monde est dans V1 » mais « **tout widget
+ * d'accueil a une destination déclarée** ». C'est donc l'union des deux listes qui compte.
+ */
+export const HOME_WIDGET_IDS_POST_V1 = [
+  // US VIE-01 (roadmap 1.28) — mode « vie réelle ».
+  'real-life',
+] as const;
+
+/** Tout id d'accueil devant porter une destination : le snapshot figé **plus** les ajouts. */
+export type HomeWidgetIdWithDestination =
+  | HomeWidgetIdV1
+  | (typeof HOME_WIDGET_IDS_POST_V1)[number];
+
+/** L'union, pour les tests de cohérence et les dérivations. */
+export const HOME_WIDGET_IDS_WITH_DESTINATION: ReadonlyArray<HomeWidgetIdWithDestination> = [
+  ...HOME_WIDGET_IDS_V1,
+  ...HOME_WIDGET_IDS_POST_V1,
+];
+
 // ---------------------------------------------------------------------------
 // Les destinations
 // ---------------------------------------------------------------------------
@@ -80,7 +106,7 @@ export type WidgetDestination =
  * **aucun** autre point d'entrée — la notification hebdomadaire n'y mène pas, faute de handler de
  * réponse dans l'app.
  */
-export const WIDGET_DESTINATIONS: Record<HomeWidgetIdV1, WidgetDestination> = {
+export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDestination> = {
   // ── Conservés (7) ─────────────────────────────────────────────────────────
   'today-session': { kind: 'home' },
   'nutrition-summary': { kind: 'home' },
@@ -90,6 +116,10 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdV1, WidgetDestination> = {
   insights: { kind: 'home' },
   'activation-path': { kind: 'home' },
   cycle: { kind: 'home' },
+  // US VIE-01 — n'existait pas au dégonflage : c'est une entrée **ajoutée après**, pas un survivant.
+  // Elle reste sur l'accueil parce que son point d'entrée n'a de sens que là : on cherche « allège la
+  // semaine » au moment où la vie déborde, pas en parcourant les réglages.
+  'real-life': { kind: 'home' },
 
   // ── Devenus des cartes d'insight (6) ──────────────────────────────────────
   'deficit-volume': { kind: 'alert-insight', id: 'deficit_volume' },
@@ -154,9 +184,8 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdV1, WidgetDestination> = {
 };
 
 /** Les widgets conservés sur l'accueil, dérivés de la table (jamais recopiés à la main). */
-export const KEPT_ON_HOME: HomeWidgetIdV1[] = HOME_WIDGET_IDS_V1.filter(
-  (id) => WIDGET_DESTINATIONS[id].kind === 'home',
-);
+export const KEPT_ON_HOME: HomeWidgetIdWithDestination[] =
+  HOME_WIDGET_IDS_WITH_DESTINATION.filter((id) => WIDGET_DESTINATIONS[id].kind === 'home');
 
 /**
  * Les signaux dont la présence est **conditionnelle par nature** et qui peuvent donc légitimement

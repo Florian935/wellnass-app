@@ -94,6 +94,58 @@ export const STALE_AFTER_DAYS = 14;
 export const NOTABLE_CHANGE_PCT = 15;
 
 // ---------------------------------------------------------------------------
+// US VIE-01 — ce qui se tait pendant une période « vie réelle »
+// ---------------------------------------------------------------------------
+
+/**
+ * Signaux **toujours muets** pendant une période « vie réelle » (US VIE-01, règle R6).
+ *
+ * Nommés et exportés plutôt qu'enfouis dans une condition : la liste de ce qu'un mode fait taire est
+ * exactement le genre de décision qui doit se relire d'un coup d'œil en revue.
+ *
+ * Ce qu'ils ont en commun : ils **reprochent d'avoir fait moins**. Or faire moins est précisément ce
+ * que l'utilisateur vient de déclarer.
+ *  - `muscle_neglected` — un déséquilibre mesuré sur une ou deux séances n'est pas un déséquilibre ;
+ *  - `activity_level` — la suggestion apprendrait d'une fenêtre atypique et proposerait un réglage à
+ *    refaire au retour ;
+ *  - `deficit_volume` — naturellement silencieux puisque le déficit est suspendu (R4), coupé
+ *    **explicitement** plutôt que par effet de bord, pour que ça reste vrai si R4 évolue.
+ *
+ * ⚠️ **Les garde-fous de charge n'y sont PAS**, et c'est un choix explicite :
+ * `overtraining_guard`, `training_load`, `readiness` et `concurrent_interference` restent armés en
+ * permanence. IDEAS.md (25/07/2026) en fait un principe transverse — « ne pas laisser désactiver les
+ * garde-fous de sécurité » — et ils se déclenchent sur l'**excès** : les couper serait inutile *et*
+ * dangereux, notamment pour quelqu'un qui rattrape trop fort au retour.
+ */
+export const REAL_LIFE_MUTED_INSIGHTS: ReadonlyArray<InsightId> = [
+  'muscle_neglected',
+  'activity_level',
+  'deficit_volume',
+];
+
+/**
+ * Signaux muets pendant une période **uniquement quand ils vont à la baisse** (US VIE-01, R6).
+ *
+ * « Ton tonnage a chuté de 41 % » est le reproche type ; « ton tonnage a augmenté de 20 % » pendant une
+ * semaine allégée est une vraie bonne nouvelle, et la taire serait absurde.
+ *
+ * ⚠️ Le sens **n'est pas lisible dans `metrics`** : `insight-adapters` y range `Math.abs(change.pct)`
+ * et met la direction dans `variant`. Filtrer sur le signe d'une métrique n'aurait donc jamais rien
+ * muté — le piège est réel, d'où ce commentaire.
+ */
+export const REAL_LIFE_MUTED_WHEN_DOWN: ReadonlyArray<InsightId> = [
+  'tonnage_change',
+  'distance_change',
+];
+
+/** Vrai si le candidat doit se taire parce qu'une période « vie réelle » court (R6). */
+export function isMutedByRealLife(candidate: InsightCandidate): boolean {
+  if (REAL_LIFE_MUTED_INSIGHTS.includes(candidate.id)) return true;
+  if (REAL_LIFE_MUTED_WHEN_DOWN.includes(candidate.id)) return candidate.variant === 'down';
+  return false;
+}
+
+// ---------------------------------------------------------------------------
 // Le candidat
 // ---------------------------------------------------------------------------
 
@@ -179,15 +231,20 @@ export function selectInsights(input: {
   candidates: ReadonlyArray<InsightCandidate>;
   activePillars: ReadonlyArray<Pillar>;
   todayKey: string;
+  /** US VIE-01 : une période « vie réelle » court-elle aujourd'hui ? Défaut `false` — sans mode déclaré, la sélection est **exactement** celle d'avant. */
+  inRealLifePeriod?: boolean;
 }): SelectedInsight[] {
-  const { candidates, activePillars, todayKey } = input;
+  const { candidates, activePillars, todayKey, inRealLifePeriod = false } = input;
 
   const eligible = candidates.filter(
     (c) =>
       orderIndex(c.id) !== -1 &&
       hasUsableMetrics(c.metrics) &&
       isPillarActive(c, activePillars) &&
-      !isStale(c.occurredOn, todayKey),
+      !isStale(c.occurredOn, todayKey) &&
+      // US VIE-01 (R6) : les signaux qui reprochent d'avoir fait moins se taisent pendant une période
+      // déclarée. Les garde-fous de charge, eux, ne sont jamais filtrés ici.
+      !(inRealLifePeriod && isMutedByRealLife(c)),
   );
 
   // Tri par priorité déclarée. `toSorted` n'est pas utilisé : la cible Hermes du bundle mobile ne

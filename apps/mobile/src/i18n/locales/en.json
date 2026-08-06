@@ -2127,6 +2127,44 @@
     "a11yKindTab": "Show chart: {{kind}}",
     "closeSheet": "Close entry form"
   },
+  "realLife": {
+    "title": "Real-life mode",
+    "cta": "Life getting in the way? Ease the week",
+    "intro": "We lower your targets for as long as you need. Nothing is lost, nothing is reset.",
+    "duration": {
+      "label": "For how long?",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
+    },
+    "startedOn": "Starting when?",
+    "startToday": "Today",
+    "startDaysAgo": "{{count}} days ago",
+    "retroHint": "You can declare a period that started up to {{count}} days ago.",
+    "close": "Close",
+    "submit": "Ease the week",
+    "activeUntil": "Eased week until {{date}}",
+    "remaining_one": "{{count}} day left",
+    "remaining_other": "{{count}} days left",
+    "lastDay": "Last day",
+    "targets": {
+      "label": "This week, aim for",
+      "strength_one": "{{count}} session",
+      "strength_other": "{{count}} sessions",
+      "running": "1 run, however you like",
+      "nutrition": "Protein on track: {{grams}} g"
+    },
+    "caloriesMaintain": "Target set to maintenance for this period",
+    "streakPaused": "Streak paused",
+    "extend": "Extend",
+    "stop": "Back to the normal plan",
+    "reviewAnnotation_one": "{{count}} day in real-life mode",
+    "reviewAnnotation_other": "{{count}} days in real-life mode",
+    "errors": {
+      "ends_before_start": "The end date comes before the start date.",
+      "backdated_too_far": "You can't go back further than {{count}} days.",
+      "failed": "The period couldn't be saved. Please try again."
+    }
+  },
   "goals": {
     "title": "Goals",
     "cta": "New goal",

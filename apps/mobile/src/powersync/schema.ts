@@ -677,6 +677,26 @@ const personal_goals = new Table({
   deleted_at: column.text,
 });
 
+// ── US VIE-01 : périodes « mode vie réelle » ───────────────────────────────
+// Migrations : supabase/migrations/20260805140000_vie01_real_life_periods.sql
+//              + 20260805140001_vie01_real_life_periods_publication.sql
+// Même patron dérivé qu'`personal_goals` juste au-dessus : la ligne ne porte **que** son intervalle
+// `[started_on, ends_on]` (bornes INCLUSES), et tout le reste — période active, jours restants, jours
+// en pause, cibles abaissées — est recalculé par `@wellness/shared` (`real-life.ts`). Donc rien à
+// écrire pour lire, donc ça marche hors ligne.
+// ⚠️ « Arrêter maintenant » pose `ends_on = aujourd'hui`, ce n'est **pas** un soft delete : la
+// période doit continuer d'annoter les analyses passées (décision D2).
+// ⚠️ **Pas de colonne « motif »** : ce serait une donnée de santé, et elle rouvrirait la déclaration
+// Google Play « Health apps ». Voir la migration pour le raisonnement complet.
+const real_life_periods = new Table({
+  user_id: column.text,
+  started_on: column.text,
+  ends_on: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -727,6 +747,7 @@ export const AppSchema = new Schema({
   body_measurements,
   streak_jokers,
   personal_goals,
+  real_life_periods,
   exercises,
   exercise_translations,
   exercise_favorites,

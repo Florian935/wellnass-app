@@ -25,6 +25,7 @@ import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
 import {
   activeDayKeys,
+  addDays,
   averageIntake,
   classifyLoadComponent,
   classifyNutritionComponent,
@@ -44,12 +45,20 @@ import {
   findRestorableGap,
   computeTrainingTime,
   dayCalorieBonus,
+  defaultMacroRatios,
+  effectiveNutritionObjective,
   estimateRunCalories,
+  isRealLifeDay,
   isTrainingDay as computeIsTrainingDay,
+  localDateFromDayKey,
   localDayKey,
   localMidnightDaysAgo,
+  macroGramsFromCalories,
+  minimalWeekTargets,
+  type MinimalWeekTargets,
   objectiveFromGoal,
   resolveActivePillars,
+  startOfWeek,
   ROLLING_WEEK_DAYS,
   sessionLoad,
   stepsActiveDays,
@@ -77,6 +86,11 @@ import { useDailyTotals } from './journal-repository';
 import { useDailySteps, useStepGoal } from './daily-steps-repository';
 import { useWellbeingRows } from './daily-wellbeing-repository';
 import { useJokerDays } from './streak-joker-repository';
+import {
+  SELECT_WEEK_STRENGTH_SESSIONS,
+  useRealLifePeriods,
+  useRealLifeState,
+} from './real-life-repository';
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
@@ -375,6 +389,11 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
   const { isTrainingDay: trainedThatDay, isLoading: trainingLoading } = useIsTrainingDay(dayKey);
   const { settings } = useSettings();
   const { runs, isLoading: runsLoading } = useRunHistory();
+  // US VIE-01 : on lit l'appartenance du **jour demandé** à une période, pas celle d'aujourd'hui —
+  // ce hook sert aussi à des jours passés (adhérence NUTR-10, bilan calorique NUTR-18), et une cible
+  // rétroactive doit refléter ce qui était demandé CE jour-là.
+  const { periods } = useRealLifePeriods();
+  const inRealLifePeriod = isRealLifeDay(periods, dayKey);
 
   const isLoading = nutritionLoading || profileLoading || weightLoading || trainingLoading || runsLoading;
 
@@ -389,9 +408,16 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
     age,
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
+  // US VIE-01 (R4) : pendant une période « vie réelle », l'objectif retombe au maintien — le déficit
+  // comme le surplus. C'est bien la **cible du jour** ici, donc la règle s'applique (l'écran de
+  // réglage de l'objectif, lui, en est exclu : voir `nutrition-profile.tsx`).
   const target =
     tdeeValue != null && objective != null
-      ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
+      ? targetCalories(
+          tdeeValue,
+          effectiveNutritionObjective(objective, inRealLifePeriod),
+          nutritionProfile?.manualCalories ?? null,
+        )
       : null;
 
   // --- Bonus du jour (RN-02) : mode forfait / auto + dépense des courses ---
@@ -558,6 +584,8 @@ export function useStreakData(windowDays = 30): StreakData {
   const { goal: stepGoal, isLoading: goalLoading } = useStepGoal();
   // US STREAK-01 — les jours couverts par un joker comptent dans la série, et **seulement** là.
   const { days: jokerDayList, isLoading: jokersLoading } = useJokerDays();
+  // US VIE-01 — les jours en période « vie réelle » sont *traversés* par la série, pas comptés.
+  const { pausedDays, isLoading: realLifeLoading } = useRealLifeState();
 
   const isLoading =
     workoutsLoading ||
@@ -565,7 +593,8 @@ export function useStreakData(windowDays = 30): StreakData {
     totalsLoading ||
     stepsLoading ||
     goalLoading ||
-    jokersLoading;
+    jokersLoading ||
+    realLifeLoading;
 
   const today = useTodayDate();
   const todayKey = useTodayKey();
@@ -611,10 +640,13 @@ export function useStreakData(windowDays = 30): StreakData {
     const activities = [...map.values()];
     const activeDays = activeDayKeys(activities);
     const jokerDays = new Set(jokerDayList);
-    const streak = computeStreakWithJokers(activeDays, jokerDays, todayKey);
+    // US VIE-01 (R5) : un jour en période et **inactif** est transparent — la série le traverse sans
+    // le compter. Ni cassée, ni allongée. Un jour en période où l'on s'est entraîné compte normalement.
+    const streak = computeStreakWithJokers(activeDays, jokerDays, todayKey, pausedDays);
     // Trou rattrapable : un seul jour manqué, récent, avec un joker encore disponible. `null` la
     // plupart du temps — c'est ce qui fait qu'on ne propose rien quand il n'y a rien à réparer.
-    const restorableGap = findRestorableGap({ activeDays, jokerDays, todayKey });
+    // `pausedDays` évite de brûler le joker du mois sur un jour que la période protège déjà.
+    const restorableGap = findRestorableGap({ activeDays, jokerDays, todayKey, pausedDays });
 
     // Semaine courante lundi → dimanche (heure locale)
     const todayObj = new Date(todayKey + 'T00:00:00');
@@ -635,7 +667,7 @@ export function useStreakData(windowDays = 30): StreakData {
     });
 
     return { streak, last7, restorableGap };
-  }, [workouts, runs, totals, stepRows, stepGoal, jokerDayList, todayKey]);
+  }, [workouts, runs, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays]);
 
   return {
     current: streak.current,
@@ -644,6 +676,54 @@ export function useStreakData(windowDays = 30): StreakData {
     restorableGap,
     isLoading,
   };
+}
+
+// ---------------------------------------------------------------------------
+// useMinimalWeekTargets — US VIE-01 (R3)
+// ---------------------------------------------------------------------------
+
+/**
+ * L'objectif de semaine minimal affiché pendant une période « vie réelle » (règle R3).
+ *
+ * ── Pourquoi ce hook vit ICI et pas dans `real-life-repository` ────────────────────────────────────
+ * Il a besoin de la chaîne nutrition (`useDayCalorieTarget`), qui vit dans ce fichier. L'écrire dans
+ * `real-life-repository` aurait créé un **import circulaire** : ce fichier l'importe déjà pour lire
+ * les périodes. Le placer ici évite le cycle **et** une cinquième copie de la chaîne TDEE → objectif
+ * → macros.
+ *
+ * Les cibles sont **dérivées du plan réel**, jamais inventées : la moitié des séances effectivement
+ * planifiées cette semaine (plancher à 1), une sortie libre, et la cible protéines telle quelle.
+ */
+export function useMinimalWeekTargets(): MinimalWeekTargets {
+  const { settings } = useSettings();
+  const { nutritionProfile } = useNutritionProfile();
+  const todayKey = useTodayKey();
+
+  const weekStart = localDayKey(startOfWeek(localDateFromDayKey(todayKey)));
+  const weekEnd = localDayKey(addDays(localDateFromDayKey(weekStart), 6));
+  const { data } = useQuery<{ n: number }>(SELECT_WEEK_STRENGTH_SESSIONS, [weekStart, weekEnd]);
+
+  const { effectiveTarget } = useDayCalorieTarget(todayKey);
+  const objective = nutritionProfile?.objective ?? null;
+  // La saisie manuelle prime, sinon la cible dérivée du jour. `null` si le profil est incomplet — on
+  // n'invente pas un chiffre (cas limite de la spec §5).
+  const proteinTargetG =
+    nutritionProfile?.manualProteinG ??
+    (effectiveTarget != null && objective != null
+      ? macroGramsFromCalories(effectiveTarget, defaultMacroRatios(objective)).protein
+      : null);
+
+  const active = resolveActivePillars(settings?.activePillars);
+
+  return minimalWeekTargets({
+    activePillars: {
+      strength: active.includes('strength'),
+      running: active.includes('running'),
+      nutrition: active.includes('nutrition'),
+    },
+    habitualStrengthSessions: data[0]?.n ?? 0,
+    proteinTargetG,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1329,6 +1409,9 @@ export function useGoalAdherenceForRange(
   const totals = toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey);
   const { workouts, isLoading: wLoading } = useWorkoutHistory();
   const { runs, isLoading: rLoading } = useRunHistory();
+  // US VIE-01 : l'appartenance est évaluée **par jour** dans `targetBaseFor` — la plage peut mêler
+  // jours en période et jours normaux.
+  const { periods } = useRealLifePeriods();
 
   const isLoading =
     nutriLoading || profileLoading || weightLoading || totalsLoading || wLoading || rLoading;
@@ -1343,9 +1426,20 @@ export function useGoalAdherenceForRange(
     age,
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
-  const targetBase =
+  // US VIE-01 (R4) : la cible de base devient une **fonction du jour**.
+  //
+  // Elle était calculée une seule fois pour toute la plage, ce qui ne pouvait plus marcher : une
+  // fenêtre de 30 jours peut contenir des jours en période « vie réelle » (objectif au maintien) et
+  // d'autres non (objectif réel). Une cible unique aurait faussé l'adhérence (NUTR-10) et le bilan
+  // calorique (NUTR-18) sur toute la fenêtre, pas seulement sur les jours concernés.
+  const hasTarget = tdeeValue != null && objective != null;
+  const targetBaseFor = (dayKey: string): number | null =>
     tdeeValue != null && objective != null
-      ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
+      ? targetCalories(
+          tdeeValue,
+          effectiveNutritionObjective(objective, isRealLifeDay(periods, dayKey)),
+          nutritionProfile?.manualCalories ?? null,
+        )
       : null;
 
   const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
@@ -1375,19 +1469,22 @@ export function useGoalAdherenceForRange(
     }
   }
 
-  const perDay = totals.map((d) => ({
-    kcal: d.kcal,
-    effectiveTarget:
-      targetBase == null
-        ? null
-        : computeEffectiveTargetForDay({
-            targetBase,
-            mode,
-            fixedBonus,
-            isTrainingDay: trainedDays.has(d.logDate),
-            runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
-          }),
-  }));
+  const perDay = totals.map((d) => {
+    const targetBase = targetBaseFor(d.logDate);
+    return {
+      kcal: d.kcal,
+      effectiveTarget:
+        targetBase == null
+          ? null
+          : computeEffectiveTargetForDay({
+              targetBase,
+              mode,
+              fixedBonus,
+              isTrainingDay: trainedDays.has(d.logDate),
+              runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
+            }),
+    };
+  });
 
   const { loggedDays, daysInTarget, pct } = computeGoalAdherence(perDay, marginPct);
   const { balanceKcal, daysAbove, daysBelow } = computeCaloricBalance(perDay);
@@ -1396,7 +1493,7 @@ export function useGoalAdherenceForRange(
     daysInTarget,
     pct,
     marginPct,
-    hasTarget: targetBase != null,
+    hasTarget,
     isLoading,
     balanceKcal,
     daysAbove,

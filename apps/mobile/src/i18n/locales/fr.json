@@ -2127,6 +2127,44 @@
     "a11yKindTab": "Afficher la courbe : {{kind}}",
     "closeSheet": "Fermer la saisie"
   },
+  "realLife": {
+    "title": "Mode vie réelle",
+    "cta": "Ça se complique ? Allège la semaine",
+    "intro": "On abaisse les objectifs le temps qu'il faut. Rien n'est perdu, rien n'est remis à zéro.",
+    "duration": {
+      "label": "Combien de temps ?",
+      "days_one": "{{count}} jour",
+      "days_other": "{{count}} jours"
+    },
+    "startedOn": "À partir de quand ?",
+    "startToday": "Aujourd'hui",
+    "startDaysAgo": "Il y a {{count}} jours",
+    "retroHint": "Tu peux déclarer une période commencée il y a jusqu'à {{count}} jours.",
+    "close": "Fermer",
+    "submit": "Alléger la semaine",
+    "activeUntil": "Semaine allégée jusqu'au {{date}}",
+    "remaining_one": "Encore {{count}} jour",
+    "remaining_other": "Encore {{count}} jours",
+    "lastDay": "Dernier jour",
+    "targets": {
+      "label": "Cette semaine, on vise",
+      "strength_one": "{{count}} séance",
+      "strength_other": "{{count}} séances",
+      "running": "1 sortie, comme tu veux",
+      "nutrition": "Protéines tenues : {{grams}} g"
+    },
+    "caloriesMaintain": "Objectif au maintien pendant cette période",
+    "streakPaused": "Série en pause",
+    "extend": "Prolonger",
+    "stop": "Reprendre le plan normal",
+    "reviewAnnotation_one": "{{count}} jour en mode vie réelle",
+    "reviewAnnotation_other": "{{count}} jours en mode vie réelle",
+    "errors": {
+      "ends_before_start": "La date de fin arrive avant la date de début.",
+      "backdated_too_far": "Tu ne peux pas remonter au-delà de {{count}} jours.",
+      "failed": "La période n'a pas pu être enregistrée. Réessaie."
+    }
+  },
   "goals": {
     "title": "Objectifs",
     "cta": "Nouvel objectif",

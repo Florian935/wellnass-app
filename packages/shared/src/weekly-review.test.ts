@@ -286,3 +286,78 @@ describe('contrat « aucune narration sans chiffres »', () => {
     expect(kinds).toEqual([...SIGNAL_ORDER]);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// US VIE-01 — une semaine « vie réelle » ne reçoit aucun reproche (R7)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('mode vie réelle (US VIE-01)', () => {
+  /** Semaine effondrée : sans période, elle déclencherait `consistency_drop`. */
+  const collapsed = week({
+    workouts: 1, tonnageKg: 1_000, runs: 0, distanceM: 0,
+    loggedDays: 2, daysInTarget: 0, activeDays: 1,
+  });
+
+  it('sans le champ, le bilan est INCHANGÉ (rétrocompatible)', () => {
+    // Les appelants qui ne connaissent pas les périodes obtiennent exactement le bilan d'avant.
+    const r = buildWeeklyReview(input({ current: collapsed }));
+    expect(r.decision?.kind).toBe('consistency_drop');
+    expect(r.realLifeDays).toBe(0);
+  });
+
+  it('reporte le décompte de jours pour que l’écran l’affiche', () => {
+    expect(buildWeeklyReview(input({ realLifeDays: 4 })).realLifeDays).toBe(4);
+  });
+
+  it('fait taire consistency_drop et retombe sur all_good', () => {
+    const r = buildWeeklyReview(input({ current: collapsed, realLifeDays: 4 }));
+    expect(r.decision?.kind).toBe('all_good');
+  });
+
+  it('fait taire volume_drop', () => {
+    const dropped = week({ tonnageKg: 3_000, activeDays: 5 });
+    const base = input({ current: dropped, previous: week({ tonnageKg: 12_000 }) });
+    expect(buildWeeklyReview(base).decision?.kind).toBe('volume_drop');
+    expect(buildWeeklyReview({ ...base, realLifeDays: 3 }).decision?.kind).toBe('all_good');
+  });
+
+  it('fait taire muscle_imbalance', () => {
+    const base = input({ underworkedMuscle: 'back' });
+    expect(buildWeeklyReview(base).decision?.kind).toBe('muscle_imbalance');
+    expect(buildWeeklyReview({ ...base, realLifeDays: 2 }).decision?.kind).toBe('all_good');
+  });
+
+  it('fait taire nutrition_drift', () => {
+    const drifting = week({ loggedDays: 6, daysInTarget: 1 });
+    const base = input({ current: drifting });
+    expect(buildWeeklyReview(base).decision?.kind).toBe('nutrition_drift');
+    expect(buildWeeklyReview({ ...base, realLifeDays: 5 }).decision?.kind).toBe('all_good');
+  });
+
+  it('🔴 CONSERVE goal_behind — décision D6, pas un oubli', () => {
+    // Une période ne décale PAS une échéance : masquer qu'un objectif décroche serait un piège, et
+    // l'utilisateur découvrirait l'échec le jour de la deadline. Ne pas « corriger » cette asymétrie.
+    const behind: ReviewGoal = {
+      id: 'g1', label: '10 km en 50 min', ratio: 0.38, elapsedRatio: 0.8,
+    };
+    const r = buildWeeklyReview(input({ goals: [behind], realLifeDays: 6 }));
+    expect(r.decision?.kind).toBe('goal_behind');
+  });
+
+  it('un seul jour de période suffit à faire taire les reproches', () => {
+    // Le seuil est `> 0`, volontairement : un jour déclaré est un jour déclaré.
+    const r = buildWeeklyReview(input({ current: collapsed, realLifeDays: 1 }));
+    expect(r.decision?.kind).toBe('all_good');
+  });
+
+  it('une semaine VIDE reste sans décision, période ou pas', () => {
+    const emptyWeek = week({
+      workouts: 0, tonnageKg: 0, runs: 0, distanceM: 0,
+      loggedDays: 0, daysInTarget: 0, activeDays: 0,
+    });
+    const r = buildWeeklyReview(input({ current: emptyWeek, realLifeDays: 7 }));
+    expect(r.isEmpty).toBe(true);
+    expect(r.decision).toBeNull();
+    expect(r.realLifeDays).toBe(7);
+  });
+});

@@ -24,6 +24,7 @@ import {
   resolveMealConfig,
   resolveMealSplit,
   suggestActivityLevel,
+  effectiveNutritionObjective,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -180,6 +181,39 @@ describe('targetCalories', () => {
 
   it('ne descend jamais sous zéro', () => {
     expect(targetCalories(100, 'cut')).toBe(0);
+  });
+});
+
+describe('effectiveNutritionObjective (US VIE-01, R4)', () => {
+  it('laisse l’objectif intact hors période', () => {
+    expect(effectiveNutritionObjective('cut', false)).toBe('cut');
+    expect(effectiveNutritionObjective('bulk', false)).toBe('bulk');
+    expect(effectiveNutritionObjective('weightloss', false)).toBe('weightloss');
+  });
+
+  it('neutralise le déficit pendant une période', () => {
+    expect(effectiveNutritionObjective('cut', true)).toBe('maintain');
+    expect(effectiveNutritionObjective('weightloss', true)).toBe('maintain');
+  });
+
+  it('neutralise AUSSI le surplus — un bulk sans entraînement n’est pas une prise de masse', () => {
+    expect(effectiveNutritionObjective('bulk', true)).toBe('maintain');
+  });
+
+  it('laisse `maintain` inchangé', () => {
+    expect(effectiveNutritionObjective('maintain', true)).toBe('maintain');
+  });
+
+  it('composée avec targetCalories : le cut remonte au TDEE', () => {
+    // Le chiffre que la recette vérifiera sur device (critère 5) : delta `cut` = −400.
+    const tdeeValue = 2250;
+    expect(targetCalories(tdeeValue, effectiveNutritionObjective('cut', false))).toBe(1850);
+    expect(targetCalories(tdeeValue, effectiveNutritionObjective('cut', true))).toBe(2250);
+  });
+
+  it('composée avec targetCalories : la surcharge manuelle prime TOUJOURS', () => {
+    // Aucune ligne de plus n'a été nécessaire : c'est déjà le contrat de `targetCalories`.
+    expect(targetCalories(2250, effectiveNutritionObjective('cut', true), 1800)).toBe(1800);
   });
 });
 

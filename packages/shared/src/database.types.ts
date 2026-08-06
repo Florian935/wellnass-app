@@ -1564,6 +1564,44 @@ export type Database = {
           },
         ]
       }
+      real_life_periods: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          ends_on: string
+          id: string
+          started_on: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          ends_on: string
+          id: string
+          started_on: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          ends_on?: string
+          id?: string
+          started_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "real_life_periods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipe_ingredients: {
         Row: {
           carbs_g: number

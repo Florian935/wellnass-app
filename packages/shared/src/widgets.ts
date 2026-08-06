@@ -48,8 +48,10 @@ export const HOME_WIDGET_IDS = [
   // possible, mais impose de modifier ce test — donc d'en faire un arbitrage conscient, ce que
   // l'ADR demandait depuis le 16/07/2026 sans disposer du moyen de l'imposer.
   //
-  // Les 4 premiers sont **permanents**, les 3 derniers ne s'affichent jamais tous ensemble par
-  // défaut : le compte **visible** reste donc dans la fourchette 4-6 de l'ADR.
+  // Les 4 premiers sont **permanents** ; parmi les 4 derniers, `insights`, `activation-path` et
+  // `cycle` ne s'affichent jamais tous ensemble par défaut. Le compte **visible** typique est donc de
+  // 5 (les 4 permanents + `real-life`) à 6 (quand `insights` a quelque chose à dire) — dans la
+  // fourchette 4-6 de l'ADR.
   'today-session',
   'nutrition-summary',
   'streak',
@@ -60,6 +62,10 @@ export const HOME_WIDGET_IDS = [
   'insights',
   // Conditionnel et temporaire : 7 jours après l'onboarding (US ACTIV-01).
   'activation-path',
+  // Conditionnel : la carte de période « vie réelle », **plus** son point d'entrée hors période
+  // (US VIE-01). Un seul id pour les deux états — deux widgets auraient regonflé le registre que
+  // INSIGHTS-02 vient de dégonfler, alors qu'ils ne s'affichent jamais ensemble.
+  'real-life',
   // Gardé par un réglage, invisible par défaut : opt-in strict sur une donnée de santé (CYCLE-01).
   'cycle',
 ] as const;
@@ -104,8 +110,25 @@ export const RUNNING_WIDGET_IDS = [
  * ⚠️ **Le dépasser reste possible — mais il faut modifier le test.** C'est exactement ce que l'ADR
  * demandait depuis le 16/07/2026 (« ajouter un widget **coûte** un arbitrage, pas un simple `+1` »)
  * sans jamais disposer du moyen de l'imposer. Le registre avait atteint **21**.
+ *
+ * ── 7 → 8 le 05/08/2026 (US VIE-01) : le premier arbitrage que ce cliquet a provoqué ──────────────
+ * Le cliquet a fonctionné comme prévu : ajouter `real-life` a **cassé la CI**, ce qui a forcé la
+ * décision au lieu de la laisser passer en `+1` silencieux. Le raisonnement, pour qu'il soit
+ * relisible :
+ *
+ *  - le plafond de l'ADR porte sur les widgets **visibles**, pas sur les entrées **déclarées** ;
+ *  - `real-life` porte **deux états dans un seul id** (point d'entrée hors période, carte active
+ *    pendant) — deux ids auraient consommé deux places pour deux affichages mutuellement exclusifs ;
+ *  - compte visible réel : **4 permanents + `real-life` = 5**, et **6** quand `insights` a quelque
+ *    chose à dire. On reste donc **dans la fourchette 4-6** de l'ADR.
+ *
+ * 🟠 **À confirmer par Florian/Damien** : c'est un arbitrage de charte d'accueil, et INSIGHTS-02
+ * vient tout juste de ramener le registre de 21 à 7. Si la réponse est non, le repli est de rendre
+ * `real-life` **conditionnel** (visible seulement pendant une période) et de déplacer son point
+ * d'entrée — au prix de la découvrabilité, qui est pourtant tout l'enjeu d'une fonctionnalité qu'on
+ * cherche au moment où la vie déborde.
  */
-export const MAX_HOME_WIDGETS = 7;
+export const MAX_HOME_WIDGETS = 8;
 
 export type HomeWidgetId = (typeof HOME_WIDGET_IDS)[number];
 export type StrengthWidgetId = (typeof STRENGTH_WIDGET_IDS)[number];
@@ -175,6 +198,9 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // lui-même le gating candidat par candidat (spec R5). Une garde par pilier ici masquerait la
       // porte d'entrée à un mono-pilier qui a pourtant des insights.
       insights: 'always',
+      // US VIE-01 : transverse — la vie prend le dessus quels que soient les piliers activés, et
+      // l'objectif de semaine minimal n'affiche de toute façon que les piliers actifs (règle R3).
+      'real-life': 'always',
     },
     defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
   },

@@ -10,6 +10,102 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `feature/vie01-mode-vie-reelle` — Mode « vie réelle », dégradation gracieuse (roadmap 1.28)
+
+Suite de `a06e406`. En **un tap**, l'utilisateur déclare une période où la vie prend le dessus
+(vacances, maladie, déplacement) : l'app **abaisse ce qu'elle demande** puis **reprend le plan normal
+toute seule, sans reset**. Idée promue depuis IDEAS.md (25/07), portée par **3 modèles sur 4** du
+benchmark et désignée **cause n°1 d'abandon à 3-6 semaines**. Sa fiche annonçait « cadrage **après**
+le détecteur de collisions, les deux partagent le même moteur de règles » — COLLIS-01 étant livrée la
+veille, c'était son tour.
+
+**2 885 tests** (1 880 shared, 824 mobile `+12`, 181 admin), typecheck et lint à **0 erreur**.
+
+**4 arbitrages Florian, acquis avant rédaction** : (D1) on fléchit **les cibles, pas le programme** ·
+(D2) les analyses **restent vraies et sont annotées**, jamais amputées · (D3) **durée choisie**
+(3/7/14 j), sortie automatique · (D4) la série est **mise en pause**, ni cassée ni allongée.
+**2 décisions de cadrage** validées : rétro-déclaration bornée à 7 j (D5) et **aucun effet sur les
+échéances d'OBJ-01** (D6).
+
+#### Ajouté
+
+- **`packages/shared/src/real-life.ts`** — le moteur pur, 8 fonctions, **38 tests**. Aucune lecture
+  d'horloge (`todayKey` en paramètre, patron `session-conflicts`). `REAL_LIFE_MAX_BACKDATE_DAYS`
+  **réutilise littéralement** `JOKER_MAX_AGE_DAYS` : STREAK-01 avait déjà arbitré la même question,
+  deux constantes à 7 auraient divergé au premier ajustement.
+- **Table `real_life_periods`** (2 migrations, poussées le 05/08) + sync rule + déclaration dans
+  `powersync/schema.ts` + export RGPD. **Aucune contrainte de plage en base, délibérément** (patron
+  REPAS-01 D6 : une violation bloquerait la file d'upload PowerSync) — la lecture absorbe un
+  chevauchement en prenant l'**union** des jours.
+- **`real-life-repository.ts`** + **12 tests SQL** sur le harness SQLite. Ces tests existent pour une
+  raison : le harness génère son DDL depuis `powersync/schema.ts`, donc une écriture-relecture qui
+  passe **prouve** que la table y est — la panne exacte de CYCLE-01.
+- **UI** : `RealLifeSheet` (déclaration) et `RealLifeCard` (**deux états dans un seul id**). **Aucune
+  dépendance native, aucun sélecteur de date** — patron `GoalFormSheet`, ce qui préserve la promesse
+  « recettable sur l'APK existant ».
+- **30 clés i18n × FR/EN**, parité vérifiée par script.
+
+#### Modifié
+
+- **`streak-joker.ts`** — 3ᵉ état de jour : un jour en période **et inactif** est **transparent**
+  (traversé, non compté) ; un jour en période où l'on s'est entraîné **compte**. ⚠️ Le point délicat
+  était la **condition de sortie de boucle** : avec `while (counts(cursor))` la série s'arrêtait au
+  premier jour transparent et la fonctionnalité **ne faisait rien, en silence**. Un test fige le cas
+  (« période au milieu de la série »).
+- **`insights.ts`** — `REAL_LIFE_MUTED_INSIGHTS` + muets **à la baisse seulement** pour
+  `tonnage_change`/`distance_change`. ⚠️ Le sens n'est **pas** dans `metrics` (`Math.abs(pct)`) mais
+  dans `variant` : un filtre sur le signe d'une métrique n'aurait jamais rien mué. Les garde-fous de
+  charge ne sont **jamais** filtrés.
+- **`weekly-review.ts`** — `decide()` saute 4 des 6 natures de décision pendant une période.
+  🔴 **`goal_behind` est CONSERVÉ**, conséquence directe de D6 : puisqu'une période ne décale pas une
+  échéance, masquer qu'un objectif décroche serait un piège. Un test le fige, motif en commentaire.
+- **`nutrition.ts`** — `effectiveNutritionObjective`, neutralisant le delta **dans les deux sens**
+  (un surplus pris sans s'entraîner n'est pas une prise de masse). `targetCalories` **inchangée** :
+  le `manualOverride` continue de primer sans une ligne de plus.
+- **7 appels de `targetCalories` câblés dans 5 fichiers**, dont **2 volontairement exclus**
+  (`nutrition-profile.tsx`) : un écran qui montre la **cible du jour** applique la règle, l'écran où
+  l'on **configure l'objectif** ne l'applique pas — sinon on croit que son réglage `cut` n'a pas pris.
+- **`useDayCalorieTarget` et `useGoalAdherenceForRange`** — la cible de base devient une **fonction
+  du jour**. Ces hooks servent des **jours passés** : une cible unique aurait faussé l'adhérence
+  (NUTR-10) et le bilan calorique (NUTR-18) sur toute la fenêtre, pas seulement sur les jours en
+  période.
+- **`widgets.ts`** — `MAX_HOME_WIDGETS` **7 → 8**. Le cliquet posé par INSIGHTS-02 a **cassé la CI**,
+  ce qui est exactement son rôle : il a forcé l'arbitrage au lieu de laisser passer un `+1`
+  silencieux. Motivé dans le code — le plafond d'ADR-007 porte sur les widgets **visibles** (typique :
+  5-6, dans la fourchette), et `real-life` porte deux états dans un seul id.
+- **`widget-destinations.ts`** — `HOME_WIDGET_IDS_POST_V1` + `HOME_WIDGET_IDS_WITH_DESTINATION`.
+  `HOME_WIDGET_IDS_V1` est un **snapshot figé** (21 entrées, figées par un test) : y ajouter un id né
+  après le dégonflage aurait réécrit l'histoire.
+
+#### Corrigé
+
+- **Le delta `cut` vaut −400, pas −350.** Le chiffre était faux dans la maquette, le plan, la roadmap
+  **et un test** — la recette aurait vérifié un mauvais nombre.
+- **Un test de cette US était faux, pas le code.** « activeToday=false pendant une période » ne mettait
+  en pause que le jour courant tout en attendant une série de 12 : les jours intermédiaires restaient
+  des trous réels, donc la série tombait bien à 0.
+- **`insight-adapters.test.ts`** — son helper `review()` construit un `WeeklyReview` en littéral et
+  devait recevoir le nouveau champ. Une recherche antérieure avait conclu à tort que « rien ne
+  construit `WeeklyReview` en littéral » : la pagination des résultats avait tronqué ce fichier.
+
+#### Technique / Notes
+
+- 🔴 **Une seule étape reste hors code** : déployer la **sync rule PowerSync** (table neuve) sur le
+  dashboard. Oubliée deux fois (BIEN-01, RUN-F2c). Le piège : le 1ᵉʳ critère de recette **passerait
+  quand même**, l'écriture étant locale — l'absence ne se voit qu'au 2ᵉ appareil.
+- ⚠️ **Import circulaire créé puis défait** : `real-life-repository` → `dashboard-repository` →
+  `real-life-repository`. `useMinimalWeekTargets` vit finalement côté dashboard (où la chaîne
+  nutrition existe déjà) ; seule la requête SQL est exportée depuis `real-life-repository`.
+- ⚠️ Warning CLI au push (`failed to cache migrations catalog`), **identique à celui de REPAS-01** :
+  il porte sur la mise en cache du catalogue pg-delta, pas sur l'exécution. Démenti par
+  `npm run db:types`, dont le diff ne contient **que** les 38 lignes de la nouvelle table.
+- 🟠 **2 points ouverts en recette** : l'arbitrage du plafond de widgets (critère 21) et la
+  confirmation de D5/D6 sur device (critère 22).
+- **Aucune donnée de santé ajoutée** : la période ne porte **pas de motif**. Stocker « malade » aurait
+  rouvert la politique de confidentialité **et** la déclaration Google Play « Health apps », déjà
+  passée à 6 types par CYCLE-01 et sur le chemin critique du lancement — pour un champ sans effet
+  fonctionnel (D1 rend le fléchissement identique quelle que soit la cause).
+
 ### 05/08/2026 — `feature/collis01-detecteur-collisions` — Détecteur de collisions entre séances (roadmap 3.57)
 
 Suite de `f764732`. Le planning **plaçait** les séances sans rien dire de leur **enchaînement** :

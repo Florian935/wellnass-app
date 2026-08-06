@@ -45,6 +45,9 @@ function review(overrides: Partial<WeeklyReview> = {}): WeeklyReview {
     changes: { tonnage: null, distance: null, activeDays: null, loggedDays: null },
     isEmpty: false,
     decision: null,
+    // US VIE-01 : aucune période « vie réelle » par défaut. Ces cas testent les adaptateurs
+    // d'insights, pas le mode — le filtrage des reproches est couvert par `weekly-review.test.ts`.
+    realLifeDays: 0,
     ...overrides,
   };
 }

@@ -8,6 +8,8 @@ import {
   computeAge,
   dayTargetKcal,
   DEFAULT_MEAL_KEYS,
+  effectiveNutritionObjective,
+  isRealLifeDay,
   localDateFromDayKey,
   localDayKey,
   objectiveFromGoal,
@@ -24,6 +26,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { MealPlanDayCard } from '@/components/nutrition/MealPlanDayCard';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useWeekPlan } from '@/data/repositories/planned-session-repository';
 import { useRecipes } from '@/data/repositories/recipe-repository';
@@ -74,6 +77,7 @@ export default function MealPlanScreen() {
   const { count: previousWeekCount } = useWeekMealPlanCount(previousWeekStart);
   const { nutritionProfile } = useNutritionProfile();
   const { profile } = useProfile();
+  const { periods: realLifePeriods } = useRealLifePeriods();
   const { settings } = useSettings();
 
   const todayKey = localDayKey(new Date());
@@ -107,9 +111,16 @@ export default function MealPlanScreen() {
     age,
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
-  const baseTarget =
+  // US VIE-01 (R4) : objectif au maintien pendant une période « vie réelle », **jour par jour** — la
+  // semaine affichée peut mêler jours en période et jours normaux, et une cible unique aurait aligné
+  // toute la semaine sur le premier cas rencontré.
+  const baseTargetFor = (dayKey: string): number | null =>
     tdeeValue != null && objective != null
-      ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null)
+      ? targetCalories(
+          tdeeValue,
+          effectiveNutritionObjective(objective, isRealLifeDay(realLifePeriods, dayKey)),
+          nutritionProfile?.manualCalories ?? null,
+        )
       : null;
 
   /**
@@ -227,7 +238,7 @@ export default function MealPlanScreen() {
               mealConfig={mealConfig}
               mealLabels={mealLabels}
               targetKcal={dayTargetKcal({
-                targetKcal: baseTarget,
+                targetKcal: baseTargetFor(dayKey),
                 trainingBonusKcal: trainingBonus,
                 hasTrainingSession,
                 trainingPillarsActive,

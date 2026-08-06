@@ -26,8 +26,10 @@ import {
   activityLevelSchema,
   computeAge,
   computeStreakWithJokers,
+  effectiveNutritionObjective,
   goalSchema,
   isGoalReached,
+  isRealLifeDay,
   localDayKey,
   localMidnightDaysAgo,
   normalizeStepGoal,
@@ -35,6 +37,7 @@ import {
   objectiveFromGoal,
   parseJsonColumn,
   PILLARS,
+  realLifeDayKeys,
   resolveActivePillars,
   sexSchema,
   targetCalories,
@@ -103,7 +106,7 @@ async function computeStreakMetric(todayKey: string): Promise<number> {
   const sinceUtc = localMidnightDaysAgo(STREAK_WINDOW_DAYS, new Date()).toISOString();
   const sinceKey = localDayKey(localMidnightDaysAgo(STREAK_WINDOW_DAYS, new Date()));
 
-  const [workouts, runs, foodTotals, stepRows, profileRow, jokerRows] = await Promise.all([
+  const [workouts, runs, foodTotals, stepRows, profileRow, jokerRows, periodRows] = await Promise.all([
     powerSync.getAll<{ finished_at: string | null }>(
       `SELECT finished_at FROM workouts WHERE status = 'completed' AND deleted_at IS NULL AND finished_at >= ?`,
       [sinceUtc],
@@ -124,6 +127,11 @@ async function computeStreakMetric(todayKey: string): Promise<number> {
       `SELECT daily_step_goal FROM profiles WHERE deleted_at IS NULL LIMIT 1`,
     ),
     powerSync.getAll<{ log_date: string }>(`SELECT log_date FROM streak_jokers WHERE deleted_at IS NULL`),
+    // US VIE-01 : les périodes « vie réelle ». Lues en SQL direct comme tout le reste de ce fichier —
+    // le widget tourne en Headless JS, donc aucun hook n'est disponible ici.
+    powerSync.getAll<{ id: string; started_on: string; ends_on: string }>(
+      `SELECT id, started_on, ends_on FROM real_life_periods WHERE deleted_at IS NULL`,
+    ),
   ]);
 
   const stepGoal = normalizeStepGoal(profileRow?.daily_step_goal ?? null);
@@ -152,7 +160,12 @@ async function computeStreakMetric(todayKey: string): Promise<number> {
 
   const activeDays = activeDayKeys([...activities.values()]);
   const jokerDays = new Set(jokerRows.map((r) => r.log_date));
-  return computeStreakWithJokers(activeDays, jokerDays, todayKey).current;
+  // US VIE-01 (R5) : mêmes jours en pause que l'app. Sans ça, le widget du launcher afficherait une
+  // série à 0 pendant que l'écran d'accueil en affiche 12 — deux surfaces qui se contredisent.
+  const pausedDays = realLifeDayKeys(
+    periodRows.map((r) => ({ id: r.id, startedOn: r.started_on, endsOn: r.ends_on })),
+  );
+  return computeStreakWithJokers(activeDays, jokerDays, todayKey, pausedDays).current;
 }
 
 // ---------------------------------------------------------------------------
@@ -201,7 +214,7 @@ async function computeKcalRemainingMetric(
 ): Promise<number | null> {
   if (!activePillars.includes('nutrition')) return null; // D6
 
-  const [profileRow, nutritionRow, latestWeight, todayTotal] = await Promise.all([
+  const [profileRow, nutritionRow, latestWeight, todayTotal, periodRows] = await Promise.all([
     powerSync.getOptional<{
       sex: string | null;
       height_cm: number | null;
@@ -220,6 +233,10 @@ async function computeKcalRemainingMetric(
     powerSync.getOptional<{ kcal: number }>(
       `SELECT SUM(kcal) AS kcal FROM food_entries WHERE deleted_at IS NULL AND log_date = ?`,
       [todayKey],
+    ),
+    // US VIE-01 : la cible du jour doit être la MÊME que dans l'app (R4).
+    powerSync.getAll<{ id: string; started_on: string; ends_on: string }>(
+      `SELECT id, started_on, ends_on FROM real_life_periods WHERE deleted_at IS NULL`,
     ),
   ]);
 
@@ -240,7 +257,15 @@ async function computeKcalRemainingMetric(
     ?? objectiveFromGoal(mainGoal);
   if (tdeeValue == null) return null;
 
-  const target = targetCalories(tdeeValue, objective, nutritionRow?.manual_calories ?? null);
+  const inRealLifePeriod = isRealLifeDay(
+    periodRows.map((r) => ({ id: r.id, startedOn: r.started_on, endsOn: r.ends_on })),
+    todayKey,
+  );
+  const target = targetCalories(
+    tdeeValue,
+    effectiveNutritionObjective(objective, inRealLifePeriod),
+    nutritionRow?.manual_calories ?? null,
+  );
   const consumed = todayTotal?.kcal ?? 0;
   return target - consumed;
 }

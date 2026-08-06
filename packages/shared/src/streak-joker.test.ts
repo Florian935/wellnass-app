@@ -157,3 +157,119 @@ describe('findRestorableGap', () => {
     expect(gap(active, ['2026-07-19'])).toBeNull();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// US VIE-01 — les jours « en pause » (mode vie réelle)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('computeStreakWithJokers — jours en pause (US VIE-01)', () => {
+  /** Raccourci : série avec un ensemble de jours en pause. */
+  function streak(active: string[], paused: string[], todayKey = TODAY): number {
+    return computeStreakWithJokers(new Set(active), new Set(), todayKey, new Set(paused)).current;
+  }
+
+  it('sans jour en pause, le comportement est INCHANGÉ', () => {
+    // Le paramètre est optionnel : les deux appelants existants ne changent pas de résultat.
+    const active = daysUpTo(TODAY, 5);
+    expect(computeStreakWithJokers(new Set(active), new Set(), TODAY).current).toBe(5);
+    expect(streak(active, [])).toBe(5);
+  });
+
+  it('deux jours inactifs consécutifs en période : la série ne tombe PAS…', () => {
+    // 12 jours actifs jusqu'au 15, puis période du 16 au 20 sans rien faire.
+    const active = daysUpTo('2026-07-15', 12);
+    const paused = ['2026-07-16', '2026-07-17', '2026-07-18', '2026-07-19', '2026-07-20'];
+    expect(streak(active, paused)).toBe(12);
+  });
+
+  it('…et elle n’augmente pas non plus (ni cassée, ni allongée)', () => {
+    const active = daysUpTo('2026-07-15', 12);
+    const paused = ['2026-07-16', '2026-07-17', '2026-07-18', '2026-07-19', '2026-07-20'];
+    // 12, pas 17 : les 5 jours de période ne sont pas comptés.
+    expect(streak(active, paused)).not.toBe(17);
+    expect(streak(active, paused)).toBe(12);
+  });
+
+  it('un jour ACTIF pendant la période compte normalement (cas C)', () => {
+    // La période abaisse ce qui est demandé, elle n'efface pas ce qui est accompli.
+    const active = [...daysUpTo('2026-07-15', 12), '2026-07-18'];
+    const paused = ['2026-07-16', '2026-07-17', '2026-07-18', '2026-07-19', '2026-07-20'];
+    expect(streak(active, paused)).toBe(13);
+  });
+
+  it('une période AU MILIEU de la série : le parcours la traverse', () => {
+    // ⚠️ Le test qui attrape la condition de boucle. Avec `while (counts(cursor))`, le parcours
+    // s'arrêtait au premier jour transparent et la fonctionnalité ne faisait rien — en silence.
+    const active = [
+      '2026-07-10', '2026-07-11', '2026-07-12', // avant la période
+      '2026-07-18', '2026-07-19', '2026-07-20', // après la période
+    ];
+    const paused = ['2026-07-13', '2026-07-14', '2026-07-15', '2026-07-16', '2026-07-17'];
+    expect(streak(active, paused)).toBe(6);
+  });
+
+  it('une période qui ne sauve rien laisse la série à 0', () => {
+    // Rien avant la période : il n'y a pas de série à protéger.
+    expect(streak([], ['2026-07-18', '2026-07-19', '2026-07-20'])).toBe(0);
+  });
+
+  it('un jour inactif NON couvert, juste avant la période, rompt bien la série', () => {
+    // La période ne protège que ses propres jours : le 17 reste un vrai trou.
+    const active = daysUpTo('2026-07-16', 6);
+    const paused = ['2026-07-18', '2026-07-19', '2026-07-20'];
+    expect(streak(active, paused)).toBe(0);
+  });
+
+  it('rend activeToday=false quand la période couvre un jour où rien n’a été fait', () => {
+    // On ne ment pas sur l'activité du jour : c'est la série qui est protégée, pas la donnée.
+    //
+    // ⚠️ La période doit couvrir TOUS les jours depuis la fin de la série. Une 1ʳᵉ rédaction ne
+    // mettait en pause que `TODAY` tout en attendant 12 : les 16 → 19 juillet restaient des trous
+    // réels, donc la série tombait bien à 0. **Le code avait raison, le test avait tort** — et c'est
+    // exactement ce que fige le cas « un jour inactif NON couvert rompt la série » juste au-dessus.
+    const r = computeStreakWithJokers(
+      new Set(daysUpTo('2026-07-15', 12)),
+      new Set(),
+      TODAY,
+      new Set(['2026-07-16', '2026-07-17', '2026-07-18', '2026-07-19', TODAY]),
+    );
+    expect(r.activeToday).toBe(false);
+    expect(r.current).toBe(12);
+  });
+});
+
+describe('findRestorableGap — jours en pause (US VIE-01)', () => {
+  it('ne propose AUCUN joker sur un jour couvert par une période', () => {
+    // Le joker du mois ne doit pas être brûlé sur un jour que la période protège déjà gratuitement.
+    const active = daysUpTo('2026-07-18', 5);
+    expect(findRestorableGap({
+      activeDays: new Set(active),
+      jokerDays: new Set(),
+      todayKey: TODAY,
+      pausedDays: new Set(['2026-07-19']),
+    })).toBeNull();
+  });
+
+  it('un jour en pause ne casse pas l’isolement d’un trou voisin', () => {
+    // Trou réel le 19 ; le 18 est en période, donc il « tient » et le trou reste rattrapable.
+    const active = daysUpTo('2026-07-17', 5);
+    const found = findRestorableGap({
+      activeDays: new Set(active),
+      jokerDays: new Set(),
+      todayKey: TODAY,
+      pausedDays: new Set(['2026-07-18']),
+    });
+    expect(found?.day).toBe('2026-07-19');
+  });
+
+  it('sans jour en pause, le comportement est INCHANGÉ', () => {
+    const active = daysUpTo('2026-07-18', 5);
+    const withParam = findRestorableGap({
+      activeDays: new Set(active), jokerDays: new Set(), todayKey: TODAY, pausedDays: new Set(),
+    });
+    const without = findRestorableGap({
+      activeDays: new Set(active), jokerDays: new Set(), todayKey: TODAY,
+    });
+    expect(withParam).toEqual(without);
+  });
+});

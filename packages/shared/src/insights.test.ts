@@ -6,7 +6,9 @@ import {
   MAX_INSIGHTS,
   MAX_PER_FAMILY,
   NOTABLE_CHANGE_PCT,
+  REAL_LIFE_MUTED_INSIGHTS,
   STALE_AFTER_DAYS,
+  isMutedByRealLife,
   isStale,
   selectInsights,
   type InsightCandidate,
@@ -309,5 +311,98 @@ describe('selectInsights — conservation de la charge utile', () => {
     ];
     selectInsights({ candidates, activePillars: ALL_PILLARS, todayKey: TODAY });
     expect(candidates.map((c) => c.id)).toEqual(['distance_change', 'overtraining_guard']);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// US VIE-01 — ce qui se tait pendant une période « vie réelle » (R6)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('mode vie réelle (US VIE-01)', () => {
+  /** Ids retenus, période « vie réelle » active ou non. */
+  function ids(candidates: InsightCandidate[], inRealLifePeriod: boolean): InsightId[] {
+    return selectInsights({
+      candidates, activePillars: ALL_PILLARS, todayKey: TODAY, inRealLifePeriod,
+    }).map((s) => s.id);
+  }
+
+  it('sans période, la sélection est INCHANGÉE (le paramètre est additif)', () => {
+    const candidates = [candidate('muscle_neglected', 'change')];
+    expect(ids(candidates, false)).toEqual(['muscle_neglected']);
+    // Et l'appel sans le paramètre du tout donne le même résultat.
+    expect(
+      selectInsights({ candidates, activePillars: ALL_PILLARS, todayKey: TODAY }).map((s) => s.id),
+    ).toEqual(['muscle_neglected']);
+  });
+
+  it('REAL_LIFE_MUTED_INSIGHTS se taisent pendant une période', () => {
+    for (const id of REAL_LIFE_MUTED_INSIGHTS) {
+      expect(ids([candidate(id, 'alert')], true)).toEqual([]);
+    }
+  });
+
+  it('les garde-fous de charge restent armés — ce n’est PAS un oubli', () => {
+    // IDEAS.md : « ne pas laisser désactiver les garde-fous de sécurité ». Et ils se déclenchent sur
+    // l'excès, donc les couper serait dangereux pour qui rattrape trop fort au retour.
+    const armed: InsightId[] = [
+      'overtraining_guard', 'training_load', 'readiness', 'concurrent_interference',
+    ];
+    for (const id of armed) {
+      expect(ids([candidate(id, 'alert')], true)).toEqual([id]);
+    }
+  });
+
+  it('les accomplissements restent affichés pendant une période', () => {
+    expect(ids([candidate('record_recent', 'celebration')], true)).toEqual(['record_recent']);
+    expect(ids([candidate('goal_achieved', 'celebration')], true)).toEqual(['goal_achieved']);
+  });
+
+  it('weekly_decision reste armé : sa source est filtrée en amont, pas ici', () => {
+    // `decide()` (weekly-review) ne produit plus de reproche pendant une période. Le filtrer une
+    // seconde fois ici masquerait aussi les décisions légitimes — dont `goal_behind`, volontairement
+    // conservé (VIE-01, D6).
+    expect(ids([candidate('weekly_decision', 'change')], true)).toEqual(['weekly_decision']);
+  });
+
+  it('une variation À LA BAISSE se tait…', () => {
+    expect(ids([candidate('tonnage_change', 'change', { variant: 'down' })], true)).toEqual([]);
+    expect(ids([candidate('distance_change', 'change', { variant: 'down' })], true)).toEqual([]);
+  });
+
+  it('…mais une variation À LA HAUSSE reste affichée', () => {
+    // Une hausse pendant une semaine allégée est une vraie bonne nouvelle.
+    expect(ids([candidate('tonnage_change', 'change', { variant: 'up' })], true))
+      .toEqual(['tonnage_change']);
+    expect(ids([candidate('distance_change', 'change', { variant: 'up' })], true))
+      .toEqual(['distance_change']);
+  });
+
+  it('le sens est lu dans `variant`, jamais dans `metrics`', () => {
+    // ⚠️ `insight-adapters` range `Math.abs(change.pct)` dans `metrics` : filtrer sur le signe d'une
+    // métrique n'aurait JAMAIS rien muté. Ce test fige la bonne source.
+    const down = candidate('tonnage_change', 'change', {
+      variant: 'down', metrics: { pct: 41 }, // positif, alors que la variation est négative
+    });
+    expect(ids([down], true)).toEqual([]);
+  });
+
+  it('isMutedByRealLife est vrai/faux indépendamment de toute période — c’est un prédicat pur', () => {
+    expect(isMutedByRealLife(candidate('muscle_neglected', 'change'))).toBe(true);
+    expect(isMutedByRealLife(candidate('overtraining_guard', 'alert'))).toBe(false);
+    expect(isMutedByRealLife(candidate('tonnage_change', 'change', { variant: 'down' }))).toBe(true);
+    expect(isMutedByRealLife(candidate('tonnage_change', 'change', { variant: 'up' }))).toBe(false);
+    // Sans `variant`, on ne peut pas conclure à une baisse : on n'invente pas un reproche.
+    expect(isMutedByRealLife(candidate('tonnage_change', 'change'))).toBe(false);
+  });
+
+  it('un signal muet laisse sa place à un signal moins prioritaire', () => {
+    // Le plafond de 3 ne doit pas être « consommé » par un candidat écarté.
+    const candidates = [
+      candidate('deficit_volume', 'alert'),            // muet en période
+      candidate('muscle_neglected', 'change'),         // muet en période
+      candidate('record_recent', 'celebration'),
+      candidate('weekly_decision', 'change'),
+    ];
+    expect(ids(candidates, true)).toEqual(['record_recent', 'weekly_decision']);
   });
 });

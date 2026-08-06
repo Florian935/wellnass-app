@@ -1,4 +1,4 @@
-# État du projet — 05/08/2026
+# État du projet — 06/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `██████████████████░░` **89 %** — 196 livré · 17 partiel · 2 à faire (sur 221)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 196 livré · 18 partiel · 2 à faire (sur 222)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -63,12 +63,13 @@ avant de pouvoir publier.
 | **TRI-03** — Score de forme / readiness global | `recette` | `feature/tri03-score-readiness` | — |
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
+| **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **47 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **48 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -89,10 +90,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/collis01-detecteur-collisions` (modifications non commitées) |
-| Commits | 1088 · `main` a **1085** commits de retard sur `dev` |
-| Specs d'US | 127 au total — 79 clôturées, 48 en cours |
-| Migrations | 74/74 poussées sur le cloud |
+| Branche courante | `feature/vie01-mode-vie-reelle` (modifications non commitées) |
+| Commits | 1089 · `main` a **1086** commits de retard sur `dev` |
+| Specs d'US | 128 au total — 79 clôturées, 49 en cours |
+| Migrations | 76/76 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -101,11 +102,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a06e406` docs(collis01): consigne l'arbitrage non tranché du conflit dimanche → lundi
 - `93747af` feat(collis01): détecteur de collisions entre séances — séquençage muscu ↔ course (roadmap 3.57)
 - `f764732` feat(insights02): dégonflage du Tier 0 — l'accueil passe de 21 à 7 widgets (roadmap 7.21)
 - `547a8fa` fix(bilan01): affiche le libellé du groupe musculaire, plus sa clé brute
 - `c079055` feat(insights01): écran « Insights » Tier 3 — moteur de sélection des analyses (roadmap 7.20)
-- `ca95ec6` feat(muscpwr01): module force livré — %1RM sur la fiche exercice, DOTS et total SBD (lots 5-6)
 
 ---
 

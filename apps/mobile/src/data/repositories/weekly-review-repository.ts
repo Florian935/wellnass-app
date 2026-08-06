@@ -42,6 +42,7 @@ import { useSettings } from './settings-repository';
 import { useGoals } from './goal-repository';
 import { useGoalAdherenceForRange } from './dashboard-repository';
 import { useStepGoal } from './daily-steps-repository';
+import { useRealLifeDaysInWeek } from './real-life-repository';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,6 +324,10 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
     [activeGoals, todayKey],
   );
 
+  // US VIE-01 (R7) : jours de LA SEMAINE BILANTÉE couverts par une période — pas ceux d'aujourd'hui.
+  // Le bilan porte sur la semaine close, et une période à cheval doit donner un décompte par semaine.
+  const realLifeDays = useRealLifeDaysInWeek(period.start, period.end);
+
   const isLoading =
     current.isLoading ||
     previous.isLoading ||
@@ -356,6 +361,11 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
       goals,
       underworkedMuscle: underworked,
       activePillars,
+      // US VIE-01 (R7) : double rôle. Il **annote** le bilan (« 4 jours en mode vie réelle ») et,
+      // dès qu'il est > 0, il fait **taire les décisions de reproche** — sinon le bilan aurait titré
+      // « ton volume a chuté de 40 % » sur une semaine que l'utilisateur a lui-même déclarée allégée.
+      // 🔴 `goal_behind` reste affiché, volontairement (décision D6).
+      realLifeDays,
     });
   }, [
     period,
@@ -367,6 +377,7 @@ export function useWeeklyReview(): { review: WeeklyReview; isLoading: boolean } 
     activePillars,
     adherence.hasTarget,
     adherence.daysInTarget,
+    realLifeDays,
   ]);
 
   return { review, isLoading };

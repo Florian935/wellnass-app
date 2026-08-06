@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
   computeAge,
+  effectiveNutritionObjective,
+  isRealLifeDay,
   objectiveFromGoal,
   rescaleEntryNutrition,
   resolveMealConfig,
@@ -27,6 +29,7 @@ import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
+import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import {
   copyMeal,
   duplicateDay,
@@ -108,6 +111,7 @@ export default function NutritionScreen() {
   };
 
   // Objectif calorique + macros cibles (même logique que le profil nutritionnel).
+  const { periods: realLifePeriods } = useRealLifePeriods();
   const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
   const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
   const tdeeValue = tdee({
@@ -117,7 +121,18 @@ export default function NutritionScreen() {
     age: age ?? undefined,
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
-  const target = tdeeValue != null ? targetCalories(tdeeValue, objective, nutritionProfile?.manualCalories ?? null) : null;
+  // US VIE-01 (R4) : objectif au maintien pendant une période « vie réelle ». Évalué sur le jour
+  // **sélectionné** (`day`), pas sur aujourd'hui : cet écran navigue dans l'historique, et une cible
+  // rétroactive doit refléter ce qui était demandé ce jour-là.
+  const inRealLifePeriod = isRealLifeDay(realLifePeriods, day);
+  const target =
+    tdeeValue != null
+      ? targetCalories(
+          tdeeValue,
+          effectiveNutritionObjective(objective, inRealLifePeriod),
+          nutritionProfile?.manualCalories ?? null,
+        )
+      : null;
 
   // Objectif effectif + bonus du jour SÉLECTIONNÉ : centralisés dans useDayCalorieTarget
   // (RN-02, mode forfait/auto + dépense des courses). Paramétré par `day` → la navigation

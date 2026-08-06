@@ -148,6 +148,32 @@ export function tdee(
 }
 
 /**
+ * Objectif nutritionnel **effectif** du jour (US VIE-01, règle R4).
+ *
+ * Pendant une période « mode vie réelle », l'objectif retombe à `maintain` : le delta calorique de
+ * l'objectif est neutralisé, **dans les deux sens**. Un `cut` ne creuse plus — tenir un déficit
+ * agressif pendant une semaine de maladie ou de déplacement est exactement ce qu'il ne faut pas faire
+ * — et un `bulk` ne charge plus, parce qu'un surplus pris sans s'entraîner n'est pas une prise de
+ * masse, juste de la graisse.
+ *
+ * ⚠️ **Cette fonction ne touche ni le TDEE, ni le niveau d'activité, ni le bonus des jours
+ * d'entraînement.** Le mode corrige une **intention** (l'objectif), jamais une **dépense mesurée**.
+ * Et `targetCalories` n'a pas été modifiée : un `manualOverride` continue donc de primer sans une
+ * ligne de plus — ce n'est pas à nous de corriger une cible que l'utilisateur a posée à la main.
+ *
+ * 🔴 **Tous les appelants ne doivent PAS l'utiliser**, et c'est la règle la plus facile à casser de
+ * cette US : un écran qui affiche **la cible du jour** l'applique ; l'écran où l'utilisateur
+ * **configure son objectif** ne l'applique pas. Y afficher « maintien » pendant une période ferait
+ * croire que le réglage `cut` n'a pas pris.
+ */
+export function effectiveNutritionObjective(
+  objective: NutritionObjective,
+  inRealLifePeriod: boolean,
+): NutritionObjective {
+  return inRealLifePeriod ? 'maintain' : objective;
+}
+
+/**
  * Objectif calorique = TDEE + delta de l'objectif.
  * `manualOverride` (si défini et > 0) prime sur le calcul automatique (spec §2.2, 4.3).
  */

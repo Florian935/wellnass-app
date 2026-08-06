@@ -15,10 +15,26 @@
  * 3. **un joker n'affecte QUE la série** (décision D3). Il ne rend pas le jour « actif » : l'adhérence,
  *    la complétion du journal et les corrélations post-V1 continuent de voir un jour vide, parce qu'il
  *    l'est. Falsifier la donnée pour sauver un affichage serait le pire des choix.
+ *
+ * ── US VIE-01 : les jours « en pause » ────────────────────────────────────────────────────────────
+ * Le mode « vie réelle » (roadmap 1.28) ajoute un **troisième** état de jour, distinct du joker et
+ * volontairement plus faible que lui : un jour couvert par une période déclarée et **inactif** est
+ * **transparent** — le parcours arrière le traverse, mais le compteur n'avance pas. La série est donc
+ * « ni cassée, ni allongée » (décision D4 de VIE-01).
+ *
+ * La nuance qui compte : un jour en période où l'utilisateur **s'est entraîné** compte
+ * normalement (`+1`). La période abaisse ce qui est **demandé** ; elle n'efface pas ce qui est
+ * **accompli**. C'est pour ça que le prédicat de pause exclut les jours actifs.
+ *
+ * Et un jour en période **ne consomme jamais de joker** : le proposer gaspillerait le filet du mois
+ * sur un jour déjà couvert. `findRestorableGap` traite donc une pause comme une couverture.
  */
 
 /** Nombre de jokers accordés par mois calendaire (décision D2). */
 export const JOKERS_PER_MONTH = 1;
+
+/** Défaut partagé pour les paramètres d'ensembles optionnels — évite d'allouer un `Set` par appel. */
+const EMPTY_DAYS: ReadonlySet<string> = new Set<string>();
 
 /** Ancienneté maximale, en jours, d'un trou encore rattrapable (décision D5). */
 export const JOKER_MAX_AGE_DAYS = 7;
@@ -58,28 +74,37 @@ export function jokersRemaining(jokerDays: ReadonlyArray<string>, todayKey: stri
 }
 
 /**
- * Série de jours consécutifs, jokers compris.
+ * Série de jours consécutifs, jokers **et** jours en pause compris.
  *
  * Même contrat que `computeStreak` (dont elle reprend la tolérance du jour courant : une journée
- * commencée n'est pas une journée manquée), avec deux différences :
+ * commencée n'est pas une journée manquée), avec trois différences :
  *  - un jour couvert par un joker compte comme actif **pour la série seulement** ;
- *  - **deux jours couverts consécutifs arrêtent le comptage** (règle 2).
+ *  - **deux jours joker consécutifs arrêtent le comptage** (règle 2) ;
+ *  - un jour **en pause et inactif** est **transparent** : traversé, non compté (US VIE-01).
+ *
+ * `pausedDays` est optionnel et vaut l'ensemble vide par défaut : sans mode « vie réelle » déclaré, le
+ * comportement est **exactement** celui d'avant.
  */
 export function computeStreakWithJokers(
   activeDays: ReadonlySet<string>,
   jokerDays: ReadonlySet<string>,
   todayKey: string,
+  pausedDays: ReadonlySet<string> = EMPTY_DAYS,
 ): { current: number; activeToday: boolean } {
   const counts = (key: string): boolean => activeDays.has(key) || jokerDays.has(key);
+  // Un jour actif en période n'est PAS en pause : il compte normalement (VIE-01, cas C). C'est ce
+  // `!activeDays.has` qui empêche la période d'effacer une séance réellement faite.
+  const paused = (key: string): boolean => pausedDays.has(key) && !activeDays.has(key);
+  const traversable = (key: string): boolean => counts(key) || paused(key);
 
   const activeToday = activeDays.has(todayKey);
 
   let cursor: string;
-  if (counts(todayKey)) {
+  if (traversable(todayKey)) {
     cursor = todayKey;
   } else {
     const yesterday = prevKey(todayKey);
-    if (counts(yesterday)) {
+    if (traversable(yesterday)) {
       cursor = yesterday;
     } else {
       return { current: 0, activeToday };
@@ -89,7 +114,18 @@ export function computeStreakWithJokers(
   let count = 0;
   let previousWasJoker = false;
 
-  while (counts(cursor)) {
+  // ⚠️ La condition est `traversable`, pas `counts` : un jour transparent ne doit pas **arrêter** le
+  // parcours. Avec `counts`, la série se serait arrêtée au premier jour de période et VIE-01 n'aurait
+  // rien fait du tout — en silence, sans qu'aucun test existant ne le voie.
+  while (traversable(cursor)) {
+    if (paused(cursor)) {
+      // Transparent : on avance sans compter. `previousWasJoker` est laissé **tel quel**, pas remis à
+      // faux — une période intercalée ne doit pas servir à contourner la règle 2. Cas très théorique
+      // (`JOKERS_PER_MONTH` vaut 1, il faut donc franchir un mois), mais le garde-fou est gratuit.
+      cursor = prevKey(cursor);
+      continue;
+    }
+
     const isJoker = !activeDays.has(cursor) && jokerDays.has(cursor);
     // Deux jours joker d'affilée : on refuse de propager (règle 2).
     if (isJoker && previousWasJoker) break;
@@ -123,30 +159,36 @@ export type RestorableGap = {
  *
  * On ne renvoie que le trou **le plus récent** : proposer de réparer un trou ancien alors qu'un plus
  * récent existe donnerait une série encore rompue juste après.
+ *
+ * ⚠️ **Un jour en pause (US VIE-01) compte comme couvert** : il n'est donc jamais proposé, et il ne
+ * casse pas l'isolement d'un trou voisin. Sans cette règle, l'app aurait proposé de brûler le joker du
+ * mois sur un jour de vacances que la période protégeait déjà gratuitement.
  */
 export function findRestorableGap(params: {
   activeDays: ReadonlySet<string>;
   jokerDays: ReadonlySet<string>;
   todayKey: string;
+  pausedDays?: ReadonlySet<string>;
 }): RestorableGap | null {
-  const { activeDays, jokerDays, todayKey } = params;
+  const { activeDays, jokerDays, todayKey, pausedDays = EMPTY_DAYS } = params;
 
   if (jokersRemaining([...jokerDays], todayKey) <= 0) return null;
+
+  const covered = (key: string): boolean =>
+    activeDays.has(key) || jokerDays.has(key) || pausedDays.has(key);
 
   // On part d'hier : le jour courant bénéficie déjà de sa propre tolérance, il n'est jamais un « trou ».
   let cursor = prevKey(todayKey);
 
   while (daysApart(cursor, todayKey) <= JOKER_MAX_AGE_DAYS) {
-    const isCovered = activeDays.has(cursor) || jokerDays.has(cursor);
-
-    if (!isCovered) {
+    if (!covered(cursor)) {
       // Trou trouvé. Il n'est rattrapable que s'il est isolé : le jour d'avant doit tenir.
       const before = prevKey(cursor);
-      if (!activeDays.has(before) && !jokerDays.has(before)) return null;
+      if (!covered(before)) return null;
 
       const simulated = new Set(jokerDays);
       simulated.add(cursor);
-      const { current } = computeStreakWithJokers(activeDays, simulated, todayKey);
+      const { current } = computeStreakWithJokers(activeDays, simulated, todayKey, pausedDays);
 
       // Un joker qui ne rallonge rien ne vaut pas d'être proposé.
       return current > 0 ? { day: cursor, streakIfUsed: current } : null;

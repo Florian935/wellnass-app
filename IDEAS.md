@@ -73,7 +73,22 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 
   </details>
 
-- [25/07/2026] 🔍 **Mode « vie réelle » / journée minimale viable (dégradation gracieuse anti-abandon)**
+- [25/07/2026] ✅ **PROMUE le 05/08/2026 → US VIE-01 (roadmap 1.28).** Cadrée le jour même, dans la
+  foulée de COLLIS-01 comme cette fiche l'annonçait (« cadrage US **après** le détecteur de collisions
+  — les deux partagent le même moteur de règles »). **4 arbitrages Florian** : on fléchit **les cibles,
+  pas le programme** (réécrire les séances demanderait un contenu de coach, blocage de CONTENU-01) ·
+  les analyses **restent vraies et sont annotées**, jamais amputées · **durée choisie** 3/7/14 j avec
+  sortie automatique · la série est **mise en pause**, ni cassée ni allongée. Les points durs de la
+  fiche d'origine sont tranchés : le **ton** devient une règle testée en recette (R9) ; le
+  « minimum viable » est **dérivé** du plan habituel et non inventé (R3) ; la **sortie** est une
+  fenêtre calculée, patron OBJ-01 ; et l'**effet sur les analyses** est résolu par l'annotation plutôt
+  que par l'exclusion. La **variante voyage** (exos au poids du corps) reste le sous-lot séparé que
+  cette fiche prévoyait — bloquée sur du contenu de coach. Spec :
+  docs/specs/functional/us/vie01-mode-vie-reelle.md.
+
+  <details><summary>Fiche d'origine (conservée)</summary>
+
+  🔍 **Mode « vie réelle » / journée minimale viable (dégradation gracieuse anti-abandon)**
   (3 modèles sur 4 ; désigné **cause n°1 d'abandon à 3-6 semaines**) : en **1 tap**, l'utilisateur déclare
   une période dégradée (vacances, malade, bébé qui ne dort pas, déplacement sans salle) → l'app **abaisse
   proprement tous les objectifs** vers un minimum cohérent (« cette semaine : 2 séances courtes +
@@ -90,6 +105,8 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   [[journal-bien-etre]], [[detecteur-collisions-sequencage]] (le « réparateur de planning » de ChatGPT §6
   est la même famille : reconstruire la suite après 2 séances manquées). _Prochaine étape :_ cadrage US
   **après** le détecteur de collisions — les deux partagent le même moteur de règles.
+
+  </details>
 
 - [25/07/2026] 🔍 **Simulateur « What-If / Et si… »** (ChatGPT §20, Qwen-3.8 §4.1) : bac à sable de
   progression — « si je passe à 4 séances muscu et que je réduis le running de moitié, à quoi ressemble ma

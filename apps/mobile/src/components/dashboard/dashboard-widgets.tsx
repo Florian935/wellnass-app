@@ -14,6 +14,7 @@ import { StepsCard } from '@/components/dashboard/StepsCard';
 import { CycleCard } from '@/components/dashboard/CycleCard';
 import { ActivationPathCard } from '@/components/dashboard/ActivationPathCard';
 import { InsightsCard } from '@/components/dashboard/InsightsCard';
+import { RealLifeCard } from '@/components/dashboard/RealLifeCard';
 
 type WidgetComponent = (props: { size?: WidgetSize }) => React.ReactElement | null;
 
@@ -28,6 +29,8 @@ const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   steps: StepsCard,
   insights: InsightsCard,
   'activation-path': ActivationPathCard,
+  // US VIE-01 : deux états dans un seul id — point d'entrée hors période, carte active pendant.
+  'real-life': RealLifeCard,
   cycle: CycleCard,
 };
 

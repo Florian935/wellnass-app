@@ -106,6 +106,20 @@ export default function ReviewScreen() {
           })}
         </Text>
 
+        {/* US VIE-01 (R7) — l'annotation, AVANT la décision et y compris sur une semaine vide :
+            c'est elle qui explique une semaine creuse. Sans elle, le bilan resterait exact mais
+            illisible. Les chiffres eux-mêmes ne sont jamais amputés (décision D2). */}
+        {review.realLifeDays > 0 && (
+          <Card>
+            <Text
+              style={[styles.decision, { color: colors.text }]}
+              accessibilityRole="text"
+            >
+              {t('realLife.reviewAnnotation', { count: review.realLifeDays })}
+            </Text>
+          </Card>
+        )}
+
         {isLoading ? null : review.isEmpty ? (
           <Card>
             <Text style={[styles.empty, { color: colors.textMuted }]}>{t('review.empty')}</Text>

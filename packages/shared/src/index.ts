@@ -81,4 +81,6 @@ export * from './insights';
 export * from './insight-adapters';
 // US COLLIS-01 (roadmap 3.57) — détecteur de collisions entre séances planifiées.
 export * from './session-conflicts';
+// US VIE-01 (roadmap 1.28) — mode « vie réelle », dégradation gracieuse des objectifs.
+export * from './real-life';
 export type { Database, Json } from './database.types';

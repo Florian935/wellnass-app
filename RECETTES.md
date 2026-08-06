@@ -11,10 +11,11 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **05/08/2026** — 32 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **05/08/2026** — 33 sections. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
 > relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
-> rule ni nouveau build** — recettable sur l'APK existant.
+> rule ni nouveau build** — recettable sur l'APK existant. 🔴 **VIE-01** (§33) : migrations poussées,
+> mais sa **sync rule (table neuve) reste à déployer** — dernier bloquant.
 
 ---
 
@@ -1125,6 +1126,82 @@ existant**.
       et le changer coûte une ligne (`LEG_SETS_CONFLICT_THRESHOLD`).
 
 **Quand l'US passe** : `etape: close`, roadmap 3.57 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 33. VIE-01 — Mode « vie réelle » (dégradation gracieuse)
+
+📄 [spec](docs/specs/functional/us/vie01-mode-vie-reelle.md) · roadmap **1.28** · **📱 device** ·
+✅ **aucune dépendance native → recettable sur l'APK existant**.
+
+✅ **Les 2 migrations sont poussées** (05/08/2026). Le CLI a émis le warning
+`failed to cache migrations catalog` — **connu et bénin**, identique à celui du push de REPAS-01 : il
+porte sur la mise en cache du catalogue pg-delta, pas sur l'exécution du SQL. Vérifié par
+`npm run db:types`, qui fait apparaître `real_life_periods` et ses 7 colonnes **depuis le cloud**.
+
+🔴 **UN SEUL BLOQUANT AVANT DE RECETTER** : **déployer la sync rule PowerSync à la main** — table
+**neuve**. Coller [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le
+dashboard (Settings → Sync Rules) puis « Deploy ». La ligne est déjà dans le YAML.
+
+⚠️ Étape **déjà oubliée deux fois** (BIEN-01, puis RUN-F2c qui reste bloquée pour ça). Sans elle, les
+périodes restent locales : le mode marcherait sur un téléphone et pas sur l'autre, **sans aucune
+erreur visible**. Le critère 1 ci-dessous passerait quand même — c'est ce qui rend l'oubli si facile.
+
+> **Comment provoquer l'état.** Depuis l'accueil, la ligne « Ça se complique ? Allège la semaine » →
+> choisir 7 jours → valider. Pour les critères de série, il faut un compte avec une série en cours et
+> des jours vides ensuite.
+
+- [ ] 1. Déclarer une période de 7 jours en **un tap** depuis l'accueil ; la carte apparaît.
+- [ ] 2. La carte affiche la date de fin et les jours restants, avec le **bon pluriel** à 1 jour, et
+      « Dernier jour » le dernier jour.
+- [ ] 3. L'objectif de semaine minimal n'affiche **que les piliers actifs** (tester en mono-pilier).
+- [ ] 4. Cible muscu = **moitié du plan habituel, plancher à 1** — vérifier avec un programme à
+      2 séances/semaine : la cible doit être **1**, pas 2.
+- [ ] 5. Objectif calorique passé **au maintien** : vérifier sur un profil en `cut` (il doit remonter
+      au TDEE, delta −400) **et** sur un `bulk` (il doit descendre, delta +300 neutralisé).
+- [ ] 6. Un `manualOverride` de calories **n'est pas modifié** par la période.
+- [ ] 6b. 🔴 **Accueil, onglet Nutrition, planning repas et widget launcher affichent le MÊME
+      chiffre.** C'est le critère qui attrape un appelant oublié — il y a **7 appels** de
+      `targetCalories` dans 5 fichiers.
+- [ ] 6c. L'écran de **réglage de l'objectif nutritionnel** continue d'afficher la cible du `cut`,
+      **pas** le maintien (exclusion volontaire, R4).
+- [ ] 7. Deux jours inactifs consécutifs en période : la série **ne tombe pas** et **n'augmente pas**.
+- [ ] 8. Une séance faite pendant la période : la série **augmente de 1**.
+- [ ] 9. Aucun joker n'est proposé sur un jour couvert par une période.
+- [ ] 10. Une chute de tonnage ≥ 15 % en période **n'affiche aucune carte d'insight** ; une **hausse**
+      ≥ 15 % l'affiche bien.
+- [ ] 11. `overtraining_guard` / `training_load` **s'affichent quand même** en période — les
+      garde-fous de sécurité ne se taisent jamais.
+- [ ] 12. Le bilan hebdo porte « N jours en mode vie réelle », avec le **bon décompte par semaine**
+      sur une période à cheval sur deux semaines.
+- [ ] 12b. Le bilan d'une semaine en période **n'affiche aucun** `volume_drop` / `consistency_drop` /
+      `muscle_imbalance` / `nutrition_drift` — sur une semaine qui, hors période, les déclencherait.
+- [ ] 12c. En revanche, un objectif OBJ-01 qui décroche **s'affiche toujours** (`goal_behind`) :
+      contrepartie assumée de D6, et elle doit rester visible.
+- [ ] 13. À l'échéance, la sortie est **automatique** : cibles et signaux reviennent à la normale,
+      **sans notification et sans écran de bilan**.
+- [ ] 14. « Prolonger » (+7 j) et « Reprendre le plan normal » fonctionnent, y compris **en mode
+      avion**.
+- [ ] 15. Rétro-déclaration : l'option « il y a 7 jours » est acceptée ; il n'existe **aucune** option
+      au-delà.
+- [ ] 16. Les moyennes, tendances et ACWR **contiennent toujours** les jours de la période (D2) —
+      vérifier qu'aucune valeur n'a été retirée.
+- [ ] 17. Relecture du **ton**, FR **et** EN : aucun « seulement », « manqué », « raté », aucun
+      compteur d'écart négatif. C'est une règle de la spec (R9), pas une préférence.
+- [ ] 18. Export RGPD : la table `real_life_periods` est présente dans l'archive.
+- [ ] 19. Police 1,5× et thème sombre → carte et feuille lisibles, non tronquées.
+- [ ] 20. TalkBack → la carte est annoncée d'un bloc ; les 3 chips de durée et les 2 actions sont
+      atteignables séparément.
+- [ ] 21. 🟠 **Arbitrage produit à confirmer** : l'accueil passe de **7 à 8 widgets déclarés**
+      (plafond `MAX_HOME_WIDGETS` relevé). Le compte **visible** typique reste 5-6, dans la fourchette
+      d'ADR-007 §2 — mais INSIGHTS-02 vient de ramener le registre de 21 à 7, donc c'est **ta**
+      décision. Si non : rendre `real-life` conditionnel et déplacer son point d'entrée.
+- [ ] 22. 🟠 **Décisions D5 et D6 à confirmer sur device** : la rétro-déclaration à 7 jours permet de
+      **rattraper une série rompue** (est-ce acceptable ?), et une période **ne décale pas** une
+      échéance d'objectif (est-ce le bon choix ?).
+
+**Quand l'US passe** : `etape: close`, roadmap 1.28 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).
 
 ---

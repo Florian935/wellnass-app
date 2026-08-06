@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIE-01 — Mode « vie réelle »</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8;--calm:#4a6572;--calmbg:#eef3f5;--calmbd:#cfdde3}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:240px}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+        padding:11px 13px;margin-bottom:9px}
+  .ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+          color:var(--muted);margin-bottom:7px}
+  .big{font-size:22px;font-weight:800;letter-spacing:-.01em}
+  .unit{font-size:12px;color:var(--muted);font-weight:600}
+  .muted{color:var(--muted)}
+  .line{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0}
+  .line .g{margin-left:auto;font-weight:700}
+
+  /* la ligne d'entrée, discrète : hors période elle ne doit pas peser */
+  .entry{display:flex;align-items:center;gap:9px;background:transparent;
+         border:1px dashed #d8c8b0;border-radius:12px;padding:10px 12px;
+         font-size:12.5px;color:#6a5d4d}
+  .entry .arrow{margin-left:auto;color:var(--bstrong);font-weight:800}
+
+  /* la carte de période active : calme, jamais alarmante */
+  .period{background:var(--calmbg);border:1px solid var(--calmbd);border-left:3px solid var(--calm);
+          border-radius:13px;padding:12px 13px;margin-bottom:9px}
+  .ptitle{font-size:13.5px;font-weight:800;color:#33505c}
+  .pmeta{font-size:11.5px;color:#5b7280;margin-top:2px}
+  .targets{margin-top:10px;border-top:1px solid var(--calmbd);padding-top:8px}
+  .t{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0;color:#33505c}
+  .t .v{margin-left:auto;font-weight:800}
+  .pacts{display:flex;gap:7px;margin-top:11px}
+  .btn{font-size:12px;font-weight:800;border-radius:9px;padding:7px 12px;text-align:center}
+  .btn.pri{background:var(--calm);color:#fff}
+  .btn.sec{background:transparent;border:1px solid var(--calmbd);color:#3e5b68}
+
+  .chip{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;text-transform:uppercase;
+        letter-spacing:.04em}
+  .chip.str{background:rgba(177,79,43,.13);color:#8f3d20}
+  .chip.run{background:rgba(102,113,75,.16);color:#4d5638}
+  .chip.nut{background:rgba(74,101,114,.15);color:#33505c}
+  .chip.paused{background:rgba(120,106,89,.16);color:#5c5245}
+
+  /* durées */
+  .durs{display:flex;gap:8px;margin:4px 0 2px}
+  .dur{flex:1;text-align:center;background:var(--surf);border:1px solid var(--border);
+       border-radius:12px;padding:12px 6px}
+  .dur.on{background:var(--calm);border-color:var(--calm);color:#fff}
+  .dur .n{font-size:20px;font-weight:800;line-height:1}
+  .dur .l{font-size:10.5px;margin-top:3px;opacity:.85}
+
+  .field{background:var(--surf);border:1px solid var(--border);border-radius:12px;
+         padding:9px 12px;margin-top:9px;display:flex;align-items:center;font-size:13px}
+  .field .lab{color:var(--muted);font-size:11.5px}
+  .field .val{margin-left:auto;font-weight:700}
+  .hint{font-size:11px;color:var(--muted);margin:6px 2px 0;line-height:1.4}
+
+  .cta{background:var(--calm);color:#fff;border-radius:11px;padding:11px;text-align:center;
+       font-size:13.5px;font-weight:800;margin-top:12px}
+
+  /* insight : ce qui parle, ce qui se tait */
+  .ins{background:var(--surf);border:1px solid var(--border);border-radius:13px;
+       padding:11px 12px;margin-bottom:8px;border-left:3px solid var(--bstrong)}
+  .ins.alert{border-left-color:var(--warn);background:var(--warnbg);border-color:var(--warnbd)}
+  .ins.win{border-left-color:var(--success)}
+  .ins .h{font-size:12.5px;font-weight:800}
+  .ins .b{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .silenced{border:1px dashed #d8c8b0;background:transparent;border-radius:13px;
+            padding:10px 12px;margin-bottom:8px;opacity:.72}
+  .silenced .h{font-size:12px;font-weight:700;color:#6a5d4d;text-decoration:line-through}
+  .silenced .b{font-size:11px;color:#8a7c68;margin-top:3px}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ol,.anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  .ok{background:#f2f5ec;border:1px solid #d8e0c8;border-left:3px solid var(--success);
+      border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surfalt);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+     color:#5d5142}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>VIE-01 — Mode « vie réelle »</h1>
+<p class="sub">Dégradation gracieuse des objectifs. En un tap, l'utilisateur déclare une période où la
+vie prend le dessus ; l'app <b>abaisse ce qu'elle demande</b>, <b>se tait sur ce qu'elle reprochait</b>,
+et reprend le plan normal toute seule — sans reset. Quatre arbitrages Florian du 05/08/2026 :
+les cibles et non le programme · analyses vraies et annotées · durée choisie et prolongeable ·
+série en pause.</p>
+
+<h2>1. Déclarer — trois écrans, un tap pour le cas nominal</h2>
+<p class="why">Le point d'entrée est <b>délibérément discret</b> hors période : INSIGHTS-02 vient de
+ramener l'accueil de 21 à 7 widgets, on ne le regonfle pas avec une carte permanente. Une ligne
+pointillée, qui disparaît dès que la période court.</p>
+
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Accueil</div>
+        <div class="navsub">hors période — état normal</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Série</div>
+          <div><span class="big">12</span> <span class="unit">jours</span></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Cette semaine</div>
+          <div class="line"><span class="chip str">Muscu</span> 3 séances <span class="g">2/3</span></div>
+          <div class="line"><span class="chip run">Course</span> 2 sorties <span class="g">1/2</span></div>
+          <div class="line"><span class="chip nut">Kcal</span> 1 900 / j <span class="g">déficit</span></div>
+        </div>
+        <div class="entry">
+          <span>🌧️</span>
+          <span>Ça se complique ? Allège la semaine</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Le point d'entrée.</b> Une ligne, pas une carte. Elle ne réclame rien et ne
+    compte pour rien tant qu'on ne la touche pas — <code>realLife.cta</code>.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Mode vie réelle</div>
+        <div class="navsub">feuille de déclaration</div></div>
+      <div class="screen">
+        <p style="font-size:12.5px;color:#6a5d4d;margin:2px 2px 12px;line-height:1.5">
+          On abaisse les objectifs le temps qu'il faut. Rien n'est perdu, rien n'est remis à zéro.</p>
+        <div class="durs">
+          <div class="dur"><div class="n">3</div><div class="l">jours</div></div>
+          <div class="dur on"><div class="n">7</div><div class="l">jours</div></div>
+          <div class="dur"><div class="n">14</div><div class="l">jours</div></div>
+        </div>
+        <div class="field"><span class="lab">Depuis le</span><span class="val">3 août</span></div>
+        <p class="hint">Tu peux déclarer une période commencée il y a jusqu'à 7 jours.</p>
+        <div class="cta">Alléger la semaine</div>
+      </div>
+    </div>
+    <p class="caption"><b>Trois durées (D3) et une date rétro-datable (D5).</b> La borne de 7 jours est
+    <code>JOKER_MAX_AGE_DAYS</code>, déjà arbitrée par STREAK-01 pour la même question — on réutilise la
+    borne, on n'en invente pas une seconde.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Accueil</div>
+        <div class="navsub">en période — jour 3 sur 7</div></div>
+      <div class="screen">
+        <div class="period">
+          <div class="ptitle">🌧️ Semaine allégée jusqu'au 9 août</div>
+          <div class="pmeta">Encore 4 jours</div>
+          <div class="targets">
+            <div class="t"><span class="chip str">Muscu</span> 1 séance cette semaine <span class="v">1/1 ✓</span></div>
+            <div class="t"><span class="chip run">Course</span> 1 sortie, comme tu veux <span class="v">0/1</span></div>
+            <div class="t"><span class="chip nut">Protéines</span> tenues : 130 g <span class="v">✓</span></div>
+          </div>
+          <div class="pacts">
+            <div class="btn pri">Prolonger</div>
+            <div class="btn sec">Reprendre le plan normal</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Série</div>
+          <div><span class="big">12</span> <span class="unit">jours</span>
+            <span class="chip paused" style="margin-left:6px">en pause</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>La carte de période.</b> Bleu-gris calme, jamais l'orange d'alerte : ce n'est
+    pas un problème, c'est un réglage. La cible muscu est <b>dérivée</b> du plan habituel
+    (3 → 1), pas inventée.</p>
+  </div>
+</div>
+
+<div class="ok"><b>Ce que l'écran ne fait pas.</b> Il n'affiche aucun décompte de ce qui a été manqué,
+aucun « seulement 1 séance », aucun pourcentage d'écart. La règle R9 bannit « seulement », « manqué »,
+« raté » de toutes les chaînes, FR comme EN — c'est le seul endroit de l'app où le ton est une
+règle testée en recette, pas une intention.</div>
+
+<h2>2. Les quatre effets</h2>
+<p class="why">Et surtout : <b>ce qui ne bouge pas</b>. Le programme, le planning, les séances, les
+records, le TDEE, le niveau d'activité — et tout ce qui a réellement été fait. La période abaisse ce
+qui est <b>demandé</b>, elle n'efface pas ce qui est <b>accompli</b>.</p>
+
+<table>
+  <tr><th style="width:22%">Effet</th><th style="width:39%">Comportement</th><th>La décision derrière</th></tr>
+  <tr>
+    <td><b>Cibles de semaine</b><br><span class="muted">R3</span></td>
+    <td>Muscu = <code>max(1, ⌊habituel/2⌋)</code> · Course = 1 sortie libre · Nutrition = protéines
+    tenues. Seuls les <b>piliers actifs</b> produisent une ligne.</td>
+    <td><b>D1 — les cibles, pas le programme.</b> Réécrire les séances exigerait un générateur de
+    séance dégradée, donc du contenu de coach : le blocage exact de CONTENU-01.</td>
+  </tr>
+  <tr>
+    <td><b>Déficit suspendu</b><br><span class="muted">R4</span></td>
+    <td>L'objectif passe à <code>maintain</code> — <b>dans les deux sens</b> : un <code>cut</code> ne
+    creuse plus, un <code>bulk</code> ne charge plus. Un <code>manualOverride</code> prime toujours.
+    TDEE, activité et bonus des jours d'entraînement <b>inchangés</b>.</td>
+    <td>Un surplus pris sans s'entraîner n'est pas une prise de masse. Et on ne corrige jamais une
+    cible que l'utilisateur a posée à la main.</td>
+  </tr>
+  <tr>
+    <td><b>Série en pause</b><br><span class="muted">R5</span></td>
+    <td>Un jour <b>inactif</b> en période est <b>transparent</b> : le parcours arrière continue, le
+    compteur n'avance pas. Un jour <b>actif</b> en période <b>compte</b>. Aucun joker n'est consommé.</td>
+    <td><b>D4 — ni cassée, ni allongée.</b> Faire compter les jours vides aurait produit ce que les
+    3 règles de STREAK-01 ont été écrites pour éviter : un compteur qui ne mesure plus rien.</td>
+  </tr>
+  <tr>
+    <td><b>Reproches muets</b><br><span class="muted">R6 · R7</span></td>
+    <td>Côté insights <b>et</b> côté bilan hebdo. Les garde-fous de charge restent <b>armés</b>.</td>
+    <td>IDEAS (25/07) en fait un principe : « ne pas laisser désactiver les garde-fous de sécurité ».
+    Et ils se déclenchent sur l'<b>excès</b> — les couper serait inutile <i>et</i> dangereux.</td>
+  </tr>
+</table>
+
+<h2>3. Ce qui se tait, ce qui parle quand même</h2>
+<p class="why">C'est le cœur de l'US, et le point où elle pouvait se rater : faire taire les cartes
+d'insight <b>sans</b> filtrer <code>decide()</code> aurait laissé l'écran de bilan hebdomadaire dire
+« ton volume a chuté de 40 % » en titre. Cinq des six natures de décision de BILAN-01 sont des
+reproches.</p>
+
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Insights</div>
+        <div class="navsub">en période — 2 cartes sur 3</div></div>
+      <div class="screen">
+        <div class="ins alert">
+          <div class="h">⚠️ Ta charge reste élevée</div>
+          <div class="b">Ratio aigu/chronique 1,42. Toujours affiché : un garde-fou de sécurité ne se
+          désactive pas — surtout au retour, quand on rattrape trop fort.</div>
+        </div>
+        <div class="ins win">
+          <div class="h">🏅 Record battu — Développé couché</div>
+          <div class="b">82,5 kg. Un accomplissement reste un accomplissement.</div>
+        </div>
+        <div class="silenced">
+          <div class="h">Ton tonnage a chuté de 41 %</div>
+          <div class="b">Muet : c'est le principe même de la semaine déclarée.</div>
+        </div>
+        <div class="silenced">
+          <div class="h">Tu délaisses le dos</div>
+          <div class="b">Muet : un déséquilibre mesuré sur 1 séance n'est pas un déséquilibre.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Muets :</b> <code>muscle_neglected</code>, <code>activity_level</code>,
+    <code>deficit_volume</code>, et <code>tonnage_change</code>/<code>distance_change</code>
+    <b>à la baisse seulement</b> — une hausse pendant la période est une vraie bonne nouvelle.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Bilan de la semaine</div>
+        <div class="navsub">1<sup>er</sup> — 7 août</div></div>
+      <div class="screen">
+        <div class="period" style="margin-bottom:10px">
+          <div class="ptitle">🌧️ 4 jours en mode vie réelle</div>
+          <div class="pmeta">L'annotation, sur chaque semaine touchée.</div>
+        </div>
+        <div class="ins win">
+          <div class="h">✓ Semaine allégée, comme prévu</div>
+          <div class="b">1 séance, 1 sortie, protéines tenues 5 jours sur 7.
+          <code>all_good</code> — le repli naturel quand les reproches sont écartés.</div>
+        </div>
+        <div class="ins alert">
+          <div class="h">🎯 « 10 km en 50 min » décroche</div>
+          <div class="b">Échéance le 20 août, 38 % parcourus. <b>Conservé volontairement</b> : la
+          période ne décale pas une échéance (D6), donc le cacher serait un piège.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Écartés de <code>decide()</code> :</b> <code>consistency_drop</code>,
+    <code>volume_drop</code>, <code>muscle_imbalance</code>, <code>nutrition_drift</code>.
+    <b>Conservés :</b> <code>goal_behind</code> et <code>all_good</code>.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Nutrition</div>
+        <div class="navsub">en période — objectif au maintien</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Objectif du jour</div>
+          <div><span class="big">2 250</span> <span class="unit">kcal</span></div>
+          <div style="font-size:11.5px;color:#33505c;margin-top:6px;background:var(--calmbg);
+                      border:1px solid var(--calmbd);border-radius:9px;padding:7px 9px">
+            Objectif au maintien pendant cette période</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Macros</div>
+          <div class="line">Protéines <span class="g">130 g</span></div>
+          <div class="line">Glucides <span class="g">250 g</span></div>
+          <div class="line">Lipides <span class="g">75 g</span></div>
+        </div>
+        <p class="hint">Avant la période : 1 850 kcal (delta <code>cut</code> = −400). Le TDEE, lui,
+        n'a pas bougé.</p>
+      </div>
+    </div>
+    <p class="caption">⚠️ <b>Le risque n° 1 du chantier est ici.</b> <code>targetCalories</code> a
+    <b>7 appels dans 5 fichiers</b> : si R4 n'est appliqué qu'à certains, l'accueil affiche 2 250 et cet
+    écran 1 850. Un test de <b>cohérence</b> entre les chemins, pas seulement des tests unitaires.
+    <b>Et 2 des 7 ne doivent PAS le recevoir</b> : l'écran de <i>réglage de l'objectif</i> continue
+    d'afficher la cible du <code>cut</code>, sinon on croit que son réglage n'a pas pris.</p>
+  </div>
+</div>
+
+<h2>4. La série — la règle en quatre cas</h2>
+<p class="why">Le cas <b>D</b> est le seul comportement neuf, et c'est lui qui donne « ni cassée, ni
+allongée ». Le piège d'implémentation : la condition de sortie de boucle. Aujourd'hui
+<code>while (counts(cursor))</code> — un jour transparent n'est pas compté mais ne doit pas
+<b>arrêter</b> le parcours.</p>
+
+<div class="anno">
+<table>
+  <tr><th>Jour</th><th>En période</th><th>Actif</th><th>Effet sur le comptage</th></tr>
+  <tr><td><b>A</b></td><td>non</td><td>oui</td><td>compte (+1) — inchangé</td></tr>
+  <tr><td><b>B</b></td><td>non</td><td>non</td><td><b>rompt</b> la série — inchangé</td></tr>
+  <tr><td><b>C</b></td><td>oui</td><td>oui</td><td><b>compte (+1)</b> : c'est un vrai jour actif, la période ne l'efface pas</td></tr>
+  <tr><td><b>D</b></td><td>oui</td><td>non</td><td><b>transparent</b> : le parcours continue, le compteur n'avance pas</td></tr>
+</table>
+<div class="flag"><b>Le test qui doit exister :</b> une période <b>au milieu</b> de la série
+(actif · période vide · actif) → la série <b>traverse</b>. Sans lui, une condition de boucle mal
+écrite s'arrête au premier jour transparent et la fonctionnalité ne fait rien du tout — en silence,
+et sans qu'aucun autre test ne le voie.</div>
+</div>
+
+<h2>5. Ce que la maquette ne montre pas, volontairement</h2>
+<div class="anno">
+<ul>
+  <li><b>Aucun motif de période.</b> Ni « malade », ni « blessé », ni « vacances ». Le fléchissement
+  est identique quelle que soit la cause (D1), donc le motif n'apporte rien — et stocker « malade »
+  ferait entrer une <b>donnée de santé</b> de plus, ce qui rouvre la politique de confidentialité
+  <i>et</i> la déclaration Google Play « Health apps », déjà passée à 6 types par CYCLE-01 et sur le
+  chemin critique du lancement. On ne paie pas trois semaines de délai pour un champ décoratif.</li>
+  <li><b>Aucune notification</b> — ni à l'entrée, ni pendant, ni à la sortie (R8). La fin de période se
+  constate à l'ouverture. Même arbitrage que CYCLE-01 : « aucune notification, jamais » sur les sujets
+  à charge émotionnelle.</li>
+  <li><b>Aucun écran de bilan de fin.</b> Pas de « tu as manqué 4 séances », pas de récapitulatif. Le
+  mode se termine comme il a commencé : en un tap, ou tout seul.</li>
+  <li><b>Aucune séance allégée ni remplacée</b> dans le planning (D1) : la variante « voyage »
+  (exercices au poids du corps) est un sous-lot séparé, bloqué sur du contenu de coach.</li>
+  <li><b>Aucune donnée retirée</b> des moyennes, tendances et ACWR (D2). L'annotation remplace
+  l'exclusion — falsifier la donnée pour sauver un affichage serait le pire des choix, et c'est
+  déjà la règle que STREAK-01 s'est imposée sur le joker.</li>
+</ul>
+</div>
+
+<h2>6. Les deux décisions encore ouvertes</h2>
+<div class="flag">
+<b>D5 — rétro-déclaration bornée à 7 jours.</b> Le moment du retour <i>est</i> le moment critique :
+quelqu'un qui a été malade n'a pas ouvert l'app et découvre sa série morte en revenant. Sans
+rétro-déclaration, la fonctionnalité ne sert que ceux qui ont pensé à l'activer <b>avant</b> —
+c'est-à-dire pas ceux qu'elle doit sauver. La contrepartie honnête : cela permet de rattraper une
+série rompue, dans une fenêtre bornée.<br><br>
+<b>D6 — aucun effet sur les objectifs à échéance.</b> OBJ-01 a construit tout son fichier autour d'un
+verdict <b>stable</b> ; décaler une deadline parce qu'une période a été déclarée rendrait le verdict
+manipulable. Conséquence assumée, et visible dans la maquette §3 : <code>goal_behind</code> reste
+affiché pendant la période.
+</div>
+
+<p class="caption" style="margin-top:26px">VIE-01 · roadmap 1.28 ·
+spec <code>docs/specs/functional/us/vie01-mode-vie-reelle.md</code> ·
+plan <code>docs/plans/vie01-mode-vie-reelle.md</code> · 05/08/2026</p>
+
+</div>
+</body>
+</html>

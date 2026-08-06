@@ -65,6 +65,10 @@ bucket_definitions:
       # US OBJ-01 : objectifs à échéance. Ni statut ni progression stockés — tout est dérivé de la
       # fenêtre [start_date, deadline] côté client, donc le calcul marche hors ligne.
       - select * from personal_goals        where user_id = bucket.user_id and deleted_at is null
+      # US VIE-01 : périodes « vie réelle » (bornes incluses). Même patron dérivé qu'OBJ-01 : la ligne
+      # ne porte que son intervalle. L'HISTORIQUE est répliqué volontairement — c'est lui qui permet
+      # d'annoter les analyses passées (décision D2) ; une période échue n'a plus aucun effet actif.
+      - select * from real_life_periods     where user_id = bucket.user_id and deleted_at is null
       # US REPAS-01 : planning repas (4.27) et liste de courses (4.28).
       # `meal_plan_entries` est une INTENTION, jamais du consommé : elle n'a aucun lien avec
       # `food_entries`, que seul un geste explicite de l'utilisateur alimente (règle R1).

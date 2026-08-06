@@ -76,10 +76,11 @@ describe('sizeSpan / clampCol', () => {
 describe('WIDGET_REGISTRY', () => {
   it('accueil 7, muscu 7, course 4 ; gardes pilier', () => {
     // 7 depuis INSIGHTS-02 (05/08/2026), contre **21** la veille — 3,5x le plafond d'ADR-007 §2.
-    // Les 4 premiers sont permanents ; les 3 derniers ne s'affichent jamais tous ensemble par
-    // defaut (opt-in cycle, parcours 7 jours auto-detruit, insights conditionnel), donc le compte
-    // **visible** reste dans la fourchette 4-6 de l'ADR.
-    expect(HOME_WIDGET_IDS).toHaveLength(7);
+    // **8 depuis VIE-01** (le meme jour) : le cliquet a casse la CI et force l'arbitrage, voir le
+    // commentaire de `MAX_HOME_WIDGETS`. Les 4 premiers sont permanents ; parmi les 4 derniers,
+    // `insights` / `activation-path` / `cycle` ne s'affichent jamais tous ensemble par defaut, donc
+    // le compte **visible** typique est de 5 a 6 — dans la fourchette de l'ADR.
+    expect(HOME_WIDGET_IDS).toHaveLength(8);
     // Les hubs **gagnent** ce que l accueil perd : INSIGHTS-02 y a cree les destinations de
     // `record-recent` et `training-time`, qui n en avaient aucune de valable.
     expect(STRENGTH_WIDGET_IDS).toHaveLength(7);
@@ -163,9 +164,10 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 21 : `defaultScreenLayout` part du registre **sans filtrer** — c'est `resolveScreenLayout`
-    // qui applique les gardes. Le widget `cycle` est donc présent ici, masqué là-bas.
-    expect(layout.widgets).toHaveLength(7);
+    // 8 depuis VIE-01 : `defaultScreenLayout` part du registre **sans filtrer** — c'est
+    // `resolveScreenLayout` qui applique les gardes. Le widget `cycle` est donc présent ici,
+    // masqué là-bas.
+    expect(layout.widgets).toHaveLength(8);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -185,7 +187,8 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    expect(r.widgets).toHaveLength(6);
+    // 7 depuis VIE-01 (8 déclarés moins `cycle`, masqué faute d'opt-in).
+    expect(r.widgets).toHaveLength(7);
     assertNoOverlap(r.widgets);
   });
 
@@ -225,8 +228,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses 20 autres widgets (hors `cycle`).
-    expect(r.widgets).toHaveLength(6);
+    // Et le hub garde donc exactement ses autres widgets (hors `cycle`).
+    expect(r.widgets).toHaveLength(7);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -237,7 +240,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(7);
+    expect(r.widgets).toHaveLength(8);
     assertNoOverlap(r.widgets);
   });
 

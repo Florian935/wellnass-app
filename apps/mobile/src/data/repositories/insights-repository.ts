@@ -35,6 +35,7 @@ import {
 } from '@/data/repositories/dashboard-repository';
 import { useGoals } from '@/data/repositories/goal-repository';
 import { useMuscleBalance } from '@/data/repositories/records-repository';
+import { useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useWeeklyReview } from '@/data/repositories/weekly-review-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
@@ -60,6 +61,8 @@ export function canAccessInsights(): boolean {
  */
 export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean } {
   const { settings } = useSettings();
+  // US VIE-01 (R6) : une période déclarée fait taire les signaux de reproche.
+  const { inRealLifePeriod } = useRealLifeState();
 
   // 🔴 `todayKey` vient du hook dédié, JAMAIS d'une lecture d'horloge dans ce corps : React
   // Compiler gèlerait la valeur dans un slot mount-only et la sélection resterait figée jusqu'au
@@ -124,6 +127,10 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
       candidates,
       activePillars: resolveActivePillars(settings?.activePillars),
       todayKey,
+      // US VIE-01 (R6) : pendant une période déclarée, les signaux qui reprochent d'avoir fait moins
+      // se taisent. Les garde-fous de charge, eux, restent armés — `selectInsights` ne les filtre
+      // jamais, y compris ici.
+      inRealLifePeriod,
     });
     // Pas de `i18n.language` en dépendance : `useGoals` et `useRecentStrengthRecords` passent déjà
     // la langue en **paramètre SQL**, donc `finished` et `records` changent d'identité à la bascule
@@ -142,6 +149,7 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
     balance,
     settings?.activePillars,
     todayKey,
+    inRealLifePeriod,
   ]);
 
   return { insights, isLoading };

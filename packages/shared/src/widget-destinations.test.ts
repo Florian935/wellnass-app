@@ -4,6 +4,7 @@ import { INSIGHT_ORDER } from './insights';
 import {
   CONDITIONAL_BY_NATURE,
   HOME_WIDGET_IDS_V1,
+  HOME_WIDGET_IDS_WITH_DESTINATION,
   KEPT_ON_HOME,
   WIDGET_DESTINATIONS,
 } from './widget-destinations';
@@ -26,8 +27,10 @@ describe('table des destinations', () => {
     expect(new Set(HOME_WIDGET_IDS_V1).size).toBe(HOME_WIDGET_IDS_V1.length);
   });
 
-  it('conserve exactement 7 widgets sur l’accueil', () => {
-    expect(KEPT_ON_HOME).toHaveLength(7);
+  it('conserve exactement 8 widgets sur l’accueil', () => {
+    // 7 au dégonflage (INSIGHTS-02), **8 depuis VIE-01** qui a ajouté `real-life` le même jour —
+    // seul id né après le snapshot, d'où la liste compagne `HOME_WIDGET_IDS_POST_V1`.
+    expect(KEPT_ON_HOME).toHaveLength(8);
   });
 
   it('retire donc 14 widgets, chacun avec une destination', () => {
@@ -93,8 +96,11 @@ describe('cohérence avec le registre réel', () => {
   it('n’oublie aucun widget du registre courant', () => {
     // Si quelqu'un ajoute un widget d'accueil sans lui donner de destination, il échappera au
     // prochain dégonflage — et c'est exactement comme ça qu'on est arrivé à 21.
+    //
+    // On compare à l'**union** (snapshot figé + ajouts postérieurs) et non à `V1` seul : un widget né
+    // après le dégonflage doit déclarer sa destination sans pour autant réécrire le snapshot.
     for (const id of HOME_WIDGET_IDS) {
-      expect(HOME_WIDGET_IDS_V1 as readonly string[]).toContain(id);
+      expect(HOME_WIDGET_IDS_WITH_DESTINATION as readonly string[]).toContain(id);
     }
   });
 
