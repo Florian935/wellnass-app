@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Profil et recettes : le poids de départ
+
+**24 tests** sur `profile-repository` et `recipe-repository`.
+
+#### Ajouté
+
+- **`profile-recipe-sql.test.ts` — 24 tests.** Le point dur est le **poids de départ**
+  (règle NUTR-11) : figé au moment où la cible est posée, il sert de référence à toute la
+  progression affichée. Deux façons de le casser, aucune visible à l'écran :
+  - **🔴 le ré-ancrer à tort.** Ré-enregistrer la **même** cible depuis l'écran ne doit pas remettre
+    le départ au poids d'aujourd'hui — sinon la progression déjà accomplie disparaît, sans le
+    moindre message. Le test pose une cible, simule 4 kg perdus, re-valide la même cible et vérifie
+    que le départ n'a pas bougé. Le pendant est testé aussi : une cible **modifiée** doit, elle,
+    ré-ancrer.
+  - **le prendre à la mauvaise source.** C'est la dernière **pesée** qui fait foi, pas le poids du
+    profil — lequel peut dater de l'onboarding. Testé avec un profil à 85 kg et deux pesées : c'est
+    la plus récente (78) qui ancre. Avec repli sur le profil s'il n'y a aucune pesée, et exclusion
+    des pesées supprimées.
+  - Effacer la cible efface **aussi** le départ : garder un départ orphelin laisserait une
+    progression calculée vers rien.
+- Côté recettes : l'ingrédient est un **snapshot** (même raison que le journal alimentaire —
+  corriger la fiche d'un aliment ne doit pas déformer une recette écrite il y a six mois), et les
+  portions ont un **plancher à 1**, testé sur 0, négatif et décimales : diviser les macros par zéro
+  produirait des valeurs infinies à l'écran.
+
+#### Technique / Notes
+
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 967 (mobile) + 181 (admin) = 3 072 tests**. Mobile 26,8 % → **27,3 %** ;
+  `src/data/repositories` 38,2 % → **40,0 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Aliments : propriété et snapshot du journal
 
 **26 tests** sur `food-repository`. Un aliment est partagé entre trois sources — la bibliothèque
