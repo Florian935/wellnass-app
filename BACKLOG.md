@@ -91,17 +91,17 @@ avec son front-matter, **disparaît d'ici** et apparaît dans [ETAT.md](ETAT.md)
 
 ## 🧹 Dette & suivi technique
 
-Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien — **sauf le premier**.
+Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
-- [ ] 🔴 **15 US en recette n'ont aucune section dans [RECETTES.md](RECETTES.md).** Trouvé le
-      06/08/2026 par [`/reconcilier`](.claude/commands/reconcilier.md) : **49 US** sont à
-      `etape: recette`, **34 sections** existent. Manquent **GARDE-01, META-19, MN-04, MR-08,
-      MUSC-12, MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b,
-      TRI-03**. Leurs critères vivent dans leur spec, mais **rien n'est cochable** : personne ne sait
-      ce qu'il reste à vérifier sur device, et c'est précisément l'information que RECETTES.md existe
-      pour empêcher de mourir avec la session qui l'a produite (voir [CLAUDE.md](CLAUDE.md), « la
-      recette est la seule étape qu'un agent ne peut pas franchir »). **À écrire avant la prochaine
-      campagne de recette.** 4 lignes de ce backlog pointaient vers ces sections inexistantes.
+> ✅ **Fermé le 06/08/2026 — les 15 US en recette sans critères cochables.** Ouvert le matin par
+> [`/reconcilier`](.claude/commands/reconcilier.md), comblé l'après-midi : **RECETTES.md §35 à §49**
+> couvrent GARDE-01, META-19, MN-04, MR-08, MUSC-12, MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03,
+> RUN-18, RUN-F1b, RUN-F2a, RUN-F2b et TRI-03. **49 US en recette, 49 sections.** Les 4 lignes de ce
+> backlog qui pointaient dans le vide résolvent à nouveau.
+> 🔴 **Trouvé en écrivant** : les critères de **5** de ces specs étaient **périmés** — INSIGHTS-02 a
+> sorti META-19, GARDE-01, TRI-03, MR-08 et RN-03 de l'accueil pour en faire des cartes de l'écran
+> Insights, et le moteur n'en affiche que **2 par famille**. Les recetter tels quels aurait produit
+> **5 faux défauts**. C'est le vrai gain de l'exercice, pas les cases à cocher.
 
 - [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`

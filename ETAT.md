@@ -92,7 +92,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1101 · `main` a **1098** commits de retard sur `dev` |
+| Commits | 1102 · `main` a **1099** commits de retard sur `dev` |
 | Specs d'US | 129 au total — 79 clôturées, 50 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -103,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `f6fb305` test(repositories): profil et recettes — le poids de départ
 - `a4e8f42` test(repositories): aliments — propriété et snapshot du journal
 - `61073b6` test(repositories): réglages — le repository à l'origine de tout le chantier
 - `f5d1369` test(repositories): modèles de séance — la copie figée
 - `ada8182` test(mobile): résumé de séance — la règle des échauffements
-- `da6756f` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 
 ---
 
