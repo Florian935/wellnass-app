@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Planificateur de rappel : l'orchestration autour de la règle
+
+**8 tests** sur `useStreakReminderScheduler` (US 2.6). Premier planificateur de
+`notification-repository` couvert — un fichier de 477 lignes fait presque entièrement de hooks,
+donc jusqu'ici hors de portée du harness SQL.
+
+#### Ajouté
+
+- **`streak-reminder-scheduler.test.tsx` — 8 tests.** La **décision**
+  (`shouldScheduleStreakReminder` : heure, « ne pas déranger », activité du jour) vit dans
+  `@wellness/shared` et y est testée. Ce qui n'était vérifié nulle part, c'est ce que le hook fait
+  **autour** — et ces défauts-là produisent tous la même chose à l'écran : **rien**.
+  - **🔴 Ne pas décider pendant le chargement.** Tant que l'activité du jour n'est pas résolue,
+    planifier ou annuler revient à trancher sur des données incomplètes — donc à annuler un rappel
+    légitime une fois sur deux, au hasard de la latence de la base locale. Le test vérifie qu'on ne
+    demande même pas la permission dans cet état.
+  - **Permission refusée → annuler ce qui est en attente.** Garder un rappel que l'OS ne délivrera
+    jamais n'aide personne, et laisserait un état sale si la permission revenait.
+  - **🔴 Réévaluer au retour au premier plan.** Il n'y a pas de tâche d'arrière-plan (limite
+    assumée du MVP) : c'est le seul moment où l'app peut constater que l'utilisateur est devenu
+    actif. Sans ce ré-examen, un rappel « ta série est en danger » partirait alors que la séance
+    est déjà faite.
+  - Plus : planification à la bonne heure avec le bon contenu i18n, annulation quand l'utilisateur
+    est déjà actif, indifférence au passage en arrière-plan, désabonnement au démontage.
+
+#### Technique / Notes
+
+- ⚠️ **Piège de mock à connaître** : mocker `react-i18next` sans exposer `initReactI18next` fait
+  échouer **la suite entière à l'import** (« You are passing an undefined module »), parce que
+  `@/i18n` appelle `i18n.use(initReactI18next)` au chargement du module et que le repository
+  l'importe. La clé est ajoutée au mock, avec le commentaire qui explique pourquoi.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 1 014 (mobile) + 181 (admin) = 3 119 tests**. Mobile 28,0 % → **28,3 %** ;
+  `src/data/repositories` 42,6 % → **43,7 %**.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Pesées, repas types, profil coureur
 
 **20 tests** sur trois repositories courts, réunis parce qu'ils partagent la même famille
