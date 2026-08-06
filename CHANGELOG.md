@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Pesées, repas types, profil coureur
+
+**20 tests** sur trois repositories courts, réunis parce qu'ils partagent la même famille
+d'invariants : ce qui est **une ligne par jour**, ce qui est **un instantané**, et ce qui **ajoute**
+au lieu de remplacer. `apps/mobile` franchit les **1 000 tests**.
+
+#### Ajouté
+
+- **`bodyweight-meal-template-sql.test.ts` — 20 tests.**
+  - **🔴 Une pesée par jour.** Se repeser le soir doit **corriger** la valeur du matin, pas créer
+    une seconde ligne. Deux lignes le même jour afficheraient deux points sur la courbe **et**
+    fausseraient l'ancrage du poids de départ (NUTR-11) — donc toute la progression vers
+    l'objectif. Testé aussi : une pesée supprimée n'est pas ressuscitée.
+  - **`getLatestWeightKg` retourne la plus récente par DATE, pas la dernière écrite.** Le test
+    enregistre une pesée du 5 août puis une saisie rétroactive du 1ᵉʳ : c'est bien celle du 5 qui
+    remonte. Prendre la dernière écrite ancrerait la progression sur un poids que l'utilisateur
+    n'a plus.
+  - **🔴 Réappliquer un repas type AJOUTE, ça ne remplace pas.** Appliqué sur un déjeuner déjà
+    rempli, il complète la liste et numérote à la suite — remplacer effacerait ce que
+    l'utilisateur venait de saisir, sans confirmation. Et chaque application est un **instantané
+    indépendant** : réappliquer deux lundis de suite donne deux repas distincts, pas deux
+    références liées.
+  - Supprimer un repas type **ne touche pas** aux repas déjà appliqués : ce sont des faits au
+    journal, pas des références.
+  - `upsertRunnerProfile` : patch partiel — l'allure de référence, mise à jour automatiquement par
+    la détection de records, ne doit pas écraser au passage la fréquence hebdomadaire saisie à la
+    main.
+
+#### Technique / Notes
+
+- J'avais écrit les tests du profil coureur autour d'un champ **`vmaKmh` qui n'existe pas** : la
+  table porte `weekly_frequency`, `objective`, `level` et `ref_5k_pace_s_per_km`. Le harness l'a
+  rejeté immédiatement (colonne absente du schéma), fixtures corrigées. Sans lui, un mock aurait
+  accepté ce champ fantôme sans broncher.
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 1 006 (mobile) + 181 (admin) = 3 111 tests**. Mobile 27,8 % → **28,0 %** ;
+  `src/data/repositories` 41,9 % → **42,6 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Records d'allure : l'idempotence par l'arrondi
 
 **19 tests** sur `running-record-repository`. Un record d'allure est un **fait définitif** dérivé
