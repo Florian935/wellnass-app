@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — Réglages : le repository à l'origine de tout le chantier
+
+**23 tests** sur `settings-repository` — celui dont une colonne manquante a produit le bug de la
+recette du 31/07/2026 qui a lancé ce chantier.
+
+#### Ajouté
+
+- **`settings-sql.test.ts` — 23 tests.** Rappel du bug fondateur : `cycle_tracking_enabled` était
+  absente du schéma PowerSync local, l'écriture échouait, `void updateSettings()` avalait l'erreur,
+  et l'interrupteur restait éteint **sans le moindre message**. Un test nommé verrouille désormais
+  cette écriture ; et comme le harness rejoue les requêtes contre le schéma réel, toute la classe
+  de panne est devenue impossible à rater.
+
+  Trois familles d'invariants, toutes silencieuses en cas de défaut :
+  - **Le sens des défauts d'opt-in.** Health Connect et les deux réglages du cycle valent **OFF**
+    en l'absence de ligne ou de valeur — un défaut inversé activerait une synchro de **données de
+    santé** que personne n'a demandée. L'analytics, à l'inverse, est en **opt-out** : ON par
+    défaut. Se tromper de sens ne se voit sur aucun écran. Chacun a son test, ligne présente comme
+    absente, plus le cas de la ligne en soft delete.
+  - **La tolérance des colonnes JSON.** `active_pillars`, `notifications` et `dashboard_layout`
+    sont sérialisées à la main : une valeur illisible doit **retomber sur un défaut**, pas faire
+    planter l'app au démarrage. Testé avec du JSON volontairement corrompu.
+  - **Le patch partiel.** Régler le thème ne doit pas réinitialiser les piliers actifs. Et
+    effacer la disposition du dashboard doit écrire un vrai `null`, pas la chaîne « null » — qui
+    serait relue comme une valeur au lieu d'une absence.
+
+  Plus `togglePillar` : réversibilité, pas de doublon dans la liste, création de la ligne complète
+  quand elle n'existe pas encore.
+
+#### Technique / Notes
+
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 917 (mobile) + 181 (admin) = 3 022 tests**. Mobile 26,1 % → **26,4 %** ;
+  `src/data/repositories` 35,7 % → **36,8 %**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Modèles de séance : la copie figée
 
 **20 tests** sur `workout-template-repository` (503 l., le plus gros repository encore nu).
