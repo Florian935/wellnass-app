@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `chore/socle-tests-unitaires` — La CI repasse au vert : résolution ESLint du monorepo
+
+Correctif du point 🔴 signalé dans l'entrée précédente (`46781a7`). **La cause n'était pas celle
+qu'on croyait**, et elle ne concerne pas que ce paquet.
+
+#### Corrigé
+
+- 🔴 **`npm run lint` échouait sur `dev`** (`import/no-unresolved` sur
+  `react-native-android-widget`, 3 fichiers de `src/widgets/`).
+
+  **Ce n'était ni un défaut d'installation, ni un défaut du paquet.** Diagnostic mené par
+  élimination : le paquet est au lockfile committé, `require.resolve` le trouve, et le résolveur
+  d'`eslint-plugin-import` appelé **à la main** le trouve aussi. Le fil conducteur était ailleurs :
+  `npx eslint .` passait, `expo lint` échouait — sur le même fichier, la même config.
+
+  `eslint-config-expo` configure le résolveur `node` avec les bonnes extensions mais **sans
+  `moduleDirectory`** : la recherche part alors du **répertoire de travail** d'ESLint, qui diffère
+  entre les deux invocations. `npm run lint` appelant `expo lint`, **c'est la version qui échoue
+  que lance la CI**.
+
+  Le piège n'est pas propre à ce paquet : **tout paquet hoisté à la racine et non dupliqué** dans
+  `apps/mobile/node_modules` peut déclencher le même faux positif, au gré des arbitrages
+  d'installation de npm. Le correctif rend donc les **deux racines de recherche explicites**
+  (`node_modules` et `../../node_modules`) dans
+  [`apps/mobile/eslint.config.js`](apps/mobile/eslint.config.js), plutôt qu'une exception par
+  paquet — qu'il aurait fallu rouvrir à chaque nouvelle dépendance. Les extensions sont réimportées
+  du préréglage Expo pour ne pas en dupliquer la liste.
+
+#### Technique / Notes
+
+- Quality gate **entièrement au vert**, pour la première fois depuis l'intégration des 33 commits :
+  lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` (seuils inclus) propre sur les
+  3 workspaces — **1 924 (shared) + 859 (mobile) + 181 (admin) = 2 964 tests**.
+
 ### 06/08/2026 — `chore/socle-tests-unitaires` — Hooks `AppState` + `shared` remis à 100 %, et **la CI est rouge**
 
 Reprise du lot 5 après l'intégration de 33 commits sur `dev`. Le quality gate a été passé **avant**

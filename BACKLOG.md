@@ -161,19 +161,19 @@ avec son front-matter, disparaît d'ici et apparaît dans [ETAT.md](ETAT.md).
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
-- [ ] 🔴 **`npm run lint` échoue sur `dev` — `react-native-android-widget` non résolu.** Constaté le
-      06/08/2026 sur `e3b2f1a`. Les 3 imports de
-      [`src/widgets/`](apps/mobile/src/widgets/) (LAUNCHER-01) déclenchent
-      `import/no-unresolved`. **Ce n'est pas un problème d'installation** : le paquet est bien au
-      lockfile committé, `npm ci` l'installe, et `require.resolve` le trouve
-      (`lib/commonjs/index.js`) — seul le résolveur d'`eslint-plugin-import` échoue. La CI lance
-      `npm run lint` : **elle est donc rouge**. Piste : le paquet n'a ni champ `exports` ni
-      extension dans `main` (`lib/commonjs/index`) ; ajouter un
-      `settings['import/resolver']` explicite dans la config ESLint mobile, ou une exception ciblée.
-      ⚠️ Ne pas confondre avec deux fausses pistes écartées le même jour : les 11 erreurs de
-      typecheck sur `/meal-plan`, `/pain`, `/insights`, `/strength-lifts` venaient d'un
-      `.expo/types/router.d.ts` **local et périmé** (dossier gitignoré, absent en CI — le
-      supprimer suffit) ; et `packages/shared` sous son seuil de 100 % était un vrai trou, corrigé.
+- [x] ~~🔴 **`npm run lint` échoue sur `dev` — `react-native-android-widget` non résolu.**~~ —
+      **corrigé le 06/08/2026.** Cause réelle : `eslint-config-expo` configure le résolveur `node`
+      **sans `moduleDirectory`**, donc la recherche part du répertoire de travail d'ESLint.
+      `npx eslint .` trouvait les paquets, `expo lint` — ce que lance `npm run lint`, et donc la
+      CI — ne les trouvait pas. Tout paquet **hoisté à la racine et non dupliqué** dans
+      `apps/mobile/node_modules` pouvait déclencher le faux positif, au hasard des arbitrages
+      d'installation de npm. Correctif dans
+      [`apps/mobile/eslint.config.js`](apps/mobile/eslint.config.js) : les deux racines de
+      recherche sont rendues explicites, plutôt qu'une exception par paquet.
+      ⚠️ **Deux fausses pistes écartées** au passage, à ne pas rouvrir : les 11 erreurs de typecheck
+      sur `/meal-plan`, `/pain`, `/insights`, `/strength-lifts` venaient d'un
+      `.expo/types/router.d.ts` **local et périmé** (dossier gitignoré, donc absent en CI — le
+      supprimer suffit) ; `packages/shared` sous son seuil de 100 % était, lui, un vrai trou.
 
 - [x] ~~🟢 **`training-load`/`overtraining-guard` laissent un trou dans la grille du dashboard
       quand ils rendent `null`.**~~ — **corrigé le 03/08/2026** (`fix/dashboard-widgets-tier2-vides`).

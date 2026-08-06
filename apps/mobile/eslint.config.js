@@ -1,11 +1,40 @@
 // https://docs.expo.dev/guides/using-eslint/
 const { defineConfig } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
+// Mêmes extensions que le préréglage Expo (`.android.js`, `.native.tsx`, …) : on ne redéfinit que
+// l'emplacement de recherche, pas la liste des extensions.
+const { allExtensions } = require('eslint-config-expo/flat/utils/extensions');
 
 module.exports = defineConfig([
   expoConfig,
   {
     ignores: ['dist/*', '.expo/*', 'node_modules/*'],
+  },
+  {
+    /**
+     * Résolution des imports — ancrée sur le `node_modules` **hoisté à la racine** du monorepo.
+     *
+     * `eslint-config-expo` configure déjà le résolveur `node`, mais sans `moduleDirectory` : la
+     * recherche part alors du **répertoire de travail** d'ESLint. `npx eslint .` (lancé depuis
+     * `apps/mobile`) trouve donc les paquets, tandis qu'`expo lint` — ce que lance `npm run lint`,
+     * et donc la CI — ne les trouve pas. Symptôme observé le 06/08/2026 :
+     * `react-native-android-widget` (hoisté à la racine, absent d'`apps/mobile/node_modules`)
+     * remontait `import/no-unresolved` sur les 3 fichiers de `src/widgets/`, alors que
+     * `require.resolve` et le résolveur appelé à la main le trouvaient tous les deux.
+     *
+     * Le piège n'est pas ce paquet en particulier : **tout paquet hoisté et non dupliqué** dans
+     * `apps/mobile/node_modules` peut déclencher le même faux positif, au hasard des arbitrages
+     * d'installation de npm. On rend donc les deux racines explicites plutôt que d'ajouter une
+     * exception par paquet.
+     */
+    settings: {
+      'import/resolver': {
+        node: {
+          extensions: allExtensions,
+          moduleDirectory: ['node_modules', '../../node_modules'],
+        },
+      },
+    },
   },
   {
     /**
