@@ -10,6 +10,89 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 06/08/2026 — `feature/doul01-journal-zones-douloureuses` — Journal des zones douloureuses (roadmap 1.29)
+
+Suite de `a26d685`. Déclarer une zone sensible sur un schéma corporel, en garder l'historique, et
+recevoir un **fait daté** quand une séance planifiée cible une zone récemment signalée. Idée promue
+depuis IDEAS.md (13/07/2026).
+
+**2 943 tests** (1 920 shared `+40`, 842 mobile `+18`, 181 admin), typecheck et lint à **0 erreur**.
+**3 migrations poussées**, **sync rule déployée** — recettable immédiatement, sur l'APK existant.
+
+**4 arbitrages Florian** : zones **muscles + articulations** · **signal factuel, jamais de conseil** ·
+3 niveaux (gêne / douleur / bloquant) · **substitution hors périmètre**.
+
+#### 🔴 La correction de cadrage qui définit l'US
+
+L'US **ne débloque pas** la substitution d'exercice, contrairement à ce qui avait été annoncé à l'oral
+en la proposant. MUSC-F14 n'avait pas retiré le motif « zone douloureuse » faute de savoir *où*
+l'utilisateur a mal, mais faute d'**information articulaire et de schéma de mouvement sur
+`exercises`** (sa spec §0.1). Ce journal fournit la moitié gauche de l'équation ; la droite reste
+absente, et suggérer un remplacement serait un **conseil de santé inventé**.
+
+**Conséquence structurante, et testée** : les 10 zones **musculaires** produisent un signal
+(projetables vers `FINE_MUSCLES`), les 8 zones **articulaires** n'en produisent aucun — on sait qu'un
+squat charge les quadriceps, pas qu'il charge le genou. Un test vérifie que les articulations n'ont
+**aucune** projection, pour que personne ne « corrige » un jour cette asymétrie en croyant combler un
+oubli.
+
+#### Ajouté
+
+- **`packages/shared/src/pain-zones.ts`** — vocabulaire (18 zones, 3 niveaux), fraîcheur glissante de
+  7 jours, projection partielle, choix du signal, `dominantFineMuscles`. **40 tests.**
+- **Table `pain_reports`** (3 migrations) + sync rule + `powersync/schema.ts` + export RGPD.
+  ⚠️ **`zone` sans `CHECK`** (liste applicative évolutive ; une violation bloquerait la file d'upload
+  PowerSync — patron `meal_key` de REPAS-01), `level` **avec** `CHECK` (3 valeurs fermées).
+- **`pain-repository.ts`** + **12 tests SQL**. La garde d'opt-in est **dans le repository**, pas
+  seulement dans l'UI : une route atteinte par deep-link ne doit pas pouvoir écrire une donnée de
+  santé — défaut relevé en recette de CYCLE-01.
+- **`PainBodyMap.tsx`** — 8 pastilles articulaires ajoutées à la géométrie existante. Muscles =
+  plaques, articulations = pastilles : la **forme** distingue `shoulders` de `shoulder_joint` sans
+  lire un libellé. Trois niveaux par **trois teintes**, pas trois opacités (MUSC-F1b avait constaté
+  qu'une 3ᵉ opacité est illisible).
+- **Écran `/pain`** (+ route déclarée dans `_layout.tsx` — leçon PAS-01), **bandeau de signal** sur le
+  planning, **réglage d'opt-in**, **42 clés i18n × FR/EN**.
+- **Test de vocabulaire interdit** (6 cas) : les clés `pain.*` échouent sur « blessure », « repos
+  conseillé », « consulte », « guérison »… La règle R6 est exécutable, pas déclarative.
+
+#### Modifié
+
+- **`BodyMap.tsx`** — **un seul changement** : `MUSCLE_PATHS` est exporté. Trois écrans en dépendent
+  (`exercises/[id]`, `programs/[id]`, `review`), dont deux en recette : on duplique la géométrie dans
+  un composant distinct plutôt que de rendre celui-ci interactif.
+- **`planned-session-repository.ts`** — `useWeekPainSignals` réutilise **la requête d'enrichissement
+  de COLLIS-01** plutôt que d'en écrire une seconde : même chiffre, et deux requêtes auraient divergé.
+- **`settings-repository.ts` / `settings.ts` / `powersync/schema.ts`** — les 6 points d'édition d'un
+  réglage booléen, checklist héritée de la panne silencieuse de CYCLE-01.
+
+#### Corrigé
+
+- **`pain-zones.test.ts` passait au vert sur un type faux.** `{ back: 14, biceps: 4 }` — `biceps` est
+  un muscle **fin**, alors que l'entrée attend les 6 groupes **larges**. Vitest ne typechecke pas ;
+  seul `tsc` l'a vu, à la vérification globale. Rappel utile : des tests verts ne remplacent pas un
+  typecheck.
+- **`expect(valeur, message)` est l'API Vitest, pas Jest.** Le paquet mobile tourne sous Jest, qui
+  refuse le 2ᵉ argument. Le contexte est désormais porté par l'assertion elle-même.
+
+#### Technique / Notes
+
+- ✅ **Conformité légère, à l'inverse de CYCLE-01** : la catégorie « Santé » et le disclaimer médical
+  **existaient déjà** dans la fiche Play, et l'US **n'écrit rien dans Health Connect** → déclaration
+  « Health apps » **inchangée à 6 types**, **aucun délai externe ajouté**. C'est un choix, pas une
+  chance.
+- ⚠️ **`react-native-svg` n'accepte ni `accessibilityRole` ni `accessibilityState`** sur ses formes,
+  seulement `accessibilityLabel` (constaté au typecheck). Le parcours accessible passe donc par une
+  **liste de zones** sous le schéma — de vrais boutons, qui règlent au passage le problème des petites
+  articulations difficiles à viser au doigt.
+- ⚠️ Warning CLI au push (`failed to cache migrations catalog`), **le même qu'aux push de REPAS-01 et
+  VIE-01** : mise en cache du catalogue pg-delta, pas exécution. Démenti par `npm run db:types`
+  (+44 lignes, **aucune suppression**).
+- 🟠 **1 point ouvert en recette** : la fenêtre de fraîcheur de **7 jours** demande un jugement de
+  pratiquant (critère 22). La changer coûte une ligne (`PAIN_FRESHNESS_DAYS`).
+- **Ce qu'il faudrait pour débloquer la substitution** est tracé en spec §8 : taguer chaque exercice
+  avec l'articulation sollicitée et son schéma de mouvement — **travail de coach**, même blocage que
+  CONTENU-01. Tracé, pas promis.
+
 ### 06/08/2026 — `feature/vie01-mode-vie-reelle` — Mode « vie réelle », dégradation gracieuse (roadmap 1.28)
 
 Suite de `a06e406`. En **un tap**, l'utilisateur déclare une période où la vie prend le dessus

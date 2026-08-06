@@ -145,6 +145,14 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
   cycleTrackingEnabled: z.boolean().default(false),
   /** US COLLIS-01 — opt-in du détecteur de collisions entre séances (décision H). */
   sessionConflictsEnabled: z.boolean().default(false),
+  /**
+   * US DOUL-01 — opt-in du journal des zones douloureuses (R7).
+   *
+   * **Donnée de santé** : tant qu'il est faux, aucun écran, aucun signal, et **aucune ligne écrite**
+   * dans `pain_reports`. Le défaut `false` garantit qu'aucun compte existant ne se met à collecter
+   * une donnée de santé à la mise à jour.
+   */
+  painJournalEnabled: z.boolean().default(false),
 
   /**
    * Synchronisation du cycle avec Health Connect (US CYCLE-01, R20). **Indépendant** de

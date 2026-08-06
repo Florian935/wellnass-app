@@ -809,6 +809,42 @@ export default function SettingsScreen() {
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.conflicts.hint')}</Text>
 
+      {/* US DOUL-01 — journal des zones sensibles. **Donnée de santé** : opt-in strict, désactivé par
+          défaut, et la garde est aussi dans le repository (une route atteinte par deep-link ne doit
+          pas pouvoir écrire — défaut relevé en recette de CYCLE-01). */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('pain.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('pain.settings.label')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('pain.settings.hint')}
+            </Text>
+          </View>
+          <Switch
+            value={settings?.painJournalEnabled ?? false}
+            onValueChange={(next) => void updateSettings({ painJournalEnabled: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('pain.settings.label')}
+          />
+        </View>
+        {settings?.painJournalEnabled === true && (
+          <Pressable
+            onPress={() => router.push('/pain')}
+            accessibilityRole="button"
+            accessibilityLabel={t('pain.title')}
+            style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}
+          >
+            <Text style={[styles.rowLabel, { color: colors.accent }]}>{t('pain.cta')}</Text>
+          </Pressable>
+        )}
+      </View>
+
       {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.analytics.title')}

@@ -493,6 +493,20 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US DOUL-01 — journal des zones sensibles. ⚠️ Sans cette déclaration, l'écran n'a aucun
+            en-tête et son titre se dessine sous la barre d'état : leçon de PAS-01, qu'aucun test ni
+            typecheck n'attrape. */}
+        <Stack.Screen
+          name="pain"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('pain.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="nutrition-stats"
           options={{

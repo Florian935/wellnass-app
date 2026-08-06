@@ -28,6 +28,7 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { PainSignalBanner } from '@/components/planning/PainSignalBanner';
 import { SessionConflictBanner } from '@/components/planning/SessionConflictBanner';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -37,6 +38,7 @@ import {
   skipPlannedSession,
   useMissedSessions,
   useSessionConflicts,
+  useWeekPainSignals,
   useWeekPlan,
   type PlannedSessionItem,
 } from '@/data/repositories/planned-session-repository';
@@ -112,6 +114,7 @@ export default function PlanningScreen() {
   // US COLLIS-01 — conflits de séquençage de la semaine affichée. Rend [] tant que le réglage
   // opt-in est éteint (désactivé par défaut, décision H).
   const { conflicts } = useSessionConflicts(weekStart);
+  const painSignals = useWeekPainSignals(weekStart);
   /** Zones mesurées à l'écran (coordonnées absolues) — fraîches à chaque début de geste. */
   const zonesRef = useRef<DropZone[]>([]);
   /** Id de la séance actuellement tirée (`null` = aucun geste en cours). */
@@ -378,6 +381,11 @@ export default function PlanningScreen() {
                       onSwap={(target) => void reschedulePlannedSession(c.runSessionId, target)}
                     />
                   ))}
+                {/* US DOUL-01 — un fait daté, sans action, sur la séance concernée (R4). */}
+                {dayItems.map((item) => {
+                  const signal = painSignals.get(item.id);
+                  return signal ? <PainSignalBanner key={`pain-${item.id}`} signal={signal} /> : null;
+                })}
                 {dayItems.length === 0 ? (
                   <Text style={[styles.restDay, { color: colors.textMuted }]}>
                     {t('planning.restDay')}

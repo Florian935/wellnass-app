@@ -38,10 +38,13 @@ import type {
   PlanProgramInput,
   PlanTemplateSession,
   ProgramSessionType,
+  SessionPainSignal,
 } from '@wellness/shared';
 import {
   findSessionConflicts,
   addDays,
+  dominantFineMuscles,
+  pickSessionPainSignal,
   computeIntervalRegularity,
   computeWeekCompletionRate,
   daysBetween,
@@ -52,6 +55,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { usePainReports } from '@/data/repositories/pain-repository';
 import { nowUtc, patch, txInsert } from './_sql';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
@@ -667,6 +671,59 @@ type MuscleSetsRow = {
  * 🔴 `todayKey` vient du hook dédié : sans lui, le moteur pourrait proposer un repli **dans le
  * passé**, et la course naîtrait « manquée ».
  */
+/**
+ * Le signal « zone sensible » de chaque séance de muscu de la semaine (US DOUL-01, R4).
+ *
+ * Réutilise **la requête d'enrichissement de COLLIS-01** plutôt que d'en écrire une seconde : les
+ * deux fonctionnalités ont besoin du même chiffre (séries par groupe musculaire d'une séance
+ * planifiée), et deux requêtes auraient divergé au premier ajustement.
+ *
+ * ⚠️ **Journal éteint = rien**, obtenu par le même gate `owner_id` vide que COLLIS-01. Une donnée de
+ * santé ne doit produire aucune surface tant que l'utilisateur n'a pas activé le journal — y compris
+ * à partir de lignes restées en base après une désactivation sans suppression.
+ *
+ * Rend une `Map` indexée par id de séance planifiée : l'écran affiche le bandeau sur la séance
+ * concernée, pas sur le jour.
+ */
+export function useWeekPainSignals(weekStartDate: string): Map<string, SessionPainSignal> {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { settings } = useSettings();
+  const todayKey = useTodayKey();
+  const { reports } = usePainReports();
+
+  const [y, m, d] = weekStartDate.split('-').map(Number);
+  const weekEnd = localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
+
+  const enabled = settings?.painJournalEnabled === true;
+  const { data: setsRows } = useQuery<MuscleSetsRow>(SELECT_PLANNED_MUSCLE_SETS, [
+    enabled ? userId : '',
+    weekStartDate,
+    weekEnd,
+  ]);
+
+  return useMemo(() => {
+    const signals = new Map<string, SessionPainSignal>();
+    if (!enabled) return signals;
+
+    const byPlannedSession = new Map<string, Partial<Record<MuscleGroup, number | null>>>();
+    for (const row of setsRows) {
+      const entry = byPlannedSession.get(row.planned_session_id) ?? {};
+      entry[row.muscle as MuscleGroup] = row.sets;
+      byPlannedSession.set(row.planned_session_id, entry);
+    }
+
+    for (const [sessionId, sets] of byPlannedSession) {
+      const signal = pickSessionPainSignal({
+        reports,
+        sessionMuscles: dominantFineMuscles(sets),
+        todayKey,
+      });
+      if (signal !== null) signals.set(sessionId, signal);
+    }
+    return signals;
+  }, [enabled, setsRows, reports, todayKey]);
+}
+
 export function useSessionConflicts(weekStartDate: string): {
   conflicts: SessionConflict[];
   isLoading: boolean;

@@ -69,6 +69,11 @@ bucket_definitions:
       # ne porte que son intervalle. L'HISTORIQUE est répliqué volontairement — c'est lui qui permet
       # d'annoter les analyses passées (décision D2) ; une période échue n'a plus aucun effet actif.
       - select * from real_life_periods     where user_id = bucket.user_id and deleted_at is null
+      # US DOUL-01 : zones sensibles déclarées (une ligne par jour ET par zone).
+      # ⚠️ Donnée de SANTÉ : elle ne quitte l'appareil que si l'utilisateur a activé le journal
+      # (opt-in strict, `user_settings.pain_journal_enabled`, désactivé par défaut). Rien n'est
+      # écrit dans Health Connect — c'est ce qui garde la déclaration Play « Health apps » à 6 types.
+      - select * from pain_reports          where user_id = bucket.user_id and deleted_at is null
       # US REPAS-01 : planning repas (4.27) et liste de courses (4.28).
       # `meal_plan_entries` est une INTENTION, jamais du consommé : elle n'a aucun lien avec
       # `food_entries`, que seul un geste explicite de l'utilisateur alimente (règle R1).

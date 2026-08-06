@@ -11,11 +11,12 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **05/08/2026** — 33 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **06/08/2026** — 34 sections. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
 > relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
 > rule ni nouveau build** — recettable sur l'APK existant. 🔴 **VIE-01** (§33) : migrations poussées,
-> mais sa **sync rule (table neuve) reste à déployer** — dernier bloquant.
+> mais sa **sync rule (table neuve) reste à déployer**. ✅ **DOUL-01** (§34) : migrations
+> poussées et sync rule déployée — **recettable immédiatement**, sur l'APK existant.
 
 ---
 
@@ -1202,6 +1203,58 @@ erreur visible**. Le critère 1 ci-dessous passerait quand même — c'est ce qu
       échéance d'objectif (est-ce le bon choix ?).
 
 **Quand l'US passe** : `etape: close`, roadmap 1.28 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 34. DOUL-01 — Journal des zones douloureuses
+
+📄 [spec](docs/specs/functional/us/doul01-journal-zones-douloureuses.md) · roadmap **1.29** ·
+**📱 device** · ✅ **aucune dépendance native → recettable sur l'APK existant**.
+
+✅ **Aucun bloquant : tout est en place.** Les 3 migrations sont poussées (06/08/2026) et la **sync
+rule PowerSync est déployée**. `npm run db:types` confirme `pain_reports` et `pain_journal_enabled`
+depuis le cloud. La recette peut commencer.
+
+> **Comment provoquer l'état.** Réglages → *Zones sensibles* → activer, puis *Signaler une zone*.
+> Pour le signal, il faut une séance de muscu **planifiée** dont un groupe musculaire domine.
+
+- [ ] 1. Réglage **désactivé par défaut** sur un compte neuf ; aucun écran, aucun signal.
+- [ ] 2. Une fois activé : déclarer une zone en 2 taps (zone puis niveau).
+- [ ] 3. Les **18 zones** sont atteignables, face **et** dos, sur le schéma **et** dans la liste.
+- [ ] 4. `Épaules` (muscle) et `Articulation de l'épaule` sont **distinguables** : plaque contre
+      pastille sur le schéma, libellés différents dans la liste.
+- [ ] 5. Les petites articulations (poignet, cheville) sont **tapables au doigt** — c'est le point le
+      plus incertain du dessin, à juger sur device.
+- [ ] 6. Redéclarer la même zone le même jour **met à jour** le niveau, sans créer de doublon.
+- [ ] 7. Les 3 niveaux se distinguent **par la couleur** sur le schéma (gêne / douleur / bloquant).
+- [ ] 8. Une zone **musculaire** en `douleur` → la séance planifiée qui la cible affiche le **fait
+      daté**, **sans aucun bouton**.
+- [ ] 9. Une zone en `gêne` → **aucun signal** (une courbature n'est pas une alerte).
+- [ ] 10. 🔴 Une zone **articulaire** en `bloquant` (ex. genou) → **aucun signal**, même sur une
+      séance de jambes. C'est le comportement le plus contre-intuitif de l'US, et il est **voulu** :
+      on ne sait pas qu'un squat charge un genou.
+- [ ] 11. Deux zones sensibles sur la même séance → **un seul** message, sur la plus grave.
+- [ ] 12. Au 8ᵉ jour, la zone **sort du signal** et **reste dans l'historique**.
+- [ ] 13. L'historique montre la **suite** des niveaux d'une zone, jamais une moyenne.
+- [ ] 14. 🔴 **Relecture du vocabulaire, FR et EN** : aucun « blessure », « repos conseillé »,
+      « consulte », « guérison ». Un test automatique couvre les clés i18n — mais **relis l'écran**,
+      il ne couvre pas ce que le schéma suggère.
+- [ ] 15. Désactiver le journal → écrans et signaux disparaissent ; les données restent.
+- [ ] 16. Mode avion → déclaration, historique et signal identiques.
+- [ ] 17. Export RGPD : `pain_reports` est présent dans l'archive.
+- [ ] 18. 🔴 **L'opt-in survit à une réinstallation** — le seul test qui exerce ensemble la migration,
+      la colonne et le schéma PowerSync local (panne CYCLE-01).
+- [ ] 19. **Deuxième appareil** : une zone déclarée sur A apparaît sur B. C'est **le seul critère qui
+      vérifie la sync rule** — sans elle, tout le reste passe et la donnée ne remonte jamais.
+- [ ] 20. Police 1,5×, thème sombre : schéma et liste lisibles, non tronqués.
+- [ ] 21. TalkBack : les zones sont déclarables **par la liste** (le schéma SVG n'expose que des
+      libellés — `react-native-svg` n'accepte pas `accessibilityRole` sur ses formes).
+- [ ] 22. 🟠 **Jugement de pratiquant** : la fenêtre de **7 jours** est-elle la bonne ? Trop longue
+      (l'app radote sur une douleur passée) ou trop courte ? Changer coûte une ligne
+      (`PAIN_FRESHNESS_DAYS`).
+
+**Quand l'US passe** : `etape: close`, roadmap 1.29 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).
 
 ---

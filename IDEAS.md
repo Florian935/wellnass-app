@@ -482,9 +482,27 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   photo de l'assiette → estimation des aliments/macros. Recoupe [[nutrition-recettes-healthy]].
 - [13/07/2026] 🆕 **Suivi du jeûne intermittent / fenêtre alimentaire** : timer + historique de la
   fenêtre repas. Public fitness demandeur ; non couvert par le cadrage nutrition.
-- [13/07/2026] 🆕 **Journal blessures/douleurs & courbatures** : noter une zone sensible → l'app évite
+- [13/07/2026] ✅ **PROMUE le 06/08/2026 → US DOUL-01 (roadmap 1.29)**, cadrée et livrée le jour même.
+  **4 arbitrages Florian** : zones **muscles + articulations** (les 10 `FINE_MUSCLES` ne suffisaient
+  pas — les douleurs d'entraînement sont surtout articulaires) · **signal factuel, jamais de conseil**
+  · 3 niveaux gêne / douleur / bloquant · **substitution hors périmètre**.
+  🔴 **La fiche ci-dessous se trompait sur un point**, et le cadrage l'a corrigé : « l'app évite de
+  programmer ce groupe » n'est **pas** réalisable, et le lien avec [[substitution-exercices]] non plus.
+  MUSC-F14 n'avait pas retiré le motif « zone douloureuse » faute de savoir *où* l'utilisateur a mal,
+  mais faute d'**information articulaire et de schéma de mouvement sur `exercises`** — donnée que ce
+  journal ne produit pas. L'app énonce donc un **fait daté** (« cette séance cible le dos, signalé
+  douloureux il y a 2 jours ») et s'arrête là. Conséquence assumée et **testée** : les 10 zones
+  musculaires produisent un signal, les 8 zones articulaires **aucun**. Ce qu'il faudrait pour
+  débloquer la substitution est tracé en spec §8 — du **travail de coach**, comme CONTENU-01.
+  Spec : docs/specs/functional/us/doul01-journal-zones-douloureuses.md.
+
+  <details><summary>Fiche d'origine (conservée)</summary>
+
+  🆕 **Journal blessures/douleurs & courbatures** : noter une zone sensible → l'app évite
   de programmer ce groupe ou alerte. Complète la récup ; lié à [[substitution-exercices]] et
   [[analyses-croisees-poussees]].
+
+  </details>
 - [13/07/2026] 🆕 **Commandes / annonces vocales pendant la séance** : mains occupées — « série
   validée », « prochain exercice ». Étend à la muscu les annonces audio running déjà prévues.
 - [13/07/2026] 🆕 **Langues supplémentaires (ES, DE…)** : extension naturelle post-FR/EN ; l'archi

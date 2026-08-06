@@ -83,4 +83,6 @@ export * from './insight-adapters';
 export * from './session-conflicts';
 // US VIE-01 (roadmap 1.28) — mode « vie réelle », dégradation gracieuse des objectifs.
 export * from './real-life';
+// US DOUL-01 (roadmap 1.29) — journal des zones douloureuses.
+export * from './pain-zones';
 export type { Database, Json } from './database.types';

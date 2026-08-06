@@ -2127,6 +2127,58 @@
     "a11yKindTab": "Afficher la courbe : {{kind}}",
     "closeSheet": "Fermer la saisie"
   },
+  "pain": {
+    "title": "Zones sensibles",
+    "cta": "Signaler une zone",
+    "intro": "Note où ça coince. L'app te le rappellera avant une séance qui cible cette zone — sans jamais te dire quoi faire.",
+    "pickZone": "Muscles",
+    "jointsHint": "Articulations",
+    "howMuch": "{{zone}} — c'est à quel point ?",
+    "currentTitle": "Actuellement sensibles",
+    "historyTitle": "Historique",
+    "empty": "Aucune zone signalée.",
+    "today": "Aujourd'hui",
+    "remove": "Retirer {{zone}}",
+    "removeShort": "Retirer",
+    "signal": "Cette séance cible surtout {{zone}}, signalé {{level}} il y a {{count}} jour",
+    "signal_other": "Cette séance cible surtout {{zone}}, signalé {{level}} il y a {{count}} jours",
+    "signalToday": "Cette séance cible surtout {{zone}}, signalé {{level}} aujourd'hui",
+    "levels": {
+      "discomfort": "Gêne",
+      "pain": "Douleur",
+      "blocking": "Bloquant"
+    },
+    "zones": {
+      "chest": "Pectoraux",
+      "back": "Dos",
+      "shoulders": "Épaules",
+      "biceps": "Biceps",
+      "triceps": "Triceps",
+      "abs": "Abdominaux",
+      "glutes": "Fessiers",
+      "quadriceps": "Quadriceps",
+      "hamstrings": "Ischio-jambiers",
+      "calves": "Mollets",
+      "neck": "Nuque",
+      "shoulder_joint": "Articulation de l'épaule",
+      "elbow": "Coude",
+      "wrist": "Poignet",
+      "lower_back": "Lombaires",
+      "hip": "Hanche",
+      "knee": "Genou",
+      "ankle": "Cheville"
+    },
+    "settings": {
+      "label": "Journal des zones sensibles",
+      "hint": "Noter où ça coince, et être prévenu avant une séance qui cible la zone. Rien n'est enregistré tant que c'est désactivé.",
+      "deleteAll": "Supprimer mes déclarations",
+      "deleted": "{{count}} déclaration supprimée",
+      "deleted_other": "{{count}} déclarations supprimées"
+    },
+    "errors": {
+      "failed": "L'enregistrement a échoué. Réessaie."
+    }
+  },
   "realLife": {
     "title": "Mode vie réelle",
     "cta": "Ça se complique ? Allège la semaine",

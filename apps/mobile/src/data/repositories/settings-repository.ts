@@ -53,6 +53,7 @@ export type SettingsInput = Pick<
   | 'healthConnectEnabled'
   | 'cycleTrackingEnabled'
   | 'sessionConflictsEnabled'
+  | 'painJournalEnabled'
   | 'cycleHealthConnectEnabled'
   | 'sbdLifts'
 >;
@@ -79,6 +80,8 @@ type SettingsDbRow = {
   /** 0/1 (opt-in suivi du cycle, US CYCLE-01) ou null sur les lignes locales antérieures. */
   cycle_tracking_enabled: number | null;
   session_conflicts_enabled: number | null;
+  /** 0/1 (opt-in journal des zones douloureuses, US DOUL-01 — donnée de santé) ou null. */
+  pain_journal_enabled: number | null;
   /** 0/1 (synchro cycle ↔ Health Connect) ou null sur les lignes locales antérieures. */
   cycle_health_connect_enabled: number | null;
   /** Stockée en TEXT (JSON sérialisé) — mouvements de force désignés (US MUSCPWR-01). */
@@ -149,6 +152,10 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     healthConnectEnabled: decodeHealthConnectEnabled(row),
     cycleTrackingEnabled: decodeCycleTrackingEnabled(row),
     sessionConflictsEnabled: row.session_conflicts_enabled === 1,
+    // `=== 1` et non un décodage tolérant : sur une ligne locale antérieure la colonne est `null`,
+    // ce qui doit se lire **désactivé**. Pour une donnée de santé, l'absence ne vaut jamais
+    // consentement (même règle que le widget `cycle`).
+    painJournalEnabled: row.pain_journal_enabled === 1,
     cycleHealthConnectEnabled: decodeCycleHealthConnectEnabled(row),
     // Parse tolérant (`sbdLiftsSchema` a un `catch`) : une valeur illisible ou absente retombe sur
     // « rien de désigné », ce qui masque le module force sans casser la lecture des réglages.
@@ -189,6 +196,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('sessionConflictsEnabled' in input) {
     columns['session_conflicts_enabled'] = input.sessionConflictsEnabled ? 1 : 0;
+  }
+  if ('painJournalEnabled' in input) {
+    columns['pain_journal_enabled'] = input.painJournalEnabled ? 1 : 0;
   }
   if ('cycleTrackingEnabled' in input) {
     columns['cycle_tracking_enabled'] = input.cycleTrackingEnabled ? 1 : 0;

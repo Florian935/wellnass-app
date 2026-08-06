@@ -32,7 +32,11 @@ const REDUCED_OPACITY = 0.35;
  * Régions reprises de la maquette (rectangles à main levée, pas une planche d'anatomie complète —
  * le niveau de détail assumé par le produit, spec §1).
  */
-const MUSCLE_PATHS: Record<FineMuscle, string> = {
+// ⚠️ Exporté pour `PainBodyMap` (US DOUL-01), qui réutilise la **géométrie** sans rendre ce
+// composant-ci interactif : trois écrans en dépendent (`exercises/[id]`, `programs/[id]`, `review`),
+// dont deux appartiennent à des US en recette. Un fichier de plus vaut mieux qu'une régression sur
+// des écrans qui marchent. C'est le seul changement apporté à ce fichier par DOUL-01.
+export const MUSCLE_PATHS: Record<FineMuscle, string> = {
   chest: 'M34 48h44v30H34z',
   back: 'M34 48h44v34H34z',
   shoulders: 'M24 46h14v12H24z M74 46h14v12H74z',

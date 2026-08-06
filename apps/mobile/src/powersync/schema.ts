@@ -69,6 +69,9 @@ const user_settings = new Table({
   // US COLLIS-01 — opt-in du détecteur de collisions entre séances. 🔴 Sans cette ligne, l'écriture
   // échoue et `void updateSettings()` avale l'erreur : l'interrupteur reste éteint sans message.
   session_conflicts_enabled: column.integer, // 0/1
+  // US DOUL-01 — opt-in du journal des zones douloureuses (donnée de SANTÉ). Même piège que
+  // ci-dessus : absente d'ici, l'écriture échoue en silence et le journal reste inactivable.
+  pain_journal_enabled: column.integer, // 0/1
   cycle_health_connect_enabled: column.integer, // 0/1
   // US MUSCPWR-01 — mouvements de force désignés, JSON {squat,bench,deadlift} sérialisé.
   // ⚠️ Troisième colonne de cette table à devoir être déclarée ici : les deux précédentes
@@ -697,6 +700,24 @@ const real_life_periods = new Table({
   deleted_at: column.text,
 });
 
+// ── US DOUL-01 : journal des zones douloureuses ────────────────────────────
+// Migrations : supabase/migrations/20260806090000_doul01_pain_reports.sql
+//              + 20260806090001_doul01_pain_reports_publication.sql
+//              + 20260806090002_doul01_pain_journal_opt_in.sql (colonne sur user_settings)
+// Une ligne par (jour, zone) — patron `daily_wellbeing`. `zone` couvre 18 valeurs : 10 muscles
+// (projetables vers FINE_MUSCLES, donc capables de produire un signal) et 8 articulations
+// (journalisables mais muettes — rien ne relie un exercice à un genou dans nos données).
+// ⚠️ Donnée de SANTÉ, opt-in strict. Aucun écrit dans Health Connect, délibérément.
+const pain_reports = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  zone: column.text,
+  level: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -748,6 +769,7 @@ export const AppSchema = new Schema({
   streak_jokers,
   personal_goals,
   real_life_periods,
+  pain_reports,
   exercises,
   exercise_translations,
   exercise_favorites,

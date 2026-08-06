@@ -64,6 +64,11 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // l'export (décision D2 : les jours restent dans les données, la période les annote) — l'omettre
   // rendrait l'archive exacte mais illisible.
   { table: 'real_life_periods', col: 'user_id' },
+  // US DOUL-01 — zones sensibles déclarées. **Donnée de santé** : son absence de l'export ne serait
+  // pas une finition oubliée mais un manquement RGPD, exactement comme l'a écrit CYCLE-01 pour le
+  // cycle menstruel. Exportée même si le journal a été désactivé sans suppression — ce qui est gardé
+  // reste exportable.
+  { table: 'pain_reports', col: 'user_id' },
   // US CYCLE-01 — cycle menstruel. **Catégorie sensible au sens du RGPD** : l'omettre de l'export
   // ne serait pas une finition oubliée mais un manquement réglementaire. Les deux tables sont
   // exportées même quand le suivi a été désactivé sans suppression (R17 : « garder » est un choix

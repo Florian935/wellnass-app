@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DOUL-01 — Journal des zones douloureuses</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8;
+        --l1:#e3c9a8;--l2:#d08a5a;--l3:#a83b2a}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:250px}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+        padding:11px 13px;margin-bottom:9px}
+  .ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+          color:var(--muted);margin-bottom:7px}
+  .muted{color:var(--muted)}
+
+  .bodyrow{display:flex;gap:10px;justify-content:center;padding:6px 0}
+  svg{display:block}
+  .zlabel{font-size:9px;fill:#8a7c68}
+
+  .levels{display:flex;gap:7px;margin-top:8px}
+  .lv{flex:1;text-align:center;border-radius:10px;padding:9px 4px;border:1px solid var(--border);
+      background:var(--surf);font-size:11.5px;font-weight:700}
+  .lv .dot{display:block;width:12px;height:12px;border-radius:50%;margin:0 auto 5px}
+  .lv.on{border-color:var(--l3);background:#fdf0ec}
+
+  .hist{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;
+        border-bottom:1px solid var(--border)}
+  .hist:last-child{border-bottom:none}
+  .pill{font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:999px;color:#fff}
+  .hist .when{margin-left:auto;font-size:11.5px;color:var(--muted)}
+  .seq{display:flex;gap:3px;margin-left:auto}
+  .seq i{width:9px;height:9px;border-radius:2px;display:block}
+
+  .signal{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+          border-radius:12px;padding:11px 12px;margin-top:8px}
+  .stitle{font-size:13px;font-weight:800;color:#6d4f14;line-height:1.35}
+  .sbody{font-size:11.5px;color:#7a5c1c;margin-top:4px}
+  .mute{display:inline-block;margin-top:8px;font-size:11px;color:#8a7c68;font-style:italic}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  .ok{background:#f2f5ec;border:1px solid #d8e0c8;border-left:3px solid var(--success);
+      border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border)}
+  th{background:var(--surfalt);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;
+     color:#5d5142}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--text)}
+  .no{color:#a83b2a;font-weight:800}
+  .yes{color:#66714b;font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>DOUL-01 — Journal des zones douloureuses</h1>
+<p class="sub">Déclarer où ça fait mal, en garder l'historique, et laisser l'app dire un <b>fait</b>
+quand une séance planifiée cible une zone récemment signalée. Quatre arbitrages Florian du
+06/08/2026 : zones muscles <b>et</b> articulations · signal factuel sans conseil · 3 niveaux ·
+<b>substitution hors périmètre</b>.</p>
+
+<div class="flag"><b>À lire avant la maquette.</b> Cette US <b>ne débloque pas</b> la substitution
+d'exercice, contrairement à ce qui avait été annoncé à l'oral. MUSC-F14 ne l'avait pas retirée faute
+de savoir <i>où</i> l'utilisateur a mal, mais faute d'<b>information articulaire et de schéma de
+mouvement sur les exercices</b>. Ce journal fournit la moitié gauche de l'équation ; la moitié droite
+reste absente. Suggérer un remplacement resterait un <b>conseil de santé inventé</b>.</div>
+
+<h2>1. Déclarer — deux taps</h2>
+<p class="why">Le schéma corporel existe déjà (<code>BodyMap</code>, MUSC-F1b) mais il est en
+<b>lecture seule</b> et ne connaît que 10 muscles. Ici on ajoute 8 zones articulaires et
+l'interactivité — dans un composant <b>séparé</b>, pour ne pas toucher les 3 écrans qui l'utilisent
+déjà, dont 2 en recette.</p>
+
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Zones sensibles</div>
+        <div class="navsub">tap sur une zone</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Où ça coince ?</div>
+          <div class="bodyrow">
+            <svg width="104" height="176" viewBox="0 0 112 188">
+              <ellipse cx="56" cy="20" rx="13" ry="15" fill="#e8dcc8"/>
+              <rect x="42" y="37" width="28" height="10" rx="4" fill="#e8dcc8"/>
+              <rect x="34" y="48" width="44" height="30" fill="#e8dcc8"/>
+              <rect x="24" y="46" width="14" height="12" fill="#e8dcc8"/>
+              <rect x="74" y="46" width="14" height="12" fill="#e8dcc8"/>
+              <rect x="22" y="58" width="11" height="46" fill="#e8dcc8"/>
+              <rect x="79" y="58" width="11" height="46" fill="#e8dcc8"/>
+              <rect x="38" y="78" width="36" height="30" fill="#e8dcc8"/>
+              <rect x="40" y="110" width="14" height="72" fill="#e8dcc8"/>
+              <rect x="58" y="110" width="14" height="72" fill="#e8dcc8"/>
+              <!-- articulations : petits cercles, forme distincte des plaques musculaires -->
+              <circle cx="22" cy="47" r="5" fill="var(--l3)"/>
+              <circle cx="90" cy="47" r="5" fill="#cbbda6"/>
+              <circle cx="24" cy="106" r="4" fill="#cbbda6"/>
+              <circle cx="88" cy="106" r="4" fill="#cbbda6"/>
+              <circle cx="47" cy="112" r="4" fill="#cbbda6"/>
+              <circle cx="65" cy="112" r="4" fill="#cbbda6"/>
+              <circle cx="47" cy="156" r="4" fill="#cbbda6"/>
+              <circle cx="65" cy="156" r="4" fill="#cbbda6"/>
+              <text class="zlabel" x="2" y="40">épaule</text>
+            </svg>
+            <svg width="104" height="176" viewBox="0 0 112 188">
+              <ellipse cx="56" cy="20" rx="13" ry="15" fill="#e8dcc8"/>
+              <rect x="42" y="37" width="28" height="10" rx="4" fill="#e8dcc8"/>
+              <rect x="34" y="48" width="44" height="34" fill="var(--l2)"/>
+              <rect x="24" y="46" width="14" height="12" fill="#e8dcc8"/>
+              <rect x="74" y="46" width="14" height="12" fill="#e8dcc8"/>
+              <rect x="22" y="58" width="11" height="46" fill="#e8dcc8"/>
+              <rect x="79" y="58" width="11" height="46" fill="#e8dcc8"/>
+              <rect x="40" y="110" width="14" height="16" fill="#e8dcc8"/>
+              <rect x="58" y="110" width="14" height="16" fill="#e8dcc8"/>
+              <rect x="40" y="126" width="14" height="30" fill="#e8dcc8"/>
+              <rect x="58" y="126" width="14" height="30" fill="#e8dcc8"/>
+              <rect x="40" y="156" width="14" height="26" fill="#e8dcc8"/>
+              <rect x="58" y="156" width="14" height="26" fill="#e8dcc8"/>
+              <rect x="44" y="84" width="24" height="9" rx="3" fill="var(--l1)"/>
+              <text class="zlabel" x="70" y="92">lombaires</text>
+            </svg>
+          </div>
+          <div class="levels">
+            <div class="lv"><span class="dot" style="background:var(--l1)"></span>Gêne</div>
+            <div class="lv on"><span class="dot" style="background:var(--l2)"></span>Douleur</div>
+            <div class="lv"><span class="dot" style="background:var(--l3)"></span>Bloquant</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>18 zones : 10 muscles + 8 articulations.</b> Les articulations sont des
+    <b>cercles</b>, les muscles des <b>plaques</b> — c'est ce qui distingue « deltoïdes en compote »
+    de « mon épaule coince » sans lire un libellé (critère de recette 4).</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Zones sensibles</div>
+        <div class="navsub">historique</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Actuellement sensibles</div>
+          <div class="hist"><span class="pill" style="background:var(--l2)">Douleur</span> Dos
+            <span class="when">il y a 2 j</span></div>
+          <div class="hist"><span class="pill" style="background:var(--l3)">Bloquant</span> Épaule
+            <span class="when">hier</span></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Genou — évolution</div>
+          <div class="hist" style="border:none">
+            <span style="font-size:12px" class="muted">28 juil → 3 août</span>
+            <span class="seq">
+              <i style="background:var(--l3)"></i><i style="background:var(--l3)"></i>
+              <i style="background:var(--l2)"></i><i style="background:var(--l2)"></i>
+              <i style="background:var(--l1)"></i><i style="background:var(--l1)"></i>
+            </span>
+          </div>
+          <p style="font-size:11.5px;margin:6px 0 0" class="muted">La <b>suite</b> des niveaux, pas
+          une moyenne : passer de bloquant à gêne est une information, sa moyenne n'en est pas une.</p>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Aucun verbe médical.</b> Ni « blessure », ni « repos conseillé », ni
+    « consulte ». Le mot employé est <b>zone sensible</b>, et un test échoue sur le vocabulaire
+    interdit — comme MUSC-F14 l'avait fait.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div>
+        <div class="navsub">séance de jeudi</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Jeudi 13 août</div>
+          <div style="font-size:13.5px;font-weight:700">Dos & biceps</div>
+          <div style="font-size:11.5px;margin-top:2px" class="muted">14 séries · 5 exercices</div>
+          <div class="signal">
+            <div class="stitle">Cette séance cible surtout le dos</div>
+            <div class="sbody">Tu l'as signalé <b>douloureux</b> il y a 2 jours.</div>
+            <span class="mute">— aucun bouton : on informe, on ne propose rien</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Samedi 15 août</div>
+          <div style="font-size:13.5px;font-weight:700">Jambes</div>
+          <div style="font-size:11.5px;margin-top:2px" class="muted">Genou signalé bloquant —
+          <b>aucun signal</b></div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Le second cas est le plus important de la maquette.</b> Un genou déclaré
+    bloquant ne produit <b>rien</b>, même face à une séance de jambes : on sait qu'un squat charge les
+    quadriceps, on ne sait pas qu'il charge le genou. L'app se tait plutôt que d'inventer.</p>
+  </div>
+</div>
+
+<div class="ok"><b>Le cadre, en une phrase.</b> L'app énonce un <b>fait daté</b> — « tu as signalé
+ceci, cette séance cible cela » — et s'arrête là. C'est exactement la contrainte que CYCLE-01 s'est
+imposée (« des moyennes observées, jamais une causalité ni un conseil ») et que MUSC-F14 a refusé
+d'enfreindre. Le franchir ferait de l'app un avis médical.</div>
+
+<h2>2. La projection est partielle — et c'est le cœur du dispositif</h2>
+
+<table>
+  <tr><th style="width:16%">Famille</th><th style="width:46%">Zones</th><th style="width:12%">Journal</th><th>Signal sur une séance</th></tr>
+  <tr>
+    <td><b>Muscles</b><br><span class="muted">10</span></td>
+    <td>pectoraux · dos · épaules · biceps · triceps · abdos · fessiers · quadriceps ·
+        ischio-jambiers · mollets</td>
+    <td class="yes">oui</td>
+    <td class="yes">oui — projetables vers <code>FINE_MUSCLES</code>, donc reliables au tonnage prévu</td>
+  </tr>
+  <tr>
+    <td><b>Articulations</b><br><span class="muted">8</span></td>
+    <td>nuque · épaule · coude · poignet · lombaires · hanche · genou · cheville</td>
+    <td class="yes">oui</td>
+    <td class="no">non — rien dans nos données ne relie un exercice à une articulation</td>
+  </tr>
+</table>
+
+<div class="flag"><b>Cette asymétrie est testée, pas subie.</b> Un test vérifie que les 8
+articulations n'ont <b>aucune</b> projection — sans lui, quelqu'un la « corrigerait » un jour en
+croyant combler un oubli, et l'app se mettrait à produire des conseils sans fondement.</div>
+
+<h2>3. Conformité — l'inverse de CYCLE-01</h2>
+<p class="why">C'est une donnée de santé, donc la question se pose. Vérifié le 06/08/2026 contre la
+fiche Play déjà rédigée.</p>
+
+<table>
+  <tr><th style="width:34%">Point</th><th>Impact</th></tr>
+  <tr><td>Catégorie « Santé » de la politique de confidentialité</td>
+      <td class="yes">Existe déjà (poids, mensurations, bien-être, pas) → <b>une ligne</b>, pas une catégorie</td></tr>
+  <tr><td>Disclaimer médical</td>
+      <td class="yes">Existe déjà (« Wellness ne fournit pas de conseil médical »)</td></tr>
+  <tr><td>Déclaration Play « Health apps »</td>
+      <td class="yes"><b>Inchangée, reste à 6 types</b> — cette US n'écrit <b>rien</b> dans Health
+      Connect, donc <b>aucun délai d'instruction Google</b></td></tr>
+  <tr><td>Formulaire « Sécurité des données »</td>
+      <td>Un item de plus dans une catégorie existante</td></tr>
+  <tr><td>Export RGPD</td>
+      <td class="no">Obligatoire — une donnée de santé absente de l'export est un manquement</td></tr>
+</table>
+
+<div class="ok"><b>Aucun délai externe ajouté</b>, là où CYCLE-01 avait allongé le chemin critique de
+~3 à ~5 semaines. C'est la conséquence directe de ne pas toucher Health Connect — un choix, pas une
+chance.</div>
+
+<h2>4. Ce que la maquette ne montre pas, volontairement</h2>
+<div class="anno">
+<ul>
+  <li><b>Aucune suggestion de remplacement d'exercice</b> (D4). Il faudrait taguer chaque exercice
+  avec l'articulation sollicitée et son schéma de mouvement — donnée absente, et <b>travail de
+  coach</b>, même blocage que CONTENU-01. Tracé en spec §8, non promis.</li>
+  <li><b>Aucune notification</b>, ni rappel, ni relance (R8) : un carnet de douleur qui poursuit
+  devient anxiogène. Même arbitrage que CYCLE-01.</li>
+  <li><b>Aucune mise en veille des suggestions de progression.</b> Écarté par D2 : ce serait l'app
+  qui prend une décision d'entraînement à partir d'une douleur déclarée.</li>
+  <li><b>Aucune catégorie « courbature » distincte.</b> Le niveau « gêne » les couvre ; les séparer
+  demanderait de distinguer DOMS et douleur, ce qu'un auto-report ne permet pas.</li>
+  <li><b>Aucune modification de <code>BodyMap</code></b> hormis un <code>export</code> : trois écrans
+  en dépendent, dont deux en recette. On duplique un fichier plutôt que de risquer une régression.</li>
+</ul>
+</div>
+
+<h2>5. Les deux décisions encore ouvertes</h2>
+<div class="flag">
+<b>D5 — une ligne par (jour, zone), pas une période avec résolution.</b> Une douleur ne se « clôt »
+pas à une date : l'utilisateur cesse simplement de la déclarer. Une fraîcheur glissante de 7 jours
+exprime ça mieux qu'un drapeau « résolu » que personne ne pense à cocher.<br><br>
+<b>D6 — le signal se déclenche à partir de « douleur », pas de « gêne ».</b> Une gêne après une
+séance de jambes est une courbature ; la signaler ferait de l'app une alarme permanente — et c'est le
+bruit qui fait désactiver ce genre de fonctionnalité, leçon explicite de COLLIS-01.
+</div>
+
+<p class="caption" style="margin-top:26px">DOUL-01 · roadmap 1.29 ·
+spec <code>docs/specs/functional/us/doul01-journal-zones-douloureuses.md</code> ·
+plan <code>docs/plans/doul01-journal-zones-douloureuses.md</code> · 06/08/2026</p>
+
+</div>
+</body>
+</html>

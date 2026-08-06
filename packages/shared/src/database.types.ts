@@ -1204,6 +1204,47 @@ export type Database = {
           },
         ]
       }
+      pain_reports: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          level: string
+          log_date: string
+          updated_at: string
+          user_id: string
+          zone: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          level: string
+          log_date: string
+          updated_at?: string
+          user_id: string
+          zone: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          level?: string
+          log_date?: string
+          updated_at?: string
+          user_id?: string
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pain_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       personal_goals: {
         Row: {
           created_at: string
@@ -2289,6 +2330,7 @@ export type Database = {
           intensity_scale: string
           language: string
           notifications: Json
+          pain_journal_enabled: boolean
           sbd_lifts: Json | null
           session_conflicts_enabled: boolean
           theme: string
@@ -2309,6 +2351,7 @@ export type Database = {
           intensity_scale?: string
           language?: string
           notifications?: Json
+          pain_journal_enabled?: boolean
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           theme?: string
@@ -2329,6 +2372,7 @@ export type Database = {
           intensity_scale?: string
           language?: string
           notifications?: Json
+          pain_journal_enabled?: boolean
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           theme?: string

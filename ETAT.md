@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 196 livré · 18 partiel · 2 à faire (sur 222)
+**MVP1 (= V1.0 complète)** `██████████████████░░` **88 %** — 196 livré · 19 partiel · 2 à faire (sur 223)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -24,6 +24,7 @@ avant de pouvoir publier.
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `recette` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
+| **DOUL-01** — Journal des zones douloureuses — déclaration, historique et signal factuel | `recette` | `feature/doul01-journal-zones-douloureuses` | [1.29] |
 | **GARDE-01** — Garde-fou unifié charge & récupération (fusion TRI-12 + MR-14) | `recette` | `refactor/garde01-fusion-garde-fou` | — |
 | **INSIGHTS-01** — Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3) | `recette` | `feature/insights01-ecran-insights` | [7.20] |
 | **INSIGHTS-02** — Dégonflage du Tier 0 — ramener l'accueil au plafond d'ADR-007 | `recette` | `feature/insights02-degonflage-tier0` | [7.21] |
@@ -69,7 +70,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **48 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **49 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -90,10 +91,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/vie01-mode-vie-reelle` (modifications non commitées) |
-| Commits | 1089 · `main` a **1086** commits de retard sur `dev` |
-| Specs d'US | 128 au total — 79 clôturées, 49 en cours |
-| Migrations | 76/76 poussées sur le cloud |
+| Branche courante | `feature/doul01-journal-zones-douloureuses` (modifications non commitées) |
+| Commits | 1090 · `main` a **1087** commits de retard sur `dev` |
+| Specs d'US | 129 au total — 79 clôturées, 50 en cours |
+| Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -102,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a26d685` feat(vie01): mode « vie réelle » — dégradation gracieuse des objectifs (roadmap 1.28)
 - `a06e406` docs(collis01): consigne l'arbitrage non tranché du conflit dimanche → lundi
 - `93747af` feat(collis01): détecteur de collisions entre séances — séquençage muscu ↔ course (roadmap 3.57)
 - `f764732` feat(insights02): dégonflage du Tier 0 — l'accueil passe de 21 à 7 widgets (roadmap 7.21)
 - `547a8fa` fix(bilan01): affiche le libellé du groupe musculaire, plus sa clé brute
-- `c079055` feat(insights01): écran « Insights » Tier 3 — moteur de sélection des analyses (roadmap 7.20)
 
 ---
 
