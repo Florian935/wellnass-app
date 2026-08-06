@@ -551,6 +551,22 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [10/07/2026] ❌ Intégration montres Garmin → hors périmètre V1, revoir en V2.
 -->
 
+- [21/07/2026] ❌ **Compatibilité Claude Code ↔ Codex (outillage multi-agents)** → **abandonné le
+  06/08/2026 (Florian).** Chantier de **5 commits / 1 318 insertions** resté sur la branche
+  `chore/compatibilite-claude-codex` : un skill `/commit` partagé entre les deux agents
+  (`.agents/skills/commit/SKILL.md` + `.claude/skills/commit/SKILL.md`), `.codex/config.toml`,
+  `docs/agent-workflows/{README,commit}.md`, un script de vérification `scripts/check-agent-compat.mjs`
+  branché dans `package.json`, plus un plan et un design datés du 21/07/2026.
+  🔴 **Trouvé par [`/reconcilier`](.claude/commands/reconcilier.md) le 06/08/2026, et c'est le vrai
+  enseignement** : le chantier n'était **mergé nulle part** (les 6 fichiers sont absents de `dev`) et
+  **cité nulle part** — zéro occurrence de « codex » dans BACKLOG.md, IDEAS.md, la roadmap ou
+  CLAUDE.md. Trois semaines durant, du travail réel n'existait dans aucun fichier de suivi : c'est
+  exactement l'angle mort que l'audit « code → roadmap » cherche.
+  **Décision** : on n'entretient pas deux outillages d'agent en parallèle. Le workflow de commit
+  reste **unique**, dans [.claude/commands/commit.md](.claude/commands/commit.md). La branche est
+  **conservée** (elle est la seule trace du travail) et référencée dans la dette de
+  [BACKLOG.md](BACKLOG.md) ; à reprendre uniquement si un second agent devient un besoin réel.
+
 - [04/08/2026] ✅ **Fusionner les cartes TRI-12 et MR-14 en un seul widget à message variable** →
   **promue en [GARDE-01](docs/specs/functional/us/garde01-fusion-garde-fou-charge-repos.md) et
   livrée le jour même.** Remontée par la revue de code de MR-14 : avec P = muscu∧course, S = streak

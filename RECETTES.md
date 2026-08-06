@@ -13,12 +13,22 @@
 >
 > Dernière mise à jour : **06/08/2026** — 34 sections. 🔴 **Commence par l'encadré du 06/08
 > ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections déjà écrites**,
-> dont les critères sont antérieurs à ces changements. **REPAS-01** (§28) exige 3 sync rules
-> PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
-> relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
-> rule ni nouveau build** — recettable sur l'APK existant. 🔴 **VIE-01** (§33) : migrations poussées,
-> mais sa **sync rule (table neuve) reste à déployer**. ✅ **DOUL-01** (§34) : migrations
-> poussées et sync rule déployée — **recettable immédiatement**, sur l'APK existant.
+> dont les critères sont antérieurs à ces changements.
+>
+> ✅ **Toutes les sync rules PowerSync sont déployées** (confirmé par Florian le 06/08/2026) : le
+> prérequis qui bloquait MESUR-01, STREAK-01, OBJ-01, ADMIN-01, RUN-F2c, REPAS-01, VIE-01 et DOUL-01
+> **est levé**. Ce qui reste par section n'est plus qu'un **build** ou une **manipulation**.
+> **MUSCPWR-01** (§29) a un critère (21) qui demande une relecture par un pratiquant, pas une
+> manipulation ; **INSIGHTS-01** (§30), **INSIGHTS-02** (§31), **COLLIS-01** (§32), **VIE-01** (§33) et
+> **DOUL-01** (§34) sont recettables **sur l'APK existant**.
+>
+> ⚠️ **Trou connu, ouvert le 06/08/2026 par [`/reconcilier`](.claude/commands/reconcilier.md)** :
+> **15 US sont à `etape: recette` sans section ici** — GARDE-01, META-19, MN-04, MR-08, MUSC-12,
+> MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, TRI-03. Leurs
+> critères vivent dans leur spec (`docs/specs/functional/us/`) mais **rien n'est cochable ici**, donc
+> personne ne sait ce qu'il reste à vérifier sur device. 49 US en recette, 34 sections. **À écrire
+> avant la prochaine campagne de recette** — c'est exactement le savoir que ce fichier existe pour
+> ne pas perdre.
 
 ---
 
@@ -77,18 +87,24 @@ date est gelée) — mais il protège l'avenir, il ne remplace pas cette vérifi
 
 ---
 
-## ⛔ Prérequis bloquant — à faire AVANT les recettes device
+## ✅ Prérequis sync rules — levé le 06/08/2026
 
-- [x] **Déployer les sync rules PowerSync** — fait le 29/07/2026 (Damien). Coller
-      [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
-      PowerSync → Settings → Sync Rules → **Deploy**.
+**Une case par collage** — la version d'avant n'en avait qu'une, cochée le 29/07, alors que 6 lignes
+de sync rule ont été ajoutées après : l'encadré annonçait « prérequis levé » pendant deux semaines
+où il ne l'était pas. Coller [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml)
+dans le dashboard PowerSync → Settings → Sync Rules → **Deploy**.
 
-**Quatre changements partent dans ce même collage** : les tables `body_measurements` (MESUR-01),
-`streak_jokers` (STREAK-01), `personal_goals` (OBJ-01) et la **suppression du filtre `deleted_at`**
-sur `exercises` / `exercise_translations` (ADMIN-01).
+- [x] **Collage du 29/07/2026** (Damien) — `body_measurements` (MESUR-01), `streak_jokers`
+      (STREAK-01), `personal_goals` (OBJ-01) et la **suppression du filtre `deleted_at`** sur
+      `exercises` / `exercise_translations` (ADMIN-01).
+- [x] **Collages du 03 → 06/08/2026** — confirmé à jour par **Florian le 06/08/2026** :
+      `session_intervals` ×2 (RUN-F2c, buckets `user_data` **et** `shared_content`),
+      `meal_plan_entries` / `shopping_lists` / `shopping_list_items` (REPAS-01),
+      `real_life_periods` (VIE-01), `pain_reports` (DOUL-01).
 
-Sans ce déploiement : les mensurations et les jokers **ne se synchronisent jamais** — et sans aucune
-erreur visible, ce qui est le piège. Le correctif d'historique d'ADMIN-01 reste inopérant.
+> **Règle** : à chaque table neuve, ajouter une case ici **en même temps** que la ligne dans le YAML.
+> L'étape a déjà été oubliée deux fois (BIEN-01, RUN-F2c) et elle échoue **sans aucune erreur
+> visible** — la donnée reste locale et ne remonte jamais.
 
 **Le test le plus rapide pour confirmer que c'est actif** : archiver un exercice depuis le
 back-office, puis vérifier qu'une séance qui l'utilise **affiche toujours son nom** dans
@@ -164,7 +180,7 @@ l'historique. Nom vide = sync rule pas déployée.
 ## 4. MESUR-01 — Mensurations corporelles
 
 📄 [spec](docs/specs/functional/us/mesur01-mensurations.md) · roadmap 3.51 · **📱 device**
-⚠️ dépend du **déploiement des sync rules**
+✅ sync rules déployées (06/08/2026)
 
 - [ ] 1. Saisir 3 mesures, enregistrer, les retrouver dans l'historique à la bonne date.
 - [ ] 2. Ré-ouvrir la feuille : champs pré-remplis avec le dernier relevé.
@@ -214,7 +230,7 @@ l'historique. Nom vide = sync rule pas déployée.
 ## 6. STREAK-01 — Joker de série
 
 📄 [spec](docs/specs/functional/us/streak01-joker.md) · roadmap 7.14 · **📱 device**
-⚠️ dépend du **déploiement des sync rules**
+✅ sync rules déployées (06/08/2026)
 
 - [ ] 1. Manquer un jour, ouvrir l'app le lendemain : la proposition apparaît et **annonce le nombre
       de jours sauvés**.
@@ -231,7 +247,7 @@ l'historique. Nom vide = sync rule pas déployée.
 ## 7. OBJ-01 — Objectifs personnels à échéance
 
 📄 [spec](docs/specs/functional/us/obj01-objectifs.md) · roadmap 7.15 · **📱 device**
-⚠️ dépend du **déploiement des sync rules**
+✅ sync rules déployées (06/08/2026)
 
 - [ ] 1. Créer « 50 km d'ici 4 semaines » : l'anneau reflète les courses **déjà faites** dans la
       fenêtre (la fenêtre part d'aujourd'hui, donc l'anneau démarre à 0 si tu n'as pas couru depuis).
@@ -472,9 +488,9 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 **📱 device** (20 critères, §7 de la spec) · **nouveau build probablement nécessaire** (voir
 prérequis ci-dessous)
 
-⛔ **Prérequis bloquant propre à cette US** : contrairement au lot du 29/07/2026, il n'existe
-**aucune confirmation** que les sync rules PowerSync couvrant `menstrual_periods` et
-`menstrual_daily_logs` (ajoutées le 30/07/2026) ont été **collées et déployées** dans le dashboard
+✅ **Prérequis levé le 06/08/2026** : les sync rules PowerSync couvrant `menstrual_periods` et
+`menstrual_daily_logs` (ajoutées le 30/07/2026) sont **déployées** — confirmé par Florian. Ce bloc
+signalait jusqu'ici qu'aucune confirmation n'existait ; elle existe. Le dashboard
 PowerSync — seul le fichier [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml)
 les contient. Sans ce déploiement, le suivi du cycle **ne se synchronise jamais entre appareils**,
 sans erreur visible. Vérifier avec Florian/Damien avant de recetter, et cocher ici une fois fait :
@@ -750,11 +766,11 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 📄 [spec](docs/specs/functional/us/runf2c-blocs-fractionne.md) · roadmap 5.9 ·
 **📱 device + 🌐 navigateur (admin)** · migration poussée (nouvelle table `session_intervals`)
 
-⛔ **Prérequis bloquant propre à cette US** : contrairement aux 3 précédentes de la famille RUN-F2
-(qui n'ajoutaient que des colonnes à des tables déjà publiées), `session_intervals` est une
-**table neuve** — elle a besoin de ses **deux propres lignes** de sync rule, déjà écrites dans
-[powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) mais **pas encore
-collées/déployées dans le dashboard PowerSync** (pas d'accès dashboard depuis cette session).
+✅ **Prérequis levé le 06/08/2026** : `session_intervals` est une **table neuve** (contrairement aux
+3 précédentes de la famille RUN-F2, qui n'ajoutaient que des colonnes à des tables déjà publiées) et
+exigeait ses **deux propres lignes** de sync rule — buckets `user_data` **et** `shared_content`. Elles
+sont écrites dans [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) **et
+déployées** (confirmé par Florian). Cette US n'est plus bloquée que par son build.
 Sans ce déploiement, les blocs créés **ne synchroniseraient jamais**, sans erreur visible — c'est
 exactement le piège déjà rencontré une fois sur CYCLE-01. Vérifier avec Florian/Damien avant de
 recetter, et cocher ici une fois fait :
@@ -907,7 +923,7 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 ## 28. REPAS-01 — Planning repas, liste de courses et partage
 
 📄 [spec](docs/specs/functional/us/repas01-planning-repas-liste-courses.md) · roadmap 4.27 / 4.28 /
-4.29 · **📱 device** · ⚠️ **3 sync rules à déployer** (tables neuves `meal_plan_entries`,
+4.29 · **📱 device** · ✅ **3 sync rules déployées** le 06/08/2026 (tables neuves `meal_plan_entries`,
 `shopping_lists`, `shopping_list_items`) · ✅ **aucune dépendance native neuve → recettable sur
 l'APK existant** (le partage passe par `Share.share()` de React Native, décision D8).
 
@@ -1175,9 +1191,9 @@ par [`/commit`](.claude/commands/commit.md).
 porte sur la mise en cache du catalogue pg-delta, pas sur l'exécution du SQL. Vérifié par
 `npm run db:types`, qui fait apparaître `real_life_periods` et ses 7 colonnes **depuis le cloud**.
 
-🔴 **UN SEUL BLOQUANT AVANT DE RECETTER** : **déployer la sync rule PowerSync à la main** — table
-**neuve**. Coller [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le
-dashboard (Settings → Sync Rules) puis « Deploy ». La ligne est déjà dans le YAML.
+✅ **Plus aucun bloquant** : la sync rule de la table **neuve** `real_life_periods` est **déployée**
+(confirmé par Florian le 06/08/2026). Cette section annonçait jusqu'ici « un seul bloquant avant de
+recetter » — il est levé, l'US est recettable sur l'APK existant.
 
 ⚠️ Étape **déjà oubliée deux fois** (BIEN-01, puis RUN-F2c qui reste bloquée pour ça). Sans elle, les
 périodes restent locales : le mode marcherait sur un téléphone et pas sur l'autre, **sans aucune
@@ -1301,7 +1317,8 @@ UX-LOT-01, OBJ-01, BILAN-01, UX-05, MUSC-F14, **PARTAGE-01** — et
 `react-native-svg`/calcul pur déjà en place)
 (+ les 2 critères device d'ADMIN-01 et CONTENU-01). Un seul build suffit — mais **après** le
 déploiement des sync rules, sinon MESUR-01, STREAK-01 et OBJ-01 échoueront pour une raison qui n'a
-rien à voir avec leur code. **Sync rules déployées le 29/07/2026** (voir le prérequis en tête).
+rien à voir avec leur code. ✅ **Toutes les sync rules sont déployées au 06/08/2026** (voir le
+prérequis en tête, une case par collage).
 
 **ADMIN-01 se recette au navigateur**, indépendamment du build.
 

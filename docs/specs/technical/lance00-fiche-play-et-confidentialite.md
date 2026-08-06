@@ -204,8 +204,15 @@ d'entreprendre un programme d'entraînement ou un régime.
 
 Procédure et textes déjà prêts dans
 [health-connect-play-declaration.md](health-connect-play-declaration.md).
-**4 types de données** à déclarer : `WRITE_EXERCISE`, `WRITE_DISTANCE`, `READ_WEIGHT`, `READ_STEPS` —
-conformes aux `permissions` d'[app.json](../../../apps/mobile/app.json).
+🔴 **6 types de données** à déclarer : `WRITE_EXERCISE`, `WRITE_DISTANCE`, `READ_WEIGHT`,
+`READ_STEPS`, **`READ_MENSTRUATION`, `WRITE_MENSTRUATION`** — conformes aux `permissions`
+d'[app.json](../../../apps/mobile/app.json).
+
+> ⚠️ **Ce paragraphe annonçait 4 types jusqu'au 06/08/2026**, alors que l'en-tête du présent fichier
+> et le §2 bis de la procédure étaient passés à **6** le 30/07/2026 (US CYCLE-01, permissions
+> Menstruation). La déclaration se dépose **une seule fois** : la déposer à 4 types aurait imposé une
+> **re-déclaration complète** et ~2 semaines de délai externe supplémentaires sur le chemin critique
+> du lancement. Corrigé par [`/reconcilier`](../../../.claude/commands/reconcilier.md).
 
 ## 5. Ordre d'exécution — et pourquoi il compte
 
