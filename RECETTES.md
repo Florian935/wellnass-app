@@ -11,12 +11,46 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **06/08/2026** — 34 sections. **REPAS-01** (§28) exige 3 sync rules
+> Dernière mise à jour : **06/08/2026** — 34 sections. 🔴 **Commence par l'encadré du 06/08
+> ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections déjà écrites**,
+> dont les critères sont antérieurs à ces changements. **REPAS-01** (§28) exige 3 sync rules
 > PowerSync déployées avant recette ; **MUSCPWR-01** (§29) a un critère (21) qui demande une
 > relecture par un pratiquant, pas une manipulation ; **INSIGHTS-01** (§30) ne demande **ni sync
 > rule ni nouveau build** — recettable sur l'APK existant. 🔴 **VIE-01** (§33) : migrations poussées,
 > mais sa **sync rule (table neuve) reste à déployer**. ✅ **DOUL-01** (§34) : migrations
 > poussées et sync rule déployée — **recettable immédiatement**, sur l'APK existant.
+
+---
+
+## ⚠️ À lire avant de recetter (06/08/2026) — VIE-01 et DOUL-01 ont modifié du code déjà en recette
+
+Les deux US livrées les 05 et 06/08 (`a26d685`, `b470d85`) n'ont pas fait qu'ajouter des fichiers :
+elles ont **modifié des fonctions partagées** appartenant à **huit US déjà listées ici**, dont les
+critères ont été écrits **avant** ces changements. Une section peut donc passer au vert sans que la
+modification qui la traverse ait été regardée.
+
+**Le principe qui limite le risque** : tous les paramètres ajoutés sont **optionnels avec un défaut
+neutre**. Sans période « vie réelle » déclarée et sans journal de douleurs activé, le comportement
+doit être **exactement** celui d'avant. C'est cette non-régression qu'il faut vérifier — pas la
+nouvelle fonctionnalité, qui a ses propres sections (§33, §34).
+
+| Section à recetter | Ce que VIE-01 / DOUL-01 y ont touché | À vérifier **sans rien activer** |
+|---|---|---|
+| **§6 STREAK-01** | 🔴 `computeStreakWithJokers` : 4ᵉ paramètre **et condition de sortie de boucle réécrite** (`counts` → `traversable`). `findRestorableGap` : nouvelle notion de « couvert ». | La série et la proposition de joker se comportent **comme avant**. C'est le changement le plus profond de la session — la boucle de comptage elle-même. |
+| **§8 BILAN-01** | `decide()` peut désormais écarter 4 de ses 6 signaux ; `WeeklyReview` porte un champ de plus. | Hors période, le bilan rend **la même décision** qu'avant (y compris `volume_drop`, `consistency_drop`, `muscle_imbalance`, `nutrition_drift`). |
+| **§30 INSIGHTS-01** et **§31 INSIGHTS-02** | `selectInsights` a un paramètre de filtrage de plus. **Et l'accueil passe de 7 à 8 widgets déclarés** (`MAX_HOME_WIDGETS` relevé). | La sélection d'insights est identique hors période. L'accueil reste lisible avec le widget de plus — c'est l'arbitrage du critère 21 de §33. |
+| **§20 MUSC-F1b** | `BodyMap` : **une seule ligne**, `MUSCLE_PATHS` est exporté. Le composant n'a pas changé. | Les 3 écrans qui l'utilisent (fiche exercice, fiche programme, bilan) rendent le schéma à l'identique. |
+| **§19 MUSC-F9** et **§32 COLLIS-01** | `planning/index.tsx` rend un bandeau de plus (signal de zone sensible). | Le glisser-déposer et le bandeau de conflit sont intacts ; aucun bandeau parasite. |
+| **§27 LAUNCHER-01** | `home-widget-data.ts` : série **et** kcal restantes passent par les nouvelles fonctions. | Le widget du launcher affiche **les mêmes chiffres que l'app**. Une divergence ici serait le symptôme d'un appelant oublié. |
+| **§22 NUTR-16** — et **NUTR-18**, qui ⚠️ **n'a aucune section ici** alors qu'elle est à `etape: recette` | 🔴 `useDayCalorieTarget` et `useGoalAdherenceForRange` : la cible de base n'est plus **une valeur** mais **une fonction du jour**. `computeCaloricBalance` (le cœur de NUTR-18) consomme directement ce changement. | Adhérence, **bilan calorique hebdomadaire** et répartition par repas donnent **les mêmes chiffres qu'avant** sur une fenêtre sans période déclarée. |
+| **Export RGPD** *(CONF-01, clôturée)* | Deux tables ajoutées : `real_life_periods`, `pain_reports`. | L'archive exportée **contient les deux**. Une donnée de santé absente de l'export est un manquement, pas une finition. |
+
+**Le raccourci le plus efficace** : recetter §33 et §34 **avec les deux fonctionnalités éteintes
+d'abord**. Si tout le reste de l'app se comporte normalement dans cet état, la non-régression est
+faite ; il ne reste qu'à activer et dérouler les critères propres à chaque US.
+
+Deux réglages, tous deux **désactivés par défaut** : le mode « vie réelle » (aucun réglage — déclarer
+une période **est** l'activation) et le journal des zones sensibles (Réglages → *Zones sensibles*).
 
 ---
 

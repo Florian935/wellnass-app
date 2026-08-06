@@ -92,7 +92,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/doul01-journal-zones-douloureuses` (modifications non commitées) |
-| Commits | 1090 · `main` a **1087** commits de retard sur `dev` |
+| Commits | 1091 · `main` a **1088** commits de retard sur `dev` |
 | Specs d'US | 129 au total — 79 clôturées, 50 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -103,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b470d85` feat(doul01): journal des zones douloureuses — déclaration, historique et signal factuel (roadmap 1.29)
 - `a26d685` feat(vie01): mode « vie réelle » — dégradation gracieuse des objectifs (roadmap 1.28)
 - `a06e406` docs(collis01): consigne l'arbitrage non tranché du conflit dimanche → lundi
 - `93747af` feat(collis01): détecteur de collisions entre séances — séquençage muscu ↔ course (roadmap 3.57)
 - `f764732` feat(insights02): dégonflage du Tier 0 — l'accueil passe de 21 à 7 widgets (roadmap 7.21)
-- `547a8fa` fix(bilan01): affiche le libellé du groupe musculaire, plus sa clé brute
 
 ---
 
