@@ -29,6 +29,7 @@
  * ne fait jamais de comparaison `date()` SQL sur des valeurs UTC.
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import {
   computeMuscleBalance,
@@ -50,6 +51,16 @@ import {
   type RecordType,
   type RepBucketRecord,
   type WeeklyTrainingNutrition,
+  computeExecutionCompliance,
+  computeSessionDuration,
+  computeSetTypeMix,
+  findNeglectedExercises,
+  type ComplianceResult,
+  type CompliancePlannedSet,
+  type DurationResult,
+  type SetTypeShare,
+  type NeglectedExercise,
+  type FavoriteExercise,
 } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
@@ -64,7 +75,7 @@ import {
   type WorkoutEntry,
   type WorkoutSetItem,
 } from './workout-repository';
-import { useTodayDate, useWindowStartUtc } from '@/hooks/useTodayKey';
+import { useTodayDate, useTodayKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -1123,4 +1134,245 @@ export function useTrainingNutritionCross(): {
     : [];
 
   return { weeks, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// US EXEC-01 — écart entre le prévu et le réalisé (roadmap 3.58)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fenêtre d'analyse du lot EXEC-01, en jours : **12 semaines** (spec D2, validée le 07/08/2026).
+ *
+ * Cohérente avec les autres sections de l'écran de progression, et assez longue pour qu'un
+ * pratiquant à 3 séances par semaine franchisse tous les seuils de données.
+ */
+export const EXECUTION_WINDOW_DAYS = 12 * 7;
+
+/**
+ * Séries validées des séances **de programme**, avec leur prescription (US EXEC-01, MUSC-33).
+ *
+ * ⚠️ **`w.session_id IS NOT NULL`** : seules les séances issues d'un programme entrent (spec R4).
+ * Une séance libre n'a aucune prescription — l'inclure ferait chuter le taux d'exécution de
+ * quelqu'un qui s'entraîne beaucoup **hors** programme, soit l'inverse exact du signal.
+ *
+ * ⚠️ **`LEFT JOIN` sur `exercise_plans`, jamais `JOIN`** : un exercice ajouté en cours de séance n'a
+ * pas de plan. Un `JOIN` strict le ferait disparaître du taux de **charge** aussi, alors que sa
+ * `planned_weight_kg` est parfaitement exploitable.
+ *
+ * ⚠️ **Les échauffements sont exclus.** Ils sont improvisés au feeling, et leur prescription — quand
+ * elle existe — n'est pas ce qu'on cherche à mesurer. Même filtre que `useLifetimeTonnage` et
+ * `useMuscleVolumeThisWeek` sur ce même fichier.
+ *
+ * ⚠️ **Pas de filtre `user_id`** : c'est la convention de **lecture** de ce fichier — la base locale
+ * PowerSync ne contient que les lignes de l'utilisateur connecté (sync rules), et `user_id` n'est
+ * posé qu'à l'écriture, comme le dit l'en-tête. *(Le plan d'EXEC-01 affirmait le contraire, à tort.)*
+ */
+export const SELECT_EXECUTION_COMPLIANCE = `
+  SELECT s.workout_id, s.planned_weight_kg, s.weight_kg, s.reps, s.done,
+         ep.target_reps
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id
+    AND w.status = 'completed' AND w.deleted_at IS NULL
+    AND w.session_id IS NOT NULL
+    AND w.finished_at >= ?
+  LEFT JOIN exercise_plans ep ON ep.session_id = w.session_id
+                             AND ep.exercise_id = s.exercise_id
+                             AND ep.deleted_at IS NULL
+  WHERE s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+`;
+
+type ComplianceDbRow = {
+  workout_id: string;
+  planned_weight_kg: number | null;
+  weight_kg: number | null;
+  reps: number | null;
+  done: number;
+  target_reps: string | null;
+};
+
+/**
+ * Le taux d'exécution du programme sur la fenêtre (US EXEC-01, MUSC-33).
+ *
+ * Rend `null` sous le seuil de données du moteur — l'écran se tait alors (spec R3).
+ *
+ * 🔴 **Un exercice présent deux fois dans une même séance de programme produit deux lignes de plan**,
+ * donc la jointure duplique la série. On **déduplique** en ne gardant qu'une occurrence par série :
+ * la compter deux fois gonflerait le dénominateur et laisserait croire que le taux porte sur plus
+ * d'observations qu'en réalité — or ce dénominateur est **affiché** (spec R2).
+ */
+export function useExecutionCompliance(): {
+  compliance: ComplianceResult | null;
+  isLoading: boolean;
+} {
+  const windowStart = useWindowStartUtc(EXECUTION_WINDOW_DAYS);
+
+  const { data, isLoading } = useQuery<ComplianceDbRow>(SELECT_EXECUTION_COMPLIANCE, [windowStart]);
+
+  const compliance = useMemo(() => {
+    const bySession = new Map<string, CompliancePlannedSet[]>();
+    // Deux lignes issues de la duplication de jointure sont rigoureusement identiques : la clé les
+    // confond, ce qui est exactement le but.
+    const seen = new Set<string>();
+
+    for (const row of data) {
+      const key = `${row.workout_id}|${row.planned_weight_kg}|${row.weight_kg}|${row.reps}|${row.target_reps}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const sets = bySession.get(row.workout_id) ?? [];
+      sets.push({
+        plannedWeightKg: row.planned_weight_kg,
+        weightKg: row.weight_kg,
+        reps: row.reps,
+        targetReps: row.target_reps,
+        done: row.done === 1,
+      });
+      bySession.set(row.workout_id, sets);
+    }
+
+    return computeExecutionCompliance({
+      sessions: [...bySession.values()].map((sets) => ({ sets })),
+    });
+  }, [data]);
+
+  return { compliance, isLoading };
+}
+
+/**
+ * Durées des séances terminées de la fenêtre, **du plus ancien au plus récent** (MUSC-26).
+ *
+ * L'ordre n'est pas cosmétique : c'est lui qui définit les deux moitiés de la tendance dans
+ * `computeSessionDuration`. Le `ORDER BY` est donc une **dépendance du calcul**, pas un confort
+ * d'affichage.
+ */
+export const SELECT_SESSION_DURATIONS = `
+  SELECT w.duration_seconds
+  FROM workouts w
+  WHERE w.status = 'completed' AND w.deleted_at IS NULL
+    AND w.finished_at >= ?
+  ORDER BY w.started_at ASC
+`;
+
+/** Médiane, tendance et séances aberrantes écartées (US EXEC-01, MUSC-26). */
+export function useSessionDurationStats(): {
+  duration: DurationResult | null;
+  isLoading: boolean;
+} {
+  const windowStart = useWindowStartUtc(EXECUTION_WINDOW_DAYS);
+
+  const { data, isLoading } = useQuery<{ duration_seconds: number | null }>(
+    SELECT_SESSION_DURATIONS,
+    [windowStart],
+  );
+
+  const duration = useMemo(
+    () => computeSessionDuration({ sessions: data.map((r) => r.duration_seconds) }),
+    [data],
+  );
+
+  return { duration, isLoading };
+}
+
+/**
+ * Séries validées de la fenêtre, avec leur type (MUSC-13).
+ *
+ * ⚠️ **Les échauffements sont gardés ici**, contrairement à `SELECT_EXECUTION_COMPLIANCE` : c'est
+ * précisément ce que l'analyse montre (« 21 % d'échauffement »). Les exclure viderait la carte de son
+ * intérêt — la contradiction apparente entre les deux requêtes est **voulue**.
+ */
+export const SELECT_SET_TYPE_MIX = `
+  SELECT s.set_type
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id
+    AND w.status = 'completed' AND w.deleted_at IS NULL
+    AND w.finished_at >= ?
+  WHERE s.deleted_at IS NULL AND s.done = 1
+`;
+
+/** Répartition des séries validées par type (US EXEC-01, MUSC-13). */
+export function useSetTypeMix(): { mix: SetTypeShare[] | null; isLoading: boolean } {
+  const windowStart = useWindowStartUtc(EXECUTION_WINDOW_DAYS);
+
+  const { data, isLoading } = useQuery<{ set_type: string }>(SELECT_SET_TYPE_MIX, [windowStart]);
+
+  const mix = useMemo(
+    // `done = 1` est déjà garanti par la requête : le moteur reçoit `done: true` sans qu'on mente.
+    () => computeSetTypeMix({ sets: data.map((r) => ({ setType: r.set_type, done: true })) }),
+    [data],
+  );
+
+  return { mix, isLoading };
+}
+
+/**
+ * Favoris de l'utilisateur, avec leur dernière pratique validée (MUSC-21).
+ *
+ * ⚠️ **`e.deleted_at IS NULL` sur `exercises`** — et c'est le seul endroit du lot où ce filtre est
+ * souhaitable : proposer de reprendre un exercice retiré de la bibliothèque serait absurde.
+ * (COLLIS-01 ne le filtre **pas**, pour la raison inverse : une séance planifiée qui contient un
+ * exercice archivé sera quand même faite.)
+ *
+ * ⚠️ **Aucune borne de fenêtre ici** : un favori délaissé depuis 8 mois doit être trouvé. Borner à
+ * 12 semaines ferait disparaître les plus délaissés — exactement ceux qu'on cherche.
+ *
+ * Le nom suit le repli de traduction du fichier : langue demandée, puis français.
+ */
+export const SELECT_FAVORITE_PRACTICE = `
+  SELECT f.exercise_id,
+         COALESCE(tl.name, tfr.name) AS exercise_name,
+         f.created_at AS favorited_at,
+         MAX(w.finished_at) AS last_practiced_at
+  FROM exercise_favorites f
+  JOIN exercises e ON e.id = f.exercise_id AND e.deleted_at IS NULL
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = f.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = f.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  LEFT JOIN workout_sets s ON s.exercise_id = f.exercise_id AND s.done = 1 AND s.deleted_at IS NULL
+  LEFT JOIN workouts w ON w.id = s.workout_id
+    AND w.status = 'completed' AND w.deleted_at IS NULL
+  WHERE f.deleted_at IS NULL
+  GROUP BY f.exercise_id, exercise_name, f.created_at
+`;
+
+type FavoritePracticeDbRow = {
+  exercise_id: string;
+  exercise_name: string | null;
+  favorited_at: string;
+  last_practiced_at: string | null;
+};
+
+/**
+ * Les favoris non pratiqués depuis `NEGLECTED_AFTER_WEEKS` semaines (US EXEC-01, MUSC-21).
+ *
+ * 🔴 `todayKey` vient du hook dédié, **jamais** d'une lecture d'horloge dans ce corps : React
+ * Compiler gèlerait la valeur dans un slot mount-only et la liste resterait figée jusqu'au
+ * redémarrage de l'app. Même raison que dans `useInsights` et `useSessionConflicts`.
+ *
+ * Les horodatages UTC sont convertis en **clés de jour locales** ici, pas dans le moteur : un calcul
+ * pur ne doit pas dépendre du fuseau de la machine.
+ */
+export function useNeglectedFavorites(): {
+  neglected: NeglectedExercise[];
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+  const todayKey = useTodayKey();
+
+  const { data, isLoading } = useQuery<FavoritePracticeDbRow>(SELECT_FAVORITE_PRACTICE, [lang]);
+
+  const neglected = useMemo(() => {
+    const favorites: FavoriteExercise[] = data.map((row) => ({
+      exerciseId: row.exercise_id,
+      // Un favori sans traduction ne disparaît pas de la liste : son id fait un libellé laid mais
+      // honnête, et l'absence de traduction est un défaut de contenu, pas de calcul.
+      name: row.exercise_name ?? row.exercise_id,
+      favoritedOn: localDayKey(new Date(row.favorited_at)),
+      lastPracticedOn:
+        row.last_practiced_at === null ? null : localDayKey(new Date(row.last_practiced_at)),
+    }));
+
+    return findNeglectedExercises({ favorites, todayKey });
+  }, [data, todayKey]);
+
+  return { neglected, isLoading };
 }

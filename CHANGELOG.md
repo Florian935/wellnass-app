@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : requêtes, section d'écran et i18n
+
+Commit précédent : `a2f1401`. **MUSC-14 définitivement écartée** (Florian, après explication — spec
+§8 D4). L'US passe à `etape: recette`.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 328 tests verts** (181 admin + 1 103 mobile +
+2 044 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- **4 requêtes + 4 hooks** dans `records-repository.ts` : `useExecutionCompliance`,
+  `useSessionDurationStats`, `useSetTypeMix`, `useNeglectedFavorites`. Fenêtre de **12 semaines**
+  (`EXECUTION_WINDOW_DAYS`, spec D2).
+- `components/progress/ExecutionSection.tsx` — section **conditionnelle et repliée par défaut**,
+  branchée sur `progress/index.tsx`.
+- **26 tests SQL** (`execution-sql.test.ts`) et **13 tests de section**
+  (`ExecutionSection.test.tsx`).
+- **20 clés i18n** FR + EN (2 045 chacune, symétrie tenue). Les libellés de type de série
+  **réutilisent** `workout.setType.*` plutôt que d'ouvrir un second jeu.
+
+#### Technique — Notes
+
+- 🔴 **Ma spec avait négligé une contrainte, et l'implémentation l'a trouvée** : `progress/index.tsx`
+  porte un commentaire explicite disant que l'écran est **déjà au seuil de repli d'ADR-007** (5
+  sections) — c'est ce qui avait fait replier MUSCPWR-01. La section EXEC-01 suit donc le même patron :
+  elle **rend `null`** quand ses quatre analyses se taisent, donc **un compte neuf ne voit rien de plus
+  qu'avant**. Ce n'est pas une concession : la règle R3 imposait déjà ce silence pour une raison de
+  **justesse statistique** (une moyenne sur n=1 est un mensonge). La même décision servait deux fins.
+  Spec §3.1 ajoutée.
+- 🔴 **Deux règles opposées sur la même colonne, volontairement.** `SELECT_FAVORITE_PRACTICE` **exclut**
+  les exercices archivés (on ne propose pas de reprendre un exercice retiré) ; COLLIS-01 les **garde**
+  (une séance planifiée qui en contient sera quand même faite). C'est le genre de chose qu'une
+  relecture inverse par réflexe — un test le fige de chaque côté.
+- 🔴 **Même contradiction assumée sur les échauffements** : exclus du taux d'exécution (improvisés au
+  feeling, donc hors mesure), **gardés** dans la répartition par type — c'est précisément ce que cette
+  analyse montre. Deux tests le figent.
+- 🔴 **La jointure duplique les séries** quand un exercice a deux plans dans la même séance. Un test
+  SQL **constate** la duplication, et le hook déduplique — sinon un dénominateur **affiché** serait
+  deux fois trop grand.
+- ⚠️ **Le plan affirmait que « toutes les autres requêtes du fichier portent `user_id = ?` ». C'était
+  faux** : `records-repository.ts` ne filtre pas `user_id` en **lecture** (une seule occurrence, à
+  l'écriture), parce que la base locale PowerSync ne contient que les lignes de l'utilisateur connecté.
+  On suit la convention du fichier ; le commentaire de la requête dit pourquoi.
+- ⚠️ **`exercises.status` existe côté Postgres mais PAS dans le schéma PowerSync local** — trouvé en
+  écrivant le test SQL, dont le harness génère son DDL depuis ce schéma. Rappel utile : la base
+  embarquée est un **sous-ensemble** du cloud, pas sa copie.
+- ⚠️ **`SELECT_FAVORITE_PRACTICE` n'est volontairement PAS borné** à 12 semaines : un favori délaissé
+  depuis 8 mois est exactement celui qu'on cherche. Le borner ferait disparaître les plus délaissés.
+- ⚠️ **`ORDER BY started_at` est une dépendance du calcul**, pas un confort d'affichage : c'est lui qui
+  définit les deux moitiés de la tendance de durée. Un test le fige en semant dans le désordre.
+- ⚠️ **Deux pièges de test rencontrés** : `CollapsibleCard` **ne monte pas ses enfants** tant qu'il est
+  replié (il faut `fireEvent.press` sur le **label** de l'en-tête, puis `await act`) — piège déjà
+  documenté en §3.6 de strategie-tests.md ; et le second argument de `t` est **tantôt un objet
+  d'options, tantôt une chaîne de repli**, ce qui casse un mock qui suppose l'objet.
+- ✅ **Aucune migration, aucune sync rule, aucun schéma local, aucune écriture.** `insights.ts`,
+  `insights-repository.ts`, `MAX_INSIGHTS`, `INSIGHT_ORDER` et ADR-007 **non modifiés**.
+- **Reste** : la **recette device** — 22 critères, dont le calibrage des trois seuils par un pratiquant.
+
 ### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : les 4 moteurs purs du lot « prévu vs réalisé »
 
 Commit précédent : `11cc849`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),

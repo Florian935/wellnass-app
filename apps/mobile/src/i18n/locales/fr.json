@@ -1421,6 +1421,36 @@
         "1y": "1 an",
         "all": "Tout"
       }
+    },
+    "execution": {
+      "title": "Exécution du programme",
+      "subtitle": "L'écart entre le prévu et le réalisé, sur 12 semaines",
+      "compliance": {
+        "title": "Prescrit vs réalisé",
+        "load": "Charge",
+        "reps": "Répétitions",
+        "basisSets": "sur {{count}} série",
+        "basisSets_plural": "sur {{count}} séries",
+        "basis": "{{count}} séance de programme",
+        "basis_plural": "{{count}} séances de programme"
+      },
+      "duration": {
+        "title": "Durée de séance",
+        "median": "{{minutes}} min",
+        "trendUp": "médiane · en hausse de {{minutes}} min",
+        "trendDown": "médiane · en baisse de {{minutes}} min",
+        "excluded": "{{count}} séance écartée (durée invraisemblable)",
+        "excluded_plural": "{{count}} séances écartées (durées invraisemblables)"
+      },
+      "setTypes": {
+        "title": "Types de série"
+      },
+      "neglected": {
+        "title": "Exercices délaissés",
+        "weeks": "{{count}} sem.",
+        "item": "{{name}}, {{count}} semaines",
+        "scope": "parmi tes favoris"
+      }
     }
   },
   "settings": {

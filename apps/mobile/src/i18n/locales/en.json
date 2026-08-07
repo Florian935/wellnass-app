@@ -1421,6 +1421,36 @@
         "1y": "1 yr",
         "all": "All"
       }
+    },
+    "execution": {
+      "title": "Program execution",
+      "subtitle": "The gap between planned and done, over 12 weeks",
+      "compliance": {
+        "title": "Planned vs done",
+        "load": "Load",
+        "reps": "Reps",
+        "basisSets": "across {{count}} set",
+        "basisSets_plural": "across {{count}} sets",
+        "basis": "{{count}} program session",
+        "basis_plural": "{{count}} program sessions"
+      },
+      "duration": {
+        "title": "Session length",
+        "median": "{{minutes}} min",
+        "trendUp": "median · up {{minutes}} min",
+        "trendDown": "median · down {{minutes}} min",
+        "excluded": "{{count}} session excluded (implausible length)",
+        "excluded_plural": "{{count}} sessions excluded (implausible lengths)"
+      },
+      "setTypes": {
+        "title": "Set types"
+      },
+      "neglected": {
+        "title": "Neglected exercises",
+        "weeks": "{{count}} wk",
+        "item": "{{name}}, {{count}} weeks",
+        "scope": "among your favourites"
+      }
     }
   },
   "settings": {

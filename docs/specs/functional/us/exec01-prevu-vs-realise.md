@@ -3,7 +3,7 @@ id: EXEC-01
 titre: "Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu"
 roadmap: [3.58]
 catalogue: [MUSC-33, MUSC-26, MUSC-13, MUSC-21]
-etape: code
+etape: recette
 branche: feature/exec01-prevu-vs-realise
 maj: 07/08/2026
 ---
@@ -182,8 +182,23 @@ sélection existante au passage, puisque chaque nouveau candidat prend la place 
 C'est la leçon d'INSIGHTS-02, qui a dû **dégonfler** l'accueil de 21 à 7 widgets : la place
 d'affichage est une ressource rare, et une analyse qu'on ne voit pas n'a pas été livrée.
 
-**Conséquence** : ADR-007 n'est pas touché, le plafond du Tier 0 non plus, et le moteur de sélection
-reste tel quel.
+**Conséquence** : le plafond du Tier 0 n'est pas touché, et le moteur de sélection reste tel quel.
+
+### 3.1 ⚠️ Mais l'écran de progression est déjà au seuil de repli d'ADR-007
+
+Trouvé en implémentant, et **cette spec l'avait négligé** : `progress/index.tsx` porte un commentaire
+explicite — « 5ᵉ section de cet écran, **seuil de repli ADR-007 (~4-5 sections) atteint** ». C'est
+pour cette raison que **MUSCPWR-01 s'est replié** : sa section « ne sert qu'aux pratiquants de force »
+et **rend `null`** tant que rien n'est calculable, « donc elle ne coûte rien aux autres ».
+
+**On suit le même patron, et il tombe juste** : la section EXEC-01 est un composant autonome qui rend
+son propre titre et **retourne `null` quand les quatre analyses se taisent**. R3 le donnait déjà
+gratuitement — ce qui était une règle de justesse statistique se trouve être aussi la réponse au
+plafond d'ADR-007.
+
+Autrement dit : un compte neuf ne voit **aucune** section supplémentaire ; elle n'apparaît que pour
+quelqu'un qui a assez d'historique pour qu'elle dise quelque chose. Le coût pour les autres est nul,
+au sens littéral.
 
 ## 4. Cas limites
 
@@ -247,11 +262,12 @@ en **lecture seule** : c'est ce qui en fait le lot le moins risqué des trois pi
 | D1 | **Seuil « délaissé » = 4 semaines** (R8), calibrable en recette comme celui de COLLIS-01 | ✅ validé |
 | D2 | **Fenêtre d'analyse = 12 semaines**, cohérent avec les autres sections de l'écran | ✅ validé |
 | D3 | **MUSC-33 se tait pendant une période « vie réelle »** (VIE-01) ; les trois autres restent — c'est le seul des quatre qui puisse se lire comme un reproche | ✅ validé |
-| D4 | **MUSC-14 hors du lot** (§1.1) | ⏸️ **question ouverte** — voir ci-dessous |
+| D4 | **MUSC-14 hors du lot** (§1.1) | ✅ **validé** — Florian, 07/08/2026, après explication |
 
-### D4 — l'état de la question au 07/08/2026
+### D4 — pourquoi MUSC-14 reste dehors
 
-Florian a validé le lot **sauf** ce point, en demandant l'explication. Elle tient en trois faits :
+Florian avait validé le lot **sauf** ce point, en demandant l'explication, puis **tranché : elle reste
+dehors**. Le raisonnement, pour ne pas avoir à le refaire :
 
 1. Le repos réel se déduit de l'écart entre deux **validations de série**. Cette heure n'est stockée
    nulle part : `created_at` date de la **génération** de la séance (toutes les séries partagent la

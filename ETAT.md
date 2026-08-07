@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **94 %** — 211 livré · 4 partiel · 3 à faire (sur 224)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 212 livré · 4 partiel · 2 à faire (sur 224)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -66,7 +66,6 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
-| **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `code` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -94,22 +93,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/exec01-prevu-vs-realise` (modifications non commitées) |
-| Commits | 1115 · `main` a **1112** commits de retard sur `dev` |
-| Specs d'US | 131 au total — 79 clôturées, 52 en cours |
+| Commits | 1116 · `main` a **1113** commits de retard sur `dev` |
+| Specs d'US | 131 au total — 79 clôturées, 51 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
+- ⚠️ 1 spec(s) sans front-matter : exec01-prevu-vs-realise.md
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `a2f1401` feat(exec01): les 4 moteurs purs du lot « prevu vs realise »
 - `11cc849` merge(collis01): correctif « veille hors semaine » dans dev
 - `2e86638` fix(collis01): le conflit dimanche -> lundi n'etait jamais detecte (D7)
 - `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
 - `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `db47824` test(muscu): candidats de substitution — le OU qui ne doit pas devenir un ET
 
 ---
 
