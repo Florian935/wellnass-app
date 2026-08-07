@@ -10,6 +10,77 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/fuel01-socle-glucidique-coureur` — FUEL-01 : cadrage du socle glucidique (catalogue RN-05 + RN-06)
+
+Commit précédent : `5c6db3b`. **Cadrage seul — aucune ligne de code applicatif** (règle du workflow
+obligatoire). Les 3 livrables d'amont sont écrits, l'US est à `etape: validation` et **attend
+Florian ou Damien**. Lint **0**, typecheck **0**, **1 030 tests mobile verts**.
+
+Premier lot du chantier « Nutrition du coureur » choisi par Florian le 07/08/2026 après audit du
+catalogue : **RN-05 → RN-21, 9 analyses non cadrées**, la paire de piliers la plus pauvre du produit
+(3 items livrés sur 21). Ce lot livre le **socle** — les 4 lots suivants (fueling de sortie longue,
+recharge glycogène, sodium, affûtage) en dépendent.
+
+#### Ajouté
+
+- **Spec** [fuel01-socle-glucidique-coureur.md](docs/specs/functional/us/fuel01-socle-glucidique-coureur.md)
+  — 7 décisions à arbitrer, 8 règles, 14 cas limites, 14 critères de recette, i18n FR+EN, offline.
+- **Plan** [fuel01-socle-glucidique-coureur.md](docs/plans/fuel01-socle-glucidique-coureur.md)
+  — 5 lots TDD, ~32 tests attendus, fichiers touchés, 6 risques et leurs parades.
+- **Maquette** [design/fuel01-socle-glucidique-coureur/](design/fuel01-socle-glucidique-coureur/)
+  — 5 états de la carte « Macros par kg », palette réelle du thème (aucune couleur inventée).
+
+#### Technique / Notes
+
+- 🔴 **Le cadrage a trouvé une collision, et c'est ce qui commande toute la spec.** Une cible
+  glucidique **existe déjà** : `trainingDayMacroGrams` ([nutrition.ts:371](packages/shared/src/nutrition.ts)),
+  livrée par **MN-04 le 04/08/2026**, calcule les glucides en **pourcentage des calories** (45/50/35 %
+  selon l'objectif) plus le bonus d'entraînement redirigé à 100 % en glucides. RN-05, tel que le
+  catalogue le décrit, propose une cible **en g/kg de poids de corps**. **Les deux ne donnent pas le
+  même nombre**, et l'écart se creuse exactement là où la fonctionnalité sert : pour un coureur de
+  70 kg en `maintain`, jour de repos **325 g vs 210-350 g** (compatible), semaine à gros volume
+  **425 g vs 490-700 g** — soit **+65 à +275 g**.
+  C'est le **schéma exact qui a coûté l'US GARDE-01** (TRI-12 et MR-14 validées à 2 jours d'écart en
+  se contredisant), en pire : la contradiction porterait sur **un chiffre affiché**, donc visible.
+- 🔴 **Et elle aurait fait régresser une recette en cours** : le critère 5 de MN-04
+  ([RECETTES.md §42](RECETTES.md)) exige que « les 3 barres macro totalisent l'objectif calorique ».
+  Une cible glucides pilotée par le poids de corps est indépendante des calories : **elle casse cette
+  égalité**. → **D1 recommandée : indicateur descriptif, jamais prescriptif**, patron MN-06
+  (protéines g/kg, livré et validé). Verrouillé par la règle R1 **et** par une assertion de test
+  dédiée (lot 5 du plan) : si quelqu'un branche un jour la cible sur le g/kg, le test tombe.
+- **D2 — zéro bloc ajouté à l'écran Stats nutrition**, qui en a déjà **8** quand ADR-007 §2 fixe le
+  Tier 1 à « ~4-5 sections, au-delà → repliable ». La ligne glucides se fond dans la carte
+  `ProteinPerKgCard` renommée « Macros par kg ». Précédent vieux de 3 jours et venu du **même
+  écran** : NUTR-18 s'est fondue dans la carte Adhérence plutôt que d'ajouter un 9ᵉ bloc.
+- **D6 — fenêtre glissante, et c'est un piège évité de justesse** : `aggregateRunStats(period:'week')`
+  est **calendaire** ([run-stats.ts:33](packages/shared/src/run-stats.ts), lundi→dimanche). L'utiliser
+  aurait fait chuter la charge de « gros volume » à « repos » **chaque lundi matin**, sans qu'aucun
+  entraînement ne change. Un test dédié (« J-6 compte, J-7 non ») garde la règle.
+- **D3 — charge mesurée en heures, pas en km** : même arbitrage que RUN-02 (« complète la distance
+  pour les séances au temps/sans GPS »). Un tapis ou une saisie manuelle ont une durée fiable, pas
+  toujours une distance.
+- **D4 — une course libre ne se classe pas** : `course_libre` n'a structurellement pas de
+  `session_type` — c'est la raison pour laquelle **RUN-07 est encore ⏳** au catalogue. Elle compte
+  dans la **charge** (elle a une durée) mais pas dans le **classement** dur/facile. Précédent MUSC-20
+  critère 2 : « indisponible », jamais un chiffre inventé.
+- **D5 — les fourchettes sourcées sont assumées**, la ligne étant déjà franchie par
+  `PROTEIN_TARGETS_G_PER_KG` (en production, commenté « heuristiques, ajustables »). Ce que le projet
+  refuse est différent : MUSC-F14 refusait une **action** (suggérer un remplacement sans donnée
+  articulaire), DOUL-01 refusait d'**expliquer** une douleur. ⚠️ Le vrai risque est celui des
+  coefficients DOTS (MUSCPWR-01 critère 21) : un seuil faux produit un chiffre **plausible donc
+  invisible en recette** → constantes exportées et nommées + critère de recette 9 (relecture par un
+  pratiquant d'endurance).
+- **Aucune migration, aucune sync rule, aucune dépendance native, aucune table ni colonne neuve** —
+  vérifié : toutes les données lues existent et sont déjà synchronisées. Conséquence de D1 : une US
+  qui ne fait que lire ne touche pas au schéma. **Recettable sur l'APK existant.**
+- **Aucune ligne de roadmap créée** : US d'analyse, suivie au catalogue seul (règle du 02/08/2026,
+  respectée depuis META-19). `roadmap: []`, `catalogue: [RN-05, RN-06]`.
+- ⚠️ **Incident d'outillage à retenir** : la spec a d'abord été écrite avec des **fins de ligne CRLF**
+  (écriture via Python sous Windows, qui traduit `\n` par défaut). Résultat : `scripts/etat.mjs` ne
+  reconnaissait plus le front-matter et signalait « 1 spec sans front-matter » — l'US était
+  **invisible dans ETAT.md**. Reconverti en LF. Toutes les autres specs sont en LF : **ne pas écrire
+  de fichier suivi avec un outil qui traduit les fins de ligne.**
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Bilan hebdo et rappels programmés : la course qui ressuscite un rappel
 
 **16 tests** sur `useWeeklyReviewScheduler` (BILAN-01) et `useProgrammedRemindersScheduler`

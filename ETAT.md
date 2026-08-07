@@ -65,6 +65,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **FUEL-01** — Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles | `validation` | `feature/fuel01-socle-glucidique-coureur` | — |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -91,9 +92,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1107 · `main` a **1104** commits de retard sur `dev` |
-| Specs d'US | 129 au total — 79 clôturées, 50 en cours |
+| Branche courante | `feature/fuel01-socle-glucidique-coureur` (modifications non commitées) |
+| Commits | 1108 · `main` a **1105** commits de retard sur `dev` |
+| Specs d'US | 130 au total — 79 clôturées, 51 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -103,11 +104,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `81266c3` test(notifications): bilan hebdo et rappels programmés — la course qui ressuscite un rappel
 - `43f51fc` test(notifications): planificateur de rappel — l'orchestration autour de la règle
 - `b2f6458` test(repositories): pesées, repas types, profil coureur
 - `38e9ac4` test(repositories): records d'allure — l'idempotence par l'arrondi
 - `16420ec` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `5c6db3b` docs(recettes): écrit les 15 sections de recette manquantes (RECETTES.md §35-49)
 
 ---
 
