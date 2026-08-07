@@ -18,26 +18,37 @@
 
 import { useQuery } from '@powersync/react';
 import type {
+  CarbLoadLevel,
+  CarbsPerKg,
   DietRestriction,
   MealConfigItem,
   NutritionObjective,
   NutritionProfileRow,
   ProteinPerKg,
+  RunningDayKind,
   TrainingBonusMode,
 } from '@wellness/shared';
 import {
   averageIntake,
+  classifyRunningDay,
+  computeCarbLoadLevel,
+  computeCarbsPerKg,
   computeProteinPerKg,
   localDayKey,
   objectiveFromGoal,
   parseJsonColumn,
+  resolveActivePillars,
+  weeklyEquivalentHours,
 } from '@wellness/shared';
+import { useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
 import { useLatestWeight } from './bodyweight-repository';
 import { useDailyTotals } from './journal-repository';
 import { useProfile } from './profile-repository';
+import { useRunHistory } from './run-repository';
+import { useSettings } from './settings-repository';
 
 /** Profil nutritionnel applicatif (forme camelCase du domaine partagé). */
 export type NutritionProfile = NutritionProfileRow;
@@ -229,4 +240,98 @@ export function useProteinPerKg(window: ProteinWindow): {
   const isLoading = tLoading || wLoading || pLoading || nLoading;
 
   return { result, objective, hasWeight: weightKg != null, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// Socle glucidique du coureur (FUEL-01, catalogue RN-05 + RN-06)
+// ---------------------------------------------------------------------------
+
+/**
+ * Types des séances de course **planifiées du jour**, pour classer la journée (RN-06).
+ *
+ * `status <> 'skipped'` : une séance sautée n'est pas la nature de la journée, mais une séance déjà
+ * `done` l'est toujours. Pas de `LIMIT` — deux séances le même jour existent (badge MR-01), et R5
+ * veut que la plus exigeante gagne.
+ *
+ * ⚠️ **La requête vit ici et pas dans `run-repository.ts`, volontairement** : ce fichier-là est lu
+ * par RUN-F2b, RUN-F2c, RUN-F2d et RUN-F3, **toutes en recette**. Y ajouter une requête pour une
+ * autre US élargirait la surface de régression de quatre recettes en attente, pour aucun gain.
+ */
+export const SELECT_TODAY_RUN_SESSION_TYPES = `
+  SELECT s.session_type
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND p.pillar = 'running'
+    AND ps.status <> 'skipped' AND ps.scheduled_date = ?
+`;
+
+/**
+ * Apport glucidique en g/kg vs la fourchette de référence du volume de course (FUEL-01).
+ *
+ * 🔴 **Strictement descriptif** (spec R1, décision D1) : ne touche ni `trainingDayMacroGrams` ni
+ * aucune cible affichée. La cible du journal reste celle de MN-04, pilotée par les calories.
+ *
+ * Fenêtre : la **même** que celle des protéines (7 j / 30 j, choisie dans la carte), avec la charge
+ * de course normalisée en **équivalent hebdomadaire** (R6 bis) — sans quoi 30 jours de cumul
+ * comparés à des seuils hebdomadaires classeraient presque tout en « gros volume ».
+ *
+ * Tous les hooks sont appelés **inconditionnellement** (règle des hooks React) ; le gating à 2
+ * piliers (décision H, via `resolveActivePillars`) n'intervient qu'au retour.
+ */
+export function useCarbsPerKg(window: ProteinWindow): {
+  result: CarbsPerKg | null;
+  level: CarbLoadLevel | null;
+  dayKind: RunningDayKind;
+  hasWeight: boolean;
+  isLoading: boolean;
+} {
+  const windowDays = WINDOW_DAYS[window];
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const todayKey = useTodayKey();
+  const windowStartKey = useWindowStartKey(windowDays);
+
+  const { settings, isLoading: sLoading } = useSettings();
+  const { totals, isLoading: tLoading } = useDailyTotals(proteinSinceDayKey(windowDays));
+  const { latest, isLoading: wLoading } = useLatestWeight();
+  const { profile, isLoading: pLoading } = useProfile();
+  const { runs, isLoading: rLoading } = useRunHistory();
+  const { data: typeRows, isLoading: dLoading } = useQuery<{ session_type: string | null }>(
+    SELECT_TODAY_RUN_SESSION_TYPES,
+    [userId, todayKey],
+  );
+
+  const isLoading = sLoading || tLoading || wLoading || pLoading || rLoading || dLoading;
+
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const gated = !(activePillars.includes('running') && activePillars.includes('nutrition'));
+
+  // Durée de course de la fenêtre. `finished_at` est un instant UTC : on le ramène en jour LOCAL
+  // avant de comparer, comme le fait `useOvertrainingGuardAlert`. Une durée `null` contribue zéro
+  // sans retirer la course du décompte (même règle que le RPE absent dans `sessionLoad`).
+  const totalDurationSeconds = runs.reduce((sum, r) => {
+    if (r.finishedAt == null) return sum;
+    const dayKey = localDayKey(new Date(r.finishedAt));
+    if (dayKey < windowStartKey || dayKey > todayKey) return sum;
+    return sum + (r.durationSeconds ?? 0);
+  }, 0);
+
+  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
+  const avgCarbsG = totals.length > 0 ? averageIntake(totals).carbsG : null;
+  const level = computeCarbLoadLevel(weeklyEquivalentHours(totalDurationSeconds, windowDays));
+  // `course_libre` n'a pas de `session_type` en base : un `null` est un type inconnu, pas un type
+  // absent — `classifyRunningDay` doit le voir pour renvoyer `unavailable` (décision D4).
+  const dayKind = classifyRunningDay(typeRows.map((r) => r.session_type ?? 'course_libre'));
+
+  if (gated || level == null) {
+    return { result: null, level: null, dayKind: 'rest', hasWeight: weightKg != null, isLoading };
+  }
+
+  return {
+    result: computeCarbsPerKg({ avgCarbsG, weightKg, level }),
+    level,
+    dayKind,
+    hasWeight: weightKg != null,
+    isLoading,
+  };
 }

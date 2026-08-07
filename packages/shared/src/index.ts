@@ -42,6 +42,7 @@ export * from './strength-intensity';
 export * from './strength-dots';
 export * from './strength-sbd';
 export * from './protein-target';
+export * from './carb-target';
 export * from './records';
 export * from './food';
 export * from './micronutrient-reference';

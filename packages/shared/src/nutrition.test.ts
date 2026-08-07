@@ -334,6 +334,41 @@ describe('trainingDayMacroGrams (US MN-04, spec R1/R4)', () => {
   });
 });
 
+describe('FUEL-01 — frontière avec MN-04 (spec R1, décision D1)', () => {
+  // 🔴 Ce bloc n'existe pas pour tester FUEL-01, il existe pour l'EMPÊCHER de déborder.
+  //
+  // FUEL-01 introduit une cible glucidique en g/kg de poids de corps (`carb-target.ts`), alors que
+  // MN-04 en calcule déjà une en pourcentage des calories. Les deux ne donnent pas le même nombre :
+  // pour un coureur de 70 kg en `maintain` à gros volume, 425 g contre 490-700 g. Les laisser
+  // cohabiter comme deux cibles concurrentes reproduirait le défaut qui a coûté l'US GARDE-01 —
+  // et casserait le critère 5 de la recette de MN-04 (« les 3 barres macro totalisent l'objectif
+  // calorique »), puisqu'une cible en g/kg est indépendante des calories.
+  //
+  // La décision D1 tranche : FUEL-01 est DESCRIPTIF. Si quelqu'un branche un jour le g/kg sur la
+  // cible du journal, l'un de ces deux tests tombe.
+
+  it('la cible du journal reste pilotée par les calories, jamais par le poids de corps', () => {
+    // Aucun paramètre de poids n'existe dans la signature : c'est structurel, pas une convention.
+    const grams = trainingDayMacroGrams({
+      targetBase: 2600,
+      effectiveTarget: 2600,
+      objective: 'maintain',
+    });
+    expect(grams).toEqual(macroGramsFromCalories(2600, defaultMacroRatios('maintain')));
+    // 325 g pour 2 600 kcal en maintain (50 % glucides) — soit 4,6 g/kg pour 70 kg, très loin des
+    // 7-10 g/kg que FUEL-01 affiche comme référence à gros volume. L'écart est VOULU : l'un est une
+    // cible calorique, l'autre un repère physiologique.
+    expect(grams.carbs).toBe(325);
+  });
+
+  it('nutrition.ts n’importe rien de carb-target.ts (frontière de module)', async () => {
+    const src = await import('node:fs/promises').then((fs) =>
+      fs.readFile(new URL('./nutrition.ts', import.meta.url), 'utf8'),
+    );
+    expect(src).not.toMatch(/carb-target/);
+  });
+});
+
 describe('nutritionProfileRowSchema', () => {
   const base = {
     id: '11111111-1111-4111-8111-111111111111',

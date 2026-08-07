@@ -675,6 +675,22 @@
         "flat": "unchanged",
         "new": "new, no comparison"
       }
+    },
+    "macrosPerKg": {
+      "title": "Macros per kg",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "carbsReference": "reference {{min}}–{{max}} · {{load}}",
+      "load": {
+        "light": "light volume",
+        "moderate": "moderate volume",
+        "high": "high volume"
+      },
+      "day": {
+        "hard": "Hard day — upper end of the range",
+        "easy": "Easy day — lower end of the range",
+        "rest": "No run planned today"
+      }
     }
   },
   "widgets": {

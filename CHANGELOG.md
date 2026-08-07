@@ -10,6 +10,69 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/fuel01-socle-glucidique-coureur` — FUEL-01 livré : socle glucidique du coureur (RN-05 + RN-06)
+
+Commit précédent : `8d7ac75`. **D1 → D7 et la maquette validées par Florian le 07/08/2026**, telles
+que recommandées. Code livré en TDD (5 lots), US à `etape: recette`.
+Vérifié : lint **0 erreur**, typecheck **0**, **3 175 tests verts** (181 admin + 1 046 mobile +
+1 948 shared), `carb-target.ts` à **100 %** instructions/branches/fonctions/lignes.
+✅ **Aucune migration, aucune sync rule, aucune dépendance native → recettable sur l'APK existant.**
+
+#### Ajouté
+
+- **`packages/shared/src/carb-target.ts`** — 4 briques pures, 22 tests. `computeCarbLoadLevel`
+  (heures/semaine → `light`/`moderate`/`high`), `computeCarbsPerKg` (g/kg + fourchette + statut
+  3 états, bornes incluses), `classifyRunningDay` (types de séance → journée dure/facile/repos/
+  indisponible) et `weeklyEquivalentHours` (R6 bis, ci-dessous). Cloné sur `protein-target.ts` :
+  même forme, même statut, mêmes bornes — deux macros lues côte à côte doivent se calculer pareil.
+- **`CARB_TARGETS_G_PER_KG`** (3-5 / 5-7 / 7-10) et **`CARB_LOAD_THRESHOLDS_H`** (3 h, 6 h) —
+  exportées et nommées, pas enfouies dans une condition : c'est ce qui rend praticable le critère de
+  recette 9 (relecture par un pratiquant) et permet de corriger un seuil en une ligne.
+- **`useCarbsPerKg`** (nutrition-repository) + `SELECT_TODAY_RUN_SESSION_TYPES`, 8 tests SQL sur
+  base réelle : owner-scoping, filtre pilier, exclusion des séances sautées, **absence de `LIMIT`**
+  (deux séances le même jour existent, la plus exigeante gagne), `session_type` NULL, soft delete.
+- **Carte « Macros par kg »** — la carte protéines de MN-06 porte désormais les deux macros, via un
+  sous-composant `MacroRow` mutualisé (la brique « jauge valeur vs cible » qu'ADR-007 §3 demande).
+  8 tests, dont **4 de non-régression MN-06**.
+- **i18n `stats.macrosPerKg.*`** FR + EN, alignement des deux fichiers vérifié par script
+  (2 052 clés de chaque côté, aucun écart).
+- **`RECETTES.md` §50** — 15 critères. 50 US en recette ↔ **50 sections**.
+
+#### Technique / Notes
+
+- 🔴 **Le garde-fou le plus important de cette US n'est pas une fonctionnalité, c'est un test.**
+  `nutrition.test.ts` gagne un bloc « frontière avec MN-04 » : la cible du journal doit rester
+  pilotée par les calories, et `nutrition.ts` ne doit **rien** importer de `carb-target.ts`. Sans
+  lui, rien n'empêcherait un futur contributeur de brancher le g/kg sur la cible — ce qui ferait
+  diverger deux chiffres affichés (425 g contre 490-700 g à gros volume pour 70 kg) et casserait le
+  critère 5 de la recette de MN-04. C'est la traduction en code de la décision D1.
+- **R6 bis ajoutée à l'implémentation** : la carte partage un sélecteur 7 j / 30 j avec les
+  protéines, or les seuils sont **hebdomadaires**. Sur 30 jours, un cumul mensuel comparé à des
+  seuils de semaine classerait presque tout en « gros volume ». La charge est donc normalisée en
+  **équivalent hebdomadaire** (`heures ÷ jours × 7`). Sur 7 jours c'est l'identité : **R6 bis
+  complète D6, elle ne la contredit pas** — elle définit le cas que la spec validée laissait ouvert.
+- **Deux écarts assumés avec la maquette validée** (spec §10 bis), tous deux dans le sens du moins
+  d'invention : les puces de statut reprennent le `statusColor()` **existant** de la carte (doré /
+  accent / grisé) plutôt que les pastilles vert-ambre-rouge de la maquette, et les libellés de statut
+  sont ceux des protéines. Donner aux glucides un second vocabulaire de couleur **dans la même
+  carte** se lirait comme deux échelles différentes — et c'est ce qui rend vraie l'affirmation du
+  §8 : aucune couleur nouvelle n'est introduite.
+- **La requête des séances du jour vit dans `nutrition-repository.ts`, pas dans `run-repository.ts`**
+  — délibérément : ce dernier est lu par RUN-F2b, RUN-F2c, RUN-F2d et RUN-F3, **toutes en recette**.
+  Y ajouter une requête pour une autre US aurait élargi la surface de régression de quatre recettes
+  en attente, pour aucun gain.
+- ⚠️ **Découverte d'outillage, coûteuse et non documentée jusqu'ici** : dans ce dépôt,
+  **`render()` de `@testing-library/react-native` est ASYNCHRONE** (RNTL 14 + React 19) — il renvoie
+  une promesse. Sans `await`, les queries de `screen` échouent sur « `render` function has not been
+  called », un message qui envoie chercher le problème au mauvais endroit ; et les queries
+  destructurées de `render()` **n'existent plus** (il faut `screen`). Les tests d'écran existants
+  masquent le premier point derrière un `setup()` `async` sans l'expliquer. C'est désormais écrit en
+  tête de `ProteinPerKgCard.test.tsx`, pour le prochain.
+- **Catalogue** : RN-05 et RN-06 passent 🆕 → ✅ avec le détail des décisions. **Aucune ligne de
+  roadmap créée** (US d'analyse, catalogue seul — règle du 02/08/2026).
+- **Reste 4 lots** au chantier « Nutrition du coureur » : RN-07/08/09/21 (autour de la sortie),
+  RN-15/16/19/20 (sodium, fractionné, carburant embarqué, affûtage). Ils s'appuient tous sur ce socle.
+
 ### 07/08/2026 — `feature/fuel01-socle-glucidique-coureur` — FUEL-01 : cadrage du socle glucidique (catalogue RN-05 + RN-06)
 
 Commit précédent : `5c6db3b`. **Cadrage seul — aucune ligne de code applicatif** (règle du workflow

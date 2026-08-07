@@ -3,15 +3,15 @@ id: FUEL-01
 titre: "Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles"
 roadmap: []
 catalogue: [RN-05, RN-06]
-etape: validation
+etape: recette
 branche: feature/fuel01-socle-glucidique-coureur
 maj: 07/08/2026
 ---
 
 # US FUEL-01 — Socle glucidique du coureur
 
-> **Spec fonctionnelle — en attente de validation (Florian ou Damien).** Aucune ligne de code
-> applicatif n'est écrite avant validation des 3 livrables (spec + plan + maquette).
+> **Spec fonctionnelle — ✅ VALIDÉE par Florian le 07/08/2026** : les 7 décisions D1 → D7 et la
+> maquette sont validées telles quelles, conformément aux recommandations. Code livré le 07/08/2026 (TDD, 5 lots) — reste la recette device (§11, RECETTES.md §50).
 >
 > **Premier lot du chantier « Nutrition du coureur »** (catalogue RN-05 → RN-21, 9 analyses non
 > cadrées). Ce lot livre **le socle** : la cible glucidique en g/kg de poids de corps. Tout le reste du
@@ -151,6 +151,14 @@ concurrentes dans la même carte reproduiraient à l'échelle de la carte le dé
 jours locaux (`localDayKey`), cohérente avec ACWR et MN-02. Aucune dépendance à `Date.now()` dans les
 briques pures : la date du jour est **injectée** (`todayKey`), comme dans tout `packages/shared`.
 
+**R6 bis — Sur 30 jours, la charge est ramenée à son équivalent hebdomadaire.** *(Ajoutée à
+l'implémentation, 07/08/2026 — elle **complète** R6 sans la contredire.)* La carte partage un
+sélecteur 7 j / 30 j avec les protéines, mais les seuils de R2 sont définis **par semaine**. Sur
+30 jours, comparer un cumul mensuel à des seuils hebdomadaires classerait presque tout en « gros
+volume ». La durée est donc normalisée : `heures ÷ jours de fenêtre × 7` (`weeklyEquivalentHours`).
+Sur 7 jours c'est l'**identité** (7/7 = 1), donc le comportement validé en D6 est inchangé — R6 bis
+ne fait que définir le cas que la spec validée laissait ouvert.
+
 **R7 — Les jours non loggés sont exclus, jamais comptés à zéro.** Réutilise `averageIntake`, qui
 applique déjà cette règle. Un jour sans journal ne fait pas chuter la moyenne — sinon la carte
 punirait l'oubli de saisie au lieu de mesurer l'alimentation.
@@ -248,6 +256,23 @@ donc rien à ajouter au test de contraste.
 - [ ] Catalogue : RN-05 et RN-06 → ✅ avec renvoi vers cette US.
 - [ ] `RECETTES.md` : section créée (la §50), critères ci-dessous.
 - [ ] **Aucune ligne de roadmap créée** (US d'analyse — règle du 02/08/2026).
+
+## 10 bis. Écarts entre la maquette validée et le code livré (07/08/2026)
+
+Deux, tous deux volontaires, tous deux dans le sens du **moins d'invention** :
+
+1. **Les puces de statut reprennent l'habillage existant de la carte, pas celui de la maquette.** La
+   maquette dessinait des pastilles vert / ambre / rouge ; la carte réelle utilise déjà
+   `statusColor()` (doré pour `low`, accent pour `in`, grisé pour `high`) pour les protéines. Donner
+   aux glucides un second vocabulaire de couleur dans la **même carte** se lirait comme deux échelles
+   différentes. Le code réutilise donc `statusColor()` tel quel — ce qui rend vraie, au passage,
+   l'affirmation du §8 : **aucune couleur nouvelle n'est introduite**.
+2. **Les libellés de statut sont ceux des protéines** (`insuffisant` / `dans la cible` / `élevé`),
+   comme annoncé au §6, et non les « sous la référence / au-dessus » de la maquette. Même raison :
+   une seule langue par carte.
+
+La maquette reste juste sur ce qu'elle devait valider — la **structure** (deux lignes, une mention de
+journée, les états de disparition) et le fait qu'aucun bloc ne soit ajouté à l'écran.
 
 ## 11. Critères d'acceptation (recette device)
 
