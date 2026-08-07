@@ -1200,6 +1200,59 @@ par [`/commit`](.claude/commands/commit.md).
 
 ---
 
+## 52. ALLURE-01 — La courbe d'allure (lot de 4 analyses)
+
+📄 [spec](docs/specs/functional/us/allure01-courbe-allure.md) · roadmap **5.35** · **📱 device** ·
+✅ **aucune migration, aucune sync rule, aucune dépendance native → recettable sur l'APK existant**.
+
+> **Où ça se trouve** : 3 cartes sur le **résumé de course** (après les splits par km), et 1 section
+> **Polarisation** en bas de l'**historique course**.
+>
+> ⚠️ **Il faut de vraies courses GPS.** Une course saisie à la main ne produit **rien**, et c'est
+> voulu (critère 1). Pour le fade il faut **plus de 10 km**, pour la polarisation **2 courses avec
+> trace sur 4 semaines**.
+
+- [ ] 1. Course **saisie à la main** → aucune des 3 cartes du résumé, **et aucune erreur**.
+- [ ] 2. Course GPS de **moins de 2 km** → pas de carte « gestion d'effort ».
+- [ ] 3. Course GPS de 4-5 km → « gestion d'effort » **présente**, « dégradation » **absente**.
+- [ ] 4. Course de **plus de 10 km en accélérant** sur la fin → verdict **Negative split**, avec les
+      deux allures de moitié et l'écart.
+- [ ] 5. Même distance en **ralentissant** → verdict **Positive split**.
+- [ ] 6. Course à allure **très régulière** → **Allure régulière**, pas un faux « positive ».
+- [ ] 7. 🔴 Fade : sortie longue avec fin nettement plus lente → **pourcentage positif**. Et sur une
+      sortie où tu **accélères** à la fin → **pourcentage négatif**, affiché tel quel (ce n'est pas un
+      défaut, c'est une bonne gestion d'effort).
+- [ ] 8. 🔴 **Allure de référence 5 km non renseignée** (profil coureur) → la carte des zones **reste
+      affichée** et propose de **renseigner l'allure**, avec un accès au profil. **Jamais un « — »**, et
+      surtout pas une carte disparue : sinon tu ne saurais jamais qu'il te manque un réglage.
+- [ ] 9. Renseigner l'allure de référence → les zones apparaissent **sans redémarrer l'app**.
+- [ ] 10. Les parts de zones **somment à 100 %**.
+- [ ] 11. Une course entièrement **marchée** → tout en **Récupération**, sans erreur.
+- [ ] 12. Un **fractionné** rapide → des kilomètres en **Seuil** ou **VMA**.
+- [ ] 13. Polarisation : après ≥ 2 courses avec trace sur 4 semaines, les deux parts apparaissent
+      **avec le volume en km et le nombre de sorties**, et le repère ~80/20 **nommé sans reproche**.
+- [ ] 14. Aucune course sur 4 semaines → **aucune section** Polarisation (pas de titre orphelin).
+- [ ] 15. 🔴 La polarisation pèse les **kilomètres** : fais une **sortie longue** et un **court
+      fractionné**, la sortie longue doit peser beaucoup plus. Si tu vois ~50/50, c'est le bug.
+- [ ] 16. Désactiver le pilier **running** → rien nulle part.
+- [ ] 17. FR ⇄ EN → aucune chaîne brute ; allures et pourcentages cohérents. En **impérial**, les
+      allures des cartes suivent le réglage (min/mile).
+- [ ] 18. Police **1,5×** et thème **sombre** → lisible, non tronqué, contrastes corrects.
+- [ ] 19. **TalkBack** → chaque carte annoncée d'un bloc **avec son chiffre** ; le lien vers le profil
+      coureur est atteignable quand l'allure de référence manque.
+- [ ] 20. Mode avion → identique.
+- [ ] 21. **L'écran Insights et l'accueil n'ont pas changé.** ⚠️ Vérifier aussi que **l'historique
+      course ne rame pas** : la polarisation décode les traces de 4 semaines. Si c'est lent, dis-le —
+      la parade est de borner et de l'afficher, jamais de tronquer en silence.
+- [ ] 22. 🔴 **Calibrage**, jugement de pratiquant : **10 km** est-il le bon seuil de dégradation ?
+      **2 %** la bonne tolérance d'« allure régulière » ? Et surtout — **la frontière Tempo
+      correspond-elle à ton ressenti** ? C'est le seul vrai choix de conception du lot (spec §2.1).
+
+**Quand l'US passe** : `etape: close`, roadmap 5.35 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
 ## 32. COLLIS-01 — Détecteur de collisions entre séances
 
 > 🔴 **Correctif du 07/08/2026 intégré — 5 critères de plus (18 à 22).** La détection ne regardait que

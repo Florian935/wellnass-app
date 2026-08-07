@@ -3,7 +3,7 @@ id: ALLURE-01
 titre: "La courbe d'allure — ce que ta façon de courir dit"
 roadmap: [5.35]
 catalogue: [RUN-11, RUN-20, RUN-17, RUN-08]
-etape: code
+etape: recette
 branche: feature/allure01-courbe-allure
 maj: 07/08/2026
 ---
@@ -307,19 +307,40 @@ native. Le calcul part d'une trace déjà en base.
 
 ## 10. Definition of Done
 
-- [ ] `typecheck`, `lint`, `test:coverage` verts — codes de sortie **sans pipe**.
-- [ ] 4 moteurs **purs**, `packages/shared` toujours à **100 %** (branches comprises).
-- [ ] Chaque moteur rend `null` sous son seuil, et un test le fige (R3).
-- [ ] Les **3 seuils** sont des constantes exportées et nommées, chacune assise par un test.
-- [ ] Les zones sont **dérivées de `sessionTargetPace`**, sans aucun nombre neuf — un test le fige
-      en changeant la référence et en vérifiant que les bornes suivent (D1).
-- [ ] Un test fige que les parts de zones **somment à 100** malgré les arrondis (R8).
-- [ ] Un test fige que la polarisation pèse les **kilomètres** et non les courses (R9).
-- [ ] Un test fige que le km central d'un nombre impair va à la **1ʳᵉ** moitié (§4).
-- [ ] `run/summary.tsx` **ne décode pas la trace une seconde fois** — les splits existants sont
-      réutilisés.
-- [ ] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`, aucune écriture.
-- [ ] `MAX_INSIGHTS`, `INSIGHT_ORDER`, `selectInsights` et le registre d'accueil **non modifiés**.
-- [ ] FR + EN symétriques, nombres formatés avant interpolation.
-- [ ] Catalogue : RUN-11, RUN-20, RUN-17, RUN-08 → ✅.
-- [ ] CHANGELOG, front-matter, roadmap 5.35, RECETTES.md, ETAT.
+Cochée le 07/08/2026, **item par item, sur des faits vérifiés** — pas de case cochée par ressenti
+(leçon d'EXEC-01, où la relecture avait trouvé un item non tenu).
+
+- [x] `typecheck` **0**, `lint` **0 erreur**, `test:coverage` **0**, **3 427 tests verts**.
+- [x] 5 moteurs **purs**, tous à **100 % sur les quatre métriques**, branches comprises.
+- [x] Chaque moteur rend `null` sous son seuil, et un test le fige (R3).
+- [x] Les **3 seuils** sont exportés et nommés, chacun assis par un test :
+      `FADE_MIN_DISTANCE_KM`, `EVEN_SPLIT_TOLERANCE_PCT`, `MIN_RUNS_FOR_POLARISATION`.
+- [x] Les zones sont **dérivées de `sessionTargetPace`** : un test change la référence et vérifie que
+      **toutes** les bornes suivent (D1).
+- [x] Un test fige que les parts de zones **somment à 100** malgré les arrondis (R8).
+- [x] Un test fige que la polarisation pèse les **kilomètres** et non les courses, avec un
+      `not.toBe(50)` explicite (R9).
+- [x] Un test fige que le km central d'un nombre impair va à la **1ʳᵉ** moitié (§4).
+- [x] `run/summary.tsx` **ne décode pas la trace une seconde fois** — `splits` arrive en **prop**.
+- [x] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`, aucune écriture.
+- [x] `MAX_INSIGHTS`, `INSIGHT_ORDER`, `selectInsights` et le registre d'accueil **non modifiés** —
+      vérifié par `git diff` : **vide** sur `insights.ts` et `insights-repository.ts`.
+- [x] FR + EN symétriques (**2 069 clés** chacun) ; pourcentages arrondis **avant** `t()`, allures via
+      `useUnits().formatPace` — aucun second formateur.
+- [x] Catalogue : RUN-11, RUN-20, RUN-17, RUN-08 → ✅.
+- [x] CHANGELOG, front-matter, roadmap 5.35, RECETTES.md §52, ETAT.
+
+### Deux items ajoutés en cours de route, parce que l'implémentation les a réclamés
+
+- [x] 🔴 **`SELECT_HISTORY` ne gagne pas `gps_track`** — un test garde cette porte fermée. Cette
+      requête n'a **aucune borne de date** et alimente les statistiques, la tendance d'allure et
+      l'accueil : y ajouter la trace ferait charger **toutes** les traces GPS de l'utilisateur pour
+      chacun de ces consommateurs. La régression serait invisible en recette et s'aggraverait avec
+      l'historique.
+- [x] **La carte des zones survit à l'absence d'allure de référence** et affiche son **remède** — un
+      test l'exige, parce que la pente naturelle est de masquer la carte, ce qui laisserait
+      l'utilisateur ignorer à jamais qu'il lui manque un réglage.
+
+> **Le code est complet ; l'US ne l'est pas.** Restent les **22 critères de recette device**
+> ([RECETTES.md](../../../../RECETTES.md) §52), dont le calibrage des trois seuils et la frontière
+> `tempo` — la seule étape qu'un agent ne peut pas franchir.

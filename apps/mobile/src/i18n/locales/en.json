@@ -1974,6 +1974,16 @@
       "fastStartWithPace": "Go, {{amount}} at {{pct}}% VMA.",
       "recoveryStart": "Recovery, {{amount}}.",
       "sessionComplete": "Interval session complete!"
+    },
+    "polarisation": {
+      "title": "Training polarisation",
+      "lowLabel": "Low intensity",
+      "highLabel": "High intensity",
+      "low": "{{pct}}% at low intensity",
+      "high": "{{pct}}% at high intensity",
+      "basis": "across {{km}} km · {{count}} run",
+      "basis_plural": "across {{km}} km · {{count}} runs",
+      "reference": "The commonly cited benchmark is ~{{pct}}/20."
     }
   },
   "planning": {
@@ -2752,6 +2762,34 @@
       "activity_level": {
         "title": "Your activity level has shifted",
         "body": "{{runningDays}} running days over the last 14 — your baseline calorie need has probably moved."
+      }
+    }
+  },
+  "run": {
+    "summary": {
+      "split": {
+        "title": "Effort pacing",
+        "negative": "Negative split",
+        "even": "Even pacing",
+        "positive": "Positive split",
+        "detail": "{{first}} for the first half, then {{second}} — {{delta}}"
+      },
+      "fade": {
+        "title": "Late-run slowdown",
+        "detail": "{{first}} in the first quarter, {{last}} in the last ({{km}} km each)"
+      },
+      "zones": {
+        "title": "Time in pace zone",
+        "basis": "across {{count}} full km",
+        "basis_plural": "across {{count}} full km",
+        "needsRef": "Set your 5K reference pace to see your zones",
+        "zone": {
+          "vma": "VO2max",
+          "seuil": "Threshold",
+          "tempo": "Tempo",
+          "endurance": "Easy",
+          "recuperation": "Recovery"
+        }
       }
     }
   }
