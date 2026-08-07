@@ -93,7 +93,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1109 · `main` a **1107** commits de retard sur `dev` |
+| Commits | 1113 · `main` a **1110** commits de retard sur `dev` |
 | Specs d'US | 130 au total — 79 clôturées, 51 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -104,11 +104,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
+- `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `db47824` test(muscu): candidats de substitution — le OU qui ne doit pas devenir un ET
-- `81266c3` test(notifications): bilan hebdo et rappels programmés — la course qui ressuscite un rappel
-- `43f51fc` test(notifications): planificateur de rappel — l'orchestration autour de la règle
-- `b2f6458` test(repositories): pesées, repas types, profil coureur
-- `38e9ac4` test(repositories): records d'allure — l'idempotence par l'arrondi
+- `5d0374b` feat(fuel01): socle glucidique du coureur — g/kg selon la charge (RN-05 + RN-06)
+- `8d7ac75` docs(fuel01): cadre le socle glucidique du coureur (catalogue RN-05 + RN-06)
 
 ---
 

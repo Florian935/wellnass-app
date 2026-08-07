@@ -10,6 +10,78 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Écrans à état : un vrai écran monté, et une garde qui ne gardait rien
+
+**62 tests** sur les deux écrans les plus lourds de l'app. Le premier écran réellement monté en
+test a immédiatement trouvé un défaut — et le même défaut se cachait sur un second écran.
+
+#### Corrigé
+
+- **🔴 `run/active.tsx` — la garde de double appui ne gardait rien.** `onStop` testait
+  `if (stopping) return`, où `stopping` est un **état React**. Deux appuis rapides tombent dans le
+  **même cycle de rendu**, donc dans la même fermeture où `stopping` vaut encore `false`, et le
+  bouton n'a pas encore eu le temps de se désactiver : la séquence d'arrêt partait **deux fois** —
+  double `stopTracking`, double `finishRun`, double navigation vers le résumé. Remplacé par une
+  **ref**, écrite et relue sans attendre un rendu. Couvert par un test dédié.
+- **🔴 `workout.tsx` — même défaut, en pire : aucune garde du tout.** « Terminer » est un
+  `Pressable` nu qui reste actif pendant tout l'`await` : deux appuis clôturaient la séance deux
+  fois, réévaluaient les records deux fois (donc pouvaient **pousser deux notifications de record
+  identiques**) et navigueaient deux fois. Même correctif par ref. ⚠️ **Sans test** — l'écran n'est
+  pas encore monté en test ; c'est la première chose à verrouiller au prochain lot (§8 de la
+  stratégie).
+
+#### Ajouté
+
+- **`run-active.test.tsx` — 20 tests, le vrai écran monté.** Pas de coquille de test : le composant
+  exporté par la route, avec seulement les modules natifs mockés (tracker, GPS, voix, carte).
+  - **Le séquencement d'arrêt est best-effort de bout en bout** : `stopTracking` échoue → on clôture
+    et on navigue quand même ; `finishRun` échoue → on navigue quand même. Sans ça, une panne du
+    module natif laisse la course « en cours » **pour toujours** : impossible d'en démarrer une
+    autre, la sortie n'apparaît nulle part, et l'écran n'a plus aucune issue.
+  - **L'état de pause vient de l'émetteur du tracker**, jamais d'un état local — sinon l'auto-pause,
+    déclenchée hors interaction, laisserait le bouton afficher « Pause » alors que le suivi est
+    arrêté. Vérifié aussi : le désabonnement au démontage.
+  - **La comparaison à la cible n'utilise jamais l'horloge murale** (RUN-F2b, R1 bis) : elle inclut
+    les pauses, et annoncerait un objectif de durée atteint pendant que le coureur est à l'arrêt.
+  - Plus : l'état vide **rédigé** (constat de recette device du 30/07/2026 — un bouton « Retour »
+    seul se lit comme un plantage), et l'absence d'allure en mode manuel.
+- **`workout-focus.test.ts` — 42 tests sur la machine à états du focus de séance.**
+  `resolveCurrentSet` décide **quelle série est « en cours »**. Une erreur y est totalement
+  silencieuse : l'écran affiche la mauvaise série, l'utilisateur saisit ses reps dessus et s'en
+  aperçoit à la fin de la séance, quand plus rien n'est corrigeable de tête.
+  - **La cascade des trois règles** (rang précis → exercice → ordre naturel) et surtout **chaque
+    repli** : taper sur un exercice déjà terminé doit retomber sur l'ordre naturel, pas afficher
+    « séance terminée » alors qu'il reste des séries ailleurs.
+  - **La bascule superset vise la série JUMELLE**, pas la 1ʳᵉ série non validée du partenaire — qui
+    pourrait être un échauffement sans rapport avec le couple.
+  - **Une série dé-validée redevient la série courante** : sinon on corrige une faute de frappe et
+    l'écran continue d'afficher la suivante.
+  - Plus : `formatMmSs` / `parseMmSs` (aller-retour, bornes, saisies parasites) et `formatLastPerf`
+    (factorisation du poids, poids du corps, reps manquantes).
+
+#### Modifié
+
+- **`workout.tsx`** : `resolveCurrentSet`, `findSupersetPartnerSet`, `formatMmSs`, `parseMmSs` et
+  `formatLastPerf` exportés **pour les tests** (patron §3.3). `formatLastPerf` prend désormais un
+  `Pick<Units, …>` au lieu de l'objet d'unités entier — deux membres sur trente suffisent.
+- **Cliquet de couverture du reste mobile relevé** : 12/8/10 → **18/15/14** (réel 21,7/18,7/17,1).
+  La marge sous le réel est volontaire : un nouvel écran arrive toujours moins couvert que la
+  moyenne, et un seuil collé au réel le ferait rougir dès le premier commit.
+- **Stratégie de tests : nouveau §3.7 « monter le vrai écran, pas une coquille ».** Plusieurs
+  `*-smoke.test.tsx` du dépôt **réécrivent** la logique de l'écran dans un composant `…Shell` local
+  puis testent cette réécriture — on peut supprimer l'écran, ils restent verts. Quatrième famille
+  de faux vert documentée, après le `powerSync` mocké, l'import dynamique non transpilé et le rendu
+  non attendu.
+
+#### Technique / Notes
+
+- **Deux pièges de RNTL notés au §3.7** : un `Button` en `loading` n'affiche plus son texte (il ne
+  porte plus que l'`accessibilityLabel` — ce que lit TalkBack), et un `fireEvent.press` **hors
+  `act`** ne rafraîchit pas l'écran. Deux appuis dans le même `act` testent la garde applicative ;
+  dans deux `act` successifs, ils testent le `disabled` du bouton. Ce sont deux tests différents.
+- **3 249 tests verts** (1 948 shared + 1 120 mobile + 181 admin). Couverture mobile **30,3 %**.
+  Typecheck, lint et seuils propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Substitutions d'exercice, et resserrage des cliquets
 
 **12 tests** sur la requête des candidats de remplacement (MUSC-F14), puis **remontée des trois

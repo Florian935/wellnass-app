@@ -45,12 +45,14 @@ module.exports = {
   // couverture ; la réponse est d'en ajouter, pas de baisser le seuil.
   //
   // ⚠️ `global` porte sur ce qui reste APRÈS déduction des chemins ci-dessous — donc surtout
-  // `src/app` (écrans, ~6 %) et `src/components` (~27 %). Il est bas volontairement : le monter
-  // bloquerait l'ajout de tout nouvel écran, ce qui pousserait à contourner le garde-fou.
+  // `src/app` (écrans) et `src/components`. Il reste **volontairement en retrait du réel**
+  // (21,7 / 18,7 / 17,1 au 07/08/2026) : un nouvel écran arrive toujours moins couvert que la
+  // moyenne, et un seuil collé au réel le ferait rougir dès le premier commit — ce qui pousserait
+  // à contourner le garde-fou plutôt qu'à écrire des tests. La marge est l'ajustement, pas un oubli.
   coverageThreshold: {
     './src/data/repositories/': { statements: 44, branches: 33, functions: 39 },
     './src/lib/': { statements: 52, branches: 51, functions: 64 },
     './src/stores/': { statements: 47, branches: 36, functions: 46 },
-    global: { statements: 12, branches: 8, functions: 10 },
+    global: { statements: 18, branches: 15, functions: 14 },
   },
 };

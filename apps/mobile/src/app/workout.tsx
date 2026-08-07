@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -43,8 +43,18 @@ import { computeProgressionSuggestion } from '@wellness/shared';
 /** Repos par défaut (s) quand l'exercice n'a ni override de session ni valeur planifiée. */
 const DEFAULT_REST_SECONDS = 90;
 
+/**
+ * ── Fonctions pures exportées **pour les tests** ────────────────────────────────────────────────
+ * `resolveCurrentSet`, `findSupersetPartnerSet`, `formatMmSs`, `parseMmSs` et `formatLastPerf` sont
+ * la vraie substance de cet écran : la machine à états du focus et les formats de saisie. Les
+ * atteindre en rendant l'écran demanderait de monter PowerSync, le thème, l'i18n et six hooks de
+ * données — pour tester des fonctions qui n'ont besoin d'aucun des six. Elles restent ici, à côté
+ * de leur unique appelant, plutôt que déplacées dans `src/lib` pour les besoins du test. Même
+ * patron que `buildSummary` dans `workout-summary.tsx`, voir §3.3 de `strategie-tests.md`.
+ */
+
 /** Série courante résolue : l'exercice, la série et le rang (0-based) dans l'exercice. */
-type CurrentSet = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number]; rang: number };
+export type CurrentSet = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number]; rang: number };
 
 /**
  * Dérogation de focus : cible un exercice (comme avant C3), et optionnellement
@@ -52,7 +62,7 @@ type CurrentSet = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number]; rang
  * pas la 1ʳᵉ série non validée de l'exercice partenaire, qui pourrait être un
  * échauffement antérieur non lié au couple).
  */
-type FocusOverride = { exerciseId: string; rang?: number } | null;
+export type FocusOverride = { exerciseId: string; rang?: number } | null;
 
 /**
  * Résout la « série en cours » (machine à états de focus, C1 + superset C3) :
@@ -63,7 +73,10 @@ type FocusOverride = { exerciseId: string; rang?: number } | null;
  *  - sinon la 1ʳᵉ série `done===false` en parcourant exercices puis séries dans l'ordre ;
  *  - `null` si toutes les séries de tous les exercices sont validées (état de fin).
  */
-function resolveCurrentSet(entries: WorkoutEntry[], focusOverride: FocusOverride): CurrentSet | null {
+export function resolveCurrentSet(
+  entries: WorkoutEntry[],
+  focusOverride: FocusOverride,
+): CurrentSet | null {
   const firstUndone = (entry: WorkoutEntry): CurrentSet | null => {
     for (let rang = 0; rang < entry.sets.length; rang += 1) {
       const set = entry.sets[rang];
@@ -105,7 +118,7 @@ type SupersetPartner = { entry: WorkoutEntry; set: WorkoutEntry['sets'][number] 
  * rang (progression différente), ou si le partenaire a quitté la séance
  * (dégradation silencieuse — repos normal dans tous ces cas).
  */
-function findSupersetPartnerSet(
+export function findSupersetPartnerSet(
   entries: WorkoutEntry[],
   pairs: Record<string, string>,
   exerciseId: string,
@@ -124,7 +137,7 @@ type EditState = { reps: string; weightKg: number | null; durationSeconds: numbe
 type Units = ReturnType<typeof useUnits>;
 
 /** Formate un nombre de secondes en « m:ss » (ex. 90 → « 1:30 »). */
-function formatMmSs(totalSeconds: number): string {
+export function formatMmSs(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
   const m = Math.floor(s / 60);
   const ss = String(s % 60).padStart(2, '0');
@@ -135,7 +148,7 @@ function formatMmSs(totalSeconds: number): string {
  * Parse une durée saisie en secondes, tolérant : « 90 » → 90, « 1:30 » → 90,
  * champ vide → `null`. La partie secondes est bornée aux chiffres.
  */
-function parseMmSs(input: string): number | null {
+export function parseMmSs(input: string): number | null {
   const trimmed = input.trim();
   if (trimmed === '') return null;
   if (trimmed.includes(':')) {
@@ -152,9 +165,11 @@ function parseMmSs(input: string): number | null {
  * Formate la dernière performance d'un exercice : « 80 kg × 8/8/7 » si toutes les
  * séries ont le même poids, sinon « 80×8, 82.5×8 ». `null` si aucune donnée.
  */
-function formatLastPerf(
+export function formatLastPerf(
   perf: { weightKg: number | null; reps: number | null }[],
-  units: Units,
+  // `Pick` et non `Units` entier : la fonction n'a besoin que de deux membres sur trente, et
+  // l'exiger tous obligerait un appelant (ou un test) à construire tout le hook d'unités.
+  units: Pick<Units, 'weightInputValue' | 'weightSymbol'>,
 ): string | null {
   const first = perf[0];
   if (!first) return null;
@@ -214,6 +229,8 @@ export default function WorkoutScreen() {
   const [edit, setEdit] = useState<{ setId: string; state: EditState } | null>(null);
   const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
   const [supersetPickerOpen, setSupersetPickerOpen] = useState(false);
+  // Voir `doFinish` : verrou de clôture, écrit et relu sans attendre un rendu.
+  const finishingRef = useRef(false);
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
@@ -467,6 +484,13 @@ export default function WorkoutScreen() {
   };
 
   const doFinish = async () => {
+    // Verrou d'arrêt — même défaut que celui trouvé sur `run/active.tsx` le 07/08/2026 : « Terminer »
+    // est un Pressable nu qui reste actif pendant tout l'`await`. Deux appuis rapides tombent dans
+    // le même cycle de rendu, donc clôturaient la séance deux fois, réévaluaient les records deux
+    // fois (donc pouvaient pousser deux notifications de record identiques) et navigueraient deux
+    // fois. Une ref est écrite et relue immédiatement, sans attendre un rendu.
+    if (finishingRef.current) return;
+    finishingRef.current = true;
     // 1. Clôture de la séance : doit réussir (statut 'completed').
     await finishWorkout(workoutId);
     // 2. Évaluation des records : enrichissement best-effort. Un échec ne doit

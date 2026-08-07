@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { averagePace, compareToTarget, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
 import { useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +71,13 @@ export default function RunActiveScreen() {
   // l'auto-pause (déclenchée hors interaction) pour que le bouton ne mente jamais.
   const [paused, setPaused] = useState(getPaused);
   const [stopping, setStopping] = useState(false);
+  // Verrou d'arrêt. `stopping` (état React) pilote l'affichage, mais ne peut pas servir de garde :
+  // deux appuis rapides tombent dans le **même cycle de rendu**, donc dans la même fermeture, où
+  // `stopping` vaut encore `false` pour les deux — et le bouton n'a pas encore eu le temps de se
+  // désactiver. La séquence d'arrêt partait alors deux fois : double `stopTracking`, double
+  // `finishRun`, double navigation. Une ref est écrite et relue immédiatement, sans attendre un
+  // rendu. (Défaut trouvé en écrivant `run-active.test.tsx`, 07/08/2026.)
+  const stoppingRef = useRef(false);
 
   useEffect(() => subscribePaused(setPaused), []);
 
@@ -217,7 +224,8 @@ export default function RunActiveScreen() {
   };
 
   const onStop = async () => {
-    if (stopping) return;
+    if (stoppingRef.current) return;
+    stoppingRef.current = true;
     setStopping(true);
     const runId = active.id;
     // Séquencement critique : stop + DRAIN avant finish (aucun flush tardif après
