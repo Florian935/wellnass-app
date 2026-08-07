@@ -19,8 +19,14 @@
 
 import { vi } from 'vitest';
 
-/** Réponse simulée d'une requête. */
-export type MockResponse = { data?: unknown; error?: unknown };
+/**
+ * Réponse simulée d'une requête.
+ *
+ * `count` accompagne un `select('*', { count: 'exact' })` : c'est le total **hors pagination**, et
+ * c'est ce qui permet à l'UI d'afficher un nombre de pages. Sans lui dans le double, une
+ * pagination pouvait être testée sur ses bornes mais jamais sur ce qu'elle rend.
+ */
+export type MockResponse = { data?: unknown; error?: unknown; count?: number | null };
 
 /** Un filtre appliqué à une requête : `is('owner_id', null)` → `['is', 'owner_id', null]`. */
 export type RecordedFilter = [method: string, ...args: unknown[]];
@@ -130,10 +136,14 @@ export function createSupabaseMock(options?: { user?: { id: string; email?: stri
       onRejected?: (reason: unknown) => unknown,
     ) => {
       const response = nextResponse(`${record.table}.${record.operation}`);
-      return Promise.resolve({ data: response.data ?? null, error: response.error ?? null }).then(
-        onFulfilled,
-        onRejected,
-      );
+      const resolved: MockResponse = {
+        data: response.data ?? null,
+        error: response.error ?? null,
+        // `null` et non `undefined` : c'est ce que supabase-js rend quand `count` n'a pas été
+        // demandé, et un appelant peut légitimement faire la différence.
+        count: response.count ?? null,
+      };
+      return Promise.resolve(resolved).then(onFulfilled, onRejected);
     };
 
     return builder;

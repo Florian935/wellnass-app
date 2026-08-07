@@ -285,7 +285,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **1 — fait** | Repositories d'**écriture** des US en recette : `menstrual-cycle` (15), `workout` (44), `run` (22), `planned-session` (16), `records` (17), `goal` + `streak-joker` (21), `body-measurement` (11, réécrit sur SQL) | Ce sont les 31 US bloquées : chaque test posé ici **retire une ligne de RECETTES.md** | ✅ 146 tests |
 | **2 — fait** | Repositories de **lecture** à SQL complexe : `weekly-review` (25), `dashboard` (20), `program` (24), `journal` + `nutrition` (34) | Requêtes d'agrégation — les plus faciles à casser sans s'en apercevoir | ✅ 103 tests |
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
-| **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
+| **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) , puis 07/08 : détail et écriture d'exercice (27), détail et contenu de programme (41), lectures d'aliments et de comptes + modération (29) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 278 tests · **97,7 %** — la couche data du back-office est couverte |
 | **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17), effets de montage de `cycle` et `help` (4), `buildSummary` du résumé de séance (11), `workout-template` (20), `settings` (23), `food` (26), `profile` + `recipe` (24), `running-record` (19), `bodyweight` + `meal-template` + `running-profile` (20), planificateurs de notifications (24), candidats de substitution d'exercice (12), **machine à états du focus de séance** (42) et
 et **trois écrans réellement montés** : course en cours (20), séance (20), historique de
 course (30). Les trois cibles à état du lot sont faites. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 322 tests |
@@ -305,7 +305,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
 | `apps/mobile` — reste (écrans, composants) | **23** | **20** | **18** |
-| `apps/admin` (`src/data` + `src/lib`) | **68** | **87** | **70** |
+| `apps/admin` (`src/data` + `src/lib`) | **96** | **89** | **96** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
 > `stores` 45→47, reste 12→18) : les lots suivants avaient fait monter le réel bien au-dessus du cliquet, qui
@@ -381,7 +381,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 238 (mobile) + 181 (admin) = 3 539 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 238 (mobile) + 278 (admin) = 3 636 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -389,7 +389,7 @@ couverture** propres.
 | Couverture mobile | 15,0 % | **33,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **181 tests · 68,9 %** (`src/lib` à 100 %) |
+| `apps/admin` | aucun runner | **278 tests · 97,7 %** (`src/lib`, `foods`, `users` à 100 %) |
 
 ## 8. Reprise — par où continuer
 
@@ -440,14 +440,16 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    la justification détaillée au §5 bis. Trois vrais trous fonctionnels trouvés au passage
    (suggestions de glucides, fractionnés en durée, throttle d'import du cycle) et deux défauts de
    code corrigés (`NaN` retourné comme record de course, code mort prouvé).
-4. **Reste de `apps/admin/src/data`** — avancé le 04/08/2026 : **61,33 % → 68,88 %** (157 → 181
-   tests), cliquet relevé à 68/87/70. **`exercise-variants.ts` est passé de 0 % à 100 %**
-   d'instructions et de fonctions : 172 lignes de couche data sans un seul test, le plus gros trou
-   du paquet. Restent les deux plus gros fichiers : **`exercises.ts` (49,8 %)** et
-   **`programs.ts` (57,8 %)** — surtout `getProgram` / `getExercise` et les écritures de programme.
-   Copier [`exercise-variants.test.ts`](../../../apps/admin/src/data/exercise-variants.test.ts),
-   qui montre le patron complet (canonisation, réactivation d'un soft delete, audit non journalisé
-   quand l'écriture échoue).
+4. ~~**Reste de `apps/admin/src/data`**~~ — ✅ **fait le 07/08/2026 : 68,88 % → 97,71 %**
+   (181 → 278 tests), cliquet relevé à 96/89/96. `exercises.ts` 49,8 → **99,1 %**, `programs.ts`
+   57,8 → **96,9 %**, `foods.ts` et `users.ts` à **100 %**. **La couche data du back-office est
+   couverte** ; le seuil est assez haut pour qu'un nouveau fichier non testé le fasse rougir.
+   Le fil conducteur des trois fichiers ajoutés : **`owner_id IS NULL` sur chaque lecture comme sur
+   chaque écriture** (l'admin parle à Supabase avec la clé anon — sans ce filtre, une action
+   d'administration déborde sur les données **créées par les utilisateurs**), le **bornage au
+   parent** des réordonnancements, et la **coercion des `numeric`** que PostgREST rend en chaîne.
+   Ce qui reste, ce sont les **écrans React** du back-office : `jsdom` + Testing Library, non
+   installés (voir l'en-tête de [`vitest.config.ts`](../../../apps/admin/vitest.config.ts)).
 
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.

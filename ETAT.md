@@ -95,7 +95,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1128 · `main` a **1123** commits de retard sur `dev` |
+| Commits | 1129 · `main` a **1126** commits de retard sur `dev` |
 | Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -106,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `85b3fce` test(running): couvrir la section polarisation arrivée de dev (RUN-19)
 - `64ba2e7` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `80d8b0a` test(running): monter l écran d historique de course — 26 tests, six états vides
 - `041375a` merge(allure01): la courbe d'allure dans dev
 - `e986e9d` feat(allure01): requete, surfaces et i18n de la courbe d'allure
-- `ddacea6` test(muscu): monter le vrai écran de séance — 20 tests, dont la double clôture
 
 ---
 

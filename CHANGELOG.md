@@ -10,6 +10,75 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — La couche data du back-office est couverte (68,9 % → 97,7 %)
+
+**97 tests** sur les trois derniers fichiers de `apps/admin/src/data` qui restaient à moitié nus.
+C'est l'outil qui écrit dans le **contenu partagé par tous les utilisateurs** : un filtre oublié
+n'y casse pas un compte, il en casse des milliers.
+
+#### Ajouté
+
+- **`exercises-detail.test.ts` — 27 tests** (49,8 % → **99,1 %**). Liste, détail et enregistrement.
+  - **🔴 La sémantique d'échec partiel de `saveExercise`.** L'écriture est séquentielle : ligne
+    puis deux traductions. Si une traduction échoue, l'exercice **existe déjà** en base — la
+    fonction renvoie donc son `id`, pas `null`. Renvoyer `null` ferait croire à l'UI qu'il n'y a
+    rien à reprendre, et le prochain enregistrement créerait un **doublon** au lieu de compléter
+    la ligne existante.
+  - **🔴 L'audit n'est écrit qu'en succès complet.** Un journal qui affirme « exercice créé » alors
+    que la fiche est sans nom éteint la seule alerte disponible.
+  - Plus : le muscle principal exclu des secondaires **à la lecture comme à l'écriture** (sinon un
+    aller-retour dans le formulaire réintroduit le doublon que la lecture venait de retirer), un
+    nom manquant rendu en chaîne vide et non `undefined` (un champ contrôlé qui bascule en non
+    contrôlé perd la saisie de l'admin), et le statut absent replié sur « brouillon ».
+- **`programs-detail.test.ts` — 41 tests** (57,8 % → **96,9 %**). `getProgram` et les quinze
+  écritures de séances, exercices planifiés et blocs fractionné.
+  - **🔴 Le bornage au parent des trois réordonnancements.** Sans `.eq('program_id', …)` /
+    `.eq('session_id', …)`, un glisser-déposer bogué réécrirait les positions de séances
+    appartenant à **un autre programme** — et le désordre resterait invisible jusqu'à l'ouverture
+    de l'autre fiche.
+  - **🔴 Le retrait d'une séance emporte plans et blocs AVANT la séance**, et s'arrête à la
+    première erreur : archiver la séance seule laisserait des orphelins invisibles dans l'admin et
+    toujours synchronisés vers les téléphones.
+  - **🔴 `getProgram` ignore les traductions archivées** — sinon une traduction archivée peut
+    gagner le `find` et réapparaître dans le formulaire, où l'admin enregistrerait l'ancien nom en
+    croyant confirmer.
+  - **🔴 Aucun ajout n'insère avec une position devinée** : si le calcul de `order_index` échoue,
+    rien n'est écrit. Deux éléments au même rang laisseraient l'ordre à ce que Postgres rend.
+- **`listings-detail.test.ts` — 29 tests** (`foods.ts` et `users.ts` à **100 %**).
+  - **🔴 La coercion des `numeric`.** PostgREST rend ces colonnes **en chaîne** pour préserver la
+    précision : un `kcal_per_100g` à `"52.0"` traverse tout le code sans lever, jusqu'à un tri qui
+    range « 9 » après « 100 ». Et `Number(null)` vaut **0** — un lipide non renseigné s'afficherait
+    « 0 g », une affirmation nutritionnelle fausse là où « — » dit qu'on ne sait pas.
+  - **🔴 Les bornes de pagination.** `range` est **inclus** aux deux bouts : un `-1` oublié fait
+    remonter une ligne de trop par page, donc un doublon en tête de la suivante. Vérifié sur la
+    page 0 et la page 2.
+  - **🔴 Une recherche blanche n'applique aucun filtre.** `ilike('email', '%%')` semble inoffensif
+    mais écarte les comptes **sans e-mail** (OAuth) : la liste maigrirait sans explication dès
+    qu'on efface la recherche.
+  - **🔴 La modération ne journalise rien si la RPC refuse.** Les garde-fous (anti-soi, anti-admin,
+    motif obligatoire) sont côté serveur ; journaliser avant sa réponse écrirait un historique
+    affirmant des bannissements qui n'ont pas eu lieu — sur la fonctionnalité où l'historique
+    **est** la preuve.
+
+#### Corrigé
+
+- **Le double de test Supabase perdait `count`.** `select('*', { count: 'exact' })` est ce qui
+  permet à l'UI d'afficher un nombre de pages ; le double le laissait tomber, donc une pagination
+  pouvait être testée sur ses bornes mais **jamais sur ce qu'elle rend**. Corrigé dans le helper,
+  pas contourné dans le test.
+
+#### Modifié
+
+- **Cliquet `apps/admin` relevé** : 68/87/70 → **96/89/96** (réel 97,71 / 89,59 / 98,27). Assez
+  haut, désormais, pour qu'un nouveau fichier de couche data non testé le fasse rougir.
+
+#### Technique / Notes
+
+- **Ce qui reste côté back-office, ce sont les écrans React** : `jsdom` + Testing Library, non
+  installés (voir l'en-tête de [vitest.config.ts](apps/admin/vitest.config.ts)).
+- **3 636 tests verts** (2 120 shared + 1 238 mobile + 278 admin). Typecheck, lint et seuils
+  propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Historique de course : six sections, six états vides
 
 **26 tests** sur `running-history/index.tsx`, le troisième et dernier écran à état du lot 5.

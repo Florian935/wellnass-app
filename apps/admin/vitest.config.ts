@@ -40,12 +40,20 @@ export default defineConfig({
       // Relevé de nouveau le **04/08/2026** (60 → 68) après couverture de `exercise-variants.ts`,
       // qui était à **0 %** — 172 lignes de couche data sans un seul test, le plus gros trou du
       // paquet. Réel : 68,88 % d'instructions, 87,86 % de branches, 70,17 % de fonctions.
-      // Restent `exercises.ts` (49,8 %) et `programs.ts` (57,8 %), les deux plus gros fichiers.
+      //
+      // Relevé une dernière fois le **07/08/2026** (68 → 96) : `exercises.ts` (49,8 → 99,1 %),
+      // `programs.ts` (57,8 → 96,9 %), `foods.ts` et `users.ts` à **100 %**. Réel : 97,71 %
+      // d'instructions, 89,59 % de branches, 98,27 % de fonctions. **La couche data du back-office
+      // est couverte** ; le seuil est désormais assez haut pour qu'un nouveau fichier non testé le
+      // fasse rougir — ce qui est exactement l'effet recherché à ce stade.
+      //
+      // Les branches restent en retrait (89,6 %) : ce sont surtout des gardes défensives sur des
+      // colonnes `numeric` nullables. Même arbitrage qu'au §5 bis pour `packages/shared`.
       thresholds: {
-        statements: 68,
-        branches: 87,
-        functions: 70,
-        lines: 68,
+        statements: 96,
+        branches: 89,
+        functions: 96,
+        lines: 96,
       },
     },
   },
