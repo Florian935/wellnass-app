@@ -217,13 +217,17 @@ fonctionnalité.</p>
   <div class="anno">
     <p style="margin:0 0 8px;font-weight:800;font-size:14px">Opt-in, et ce qu'il coupe vraiment</p>
     <p style="margin:0;font-size:13.5px">Réglage <b>désactivé par défaut</b> (décision H). Éteint,
-      ce n'est pas seulement l'affichage qui disparaît : <b>la requête d'enrichissement n'est même
-      pas montée</b>. On ne fait pas payer à tout le monde une fonctionnalité que personne n'a
-      demandée.</p>
-    <div class="flag"><b>Une migration et une sync rule.</b> Le réglage vit sur
-      <code>user_settings</code>. La sync rule PowerSync est <b>à redéployer à la main</b> — l'étape
-      déjà oubliée une fois, qui avait rendu le suivi de cycle impossible à activer (recette du
-      01/08). Elle est un critère de recette à part entière.</div>
+      la requête d'enrichissement <b>ne ramène rien</b> : le verrou est un <code>owner_id</code> lié
+      à vide, pas une sentinelle SQL. On ne fait pas payer à tout le monde une fonctionnalité que
+      personne n'a demandée.</p>
+    <div class="flag"><b>Une migration, et aucune sync rule.</b> Le réglage vit sur
+      <code>user_settings</code>, déjà publiée et lue en <code>select *</code> : y ajouter une
+      colonne ne change pas une ligne du YAML. <b>Le vrai risque est
+      <code>powersync/schema.ts</code></b> — une colonne absente du schéma <b>local</b> n'existe pas
+      dans la base SQLite embarquée, l'écriture échoue et l'erreur est avalée : l'interrupteur reste
+      éteint <b>sans message</b>. C'est la panne exacte de CYCLE-01 (recette du 31/07).
+      <i>Corrigé le 07/08/2026 : cette carte annonçait une sync rule à redéployer, ce qui était
+      faux.</i></div>
   </div>
   <div class="anno">
     <p style="margin:0 0 8px;font-weight:800;font-size:14px">Le ton</p>
@@ -236,6 +240,95 @@ fonctionnalité.</p>
       course ↔ course, densité de semaine, charge ↔ nutrition — sont écartées de la V1. Le moteur
       est conçu pour les accueillir : une règle s'ajoute à une table, elle ne réécrit rien.</p>
   </div>
+</div>
+
+<h2>5. Correctif du 07/08/2026 — la veille hors semaine</h2>
+<p class="why"><b>Zéro pixel ne change.</b> Le bandeau, ses trois états, l'écran : tout est identique.
+Ce qui change est <b>quand</b> il apparaît — et ça produit deux situations qu'aucune maquette du
+05/08 ne montrait, parce qu'elles étaient toutes deux impossibles.</p>
+
+<div class="flag" style="max-width:96ch;margin:0 0 18px">
+  <b>Le trou.</b> La règle dit « le lendemain », mais la détection ne regardait que la
+  <b>semaine affichée</b>. Un dimanche de jambes suivi d'un lundi de fractionné était donc
+  structurellement invisible : <b>une paire de jours sur sept</b>, et pas la plus rare — le dimanche
+  est un jour de muscu courant, le lundi un jour de qualité courant.
+</div>
+
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div><div class="navsub">Semaine du 10 au 16 août</div></div>
+      <div class="screen">
+        <div class="day flagged">
+          <div class="dayhead">Lundi 10 · premier jour affiché</div>
+          <div class="sess"><span class="chip run">Course</span> Fractionné <span class="meta">8 × 400 m</span></div>
+          <div class="banner">
+            <div class="btitle">Séance jambes lourde la veille</div>
+            <div class="bbody"><b>12 séries</b> sur les jambes hier, puis un <b>fractionné</b>
+              aujourd'hui. Tes jambes n'auront pas récupéré.</div>
+            <div class="bbtn">Déplacer au mercredi</div>
+          </div>
+        </div>
+        <div class="day"><div class="dayhead">Mardi 11</div>
+          <div class="sess"><span class="chip run">Course</span> Endurance <span class="meta">45 min</span></div></div>
+        <div class="day"><div class="dayhead">Mercredi 12</div>
+          <div class="sess" style="color:var(--muted);font-weight:400">Repos</div></div>
+      </div>
+    </div>
+    <p class="caption"><b>Le cas corrigé.</b> Le bandeau apparaît sur le <b>lundi</b>, et la séance de
+      jambes qu'il cite <b>n'est pas à l'écran</b> — elle est sur la semaine précédente. C'est assumé :
+      « la veille » se comprend sans être montrée, et <b>le bandeau porte ses chiffres</b> (« 12 séries »),
+      ce qui reste vérifiable. Avant correctif, <b>aucun bandeau n'apparaissait jamais ici</b>.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Planning</div><div class="navsub">Le repli qui se sabotait</div></div>
+      <div class="screen">
+        <div class="day"><div class="dayhead">Lundi 10</div>
+          <div class="sess" style="color:var(--muted);font-weight:400">Repos — <b style="color:#8a6419">jamais proposé</b></div></div>
+        <div class="day flagged">
+          <div class="dayhead">Mardi 11</div>
+          <div class="sess"><span class="chip run">Course</span> Sortie longue <span class="meta">18 km</span></div>
+          <div class="banner">
+            <div class="btitle">Séance jambes lourde la veille</div>
+            <div class="bbody"><b>14 séries</b> sur les jambes dimanche, puis une <b>sortie longue</b>.</div>
+            <div class="bbtn">Déplacer au jeudi</div>
+          </div>
+        </div>
+        <div class="day"><div class="dayhead">Jeudi 13</div>
+          <div class="sess" style="color:var(--muted);font-weight:400">Repos</div></div>
+      </div>
+    </div>
+    <p class="caption"><b>Le second bug, invisible en lecture de code.</b> Le lundi est libre, donc il
+      semblait être le meilleur repli — mais la veille du lundi, c'est le <b>dimanche des 14 séries</b> :
+      le bouton aurait <b>fabriqué le conflit qu'il prétendait résoudre</b>, un jour plus tôt. Le lundi
+      est écarté, on propose le jeudi.</p>
+  </div>
+
+  <div>
+    <div class="anno">
+      <p style="margin:0 0 8px;font-weight:800;font-size:14px">Deux bornes, et pas une seule</p>
+      <table style="margin:0 0 12px">
+        <tr><th>Question</th><th>Fenêtre</th></tr>
+        <tr><td><b>Qu'ai-je fait hier ?</b><br><span style="color:var(--muted)">détection</span></td>
+            <td><b>8 jours</b> — la veille compte même hors écran</td></tr>
+        <tr><td><b>Où puis-je le mettre ?</b><br><span style="color:var(--muted)">repli</span></td>
+            <td><b>7 jours</b> — proposer un jour invisible n'a pas de sens</td></tr>
+      </table>
+      <p style="margin:0;font-size:13.5px">Une question de physiologie et une question d'écran n'ont
+        aucune raison d'avoir la même borne. C'est de les avoir confondues que venait le bug.</p>
+      <div class="flag"><b>L'aval est écarté, et c'est un choix.</b> Le trou symétrique existe —
+        jambes le dimanche <b>affiché</b>, course le lundi <b>suivant</b> — et il n'est pas signalé
+        quand on regarde la semaine des jambes. Le bandeau vit sur le jour de la <b>course</b>
+        (décision D5) : il apparaîtra dès qu'on regardera la semaine de la course. Le couvrir en aval
+        aurait affiché <b>le même conflit deux fois, sur deux semaines, avec deux ancres
+        différentes</b>. Si la recette montre que le dimanche soir est le moment qui compte, la
+        réponse sera <b>une notification</b>, pas un second bandeau.</div>
+    </div>
+  </div>
+
 </div>
 
 </div>

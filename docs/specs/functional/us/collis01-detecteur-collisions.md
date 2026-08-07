@@ -4,8 +4,8 @@ titre: "Détecteur de collisions entre séances — séquençage muscu ↔ cours
 roadmap: [3.57]
 catalogue: []
 etape: recette
-branche: feature/collis01-detecteur-collisions
-maj: 05/08/2026
+branche: fix/collis01-conflit-veille-hors-semaine
+maj: 07/08/2026
 ---
 
 # COLLIS-01 — Détecteur de collisions entre séances
@@ -14,6 +14,20 @@ maj: 05/08/2026
 > décisions du §3 sont **acquises**, elles ne se rouvrent pas en codant. Idée promue depuis
 > [IDEAS.md](../../../../IDEAS.md) (25/07/2026), où elle est le **signal le plus fort du benchmark
 > IA** — retenue par les 4 modèles sur 4.
+
+> 🔴 **Rouverte le 07/08/2026 (Florian) — avant recette.** La règle du §2 dit « le lendemain », mais
+> l'implémentation ne regarde que la **semaine affichée** : un dimanche de jambes suivi d'un lundi de
+> fractionné est structurellement invisible. **Une paire de jours sur sept**, et pas la plus rare —
+> le dimanche est un jour de muscu courant et le lundi un jour de qualité courant.
+>
+> **Corrigée en place plutôt que dans une US distincte** : la recette n'a pas encore eu lieu.
+> Recetter une règle qu'on sait incomplète, puis la recetter une seconde fois après correctif, c'est
+> du temps humain payé deux fois — et c'est exactement le piège des « 5 faux défauts » relevé le
+> 06/08/2026, quand INSIGHTS-02 avait périmé des critères sans qu'on le voie.
+>
+> Ce que la réouverture change : **D7** (§3), **§4** (le repli), **R7** (§5), 4 cas limites (§8),
+> 3 critères de recette (§11). Les six décisions du 05/08 restent acquises ; aucune ne se rejoue.
+> Détail d'exécution : [plan du correctif](../../../plans/collis01-conflit-veille-hors-semaine.md).
 
 ## 0. Ce que ça résout
 
@@ -34,8 +48,8 @@ C'est le cœur du différenciateur d'intégration : deux piliers qui se parlent 
 
 ### 1.1 Dans le périmètre
 
-- Un **moteur pur** (`packages/shared/src/session-conflicts.ts`) : reçoit une semaine de séances
-  déjà décrites, rend les conflits et leur jour de repli.
+- Un **moteur pur** (`packages/shared/src/session-conflicts.ts`) : reçoit les séances **de la veille
+  et de la semaine affichée** déjà décrites (8 jours, D7), rend les conflits et leur jour de repli.
 - Une **requête d'enrichissement** du planning : part de jambes et nombre de séries d'une séance
   planifiée. **Seule donnée nouvelle du chantier.**
 - Un **bandeau** sur `/planning`, sur le jour en conflit, avec l'échange en un tap.
@@ -74,7 +88,7 @@ sont neutres, voire bénéfiques. Seules les séances de **qualité** comptent.
 mesuré dans ce produit — c'est un point de départ explicite, à calibrer en recette puis à l'usage.
 Il est exporté comme constante nommée, pas enfoui dans une condition.
 
-## 3. Les six décisions acquises
+## 3. Les sept décisions acquises
 
 | # | Décision | Motif |
 |---|---|---|
@@ -84,18 +98,67 @@ Il est exporté comme constante nommée, pas enfoui dans une condition.
 | D4 | Repli = **premier jour de la semaine ISO qui résout**, après puis avant | Seul algorithme qui reste explicable sur un planning dense (voir §4) |
 | D5 | Surface = **bandeau en ligne sur `/planning`** | On voit le problème là où on le règle, avec les deux séances sous les yeux |
 | D6 | **Opt-in strict, désactivé par défaut** | Décision H — intégration sans imposition |
+| D7 | **Détection sur 8 jours (la veille + la semaine), repli borné à la semaine affichée** | 07/08/2026 — voir §4 |
+
+**D7, en entier.** La détection remonte **d'un jour en amont** de la semaine affichée ; le repli, lui,
+reste **borné à la semaine affichée**. Deux bornes différentes pour deux besoins différents, et
+chacune a sa raison :
+
+- **La détection** répond à une question de physiologie — « qu'ai-je fait hier ? ». Hier existe même
+  quand l'écran ne le montre pas. La borner à l'écran, c'était laisser la règle mentir sur son propre
+  énoncé.
+- **Le repli** répond à une question d'écran — « où puis-je le mettre ? ». Proposer « déplacer au
+  mardi » en désignant un mardi que l'utilisateur ne voit pas serait incompréhensible, et le bouton
+  déplacerait une séance hors du champ de vision.
+
+**L'aval a été explicitement écarté** (Florian, 07/08/2026). Le trou symétrique existe — jambes le
+dimanche **de la semaine affichée**, course de qualité le lundi **suivant** — et il n'est pas signalé
+quand on regarde la semaine des jambes. C'est assumé : le bandeau vit sur le jour de la **course**
+(D5), donc il apparaît dès qu'on regarde la semaine de la course. Le couvrir en aval aurait affiché
+**le même conflit deux fois, sur deux semaines, avec deux ancres différentes** — ce qui rouvre D5
+pour un gain nul.
+
+⚠️ **L'angle mort qui reste, nommé** : le dimanche soir, en regardant sa semaine, l'utilisateur ne
+voit rien de la course du lundi. Il le verra en passant à la semaine suivante. On l'accepte pour
+V1 ; si la recette montre que c'est le cas fréquent, c'est **une notification** qu'il faudra (hors
+périmètre, §1.2 : « le détecteur se consulte, il ne poursuit pas »), pas un second bandeau.
 
 ## 4. Le repli
 
-**Le détecteur suit la semaine affichée**, pas la semaine réelle : l'écran de planning se navigue
-d'une semaine à l'autre, et un bandeau qui parlerait d'une autre semaine que celle sous les yeux
-serait incompréhensible. En revanche **aucun repli ne peut tomber avant aujourd'hui** (R1) — sur une
-semaine passée, le détecteur informe donc sans jamais proposer.
+**La fenêtre de détection est de 8 jours** — la veille du lundi, puis les 7 jours affichés (D7). Le
+**repli**, lui, reste **borné aux 7 jours affichés** : un bandeau qui proposerait un jour d'une autre
+semaine que celle sous les yeux serait incompréhensible, et le bouton déplacerait la course hors du
+champ de vision. En revanche **aucun repli ne peut tomber avant aujourd'hui** (R1) — sur une semaine
+passée, le détecteur informe donc sans jamais proposer.
 
 Balayage de la **semaine affichée**, en préférant les jours **après** le conflit, puis avant.
 Un jour convient s'il **ne porte aucune course** et **ne recrée pas le conflit**.
 
-**La séance de musculation ne bouge jamais** : elle est l'ancre du programme.
+### 4.1 Le bug de la veille se manifestait à **deux** endroits
+
+Trouvé le 07/08/2026 en instruisant la réouverture. Le premier était connu (backlog du 05/08), le
+second **ne l'était pas** — et il était le plus vicieux des deux, parce qu'il faisait échouer
+silencieusement la correction qu'on croyait apporter.
+
+| # | Où | Symptôme |
+|---|---|---|
+| 1 | **Détection** — la veille d'une course lundi | Aucun conflit rendu : `previousDayKey` rend `null` sur l'index 0. Le trou du backlog. |
+| 2 | **Repli** — la veille d'un jour *candidat* lundi | Le lundi est proposé comme repli **sans qu'on vérifie le dimanche précédent**. Si ce dimanche porte une grosse séance de jambes, le repli **recrée exactement le conflit qu'il prétend résoudre**. |
+
+Le n° 2 est le mode d'échec le plus coûteux du dispositif : un bouton « Déplacer au lundi » qui
+fabrique un conflit. Il est déjà écarté pour tous les autres jours de la semaine — la vérification de
+la veille d'un candidat existe et a été trouvée par les tests du 05/08 (« sans elle, le repli
+proposait le jour **même** de la séance de jambes »). Elle n'échouait que sur le lundi, pour la même
+raison d'index que le n° 1.
+
+**Conséquence de conception : la veille doit être connue de la détection *et* du balayage du repli.**
+Corriger la seule boucle de détection aurait laissé le n° 2 intact — et l'aurait même rendu *plus*
+atteignable, puisque le n° 1 corrigé fait apparaître des conflits sur les lundis.
+
+### 4.2 Ce qui reste inchangé
+
+**La séance de musculation ne bouge jamais** : elle est l'ancre du programme. A fortiori quand elle
+est hors semaine — la déplacer serait modifier un jour que l'utilisateur ne voit pas.
 
 **Aucun jour valable → on informe sans proposer.** C'est la dégradation propre, et elle reste
 conforme à « jamais un blocage ».
@@ -109,9 +172,9 @@ plannings denses, ceux qui produisent les conflits.
 
 ### R1 — Le moteur ne lit ni base, ni horloge, ni React
 
-Il reçoit une semaine décrite **et un `todayKey`**. Même discipline que `selectInsights`
-(INSIGHTS-01) : lire l'heure dans un hook la ferait geler par React Compiler dans un slot
-mount-only.
+Il reçoit **les séances de la fenêtre de 8 jours** décrites (R7) **et un `todayKey`**. Même discipline
+que `selectInsights` (INSIGHTS-01) : lire l'heure dans un hook la ferait geler par React Compiler dans
+un slot mount-only.
 
 ⚠️ **`todayKey` n'est pas décoratif** : le repli balaie « après puis **avant** ». Sans lui, le
 moteur peut proposer de déplacer une course vers un **jour déjà passé** — elle deviendrait
@@ -153,12 +216,51 @@ chose.
 L'échange réutilise `reschedulePlannedSession`, déjà livrée et éprouvée par MUSC-F9. **Aucune
 migration, aucune table, aucune sync rule** — sauf pour le réglage opt-in, voir §6.
 
+### R7 — La veille se **dérive**, elle ne se passe pas en paramètre
+
+Le moteur reçoit déjà `weekStartKey` et en dérive lui-même les 7 clés de la semaine
+(`weekDayKeys`). Il dérive de la même façon la **8ᵉ clé**, celle de la veille. Ajouter un paramètre
+`eveKey` serait une **seconde source de vérité pour le même fait** : un appelant qui la calcule mal
+— ou qui l'oublie après un copier-coller — produirait un moteur silencieusement borgne, et aucun
+test unitaire du moteur ne le verrait, puisqu'il croirait à ce qu'on lui donne.
+
+R1 n'est pas contredit : R1 interdit de lire **l'horloge**, pas de faire de l'arithmétique de dates.
+`weekDayKeys` en fait déjà, et pour cette raison précise.
+
+🔴 **Le seul risque réel du correctif est en face, chez l'appelant** : si la requête du repository
+n'élargit pas sa fenêtre à 8 jours, le moteur corrigé ne voit **aucune** séance la veille et ne
+détecte donc **rien de nouveau**. Les tests unitaires du moteur passent au vert, la fonctionnalité ne
+bouge pas d'un pixel sur le device, et le correctif a l'air livré. **La parade est un test SQL au
+niveau du repository** (`*-sql.test.ts`) qui sème une séance de jambes la veille du lundi et exige
+qu'elle remonte — pas un test de moteur.
+
 ## 6. Données
 
 **Une requête neuve, et une seule.** `PlannedSessionItem` porte aujourd'hui le pilier, le nom, le
 type de séance (course uniquement), les cibles et `exerciseCount` — **pas les muscles**. Il faut
 donc, pour les séances de muscu de la semaine affichée : la somme des `target_sets` par
 `muscle_primary`, via `exercise_plans` → `exercises`.
+
+**07/08/2026 — la fenêtre passe à 8 jours** (D7, R7). Deux lectures sont à élargir d'un jour en
+amont, **et les deux seulement pour le détecteur** :
+
+| Ce qui est lu | Avant | Après |
+|---|---|---|
+| Les séances planifiées (pilier, statut, type de course) | `weekStart` → `weekEnd` | **veille** → `weekEnd` |
+| Les séries par groupe musculaire (`SELECT_PLANNED_MUSCLE_SETS`) | `weekStart` → `weekEnd` | **veille** → `weekEnd` |
+
+⚠️ **`SELECT_PLANNED_MUSCLE_SETS` est partagée avec DOUL-01** (`useWeekPainSignals`, même fichier).
+Elle prend ses bornes **en paramètres liés** : élargir la fenêtre du détecteur de collisions ne
+change donc **pas une ligne** du comportement de DOUL-01, qui garde ses 7 jours. La constante SQL
+n'est pas touchée — seuls les paramètres de l'appel côté COLLIS-01 changent.
+
+⚠️ **L'écran de planning ne doit pas voir la veille.** `useWeekPlan` est aussi la source des cartes
+de jour de `/planning` : lui faire rendre 8 jours ferait apparaître une 8ᵉ carte hors semaine. La
+fenêtre élargie est donc **réservée au hook du détecteur**, sans toucher au contrat de `useWeekPlan`.
+
+✅ **Aucune migration, aucun schéma local, aucune sync rule pour ce correctif.** Il ne lit pas une
+colonne neuve : il lit **plus de lignes de la même colonne**. Le réglage opt-in de §6 était la seule
+dépendance d'infrastructure de l'US, et il est déjà livré et poussé.
 
 **Le réglage opt-in** : une colonne booléenne sur `user_settings`, comme `cycleTrackingEnabled`.
 C'est donc **une migration**.
@@ -199,6 +301,11 @@ réécrit rien.
 | Exercice **archivé** dans un programme | Ses séries **comptent** — l'utilisateur les fera quand même |
 | Deux groupes musculaires à égalité de séries | Aucun n'est dominant → pas de conflit |
 | Conflit le dernier jour de la semaine ISO | Repli cherché **avant** uniquement |
+| **Jambes lourdes la veille du lundi affiché**, course de qualité **lundi** | 🔴 **Conflit** (D7). Le cas que la réouverture corrige. Le bandeau s'affiche sur le lundi ; la séance de jambes, elle, n'est **pas visible** à l'écran. |
+| **Course de qualité le jour de la veille** (dimanche hors semaine) | **Jamais un conflit** : la veille entre dans la fenêtre pour être *lue*, pas pour être *jugée*. Son propre conflit appartient au bandeau de la semaine précédente (D5). |
+| **Lundi proposé comme repli** alors que la veille porte des jambes lourdes | 🔴 **Lundi est écarté** — sinon le bouton fabriquerait le conflit qu'il prétend résoudre (§4.1 n° 2) |
+| Jambes lourdes la veille **et** dans la semaine, avant la même course | Un seul conflit, la plus lourde des deux (R5) — la règle ne change pas parce qu'une candidate est hors semaine |
+| Jambes lourdes la veille, mais `status` `done` ou `skipped` | Pas un conflit : la règle du §2 ne change pas selon le côté de la frontière |
 | Aucun jour libre | Bandeau informatif, sans bouton d'échange |
 | Deux conflits la même semaine | Deux bandeaux, sur deux jours différents |
 | Utilisateur mono-pilier | Aucun conflit possible — il faut les deux piliers |
@@ -247,6 +354,28 @@ fonctionnement local.
 16. 🔴 **Calibrage du seuil** : sur ton propre planning, 8 séries est-il le bon déclencheur, ou
     est-ce trop bas / trop haut ? C'est un jugement de pratiquant, pas une manipulation.
 
+### Ajoutés par la réouverture du 07/08/2026 (D7)
+
+> Numérotés 18 à 22 dans [RECETTES.md](../../../../RECETTES.md) §32, qui découpe le critère 15
+> ci-dessus en deux. C'est ce fichier-là qu'on coche.
+
+17. 🔴 **Le conflit dimanche → lundi est détecté.** Planifier une séance jambes (≥ 8 séries,
+    majoritaires) un **dimanche**, puis une **sortie longue le lundi suivant**. Se placer sur la
+    semaine **du lundi** : le bandeau doit apparaître sur ce lundi. Avant correctif, il n'apparaissait
+    jamais. **C'est le critère qui justifie la réouverture** — s'il échoue, rien d'autre ne compte.
+18. 🔴 **Le repli ne fabrique pas le conflit qu'il résout.** Jambes lourdes le **dimanche** (hors
+    semaine), course de qualité le **mardi**, et **aucune séance le lundi**. Le bouton ne doit
+    **jamais** proposer « Déplacer au lundi » : ce serait recréer le conflit un jour plus tôt. Il doit
+    proposer un jour plus loin, ou aucun. C'est le bug §4.1 n° 2, invisible en lecture de code.
+19. **L'écran de planning affiche toujours 7 jours.** Après correctif, vérifier qu'aucune 8ᵉ carte de
+    jour n'est apparue en haut de `/planning` — la fenêtre élargie ne doit servir qu'au détecteur.
+20. **Rien n'a bougé sur les autres jours.** Rejouer les critères 2, 5 et 7 (conflit nominal en
+    milieu de semaine, disparition après déplacement, jambes minoritaires) : le correctif ne doit
+    **rien changer** aux six jours qui fonctionnaient déjà.
+21. **DOUL-01 n'a pas bougé.** Le journal des zones douloureuses partage la requête d'enrichissement.
+    Avec le journal activé, ses bandeaux doivent apparaître exactement comme avant, et **aucun** sur
+    une séance de la veille hors semaine.
+
 ## 12. Definition of Done
 
 - [ ] `typecheck`, `lint`, `test:coverage` verts, cliquets tenus.
@@ -259,3 +388,27 @@ fonctionnement local.
 - [ ] FR + EN symétriques, nombres formatés avant interpolation.
 - [ ] Idée archivée dans IDEAS.md avec la décision.
 - [ ] CHANGELOG, front-matter, roadmap 3.57, RECETTES.md, ETAT.
+
+### Ajoutés par la réouverture du 07/08/2026
+
+- [x] La veille est **dérivée** dans le moteur, pas reçue en paramètre (R7).
+- [x] 🔴 **Test au niveau de l'appelant** prouvant que la fenêtre remonte bien à 8 jours — sans lui,
+      un moteur corrigé et un appelant non élargi passent tous les tests sans rien changer sur le
+      device (R7). → `session-conflicts-window.test.ts`, 6 cas.
+      ⚠️ **Pas un test SQL**, contrairement à ce que le plan annonçait : la constante SQL prend ses
+      bornes en paramètres liés, donc elle marche déjà pour n'importe quelle fenêtre. C'est le **hook**
+      qui porte le bug, donc c'est lui qu'il faut tester.
+- [x] Un test fige le **repli qui écarte le lundi** quand la veille porte des jambes lourdes
+      (§4.1 n° 2).
+- [x] Un test fige qu'une **course de qualité le jour de la veille** ne produit **aucun** conflit
+      (la veille est lue, pas jugée).
+- [x] Le test « ne déclenche pas sur une course le premier jour de la semaine — pas de veille »
+      (`session-conflicts.test.ts`) est **réécrit, pas supprimé** : il figeait le bug.
+- [x] `useWeekPlan` garde son contrat à 7 jours — aucune 8ᵉ carte sur `/planning`.
+- [x] DOUL-01 (`useWeekPainSignals`) garde sa fenêtre de 7 jours ; la constante SQL partagée n'est
+      pas modifiée.
+- [x] Le commentaire de `findFallbackDay` qui justifie l'absence de garde `indexOf === -1` est
+      **revérifié** — et il était devenu faux : l'invariant ne tenait plus que par accident. Remplacé
+      par un filtre explicite `weekKeys.includes(run.dayKey)` dans la boucle de détection.
+- [x] `typecheck` (0), `lint` (0 erreur), les **3 suites** (1959 + 1052 + 181) et
+      `test:coverage` (0) sont verts — codes de sortie relevés sans pipe.

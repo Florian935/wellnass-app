@@ -10,6 +10,102 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `fix/collis01-conflit-veille-hors-semaine` — COLLIS-01 : le conflit dimanche → lundi était invisible
+
+Commit précédent : `5d0374b`. **Réouverture décidée par Florian le 07/08/2026, avant recette**, avec
+deux arbitrages : corriger **en place** (même identifiant, roadmap 3.57 inchangée) et couvrir la
+**veille en amont seule**, l'aval étant explicitement écarté. Vérifié : typecheck **0**, lint **0
+erreur**, **3 192 tests verts** (181 admin + 1 052 mobile + 1 959 shared), `test:coverage` **0** —
+codes de sortie relevés **sans pipe**.
+
+#### Corrigé
+
+- **La règle mentait sur son propre énoncé.** Le §2 de la spec dit « le lendemain », mais la détection
+  était bornée à la **semaine affichée** : une grosse séance de jambes le dimanche suivie d'un
+  fractionné le lundi n'était **jamais** signalée. **Une paire de jours sur sept**, et pas la plus
+  rare — le dimanche est un jour de muscu courant, le lundi un jour de qualité courant.
+- 🔴 **Le même bug se manifestait une seconde fois, dans le repli — non documenté avant ce commit.**
+  `findFallbackDay` cherchait la veille d'un jour candidat dans les 7 clés de la semaine, où le lundi
+  est à l'index 0 : le lundi était donc proposé **sans qu'on vérifie le dimanche précédent**. Un
+  bouton « Déplacer au lundi » pouvait ainsi **fabriquer le conflit qu'il prétend résoudre**, un jour
+  plus tôt. C'est le mode d'échec le plus coûteux du dispositif, et corriger la seule détection
+  l'aurait laissé intact — en le rendant *plus* atteignable, puisque des conflits apparaissent
+  désormais sur les lundis.
+
+#### Modifié
+
+- `packages/shared/src/session-conflicts.ts` — **deux fenêtres au lieu d'une**, et c'est tout le
+  correctif : `scanKeys` (8 jours, la veille incluse) borne la **détection**, `weekKeys` (7 jours)
+  borne le **repli**. Une question de physiologie (« qu'ai-je fait hier ? ») et une question d'écran
+  (« où puis-je le mettre ? ») n'ont aucune raison de partager la même borne — les avoir confondues
+  était le bug.
+- La veille est **dérivée** de `weekStartKey` dans le moteur, pas reçue en paramètre (R7) : un
+  `eveKey` fourni par l'appelant serait une seconde source de vérité pour le même fait, et un
+  appelant qui l'oublie produirait un moteur silencieusement borgne qu'aucun test de moteur ne verrait.
+- Les **courses du jour de la veille ne sont pas jugées** : elles entrent pour servir de contexte, pas
+  pour produire leur propre conflit — celui-ci appartient au bandeau de la semaine précédente (D5).
+- `apps/mobile/src/data/repositories/planned-session-repository.ts` — hook `usePlannedBetween`
+  extrait de `useWeekPlan`, qui **garde son contrat de 7 jours** et reste la source des cartes de jour
+  de `/planning`. Élargir *son* contrat aurait fait apparaître une **8ᵉ carte** hors semaine en tête
+  d'écran. Helpers `weekEndKeyOf` / `eveKeyOf` en remplacement de 3 copies inline du même calcul.
+
+#### Ajouté
+
+- `apps/mobile/src/data/repositories/__tests__/session-conflicts-window.test.ts` (**neuf**, 6 cas) —
+  🔴 **le seul test capable d'échouer pour la bonne raison.** On peut corriger le moteur, obtenir
+  100 % de tests verts sur `packages/shared`, et que **rien ne change sur le device** : il suffit que
+  la requête garde ses 7 jours. Ce test part de l'appelant et inspecte les **bornes réellement
+  demandées** aux deux requêtes. Il couvre aussi le second piège — **n'élargir qu'une des deux
+  lectures** : une séance vue mais non chiffrée donne `setsByMuscle` vide, donc aucun conflit, donc un
+  symptôme *identique* à celui d'avant correctif.
+- 11 cas dans `session-conflicts.test.ts` (43 tests au total sur le fichier), dont celui du repli qui
+  écarte le lundi et celui de la course de la veille non jugée.
+- Spec : **D7**, **§4.1** (les deux manifestations du bug), **R7**, 5 cas limites, 5 critères de
+  recette. `RECETTES.md` §32 passe de **17 à 22 critères**.
+
+#### Supprimé
+
+- La garde `if (eve === null) continue` et le test `eve !== null` du repli, devenus **du code mort** :
+  la fenêtre de 8 jours garantit qu'un jour affiché a **toujours** une veille. `previousDayKey`
+  (partielle, `string | null`) devient `eveOfDisplayedDay` (**totale**). Convention du dépôt — les
+  gardes mortes se suppriment plutôt que se figer par un test d'appel impossible (cf. `bucketOf`,
+  04/08/2026). Effet mesuré : `session-conflicts.ts` passe de **95,83 % à 100 % de branches**.
+
+#### Technique — Notes
+
+- ⚠️ **Un test de la suite figeait le bug** : « ne déclenche pas sur une course le premier jour de la
+  semaine — **pas de veille** ». Il a été **réécrit, pas supprimé** — un test retiré sans trace laisse
+  croire que le cas n'a jamais été couvert.
+- ⚠️ **Le plan a été corrigé en cours d'exécution.** Il annonçait un test `*-sql.test.ts` semant des
+  lignes dans le harness SQLite. **Mauvais instrument** : `SELECT_PLANNED_MUSCLE_SETS` prend ses
+  bornes en **paramètres liés**, donc elle fonctionne déjà pour n'importe quelle fenêtre — un test SQL
+  aurait prouvé que SQLite sait comparer des dates, pas que le hook demande la bonne fenêtre. C'est le
+  **hook** qui portait le bug.
+- ⚠️ **Un commentaire du dépôt était devenu faux**, et la revue l'a rattrapé : celui qui justifiait
+  l'absence de garde `indexOf === -1` dans `findFallbackDay` par un invariant. Avec la fenêtre élargie,
+  cet invariant ne tenait plus que **par accident** (`previousDayKey` rendait `null` sur l'index 0).
+  Remplacé par un filtre explicite `weekKeys.includes(run.dayKey)` dans la boucle de détection.
+- **Une requête locale de plus qu'avant** : `useSessionConflicts` et l'écran de planning demandaient
+  auparavant la même fenêtre et partageaient donc leur souscription ; leurs bornes diffèrent
+  désormais. Coût : une surveillance SQLite locale sur 8 jours. Non mesurable en recette.
+- ✅ **Aucune migration, aucune sync rule, aucun schéma PowerSync local** : le correctif lit **plus de
+  lignes de la même colonne**, pas une colonne neuve. **Aucun changement d'écran ni d'i18n** — le
+  bandeau et ses trois états sont identiques au pixel ; seul le *moment* où il apparaît change.
+- **DOUL-01 partage `SELECT_PLANNED_MUSCLE_SETS`** et garde ses 7 jours (bornes en paramètres liés, la
+  constante SQL n'est pas touchée). Verrouillé par test, et critère de recette 22.
+- ⚠️ **Deux affirmations fausses corrigées dans la maquette du 05/08** : elle annonçait une sync rule
+  PowerSync à redéployer (il n'y en a pas, `user_settings` est lue en `select *`) et « la requête n'est
+  même pas montée » (elle l'est, avec un `owner_id` vide).
+- **Angle mort assumé, écrit noir sur blanc en §3 de la spec** : le dimanche soir, en regardant sa
+  semaine, l'utilisateur ne voit rien de sa course du lundi — il le verra en passant à la semaine
+  suivante. Couvrir l'aval aurait affiché le même conflit **deux fois, sur deux semaines, avec deux
+  ancres différentes**, ce qui rouvre D5 pour un gain nul. Si la recette montre que le dimanche soir
+  est le moment qui compte, la réponse sera **une notification**, pas un second bandeau.
+- ⚠️ **Piège Babel/Jest** rencontré : une variable capturée par une factory `jest.mock` doit être
+  **préfixée par `mock`** (`settingsMock` échoue, `mockSettings` passe).
+- ⚠️ **`npm run test:coverage` agrégé a renvoyé 255 une fois, à tort** — artefact de pipe déjà
+  documenté le 05/08/2026. Relancé sans pipe : **0**, et les 3 workspaces passent aussi séparément.
+
 ### 07/08/2026 — `feature/fuel01-socle-glucidique-coureur` — FUEL-01 livré : socle glucidique du coureur (RN-05 + RN-06)
 
 Commit précédent : `8d7ac75`. **D1 → D7 et la maquette validées par Florian le 07/08/2026**, telles
