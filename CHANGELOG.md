@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : les 4 moteurs purs du lot « prévu vs réalisé »
+
+Commit précédent : `11cc849`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),
+avec une question laissée ouverte sur MUSC-14 — sans effet sur cet incrément, l'ajout étant purement
+additif. **Incrément borné : la couche pure uniquement**, aucune requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 289 tests verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `packages/shared/src/execution-compliance.ts` (**MUSC-33**) — taux d'exécution de la charge et des
+  répétitions. **Deux dénominateurs distincts et tous deux rendus** : la cible de reps est du texte
+  libre et toutes ne se parsent pas, donc masquer l'écart de base ferait passer un taux calculé sur
+  12 séries pour un taux calculé sur 87.
+- `packages/shared/src/session-duration.ts` (**MUSC-26**) — médiane, tendance, aberrantes écartées.
+- `packages/shared/src/set-type-mix.ts` (**MUSC-13**) — répartition des séries validées par type.
+- `packages/shared/src/neglected-exercises.ts` (**MUSC-21**) — favoris non pratiqués depuis 4 semaines.
+- **81 tests** neufs (41 + 20 + 11 + 13). Les 4 modules sont à **100 % sur les quatre métriques**,
+  branches comprises.
+
+#### Technique — Notes
+
+- **`parseTargetReps` : parsing tolérant, échec silencieux.** Le champ `exercise_plans.target_reps`
+  est du **texte libre** sans validation de format — « 10 », « 8-12 », « 8 à 12 », « AMRAP »,
+  « 3x10 », du vide. Seuls l'entier et `a-b` sont reconnus ; tout le reste sort du calcul **sans être
+  compté comme un écart**. Inventer une interprétation d'« AMRAP » produirait des écarts fantômes sur
+  les programmes les mieux écrits, et **un faux reproche est pire qu'un silence**.
+- 🔴 **Le poids du corps donne `0 / 0`.** Une série au poids du corps porte `plannedWeightKg = 0` :
+  sans garde, le ratio vaut `NaN`. Précédent réel du dépôt — `bestSegmentTimeFromSamples` a écrit un
+  record « NaN seconde » en base (corrigé le 04/08/2026). Test dédié.
+- **La charge prescrite est lue sur la série** (`workout_sets.planned_weight_kg`), **pas** sur
+  `exercise_plans.target_weight_kg` : le plan a pu changer depuis, et comparer un réalisé d'il y a
+  trois semaines à une prescription modifiée hier afficherait **un écart qui n'a jamais existé**.
+  C'est aussi ce qui rend MUSC-33 calculable **sans jointure**.
+- **Médiane et non moyenne** pour la durée : une séance oubliée ouverte est le cas *normal*, pas le
+  cas rare. Une moyenne la laisserait rendre toutes les autres séances « courtes ».
+- **Le nombre de séances écartées est rendu.** Sans lui, l'utilisateur lit une médiane calculée sur
+  moins de séances qu'il n'en a faites, sans explication — l'écart silencieux qui fait perdre
+  confiance dans tout l'écran.
+- **Les parts de `set-type-mix` somment toujours à 100.** Trois tiers arrondis à l'entier donnent
+  99 ; le reliquat va à la part la plus grosse. Deux tests le figent.
+- **Une branche morte supprimée pendant la revue** : `trendSeconds` était nullable pour un cas vide
+  que `MIN_SESSIONS_FOR_DURATION = 5` rend impossible (`cut ≥ 2`). Devenue `number` non nullable, avec
+  la fragilité documentée en clair — descendre le seuil sous 2 rendrait `median([])` égal à `NaN`.
+  Convention du dépôt (cf. `bucketOf` 04/08, `findFallbackDay` 07/08).
+- ⚠️ **Deux branches signalées non couvertes n'étaient PAS mortes**, contrairement à la troisième :
+  la validation des bornes d'une fourchette (« 0-5 », entiers non sûrs) et la garde `Number.isFinite`
+  de `ratioOf`. Le type est `number | null`, et rien entre SQLite et le calcul n'exclut `NaN` : elles
+  ont donc reçu des **tests**, pas la suppression. Distinguer les deux cas est tout l'exercice.
+- **Trois seuils exportés et nommés**, pas enfouis : `MIN_SESSIONS_FOR_COMPLIANCE` (3),
+  `MIN_SESSIONS_FOR_DURATION` (5), `NEGLECTED_AFTER_WEEKS` (4, validé par Florian, à calibrer en
+  recette comme celui de COLLIS-01).
+- ✅ **Aucune migration, aucune sync rule, aucune écriture** — le lot est en lecture seule.
+- **Reste à faire** : les requêtes (lot 2 du plan), la section d'écran sur `progress/index.tsx`
+  (lot 5) et l'i18n (lot 6).
+
 ### 07/08/2026 — `fix/collis01-conflit-veille-hors-semaine` — COLLIS-01 : le conflit dimanche → lundi était invisible
 
 Commit précédent : `5d0374b`. **Réouverture décidée par Florian le 07/08/2026, avant recette**, avec

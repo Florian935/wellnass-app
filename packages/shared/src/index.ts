@@ -82,6 +82,11 @@ export * from './insights';
 export * from './insight-adapters';
 // US COLLIS-01 (roadmap 3.57) — détecteur de collisions entre séances planifiées.
 export * from './session-conflicts';
+// US EXEC-01 (roadmap 3.58) — lot « prévu vs réalisé » : les 4 moteurs d'analyse d'exécution.
+export * from './execution-compliance';
+export * from './session-duration';
+export * from './set-type-mix';
+export * from './neglected-exercises';
 // US VIE-01 (roadmap 1.28) — mode « vie réelle », dégradation gracieuse des objectifs.
 export * from './real-life';
 // US DOUL-01 (roadmap 1.29) — journal des zones douloureuses.

@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 211 livré · 4 partiel · 2 à faire (sur 223)
+**MVP1 (= V1.0 complète)** `███████████████████░` **94 %** — 211 livré · 4 partiel · 3 à faire (sur 224)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -66,6 +66,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `code` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -92,9 +93,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `dev` (modifications non commitées) |
-| Commits | 1113 · `main` a **1110** commits de retard sur `dev` |
-| Specs d'US | 130 au total — 79 clôturées, 51 en cours |
+| Branche courante | `feature/exec01-prevu-vs-realise` (modifications non commitées) |
+| Commits | 1115 · `main` a **1112** commits de retard sur `dev` |
+| Specs d'US | 131 au total — 79 clôturées, 52 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -104,11 +105,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `11cc849` merge(collis01): correctif « veille hors semaine » dans dev
+- `2e86638` fix(collis01): le conflit dimanche -> lundi n'etait jamais detecte (D7)
 - `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
 - `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `db47824` test(muscu): candidats de substitution — le OU qui ne doit pas devenir un ET
-- `5d0374b` feat(fuel01): socle glucidique du coureur — g/kg selon la charge (RN-05 + RN-06)
-- `8d7ac75` docs(fuel01): cadre le socle glucidique du coureur (catalogue RN-05 + RN-06)
 
 ---
 
