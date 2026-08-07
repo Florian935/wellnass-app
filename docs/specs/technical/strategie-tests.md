@@ -288,7 +288,7 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
 | **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17), effets de montage de `cycle` et `help` (4), `buildSummary` du résumé de séance (11), `workout-template` (20), `settings` (23), `food` (26), `profile` + `recipe` (24), `running-record` (19), `bodyweight` + `meal-template` + `running-profile` (20), planificateurs de notifications (24), candidats de substitution d'exercice (12), **machine à états du focus de séance** (42) et
 et **trois écrans réellement montés** : course en cours (20), séance (20), historique de
-course (26). Les trois cibles à état du lot sont faites. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 318 tests |
+course (30). Les trois cibles à état du lot sont faites. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 322 tests |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs
@@ -381,7 +381,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 213 (mobile) + 181 (admin) = 3 514 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 238 (mobile) + 181 (admin) = 3 539 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |

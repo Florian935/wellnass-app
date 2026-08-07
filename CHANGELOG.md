@@ -58,8 +58,13 @@ des affichages faux plutôt que des plantages.
 - **Un test rendu indépendant de la date** : il distinguait période courante et période précédente
   par une clé de jour en dur, donc n'aurait été juste que le jour de son écriture. Il distingue
   désormais par le **rang d'appel** du hook.
-- **3 514 tests verts** (2 120 shared + 1 213 mobile + 181 admin). Couverture mobile **33,0 %**.
+- **3 539 tests verts** (2 120 shared + 1 238 mobile + 181 admin). Couverture mobile **33,0 %**.
   Typecheck, lint et seuils propres.
+- **La section polarisation (RUN-19, arrivée de `dev` pendant l'écriture) est couverte au passage** :
+  4 tests. Elle **disparaît entièrement, titre compris**, quand elle n'a rien à dire — un titre
+  suivi du vide serait pire qu'une absence — et n'affiche jamais une part sans son volume : « 73 % »
+  sur 12 km ne vaut pas « 73 % » sur 142 km (spec R2). Son libellé d'accessibilité regroupé est
+  vérifié aussi : sans lui, TalkBack annoncerait « 73 pour cent, 27 pour cent » sans dire de quoi.
 ### 07/08/2026 — `feature/allure01-courbe-allure` — ALLURE-01 : requête, surfaces et i18n
 
 Commit précédent : `298740d`. L'US passe à `etape: recette`. **DoD relue item par item avant de la

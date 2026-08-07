@@ -22,7 +22,12 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import RunningHistoryScreen from '../index';
-import { usePaceTrend, useRunHistory, useRunStatsAt } from '@/data/repositories/run-repository';
+import {
+  usePaceTrend,
+  usePolarisation,
+  useRunHistory,
+  useRunStatsAt,
+} from '@/data/repositories/run-repository';
 import {
   backfillRunningRecords,
   useRunningRecords,
@@ -48,6 +53,7 @@ jest.mock('@/data/repositories/run-repository', () => ({
     isLoading: false,
   })),
   usePaceTrend: jest.fn(() => ({ points: [], trend: 'stable' })),
+  usePolarisation: jest.fn(() => ({ polarisation: null, isLoading: false })),
 }));
 
 jest.mock('@/data/repositories/running-record-repository', () => ({
@@ -170,6 +176,7 @@ function statsVides() {
 const mockUseRunHistory = useRunHistory as jest.Mock;
 const mockUseRunStatsAt = useRunStatsAt as jest.Mock;
 const mockUsePaceTrend = usePaceTrend as jest.Mock;
+const mockUsePolarisation = usePolarisation as jest.Mock;
 const mockUseRunningRecords = useRunningRecords as jest.Mock;
 const mockBackfill = backfillRunningRecords as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
@@ -194,6 +201,7 @@ beforeEach(() => {
   mockUseRunHistory.mockReturnValue({ runs: [], isLoading: false });
   mockUseRunStatsAt.mockReturnValue({ stats: statsVides(), isLoading: false });
   mockUsePaceTrend.mockReturnValue({ points: [], trend: 'stable' });
+  mockUsePolarisation.mockReturnValue({ polarisation: null, isLoading: false });
   mockUseRunningRecords.mockReturnValue({ records: [], isLoading: false });
   mockBackfill.mockResolvedValue(undefined);
 });
@@ -510,6 +518,59 @@ describe('objectifs estimés', () => {
     // Le 10 km a un vrai record : il ne doit apparaître qu'une fois (la ligne de record), jamais
     // en estimation. Les prédictions restantes sont le semi et le marathon.
     expect(screen.getAllByText(/running\.predictions\.sourceLabel/)).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Polarisation
+// ---------------------------------------------------------------------------
+
+describe('polarisation', () => {
+  it('🔴 disparaît ENTIÈREMENT, titre compris, quand elle n’a rien à dire', async () => {
+    mockUsePolarisation.mockReturnValue({ polarisation: null, isLoading: false });
+
+    await render(<RunningHistoryScreen />);
+
+    // Cette section rend son propre titre, précisément pour pouvoir s'effacer en entier : un
+    // titre suivi du vide serait pire qu'une absence.
+    expect(screen.queryByText('running.polarisation.title')).toBeNull();
+  });
+
+  it('reste absente pendant le chargement', async () => {
+    mockUsePolarisation.mockReturnValue({ polarisation: null, isLoading: true });
+
+    await render(<RunningHistoryScreen />);
+
+    expect(screen.queryByText('running.polarisation.title')).toBeNull();
+  });
+
+  it('🔴 affiche la part avec son volume, jamais seule', async () => {
+    mockUsePolarisation.mockReturnValue({
+      polarisation: { lowIntensityPct: 73, highIntensityPct: 27, totalKm: 142, runCount: 18 },
+      isLoading: false,
+    });
+
+    await render(<RunningHistoryScreen />);
+
+    expect(screen.getByText('73 %')).toBeTruthy();
+    expect(screen.getByText('27 %')).toBeTruthy();
+    // Spec R2 : « 73 % » sur 12 km ne vaut pas « 73 % » sur 142 km, et l'utilisateur doit pouvoir
+    // en juger. Le volume n'est pas un détail décoratif.
+    expect(screen.getByText('running.polarisation.basis:{"km":142,"count":18}')).toBeTruthy();
+  });
+
+  it('rend un libellé d’accessibilité complet — la répartition ne se lit pas en deux nombres nus', async () => {
+    mockUsePolarisation.mockReturnValue({
+      polarisation: { lowIntensityPct: 73, highIntensityPct: 27, totalKm: 142, runCount: 18 },
+      isLoading: false,
+    });
+
+    await render(<RunningHistoryScreen />);
+
+    // US CONF-07 : sans ce regroupement, TalkBack annoncerait « 73 pour cent », « 27 pour cent »
+    // sans dire de quoi.
+    const bloc = screen.getByLabelText(/running\.polarisation\.title/);
+    expect(bloc.props.accessibilityLabel).toContain('running.polarisation.reference');
   });
 });
 
