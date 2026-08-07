@@ -36,6 +36,7 @@ import {
   type PaceTrendKind,
   type RecordDistanceKey,
   type StatPeriod,
+  POLARISATION_REFERENCE_LOW_PCT,
 } from '@wellness/shared';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
@@ -48,6 +49,7 @@ import {
   usePaceTrend,
   useRunHistory,
   useRunStatsAt,
+  usePolarisation,
 } from '@/data/repositories/run-repository';
 import {
   backfillRunningRecords,
@@ -170,9 +172,88 @@ export default function RunningHistoryScreen() {
             {t('running.trainingLoad.title')}
           </Text>
           <TrainingLoadSection />
+
+          {/* US ALLURE-01 — polarisation du volume (RUN-08). Rend son propre titre et `null` quand
+              elle se tait : moins de 2 courses avec trace sur 4 semaines, ou allure de référence
+              absente. Une course ne se « polarise » pas — c'est pourquoi elle vit ici et non sur le
+              résumé de course, où les trois autres lectures du lot s'affichent. */}
+          <PolarisationSection />
         </ScrollView>
       )}
     </Screen>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section polarisation de l'entraînement (US ALLURE-01, catalogue RUN-08)
+// ---------------------------------------------------------------------------
+
+/**
+ * Répartition du volume entre faible et haute intensité sur 4 semaines.
+ *
+ * ── On nomme le repère, on ne le prescrit pas (spec D5) ─────────────────────────────────────────
+ * Le « 80/20 » de la littérature vaut pour un coureur qui s'entraîne pour **performer** — pas pour
+ * quelqu'un qui court trois fois par semaine pour se sentir bien. Le présenter comme un objectif
+ * serait faux pour une partie des utilisateurs. Il est donc **affiché comme repère**, jamais comparé,
+ * et aucun écart n'est commenté.
+ *
+ * Rend son propre titre pour pouvoir disparaître **entièrement** quand elle n'a rien à dire — un titre
+ * suivi du vide serait pire qu'une absence.
+ */
+function PolarisationSection() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const { polarisation, isLoading } = usePolarisation();
+
+  if (isLoading || polarisation === null) return null;
+
+  const a11y = [
+    t('running.polarisation.title'),
+    t('running.polarisation.low', { pct: polarisation.lowIntensityPct }),
+    t('running.polarisation.high', { pct: polarisation.highIntensityPct }),
+    t('running.polarisation.basis', { km: polarisation.totalKm, count: polarisation.runCount }),
+    t('running.polarisation.reference', { pct: POLARISATION_REFERENCE_LOW_PCT }),
+  ].join('. ');
+
+  return (
+    <>
+      <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+        {t('running.polarisation.title')}
+      </Text>
+      <Card>
+        <View accessible accessibilityLabel={a11y}>
+          <View style={styles.polarisationRow}>
+            <View style={styles.polarisationStat}>
+              <Text style={[styles.polarisationLabel, { color: colors.textMuted }]}>
+                {t('running.polarisation.lowLabel')}
+              </Text>
+              <Text style={[styles.polarisationValue, { color: colors.success }]}>
+                {polarisation.lowIntensityPct} %
+              </Text>
+            </View>
+            <View style={styles.polarisationStat}>
+              <Text style={[styles.polarisationLabel, { color: colors.textMuted }]}>
+                {t('running.polarisation.highLabel')}
+              </Text>
+              <Text style={[styles.polarisationValue, { color: colors.accent }]}>
+                {polarisation.highIntensityPct} %
+              </Text>
+            </View>
+          </View>
+          {/* Spec R2 — la part n'a de sens qu'avec son volume : « 73 % » sur 12 km ne vaut pas « 73 % »
+              sur 142 km, et l'utilisateur doit pouvoir en juger. */}
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            {t('running.polarisation.basis', {
+              km: polarisation.totalKm,
+              count: polarisation.runCount,
+            })}
+          </Text>
+          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            {t('running.polarisation.reference', { pct: POLARISATION_REFERENCE_LOW_PCT })}
+          </Text>
+        </View>
+      </Card>
+    </>
   );
 }
 
@@ -593,6 +674,11 @@ function TrainingLoadSection() {
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 32 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  // US ALLURE-01 — aucune hauteur fixe : tout grandit avec la police système (recette à 1,5×).
+  polarisationRow: { flexDirection: 'row', gap: 18 },
+  polarisationStat: { flex: 1, gap: 1 },
+  polarisationLabel: { fontFamily: fontFamily.bodyBold, fontSize: 11 },
+  polarisationValue: { fontFamily: fontFamily.bodyBold, fontSize: 24, lineHeight: 29 },
   sectionTitle: {
     fontFamily: fontFamily.displaySemi,
     fontSize: 18,

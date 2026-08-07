@@ -1974,6 +1974,16 @@
       "fastStartWithPace": "C'est parti, {{amount}} à {{pct}} % VMA.",
       "recoveryStart": "Récupération, {{amount}}.",
       "sessionComplete": "Séance fractionné terminée !"
+    },
+    "polarisation": {
+      "title": "Polarisation de l'entraînement",
+      "lowLabel": "Faible intensité",
+      "highLabel": "Haute intensité",
+      "low": "{{pct}} % à faible intensité",
+      "high": "{{pct}} % à haute intensité",
+      "basis": "sur {{km}} km · {{count}} sortie",
+      "basis_plural": "sur {{km}} km · {{count}} sorties",
+      "reference": "Le repère souvent cité est ~{{pct}} / 20."
     }
   },
   "planning": {
@@ -2752,6 +2762,34 @@
       "activity_level": {
         "title": "Ton niveau d’activité a changé",
         "body": "{{runningDays}} jours de course sur les 14 derniers — ton besoin calorique de base a probablement bougé."
+      }
+    }
+  },
+  "run": {
+    "summary": {
+      "split": {
+        "title": "Gestion d'effort",
+        "negative": "Negative split",
+        "even": "Allure régulière",
+        "positive": "Positive split",
+        "detail": "{{first}} sur la 1ʳᵉ moitié, puis {{second}} — {{delta}}"
+      },
+      "fade": {
+        "title": "Dégradation sur la fin",
+        "detail": "{{first}} sur le 1ᵉʳ quart, {{last}} sur le dernier ({{km}} km chacun)"
+      },
+      "zones": {
+        "title": "Temps par zone d'allure",
+        "basis": "sur {{count}} km plein",
+        "basis_plural": "sur {{count}} km pleins",
+        "needsRef": "Renseigne ton allure de référence 5 km pour voir tes zones",
+        "zone": {
+          "vma": "VMA",
+          "seuil": "Seuil",
+          "tempo": "Tempo",
+          "endurance": "Endurance",
+          "recuperation": "Récupération"
+        }
       }
     }
   }

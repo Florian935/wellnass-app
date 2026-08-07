@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/allure01-courbe-allure` — ALLURE-01 : requête, surfaces et i18n
+
+Commit précédent : `298740d`. L'US passe à `etape: recette`. **DoD relue item par item avant de la
+cocher** (leçon d'EXEC-01) — les 14 items étaient tenus, et **deux items ont été ajoutés** parce que
+l'implémentation les a réclamés.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 427 tests verts** (181 admin + 1 126 mobile +
+2 120 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `usePolarisation` + `SELECT_RUNS_WITH_TRACK_SINCE` (`run-repository.ts`) — fenêtre de 4 semaines,
+  `POLARISATION_WINDOW_DAYS`.
+- `components/run/PaceCurveCards.tsx` — les 3 lectures intra-sortie, branchées sur le résumé de course.
+- `PolarisationSection` sur `running-history/index.tsx` — rend son propre titre pour pouvoir
+  disparaître **entièrement** ; un titre suivi du vide serait pire qu'une absence.
+- **9 tests SQL** (`polarisation-sql.test.ts`) et **12 tests de composant** (`PaceCurveCards.test.tsx`).
+- **48 clés i18n** FR + EN (2 069 chacune, symétrie tenue).
+
+#### Technique — Notes
+
+- 🔴 **`SELECT_HISTORY` ne doit PAS gagner `gps_track`, et un test garde la porte fermée.** C'était la
+  tentation évidente : l'historique ramène déjà les courses, pourquoi une seconde requête ? Parce que
+  `SELECT_HISTORY` **n'a aucune borne de date** et alimente les statistiques, la tendance d'allure et
+  l'accueil : y ajouter la trace ferait charger **toutes** les traces GPS de l'utilisateur pour chacun
+  de ces consommateurs. La régression serait **invisible en recette** et s'aggraverait avec
+  l'historique. Un `SELECT_HISTORY_FOR_TEST` existe pour ça, et son nom porte son intention.
+- 🟢 **`splits` arrive en PROP sur le résumé de course.** L'écran décode et splitte déjà (l.238) ; le
+  recalculer aurait doublé le coût du plus gros calcul de la page pour un résultat identique. Ce n'est
+  pas un choix de style — c'est **la** raison pour laquelle ce lot est bon marché.
+- 🔴 **La carte des zones survit à l'absence d'allure de référence.** La pente naturelle est de masquer
+  la carte ; ce serait laisser l'utilisateur **ignorer à jamais** qu'il lui manque un réglage. Elle
+  reste donc, affiche l'indisponibilité **et son remède**, avec un accès au profil coureur — patron de
+  `StrengthSection` pour le DOTS sans sexe déclaré. Quatre tests l'exigent.
+- **Un fade négatif est une bonne nouvelle**, et la couleur suit le **sens**, pas le signe : la fin
+  plus rapide s'affiche en vert. Le verdict `even`, lui, reste en couleur de texte — le colorer ferait
+  passer un constat neutre pour un jugement.
+- ⚠️ **Deux fois le même piège d'idempotence dans mes scripts d'édition** : une condition
+  `if 'X' not in fichier` a sauté l'ajout d'un import et d'un bloc de styles, parce que `X` figurait
+  déjà… dans le code que je venais d'écrire. Détecté par le typecheck les deux fois, corrigé par
+  `Edit`. À retenir : tester la présence d'un **symbole** ne dit rien de la présence de sa
+  **déclaration**.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.** `insights.ts` et
+  `insights-repository.ts` : `git diff` **vide**.
+- **Reste** : la recette device — 22 critères, dont le calibrage des trois seuils et la frontière
+  `tempo`, qui est le seul vrai choix de conception du lot.
+
 ### 07/08/2026 — `feature/allure01-courbe-allure` — ALLURE-01 : les 5 moteurs purs de la courbe d'allure
 
 Commit précédent : `978d209`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),

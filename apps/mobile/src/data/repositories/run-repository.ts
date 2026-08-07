@@ -29,6 +29,7 @@
  * la ligne active, qui change à chaque flush).
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import {
   appendToTrack,
@@ -45,9 +46,14 @@ import {
   type PaceTrendPoint,
   type PaceTrendKind,
   type ProgramSessionType,
+  computeKmSplits,
+  computePolarisation,
+  decodeTrack,
+  type Polarisation,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
+import { useRunnerProfile } from './running-profile-repository';
 import i18n from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
@@ -223,6 +229,15 @@ const SELECT_HISTORY = `
   WHERE status = 'completed' AND deleted_at IS NULL
   ORDER BY finished_at DESC
 `;
+
+/**
+ * Réexport de `SELECT_HISTORY` à seule fin de test.
+ *
+ * ⚠️ Le nom porte son intention : ce n'est **pas** une API de repository. Elle existe pour qu'un test
+ * puisse vérifier que cette requête **ne gagne jamais `gps_track`** — elle n'a aucune borne de date et
+ * alimente les stats, la tendance d'allure et l'accueil.
+ */
+export const SELECT_HISTORY_FOR_TEST = SELECT_HISTORY;
 
 /** Détail d'une course par id (tous statuts, non supprimée). */
 const SELECT_RUN_BY_ID = `
@@ -855,4 +870,71 @@ export async function setManualRunDistance(
     distance_m: distanceM,
     avg_pace_s_per_km: avgPace,
   });
+}
+
+// ---------------------------------------------------------------------------
+// US ALLURE-01 — polarisation de l'entraînement (roadmap 5.35, catalogue RUN-08)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre de la polarisation, en jours : **4 semaines** (spec §8 décision 3). */
+export const POLARISATION_WINDOW_DAYS = 28;
+
+/**
+ * Traces des courses terminées de la fenêtre (US ALLURE-01, RUN-08).
+ *
+ * 🔴 **Requête dédiée, et surtout PAS `gps_track` ajouté à `SELECT_HISTORY`.** Cette dernière n'a
+ * aucune borne de date et alimente les statistiques, la tendance d'allure et l'accueil : y ajouter la
+ * trace ferait charger en mémoire **les traces GPS de toutes les courses de l'utilisateur**, pour tous
+ * ces consommateurs, alors qu'un seul en a besoin. La régression serait invisible en recette et
+ * s'aggraverait avec l'historique.
+ *
+ * ⚠️ **`gps_track IS NOT NULL`** : une course saisie à la main n'a rien à analyser (spec R7). L'exclure
+ * en SQL évite de la compter comme « course ignorée » côté moteur.
+ */
+export const SELECT_RUNS_WITH_TRACK_SINCE = `
+  SELECT gps_track
+  FROM runs
+  WHERE status = 'completed' AND deleted_at IS NULL
+    AND gps_track IS NOT NULL
+    AND finished_at >= ?
+  ORDER BY finished_at ASC
+`;
+
+/**
+ * La polarisation du volume sur les 4 dernières semaines (US ALLURE-01, RUN-08).
+ *
+ * Rend `null` quand le moteur se tait : moins de 2 courses exploitables, ou **allure de référence
+ * absente** — auquel cas l'écran affiche l'indisponibilité **et son remède** (spec R4).
+ *
+ * ⚠️ **Le décodage est le coût de cette analyse.** Chaque trace est décodée puis découpée en splits.
+ * Le `useMemo` dépend donc des **lignes** et de la seule allure de référence : reconstruire un objet
+ * d'entrée à chaque passe relancerait tout le décodage à chaque rendu de l'écran d'historique. Si la
+ * recette montre un ralentissement, la parade est de **borner le nombre de courses décodées et de le
+ * dire à l'écran** — jamais de tronquer en silence.
+ */
+export function usePolarisation(): { polarisation: Polarisation | null; isLoading: boolean } {
+  const windowStart = useWindowStartUtc(POLARISATION_WINDOW_DAYS);
+  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
+
+  const { data, isLoading: runsLoading } = useQuery<{ gps_track: string | null }>(
+    SELECT_RUNS_WITH_TRACK_SINCE,
+    [windowStart],
+  );
+
+  const ref5kPaceSPerKm = runnerProfile?.ref5kPaceSPerKm ?? null;
+
+  const polarisation = useMemo(
+    () =>
+      computePolarisation({
+        runs: data.map((row) => ({
+          // `gps_track` est non nul par la requête ; le `?? ''` satisfait le type sans mentir —
+          // `decodeTrack('')` rend un tableau vide, que le moteur ignore proprement.
+          splits: computeKmSplits(decodeTrack(row.gps_track ?? '')),
+        })),
+        ref5kPaceSPerKm,
+      }),
+    [data, ref5kPaceSPerKm],
+  );
+
+  return { polarisation, isLoading: runsLoading || profileLoading };
 }
