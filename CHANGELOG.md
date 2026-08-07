@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Bilan hebdo et rappels programmés : la course qui ressuscite un rappel
+
+**16 tests** sur `useWeeklyReviewScheduler` (BILAN-01) et `useProgrammedRemindersScheduler`
+(NUTR-F1 / MUSC-F8). `notification-repository` est désormais couvert sur ses trois planificateurs.
+
+#### Ajouté
+
+- **`programmed-reminders-scheduler.test.tsx` — 16 tests.**
+  - **🔴 Le jeton de génération.** `apply()` commence par un aller-retour natif : deux invocations
+    peuvent se chevaucher. Sans jeton, le `schedule` d'une passe **périmée** s'exécute *après* le
+    `cancel` de la passe fraîche — et le rappel « pense à remplir ton journal » revient alors que
+    le journal vient d'être rempli. Le hook étant réveillé par **deux tables surveillées**, chaque
+    aliment ajouté déclenche un tour : le chevauchement n'est pas théorique. Le test bloque
+    volontairement la première passe, en fait passer une seconde, puis débloque la première et
+    vérifie qu'elle **n'écrit rien**.
+  - **🔴 La semaine vide n'est pas notifiée** (BILAN-01, D4). Le rendez-vous `WEEKLY` est récurrent
+    côté OS : sans annulation explicite, il notifierait une semaine sans rien à résumer.
+  - **🔴 La logique inversée du rappel de séance** (MUSC-F8, D16). Pour le repas et la pesée,
+    « déjà fait » = le geste est accompli ; pour la séance, c'est « rien à faire », donc **aucune
+    occurrence planifiée**. Confondre les deux enverrait un rappel de séance à quelqu'un qui n'en
+    a pas au programme.
+  - Plus : la garde de chargement sur chacune des sources (décider avant résolution annulerait un
+    rappel valide sur la foi d'un « déjà fait » simplement pas encore chargé), l'annulation des
+    **trois** rappels quand la permission est refusée, et le désabonnement au démontage.
+
+#### Technique / Notes
+
+- ⚠️ **Piège de mock corrigé en cours de route** : `useNotificationPrefs` est défini **dans**
+  `notification-repository` et lit `useSettings()`. Le mocker depuis `settings-repository` n'a
+  aucun effet — les préférences restaient aux **valeurs par défaut**, où `mealReminder` et
+  `weighInReminder` sont à `false`. Deux tests passaient donc au vert pour la mauvaise raison : le
+  rappel était annulé parce qu'il est désactivé par défaut, pas parce que la règle l'avait décidé.
+  C'est la source des réglages qu'il faut contrôler ; le commentaire le dit à l'endroit du mock.
+- Deuxième rappel de la même leçon : `renderHook` renvoie une **promesse**. Sans `await`, le
+  destructurage donne `rerender === undefined` (§3.6).
+- Quality gate au vert : lint 0 erreur, typecheck 0 erreur, `npm run test:coverage` propre —
+  **1 924 (shared) + 1 030 (mobile) + 181 (admin) = 3 135 tests**. Mobile 28,3 % → **28,8 %** ;
+  `src/data/repositories` 43,7 % → **45,8 %**.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Planificateur de rappel : l'orchestration autour de la règle
 
 **8 tests** sur `useStreakReminderScheduler` (US 2.6). Premier planificateur de
