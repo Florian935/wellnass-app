@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
+import { PaceCurveCards } from '@/components/run/PaceCurveCards';
 import { Card } from '@/components/Card';
 import { CelebrationCard } from '@/components/CelebrationCard';
 import { FormScreen } from '@/components/FormScreen';
@@ -573,6 +574,14 @@ export default function RunSummaryScreen() {
           })}
         </Card>
       ) : null}
+
+      {/* US ALLURE-01 — les trois lectures de la courbe d'allure (RUN-11, RUN-20, RUN-17).
+          🔴 `splits` est passé en PROP : cet écran l'a déjà calculé plus haut (l.238), et le
+          recalculer doublerait le coût du plus gros calcul de la page pour un résultat identique.
+          Chaque carte se tait individuellement sous son seuil de données, et le composant entier
+          rend `null` sur une course sans trace (spec R7) — une saisie manuelle n'a rien à analyser,
+          et ce n'est pas une erreur. */}
+      <PaceCurveCards splits={splits} />
 
       {/* Export GPX (course GPS terminée avec trace ≥ 2 points valides) */}
       {canExport ? (

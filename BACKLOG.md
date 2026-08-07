@@ -103,6 +103,22 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 > Insights, et le moteur n'en affiche que **2 par famille**. Les recetter tels quels aurait produit
 > **5 faux défauts**. C'est le vrai gain de l'exercice, pas les cases à cocher.
 
+- [ ] 🔴 **`health-connect-state.test.ts` a échoué une fois sur la suite complète, sans être
+      reproductible.** Constaté le 07/08/2026 en intégrant ALLURE-01 : **16 des 31 tests** du fichier
+      en échec sur un `npm run test` agrégé, avec des mocks du module natif rapportant
+      `Number of calls: 0`. Le même fichier passe **en isolation** (31/31), passe **avec les fichiers
+      neufs d'ALLURE-01** (52/52), et la suite mobile complète est repassée **verte trois fois de
+      suite** (1 208/1 208) sans qu'une ligne ne change entre-temps.
+      **Ce n'est donc pas une régression d'ALLURE-01 ni des tests d'écrans de Damien** — c'est une
+      **fragilité d'isolation** du fichier, que l'ajout de fichiers a fait surgir une fois en
+      redistribuant les workers Jest.
+      🔴 **Pourquoi ça compte quand même** : un test intermittent en CI use la confiance dans toute la
+      suite, et le réflexe devient « relance, ça passera » — exactement ce qui laisse filer un vrai
+      défaut un jour. À traiter en `fix/` dédié : vraisemblablement un `jest.resetModules()` ou un
+      `jest.mock` hissé qui fuit entre fichiers du même worker.
+      Piste de reproduction : lancer la suite mobile sous charge (typecheck + lint + test + coverage
+      enchaînés dans le même shell), condition dans laquelle l'échec est apparu.
+
 - [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
       9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de
