@@ -92,7 +92,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1107 · `main` a **1104** commits de retard sur `dev` |
+| Commits | 1108 · `main` a **1105** commits de retard sur `dev` |
 | Specs d'US | 129 au total — 79 clôturées, 50 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -103,11 +103,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `81266c3` test(notifications): bilan hebdo et rappels programmés — la course qui ressuscite un rappel
 - `43f51fc` test(notifications): planificateur de rappel — l'orchestration autour de la règle
 - `b2f6458` test(repositories): pesées, repas types, profil coureur
 - `38e9ac4` test(repositories): records d'allure — l'idempotence par l'arrondi
 - `16420ec` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `5c6db3b` docs(recettes): écrit les 15 sections de recette manquantes (RECETTES.md §35-49)
 
 ---
 

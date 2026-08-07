@@ -43,7 +43,10 @@ type CandidateDbRow = {
  *
  * Les exercices archivés sont exclus (`e.deleted_at IS NULL`).
  */
-const SELECT_CANDIDATES = `
+// `export` **uniquement pour les tests** : le hook ci-dessous est le seul consommateur. La requête
+// mêle un `json_each` (liste de variantes passée en JSON), un repli de langue et l'exclusion des
+// exercices archivés — trois choses qu'un mock ne vérifie pas. Voir §3.3 de strategie-tests.md.
+export const SELECT_CANDIDATES = `
   SELECT e.id, e.muscle_primary, e.equipment, e.muscles_secondary,
          COALESCE(tl.name, tfr.name) AS name
   FROM exercises e

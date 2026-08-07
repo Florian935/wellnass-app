@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Substitutions d'exercice, et resserrage des cliquets
+
+**12 tests** sur la requête des candidats de remplacement (MUSC-F14), puis **remontée des trois
+seuils de couverture mobile**, devenus inopérants à force d'être dépassés.
+
+#### Ajouté
+
+- **`exercise-substitution-sql.test.ts` — 12 tests.** Le classement (`rankSubstitutions`) était
+  déjà testé dans `packages/shared` ; la requête qui l'**alimente** ne l'était pas. Elle fait trois
+  choses qu'un mock n'aurait jamais exercées :
+  - **🔴 La clause est un OU, pas un ET.** Une variante déclarée par un humain doit remonter
+    **quel que soit son groupe musculaire** — si quelqu'un a lié « squat » et « soulevé de terre »,
+    on ne remet pas cette information en cause. Un `AND` accidentel ferait disparaître toutes les
+    variantes inter-groupes **sans la moindre erreur**, juste une liste plus courte.
+  - **🔴 Les exercices archivés sont exclus** (ADMIN-01), y compris quand ils sont déclarés comme
+    variante : proposer en remplacement un exercice retiré du catalogue enverrait l'utilisateur
+    vers une fiche qui n'existe plus.
+  - **Le `json_each`** : la liste de variantes transite en **chaîne JSON**. Une sérialisation
+    cassée ne lève pas — elle rend simplement « aucune suggestion » là où l'utilisateur en attend.
+  - Plus : le repli de langue (un exercice sans traduction anglaise ressort avec son nom français,
+    au lieu de disparaître), le groupe vide qui ne doit pas tout ramener, et l'absence de doublon
+    quand un exercice est à la fois du bon groupe **et** déclaré variante.
+
+#### Modifié
+
+- **`exercise-substitution-repository.ts`** : `SELECT_CANDIDATES` exporté **pour les tests
+  uniquement** (patron §3.3 de la stratégie), avec le commentaire qui dit pourquoi.
+- **Cliquets de couverture mobile resserrés** : `src/data/repositories` 28 → **44**, `src/lib`
+  50 → **52**, `src/stores` 45 → **47**. Le réel avait dépassé les seuils de 17 points par endroits :
+  on pouvait supprimer une quinzaine de points de couverture sans que la CI bronche. **Un cliquet
+  qu'on ne remonte pas cesse d'être un cliquet** — à recaler sous le réel à chaque lot.
+
+#### Technique / Notes
+
+- **Les repositories sont finis.** Ce qui reste dans `src/data/repositories` est exclusivement
+  composé de hooks `useQuery` sur des `SELECT … WHERE deleted_at IS NULL` simples : le rendement
+  de l'extraction §3.3 y devient marginal. Le prochain gisement, ce sont les **écrans à état**
+  (`workout.tsx`, `run/active.tsx`, `running-history/index.tsx`) — noté au §8 de la stratégie.
+- **3 147 tests verts** (1 924 shared + 1 042 mobile + 181 admin). Couverture mobile **28,8 %**,
+  `src/data/repositories` **45,8 %**. Typecheck, lint et seuils propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Bilan hebdo et rappels programmés : la course qui ressuscite un rappel
 
 **16 tests** sur `useWeeklyReviewScheduler` (BILAN-01) et `useProgrammedRemindersScheduler`

@@ -48,9 +48,9 @@ module.exports = {
   // `src/app` (écrans, ~6 %) et `src/components` (~27 %). Il est bas volontairement : le monter
   // bloquerait l'ajout de tout nouvel écran, ce qui pousserait à contourner le garde-fou.
   coverageThreshold: {
-    './src/data/repositories/': { statements: 28, branches: 20, functions: 23 },
-    './src/lib/': { statements: 50, branches: 48, functions: 64 },
-    './src/stores/': { statements: 45, branches: 34, functions: 44 },
+    './src/data/repositories/': { statements: 44, branches: 33, functions: 39 },
+    './src/lib/': { statements: 52, branches: 51, functions: 64 },
+    './src/stores/': { statements: 47, branches: 36, functions: 46 },
     global: { statements: 12, branches: 8, functions: 10 },
   },
 };
