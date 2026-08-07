@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FUEL-01 — Socle glucidique du coureur</title>
+<style>
+  /* Palette réelle du thème clair de l'app (apps/mobile/src/theme/colors.ts) — pas d'approximation.
+     amber #b47f31 est LA couleur des glucides : le commentaire CONF-07 du fichier de thème le dit
+     explicitement (« barre glucides »), et sa valeur est celle assombrie pour passer WCAG 1.4.11. */
+  :root{
+    --bg:#f7eede; --surface:#fffaf2; --surfaceAlt:#f3ddd0; --border:#ece0cd;
+    --text:#33291f; --muted:#786a59; --accent:#b14f2b;
+    --success:#66714b; --amber:#b47f31; --danger:#b23b2e;
+    --warn:#f7ead6; --warnBorder:#e9cfa0; --warnText:#8a6419;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:24px 16px 64px}
+  .wrap{max-width:420px;margin:0 auto}
+  h1{font-size:19px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 28px}
+  .caption{color:var(--muted);font-size:12px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin:0 0 22px}
+  .cardTitle{font-size:15px;font-weight:600;margin:0 0 14px}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:10px 0}
+  .row + .row{border-top:1px solid var(--border)}
+  .macro{font-size:14px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+  .val{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+  .unit{font-size:12px;color:var(--muted);font-weight:400;margin-left:2px}
+  .ref{display:block;font-size:12px;color:var(--muted);margin-top:3px;text-align:right}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;margin-left:8px;
+        vertical-align:middle;font-weight:600}
+  .pill.low{background:var(--warn);color:var(--warnText);border:1px solid var(--warnBorder)}
+  .pill.in{background:#eef0e6;color:var(--success);border:1px solid #dfe3d1}
+  .pill.high{background:#f6e3dc;color:var(--danger);border:1px solid #ecd0c6}
+  .dayNote{margin:12px 0 0;padding:9px 11px;background:var(--surfaceAlt);border-radius:9px;
+           font-size:12.5px;color:var(--text)}
+  .dayNote b{font-weight:600}
+  .note{font-size:12.5px;color:var(--muted);margin:-10px 0 22px;padding-left:2px}
+  .note b{color:var(--text)}
+  .flag{border-left:3px solid var(--accent);padding:2px 0 2px 11px;margin:0 0 22px;font-size:12.5px;color:var(--muted)}
+  .flag b{color:var(--text)}
+  .absent{color:var(--muted);font-style:italic;font-size:13px;padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>FUEL-01 — Socle glucidique du coureur</h1>
+  <p class="sub">Catalogue RN-05 + RN-06 · écran <b>Nutrition › Stats</b> · Tier 1 conditionnel<br>
+  États de la carte « Macros par kg », qui <b>remplace</b> la carte « Protéines par kg » de MN-06 —
+  zéro bloc ajouté à l'écran (décision D2).</p>
+
+  <p class="caption">1 · Volume léger — 2 h de course sur 7 j</p>
+  <div class="card">
+    <p class="cardTitle">Macros par kg</p>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--accent)"></span>Protéines</span>
+      <span>
+        <span class="val">1,9<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">cible 1,6-2,0 · maintien</span>
+      </span>
+    </div>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--amber)"></span>Glucides</span>
+      <span>
+        <span class="val">4,2<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">référence 3-5 · volume léger</span>
+      </span>
+    </div>
+    <p class="dayNote"><b>Journée facile</b> — bas de la fourchette</p>
+  </div>
+  <p class="note">La ligne protéines est <b>inchangée</b> (MN-06, livrée) : mêmes clés i18n, même
+  calcul. On ajoute une ligne, on ne réorganise pas une carte que des recettes en attente traversent.</p>
+
+  <p class="caption">2 · Gros volume — 7 h de course sur 7 j · sous la référence</p>
+  <div class="card">
+    <p class="cardTitle">Macros par kg</p>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--accent)"></span>Protéines</span>
+      <span>
+        <span class="val">1,8<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">cible 1,6-2,0 · maintien</span>
+      </span>
+    </div>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--amber)"></span>Glucides</span>
+      <span>
+        <span class="val">4,4<span class="unit">g/kg</span></span><span class="pill low">sous la référence</span>
+        <span class="ref">référence 7-10 · gros volume</span>
+      </span>
+    </div>
+    <p class="dayNote"><b>Journée dure</b> — haut de la fourchette</p>
+  </div>
+  <p class="note">C'est le cas qui justifie l'US : mêmes apports qu'en 1, mais la référence a bougé
+  parce que la <b>charge</b> a bougé. Le statut passe à « sous la référence » <b>sans</b> qu'aucune
+  cible du journal ne change (règle R1).</p>
+
+  <p class="caption">3 · Aucune course sur 7 j — la ligne glucides disparaît</p>
+  <div class="card">
+    <p class="cardTitle">Macros par kg</p>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--accent)"></span>Protéines</span>
+      <span>
+        <span class="val">1,9<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">cible 1,6-2,0 · maintien</span>
+      </span>
+    </div>
+    <p class="absent">— pas de ligne glucides, pas de « 0 g/kg », pas d'état vide —</p>
+  </div>
+  <p class="note">Même rendu si le <b>poids est inconnu</b>, si le pilier course est <b>désactivé</b>,
+  ou si <b>aucun jour de journal</b> n'est renseigné : la ligne n'existe pas, elle ne s'excuse pas.</p>
+
+  <p class="caption">4 · Course libre — le classement de journée est indisponible</p>
+  <div class="card">
+    <p class="cardTitle">Macros par kg</p>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--accent)"></span>Protéines</span>
+      <span>
+        <span class="val">1,7<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">cible 1,6-2,0 · maintien</span>
+      </span>
+    </div>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--amber)"></span>Glucides</span>
+      <span>
+        <span class="val">6,1<span class="unit">g/kg</span></span><span class="pill in">dans la cible</span>
+        <span class="ref">référence 5-7 · volume modéré</span>
+      </span>
+    </div>
+    <p class="absent">— aucune mention de journée —</p>
+  </div>
+  <p class="note">La course libre <b>compte dans la charge</b> (elle a une durée) mais <b>pas dans le
+  classement</b> : on ne connaît pas son type. Ne rien afficher plutôt que supposer « endurance »
+  (décision D4, précédent MUSC-20).</p>
+
+  <p class="caption">5 · Au-dessus de la référence</p>
+  <div class="card">
+    <p class="cardTitle">Macros par kg</p>
+    <div class="row">
+      <span class="macro"><span class="dot" style="background:var(--amber)"></span>Glucides</span>
+      <span>
+        <span class="val">6,3<span class="unit">g/kg</span></span><span class="pill high">au-dessus</span>
+        <span class="ref">référence 3-5 · volume léger</span>
+      </span>
+    </div>
+    <p class="dayNote"><b>Aucune course planifiée aujourd'hui</b></p>
+  </div>
+
+  <p class="flag"><b>Ce que la maquette ne montre pas, volontairement.</b> Aucun bouton, aucun lien,
+  aucune action : FUEL-01 est <b>descriptif</b>. La carte énonce un fait mesuré et un repère — jamais
+  « mange plus de glucides ». Le ton des trois statuts est celui déjà validé pour les protéines.</p>
+
+  <p class="flag"><b>Contrastes.</b> Aucune couleur nouvelle : <code>amber</code> (#b47f31),
+  <code>success</code> (#66714b) et <code>warnText</code> (#8a6419) sont les valeurs <b>déjà
+  assombries par CONF-07</b> pour passer WCAG AA. Rien à ajouter au test de contraste
+  (<code>theme/__tests__/contrast.test.ts</code>).</p>
+
+</div>
+</body>
+</html>

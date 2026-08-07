@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **06/08/2026** — **49 sections, une par US en recette**. 🔴 **Commence par
+> Dernière mise à jour : **07/08/2026** — **50 sections, une par US en recette**. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
@@ -1764,6 +1764,56 @@ leurs critères décrivaient deux cartes et un masquage mutuel qui **n'existent 
 **Quand l'US passe** : `etape: close` dans le front-matter de sa spec **et** dans celles de TRI-12 /
 MR-14 si besoin, catalogue à ✅, et **on supprime sa section ici**. Passe par
 [`/commit`](.claude/commands/commit.md).
+
+---
+
+## 50. FUEL-01 — Socle glucidique du coureur (g/kg selon la charge)
+
+📄 [spec](docs/specs/functional/us/fuel01-socle-glucidique-coureur.md) · catalogue **RN-05** +
+**RN-06** · **📱 device** · ✅ aucune migration, aucune sync rule, aucune dépendance native →
+**recettable sur l'APK existant**.
+ℹ️ **Ligne ajoutée à une carte existante**, pas un écran neuf : la carte « Protéines par kg » de
+Nutrition › Stats devient **« Macros par kg »** et porte les deux macros (décision D2 — zéro bloc
+ajouté à un écran déjà à 8 quand ADR-007 en prévoit 4-5).
+
+- [ ] 1. Coureur ~70 kg, **2 h de course** sur les 7 derniers jours, journal renseigné → la carte
+      affiche une ligne **Glucides** avec la référence **3-5 g/kg** (volume léger).
+- [ ] 2. Même compte, **7 h de course** sur 7 jours → la référence passe à **7-10 g/kg** (gros
+      volume). *C'est le test qui prouve que les paliers de durée fonctionnent.*
+- [ ] 3. **Aucune course** sur 7 jours → la ligne Glucides **disparaît**, la ligne Protéines
+      **reste**. Pas de « 0 g/kg », pas de carte vide.
+- [ ] 4. **Poids de corps absent** (aucune pesée, rien au profil) → ligne Glucides masquée.
+- [ ] 5. **Pilier course désactivé** → ligne Glucides masquée, quelles que soient les données.
+- [ ] 6. 🔴 **La cible glucides du journal n'a pas bougé** : ouvrir l'onglet Nutrition et vérifier que
+      les grammes cibles sont **identiques à avant cette US**, et que les 3 barres macro totalisent
+      toujours l'objectif calorique. *Critère central — il vérifie la décision D1 et protège la
+      recette de MN-04 (§42 critère 5). Si celui-ci échoue, tout le reste est sans objet.*
+- [ ] 7. Journée avec un **fractionné planifié** → mention « Journée dure ». Avec une **endurance** →
+      « Journée facile ». **Sans séance planifiée** → « Aucune course planifiée aujourd'hui ».
+- [ ] 8. Journée avec une **course libre** → **aucune mention** de journée (ni dure, ni facile, ni
+      repos). ⚠️ **Ce n'est pas un oubli d'affichage** (D4) : une course libre n'a pas de type en
+      base, et le deviner serait inventer une donnée.
+- [ ] 9. 🔴 **Relecture par un pratiquant d'endurance** : les 3 fourchettes (**3-5 / 5-7 / 7-10
+      g/kg**) et les 2 seuils de durée (**3 h**, **6 h**) sont-ils crédibles ? ⚠️ **Critère de
+      jugement, pas de manipulation** — un seuil faux produit un chiffre plausible, donc invisible en
+      recette fonctionnelle (leçon des coefficients DOTS, §29 critère 21). Les 5 valeurs sont des
+      constantes nommées (`CARB_TARGETS_G_PER_KG`, `CARB_LOAD_THRESHOLDS_H`) : les corriger est une
+      ligne, pas un chantier.
+- [ ] 10. Un jour de journal **non renseigné** dans la fenêtre ne fait pas chuter les g/kg affichés.
+- [ ] 11. Basculer **7 j ↔ 30 j** : la ligne reste cohérente. ⚠️ Sur 30 j la charge est ramenée à son
+      **équivalent hebdomadaire** (R6 bis) — 20 h sur 30 jours ≈ 4,7 h/semaine, donc « volume
+      modéré », **pas** « gros volume ». Sans cette normalisation, tout un mois basculerait au
+      palier haut.
+- [ ] 12. **Mode avion** : la carte s'affiche et se calcule normalement.
+- [ ] 13. En **EN** : les 3 libellés de volume, les 3 de journée et la référence sont grammaticaux ;
+      le séparateur décimal suit la langue.
+- [ ] 14. TalkBack énonce la ligne Glucides comme **un seul bloc cohérent** (macro + valeur +
+      référence + statut), pas des fragments disjoints.
+- [ ] 15. **Période « vie réelle » active** → la ligne reste affichée normalement. Ce n'est ni un
+      reproche ni un objectif : c'est un fait mesuré et un repère physiologique.
+
+**Quand l'US passe** : `etape: close` dans le front-matter de sa spec, catalogue RN-05/RN-06 à ✅
+(déjà fait), et **on supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md).
 
 ---
 

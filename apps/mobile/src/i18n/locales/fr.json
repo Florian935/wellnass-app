@@ -675,6 +675,22 @@
         "flat": "stable",
         "new": "nouveau, pas de comparaison"
       }
+    },
+    "macrosPerKg": {
+      "title": "Macros par kg",
+      "protein": "Protéines",
+      "carbs": "Glucides",
+      "carbsReference": "référence {{min}}–{{max}} · {{load}}",
+      "load": {
+        "light": "volume léger",
+        "moderate": "volume modéré",
+        "high": "gros volume"
+      },
+      "day": {
+        "hard": "Journée dure — haut de la fourchette",
+        "easy": "Journée facile — bas de la fourchette",
+        "rest": "Aucune course planifiée aujourd’hui"
+      }
     }
   },
   "widgets": {
