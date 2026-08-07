@@ -81,6 +81,305 @@ test a immédiatement trouvé un défaut — et le même défaut se cachait sur 
   dans deux `act` successifs, ils testent le `disabled` du bouton. Ce sont deux tests différents.
 - **3 249 tests verts** (1 948 shared + 1 120 mobile + 181 admin). Couverture mobile **30,3 %**.
   Typecheck, lint et seuils propres.
+### 07/08/2026 — `feature/allure01-courbe-allure` — ALLURE-01 : les 5 moteurs purs de la courbe d'allure
+
+Commit précédent : `978d209`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),
+mes 4 propositions du §8 retenues faute d'objection. **Incrément borné à la couche pure** : aucune
+requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 406 tests verts** (181 admin + 1 105 mobile +
+2 120 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `pace-zones.ts` — le **modèle de zones**, et le cœur du lot : 5 zones contiguës qui couvrent toutes
+  les allures.
+- `split-balance.ts` (**RUN-11**) — negative / even / positive split, avec l'écart chiffré.
+- `pace-fade.ts` (**RUN-20**) — dégradation du 1ᵉʳ au dernier **quart** d'une sortie assez longue.
+- `pace-zone-mix.ts` (**RUN-17 + RUN-08**) — répartition par zone d'une course, et polarisation du
+  volume sur plusieurs courses. Les deux vivent ensemble parce que la seconde est **l'agrégation de la
+  première** : les séparer aurait dupliqué le classement en zones.
+- `shares.ts` — mécanique de parts entières **extraite** de `computeSetTypeMix` (EXEC-01).
+- `meanSplitPace` dans `running.ts` — allure moyenne d'un groupe de splits.
+- **76 tests** neufs. Les 5 modules sont à **100 % sur les quatre métriques**, branches comprises.
+
+#### Modifié
+
+- `set-type-mix.ts` (EXEC-01) délègue son arrondi à `sharesOf`. **Ses 11 tests passent inchangés** —
+  c'était le garde-fou de la factorisation.
+
+#### Technique — Notes
+
+- 🟢 **Les zones ne sont pas inventées, et c'est le meilleur du lot.** `sessionTargetPace` définissait
+  déjà des bandes d'allure calibrées depuis l'allure de réf 5 km. Elles **laissaient des trous** (rien
+  entre `ref` et `ref+30`, rien sous `vma`) : une allure pouvait ne tomber dans aucune. La partition les
+  **prolonge** sans ajouter un seul nombre — et **un test change la référence pour vérifier que TOUTES
+  les bornes suivent**. C'est ce test qui interdit de recopier `ref + 60` en littéral : ça marcherait
+  aujourd'hui et divergerait au premier ajustement, **sans que rien n'échoue**.
+- 🔴 **Le piège de tout ce lot : une allure plus rapide est un nombre plus PETIT.** Un `deltaPct`
+  négatif signifie « 2ᵉ moitié plus rapide » — le bon signe. Une inversion passe la revue, passe le
+  typecheck, et produit une répartition exactement inversée : crédible et fausse. Deux tests l'exercent
+  explicitement, et un balayage de 120 à 1200 s/km sur cinq références prouve que la partition couvre
+  tout.
+- 🔴 **La polarisation pèse les kilomètres, pas les courses.** 20 km d'endurance + 5 km de seuil font
+  **80/20** en kilomètres et **50/50** en courses. Un test est écrit **exprès** pour échouer sur cette
+  erreur, avec un `expect(...).not.toBe(50)` explicite.
+- **Le fade se lit sur des quarts.** Trois tests le justifient : un km très lent **au milieu** ne
+  l'affecte pas, un km lent dans le dernier quart est lissé par ses voisins, et remplacer tout le
+  centre par des valeurs absurdes ne déplace pas le résultat d'un iota.
+- **Trois verdicts et pas deux** : sans zone morte de 2 %, **toute** course serait « positive » ou
+  « negative » — personne ne court deux moitiés exactement égales, et une analyse qui a toujours un
+  verdict tranché cesse d'être crédible.
+- **Le km central d'un nombre impair va à la 1ʳᵉ moitié.** Arbitraire, donc figé par un test et écrit
+  en spec : sans cette trace, la prochaine lecture pourrait l'inverser en croyant corriger un bug.
+- ⚠️ **Cinq branches non couvertes au premier passage, et toutes les cinq étaient mortes** — mais deux
+  d'entre elles étaient le **même helper dupliqué** dans deux fichiers. Plutôt que de supprimer deux
+  gardes, `meanSplitPace` est **extrait dans `running.ts`** (son vrai domicile, avec `KmSplit` et
+  `computeKmSplits`) : devenu public, il a ses propres tests, et sa garde cesse d'être morte. Les trois
+  autres sont supprimées avec leur invariant écrit en clair.
+- ⚠️ **Une garde que j'avais moi-même écrite puis retirée** : `if (kmPerQuarter < 1)` dans le fade,
+  documentée comme inatteignable — exactement le patron d'invariant accidentel critiqué sur COLLIS-01
+  le matin même. Remplacée par l'invariant explicite, avec la conséquence notée : descendre
+  `FADE_MIN_DISTANCE_KM` sous 4 viderait les quarts.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.** `insights.ts` et le registre d'accueil
+  non touchés.
+- **Reste** : la requête de polarisation (lot 5), les surfaces (lot 6, résumé de course +
+  historique) et l'i18n (lot 7).
+
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : le test que la DoD réclamait et que j'avais oublié
+
+Commit précédent : `6e9588a`. **Definition of Done relue item par item avant de la cocher**, et un
+item ne passait pas : « un test fige que la charge prescrite vient de `planned_weight_kg` et **non**
+du plan (R7) ». Il n'existait pas.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 330 tests verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- **2 tests SQL** (`execution-sql.test.ts`, 28 au total) : le plan dit **999 kg**, la série en a gardé
+  **100**, et c'est **100** qui doit sortir. Le second couvre le cas où le plan n'a aucune charge cible.
+
+#### Technique — Notes
+
+- 🔴 **Pourquoi ce test compte plus qu'il n'y paraît.** Il protège contre une « correction » qui
+  paraîtrait naturelle à quiconque relit la requête : joindre `ep.target_weight_kg` **puisqu'on joint
+  déjà `ep.target_reps`**. Ce serait comparer une séance d'il y a trois semaines à une prescription
+  modifiée hier — donc **afficher un écart qui n'a jamais existé**, sans erreur, sans alerte. Le test
+  vérifie aussi que la colonne du plan n'est **même pas rapatriée** par la requête.
+- ⚠️ **La leçon de méthode** : cocher une DoD sans la relire ligne à ligne, c'est la transformer en
+  formalité. Les 11 autres items étaient tenus ; celui-là ne l'était pas, et c'était précisément le
+  garde-fou de la règle la plus subtile du lot. La DoD porte maintenant, en clair, la mention que cet
+  item manquait au premier passage.
+- Vérifié au passage et consigné dans la DoD : `git diff` sur `insights.ts` et
+  `insights-repository.ts` est **vide** — `MAX_INSIGHTS`, `INSIGHT_ORDER` et `selectInsights` sont
+  intacts, comme le §3 de la spec l'exigeait.
+
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : requêtes, section d'écran et i18n
+
+Commit précédent : `a2f1401`. **MUSC-14 définitivement écartée** (Florian, après explication — spec
+§8 D4). L'US passe à `etape: recette`.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 328 tests verts** (181 admin + 1 103 mobile +
+2 044 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- **4 requêtes + 4 hooks** dans `records-repository.ts` : `useExecutionCompliance`,
+  `useSessionDurationStats`, `useSetTypeMix`, `useNeglectedFavorites`. Fenêtre de **12 semaines**
+  (`EXECUTION_WINDOW_DAYS`, spec D2).
+- `components/progress/ExecutionSection.tsx` — section **conditionnelle et repliée par défaut**,
+  branchée sur `progress/index.tsx`.
+- **26 tests SQL** (`execution-sql.test.ts`) et **13 tests de section**
+  (`ExecutionSection.test.tsx`).
+- **20 clés i18n** FR + EN (2 045 chacune, symétrie tenue). Les libellés de type de série
+  **réutilisent** `workout.setType.*` plutôt que d'ouvrir un second jeu.
+
+#### Technique — Notes
+
+- 🔴 **Ma spec avait négligé une contrainte, et l'implémentation l'a trouvée** : `progress/index.tsx`
+  porte un commentaire explicite disant que l'écran est **déjà au seuil de repli d'ADR-007** (5
+  sections) — c'est ce qui avait fait replier MUSCPWR-01. La section EXEC-01 suit donc le même patron :
+  elle **rend `null`** quand ses quatre analyses se taisent, donc **un compte neuf ne voit rien de plus
+  qu'avant**. Ce n'est pas une concession : la règle R3 imposait déjà ce silence pour une raison de
+  **justesse statistique** (une moyenne sur n=1 est un mensonge). La même décision servait deux fins.
+  Spec §3.1 ajoutée.
+- 🔴 **Deux règles opposées sur la même colonne, volontairement.** `SELECT_FAVORITE_PRACTICE` **exclut**
+  les exercices archivés (on ne propose pas de reprendre un exercice retiré) ; COLLIS-01 les **garde**
+  (une séance planifiée qui en contient sera quand même faite). C'est le genre de chose qu'une
+  relecture inverse par réflexe — un test le fige de chaque côté.
+- 🔴 **Même contradiction assumée sur les échauffements** : exclus du taux d'exécution (improvisés au
+  feeling, donc hors mesure), **gardés** dans la répartition par type — c'est précisément ce que cette
+  analyse montre. Deux tests le figent.
+- 🔴 **La jointure duplique les séries** quand un exercice a deux plans dans la même séance. Un test
+  SQL **constate** la duplication, et le hook déduplique — sinon un dénominateur **affiché** serait
+  deux fois trop grand.
+- ⚠️ **Le plan affirmait que « toutes les autres requêtes du fichier portent `user_id = ?` ». C'était
+  faux** : `records-repository.ts` ne filtre pas `user_id` en **lecture** (une seule occurrence, à
+  l'écriture), parce que la base locale PowerSync ne contient que les lignes de l'utilisateur connecté.
+  On suit la convention du fichier ; le commentaire de la requête dit pourquoi.
+- ⚠️ **`exercises.status` existe côté Postgres mais PAS dans le schéma PowerSync local** — trouvé en
+  écrivant le test SQL, dont le harness génère son DDL depuis ce schéma. Rappel utile : la base
+  embarquée est un **sous-ensemble** du cloud, pas sa copie.
+- ⚠️ **`SELECT_FAVORITE_PRACTICE` n'est volontairement PAS borné** à 12 semaines : un favori délaissé
+  depuis 8 mois est exactement celui qu'on cherche. Le borner ferait disparaître les plus délaissés.
+- ⚠️ **`ORDER BY started_at` est une dépendance du calcul**, pas un confort d'affichage : c'est lui qui
+  définit les deux moitiés de la tendance de durée. Un test le fige en semant dans le désordre.
+- ⚠️ **Deux pièges de test rencontrés** : `CollapsibleCard` **ne monte pas ses enfants** tant qu'il est
+  replié (il faut `fireEvent.press` sur le **label** de l'en-tête, puis `await act`) — piège déjà
+  documenté en §3.6 de strategie-tests.md ; et le second argument de `t` est **tantôt un objet
+  d'options, tantôt une chaîne de repli**, ce qui casse un mock qui suppose l'objet.
+- ✅ **Aucune migration, aucune sync rule, aucun schéma local, aucune écriture.** `insights.ts`,
+  `insights-repository.ts`, `MAX_INSIGHTS`, `INSIGHT_ORDER` et ADR-007 **non modifiés**.
+- **Reste** : la **recette device** — 22 critères, dont le calibrage des trois seuils par un pratiquant.
+
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : les 4 moteurs purs du lot « prévu vs réalisé »
+
+Commit précédent : `11cc849`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),
+avec une question laissée ouverte sur MUSC-14 — sans effet sur cet incrément, l'ajout étant purement
+additif. **Incrément borné : la couche pure uniquement**, aucune requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 289 tests verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `packages/shared/src/execution-compliance.ts` (**MUSC-33**) — taux d'exécution de la charge et des
+  répétitions. **Deux dénominateurs distincts et tous deux rendus** : la cible de reps est du texte
+  libre et toutes ne se parsent pas, donc masquer l'écart de base ferait passer un taux calculé sur
+  12 séries pour un taux calculé sur 87.
+- `packages/shared/src/session-duration.ts` (**MUSC-26**) — médiane, tendance, aberrantes écartées.
+- `packages/shared/src/set-type-mix.ts` (**MUSC-13**) — répartition des séries validées par type.
+- `packages/shared/src/neglected-exercises.ts` (**MUSC-21**) — favoris non pratiqués depuis 4 semaines.
+- **81 tests** neufs (41 + 20 + 11 + 13). Les 4 modules sont à **100 % sur les quatre métriques**,
+  branches comprises.
+
+#### Technique — Notes
+
+- **`parseTargetReps` : parsing tolérant, échec silencieux.** Le champ `exercise_plans.target_reps`
+  est du **texte libre** sans validation de format — « 10 », « 8-12 », « 8 à 12 », « AMRAP »,
+  « 3x10 », du vide. Seuls l'entier et `a-b` sont reconnus ; tout le reste sort du calcul **sans être
+  compté comme un écart**. Inventer une interprétation d'« AMRAP » produirait des écarts fantômes sur
+  les programmes les mieux écrits, et **un faux reproche est pire qu'un silence**.
+- 🔴 **Le poids du corps donne `0 / 0`.** Une série au poids du corps porte `plannedWeightKg = 0` :
+  sans garde, le ratio vaut `NaN`. Précédent réel du dépôt — `bestSegmentTimeFromSamples` a écrit un
+  record « NaN seconde » en base (corrigé le 04/08/2026). Test dédié.
+- **La charge prescrite est lue sur la série** (`workout_sets.planned_weight_kg`), **pas** sur
+  `exercise_plans.target_weight_kg` : le plan a pu changer depuis, et comparer un réalisé d'il y a
+  trois semaines à une prescription modifiée hier afficherait **un écart qui n'a jamais existé**.
+  C'est aussi ce qui rend MUSC-33 calculable **sans jointure**.
+- **Médiane et non moyenne** pour la durée : une séance oubliée ouverte est le cas *normal*, pas le
+  cas rare. Une moyenne la laisserait rendre toutes les autres séances « courtes ».
+- **Le nombre de séances écartées est rendu.** Sans lui, l'utilisateur lit une médiane calculée sur
+  moins de séances qu'il n'en a faites, sans explication — l'écart silencieux qui fait perdre
+  confiance dans tout l'écran.
+- **Les parts de `set-type-mix` somment toujours à 100.** Trois tiers arrondis à l'entier donnent
+  99 ; le reliquat va à la part la plus grosse. Deux tests le figent.
+- **Une branche morte supprimée pendant la revue** : `trendSeconds` était nullable pour un cas vide
+  que `MIN_SESSIONS_FOR_DURATION = 5` rend impossible (`cut ≥ 2`). Devenue `number` non nullable, avec
+  la fragilité documentée en clair — descendre le seuil sous 2 rendrait `median([])` égal à `NaN`.
+  Convention du dépôt (cf. `bucketOf` 04/08, `findFallbackDay` 07/08).
+- ⚠️ **Deux branches signalées non couvertes n'étaient PAS mortes**, contrairement à la troisième :
+  la validation des bornes d'une fourchette (« 0-5 », entiers non sûrs) et la garde `Number.isFinite`
+  de `ratioOf`. Le type est `number | null`, et rien entre SQLite et le calcul n'exclut `NaN` : elles
+  ont donc reçu des **tests**, pas la suppression. Distinguer les deux cas est tout l'exercice.
+- **Trois seuils exportés et nommés**, pas enfouis : `MIN_SESSIONS_FOR_COMPLIANCE` (3),
+  `MIN_SESSIONS_FOR_DURATION` (5), `NEGLECTED_AFTER_WEEKS` (4, validé par Florian, à calibrer en
+  recette comme celui de COLLIS-01).
+- ✅ **Aucune migration, aucune sync rule, aucune écriture** — le lot est en lecture seule.
+- **Reste à faire** : les requêtes (lot 2 du plan), la section d'écran sur `progress/index.tsx`
+  (lot 5) et l'i18n (lot 6).
+
+### 07/08/2026 — `fix/collis01-conflit-veille-hors-semaine` — COLLIS-01 : le conflit dimanche → lundi était invisible
+
+Commit précédent : `5d0374b`. **Réouverture décidée par Florian le 07/08/2026, avant recette**, avec
+deux arbitrages : corriger **en place** (même identifiant, roadmap 3.57 inchangée) et couvrir la
+**veille en amont seule**, l'aval étant explicitement écarté. Vérifié : typecheck **0**, lint **0
+erreur**, **3 192 tests verts** (181 admin + 1 052 mobile + 1 959 shared), `test:coverage` **0** —
+codes de sortie relevés **sans pipe**.
+
+#### Corrigé
+
+- **La règle mentait sur son propre énoncé.** Le §2 de la spec dit « le lendemain », mais la détection
+  était bornée à la **semaine affichée** : une grosse séance de jambes le dimanche suivie d'un
+  fractionné le lundi n'était **jamais** signalée. **Une paire de jours sur sept**, et pas la plus
+  rare — le dimanche est un jour de muscu courant, le lundi un jour de qualité courant.
+- 🔴 **Le même bug se manifestait une seconde fois, dans le repli — non documenté avant ce commit.**
+  `findFallbackDay` cherchait la veille d'un jour candidat dans les 7 clés de la semaine, où le lundi
+  est à l'index 0 : le lundi était donc proposé **sans qu'on vérifie le dimanche précédent**. Un
+  bouton « Déplacer au lundi » pouvait ainsi **fabriquer le conflit qu'il prétend résoudre**, un jour
+  plus tôt. C'est le mode d'échec le plus coûteux du dispositif, et corriger la seule détection
+  l'aurait laissé intact — en le rendant *plus* atteignable, puisque des conflits apparaissent
+  désormais sur les lundis.
+
+#### Modifié
+
+- `packages/shared/src/session-conflicts.ts` — **deux fenêtres au lieu d'une**, et c'est tout le
+  correctif : `scanKeys` (8 jours, la veille incluse) borne la **détection**, `weekKeys` (7 jours)
+  borne le **repli**. Une question de physiologie (« qu'ai-je fait hier ? ») et une question d'écran
+  (« où puis-je le mettre ? ») n'ont aucune raison de partager la même borne — les avoir confondues
+  était le bug.
+- La veille est **dérivée** de `weekStartKey` dans le moteur, pas reçue en paramètre (R7) : un
+  `eveKey` fourni par l'appelant serait une seconde source de vérité pour le même fait, et un
+  appelant qui l'oublie produirait un moteur silencieusement borgne qu'aucun test de moteur ne verrait.
+- Les **courses du jour de la veille ne sont pas jugées** : elles entrent pour servir de contexte, pas
+  pour produire leur propre conflit — celui-ci appartient au bandeau de la semaine précédente (D5).
+- `apps/mobile/src/data/repositories/planned-session-repository.ts` — hook `usePlannedBetween`
+  extrait de `useWeekPlan`, qui **garde son contrat de 7 jours** et reste la source des cartes de jour
+  de `/planning`. Élargir *son* contrat aurait fait apparaître une **8ᵉ carte** hors semaine en tête
+  d'écran. Helpers `weekEndKeyOf` / `eveKeyOf` en remplacement de 3 copies inline du même calcul.
+
+#### Ajouté
+
+- `apps/mobile/src/data/repositories/__tests__/session-conflicts-window.test.ts` (**neuf**, 6 cas) —
+  🔴 **le seul test capable d'échouer pour la bonne raison.** On peut corriger le moteur, obtenir
+  100 % de tests verts sur `packages/shared`, et que **rien ne change sur le device** : il suffit que
+  la requête garde ses 7 jours. Ce test part de l'appelant et inspecte les **bornes réellement
+  demandées** aux deux requêtes. Il couvre aussi le second piège — **n'élargir qu'une des deux
+  lectures** : une séance vue mais non chiffrée donne `setsByMuscle` vide, donc aucun conflit, donc un
+  symptôme *identique* à celui d'avant correctif.
+- 11 cas dans `session-conflicts.test.ts` (43 tests au total sur le fichier), dont celui du repli qui
+  écarte le lundi et celui de la course de la veille non jugée.
+- Spec : **D7**, **§4.1** (les deux manifestations du bug), **R7**, 5 cas limites, 5 critères de
+  recette. `RECETTES.md` §32 passe de **17 à 22 critères**.
+
+#### Supprimé
+
+- La garde `if (eve === null) continue` et le test `eve !== null` du repli, devenus **du code mort** :
+  la fenêtre de 8 jours garantit qu'un jour affiché a **toujours** une veille. `previousDayKey`
+  (partielle, `string | null`) devient `eveOfDisplayedDay` (**totale**). Convention du dépôt — les
+  gardes mortes se suppriment plutôt que se figer par un test d'appel impossible (cf. `bucketOf`,
+  04/08/2026). Effet mesuré : `session-conflicts.ts` passe de **95,83 % à 100 % de branches**.
+
+#### Technique — Notes
+
+- ⚠️ **Un test de la suite figeait le bug** : « ne déclenche pas sur une course le premier jour de la
+  semaine — **pas de veille** ». Il a été **réécrit, pas supprimé** — un test retiré sans trace laisse
+  croire que le cas n'a jamais été couvert.
+- ⚠️ **Le plan a été corrigé en cours d'exécution.** Il annonçait un test `*-sql.test.ts` semant des
+  lignes dans le harness SQLite. **Mauvais instrument** : `SELECT_PLANNED_MUSCLE_SETS` prend ses
+  bornes en **paramètres liés**, donc elle fonctionne déjà pour n'importe quelle fenêtre — un test SQL
+  aurait prouvé que SQLite sait comparer des dates, pas que le hook demande la bonne fenêtre. C'est le
+  **hook** qui portait le bug.
+- ⚠️ **Un commentaire du dépôt était devenu faux**, et la revue l'a rattrapé : celui qui justifiait
+  l'absence de garde `indexOf === -1` dans `findFallbackDay` par un invariant. Avec la fenêtre élargie,
+  cet invariant ne tenait plus que **par accident** (`previousDayKey` rendait `null` sur l'index 0).
+  Remplacé par un filtre explicite `weekKeys.includes(run.dayKey)` dans la boucle de détection.
+- **Une requête locale de plus qu'avant** : `useSessionConflicts` et l'écran de planning demandaient
+  auparavant la même fenêtre et partageaient donc leur souscription ; leurs bornes diffèrent
+  désormais. Coût : une surveillance SQLite locale sur 8 jours. Non mesurable en recette.
+- ✅ **Aucune migration, aucune sync rule, aucun schéma PowerSync local** : le correctif lit **plus de
+  lignes de la même colonne**, pas une colonne neuve. **Aucun changement d'écran ni d'i18n** — le
+  bandeau et ses trois états sont identiques au pixel ; seul le *moment* où il apparaît change.
+- **DOUL-01 partage `SELECT_PLANNED_MUSCLE_SETS`** et garde ses 7 jours (bornes en paramètres liés, la
+  constante SQL n'est pas touchée). Verrouillé par test, et critère de recette 22.
+- ⚠️ **Deux affirmations fausses corrigées dans la maquette du 05/08** : elle annonçait une sync rule
+  PowerSync à redéployer (il n'y en a pas, `user_settings` est lue en `select *`) et « la requête n'est
+  même pas montée » (elle l'est, avec un `owner_id` vide).
+- **Angle mort assumé, écrit noir sur blanc en §3 de la spec** : le dimanche soir, en regardant sa
+  semaine, l'utilisateur ne voit rien de sa course du lundi — il le verra en passant à la semaine
+  suivante. Couvrir l'aval aurait affiché le même conflit **deux fois, sur deux semaines, avec deux
+  ancres différentes**, ce qui rouvre D5 pour un gain nul. Si la recette montre que le dimanche soir
+  est le moment qui compte, la réponse sera **une notification**, pas un second bandeau.
+- ⚠️ **Piège Babel/Jest** rencontré : une variable capturée par une factory `jest.mock` doit être
+  **préfixée par `mock`** (`settingsMock` échoue, `mockSettings` passe).
+- ⚠️ **`npm run test:coverage` agrégé a renvoyé 255 une fois, à tort** — artefact de pipe déjà
+  documenté le 05/08/2026. Relancé sans pipe : **0**, et les 3 workspaces passent aussi séparément.
 
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Substitutions d'exercice, et resserrage des cliquets
 

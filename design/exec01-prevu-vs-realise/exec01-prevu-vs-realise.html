@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXEC-01 — Écart entre le prévu et le réalisé</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:200px}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+        padding:12px 13px;margin-bottom:10px}
+  .ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+          color:var(--muted);margin-bottom:8px}
+  .big{font-size:27px;font-weight:800;line-height:1.1}
+  .big.over{color:var(--accent)}
+  .basis{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .split{display:flex;gap:18px;margin-top:2px}
+  .metric{flex:1}
+  .mlabel{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+
+  .bar{height:9px;border-radius:99px;background:var(--surfalt);overflow:hidden;display:flex;margin-top:9px}
+  .bar i{display:block;height:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:4px}
+  .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  .item{display:flex;align-items:center;gap:8px;font-size:13px;padding:5px 0;
+        border-bottom:1px solid var(--border)}
+  .item:last-child{border-bottom:none}
+  .item .w{margin-left:auto;font-size:11.5px;color:var(--warn);font-weight:800}
+  .mute{color:var(--muted);font-size:12.5px;font-style:italic}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>EXEC-01 — Écart entre le prévu et le réalisé</h1>
+<p class="sub">L'app sait dire <b>ce que tu as fait</b> — tonnage, volume, records, régularité.
+Elle ne sait rien dire de <b>l'écart entre ce que tu avais prévu et ce que tu as fait</b>. C'est
+pourtant là que vit l'information utile quand on suit un programme. <b>Quatre analyses</b> du
+catalogue, une seule section, <b>aucune migration</b> — et <b>on constate, on ne prescrit pas</b>.</p>
+
+<h2>1. La section, quand il y a de quoi parler</h2>
+<p class="why">Nouvelle section sur l'écran <b>Progression</b>, aux côtés des 7 existantes. Chaque
+analyse qui n'a pas assez de données <b>ne s'affiche pas</b> : rien plutôt qu'un zéro trompeur.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Progression</div><div class="navsub">Exécution du programme</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Prescrit vs réalisé</div>
+          <div class="split">
+            <div class="metric">
+              <div class="mlabel">Charge</div>
+              <div class="big">94 %</div>
+              <div class="basis">sur 87 séries</div>
+            </div>
+            <div class="metric">
+              <div class="mlabel">Répétitions</div>
+              <div class="big">101 %</div>
+              <div class="basis">sur 62 séries</div>
+            </div>
+          </div>
+          <div class="basis" style="margin-top:9px">12 séances de programme · 12 dernières semaines</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Durée de séance</div>
+          <div class="big">52 min</div>
+          <div class="basis">médiane · en hausse de 6 min sur 6 semaines</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Deux dénominateurs, et c'est voulu.</b> « 87 séries » pour la charge,
+      « 62 » pour les reps : les cibles de répétitions sont du <b>texte libre</b> et toutes ne se
+      parsent pas. Masquer l'écart rendrait les deux chiffres incomparables.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Progression</div><div class="navsub">Suite de la section</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Types de série</div>
+          <div class="bar">
+            <i style="width:64%;background:#b14f2b"></i>
+            <i style="width:21%;background:#c98a5e"></i>
+            <i style="width:9%;background:#66714b"></i>
+            <i style="width:6%;background:#8a6419"></i>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#b14f2b"></i>Normal 64 %</span>
+            <span><i class="dot" style="background:#c98a5e"></i>Échauffement 21 %</span>
+            <span><i class="dot" style="background:#66714b"></i>Superset 9 %</span>
+            <span><i class="dot" style="background:#8a6419"></i>Poids du corps 6 %</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Exercices délaissés</div>
+          <div class="item">Rowing barre <span class="w">7 sem.</span></div>
+          <div class="item">Développé incliné <span class="w">6 sem.</span></div>
+          <div class="item">Face pull <span class="w">5 sem.</span></div>
+          <div class="basis" style="margin-top:7px">parmi tes favoris</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>« Parmi tes favoris » n'est pas un détail.</b> On ne devine pas ce que
+      l'utilisateur voulait faire : sans favoris déclarés, cette analyse <b>se tait</b>. Et elle
+      raisonne <b>exercice</b>, jamais groupe musculaire — sinon elle redirait la carte d'équilibre
+      musculaire, déjà à l'écran.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Progression</div><div class="navsub">Compte récent</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Types de série</div>
+          <div class="bar">
+            <i style="width:78%;background:#b14f2b"></i>
+            <i style="width:22%;background:#c98a5e"></i>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#b14f2b"></i>Normal 78 %</span>
+            <span><i class="dot" style="background:#c98a5e"></i>Échauffement 22 %</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Prescrit vs réalisé</div>
+          <div class="mute">Pas encore assez de séances de programme.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Le silence est un état, pas un bug.</b> Sous le seuil de données, chaque
+      analyse se tait <b>individuellement</b> — les autres restent. Un taux d'exécution calculé sur
+      une séance n'est pas une tendance, c'est un accident. Si les quatre se taisent, la section
+      entière disparaît.</p>
+  </div>
+
+</div>
+
+<h2>2. Ce que la maquette ne montre pas — les six règles qui font la valeur</h2>
+<p class="why">Un pourcentage est facile à afficher et facile à rendre faux. Ces règles existent
+chacune pour écarter une manière précise de mentir.</p>
+<div class="row">
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Ce qui entre dans le calcul</p>
+    <ul>
+      <li><b>Les séances libres sont exclues.</b> Elles n'ont aucune prescription : les compter
+        ferait <b>chuter</b> le taux de quelqu'un qui s'entraîne beaucoup hors programme — l'inverse
+        exact du signal.</li>
+      <li><b>Une série non validée n'est pas une série ratée.</b> Une séance abandonnée relève de
+        l'assiduité, pas de l'exécution — et l'assiduité a déjà sa carte.</li>
+      <li><b>Dépasser la prescription donne un taux &gt; 100 %</b>, affiché tel quel. C'est un signal
+        utile (« ton programme est trop facile »), pas une anomalie à plafonner.</li>
+    </ul>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Les cibles de reps sont du texte libre</p>
+    <p style="margin:0 0 8px;font-size:13.5px">Le champ est saisi à la main, sans format imposé. On y
+      trouve <code>10</code>, <code>8-12</code>, <code>8 à 12</code>, <code>AMRAP</code>,
+      <code>max</code>, <code>3x10</code>, et du vide.</p>
+    <div class="flag"><b>Règle : parsing tolérant, échec silencieux.</b> Un entier ou une fourchette
+      se comparent. <b>Tout le reste sort du calcul</b>, sans message et <b>sans être compté comme un
+      écart</b>. Inventer une interprétation d'« AMRAP » produirait des écarts fantômes sur les
+      programmes les mieux écrits — un faux reproche est pire qu'un silence.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">On compare à la prescription <i>d'alors</i></p>
+    <p style="margin:0;font-size:13.5px">La charge prescrite est lue <b>sur la série réalisée</b>, pas
+      sur le programme. Le plan a pu changer depuis : comparer une séance d'il y a trois semaines à
+      une prescription modifiée hier afficherait <b>un écart qui n'a jamais existé</b>.</p>
+    <div class="flag"><b>Une séance oubliée ouverte ne pollue rien.</b> La durée est une
+      <b>médiane</b>, pas une moyenne — sinon une séance de 6 h rendrait toutes les autres
+      « courtes ». Les durées aberrantes sont écartées, et <b>le nombre d'écartées est dit</b> :
+      sans ça, l'utilisateur voit une médiane calculée sur moins de séances qu'il n'en a faites,
+      sans explication.</div>
+  </div>
+</div>
+
+<h2>3. Deux items du catalogue qui ne sont pas ce qu'ils annoncent</h2>
+<p class="why">Le catalogue n'est <b>pas</b> une source de vérité sur ce qui est livré — il le dit
+lui-même, après deux réconciliations et 8 lignes corrigées. Les quatre analyses retenues ont donc
+été vérifiées <b>dans le code</b> avant d'entrer en spec. Deux n'ont pas survécu telles quelles.</p>
+<table>
+  <tr><th>Item</th><th>Ce que le catalogue annonce</th><th>Ce que le code dit</th></tr>
+  <tr>
+    <td><b>MUSC-14</b><br>Repos réel vs configuré</td>
+    <td>Repos effectif calculé depuis les « horodatages de validation » des séries.</td>
+    <td>🔴 <b>Écartée du lot.</b> Il n'existe <b>aucun horodatage de validation</b> sur les séries.
+      Se rabattre sur <code>updated_at</code> serait pire que ne rien faire : il bouge à chaque
+      édition ultérieure, donc corriger une charge trois jours plus tard réécrirait le « repos
+      réel » — faux, et <b>silencieusement</b> faux. La faire rentrer coûte une migration, et
+      surtout : la donnée <b>n'existe pas rétroactivement</b>, l'analyse serait <b>vide pour tout le
+      monde</b> au lancement.</td>
+  </tr>
+  <tr>
+    <td><b>MUSC-21</b><br>Exercices délaissés</td>
+    <td>Favoris non faits depuis N semaines <b>et</b> groupes musculaires non travaillés récemment.</td>
+    <td>🟡 <b>À moitié déjà livrée.</b> La partie « groupes » existe : <code>muscle_neglected</code>
+      est dans le moteur d'insights et la carte d'équilibre musculaire est déjà sur cet écran. On ne
+      garde donc que le <b>niveau exercice</b>. C'est le genre de doublon que le catalogue produit
+      quand on le lit comme une liste de courses.</td>
+  </tr>
+</table>
+
+<h2>4. Pourquoi une section d'écran, et pas des cartes d'insight</h2>
+<div class="anno" style="max-width:88ch">
+  <p style="margin:0 0 10px;font-size:14px">La tentation était de brancher ces quatre analyses sur le
+    moteur d'<b>Insights</b>, qui existe et sait sélectionner. <b>Ç'aurait été les enterrer.</b></p>
+  <ul>
+    <li>L'écran Insights affiche <b>au plus 3 cartes</b>, et le pool compte déjà <b>13 candidats</b>
+      avec un quota par famille.</li>
+    <li>Ajouter 4 candidats à un pool qui n'en montre que 3, c'est écrire quatre analyses
+      <b>structurellement invisibles</b> — <i>et</i> dégrader la sélection existante au passage,
+      puisque chaque nouveau candidat prend la place d'un autre.</li>
+  </ul>
+  <div class="flag"><b>C'est la leçon d'INSIGHTS-02</b>, qui a dû <b>dégonfler</b> l'accueil de 21 à
+    7 widgets deux jours plus tôt : la place d'affichage est une ressource rare. <b>Une analyse qu'on
+    ne voit pas n'a pas été livrée.</b> Conséquence : ADR-007 n'est pas touché, le plafond du Tier 0
+    non plus, et le moteur de sélection reste tel quel — un critère de recette le vérifie.</div>
+</div>
+
+</div>
+</body>
+</html>

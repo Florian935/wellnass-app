@@ -130,16 +130,6 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       À faire en `chore/` dédié — vérifier au passage qu'aucun n'est destiné à un hub (candidats
       plausibles : `MuscleVolumeCard` et `RunningWeekCard`).
 
-- [ ] 🟠 **COLLIS-01 — le conflit dimanche → lundi n'est jamais détecté.** Soulevé le 05/08/2026 en
-      revue de code, **non tranché**. La détection est bornée à la **semaine affichée** : une grosse
-      séance de jambes le dimanche suivie d'un fractionné le lundi est donc structurellement
-      invisible — **une paire de jours sur sept**, et pas la plus rare. Ce n'est pas un défaut
-      d'implémentation : c'est conforme à la spec validée (§4) et **figé par un test**
-      (`session-conflicts.test.ts`, « ne déclenche pas sur une course le premier jour de la
-      semaine »). Correctif possible sans toucher au repli : charger **un jour de plus en amont**
-      pour la seule détection, en gardant le repli borné à la semaine affichée.
-      **Décision produit → Florian.**
-
 - [ ] 🟠 **Décision RGPD — `analytics_events` doit-elle entrer dans l'export de données ?**
       Soulevé le 03/08/2026 par le test de complétude de l'export (US CONF-01). La table est
       aujourd'hui **exclue** — exclusion héritée, jamais arbitrée explicitement. Elle porte un

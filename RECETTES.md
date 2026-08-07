@@ -1144,7 +1144,69 @@ par [`/commit`](.claude/commands/commit.md).
 
 ---
 
+## 51. EXEC-01 — Écart entre le prévu et le réalisé (lot de 4 analyses)
+
+📄 [spec](docs/specs/functional/us/exec01-prevu-vs-realise.md) · roadmap **3.58** · **📱 device** ·
+✅ **aucune migration, aucune sync rule, aucune dépendance native → recettable sur l'APK existant**.
+
+> **Où ça se trouve** : écran **Progression**, section « Exécution du programme », **repliée par
+> défaut** — il faut la déplier. ⚠️ **Elle n'apparaît pas du tout** tant qu'aucune des 4 analyses n'a
+> assez de données : c'est **voulu** (l'écran était déjà au seuil de repli d'ADR-007). Le critère 1
+> vérifie ce silence, les autres supposent d'avoir de l'historique.
+>
+> **Comment fabriquer les données** : il faut **au moins 3 séances issues d'un programme** (pas des
+> séances libres) pour le taux d'exécution, et **5 séances** pour la durée.
+
+- [ ] 1. Compte neuf → **aucune section « Exécution »** sur l'écran Progression. Pas de section vide,
+      pas de « — ».
+- [ ] 2. Une seule séance de programme → la section reste absente ou muette sur ce point.
+- [ ] 3. Après ≥ 3 séances de programme : le taux d'exécution de la **charge** apparaît, **avec le
+      nombre de séries** et **le nombre de séances** sur lequel il porte.
+- [ ] 4. Faire une séance **libre** (hors programme) → elle **n'entre pas** dans le taux d'exécution.
+      C'est le critère qui protège le pratiquant qui s'entraîne beaucoup hors programme.
+- [ ] 5. Faire une séance en **dépassant** les charges prescrites → taux **> 100 %**, affiché tel
+      quel, sans félicitation ni alerte.
+- [ ] 6. Abandonner une séance en cours (séries non validées) → **pas** de chute du taux d'exécution.
+- [ ] 7. 🔴 Programme avec `reps cibles` = **« AMRAP »** → **aucun** taux de répétitions, **et le taux
+      de charge reste affiché**. C'est le critère qui exerce le parsing tolérant.
+- [ ] 8. Programme avec reps cibles **« 8-12 »**, réalisé à 10 → compté **conforme**, pas en écart.
+- [ ] 9. 🔴 **Modifier la charge cible d'un programme APRÈS avoir fait la séance** → le taux passé
+      **ne bouge pas**. C'est le critère qui prouve qu'on lit la prescription **du moment**, pas le
+      plan actuel — sinon éditer un programme réécrirait l'historique des écarts.
+- [ ] 10. Durée : la médiane apparaît après ≥ 5 séances. Laisser une séance **ouverte plusieurs
+      heures** → elle est **écartée**, et le nombre d'écartées est **affiché**.
+- [ ] 11. Répartition par type de série : les parts **somment à 100 %** et les libellés sont traduits.
+- [ ] 12. Ajouter un exercice en **favori** et le pratiquer hier → **pas** dans les délaissés.
+- [ ] 13. Favori non pratiqué depuis **plus de 4 semaines** → apparaît ; le pratiquer → disparaît.
+- [ ] 14. **Archiver** un exercice favori → il **sort** de la liste des délaissés.
+- [ ] 15. Aucun favori déclaré → la sous-carte « délaissés » se tait, les trois autres restent.
+- [ ] 16. La section **ne redit pas** ce que dit la carte d'**équilibre musculaire** (elle raisonne
+      **exercice**, jamais groupe musculaire).
+- [ ] 17. Déclarer une période **« vie réelle »** (VIE-01) → le **taux d'exécution disparaît**, les
+      trois autres analyses **restent**. Fin de période → il revient.
+- [ ] 18. Désactiver le pilier **muscu** → aucune section.
+- [ ] 19. FR ⇄ EN → aucune chaîne brute ; pourcentages et durées cohérents.
+- [ ] 20. Police **1,5×** et thème **sombre** → lisible, non tronqué, contrastes corrects.
+- [ ] 21. **TalkBack** → chaque analyse est annoncée **avec son chiffre et sa base** ; l'en-tête
+      repliable annonce son état (déplié / replié).
+- [ ] 22. Mode avion → identique.
+- [ ] 23. 🔴 **L'écran Insights n'a pas changé** : toujours au plus 3 cartes, même sélection qu'avant.
+- [ ] 24. 🔴 **Calibrage des trois seuils**, jugement de pratiquant : **3 séances** pour le taux
+      d'exécution, **5** pour la durée, **4 semaines** pour « délaissé ». Trop bas (bruit) ? Trop haut
+      (muet) ? Chacun est une constante nommée, le changer coûte une ligne.
+
+**Quand l'US passe** : `etape: close`, roadmap 3.58 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
 ## 32. COLLIS-01 — Détecteur de collisions entre séances
+
+> 🔴 **Correctif du 07/08/2026 intégré — 5 critères de plus (18 à 22).** La détection ne regardait que
+> la **semaine affichée** alors que la règle dit « le lendemain » : le conflit **dimanche → lundi**
+> n'était **jamais** détecté, soit une paire de jours sur sept. Corrigé avant recette, pour ne pas te
+> faire recetter deux fois la même fonctionnalité. **Commence par le 18** : c'est celui qui justifie
+> le correctif. Spec §4.1 · [plan](docs/plans/collis01-conflit-veille-hors-semaine.md).
 
 📄 [spec](docs/specs/functional/us/collis01-detecteur-collisions.md) · roadmap **3.57** ·
 **📱 device** · ⚠️ **1 migration poussée le 05/08/2026** · ✅ **aucune sync rule**
@@ -1180,6 +1242,25 @@ existant**.
       déclencheur, ou est-ce trop bas (bruit) / trop haut (muet) ? C'est le **seul nombre inventé**
       du dispositif, il ne repose sur rien de mesuré. Jugement de pratiquant, pas manipulation —
       et le changer coûte une ligne (`LEG_SETS_CONFLICT_THRESHOLD`).
+
+### Correctif « veille hors semaine » du 07/08/2026 (D7)
+
+- [ ] 18. 🔴 **Le conflit dimanche → lundi est détecté.** Planifie une séance jambes (**≥ 8 séries**,
+      majoritaires) un **dimanche**, puis une **sortie longue le lundi suivant**. Place-toi sur la
+      semaine **du lundi** : le bandeau doit apparaître sur ce lundi. **Avant correctif, il
+      n'apparaissait jamais.** Si ce critère échoue, rien d'autre dans cette section ne compte.
+- [ ] 19. 🔴 **Le repli ne fabrique pas le conflit qu'il résout.** Jambes lourdes le **dimanche**
+      (hors semaine), un conflit **mardi → mercredi**, tous les jours après mercredi occupés, et
+      **rien le lundi**. Le bouton ne doit **jamais** proposer « Déplacer au lundi » — ce serait
+      recréer le conflit un jour plus tôt. Il doit proposer un autre jour, ou aucun.
+- [ ] 20. **L'écran affiche toujours 7 jours.** Vérifie qu'aucune **8ᵉ carte de jour** n'est apparue
+      en haut de `/planning` : la fenêtre élargie ne sert qu'à la détection, jamais à l'affichage.
+- [ ] 21. **Rien n'a bougé sur les autres jours.** Rejoue les critères **2, 5 et 7** (conflit nominal
+      en milieu de semaine, disparition après déplacement, jambes minoritaires) : le correctif ne doit
+      **rien changer** aux six jours qui fonctionnaient déjà.
+- [ ] 22. **DOUL-01 n'a pas bougé.** Le journal des zones douloureuses partage la requête
+      d'enrichissement. Journal activé : ses bandeaux apparaissent comme avant, et **aucun** sur une
+      séance de la veille hors semaine.
 
 **Quand l'US passe** : `etape: close`, roadmap 3.57 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).

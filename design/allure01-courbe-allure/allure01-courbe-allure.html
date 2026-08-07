@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALLURE-01 — La courbe d'allure</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:210px}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+        padding:12px 13px;margin-bottom:10px}
+  .ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+          color:var(--muted);margin-bottom:7px}
+  .verdict{font-size:19px;font-weight:800;line-height:1.2}
+  .verdict.good{color:var(--success)} .verdict.bad{color:var(--accent)} .verdict.even{color:var(--text)}
+  .big{font-size:26px;font-weight:800;line-height:1.1}
+  .meta{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .meta b{color:var(--text)}
+
+  .bar{height:11px;border-radius:99px;background:var(--surfalt);overflow:hidden;display:flex;margin-top:9px}
+  .bar i{display:block;height:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:8px;font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:4px}
+  .dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+
+  /* Courbe d'allure schematique : plus haut = plus rapide */
+  .curve{display:flex;align-items:flex-end;gap:3px;height:56px;margin-top:8px}
+  .curve i{flex:1;background:var(--accent);border-radius:2px 2px 0 0;opacity:.85}
+  .curve i.slow{background:var(--warn)}
+  .axis{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:3px}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>ALLURE-01 — La courbe d'allure</h1>
+<p class="sub">L'app enregistre une trace, en tire une distance, une durée, une allure moyenne et des
+splits par kilomètre. Elle ne dit <b>rien de la forme de la courbe</b> — or c'est là que vit ce qu'un
+coureur veut savoir : ai-je accéléré ou explosé sur la fin, est-ce que je m'écroule sur mes sorties
+longues, est-ce que je passe mon temps dans la « zone grise ». <b>Quatre analyses</b>, une seule
+donnée, <b>aucune migration</b>.</p>
+
+<h2>1. Trois lectures sur le résumé de course</h2>
+<p class="why">Le résumé <b>décode déjà la trace et calcule déjà les splits</b> — ces trois cartes sont
+du calcul pur sur un tableau déjà en mémoire. C'est ce qui rend le lot bon marché.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Résumé de course</div><div class="navsub">14,2 km · 1 h 08</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Gestion d'effort</div>
+          <div class="verdict good">Negative split</div>
+          <div class="curve">
+            <i style="height:52%"></i><i style="height:55%"></i><i style="height:54%"></i>
+            <i style="height:58%"></i><i style="height:62%"></i><i style="height:64%"></i>
+            <i style="height:70%"></i><i style="height:74%"></i><i style="height:78%"></i>
+            <i style="height:82%"></i><i style="height:88%"></i><i style="height:95%"></i>
+          </div>
+          <div class="axis"><span>km 1</span><span>km 12</span></div>
+          <div class="meta">2ᵉ moitié <b>4 % plus rapide</b> — 5:12/km puis 4:59/km.</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Dégradation sur la fin</div>
+          <div class="big" style="color:var(--success)">−4 %</div>
+          <div class="meta">dernier quart <b>plus rapide</b> que le premier. Rien ne s'écroule.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>La course bien gérée.</b> Le verdict porte <b>son écart chiffré</b> et les deux
+      allures — « negative split » seul ne serait pas vérifiable par celui qui le lit. Et le fade
+      n'est <b>pas plafonné à 0</b> : accélérer sur la fin donne une valeur négative, ce qui est une
+      information, pas une anomalie.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Résumé de course</div><div class="navsub">18,0 km · 1 h 42</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Gestion d'effort</div>
+          <div class="verdict bad">Positive split</div>
+          <div class="curve">
+            <i style="height:95%"></i><i style="height:92%"></i><i style="height:90%"></i>
+            <i style="height:86%"></i><i style="height:80%"></i><i style="height:76%"></i>
+            <i style="height:70%"></i><i style="height:62%"></i><i class="slow" style="height:54%"></i>
+            <i class="slow" style="height:48%"></i><i class="slow" style="height:42%"></i>
+            <i class="slow" style="height:38%"></i>
+          </div>
+          <div class="axis"><span>km 1</span><span>km 18</span></div>
+          <div class="meta">2ᵉ moitié <b>11 % plus lente</b> — 5:05/km puis 5:39/km.</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Dégradation sur la fin</div>
+          <div class="big" style="color:var(--accent)">+14 %</div>
+          <div class="meta">dernier quart à <b>5:48/km</b> contre <b>5:04/km</b> au premier.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>La sortie où l'on s'écroule.</b> Et voilà le point de méthode : le fade se lit
+      sur des <b>quarts</b>, pas sur le 1ᵉʳ km contre le dernier. Un feu rouge au 12ᵉ kilomètre ne doit
+      pas fabriquer une dégradation qui n'existe pas.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Résumé de course</div><div class="navsub">Répartition d'allure</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Temps par zone d'allure</div>
+          <div class="bar">
+            <i style="width:58%;background:#66714b"></i>
+            <i style="width:17%;background:#8ca05f"></i>
+            <i style="width:17%;background:#c98a5e"></i>
+            <i style="width:8%;background:#b14f2b"></i>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#66714b"></i>Endurance 58 %</span>
+            <span><i class="dot" style="background:#8ca05f"></i>Récup 17 %</span>
+            <span><i class="dot" style="background:#c98a5e"></i>Tempo 17 %</span>
+            <span><i class="dot" style="background:#b14f2b"></i>Seuil 8 %</span>
+          </div>
+          <div class="meta">sur <b>12 km pleins</b></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Temps par zone d'allure</div>
+          <div class="meta" style="font-style:italic;margin-top:0">Renseigne ton <b>allure de
+            référence 5 km</b> dans ton profil coureur pour voir tes zones.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Et l'état où ce n'est pas calculable.</b> L'allure de référence est
+      <b>nullable</b> : sans elle, aucune zone n'existe, et il n'y a <b>aucune valeur neutre</b> pour la
+      remplacer. On affiche donc <b>l'indisponibilité ET son remède</b> — jamais un « — », jamais une
+      carte simplement masquée : sinon l'utilisateur ne saura jamais qu'il lui manque un réglage.</p>
+  </div>
+
+</div>
+
+<h2>2. Les zones ne sont pas inventées — elles existaient déjà</h2>
+<p class="why">C'est le point de conception dont je suis le plus content, et il ne coûte rien :
+<code>sessionTargetPace</code> définit <b>déjà</b> des bandes d'allure calibrées depuis l'allure de
+référence 5 km. Elles sont dans le produit et déjà défendues.</p>
+<div class="row">
+  <div class="anno" style="grid-column:span 2">
+    <p style="margin:0 0 10px;font-weight:800;font-size:14px">Le problème : ce sont des cibles, pas des zones</p>
+    <p style="margin:0 0 10px;font-size:13.5px">Les bandes existantes <b>laissent des trous</b> — rien
+      entre <code>ref</code> et <code>ref+30</code>, rien au-delà de <code>ref+120</code>, rien sous
+      <code>vma</code>. Une allure pouvait ne tomber dans aucune.</p>
+    <table>
+      <tr><th>Zone</th><th>Bornes (s/km)</th><th>D'où vient la borne</th></tr>
+      <tr><td><b>VMA</b></td><td class="mono">&lt; vma</td><td>borne basse de <code>fractionne</code></td></tr>
+      <tr><td><b>Seuil</b></td><td class="mono">vma .. ref</td><td>bande <code>fractionne</code></td></tr>
+      <tr><td><b>Tempo</b></td><td class="mono">ref .. ref+60</td><td>comble le trou · borne haute de <code>sortie_longue</code></td></tr>
+      <tr><td><b>Endurance</b></td><td class="mono">ref+60 .. ref+90</td><td>bande <code>endurance</code></td></tr>
+      <tr><td><b>Récupération</b></td><td class="mono">&gt; ref+90</td><td>borne basse de <code>recuperation</code></td></tr>
+    </table>
+    <div class="flag"><b>Aucun nombre neuf.</b> La partition ferme les trous en <b>prolongeant</b> les
+      bandes existantes. Conséquence qui compte : un ajustement de <code>sessionTargetPace</code> se
+      répercute <b>mécaniquement</b> sur les zones — un test le prouve en changeant la référence et en
+      vérifiant que <b>toutes</b> les bornes suivent. Recopier <code>ref + 60</code> en dur marcherait
+      aujourd'hui et divergerait au premier ajustement, <b>sans que rien n'échoue</b>.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Le piège de tout ce lot</p>
+    <p style="margin:0;font-size:13.5px">Une allure <b>plus rapide</b> est un nombre <b>plus
+      petit</b> — des secondes par kilomètre. Chaque comparaison de ce lot doit être relue avec ça en
+      tête, et <code>paceSPerKm &lt; vma</code> veut dire « plus rapide que la VMA ».</p>
+    <div class="flag"><b>Deux tests l'exercent explicitement.</b> C'est le genre d'inversion qui passe
+      la revue, passe le typecheck, et produit une répartition exactement inversée — crédible et
+      fausse.</div>
+  </div>
+</div>
+
+<h2>3. Une lecture sur l'historique — la polarisation</h2>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Historique course</div><div class="navsub">4 dernières semaines</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Polarisation de l'entraînement</div>
+          <div class="bar">
+            <i style="width:73%;background:#66714b"></i>
+            <i style="width:27%;background:#b14f2b"></i>
+          </div>
+          <div class="legend">
+            <span><i class="dot" style="background:#66714b"></i>Faible intensité 73 %</span>
+            <span><i class="dot" style="background:#b14f2b"></i>Haute intensité 27 %</span>
+          </div>
+          <div class="meta">sur <b>142 km</b> · 11 sorties<br>Le repère souvent cité est <b>~80 / 20</b>.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>On nomme le repère, on ne le prescrit pas.</b> « 80/20 » vaut pour un coureur
+      qui s'entraîne pour <b>performer</b> — pas pour quelqu'un qui court trois fois par semaine pour se
+      sentir bien. Le présenter comme un objectif serait faux pour une partie des utilisateurs.</p>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Pondéré par kilomètres, jamais par courses</p>
+    <p style="margin:0 0 8px;font-size:13.5px">Une sortie longue de <b>20 km</b> doit peser <b>quatre
+      fois</b> un fractionné de 5 km dans la répartition du volume.</p>
+    <div class="flag"><b>C'est l'erreur la plus facile à commettre ici</b>, et elle est invisible : en
+      comptant les courses, 20 km d'endurance et 5 km de seuil donneraient <b>50/50</b> au lieu de
+      <b>80/20</b>. Un chiffre plausible, et faux. Un test est écrit <b>exprès</b> pour échouer sur
+      cette erreur précise.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Pourquoi pas en carte d'insight</p>
+    <p style="margin:0;font-size:13.5px">Même raison qu'EXEC-01 : <code>MAX_INSIGHTS = 3</code> pour
+      <b>13 candidats</b> déjà en lice. Et rien sur l'accueil — ADR-007 plafonne le Tier 0, dégonflé de
+      21 à 7 widgets par INSIGHTS-02. <b>Une analyse qu'on ne voit pas n'a pas été livrée.</b></p>
+    <div class="flag"><b>Coût à surveiller en recette</b> : la polarisation décode les traces de 4
+      semaines de courses. Si c'est lent, la parade est de borner le nombre de courses décodées
+      <b>et de le dire à l'écran</b> — jamais de tronquer en silence.</div>
+  </div>
+</div>
+
+<h2>4. Ce que le modèle de données interdit, et qu'on assume</h2>
+<div class="row">
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">🔴 <code>runs</code> n'a pas de type de séance</p>
+    <p style="margin:0 0 8px;font-size:13.5px">Vérifié colonne par colonne : le type n'existe que sur
+      une séance <b>planifiée</b>. Les <b>courses libres n'en ont aucun</b> — et elles sont majoritaires
+      chez qui ne suit pas de programme. C'est le mur qui laisse <b>RUN-07</b> en ⏳ au catalogue.</p>
+    <div class="flag">Filtrer le fade sur « sortie longue » le rendrait <b>muet pour la majorité</b>, et
+      muet précisément pour les gens qui courent sans plan — ceux à qui il sert le plus. <b>On borne donc
+      en distance</b> : au-delà de <b>10 km pleins</b>. C'est le <b>seul nombre inventé du lot</b>,
+      exporté, nommé, et soumis au jugement d'un pratiquant en recette.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">Pas de fréquence cardiaque</p>
+    <p style="margin:0;font-size:13.5px">Le catalogue parle de « dérive cardio-mécanique ». La FC
+      <b>n'est pas dans le modèle de données</b> (V2, wearables). Le fade est donc approché par la
+      <b>seule allure</b> — et la spec le dit, au lieu de laisser croire à une mesure physiologique
+      qu'on ne fait pas.</p>
+    <div class="flag"><b>Le dernier kilomètre partiel est ignoré</b>, par conception de
+      <code>computeKmSplits</code>. Une sortie de 5,8 km est lue sur 5 km. On ne bricole pas
+      d'extrapolation : un dernier km incomplet a une allure mécaniquement bruitée (arrêt, montre
+      coupée), et l'inclure fausserait précisément le fade.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">La tolérance d'égalité</p>
+    <p style="margin:0 0 8px;font-size:13.5px">Sans zone morte, <b>toute</b> course serait « negative »
+      ou « positive » : personne ne court deux moitiés exactement égales. L'analyse dirait quelque
+      chose de faux à chaque sortie.</p>
+    <p style="margin:0;font-size:13.5px">D'où <b>trois</b> verdicts et une bande d'égalité de
+      <b>2 %</b> — à calibrer en recette, comme le reste.</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -21,6 +21,7 @@ import {
   NET_KCAL_PER_KG_KM,
   MAX_INTENSITY_BONUS,
   nextAnnouncementThreshold,
+  meanSplitPace,
 } from './running';
 
 // ---------------------------------------------------------------------------
@@ -758,5 +759,37 @@ describe('nextAnnouncementThreshold (US RUN-F2a)', () => {
 
   it('distance sous le premier seuil → null', () => {
     expect(nextAnnouncementThreshold(400, 1000, 0)).toBeNull();
+  });
+});
+
+describe('meanSplitPace — US ALLURE-01', () => {
+  const s = (...seconds: number[]) => seconds.map((sec, i) => ({ km: i + 1, seconds: sec }));
+
+  it('moyenne les durees d un groupe de splits', () => {
+    expect(meanSplitPace(s(300, 320, 280))).toBeCloseTo(300, 5);
+  });
+
+  it('rend l allure du seul split quand il est unique', () => {
+    expect(meanSplitPace(s(312))).toBe(312);
+  });
+
+  it('rend null sur un groupe vide — il n y a pas de moyenne de rien', () => {
+    expect(meanSplitPace([])).toBeNull();
+  });
+
+  it('rend null si un split est a zero seconde', () => {
+    // Montre coupee ou trace corrompue : on refuse le groupe ENTIER plutot que de rendre une
+    // moyenne a moitie fausse, et surtout plutot que de laisser un NaN remonter a l ecran.
+    expect(meanSplitPace(s(300, 0, 300))).toBeNull();
+  });
+
+  it('rend null sur un split negatif ou non fini', () => {
+    expect(meanSplitPace(s(300, -10))).toBeNull();
+    expect(meanSplitPace(s(300, Number.NaN))).toBeNull();
+    expect(meanSplitPace(s(Number.POSITIVE_INFINITY))).toBeNull();
+  });
+
+  it('ne rend jamais NaN', () => {
+    expect(Number.isFinite(meanSplitPace(s(300, 300))!)).toBe(true);
   });
 });

@@ -59,6 +59,7 @@ import {
 import { useExercise, type ExerciseListItem } from '@/data/repositories/exercise-repository';
 import { useTrainingRegularity } from '@/data/repositories/planned-session-repository';
 import { StrengthSection } from '@/components/strength/StrengthSection';
+import { ExecutionSection } from '@/components/progress/ExecutionSection';
 import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -171,6 +172,19 @@ export default function ProgressScreen() {
         {/* désigné ni calculable, donc il ne coûte rien aux autres.          */}
         {/* ---------------------------------------------------------------- */}
         <StrengthSection />
+
+        {/* ---------------------------------------------------------------- */}
+        {/* US EXEC-01 — exécution du programme (MUSC-33/26/13/21).           */}
+        {/* Même statut que StrengthSection ci-dessus, et pour la même        */}
+        {/* raison : cet écran est au seuil de repli d'ADR-007, donc la       */}
+        {/* section est CONDITIONNELLE et REPLIÉE par défaut. Elle rend       */}
+        {/* `null` tant qu'aucune de ses 4 analyses n'a assez de données —    */}
+        {/* un compte neuf ne voit donc rien de plus qu'avant.                */}
+        {/* Ce silence n'est pas une concession au plafond : la règle R3 de   */}
+        {/* la spec l'imposait déjà par JUSTESSE (une moyenne sur n=1 est un  */}
+        {/* mensonge). La même décision servait déjà deux fins.               */}
+        {/* ---------------------------------------------------------------- */}
+        <ExecutionSection />
 
         {/* ---------------------------------------------------------------- */}
         {/* US MESUR-01 — entrée vers les mensurations.                       */}
