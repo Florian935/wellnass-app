@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — L'écran de séance monté : le correctif de double clôture est verrouillé
+
+**20 tests** sur `workout.tsx`, l'écran le plus lourd de l'app. Le correctif de double clôture livré
+plus tôt dans la journée était **posé sans test** ; il ne l'est plus.
+
+#### Ajouté
+
+- **`workout-screen.test.tsx` — 20 tests, le vrai écran monté** (patron §3.7). `CurrentSetCard`,
+  `ExerciseList`, `RestOverlay` et `SupersetPickerModal` sont remplacés par des sondes minimales :
+  ils sont testés chez eux, ce qui compte ici est **ce que l'écran leur passe et quand**.
+  - **🔴 Deux appuis sur « Terminer » dans le même cycle de rendu ne clôturent qu'une fois.**
+    C'est le test qui verrouille le correctif du jour. **Vérifié en retirant la garde** : il passe
+    au rouge (`finishWorkout` appelé 2 fois). Un test de non-régression qu'on n'a jamais vu échouer
+    ne démontre rien — la vérification est désormais écrite au §8 comme une règle.
+  - **Le best-effort de clôture, dans les deux sens** : l'évaluation des records échoue → on navigue
+    quand même ; le push de notification échoue → on navigue quand même. Rester coincé sur l'écran
+    de saisie alors que la séance EST clôturée en base est le pire des états.
+  - **🔴 La bascule superset n'enclenche PAS le repos** — un superset s'enchaîne sans pause, en
+    déclencher un ici casserait tout le principe. Et la **2ᵉ** série du couple, elle, le déclenche.
+  - **🔴 Les trois issues de sortie sont distinctes** : « mettre en pause » quitte **sans toucher à
+    la séance** (elle reste ouverte, on la reprend plus tard), « abandonner » **redemande
+    confirmation** avant d'annuler. Confondre les deux perdrait une séance entière sur un geste.
+  - **Une séance sans aucune série validée demande confirmation** avant clôture : ouverte par
+    erreur puis clôturée d'un geste, elle polluerait l'historique et le streak.
+  - Plus : une série à la durée enregistre `durationSeconds` et **efface les reps** (les laisser les
+    ferait remonter dans le volume de séance), et un partenaire superset ayant quitté la séance
+    dégrade en repos normal sans planter.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 18/15/14 → **22/19/17** (réel 24,0/20,7/18,7).
+- **Stratégie de tests §8** : nouvelle règle — **vérifier qu'un test de non-régression échoue
+  vraiment**, en retirant le correctif à la main. C'est le seul moyen de distinguer « ça protège »
+  de « ça passe ».
+
+#### Technique / Notes
+
+- **3 488 tests verts** (2 120 shared + 1 187 mobile + 181 admin). Couverture mobile **31,8 %**.
+  Typecheck, lint et seuils propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Écrans à état : un vrai écran monté, et une garde qui ne gardait rien
 
 **62 tests** sur les deux écrans les plus lourds de l'app. Le premier écran réellement monté en

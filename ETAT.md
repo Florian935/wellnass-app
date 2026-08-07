@@ -95,7 +95,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1114 · `main` a **1117** commits de retard sur `dev` |
+| Commits | 1123 · `main` a **1120** commits de retard sur `dev` |
 | Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -106,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `2afc5dd` docs(tests): recaler le compte de tests après intégration de dev
+- `477e897` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
+- `298740d` feat(allure01): les 5 moteurs purs de la courbe d'allure
 - `a524ccc` fix(running,muscu): la garde de double appui ne gardait rien + 62 tests d écran
-- `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
-- `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `db47824` test(muscu): candidats de substitution — le OU qui ne doit pas devenir un ET
-- `5d0374b` feat(fuel01): socle glucidique du coureur — g/kg selon la charge (RN-05 + RN-06)
+- `978d209` test(exec01): le test que la DoD reclamait et que j'avais oublie
 
 ---
 
