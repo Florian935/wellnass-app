@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : le test que la DoD réclamait et que j'avais oublié
+
+Commit précédent : `6e9588a`. **Definition of Done relue item par item avant de la cocher**, et un
+item ne passait pas : « un test fige que la charge prescrite vient de `planned_weight_kg` et **non**
+du plan (R7) ». Il n'existait pas.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 330 tests verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- **2 tests SQL** (`execution-sql.test.ts`, 28 au total) : le plan dit **999 kg**, la série en a gardé
+  **100**, et c'est **100** qui doit sortir. Le second couvre le cas où le plan n'a aucune charge cible.
+
+#### Technique — Notes
+
+- 🔴 **Pourquoi ce test compte plus qu'il n'y paraît.** Il protège contre une « correction » qui
+  paraîtrait naturelle à quiconque relit la requête : joindre `ep.target_weight_kg` **puisqu'on joint
+  déjà `ep.target_reps`**. Ce serait comparer une séance d'il y a trois semaines à une prescription
+  modifiée hier — donc **afficher un écart qui n'a jamais existé**, sans erreur, sans alerte. Le test
+  vérifie aussi que la colonne du plan n'est **même pas rapatriée** par la requête.
+- ⚠️ **La leçon de méthode** : cocher une DoD sans la relire ligne à ligne, c'est la transformer en
+  formalité. Les 11 autres items étaient tenus ; celui-là ne l'était pas, et c'était précisément le
+  garde-fou de la règle la plus subtile du lot. La DoD porte maintenant, en clair, la mention que cet
+  item manquait au premier passage.
+- Vérifié au passage et consigné dans la DoD : `git diff` sur `insights.ts` et
+  `insights-repository.ts` est **vide** — `MAX_INSIGHTS`, `INSIGHT_ORDER` et `selectInsights` sont
+  intacts, comme le §3 de la spec l'exigeait.
+
 ### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : requêtes, section d'écran et i18n
 
 Commit précédent : `a2f1401`. **MUSC-14 définitivement écartée** (Florian, après explication — spec

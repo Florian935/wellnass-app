@@ -320,16 +320,30 @@ Le développement des 4 validées a donc démarré sans attendre la réponse.
 
 ## 10. Definition of Done
 
-- [ ] `typecheck`, `lint`, `test:coverage` verts, cliquets tenus — codes de sortie **sans pipe**.
-- [ ] 4 moteurs **purs** dans `packages/shared` : zéro React, zéro base, zéro lecture d'horloge (R1).
-- [ ] `packages/shared` reste à **100 %** (instructions / fonctions / lignes).
-- [ ] Chaque moteur rend `null` sous son seuil de données, et un test le fige (R3).
-- [ ] Les seuils sont des **constantes nommées et exportées**, pas des littéraux enfouis (R8).
-- [ ] Le parsing de `target_reps` échoue **en silence** et un test fige « AMRAP » (R6).
-- [ ] Un test fige que la charge prescrite vient de `planned_weight_kg` et **non** du plan (R7).
-- [ ] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`.
-- [ ] `MAX_INSIGHTS`, `INSIGHT_ORDER` et `selectInsights` **non modifiés** (§3).
-- [ ] FR + EN symétriques, nombres formatés avant interpolation.
-- [ ] Catalogue mis à jour : MUSC-33, MUSC-26, MUSC-13 → ✅ ; MUSC-21 → ✅ avec la note du §1.2 ;
+Cochée le 07/08/2026, **item par item, sur des faits vérifiés** — pas de case cochée par ressenti.
+
+- [x] `typecheck` **0**, `lint` **0 erreur**, `test:coverage` **0**, **3 330 tests verts** — codes de
+      sortie relevés **sans pipe**.
+- [x] 4 moteurs **purs** dans `packages/shared` : zéro React, zéro base, zéro lecture d'horloge (R1).
+- [x] `packages/shared` à **100 %** sur les quatre métriques, **branches comprises**.
+- [x] Chaque moteur rend `null` (ou `[]`) sous son seuil, et un test le fige (R3).
+- [x] Quatre seuils **exportés et nommés** : `MIN_SESSIONS_FOR_COMPLIANCE`,
+      `MIN_SESSIONS_FOR_DURATION`, `NEGLECTED_AFTER_WEEKS`, `EXECUTION_WINDOW_DAYS`. Un test assied
+      chaque valeur — la changer casse un test, donc la rediscute.
+- [x] Le parsing de `target_reps` échoue **en silence** ; 7 formes inexploitables testées, dont
+      « AMRAP » (R6).
+- [x] Un test fige que la charge prescrite vient de `planned_weight_kg` et **non** du plan (R7).
+      ⚠️ **Il manquait au premier passage** : le plan dit 999 kg, la série 100, et c'est 100 qui doit
+      sortir. Ajouté après relecture de cette DoD, pas avant.
+- [x] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`.
+- [x] `MAX_INSIGHTS`, `INSIGHT_ORDER` et `selectInsights` **non modifiés** — vérifié par
+      `git diff` sur `insights.ts` et `insights-repository.ts` : **vide** (§3).
+- [x] FR + EN symétriques (**2 045 clés** chacun) ; pourcentages et minutes **arrondis avant** `t()`.
+- [x] Catalogue mis à jour : MUSC-33, MUSC-26, MUSC-13 → ✅ ; MUSC-21 → ✅ avec la note du §1.2 ;
       **MUSC-14 reste ⏳** avec le motif du §1.1.
-- [ ] CHANGELOG, front-matter, roadmap 3.58, RECETTES.md, ETAT.
+- [x] CHANGELOG, front-matter, roadmap 3.58 (✅, compteurs 212/2 sur 224), RECETTES.md §51, ETAT
+      (`--check` **0**).
+
+> **Le code est complet ; l'US ne l'est pas.** Il reste les **22 critères de recette device**
+> ([RECETTES.md](../../../../RECETTES.md) §51), dont le calibrage des trois seuils — la seule étape
+> qu'un agent ne peut pas franchir.

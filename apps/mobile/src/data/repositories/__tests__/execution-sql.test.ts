@@ -108,6 +108,7 @@ function seedPlan(opts: {
   sessionId: string;
   exerciseId?: string;
   targetReps?: string | null;
+  targetWeightKg?: number | null;
 }) {
   seed('exercise_plans', [
     {
@@ -115,6 +116,7 @@ function seedPlan(opts: {
       session_id: opts.sessionId,
       exercise_id: opts.exerciseId ?? 'ex-1',
       target_reps: opts.targetReps === undefined ? '10' : opts.targetReps,
+      target_weight_kg: opts.targetWeightKg ?? null,
       order_index: 0,
       set_type: 'normal',
     },
@@ -222,6 +224,31 @@ describe('SELECT_EXECUTION_COMPLIANCE — MUSC-33', () => {
     const rows = await compliance();
     expect(rows).toHaveLength(1);
     expect(rows[0]!.target_reps).toBeNull();
+  });
+
+  it('🔴 lit la charge prescrite sur la SÉRIE, jamais sur le plan (R7)', async () => {
+    // Le plan dit 999 kg, la série en a gardé 100 : c'est 100 qui doit sortir.
+    //
+    // Ce test protège contre une « correction » qui paraîtrait naturelle en relisant la requête —
+    // joindre `ep.target_weight_kg` puisqu'on joint déjà `ep.target_reps`. Ce serait comparer une
+    // séance d'il y a trois semaines à une prescription modifiée hier, donc **afficher un écart qui
+    // n'a jamais existé**. C'est aussi ce qui rend l'analyse calculable sans dépendre du plan.
+    seedWorkout({ id: 'w1', sessionId: 'sess-1' });
+    seedPlan({ id: 'p1', sessionId: 'sess-1', targetReps: '10', targetWeightKg: 999 });
+    seedSet({ id: 's1', workoutId: 'w1', plannedWeightKg: 100, weightKg: 95 });
+
+    const rows = await compliance();
+    expect(rows[0]!.planned_weight_kg).toBe(100);
+    // Et la valeur du plan n'est même pas rapatriée : la requête ne la sélectionne pas.
+    expect(Object.keys(rows[0]!)).not.toContain('target_weight_kg');
+  });
+
+  it('garde la charge prescrite de la série même quand le plan n’en a aucune', async () => {
+    seedWorkout({ id: 'w1', sessionId: 'sess-1' });
+    seedPlan({ id: 'p1', sessionId: 'sess-1', targetWeightKg: null });
+    seedSet({ id: 's1', workoutId: 'w1', plannedWeightKg: 80 });
+
+    expect((await compliance())[0]!.planned_weight_kg).toBe(80);
   });
 
   it('🔴 duplique bien la série quand l’exercice a DEUX plans — le hook doit dédupliquer', async () => {

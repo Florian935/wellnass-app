@@ -94,7 +94,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/exec01-prevu-vs-realise` (modifications non commitées) |
-| Commits | 1117 · `main` a **1113** commits de retard sur `dev` |
+| Commits | 1118 · `main` a **1115** commits de retard sur `dev` |
 | Specs d'US | 131 au total — 79 clôturées, 52 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -105,11 +105,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6e9588a` fix(exec01): normalise les fins de ligne en LF
 - `5717ab2` feat(exec01): requetes, section d'ecran et i18n du lot « prevu vs realise »
 - `a2f1401` feat(exec01): les 4 moteurs purs du lot « prevu vs realise »
 - `11cc849` merge(collis01): correctif « veille hors semaine » dans dev
 - `2e86638` fix(collis01): le conflit dimanche -> lundi n'etait jamais detecte (D7)
-- `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
 
 ---
 
