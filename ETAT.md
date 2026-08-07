@@ -20,7 +20,7 @@ avant de pouvoir publier.
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
 | **BILAN-01** — Bilan hebdomadaire automatique | `recette` | `feature/bilan01-bilan-hebdo` | [7.16] |
-| **COLLIS-01** — Détecteur de collisions entre séances — séquençage muscu ↔ course | `recette` | `feature/collis01-detecteur-collisions` | [3.57] |
+| **COLLIS-01** — Détecteur de collisions entre séances — séquençage muscu ↔ course | `recette` | `fix/collis01-conflit-veille-hors-semaine` | [3.57] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `recette` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
@@ -92,8 +92,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1109 · `main` a **1107** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1113 · `main` a **1110** commits de retard sur `dev` |
 | Specs d'US | 130 au total — 79 clôturées, 51 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -104,11 +104,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
+- `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `db47824` test(muscu): candidats de substitution — le OU qui ne doit pas devenir un ET
-- `81266c3` test(notifications): bilan hebdo et rappels programmés — la course qui ressuscite un rappel
-- `43f51fc` test(notifications): planificateur de rappel — l'orchestration autour de la règle
-- `b2f6458` test(repositories): pesées, repas types, profil coureur
-- `38e9ac4` test(repositories): records d'allure — l'idempotence par l'arrondi
+- `5d0374b` feat(fuel01): socle glucidique du coureur — g/kg selon la charge (RN-05 + RN-06)
+- `8d7ac75` docs(fuel01): cadre le socle glucidique du coureur (catalogue RN-05 + RN-06)
 
 ---
 

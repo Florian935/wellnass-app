@@ -189,15 +189,52 @@ export function useWeekPlan(weekStartDate: string): {
   items: PlannedSessionItem[];
   isLoading: boolean;
 } {
-  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  return usePlannedBetween(weekStartDate, weekEndKeyOf(weekStartDate));
+}
 
+/**
+ * La clé du dernier jour de la semaine commençant à `weekStartDate` (6 jours plus tard).
+ *
+ * La `Date` est construite **composant par composant** : `new Date('AAAA-MM-JJ')` est interprété en
+ * UTC et décale la semaine d'un jour dans les fuseaux à l'ouest de Greenwich.
+ */
+function weekEndKeyOf(weekStartDate: string): string {
   const [y, m, d] = weekStartDate.split('-').map(Number);
-  const weekEnd = localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
+  return localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
+}
+
+/**
+ * La clé de la **veille** de `dayKey`. Même précaution de fuseau que ci-dessus.
+ *
+ * Sert à la fenêtre de détection de COLLIS-01, qui remonte d'un jour en amont de la semaine
+ * affichée (spec D7) : « qu'ai-je fait hier ? » est une question de physiologie, et hier existe même
+ * quand l'écran ne le montre pas.
+ */
+function eveKeyOf(dayKey: string): string {
+  const [y, m, d] = dayKey.split('-').map(Number);
+  return localDayKey(addDays(new Date(y!, m! - 1, d!), -1));
+}
+
+/**
+ * Séances planifiées de l'utilisateur courant entre deux jours **inclus**, tous piliers.
+ *
+ * Extrait de `useWeekPlan` le 07/08/2026 (COLLIS-01, D7) : le détecteur de collisions a besoin de
+ * **8 jours** là où l'écran de planning en affiche 7.
+ *
+ * ⚠️ **`useWeekPlan` garde son contrat de 7 jours** et reste la source des cartes de jour de
+ * `/planning`. Élargir *son* contrat plutôt que d'extraire ce hook aurait fait apparaître une
+ * **8ᵉ carte** hors semaine en tête d'écran — la fenêtre élargie ne doit servir qu'au détecteur.
+ */
+function usePlannedBetween(
+  fromKey: string,
+  toKey: string,
+): { items: PlannedSessionItem[]; isLoading: boolean } {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
 
   const { data, isLoading } = useQuery<PlannedSessionDbRow>(SELECT_PLANNED_BETWEEN, [
     userId,
-    weekStartDate,
-    weekEnd,
+    fromKey,
+    toKey,
   ]);
 
   const items = data.map(rowToItem);
@@ -691,14 +728,15 @@ export function useWeekPainSignals(weekStartDate: string): Map<string, SessionPa
   const todayKey = useTodayKey();
   const { reports } = usePainReports();
 
-  const [y, m, d] = weekStartDate.split('-').map(Number);
-  const weekEnd = localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
-
+  // ⚠️ **7 jours, et pas 8.** `SELECT_PLANNED_MUSCLE_SETS` est partagée avec COLLIS-01, qui remonte
+  // à la veille depuis le 07/08/2026 (D7) — mais elle prend ses bornes en paramètres liés, donc
+  // DOUL-01 garde les siennes. Un signal de douleur sur une séance que l'utilisateur ne voit pas à
+  // l'écran n'aurait aucun sens. Figé par `session-conflicts-window.test.ts`.
   const enabled = settings?.painJournalEnabled === true;
   const { data: setsRows } = useQuery<MuscleSetsRow>(SELECT_PLANNED_MUSCLE_SETS, [
     enabled ? userId : '',
     weekStartDate,
-    weekEnd,
+    weekEndKeyOf(weekStartDate),
   ]);
 
   return useMemo(() => {
@@ -732,17 +770,25 @@ export function useSessionConflicts(weekStartDate: string): {
   const { settings } = useSettings();
   const todayKey = useTodayKey();
 
-  const [y, m, d] = weekStartDate.split('-').map(Number);
-  const weekEnd = localDayKey(addDays(new Date(y!, m! - 1, d!), 6));
+  // Spec D7 — la fenêtre de DÉTECTION remonte d'un jour en amont de la semaine affichée. Le REPLI,
+  // lui, reste borné aux 7 jours affichés : c'est le moteur qui tient cette seconde borne.
+  const eveKey = eveKeyOf(weekStartDate);
+  const weekEnd = weekEndKeyOf(weekStartDate);
 
-  const { items, isLoading: planLoading } = useWeekPlan(weekStartDate);
+  const { items, isLoading: planLoading } = usePlannedBetween(eveKey, weekEnd);
   const enabled = settings?.sessionConflictsEnabled === true;
 
   // Spec R2 — réglage éteint : la requête ne ramène rien. Le gate est un simple `owner_id` vide,
   // aucune sentinelle SQL nécessaire (ce que la première version du commentaire affirmait à tort).
+  //
+  // 🔴 **Les deux lectures s'élargissent ensemble, ou aucune.** Élargir les séances sans élargir les
+  // séries donnerait une séance de jambes la veille avec `setsByMuscle` vide → `isHeavyLegSession`
+  // rend `false` → aucun conflit, et le symptôme serait **identique à celui d'avant correctif**.
+  // Deux lignes, et l'oubli de l'une annule l'autre en silence. Figé par
+  // `session-conflicts-window.test.ts`.
   const { data: setsRows, isLoading: setsLoading } = useQuery<MuscleSetsRow>(
     SELECT_PLANNED_MUSCLE_SETS,
-    [enabled ? userId : '', weekStartDate, weekEnd],
+    [enabled ? userId : '', eveKey, weekEnd],
   );
   const isLoading = planLoading || setsLoading;
 

@@ -1146,6 +1146,12 @@ par [`/commit`](.claude/commands/commit.md).
 
 ## 32. COLLIS-01 — Détecteur de collisions entre séances
 
+> 🔴 **Correctif du 07/08/2026 intégré — 5 critères de plus (18 à 22).** La détection ne regardait que
+> la **semaine affichée** alors que la règle dit « le lendemain » : le conflit **dimanche → lundi**
+> n'était **jamais** détecté, soit une paire de jours sur sept. Corrigé avant recette, pour ne pas te
+> faire recetter deux fois la même fonctionnalité. **Commence par le 18** : c'est celui qui justifie
+> le correctif. Spec §4.1 · [plan](docs/plans/collis01-conflit-veille-hors-semaine.md).
+
 📄 [spec](docs/specs/functional/us/collis01-detecteur-collisions.md) · roadmap **3.57** ·
 **📱 device** · ⚠️ **1 migration poussée le 05/08/2026** · ✅ **aucune sync rule**
 (`user_settings` lue en `select *`) · ✅ **aucune dépendance native → recettable sur l'APK
@@ -1180,6 +1186,25 @@ existant**.
       déclencheur, ou est-ce trop bas (bruit) / trop haut (muet) ? C'est le **seul nombre inventé**
       du dispositif, il ne repose sur rien de mesuré. Jugement de pratiquant, pas manipulation —
       et le changer coûte une ligne (`LEG_SETS_CONFLICT_THRESHOLD`).
+
+### Correctif « veille hors semaine » du 07/08/2026 (D7)
+
+- [ ] 18. 🔴 **Le conflit dimanche → lundi est détecté.** Planifie une séance jambes (**≥ 8 séries**,
+      majoritaires) un **dimanche**, puis une **sortie longue le lundi suivant**. Place-toi sur la
+      semaine **du lundi** : le bandeau doit apparaître sur ce lundi. **Avant correctif, il
+      n'apparaissait jamais.** Si ce critère échoue, rien d'autre dans cette section ne compte.
+- [ ] 19. 🔴 **Le repli ne fabrique pas le conflit qu'il résout.** Jambes lourdes le **dimanche**
+      (hors semaine), un conflit **mardi → mercredi**, tous les jours après mercredi occupés, et
+      **rien le lundi**. Le bouton ne doit **jamais** proposer « Déplacer au lundi » — ce serait
+      recréer le conflit un jour plus tôt. Il doit proposer un autre jour, ou aucun.
+- [ ] 20. **L'écran affiche toujours 7 jours.** Vérifie qu'aucune **8ᵉ carte de jour** n'est apparue
+      en haut de `/planning` : la fenêtre élargie ne sert qu'à la détection, jamais à l'affichage.
+- [ ] 21. **Rien n'a bougé sur les autres jours.** Rejoue les critères **2, 5 et 7** (conflit nominal
+      en milieu de semaine, disparition après déplacement, jambes minoritaires) : le correctif ne doit
+      **rien changer** aux six jours qui fonctionnaient déjà.
+- [ ] 22. **DOUL-01 n'a pas bougé.** Le journal des zones douloureuses partage la requête
+      d'enrichissement. Journal activé : ses bandeaux apparaissent comme avant, et **aucun** sur une
+      séance de la veille hors semaine.
 
 **Quand l'US passe** : `etape: close`, roadmap 3.57 à ✅, et **on supprime cette section**. Passe
 par [`/commit`](.claude/commands/commit.md).
