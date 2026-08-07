@@ -5,9 +5,15 @@
  *
  * ── Le seul vrai piège de ce module : les arrondis ───────────────────────────────────────────────
  * Trois parts égales arrondies à l'entier donnent 33 + 33 + 33 = **99**, et une barre qui n'atteint
- * pas son bord fait douter de tout le reste de l'écran. La plus grosse part absorbe donc le reliquat
- * (méthode du plus grand reste, simplifiée) : le total est **toujours** 100.
+ * pas son bord fait douter de tout le reste de l'écran.
+ *
+ * Cette mécanique vivait ici ; elle est **extraite dans `sharesOf`** depuis le 07/08/2026, parce
+ * qu'ALLURE-01 en avait besoin à l'identique pour les zones d'allure. Un même arrondi implémenté deux
+ * fois divergera — au premier ajustement, une des deux barres cesserait d'atteindre son bord et
+ * personne ne saurait laquelle est juste.
  */
+
+import { sharesOf } from './shares';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,18 +51,10 @@ export function computeSetTypeMix(input: {
     counts.set(s.setType, (counts.get(s.setType) ?? 0) + 1);
   }
 
-  const total = [...counts.values()].reduce((sum, c) => sum + c, 0);
-  if (total === 0) return null;
+  // Tri, arrondi et reliquat sont dans `sharesOf` : tri par part décroissante, départage alphabétique
+  // à égalité, et somme garantie à 100.
+  const shares = sharesOf(counts);
+  if (shares === null) return null;
 
-  // Tri d'abord : le reliquat d'arrondi doit atterrir sur la part la plus grosse, où il est le moins
-  // visible. À égalité de compte, l'ordre alphabétique rend la sortie déterministe — sans quoi deux
-  // rendus successifs pourraient intervertir deux parts identiques.
-  const shares = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([setType, count]) => ({ setType, count, percent: Math.floor((count / total) * 100) }));
-
-  const remainder = 100 - shares.reduce((sum, s) => sum + s.percent, 0);
-  shares[0]!.percent += remainder;
-
-  return shares;
+  return shares.map(({ key, count, percent }) => ({ setType: key, count, percent }));
 }

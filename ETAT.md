@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 212 livré · 4 partiel · 2 à faire (sur 224)
+**MVP1 (= V1.0 complète)** `███████████████████░` **94 %** — 212 livré · 4 partiel · 3 à faire (sur 225)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -67,6 +67,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **ALLURE-01** — La courbe d'allure — ce que ta façon de courir dit | `code` | `feature/allure01-courbe-allure` | [5.35] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -93,9 +94,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/exec01-prevu-vs-realise` (modifications non commitées) |
-| Commits | 1118 · `main` a **1115** commits de retard sur `dev` |
-| Specs d'US | 131 au total — 79 clôturées, 52 en cours |
+| Branche courante | `feature/allure01-courbe-allure` (modifications non commitées) |
+| Commits | 1119 · `main` a **1116** commits de retard sur `dev` |
+| Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -105,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `978d209` test(exec01): le test que la DoD reclamait et que j'avais oublie
 - `6e9588a` fix(exec01): normalise les fins de ligne en LF
 - `5717ab2` feat(exec01): requetes, section d'ecran et i18n du lot « prevu vs realise »
 - `a2f1401` feat(exec01): les 4 moteurs purs du lot « prevu vs realise »
 - `11cc849` merge(collis01): correctif « veille hors semaine » dans dev
-- `2e86638` fix(collis01): le conflit dimanche -> lundi n'etait jamais detecte (D7)
 
 ---
 

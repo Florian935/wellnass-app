@@ -212,6 +212,32 @@ export function computeKmSplits(points: ReadonlyArray<GpsPoint>): KmSplit[] {
   return splits;
 }
 
+/**
+ * Allure moyenne (s/km) d'un groupe de splits, ou `null` si le groupe n'est pas exploitable.
+ *
+ * Extrait le 07/08/2026 (US ALLURE-01) : `computeSplitBalance` et `computePaceFade` en avaient chacun
+ * une copie identique. Sa place est ici, avec `KmSplit` et `computeKmSplits`.
+ *
+ * ⚠️ **La durée d'un kilomètre PLEIN est son allure en s/km** — c'est cette égalité qui rend toutes
+ * les analyses d'ALLURE-01 triviales, et c'est pourquoi `computeKmSplits` est la bonne entrée.
+ *
+ * Rend `null` — jamais `NaN`, jamais 0 — dans deux cas :
+ *  - **groupe vide** : il n'y a pas de moyenne de rien ;
+ *  - **un split à 0 s, negatif ou non fini** (montre coupee, trace corrompue). On refuse alors le
+ *    groupe **entier** plutot que de rendre une moyenne a moitie fausse, et surtout plutot que de
+ *    laisser un `NaN` remonter jusqu'a l'ecran. Precedent du depot : `bestSegmentTimeFromSamples` a
+ *    ecrit un record « NaN seconde » en base (corrige le 04/08/2026).
+ */
+export function meanSplitPace(splits: ReadonlyArray<KmSplit>): number | null {
+  if (splits.length === 0) return null;
+  let total = 0;
+  for (const s of splits) {
+    if (!Number.isFinite(s.seconds) || s.seconds <= 0) return null;
+    total += s.seconds;
+  }
+  return total / splits.length;
+}
+
 // ---------------------------------------------------------------------------
 // Vitesse lissee (auto-pause) — Volet B
 // ---------------------------------------------------------------------------

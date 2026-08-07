@@ -10,6 +10,70 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `feature/allure01-courbe-allure` — ALLURE-01 : les 5 moteurs purs de la courbe d'allure
+
+Commit précédent : `978d209`. **Cadrage validé par Florian le 07/08/2026** (spec + plan + maquette),
+mes 4 propositions du §8 retenues faute d'objection. **Incrément borné à la couche pure** : aucune
+requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 406 tests verts** (181 admin + 1 105 mobile +
+2 120 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `pace-zones.ts` — le **modèle de zones**, et le cœur du lot : 5 zones contiguës qui couvrent toutes
+  les allures.
+- `split-balance.ts` (**RUN-11**) — negative / even / positive split, avec l'écart chiffré.
+- `pace-fade.ts` (**RUN-20**) — dégradation du 1ᵉʳ au dernier **quart** d'une sortie assez longue.
+- `pace-zone-mix.ts` (**RUN-17 + RUN-08**) — répartition par zone d'une course, et polarisation du
+  volume sur plusieurs courses. Les deux vivent ensemble parce que la seconde est **l'agrégation de la
+  première** : les séparer aurait dupliqué le classement en zones.
+- `shares.ts` — mécanique de parts entières **extraite** de `computeSetTypeMix` (EXEC-01).
+- `meanSplitPace` dans `running.ts` — allure moyenne d'un groupe de splits.
+- **76 tests** neufs. Les 5 modules sont à **100 % sur les quatre métriques**, branches comprises.
+
+#### Modifié
+
+- `set-type-mix.ts` (EXEC-01) délègue son arrondi à `sharesOf`. **Ses 11 tests passent inchangés** —
+  c'était le garde-fou de la factorisation.
+
+#### Technique — Notes
+
+- 🟢 **Les zones ne sont pas inventées, et c'est le meilleur du lot.** `sessionTargetPace` définissait
+  déjà des bandes d'allure calibrées depuis l'allure de réf 5 km. Elles **laissaient des trous** (rien
+  entre `ref` et `ref+30`, rien sous `vma`) : une allure pouvait ne tomber dans aucune. La partition les
+  **prolonge** sans ajouter un seul nombre — et **un test change la référence pour vérifier que TOUTES
+  les bornes suivent**. C'est ce test qui interdit de recopier `ref + 60` en littéral : ça marcherait
+  aujourd'hui et divergerait au premier ajustement, **sans que rien n'échoue**.
+- 🔴 **Le piège de tout ce lot : une allure plus rapide est un nombre plus PETIT.** Un `deltaPct`
+  négatif signifie « 2ᵉ moitié plus rapide » — le bon signe. Une inversion passe la revue, passe le
+  typecheck, et produit une répartition exactement inversée : crédible et fausse. Deux tests l'exercent
+  explicitement, et un balayage de 120 à 1200 s/km sur cinq références prouve que la partition couvre
+  tout.
+- 🔴 **La polarisation pèse les kilomètres, pas les courses.** 20 km d'endurance + 5 km de seuil font
+  **80/20** en kilomètres et **50/50** en courses. Un test est écrit **exprès** pour échouer sur cette
+  erreur, avec un `expect(...).not.toBe(50)` explicite.
+- **Le fade se lit sur des quarts.** Trois tests le justifient : un km très lent **au milieu** ne
+  l'affecte pas, un km lent dans le dernier quart est lissé par ses voisins, et remplacer tout le
+  centre par des valeurs absurdes ne déplace pas le résultat d'un iota.
+- **Trois verdicts et pas deux** : sans zone morte de 2 %, **toute** course serait « positive » ou
+  « negative » — personne ne court deux moitiés exactement égales, et une analyse qui a toujours un
+  verdict tranché cesse d'être crédible.
+- **Le km central d'un nombre impair va à la 1ʳᵉ moitié.** Arbitraire, donc figé par un test et écrit
+  en spec : sans cette trace, la prochaine lecture pourrait l'inverser en croyant corriger un bug.
+- ⚠️ **Cinq branches non couvertes au premier passage, et toutes les cinq étaient mortes** — mais deux
+  d'entre elles étaient le **même helper dupliqué** dans deux fichiers. Plutôt que de supprimer deux
+  gardes, `meanSplitPace` est **extrait dans `running.ts`** (son vrai domicile, avec `KmSplit` et
+  `computeKmSplits`) : devenu public, il a ses propres tests, et sa garde cesse d'être morte. Les trois
+  autres sont supprimées avec leur invariant écrit en clair.
+- ⚠️ **Une garde que j'avais moi-même écrite puis retirée** : `if (kmPerQuarter < 1)` dans le fade,
+  documentée comme inatteignable — exactement le patron d'invariant accidentel critiqué sur COLLIS-01
+  le matin même. Remplacée par l'invariant explicite, avec la conséquence notée : descendre
+  `FADE_MIN_DISTANCE_KM` sous 4 viderait les quarts.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.** `insights.ts` et le registre d'accueil
+  non touchés.
+- **Reste** : la requête de polarisation (lot 5), les surfaces (lot 6, résumé de course +
+  historique) et l'i18n (lot 7).
+
 ### 07/08/2026 — `feature/exec01-prevu-vs-realise` — EXEC-01 : le test que la DoD réclamait et que j'avais oublié
 
 Commit précédent : `6e9588a`. **Definition of Done relue item par item avant de la cocher**, et un
