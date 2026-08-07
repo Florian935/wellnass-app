@@ -95,7 +95,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1123 · `main` a **1120** commits de retard sur `dev` |
+| Commits | 1124 · `main` a **1121** commits de retard sur `dev` |
 | Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -106,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `ddacea6` test(muscu): monter le vrai écran de séance — 20 tests, dont la double clôture
 - `2afc5dd` docs(tests): recaler le compte de tests après intégration de dev
 - `477e897` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `298740d` feat(allure01): les 5 moteurs purs de la courbe d'allure
 - `a524ccc` fix(running,muscu): la garde de double appui ne gardait rien + 62 tests d écran
-- `978d209` test(exec01): le test que la DoD reclamait et que j'avais oublie
 
 ---
 

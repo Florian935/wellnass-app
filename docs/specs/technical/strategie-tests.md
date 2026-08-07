@@ -287,8 +287,8 @@ Priorisé par **risque × coût de la recette manuelle**, pas par taille.
 | **3 — fait** | `src/stores` + `src/lib` : `notifications` (21), `health-connect` état + throttles (31), `auth-store` (25), `data-export` (15), `gpx-export` (10). `analytics` était déjà couvert | Logique séquentielle isolable, aucun device requis | ✅ 102 tests · `lib` **54 %**, `stores` **48 %** |
 | **4 — fait** | **`apps/admin`** : Vitest, double de test Supabase, `foods` (29), `programs` (37), `users` + `roles` + `audit` (36), `exercises` + `usage-counts` (19), `archive-confirm` (7) | 9 716 lignes, **zéro filet** jusqu'ici, et c'est l'outil qui écrit dans la base de contenu | ✅ 157 tests · **61 %** (avec les lectures de liste) |
 | **5 — en cours** | Hooks et écrans à état. Fait : `useAuthDeepLink` (10), `useAppOpenedAnalytics` + `useTodayKey` + `useHealthConnectImports` (17), effets de montage de `cycle` et `help` (4), `buildSummary` du résumé de séance (11), `workout-template` (20), `settings` (23), `food` (26), `profile` + `recipe` (24), `running-record` (19), `bodyweight` + `meal-template` + `running-profile` (20), planificateurs de notifications (24), candidats de substitution d'exercice (12), **machine à états du focus de séance** (42) et
-**écran de course en cours** (20) et **écran de séance** (20) — les deux vrais écrans montés.
-Reste : `running-history`. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 292 tests |
+et **trois écrans réellement montés** : course en cours (20), séance (20), historique de
+course (26). Les trois cibles à état du lot sont faites. ⚠️ La « reprise des `*-smoke.test.tsx` » annoncée le 03/08 **n'a pas lieu d'être** : ils font tous `await render(...)`, leurs effets s'exécutent (§3.6) | Niveau 3 — viser les écrans **à état**, pas le pourcentage | 🟡 318 tests |
 | **6 — fait** | Seuils de couverture appliqués **en CI** (voir §5 bis) | Une fois les lots 1–4 passés, pour que ça ne redescende pas | ✅ |
 
 ### 5 bis. Les seuils — des cliquets, pas des objectifs
@@ -304,7 +304,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
-| `apps/mobile` — reste (écrans, composants) | **22** | **19** | **17** |
+| `apps/mobile` — reste (écrans, composants) | **23** | **20** | **18** |
 | `apps/admin` (`src/data` + `src/lib`) | **68** | **87** | **70** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
@@ -381,12 +381,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 187 (mobile) + 181 (admin) = 3 488 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 213 (mobile) + 181 (admin) = 3 514 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **31,8 %** |
+| Couverture mobile | 15,0 % | **33,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **181 tests · 68,9 %** (`src/lib` à 100 %) |
@@ -414,10 +414,15 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    [`useAuthDeepLink.test.tsx`](../../../apps/mobile/src/hooks/__tests__/useAuthDeepLink.test.tsx).
    **`run/active.tsx` est fait** (20 tests, écran réellement monté — patron §3.7), et sa
    **machine à états du focus** de `workout.tsx` aussi (42 tests, fonctions pures exportées).
-   **`workout.tsx` est monté aussi** (20 tests : clôture, repos, bascule superset, les trois
-   `Alert` de sortie) — les composants lourds y sont remplacés par des sondes minimales, patron à
-   copier pour tout écran à `Alert`. Reste **`running-history/index.tsx`** (filtres + pagination).
-   Côté admin, il faudra en plus `jsdom` + Testing Library.
+   **`workout.tsx`** (20 tests : clôture, repos, bascule superset, les trois `Alert` de sortie) et
+   **`running-history/index.tsx`** (26 tests : garde de chargement, six sections, six états vides)
+   sont montés aussi. Les composants lourds y sont remplacés par des sondes minimales — patron à
+   copier pour tout écran à `Alert` ou à sections.
+
+   **Les trois écrans à état identifiés sont faits.** La suite côté mobile, c'est le reste de
+   `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
+   risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
+   + Testing Library.
 
    ⚠️ **Vérifier qu'un test de non-régression échoue vraiment.** Les deux gardes de double appui
    ont été retirées à la main pour voir les tests passer au rouge. Un test écrit **après** le

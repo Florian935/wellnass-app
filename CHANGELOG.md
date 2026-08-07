@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Historique de course : six sections, six états vides
+
+**26 tests** sur `running-history/index.tsx`, le troisième et dernier écran à état du lot 5.
+Ce qui rend cet écran risqué n'est pas son calcul — il est délégué à `@wellness/shared`, testé
+là-bas — mais la **confusion entre « pas encore chargé » et « rien à montrer »**, qui y produit
+des affichages faux plutôt que des plantages.
+
+#### Ajouté
+
+- **`running-history-screen.test.tsx` — 26 tests, le vrai écran monté** (patron §3.7).
+  - **🔴 La garde de chargement globale.** `runs = []` est l'état transitoire normal de PowerSync
+    au démarrage : sans la garde, quelqu'un qui a couru 400 km voit « 0 course, aucune donnée »
+    puis l'écran se corrige. Vérifié qu'**aucune** section n'est montée pendant le chargement.
+  - **🔴 « Depuis le début » n'affiche aucun badge de comparaison.** Il n'existe pas de période
+    précédant le début : un « +0 % » y serait une affirmation fausse, pas un affichage neutre.
+    Idem tant que la période précédente charge — comparer à un total encore vide afficherait un
+    « -100 % » qui n'a jamais existé.
+  - **🔴 Le rattrapage des records ne part qu'au bon moment** : pas pendant le chargement (`[]`
+    transitoire n'est pas « aucun record » — rejouer la détection sur tout l'historique GPS à
+    chaque montage serait un coût pur), pas quand des records existent, et **son échec ne fait pas
+    tomber l'écran** (offline-first : un enrichissement optionnel n'empêche pas de consulter ses
+    stats).
+  - **Six états vides rédigés**, jamais un graphique ou une carte vides : courbe d'allure sans
+    point, liste sans course, objectifs sans record de 5 km, charge d'entraînement sans historique
+    exploitable.
+  - **🔴 Une course sans date de fin n'affiche pas « Invalid Date »**, et l'ACWR **ignore les
+    courses hors fenêtre sur la date de FIN** — une course de l'an dernier gonflerait la charge
+    chronique et écraserait le ratio.
+  - Plus : le dénivelé arrondi à l'entier (un « +312,4 m » suggère une précision que le GPS n'a
+    pas), la bascule 90 → 30 jours de la courbe, et l'ouverture du détail au tap depuis la liste
+    comme depuis un record.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 22/19/17 → **23/20/18** (réel 25,4/21,5/20,1).
+- **Stratégie de tests §5 / §8** : les **trois écrans à état identifiés sont faits**. La suite côté
+  mobile, c'est le reste de `src/app` et `src/components` — plus nombreux mais moins risqués, à
+  prendre par ordre de risque et non de taille.
+
+#### Technique / Notes
+
+- **Deux pièges rencontrés, et déjà documentés au §3.7** — la preuve que la note sert : une
+  fabrique `jest.mock()` ne peut référencer **aucune** variable du fichier (elle est hissée), et un
+  `fireEvent.press` **hors `act`** ne rafraîchit pas l'écran — deux tests de bascule de filtre
+  passaient à côté de leur sujet avant correction.
+- **Un test rendu indépendant de la date** : il distinguait période courante et période précédente
+  par une clé de jour en dur, donc n'aurait été juste que le jour de son écriture. Il distingue
+  désormais par le **rang d'appel** du hook.
+- **3 514 tests verts** (2 120 shared + 1 213 mobile + 181 admin). Couverture mobile **33,0 %**.
+  Typecheck, lint et seuils propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — L'écran de séance monté : le correctif de double clôture est verrouillé
 
 **20 tests** sur `workout.tsx`, l'écran le plus lourd de l'app. Le correctif de double clôture livré
