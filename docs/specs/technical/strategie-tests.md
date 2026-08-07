@@ -306,6 +306,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
 | `apps/mobile` — reste (écrans, composants) | **23** | **20** | **18** |
 | `apps/admin` (`src/data` + `src/lib`) | **96** | **89** | **96** |
+| `apps/admin` — écrans React | **6** | **55** | **15** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
 > `stores` 45→47, reste 12→18) : les lots suivants avaient fait monter le réel bien au-dessus du cliquet, qui
@@ -381,7 +382,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 238 (mobile) + 278 (admin) = 3 636 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 238 (mobile) + 307 (admin) = 3 665 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -389,7 +390,7 @@ couverture** propres.
 | Couverture mobile | 15,0 % | **33,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **278 tests · 97,7 %** (`src/lib`, `foods`, `users` à 100 %) |
+| `apps/admin` | aucun runner | **307 tests** · data **97,7 %** · 1ᵉʳ écran React couvert |
 
 ## 8. Reprise — par où continuer
 
@@ -448,8 +449,24 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    chaque écriture** (l'admin parle à Supabase avec la clé anon — sans ce filtre, une action
    d'administration déborde sur les données **créées par les utilisateurs**), le **bornage au
    parent** des réordonnancements, et la **coercion des `numeric`** que PostgREST rend en chaîne.
-   Ce qui reste, ce sont les **écrans React** du back-office : `jsdom` + Testing Library, non
-   installés (voir l'en-tête de [`vitest.config.ts`](../../../apps/admin/vitest.config.ts)).
+5. **Écrans React du back-office** — **socle posé le 07/08/2026** : `jsdom` + Testing Library
+   installés, environnement choisi **par l'extension du fichier de test** (`.test.ts` → `node`,
+   `.test.tsx` → `jsdom`, via `environmentMatchGlobs`), nettoyage du DOM entre deux tests dans
+   [`setup-dom.ts`](../../../apps/admin/src/test-utils/setup-dom.ts).
+   Premier écran couvert : [`ExercisesScreen.test.tsx`](../../../apps/admin/src/screens/ExercisesScreen.test.tsx)
+   (29 tests) — **à copier pour les suivants**. Restent 14 écrans, par ordre de risque :
+   `ProgramEditScreen` (1 387 lignes, glisser-déposer + quinze écritures), `FoodImportScreen`
+   (import CSV), `UserDetailScreen` (modération), puis les listes.
+
+   ⚠️ **Deux pièges du DOM, rencontrés dès le premier écran** :
+   - **les libellés existent en double** — une fois dans un `<option>` de filtre, une fois dans le
+     tableau. Borner la requête avec `within(screen.getByRole('table'))`, sinon
+     « Found multiple elements » ;
+   - **un mock de couche data au mauvais type ne lève pas où on croit.** `fetchUsageSummary` mocké
+     avec une forme inventée faisait planter `archiveConfirmMessage` **dans le gestionnaire de
+     clic** : la promesse était rejetée en silence, rien ne se passait, et quatre tests
+     échouaient sur « la fonction n'a pas été appelée » — un symptôme à trois pas de la cause.
+     Construire les objets de test à partir du **type réel**.
 
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.

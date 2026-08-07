@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 07/08/2026 — `chore/socle-tests-unitaires` — Les écrans du back-office deviennent testables
+
+Socle `jsdom` + Testing Library posé côté `apps/admin`, et **premier écran React monté en test**
+(29 tests). Jusqu'ici on savait que `archiveExercise` émet la bonne requête — jamais qu'un clic sur
+« Archiver » l'appelle, ni surtout qu'il ne l'appelle **pas** quand l'admin annule.
+
+#### Ajouté
+
+- **Socle de test des écrans** : `jsdom`, `@testing-library/react`, `user-event`, `jest-dom`.
+  L'environnement est choisi **par l'extension du fichier de test** (`.test.ts` → `node`,
+  `.test.tsx` → `jsdom`) via `environmentMatchGlobs`, plutôt que par un pragma en tête de fichier :
+  un pragma s'oublie, et l'oubli se manifeste par un « document is not defined » qui ne dit pas
+  qu'il manque une ligne de commentaire. Les 278 tests de couche data gardent l'environnement
+  `node` — leur charger un DOM ralentirait chaque exécution pour rien.
+- **`ExercisesScreen.test.tsx` — 29 tests**, patron à copier pour les 14 autres écrans.
+  - **🔴 Le décompte d'usage est lu AVANT la confirmation, et son résultat figure dans le message.**
+    C'est la raison d'être de l'US ADMIN-01 : on archivait en aveugle, et le nom disparaissait de
+    l'historique d'utilisateurs qui avaient fait l'exercice. Compter après — ou pas du tout —
+    ramènerait exactement le comportement que l'US corrige.
+  - **🔴 Le troisième état du décompte.** Ni « des usages », ni « aucun usage », mais **« le
+    décompte a échoué »** : le message doit alors avertir. Afficher un zéro rassurant serait à
+    nouveau de l'archivage en aveugle. Et un contenu réellement inutilisé doit le **dire** — une
+    liste vide se lirait comme un bug.
+  - **🔴 Annuler n'écrit rien** — la moitié du travail d'une confirmation, et celle qu'on oublie
+    de tester.
+  - **🔴 Une ligne archivée n'offre QUE la restauration.** Publier ou éditer un contenu invisible
+    enverrait l'admin dans une impasse silencieuse. Et sa mention « Archivé le … » est **textuelle**,
+    pas seulement une nuance de couleur.
+  - **🔴 Une erreur de chargement est annoncée**, jamais confondue avec un catalogue vide : un
+    admin dont la session a expiré pourrait conclure que le catalogue a été vidé.
+  - **🔴 Changer de portée recharge depuis la base** au lieu de filtrer côté client — les archivés
+    ne sont jamais chargés en portée « actifs », un filtre client donnerait une corbeille toujours
+    vide.
+  - Plus : la recherche porte sur le nom FR **et** EN (le catalogue est bilingue), la bascule de
+    publication vise l'état **inverse** de celui affiché et ne demande aucune confirmation (action
+    réversible d'un clic), et un échec n'entraîne pas de rechargement — recharger masquerait
+    l'échec derrière une liste inchangée.
+
+#### Modifié
+
+- **Seuils `apps/admin` désormais par chemin.** Les ~2 200 lignes d'écrans diluent tout : mesurées
+  ensemble, la couche data à 97,7 % et les écrans à 6,7 % donnent un global de 30 %, qui ne dit
+  plus rien de ce qu'il protège — on pourrait retirer la moitié des tests de `src/data` en couvrant
+  un écran de plus. `src/data/**` reste à **96/89/96**, `src/screens/**` démarre à **6/55/15**.
+  ⚠️ Noté dans la config : en Vitest 2, un seuil par glob **n'exclut pas** ses fichiers du calcul
+  global, contrairement à ce que laisse entendre la doc — vérifié.
+
+#### Technique / Notes
+
+- **Deux pièges du DOM, documentés au §8** : les libellés existent **en double** (une fois dans un
+  `<option>` de filtre, une fois dans le tableau) — borner avec `within(getByRole('table'))` ; et
+  **un mock de couche data au mauvais type ne lève pas où on croit** : `fetchUsageSummary` mocké
+  avec une forme inventée faisait planter `archiveConfirmMessage` **dans le gestionnaire de clic**,
+  la promesse était rejetée en silence, et quatre tests échouaient sur « la fonction n'a pas été
+  appelée » — un symptôme à trois pas de la cause.
+- **3 665 tests verts** (2 120 shared + 1 238 mobile + 307 admin). Typecheck, lint et seuils
+  propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — La couche data du back-office est couverte (68,9 % → 97,7 %)
 
 **97 tests** sur les trois derniers fichiers de `apps/admin/src/data` qui restaient à moitié nus.

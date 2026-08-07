@@ -3,10 +3,14 @@ import { defineConfig } from 'vitest/config';
 /**
  * Tests du back-office.
  *
- * Environnement `node` : ce qui est testé ici est la **couche data** (`src/data`) et les briques
- * pures (`src/lib`), pas le rendu React. Les écrans demanderont `jsdom` + Testing Library — à
- * ajouter le jour où on les couvre (lot 5 de docs/specs/technical/strategie-tests.md), pas avant :
- * un jsdom chargé pour rien ralentit chaque exécution.
+ * **Deux environnements, choisis par l'extension du fichier de test** (07/08/2026) :
+ *  - `.test.ts`  → `node`. La couche data (`src/data`) et les briques pures (`src/lib`) n'ont pas
+ *    besoin d'un DOM, et lui en charger un ralentirait chaque exécution pour rien.
+ *  - `.test.tsx` → `jsdom`. Les écrans React, eux, en ont besoin.
+ *
+ * La règle est portée par `environmentMatchGlobs` plutôt que par un pragma en tête de chaque
+ * fichier : un pragma s'oublie, et l'oubli ne se voit pas — le test échoue sur un
+ * « document is not defined » qui ne dit pas qu'il manque une ligne de commentaire.
  *
  * `src/lib/supabase.ts` lit `import.meta.env` et **lève au chargement** sans les variables Vite.
  * On les fournit ici pour que l'import du module ne casse pas ; le client réel n'est jamais
@@ -19,11 +23,13 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    environmentMatchGlobs: [['src/**/*.test.tsx', 'jsdom']],
+    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['./src/test-utils/setup-dom.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/data/**/*.ts', 'src/lib/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/lib/supabase.ts'],
+      include: ['src/data/**/*.ts', 'src/lib/**/*.ts', 'src/screens/**/*.tsx'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/lib/supabase.ts'],
       // ── Seuils (lot 6, 03/08/2026) ──────────────────────────────────────────
       //
       // **Cliquets** posés sous le réel du jour (56 % d'instructions, 86,9 % de branches) : ils
@@ -49,11 +55,38 @@ export default defineConfig({
       //
       // Les branches restent en retrait (89,6 %) : ce sont surtout des gardes défensives sur des
       // colonnes `numeric` nullables. Même arbitrage qu'au §5 bis pour `packages/shared`.
+      //
+      // ⚠️ **Cliquets par chemin** depuis l'ouverture des écrans à la mesure (07/08/2026). Les
+      // ~2 200 lignes de `src/screens` diluent tout : mesurées ensemble, la couche data à 97,7 % et
+      // les écrans à 6,7 % donnent un chiffre global de 30 %, qui ne dit plus rien de ce qu'il
+      // protège — on pourrait retirer la moitié des tests de `src/data` en couvrant un écran de
+      // plus. D'où deux seuils distincts, chacun calé sous SON réel.
+      //
+      // Le seuil global qui reste (28/85/80) porte sur l'union et n'est qu'un plancher : la vraie
+      // protection est dans les deux entrées ci-dessous. ⚠️ En Vitest 2, un seuil par glob
+      // **n'exclut pas** ses fichiers du calcul global — vérifié, contrairement à ce que laisse
+      // entendre la doc. Le global doit donc rester cohérent avec l'union, pas avec `src/data`.
       thresholds: {
-        statements: 96,
-        branches: 89,
-        functions: 96,
-        lines: 96,
+        statements: 28,
+        branches: 85,
+        functions: 80,
+        lines: 28,
+        // Couche data : c'est elle qui écrit dans le contenu partagé par tous les utilisateurs.
+        'src/data/**': {
+          statements: 96,
+          branches: 89,
+          functions: 96,
+          lines: 96,
+        },
+        // Écrans React : cliquet volontairement en retrait, comme côté mobile. Un écran arrive
+        // toujours moins couvert que la moyenne ; un seuil collé au réel le ferait rougir dès le
+        // premier commit, ce qui pousserait à contourner le garde-fou.
+        'src/screens/**': {
+          statements: 6,
+          branches: 55,
+          functions: 15,
+          lines: 6,
+        },
       },
     },
   },
