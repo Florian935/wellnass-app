@@ -25,6 +25,7 @@ avant de pouvoir publier.
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **DOUL-01** — Journal des zones douloureuses — déclaration, historique et signal factuel | `recette` | `feature/doul01-journal-zones-douloureuses` | [1.29] |
+| **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `recette` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **FUEL-01** — Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles | `recette` | `feature/fuel01-socle-glucidique-coureur` | — |
 | **GARDE-01** — Garde-fou unifié charge & récupération (fusion TRI-12 + MR-14) | `recette` | `refactor/garde01-fusion-garde-fou` | — |
 | **INSIGHTS-01** — Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3) | `recette` | `feature/insights01-ecran-insights` | [7.20] |
@@ -71,7 +72,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **50 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, FUEL-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **51 US attendent une recette humaine** (ACTIV-01, ADMIN-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -93,23 +94,22 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/exec01-prevu-vs-realise` (modifications non commitées) |
-| Commits | 1116 · `main` a **1113** commits de retard sur `dev` |
-| Specs d'US | 131 au total — 79 clôturées, 51 en cours |
+| Commits | 1117 · `main` a **1113** commits de retard sur `dev` |
+| Specs d'US | 131 au total — 79 clôturées, 52 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
-- ⚠️ 1 spec(s) sans front-matter : exec01-prevu-vs-realise.md
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `5717ab2` feat(exec01): requetes, section d'ecran et i18n du lot « prevu vs realise »
 - `a2f1401` feat(exec01): les 4 moteurs purs du lot « prevu vs realise »
 - `11cc849` merge(collis01): correctif « veille hors semaine » dans dev
 - `2e86638` fix(collis01): le conflit dimanche -> lundi n'etait jamais detecte (D7)
 - `aa2257b` chore(admin): ignorer coverage/ au lint, et recaler le compte de tests
-- `173d714` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 
 ---
 
