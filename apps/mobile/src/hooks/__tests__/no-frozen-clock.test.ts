@@ -80,7 +80,9 @@ const WATCHED = [
   // corps serait gelée par React Compiler et la sélection ne bougerait plus jusqu'au redémarrage
   // de l'app : exactement le défaut que le critère de recette 14 cherche.
   'src/data/repositories/insights-repository.ts',
-  'src/components/dashboard/WellbeingCard.tsx',
+  // `WellbeingCard.tsx` était surveillé ici ; le composant a été **supprimé** le 08/08/2026 avec
+  // les 11 autres cartes devenues mortes après INSIGHTS-02. La liste est lue par `readFileSync` :
+  // y laisser un chemin inexistant aurait fait échouer ce test, pas seulement l'affaiblir.
   'src/components/dashboard/NutritionSummaryCard.tsx',
 ];
 

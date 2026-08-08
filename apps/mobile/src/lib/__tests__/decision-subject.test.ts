@@ -3,7 +3,7 @@
  *
  * `ReviewDecision.subject` vaut `balance.neglected[0]` pour la décision `muscle_imbalance` — une
  * **clé** métier, pas un libellé. Les trois surfaces qui rendent cette décision (`review.tsx`,
- * `ReviewCard.tsx`, la carte `weekly_decision` de l'écran « Insights ») affichaient donc « Tu
+ * le widget d'accueil d'alors, la carte `weekly_decision` de l'écran « Insights ») affichaient « Tu
  * délaisses un groupe musculaire : **back** ».
  *
  * Le défaut a vécu dans BILAN-01 sans être vu, jusqu'à ce qu'INSIGHTS-01 l'expose sur une

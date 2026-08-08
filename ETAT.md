@@ -95,8 +95,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/health-connect-test-isolation` (modifications non commitées) |
-| Commits | 1138 · `main` a **1135** commits de retard sur `dev` |
+| Branche courante | `chore/composants-cartes-morts` (modifications non commitées) |
+| Commits | 1139 · `main` a **1136** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `180c7ca` fix(tests): nommer l'echec intermittent de health-connect plutot que le deviner
 - `35e51c2` refactor(nutrition): la cible calorique du jour, ecrite une seule fois
 - `88d26b6` feat(apport01): requetes, section et i18n du croise muscu x nutrition
 - `72ac9d1` feat(apport01): les 4 moteurs du croise muscu x nutrition
 - `b710b9b` test(admin): le constructeur de programmes sous test (21 tests, 1 458 lignes)
-- `8dd78a2` fix(app): neuf gardes de double appui qui ne gardaient rien + hook useActionLock
 
 ---
 

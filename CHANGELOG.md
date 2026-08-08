@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/composants-cartes-morts` — les 12 cartes orphelines d'INSIGHTS-02, retirées
+
+Commit précédent : `180c7ca`. **Dette 🟠 du BACKLOG (05/08) fermée**, sur accord explicite de
+Florian. Vérifié : typecheck **0**, lint **0 erreur**, **1 285 tests mobile verts**,
+`test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Supprimé
+
+- **12 composants** de `components/dashboard/` devenus morts après le dégonflage du Tier 0 :
+  `DeficitVolumeAlertCard`, `TrainingLoadAlertCard`, `OvertrainingGuardCard`, `ReadinessCard`,
+  `ActivityLevelSuggestionCard`, `ConcurrentTrainingInterferenceCard` (leur signal vit en **carte
+  d'insight**) · `GoalsCard`, `WellbeingCard`, `ReviewCard`, `MuscleVolumeCard`, `RunningWeekCard`,
+  `WeightCard` (leur **écran** existe et a sa propre mise en page).
+- **7 fichiers de tests** correspondants (39 tests).
+
+#### Modifié
+
+- `no-frozen-clock.test.ts` — `WellbeingCard.tsx` retiré de la liste `WATCHED`.
+- Quatre commentaires qui pointaient vers des fichiers désormais absents : `decision-subject.ts`
+  (+ son test), `ActivationPathCard.tsx`, `CycleCard.test.tsx`, `contrast.test.ts`.
+
+#### Technique — Notes
+
+- 🔴 **Le piège le plus coûteux n'était pas la suppression mais une liste de chemins.**
+  `no-frozen-clock.test.ts` lit ses fichiers surveillés par `readFileSync` : y laisser
+  `WellbeingCard.tsx` après suppression aurait fait **échouer** ce test, pas seulement l'affaiblir.
+  Repéré avant de supprimer, en lisant la liste plutôt qu'en se fiant au compilateur — TypeScript
+  ne voit pas une chaîne de caractères.
+- ✅ **L'angle mort signalé par le BACKLOG a été vérifié, et il était bien vide** : les registres de
+  hub (`STRENGTH_WIDGET_IDS`, `RUNNING_WIDGET_IDS`) utilisent des ids `strength-*` / `running-*`
+  avec leurs propres composants. `MuscleVolumeCard` et `RunningWeekCard`, qui portaient les ids
+  historiques d'accueil, ne leur servent pas. Si un hub les réclame un jour, `git show 180c7ca` les
+  rend.
+- **Preuve d'innocuité avant geste** : `dashboard-widgets.tsx` ne compte que 8 entrées, et un grep
+  des `import … from '…Card'` ne renvoyait que les **7 tests** de ces mêmes composants. Zéro import
+  applicatif.
+- ⚠️ **La couverture baisse, et c'était le risque à mesurer** : 35,47 % → **34,89 %** de statements
+  (branches 29,01 → 28,57 ; functions 29,23 → 28,89). Retirer 7 suites de tests retire du code
+  **bien couvert**, donc tire la moyenne vers le bas. Mesuré avant/après : les seuils du
+  `coverageThreshold` tiennent (`test:coverage` sort **0**), **aucun seuil n'a été abaissé** — ce
+  qu'interdit explicitement le commentaire du `jest.config.js`.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée** : ces composants
+  n'étaient plus rendus depuis INSIGHTS-02, leur retrait ne change rien à l'écran.
+
 ### 08/08/2026 — `fix/health-connect-test-isolation` — l'échec intermittent, nommé plutôt que deviné
 
 Commit précédent : `35e51c2`. **Dette 🔴 du BACKLOG (07/08) instruite** : le mode de défaillance est
