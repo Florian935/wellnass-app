@@ -409,6 +409,35 @@
       },
       "allergens": "Allergens",
       "allergensPlaceholder": "e.g. peanuts, tree nuts…"
+    },
+    "crossTraining": {
+      "title": "Do you eat the way you train?",
+      "subtitle": "Your nutrition against your training, over 4 weeks",
+      "energy": {
+        "title": "Training days vs rest days",
+        "trainingDay": "Training days",
+        "restDay": "Rest days",
+        "delta": "{{kcal}} kcal on training days",
+        "basis": "across {{training}} training days and {{rest}} rest days logged"
+      },
+      "adherence": {
+        "title": "On-target rate",
+        "trainingDay": "Training",
+        "restDay": "Rest",
+        "margin": "within ±{{pct}}% of target — your margin, set in your profile"
+      },
+      "lowFuel": {
+        "title": "Energy availability",
+        "count": "{{count}} day",
+        "count_plural": "{{count}} days",
+        "detail": "{{day}} — {{volume}} kg·reps on {{kcal}} kcal (target {{target}})"
+      },
+      "protein": {
+        "title": "Protein through the day",
+        "servings": "{{count}} serving above the benchmark ({{grams}} g)",
+        "servings_plural": "{{count}} servings above the benchmark ({{grams}} g)",
+        "needsWeight": "Add a weigh-in to see protein per serving"
+      }
     }
   },
   "food": {

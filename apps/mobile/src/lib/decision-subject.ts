@@ -8,11 +8,13 @@
  * Les autres natures de décision portent déjà du texte (`goal_behind` transporte le libellé résolu
  * de l'objectif), d'où la condition plutôt qu'une traduction systématique.
  *
- * Fonction unique et partagée par les **trois** surfaces qui rendent cette décision : l'écran
- * `review.tsx`, le widget `ReviewCard.tsx`, et la carte `weekly_decision` de l'écran « Insights »
- * (via `resolveInsightSubject`). Les avoir laissées diverger est précisément ce qui a produit le
- * défaut : il est resté invisible dans BILAN-01 jusqu'à ce qu'INSIGHTS-01 l'expose sur une
- * troisième surface.
+ * Fonction unique et partagée par les surfaces qui rendent cette décision : l'écran `review.tsx` et
+ * la carte `weekly_decision` de l'écran « Insights » (via `resolveInsightSubject`). Les avoir
+ * laissées diverger est précisément ce qui a produit le défaut : il est resté invisible dans
+ * BILAN-01 jusqu'à ce qu'INSIGHTS-01 l'expose sur une troisième surface.
+ *
+ * ⚠️ Elles étaient **trois** : le widget d'accueil `ReviewCard.tsx` a été supprimé le 08/08/2026,
+ * INSIGHTS-02 l'ayant sorti du registre. La leçon, elle, ne dépend pas du nombre de surfaces.
  */
 
 import type { SignalKind } from '@wellness/shared';

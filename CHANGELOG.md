@@ -61,6 +61,244 @@ celui qui décide **qui peut administrer**, et celui qui **garde la trace de ce 
 
 - **3 814 tests verts** (2 120 shared + 1 282 mobile + 412 admin). **6 écrans du back-office sur
   15.** Typecheck, lint et seuils propres.
+### 08/08/2026 — `chore/composants-cartes-morts` — les 12 cartes orphelines d'INSIGHTS-02, retirées
+
+Commit précédent : `180c7ca`. **Dette 🟠 du BACKLOG (05/08) fermée**, sur accord explicite de
+Florian. Vérifié : typecheck **0**, lint **0 erreur**, **1 285 tests mobile verts**,
+`test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Supprimé
+
+- **12 composants** de `components/dashboard/` devenus morts après le dégonflage du Tier 0 :
+  `DeficitVolumeAlertCard`, `TrainingLoadAlertCard`, `OvertrainingGuardCard`, `ReadinessCard`,
+  `ActivityLevelSuggestionCard`, `ConcurrentTrainingInterferenceCard` (leur signal vit en **carte
+  d'insight**) · `GoalsCard`, `WellbeingCard`, `ReviewCard`, `MuscleVolumeCard`, `RunningWeekCard`,
+  `WeightCard` (leur **écran** existe et a sa propre mise en page).
+- **7 fichiers de tests** correspondants (39 tests).
+
+#### Modifié
+
+- `no-frozen-clock.test.ts` — `WellbeingCard.tsx` retiré de la liste `WATCHED`.
+- Quatre commentaires qui pointaient vers des fichiers désormais absents : `decision-subject.ts`
+  (+ son test), `ActivationPathCard.tsx`, `CycleCard.test.tsx`, `contrast.test.ts`.
+
+#### Technique — Notes
+
+- 🔴 **Le piège le plus coûteux n'était pas la suppression mais une liste de chemins.**
+  `no-frozen-clock.test.ts` lit ses fichiers surveillés par `readFileSync` : y laisser
+  `WellbeingCard.tsx` après suppression aurait fait **échouer** ce test, pas seulement l'affaiblir.
+  Repéré avant de supprimer, en lisant la liste plutôt qu'en se fiant au compilateur — TypeScript
+  ne voit pas une chaîne de caractères.
+- ✅ **L'angle mort signalé par le BACKLOG a été vérifié, et il était bien vide** : les registres de
+  hub (`STRENGTH_WIDGET_IDS`, `RUNNING_WIDGET_IDS`) utilisent des ids `strength-*` / `running-*`
+  avec leurs propres composants. `MuscleVolumeCard` et `RunningWeekCard`, qui portaient les ids
+  historiques d'accueil, ne leur servent pas. Si un hub les réclame un jour, `git show 180c7ca` les
+  rend.
+- **Preuve d'innocuité avant geste** : `dashboard-widgets.tsx` ne compte que 8 entrées, et un grep
+  des `import … from '…Card'` ne renvoyait que les **7 tests** de ces mêmes composants. Zéro import
+  applicatif.
+- ⚠️ **La couverture baisse, et c'était le risque à mesurer** : 35,47 % → **34,89 %** de statements
+  (branches 29,01 → 28,57 ; functions 29,23 → 28,89). Retirer 7 suites de tests retire du code
+  **bien couvert**, donc tire la moyenne vers le bas. Mesuré avant/après : les seuils du
+  `coverageThreshold` tiennent (`test:coverage` sort **0**), **aucun seuil n'a été abaissé** — ce
+  qu'interdit explicitement le commentaire du `jest.config.js`.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée** : ces composants
+  n'étaient plus rendus depuis INSIGHTS-02, leur retrait ne change rien à l'écran.
+
+### 08/08/2026 — `fix/health-connect-test-isolation` — l'échec intermittent, nommé plutôt que deviné
+
+Commit précédent : `35e51c2`. **Dette 🔴 du BACKLOG (07/08) instruite** : le mode de défaillance est
+reproduit et mesuré, le déclencheur reste ouvert — la dette est **requalifiée 🟠, pas fermée**.
+Vérifié : typecheck **0**, lint **0 erreur**, **1 324 tests mobile verts** (1 323 + la garde) —
+codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- Garde d'isolation en tête de `health-connect-state.test.ts` : vérifie que
+  `import('react-native-health-connect')` résout bien **le mock de ce fichier**.
+
+#### Technique — Notes
+
+- 🔴 **Le mode de défaillance est établi par la mesure, pas par déduction.** Quatre hypothèses ont
+  été testées en forçant chacune une sortie anticipée, et elles ont des **signatures distinctes** :
+  `Platform.OS` non-Android → **20** échecs sur 31 · opt-in perdu → **6** · `getSdkStatus` sans
+  implémentation → **8** · **module natif détaché des mocks locaux → 17**. L'incident du 07/08 en
+  comptait **16**. Seule la dernière colle, en nombre **et** en genre (`Number of calls: 0` en
+  masse). Les trois autres sont écartées — c'est le gain réel de l'exercice, pas la garde.
+- **Cause structurelle** : `health-connect.ts` charge le natif par `import()` **dynamique**
+  (`nativeModule()`), donc la résolution a lieu à l'**appel** et dépend de l'état du registre de
+  modules à cet instant. Un fichier de test ne maîtrise pas seul cette résolution.
+- ⚠️ **Le déclencheur n'est PAS trouvé, et rien ici ne prétend le corriger.** Aucun
+  `jest.resetModules()` n'existe dans le dépôt : le vecteur de fuite reste inconnu, et sans
+  reproduction déterministe un correctif ne serait pas vérifiable. Poser un correctif « plausible »
+  sur un bug non reproductible aurait surtout produit l'illusion d'une dette fermée.
+- **Ce que la garde change** : à la prochaine occurrence, **un** test échoue avec la cause nommée et
+  la marche à suivre, au lieu de seize échecs opaques. Le coût de cet incident n'était pas l'échec,
+  c'était le temps passé à ne pas savoir d'où il venait.
+- ✅ **Aucun code applicatif touché.** L'`import()` dynamique de `health-connect.ts` est **laissé
+  tel quel** : le basculer en import statique changerait le chargement du module natif sur un
+  chemin livré et recetté (9.9), pour corriger un défaut de test.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
+### 08/08/2026 — `refactor/goal-adherence-factorisation` — la cible calorique du jour, écrite une seule fois
+
+Commit précédent : `88d26b6`. **Dette du BACKLOG ouverte la veille par APPORT-01, refermée** — dans
+l'ordre qu'elle prescrivait : couvrir d'abord, extraire ensuite.
+Vérifié : typecheck **0**, lint **0 erreur** (96 warnings, tous préexistants), **1 323 tests mobile
++ 373 admin + 91 fichiers shared verts** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `useDailyCalorieTargets(fromKey, toKey)` dans `dashboard-repository.ts` — l'assemblage de la cible
+  calorique effective, jour par jour, désormais **écrit une seule fois**. Expose `days`, `marginPct`,
+  `hasTarget`, `weightKg`, `isLoading`. Types `DailyCalorieTarget` et `DailyCalorieTargets`.
+- `__tests__/goal-adherence-assembly.test.tsx` — **17 tests** sur `useGoalAdherenceForRange`, qui
+  n'avait jusqu'ici **aucun test direct** : bornes de fenêtre, cible par jour (VIE-01), jours de
+  séance, dépense de course, marge utilisateur, absence d'objectif, chargement, bilan signé.
+
+#### Modifié
+
+- `useGoalAdherenceForRange` ne fait plus que **juger** les jours (`computeGoalAdherence` +
+  `computeCaloricBalance`) ; leur construction est déléguée.
+- `useTrainingNutritionCross` consomme le même assemblage et ne garde que ce qui lui est propre :
+  le volume muscu par jour et les quatre moteurs. Ses `isLoading` et son `useMemo` sont réduits
+  d'autant (14 dépendances → 6).
+
+#### Technique — Notes
+
+- 🔴 **L'ordre imposé par le BACKLOG a été respecté à la lettre**, et il comptait : les 17 tests ont
+  été écrits **et vérifiés verts sur le code d'origine** avant la moindre extraction, puis rejoués
+  à l'identique après. C'est ce qui distingue « j'ai factorisé » de « j'ai changé les chiffres de
+  trois écrans livrés » — `useGoalAdherenceForRange` sert NUTR-10, NUTR-18, BILAN-01 (en recette)
+  et `nutrition-stats.tsx`.
+- ⚠️ **Une attente du test était fausse, pas le code** : le premier jet exigeait `daysInTarget = 3`
+  là où le code rendait 2. `daysBelow` est **binaire** (strictement sous la cible) tandis que
+  `daysInTarget` applique la marge de ±10 % — un jour à −200 sur 2 000 est donc à la fois « en
+  dessous » et « dans la cible ». L'assertion a été corrigée et la distinction documentée dans le
+  test, parce qu'elle se represcrira.
+- 🔴 **`DailyCalorieTarget.kcal` n'est PAS nullable, là où `CrossDay.kcal` l'est** — et ce n'est pas
+  une divergence à corriger. `CrossDay` réserve `null` au jour **non journalisé** (spec APPORT-01
+  R4) ; or les jours produits ici viennent tous de `useDailyTotals`, où un jour sans entrée ne
+  figure simplement pas. Élargir le type aurait obligé chaque consommateur à traiter un cas que le
+  producteur n'émet jamais. `number` restant assignable à `number | null`, `CrossDay` est satisfait
+  à la construction. Premier jet fait en `Omit<CrossDay, 'strengthVolume'>` : rejeté par le
+  typecheck, et c'est le typecheck qui avait raison.
+- **Aucun changement de comportement attendu, et rien qui le masque** : mêmes fonctions pures, même
+  ordre, même convention de rattachement au jour (`finished_at` local). Le `useMemo` ajouté ne
+  mémoïse pas davantage qu'avant en pratique — ses dépendances (`allTotals`, `workouts`, `runs`)
+  sont des tableaux reconstruits à chaque rendu par leurs hooks — mais il ne dégrade rien et
+  bénéficiera d'éventuelles références stables.
+- **Les tests mockent les sources, jamais les briques pures** : c'est l'assemblage qu'on veut voir,
+  pas une réimplémentation du calcul dans le test.
+- ⚠️ **`renderHook()` de @testing-library/react-native v14 est async.** Oublier le `await` donne un
+  `result` à `undefined` et un échec qui ne dit pas pourquoi — piège déjà documenté dans
+  `useUnits.test.tsx`, redocumenté en tête du nouveau fichier.
+- **Les horodatages de test sont construits en heure locale** puis sérialisés, jamais écrits en UTC
+  en dur : un `'…T23:50:00Z'` passerait dans un fuseau et échouerait dans un autre — exactement le
+  profil du test intermittent déjà ouvert au BACKLOG sur `health-connect-state`.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture, aucune chaîne i18n.** Refactorisation
+  interne : **aucune ligne de roadmap ne change de statut**.
+
+### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : requêtes, section et i18n
+
+Commit précédent : `72ac9d1`. L'US passe à `etape: recette`.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 841 tests verts** (373 admin + 1 306 mobile +
+2 162 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `useTrainingNutritionCross` + 2 requêtes (`SELECT_PROTEIN_BY_MEAL`,
+  `SELECT_STRENGTH_VOLUME_BY_DAY`) dans `dashboard-repository.ts`.
+- `components/nutrition/CrossTrainingSection.tsx` — section **conditionnelle et repliée**, branchée
+  sur l'écran Nutrition à côté de la carte MN-03 déjà présente.
+- **14 tests SQL** et **10 tests de section**. **19 clés i18n** FR + EN (2 088 chacune).
+
+#### Technique — Notes
+
+- 🔴 **D1 a été AFFINÉE en codant, et le résultat est meilleur que la spec.** Elle prescrivait
+  `isTrainingDay` ; or le calcul de la cible effective, dans ce même fichier, groupe déjà les jours
+  avec un `trainedDays` bâti des séances **terminées**. Sur une fenêtre **passée** les deux
+  coïncident — la branche d'anticipation d'`isTrainingDay` ne peut pas se déclencher sur un jour
+  révolu. Reprendre `trainedDays` **garantit que le groupement colle exactement à la cible** qui a
+  servi à juger chaque jour ; importer `isTrainingDay` séparément aurait permis un jour classé
+  « séance » dont la cible aurait été calculée en jour de repos — incohérence invisible et
+  indébusquable en recette.
+- 🔴 **Un item de DoD a été RÉÉCRIT plutôt que coché.** Il annonçait quatre réutilisations ; **deux
+  n'ont pas eu lieu** : `isTrainingDay` (remplacée par mieux, voir ci-dessus) et
+  `computeCaloricBalance` (elle rend un solde global, ce lot compare **deux groupes de jours** —
+  l'annoncer était une erreur de cadrage). Et `resolveMealSplit` voit sa **convention** reprise, pas
+  sa fonction appelée : elle rend des `avgKcalPerDay`, spécifiques aux calories. Cocher ces items
+  aurait été faux ; le tableau du §10 dit désormais exactement ce qui est réutilisé et ce qui ne
+  l'est pas.
+- 🔴 **`SELECT_STRENGTH_VOLUME_BY_DAY` reprend la convention de volume du dépôt** — séries validées,
+  hors échauffement, séances terminées, comme `useLifetimeTonnage` et `useMuscleVolumeThisWeek`. Une
+  troisième définition du « volume » rendrait les chiffres incomparables d'un écran à l'autre, sans
+  qu'aucun test fonctionnel ne le voie. Un test SQL le fige.
+- **`finished_at` et non `started_at`** pour rattacher une séance à un jour : c'est la convention de
+  `trainedDays`, donc une séance commencée à 23 h 50 appartient au jour où elle se termine, ici comme
+  ailleurs.
+- **La carte protéines survit à l'absence de pesée** et affiche son remède, avec l'accès aux
+  mensurations — troisième application du patron (`StrengthSection`, puis les zones d'ALLURE-01).
+  Deux tests l'exigent, dont un qui vérifie que le remède est **actionnable**.
+- ⚠️ **Dette assumée et inscrite au BACKLOG** : l'assemblage de `perDay` duplique celui de
+  `useGoalAdherenceForRange`. Le factoriser était le bon geste — mais ce hook **n'a aucun test
+  direct** et sert **BILAN-01, en recette**. Refactoriser à l'aveugle un chemin livré et en recette
+  aurait été un risque mal payé. **Ordre de traitement noté** : couvrir d'abord, extraire ensuite.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.** `insights.ts` et le registre d'accueil :
+  `git diff` **vide**.
+
+### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : les 4 moteurs du croisé muscu × nutrition
+
+Commit précédent : `041375a`. **Cadrage validé par Florian le 08/08/2026**, mes 4 propositions du §8
+retenues. **Incrément borné à la couche pure** : aucune requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 551 tests verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `packages/shared/src/training-nutrition-cross.ts` — les 4 analyses : `computeEnergyByDayType`
+  (**MN-20**), `computeAdherenceByDayType` (**MN-16**), `findLowFuelDays` (**MN-15**),
+  `computeProteinDistribution` (**MN-10**).
+- **42 tests** neufs. Le module est à **100 % sur les quatre métriques**, branches comprises.
+
+#### Technique — Notes
+
+- 🟢 **Ce module ne définit rien, il assemble.** Trois calibrages existaient déjà, et les recopier
+  aurait marché aujourd'hui pour diverger au premier ajustement **sans que rien n'échoue** :
+  `isTrainingDay` entre en **booléen déjà calculé** ; la marge d'adhérence entre **en paramètre** ;
+  `computeGoalAdherence` est **réutilisée** groupe par groupe plutôt que refaite.
+- 🔴 **Le test qui prouve D2** : les mêmes jours, marge 10 % → 100 %, marge 5 % → 0 %. Si le module
+  figeait sa propre constante, les deux appels rendraient la même chose — et l'app afficherait deux
+  taux d'adhérence contradictoires, l'un sur l'accueil, l'autre ici, tous deux crédibles.
+- 🔴 **Le seuil est par GROUPE, pas au total.** 3 jours de séance et 2 de repos rendent `null` : un
+  test est écrit exprès pour échouer sur `if (days.length < MIN)`, qui est la formulation naturelle et
+  qui laisserait calculer un écart sur une seule journée de séance.
+- 🔴 **`kcal: null` n'est pas `kcal: 0`.** Le type l'impose, et **deux tests le figent dans les deux
+  sens** : un jour non journalisé est exclu des moyennes *et* des compteurs ; un jour **à zéro
+  calorie** compte, parce qu'il a été journalisé. Les confondre fausserait tous les dénominateurs à la
+  fois, et vers le bas — donc de façon crédible.
+- 🔴 **L'asymétrie course / volume est testée.** Un jour de course est un jour d'entraînement pour
+  MN-20 et MN-16 (la cible calorique s'y applique) mais produit **zéro volume muscu**, donc jamais un
+  « gros volume ». C'est le genre de chose qu'une relecture « corrige » par symétrie apparente.
+- **« Gros volume » se mesure contre soi-même** : au-delà de 1,25 × la **médiane personnelle**. Un test
+  montre qu'une séance exceptionnelle de 100 000 kg·reps ne déplace pas le seuil — ce qu'une moyenne
+  aurait fait, en rendant tous les autres jours « faibles ».
+- **MN-10 réutilise la convention de repas de NUTR-16**, pas sa fonction : `resolveMealSplit` rend des
+  `avgKcalPerDay`, spécifiques aux calories. L'ordre suit les repas configurés et `OTHER_MEAL_KEY`
+  reste **en dernier** — deux conventions de repas dans la même app divergeraient au premier repas
+  personnalisé.
+- **Le test qui justifie MN-10 à lui seul** : 130 g en un dîner et 130 g en quatre prises ont le
+  **même total** et un `servingsAtReference` de 1 contre 4. C'est le fractionnement qui porte
+  l'information, pas le total — déjà affiché ailleurs.
+- ⚠️ **Une branche morte supprimée** (`servings.length === 0`, impossible puisque `byKey` est non vide
+  et toutes ses valeurs positives) et **une branche vivante testée** (le départage de deux jours à
+  volume égal). Distinguer les deux est l'exercice, pas la formalité.
+- ⚠️ **`npm install` manquant après l'intégration de `dev`** : Damien a ajouté
+  `@testing-library/react` à `apps/admin`, et mon `node_modules` ne l'avait pas. Le typecheck a
+  échoué sur 5 fichiers du back-office **sans aucun rapport avec ce lot**. Réflexe à garder après
+  chaque intégration qui touche un `package.json`.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.**
+- **Reste** : les requêtes et le hook (lot 6), la section d'écran Nutrition (lot 7), l'i18n (lot 8).
 
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Le constructeur de programmes sous test (1 458 lignes)
 

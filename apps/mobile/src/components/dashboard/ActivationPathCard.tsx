@@ -2,8 +2,8 @@
  * Widget conditionnel temporel — Parcours « 7 jours pour démarrer » (US ACTIV-01), 3 formes.
  *
  * Rendu seulement les 7 jours suivant la fin de l'onboarding, ou jusqu'à une fermeture explicite
- * (`useActivationPath().show`) — même patron que les widgets Tier 2 (`TrainingLoadAlertCard`), à
- * ceci près que sa condition est **aussi** déclarée dans `isWidgetActive`
+ * (`useActivationPath().show`) — même patron que les widgets Tier 2 (rendre `null` hors de leur
+ * fenêtre), à ceci près que sa condition est **aussi** déclarée dans `isWidgetActive`
  * (`(tabs)/index.tsx`, spec R4) pour éviter le trou de grille que ce simple `null` interne ne
  * suffit pas à effacer.
  *

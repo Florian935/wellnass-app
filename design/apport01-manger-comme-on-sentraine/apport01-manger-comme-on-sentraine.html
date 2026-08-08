@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>APPORT-01 — Manges-tu comme tu t'entraînes ?</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--warn:#8a6419;
+        --warnbg:#fdf3e2;--warnbd:#e7d3a8}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:84ch}
+  h2{font-size:18px;margin:40px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:84ch}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:start}
+  @media(max-width:980px){.row{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.row{grid-template-columns:1fr}}
+  .caption{font-size:12.5px;color:#6a5d4d;margin:8px 2px 0}
+  .caption b{color:var(--text)}
+
+  .phone{background:var(--bg);border-radius:26px;overflow:hidden;
+         box-shadow:0 4px 14px rgba(0,0,0,.15);border:1px solid #d9c9b1}
+  .navbar{padding:13px 16px 11px;border-bottom:1px solid var(--border)}
+  .navtitle{font-size:16px;font-weight:800}
+  .navsub{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .screen{padding:12px;min-height:210px}
+
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;
+        padding:12px 13px;margin-bottom:10px}
+  .ctitle{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+          color:var(--muted);margin-bottom:8px}
+  .pair{display:flex;gap:16px}
+  .pair > div{flex:1}
+  .plabel{font-size:11px;color:var(--muted);font-weight:700}
+  .pval{font-size:21px;font-weight:800;line-height:1.15}
+  .delta{font-size:12.5px;font-weight:800;margin-top:7px}
+  .delta.up{color:var(--success)} .delta.down{color:var(--accent)}
+  .meta{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+  .meta b{color:var(--text)}
+
+  .bar{height:10px;border-radius:99px;background:var(--surfalt);overflow:hidden;display:flex;margin-top:8px}
+  .bar i{display:block;height:100%}
+  .mealrow{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:3px 0}
+  .mealrow .g{margin-left:auto;font-weight:800;font-size:12px}
+  .mealrow .ok{color:var(--success)} .mealrow .no{color:var(--muted)}
+
+  .anno{background:#fffaf2;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+  .anno ul{margin:0;padding-left:20px} .anno li{margin:7px 0;font-size:13.5px}
+  code{background:#f0e4d3;padding:1px 5px;border-radius:4px;font-size:12px}
+  .flag{background:var(--warnbg);border:1px solid var(--warnbd);border-left:3px solid var(--warn);
+        border-radius:10px;padding:12px 14px;font-size:13.5px;margin:14px 0 0}
+  .flag b{color:#6d4f14}
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surf);
+        border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  th,td{padding:8px 11px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--surfalt);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>APPORT-01 — Manges-tu comme tu t'entraînes ?</h1>
+<p class="sub">L'app sait dire ce que tu manges. Elle sait dire comment tu t'entraînes. Elle ne dit
+<b>jamais si l'un va avec l'autre</b> — et c'est pourtant le différenciateur que la vision revendique,
+celui qu'aucune des trois apps qu'on remplace ne sait faire. <b>Quatre analyses croisées</b>, aucune
+migration, et <b>un seul nombre inventé</b> dans tout le lot.</p>
+
+<h2>1. Les quatre lectures</h2>
+<p class="why">Section <b>repliée par défaut</b> sur l'écran Nutrition. Chaque carte se tait sous son
+seuil ; si les quatre se taisent, la section n'existe pas — un compte neuf ne voit rien de plus
+qu'avant.</p>
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Nutrition</div><div class="navsub">Croisement entraînement · 4 semaines</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Jours de séance vs repos</div>
+          <div class="pair">
+            <div>
+              <div class="plabel">Jours de séance</div>
+              <div class="pval">2 480 kcal</div>
+            </div>
+            <div>
+              <div class="plabel">Jours de repos</div>
+              <div class="pval">2 160 kcal</div>
+            </div>
+          </div>
+          <div class="delta up">+320 kcal les jours de séance</div>
+          <div class="meta">sur <b>11 jours de séance</b> et <b>13 jours de repos</b> journalisés</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Adhérence à la cible</div>
+          <div class="pair">
+            <div><div class="plabel">Séance</div><div class="pval">64 %</div></div>
+            <div><div class="plabel">Repos</div><div class="pval">85 %</div></div>
+          </div>
+          <div class="meta">à <b>± 10 %</b> de la cible — ta marge réglée en profil</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Le croisement, en deux chiffres.</b> Et « ± 10 % » n'est pas une décoration :
+      c'est <b>ta</b> marge, celle du profil. En coder une en dur ici afficherait deux taux d'adhérence
+      différents dans la même app — un sur l'accueil, un ici, tous deux crédibles.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Nutrition</div><div class="navsub">Suite de la section</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Disponibilité énergétique</div>
+          <div class="pval" style="color:var(--warn)">3 jours</div>
+          <div class="meta">gros volume et apport bas — <b>12/07</b> (14 200 kg·reps, 1 780 kcal),
+            <b>19/07</b>, <b>02/08</b></div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Protéines dans la journée</div>
+          <div class="mealrow">Petit-déj. <span class="g no">18 g</span></div>
+          <div class="mealrow">Déjeuner <span class="g ok">42 g</span></div>
+          <div class="mealrow">Collation <span class="g no">12 g</span></div>
+          <div class="mealrow">Dîner <span class="g ok">58 g</span></div>
+          <div class="bar">
+            <i style="width:14%;background:#c98a5e"></i><i style="width:32%;background:#66714b"></i>
+            <i style="width:9%;background:#c98a5e"></i><i style="width:45%;background:#66714b"></i>
+          </div>
+          <div class="meta"><b>2 prises</b> au-dessus du repère (0,3 g/kg, soit 22 g pour 74 kg)</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Deux chiffres qui n'existaient nulle part.</b> Le total de protéines est déjà
+      affiché ailleurs — mais « 130 g » ne distingue pas <b>tout au dîner</b> de <b>quatre prises</b>.
+      C'est la répartition qui porte l'information.</p>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="navbar"><div class="navtitle">Nutrition</div><div class="navsub">Ce qui n'est pas calculable</div></div>
+      <div class="screen">
+        <div class="card">
+          <div class="ctitle">Protéines dans la journée</div>
+          <div class="meta" style="font-style:italic;margin-top:0">Ajoute une pesée pour voir tes
+            protéines par prise en g/kg. ›</div>
+        </div>
+        <div class="card">
+          <div class="ctitle">Jours de séance vs repos</div>
+          <div class="meta" style="font-style:italic;margin-top:0">Pas encore assez de jours
+            journalisés dans les deux groupes.</div>
+        </div>
+      </div>
+    </div>
+    <p class="caption"><b>Et les deux façons de ne pas savoir.</b> Sans pesée, les g/kg n'existent
+      pas — et il n'y a <b>aucune valeur neutre</b> : prendre 70 kg par défaut produirait une
+      répartition fausse et parfaitement crédible. La carte <b>reste</b> et dit <b>quoi faire</b>.</p>
+  </div>
+
+</div>
+
+<h2>2. Ce lot ne réinvente presque rien — et c'est sa force</h2>
+<p class="why">Trois calibrages existaient déjà dans le produit. Les recopier aurait marché
+aujourd'hui et divergé au premier ajustement, <b>sans que rien n'échoue</b>.</p>
+<table>
+  <tr><th>Ce qu'il fallait</th><th>Ce qui existe déjà</th><th>Ce que ça évite</th></tr>
+  <tr>
+    <td><b>« Jour d'entraînement »</b></td>
+    <td><code>isTrainingDay</code> — séance <b>terminée</b> (rétroactif), <b>ou</b> planifiée si le
+      jour est aujourd'hui ou futur. <i>« Le passé n'est jamais anticipé. »</i></td>
+    <td>Une définition naïve (« il y a un workout ce jour-là ») classerait les jours autrement que
+      l'accueil et que le calcul de cible. <b>Deux écrans diraient des choses contradictoires sur la
+      même journée</b>, chacun ayant l'air juste.</td>
+  </tr>
+  <tr>
+    <td><b>La tolérance d'adhérence</b></td>
+    <td><code>adherenceMarginPct</code> — un <b>réglage utilisateur</b>, défaut 10.</td>
+    <td>Un ±10 % en dur donnerait <b>deux taux d'adhérence différents</b> à qui a réglé sa marge à
+      5 %, sans moyen de savoir lequel croire.</td>
+  </tr>
+  <tr>
+    <td><b>Le groupement par repas</b></td>
+    <td><code>resolveMealSplit</code> + <code>OTHER_MEAL_KEY</code> (NUTR-16, 02/08).</td>
+    <td>Deux conventions de repas dans la même app, qui divergeraient sur le premier repas
+      personnalisé.</td>
+  </tr>
+  <tr>
+    <td><b>La cible du jour</b></td>
+    <td><code>trainingDayCalories(target, bonus)</code>, déjà câblée par MN-04.</td>
+    <td>La recalculer risquerait de diverger le jour où le bonus change de mode
+      (<code>fixed</code> / <code>auto</code>).</td>
+  </tr>
+</table>
+<div class="flag" style="max-width:96ch"><b>Le seul nombre libre du lot</b> est le facteur de « gros
+volume » — et il n'est même pas absolu : un jour est à fort volume s'il dépasse <b>ta propre
+médiane</b>. 15 000 kg·reps est énorme pour un débutant et ordinaire pour un confirmé ; un seuil fixe
+n'aurait eu de sens pour personne. Médiane et non moyenne, pour la raison déjà rencontrée sur la durée
+de séance : une séance exceptionnelle tirerait la moyenne et rendrait toutes les autres « faibles ».</div>
+
+<h2>3. Trois pièges nommés, chacun avec son test</h2>
+<div class="row">
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">🔴 « 0 kcal » n'est pas « non journalisé »</p>
+    <p style="margin:0;font-size:13.5px">Un jour sans aucune entrée n'est pas un jour à zéro calorie :
+      c'est un jour où l'utilisateur n'a rien noté. Les confondre fausse <b>tous les dénominateurs à la
+      fois</b> — et vers le bas, donc de façon crédible.</p>
+    <div class="flag">Le type l'impose : <code>kcal: number | null</code>. Et un test le fige sur
+      <b>chacun</b> des quatre moteurs, pas seulement sur celui où on y a pensé.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">🔴 Le seuil est par GROUPE, pas au total</p>
+    <p style="margin:0;font-size:13.5px">12 jours de repos et 1 jour de séance font 13 jours — et
+      <b>aucune comparaison</b>. Écrire <code>if (days.length &lt; MIN)</code> est l'erreur naturelle,
+      et elle produit un écart calculé sur une seule journée de séance.</p>
+    <div class="flag">Un test est écrit <b>exprès</b> pour échouer sur cette formulation : 3 jours de
+      séance et 2 de repos doivent rendre <code>null</code>.</div>
+  </div>
+  <div class="anno">
+    <p style="margin:0 0 8px;font-weight:800;font-size:14px">🔴 Une course est un jour d'entraînement — sauf pour le volume</p>
+    <p style="margin:0;font-size:13.5px">Elle compte pour le <b>bilan énergétique</b> et l'<b>adhérence</b>
+      (la cible calorique s'applique aussi aux jours de course), mais elle produit <b>zéro volume
+      muscu</b> — donc jamais un « gros volume ».</p>
+    <div class="flag"><b>Cette asymétrie est délibérée</b>, et c'est exactement le genre de chose qu'une
+      relecture « corrige » par symétrie apparente. Un test la fige, et la spec dit pourquoi.</div>
+  </div>
+</div>
+
+<h2>4. Ce que ce lot s'interdit</h2>
+<div class="anno" style="max-width:92ch">
+  <p style="margin:0 0 10px;font-size:14px"><b>Toute affirmation de causalité.</b> Le catalogue propose
+  six items qui veulent corréler l'apport à la <b>progression de force</b> (MN-07, 08, 11, 17, 18, 23).
+  Ils ne sont pas dans ce lot.</p>
+  <ul>
+    <li>C'est le <b>moteur de corrélations</b> — un autre chantier, avec un autre niveau d'exigence
+      statistique.</li>
+    <li>Ici on <b>met deux chiffres côte à côte</b>. On ne dit jamais « ton déficit explique ta
+      stagnation » : il n'y a ni contrôle, ni puissance, ni causalité établie.</li>
+  </ul>
+  <div class="flag"><b>Et on ne prescrit pas.</b> « Mange plus les jours de séance » est un conseil de
+    coach. On montre l'écart, on nomme le repère quand il existe (0,3 g/kg par prise), et on s'arrête.
+    Ton de GARDE-01, DOUL-01, EXEC-01 et ALLURE-01 — <b>quatre fois validé</b>.</div>
+</div>
+
+</div>
+</body>
+</html>

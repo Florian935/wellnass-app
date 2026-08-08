@@ -1253,6 +1253,58 @@ par [`/commit`](.claude/commands/commit.md).
 
 ---
 
+## 53. APPORT-01 — Manges-tu comme tu t'entraînes ? (lot de 4 analyses croisées)
+
+📄 [spec](docs/specs/functional/us/apport01-manger-comme-on-sentraine.md) · roadmap **4.40** ·
+**📱 device** · ✅ **aucune migration, aucune sync rule, aucune dépendance native → recettable sur
+l'APK existant**.
+
+> **Où ça se trouve** : écran **Nutrition** (stats), section « Manges-tu comme tu t'entraînes ? »,
+> **repliée par défaut** — il faut la déplier.
+> ⚠️ **Elle n'apparaît pas du tout** tant que les 4 analyses se taisent : c'est **voulu**.
+> **Ce qu'il faut fabriquer** : au moins **3 jours de séance ET 3 jours de repos** journalisés dans les
+> 4 dernières semaines. Les deux groupes, sinon rien ne s'affiche.
+
+- [ ] 1. Compte neuf → **aucune section** sur l'écran Nutrition.
+- [ ] 2. Journaliser **uniquement des jours de repos** → le bilan et l'adhérence restent muets.
+- [ ] 3. Après ≥ 3 jours de séance et 3 de repos journalisés → le bilan apparaît, **avec l'écart signé
+      et le nombre de jours de chaque côté**.
+- [ ] 4. 🔴 Manger **plus** les jours de séance → écart **positif**. Manger **moins** → écart
+      **négatif**, affiché tel quel, **sans reproche ni commentaire**.
+- [ ] 5. 🔴 **La marge affichée est la tienne.** Change `marge d'adhérence` dans le profil nutrition
+      → le taux **bouge**, et il reste **cohérent avec celui de l'accueil**. C'est le critère qui
+      prouve qu'on n'a pas inventé une seconde tolérance.
+- [ ] 6. 🔴 Faire une **course** (sans muscu) un jour journalisé → ce jour compte comme **jour
+      d'entraînement** dans le bilan et l'adhérence, mais **jamais** dans « disponibilité énergétique »,
+      qui lit le volume **muscu**.
+- [ ] 7. Faire une séance nettement plus grosse que d'habitude **avec un apport bas** → elle apparaît
+      en « disponibilité énergétique », avec son volume et ses kcal. Volume régulier → la carte se tait.
+- [ ] 8. Un jour de **gros volume non journalisé** → **pas** signalé (on ne sait pas ce qui a été mangé).
+- [ ] 9. 🔴 **Aucune pesée** → la carte protéines **reste affichée** et propose d'en ajouter une, avec
+      l'accès aux mensurations. **Jamais un « — »**, jamais une carte disparue.
+- [ ] 10. Ajouter une pesée → les g/kg apparaissent **sans redémarrer l'app**.
+- [ ] 11. Tout manger au **dîner** vs répartir sur 4 repas, à protéines égales → **le nombre de prises
+      au-dessus du repère change**. C'est toute la raison d'être de cette carte.
+- [ ] 12. Un **repas personnalisé** (hors config) → rangé en **« Autre », en dernier** (convention
+      NUTR-16, la même que la répartition calorique).
+- [ ] 13. Les jours **non journalisés** ne comptent pas comme des jours à zéro : vérifier que le
+      nombre de jours annoncé correspond bien aux jours réellement renseignés.
+- [ ] 14. Désactiver le pilier **nutrition** ou **muscu** → aucune section.
+- [ ] 15. FR ⇄ EN → aucune chaîne brute ; kcal et grammes cohérents.
+- [ ] 16. Police **1,5×** et thème **sombre** → lisible, non tronqué, contrastes corrects.
+- [ ] 17. **TalkBack** → chaque carte annoncée avec son chiffre et sa base ; le lien vers les
+      mensurations est atteignable quand la pesée manque.
+- [ ] 18. Mode avion → identique. **L'écran Insights, l'accueil et le reste de l'écran Nutrition
+      n'ont pas changé** (la carte MN-03 déjà présente notamment).
+- [ ] 19. 🔴 **Calibrage**, jugement de pratiquant : **1,25× la médiane** est-il le bon seuil de « gros
+      volume » ? **3 jours** par groupe suffisent-ils ? Et **0,3 g/kg par prise** est-il le bon repère
+      à afficher, ou trop bas ?
+
+**Quand l'US passe** : `etape: close`, roadmap 4.40 à ✅, et **on supprime cette section**. Passe
+par [`/commit`](.claude/commands/commit.md).
+
+---
+
 ## 32. COLLIS-01 — Détecteur de collisions entre séances
 
 > 🔴 **Correctif du 07/08/2026 intégré — 5 critères de plus (18 à 22).** La détection ne regardait que

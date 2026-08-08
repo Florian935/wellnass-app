@@ -26,7 +26,7 @@ const PAIRS: {
 }[] = [
   // Thème clair — 3 non-conformités trouvées le 30/07/2026 (spec §0.1).
   { theme: 'light', fg: 'success', bg: 'background', threshold: 4.5, usage: 'texte de succès (sign-in, steps, WeightGoalCard, CurrentSetCard)' },
-  { theme: 'light', fg: 'warnText', bg: 'warn', threshold: 4.5, usage: 'texte d’alerte (DeficitVolumeAlertCard, StreakCard, GoalCard)' },
+  { theme: 'light', fg: 'warnText', bg: 'warn', threshold: 4.5, usage: 'texte d’alerte (StreakCard, GoalCard, cartes d’insight)' },
   { theme: 'light', fg: 'amber', bg: 'background', threshold: 3.0, usage: 'donnée (barre glucides NutritionSummaryCard, MicroCoverageGrid, MacroTriple)' },
   // Thème sombre — 2 non-conformités déjà connues (spec §0.2).
   { theme: 'dark', fg: 'accentText', bg: 'accent', threshold: 4.5, usage: 'libellé des boutons pleins (D1, acceptée le 01/08/2026)' },

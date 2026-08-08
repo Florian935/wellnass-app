@@ -1,7 +1,7 @@
 /**
  * US CYCLE-01 — smoke test du widget de suivi de cycle (3 formes).
  *
- * Même stratégie de mock que `WellbeingCard.test.tsx` : repository, i18n, thème et navigation
+ * Même stratégie de mock que `StreakCard.test.tsx` : repository, i18n, thème et navigation
  * isolés pour ne dépendre ni de PowerSync ni du natif.
  */
 import React from 'react';
