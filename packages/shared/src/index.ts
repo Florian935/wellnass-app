@@ -94,6 +94,9 @@ export * from './pace-zones';
 export * from './split-balance';
 export * from './pace-fade';
 export * from './pace-zone-mix';
+
+// US APPORT-01 (roadmap 4.40) — lot croise muscu x nutrition.
+export * from './training-nutrition-cross';
 // US VIE-01 (roadmap 1.28) — mode « vie réelle », dégradation gracieuse des objectifs.
 export * from './real-life';
 // US DOUL-01 (roadmap 1.29) — journal des zones douloureuses.

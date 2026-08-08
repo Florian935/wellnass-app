@@ -10,6 +10,59 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : les 4 moteurs du croisé muscu × nutrition
+
+Commit précédent : `041375a`. **Cadrage validé par Florian le 08/08/2026**, mes 4 propositions du §8
+retenues. **Incrément borné à la couche pure** : aucune requête, aucun écran.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 551 tests verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `packages/shared/src/training-nutrition-cross.ts` — les 4 analyses : `computeEnergyByDayType`
+  (**MN-20**), `computeAdherenceByDayType` (**MN-16**), `findLowFuelDays` (**MN-15**),
+  `computeProteinDistribution` (**MN-10**).
+- **42 tests** neufs. Le module est à **100 % sur les quatre métriques**, branches comprises.
+
+#### Technique — Notes
+
+- 🟢 **Ce module ne définit rien, il assemble.** Trois calibrages existaient déjà, et les recopier
+  aurait marché aujourd'hui pour diverger au premier ajustement **sans que rien n'échoue** :
+  `isTrainingDay` entre en **booléen déjà calculé** ; la marge d'adhérence entre **en paramètre** ;
+  `computeGoalAdherence` est **réutilisée** groupe par groupe plutôt que refaite.
+- 🔴 **Le test qui prouve D2** : les mêmes jours, marge 10 % → 100 %, marge 5 % → 0 %. Si le module
+  figeait sa propre constante, les deux appels rendraient la même chose — et l'app afficherait deux
+  taux d'adhérence contradictoires, l'un sur l'accueil, l'autre ici, tous deux crédibles.
+- 🔴 **Le seuil est par GROUPE, pas au total.** 3 jours de séance et 2 de repos rendent `null` : un
+  test est écrit exprès pour échouer sur `if (days.length < MIN)`, qui est la formulation naturelle et
+  qui laisserait calculer un écart sur une seule journée de séance.
+- 🔴 **`kcal: null` n'est pas `kcal: 0`.** Le type l'impose, et **deux tests le figent dans les deux
+  sens** : un jour non journalisé est exclu des moyennes *et* des compteurs ; un jour **à zéro
+  calorie** compte, parce qu'il a été journalisé. Les confondre fausserait tous les dénominateurs à la
+  fois, et vers le bas — donc de façon crédible.
+- 🔴 **L'asymétrie course / volume est testée.** Un jour de course est un jour d'entraînement pour
+  MN-20 et MN-16 (la cible calorique s'y applique) mais produit **zéro volume muscu**, donc jamais un
+  « gros volume ». C'est le genre de chose qu'une relecture « corrige » par symétrie apparente.
+- **« Gros volume » se mesure contre soi-même** : au-delà de 1,25 × la **médiane personnelle**. Un test
+  montre qu'une séance exceptionnelle de 100 000 kg·reps ne déplace pas le seuil — ce qu'une moyenne
+  aurait fait, en rendant tous les autres jours « faibles ».
+- **MN-10 réutilise la convention de repas de NUTR-16**, pas sa fonction : `resolveMealSplit` rend des
+  `avgKcalPerDay`, spécifiques aux calories. L'ordre suit les repas configurés et `OTHER_MEAL_KEY`
+  reste **en dernier** — deux conventions de repas dans la même app divergeraient au premier repas
+  personnalisé.
+- **Le test qui justifie MN-10 à lui seul** : 130 g en un dîner et 130 g en quatre prises ont le
+  **même total** et un `servingsAtReference` de 1 contre 4. C'est le fractionnement qui porte
+  l'information, pas le total — déjà affiché ailleurs.
+- ⚠️ **Une branche morte supprimée** (`servings.length === 0`, impossible puisque `byKey` est non vide
+  et toutes ses valeurs positives) et **une branche vivante testée** (le départage de deux jours à
+  volume égal). Distinguer les deux est l'exercice, pas la formalité.
+- ⚠️ **`npm install` manquant après l'intégration de `dev`** : Damien a ajouté
+  `@testing-library/react` à `apps/admin`, et mon `node_modules` ne l'avait pas. Le typecheck a
+  échoué sur 5 fichiers du back-office **sans aucun rapport avec ce lot**. Réflexe à garder après
+  chaque intégration qui touche un `package.json`.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.**
+- **Reste** : les requêtes et le hook (lot 6), la section d'écran Nutrition (lot 7), l'i18n (lot 8).
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Le constructeur de programmes sous test (1 458 lignes)
 
 **21 tests** sur `ProgramEditScreen`, le plus gros écran du dépôt. Le fichier ne couvre pas chaque

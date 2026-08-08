@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 213 livré · 4 partiel · 2 à faire (sur 225)
+**MVP1 (= V1.0 complète)** `███████████████████░` **94 %** — 213 livré · 4 partiel · 3 à faire (sur 226)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -68,6 +68,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **APPORT-01** — Manges-tu comme tu t'entraînes ? — lot d'analyses croisées muscu × nutrition | `code` | `feature/apport01-manger-comme-on-sentraine` | [4.40] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -94,9 +95,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1134 · `main` a **1131** commits de retard sur `dev` |
-| Specs d'US | 132 au total — 79 clôturées, 53 en cours |
+| Branche courante | `feature/apport01-manger-comme-on-sentraine` (modifications non commitées) |
+| Commits | 1135 · `main` a **1132** commits de retard sur `dev` |
+| Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -106,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b710b9b` test(admin): le constructeur de programmes sous test (21 tests, 1 458 lignes)
 - `8dd78a2` fix(app): neuf gardes de double appui qui ne gardaient rien + hook useActionLock
 - `8ad8b6d` fix(programs): le verrou de duplication ne gardait rien + 3 coquilles de test supprimées
 - `b4bba32` test(admin): modération et import CSV sous test (45 tests)
 - `c692a34` test(admin): monter le premier écran React du back-office (29 tests)
-- `4c3c1ef` test(admin): couvrir la couche data du back-office (68,9 % → 97,7 %)
 
 ---
 
