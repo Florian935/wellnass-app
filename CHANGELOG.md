@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Comptes et aliments : les deux dernières listes du back-office
+
+**33 tests** sur `UsersScreen` et `FoodsScreen`. Huit écrans du back-office sur quinze sont
+désormais montés en test.
+
+#### Ajouté
+
+- **`UsersScreen.test.tsx` — 15 tests.** Un écran en lecture seule, et pourtant trois mécanismes
+  y décident s'il est utilisable.
+  - **🔴 La recherche est débouncée ET remet la page à zéro.** Sans le débounce, taper « martin »
+    émet six requêtes. Sans le reset de page, chercher depuis la page 4 interroge la page 4 d'un
+    résultat qui n'en a qu'une — l'écran annonce « aucun compte » à quelqu'un dont la recherche a
+    bien des résultats. Le test avance les minuteurs pour le prouver.
+  - **🔴 « Aucun résultat » et « aucun compte » sont deux messages distincts.** Le second se lit
+    comme « la base est vide » : alarmant à tort sur un écran d'administration.
+  - **🔴 Le nombre de pages vient du décompte TOTAL, pas de la page reçue** — sinon la pagination
+    s'arrêterait à la première page. Et sur une page unique, les deux boutons sont désactivés :
+    un bouton actif qui ne fait rien se lit comme un écran cassé.
+  - **🔴 Sobriété RGPD et absence d'action** : aucune donnée de santé dans le DOM, et **exactement
+    deux boutons** (précédent / suivant). Bannir se fait depuis la fiche détail après
+    confirmation — offrir l'action depuis une liste de vingt-cinq lignes, c'est un clic mal placé
+    qui sanctionne la mauvaise personne.
+- **`FoodsScreen.test.tsx` — 18 tests.** Même forme qu'`ExercisesScreen`, sur la table la plus
+  consultée de l'app : un aliment archivé disparaît du journal alimentaire de **tous** les
+  utilisateurs qui l'avaient enregistré.
+  - **🔴 Le décompte d'usage porte sur le bon type** (`'food'`, pas `'exercise'`) — se tromper
+    renverrait un décompte sans rapport, donc un « aucun usage » rassurant et faux.
+  - **🔴 Le troisième état du décompte** (indisponible) avertit au lieu de rassurer, et **annuler
+    n'archive rien**.
+  - **🔴 La restauration ne compte aucun usage** : remettre en service n'a aucun effet destructif,
+    un décompte serait un aller-retour inutile et un message alarmiste sur une action inoffensive.
+  - Plus : la recherche bilingue, le changement de portée qui **recharge depuis la base** (les
+    archivés ne sont jamais chargés en portée « actifs »), et la mention « Archivé le … »
+    **textuelle**, pas seulement une nuance de couleur.
+
+#### Modifié
+
+- **Cliquets `apps/admin` relevés** : écrans 46/77/50 → **57/78/56**, global 59/84/65 →
+  **67/84/68**.
+
+#### Technique / Notes
+
+- **3 892 tests verts** (2 162 shared + 1 285 mobile + 445 admin). **8 écrans du back-office sur
+  15** ; les 7 restants sont des formulaires ou des vues sans état. Typecheck, lint et seuils
+  propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Habilitations et journal d'audit sous test
 
 **39 tests** sur les deux écrans dont dépend la confiance qu'on peut accorder au back-office :

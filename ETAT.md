@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1136 · `main` a **1137** commits de retard sur `dev` |
+| Commits | 1143 · `main` a **1140** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `e6cc595` docs(tests): recaler le compte de tests après intégration de dev
+- `509e6a7` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `03a75d4` test(admin): habilitations et journal d audit sous test (39 tests)
-- `b710b9b` test(admin): le constructeur de programmes sous test (21 tests, 1 458 lignes)
-- `8dd78a2` fix(app): neuf gardes de double appui qui ne gardaient rien + hook useActionLock
-- `8ad8b6d` fix(programs): le verrou de duplication ne gardait rien + 3 coquilles de test supprimées
-- `b4bba32` test(admin): modération et import CSV sous test (45 tests)
+- `c83afad` chore(dashboard): retirer les 12 cartes devenues mortes apres INSIGHTS-02
+- `180c7ca` fix(tests): nommer l'echec intermittent de health-connect plutot que le deviner
 
 ---
 

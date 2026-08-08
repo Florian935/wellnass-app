@@ -74,10 +74,10 @@ export default defineConfig({
       // même si la protection réelle a augmenté. Ne pas lire un seuil qui recule comme une
       // régression sans avoir vérifié ce qui est entré dans la mesure.
       thresholds: {
-        statements: 59,
+        statements: 67,
         branches: 84,
-        functions: 65,
-        lines: 59,
+        functions: 68,
+        lines: 67,
         // Couche data : c'est elle qui écrit dans le contenu partagé par tous les utilisateurs.
         'src/data/**': {
           statements: 97,
@@ -89,10 +89,10 @@ export default defineConfig({
         // toujours moins couvert que la moyenne ; un seuil collé au réel le ferait rougir dès le
         // premier commit, ce qui pousserait à contourner le garde-fou.
         'src/screens/**': {
-          statements: 46,
-          branches: 77,
-          functions: 50,
-          lines: 46,
+          statements: 57,
+          branches: 78,
+          functions: 56,
+          lines: 57,
         },
       },
     },

@@ -328,7 +328,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
 | `apps/mobile` — reste (écrans, composants) | **26** | **22** | **21** |
 | `apps/admin` (`src/data` + `src/lib`) | **97** | **89** | **98** |
-| `apps/admin` — écrans React | **46** | **77** | **50** |
+| `apps/admin` — écrans React | **57** | **78** | **56** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
 > `stores` 45→47, reste 12→18) : les lots suivants avaient fait monter le réel bien au-dessus du cliquet, qui
@@ -404,7 +404,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 162
-(shared) + 1 285 (mobile) + 412 (admin) = 3 859 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 285 (mobile) + 445 (admin) = 3 892 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -412,7 +412,7 @@ couverture** propres.
 | Couverture mobile | 15,0 % | **35,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **412 tests** · data **97,7 %** · 6 écrans React couverts |
+| `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
 
 ## 8. Reprise — par où continuer
 
@@ -483,7 +483,7 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    **`ProgramEditScreen`** (1 458 lignes, le plus gros du dépôt) est couvert depuis le 08/08 sur
    ce qui porte son risque — l'**orchestration** (`runWrite` / `runReorder`), pas chaque champ de
    chaque formulaire, dont les écritures sont déjà testées dans `programs-detail.test.ts`.
-   Restent 9 écrans : `ProgramsScreen`, `FoodsScreen`, `UsersScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`, `AccessDenied` et le layout.
+   Restent 7 écrans, tous des formulaires ou des vues sans état : `ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`, `AccessDenied` et le layout.
 
    ⚠️ **Un pourcentage de branches peut BAISSER quand on couvre un gros fichier.** Avec le
    fournisseur v8, un fichier jamais chargé par un test contribue **zéro branche au dénominateur** :
