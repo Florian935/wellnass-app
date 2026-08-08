@@ -67,10 +67,10 @@ export default defineConfig({
       // **n'exclut pas** ses fichiers du calcul global — vérifié, contrairement à ce que laisse
       // entendre la doc. Le global doit donc rester cohérent avec l'union, pas avec `src/data`.
       thresholds: {
-        statements: 28,
-        branches: 85,
-        functions: 80,
-        lines: 28,
+        statements: 37,
+        branches: 86,
+        functions: 85,
+        lines: 37,
         // Couche data : c'est elle qui écrit dans le contenu partagé par tous les utilisateurs.
         'src/data/**': {
           statements: 96,
@@ -82,10 +82,10 @@ export default defineConfig({
         // toujours moins couvert que la moyenne ; un seuil collé au réel le ferait rougir dès le
         // premier commit, ce qui pousserait à contourner le garde-fou.
         'src/screens/**': {
-          statements: 6,
-          branches: 55,
-          functions: 15,
-          lines: 6,
+          statements: 17,
+          branches: 80,
+          functions: 70,
+          lines: 17,
         },
       },
     },

@@ -306,7 +306,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
 | `apps/mobile` — reste (écrans, composants) | **23** | **20** | **18** |
 | `apps/admin` (`src/data` + `src/lib`) | **96** | **89** | **96** |
-| `apps/admin` — écrans React | **6** | **55** | **15** |
+| `apps/admin` — écrans React | **17** | **80** | **70** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
 > `stores` 45→47, reste 12→18) : les lots suivants avaient fait monter le réel bien au-dessus du cliquet, qui
@@ -382,7 +382,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 238 (mobile) + 307 (admin) = 3 665 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 238 (mobile) + 352 (admin) = 3 710 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -390,7 +390,7 @@ couverture** propres.
 | Couverture mobile | 15,0 % | **33,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **307 tests** · data **97,7 %** · 1ᵉʳ écran React couvert |
+| `apps/admin` | aucun runner | **352 tests** · data **97,7 %** · 3 écrans React couverts |
 
 ## 8. Reprise — par où continuer
 
@@ -453,10 +453,21 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    installés, environnement choisi **par l'extension du fichier de test** (`.test.ts` → `node`,
    `.test.tsx` → `jsdom`, via `environmentMatchGlobs`), nettoyage du DOM entre deux tests dans
    [`setup-dom.ts`](../../../apps/admin/src/test-utils/setup-dom.ts).
-   Premier écran couvert : [`ExercisesScreen.test.tsx`](../../../apps/admin/src/screens/ExercisesScreen.test.tsx)
-   (29 tests) — **à copier pour les suivants**. Restent 14 écrans, par ordre de risque :
-   `ProgramEditScreen` (1 387 lignes, glisser-déposer + quinze écritures), `FoodImportScreen`
-   (import CSV), `UserDetailScreen` (modération), puis les listes.
+   **Trois écrans couverts** (74 tests) — à copier pour les suivants :
+   [`ExercisesScreen`](../../../apps/admin/src/screens/ExercisesScreen.test.tsx) (29, liste +
+   archivage), [`UserDetailScreen`](../../../apps/admin/src/screens/UserDetailScreen.test.tsx)
+   (30, modération + sobriété RGPD),
+   [`FoodImportScreen`](../../../apps/admin/src/screens/FoodImportScreen.test.tsx) (15, import CSV).
+   Restent 12 écrans, par ordre de risque : **`ProgramEditScreen`** (1 458 lignes, glisser-déposer
+   + quinze écritures — de loin le plus gros), `ProgramsScreen`, `FoodsScreen`, `RolesScreen`,
+   `AuditScreen`, puis les listes.
+
+   ⚠️ **`Blob.prototype.text` et `arrayBuffer` n'existent pas dans jsdom**, même en v26
+   (jsdom#2555) — ce n'est pas une question de version. Le complément est posé dans
+   [`setup-dom.ts`](../../../apps/admin/src/test-utils/setup-dom.ts), via `FileReader` que jsdom
+   fournit, lui. Sans lui, tout écran qui lit un fichier casse **là où on ne regarde pas** :
+   `await file.text()` rejette, le gestionnaire `onChange` avale l'erreur, et l'écran reste figé
+   sur son état initial.
 
    ⚠️ **Deux pièges du DOM, rencontrés dès le premier écran** :
    - **les libellés existent en double** — une fois dans un `<option>` de filtre, une fois dans le
@@ -466,7 +477,10 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
      avec une forme inventée faisait planter `archiveConfirmMessage` **dans le gestionnaire de
      clic** : la promesse était rejetée en silence, rien ne se passait, et quatre tests
      échouaient sur « la fonction n'a pas été appelée » — un symptôme à trois pas de la cause.
-     Construire les objets de test à partir du **type réel**.
+     Construire les objets de test à partir du **type réel**. Même famille sur `UserDetailScreen` :
+     `parseActivePillars` remplacé par un double `undefined` faisait planter le **rendu**, et les
+     30 tests échouaient sur « élément introuvable ». **Une fonction pure se reprend telle quelle**
+     (`vi.mock(…, importOriginal)`), on ne la stubbe pas.
 
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.

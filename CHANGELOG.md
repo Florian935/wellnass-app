@@ -10,6 +10,76 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Back-office : modération et import CSV sous test
+
+**45 tests** sur les deux écrans les plus sensibles du back-office après la liste d'exercices :
+la fiche utilisateur (données personnelles, sanctions) et l'import CSV (un fichier, des centaines
+de lignes écrites dans la base partagée).
+
+#### Ajouté
+
+- **`UserDetailScreen.test.tsx` — 30 tests.** Deux exigences s'y croisent, aucune visible dans la
+  couche data.
+  - **🔴 La sobriété RGPD.** La fiche affiche le compte d'une personne réelle à un administrateur :
+    elle ne doit montrer que ce qui sert à l'administrer, **jamais de donnée de santé**. Le test
+    balaie le DOM à la recherche de « kg », « kcal », « IMC », « poids », « cycle ». Un test qui
+    vérifie une absence a mauvaise réputation ; celui-là est justifié — le jour où quelqu'un
+    ajoutera le poids « pour rendre service », rien d'autre ne l'arrêtera.
+  - **🔴 Les garde-fous de modération, en profondeur.** Les vrais vivent côté serveur dans les RPC
+    (anti-soi, anti-admin, motif obligatoire) — c'est leur place, l'UI n'est pas une frontière de
+    sécurité. Mais l'UI doit **refuser d'émettre l'appel** : proposer un bouton qui échouera
+    toujours, sans dire pourquoi, est un défaut d'interface même quand la sécurité tient. Vérifié
+    aussi que `is_admin` **absent** vaut « non admin » — le traiter comme « admin » rendrait la
+    modération impossible sur tous les comptes dont la colonne n'est pas renseignée.
+  - **🔴 Un motif vide ou fait d'espaces est refusé.** Le motif est ce que la personne bannie
+    verra, et la trace de la décision : une sanction sans motif est une sanction sans
+    justification.
+  - **🔴 Le motif courant est celui du DERNIER bannissement** — prendre le premier de la liste
+    afficherait une sanction levée depuis. Et l'acteur est résolu **en e-mail** : « décidé par
+    8f3a-… » n'apprend rien, alors que la responsabilité d'une sanction est la moitié de
+    l'intérêt d'un journal de modération.
+  - Plus : une erreur sur le **seul** historique suffit à alerter (une fiche avec « aucun
+    événement » laisserait croire qu'un compte banni ne l'a jamais été), les piliers acceptés en
+    tableau **ou** en chaîne JSON, et chaque acteur résolu **une seule fois** même sur dix
+    événements.
+- **`FoodImportScreen.test.tsx` — 15 tests.** L'écran le plus dangereux du back-office : un seul
+  fichier écrit des centaines de lignes, et l'erreur ne se rattrape pas en corrigeant une fiche.
+  - **🔴 Rien ne s'écrit avant un aperçu et un clic explicite** — pas de bouton d'import tant
+    qu'aucun fichier n'est analysé.
+  - **🔴 Les lignes invalides n'empêchent pas les valides de passer**, mais elles sont **listées**
+    avec numéro de ligne et motif. Une validation tout-ou-rien sur 400 lignes rendrait l'outil
+    inutilisable ; une validation silencieuse ferait perdre des lignes sans le dire.
+  - **🔴 Zéro ligne valide → le bouton est DÉSACTIVÉ**, pas seulement sans effet : un clic sans
+    réaction se lit comme un écran figé.
+  - **🔴 Un fichier sans aucune ligne est refusé**, pas résumé « 0 valide · 0 erreur » — qui se
+    lirait comme un fichier correct mais inutile, alors que c'est le mauvais fichier.
+  - **🔴 Un échec est rattrapable sans reprendre le fichier** (l'upsert est idempotent), et le
+    rapport n'affiche « réactivés » que s'il y en a — un « 0 réactivé » attire l'œil sur un
+    non-événement.
+
+#### Corrigé
+
+- **`Blob.prototype.text` / `arrayBuffer` complétés dans le setup de test.** jsdom **ne les
+  implémente pas**, même en v26 (jsdom#2555) — ce n'est pas une question de version, monter jsdom
+  de 20 à 26 n'y change rien. Sans ce complément, `FoodImportScreen` casse **là où on ne regarde
+  pas** : son `await file.text()` rejette, le gestionnaire `onChange` avale l'erreur, et l'écran
+  reste figé sur son état initial. Onze tests échouaient sur « bouton d'import introuvable », à
+  trois écrans de la cause. L'implémentation passe par `FileReader`, que jsdom fournit.
+
+#### Modifié
+
+- **jsdom 20 → 26** (npm avait dédupliqué sur la version héritée de l'outillage React Native).
+- **Cliquets `apps/admin` relevés** : écrans 6/55/15 → **17/80/70**, global 28/85/80 → **37/86/85**.
+
+#### Technique / Notes
+
+- **Un piège de mock, dans la même famille que celui d'hier** : `parseActivePillars` remplacé par
+  un double `undefined` faisait planter le **rendu**, et les 30 tests échouaient sur « élément
+  introuvable ». **Une fonction pure se reprend telle quelle** (`vi.mock(…, importOriginal)`), on
+  ne la stubbe pas — c'est déjà testé ailleurs, un stub ne teste que lui-même.
+- **3 710 tests verts** (2 120 shared + 1 238 mobile + 352 admin). 3 écrans du back-office sur 15.
+  Typecheck, lint et seuils propres.
+
 ### 07/08/2026 — `chore/socle-tests-unitaires` — Les écrans du back-office deviennent testables
 
 Socle `jsdom` + Testing Library posé côté `apps/admin`, et **premier écran React monté en test**
