@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -37,6 +37,8 @@ export default function ProgramsScreen() {
 
   const [levelFilter, setLevelFilter] = useState<LevelFilter>(ALL_LEVELS);
   const [duplicating, setDuplicating] = useState<string | null>(null);
+  /** Voir `onDuplicate` : verrou écrit et relu sans attendre un rendu. */
+  const duplicatingRef = useRef<string | null>(null);
 
   // Filtre pilier muscu obligatoire : sans lui, la biblio et « Mes programmes » affichaient
   // aussi les programmes running (fuite inter-piliers). Miroir de l'écran running.
@@ -49,7 +51,14 @@ export default function ProgramsScreen() {
   const isLoading = libraryLoading || myLoading;
 
   const onDuplicate = async (id: string) => {
-    if (duplicating) return;
+    // Verrou par ref, et non par l'état `duplicating` — même défaut que celui corrigé le
+    // 07/08/2026 sur `run/active.tsx` et `workout.tsx` : deux appuis rapides tombent dans le
+    // **même cycle de rendu**, donc dans la même fermeture où `duplicating` vaut encore `null`,
+    // et le bouton n'a pas encore eu le temps de se désactiver. On créait alors **deux copies**,
+    // dont une orpheline que l'utilisateur ne verra jamais — et on naviguait deux fois.
+    // `duplicating` reste l'état d'affichage (l'indicateur de chargement sur la bonne ligne).
+    if (duplicatingRef.current) return;
+    duplicatingRef.current = id;
     setDuplicating(id);
     try {
       const newId = await duplicateProgram(id);
@@ -58,6 +67,7 @@ export default function ProgramsScreen() {
       // En cas d'erreur silencieuse, on reste sur la liste (la copie partielle est
       // impossible côté transaction).
     } finally {
+      duplicatingRef.current = null;
       setDuplicating(null);
     }
   };

@@ -10,6 +10,71 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Les trois coquilles de test supprimées, un troisième verrou corrigé
+
+Correction de la dette signalée au §3.7 : trois `*-smoke.test.tsx` **réécrivaient** la logique de
+leur écran dans un composant `…Shell` local, puis testaient cette réécriture. On pouvait supprimer
+l'écran entier, ils restaient verts. Ils sont remplacés par des montages du **vrai** écran —
+**48 tests**, et la conversion a immédiatement trouvé un défaut.
+
+#### Corrigé
+
+- **🔴 `programs/index.tsx` — le verrou de duplication ne gardait rien.** Troisième occurrence du
+  même défaut, après `run/active.tsx` et `workout.tsx` : `onDuplicate` testait
+  `if (duplicating) return` sur un **état React**, alors que deux appuis rapides tombent dans le
+  même cycle de rendu. On créait **deux copies** du programme, dont une orpheline que l'utilisateur
+  ne verra jamais, et on naviguait deux fois. Remplacé par une ref, test à l'appui (vu rouge avant
+  correction). **Trois écrans sur trois portaient ce défaut** — c'est désormais noté comme un
+  patron à vérifier dans toute action asynchrone déclenchée par un appui.
+
+#### Ajouté
+
+- **`history-screen.test.tsx` — 15 tests** (remplace `history-smoke`). Le filtre de période est le
+  cœur de l'écran, et il porte trois subtilités :
+  - **🔴 il filtre sur la date de FIN**, avec repli sur celle de début — une séance commencée il y a
+    40 jours et clôturée avant-hier appartient à la semaine écoulée ;
+  - **🔴 sans le repli, `new Date(null)` vaut le 1ᵉʳ janvier 1970** : une séance jamais clôturée
+    sortirait de **toutes** les fenêtres ;
+  - **🔴 la borne est ramenée à minuit**, pas à 7×24 h glissantes — sinon une séance faite il y a
+    exactement une semaine serait dans la liste le matin et dehors l'après-midi.
+  - Plus : un filtre qui ne rend rien affiche l'état vide (pas une liste blanche), et « chargement »
+    ne se confond pas avec « aucune séance ».
+- **`programs-screen.test.tsx` — 15 tests** (remplace `programs-smoke`).
+  - **🔴 Le filtre de pilier `strength` est obligatoire sur les DEUX listes.** Sans lui, les
+    programmes de course remontaient dans la bibliothèque muscu — une fuite inter-piliers qui
+    contredit la décision H. Vérifié aussi que le filtre de niveau **s'ajoute** au pilier et ne le
+    remplace pas.
+  - **🔴 Le chargement de l'une des deux listes suffit à attendre** : « tu n'as pas encore de
+    programme » affiché pendant que la requête tourne serait un message faux, et le seul que
+    l'utilisateur retiendra.
+  - Plus : deux états vides **distincts** (« rien en bibliothèque » ≠ « tu n'as pas de programme »),
+    la duplication offerte uniquement sur la bibliothèque, et le verrou relâché après un échec —
+    sinon le bouton reste mort jusqu'au prochain affichage.
+- **`run-summary-screen.test.tsx` — 18 tests** (remplace `run-summary-smoke`).
+  - **🔴 La détection de records ne part qu'une fois**, et seulement sur une course **GPS terminée** :
+    sur une course manuelle, elle décernerait un record sur une distance saisie à la main ; rejouée
+    à chaque rendu, elle re-célébrerait un record déjà connu.
+  - **🔴 Une distance manuelle non numérique n'écrit rien.** Un `NaN` en base contaminerait toutes
+    les agrégations (total, moyenne, ACWR) sans jamais lever d'erreur ni dire d'où il vient.
+  - **🔴 « Course introuvable » garde une sortie** — sans bouton, l'écran est un cul-de-sac dont la
+    seule issue est de tuer l'app.
+  - Plus : le feedback persisté dès la saisie (pas de bouton « enregistrer » à oublier), un échec
+    d'écriture qui ne fait pas tomber l'écran, et le feedback déjà enregistré repris au montage.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 23/20/18 → **26/22/21** (réel 28,5/24,6/22,9).
+- **§3.7 mis à jour** : les trois coquilles sont traitées. Les **douze** `*-smoke.test.tsx` qui
+  subsistent montent bien leur composant — ils sont légitimes, ne pas les convertir.
+
+#### Technique / Notes
+
+- **Un piège de plus, de la même famille que les verrous** : `fireEvent.changeText` puis
+  `submitEditing` **dans le même `act`** fait lire au gestionnaire l'état d'avant la frappe. Deux
+  `act` distincts. C'est la même mécanique que le double appui — un rendu doit s'intercaler.
+- **3 746 tests verts** (2 120 shared + 1 274 mobile + 352 admin). Couverture mobile **35,0 %**
+  (départ 15,0 %). Typecheck, lint et seuils propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Back-office : modération et import CSV sous test
 
 **45 tests** sur les deux écrans les plus sensibles du back-office après la liste d'exercices :

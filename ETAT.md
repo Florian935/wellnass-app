@@ -95,7 +95,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1131 · `main` a **1128** commits de retard sur `dev` |
+| Commits | 1132 · `main` a **1129** commits de retard sur `dev` |
 | Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -106,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b4bba32` test(admin): modération et import CSV sous test (45 tests)
 - `c692a34` test(admin): monter le premier écran React du back-office (29 tests)
 - `4c3c1ef` test(admin): couvrir la couche data du back-office (68,9 % → 97,7 %)
 - `85b3fce` test(running): couvrir la section polarisation arrivée de dev (RUN-19)
 - `64ba2e7` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `80d8b0a` test(running): monter l écran d historique de course — 26 tests, six états vides
 
 ---
 

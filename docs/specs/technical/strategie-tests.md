@@ -209,15 +209,21 @@ Références :
 
 ### 3.7 Tester un écran — **monter le vrai écran, pas une coquille**
 
-Plusieurs `*-smoke.test.tsx` du dépôt ne montent pas l'écran : ils **réécrivent** sa logique dans un
-composant `…Shell` local, puis testent cette réécriture. Voir l'en-tête de
-[`run-summary-smoke.test.tsx`](../../../apps/mobile/src/app/run/__tests__/run-summary-smoke.test.tsx),
-qui l'assume explicitement (« on compose un composant de test minimal »).
+Trois `*-smoke.test.tsx` du dépôt ne montaient pas l'écran : ils **réécrivaient** sa logique dans un
+composant `…Shell` local, puis testaient cette réécriture — l'un d'eux l'assumait même
+explicitement (« on compose un composant de test minimal »).
 
 **Ces tests valident la copie, jamais le code qui tourne sur le téléphone.** Ils ne détectent aucune
 régression de l'écran réel : on peut supprimer l'écran entier, ils restent verts. C'est une
 quatrième famille de faux vert, après le `powerSync` mocké (§3.3), l'import dynamique non transpilé
 (§3.5) et le rendu non attendu (§3.6).
+
+> ✅ **Les trois sont remplacés depuis le 08/08/2026** par des montages du vrai écran :
+> [`history-screen`](../../../apps/mobile/src/app/history/__tests__/history-screen.test.tsx) (15),
+> [`programs-screen`](../../../apps/mobile/src/app/programs/__tests__/programs-screen.test.tsx) (15),
+> [`run-summary-screen`](../../../apps/mobile/src/app/run/__tests__/run-summary-screen.test.tsx) (18).
+> **La conversion a immédiatement trouvé un défaut** — le verrou de duplication de programme, voir
+> §3.2. Douze `*-smoke.test.tsx` subsistent : ils montent bien leur composant, ils sont légitimes.
 
 Le patron correct est celui de
 [`run-active.test.tsx`](../../../apps/mobile/src/app/run/__tests__/run-active.test.tsx) : importer
@@ -260,6 +266,12 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
   [`workout-screen.test.tsx`](../../../apps/mobile/src/app/__tests__/workout-screen.test.tsx)
   (même jour). Les deux tests ont été **vérifiés en retirant la garde** : ils passent de vert à
   rouge. Un test de non-régression qu'on n'a jamais vu échouer n'est pas encore un test.
+- **🔴 `programs/index.tsx` — même défaut, troisième occurrence** (08/08/2026, trouvée en
+  convertissant `programs-smoke` en montage réel). `onDuplicate` testait `if (duplicating) return`
+  sur un **état React** : deux appuis rapides créaient **deux copies** du programme, dont une
+  orpheline que l'utilisateur ne verra jamais, et naviguaient deux fois. Remplacé par une ref.
+  **Trois écrans sur trois portaient ce défaut** — c'est un patron à vérifier systématiquement
+  dans toute action asynchrone déclenchée par un appui.
 
 ## 4. Conventions
 
@@ -304,7 +316,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
-| `apps/mobile` — reste (écrans, composants) | **23** | **20** | **18** |
+| `apps/mobile` — reste (écrans, composants) | **26** | **22** | **21** |
 | `apps/admin` (`src/data` + `src/lib`) | **96** | **89** | **96** |
 | `apps/admin` — écrans React | **17** | **80** | **70** |
 
@@ -382,12 +394,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 238 (mobile) + 352 (admin) = 3 710 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 274 (mobile) + 352 (admin) = 3 746 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **33,0 %** |
+| Couverture mobile | 15,0 % | **35,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **352 tests** · data **97,7 %** · 3 écrans React couverts |
