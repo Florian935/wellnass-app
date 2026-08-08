@@ -117,6 +117,42 @@ afterEach(() => {
 });
 
 // ---------------------------------------------------------------------------
+// Garde d'isolation — à lire AVANT de débugger un échec en masse de ce fichier
+// ---------------------------------------------------------------------------
+
+/**
+ * 🔴 **Si ce test échoue, ne cherchez pas ailleurs : les autres échecs en découlent.**
+ *
+ * Le 07/08/2026, ce fichier a rendu **16 échecs sur 31** sur une suite complète, tous du même
+ * genre — des mocks natifs à `Number of calls: 0` — sans être reproductible : 31/31 en isolation,
+ * et trois suites complètes vertes d'affilée sans qu'une ligne ne change. Dette ouverte au BACKLOG.
+ *
+ * L'investigation du 08/08/2026 a **reproduit le mode de défaillance** : en faisant résoudre à
+ * `import('react-native-health-connect')` autre chose que le mock de ce fichier, on obtient
+ * **17 échecs sur 31**, du même genre. Les autres pistes ont été écartées par mesure, chacune
+ * donnant une signature différente : `Platform.OS` non-Android → **20** échecs, opt-in perdu →
+ * **6**, `getSdkStatus` sans implémentation → **8**.
+ *
+ * Le mode de défaillance est donc établi : **le module natif résolu n'est pas le mock local.**
+ * `health-connect.ts` le charge par `import()` **dynamique** (`nativeModule()`), donc la
+ * résolution a lieu à l'**appel**, pas au chargement de ce fichier — elle dépend de l'état du
+ * registre de modules à cet instant, que ce fichier ne maîtrise pas seul.
+ *
+ * ⚠️ Le **déclencheur** exact reste inconnu : aucun `jest.resetModules()` dans le dépôt. Cette
+ * garde ne le corrige donc pas — elle fait échouer **un** test avec une cause nommée au lieu de
+ * seize sans explication. C'est ce qui coûtait cher : pas l'échec, son opacité.
+ */
+describe("garde d'isolation du module natif", () => {
+  it('résout bien le mock de CE fichier pour `react-native-health-connect`', async () => {
+    const native = await import('react-native-health-connect');
+
+    await native.getSdkStatus('sonde-isolation');
+
+    expect(mockGetSdkStatus).toHaveBeenCalledWith('sonde-isolation');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Disponibilité du fournisseur
 // ---------------------------------------------------------------------------
 

@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `fix/health-connect-test-isolation` — l'échec intermittent, nommé plutôt que deviné
+
+Commit précédent : `35e51c2`. **Dette 🔴 du BACKLOG (07/08) instruite** : le mode de défaillance est
+reproduit et mesuré, le déclencheur reste ouvert — la dette est **requalifiée 🟠, pas fermée**.
+Vérifié : typecheck **0**, lint **0 erreur**, **1 324 tests mobile verts** (1 323 + la garde) —
+codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- Garde d'isolation en tête de `health-connect-state.test.ts` : vérifie que
+  `import('react-native-health-connect')` résout bien **le mock de ce fichier**.
+
+#### Technique — Notes
+
+- 🔴 **Le mode de défaillance est établi par la mesure, pas par déduction.** Quatre hypothèses ont
+  été testées en forçant chacune une sortie anticipée, et elles ont des **signatures distinctes** :
+  `Platform.OS` non-Android → **20** échecs sur 31 · opt-in perdu → **6** · `getSdkStatus` sans
+  implémentation → **8** · **module natif détaché des mocks locaux → 17**. L'incident du 07/08 en
+  comptait **16**. Seule la dernière colle, en nombre **et** en genre (`Number of calls: 0` en
+  masse). Les trois autres sont écartées — c'est le gain réel de l'exercice, pas la garde.
+- **Cause structurelle** : `health-connect.ts` charge le natif par `import()` **dynamique**
+  (`nativeModule()`), donc la résolution a lieu à l'**appel** et dépend de l'état du registre de
+  modules à cet instant. Un fichier de test ne maîtrise pas seul cette résolution.
+- ⚠️ **Le déclencheur n'est PAS trouvé, et rien ici ne prétend le corriger.** Aucun
+  `jest.resetModules()` n'existe dans le dépôt : le vecteur de fuite reste inconnu, et sans
+  reproduction déterministe un correctif ne serait pas vérifiable. Poser un correctif « plausible »
+  sur un bug non reproductible aurait surtout produit l'illusion d'une dette fermée.
+- **Ce que la garde change** : à la prochaine occurrence, **un** test échoue avec la cause nommée et
+  la marche à suivre, au lieu de seize échecs opaques. Le coût de cet incident n'était pas l'échec,
+  c'était le temps passé à ne pas savoir d'où il venait.
+- ✅ **Aucun code applicatif touché.** L'`import()` dynamique de `health-connect.ts` est **laissé
+  tel quel** : le basculer en import statique changerait le chargement du module natif sur un
+  chemin livré et recetté (9.9), pour corriger un défaut de test.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
 ### 08/08/2026 — `refactor/goal-adherence-factorisation` — la cible calorique du jour, écrite une seule fois
 
 Commit précédent : `88d26b6`. **Dette du BACKLOG ouverte la veille par APPORT-01, refermée** — dans
