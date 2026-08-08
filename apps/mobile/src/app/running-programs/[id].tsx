@@ -26,6 +26,7 @@ import { useRunnerProfile } from '@/data/repositories/running-profile-repository
 import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 
 export default function RunningProgramDetailScreen() {
@@ -46,36 +47,41 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
   // Un programme éditorial (non possédé) ne peut pas être planifié/activé directement : il
   // doit d'abord être dupliqué (sinon activation de l'éditorial → divergence local↔cloud).
   const isOwned = myPrograms.some((p) => p.id === programId);
+  // Ces états ne pilotent que l'affichage ; la garde contre le double appui est portée par
+  // `useActionLock` (un état React ne voit pas un second appui du même cycle — voir le hook).
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const onDuplicate = async () => {
-    if (duplicating) return;
-    setDuplicating(true);
-    try {
-      const newId = await duplicateProgram(programId);
-      router.replace(`/running-programs/${newId}`);
-    } catch {
-      // Silencieux.
-    } finally {
-      setDuplicating(false);
-    }
-  };
+  const lockDuplicate = useActionLock();
+  const lockDelete = useActionLock();
 
-  const handleDelete = async () => {
-    if (deleting) return;
-    setDeleting(true);
-    try {
-      await deleteProgram(programId);
-      router.replace('/running-programs');
-    } catch {
-      setDeleting(false);
-      Alert.alert(
-        t('running.program.deleteError'),
-        t('running.program.deleteErrorMessage'),
-      );
-    }
-  };
+  const onDuplicate = () =>
+    void lockDuplicate(async () => {
+      setDuplicating(true);
+      try {
+        const newId = await duplicateProgram(programId);
+        router.replace(`/running-programs/${newId}`);
+      } catch {
+        // Silencieux.
+      } finally {
+        setDuplicating(false);
+      }
+    });
+
+  const handleDelete = () =>
+    void lockDelete(async () => {
+      setDeleting(true);
+      try {
+        await deleteProgram(programId);
+        router.replace('/running-programs');
+      } catch {
+        setDeleting(false);
+        Alert.alert(
+          t('running.program.deleteError'),
+          t('running.program.deleteErrorMessage'),
+        );
+      }
+    });
 
   const onDelete = () => {
     if (deleting) return;
@@ -84,7 +90,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
       {
         text: t('running.program.delete'),
         style: 'destructive',
-        onPress: () => void handleDelete(),
+        onPress: handleDelete,
       },
     ]);
   };
@@ -196,7 +202,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
           <Button
             label={duplicating ? t('programs.detail.duplicating') : t('running.program.duplicate')}
             variant="ghost"
-            onPress={() => void onDuplicate()}
+            onPress={onDuplicate}
             loading={duplicating}
             disabled={duplicating}
           />

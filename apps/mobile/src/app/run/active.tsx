@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { averagePace, compareToTarget, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
 import { useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ import { useDistanceAnnouncements } from '@/running/announcements';
 import { useIntervalGuidance } from '@/running/interval-guidance';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 
 /** Horloge locale : secondes écoulées depuis `startedAt`, rafraîchie chaque seconde. */
@@ -70,14 +71,12 @@ export default function RunActiveScreen() {
   // État de pause piloté par la source de vérité unique du tracker : reflète aussi
   // l'auto-pause (déclenchée hors interaction) pour que le bouton ne mente jamais.
   const [paused, setPaused] = useState(getPaused);
+  // `stopping` pilote l'affichage (bouton en attente) ; la garde contre le double appui est
+  // portée par `useActionLock` — un état React ne voit pas un second appui du même cycle de rendu.
+  // Sans elle, la séquence d'arrêt partait deux fois : double `stopTracking`, double `finishRun`,
+  // double navigation. (Défaut trouvé en écrivant `run-active.test.tsx`, 07/08/2026.)
   const [stopping, setStopping] = useState(false);
-  // Verrou d'arrêt. `stopping` (état React) pilote l'affichage, mais ne peut pas servir de garde :
-  // deux appuis rapides tombent dans le **même cycle de rendu**, donc dans la même fermeture, où
-  // `stopping` vaut encore `false` pour les deux — et le bouton n'a pas encore eu le temps de se
-  // désactiver. La séquence d'arrêt partait alors deux fois : double `stopTracking`, double
-  // `finishRun`, double navigation. Une ref est écrite et relue immédiatement, sans attendre un
-  // rendu. (Défaut trouvé en écrivant `run-active.test.tsx`, 07/08/2026.)
-  const stoppingRef = useRef(false);
+  const lockStop = useActionLock();
 
   useEffect(() => subscribePaused(setPaused), []);
 
@@ -223,25 +222,24 @@ export default function RunActiveScreen() {
     }
   };
 
-  const onStop = async () => {
-    if (stoppingRef.current) return;
-    stoppingRef.current = true;
-    setStopping(true);
-    const runId = active.id;
-    // Séquencement critique : stop + DRAIN avant finish (aucun flush tardif après
-    // clôture), puis navigation quoi qu'il arrive (best-effort, comme la muscu).
-    try {
-      await stopTracking();
-    } catch (error) {
-      console.warn('Échec de stopTracking (ignoré, best-effort) :', error);
-    }
-    try {
-      await finishRun(runId);
-    } catch (error) {
-      console.warn('Échec de finishRun (ignoré, best-effort) :', error);
-    }
-    router.replace({ pathname: '/run/summary', params: { id: runId } });
-  };
+  const onStop = () =>
+    void lockStop(async () => {
+      setStopping(true);
+      const runId = active.id;
+      // Séquencement critique : stop + DRAIN avant finish (aucun flush tardif après
+      // clôture), puis navigation quoi qu'il arrive (best-effort, comme la muscu).
+      try {
+        await stopTracking();
+      } catch (error) {
+        console.warn('Échec de stopTracking (ignoré, best-effort) :', error);
+      }
+      try {
+        await finishRun(runId);
+      } catch (error) {
+        console.warn('Échec de finishRun (ignoré, best-effort) :', error);
+      }
+      router.replace({ pathname: '/run/summary', params: { id: runId } });
+    });
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>

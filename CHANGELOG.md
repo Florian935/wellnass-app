@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Le verrou de double appui : audit systématique, neuf sites de plus
+
+Le même défaut ayant été trouvé sur **trois écrans en deux jours**, il était temps de le chercher
+partout plutôt que d'attendre le quatrième. Une recherche de `if (<état>) return` dans les
+gestionnaires asynchrones a remonté **neuf occurrences supplémentaires**. Toutes corrigées, et le
+patron est désormais porté par un hook unique.
+
+#### Corrigé
+
+- **🔴 Neuf gardes de double appui qui ne gardaient rien.** Toutes reposaient sur un **état React**,
+  lu depuis la fermeture du rendu courant : deux appuis rapides tombent dans le même cycle, où
+  l'état vaut encore sa valeur initiale pour les deux.
+  - **Détail de programme** (`programs/[id]`) : démarrer une séance, dupliquer, supprimer.
+  - **Détail de modèle de séance** (`templates/[id]`) : démarrer, dupliquer, supprimer.
+  - **Programmes de course** (`running-programs/[id]` et `index`) : dupliquer, supprimer, **créer**
+    — deux appuis créaient **deux programmes**, dont un orphelin.
+  - **`runWrite` de `ProgramEditScreen`** (back-office) : la conséquence y était plus lourde — deux
+    gestes enchaînés produisaient **deux séances au même `order_index`**, ou deux réordonnancements
+    concurrents dont le second écrasait le premier.
+
+#### Ajouté
+
+- **`useActionLock` — un hook, 8 tests.** L'explication du défaut y vit **une fois** au lieu d'être
+  recopiée douze fois, et le contrat est testé là où il compte : appels **synchrones successifs**,
+  sans rendu intercalé — exactement ce qu'une garde par état laissait passer.
+  - Le verrou est **relâché même si l'action lève** : sinon un échec réseau interdirait
+    définitivement de réessayer, un défaut plus discret et plus agaçant que le double appui.
+  - L'appel ignoré rend `undefined` **sans lever** : l'utilisateur a appuyé deux fois, ce n'est pas
+    une erreur, et l'inverse obligerait chaque appelant à un `try`.
+  - **Un verrou par action, pas un par écran** : les partager empêcherait de supprimer pendant
+    qu'une duplication est en vol.
+
+#### Modifié
+
+- **Les cinq sites déjà corrigés basculent sur le hook** (`workout.tsx`, `run/active.tsx`,
+  `programs/index.tsx`) : un seul idiome dans le dépôt, pas deux. Les tests d'écran existants
+  portent sur le comportement, pas sur l'implémentation — ils sont restés verts pendant le
+  refactor, ce qui est précisément leur intérêt.
+
+#### Technique / Notes
+
+- **La leçon, écrite au §3.2 de la stratégie** : dès qu'un défaut se répète sur trois sites, le
+  chercher partout coûte une commande `grep` et rapporte davantage que le troisième correctif.
+- **3 754 tests verts** (2 120 shared + 1 282 mobile + 352 admin). Typecheck, lint et seuils
+  propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Les trois coquilles de test supprimées, un troisième verrou corrigé
 
 Correction de la dette signalée au §3.7 : trois `*-smoke.test.tsx` **réécrivaient** la logique de

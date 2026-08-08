@@ -270,8 +270,18 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
   convertissant `programs-smoke` en montage réel). `onDuplicate` testait `if (duplicating) return`
   sur un **état React** : deux appuis rapides créaient **deux copies** du programme, dont une
   orpheline que l'utilisateur ne verra jamais, et naviguaient deux fois. Remplacé par une ref.
-  **Trois écrans sur trois portaient ce défaut** — c'est un patron à vérifier systématiquement
-  dans toute action asynchrone déclenchée par un appui.
+  **Trois écrans sur trois portaient ce défaut.**
+- **🔴 Audit systématique du patron, et extraction d'un hook** (08/08/2026). Une recherche de
+  `if (<état>) return` dans les gestionnaires asynchrones a remonté **neuf occurrences de plus** :
+  détail de programme (démarrer une séance, dupliquer, supprimer), détail de modèle de séance
+  (idem), détail et liste de programmes de course (dupliquer, créer), et `runWrite` de
+  `ProgramEditScreen` côté back-office — où deux gestes enchaînés auraient produit **deux séances
+  au même `order_index`** ou deux réordonnancements concurrents.
+  Toutes corrigées, et le patron est désormais porté par un hook unique,
+  [`useActionLock`](../../../apps/mobile/src/hooks/useActionLock.ts) (8 tests) : c'est là que
+  l'explication vit, une fois, au lieu d'être recopiée douze fois.
+  **La leçon générale** : dès qu'un défaut se répète sur trois sites, le chercher partout coûte
+  une commande `grep` et rapporte davantage que le troisième correctif.
 
 ## 4. Conventions
 
@@ -394,7 +404,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 274 (mobile) + 352 (admin) = 3 746 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 282 (mobile) + 352 (admin) = 3 754 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |

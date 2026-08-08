@@ -28,6 +28,7 @@ import {
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 
 // ---------------------------------------------------------------------------
@@ -53,25 +54,32 @@ function ProgramDetailView({ programId }: { programId: string }) {
   const { detail, isLoading } = useProgramDetail(programId);
   const { programs: myPrograms } = useMyPrograms();
 
+  // Ces trois états ne pilotent que l'**affichage** (indicateur, bouton grisé). La garde contre le
+  // double appui est portée par `useActionLock` : un état React est lu depuis la fermeture du
+  // rendu courant et ne voit pas un second appui du même cycle. Voir le hook.
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [startingSessionId, setStartingSessionId] = useState<string | null>(null);
 
+  const lockStart = useActionLock();
+  const lockDuplicate = useActionLock();
+  const lockDelete = useActionLock();
+
   // Un programme appartient à l'utilisateur s'il figure dans « Mes programmes ».
   const isOwned = myPrograms.some((p) => p.id === programId);
 
-  const onStartSession = async (sessionId: string) => {
-    if (startingSessionId) return;
-    setStartingSessionId(sessionId);
-    try {
-      await startWorkoutFromSession(sessionId);
-      router.push('/workout');
-    } catch {
-      // Écriture offline-first : échec très improbable ; on réactive le bouton.
-    } finally {
-      setStartingSessionId(null);
-    }
-  };
+  const onStartSession = (sessionId: string) =>
+    void lockStart(async () => {
+      setStartingSessionId(sessionId);
+      try {
+        await startWorkoutFromSession(sessionId);
+        router.push('/workout');
+      } catch {
+        // Écriture offline-first : échec très improbable ; on réactive le bouton.
+      } finally {
+        setStartingSessionId(null);
+      }
+    });
 
   const onEdit = () => {
     router.push(`/programs/edit?id=${programId}`);
@@ -81,33 +89,33 @@ function ProgramDetailView({ programId }: { programId: string }) {
     router.push(`/planning/plan?id=${programId}`);
   };
 
-  const onDuplicate = async () => {
-    if (duplicating) return;
-    setDuplicating(true);
-    try {
-      const newId = await duplicateProgram(programId);
-      router.replace(`/programs/${newId}`);
-    } catch {
-      // Silencieux : la duplication atomique a échoué, on reste sur le détail.
-    } finally {
-      setDuplicating(false);
-    }
-  };
+  const onDuplicate = () =>
+    void lockDuplicate(async () => {
+      setDuplicating(true);
+      try {
+        const newId = await duplicateProgram(programId);
+        router.replace(`/programs/${newId}`);
+      } catch {
+        // Silencieux : la duplication atomique a échoué, on reste sur le détail.
+      } finally {
+        setDuplicating(false);
+      }
+    });
 
-  const handleDelete = async () => {
-    if (deleting) return;
-    setDeleting(true);
-    try {
-      await deleteProgram(programId);
-      router.replace('/programs');
-    } catch {
-      setDeleting(false);
-      Alert.alert(
-        t('programs.detail.deleteError'),
-        t('programs.detail.deleteErrorMessage'),
-      );
-    }
-  };
+  const handleDelete = () =>
+    void lockDelete(async () => {
+      setDeleting(true);
+      try {
+        await deleteProgram(programId);
+        router.replace('/programs');
+      } catch {
+        setDeleting(false);
+        Alert.alert(
+          t('programs.detail.deleteError'),
+          t('programs.detail.deleteErrorMessage'),
+        );
+      }
+    });
 
   const onDelete = () => {
     if (deleting) return;
@@ -116,7 +124,7 @@ function ProgramDetailView({ programId }: { programId: string }) {
       {
         text: t('programs.detail.delete'),
         style: 'destructive',
-        onPress: () => void handleDelete(),
+        onPress: handleDelete,
       },
     ]);
   };

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
+import { useActionLock } from '@/hooks/useActionLock';
 import {
   deleteWorkoutTemplate,
   duplicateWorkoutTemplate,
@@ -37,6 +38,10 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const lockStart = useActionLock();
+  const lockDuplicate = useActionLock();
+  const lockDelete = useActionLock();
+
   // Tant que le template n'est pas chargé (ou introuvable — ex. supprimé depuis un
   // autre appareil), `TemplateComposer` affiche déjà son propre état de chargement/
   // "introuvable" : on n'ajoute PAS le footer d'actions dans ce cas (patron
@@ -47,42 +52,45 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
 
   const hasExercises = detail.exercises.length > 0;
 
-  const onStart = async () => {
-    if (starting) return;
-    setStarting(true);
-    try {
-      await startWorkoutFromTemplate(templateId);
-      router.push('/workout');
-    } catch {
-      // Écriture offline-first : échec très improbable ; on réactive le bouton.
-    } finally {
-      setStarting(false);
-    }
-  };
+  // Les états `starting` / `duplicating` / `deleting` ne pilotent que l'affichage ; la garde
+  // contre le double appui est portée par `useActionLock` (un état React ne voit pas un second
+  // appui du même cycle de rendu — voir le hook).
+  const onStart = () =>
+    void lockStart(async () => {
+      setStarting(true);
+      try {
+        await startWorkoutFromTemplate(templateId);
+        router.push('/workout');
+      } catch {
+        // Écriture offline-first : échec très improbable ; on réactive le bouton.
+      } finally {
+        setStarting(false);
+      }
+    });
 
-  const onDuplicate = async () => {
-    if (duplicating) return;
-    setDuplicating(true);
-    try {
-      const newId = await duplicateWorkoutTemplate(templateId);
-      router.replace(`/templates/${newId}`);
-    } catch {
-      // Silencieux : la duplication atomique a échoué, on reste sur le détail.
-    } finally {
-      setDuplicating(false);
-    }
-  };
+  const onDuplicate = () =>
+    void lockDuplicate(async () => {
+      setDuplicating(true);
+      try {
+        const newId = await duplicateWorkoutTemplate(templateId);
+        router.replace(`/templates/${newId}`);
+      } catch {
+        // Silencieux : la duplication atomique a échoué, on reste sur le détail.
+      } finally {
+        setDuplicating(false);
+      }
+    });
 
-  const handleDelete = async () => {
-    if (deleting) return;
-    setDeleting(true);
-    try {
-      await deleteWorkoutTemplate(templateId);
-      router.replace('/templates');
-    } catch {
-      setDeleting(false);
-    }
-  };
+  const handleDelete = () =>
+    void lockDelete(async () => {
+      setDeleting(true);
+      try {
+        await deleteWorkoutTemplate(templateId);
+        router.replace('/templates');
+      } catch {
+        setDeleting(false);
+      }
+    });
 
   const onDelete = () => {
     if (deleting) return;
@@ -91,7 +99,7 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
       {
         text: t('templates.delete'),
         style: 'destructive',
-        onPress: () => void handleDelete(),
+        onPress: handleDelete,
       },
     ]);
   };

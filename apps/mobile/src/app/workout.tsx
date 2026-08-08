@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,7 @@ import { useProfile } from '@/data/repositories/profile-repository';
 import { usePriorWeekAdherence } from '@/data/repositories/planned-session-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import { computeProgressionSuggestion } from '@wellness/shared';
 
@@ -229,8 +230,7 @@ export default function WorkoutScreen() {
   const [edit, setEdit] = useState<{ setId: string; state: EditState } | null>(null);
   const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
   const [supersetPickerOpen, setSupersetPickerOpen] = useState(false);
-  // Voir `doFinish` : verrou de clôture, écrit et relu sans attendre un rendu.
-  const finishingRef = useRef(false);
+  const lockFinish = useActionLock();
 
   const entries = active?.entries ?? [];
   const current = resolveCurrentSet(entries, focusOverride);
@@ -483,29 +483,27 @@ export default function WorkoutScreen() {
     ]);
   };
 
-  const doFinish = async () => {
-    // Verrou d'arrêt — même défaut que celui trouvé sur `run/active.tsx` le 07/08/2026 : « Terminer »
-    // est un Pressable nu qui reste actif pendant tout l'`await`. Deux appuis rapides tombent dans
-    // le même cycle de rendu, donc clôturaient la séance deux fois, réévaluaient les records deux
-    // fois (donc pouvaient pousser deux notifications de record identiques) et navigueraient deux
-    // fois. Une ref est écrite et relue immédiatement, sans attendre un rendu.
-    if (finishingRef.current) return;
-    finishingRef.current = true;
-    // 1. Clôture de la séance : doit réussir (statut 'completed').
-    await finishWorkout(workoutId);
-    // 2. Évaluation des records : enrichissement best-effort. Un échec ne doit
-    //    jamais bloquer la navigation (le résumé lit les records de façon réactive).
-    //    US MUSC-F8 : le push de record est lui aussi best-effort, dans le même `try` — un
-    //    échec du push ne doit pas plus bloquer la navigation qu'un échec de l'évaluation.
-    try {
-      const beaten = await evaluateWorkoutRecords(workoutId);
-      await maybePushRecords(workoutId, beaten);
-    } catch (error) {
-      console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
-    }
-    // 3. Navigation vers le résumé, quoi qu'il advienne à l'étape 2.
-    router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
-  };
+  // Verrou de clôture — « Terminer » est un `Pressable` nu qui reste actif pendant tout l'`await` :
+  // deux appuis rapides tombent dans le même cycle de rendu et clôturaient la séance deux fois,
+  // réévaluaient les records deux fois (donc pouvaient pousser deux notifications identiques) et
+  // navigueaient deux fois. Voir `useActionLock`.
+  const doFinish = () =>
+    void lockFinish(async () => {
+      // 1. Clôture de la séance : doit réussir (statut 'completed').
+      await finishWorkout(workoutId);
+      // 2. Évaluation des records : enrichissement best-effort. Un échec ne doit
+      //    jamais bloquer la navigation (le résumé lit les records de façon réactive).
+      //    US MUSC-F8 : le push de record est lui aussi best-effort, dans le même `try` — un
+      //    échec du push ne doit pas plus bloquer la navigation qu'un échec de l'évaluation.
+      try {
+        const beaten = await evaluateWorkoutRecords(workoutId);
+        await maybePushRecords(workoutId, beaten);
+      } catch (error) {
+        console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
+      }
+      // 3. Navigation vers le résumé, quoi qu'il advienne à l'étape 2.
+      router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
+    });
 
   // Gestion des séries en direct depuis la liste dépliée (C1) : dé-validation
   // volontairement sans repos (spec §2.2 — seule la carte focus déclenche le repos).
@@ -534,11 +532,11 @@ export default function WorkoutScreen() {
     if (!hasAnyDone) {
       Alert.alert(t('workout.finishNoSetsTitle'), t('workout.finishNoSetsMessage'), [
         { text: t('common.cancel'), style: 'cancel' },
-        { text: t('workout.finishAnyway'), onPress: () => void doFinish() },
+        { text: t('workout.finishAnyway'), onPress: doFinish },
       ]);
       return;
     }
-    void doFinish();
+    doFinish();
   };
 
   return (

@@ -139,13 +139,22 @@ export function ProgramEditScreen() {
   }, [id]);
 
   /**
-   * Exécute une écriture bornée par `busy`, puis re-fetch pour resynchroniser.
+   * Exécute une écriture sérialisée, puis re-fetch pour resynchroniser.
    * `run` renvoie `{ error }` (convention de la couche data). En cas d'erreur, ne
    * re-fetch pas et lève le drapeau d'erreur.
+   *
+   * ⚠️ **Le verrou est une ref, pas l'état `busy`.** `busy` est lu depuis la fermeture du rendu
+   * courant : deux clics rapides — ou deux gestes de glisser-déposer enchaînés — tombent dans le
+   * même cycle de rendu, où `busy` vaut encore `false` pour les deux. Sur cet écran, la
+   * conséquence serait deux séances ajoutées au même `order_index`, ou deux réordonnancements
+   * concurrents dont le second écraserait le premier. Même défaut que celui corrigé côté mobile
+   * les 07 et 08/08/2026, sur cinq écrans. `busy` reste l'état d'**affichage** (boutons grisés).
    */
+  const busyRef = useRef(false);
   const runWrite = useCallback(
     async (run: () => Promise<{ error: unknown }>) => {
-      if (busy) return;
+      if (busyRef.current) return;
+      busyRef.current = true;
       setBusy(true);
       setActionError(false);
       try {
@@ -159,10 +168,11 @@ export function ProgramEditScreen() {
       } catch {
         setActionError(true);
       } finally {
+        busyRef.current = false;
         setBusy(false);
       }
     },
-    [busy, reload],
+    [reload],
   );
 
   /**

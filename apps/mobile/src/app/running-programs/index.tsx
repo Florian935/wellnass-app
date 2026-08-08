@@ -28,6 +28,7 @@ import {
   type ProgramLibraryFilters,
   type ProgramListItem,
 } from '@/data/repositories/program-repository';
+import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -59,6 +60,9 @@ export default function RunningProgramsScreen() {
   const [creating, setCreating] = useState(false);
   const [duplicating, setDuplicating] = useState<string | null>(null);
 
+  const lockCreate = useActionLock();
+  const lockDuplicate = useActionLock();
+
   const { programs: myPrograms, isLoading: myLoading } = useMyPrograms('running');
 
   // Filtres combinés (ET) passés à la bibliothèque. Le pilier est toujours
@@ -71,35 +75,38 @@ export default function RunningProgramsScreen() {
   const { programs: libraryPrograms, isLoading: libraryLoading } =
     useProgramLibrary(libraryFilters);
 
-  const onCreate = async () => {
-    if (creating) return;
-    setCreating(true);
-    try {
-      const id = await createProgram({
-        pillar: 'running',
-        name: t('running.program.createTitle'),
-      });
-      router.push(`/running-programs/edit?id=${id}`);
-    } catch {
-      // Écriture offline-first : échec très improbable ; on réactive le bouton.
-    } finally {
-      setCreating(false);
-    }
-  };
+  // `creating` / `duplicating` ne pilotent que l'affichage ; la garde contre le double appui est
+  // portée par `useActionLock` (un état React ne voit pas un second appui du même cycle de rendu —
+  // voir le hook). Sans elle, deux appuis créaient **deux programmes**, dont un orphelin.
+  const onCreate = () =>
+    void lockCreate(async () => {
+      setCreating(true);
+      try {
+        const id = await createProgram({
+          pillar: 'running',
+          name: t('running.program.createTitle'),
+        });
+        router.push(`/running-programs/edit?id=${id}`);
+      } catch {
+        // Écriture offline-first : échec très improbable ; on réactive le bouton.
+      } finally {
+        setCreating(false);
+      }
+    });
 
-  const onDuplicate = async (id: string) => {
-    if (duplicating) return;
-    setDuplicating(id);
-    try {
-      const newId = await duplicateProgram(id);
-      router.push(`/running-programs/${newId}`);
-    } catch {
-      // En cas d'erreur, la transaction garantit l'absence de copie partielle :
-      // on reste simplement sur la liste.
-    } finally {
-      setDuplicating(null);
-    }
-  };
+  const onDuplicate = (id: string) =>
+    void lockDuplicate(async () => {
+      setDuplicating(id);
+      try {
+        const newId = await duplicateProgram(id);
+        router.push(`/running-programs/${newId}`);
+      } catch {
+        // En cas d'erreur, la transaction garantit l'absence de copie partielle :
+        // on reste simplement sur la liste.
+      } finally {
+        setDuplicating(null);
+      }
+    });
 
   const onPress = (id: string) => {
     router.push(`/running-programs/${id}`);
