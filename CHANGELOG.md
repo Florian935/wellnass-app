@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `refactor/goal-adherence-factorisation` — la cible calorique du jour, écrite une seule fois
+
+Commit précédent : `88d26b6`. **Dette du BACKLOG ouverte la veille par APPORT-01, refermée** — dans
+l'ordre qu'elle prescrivait : couvrir d'abord, extraire ensuite.
+Vérifié : typecheck **0**, lint **0 erreur** (96 warnings, tous préexistants), **1 323 tests mobile
++ 373 admin + 91 fichiers shared verts** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `useDailyCalorieTargets(fromKey, toKey)` dans `dashboard-repository.ts` — l'assemblage de la cible
+  calorique effective, jour par jour, désormais **écrit une seule fois**. Expose `days`, `marginPct`,
+  `hasTarget`, `weightKg`, `isLoading`. Types `DailyCalorieTarget` et `DailyCalorieTargets`.
+- `__tests__/goal-adherence-assembly.test.tsx` — **17 tests** sur `useGoalAdherenceForRange`, qui
+  n'avait jusqu'ici **aucun test direct** : bornes de fenêtre, cible par jour (VIE-01), jours de
+  séance, dépense de course, marge utilisateur, absence d'objectif, chargement, bilan signé.
+
+#### Modifié
+
+- `useGoalAdherenceForRange` ne fait plus que **juger** les jours (`computeGoalAdherence` +
+  `computeCaloricBalance`) ; leur construction est déléguée.
+- `useTrainingNutritionCross` consomme le même assemblage et ne garde que ce qui lui est propre :
+  le volume muscu par jour et les quatre moteurs. Ses `isLoading` et son `useMemo` sont réduits
+  d'autant (14 dépendances → 6).
+
+#### Technique — Notes
+
+- 🔴 **L'ordre imposé par le BACKLOG a été respecté à la lettre**, et il comptait : les 17 tests ont
+  été écrits **et vérifiés verts sur le code d'origine** avant la moindre extraction, puis rejoués
+  à l'identique après. C'est ce qui distingue « j'ai factorisé » de « j'ai changé les chiffres de
+  trois écrans livrés » — `useGoalAdherenceForRange` sert NUTR-10, NUTR-18, BILAN-01 (en recette)
+  et `nutrition-stats.tsx`.
+- ⚠️ **Une attente du test était fausse, pas le code** : le premier jet exigeait `daysInTarget = 3`
+  là où le code rendait 2. `daysBelow` est **binaire** (strictement sous la cible) tandis que
+  `daysInTarget` applique la marge de ±10 % — un jour à −200 sur 2 000 est donc à la fois « en
+  dessous » et « dans la cible ». L'assertion a été corrigée et la distinction documentée dans le
+  test, parce qu'elle se represcrira.
+- 🔴 **`DailyCalorieTarget.kcal` n'est PAS nullable, là où `CrossDay.kcal` l'est** — et ce n'est pas
+  une divergence à corriger. `CrossDay` réserve `null` au jour **non journalisé** (spec APPORT-01
+  R4) ; or les jours produits ici viennent tous de `useDailyTotals`, où un jour sans entrée ne
+  figure simplement pas. Élargir le type aurait obligé chaque consommateur à traiter un cas que le
+  producteur n'émet jamais. `number` restant assignable à `number | null`, `CrossDay` est satisfait
+  à la construction. Premier jet fait en `Omit<CrossDay, 'strengthVolume'>` : rejeté par le
+  typecheck, et c'est le typecheck qui avait raison.
+- **Aucun changement de comportement attendu, et rien qui le masque** : mêmes fonctions pures, même
+  ordre, même convention de rattachement au jour (`finished_at` local). Le `useMemo` ajouté ne
+  mémoïse pas davantage qu'avant en pratique — ses dépendances (`allTotals`, `workouts`, `runs`)
+  sont des tableaux reconstruits à chaque rendu par leurs hooks — mais il ne dégrade rien et
+  bénéficiera d'éventuelles références stables.
+- **Les tests mockent les sources, jamais les briques pures** : c'est l'assemblage qu'on veut voir,
+  pas une réimplémentation du calcul dans le test.
+- ⚠️ **`renderHook()` de @testing-library/react-native v14 est async.** Oublier le `await` donne un
+  `result` à `undefined` et un échec qui ne dit pas pourquoi — piège déjà documenté dans
+  `useUnits.test.tsx`, redocumenté en tête du nouveau fichier.
+- **Les horodatages de test sont construits en heure locale** puis sérialisés, jamais écrits en UTC
+  en dur : un `'…T23:50:00Z'` passerait dans un fuseau et échouerait dans un autre — exactement le
+  profil du test intermittent déjà ouvert au BACKLOG sur `health-connect-state`.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture, aucune chaîne i18n.** Refactorisation
+  interne : **aucune ligne de roadmap ne change de statut**.
+
 ### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : requêtes, section et i18n
 
 Commit précédent : `72ac9d1`. L'US passe à `etape: recette`.

@@ -95,8 +95,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/apport01-manger-comme-on-sentraine` (modifications non commitées) |
-| Commits | 1136 · `main` a **1133** commits de retard sur `dev` |
+| Branche courante | `refactor/goal-adherence-factorisation` (modifications non commitées) |
+| Commits | 1137 · `main` a **1134** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `88d26b6` feat(apport01): requetes, section et i18n du croise muscu x nutrition
 - `72ac9d1` feat(apport01): les 4 moteurs du croise muscu x nutrition
 - `b710b9b` test(admin): le constructeur de programmes sous test (21 tests, 1 458 lignes)
 - `8dd78a2` fix(app): neuf gardes de double appui qui ne gardaient rien + hook useActionLock
 - `8ad8b6d` fix(programs): le verrou de duplication ne gardait rien + 3 coquilles de test supprimées
-- `b4bba32` test(admin): modération et import CSV sous test (45 tests)
 
 ---
 

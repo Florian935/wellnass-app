@@ -119,20 +119,6 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       Piste de reproduction : lancer la suite mobile sous charge (typecheck + lint + test + coverage
       enchaînés dans le même shell), condition dans laquelle l'échec est apparu.
 
-- [ ] 🟠 **`useGoalAdherenceForRange` n'a aucun test direct, et son assemblage est désormais
-      dupliqué.** Constaté le 08/08/2026 en livrant APPORT-01 : ce hook construit `perDay` (cible de
-      base par jour → cible effective, avec la règle VIE-01 et le bonus des jours de séance), et
-      `useTrainingNutritionCross` a dû **refaire le même assemblage**.
-      **Le factoriser était le bon geste, et je ne l'ai pas fait** : le hook sert **BILAN-01, en
-      recette**, ainsi que `nutrition-stats.tsx`, et il n'a **aucun test direct** — seule sa partie
-      pure (`computeEffectiveTargetForDay`) est couverte. Refactoriser à l'aveugle un chemin livré et
-      en recette aurait été un risque mal payé.
-      Les deux chemins appellent **les mêmes fonctions pures dans le même ordre**, donc rien ne diverge
-      aujourd'hui. Mais deux assemblages de la cible **finiront** par diverger — au premier ajustement
-      du bonus (`fixed` / `auto`, RN-02) ou de la règle VIE-01.
-      **Ordre de traitement** : d'abord **couvrir** `useGoalAdherenceForRange` par des tests, ensuite
-      seulement extraire l'assemblage commun. Dans l'autre sens, on refactorise sans filet.
-
 - [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
       9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de

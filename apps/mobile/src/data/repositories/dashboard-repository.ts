@@ -1385,42 +1385,74 @@ export type GoalAdherence = {
 };
 
 /**
- * Adhérence à l'objectif calorique (NUTR-10) sur les `windowDays` derniers jours : part des jours
- * loggés dont les kcal tombent dans la fourchette ±marge% de l'**objectif effectif du jour** (base +
- * bonus jour de séance, mode Forfait/Auto). Réutilise le calcul d'objectif de base de
- * `useDayCalorieTarget` et les briques pures RN-01 (`computeEffectiveTargetForDay`), en batch sur la
- * fenêtre. Jours d'entraînement / dépense course déterminés depuis l'historique (déjà en mémoire).
- * Hooks appelés inconditionnellement.
+ * Un jour de la fenêtre, avec sa cible calorique **effective** — la brique commune à l'adhérence
+ * (NUTR-10), au bilan calorique (NUTR-18), au bilan hebdo (BILAN-01) et au lot croisé (APPORT-01).
+ *
+ * ⚠️ **`kcal` n'est pas nullable ici**, là où `CrossDay.kcal` l'est. Ce n'est pas une divergence :
+ * `CrossDay` réserve `null` au jour **non journalisé** (spec APPORT-01 R4), or les jours produits
+ * ici viennent tous de `useDailyTotals` — un jour sans entrée n'y figure simplement pas. Déclarer
+ * `number | null` obligerait chaque consommateur à traiter un cas que le producteur n'émet jamais.
+ * Le type reste assignable à `CrossDay`, `number` étant compatible avec `number | null`.
  */
-export function useGoalAdherence(windowDays: number): GoalAdherence {
-  const today = useTodayDate();
-  return useGoalAdherenceForRange(daysAgo(windowDays, today), null);
-}
+export type DailyCalorieTarget = {
+  dayKey: string;
+  kcal: number;
+  /** Cible du jour, bonus de séance déjà appliqué. `null` = objectif non calculable (pas de TDEE). */
+  effectiveTarget: number | null;
+  isTrainingDay: boolean;
+};
+
+/** Ce que `useDailyCalorieTargets` expose à ses consommateurs. */
+export type DailyCalorieTargets = {
+  days: DailyCalorieTarget[];
+  /** Marge de tolérance **de l'utilisateur** (défaut 10 %) — jamais une constante d'appelant. */
+  marginPct: number;
+  hasTarget: boolean;
+  /** Dernière pesée, ou le poids du profil à défaut — utile aux calculs par kg de l'appelant. */
+  weightKg: number | null;
+  isLoading: boolean;
+};
 
 /**
- * Même calcul, sur une **fenêtre explicite** `[fromKey, toKey]` (bornes incluses ; `toKey = null`
- * signifie « jusqu'à aujourd'hui »).
+ * Cible calorique effective de chaque jour d'une fenêtre `[fromKey, toKey]` (bornes incluses ;
+ * `toKey = null` = jusqu'à aujourd'hui).
  *
- * Extrait pour le bilan hebdomadaire (US BILAN-01, décision D6) : le bilan porte sur une **semaine
- * ISO close**, et une adhérence mesurée sur 7 jours glissants afficherait, sous un titre « semaine du
- * 20 au 26 juillet », un chiffre portant sur une autre période. Le corps est inchangé — seule la
- * borne est devenue un paramètre, plutôt que d'être dérivée d'un nombre de jours.
+ * ── Pourquoi ce hook existe ─────────────────────────────────────────────────────────────────────
+ * Cet assemblage était **écrit deux fois** : dans `useGoalAdherenceForRange` et dans
+ * `useTrainingNutritionCross` (APPORT-01, 08/08/2026). Les deux copies appelaient les mêmes
+ * fonctions pures dans le même ordre, donc rien ne divergeait — mais deux définitions de « la cible
+ * du jour » finissent toujours par diverger, au premier ajustement du bonus (`fixed`/`auto`, RN-02)
+ * ou de la règle VIE-01. Et cette divergence-là est invisible : elle ne plante pas, elle affiche
+ * deux chiffres différents pour la même journée sur deux écrans.
+ *
+ * L'extraction est faite **après** avoir couvert `useGoalAdherenceForRange`
+ * (`goal-adherence-assembly.test.tsx`) : refactoriser d'abord aurait été sans filet.
+ *
+ * ── Ce que l'assemblage garantit ────────────────────────────────────────────────────────────────
+ * - **La cible de base est une fonction DU JOUR** (US VIE-01, R4), pas de la fenêtre : une fenêtre
+ *   de 30 jours peut mêler des jours en période « vie réelle » (objectif ramené au maintien) et des
+ *   jours normaux. Une cible unique fausserait toute la fenêtre, pas seulement les jours concernés.
+ * - **`isTrainingDay` vient des séances TERMINÉES** (muscu + course), rattachées au jour **local**
+ *   de `finished_at`. C'est la même convention partout dans l'app — et c'est ce qui garantit que le
+ *   groupement d'APPORT-01 colle exactement à la cible qui a servi à juger chaque jour.
+ * - **La dépense de course n'entre que si le pilier running est actif** (décision H) ; les courses
+ *   d'un même jour se cumulent.
+ *
+ * Hooks appelés inconditionnellement.
  */
-export function useGoalAdherenceForRange(
+export function useDailyCalorieTargets(
   fromKey: string,
   toKey: string | null,
-): GoalAdherence {
+): DailyCalorieTargets {
   const { nutritionProfile, isLoading: nutriLoading } = useNutritionProfile();
   const { profile, isLoading: profileLoading } = useProfile();
   const { latest, isLoading: weightLoading } = useLatestWeight();
   const { settings } = useSettings();
   const { totals: allTotals, isLoading: totalsLoading } = useDailyTotals(fromKey);
-  // Borne haute : sans elle, un bilan de la semaine close inclurait les jours de la semaine en cours.
-  const totals = toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey);
   const { workouts, isLoading: wLoading } = useWorkoutHistory();
   const { runs, isLoading: rLoading } = useRunHistory();
-  // US VIE-01 : l'appartenance est évaluée **par jour** dans `targetBaseFor` — la plage peut mêler
-  // jours en période et jours normaux.
+  // US VIE-01 : l'appartenance est évaluée **par jour** — la plage peut mêler jours en période et
+  // jours normaux.
   const { periods } = useRealLifePeriods();
 
   const isLoading =
@@ -1436,68 +1468,114 @@ export function useGoalAdherenceForRange(
     age,
     activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
   });
-  // US VIE-01 (R4) : la cible de base devient une **fonction du jour**.
-  //
-  // Elle était calculée une seule fois pour toute la plage, ce qui ne pouvait plus marcher : une
-  // fenêtre de 30 jours peut contenir des jours en période « vie réelle » (objectif au maintien) et
-  // d'autres non (objectif réel). Une cible unique aurait faussé l'adhérence (NUTR-10) et le bilan
-  // calorique (NUTR-18) sur toute la fenêtre, pas seulement sur les jours concernés.
   const hasTarget = tdeeValue != null && objective != null;
-  const targetBaseFor = (dayKey: string): number | null =>
-    tdeeValue != null && objective != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, isRealLifeDay(periods, dayKey)),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
 
   const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
   const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
   const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
   const runningActive = resolveActivePillars(settings?.activePillars).includes('running');
+  const manualCalories = nutritionProfile?.manualCalories ?? null;
 
-  // Jours d'entraînement (muscu/course terminés) + dépense course, par jour local.
-  const trainedDays = new Set<string>();
-  for (const w of workouts) if (w.finishedAt) trainedDays.add(localDayKey(new Date(w.finishedAt)));
-  for (const r of runs) if (r.finishedAt) trainedDays.add(localDayKey(new Date(r.finishedAt)));
-  const runCaloriesByDay = new Map<string, number>();
-  if (runningActive) {
-    for (const r of runs) {
-      if (!r.finishedAt) continue;
-      const k = localDayKey(new Date(r.finishedAt));
-      runCaloriesByDay.set(
-        k,
-        (runCaloriesByDay.get(k) ?? 0) +
-          estimateRunCalories({
-            distanceM: r.distanceM,
-            durationSeconds: r.durationSeconds,
-            weightKg,
-          }),
-      );
-    }
-  }
+  const days = useMemo(() => {
+    // Borne haute : sans elle, un bilan de la semaine close inclurait les jours de la semaine en
+    // cours — sous un titre « semaine du 20 au 26 », un chiffre portant sur une autre période.
+    const totals = toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey);
 
-  const perDay = totals.map((d) => {
-    const targetBase = targetBaseFor(d.logDate);
-    return {
-      kcal: d.kcal,
-      effectiveTarget:
-        targetBase == null
-          ? null
-          : computeEffectiveTargetForDay({
-              targetBase,
-              mode,
-              fixedBonus,
-              isTrainingDay: trainedDays.has(d.logDate),
-              runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
+    // Jours d'entraînement (muscu/course terminés) + dépense course, par jour local.
+    const trainedDays = new Set<string>();
+    for (const w of workouts) if (w.finishedAt) trainedDays.add(localDayKey(new Date(w.finishedAt)));
+    for (const r of runs) if (r.finishedAt) trainedDays.add(localDayKey(new Date(r.finishedAt)));
+
+    const runCaloriesByDay = new Map<string, number>();
+    if (runningActive) {
+      for (const r of runs) {
+        if (!r.finishedAt) continue;
+        const k = localDayKey(new Date(r.finishedAt));
+        runCaloriesByDay.set(
+          k,
+          (runCaloriesByDay.get(k) ?? 0) +
+            estimateRunCalories({
+              distanceM: r.distanceM,
+              durationSeconds: r.durationSeconds,
+              weightKg,
             }),
-    };
-  });
+        );
+      }
+    }
 
-  const { loggedDays, daysInTarget, pct } = computeGoalAdherence(perDay, marginPct);
-  const { balanceKcal, daysAbove, daysBelow } = computeCaloricBalance(perDay);
+    const targetBaseFor = (dayKey: string): number | null =>
+      tdeeValue != null && objective != null
+        ? targetCalories(
+            tdeeValue,
+            effectiveNutritionObjective(objective, isRealLifeDay(periods, dayKey)),
+            manualCalories,
+          )
+        : null;
+
+    return totals.map((d) => {
+      const targetBase = targetBaseFor(d.logDate);
+      const isTraining = trainedDays.has(d.logDate);
+      return {
+        dayKey: d.logDate,
+        kcal: d.kcal,
+        effectiveTarget:
+          targetBase == null
+            ? null
+            : computeEffectiveTargetForDay({
+                targetBase,
+                mode,
+                fixedBonus,
+                isTrainingDay: isTraining,
+                runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
+              }),
+        isTrainingDay: isTraining,
+      };
+    });
+  }, [
+    allTotals,
+    toKey,
+    workouts,
+    runs,
+    periods,
+    tdeeValue,
+    objective,
+    manualCalories,
+    mode,
+    fixedBonus,
+    weightKg,
+    runningActive,
+  ]);
+
+  return { days, marginPct, hasTarget, weightKg, isLoading };
+}
+
+/**
+ * Adhérence à l'objectif calorique (NUTR-10) sur les `windowDays` derniers jours : part des jours
+ * loggés dont les kcal tombent dans la fourchette ±marge% de l'**objectif effectif du jour** (base +
+ * bonus jour de séance, mode Forfait/Auto). Jours d'entraînement / dépense course déterminés depuis
+ * l'historique (déjà en mémoire). Hooks appelés inconditionnellement.
+ */
+export function useGoalAdherence(windowDays: number): GoalAdherence {
+  const today = useTodayDate();
+  return useGoalAdherenceForRange(daysAgo(windowDays, today), null);
+}
+
+/**
+ * Même calcul, sur une **fenêtre explicite** `[fromKey, toKey]` (bornes incluses ; `toKey = null`
+ * signifie « jusqu'à aujourd'hui »).
+ *
+ * Extrait pour le bilan hebdomadaire (US BILAN-01, décision D6) : le bilan porte sur une **semaine
+ * ISO close**, et une adhérence mesurée sur 7 jours glissants afficherait, sous un titre « semaine du
+ * 20 au 26 juillet », un chiffre portant sur une autre période.
+ *
+ * Ne fait plus que **juger** les jours : leur construction vit dans `useDailyCalorieTargets`.
+ */
+export function useGoalAdherenceForRange(fromKey: string, toKey: string | null): GoalAdherence {
+  const { days, marginPct, hasTarget, isLoading } = useDailyCalorieTargets(fromKey, toKey);
+
+  const { loggedDays, daysInTarget, pct } = computeGoalAdherence(days, marginPct);
+  const { balanceKcal, daysAbove, daysBelow } = computeCaloricBalance(days);
   return {
     loggedDays,
     daysInTarget,
@@ -1578,25 +1656,22 @@ export type TrainingNutritionCross = {
  * « séance » alors que sa cible aurait été calculée en jour de repos — une incohérence interne
  * invisible et impossible à débusquer en recette.
  *
- * ── ⚠️ Ce qui reste dupliqué, et pourquoi c'est assumé ──────────────────────────────────────────
- * L'assemblage de `perDay` (cible de base par jour → cible effective) reprend celui de
- * `useGoalAdherenceForRange`. **Le factoriser aurait été mieux**, mais ce hook n'a **aucun test
- * direct** et sert BILAN-01, actuellement en recette : le refactoriser maintenant serait un risque
- * mal payé. Les deux chemins appellent **les mêmes fonctions pures** dans le même ordre, et la dette
- * est inscrite au BACKLOG.
+ * Depuis la factorisation (dette du 08/08/2026), cette garantie n'est plus une convention à
+ * respecter des deux côtés : les jours **viennent** de `useDailyCalorieTargets`, qui porte la cible
+ * et le drapeau `isTrainingDay` dans le même objet. Il ne reste ici que ce qui est propre au lot —
+ * le volume de musculation par jour, et les quatre moteurs.
  */
 export function useTrainingNutritionCross(): TrainingNutritionCross {
   const fromKey = useWindowStartKey(CROSS_WINDOW_DAYS);
   const windowStartUtc = useWindowStartUtc(CROSS_WINDOW_DAYS);
 
-  const { nutritionProfile, isLoading: nutriLoading } = useNutritionProfile();
-  const { profile, isLoading: profileLoading } = useProfile();
-  const { latest, isLoading: weightLoading } = useLatestWeight();
-  const { settings } = useSettings();
-  const { totals, isLoading: totalsLoading } = useDailyTotals(fromKey);
-  const { workouts, isLoading: wLoading } = useWorkoutHistory();
-  const { runs, isLoading: rLoading } = useRunHistory();
-  const { periods } = useRealLifePeriods();
+  const {
+    days: targetDays,
+    marginPct,
+    weightKg,
+    isLoading: targetsLoading,
+  } = useDailyCalorieTargets(fromKey, null);
+  const { nutritionProfile } = useNutritionProfile();
 
   const { data: mealRows, isLoading: mealLoading } = useQuery<{
     meal_key: string;
@@ -1608,56 +1683,11 @@ export function useTrainingNutritionCross(): TrainingNutritionCross {
     volume: number | null;
   }>(SELECT_STRENGTH_VOLUME_BY_DAY, [windowStartUtc]);
 
-  const isLoading =
-    nutriLoading ||
-    profileLoading ||
-    weightLoading ||
-    totalsLoading ||
-    wLoading ||
-    rLoading ||
-    mealLoading ||
-    volLoading;
+  const isLoading = targetsLoading || mealLoading || volLoading;
 
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-  });
-
-  const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
-  const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
-  // 🔴 La marge de L'UTILISATEUR (spec D2) — jamais une constante de ce lot.
-  const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
-  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
-  const runningActive = resolveActivePillars(settings?.activePillars).includes('running');
+  const configuredMeals = nutritionProfile?.meals ?? DEFAULT_MEAL_CONFIG;
 
   const cross = useMemo(() => {
-    // Même construction que `useGoalAdherenceForRange` — voir l'avertissement en tête du hook.
-    const trainedDays = new Set<string>();
-    for (const w of workouts) if (w.finishedAt) trainedDays.add(localDayKey(new Date(w.finishedAt)));
-    for (const r of runs) if (r.finishedAt) trainedDays.add(localDayKey(new Date(r.finishedAt)));
-
-    const runCaloriesByDay = new Map<string, number>();
-    if (runningActive) {
-      for (const r of runs) {
-        if (!r.finishedAt) continue;
-        const k = localDayKey(new Date(r.finishedAt));
-        runCaloriesByDay.set(
-          k,
-          (runCaloriesByDay.get(k) ?? 0) +
-            estimateRunCalories({
-              distanceM: r.distanceM,
-              durationSeconds: r.durationSeconds,
-              weightKg,
-            }),
-        );
-      }
-    }
-
     const volumeByDay = new Map<string, number>();
     for (const row of volumeRows) {
       if (row.volume === null || !Number.isFinite(row.volume)) continue;
@@ -1665,33 +1695,10 @@ export function useTrainingNutritionCross(): TrainingNutritionCross {
       volumeByDay.set(k, (volumeByDay.get(k) ?? 0) + row.volume);
     }
 
-    const days: CrossDay[] = totals.map((d) => {
-      const targetBase =
-        tdeeValue != null && objective != null
-          ? targetCalories(
-              tdeeValue,
-              effectiveNutritionObjective(objective, isRealLifeDay(periods, d.logDate)),
-              nutritionProfile?.manualCalories ?? null,
-            )
-          : null;
-      const isTraining = trainedDays.has(d.logDate);
-      return {
-        dayKey: d.logDate,
-        kcal: d.kcal,
-        effectiveTarget:
-          targetBase == null
-            ? null
-            : computeEffectiveTargetForDay({
-                targetBase,
-                mode,
-                fixedBonus,
-                isTrainingDay: isTraining,
-                runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
-              }),
-        isTrainingDay: isTraining,
-        strengthVolume: volumeByDay.get(d.logDate) ?? 0,
-      };
-    });
+    const days: CrossDay[] = targetDays.map((d) => ({
+      ...d,
+      strengthVolume: volumeByDay.get(d.dayKey) ?? 0,
+    }));
 
     return {
       energy: computeEnergyByDayType(days),
@@ -1701,26 +1708,11 @@ export function useTrainingNutritionCross(): TrainingNutritionCross {
         mealProtein: mealRows
           .filter((r) => r.protein_g !== null)
           .map((r) => ({ mealKey: r.meal_key, proteinG: r.protein_g as number })),
-        configuredMeals: nutritionProfile?.meals ?? DEFAULT_MEAL_CONFIG,
+        configuredMeals,
         bodyWeightKg: weightKg,
       }),
     };
-  }, [
-    totals,
-    workouts,
-    runs,
-    volumeRows,
-    mealRows,
-    periods,
-    tdeeValue,
-    objective,
-    mode,
-    fixedBonus,
-    marginPct,
-    weightKg,
-    runningActive,
-    nutritionProfile,
-  ]);
+  }, [targetDays, volumeRows, mealRows, marginPct, weightKg, configuredMeals]);
 
   return { ...cross, isLoading };
 }
