@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — La liste d'exercices de la séance, 4 % → couverte
+
+**44 tests** sur `components/workout/ExerciseList`. Le composant était à **4 %**, et
+`workout-screen.test.tsx` le remplace par une sonde : rien ne le vérifiait. C'est pourtant l'endroit
+d'où l'utilisateur corrige sa séance en cours — dé-valider une série mal saisie, en retirer une,
+réordonner, remplacer un exercice parce que la machine est prise.
+
+#### Ajouté
+
+- **`ExerciseList.test.tsx` — 44 tests.**
+  - **🔴 Le dépli est un DÉFAUT, pas un état.** L'exercice courant est déplié ; un tap pose une
+    **dérogation** pour cet exercice-là. Sans la dérogation, l'exercice courant serait impossible à
+    replier et sa liste de séries occuperait l'écran en permanence ; sans le défaut, il faudrait le
+    déplier à la main à chaque changement de focus.
+  - **🔴 Un exercice sans série affiche 0/0 et n'est PAS considéré comme terminé.**
+    `doneCount === total` est vrai pour `0 === 0` : sans la garde `total > 0`, un exercice
+    fraîchement ajouté s'afficherait coché et **perdrait toutes ses actions**.
+  - **🔴 Les actions de réorganisation sont masquées si le parent ne les câble pas.** Des boutons
+    inertes valent moins que pas de boutons : l'utilisateur appuie, rien ne bouge, il conclut que
+    l'app est cassée. Et elles **disparaissent** quand l'exercice est entièrement validé — l'envoyer
+    « plus tard » le ferait réapparaître comme s'il restait à faire.
+  - **🔴 La dé-validation est désactivée sur une série non validée**, mais le bouton reste présent
+    (la ligne garde sa géométrie). Le rendre actif permettrait de « valider » depuis la liste, ce
+    qui court-circuiterait le repos (spec §2.2). Le **retrait**, lui, reste possible sur une série
+    déjà validée : corriger une série ajoutée par erreur est exactement le cas d'usage.
+  - **🔴 Une série à la durée AVEC lest affiche les deux** (« 0:45 · +10 kg ») — le lest change
+    complètement la difficulté, l'omettre rendrait deux séries identiques à l'écran alors qu'elles
+    n'ont rien à voir.
+  - **🔴 La note d'exercice et la liaison superset sont visibles même REPLIÉ** : une note qu'il faut
+    déplier pour lire ne sert à rien pendant une séance. Et un partenaire absent de la séance
+    n'affiche **rien** — un « 🔗 » sans nom serait une information mutilée, pire que pas
+    d'information.
+  - Plus : les six types de série portant un badge (et la série « normale » qui n'en porte aucun,
+    sinon les badges deviennent illisibles là où ils comptent), les reps absentes rendues en tiret,
+    et les quatre gestes de gestion transmis avec le bon identifiant.
+
+#### Technique / Notes
+
+- **Un piège de sélection RNTL** : filtrer les en-têtes sur `'expanded' in accessibilityState`
+  remonte aussi des nœuds où la clé existe avec la valeur `undefined`. Filtrer sur
+  `typeof … === 'boolean'`.
+- **3 925 tests verts** (2 162 shared + 1 318 mobile + 445 admin). Typecheck, lint et seuils
+  propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Comptes et aliments : les deux dernières listes du back-office
 
 **33 tests** sur `UsersScreen` et `FoodsScreen`. Huit écrans du back-office sur quinze sont
