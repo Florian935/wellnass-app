@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : requêtes, section et i18n
+
+Commit précédent : `72ac9d1`. L'US passe à `etape: recette`.
+Vérifié : typecheck **0**, lint **0 erreur**, **3 841 tests verts** (373 admin + 1 306 mobile +
+2 162 shared), `test:coverage` **0** — codes de sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `useTrainingNutritionCross` + 2 requêtes (`SELECT_PROTEIN_BY_MEAL`,
+  `SELECT_STRENGTH_VOLUME_BY_DAY`) dans `dashboard-repository.ts`.
+- `components/nutrition/CrossTrainingSection.tsx` — section **conditionnelle et repliée**, branchée
+  sur l'écran Nutrition à côté de la carte MN-03 déjà présente.
+- **14 tests SQL** et **10 tests de section**. **19 clés i18n** FR + EN (2 088 chacune).
+
+#### Technique — Notes
+
+- 🔴 **D1 a été AFFINÉE en codant, et le résultat est meilleur que la spec.** Elle prescrivait
+  `isTrainingDay` ; or le calcul de la cible effective, dans ce même fichier, groupe déjà les jours
+  avec un `trainedDays` bâti des séances **terminées**. Sur une fenêtre **passée** les deux
+  coïncident — la branche d'anticipation d'`isTrainingDay` ne peut pas se déclencher sur un jour
+  révolu. Reprendre `trainedDays` **garantit que le groupement colle exactement à la cible** qui a
+  servi à juger chaque jour ; importer `isTrainingDay` séparément aurait permis un jour classé
+  « séance » dont la cible aurait été calculée en jour de repos — incohérence invisible et
+  indébusquable en recette.
+- 🔴 **Un item de DoD a été RÉÉCRIT plutôt que coché.** Il annonçait quatre réutilisations ; **deux
+  n'ont pas eu lieu** : `isTrainingDay` (remplacée par mieux, voir ci-dessus) et
+  `computeCaloricBalance` (elle rend un solde global, ce lot compare **deux groupes de jours** —
+  l'annoncer était une erreur de cadrage). Et `resolveMealSplit` voit sa **convention** reprise, pas
+  sa fonction appelée : elle rend des `avgKcalPerDay`, spécifiques aux calories. Cocher ces items
+  aurait été faux ; le tableau du §10 dit désormais exactement ce qui est réutilisé et ce qui ne
+  l'est pas.
+- 🔴 **`SELECT_STRENGTH_VOLUME_BY_DAY` reprend la convention de volume du dépôt** — séries validées,
+  hors échauffement, séances terminées, comme `useLifetimeTonnage` et `useMuscleVolumeThisWeek`. Une
+  troisième définition du « volume » rendrait les chiffres incomparables d'un écran à l'autre, sans
+  qu'aucun test fonctionnel ne le voie. Un test SQL le fige.
+- **`finished_at` et non `started_at`** pour rattacher une séance à un jour : c'est la convention de
+  `trainedDays`, donc une séance commencée à 23 h 50 appartient au jour où elle se termine, ici comme
+  ailleurs.
+- **La carte protéines survit à l'absence de pesée** et affiche son remède, avec l'accès aux
+  mensurations — troisième application du patron (`StrengthSection`, puis les zones d'ALLURE-01).
+  Deux tests l'exigent, dont un qui vérifie que le remède est **actionnable**.
+- ⚠️ **Dette assumée et inscrite au BACKLOG** : l'assemblage de `perDay` duplique celui de
+  `useGoalAdherenceForRange`. Le factoriser était le bon geste — mais ce hook **n'a aucun test
+  direct** et sert **BILAN-01, en recette**. Refactoriser à l'aveugle un chemin livré et en recette
+  aurait été un risque mal payé. **Ordre de traitement noté** : couvrir d'abord, extraire ensuite.
+- ✅ **Aucune migration, aucune sync rule, aucune écriture.** `insights.ts` et le registre d'accueil :
+  `git diff` **vide**.
+
 ### 08/08/2026 — `feature/apport01-manger-comme-on-sentraine` — APPORT-01 : les 4 moteurs du croisé muscu × nutrition
 
 Commit précédent : `041375a`. **Cadrage validé par Florian le 08/08/2026**, mes 4 propositions du §8

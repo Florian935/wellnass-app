@@ -13,6 +13,7 @@ import {
   type MealSplitRow,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { CrossTrainingSection } from '@/components/nutrition/CrossTrainingSection';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
 import { Segment } from '@/components/Segment';
@@ -270,6 +271,12 @@ export default function NutritionStatsScreen() {
 
       {/* Vue croisée charge muscu ↔ apports (MN-03) — auto-portante, gating muscu+nutrition */}
       <TrainingNutritionCrossCard />
+
+      {/* US APPORT-01 — « manges-tu comme tu t'entraînes ? » (MN-20/16/15/10).
+          Conditionnelle et repliée : rend `null` quand ses 4 analyses se taisent, donc un compte
+          neuf ne voit rien de plus qu'avant. Même patron que StrengthSection, ExecutionSection et
+          PolarisationSection — la place d'affichage est une ressource rare. */}
+      <CrossTrainingSection />
     </ScrollView>
   );
 }

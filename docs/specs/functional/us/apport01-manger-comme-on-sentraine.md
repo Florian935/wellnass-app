@@ -3,7 +3,7 @@ id: APPORT-01
 titre: "Manges-tu comme tu t'entraînes ? — lot d'analyses croisées muscu × nutrition"
 roadmap: [4.40]
 catalogue: [MN-20, MN-16, MN-15, MN-10]
-etape: code
+etape: recette
 branche: feature/apport01-manger-comme-on-sentraine
 maj: 08/08/2026
 ---
@@ -112,6 +112,22 @@ distingue pas les piliers). C'est **voulu pour MN-20 et MN-16**, parce que la ci
 aussi s'applique aux jours de course. MN-15, en revanche, parle explicitement de **volume muscu** :
 elle utilise `computeVolume`, pas `isTrainingDay`. Cette asymétrie est **délibérée** et écrite ici
 pour qu'on ne la « corrige » pas par symétrie apparente.
+
+> 🔴 **Affiné en implémentant le 08/08/2026 — et c'est mieux que ce que la spec prescrivait.**
+> Le calcul de la cible effective, dans `dashboard-repository.ts`, groupe déjà les jours avec un
+> `trainedDays` bâti des séances **terminées** (muscu + course), **pas** avec `isTrainingDay`.
+>
+> Or sur une fenêtre **passée** les deux coïncident : `isTrainingDay` vaut
+> `retroactiveDone || (hasPlanned && dayKey >= todayKey)`, et sa branche d'anticipation ne peut pas se
+> déclencher sur un jour révolu.
+>
+> **On reprend donc `trainedDays`**, ce qui garantit que le groupement colle **exactement** à la cible
+> qui a servi à juger chaque jour. Importer `isTrainingDay` séparément aurait ouvert la porte à un
+> jour classé « séance » dont la cible aurait été calculée en jour de repos — une incohérence interne
+> invisible, et impossible à débusquer en recette.
+>
+> L'intention de D1 est donc **tenue et renforcée** : on ne redéfinit rien, et on s'aligne sur la
+> source qui compte.
 
 ### 2.2 D2 — 🔴 La tolérance appartient à l'utilisateur
 
@@ -302,19 +318,49 @@ aucun second jeu.
 
 ## 10. Definition of Done
 
-- [ ] `typecheck`, `lint`, `test:coverage` verts — codes de sortie **sans pipe**.
-- [ ] 4 moteurs **purs**, `packages/shared` toujours à **100 %** (branches comprises).
-- [ ] Chaque moteur rend `null` sous son seuil, et un test le fige (R3).
-- [ ] Les seuils sont des constantes **exportées et nommées**, chacune assise par un test.
-- [ ] 🔴 Un test fige que l'adhérence utilise **`adherenceMarginPct` de l'utilisateur** et non une
-      constante (D2) — en changeant la marge et en vérifiant que le taux suit.
-- [ ] 🔴 Un test fige qu'un **jour de course** compte comme jour d'entraînement pour MN-20/MN-16 mais
-      **pas** pour MN-15 (D1) — l'asymétrie est délibérée, donc elle se prouve.
-- [ ] `isTrainingDay`, `computeGoalAdherence`, `computeCaloricBalance` et `resolveMealSplit` sont
-      **réutilisés**, pas réécrits — et leurs tests existants passent inchangés.
-- [ ] Un test fige que les jours **non journalisés** n'entrent pas au dénominateur (R4).
-- [ ] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`, aucune écriture.
-- [ ] `MAX_INSIGHTS`, `INSIGHT_ORDER`, `selectInsights` et le registre d'accueil **non modifiés**.
-- [ ] FR + EN symétriques, nombres formatés avant interpolation.
-- [ ] Catalogue : MN-20, MN-16, MN-15, MN-10 → ✅.
-- [ ] CHANGELOG, front-matter, roadmap 4.40, RECETTES.md, ETAT.
+Cochée le 08/08/2026, **item par item, sur des faits vérifiés**. Un item a dû être **réécrit** plutôt
+que coché : il annonçait des réutilisations qui n'ont pas eu lieu, et pour de bonnes raisons.
+
+- [x] `typecheck` **0**, `lint` **0 erreur**, `test:coverage` **0**, **3 841 tests verts**.
+- [x] 4 moteurs **purs**, module à **100 % sur les quatre métriques**, branches comprises.
+- [x] Chaque moteur rend `null` (ou `[]`) sous son seuil, et un test le fige (R3).
+- [x] Les 3 seuils sont **exportés et nommés**, chacun assis par un test.
+- [x] 🔴 Un test fige que l'adhérence utilise **la marge de l'utilisateur** : mêmes jours, marge 10 %
+      → 100 %, marge 5 % → 0 % (D2).
+- [x] 🔴 Un test fige qu'un **jour de course** ne produit jamais un « gros volume », là où il compte
+      bien comme jour d'entraînement pour MN-20/MN-16 (D1).
+- [x] Un test fige que les jours **non journalisés** n'entrent pas au dénominateur — **et** qu'un jour
+      à **0 kcal** compte, lui, parce qu'il a été journalisé (R4).
+- [x] Aucune migration, aucune sync rule, aucun ajout à `powersync/schema.ts`, aucune écriture.
+- [x] `MAX_INSIGHTS`, `INSIGHT_ORDER`, `selectInsights` et le registre d'accueil **non modifiés** —
+      `git diff` vide sur `insights.ts` et `insights-repository.ts`.
+- [x] FR + EN symétriques (**2 088 clés** chacun), nombres formatés avant interpolation.
+- [x] Catalogue : MN-20, MN-16, MN-15, MN-10 → ✅.
+- [x] CHANGELOG, front-matter, roadmap 4.40, RECETTES.md §53, ETAT.
+
+### 🔴 L'item réécrit, et pourquoi
+
+La DoD annonçait : *« `isTrainingDay`, `computeGoalAdherence`, `computeCaloricBalance` et
+`resolveMealSplit` sont réutilisés, pas réécrits »*. **Deux des quatre ne le sont pas** — et les
+cocher aurait été faux :
+
+| Brique | Réalité | Pourquoi |
+|---|---|---|
+| `computeGoalAdherence` | ✅ **réutilisée** telle quelle, groupe par groupe | C'est elle qui définit « dans la cible » |
+| `isTrainingDay` | ❌ **non utilisée** — `trainedDays` l'est à la place | Voir D1 : sur une fenêtre passée les deux coïncident, et `trainedDays` **garantit l'alignement avec la cible**. C'est mieux, pas moins bien |
+| `computeCaloricBalance` | ❌ **non utilisée** | Elle rend un solde global ; ce lot compare **deux groupes de jours**. L'appeler n'aurait rien apporté — l'annoncer était une erreur de cadrage, pas une dette |
+| `resolveMealSplit` | 🟡 **convention réutilisée, fonction non appelée** | Elle rend des `avgKcalPerDay`, spécifiques aux calories. Ce sont `OTHER_MEAL_KEY` et l'ordre des repas configurés qui sont repris — l'essentiel, mais il fallait le dire exactement |
+
+- [x] **Version exacte de l'item** : `computeGoalAdherence` est réutilisée telle quelle ; la convention
+      de repas de NUTR-16 est reprise sans dupliquer sa fonction ; et le groupement des jours
+      s'aligne sur `trainedDays`, la même source que la cible.
+
+### ⚠️ Une dette assumée, inscrite au backlog
+
+L'assemblage de `perDay` (cible de base → cible effective) **duplique** celui de
+`useGoalAdherenceForRange`. Le factoriser aurait été mieux — mais ce hook **n'a aucun test direct** et
+sert **BILAN-01, en recette** : le refactoriser maintenant aurait été un risque mal payé. Les deux
+chemins appellent **les mêmes fonctions pures dans le même ordre**, et la dette est écrite.
+
+> **Le code est complet ; l'US ne l'est pas.** Restent les **19 critères de recette device**
+> ([RECETTES.md](../../../../RECETTES.md) §53), dont le calibrage des trois seuils.

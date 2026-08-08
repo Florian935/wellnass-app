@@ -409,6 +409,35 @@
       },
       "allergens": "Allergènes",
       "allergensPlaceholder": "Ex. arachides, fruits à coque…"
+    },
+    "crossTraining": {
+      "title": "Manges-tu comme tu t'entraînes ?",
+      "subtitle": "Ta nutrition face à ton entraînement, sur 4 semaines",
+      "energy": {
+        "title": "Jours de séance vs repos",
+        "trainingDay": "Jours de séance",
+        "restDay": "Jours de repos",
+        "delta": "{{kcal}} kcal les jours de séance",
+        "basis": "sur {{training}} jours de séance et {{rest}} jours de repos journalisés"
+      },
+      "adherence": {
+        "title": "Adhérence à la cible",
+        "trainingDay": "Séance",
+        "restDay": "Repos",
+        "margin": "à ± {{pct}} % de la cible — ta marge réglée en profil"
+      },
+      "lowFuel": {
+        "title": "Disponibilité énergétique",
+        "count": "{{count}} jour",
+        "count_plural": "{{count}} jours",
+        "detail": "{{day}} — {{volume}} kg·reps pour {{kcal}} kcal (cible {{target}})"
+      },
+      "protein": {
+        "title": "Protéines dans la journée",
+        "servings": "{{count}} prise au-dessus du repère ({{grams}} g)",
+        "servings_plural": "{{count}} prises au-dessus du repère ({{grams}} g)",
+        "needsWeight": "Ajoute une pesée pour voir tes protéines par prise"
+      }
     }
   },
   "food": {
