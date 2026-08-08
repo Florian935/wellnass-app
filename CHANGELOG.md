@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Le constructeur de programmes sous test (1 458 lignes)
+
+**21 tests** sur `ProgramEditScreen`, le plus gros écran du dépôt. Le fichier ne couvre pas chaque
+champ de chaque formulaire — les écritures sont déjà testées dans `programs-detail.test.ts`. Il
+cible **l'orchestration**, qui n'existe qu'ici et qui porte tout le risque.
+
+#### Ajouté
+
+- **`ProgramEditScreen.test.tsx` — 21 tests.**
+  - **🔴 `runWrite` resynchronise après une écriture réussie, et PAS après un échec.** Sans
+    re-fetch, l'admin enchaîne ses modifications sur une vue périmée — c'est comme ça qu'on ajoute
+    deux séances en croyant n'en avoir ajouté qu'une. Et recharger après un échec masquerait
+    l'échec derrière une vue inchangée : l'admin croirait avoir enregistré.
+  - **🔴 Une écriture qui LÈVE est traitée comme un échec, pas comme un plantage.** La couche data
+    promet `{ error }`, mais une coupure réseau lève : sans le `catch`, l'écran resterait bloqué en
+    état « occupé », tous boutons grisés. Vérifié que le bouton redevient actif.
+  - **🔴 Le réordonnancement est optimiste avec rollback.** L'ordre s'applique **avant** la réponse
+    du serveur (un glisser-déposer qui attend le réseau est injouable — l'élément « revient » sous
+    le curseur), puis revient à la vérité serveur si la persistance échoue. Sans rollback, l'écran
+    affirmerait un ordre que la base ignore, et l'admin construirait la suite là-dessus.
+  - **🔴 Réordonner n'est PAS gaté par `busy`**, mais par son propre verrou : les deux opérations
+    touchent des colonnes disjointes, et perdre un geste de glisser-déposer sans aucun message est
+    le pire des deux mondes. Test dédié : le dépôt passe pendant qu'une écriture de champ est en vol.
+  - **🔴 Le contenu d'une séance dépend du pilier** : blocs de fractionné en course, exercices
+    planifiés en muscu. Rien côté base n'interdit un `exercise_plan` sur une séance running — c'est
+    l'écran qui doit ne pas le proposer.
+  - Plus : le bandeau d'erreur effacé au début de l'écriture suivante (un bandeau qui persiste fait
+    douter d'un enregistrement qui a bien eu lieu), et une erreur de lecture jamais confondue avec
+    un programme absent.
+
+#### Modifié
+
+- **Cliquets `apps/admin` recalibrés** : `src/data` 96/89/96 → **97/89/98**, écrans 17/80/70 →
+  **36/74/44**, global 37/86/85 → **51/83/62**.
+  ⚠️ **Oui, deux chiffres baissent — et c'est correct.** Avec le fournisseur v8, un fichier jamais
+  chargé par un test contribue **zéro branche au dénominateur** : couvrir `ProgramEditScreen` à
+  75 % ajoute d'un coup ses centaines de branches au total, et le pourcentage global recule alors
+  que la protection réelle a augmenté. Noté dans la config et au §8 — ne pas lire un seuil qui
+  recule comme une régression sans regarder ce qui vient d'entrer dans la mesure.
+
+#### Technique / Notes
+
+- **Un test qui ne testait pas ce que son nom annonçait, attrapé à temps.** « Deux clics n'ajoutent
+  qu'une séance » passait **avec ou sans** la garde par ref : `userEvent.click` laisse React
+  re-rendre entre les deux appuis, donc c'était l'attribut `disabled` qui protégeait. Le test a été
+  dédoublé — un pour le `disabled`, un pour la garde applicative avec des clics natifs successifs
+  (`element.click()` deux fois, sans flush). Le second **échoue** quand on retire la ref : vérifié.
+  C'est l'application directe de la règle du §8 (voir un test de non-régression au rouge).
+- **3 775 tests verts** (2 120 shared + 1 282 mobile + 373 admin). 4 écrans du back-office sur 15.
+  Typecheck, lint et seuils propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Le verrou de double appui : audit systématique, neuf sites de plus
 
 Le même défaut ayant été trouvé sur **trois écrans en deux jours**, il était temps de le chercher

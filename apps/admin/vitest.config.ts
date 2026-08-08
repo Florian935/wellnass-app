@@ -66,26 +66,33 @@ export default defineConfig({
       // protection est dans les deux entrées ci-dessous. ⚠️ En Vitest 2, un seuil par glob
       // **n'exclut pas** ses fichiers du calcul global — vérifié, contrairement à ce que laisse
       // entendre la doc. Le global doit donc rester cohérent avec l'union, pas avec `src/data`.
+      //
+      // ⚠️ **Un pourcentage de branches peut BAISSER quand on couvre un gros fichier.** Constaté
+      // le 08/08/2026 en couvrant `ProgramEditScreen` (1 458 lignes) : avec le fournisseur v8, un
+      // fichier jamais chargé par un test contribue **zéro branche au dénominateur**. Le couvrir à
+      // 75 % ajoute d'un coup ses centaines de branches au total, et le pourcentage global recule
+      // même si la protection réelle a augmenté. Ne pas lire un seuil qui recule comme une
+      // régression sans avoir vérifié ce qui est entré dans la mesure.
       thresholds: {
-        statements: 37,
-        branches: 86,
-        functions: 85,
-        lines: 37,
+        statements: 51,
+        branches: 83,
+        functions: 62,
+        lines: 51,
         // Couche data : c'est elle qui écrit dans le contenu partagé par tous les utilisateurs.
         'src/data/**': {
-          statements: 96,
+          statements: 97,
           branches: 89,
-          functions: 96,
-          lines: 96,
+          functions: 98,
+          lines: 97,
         },
         // Écrans React : cliquet volontairement en retrait, comme côté mobile. Un écran arrive
         // toujours moins couvert que la moyenne ; un seuil collé au réel le ferait rougir dès le
         // premier commit, ce qui pousserait à contourner le garde-fou.
         'src/screens/**': {
-          statements: 17,
-          branches: 80,
-          functions: 70,
-          lines: 17,
+          statements: 36,
+          branches: 74,
+          functions: 44,
+          lines: 36,
         },
       },
     },

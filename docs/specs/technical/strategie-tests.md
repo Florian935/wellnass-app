@@ -327,8 +327,8 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
 | `apps/mobile` — reste (écrans, composants) | **26** | **22** | **21** |
-| `apps/admin` (`src/data` + `src/lib`) | **96** | **89** | **96** |
-| `apps/admin` — écrans React | **17** | **80** | **70** |
+| `apps/admin` (`src/data` + `src/lib`) | **97** | **89** | **98** |
+| `apps/admin` — écrans React | **36** | **74** | **44** |
 
 > **Les cliquets mobiles ont été resserrés le 07/08/2026** (repositories 28→44, `lib` 50→52,
 > `stores` 45→47, reste 12→18) : les lots suivants avaient fait monter le réel bien au-dessus du cliquet, qui
@@ -404,7 +404,7 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 282 (mobile) + 352 (admin) = 3 754 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 282 (mobile) + 373 (admin) = 3 775 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
@@ -412,7 +412,7 @@ couverture** propres.
 | Couverture mobile | 15,0 % | **35,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **352 tests** · data **97,7 %** · 3 écrans React couverts |
+| `apps/admin` | aucun runner | **373 tests** · data **97,7 %** · 4 écrans React couverts |
 
 ## 8. Reprise — par où continuer
 
@@ -480,9 +480,18 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    archivage), [`UserDetailScreen`](../../../apps/admin/src/screens/UserDetailScreen.test.tsx)
    (30, modération + sobriété RGPD),
    [`FoodImportScreen`](../../../apps/admin/src/screens/FoodImportScreen.test.tsx) (15, import CSV).
-   Restent 12 écrans, par ordre de risque : **`ProgramEditScreen`** (1 458 lignes, glisser-déposer
-   + quinze écritures — de loin le plus gros), `ProgramsScreen`, `FoodsScreen`, `RolesScreen`,
-   `AuditScreen`, puis les listes.
+   **`ProgramEditScreen`** (1 458 lignes, le plus gros du dépôt) est couvert depuis le 08/08 sur
+   ce qui porte son risque — l'**orchestration** (`runWrite` / `runReorder`), pas chaque champ de
+   chaque formulaire, dont les écritures sont déjà testées dans `programs-detail.test.ts`.
+   Restent 11 écrans : `ProgramsScreen`, `FoodsScreen`, `RolesScreen`, `AuditScreen`, les listes.
+
+   ⚠️ **Un pourcentage de branches peut BAISSER quand on couvre un gros fichier.** Avec le
+   fournisseur v8, un fichier jamais chargé par un test contribue **zéro branche au dénominateur** :
+   le couvrir à 75 % ajoute d'un coup ses centaines de branches au total, et le pourcentage global
+   recule alors que la protection réelle a augmenté. Les cliquets `apps/admin` ont donc été
+   **recalibrés à la baisse sur les branches et les fonctions** en même temps qu'à la hausse sur
+   les instructions — ne pas lire un seuil qui recule comme une régression sans regarder ce qui
+   vient d'entrer dans la mesure.
 
    ⚠️ **`Blob.prototype.text` et `arrayBuffer` n'existent pas dans jsdom**, même en v26
    (jsdom#2555) — ce n'est pas une question de version. Le complément est posé dans
