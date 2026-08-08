@@ -403,8 +403,8 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 120
-(shared) + 1 282 (mobile) + 412 (admin) = 3 814 tests, tous verts**, typecheck, lint et **seuils de
+État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 162
+(shared) + 1 285 (mobile) + 412 (admin) = 3 859 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
