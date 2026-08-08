@@ -95,7 +95,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1134 · `main` a **1131** commits de retard sur `dev` |
+| Commits | 1135 · `main` a **1132** commits de retard sur `dev` |
 | Specs d'US | 132 au total — 79 clôturées, 53 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -106,11 +106,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b710b9b` test(admin): le constructeur de programmes sous test (21 tests, 1 458 lignes)
 - `8dd78a2` fix(app): neuf gardes de double appui qui ne gardaient rien + hook useActionLock
 - `8ad8b6d` fix(programs): le verrou de duplication ne gardait rien + 3 coquilles de test supprimées
 - `b4bba32` test(admin): modération et import CSV sous test (45 tests)
 - `c692a34` test(admin): monter le premier écran React du back-office (29 tests)
-- `4c3c1ef` test(admin): couvrir la couche data du back-office (68,9 % → 97,7 %)
 
 ---
 

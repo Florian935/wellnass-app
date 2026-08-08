@@ -10,6 +10,58 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 08/08/2026 — `chore/socle-tests-unitaires` — Habilitations et journal d'audit sous test
+
+**39 tests** sur les deux écrans dont dépend la confiance qu'on peut accorder au back-office :
+celui qui décide **qui peut administrer**, et celui qui **garde la trace de ce qui a été fait**.
+
+#### Ajouté
+
+- **`RolesScreen.test.tsx` — 19 tests.**
+  - **🔴 Une attribution déjà active est un AVIS, pas une erreur.** `grantRole` renvoie
+    `alreadyActive` plutôt qu'un échec : afficher « erreur » sur une action sans effet ferait
+    chercher un problème de droits qui n'existe pas. Et dans ce cas le champ **n'est pas vidé** —
+    l'effacer supprimerait l'identifiant que l'admin vient de coller, sans qu'il puisse vérifier
+    lequel il avait saisi.
+  - **🔴 L'identifiant est débarrassé de ses espaces.** Les UUID sont copiés depuis le dashboard
+    Supabase, espace de fin compris : sans `trim`, l'attribution part sur un identifiant qui ne
+    correspond à personne. Un identifiant vide ou fait d'espaces, lui, n'émet **aucune requête**.
+  - **🔴 Deux surfaces d'erreur distinctes** : le formulaire et la liste. L'échec d'une révocation
+    affiché au-dessus du champ de saisie ferait croire que c'est l'attribution qui a échoué.
+  - **🔴 Un rôle inconnu reste visible et révocable.** Un rôle ajouté en base et pas encore dans
+    l'UI ne doit pas disparaître : le masquer laisserait une habilitation active que plus personne
+    ne peut retirer depuis l'écran.
+  - Plus : la révocation confirmée avant d'agir (c'est la seule action de l'app qui puisse priver
+    le back-office de son dernier administrateur), et le rôle **et** l'utilisateur transmis à
+    l'audit — « attribution role-1 révoquée » n'apprend rien à qui relit six mois plus tard.
+- **`AuditScreen.test.tsx` — 20 tests.**
+  - **🔴 L'anti-obsolescence des requêtes.** Changer un filtre relance une lecture, et la réponse
+    du filtre **précédent** peut arriver après : sans le jeton de requête, elle écrase l'état et
+    l'écran affiche des lignes qui ne correspondent pas aux filtres affichés. C'est le pire état
+    possible pour un journal — rien ne le signale. Test dédié, avec les réponses inversées.
+  - **🔴 Les bornes de date sont construites en heure LOCALE.** Une chaîne `AAAA-MM-JJ` sans `Z`
+    est lue dans le fuseau du navigateur ; l'envoyer brute ferait lire à Postgres une date UTC et
+    décalerait la fenêtre de plusieurs heures. Et « jusqu'au 31 » **inclut** le 31 à 23:59:59.999 —
+    sinon un événement de 18 h serait exclu de sa propre journée.
+  - **🔴 La pagination est par CURSEUR**, sur la date de la dernière ligne affichée. Un journal
+    reçoit des lignes en continu : un `offset` sauterait ou dupliquerait des entrées à chaque
+    insertion pendant la lecture. Vérifié aussi que « charger plus » n'est offert que si la page
+    est **pleine**, que la page suivante s'**ajoute** sans remplacer, et qu'un échec de page 2
+    n'ampute pas la page 1 déjà lue.
+  - Plus : un acteur sans e-mail retombe sur son identifiant (une ligne d'audit sans acteur ne
+    prouve plus rien), une cible sans libellé sur `table + id`, une action non traduite reste
+    lisible, et la liste d'acteurs du filtre est dédoublonnée.
+
+#### Modifié
+
+- **Cliquets `apps/admin` relevés** : écrans 36/74/44 → **46/77/50**, global 51/83/62 →
+  **59/84/65**.
+
+#### Technique / Notes
+
+- **3 814 tests verts** (2 120 shared + 1 282 mobile + 412 admin). **6 écrans du back-office sur
+  15.** Typecheck, lint et seuils propres.
+
 ### 08/08/2026 — `chore/socle-tests-unitaires` — Le constructeur de programmes sous test (1 458 lignes)
 
 **21 tests** sur `ProgramEditScreen`, le plus gros écran du dépôt. Le fichier ne couvre pas chaque
