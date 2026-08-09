@@ -223,6 +223,51 @@ describe('instantPace', () => {
       expect(pace).toBeLessThan(96);
     }
   });
+
+  // ── Traces abîmées ────────────────────────────────────────────────────────
+
+  it('🔴 retourne null si la fenêtre ne contient qu’UN point', () => {
+    // Reprise après une longue perte de signal : les points précédents sont hors fenêtre.
+    const pts = [
+      { lat: 48.0, lng: 2.0, t: 0 },
+      { lat: 48.01, lng: 2.0, t: 600 },
+    ];
+
+    // Une allure calculée sur un seul point n'a pas de sens ; « — » est la bonne réponse.
+    expect(instantPace(pts, 60)).toBeNull();
+  });
+
+  it('🔴 ignore deux points au MÊME horodatage', () => {
+    const pts = [
+      { lat: 48.0, lng: 2.0, t: 0 },
+      { lat: 48.001, lng: 2.0, t: 10 },
+      { lat: 48.002, lng: 2.0, t: 10 }, // doublon d'horodatage
+      { lat: 48.003, lng: 2.0, t: 20 },
+    ];
+
+    const pace = instantPace(pts);
+
+    // `dt === 0` donnerait une vitesse infinie, écartée par le filtre de plausibilité —
+    // mais la distance du segment ne doit pas non plus être comptée.
+    expect(pace).not.toBeNull();
+    expect(Number.isFinite(pace!)).toBe(true);
+  });
+
+  it('🔴 écarte un saut de position impossible sans annuler l’allure', () => {
+    const pts = [
+      { lat: 48.0, lng: 2.0, t: 0 },
+      { lat: 48.001, lng: 2.0, t: 10 },
+      { lat: 49.0, lng: 2.0, t: 11 }, // ~111 km en 1 s
+      { lat: 48.002, lng: 2.0, t: 20 },
+    ];
+
+    const pace = instantPace(pts);
+
+    // Sans le filtre, l'allure instantanée afficherait quelques secondes au kilomètre —
+    // un chiffre absurde, en gros et en direct, pendant la course.
+    expect(pace).not.toBeNull();
+    expect(pace!).toBeGreaterThan(30);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -297,6 +342,55 @@ describe('encodage trace GPS', () => {
 
   it('decodeTrack("") retourne []', () => {
     expect(decodeTrack('')).toEqual([]);
+  });
+
+  // ── Traces corrompues ─────────────────────────────────────────────────────
+  //
+  // La trace est une chaîne concaténée segment par segment, écrite pendant la course et
+  // synchronisée ensuite. Une écriture interrompue (batterie, arrêt système) la laisse
+  // tronquée. `decodeTrack` doit alors **rendre ce qu'elle sait lire et s'arrêter** — jamais
+  // lever : l'appelant est l'écran de résumé, et une exception y remplacerait toute la
+  // course par un écran blanc.
+
+  it('🔴 une trace tronquée rend les segments LISIBLES, sans lever', () => {
+    const complet = appendToTrack(appendToTrack('', encodeSegment(seg1)), encodeSegment(seg1));
+    // Coupe au milieu de l'en-tête du second segment : plus de `:` à trouver.
+    const tronque = complet.slice(0, complet.length - 4).replace(/:[^:]*$/, '');
+
+    const decoded = decodeTrack(tronque);
+
+    expect(decoded.length).toBeGreaterThan(0);
+  });
+
+  it('🔴 un en-tête de longueur illisible arrête le décodage proprement', () => {
+    const bon = appendToTrack('', encodeSegment(seg1));
+
+    // Longueur non numérique : impossible de savoir où finit le segment, donc où reprendre.
+    expect(decodeTrack(`${bon}abc:xxxx`)).toHaveLength(seg1.length);
+    // Longueur négative : même conclusion, et surtout pas une tranche à l'envers.
+    expect(decodeTrack(`${bon}-5:xxxx`)).toHaveLength(seg1.length);
+  });
+
+  it('🔴 un segment vide est sauté, pas traité comme une fin de trace', () => {
+    const bon = appendToTrack('', encodeSegment(seg1));
+
+    // Un flush sans point produit un segment de longueur 0 ; les segments suivants sont
+    // parfaitement valides et doivent être lus.
+    const avecVide = `0:${bon}`;
+
+    expect(decodeTrack(avecVide)).toHaveLength(seg1.length);
+  });
+
+  it('🔴 un segment sans séparateur coords/temps est ignoré, les autres restent lus', () => {
+    const bon = appendToTrack('', encodeSegment(seg1));
+    const corps = 'abcdef'; // ni `|` ni `,`
+    const malforme = `${corps.length}:${corps}`;
+
+    const decoded = decodeTrack(`${malforme}${bon}`);
+
+    // Ignorer le segment illisible et garder le reste : la portion de course enregistrée
+    // vaut mieux que rien, et c'est tout ce qu'on peut honnêtement rendre.
+    expect(decoded).toHaveLength(seg1.length);
   });
 
   it("append n'encode pas les segments precedents (idempotence append)", () => {
@@ -732,6 +826,53 @@ describe('computeKmSplits', () => {
     expect(splits.map((s) => s.km)).toEqual([1, 2]);
     expect(splits.length).toBe(Math.floor(totalDistance(pts) / 1000));
     for (const s of splits) expect(s.seconds).toBeGreaterThan(0);
+  });
+
+  // ── Traces abîmées ────────────────────────────────────────────────────────
+  // Un flux GPS réel n'est pas la trace propre ci-dessus : il contient des points
+  // horodatés à l'identique (deux callbacks dans la même seconde) et des sauts de
+  // position impossibles. Ces cas ne doivent ni fausser les splits ni les faire
+  // disparaître — c'est le seul endroit qui les écarte.
+
+  it('🔴 ignore deux points au MÊME horodatage sans casser les splits', () => {
+    const pts = track(25);
+    // Doublon exact du 5ᵉ point : `dt === 0` donnerait une vitesse infinie.
+    pts.splice(5, 0, { ...pts[5]! });
+
+    const splits = computeKmSplits(pts);
+
+    expect(splits.map((s) => s.km)).toEqual([1, 2]);
+    for (const s of splits) expect(Number.isFinite(s.seconds)).toBe(true);
+  });
+
+  it('🔴 écarte un saut de position impossible (glitch GPS)', () => {
+    const pts = track(25);
+    // Point aberrant à ~50 km du précédent, une seconde plus tard : sans le filtre de
+    // vitesse plausible, il ajouterait 50 km d'un coup et décalerait toutes les bornes.
+    pts.splice(10, 0, { lat: 0.45, lng: pts[10]!.lng, t: pts[9]!.t + 1 });
+
+    const splits = computeKmSplits(pts);
+
+    expect(splits.map((s) => s.km)).toEqual([1, 2]);
+  });
+
+  it('🔴 une borne atteinte sur un segment de distance nulle ne rend pas NaN', () => {
+    // Deux points strictement identiques en position, séparés dans le temps : le
+    // segment fait 0 m. Si la borne tombe dessus, la fraction `(borne - début) / 0`
+    // vaudrait l'infini — et `seconds` deviendrait NaN, donc un split illisible.
+    const pts = [
+      ...track(10),
+      { lat: 0, lng: (10 * 100) / M_PER_DEG, t: 400 },
+      ...Array.from({ length: 15 }, (_, k) => ({
+        lat: 0,
+        lng: ((11 + k) * 100) / M_PER_DEG,
+        t: 430 + k * 30,
+      })),
+    ];
+
+    const splits = computeKmSplits(pts);
+
+    for (const s of splits) expect(Number.isFinite(s.seconds)).toBe(true);
   });
 });
 

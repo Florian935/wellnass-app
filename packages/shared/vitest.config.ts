@@ -20,8 +20,8 @@ export default defineConfig({
       // sur trois axes sur quatre**, le 04/08/2026 : instructions, fonctions et lignes sont à
       // **100 %** et verrouillées ici. Elles ne doivent plus jamais redescendre.
       //
-      // ⚠️ **Les branches sont arbitrées à 97 %, et c'est une décision, pas un renoncement.**
-      // Le réel est 97,35 %. Les ~2,5 % restants ont été audités un par un le 04/08/2026 : ils ne
+      // ⚠️ **Les branches sont arbitrées à 98 %, et c'est une décision, pas un renoncement.**
+      // Le réel est 98,05 %. Les ~2 % restants ont été audités un par un le 04/08/2026 : ils ne
       // relèvent pas d'un manque de tests mais de **code défensif inatteignable**, de deux familles :
       //
       //  1. **cas d'égalité de comparateurs de tri appliqués à des clés de `Map`** — uniques par
@@ -35,11 +35,22 @@ export default defineConfig({
       // a été fait (voir `pace-records.ts` : un `NaN` retourné comme record, et
       // `training-nutrition.ts` : un `return null` prouvé inatteignable).
       //
+      // **Relevé de 97 à 98 le 09/08/2026.** L'arbitrage de 97 datait du 04/08 ; `dev` a livré
+      // depuis ALLURE-01, FUEL-01 et RUN-19, et une partie du nouveau code apportait des branches
+      // **réellement atteignables** qui n'étaient pas couvertes — surtout dans `running.ts`
+      // (91,4 % → 98,6 %) : traces GPS abîmées, points au même horodatage, sauts de position
+      // impossibles, et surtout le **décodage d'une trace tronquée**, qui doit rendre ce qu'il sait
+      // lire plutôt que lever au milieu de l'écran de résumé.
+      //
+      // La leçon : un seuil arbitré « au-dessus, c'est du code mort » n'est vrai **qu'au jour de
+      // l'audit**. Le code qui arrive ensuite s'y engouffre. Réauditer les branches manquantes à
+      // chaque palier, au lieu de considérer l'arbitrage comme définitif.
+      //
       // Ne pas rebaisser ces chiffres pour faire passer un commit : un seuil rouge signifie qu'on a
       // retiré de la couverture. Ajouter des tests, pas baisser le seuil.
       thresholds: {
         statements: 100,
-        branches: 97,
+        branches: 98,
         functions: 100,
         lines: 100,
       },

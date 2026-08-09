@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — Le seuil de branches de `shared` réaudité : 97 → 98 %
+
+Dernier point parké du chantier de tests. L'arbitrage du 04/08 disait « au-dessus de 97 %, c'est du
+code défensif inatteignable ». **C'était vrai au jour de l'audit — et c'est sa limite** : `dev` a
+livré depuis ALLURE-01, FUEL-01 et RUN-19, et une partie du nouveau code apportait des branches
+**réellement atteignables** restées nues.
+
+#### Ajouté
+
+- **10 tests sur `running.ts`** (branches **91,4 % → 98,6 %**), tous sur des **traces GPS abîmées** —
+  c'est-à-dire les traces réelles, par opposition aux traces propres des tests existants.
+  - **🔴 Le décodage d'une trace TRONQUÉE** rend les segments lisibles au lieu de lever. La trace est
+    écrite segment par segment pendant la course : une coupure (batterie, arrêt système) la laisse
+    coupée en plein en-tête. L'appelant est l'écran de résumé — une exception y remplacerait toute
+    la course par un écran blanc. Couvert aussi : en-tête de longueur illisible ou négative, segment
+    vide, segment sans séparateur — chacun **ignoré**, les autres restant lus. La portion
+    enregistrée vaut mieux que rien, et c'est tout ce qu'on peut honnêtement rendre.
+  - **🔴 Deux points au même horodatage** (deux callbacks GPS dans la même seconde) : `dt === 0`
+    donnerait une vitesse infinie. Vérifié sur les splits **et** sur l'allure instantanée.
+  - **🔴 Un saut de position impossible** (~111 km en 1 s) est écarté : sans le filtre, l'allure
+    instantanée afficherait quelques secondes au kilomètre, en gros et en direct, pendant la course ;
+    et les splits verraient toutes leurs bornes décalées.
+  - **🔴 Une fenêtre glissante ne contenant qu'un point** rend `null` — reprise après une longue
+    perte de signal : une allure calculée sur un point n'a pas de sens, « — » est la bonne réponse.
+
+#### Modifié
+
+- **Seuil de branches `packages/shared` relevé : 97 → 98** (réel 98,05 %). Les ~2 % restants sont
+  bien le code défensif inatteignable arbitré le 04/08 — vérifié à nouveau : les deux dernières
+  branches de `running.ts` sont un `dist > 0 ?` sur un segment que la boucle ne peut pas atteindre,
+  et un `duration <= 0` que les gardes précédentes rendent impossible.
+- **BACKLOG** : l'item « couverture de branches de shared » est **clos**.
+
+#### Technique / Notes
+
+- **La leçon, notée dans la config et au §5 bis** : un seuil arbitré « au-dessus, c'est du code
+  mort » **se périme**. Le code qui arrive ensuite s'y engouffre, et l'arbitrage devient un plafond
+  au lieu d'un constat. Réauditer les branches manquantes à chaque palier plutôt que de considérer
+  la décision comme définitive.
+- **3 962 tests verts** (2 172 shared + 1 345 mobile + 445 admin), typecheck propre, lint à 0,
+  seuils tenus.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — `npm run lint` repasse à zéro avertissement (97 → 0)
 
 Le lint sortait **97 avertissements**. Aucun n'était une erreur, donc la CI restait verte — et

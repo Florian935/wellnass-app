@@ -135,6 +135,13 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       ⚠️ **`.nvmrc` est passé à Node 24** (`node:sqlite`) : `nvm use 24` avant de lancer les tests,
       sinon la suite mobile échoue à l'import du harness sans dire pourquoi.
 
+- [x] ✅ **Couverture de branches de `packages/shared` — réauditée le 09/08/2026, 97 → 98 %.**
+      L'arbitrage de 97 % du 04/08 était juste **au jour de l'audit**, et c'est sa limite : `dev` a
+      livré depuis ALLURE-01, FUEL-01 et RUN-19, dont une partie apportait des branches **réellement
+      atteignables** restées nues. `running.ts` : 91,4 % → 98,6 % (traces GPS abîmées, décodage
+      d'une trace tronquée). Le reste est bien du code défensif inatteignable, comme arbitré.
+      **Un seuil « au-dessus c'est du code mort » se périme : réauditer à chaque palier.**
+
 - [ ] 🟠 **Décision RGPD — `analytics_events` doit-elle entrer dans l'export de données ?**
       Soulevé le 03/08/2026 par le test de complétude de l'export (US CONF-01). La table est
       aujourd'hui **exclue** — exclusion héritée, jamais arbitrée explicitement. Elle porte un

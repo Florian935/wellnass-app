@@ -322,7 +322,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 
 | Périmètre | Instructions | Branches | Fonctions |
 |---|---:|---:|---:|
-| `packages/shared` | **100** | **97** | **100** |
+| `packages/shared` | **100** | **98** | **100** |
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
@@ -368,6 +368,14 @@ Trois principes derrière ces chiffres :
 > 04/08/2026 : `bestSegmentTimeFromSamples` renvoyait `NaN` pour une distance cible ≤ 0 (soit un
 > record de « NaN seconde » écrivable en base), et le `return null` final de `bucketOf`
 > (`training-nutrition.ts`) était prouvé inatteignable.
+>
+> 🔁 **Réaudité le 09/08/2026 : 97 → 98 %.** L'arbitrage de 97 était juste **au jour de l'audit**,
+> et c'est sa limite : `dev` a livré depuis ALLURE-01, FUEL-01 et RUN-19, dont une partie apportait
+> des branches **réellement atteignables** restées nues. `running.ts` est passé de **91,4 % à
+> 98,6 %** — traces GPS abîmées (points au même horodatage, sauts de position impossibles) et
+> surtout le **décodage d'une trace tronquée**, qui doit rendre ce qu'il sait lire au lieu de lever
+> au milieu de l'écran de résumé. **Un seuil arbitré « au-dessus, c'est du code mort » se périme :
+> le code qui arrive ensuite s'y engouffre. Réauditer à chaque palier.**
 >
 > **La leçon de ce lot** : viser 100 % de branches sur du code écrit défensivement fait apparaître
 > une frontière utile. D'un côté les trous qui cachent un vrai défaut ou un cas métier oublié — et
@@ -424,8 +432,8 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 162
-(shared) + 1 345 (mobile) + 445 (admin) = 3 952 tests, tous verts**, typecheck, lint et **seuils de
+État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
+(shared) + 1 345 (mobile) + 445 (admin) = 3 962 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
