@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — La création d'objectif, 0 % → couverte
+
+**27 tests** sur `components/goals/GoalFormSheet` (US OBJ-01), composant à **0 %**. Un formulaire ne
+se juge pas à ce qu'il enregistre quand tout va bien, mais à **ce qu'il refuse d'enregistrer**.
+
+#### Ajouté
+
+- **`GoalFormSheet.test.tsx` — 27 tests.**
+  - **🔴 Changer de type d'objectif remet la cible à zéro.** « 12 » saisi en kilomètres deviendrait
+    12 kg sur un objectif de force : le même nombre, un sens radicalement différent, et rien à
+    l'écran pour le signaler. L'exercice et son 1RM de départ sont remis à zéro aussi — les garder
+    enregistrerait un objectif sur une référence qui n'est plus affichée.
+  - **🔴 Le 1RM de départ est figé AU CHOIX de l'exercice**, pas à l'enregistrement (décision D6) :
+    le recalculer le ferait dépendre d'une séance faite entre-temps, et l'objectif changerait de
+    sens tout seul.
+  - **🔴 Un exercice jamais fait le DIT** au lieu d'afficher « — » (« aucun historique » est une
+    information, « — » se lit comme un défaut d'affichage), et **la cible reste acceptée sans
+    référence** — refuser empêcherait de se fixer un objectif sur un exercice neuf, exactement le
+    moment où on en pose un.
+  - **🔴 Rien de saisi ≠ saisie invalide** : aucune erreur à l'ouverture. Accueillir l'utilisateur
+    par un message d'erreur sur un formulaire vierge est hostile.
+  - **🔴 Un objectif de force sans exercice reste bloqué ET le dit** — un bouton grisé sans
+    explication laisse chercher ce qui manque.
+  - **🔴 La cible de course est convertie en MÈTRES** à l'enregistrement (la base en stocke) et
+    aucun exercice ne traîne sur un objectif de course.
+  - **🔴 Un échec ne ferme PAS la feuille** (fermer perdrait la saisie sans dire pourquoi), nomme
+    le plafond d'objectifs actifs, et **laisse réessayer** : le drapeau d'enregistrement est
+    relâché dans tous les cas, sinon le bouton reste en attente pour toujours.
+  - Plus : le formulaire **monté à l'ouverture** et non rendu en permanence derrière une modale
+    masquée (état neuf à chaque fois, et pas d'interrogation du catalogue sur un écran que personne
+    ne regarde), l'échéance qui suit le nombre de semaines choisi, et la liste d'exercices bornée
+    à douze.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 26/22/21 → **27/24/23** (réel 29,0/25,9/24,6).
+
+#### Technique / Notes
+
+- **3 952 tests verts** (2 162 shared + 1 345 mobile + 445 admin). Couverture mobile **35,5 %**.
+  Typecheck, lint et seuils propres.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — La liste d'exercices de la séance, 4 % → couverte
 
 **44 tests** sur `components/workout/ExerciseList`. Le composant était à **4 %**, et

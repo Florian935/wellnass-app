@@ -326,7 +326,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
-| `apps/mobile` — reste (écrans, composants) | **26** | **22** | **21** |
+| `apps/mobile` — reste (écrans, composants) | **27** | **24** | **23** |
 | `apps/admin` (`src/data` + `src/lib`) | **97** | **89** | **98** |
 | `apps/admin` — écrans React | **57** | **78** | **56** |
 
@@ -404,12 +404,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 162
-(shared) + 1 318 (mobile) + 445 (admin) = 3 925 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 345 (mobile) + 445 (admin) = 3 952 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **35,3 %** |
+| Couverture mobile | 15,0 % | **35,5 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |

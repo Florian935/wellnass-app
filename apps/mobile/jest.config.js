@@ -46,13 +46,13 @@ module.exports = {
   //
   // ⚠️ `global` porte sur ce qui reste APRÈS déduction des chemins ci-dessous — donc surtout
   // `src/app` (écrans) et `src/components`. Il reste **volontairement en retrait du réel**
-  // (28,5 / 24,6 / 22,9 au 08/08/2026) : un nouvel écran arrive toujours moins couvert que la
+  // (29,0 / 25,9 / 24,6 au 09/08/2026) : un nouvel écran arrive toujours moins couvert que la
   // moyenne, et un seuil collé au réel le ferait rougir dès le premier commit — ce qui pousserait
   // à contourner le garde-fou plutôt qu'à écrire des tests. La marge est l'ajustement, pas un oubli.
   coverageThreshold: {
     './src/data/repositories/': { statements: 44, branches: 33, functions: 39 },
     './src/lib/': { statements: 52, branches: 51, functions: 64 },
     './src/stores/': { statements: 47, branches: 36, functions: 46 },
-    global: { statements: 26, branches: 22, functions: 21 },
+    global: { statements: 27, branches: 24, functions: 23 },
   },
 };
