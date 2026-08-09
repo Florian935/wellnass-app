@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1145 · `main` a **1142** commits de retard sur `dev` |
+| Commits | 1146 · `main` a **1143** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `fd5b85d` test(objectifs): la création d objectif, 0 % → couverte (27 tests)
 - `dc4af9d` test(muscu): la liste d exercices de la séance, 4 % → couverte (44 tests)
 - `a7b2e7b` test(admin): comptes et aliments, les deux dernières listes (33 tests)
 - `e6cc595` docs(tests): recaler le compte de tests après intégration de dev
 - `509e6a7` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
-- `03a75d4` test(admin): habilitations et journal d audit sous test (39 tests)
 
 ---
 

@@ -606,7 +606,6 @@ export function useStreakData(windowDays = 30): StreakData {
     jokersLoading ||
     realLifeLoading;
 
-  const today = useTodayDate();
   const todayKey = useTodayKey();
 
   const { streak, last7, restorableGap } = useMemo(() => {

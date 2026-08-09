@@ -15,7 +15,6 @@ import {
   MAX_STEP_GOAL,
   MIN_STEP_GOAL,
   isGoalReached,
-  localDayKey,
   mergeDailySteps,
   normalizeStepGoal,
   type DailyStepsInput,
@@ -25,7 +24,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
-import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 /** Un jour de pas, forme applicative. */
 export type DailySteps = { id: string; logDate: string; steps: number };

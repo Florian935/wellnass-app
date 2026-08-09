@@ -26,7 +26,6 @@ import {
   scheduleStreakReminder,
 } from '@/lib/notifications';
 import { useStreakData } from './../dashboard-repository';
-import { useNotificationPrefs } from '../notification-repository';
 
 jest.mock('@/lib/notifications', () => ({
   ensurePermissionAndChannel: jest.fn(async () => true),
@@ -77,7 +76,9 @@ jest.mock('@/i18n', () => ({
   getAppLanguage: () => 'fr',
 }));
 
-import { useStreakReminderScheduler } from '../notification-repository';
+// Import volontairement APRÈS les `jest.mock` ci-dessus : le module testé capture ses dépendances
+// à son chargement. `useNotificationPrefs` vient du même module, d'où cet import unique.
+import { useNotificationPrefs, useStreakReminderScheduler } from '../notification-repository';
 
 const ensurePermission = ensurePermissionAndChannel as jest.Mock;
 const schedule = scheduleStreakReminder as jest.Mock;

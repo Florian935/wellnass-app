@@ -38,6 +38,30 @@ module.exports = defineConfig([
   },
   {
     /**
+     * Fichiers de test — deux règles désactivées, parce qu'elles décrivent un monde que Jest
+     * n'habite pas.
+     *
+     * 1. **`import/first`.** `jest.mock(...)` est **hissé au-dessus des imports** par Babel : un
+     *    module doit donc être importé **après** l'appel qui le mocke, sinon on capture le vrai
+     *    module. L'ordre que la règle réclame est précisément celui qui casse le test.
+     * 2. **`no-require-imports`.** Une fabrique `jest.mock()` ne peut référencer aucune variable
+     *    du fichier (elle est hissée) : `require()` à l'intérieur est la seule façon d'y charger
+     *    quoi que ce soit. C'est la forme documentée par Jest.
+     *
+     * Pourquoi une exception de configuration plutôt que des `eslint-disable` en tête de fichier :
+     * il y en aurait **70**, chacun à recopier dans le prochain test, et un commentaire de
+     * désactivation finit toujours par masquer autre chose que ce qu'il visait. Surtout, 70
+     * avertissements qu'on apprend à ignorer, c'est un `npm run lint` dont plus personne ne lit la
+     * sortie — et le jour où une vraie alerte apparaît, elle se noie dedans.
+     */
+    files: ['**/__tests__/**', '**/*.test.ts', '**/*.test.tsx', 'jest.setup.ts'],
+    rules: {
+      'import/first': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
+    /**
      * Garde-fou « tout nombre affiché passe par un formateur localisé ».
      *
      * Trois défauts identiques ont été trouvés le même soir en recette device (31/07 – 01/08/2026),

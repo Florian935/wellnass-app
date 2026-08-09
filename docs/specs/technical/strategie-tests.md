@@ -395,6 +395,27 @@ Tout le reste — règles métier, contenu écrit en base, idempotence, formats,
 i18n FR/EN — **doit** descendre aux niveaux 1 à 3. Le téléphone reste à disposition ; l'objectif
 est justement d'avoir moins souvent besoin de l'utiliser.
 
+### 6 bis. Le lint doit rester à **zéro avertissement**
+
+Ramené de **97 à 0** le 09/08/2026. Le principe est le même que pour les cliquets de couverture :
+un garde-fou qu'on apprend à ignorer ne protège plus rien. Aucun de ces 97 n'était une erreur, la
+CI restait donc verte — et c'est précisément ce qui rendait la sortie inutile.
+
+Deux familles, deux traitements :
+
+- **Ce que la règle décrit mal** → exception de configuration, **motivée dans le fichier de
+  config**. `import/first` et `no-require-imports` sont désactivées sur les fichiers de test :
+  `jest.mock()` est hissé au-dessus des imports, donc l'ordre que la première réclame casse le
+  test, et la seconde interdit la seule forme que Jest accepte dans une fabrique. 70 avertissements
+  qui ne décrivaient rien de vrai.
+- **Ce que la règle décrit bien** → on corrige. Les 27 restants étaient des imports morts, une
+  variable morte, trois `Array<T>` hors convention et un double import.
+
+> ⚠️ **Ne jamais résoudre un avertissement par un `eslint-disable` ponctuel** quand il y en a plus
+> de deux ou trois du même type : c'est le signe que la règle est mal ciblée, pas que le code est
+> fautif. Un commentaire de désactivation finit toujours par masquer autre chose que ce qu'il
+> visait.
+
 ## 7. Vérification
 
 ```bash

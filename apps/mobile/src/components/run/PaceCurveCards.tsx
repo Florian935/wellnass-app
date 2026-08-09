@@ -29,7 +29,7 @@ import { useTheme } from '@/theme/useTheme';
  * ⚠️ **Chaque verdict porte son écart chiffré** (spec R2) : « negative split » seul n'est pas
  * vérifiable par celui qui le lit.
  */
-export function PaceCurveCards({ splits }: { splits: ReadonlyArray<KmSplit> }) {
+export function PaceCurveCards({ splits }: { splits: readonly KmSplit[] }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

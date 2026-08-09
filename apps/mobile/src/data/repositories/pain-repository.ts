@@ -84,7 +84,7 @@ export function useCurrentPainZones(): { zones: PainReport[]; isLoading: boolean
  * surface, pas même à partir de données restées en base après une désactivation sans suppression.
  */
 export function useSessionPainSignal(
-  sessionMuscles: ReadonlyArray<FineMuscle>,
+  sessionMuscles: readonly FineMuscle[],
 ): SessionPainSignal | null {
   const { settings } = useSettings();
   const { reports } = usePainReports();

@@ -22,7 +22,6 @@ import {
   canEditDay,
   formatDayFull,
   isWellbeingLevel,
-  localDayKey,
   wellbeingAverages,
   wellbeingSeries,
   type WellbeingIndicator,

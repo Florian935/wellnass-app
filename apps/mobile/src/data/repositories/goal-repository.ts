@@ -34,7 +34,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, softDelete } from './_sql';
-import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 /** Un objectif enrichi de sa progression calculée et du nom de l'exercice visé. */
 export type GoalWithProgress = PersonalGoal & {

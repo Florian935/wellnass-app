@@ -43,7 +43,7 @@ import { useGoals } from './goal-repository';
 import { useGoalAdherenceForRange } from './dashboard-repository';
 import { useStepGoal } from './daily-steps-repository';
 import { useRealLifeDaysInWeek } from './real-life-repository';
-import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
+import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Requêtes — exportées pour être testables

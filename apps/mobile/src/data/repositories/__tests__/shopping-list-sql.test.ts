@@ -96,7 +96,7 @@ function seedRecipe(
 
 function seedTemplate(
   name: string,
-  items: Array<{ foodId: string | null; name: string; quantityG: number | null }>,
+  items: { foodId: string | null; name: string; quantityG: number | null }[],
 ): string {
   const [templateId] = seed('meal_templates', [{ user_id: 'user-1', name }]);
   if (items.length > 0) {

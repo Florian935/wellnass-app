@@ -37,7 +37,6 @@ import {
   computeWeeklyTrainingNutrition,
   computeWorkoutRecords,
   localDayKey,
-  localMidnightDaysAgo,
   localStartOfYear,
   rollingWeekStarts,
   ROLLING_WEEK_DAYS,

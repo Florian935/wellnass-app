@@ -92,7 +92,7 @@ describe('StrengthSection — présence conditionnelle (D4)', () => {
   it('ne rend RIEN tant qu’aucun mouvement n’est désigné et qu’aucun total n’existe', async () => {
     // Le test le plus important : quelqu'un qui fait du renforcement général ne doit pas voir ce
     // module. Pas une section vide, pas un « — », pas d'invitation permanente.
-    const { toJSON, getByLabelText } = await setup({
+    const { toJSON } = await setup({
       lifts: [
         { lift: 'squat', exerciseId: null, name: null, archived: false },
         { lift: 'bench', exerciseId: null, name: null, archived: false },
@@ -238,7 +238,7 @@ describe('StrengthSection — contenu déplié', () => {
   });
 
   it('n’affiche aucune projection quand le total est incomplet', async () => {
-    const { getByText, queryByText, getByLabelText } = await setup({
+    const { queryByText, getByLabelText } = await setup({
       total: { totalKg: null, missing: ['deadlift'] },
     });
     await expand(getByLabelText);
@@ -246,7 +246,7 @@ describe('StrengthSection — contenu déplié', () => {
   });
 
   it('mène à l’écran de désignation', async () => {
-    const { getByText, getAllByLabelText, getByLabelText } = await setup();
+    const { getAllByLabelText, getByLabelText } = await setup();
     await expand(getByLabelText);
 
     fireEvent.press(getAllByLabelText('strength.sbd.designate')[0]!);

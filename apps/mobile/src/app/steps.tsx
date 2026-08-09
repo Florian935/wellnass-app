@@ -19,7 +19,6 @@ import {
   bestSteps,
   formatDayFull,
   isGoalReached,
-  localDayKey,
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';

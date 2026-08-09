@@ -10,7 +10,6 @@
  * on les mocke entièrement pour isoler les composants de la lib.
  */
 import React from 'react';
-import { View } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { ProgressLineChart } from '../ProgressLineChart';
 import { MuscleVolumeBarChart } from '../MuscleVolumeBarChart';

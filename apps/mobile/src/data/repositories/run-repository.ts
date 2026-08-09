@@ -64,7 +64,7 @@ import {
   type IntervalBlockItem,
   type IntervalDbRow,
 } from './program-repository';
-import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
+import { useTodayKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI

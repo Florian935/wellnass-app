@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — `npm run lint` repasse à zéro avertissement (97 → 0)
+
+Le lint sortait **97 avertissements**. Aucun n'était une erreur, donc la CI restait verte — et
+c'est exactement le problème : une sortie que personne ne lit ne signale plus rien. Le jour où une
+vraie alerte apparaît, elle se noie dedans. Le chantier de tests en avait ajouté une bonne partie.
+
+#### Modifié
+
+- **Deux règles désactivées sur les fichiers de test** (70 avertissements), parce qu'elles décrivent
+  un monde que Jest n'habite pas :
+  - **`import/first`** — `jest.mock(...)` est **hissé au-dessus des imports** par Babel. Un module
+    doit donc être importé **après** l'appel qui le mocke, sinon on capture le vrai module :
+    l'ordre que la règle réclame est précisément celui qui casse le test.
+  - **`@typescript-eslint/no-require-imports`** — une fabrique `jest.mock()` ne peut référencer
+    aucune variable du fichier (elle est hissée) : `require()` à l'intérieur est la seule façon d'y
+    charger quoi que ce soit. C'est la forme documentée par Jest.
+
+  Exception de configuration plutôt que 70 `eslint-disable` en tête de fichier : chacun serait à
+  recopier dans le prochain test, et un commentaire de désactivation finit toujours par masquer
+  autre chose que ce qu'il visait.
+
+#### Corrigé
+
+- **27 avertissements réels, tous dans du code applicatif ou des tests** :
+  - **Imports morts** dans sept repositories et deux écrans — `useTodayDate`, `useWindowStartKey`,
+    `useWindowStartUtc`, `localDayKey`, `localMidnightDaysAgo` étaient importés sans être utilisés.
+    Vestiges de refactorings : ils faisaient croire à une dépendance qui n'existe plus.
+  - **Une variable morte** dans `dashboard-repository` (`today`, remplacé par `todayKey`).
+  - **Trois `Array<T>` / `ReadonlyArray<T>`** convertis en `T[]` / `readonly T[]`, conformément à
+    la convention du dépôt.
+  - **Un double import** du même module dans `streak-reminder-scheduler.test.tsx`, fusionné.
+  - Quatre destructurations inutilisées dans `StrengthSection.test.tsx`.
+
+#### Technique / Notes
+
+- ⚠️ **Un faux pas rattrapé** : le retrait des destructurations a d'abord été fait par
+  remplacement de chaîne, qui a touché **trois** occurrences identiques au lieu d'une — dont deux
+  où `getByText` servait plus bas. Le typecheck l'a attrapé immédiatement. Rappel utile : sur un
+  fichier, un remplacement littéral n'est pas une édition ciblée.
+- **3 952 tests verts**, typecheck propre, **lint à 0 avertissement** et seuils de couverture
+  tenus.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — La création d'objectif, 0 % → couverte
 
 **27 tests** sur `components/goals/GoalFormSheet` (US OBJ-01), composant à **0 %**. Un formulaire ne
