@@ -10,6 +10,69 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — Trois composants de plus à 0 % couverts (61 tests)
+
+**61 tests** sur `TodaySessionCard`, `RecordRecentCard` et `MacroSuggestionCard`, tous à **0 %**.
+Deux widgets d'accueil à trois déclinaisons chacun, et la carte de suggestion nutritionnelle.
+
+#### Ajouté
+
+- **`TodaySessionCard.test.tsx` — 22 tests** (widget 7.4, trois formes).
+  - **🔴 Le widget ne rend RIEN pendant le chargement**, dans les trois formes. Sur un accueil fait
+    de six widgets, afficher « aucune séance » une fraction de seconde à chaque ouverture est la
+    façon la plus sûre de faire croire que l'app a perdu le programme.
+  - **🔴 Une séance en cours propose de REPRENDRE, jamais de démarrer** — et reprendre n'appelle
+    aucune écriture. Démarrer par-dessus en créerait une seconde et perdrait les séries saisies.
+  - **🔴 Le démarrage passe l'occurrence PLANIFIÉE** (`plannedSessionId`) : sans elle, l'adhérence
+    au programme (MUSC-F15) ne peut plus être calculée. Un échec ne navigue pas — arriver sur un
+    écran de séance vide serait pire que rester sur l'accueil — et le verrou est relâché pour
+    permettre de réessayer.
+  - **🔴 Le repli distingue deux situations** : « pas de programme actif » (invitation à en créer
+    un) et « rien aujourd'hui, prochaine séance le 12/08 ». Le second sans la suite se lirait
+    comme un programme terminé. Et le repli mène à la bibliothèque, **pas** à l'écran de séance.
+  - Plus : une séance sans nom — ou au nom fait d'espaces — retombe sur son rang numéroté à partir
+    de 1, jamais sur un titre vide.
+- **`RecordRecentCard.test.tsx` — 18 tests** (widget 7.8, deux sources).
+  - **🔴 Le formatage dépend du type de record** : un volume est un nombre de kilos **localisé**
+    (c'est un cumul, pas une charge, il ne se convertit pas en livres), une charge passe par les
+    unités, un temps de course est un chrono. Les confondre afficherait « 1252 kg » sur un record
+    de 5 km.
+  - **🔴 Le grand format RETOMBE sur le dernier record tous piliers** quand il n'y a aucun record
+    muscu : un coureur qui ne fait pas de musculation verrait sinon « aucun record » alors qu'il
+    vient d'en battre un.
+  - **🔴 Le décompte hebdomadaire ne compte que les 7 derniers jours** et n'apparaît pas à zéro —
+    « 0 record cette semaine » sous une liste de records est un reproche gratuit.
+  - **🔴 Sans aucun record, la carte n'est pas cliquable** : un widget vide qui navigue quand même
+    emmène vers un écran vide, deux déceptions au lieu d'une.
+  - Plus : « aujourd'hui » et « il y a N jours » comme deux formulations distinctes, une date
+    invalide qui n'affiche pas « NaN », et le grand format borné à trois lignes (hauteur fixe).
+- **`MacroSuggestionCard.test.tsx` — 21 tests** (US NUTR-F2).
+  - **🔴 La carte disparaît si le budget calorique est épuisé, dépassé ou INCONNU** (décision D6).
+    Suggérer d'ajouter des protéines à quelqu'un qui a déjà dépassé ses calories ne serait pas un
+    conseil imparfait, ce serait un mauvais conseil — et il apparaîtrait le jour où il fait le plus
+    de dégâts. `null` n'est pas « il en reste » : conseiller sans connaître le budget, c'est
+    conseiller à l'aveugle.
+  - **🔴 Les macros écrits au journal sont ceux de la PORTION**, pas ceux des 100 g — une erreur
+    invisible dans le total du jour. Un macro absent de la fiche compte pour zéro, pas pour `NaN`.
+  - **🔴 Aucun candidat → on dit POURQUOI** : sans explication, l'absence de suggestion se lit
+    comme un bug. Et la limite (aucun aliment n'est étiqueté régime ou allergène en base) est
+    **affichée**, pas masquée.
+  - Plus : l'utilisateur peut viser un autre macro que celui calculé (D1), et le nombre de grammes
+    passe par le formateur localisé — sinon i18next le sort en « 41.2 g » au milieu d'une app
+    francophone.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 29/26/24 → **31/28/26** (réel 32,6/30,2/27,3).
+
+#### Technique / Notes
+
+- ⚠️ **Un `unmount()` au milieu d'un test pollue les suivants.** Deux tests enchaînaient
+  « rendre → assertion → `unmount()` → rendre » ; ils passaient isolément et faisaient tomber
+  **sept** autres tests du même fichier. Un scénario par `it`, et on laisse RNTL nettoyer.
+- **4 064 tests verts** (2 172 shared + 1 447 mobile + 445 admin). Couverture mobile **38,2 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — Mensurations et blocs fractionné : deux formulaires, 0 % → couverts
 
 **41 tests** sur `MeasurementSheet` (US MESUR-01) et `IntervalBlockEditor` (US RUN-F2c), tous deux
