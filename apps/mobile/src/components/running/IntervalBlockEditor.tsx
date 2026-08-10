@@ -158,12 +158,18 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
 
       <View style={styles.field}>
         <Text style={[styles.label, { color: colors.textMuted }]}>{t('running.intervals.reps')}</Text>
+        {/* `accessibilityLabel` sur chaque champ : le libellé visible est un `Text` frère, que
+            TalkBack n'associe pas au champ. Sans lui, les quatre saisies de ce bloc sont annoncées
+            « champ de saisie », sans distinction — sur un formulaire entièrement numérique, c'est
+            inutilisable au lecteur d'écran (US CONF-07). Aucune clé nouvelle : on réutilise le
+            libellé affiché. */}
         <TextInput
           style={fieldStyle}
           value={reps}
           onChangeText={setReps}
           onBlur={commitReps}
           keyboardType="number-pad"
+          accessibilityLabel={t('running.intervals.reps')}
         />
       </View>
 
@@ -202,6 +208,7 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
             keyboardType="number-pad"
             placeholder={t('running.intervals.distanceMPlaceholder')}
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervals.fastPhase')}
           />
         ) : (
           <TextInput
@@ -212,6 +219,7 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
             keyboardType="decimal-pad"
             placeholder={t('running.intervals.durationMinPlaceholder')}
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervals.fastPhase')}
           />
         )}
         {fastError ? (
@@ -232,6 +240,7 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
           keyboardType="number-pad"
           placeholder={t('running.intervals.pctVmaPlaceholder')}
           placeholderTextColor={colors.textMuted}
+          accessibilityLabel={t('running.intervals.pctVma')}
         />
       </View>
 
@@ -269,6 +278,7 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
             keyboardType="number-pad"
             placeholder={t('running.intervals.distanceMPlaceholder')}
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervals.recoveryPhase')}
           />
         ) : effectiveRecoveryKind === 'duration' ? (
           <TextInput
@@ -279,6 +289,7 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
             keyboardType="decimal-pad"
             placeholder={t('running.intervals.durationMinPlaceholder')}
             placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervals.recoveryPhase')}
           />
         ) : null}
       </View>

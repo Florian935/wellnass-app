@@ -1,4 +1,4 @@
-# État du projet — 09/08/2026
+# État du projet — 10/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1147 · `main` a **1144** commits de retard sur `dev` |
+| Commits | 1148 · `main` a **1145** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `abfe241` test(running): réauditer le seuil de branches de shared (97 → 98 %)
 - `f81357e` chore(lint): npm run lint repasse à zéro avertissement (97 → 0)
 - `fd5b85d` test(objectifs): la création d objectif, 0 % → couverte (27 tests)
 - `dc4af9d` test(muscu): la liste d exercices de la séance, 4 % → couverte (44 tests)
 - `a7b2e7b` test(admin): comptes et aliments, les deux dernières listes (33 tests)
-- `e6cc595` docs(tests): recaler le compte de tests après intégration de dev
 
 ---
 

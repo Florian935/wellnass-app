@@ -10,6 +10,69 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 09/08/2026 — `chore/socle-tests-unitaires` — Mensurations et blocs fractionné : deux formulaires, 0 % → couverts
+
+**41 tests** sur `MeasurementSheet` (US MESUR-01) et `IntervalBlockEditor` (US RUN-F2c), tous deux
+à **0 %**. Deux formulaires, deux patrons de saisie opposés — et dans les deux cas, la logique sert
+surtout à **décider ce qui ne part pas en écriture**.
+
+#### Corrigé
+
+- **🔴 Accessibilité — les quatre champs de `IntervalBlockEditor` n'avaient AUCUN libellé.** Le
+  libellé visible est un `Text` frère, que TalkBack n'associe pas au champ : les quatre saisies
+  étaient annoncées « champ de saisie », sans distinction, sur un formulaire entièrement numérique
+  (US CONF-07). Chacune porte désormais son `accessibilityLabel` — aucune clé i18n nouvelle, on
+  réutilise le libellé affiché. Trouvé en cherchant comment atteindre les champs depuis un test :
+  s'ils sont introuvables pour le test, ils le sont aussi pour le lecteur d'écran.
+
+#### Ajouté
+
+- **`MeasurementSheet.test.tsx` — 21 tests.**
+  - **🔴 Seules les mesures MODIFIÉES sont écrites.** Réécrire les six à chaque ouverture
+    empilerait des relevés identiques et rendrait toute courbe de progression illisible. Revenir à
+    la valeur initiale **annule** la modification.
+  - **🔴 Vider un champ RETIRE la mesure de cette date** — le seul moyen de corriger une saisie
+    erronée — et ne touche que cette mesure-là.
+  - **🔴 Une saisie illisible bloque au lieu d'effacer silencieusement** : un `parse` qui rend
+    `null` est indistinguable d'un champ vidé, donc d'une suppression.
+  - **🔴 Une valeur hors bornes bloque AUSSI, côté écran.** Sans ce contrôle, la valeur se parse,
+    le bouton reste actif, l'écriture échoue au dépôt et l'utilisateur lit « réessaie » — un
+    conseil faux, puisque réessayer avec la même valeur échouera toujours (recette device du
+    31/07/2026). Vérifié aussi qu'un seul message s'affiche à la fois : deux bandeaux rouges
+    empilés noient l'information utile.
+  - Plus : l'écart avec le dernier relevé porté par le **signe** et pas seulement par la couleur,
+    aucun écart affiché quand la valeur n'a pas bougé, la virgule décimale acceptée et arrondie au
+    dixième (la colonne est `numeric(5,1)`).
+- **`IntervalBlockEditor.test.tsx` — 20 tests.** Éditeur en **commit-on-blur** : chaque champ écrit
+  quand il perd le focus, sans bouton « Enregistrer ». D'où la règle centrale — **une saisie
+  refusée doit être visiblement refusée**, sinon l'utilisateur croit avoir enregistré et découvre
+  l'inverse en lançant sa séance.
+  - **🔴 Les répétitions ne sont jamais nulles (R1)** : une saisie illisible — ou zéro — n'écrit
+    rien et **remet la valeur d'avant** dans le champ. Laisser le champ vide ferait croire à une
+    valeur enregistrée.
+  - **🔴 La phase rapide est distance OU durée, jamais les deux (R2)** : basculer le sélecteur
+    remet l'autre à `null`. Deux cibles concurrentes en base, et le guidage vocal ne sait plus
+    quand annoncer la fin de phase. Une phase **vide** est refusée et le dit ; changer d'onglet
+    efface le message, qui portait sur le champ précédent.
+  - **🔴 Le composant DÉDUIT le type depuis les données** : rouvrir un bloc « 8 × 1 min » doit
+    afficher un champ de durée, sinon le premier blur écraserait la durée par `null`.
+  - **🔴 « Aucune récupération » n'affiche aucun champ et efface les deux colonnes immédiatement**
+    (R3) — pas de blur à attendre, le choix est explicite.
+  - **🔴 Le % VMA est nullable (R4)** : vider le champ efface la valeur, on n'invente jamais un
+    pourcentage par défaut.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 27/24/23 → **29/26/24** (réel 30,7/28,0/25,8).
+
+#### Technique / Notes
+
+- **Une limite de RNTL notée** : ni `screen.UNSAFE_getAllByType` ni `screen.root.findAllByType` ne
+  sont disponibles. Atteindre un champ passe donc par son libellé d'accessibilité — ce qui est une
+  contrainte utile : un champ introuvable pour le test est un champ introuvable pour TalkBack.
+- **4 003 tests verts** (2 172 shared + 1 386 mobile + 445 admin). Typecheck, lint à 0, seuils
+  tenus.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — Le seuil de branches de `shared` réaudité : 97 → 98 %
 
 Dernier point parké du chantier de tests. L'arbitrage du 04/08 disait « au-dessus de 97 %, c'est du
