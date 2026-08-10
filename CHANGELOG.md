@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Health Connect et aperçu du planning, 0 % → couverts (39 tests)
+
+**39 tests** sur `HealthConnectSection` (US CONF-06) et `PlanningPreview` (US 3.9), tous deux à
+**0 %**. Le premier est le composant le plus délicat des réglages : il négocie des **permissions
+système sur des données de santé**, et c'est le seul endroit de l'app qui écrit dans une base tierce.
+
+#### Ajouté
+
+- **`HealthConnectSection.test.tsx` — 23 tests.**
+  - **🔴 L'ouverture de l'écran ne demande AUCUNE permission.** L'opt-in est strict : c'est le tap
+    sur l'interrupteur, et lui seul, qui déclenche la demande. Ouvrir ses réglages ne doit pas
+    provoquer une boîte d'accès à des données de santé.
+  - **🔴 Un refus laisse le réglage OFF, l'explique, et ne relance PAS la demande.** Écrire le
+    réglage à `true` sans permission afficherait « activé » sur une intégration qui ne peut rien
+    faire ; et rien n'est plus hostile qu'une boîte de permission qui revient toute seule.
+  - **🔴 L'état est recalculé au retour au PREMIER PLAN** — et pas sur un passage en arrière-plan.
+    Les permissions peuvent avoir été révoquées depuis les réglages système pendant qu'on y était :
+    sans ce recalcul, l'app affirme un accès qu'elle n'a plus.
+  - **🔴 Un seul état est rendu à la fois**, et **rien** tant qu'il n'est pas résolu. Fournisseur
+    absent → on propose de l'installer, pas un interrupteur mort ; permissions manquantes → un
+    bouton pour les demander, pas trois boutons d'import qui échoueront.
+  - **🔴 L'échec de la dernière tentative est affiché avec son détail technique** : sans ce bandeau,
+    une panne d'écriture est totalement invisible et l'app paraît synchronisée.
+  - Plus : l'activation enchaîne les trois opérations et rend un compte rendu **chiffré** (un
+    « c'est activé » sans chiffres laisse douter que quoi que ce soit ait transité), la
+    désactivation n'écrit que le réglage et **efface** le compte rendu précédent, et chaque action
+    manuelle rafraîchit l'état — sinon la date du dernier import resterait celle d'avant et
+    l'utilisateur relancerait indéfiniment.
+- **`PlanningPreview.test.tsx` — 16 tests.** Purement présentationnel, donc entièrement calculé :
+  rien n'y est vérifiable à l'œil sans connaître la date du jour et le contenu de la base.
+  - **🔴 Les séances SAUTÉES sont exclues** — une pastille sur un jour explicitement passé donnerait
+    un planning qui ne correspond à rien, et « prochaine séance » désignerait quelque chose
+    d'annulé.
+  - **🔴 Le libellé est préfixé par son pilier.** Le composant est affiché sur les **deux** hubs :
+    « Prochaine : Fractionné (VMA) » sous l'en-tête Musculation surprenait sans le préfixe
+    (constaté en recette).
+  - **🔴 La fenêtre interrogée suit la forme du widget** : 14 jours en grand format, 7 sinon.
+    Demander 7 jours pour deux rangées laisserait la seconde vide par construction, sans que rien
+    ne le signale.
+  - **🔴 La semaine commence au lundi** — `Date.getDay()` rend 0 pour dimanche, c'est le décalage
+    classique de tout calendrier européen.
+  - Plus : une séance de course nommée par son **type** (son nom est souvent vide), une séance
+    muscu sans nom repliée sur son rang numéroté à partir de 1, et la liste du grand format bornée
+    à trois lignes et ordonnée par jour — pas par ordre de réception de la base.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 31/28/26 → **33/30/28** (réel 34,4/31,6/29,0).
+
+#### Technique / Notes
+
+- **4 103 tests verts** (2 172 shared + 1 486 mobile + 445 admin). Couverture mobile **39,4 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 09/08/2026 — `chore/socle-tests-unitaires` — Trois composants de plus à 0 % couverts (61 tests)
 
 **61 tests** sur `TodaySessionCard`, `RecordRecentCard` et `MacroSuggestionCard`, tous à **0 %**.

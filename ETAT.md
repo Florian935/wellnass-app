@@ -1,4 +1,4 @@
-# État du projet — 10/08/2026
+# État du projet — 11/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1149 · `main` a **1146** commits de retard sur `dev` |
+| Commits | 1150 · `main` a **1147** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `73a4d2a` test(accueil,nutrition): trois composants à 0 % couverts (61 tests)
 - `83d74bb` test(mesures,running): deux formulaires à 0 % couverts (41 tests) + libellés a11y
 - `abfe241` test(running): réauditer le seuil de branches de shared (97 → 98 %)
 - `f81357e` chore(lint): npm run lint repasse à zéro avertissement (97 → 0)
 - `fd5b85d` test(objectifs): la création d objectif, 0 % → couverte (27 tests)
-- `dc4af9d` test(muscu): la liste d exercices de la séance, 4 % → couverte (44 tests)
 
 ---
 
