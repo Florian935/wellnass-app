@@ -10,6 +10,53 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Les cinq widgets du hub muscu, 0 % → couverts (55 tests)
+
+**55 tests** sur `strength-widgets`, fichier à **0 %** : cinq widgets, **trois déclinaisons
+chacun**, soit quinze rendus. Aucun ne porte de logique métier — elle vit dans les repositories et
+dans `@wellness/shared` — mais tous portent des **dégradations**, parce que les données disponibles
+sont incomplètes.
+
+#### Ajouté
+
+- **`strength-widgets.test.tsx` — 55 tests.**
+  - **🔴 Le registre expose exactement les sept identifiants attendus.** Un widget absent de la map
+    rendrait une case **vide** dans la grille, sans erreur ni trace : il disparaîtrait sans que
+    personne sache pourquoi. Et chacun est monté dans les trois formes.
+  - **🔴 Chaque widget a un état vide RÉDIGÉ, dans les trois formes.** Un widget d'accueil vide ne
+    se distingue pas d'un widget en panne.
+  - **🔴 Le tonnage est localisé et exprimé en tonnes** — « 12.5 t » au milieu d'une app
+    francophone est le défaut déjà corrigé trois fois ailleurs. Et **aucun tonnage n'est affiché
+    quand le volume est nul** : « 0,0 t » sous une séance au poids du corps se lit comme une séance
+    vide.
+  - **🔴 La variation hebdomadaire porte une FLÈCHE**, pas seulement une couleur — un daltonien
+    doit lire le sens. Et **aucune variation n'est affichée sans semaine précédente** : la calculer
+    contre zéro donnerait « +∞ % » ou « +100 % », deux chiffres faux.
+  - **🔴 Aucune courbe quand la série est entièrement à zéro** : une ligne plate sur huit semaines
+    n'apprend rien et ressemble à un graphe cassé.
+  - **🔴 Le volume absent affiche un tiret, pas « 0 kg »** — « 0 kg » se lit comme un résultat,
+    « — » comme une absence de données. Idem pour une séance sans durée.
+  - Plus : la méta du programme qui retombe sur l'objectif puis le niveau quand la durée manque
+    (une ligne vide sous le titre se lit comme une donnée perdue), le nombre de séances de
+    l'historique borné par forme (hauteur fixe), et la forme transmise à l'aperçu du planning —
+    la figer annulerait la seconde semaine du grand format.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 35/32/29 → **36/33/30** (réel 37,2/34,6/31,1).
+- **Stratégie de tests §3.7** : nouvelle règle — **ne jamais appeler `unmount()` au milieu d'un
+  test**.
+
+#### Technique / Notes
+
+- ⚠️ **Le piège de l'`unmount()`, rencontré une seconde fois** — et plus cher : une boucle
+  « rendre → assertion → `unmount()` » dans un `it.each` a fait tomber **treize** tests suivants du
+  fichier, alors qu'elle passait isolément. `screen` reste pointé sur l'arbre démonté. La règle est
+  désormais écrite : un scénario par `it`, et `it.each` sur le **produit** des cas plutôt qu'une
+  boucle interne.
+- **4 198 tests verts** (2 172 shared + 1 581 mobile + 445 admin). Couverture mobile **41,2 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Grille de widgets et éditeur de séance de course (40 tests) + un dixième verrou
 
 **40 tests** sur `SortableWidgetGrid` (le plus gros composant du dépôt) et `RunningSessionEditor`,
