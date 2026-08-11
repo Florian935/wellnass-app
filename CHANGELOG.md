@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Le journal alimentaire et les réglages (86 tests) — la barre des 50 % est franchie
+
+**86 tests** sur les deux écrans suivants dans l'ordre de taille : `(tabs)/nutrition.tsx` (188
+instructions, le plus manipulé de l'app) et `settings.tsx` (130).
+
+#### Ajouté
+
+- **`nutrition-screen.test.tsx` — 50 tests.**
+  - **🔴 Le jour affiché suit « aujourd'hui » UNIQUEMENT si on y était.** À minuit ou au retour de
+    veille, `useTodayKey` change : écraser une navigation délibérée vers le 11 août ramènerait
+    l'utilisateur à aujourd'hui **pendant qu'il saisit** un repas passé. Les deux sens sont testés —
+    car sans le suivi, l'app rouverte au petit-déjeuner ajouterait les aliments à la veille.
+  - **🔴 Les entrées ORPHELINES ne sont jamais perdues.** Supprimer un repas de la config laisse ses
+    entrées avec une `mealType` qui n'existe plus : elles remontent dans « Autres », d'où on les
+    réaffecte. Sans cette section elles disparaîtraient de l'écran **en continuant de compter dans
+    les totaux** — un journal dont les chiffres ne correspondent à rien de visible.
+  - **🔴 Modifier une quantité RECALCULE le snapshot** (règle de trois) : les macros sont figées à la
+    saisie, les recalculer à l'affichage ferait bouger l'historique à chaque mise à jour de CIQUAL.
+  - **🔴 Deux types d'entrée, deux formulaires** : avec grammes → on édite les grammes ; sans (ajout
+    rapide, recette) → kcal et macros en direct. Proposer des grammes sur un ajout rapide
+    demanderait une densité qui n'a jamais été saisie.
+  - **🔴 Le voisinage de réordonnancement se calcule DANS le repas**, pas dans la journée — sinon la
+    première entrée du déjeuner se croirait deuxième et proposerait de monter au-dessus du
+    petit-déjeuner.
+  - Plus : aucune suggestion de macro sur une journée vide ni sur un jour passé, un nom vidé qui
+    retombe sur l'ancien, les macros négatives ramenées à zéro, la virgule décimale acceptée, et
+    l'objectif demandé pour le **jour affiché** (une cible rétroactive doit refléter ce jour-là).
+- **`settings-screen.test.tsx` — 36 tests.** L'écran est surtout du câblage ; trois endroits
+  décident vraiment, et les trois ont déjà produit un défaut :
+  - **🔴 La provenance de l'heure d'un rappel** (NUTR-F1) dans ses trois états — apprise, apprise et
+    décalée hors DND, historique insuffisant. Une heure qui bouge sans explication est un bug perçu.
+  - **🔴 L'avertissement DND ne dépend PAS du mode d'apprentissage** mais du fait que l'heure soit
+    apprise. Une heure de **repli** se comporte comme une heure manuelle : non rabattue, donc elle
+    ne partira pas. C'est le défaut corrigé — l'écran affichait « 23:00 en attendant » pour un rappel
+    qui n'allait jamais arriver.
+  - **🔴 Les réglages de donnée de santé sont éteints même RÉGLAGES NON CHARGÉS** (`?? false`) : un
+    opt-in sensible affiché « activé » pendant le chargement se lit comme un consentement jamais
+    donné. Contraste testé avec les statistiques d'usage, seules à être opt-out (US 9.10).
+  - **🔴 L'export RGPD avertit avant la première synchro** — un utilisateur exerçant son droit
+    d'accès repartirait sinon avec un fichier incomplet sans le savoir.
+  - Plus : la boucle modulo 24 du sélecteur d'heure (`24:00` en base ferait disparaître le rappel
+    sans erreur), les profils de piliers inactifs masqués (décision H), l'activation de pilier
+    tracée mais **pas** la désactivation, et les trois écrans de suivi maintenus atteignables —
+    le défaut trouvé en recette le 01/08/2026.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 46/43/38 → **50/47/43** (réel 51,8/48,5/45,2).
+
+#### Technique / Notes
+
+- **4 584 tests verts** (2 172 shared + 1 967 mobile + 445 admin). Couverture mobile **50,7 %**
+  (départ 15,0 %) — **la barre des 50 % est franchie**. Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Le planning hebdomadaire, et une sixième famille de faux vert (44 tests)
 
 **44 tests** sur `app/planning/index.tsx`, le plus gros écran encore à **0 %** (189 instructions).
