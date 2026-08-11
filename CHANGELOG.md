@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Les neuf verrous du 08/08 sont désormais tous couverts (37 tests)
+
+**37 tests** sur `programs/[id]` et `templates/[id]`, deux écrans à **0 %** qui portaient **six des
+neuf gardes** corrigées le 08/08/2026 sans qu'aucun test ne les protège. C'était la dette la plus
+directe du chantier : neuf correctifs, trois seulement couverts. Elle est close.
+
+#### Ajouté
+
+- **`program-detail-screen.test.tsx` — 23 tests.**
+  - **🔴 Les trois verrous de l'écran** — démarrer une séance, dupliquer, supprimer — vérifiés sur
+    le cas qu'ils protègent : deux appuis dans le **même cycle de rendu**. Sans eux : deux séances
+    créées dont une reste ouverte pour toujours, deux copies du programme, deux suppressions.
+  - **🔴 Un programme ÉDITORIAL ne propose ni planification ni suppression**, seulement la
+    duplication. Activer un programme de la bibliothèque ferait diverger le local et le cloud —
+    il n'appartient à personne. La distinction se lit sur « Mes programmes », pas sur une colonne.
+  - **🔴 Démarrer une séance désactive les boutons des AUTRES séances** : sans ça, on lance le jour
+    A puis le jour B pendant que le premier est en vol, et l'app se retrouve avec deux séances
+    ouvertes dont elle n'en affiche qu'une.
+  - **🔴 Une séance sans exercice n'offre pas de bouton « Démarrer »** — lancer une séance vide
+    mènerait à un écran de saisie sans rien à saisir.
+  - **🔴 Un échec de suppression est annoncé et ne quitte pas l'écran.** Quitter laisserait croire
+    à une suppression, et le programme réapparaîtrait dans la liste sans explication.
+  - Plus : « introuvable » qui ne clignote pas pendant le premier chargement, la ligne de méta
+    omise quand elle serait vide, et un programme actif qui propose « modifier le planning » plutôt
+    que « démarrer ».
+- **`template-detail-screen.test.tsx` — 14 tests.** Mêmes trois verrous, plus deux règles propres :
+  - **🔴 Tant que le modèle n'est pas chargé, aucune action n'est offerte** — un « Supprimer » sur
+    un modèle qu'on n'a pas encore lu (ou supprimé depuis un autre appareil) est une action sur du
+    vide.
+  - **🔴 Un modèle sans exercice garde son bouton « Démarrer », mais désactivé.** Le retirer ferait
+    sauter la mise en page des trois actions au moment précis où l'utilisateur ajoute son premier
+    exercice.
+  - **🔴 La duplication REMPLACE l'écran courant** (`replace`, pas `push`) : empiler l'original sous
+    la copie ferait revenir sur le modèle d'origine, ce qui se lit comme une duplication ratée.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 37/35/31 → **39/36/32** (réel 40,5/37,4/33,7).
+
+#### Technique / Notes
+
+- **4 303 tests verts** (2 172 shared + 1 686 mobile + 445 admin). Couverture mobile **43,3 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Widgets de course et primitives graphiques (68 tests)
 
 **68 tests** sur `running-widgets` (0 %) et `primitives` (43 %). Les primitives sont le socle

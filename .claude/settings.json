@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd C:\\\\Git\\\\wellnass-app\\\\packages\\\\shared; npx vitest run --coverage --coverage.reporter=text 2>&1 | Select-String -Pattern 'running.ts|widgets.ts|health-connect.ts|workout.ts' | ForEach-Object { $_.Line })"
+    ]
+  }
+}
