@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1152 · `main` a **1149** commits de retard sur `dev` |
+| Commits | 1153 · `main` a **1150** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `9fd3076` test(widgets): les cinq widgets du hub muscu, 0 % → couverts (55 tests)
 - `30c9eba` test(widgets,running): grille de widgets et éditeur de séance (40 tests) + 10e verrou
 - `f165b55` test(reglages,planning): Health Connect et aperçu du planning couverts (39 tests)
 - `73a4d2a` test(accueil,nutrition): trois composants à 0 % couverts (61 tests)
 - `83d74bb` test(mesures,running): deux formulaires à 0 % couverts (41 tests) + libellés a11y
-- `abfe241` test(running): réauditer le seuil de branches de shared (97 → 98 %)
 
 ---
 

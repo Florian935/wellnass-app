@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Widgets de course et primitives graphiques (68 tests)
+
+**68 tests** sur `running-widgets` (0 %) et `primitives` (43 %). Les primitives sont le socle
+visuel de tous les widgets : cinq mini-graphes dont **toute la géométrie est calculée à la main**.
+Aucune de ces formules ne lève quand elle est fausse — elle dessine quelque chose de faux, et un
+graphe faux se croit sur parole.
+
+#### Ajouté
+
+- **`primitives.test.tsx` — 30 tests**, organisés autour de trois familles de pièges.
+  - **🔴 Les divisions par zéro.** Une série **plate** (`max === min`), un maximum nul, une
+    progression `NaN` : chacune produirait `NaN` ou `Infinity` dans un attribut SVG — donc un
+    graphe **qui disparaît**, sans le moindre message. Et le cas d'une semaine sans variation est
+    le plus banal qui soit.
+  - **🔴 Les valeurs hors bornes.** Une progression à 250 % rend exactement le même anneau qu'à
+    100 %, une progression négative le même qu'à 0 % : un anneau qui se remplit deux fois ne veut
+    plus rien dire. Idem pour les barres horizontales, bornées à `[0, 100]`.
+  - **🔴 Une barre de valeur NULLE reste visible** (hauteur plancher de 4 %) : sinon un jour sans
+    activité disparaît de la semaine, et l'utilisateur compte six colonnes au lieu de sept.
+  - **🔴 Chaque dégradé SVG porte un identifiant unique.** Deux `id` identiques dans un même
+    document : le second écrase le premier et les deux courbes prennent la même teinte — le cas
+    normal sur un accueil qui empile des widgets.
+  - **🔴 L'accessibilité des états** : un jour de repos porte une **lettre**, aujourd'hui porte une
+    **bordure**. Sans elles, deux états ne se distinguent que par une nuance — invisible pour une
+    partie des utilisateurs, et sur un écran en plein soleil.
+  - Plus : `« max »` met en avant la plus haute barre et non la première (la couleur d'accent
+    désigne un fait, pas une position), une étiquette manquante ne rend pas « undefined », et la
+    taille du glyphe suit celle de la pastille.
+- **`running-widgets.test.tsx` — 38 tests.**
+  - **🔴 Le grand format bascule entre DEUX rendus** selon la donnée disponible : splits par
+    kilomètre s'il y a une trace GPS, courbe des distances récentes sinon. Le second cas est
+    fréquent (course manuelle, trace perdue, moins d'un kilomètre) et laisser un grand carré vide
+    serait le pire des rendus.
+  - **🔴 La série des distances est ordonnée du plus ANCIEN au plus récent.** L'historique arrive
+    dans l'autre sens : tracé tel quel, le graphe se lit à l'envers et une progression passe pour
+    une régression.
+  - **🔴 Le widget lit le programme du pilier COURSE** et mène à `/running-programs`. Sans le
+    filtre, le hub course afficherait le programme de musculation — la fuite inter-piliers que la
+    décision H interdit.
+  - Plus : « aujourd'hui » et « hier » dits **en mots** avant de retomber sur JJ/MM, une date
+    invalide qui n'affiche pas « Invalid Date », et une course manuelle sans distance qui affiche
+    0 et non « NaN km ».
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 36/33/30 → **37/35/31** (réel 38,7/36,3/32,1).
+
+#### Technique / Notes
+
+- ⚠️ **Le piège de l'`unmount()`, une troisième fois — le jour même où la règle a été écrite.**
+  Six comparaisons « rendre A → `unmount` → rendre B » ont fait tomber huit tests du fichier.
+  Remplacées par un helper `serialiser()` qui rend et sérialise **sans jamais démonter**, RNTL
+  nettoyant entre les cas. La règle du §3.7 est confirmée : c'est le genre d'erreur qu'on refait
+  même en la connaissant, parce qu'elle passe isolément.
+- **4 266 tests verts** (2 172 shared + 1 649 mobile + 445 admin). Couverture mobile **42,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Les cinq widgets du hub muscu, 0 % → couverts (55 tests)
 
 **55 tests** sur `strength-widgets`, fichier à **0 %** : cinq widgets, **trois déclinaisons

@@ -241,10 +241,15 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
 >
 > ⚠️ **Ne jamais appeler `unmount()` au milieu d'un test.** Démonter puis re-rendre laisse `screen`
 > pointer sur un arbre mort, et fait tomber les tests **suivants** du fichier — pas celui qui
-> contient l'appel, qui passe très bien isolément. Rencontré deux fois (09 et 11/08/2026), sept
-> tests cassés la première fois, treize la seconde. **Un scénario par `it`**, et on laisse RNTL
-> nettoyer. Pour balayer plusieurs variantes, `it.each` sur le produit des cas, jamais une boucle
-> interne.
+> contient l'appel, qui passe très bien isolément. Rencontré **trois fois** (09 et 11/08/2026) :
+> sept tests cassés, puis treize, puis huit — la troisième **le jour même où cette règle a été
+> écrite**. C'est le genre d'erreur qu'on refait en la connaissant, précisément parce que le test
+> fautif passe isolément.
+>
+> **Un scénario par `it`**, et on laisse RNTL nettoyer. Pour balayer plusieurs variantes, `it.each`
+> sur le produit des cas, jamais une boucle interne. Pour **comparer deux rendus**, un helper qui
+> rend et sérialise sans démonter — voir `serialiser()` dans
+> [`primitives.test.tsx`](../../../apps/mobile/src/components/widgets/__tests__/primitives.test.tsx).
 >
 > ⚠️ **Un `fireEvent.press` hors `act` ne rafraîchit pas l'écran.** Envelopper chaque appui dans
 > `await act(async () => …)` — sinon la requête suivante voit encore l'état d'avant. Et deux appuis
@@ -338,7 +343,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
-| `apps/mobile` — reste (écrans, composants) | **36** | **33** | **30** |
+| `apps/mobile` — reste (écrans, composants) | **37** | **35** | **31** |
 | `apps/admin` (`src/data` + `src/lib`) | **97** | **89** | **98** |
 | `apps/admin` — écrans React | **57** | **78** | **56** |
 
@@ -445,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 1 581 (mobile) + 445 (admin) = 4 198 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 649 (mobile) + 445 (admin) = 4 266 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **41,2 %** |
+| Couverture mobile | 15,0 % | **42,1 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
