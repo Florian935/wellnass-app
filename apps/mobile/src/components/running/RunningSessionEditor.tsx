@@ -19,6 +19,7 @@ import { IntervalBlockEditor } from '@/components/running/IntervalBlockEditor';
 import { Button } from '@/components/Button';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 
 type RunningSessionEditorProps = {
@@ -150,16 +151,21 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
   };
 
   // Blocs fractionné (US RUN-F2c) — uniquement pour session_type='fractionne' (R5).
+  // `addingBlock` ne pilote que l'affichage (bouton grisé) ; la garde contre le double appui est
+  // portée par `useActionLock` — deux appuis rapides tombent dans le même cycle de rendu, où
+  // l'état vaut encore `false` pour les deux. On créait alors **deux blocs au même `order_index`**,
+  // et l'ordre devenait celui que Postgres tranche. Voir le hook.
   const [addingBlock, setAddingBlock] = useState(false);
-  const onAddBlock = async () => {
-    if (addingBlock) return;
-    setAddingBlock(true);
-    try {
-      await addIntervalBlock(session.id, { reps: 1 });
-    } finally {
-      setAddingBlock(false);
-    }
-  };
+  const lockAddBlock = useActionLock();
+  const onAddBlock = () =>
+    void lockAddBlock(async () => {
+      setAddingBlock(true);
+      try {
+        await addIntervalBlock(session.id, { reps: 1 });
+      } finally {
+        setAddingBlock(false);
+      }
+    });
 
   const onRemove = () => {
     Alert.alert(displayName, t('running.program.removeSessionConfirm'), [
@@ -365,7 +371,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
           <Button
             label={t('running.intervals.addBlock')}
             variant="ghost"
-            onPress={() => void onAddBlock()}
+            onPress={onAddBlock}
             disabled={addingBlock}
           />
         </View>

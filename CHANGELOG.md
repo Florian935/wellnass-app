@@ -10,6 +10,64 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Grille de widgets et éditeur de séance de course (40 tests) + un dixième verrou
+
+**40 tests** sur `SortableWidgetGrid` (le plus gros composant du dépôt) et `RunningSessionEditor`,
+tous deux à **0 %**. Et une **dixième** occurrence du défaut de double appui.
+
+#### Corrigé
+
+- **🔴 `RunningSessionEditor` — « Ajouter un bloc » n'était pas gardé.** `if (addingBlock) return`
+  sur un état React : deux appuis rapides créaient **deux blocs au même `order_index`**, et l'ordre
+  du fractionné devenait celui que Postgres tranche. Basculé sur `useActionLock`. Dixième site du
+  même patron — et celui-ci était passé **entre les mailles du `grep`** de l'audit du 08/08, parce
+  que la garde s'appelle `addingBlock` et non `busy`/`saving`/`loading`. Le test l'a trouvé.
+
+#### Ajouté
+
+- **`SortableWidgetGrid.test.tsx` — 18 tests.** Le glisser-déposer lui-même n'est pas rejouable hors
+  device (gesture-handler + géométrie réelle) : **c'est de la recette**, et c'est assumé au §6. Le
+  reste ne l'était pas du tout.
+  - **🔴 Le placement absolu de chaque case.** `left` / `top` / `width` / `height` sont calculés à la
+    main depuis (`col`, `row`) et l'empreinte. Une erreur d'une gouttière ne plante rien : elle
+    décale toute la grille, et personne ne sait dire de combien. Vérifié pour les trois formes —
+    un widget « wide » fait `2 × colonne + 1 gouttière`, pas `2 × colonne`.
+  - **🔴 Un widget masqué reste AFFICHÉ dans la grille d'édition**, estompé et étiqueté : le retirer
+    le rendrait impossible à réafficher, puisque c'est là et seulement là qu'on le remet.
+  - **🔴 Les libellés d'accessibilité disent l'ACTION, pas l'état** (« masquer » / « afficher ») et
+    **annoncent la forme courante**. Sur une grille de six widgets aux icônes identiques, ce sont
+    les seuls repères d'un lecteur d'écran.
+  - **🔴 La poignée de déplacement ne capte aucun tap** (US UX-04) : elle signale, le geste reste
+    porté par toute la carte. La capter réduirait la zone de préhension à 18 px.
+- **`RunningSessionEditor.test.tsx` — 22 tests.**
+  - **🔴 La saisie est enregistrée à la frappe, mais SANS jamais afficher l'erreur.** C'est le filet
+    contre la perte de saisie quand « Terminé » est tapé sans blur — et afficher l'erreur pendant
+    la frappe reprocherait d'avoir tapé « 1 » avant « 12 ». Au **blur**, en revanche, une cible vide
+    est refusée et dite.
+  - **🔴 Le type de cible est DÉDUIT des données** tant que l'utilisateur n'a pas basculé le
+    sélecteur : le composant n'est pas remonté après un commit (`useProgramDetail` ré-émet), donc
+    un état local figé afficherait un champ vide sur une séance qui a bien une cible.
+  - **🔴 Sans profil coureur, on EXPLIQUE au lieu d'afficher une fourchette inventée** — une allure
+    cible se dérive du record de 5 km ; sans référence, l'afficher serait une consigne
+    d'entraînement fabriquée. Et aucune allure tant qu'aucun type n'est choisi.
+  - **🔴 Les blocs de fractionné n'existent que pour le type `fractionne`** (R5) : des répétitions
+    sur une sortie d'endurance produiraient une séance incohérente, et le guidage vocal annoncerait
+    des phases qui n'existent pas.
+  - Plus : la suppression qui **nomme** la séance dans sa confirmation (indispensable dans un
+    programme qui en compte cinq), et la bascule distance ↔ durée qui remet l'autre à `null`.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 33/30/28 → **35/32/29** (réel 36,2/33,4/30,3).
+
+#### Technique / Notes
+
+- **La leçon du dixième verrou** : un `grep` sur les noms de variables usuels (`busy`, `saving`,
+  `loading`…) rate ceux qui portent un nom métier. Écrire le test reste le seul filet qui ne
+  dépende pas du vocabulaire choisi.
+- **4 143 tests verts** (2 172 shared + 1 526 mobile + 445 admin). Couverture mobile **40,5 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Health Connect et aperçu du planning, 0 % → couverts (39 tests)
 
 **39 tests** sur `HealthConnectSection` (US CONF-06) et `PlanningPreview` (US 3.9), tous deux à

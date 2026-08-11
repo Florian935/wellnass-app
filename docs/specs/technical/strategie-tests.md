@@ -282,6 +282,11 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
   l'explication vit, une fois, au lieu d'être recopiée douze fois.
   **La leçon générale** : dès qu'un défaut se répète sur trois sites, le chercher partout coûte
   une commande `grep` et rapporte davantage que le troisième correctif.
+- **🔴 Un dixième site, raté par le `grep`** (11/08/2026) : « Ajouter un bloc » de
+  `RunningSessionEditor` gardait sur `addingBlock` — un nom **métier**, absent de la liste
+  `busy|saving|loading|…` de l'audit. Deux appuis créaient deux blocs au même `order_index`.
+  **Corollaire de la leçon précédente** : un `grep` sur les noms usuels rate ceux qui portent un
+  nom propre au domaine. Écrire le test reste le seul filet qui ne dépende pas du vocabulaire.
 
 ## 4. Conventions
 
@@ -326,7 +331,7 @@ Sans ce `--coverage`, un seuil déclaré est du texte mort — c'est exactement 
 | `apps/mobile/src/data/repositories/` | **44** | **33** | **39** |
 | `apps/mobile/src/lib/` | **52** | **51** | 64 |
 | `apps/mobile/src/stores/` | **47** | **36** | **46** |
-| `apps/mobile` — reste (écrans, composants) | **33** | **30** | **28** |
+| `apps/mobile` — reste (écrans, composants) | **35** | **32** | **29** |
 | `apps/admin` (`src/data` + `src/lib`) | **97** | **89** | **98** |
 | `apps/admin` — écrans React | **57** | **78** | **56** |
 
@@ -433,12 +438,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 07/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 1 486 (mobile) + 445 (admin) = 4 103 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 526 (mobile) + 445 (admin) = 4 143 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **39,4 %** |
+| Couverture mobile | 15,0 % | **40,5 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
