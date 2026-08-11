@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1156 · `main` a **1153** commits de retard sur `dev` |
+| Commits | 1157 · `main` a **1154** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `195016a` test(running-programs): les deux écrans à 0 %, et un compte de verrous corrigé (53 tests)
 - `181d463` test(composants): les cinq derniers composants à 0 % (98 tests, 2 défauts corrigés)
 - `03f48e6` test(programs,templates): les neuf verrous du 08/08 tous couverts (37 tests)
 - `257f8a7` test(widgets): widgets de course et primitives graphiques (68 tests)
 - `9fd3076` test(widgets): les cinq widgets du hub muscu, 0 % → couverts (55 tests)
-- `30c9eba` test(widgets,running): grille de widgets et éditeur de séance (40 tests) + 10e verrou
 
 ---
 

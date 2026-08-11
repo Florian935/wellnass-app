@@ -450,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 1 837 (mobile) + 445 (admin) = 4 454 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 881 (mobile) + 445 (admin) = 4 498 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **46,4 %** |
+| Couverture mobile | 15,0 % | **48,1 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
@@ -492,6 +492,22 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
    risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
    + Testing Library.
+
+   ⚠️ **RNTL 14 a supprimé `createNodeMock`** — et avec lui le seul levier pour donner une géométrie
+   aux composants hôtes sous Jest. Conséquence pour tout code qui appelle `ref.measureInWindow`
+   (glisser-déposer, mesures de zones) : la `ref` vaut `null`, les zones sortent à **hauteur 0**, et
+   **tous** les tests de dépôt passent au vert sans rien exécuter — y compris ceux censés vérifier
+   qu'on n'écrit *pas*. C'est la sixième famille de faux vert, et la plus traître : elle rend verts
+   les tests de non-action. Le remplacement, posé dans
+   [`planning-screen.test.tsx`](../../../apps/mobile/src/app/planning/__tests__/planning-screen.test.tsx),
+   est un `jest.mock('react-native')` par **Proxy** qui ne substitue que `View` par une version
+   `forwardRef` exposant `measureInWindow` via `useImperativeHandle`. Le Proxy évite d'étaler les
+   exports paresseux de React Native, qui déclencheraient tous les `require` natifs.
+
+   **La contre-épreuve était obligatoire ici** : la garde R3 (`target === item.scheduledDate`) a été
+   retirée à la main, et le test est bien passé au rouge. Sans cette vérification, quatre tests de
+   glisser-déposer auraient été verts pour la mauvaise raison — c'est ce qui s'est produit à la
+   première exécution.
 
    **Plus aucun composant de `src/components` n'est à 0 %** (11/08/2026). Les cinq derniers
    — `NutritionSummaryCard`, `RealLifeCard`, `ActivationPathCard`, `CycleTrackingSection`,

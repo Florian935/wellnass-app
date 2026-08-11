@@ -10,6 +10,59 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Le planning hebdomadaire, et une sixième famille de faux vert (44 tests)
+
+**44 tests** sur `app/planning/index.tsx`, le plus gros écran encore à **0 %** (189 instructions).
+
+#### Technique / Notes — ⚠️ RNTL 14 a supprimé `createNodeMock`
+
+Le glisser-déposer repose sur `ref.measureInWindow`, une API native. Sous Jest, une `ref` de
+composant hôte vaut `null`, et **RNTL 14 a retiré `createNodeMock`**, le seul levier pour lui donner
+une géométrie. Résultat à la première exécution : sept zones de hauteur 0, `findDropTarget` renvoyant
+toujours `null`, et **quatre tests verts sans rien exécuter — dont ceux censés vérifier qu'on
+n'écrit PAS**. C'est la **sixième famille de faux vert** du chantier, et la plus traître : elle rend
+verts les tests de *non-action*.
+
+Remplacement : un `jest.mock('react-native')` par **Proxy** qui ne substitue que `View` par une
+version `forwardRef` exposant `measureInWindow` (`useImperativeHandle`). Le Proxy évite d'étaler les
+exports paresseux de React Native, qui déclencheraient tous les `require` natifs.
+
+**Contre-épreuve faite** : la garde R3 retirée à la main, le test passe bien au rouge.
+
+#### Ajouté
+
+- **`planning-screen.test.tsx` — 44 tests.**
+  - **Glisser-déposer (US MUSC-F9)** joué de bout en bout via les rappels du `Gesture.Pan` :
+    **🔴 les zones sont mesurées au DÉBUT du geste** (mesurer au montage viserait faux dès qu'on a
+    fait défiler), **🔴 déposer sur son propre jour n'écrit RIEN** (R3 — sinon chaque geste avorté
+    produirait une écriture et un toast mensonger), dépôt hors zone sans effet, et
+    **🔴 seules les séances `planned` sont saisissables** (R1) — ni les faites, ni celles de la
+    bannière « manquées ».
+  - **🔴 Le statut « manqué » est CALCULÉ, jamais stocké** : le stocker demanderait un travail de
+    fond quotidien et l'app serait fausse dès qu'elle reste fermée deux jours. Une séance faite dans
+    le passé n'est pas manquée ; une séance d'aujourd'hui non plus — le jour n'est pas fini.
+  - **🔴 Une seule séance active à la fois** : démarrer depuis le planning alors qu'une séance est
+    ouverte **reprend** l'existante. En créer une seconde produirait un enregistrement fantôme que
+    rien ne rouvrirait. Et le démarrage passe `plannedSessionId`, sans quoi la case resterait
+    « planifiée » pour toujours.
+  - **🔴 L'indicateur de coordination compte les séances `planned` et `done`, jamais les `skipped`** :
+    avertir d'une double charge que l'utilisateur a justement décidé de ne pas porter serait faux.
+  - **🔴 Des séances manquées suffisent à sortir de l'état vide** — « rien de prévu » masquerait
+    précisément ce qu'il reste à faire.
+  - Plus : les trois raccourcis de replanification qui partent d'**aujourd'hui** et non de la date de
+    la séance, « démarrer » réservé à la muscu planifiée (une course se démarre depuis son écran,
+    GPS compris), les flèches de semaine qui redemandent le plan de la bonne semaine, et le toast
+    qui s'efface seul.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 44/41/36 → **46/43/38** (réel 47,9/44,7/39,8).
+
+#### Technique / Notes
+
+- **4 498 tests verts** (2 172 shared + 1 881 mobile + 445 admin). Couverture mobile **48,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Les verrous des programmes de course, et une affirmation fausse corrigée (53 tests)
 
 ⚠️ **Correction d'une affirmation de l'entrée précédente.** « Les neuf verrous du 08/08 tous
