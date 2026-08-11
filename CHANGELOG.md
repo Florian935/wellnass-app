@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Planning repas et éditeur de programme (62 tests) — un 14ᵉ verrou trouvé
+
+**62 tests** sur `meal-plan/index.tsx` (117 instructions) et `running-programs/edit.tsx` (111).
+
+#### Corrigé
+
+- **🔴 Un QUATORZIÈME site du défaut de double appui**, dans `running-programs/edit.tsx` :
+  `onAddSession` gardait sur `if (addingSession) return` — un état React, qui ne garde rien. Deux
+  appuis dans le même cycle de rendu le lisent tous deux à `false` : **deux séances créées portant
+  la MÊME lettre**, l'index étant calculé avant l'écriture. Converti à `useActionLock`, et le test
+  a été **vu rouge** avant le correctif puis vert après.
+
+  Le `grep "= useActionLock()"` posé le matin même ne pouvait pas le voir : il liste les sites
+  **déjà corrigés**. **Le filet, c'est le test de l'écran, pas la recherche textuelle** — celui-ci
+  a été trouvé en écrivant la couverture d'un écran à 0 %, exactement comme le dixième en août.
+  Tant qu'il reste des écrans non couverts, il faut supposer qu'il en reste.
+
+#### Ajouté
+
+- **`meal-plan-screen.test.tsx` — 30 tests.** Écran d'**intention** : il n'écrit jamais dans le
+  journal (R1), seul « J'ai mangé ça » crée des `food_entries`, et c'est réversible (R2/R3).
+  - **🔴 L'objectif calorique est calculé JOUR PAR JOUR.** Une semaine peut mêler des jours en
+    période « vie réelle » (objectif au maintien, R4) et des jours normaux : une cible unique
+    alignerait toute la semaine sur le premier cas rencontré.
+  - **🔴 Le bonus d'entraînement est un FORFAIT, jamais le mode `auto`** — ce mode dérive le bonus
+    d'une course **déjà enregistrée**, une notion qui n'existe pas pour un jour futur, qui est tout
+    l'objet d'un planning. Un bonus négatif est ramené à zéro : sinon la cible d'un jour de séance
+    passerait **sous** celle d'un jour de repos.
+  - **🔴 Sans pilier d'entraînement actif, aucun bonus** (décision H).
+  - **🔴 Une recette est ajoutée au prorata des portions** (R8) ; un repas type n'a pas cette notion
+    (D1) et son stepper est absent. **Changer d'onglet réinitialise la sélection** — sinon on
+    planifierait un modèle avec l'identifiant d'une recette.
+  - **🔴 Dupliquer n'est proposé que si la semaine source a du contenu** : sans cette garde, l'appel
+    « réussissait » en ne copiant rien, sans le moindre retour (arbitrage Florian du 04/08/2026).
+    Et c'est la semaine précédant celle **affichée** qui est consultée, pas celle d'aujourd'hui.
+- **`running-program-edit-screen.test.tsx` — 32 tests.** Un fichier, deux écrans :
+  - **🔴 La sentinelle « none » n'est jamais écrite en base** : c'est une valeur d'interface, et
+    l'écrire créerait une valeur d'énumération que les filtres de la bibliothèque ne retrouveraient
+    jamais.
+  - **🔴 Une durée non entière, nulle ou négative n'écrit RIEN** (six cas testés) — écrire `NaN`
+    traverserait la validation côté client et casserait l'affichage du détail.
+  - **🔴 L'édition enregistre À LA FRAPPE**, pas seulement au `onBlur` : sur Android, taper
+    « Terminé » ne fait pas perdre le focus au champ, et la saisie serait perdue. **Un nom vidé
+    n'écrase pas l'existant** (un programme sans nom est introuvable dans la liste), mais un
+    **résumé** vidé est bien effacé — sans quoi on ne pourrait jamais le retirer.
+  - **🔴 La saisie locale prime sur la donnée rechargée** : la synchro peut renvoyer la valeur
+    d'avant pendant qu'on tape.
+  - Plus : la création qui **remplace** le formulaire dans l'historique (y revenir et réappuyer
+    créerait un doublon), et la lettre de séance calculée sur le rang réel.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 53/49/46 → **56/52/49** (réel 58,1/54,2/51,8).
+
+#### Technique / Notes
+
+- **4 717 tests verts** (2 172 shared + 2 100 mobile + 445 admin). Couverture mobile **54,8 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Sélecteur d'aliment et progression (71 tests)
 
 **71 tests** sur `food-picker.tsx` (117 instructions) et `progress/index.tsx` (111), tous deux à 0 %.

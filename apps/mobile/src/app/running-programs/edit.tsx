@@ -16,6 +16,7 @@ import {
   useProgramDetail,
 } from '@/data/repositories/program-repository';
 import { RunningSessionEditor } from '@/components/running/RunningSessionEditor';
+import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -185,6 +186,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
 
   const { detail, isLoading } = useProgramDetail(programId);
   const [addingSession, setAddingSession] = useState(false);
+  const lockAddSession = useActionLock();
 
   // Métadonnées éditables — textuelles
   const [name, setName] = useState<string | null>(null);
@@ -202,18 +204,23 @@ function RunningProgramComposer({ programId }: { programId: string }) {
   const currentLevel: LevelChoice =
     level ?? (detail?.level ?? NO_LEVEL);
 
-  const onAddSession = async () => {
-    if (addingSession) return;
-    setAddingSession(true);
-    try {
-      const index = detail?.sessions.length ?? 0;
-      await addSession(programId, {
-        name: t('running.program.sessionDefaultName', { letter: sessionLetter(index) }),
-      });
-    } finally {
-      setAddingSession(false);
-    }
-  };
+  // `addingSession` ne pilote que l'affichage : la garde contre le double appui est portée par
+  // `useActionLock`. L'ancien `if (addingSession) return` ne gardait rien — deux appuis rapides
+  // tombent dans le MÊME cycle de rendu et lisent tous deux `false`, ce qui créait deux séances
+  // portant la même lettre. Même défaut que les treize sites corrigés le 08/08/2026, trouvé ici
+  // le 11/08 en écrivant le test de l'écran.
+  const onAddSession = () =>
+    void lockAddSession(async () => {
+      setAddingSession(true);
+      try {
+        const index = detail?.sessions.length ?? 0;
+        await addSession(programId, {
+          name: t('running.program.sessionDefaultName', { letter: sessionLetter(index) }),
+        });
+      } finally {
+        setAddingSession(false);
+      }
+    });
 
   const commitName = () => {
     const trimmed = currentName.trim();
@@ -394,7 +401,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
           <Button
             label={t('running.program.addSession')}
             variant="ghost"
-            onPress={() => void onAddSession()}
+            onPress={onAddSession}
             disabled={addingSession}
           />
         </View>

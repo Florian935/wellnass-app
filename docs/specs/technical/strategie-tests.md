@@ -450,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 2 038 (mobile) + 445 (admin) = 4 655 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 100 (mobile) + 445 (admin) = 4 717 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **52,7 %** |
+| Couverture mobile | 15,0 % | **54,8 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
@@ -536,6 +536,13 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    La leçon vaut plus que le chiffre : **une affirmation de couverture qui n'est pas adossée à une
    commande reproductible est une estimation**. Compter de mémoire les fichiers touchés par un
    correctif de la semaine précédente donne un nombre plausible et faux.
+
+   ⚠️ **Et le compte a encore bougé : un QUATORZIÈME site a été trouvé le 11/08/2026**, dans
+   `running-programs/edit.tsx` — `onAddSession` gardait sur `if (addingSession) return`. Le `grep`
+   ci-dessus ne pouvait pas le voir : il cherche `useActionLock`, c'est-à-dire les sites **déjà
+   corrigés**. **Le bon filet, c'est le test de l'écran, pas la recherche textuelle** : celui-ci a
+   été trouvé en écrivant la couverture d'un écran à 0 %, exactement comme le dixième l'avait été
+   en août. Tant qu'il reste des écrans non couverts, il faut supposer qu'il en reste.
 
    ⚠️ **Vérifier qu'un test de non-régression échoue vraiment.** Les deux gardes de double appui
    ont été retirées à la main pour voir les tests passer au rouge. Un test écrit **après** le
