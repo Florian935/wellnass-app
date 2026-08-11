@@ -450,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 1 686 (mobile) + 445 (admin) = 4 303 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 784 (mobile) + 445 (admin) = 4 401 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **43,3 %** |
+| Couverture mobile | 15,0 % | **45,1 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
@@ -492,6 +492,20 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
    risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
    + Testing Library.
+
+   **Plus aucun composant de `src/components` n'est à 0 %** (11/08/2026). Les cinq derniers
+   — `NutritionSummaryCard`, `RealLifeCard`, `ActivationPathCard`, `CycleTrackingSection`,
+   `RouteMap` — ont livré **deux rejets de promesse non capturés** : `void p.finally(…)` **relaie**
+   le rejet, il ne le capture pas. À retenir pour tout `void`-appel : `.catch` **avant** `.finally`,
+   sans quoi le premier échec réseau produit une rejection non capturée que RN remonte en
+   avertissement global. Le test ne l'a pas déduit — il est **tombé dessus**, la promesse rejetée
+   faisant échouer le test entier.
+
+   `RouteMap` portait en en-tête « aucun test unitaire (module natif) ». C'était vrai du **rendu**,
+   jamais de ce que le fichier décide : état affiché, GeoJSON produit, cadrage de la caméra. Le
+   module natif passe en **sonde** (props sérialisées dans `accessibilityValue`), et le fichier est
+   couvert. **Un « module natif » n'est presque jamais une raison de ne pas tester** — c'est une
+   raison de ne pas tester *son rendu*.
 
    **Les neuf verrous de double appui corrigés le 08/08/2026 sont désormais TOUS couverts**
    (11/08/2026) : `programs/[id]` (23 tests) et `templates/[id]` (14 tests) portaient à eux deux six

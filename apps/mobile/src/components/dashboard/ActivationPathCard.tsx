@@ -56,7 +56,12 @@ export function ActivationPathCard({ size = 'wide' }: { size?: WidgetSize }) {
   const onPressCta = () => {
     if (route) router.push(route);
   };
-  const onDismiss = () => void dismissActivationPath();
+  // `catch` obligatoire, pas décoratif : `void` sur une promesse rejetée laisse une rejection non
+  // capturée, que React Native remonte en avertissement global — pour une écriture locale qui
+  // repartira d'elle-même à la prochaine tentative. Rien à dire à l'utilisateur : la fermeture est
+  // idempotente, et une alerte sur « passer le parcours » serait plus intrusive que l'échec.
+  const onDismiss = () =>
+    void dismissActivationPath().catch((err) => console.warn('[activation-path] fermeture :', err));
 
   const a11yLabel = `${progress}. ${title}. ${description}${completed ? ` ${t('activationPath.doneBadge')}` : ''}`;
 

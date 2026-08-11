@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Cinq composants à 0 %, dont deux rejets de promesse non capturés (98 tests)
+
+**98 tests** sur les cinq derniers composants à **0 %**. Deux défauts de production corrigés au
+passage — tous deux invisibles jusqu'à ce qu'un test échoue sur eux.
+
+#### Corrigé
+
+- **`RealLifeCard` — rejet de promesse non capturé.** `void extend(...).finally(...)` : `finally`
+  **relaie** le rejet, il ne le capture pas. Un échec d'écriture (hors ligne, RLS) laissait donc une
+  rejection non capturée que React Native remonte en avertissement global. `.catch` ajouté **avant**
+  `.finally` sur les deux actions (prolonger, arrêter) — l'échec est tracé, la carte reprend la main.
+- **`ActivationPathCard` — même défaut** sur `void dismissActivationPath()`. Capturé et tracé : la
+  fermeture est idempotente et repartira, rien à dire à l'utilisateur.
+
+#### Ajouté
+
+- **`NutritionSummaryCard.test.tsx` — 25 tests.** Le widget ne calcule presque rien, mais **décide
+  de ce qu'on affiche quand la donnée manque** :
+  - **🔴 Pendant le chargement, il ne rend RIEN** — un « 0 » affiché une fraction de seconde à
+    chaque ouverture de l'accueil se lit comme « tu n'as rien mangé aujourd'hui ».
+  - **🔴 Le restant ne descend jamais sous zéro** : un dépassement affiche 0, pas « −310 ». Un
+    compteur négatif sur l'accueil est un reproche permanent.
+  - **🔴 Sans objectif calculable, ni anneau proportionnel ni barre** — elles mesureraient une
+    avance vers rien. Bascule sur le consommé.
+  - **🔴 Les macros manuelles priment sur les calculées** (US MN-04), y compris en manuel
+    **partiel** ; et **le bonus jour de séance va aux glucides**, sinon l'objectif calorique monte
+    de 300 sans qu'aucune ligne ne dise comment les remplir.
+- **`CycleTrackingSection.test.tsx` — 16 tests.** Un des rares endroits où une erreur coûte des
+  **données de santé** (catégorie spéciale RGPD, l'un des six types déclarés à Play) :
+  - **🔴 Désactiver n'efface PAS** (R17) — ni sur « garder », ni sur une boîte balayée sans choix.
+  - **🔴 Le réglage est coupé AVANT la question** (ordre vérifié par `invocationCallOrder`) :
+    l'inverse laisserait le widget affiché derrière la boîte de dialogue.
+  - **🔴 La permission système d'abord, le réglage ensuite** (R20) — un interrupteur allumé après
+    un refus ferait croire les données partagées. Et l'activation fait un **aller-retour** complet.
+- **`RouteMap.test.tsx` — 11 tests.** L'en-tête disait « aucun test unitaire (module natif) » :
+  vrai du **rendu**, jamais de ce que le fichier décide. MapLibre passe en sonde.
+  - **🔴 Un seul point ne produit AUCUNE LineString** — GeoJSON exige ≥ 2 coordonnées, MapLibre
+    refuse l'objet et la carte reste blanche. Cas réel : course arrêtée aussitôt démarrée.
+  - **🔴 Les bornes englobent tout le tracé**, pas premier et dernier point : une boucle donnerait
+    une boîte de taille nulle et un zoom infini.
+  - **🔴 L'ordre est `[lng, lat]`** — inversé, le tracé part au large de la Somalie sans erreur.
+- **`ActivationPathCard.test.tsx` — 24 tests** : les quatorze cas de la table de routage (une ligne
+  fausse envoie sur l'onglet d'un pilier non activé), les jours informationnels **sans bouton** — et
+  dans la forme petite, **carte non tappable** : une carte qui répond au toucher sans rien faire est
+  pire qu'une carte inerte.
+- **`RealLifeCard.test.tsx` — 22 tests** : les deux états dans un seul identifiant, le **ton R9**
+  vérifié sur l'arbre rendu (aucun « seulement / manqué / raté », aucun écart négatif), et
+  **prolonger repart de la fin courante** — recalculer depuis aujourd'hui ferait perdre les jours
+  restants à chaque appui.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 39/36/32 → **42/39/34** (réel 43,3/40,5/35,5).
+- En-tête de `RouteMap.tsx` corrigé : il annonçait une absence de tests désormais fausse.
+
+#### Technique / Notes
+
+- **4 401 tests verts** (2 172 shared + 1 784 mobile + 445 admin). Couverture mobile **45,1 %**
+  (départ 15,0 %). **Plus aucun composant à 0 %.** Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Les neuf verrous du 08/08 sont désormais tous couverts (37 tests)
 
 **37 tests** sur `programs/[id]` et `templates/[id]`, deux écrans à **0 %** qui portaient **six des

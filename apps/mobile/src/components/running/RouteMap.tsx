@@ -11,7 +11,9 @@
  * (qui requiert ≥ 2 coordonnées) — on affiche juste le marqueur, centré sur
  * le point unique, sans la ligne.
  *
- * Aucun test unitaire (module natif) ; la recette se fait sur device.
+ * Le **rendu** de la carte ne se teste que sur device (module natif). Ce que ce fichier décide —
+ * l'état affiché, le GeoJSON produit, le cadrage de la caméra — l'est en revanche sous Jest, avec
+ * MapLibre en sonde : voir [`__tests__/RouteMap.test.tsx`](./__tests__/RouteMap.test.tsx).
  */
 
 import { useMemo } from 'react';

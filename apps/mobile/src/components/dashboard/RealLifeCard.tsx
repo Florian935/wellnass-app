@@ -67,12 +67,20 @@ export function RealLifeCard({ size = 'wide' }: { size?: WidgetSize }) {
     next.setDate(next.getDate() + EXTEND_BY_DAYS);
     const p = (n: number) => String(n).padStart(2, '0');
     const key = `${next.getFullYear()}-${p(next.getMonth() + 1)}-${p(next.getDate())}`;
-    void extendRealLifePeriod(activePeriod.id, key).finally(() => setBusy(false));
+    // `.catch` AVANT `.finally` : `finally` relaie le rejet, il ne le capture pas. Sans lui, un
+    // échec d'écriture (hors ligne, RLS) laisse une rejection non capturée que React Native
+    // remonte en avertissement global. `finally` rend la main dans tous les cas — rester bloqué
+    // en « occupé » après un échec laisserait la carte inerte jusqu'au remontage de l'accueil.
+    void extendRealLifePeriod(activePeriod.id, key)
+      .catch((err) => console.warn('[real-life] prolongation :', err))
+      .finally(() => setBusy(false));
   };
 
   const onStop = () => {
     setBusy(true);
-    void stopRealLifePeriod(activePeriod.id).finally(() => setBusy(false));
+    void stopRealLifePeriod(activePeriod.id)
+      .catch((err) => console.warn('[real-life] arrêt :', err))
+      .finally(() => setBusy(false));
   };
 
   const targetLines = [
