@@ -96,7 +96,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1158 · `main` a **1155** commits de retard sur `dev` |
+| Commits | 1159 · `main` a **1156** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `10b257a` test(nutrition,settings): les deux écrans suivants, et la barre des 50 % (86 tests)
 - `2e8e34f` test(planning): l'écran hebdomadaire, et une sixième famille de faux vert (44 tests)
 - `195016a` test(running-programs): les deux écrans à 0 %, et un compte de verrous corrigé (53 tests)
 - `181d463` test(composants): les cinq derniers composants à 0 % (98 tests, 2 défauts corrigés)
 - `03f48e6` test(programs,templates): les neuf verrous du 08/08 tous couverts (37 tests)
-- `257f8a7` test(widgets): widgets de course et primitives graphiques (68 tests)
 
 ---
 

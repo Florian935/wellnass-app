@@ -10,6 +10,58 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Sélecteur d'aliment et progression (71 tests)
+
+**71 tests** sur `food-picker.tsx` (117 instructions) et `progress/index.tsx` (111), tous deux à 0 %.
+
+#### Ajouté
+
+- **`food-picker-screen.test.tsx` — 39 tests.** L'écran **porte un défaut déjà constaté en recette
+  device** (01/08/2026) : ouvert en lien direct `wellness://food-picker` sans paramètre `date`, il
+  écrivait des entrées rattachées à **aucune journée** — sans erreur, comptées par le bandeau
+  « N aliments ajoutés », et invisibles dans tous les journaux. Le repli sur *aujourd'hui* est le
+  correctif ; ce fichier est le test qui l'empêche de repartir, et il couvre aussi le repli de
+  `meal` (une `mealType` vide produirait une entrée **orpheline dès sa création**) ainsi que les
+  deux raccourcis du pied d'écran, qui rejouaient le même défaut par un autre chemin.
+  - **🔴 La déduplication OpenFoodFacts par code-barres** : sans elle, chaque import recrée une ligne
+    `foods` et les « récents » de l'utilisateur se remplissent de doublons du même produit. Testé
+    aussi le cas **sans code-barres**, où chercher par `null` remonterait un aliment sans rapport.
+  - **🔴 Modifier la recherche efface les résultats distants** — sinon les résultats de « yaourt »
+    resteraient affichés sous une recherche « pomme ».
+  - **🔴 Seuls les aliments de l'utilisateur sont modifiables**, et supprimer demande une **seconde**
+    confirmation : le menu s'ouvre sur un appui long, geste involontaire courant.
+  - **🔴 Le mode « composition de recette » est un autre écran** : l'ingrédient va dans la recette
+    (pas dans le journal du jour), l'écran se ferme, et ni ajout rapide, ni scan, ni onglet
+    « recettes » — imbriquer une recette dans une recette demanderait une composition récursive que
+    le modèle ne porte pas.
+  - Plus : le snapshot mis à l'échelle de la quantité, le compteur multi-ajout (4.16), les recettes
+    affichées **par part** (2 000 kcal pour un curry de quatre ferait renoncer à le journaliser).
+- **`progress-screen.test.tsx` — 32 tests.** Sept sections, chacune avec son chargement, son état
+  vide et sa règle de silence :
+  - **🔴 Le chargement ne passe JAMAIS par l'état vide** — vérifié section par section. C'est le
+    comportement par défaut d'un `length === 0` posé avant le test de `isLoading`, et il fait
+    douter de tout l'écran.
+  - **🔴 Aucun graphique vide n'est rendu** : un histogramme sans barre ressemble à un écran cassé,
+    pas à « pas encore de données ».
+  - **🔴 Le deep-link ne prime pas sur un choix explicite** (`pickedExercise ?? paramExercise`) :
+    une synchronisation par effet ramènerait l'utilisateur au paramètre d'URL à chaque rendu.
+  - **🔴 L'alerte d'équilibre exige `hasEnoughData`** — annoncer un groupe négligé sur six séries
+    serait un diagnostic sur du bruit.
+  - **🔴 Le volume de série n'est pas formaté en poids** : « 2400 kg » suggérerait une charge
+    soulevée, et la conversion en livres le rendrait faux.
+  - Plus : l'état vide de régularité seulement si les **trois** métriques manquent (R6), une
+    métrique absente marquée « indisponible » et non à zéro (« 0 % d'adhérence » est un jugement),
+    et le palier de tonnage annoncé seulement une fois atteint.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 50/47/43 → **53/49/46** (réel 55,0/51,0/48,5).
+
+#### Technique / Notes
+
+- **4 655 tests verts** (2 172 shared + 2 038 mobile + 445 admin). Couverture mobile **52,7 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Le journal alimentaire et les réglages (86 tests) — la barre des 50 % est franchie
 
 **86 tests** sur les deux écrans suivants dans l'ordre de taille : `(tabs)/nutrition.tsx` (188
