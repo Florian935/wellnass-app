@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Les verrous des programmes de course, et une affirmation fausse corrigée (53 tests)
+
+⚠️ **Correction d'une affirmation de l'entrée précédente.** « Les neuf verrous du 08/08 tous
+couverts » était **faux** : le compte oubliait `running-programs/index.tsx` et `[id].tsx`, tous deux
+à **0 %**, qui en portent quatre. Le compte réel est de **treize `useActionLock` sur huit fichiers**,
+et c'est cette entrée qui les couvre tous. La leçon est notée dans
+[strategie-tests.md](docs/specs/technical/strategie-tests.md) : une affirmation de couverture non
+adossée à une commande reproductible (`grep -rn "= useActionLock()"`) est une estimation, et compter
+de mémoire les fichiers touchés par un correctif donne un nombre plausible et faux.
+
+#### Ajouté
+
+- **`running-program-detail-screen.test.tsx` — 30 tests.**
+  - **🔴 Les deux verrous** (dupliquer, supprimer) sur deux appuis du **même cycle de rendu**.
+  - **🔴 Un programme éditorial n'est ni planifiable, ni modifiable, ni supprimable** — seulement
+    duplicable. L'activer ferait diverger local et cloud : il n'appartient à personne.
+  - **🔴 L'échec de suppression est ANNONCÉ, celui de duplication non** — asymétrie délibérée : une
+    copie ratée ne perd rien, une suppression qu'on croit faite si.
+  - **🔴 Sans profil coureur, l'allure cible devient une invite** au lieu de disparaître ; une
+    séance d'endurance sans allure ne dit pas à quelle vitesse courir.
+  - Plus : « introuvable » qui ne clignote pas au chargement, un nom de séance fait d'espaces qui
+    retombe sur sa lettre, la **distance prioritaire sur la durée** (afficher les deux serait une
+    consigne ambiguë), et une cible à `0` traitée comme absente et non comme une consigne.
+- **`running-programs-screen.test.tsx` — 23 tests.**
+  - **🔴 Les deux derniers verrous** (créer, dupliquer depuis la bibliothèque). Sans le premier,
+    deux appuis créaient **deux programmes dont un orphelin** — l'éditeur ne s'ouvrant que sur le
+    second.
+  - **🔴 Une carte éditoriale ne navigue PAS, elle duplique** : le même geste fait deux choses
+    différentes selon l'onglet, et c'est voulu.
+  - **🔴 La sentinelle « Tous » n'envoie AUCUNE clause** — un `goal: 'all'` transmis au repository
+    serait comparé à une valeur d'énumération inexistante et la bibliothèque reviendrait vide, sans
+    erreur. Les trois filtres se **combinent en ET**, chacun remplaçant la valeur de son seul groupe.
+  - **🔴 Le verrou de duplication est partagé entre les cartes**, pas par carte : `duplicating` ne
+    mémorise qu'un identifiant, deux copies simultanées n'auraient qu'un indicateur. Comportement
+    testé tel qu'il est, avec sa raison.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 42/39/34 → **44/41/36** (réel 45,3/42,6/37,3).
+
+#### Technique / Notes
+
+- **4 454 tests verts** (2 172 shared + 1 837 mobile + 445 admin). Couverture mobile **46,4 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Cinq composants à 0 %, dont deux rejets de promesse non capturés (98 tests)
 
 **98 tests** sur les cinq derniers composants à **0 %**. Deux défauts de production corrigés au

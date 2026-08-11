@@ -450,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 1 784 (mobile) + 445 (admin) = 4 401 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 1 837 (mobile) + 445 (admin) = 4 454 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **45,1 %** |
+| Couverture mobile | 15,0 % | **46,4 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
@@ -507,10 +507,19 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    couvert. **Un « module natif » n'est presque jamais une raison de ne pas tester** — c'est une
    raison de ne pas tester *son rendu*.
 
-   **Les neuf verrous de double appui corrigés le 08/08/2026 sont désormais TOUS couverts**
-   (11/08/2026) : `programs/[id]` (23 tests) et `templates/[id]` (14 tests) portaient à eux deux six
-   des neuf gardes sans qu'aucun test ne les protège. C'était la dette la plus directe du chantier —
-   corriger un défaut sans écrire le test qui l'empêche de revenir, c'est le laisser revenir.
+   **Les verrous de double appui corrigés le 08/08/2026 sont TOUS couverts** — pour de bon.
+   ⚠️ La note écrite plus tôt le 11/08 (« les neuf sont couverts », après `programs/[id]` et
+   `templates/[id]`) était **fausse** : elle comptait les fichiers `programs/` et oubliait
+   `running-programs/index.tsx` et `[id].tsx`, tous deux à 0 %, qui en portent quatre. Le compte
+   réel est de **treize `useActionLock` sur huit fichiers** — vérifiable en une commande :
+
+   ```bash
+   grep -rn "= useActionLock()" apps/mobile/src --include=*.tsx
+   ```
+
+   La leçon vaut plus que le chiffre : **une affirmation de couverture qui n'est pas adossée à une
+   commande reproductible est une estimation**. Compter de mémoire les fichiers touchés par un
+   correctif de la semaine précédente donne un nombre plausible et faux.
 
    ⚠️ **Vérifier qu'un test de non-régression échoue vraiment.** Les deux gardes de double appui
    ont été retirées à la main pour voir les tests passer au rouge. Un test écrit **après** le
