@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `chore/tests-ecrans-admin` — dernier écran à 0 %, et un rejet non capturé corrigé
+
+Commit précédent : `d14a66f`. **Volet back-office du lot 5 terminé.**
+Vérifié : typecheck **0**, lint **0**, **583 tests admin verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- `ProgramsScreen.test.tsx` — **31 tests** (444 lignes, dernier écran à 0 %). Couvert à **99,4 %**.
+- `AccessDenied.test.tsx` — **5 tests**. Écran à **100 %**.
+
+#### Corrigé
+
+- 🔴 **`AccessDenied.handleLogout` produisait un rejet de promesse non capturé.** `try/finally`
+  **sans `catch`** : le `finally` rendait bien la main, mais l'erreur remontait hors du
+  gestionnaire `onClick`. Un `catch` explicite est ajouté.
+
+#### Technique — Notes
+
+- 🔴 **Troisième occurrence du même motif**, après les deux `void p.finally(…)` du 11/08 — et
+  trouvée de la même façon : **pas déduite, rencontrée**. Le test échouait sur le rejet avant
+  d'échouer sur une assertion.
+  ⚠️ **Le symptôme mérite d'être retenu** : `Tests 5 passed` **et** code de sortie **1**. Qui lit
+  le résumé plutôt que le code de sortie ne voit rien. C'est exactement le piège que le CLAUDE.md
+  signale sur les pipes, sous une autre forme.
+- 🔴 **Contre-épreuves faites.** `ProgramsScreen` : inverser l'ordre décompte/confirmation et coder
+  le statut en dur fait rougir **3** tests — dont les deux qui portent la raison d'être d'ADMIN-01
+  (« compter **avant** de demander », vérifié par `invocationCallOrder`, pas seulement par la
+  présence des deux appels). Pour `AccessDenied`, la contre-épreuve était **antérieure au
+  correctif** : le rejet a d'abord été observé, puis supprimé.
+- **Ce que seul l'écran monté pouvait dire** : que la bannière de création ne se rejoue pas (l'état
+  d'historique est lu une fois au montage puis nettoyé — sans quoi un F5 réaffiche « programme
+  créé » sur une création vieille de dix minutes), que la recherche porte sur **les deux langues**,
+  et qu'une ligne archivée n'offre **que** la restauration.
+- **Le périmètre d'archives n'est pas un filtre local** : changer le scope **refait la requête**.
+  Un filtrage côté client afficherait une liste vide à tort, les archives n'étant pas en mémoire.
+- **Bilan du volet** : `apps/admin` **68,37 % → 93,26 %** de statements (`screens` 58,33 % →
+  **91,74 %**), **138 tests** ajoutés sur 6 écrans, **plus aucun écran du back-office à 0 %**.
+  Reste `ProgramEditScreen` à 73,1 %, volontairement — le compléter champ par champ duplique
+  `programs-detail.test.ts` pour un gain faible. Point de reprise §8 mis à jour.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
 ### 12/08/2026 — `chore/tests-ecrans-admin` — les deux formulaires d'écriture restants (49 tests)
 
 Commit précédent : `e96cf7c`. Suite du volet back-office du lot 5.

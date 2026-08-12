@@ -16,6 +16,14 @@ export function AccessDenied() {
     setSigningOut(true);
     try {
       await signOut();
+    } catch {
+      // 🔴 `try/finally` **sans `catch`** relaie le rejet : le `finally` rendait bien la main, mais
+      // l'erreur remontait hors du gestionnaire `onClick` en **rejet non capturé**. Troisième
+      // occurrence du motif relevé le 11/08/2026 sur `void p.finally(…)` — même cause, même
+      // remède : capturer avant de nettoyer.
+      //
+      // Il n'y a rien à annoncer ici : c'est le seul écran atteignable sans rôle, et la seule
+      // action possible reste de réessayer. On rend la main, sans message de plus.
     } finally {
       setSigningOut(false);
     }
