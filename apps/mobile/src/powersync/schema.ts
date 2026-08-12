@@ -425,6 +425,11 @@ const planned_sessions = new Table({
   program_id: column.text,
   session_id: column.text,
   scheduled_date: column.text, // AAAA-MM-JJ
+  // US HORAIRE-01 (roadmap 2.4) — heure locale facultative, `HH:MM:SS` ou null.
+  // 🔴 Déclarer la colonne ICI est l'étape critique de cette US : sans elle l'écriture échoue et
+  // l'erreur est avalée, l'heure ne se posant jamais sans le moindre message. C'est la panne
+  // exacte de CYCLE-01 (recette du 31/07/2026), et un test d'écriture-relecture la couvre.
+  scheduled_time: column.text,
   status: column.text,
   week_index: column.integer,
   completed_at: column.text,

@@ -3,7 +3,7 @@ id: HORAIRE-01
 titre: "Heure d'une séance planifiée — et le rappel « ça commence bientôt »"
 roadmap: [2.4]
 catalogue: []
-etape: validation
+etape: code
 branche: feature/horaire01-heure-seance
 maj: 12/08/2026
 ---
@@ -127,9 +127,17 @@ Supabase — invisible à l'usage.
 
 - [ ] Migration `scheduled_time` poussée via le CLI + cochée dans
       [MIGRATIONS.md](../../../../supabase/MIGRATIONS.md).
-- [ ] 🔴 **Sync rules PowerSync redéployées à la main** (voir le plan) — sinon la colonne ne descend
-      jamais sur les appareils, et l'heure disparaît à la première resynchro.
-- [ ] Schéma client `planned_sessions` complété.
+- [x] ✅ **Aucune sync rule à redéployer — le cadrage se trompait.** Vérifié le 12/08/2026 :
+      `planned_sessions` est lue en **`select *`** dans
+      [powersync-sync-rules.yaml:89](../../technical/powersync-sync-rules.yaml), donc une colonne
+      ajoutée descend **automatiquement**, comme pour `user_settings` (5 colonnes dans ce cas).
+      ⚠️ **C'est exactement l'erreur qu'avait faite le cadrage de COLLIS-01**, qui en avait aussi
+      fait son risque n° 1 avant d'être démenti. Leçon : vérifier le YAML **avant** d'écrire qu'une
+      étape manuelle est nécessaire — la réponse est dans le fichier, pas dans l'habitude.
+- [ ] 🔴 **Colonne déclarée dans le schéma PowerSync client** (`powersync/schema.ts`) **et couverte
+      par un test d'écriture-relecture** — c'est **le** vrai risque n° 1, et la checklist laissée par
+      la panne silencieuse de CYCLE-01 : sans la déclaration, l'écriture échoue, l'erreur est avalée,
+      et l'heure ne se pose jamais sans aucun message.
 - [ ] Saisie, modification et **retrait** de l'heure.
 - [ ] Rappel de convocation, régimes exclusifs (R5), et non-programmation dans le passé (R3).
 - [ ] Tests : brique pure du calcul de convocation (dont minuit et passé), SQL de lecture, scheduler.
@@ -156,8 +164,13 @@ Supabase — invisible à l'usage.
 - 🔴 **La précision n'est pas garantie (D5)**, et c'est un choix produit lié au **calendrier de
   publication**, pas à la technique. À rouvrir **après** le lancement si les retours le réclament :
   la permission exacte se demandera alors sans encombrer la review initiale.
-- ⚠️ **La sync rule est une étape manuelle**, hors CLI, **déjà oubliée une fois** sur ce projet
-  (CLAUDE.md). C'est le risque n° 1 de cette US : tout marche en local, et l'heure ne survit pas à
-  une resynchro.
+- ✅ ~~**La sync rule est une étape manuelle**, risque n° 1 de cette US~~ — **faux, corrigé le
+  12/08/2026** : `planned_sessions` est lue en `select *`, la colonne descend seule. Le réflexe
+  « migration ⇒ sync rule à la main » ne vaut que pour une **table neuve**, pas pour une colonne
+  ajoutée à une table déjà publiée et lue en `select *`. Vérifier le YAML coûte dix secondes ;
+  l'avoir supposé a produit un risque n° 1 imaginaire — et le même que celui de COLLIS-01.
+- 🔴 **Le vrai risque n° 1 : la colonne manquante dans le schéma PowerSync client.** Sans elle
+  l'écriture échoue et `void`-avale l'erreur : l'heure ne se pose pas, sans message. C'est la panne
+  de CYCLE-01, et la raison pour laquelle un **test d'écriture-relecture** est en DoD.
 - **Le rappel reste muscu** alors que la colonne sert aux deux piliers (§2). Écart volontaire, à
   dire dans le plan pour qu'il ne passe pas pour un oubli.

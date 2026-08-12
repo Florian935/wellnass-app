@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : socle (migration, calcul, lecture)
+
+Commit précédent : `67979bd`. **Validée par Florian le 12/08/2026** (« go pour HORAIRE-01 »).
+`etape: validation` → `code`. Étapes 1 à 3 du plan ; scheduler et UI suivent.
+Vérifié : typecheck **0**, lint **0**, **32 tests SQL + 22 tests purs verts**.
+
+#### Ajouté
+
+- Migration `20260812061859_planned_sessions_scheduled_time` — `scheduled_time time null`,
+  **poussée sur le cloud** et cochée au registre.
+- `packages/shared/src/session-reminder.ts` — `computeSessionCallTime` + `SESSION_LEAD_MINUTES`,
+  **22 tests** écrits **avant** la fonction.
+- `SELECT_PLANNED_STRENGTH_TIMES_TODAY` + `usePlannedStrengthTimesToday` +
+  `setPlannedSessionTime` (`planned-session-repository`).
+- `__tests__/planned-session-time-sql.test.ts` — **13 tests** sur du vrai SQLite.
+
+#### Technique — Notes
+
+- 🔴 **Le cadrage se trompait sur son propre risque n° 1, et c'est corrigé.** Il annonçait une sync
+  rule PowerSync « à coller à la main, déjà oubliée une fois ». **Faux** : `planned_sessions` est lue
+  en **`select *`** ([YAML:89](docs/specs/technical/powersync-sync-rules.yaml)), donc une colonne
+  ajoutée descend **automatiquement** — comme les 5 colonnes de `user_settings` dans le même cas. Le
+  réflexe « migration ⇒ sync rule à la main » ne vaut que pour une **table neuve**.
+  ⚠️ **Le cadrage de COLLIS-01 avait commis exactement la même erreur**, et en avait fait le même
+  risque n° 1 avant d'être démenti. Vérifier le YAML coûte dix secondes ; ne pas le faire produit un
+  risque imaginaire — et détourne l'attention du vrai.
+- 🔴 **Le vrai risque n° 1 est la colonne absente du schéma client**, et il est désormais **couvert
+  par un test**. Sans la déclaration dans `powersync/schema.ts`, l'écriture échoue, l'erreur est
+  avalée, et l'heure ne se pose jamais **sans aucun message** — panne exacte de CYCLE-01, reproduite
+  depuis par `sbd_lifts`, `pain_journal_enabled` et `session_conflicts_enabled`.
+  **Contre-épreuve faite** : retirer la colonne du schéma fait rougir **les 13 tests**. Le harness
+  construit ses tables depuis `AppSchema`, donc le filet est réel, pas déclaratif.
+- 🔴 **`computeSessionCallTime` renvoie `null` plutôt qu'un instant passé** (R3). Le piège n'est pas
+  d'oublier le calcul, c'est de rendre un instant dans le passé — que la couche notification
+  déclencherait **immédiatement**, annonçant « ça commence dans 30 min » alors que c'est commencé.
+  **Contre-épreuve faite** : retirer la garde fait rougir 4 tests.
+- **Minuit se traverse, il ne se tronque pas** : une séance à 00 h 15 convoque la **veille** à
+  23 h 45, changement de mois compris. Obtenu sans arithmétique de calendrier (soustraction sur
+  l'horodatage), mais testé explicitement parce qu'un futur « bornage à la journée » le casserait.
+- **Sept formes malformées testées** (vide, `25:00`, `18:75`, `1830`, texte, négatif, date invalide) :
+  la valeur vient de la base, donc d'un autre appareil ou d'une version antérieure. Une exception ici
+  ferait tomber le calcul des rappels **de repas et de pesée** avec elle.
+- **La requête reprend EXACTEMENT les filtres de `SELECT_HAS_PLANNED_STRENGTH_TODAY`** —
+  `status = 'planned'` strictement, `pillar = 'strength'`, non supprimée. Deux conventions de
+  « séance du jour à faire » dans le même fichier finiraient par diverger, et le rappel se calerait
+  sur une séance que l'autre requête ne voit pas. Un test vérifie qu'une **séance de course** ne
+  remonte pas : la colonne sert aux deux piliers, le rappel non.
+- ⚠️ **Le nom vient de `sessions.name` directement** : cette table n'a **pas** de table de
+  traduction, contrairement à `programs` et `exercises`. Premier jet écrit avec une jointure
+  `session_translations` inexistante — attrapé en relisant `SELECT_PLANNED_BETWEEN` juste au-dessus.
+- ⚠️ Warning CLI `pg-delta`/certificat au push, **déjà rencontré trois fois** (REPAS-01, VIE-01,
+  DOUL-01) : il porte sur la mise en cache du catalogue, pas sur l'application du SQL. Vérifié par
+  `db:types` (`scheduled_time: string | null` présent) et `db:push:dry` (« up to date »).
+
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 cadrée (spec + plan + maquette)
 
 Commit précédent : `a9d7596`. **Aucune ligne de code applicatif** — livrables d'amont uniquement,

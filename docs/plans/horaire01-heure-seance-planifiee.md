@@ -27,21 +27,31 @@ alter table public.planned_sessions
 Nullable, sans défaut — c'est la décision **D1** traduite en SQL. Pas d'index : la colonne ne filtre
 rien, elle est lue avec la ligne.
 
-**Séquence exacte** (CLAUDE.md, dev sans Docker) :
-1. `npm run db:new planned_sessions_scheduled_time`
+**Séquence exacte** (CLAUDE.md, dev sans Docker) — ✅ **faite le 12/08/2026** :
+1. `npm run db:new planned_sessions_scheduled_time` → `20260812061859_…`
 2. écrire le SQL
 3. `npm run db:push:dry` puis `npm run db:push`
 4. `npm run db:types`
 5. cocher dans [MIGRATIONS.md](../../supabase/MIGRATIONS.md)
-6. 🔴 **coller `powersync-sync-rules.yaml` dans le dashboard PowerSync et déployer**
+6. déclarer la colonne dans `powersync/schema.ts`
 
-> 🔴 **L'étape 6 est le risque n° 1 de cette US.** Elle est **hors CLI**, donc rien ne la rappelle, et
-> elle a **déjà été oubliée une fois** sur ce projet (une note d'exercice n'aurait pas survécu à une
-> resynchro). Symptôme si elle saute : tout fonctionne en développement, l'heure remonte bien vers
-> Supabase, **et disparaît des appareils à la première resynchro**. Aucun test ne peut l'attraper.
+> ✅ **Correction du plan initial : il n'y a AUCUNE sync rule à redéployer.** Le plan annonçait une
+> étape 6 « coller le YAML dans le dashboard » et en faisait le risque n° 1. **C'était faux** :
+> `planned_sessions` est lue en **`select *`**
+> ([powersync-sync-rules.yaml:89](../specs/technical/powersync-sync-rules.yaml)), donc une colonne
+> ajoutée descend **automatiquement**. Le réflexe « migration ⇒ sync rule à la main » ne vaut que
+> pour une **table neuve**. ⚠️ **Le cadrage de COLLIS-01 avait commis exactement la même erreur**, et
+> en avait fait le même risque n° 1 avant d'être démenti par la relecture.
+>
+> 🔴 **Le vrai risque n° 1 est l'étape 6 telle que réécrite** : la colonne doit être déclarée dans le
+> **schéma client**. Sans elle, l'écriture échoue, l'erreur est avalée, et l'heure ne se pose jamais
+> **sans aucun message** — panne exacte de CYCLE-01 (recette du 31/07/2026). D'où le test
+> d'écriture-relecture à l'étape 3.
 
-**Vérification** : `scheduled_time` présent dans `database.types.ts` régénéré, et la colonne listée
-dans la table `planned_sessions` du YAML.
+**Vérification faite** : `scheduled_time: string | null` présent dans `database.types.ts` régénéré
+**depuis le cloud**, et `db:push:dry` répond « Remote database is up to date ».
+⚠️ Le push a affiché le warning `pg-delta`/certificat déjà rencontré **trois fois** (REPAS-01,
+VIE-01, DOUL-01) : il porte sur la mise en cache du catalogue, **pas** sur l'application du SQL.
 
 ---
 
@@ -161,7 +171,8 @@ retirer la garde R3 à la main et **voir le test passer au rouge**. Sans ça, il
 
 | Risque | Parade |
 |---|---|
-| 🔴 Sync rules oubliées → l'heure ne survit pas à une resynchro | Étape 1 point 6, en DoD, et rappelée ici. Aucun test ne l'attrape. |
+| 🔴 **Colonne absente du schéma PowerSync client** → écriture qui échoue **sans message** (panne CYCLE-01) | Déclarée à l'étape 1 point 6, **et** test d'écriture-relecture à l'étape 3. |
+| ~~Sync rules oubliées~~ | ✅ **Sans objet** : `select *` sur `planned_sessions`, la colonne descend seule. Risque imaginaire du premier cadrage. |
 | Rappel dans le passé, ou immédiat | R3 testée **et contre-éprouvée** (étape 4). |
 | Régression du rappel actuel pour les séances sans heure | Test de non-régression explicite (étape 4), écrit **avant** de toucher au scheduler. |
 | Dépendance UI nouvelle pour le sélecteur | Vérifier l'existant d'abord ; repli sur une saisie contrôlée. |
