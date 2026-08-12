@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : le rappel bascule en convocation
+
+Commit précédent : `696a5c2`. Étape 4 du plan ; reste la saisie de l'heure (UI).
+Vérifié : typecheck **0**, lint **0**, **2 133 tests mobile verts**.
+
+#### Ajouté
+
+- Régime de **convocation** dans `useProgrammedRemindersScheduler` : quand la prochaine séance muscu
+  du jour a une heure, le rappel part à H−30 avec les libellés `notifications.sessionSoon.*`.
+- **9 tests** de scheduler (convocation, passé, non-régression, D6, réglages, chargement, nom absent).
+- 3 clés i18n × 2 langues (`sessionSoon.title/body/fallbackName`).
+
+#### Technique — Notes
+
+- 🔴 **L'exclusivité des deux régimes (R5) est garantie par le CODE, pas par une convention** : les
+  deux partagent le **même identifiant** `SESSION_REMINDER_ID`, et `scheduleDatedReminder` remplace
+  tout rappel en attente sous cet id. Basculer de régime annule donc l'autre sans qu'on ait à y
+  penser. Deux identifiants distincts auraient permis deux notifications pour la même séance.
+  **Contre-épreuve faite** : retirer le `continue` qui court-circuite l'échéance fait rougir 3 tests.
+- 🔴 **`find` et non `[0]`** pour choisir la séance : la liste est triée par heure croissante, mais la
+  première peut déjà être passée (séance de 12 h consultée à 15 h). On prend la première dont la
+  **convocation** est encore à venir — décision D6. Un test le fige avec deux séances, 12 h et 19 h,
+  vues à 15 h : c'est la seconde qui doit sortir.
+- ⚠️ **Les tests figent l'horloge au jour rendu par `useTodayKey`** (mocké à `2026-08-07`), pas au
+  jour réel. Sans ça, `computeSessionCallTime` comparerait une date planifiée du 7 août à un `now` du
+  12 : **tous** les cas retomberaient dans « convocation passée » et les tests passeraient au vert
+  pour la mauvaise raison. Le premier jet utilisait l'`atHour` du fichier, qui fige l'heure sur le
+  jour **courant** — piège discret, corrigé par une helper locale.
+- **Le régime de convocation reste soumis aux réglages** (R6) : préférence `sessionReminder`
+  désactivée ou séance déjà faite → on **annule**, on ne convoque pas. Deux tests, parce qu'une
+  nouvelle raison de notifier n'est pas une dérogation aux choix de l'utilisateur.
+- **La garde de chargement couvre la nouvelle source** : sans elle, on programmerait l'échéance
+  apprise puis, au tour suivant, la convocation — deux notifications posées coup sur coup pour la
+  même séance.
+- **Un nom de séance absent retombe sur un libellé générique** plutôt que d'afficher
+  « undefined dans 30 min ».
+- Les 16 tests de scheduler antérieurs passent **sans modification de leurs attentes** : le mock du
+  nouveau hook rend une liste vide par défaut, donc l'échéance apprise reste le régime.
+
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : socle (migration, calcul, lecture)
 
 Commit précédent : `67979bd`. **Validée par Florian le 12/08/2026** (« go pour HORAIRE-01 »).

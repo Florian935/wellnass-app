@@ -26,6 +26,9 @@ import {
   shouldScheduleStreakReminder,
   shouldScheduleWeeklyReview,
   WEEKLY_REVIEW_WEEKDAY,
+  // US HORAIRE-01 (roadmap 2.4) — convocation d'une séance à heure connue.
+  computeSessionCallTime,
+  SESSION_LEAD_MINUTES,
   type BeatenRecordSummary,
   type NotificationPrefs,
 } from '@wellness/shared';
@@ -55,7 +58,11 @@ import {
 } from './settings-repository';
 import { useStreakData } from './dashboard-repository';
 import { useWeeklyReview } from './weekly-review-repository';
-import { useHasPlannedStrengthSessionToday } from './planned-session-repository';
+import {
+  useHasPlannedStrengthSessionToday,
+  usePlannedStrengthTimesToday,
+  type PlannedSessionTime,
+} from './planned-session-repository';
 import {
   useMealDeadline,
   useMealLoggedToday,
@@ -295,6 +302,10 @@ export function useProgrammedRemindersScheduler(): void {
   const session = useSessionDeadline(prefs);
   const todayKey = useTodayKey();
   const plannedSession = useHasPlannedStrengthSessionToday(todayKey);
+  // US HORAIRE-01 (roadmap 2.4) — occurrences muscu du jour portant une heure, les plus tôt d'abord.
+  // Leur présence fait basculer le rappel d'un régime d'ÉCHÉANCE (« la journée avance ») à un régime
+  // de CONVOCATION (« ça commence dans 30 min »). Les deux sont exclusifs (règle R5).
+  const plannedTimes = usePlannedStrengthTimesToday(todayKey);
 
   /**
    * Jeton de génération, pour qu'un `apply()` périmé ne ressuscite pas un rappel.
@@ -319,7 +330,8 @@ export function useProgrammedRemindersScheduler(): void {
       mealDone.isLoading ||
       weighInDone.isLoading ||
       session.isLoading ||
-      plannedSession.isLoading
+      plannedSession.isLoading ||
+      plannedTimes.isLoading
     ) {
       return;
     }
@@ -338,6 +350,25 @@ export function useProgrammedRemindersScheduler(): void {
 
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    /**
+     * US HORAIRE-01 — convocation de la **prochaine** séance à heure connue, ou `null`.
+     *
+     * `find` et non `[0]` : la liste est triée par heure croissante, mais la première peut déjà être
+     * passée (séance de 12 h consultée à 15 h). On prend donc la première dont la **convocation** est
+     * encore à venir — c'est la décision D6 (« un seul rappel, pour la prochaine séance »), et R3
+     * (« rien ne se programme dans le passé ») est portée par `computeSessionCallTime` elle-même.
+     */
+    const convocation = plannedTimes.sessions
+      .map((s) => ({
+        session: s,
+        at: computeSessionCallTime({
+          scheduledDate: todayKey,
+          scheduledTime: s.scheduledTime,
+          now,
+        }),
+      }))
+      .find((c): c is { session: PlannedSessionTime; at: Date } => c.at !== null);
 
     const plan = [
       {
@@ -370,6 +401,33 @@ export function useProgrammedRemindersScheduler(): void {
     ] as const;
 
     for (const item of plan) {
+      /**
+       * 🔴 **Régime de CONVOCATION — il court-circuite l'échéance apprise, il ne s'y ajoute pas.**
+       *
+       * Le même identifiant (`SESSION_REMINDER_ID`) porte les deux régimes, et c'est ce qui garantit
+       * **mécaniquement** la règle R5 : `scheduleDatedReminder` remplace tout rappel en attente sous
+       * cet id, donc basculer de régime annule l'autre sans qu'on ait à y penser. Deux identifiants
+       * distincts auraient permis deux notifications pour la même séance.
+       *
+       * La préférence `sessionReminder` et le « rien à faire » restent respectés (R6) : une nouvelle
+       * raison de notifier n'est pas une dérogation aux réglages de l'utilisateur.
+       */
+      if (item.id === SESSION_REMINDER_ID && convocation !== undefined) {
+        if (item.enabled && !item.doneToday) {
+          await scheduleDatedReminder(item.id, convocation.at, {
+            title: t('notifications.sessionSoon.title'),
+            body: t('notifications.sessionSoon.body', {
+              name: convocation.session.name ?? t('notifications.sessionSoon.fallbackName'),
+              minutes: SESSION_LEAD_MINUTES,
+            }),
+          });
+        } else {
+          await cancelReminder(item.id);
+        }
+        if (gen !== generation.current) return;
+        continue;
+      }
+
       const decision = decideProgrammedReminder({
         enabled: item.enabled,
         doneToday: item.doneToday,
@@ -392,7 +450,7 @@ export function useProgrammedRemindersScheduler(): void {
       // rappel : `apply()` sera de toute façon rappelé avec les données fraîches.
       if (gen !== generation.current) return;
     }
-  }, [prefs, meal, weighIn, mealDone, weighInDone, session, plannedSession, t]);
+  }, [prefs, meal, weighIn, mealDone, weighInDone, session, plannedSession, plannedTimes, todayKey, t]);
 
   useEffect(() => {
     void apply();

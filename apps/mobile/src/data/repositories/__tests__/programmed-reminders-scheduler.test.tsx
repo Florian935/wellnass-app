@@ -33,7 +33,10 @@ import {
   WEIGH_IN_REMINDER_ID,
 } from '@/lib/notifications';
 import { useWeeklyReview } from '../weekly-review-repository';
-import { useHasPlannedStrengthSessionToday } from '../planned-session-repository';
+import {
+  useHasPlannedStrengthSessionToday,
+  usePlannedStrengthTimesToday,
+} from '../planned-session-repository';
 import {
   useMealLoggedToday,
   useWeighInToday,
@@ -64,6 +67,9 @@ jest.mock('../weekly-review-repository', () => ({
 
 jest.mock('../planned-session-repository', () => ({
   useHasPlannedStrengthSessionToday: jest.fn(() => ({ hasPlanned: true, isLoading: false })),
+  // US HORAIRE-01 — aucune séance à heure connue par défaut : le régime reste l'échéance apprise,
+  // donc tous les tests écrits avant cette US continuent de décrire le même comportement.
+  usePlannedStrengthTimesToday: jest.fn(() => ({ sessions: [], isLoading: false })),
 }));
 
 jest.mock('../reminder-habits-repository', () => ({
@@ -113,6 +119,7 @@ const scheduleDated = scheduleDatedReminder as jest.Mock;
 const cancelOne = cancelReminder as jest.Mock;
 const weeklyReview = useWeeklyReview as jest.Mock;
 const plannedSession = useHasPlannedStrengthSessionToday as jest.Mock;
+const plannedTimes = usePlannedStrengthTimesToday as jest.Mock;
 const mealLogged = useMealLoggedToday as jest.Mock;
 const weighInToday = useWeighInToday as jest.Mock;
 const settingsSource = useSettings as unknown as jest.Mock;
@@ -168,6 +175,7 @@ beforeEach(() => {
   setPrefs(prefs());
   weeklyReview.mockReturnValue({ review: { isEmpty: false }, isLoading: false });
   plannedSession.mockReturnValue({ hasPlanned: true, isLoading: false });
+  plannedTimes.mockReturnValue({ sessions: [], isLoading: false });
   mealLogged.mockReturnValue({ done: false, isLoading: false });
   weighInToday.mockReturnValue({ done: false, isLoading: false });
 
@@ -330,6 +338,150 @@ describe('useProgrammedRemindersScheduler', () => {
 // ---------------------------------------------------------------------------
 // Jeton de génération — la course qui ressuscite un rappel
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// US HORAIRE-01 — convocation vs échéance (roadmap 2.4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deux régimes, **exclusifs** (règle R5), et le partage du même identifiant de notification en est
+ * la garantie mécanique : `scheduleDatedReminder` remplace tout rappel en attente sous cet id.
+ *
+ * ⚠️ Ces tests figent l'horloge **au jour rendu par `useTodayKey`** (mocké à `2026-08-07`) et non au
+ * jour réel : `computeSessionCallTime` compare la date planifiée à `now`, donc un décalage entre les
+ * deux ferait retomber tous les cas dans « convocation passée » et les tests passeraient au vert
+ * pour la mauvaise raison.
+ */
+describe('HORAIRE-01 — convocation', () => {
+  const mount = () => renderHook(() => useProgrammedRemindersScheduler());
+
+  /** Fige l'horloge au jour de `useTodayKey`, à l'heure demandée. */
+  const atTodayKeyHour = (hour: number, minute = 0) => {
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'queueMicrotask'] });
+    jest.setSystemTime(new Date(2026, 7, 7, hour, minute, 0, 0));
+  };
+
+  /** Une occurrence muscu du jour, à l'heure donnée. */
+  const seance = (scheduledTime: string, name: string | null = 'Full body') => ({
+    id: 'ps-1',
+    scheduledTime,
+    name,
+  });
+
+  it('🔴 programme la convocation 30 min avant, et PAS l’échéance apprise', async () => {
+    atTodayKeyHour(14);
+    plannedTimes.mockReturnValue({ sessions: [seance('18:30')], isLoading: false });
+
+    await mount();
+
+    // Un seul appel pour ce rappel, à 18 h 00 — pas deux (R5), et pas à l'heure apprise (18 h).
+    const appels = scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID);
+    expect(appels).toHaveLength(1);
+    expect(appels[0]![1]).toEqual(new Date(2026, 7, 7, 18, 0, 0, 0));
+    expect(appels[0]![2]).toMatchObject({ title: 'notifications.sessionSoon.title' });
+  });
+
+  it('🔴 ne programme RIEN quand la convocation est déjà passée', async () => {
+    // Séance à 18 h 30, il est 18 h 15 : la convocation était à 18 h 00.
+    atTodayKeyHour(18, 15);
+    plannedTimes.mockReturnValue({ sessions: [seance('18:30')], isLoading: false });
+
+    await mount();
+
+    // Le régime de convocation ne s'applique plus, donc on retombe sur l'échéance apprise — mais
+    // **jamais** sur une convocation immédiate, qui annoncerait « dans 30 min » après le début.
+    const appels = scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID);
+    const convocations = appels.filter(
+      (c) => (c[2] as { title: string }).title === 'notifications.sessionSoon.title',
+    );
+    expect(convocations).toHaveLength(0);
+  });
+
+  it('🔴 retombe sur l’échéance apprise sans heure — non-régression de MUSC-F8', async () => {
+    atTodayKeyHour(12);
+    plannedTimes.mockReturnValue({ sessions: [], isLoading: false });
+
+    await mount();
+
+    const appels = scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID);
+    // Le libellé distingue les deux régimes mieux que l'heure : c'est lui qu'on assert.
+    expect(appels.every((c) => (c[2] as { title: string }).title === 'notifications.sessionReminder.title')).toBe(true);
+  });
+
+  it('🔴 choisit la PROCHAINE séance à venir, pas la première de la liste (D6)', async () => {
+    atTodayKeyHour(15);
+    plannedTimes.mockReturnValue({
+      // Triées par heure croissante, comme le fait le SQL. La première est déjà passée.
+      sessions: [seance('12:00', 'Gainage'), seance('19:00', 'Full body')],
+      isLoading: false,
+    });
+
+    await mount();
+
+    const appels = scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID);
+    expect(appels).toHaveLength(1);
+    expect(appels[0]![1]).toEqual(new Date(2026, 7, 7, 18, 30, 0, 0));
+  });
+
+  it('n’envoie qu’UNE notification même avec trois séances à venir', async () => {
+    atTodayKeyHour(6);
+    plannedTimes.mockReturnValue({
+      sessions: [seance('12:00'), seance('15:00'), seance('19:00')],
+      isLoading: false,
+    });
+
+    await mount();
+
+    expect(scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID)).toHaveLength(1);
+  });
+
+  it('🔴 annule au lieu de convoquer quand la séance est déjà faite', async () => {
+    atTodayKeyHour(14);
+    plannedTimes.mockReturnValue({ sessions: [seance('18:30')], isLoading: false });
+    // `hasPlanned: false` = « rien à faire » (logique inversée de MUSC-F8, D16).
+    plannedSession.mockReturnValue({ hasPlanned: false, isLoading: false });
+
+    await mount();
+
+    expect(scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID)).toHaveLength(0);
+    expect(cancelledIds()).toContain(SESSION_REMINDER_ID);
+  });
+
+  it('🔴 respecte la désactivation du rappel dans les réglages (R6)', async () => {
+    atTodayKeyHour(14);
+    plannedTimes.mockReturnValue({ sessions: [seance('18:30')], isLoading: false });
+    setPrefs(prefs({ sessionReminder: false }));
+
+    await mount();
+
+    // Une nouvelle raison de notifier n'est pas une dérogation aux réglages de l'utilisateur.
+    expect(scheduleDated.mock.calls.filter((c) => c[0] === SESSION_REMINDER_ID)).toHaveLength(0);
+    expect(cancelledIds()).toContain(SESSION_REMINDER_ID);
+  });
+
+  it('ne décide RIEN tant que les heures ne sont pas résolues', async () => {
+    atTodayKeyHour(14);
+    plannedTimes.mockReturnValue({ sessions: [], isLoading: true });
+
+    await mount();
+
+    // Sans cette garde, on programmerait l'échéance apprise puis, au tour suivant, la convocation :
+    // deux notifications posées coup sur coup pour la même séance.
+    expect(scheduleDated).not.toHaveBeenCalled();
+    expect(cancelOne).not.toHaveBeenCalled();
+  });
+
+  it('retombe sur un nom générique quand la séance n’en a pas', async () => {
+    atTodayKeyHour(14);
+    plannedTimes.mockReturnValue({ sessions: [seance('18:30', null)], isLoading: false });
+
+    await mount();
+
+    const appel = scheduleDated.mock.calls.find((c) => c[0] === SESSION_REMINDER_ID);
+    // Le corps ne doit pas afficher « undefined dans 30 min ».
+    expect(appel?.[2]).toMatchObject({ body: 'notifications.sessionSoon.body' });
+  });
+});
 
 describe('jeton de génération', () => {
   it('🔴 une passe PÉRIMÉE n’écrit rien après une passe fraîche', async () => {

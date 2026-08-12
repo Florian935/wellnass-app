@@ -97,7 +97,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/horaire01-heure-seance` (modifications non commitées) |
-| Commits | 1166 · `main` a **1163** commits de retard sur `dev` |
+| Commits | 1167 · `main` a **1164** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `696a5c2` feat(horaire01): socle de lheure de seance - migration, calcul, lecture
 - `67979bd` docs(horaire01): cadrage de lheure de seance planifiee (spec + plan + maquette)
 - `a9d7596` feat(nutrf2): le vivier de suggestion voit enfin la base (4.37 partiel vers livre)
 - `944b3e5` test(admin): dernier ecran a 0 %, et un rejet non capture corrige (36 tests)
 - `d14a66f` test(admin): les deux formulaires d ecriture restants (49 tests)
-- `e96cf7c` test(admin): la porte d entree et le plus gros formulaire du back-office (53 tests)
 
 ---
 

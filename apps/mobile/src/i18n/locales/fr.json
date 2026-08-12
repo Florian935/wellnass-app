@@ -2084,6 +2084,11 @@
       "title": "Ta séance du jour t'attend",
       "body": "Elle est encore au planning — 40 minutes et c'est fait."
     },
+    "sessionSoon": {
+      "title": "Ta séance commence bientôt",
+      "body": "{{name}} dans {{minutes}} min",
+      "fallbackName": "Ta séance"
+    },
     "record": {
       "titleOne": "🏆 Nouveau record !",
       "titleMany": "🏆 Records battus sur {{count}} exercices !",
