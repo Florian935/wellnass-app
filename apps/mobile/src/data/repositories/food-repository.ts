@@ -6,7 +6,13 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { FoodCategory, FoodPortion, FoodSource, Micronutrients } from '@wellness/shared';
+import type {
+  FoodCategory,
+  FoodPortion,
+  FoodSource,
+  Micronutrients,
+  SuggestibleMacro,
+} from '@wellness/shared';
 import { matchesSearch, parseJsonColumn, parseMicronutrients } from '@wellness/shared';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -159,6 +165,87 @@ export function useRecentFoods(limit = 20): { foods: FoodListItem[]; isLoading: 
   `;
   const { data, isLoading } = useQuery<FoodListDbRow>(sql, [lang, limit]);
   return { foods: data.map(rowToItem), isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// US NUTR-F2 — vivier de repli : les aliments les plus DENSES de la base
+// ---------------------------------------------------------------------------
+
+/**
+ * Colonne portant chaque macro suggérable. **Allowlist stricte**, et c'est le point important :
+ * le nom d'une colonne ne peut pas être passé en paramètre SQL, il est donc interpolé. Le seul
+ * moyen sûr est que la valeur interpolée ne puisse **jamais** venir d'ailleurs que d'ici.
+ */
+const MACRO_COLUMN: Record<SuggestibleMacro, string> = {
+  protein: 'protein_per_100g',
+  carbs: 'carbs_per_100g',
+  fat: 'fat_per_100g',
+};
+
+/** Nombre d'aliments ramenés **par macro**. Trois macros → au plus 3 × ce nombre, dédupliqués. */
+export const DENSE_FOODS_PER_MACRO = 15;
+
+/**
+ * Requête du vivier de repli : les aliments les plus **denses** pour un macro donné.
+ *
+ * ⚠️ **Densité rapportée aux calories** (`macro / kcal`), et non aux 100 g — même règle que la
+ * brique de score (décision D2). Trier sur les g/100 g désignerait les aliments les plus
+ * caloriques ; on cherche celui qui comble le macro **sans manger tout le budget**.
+ *
+ * `kcal_per_100g > 0` protège la division, et `> 0` sur le macro écarte les aliments qui n'en
+ * apportent pas — les scorer n'aurait aucun sens et ils occuperaient la limite.
+ */
+export const selectDenseFoods = (macro: SuggestibleMacro): string => `
+  ${SELECT_FOODS}
+    AND f.${MACRO_COLUMN[macro]} IS NOT NULL
+    AND f.${MACRO_COLUMN[macro]} > 0
+    AND f.kcal_per_100g > 0
+  ORDER BY (f.${MACRO_COLUMN[macro]} * 1.0 / f.kcal_per_100g) DESC
+  LIMIT ?
+`;
+
+/**
+ * Vivier de repli pour la suggestion d'aliments (US NUTR-F2, décision D4 — volet différé).
+ *
+ * ── Pourquoi ce hook existe ─────────────────────────────────────────────────────────────────────
+ * La spec prévoyait « les récents **puis la base** ». L'implémentation du 29/07/2026 s'est arrêtée
+ * aux **récents**, pour une raison valable : scorer la base côté client aurait chargé tout CIQUAL
+ * en mémoire à chaque rendu de l'onglet. Le repli était conditionné à un constat de recette
+ * (critère 8bis) — mais il y a plus simple et plus décisif : **au lancement, aucun compte n'a
+ * d'aliment récent**. Le vivier est vide pour 100 % des nouveaux utilisateurs, et la carte ne peut
+ * alors rien proposer précisément au moment où le conseil aurait le plus de valeur.
+ *
+ * ── Les trois macros, pas seulement celui qui manque ────────────────────────────────────────────
+ * Le macro visé est choisi **dans la carte**, et l'utilisateur peut en **changer** (`override`).
+ * Pré-filtrer sur le seul macro prioritaire viderait donc la liste dès qu'il bascule. On ramène les
+ * plus denses de chaque macro, une requête par macro : trois requêtes bornées valent mieux qu'un
+ * `ORDER BY` sur toute la table, et le nombre de hooks reste **fixe**.
+ *
+ * Les doublons sont écartés — un aliment peut être dense en plusieurs macros.
+ */
+export function useDenseFoodCandidates(limitPerMacro = DENSE_FOODS_PER_MACRO): {
+  foods: FoodListItem[];
+  isLoading: boolean;
+} {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+
+  const protein = useQuery<FoodListDbRow>(selectDenseFoods('protein'), [lang, limitPerMacro]);
+  const carbs = useQuery<FoodListDbRow>(selectDenseFoods('carbs'), [lang, limitPerMacro]);
+  const fat = useQuery<FoodListDbRow>(selectDenseFoods('fat'), [lang, limitPerMacro]);
+
+  const foods = useMemo(() => {
+    const vus = new Set<string>();
+    const out: FoodListItem[] = [];
+    for (const row of [...protein.data, ...carbs.data, ...fat.data]) {
+      if (vus.has(row.id)) continue;
+      vus.add(row.id);
+      out.push(rowToItem(row));
+    }
+    return out;
+  }, [protein.data, carbs.data, fat.data]);
+
+  return { foods, isLoading: protein.isLoading || carbs.isLoading || fat.isLoading };
 }
 
 // ---------------------------------------------------------------------------

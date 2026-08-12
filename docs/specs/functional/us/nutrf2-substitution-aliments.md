@@ -5,7 +5,7 @@ roadmap: [4.37]
 catalogue: []
 etape: recette
 branche: feature/nutrf2-substitution-aliments
-maj: 01/08/2026
+maj: 12/08/2026
 reste: "Recette device du 01/08/2026 : le critère 2 (« quantités réalistes ») échouait — la suggestion comblait 100 % de l'écart, d'où « Chipolatas 350 g · 952 kcal ». Contrat revu (portion de référence + plafond calorique + seuil d'utilité, la carte annonce son apport) et 50 portions manquantes renseignées en base. Reste : rejouer la recette complète, et trancher les 3 valeurs de calibrage à l'usage. Les aliments OpenFoodFacts scannés restent au repli 200 g, faute de portion déclarée."
 ---
 
@@ -43,7 +43,7 @@ fonctionner **hors ligne**, deux choses qu'un appel à un modèle ne garantit pa
 | **D1** | Quel macro suggérer ? | Le macro dont l'**écart relatif** à sa cible est le plus grand, et l'utilisateur peut basculer sur un autre | L'écart **absolu** favoriserait toujours les glucides (cible la plus élevée en grammes). Le relatif désigne le macro réellement en retard |
 | **D2** | Comment scorer un aliment ? | **Densité du macro visé rapportée aux calories** : g de macro pour 100 kcal. Puis, à densité proche, on préfère l'aliment **déjà consommé récemment** | On cherche à combler un macro **sans exploser le budget calorique** — c'est toute la difficulté. Trier sur les g/100 g désignerait des aliments très caloriques ; trier sur g/100 kcal désigne l'aliment **efficace** |
 | **D3** | Quelle quantité proposer ? | Celle qui comble l'écart, **arrondie à 5 g** et **bornée à 10–400 g**. Hors de ces bornes, l'aliment est **écarté** | Le garde-fou du backlog. « 12 g de riz » ou « 900 g de brocoli » sont des réponses justes en arithmétique et absurdes en cuisine — mieux vaut proposer autre chose |
-| **D4** | Quel vivier ? | **Les aliments récents** (40). ⚠️ Le repli sur la base est **différé** — voir §2 | On mange ce qu'on a chez soi : suggérer un aliment jamais consommé est un conseil théorique, et les récents sont donc le vivier **le plus utile**, pas seulement le plus économique |
+| **D4** | Quel vivier ? | **Les aliments récents** (40), **puis les plus denses de la base** (15 par macro, pré-filtrés en SQL — livré le 12/08/2026, voir §2) | On mange ce qu'on a chez soi : suggérer un aliment jamais consommé est un conseil théorique, et les récents sont donc le vivier **le plus utile**, pas seulement le plus économique |
 | **D5** | Où ça vit ? | Une **carte conditionnelle** en bas du journal du jour, jamais un écran de plus | Le conseil doit apparaître **là où le manque se voit**. Un écran séparé ne serait jamais ouvert |
 | **D6** | Quand s'affiche-t-elle ? | Seulement si : un objectif existe · l'écart du macro ≥ **10 %** de sa cible · le **budget calorique restant est positif** | Suggérer d'ajouter des protéines à quelqu'un qui a déjà dépassé ses calories serait un mauvais conseil. Et sous 10 % d'écart, il n'y a rien à combler |
 | **D7** | Combien de suggestions ? | **3 au maximum** | Au-delà, on transforme un conseil en catalogue et on annule l'intérêt d'avoir trié |
@@ -59,14 +59,22 @@ ajout au journal en un tap depuis une suggestion, i18n FR + EN.
   la roadmap dit « substitution » mais son contenu décrit bien un **ajout** pour combler un manque.
   Le remplacement suppose de choisir quelle entrée retirer : autre geste, autre US.
 - Toute **IA** (D2) et tout **rappel poussé** (famille NUTR-F1).
-- ⚠️ **Le repli sur la base d'aliments, différé — réduction assumée à l'implémentation.** La spec
-  prévoyait « récents **puis la base** ». Scorer la base côté client obligerait à charger
-  l'intégralité de CIQUAL en mémoire **à chaque rendu** de l'onglet nutrition : un vrai problème de
-  performance pour un gain marginal, les récents couvrant déjà l'essentiel des cas. Un repli propre
-  demande un **pré-filtrage SQL** (les N aliments les plus denses pour le macro visé) — à ouvrir si la
-  recette montre que les récents ne suffisent pas. La carte dit déjà « aucun aliment de ta base ne
-  comble cet écart » quand le vivier ne donne rien, donc l'utilisateur n'est jamais laissé sans
-  explication.
+- ✅ **Le repli sur la base d'aliments — différé le 29/07/2026, LIVRÉ le 12/08/2026.**
+  La spec prévoyait « récents **puis la base** » ; l'implémentation initiale s'était arrêtée aux
+  récents, pour une raison valable : scorer la base côté client aurait chargé l'intégralité de
+  CIQUAL en mémoire **à chaque rendu** de l'onglet. Le repli était conditionné à un constat de
+  recette (critère 8bis).
+  🔴 **Ce n'est pas la recette qui l'a rouvert, c'est un raisonnement qu'elle n'aurait pas produit :
+  au lancement, aucun compte n'a d'aliment récent.** Le vivier est donc vide pour **100 % des
+  nouveaux utilisateurs**, et la carte ne peut rien proposer précisément au moment où le conseil a
+  le plus de valeur. Attendre la recette aurait signifié constater en bêta ce qui était déductible.
+  **Solution retenue** : `useDenseFoodCandidates` (`food-repository`) — **pré-filtrage SQL**, une
+  requête bornée par macro (`LIMIT 15`), triée sur la densité **rapportée aux calories**
+  (`macro / kcal`, même règle que D2). CIQUAL n'est jamais chargé en mémoire, ce qui était le point
+  dur d'origine. Les **trois** macros sont ramenés et non le seul macro prioritaire, parce que la
+  carte laisse l'utilisateur **basculer** de macro : pré-filtrer sur un seul viderait la liste au
+  premier changement. Les récents restent **en tête du vivier** et gardent leur priorité à densité
+  comparable (D2). 11 tests SQL sur du vrai SQLite.
 - Les **restrictions alimentaires et allergènes** : `nutrition_profiles` les porte déjà
   (`restrictions`, `allergens`) mais **aucun aliment n'est étiqueté** en base pour les recouper. Les
   ignorer serait un faux service ; les traiter demande d'étiqueter la base → **post-V1**.
@@ -132,8 +140,9 @@ manque est porté par **le texte**, jamais par la seule couleur.
 6. Journée en dépassement calorique : **aucune carte**, même avec un macro manquant.
 7. Journée à l'équilibre (< 10 % d'écart) : aucune carte.
 8. Un aliment récemment consommé est privilégié à densité comparable.
-8bis. **À vérifier en recette** : les aliments récents suffisent-ils à produire des suggestions utiles ?
-   Si le message « aucun aliment ne comble cet écart » revient souvent, c'est le signal qu'il faut
-   ouvrir le repli sur la base (voir §2).
+8bis. ✅ **Sans objet depuis le 12/08/2026** — le repli sur la base est livré, la question ne se pose
+   plus. **À vérifier à sa place** : sur un **compte neuf, journal vide et aucun aliment récent**,
+   la carte propose bien des aliments (elle n'en proposait aucun avant). Et après avoir basculé de
+   macro (protéines → glucides → lipides), la liste **reste peuplée** dans les trois cas.
 9. La limite « ne tient pas compte du régime déclaré » est visible.
 10. En mode avion : la carte fonctionne à l'identique.

@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/nutrf2-repli-base` — NUTR-F2 : le vivier de suggestion voit enfin la base
+
+Commit précédent : `944b3e5`. **Roadmap 4.37 : 🟡 → ✅** (dernier trou de l'US comblé).
+Vérifié : typecheck **0**, lint **0**, **2 111 tests mobile verts** — codes de sortie relevés
+**sans pipe**.
+
+#### Ajouté
+
+- `useDenseFoodCandidates` + `selectDenseFoods` (`food-repository.ts`) — vivier de repli : les
+  aliments les plus **denses** de la base, pré-filtrés **en SQL**.
+- `__tests__/dense-foods-sql.test.ts` — **11 tests** sur du vrai SQLite.
+
+#### Modifié
+
+- `nutrition.tsx` — le vivier passe des seuls aliments récents à « **récents puis base** », les
+  récents restant en tête (leur priorité à densité comparable vit déjà dans la brique de score).
+- `nutrition-screen.test.tsx` — mock du nouveau hook (l'écran a une dépendance de plus).
+- Spec NUTR-F2 (§2, D4, critère 8bis) et roadmap 4.37 : le repli n'est plus « différé ».
+
+#### Technique — Notes
+
+- 🔴 **Ce n'est pas la recette qui a rouvert ce sujet, et c'est le point important.** La spec
+  conditionnait le repli à un constat de recette (critère 8bis : « si le message *aucun aliment ne
+  comble cet écart* revient souvent »). Or il y a un raisonnement que la recette n'aurait pas
+  produit : **au lancement, aucun compte n'a d'aliment récent.** Le vivier est vide pour **100 % des
+  nouveaux utilisateurs**, et la carte ne propose donc rien exactement quand le conseil a le plus de
+  valeur. Attendre la bêta pour le constater aurait été observer ce qui était déductible.
+- **Le point dur du report est levé, pas contourné** : la raison de différer était de ne pas charger
+  CIQUAL en mémoire à chaque rendu. Le tri vit désormais **en SQL**, borné à `LIMIT 15` par macro —
+  la mémoire ne voit jamais plus de 45 lignes.
+- 🔴 **Les trois macros sont ramenés, pas seulement celui qui manque.** La carte laisse
+  l'utilisateur **basculer** de macro (`override`) : pré-filtrer sur le seul macro prioritaire
+  viderait la liste au premier changement. Trois requêtes bornées, donc un nombre de hooks **fixe**.
+- 🔴 **Le tri est sur la densité rapportée aux CALORIES** (`macro / kcal`), pas aux 100 g — même
+  règle que la décision D2. Un test le fige avec un cas parlant : le jambon sec est plus protéiné au
+  100 g que le blanc de poulet (33 vs 31) mais bien plus calorique ; c'est le poulet qui doit sortir
+  premier. **Contre-épreuve faite** : passer le tri en `ORDER BY protein_per_100g` fait rougir
+  2 tests.
+- **Quatre exclusions testées, chacune pour une raison différente** : macro `NULL` (« on ne sait
+  pas » ≠ « zéro »), macro à `0` (occuperait la limite pour rien), **`kcal = 0`** (division par zéro
+  → densité infinie, la ligne truste toutes les premières places), et `deleted_at` (suggérer un
+  aliment retiré de la bibliothèque).
+- ⚠️ **Le nom de colonne est interpolé, jamais paramétré** — SQL ne permet pas de paramétrer un
+  identifiant. La sécurité repose donc entièrement sur l'**allowlist** `MACRO_COLUMN`, dont les
+  clés sont le type `SuggestibleMacro` : aucune valeur d'appelant n'y entre.
+- ⚠️ **Un `git checkout --` a effacé le hook une fois**, après une contre-épreuve : restaurer un
+  fichier annule aussi le travail en cours qui y vit. Refait à l'identique — mais la leçon vaut pour
+  toute contre-épreuve menée dans un fichier qu'on est en train d'écrire.
+- Aucune migration, aucune sync rule, aucune chaîne i18n nouvelle.
+
 ### 12/08/2026 — `chore/tests-ecrans-admin` — dernier écran à 0 %, et un rejet non capturé corrigé
 
 Commit précédent : `d14a66f`. **Volet back-office du lot 5 terminé.**

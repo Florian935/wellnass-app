@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 214 livré · 4 partiel · 2 à faire (sur 226)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 215 livré · 3 partiel · 2 à faire (sur 226)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -95,8 +95,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/tests-ecrans-admin` (modifications non commitées) |
-| Commits | 1163 · `main` a **1160** commits de retard sur `dev` |
+| Branche courante | `feature/nutrf2-repli-base` (modifications non commitées) |
+| Commits | 1164 · `main` a **1161** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `944b3e5` test(admin): dernier ecran a 0 %, et un rejet non capture corrige (36 tests)
 - `d14a66f` test(admin): les deux formulaires d ecriture restants (49 tests)
 - `e96cf7c` test(admin): la porte d entree et le plus gros formulaire du back-office (53 tests)
 - `795cc8c` fix(running-programs): 14e verrou de double appui + tests planning repas et éditeur (62 tests)
 - `09529e6` test(food-picker,progress): deux écrans à 0 %, dont un défaut de recette verrouillé (71 tests)
-- `10b257a` test(nutrition,settings): les deux écrans suivants, et la barre des 50 % (86 tests)
 
 ---
 
