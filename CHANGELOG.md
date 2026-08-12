@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 cadrée (spec + plan + maquette)
+
+Commit précédent : `a9d7596`. **Aucune ligne de code applicatif** — livrables d'amont uniquement,
+`etape: validation`. Roadmap **2.4** (🟡, motif « 30 min avant incalculable »).
+
+#### Ajouté
+
+- `docs/specs/functional/us/horaire01-heure-seance-planifiee.md` — 8 décisions de cadrage,
+  8 règles métier, 11 cas limites, i18n FR+EN (7 clés), 11 critères de recette.
+- `docs/plans/horaire01-heure-seance-planifiee.md` — 6 étapes, migration et sync rules en tête.
+- `design/horaire01-heure-seance-planifiee/` — maquette HTML.
+
+#### Technique — Notes
+
+- 🔴 **La décision structurante est D2 : on n'enlève rien.** Le rappel actuel est une **échéance**
+  (« la journée avance, ta séance n'est pas faite », p90 de `finished_at`) ; 2.4 demande une
+  **convocation** (« ça commence dans 30 min »). Remplacer l'une par l'autre ferait régresser tous
+  ceux qui planifient sans heure — c'est-à-dire **tout le monde aujourd'hui**, `scheduled_date`
+  étant une date nue. L'heure est donc **facultative** (D1) et les deux régimes sont **exclusifs**
+  (D3), garantis par le partage d'un **seul** identifiant de notification.
+- 🔴 **Pas de permission `SCHEDULE_EXACT_ALARM` (D5), et la raison n'est pas technique.** Elle est
+  **sensible au Play Store** et demande une justification, or LANCE-00 est déjà sur le chemin
+  critique avec la déclaration « Health apps » à 6 types. Ajouter une permission sensible
+  maintenant, c'est risquer un aller-retour de review pour gagner quelques minutes de précision.
+  Conséquence assumée **et dite à l'utilisateur** (clé `planning.timeHint`) plutôt que laissée
+  passer pour un bug.
+- 🔴 **R3 — rien ne se programme dans le passé.** Séance à 18 h 30 alors qu'il est 18 h 15 :
+  **aucun** rappel, et surtout **pas** de rappel immédiat. Le plan impose une **contre-épreuve** sur
+  cette garde (§8 de `strategie-tests.md`).
+- ⚠️ **Le risque n° 1 est hors code** : la sync rule PowerSync est une étape **manuelle**, hors CLI,
+  **déjà oubliée une fois** sur ce projet. Si elle saute, tout marche en développement et l'heure
+  **disparaît des appareils à la première resynchro** — aucun test ne peut l'attraper. Inscrite en
+  DoD, en tête du plan, et dans la maquette.
+- **Écart volontaire dit trois fois** : la colonne sert aux **deux piliers**, le **rappel** reste
+  muscu (le running a sa propre famille, RUN-F1). Écrit en spec §2, en plan et en maquette pour
+  qu'il ne passe pas pour un oubli à la relecture.
+- **Aucune migration poussée à ce stade** : elle est décrite, pas exécutée. Rien n'a changé en base.
+
 ### 12/08/2026 — `feature/nutrf2-repli-base` — NUTR-F2 : le vivier de suggestion voit enfin la base
 
 Commit précédent : `944b3e5`. **Roadmap 4.37 : 🟡 → ✅** (dernier trou de l'US comblé).

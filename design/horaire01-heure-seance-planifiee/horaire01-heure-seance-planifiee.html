@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HORAIRE-01 — Heure d'une séance planifiée</title>
+<style>
+  :root{--bg:#f7eede;--surf:#fffaf2;--surfalt:#f3ddd0;--border:#ece0cd;--bstrong:#90897d;
+        --text:#33291f;--muted:#786a59;--accent:#b14f2b;--success:#66714b;--danger:#b3261e}
+  *{box-sizing:border-box}
+  body{margin:0;padding:32px 20px 64px;background:#e7dccb;color:var(--text);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 6px} .sub{color:#6a5d4d;margin:0 0 28px;max-width:80ch}
+  h2{font-size:18px;margin:38px 0 4px;padding-top:18px;border-top:1px solid #cfc0a9}
+  .why{color:#6a5d4d;font-size:14px;margin:0 0 16px;max-width:80ch}
+  .flag{display:inline-block;background:#f3d9d4;border:1px solid #dba79c;color:#7a3226;
+        border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 0 20px}
+  .row{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  @media(max-width:820px){.row{grid-template-columns:1fr}}
+  .screen{background:var(--surf);border:1px solid var(--border);border-radius:18px;padding:18px}
+  .screenlabel{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+          color:var(--accent);margin-bottom:14px}
+  .card{border-radius:16px;padding:16px;background:var(--surf);border:1px solid var(--border)}
+  .field{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;
+         border:1px solid var(--border);border-radius:12px;background:var(--surf);margin-bottom:10px}
+  .flabel{font-size:12px;color:var(--muted);font-weight:600}
+  .fval{font-size:16px;font-weight:700}
+  .fval.none{font-weight:500;color:var(--muted);font-style:italic}
+  .btn{display:inline-block;border:1px solid var(--border);background:var(--surfalt);
+       border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text)}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .notif{background:#fff;border:1px solid var(--border);border-radius:14px;padding:13px 15px;
+         box-shadow:0 3px 12px rgba(0,0,0,.07)}
+  .notiftitle{font-size:14px;font-weight:700;margin-bottom:2px}
+  .notifbody{font-size:13px;color:var(--muted)}
+  .notifapp{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);
+            font-weight:700;margin-bottom:6px}
+  .note{background:#fff8ea;border-left:3px solid var(--accent);padding:12px 14px;
+        border-radius:0 8px 8px 0;margin-top:18px;font-size:14px;max-width:86ch}
+  .note.danger{background:#fdf0ee;border-left-color:var(--danger)}
+  code{font:13px ui-monospace,Menlo,monospace;background:var(--surfalt);padding:1px 5px;border-radius:4px}
+  table{border-collapse:collapse;width:100%;margin-top:12px;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .pill{display:inline-block;border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:700;
+        text-transform:uppercase;letter-spacing:.05em}
+  .pill.conv{background:#e6ecdb;color:#4a5334}
+  .pill.ech{background:var(--surfalt);color:var(--accent)}
+  .pill.rien{background:#eee;color:#777}
+  .sess{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;
+        border:1px solid var(--border);border-radius:12px;margin-bottom:8px;background:var(--surf)}
+  .sesstime{font-family:Georgia,serif;font-size:15px;font-weight:700;color:var(--accent);
+            min-width:52px}
+  .sessname{font-size:14px;font-weight:600}
+  .sesssub{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>HORAIRE-01 — Heure d'une séance planifiée</h1>
+<p class="sub"><strong>On ajoute une heure facultative, on ne remplace rien.</strong> Le rappel
+actuel dit « la journée avance, ta séance n'est pas faite » — une <em>échéance</em>. La roadmap 2.4
+demande « ça commence dans 30 min » — une <em>convocation</em>. Impossible sans savoir quand.</p>
+<div class="flag">⏳ En attente de validation (Florian ou Damien) — spec + plan + cette maquette.</div>
+
+<h2>1. La ligne « Heure de la séance », trois états</h2>
+<p class="why"><strong>Décision D1</strong> : l'heure est <strong>facultative</strong>. Planifier
+« jeudi » sans savoir quand est un usage normal, pas un oubli à corriger — et toutes les séances
+déjà en base sont sans heure.</p>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Aucune heure (défaut)</div>
+    <div class="field">
+      <span class="flabel">Heure de la séance</span>
+      <span class="fval none">Pas d'heure définie</span>
+    </div>
+    <span class="btn ghost">Définir une heure</span>
+    <p class="hint">Le rappel reste celui d'aujourd'hui : l'échéance apprise sur tes habitudes.</p>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Heure posée</div>
+    <div class="field">
+      <span class="flabel">Heure de la séance</span>
+      <span class="fval">18:30</span>
+    </div>
+    <span class="btn ghost">Retirer l'heure</span>
+    <p class="hint">À l'heure près n'est pas garanti : Android peut retarder un rappel pour
+    économiser la batterie.</p>
+  </div>
+</div>
+<div class="note">
+  <strong>« Retirer l'heure » n'est pas un détail d'ergonomie</strong> — c'est le pendant de D1.
+  Sans lui, poser une heure serait irréversible, et le régime de repli (échéance apprise)
+  inatteignable une fois qu'on en est sorti.
+</div>
+
+<h2>2. La notification, avant / après</h2>
+<p class="why">Les deux régimes sont <strong>exclusifs</strong> (D3) et partagent le même
+identifiant de notification : c'est ce qui garantit mécaniquement qu'il n'y en a jamais deux.</p>
+<div class="row">
+  <div class="screen">
+    <div class="screenlabel">Sans heure — échéance (inchangé)</div>
+    <div class="notif">
+      <div class="notifapp">Wellness</div>
+      <div class="notiftitle">Ta séance t'attend</div>
+      <div class="notifbody">Il te reste la soirée pour la faire.</div>
+    </div>
+    <p class="hint">Déclenchée à l'heure apprise (p90 de tes fins de séance), comme aujourd'hui.</p>
+  </div>
+  <div class="screen">
+    <div class="screenlabel">Avec heure — convocation (nouveau)</div>
+    <div class="notif">
+      <div class="notifapp">Wellness</div>
+      <div class="notiftitle">Ta séance commence bientôt</div>
+      <div class="notifbody">Full body dans 30 min</div>
+    </div>
+    <p class="hint">Déclenchée à 18:00 pour une séance à 18:30.</p>
+  </div>
+</div>
+
+<h2>3. Ce qui décide du régime</h2>
+<p class="why">Un tableau vaut mieux qu'un paragraphe : c'est exactement ce que le scheduler doit
+implémenter, et ce que la recette doit vérifier.</p>
+<table>
+  <tr><th>Situation</th><th>Rappel</th><th>Pourquoi</th></tr>
+  <tr>
+    <td>Séance à 18:30, il est 14:00</td>
+    <td><span class="pill conv">Convocation 18:00</span></td>
+    <td>L'heure est connue et la convocation est à venir.</td>
+  </tr>
+  <tr>
+    <td>Séance à 18:30, il est <strong>18:15</strong></td>
+    <td><span class="pill rien">Rien</span></td>
+    <td><strong>R3</strong> — la convocation est passée. Une notification « dans 30 min » reçue
+    après le début est pire que pas de notification. Et surtout : <strong>pas</strong> de rappel
+    immédiat.</td>
+  </tr>
+  <tr>
+    <td>Séance sans heure</td>
+    <td><span class="pill ech">Échéance apprise</span></td>
+    <td>Comportement actuel, strictement inchangé (D2).</td>
+  </tr>
+  <tr>
+    <td>Séance déjà faite ou sautée</td>
+    <td><span class="pill rien">Rien</span></td>
+    <td><strong>R4</strong> — déjà la règle de MUSC-F8.</td>
+  </tr>
+  <tr>
+    <td>Deux séances le même jour (12:00 et 19:00)</td>
+    <td><span class="pill conv">Une seule, la prochaine</span></td>
+    <td><strong>D6</strong> — un seul identifiant de rappel, et un quota quotidien à respecter.</td>
+  </tr>
+  <tr>
+    <td>Séance à 00:15</td>
+    <td><span class="pill conv">Convocation la veille 23:45</span></td>
+    <td>Le calcul traverse minuit, il ne le tronque pas.</td>
+  </tr>
+</table>
+
+<h2>4. L'heure dans les listes</h2>
+<p class="why">Une fois posée, l'heure sert à lire son planning, pas seulement à notifier. Elle
+s'affiche au format de la langue (<strong>R8</strong>), jamais en <code>HH:MM:SS</code> brut.</p>
+<div class="screen">
+  <div class="screenlabel">Planning — jeudi 14 août</div>
+  <div class="sess">
+    <span class="sesstime">08:00</span>
+    <span style="flex:1;margin-left:12px">
+      <div class="sessname">Course — sortie longue</div>
+      <div class="sesssub">Programme 10 km · semaine 3</div>
+    </span>
+  </div>
+  <div class="sess">
+    <span class="sesstime">18:30</span>
+    <span style="flex:1;margin-left:12px">
+      <div class="sessname">Full body</div>
+      <div class="sesssub">Prise de masse · semaine 5</div>
+    </span>
+  </div>
+  <div class="sess">
+    <span class="sesstime" style="color:var(--muted);font-style:italic;font-size:13px">—</span>
+    <span style="flex:1;margin-left:12px">
+      <div class="sessname">Gainage</div>
+      <div class="sesssub">Pas d'heure définie</div>
+    </span>
+  </div>
+</div>
+<div class="note">
+  <strong>La colonne sert aux deux piliers, le rappel non.</strong> <code>planned_sessions</code> est
+  pilier-agnostique, donc une sortie de course peut porter une heure et l'afficher. Mais le
+  <em>rappel</em> reste muscu : le running a sa propre famille de notifications (RUN-F1), et les
+  mélanger ici ferait deux parcours dans un seul code. Écart <strong>volontaire</strong>.
+</div>
+
+<h2>5. Les deux points durs</h2>
+<div class="note danger">
+  <strong>🔴 La précision n'est pas garantie — et c'est un choix de calendrier, pas de technique.</strong>
+  Un rappel exact demanderait la permission Android <code>SCHEDULE_EXACT_ALARM</code>,
+  <strong>sensible au Play Store</strong> et à justifier. Or LANCE-00 est déjà sur le chemin critique
+  avec la déclaration « Health apps » à 6 types. Ajouter une permission sensible maintenant, c'est
+  risquer un aller-retour de review pour gagner quelques minutes. À rouvrir <em>après</em> le
+  lancement. La mention sous le champ le dit à l'utilisateur plutôt que de le laisser croire à un bug.
+</div>
+<div class="note danger">
+  <strong>🔴 La sync rule PowerSync est une étape manuelle, hors CLI — déjà oubliée une fois.</strong>
+  Si elle saute : tout marche en développement, l'heure remonte bien vers Supabase, et
+  <strong>disparaît des appareils à la première resynchro</strong>. Aucun test ne peut l'attraper.
+  C'est le risque n° 1 de cette US, inscrit en Definition of Done.
+</div>
+
+</div></body></html>
