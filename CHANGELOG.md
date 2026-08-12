@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `chore/tests-ecrans-admin` — les deux formulaires d'écriture restants (49 tests)
+
+Commit précédent : `e96cf7c`. Suite du volet back-office du lot 5.
+Vérifié : typecheck **0**, lint **0**, **547 tests admin verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- `FoodEditScreen.test.tsx` — **24 tests** (316 lignes, 26 champs, jusqu'ici à 0 %).
+- `ProgramCreateScreen.test.tsx` — **25 tests** (269 lignes, jusqu'ici à 0 %).
+
+Couverture `apps/admin` : **78,46 % → 86,36 %** de statements (`screens` à 82,48 %).
+
+#### Technique — Notes
+
+- 🔴 **Une supposition fausse rattrapée par la contre-épreuve.** Les tests de durée de programme
+  ont d'abord été écrits en supposant que `min={1}` sur un `<input type="number">` **n'empêche pas**
+  la soumission sous jsdom. C'est l'inverse : jsdom applique la validation de contrainte, la
+  soumission est bloquée et la couche data n'est jamais appelée. Trois tests échouaient pour cette
+  raison — pas pour un défaut du code. Les deux niveaux de garde sont désormais testés
+  **séparément** : la contrainte HTML (rien ne part), puis la garde JS atteinte via
+  `fireEvent.submit`, qui contourne la validation comme le ferait un `novalidate` ou une
+  modification dans les outils de développement.
+- 🔴 **Contre-épreuves faites.** `FoodEditScreen` : retirer le `return` après validation, le
+  `setFieldErrors({})` et le `readOnly` de la clé d'import fait rougir **6** tests.
+  `ProgramCreateScreen` : casser la normalisation de durée et le `return` après échec en fait
+  rougir **6** également.
+- **Ce que la couche data ne pouvait pas dire, encore une fois** : `validateFoodInput` est couvert
+  à 100 % dans `shared`, mais rien ne garantissait que l'écran **n'écrive pas quand même** après un
+  refus, ni que chaque erreur atterrisse **sous son champ** — sur 26 champs, une clé mal recopiée
+  dans le mapping `errors[].field` passe inaperçue en recette.
+- 🔴 **`ProgramCreateScreen` traite « pas d'erreur mais pas d'identifiant » comme un échec** (`error
+  || !id`) — cas réel d'une écriture qui « réussit » sans rien rendre (RLS silencieuse,
+  `maybeSingle` vide). Test dédié : naviguer là enverrait vers une liste sans le programme attendu.
+- ⚠️ **Observation d'accessibilité sur `FoodEditScreen`** : ses **26 champs n'ont aucun label
+  associé** — le composant `Field` rend un `<label>` sans `htmlFor` et sans envelopper son contenu.
+  `getByLabelText` est inutilisable, et un lecteur d'écran annonce « zone de texte » sans nom. Les
+  tests ciblent donc par structure. **Non corrigé** : ce lot couvre, il ne redessine pas.
+  → à verser à la dette a11y (CONF-07 est déjà en recette).
+- **Le typecheck a rattrapé une signature mal mockée** (`saveFood` rend `{ id, error }`, pas
+  `{ error }`) — les tests passaient au vert avec le mauvais contrat.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
 ### 12/08/2026 — `chore/tests-ecrans-admin` — la porte d'entrée et le plus gros formulaire du back-office
 
 Commit précédent : `795cc8c`. Lot 5, **volet back-office** : les écrans React restants (point 5 du
