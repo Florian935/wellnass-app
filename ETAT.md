@@ -1,4 +1,4 @@
-# État du projet — 11/08/2026
+# État du projet — 12/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -95,8 +95,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1160 · `main` a **1157** commits de retard sur `dev` |
+| Branche courante | `chore/tests-ecrans-admin` (modifications non commitées) |
+| Commits | 1161 · `main` a **1158** commits de retard sur `dev` |
 | Specs d'US | 133 au total — 79 clôturées, 54 en cours |
 | Migrations | 79/79 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -107,11 +107,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `795cc8c` fix(running-programs): 14e verrou de double appui + tests planning repas et éditeur (62 tests)
 - `09529e6` test(food-picker,progress): deux écrans à 0 %, dont un défaut de recette verrouillé (71 tests)
 - `10b257a` test(nutrition,settings): les deux écrans suivants, et la barre des 50 % (86 tests)
 - `2e8e34f` test(planning): l'écran hebdomadaire, et une sixième famille de faux vert (44 tests)
 - `195016a` test(running-programs): les deux écrans à 0 %, et un compte de verrous corrigé (53 tests)
-- `181d463` test(composants): les cinq derniers composants à 0 % (98 tests, 2 défauts corrigés)
 
 ---
 

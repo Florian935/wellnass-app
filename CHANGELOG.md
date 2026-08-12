@@ -10,6 +10,47 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `chore/tests-ecrans-admin` — la porte d'entrée et le plus gros formulaire du back-office
+
+Commit précédent : `795cc8c`. Lot 5, **volet back-office** : les écrans React restants (point 5 du
+§8 de [strategie-tests.md](docs/specs/technical/strategie-tests.md)).
+Vérifié : typecheck **0**, lint **0**, **498 tests admin verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `LoginScreen.test.tsx` — **17 tests**. Écran **100 % couvert**.
+- `ExerciseEditScreen.test.tsx` — **36 tests** (543 lignes d'écran, jusqu'ici à 0 %).
+
+Couverture `apps/admin` : **68,37 % → 78,46 %** de statements.
+
+#### Technique — Notes
+
+- 🟠 **Trouvaille : la recherche de variantes d'exercice est SENSIBLE AUX ACCENTS.** Taper « dev »
+  ne trouve pas « Développé » — `'développé'.includes('dev')` est **faux**, c'est `d-é-v` et non
+  `d-e-v`. Le filtre (`nameFr.toLowerCase().includes(terme)`) ne normalise pas les diacritiques,
+  alors que la bibliothèque est francophone et que saisir sans accent est le réflexe courant.
+  **Comportement figé par un test, pas corrigé** : ce lot couvre, il ne change pas le produit. Le
+  correctif tiendrait en un `.normalize('NFD').replace(/\p{Diacritic}/gu, '')` des deux côtés.
+  → arbitrage Damien/Florian.
+- 🔴 **Contre-épreuve faite sur les deux écrans, comme l'exige le §8.** `LoginScreen` : retirer le
+  `return` après l'erreur et le `disabled={submitting}` fait rougir **3** tests.
+  `ExerciseEditScreen` : casser les quatre règles (purge des muscles secondaires, `trim` des noms,
+  `null` au lieu de `''`, `return` après échec) fait rougir **exactement les 5** tests qui les
+  protègent. Sans cette vérification, 8 tests auraient été verts sans rien démontrer.
+- **Ce que la couche data ne pouvait pas dire** : `exercises.test.ts` sait que `saveExercise` émet
+  la bonne requête ; il ne sait pas ce que l'écran décide **avant** d'appeler. D'où les assertions
+  sur ce qui part — noms nettoyés, `null` distinct de `''`, `id` présent en édition et absent en
+  création, et surtout **un muscle jamais primaire et secondaire à la fois**.
+- ⚠️ **Trois libellés sont ambigus à l'écran** : « Pectoraux », « Dos » et « Épaules » désignent à
+  la fois un groupe secondaire et un muscle fin, donc deux cases distinctes s'annoncent pareil pour
+  un lecteur d'écran. `getByLabelText` remontait deux nœuds — les tests ciblent donc par `id`. Noté
+  comme observation d'accessibilité, non corrigé ici.
+- **Deux faux rouges de test, pas de code** : le `name` accessible du bouton de résultat inclut une
+  mention d'aide (clic porté sur le libellé, qui remonte au parent), et un test initial cherchait
+  « dev » — c'est ce dernier qui a mis la sensibilité aux accents au jour.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Planning repas et éditeur de programme (62 tests) — un 14ᵉ verrou trouvé
 
 **62 tests** sur `meal-plan/index.tsx` (117 instructions) et `running-programs/edit.tsx` (111).
