@@ -450,12 +450,12 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 2 100 (mobile) + 445 (admin) = 4 717 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 173 (mobile) + 445 (admin) = 4 790 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **54,8 %** |
+| Couverture mobile | 15,0 % | **56,3 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |

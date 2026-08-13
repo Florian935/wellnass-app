@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 11/08/2026 — `chore/socle-tests-unitaires` — Planification d'un programme et détail de séance (73 tests)
+
+**73 tests** sur `planning/plan.tsx` (86 instructions) et `history/[id].tsx` (81), tous deux à 0 %.
+
+#### Ajouté
+
+- **`plan-screen.test.tsx` — 34 tests.** C'est le seul écran qui **génère des séances en masse** :
+  durée × nombre de séances, couramment plusieurs dizaines de lignes en une pression. Les garde-fous
+  testés sont donc ceux d'une écriture irréversible en pratique.
+  - **🔴 Rien ne part tant que TOUTES les séances n'ont pas de jour.** Une séance sans jour ne serait
+    simplement pas planifiée : l'utilisateur croirait avoir posé son programme entier et
+    découvrirait le trou trois semaines plus tard. Et un programme **sans séance** ne peut pas être
+    planifié — sans la condition `length > 0`, `every` sur un tableau vide renvoie `true`.
+  - **🔴 Le défaut de départ est LUNDI PROCHAIN**, pas aujourd'hui : planifier une semaine déjà
+    entamée poserait des séances sur des jours passés, comptées « manquées » à l'instant du départ.
+  - **🔴 Activer un second programme ouvre un arbitrage à TROIS issues** (supprimer les séances
+    futures de l'ancien / les garder / annuler). Trancher à sa place produirait soit une perte
+    silencieuse, soit un planning illisible. Replanifier le programme **déjà actif** ne pose aucune
+    question — ce serait une question sur soi-même — et l'arbitrage porte sur le **pilier du
+    programme planifié**, pas sur un pilier fixe.
+  - **🔴 « Programme introuvable » offre un retour** : la pile `planning` est en `headerShown: false`,
+    sans bouton l'écran est un cul-de-sac. Constaté le 30/07/2026.
+  - Plus : le libellé du bouton qui **annonce le nombre de séances** avant de les créer, six formes
+    de durée invalide qui bloquent l'action, et deux séances autorisées le même jour (haut/bas du
+    corps est un choix légitime que l'app n'a pas à trancher).
+- **`workout-detail-screen.test.tsx` — 39 tests.** Écran en lecture seule — ce qui pourrait laisser
+  croire qu'il ne risque rien. Au contraire : **une valeur mal formatée y devient un souvenir faux.**
+  - **🔴 Chaque type de série est lu dans SON unité.** Le même champ `weightKg` veut dire « charge
+    soulevée » sur une série normale et **« lest »** sur une série à la durée, où il s'affiche
+    « 0:45 · +10 kg » — sans le préfixe, un gainage lesté se lirait comme un mouvement à 10 kg. Les
+    sept types ont leur libellé, et un type **inconnu** (venu d'une version plus récente via la
+    synchro) retombe sur « normale » au lieu de laisser une ligne muette.
+  - **🔴 L'écart à la charge planifiée est signé** `=` / `▲` / `▼` : la seule information qui
+    distingue « j'ai suivi le programme » de « j'ai forcé » ou « j'ai réduit ».
+  - **🔴 L'intensité suit l'échelle CHOISIE** (RPE ou RIR, UX-05) alors que la base stocke le RPE —
+    afficher la donnée brute contredirait le réglage sans que rien n'échoue.
+  - **🔴 Le titre est la date de FIN** : une séance à cheval sur minuit se range dans l'historique au
+    jour où elle s'est terminée, et afficher le début ferait diverger le titre de sa position.
+  - **🔴 Un volume nul disparaît, un RPE de 0 reste** : « 0 kg » sur une séance au poids de corps est
+    faux (le volume n'est pas nul, il n'est pas mesurable), tandis que 0 est une intensité légitime.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 56/52/49 → **58/54/51** (réel 60,5/56,8/53,7).
+
+#### Technique / Notes
+
+- **4 790 tests verts** (2 172 shared + 2 173 mobile + 445 admin). Couverture mobile **56,3 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Planning repas et éditeur de programme (62 tests) — un 14ᵉ verrou trouvé
 
 **62 tests** sur `meal-plan/index.tsx` (117 instructions) et `running-programs/edit.tsx` (111).
