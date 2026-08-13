@@ -97,7 +97,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1162 · `main` a **1165** commits de retard sur `dev` |
+| Commits | 1170 · `main` a **1165** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `ac67ba2` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 - `185b08b` test(planning,history): planification d'un programme et détail de séance (73 tests)
-- `795cc8c` fix(running-programs): 14e verrou de double appui + tests planning repas et éditeur (62 tests)
-- `09529e6` test(food-picker,progress): deux écrans à 0 %, dont un défaut de recette verrouillé (71 tests)
-- `10b257a` test(nutrition,settings): les deux écrans suivants, et la barre des 50 % (86 tests)
-- `2e8e34f` test(planning): l'écran hebdomadaire, et une sixième famille de faux vert (44 tests)
+- `1e7546b` feat(horaire01): le rappel bascule en convocation quand lheure est connue
+- `696a5c2` feat(horaire01): socle de lheure de seance - migration, calcul, lecture
+- `67979bd` docs(horaire01): cadrage de lheure de seance planifiee (spec + plan + maquette)
 
 ---
 

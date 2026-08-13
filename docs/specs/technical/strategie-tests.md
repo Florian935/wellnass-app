@@ -449,16 +449,18 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 2 173 (mobile) + 445 (admin) = 4 790 tests, tous verts**, typecheck, lint et **seuils de
-couverture** propres.
+État au 12/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
+(shared) + 2 206 (mobile) + 583 (admin) = 4 983 tests, tous verts**, typecheck, lint et **seuils de
+couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
+(`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
+`AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **56,3 %** |
+| Couverture mobile | 15,0 % | **56,2 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
+| `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
 
 ## 8. Reprise — par où continuer
 
