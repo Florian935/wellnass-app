@@ -1,4 +1,4 @@
-# État du projet — 12/08/2026
+# État du projet — 13/08/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -96,8 +96,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/horaire01-heure-seance` (modifications non commitées) |
-| Commits | 1167 · `main` a **1164** commits de retard sur `dev` |
+| Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
+| Commits | 1170 · `main` a **1165** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `ac67ba2` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
+- `185b08b` test(planning,history): planification d'un programme et détail de séance (73 tests)
+- `1e7546b` feat(horaire01): le rappel bascule en convocation quand lheure est connue
 - `696a5c2` feat(horaire01): socle de lheure de seance - migration, calcul, lecture
 - `67979bd` docs(horaire01): cadrage de lheure de seance planifiee (spec + plan + maquette)
-- `a9d7596` feat(nutrf2): le vivier de suggestion voit enfin la base (4.37 partiel vers livre)
-- `944b3e5` test(admin): dernier ecran a 0 %, et un rejet non capture corrige (36 tests)
-- `d14a66f` test(admin): les deux formulaires d ecriture restants (49 tests)
 
 ---
 
