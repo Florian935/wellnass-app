@@ -101,4 +101,6 @@ export * from './training-nutrition-cross';
 export * from './real-life';
 // US DOUL-01 (roadmap 1.29) — journal des zones douloureuses.
 export * from './pain-zones';
+// US HORAIRE-01 (roadmap 2.4) — convocation d'une séance planifiée à heure connue.
+export * from './session-reminder';
 export type { Database, Json } from './database.types';

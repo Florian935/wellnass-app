@@ -2084,6 +2084,11 @@
       "title": "Today's session is waiting",
       "body": "It's still on your plan — 40 minutes and it's done."
     },
+    "sessionSoon": {
+      "title": "Your session starts soon",
+      "body": "{{name}} in {{minutes}} min",
+      "fallbackName": "Your session"
+    },
     "record": {
       "titleOne": "🏆 New personal record!",
       "titleMany": "🏆 Records broken on {{count}} exercises!",

@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 214 livré · 4 partiel · 2 à faire (sur 226)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 215 livré · 3 partiel · 2 à faire (sur 226)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -69,6 +69,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **HORAIRE-01** — Heure d'une séance planifiée — et le rappel « ça commence bientôt » | `code` | `feature/horaire01-heure-seance` | [2.4] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -96,9 +97,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1161 · `main` a **1158** commits de retard sur `dev` |
-| Specs d'US | 133 au total — 79 clôturées, 54 en cours |
-| Migrations | 79/79 poussées sur le cloud |
+| Commits | 1162 · `main` a **1165** commits de retard sur `dev` |
+| Specs d'US | 134 au total — 79 clôturées, 55 en cours |
+| Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -107,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `185b08b` test(planning,history): planification d'un programme et détail de séance (73 tests)
 - `795cc8c` fix(running-programs): 14e verrou de double appui + tests planning repas et éditeur (62 tests)
 - `09529e6` test(food-picker,progress): deux écrans à 0 %, dont un défaut de recette verrouillé (71 tests)
 - `10b257a` test(nutrition,settings): les deux écrans suivants, et la barre des 50 % (86 tests)
 - `2e8e34f` test(planning): l'écran hebdomadaire, et une sixième famille de faux vert (44 tests)
-- `195016a` test(running-programs): les deux écrans à 0 %, et un compte de verrous corrigé (53 tests)
 
 ---
 

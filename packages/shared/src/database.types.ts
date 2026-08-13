@@ -1378,6 +1378,7 @@ export type Database = {
           owner_id: string
           program_id: string
           scheduled_date: string
+          scheduled_time: string | null
           session_id: string
           status: string
           updated_at: string
@@ -1391,6 +1392,7 @@ export type Database = {
           owner_id: string
           program_id: string
           scheduled_date: string
+          scheduled_time?: string | null
           session_id: string
           status?: string
           updated_at?: string
@@ -1404,6 +1406,7 @@ export type Database = {
           owner_id?: string
           program_id?: string
           scheduled_date?: string
+          scheduled_time?: string | null
           session_id?: string
           status?: string
           updated_at?: string

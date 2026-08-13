@@ -580,7 +580,32 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    **`ProgramEditScreen`** (1 458 lignes, le plus gros du dépôt) est couvert depuis le 08/08 sur
    ce qui porte son risque — l'**orchestration** (`runWrite` / `runReorder`), pas chaque champ de
    chaque formulaire, dont les écritures sont déjà testées dans `programs-detail.test.ts`.
-   Restent 7 écrans, tous des formulaires ou des vues sans état : `ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`, `AccessDenied` et le layout.
+
+   ✅ **Terminé le 12/08/2026 — plus aucun écran du back-office n'est à 0 %.** Les 6 restants ont
+   été couverts en **138 tests** : `LoginScreen` (17, **100 %**), `ExerciseEditScreen` (36,
+   **100 %**), `FoodEditScreen` (24, **100 %**), `ProgramCreateScreen` (25, 99,1 %),
+   `ProgramsScreen` (31, 99,4 %) et `AccessDenied` (5, **100 %**).
+   Couverture `apps/admin` : **68,37 % → 93,26 %** (`screens` 58,33 % → **91,74 %**).
+   **Reste uniquement** `ProgramEditScreen` à 73,1 %, volontairement — le compléter champ par champ
+   duplique `programs-detail.test.ts` pour un gain faible.
+
+   🔴 **Le motif du rejet non capturé a resservi une troisième fois.** `AccessDenied.handleLogout`
+   était en `try/finally` **sans `catch`** : le `finally` rendait bien la main, mais l'erreur
+   remontait hors du gestionnaire `onClick`. Même cause que les deux `void p.finally(…)` du 11/08,
+   même remède — **capturer avant de nettoyer**. Trouvé de la même façon que les précédents : pas
+   déduit, mais **rencontré**, le test échouant sur le rejet avant d'échouer sur une assertion.
+   ⚠️ Le symptôme est un **code de sortie à 1 avec tous les tests au vert** — invisible si on lit
+   le résumé plutôt que le code de sortie. Une raison de plus de le relever sans pipe.
+
+   ⚠️ **Deux observations d'accessibilité relevées en passant, non corrigées** (ce lot couvre, il
+   ne redessine pas) : les **26 champs de `FoodEditScreen` n'ont aucun label associé** (le
+   composant `Field` rend un `<label>` sans `htmlFor` et sans envelopper son contenu), et trois
+   libellés d'`ExerciseEditScreen` sont **ambigus** — « Pectoraux », « Dos » et « Épaules »
+   désignent à la fois un groupe secondaire et un muscle fin, donc deux cases s'annoncent pareil.
+
+   🟠 **Un défaut fonctionnel figé plutôt que corrigé** : la recherche de variantes d'exercice est
+   **sensible aux accents** (`'développé'.includes('dev')` est faux). Un test documente le
+   comportement actuel ; le correctif tiendrait en un `.normalize('NFD')` des deux côtés.
 
    ⚠️ **Un pourcentage de branches peut BAISSER quand on couvre un gros fichier.** Avec le
    fournisseur v8, un fichier jamais chargé par un test contribue **zéro branche au dénominateur** :

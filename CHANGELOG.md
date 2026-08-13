@@ -10,6 +10,310 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : le rappel bascule en convocation
+
+Commit précédent : `696a5c2`. Étape 4 du plan ; reste la saisie de l'heure (UI).
+Vérifié : typecheck **0**, lint **0**, **2 133 tests mobile verts**.
+
+#### Ajouté
+
+- Régime de **convocation** dans `useProgrammedRemindersScheduler` : quand la prochaine séance muscu
+  du jour a une heure, le rappel part à H−30 avec les libellés `notifications.sessionSoon.*`.
+- **9 tests** de scheduler (convocation, passé, non-régression, D6, réglages, chargement, nom absent).
+- 3 clés i18n × 2 langues (`sessionSoon.title/body/fallbackName`).
+
+#### Technique — Notes
+
+- 🔴 **L'exclusivité des deux régimes (R5) est garantie par le CODE, pas par une convention** : les
+  deux partagent le **même identifiant** `SESSION_REMINDER_ID`, et `scheduleDatedReminder` remplace
+  tout rappel en attente sous cet id. Basculer de régime annule donc l'autre sans qu'on ait à y
+  penser. Deux identifiants distincts auraient permis deux notifications pour la même séance.
+  **Contre-épreuve faite** : retirer le `continue` qui court-circuite l'échéance fait rougir 3 tests.
+- 🔴 **`find` et non `[0]`** pour choisir la séance : la liste est triée par heure croissante, mais la
+  première peut déjà être passée (séance de 12 h consultée à 15 h). On prend la première dont la
+  **convocation** est encore à venir — décision D6. Un test le fige avec deux séances, 12 h et 19 h,
+  vues à 15 h : c'est la seconde qui doit sortir.
+- ⚠️ **Les tests figent l'horloge au jour rendu par `useTodayKey`** (mocké à `2026-08-07`), pas au
+  jour réel. Sans ça, `computeSessionCallTime` comparerait une date planifiée du 7 août à un `now` du
+  12 : **tous** les cas retomberaient dans « convocation passée » et les tests passeraient au vert
+  pour la mauvaise raison. Le premier jet utilisait l'`atHour` du fichier, qui fige l'heure sur le
+  jour **courant** — piège discret, corrigé par une helper locale.
+- **Le régime de convocation reste soumis aux réglages** (R6) : préférence `sessionReminder`
+  désactivée ou séance déjà faite → on **annule**, on ne convoque pas. Deux tests, parce qu'une
+  nouvelle raison de notifier n'est pas une dérogation aux choix de l'utilisateur.
+- **La garde de chargement couvre la nouvelle source** : sans elle, on programmerait l'échéance
+  apprise puis, au tour suivant, la convocation — deux notifications posées coup sur coup pour la
+  même séance.
+- **Un nom de séance absent retombe sur un libellé générique** plutôt que d'afficher
+  « undefined dans 30 min ».
+- Les 16 tests de scheduler antérieurs passent **sans modification de leurs attentes** : le mock du
+  nouveau hook rend une liste vide par défaut, donc l'échéance apprise reste le régime.
+
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : socle (migration, calcul, lecture)
+
+Commit précédent : `67979bd`. **Validée par Florian le 12/08/2026** (« go pour HORAIRE-01 »).
+`etape: validation` → `code`. Étapes 1 à 3 du plan ; scheduler et UI suivent.
+Vérifié : typecheck **0**, lint **0**, **32 tests SQL + 22 tests purs verts**.
+
+#### Ajouté
+
+- Migration `20260812061859_planned_sessions_scheduled_time` — `scheduled_time time null`,
+  **poussée sur le cloud** et cochée au registre.
+- `packages/shared/src/session-reminder.ts` — `computeSessionCallTime` + `SESSION_LEAD_MINUTES`,
+  **22 tests** écrits **avant** la fonction.
+- `SELECT_PLANNED_STRENGTH_TIMES_TODAY` + `usePlannedStrengthTimesToday` +
+  `setPlannedSessionTime` (`planned-session-repository`).
+- `__tests__/planned-session-time-sql.test.ts` — **13 tests** sur du vrai SQLite.
+
+#### Technique — Notes
+
+- 🔴 **Le cadrage se trompait sur son propre risque n° 1, et c'est corrigé.** Il annonçait une sync
+  rule PowerSync « à coller à la main, déjà oubliée une fois ». **Faux** : `planned_sessions` est lue
+  en **`select *`** ([YAML:89](docs/specs/technical/powersync-sync-rules.yaml)), donc une colonne
+  ajoutée descend **automatiquement** — comme les 5 colonnes de `user_settings` dans le même cas. Le
+  réflexe « migration ⇒ sync rule à la main » ne vaut que pour une **table neuve**.
+  ⚠️ **Le cadrage de COLLIS-01 avait commis exactement la même erreur**, et en avait fait le même
+  risque n° 1 avant d'être démenti. Vérifier le YAML coûte dix secondes ; ne pas le faire produit un
+  risque imaginaire — et détourne l'attention du vrai.
+- 🔴 **Le vrai risque n° 1 est la colonne absente du schéma client**, et il est désormais **couvert
+  par un test**. Sans la déclaration dans `powersync/schema.ts`, l'écriture échoue, l'erreur est
+  avalée, et l'heure ne se pose jamais **sans aucun message** — panne exacte de CYCLE-01, reproduite
+  depuis par `sbd_lifts`, `pain_journal_enabled` et `session_conflicts_enabled`.
+  **Contre-épreuve faite** : retirer la colonne du schéma fait rougir **les 13 tests**. Le harness
+  construit ses tables depuis `AppSchema`, donc le filet est réel, pas déclaratif.
+- 🔴 **`computeSessionCallTime` renvoie `null` plutôt qu'un instant passé** (R3). Le piège n'est pas
+  d'oublier le calcul, c'est de rendre un instant dans le passé — que la couche notification
+  déclencherait **immédiatement**, annonçant « ça commence dans 30 min » alors que c'est commencé.
+  **Contre-épreuve faite** : retirer la garde fait rougir 4 tests.
+- **Minuit se traverse, il ne se tronque pas** : une séance à 00 h 15 convoque la **veille** à
+  23 h 45, changement de mois compris. Obtenu sans arithmétique de calendrier (soustraction sur
+  l'horodatage), mais testé explicitement parce qu'un futur « bornage à la journée » le casserait.
+- **Sept formes malformées testées** (vide, `25:00`, `18:75`, `1830`, texte, négatif, date invalide) :
+  la valeur vient de la base, donc d'un autre appareil ou d'une version antérieure. Une exception ici
+  ferait tomber le calcul des rappels **de repas et de pesée** avec elle.
+- **La requête reprend EXACTEMENT les filtres de `SELECT_HAS_PLANNED_STRENGTH_TODAY`** —
+  `status = 'planned'` strictement, `pillar = 'strength'`, non supprimée. Deux conventions de
+  « séance du jour à faire » dans le même fichier finiraient par diverger, et le rappel se calerait
+  sur une séance que l'autre requête ne voit pas. Un test vérifie qu'une **séance de course** ne
+  remonte pas : la colonne sert aux deux piliers, le rappel non.
+- ⚠️ **Le nom vient de `sessions.name` directement** : cette table n'a **pas** de table de
+  traduction, contrairement à `programs` et `exercises`. Premier jet écrit avec une jointure
+  `session_translations` inexistante — attrapé en relisant `SELECT_PLANNED_BETWEEN` juste au-dessus.
+- ⚠️ Warning CLI `pg-delta`/certificat au push, **déjà rencontré trois fois** (REPAS-01, VIE-01,
+  DOUL-01) : il porte sur la mise en cache du catalogue, pas sur l'application du SQL. Vérifié par
+  `db:types` (`scheduled_time: string | null` présent) et `db:push:dry` (« up to date »).
+
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 cadrée (spec + plan + maquette)
+
+Commit précédent : `a9d7596`. **Aucune ligne de code applicatif** — livrables d'amont uniquement,
+`etape: validation`. Roadmap **2.4** (🟡, motif « 30 min avant incalculable »).
+
+#### Ajouté
+
+- `docs/specs/functional/us/horaire01-heure-seance-planifiee.md` — 8 décisions de cadrage,
+  8 règles métier, 11 cas limites, i18n FR+EN (7 clés), 11 critères de recette.
+- `docs/plans/horaire01-heure-seance-planifiee.md` — 6 étapes, migration et sync rules en tête.
+- `design/horaire01-heure-seance-planifiee/` — maquette HTML.
+
+#### Technique — Notes
+
+- 🔴 **La décision structurante est D2 : on n'enlève rien.** Le rappel actuel est une **échéance**
+  (« la journée avance, ta séance n'est pas faite », p90 de `finished_at`) ; 2.4 demande une
+  **convocation** (« ça commence dans 30 min »). Remplacer l'une par l'autre ferait régresser tous
+  ceux qui planifient sans heure — c'est-à-dire **tout le monde aujourd'hui**, `scheduled_date`
+  étant une date nue. L'heure est donc **facultative** (D1) et les deux régimes sont **exclusifs**
+  (D3), garantis par le partage d'un **seul** identifiant de notification.
+- 🔴 **Pas de permission `SCHEDULE_EXACT_ALARM` (D5), et la raison n'est pas technique.** Elle est
+  **sensible au Play Store** et demande une justification, or LANCE-00 est déjà sur le chemin
+  critique avec la déclaration « Health apps » à 6 types. Ajouter une permission sensible
+  maintenant, c'est risquer un aller-retour de review pour gagner quelques minutes de précision.
+  Conséquence assumée **et dite à l'utilisateur** (clé `planning.timeHint`) plutôt que laissée
+  passer pour un bug.
+- 🔴 **R3 — rien ne se programme dans le passé.** Séance à 18 h 30 alors qu'il est 18 h 15 :
+  **aucun** rappel, et surtout **pas** de rappel immédiat. Le plan impose une **contre-épreuve** sur
+  cette garde (§8 de `strategie-tests.md`).
+- ⚠️ **Le risque n° 1 est hors code** : la sync rule PowerSync est une étape **manuelle**, hors CLI,
+  **déjà oubliée une fois** sur ce projet. Si elle saute, tout marche en développement et l'heure
+  **disparaît des appareils à la première resynchro** — aucun test ne peut l'attraper. Inscrite en
+  DoD, en tête du plan, et dans la maquette.
+- **Écart volontaire dit trois fois** : la colonne sert aux **deux piliers**, le **rappel** reste
+  muscu (le running a sa propre famille, RUN-F1). Écrit en spec §2, en plan et en maquette pour
+  qu'il ne passe pas pour un oubli à la relecture.
+- **Aucune migration poussée à ce stade** : elle est décrite, pas exécutée. Rien n'a changé en base.
+
+### 12/08/2026 — `feature/nutrf2-repli-base` — NUTR-F2 : le vivier de suggestion voit enfin la base
+
+Commit précédent : `944b3e5`. **Roadmap 4.37 : 🟡 → ✅** (dernier trou de l'US comblé).
+Vérifié : typecheck **0**, lint **0**, **2 111 tests mobile verts** — codes de sortie relevés
+**sans pipe**.
+
+#### Ajouté
+
+- `useDenseFoodCandidates` + `selectDenseFoods` (`food-repository.ts`) — vivier de repli : les
+  aliments les plus **denses** de la base, pré-filtrés **en SQL**.
+- `__tests__/dense-foods-sql.test.ts` — **11 tests** sur du vrai SQLite.
+
+#### Modifié
+
+- `nutrition.tsx` — le vivier passe des seuls aliments récents à « **récents puis base** », les
+  récents restant en tête (leur priorité à densité comparable vit déjà dans la brique de score).
+- `nutrition-screen.test.tsx` — mock du nouveau hook (l'écran a une dépendance de plus).
+- Spec NUTR-F2 (§2, D4, critère 8bis) et roadmap 4.37 : le repli n'est plus « différé ».
+
+#### Technique — Notes
+
+- 🔴 **Ce n'est pas la recette qui a rouvert ce sujet, et c'est le point important.** La spec
+  conditionnait le repli à un constat de recette (critère 8bis : « si le message *aucun aliment ne
+  comble cet écart* revient souvent »). Or il y a un raisonnement que la recette n'aurait pas
+  produit : **au lancement, aucun compte n'a d'aliment récent.** Le vivier est vide pour **100 % des
+  nouveaux utilisateurs**, et la carte ne propose donc rien exactement quand le conseil a le plus de
+  valeur. Attendre la bêta pour le constater aurait été observer ce qui était déductible.
+- **Le point dur du report est levé, pas contourné** : la raison de différer était de ne pas charger
+  CIQUAL en mémoire à chaque rendu. Le tri vit désormais **en SQL**, borné à `LIMIT 15` par macro —
+  la mémoire ne voit jamais plus de 45 lignes.
+- 🔴 **Les trois macros sont ramenés, pas seulement celui qui manque.** La carte laisse
+  l'utilisateur **basculer** de macro (`override`) : pré-filtrer sur le seul macro prioritaire
+  viderait la liste au premier changement. Trois requêtes bornées, donc un nombre de hooks **fixe**.
+- 🔴 **Le tri est sur la densité rapportée aux CALORIES** (`macro / kcal`), pas aux 100 g — même
+  règle que la décision D2. Un test le fige avec un cas parlant : le jambon sec est plus protéiné au
+  100 g que le blanc de poulet (33 vs 31) mais bien plus calorique ; c'est le poulet qui doit sortir
+  premier. **Contre-épreuve faite** : passer le tri en `ORDER BY protein_per_100g` fait rougir
+  2 tests.
+- **Quatre exclusions testées, chacune pour une raison différente** : macro `NULL` (« on ne sait
+  pas » ≠ « zéro »), macro à `0` (occuperait la limite pour rien), **`kcal = 0`** (division par zéro
+  → densité infinie, la ligne truste toutes les premières places), et `deleted_at` (suggérer un
+  aliment retiré de la bibliothèque).
+- ⚠️ **Le nom de colonne est interpolé, jamais paramétré** — SQL ne permet pas de paramétrer un
+  identifiant. La sécurité repose donc entièrement sur l'**allowlist** `MACRO_COLUMN`, dont les
+  clés sont le type `SuggestibleMacro` : aucune valeur d'appelant n'y entre.
+- ⚠️ **Un `git checkout --` a effacé le hook une fois**, après une contre-épreuve : restaurer un
+  fichier annule aussi le travail en cours qui y vit. Refait à l'identique — mais la leçon vaut pour
+  toute contre-épreuve menée dans un fichier qu'on est en train d'écrire.
+- Aucune migration, aucune sync rule, aucune chaîne i18n nouvelle.
+
+### 12/08/2026 — `chore/tests-ecrans-admin` — dernier écran à 0 %, et un rejet non capturé corrigé
+
+Commit précédent : `d14a66f`. **Volet back-office du lot 5 terminé.**
+Vérifié : typecheck **0**, lint **0**, **583 tests admin verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- `ProgramsScreen.test.tsx` — **31 tests** (444 lignes, dernier écran à 0 %). Couvert à **99,4 %**.
+- `AccessDenied.test.tsx` — **5 tests**. Écran à **100 %**.
+
+#### Corrigé
+
+- 🔴 **`AccessDenied.handleLogout` produisait un rejet de promesse non capturé.** `try/finally`
+  **sans `catch`** : le `finally` rendait bien la main, mais l'erreur remontait hors du
+  gestionnaire `onClick`. Un `catch` explicite est ajouté.
+
+#### Technique — Notes
+
+- 🔴 **Troisième occurrence du même motif**, après les deux `void p.finally(…)` du 11/08 — et
+  trouvée de la même façon : **pas déduite, rencontrée**. Le test échouait sur le rejet avant
+  d'échouer sur une assertion.
+  ⚠️ **Le symptôme mérite d'être retenu** : `Tests 5 passed` **et** code de sortie **1**. Qui lit
+  le résumé plutôt que le code de sortie ne voit rien. C'est exactement le piège que le CLAUDE.md
+  signale sur les pipes, sous une autre forme.
+- 🔴 **Contre-épreuves faites.** `ProgramsScreen` : inverser l'ordre décompte/confirmation et coder
+  le statut en dur fait rougir **3** tests — dont les deux qui portent la raison d'être d'ADMIN-01
+  (« compter **avant** de demander », vérifié par `invocationCallOrder`, pas seulement par la
+  présence des deux appels). Pour `AccessDenied`, la contre-épreuve était **antérieure au
+  correctif** : le rejet a d'abord été observé, puis supprimé.
+- **Ce que seul l'écran monté pouvait dire** : que la bannière de création ne se rejoue pas (l'état
+  d'historique est lu une fois au montage puis nettoyé — sans quoi un F5 réaffiche « programme
+  créé » sur une création vieille de dix minutes), que la recherche porte sur **les deux langues**,
+  et qu'une ligne archivée n'offre **que** la restauration.
+- **Le périmètre d'archives n'est pas un filtre local** : changer le scope **refait la requête**.
+  Un filtrage côté client afficherait une liste vide à tort, les archives n'étant pas en mémoire.
+- **Bilan du volet** : `apps/admin` **68,37 % → 93,26 %** de statements (`screens` 58,33 % →
+  **91,74 %**), **138 tests** ajoutés sur 6 écrans, **plus aucun écran du back-office à 0 %**.
+  Reste `ProgramEditScreen` à 73,1 %, volontairement — le compléter champ par champ duplique
+  `programs-detail.test.ts` pour un gain faible. Point de reprise §8 mis à jour.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
+### 12/08/2026 — `chore/tests-ecrans-admin` — les deux formulaires d'écriture restants (49 tests)
+
+Commit précédent : `e96cf7c`. Suite du volet back-office du lot 5.
+Vérifié : typecheck **0**, lint **0**, **547 tests admin verts**, `test:coverage` **0**.
+
+#### Ajouté
+
+- `FoodEditScreen.test.tsx` — **24 tests** (316 lignes, 26 champs, jusqu'ici à 0 %).
+- `ProgramCreateScreen.test.tsx` — **25 tests** (269 lignes, jusqu'ici à 0 %).
+
+Couverture `apps/admin` : **78,46 % → 86,36 %** de statements (`screens` à 82,48 %).
+
+#### Technique — Notes
+
+- 🔴 **Une supposition fausse rattrapée par la contre-épreuve.** Les tests de durée de programme
+  ont d'abord été écrits en supposant que `min={1}` sur un `<input type="number">` **n'empêche pas**
+  la soumission sous jsdom. C'est l'inverse : jsdom applique la validation de contrainte, la
+  soumission est bloquée et la couche data n'est jamais appelée. Trois tests échouaient pour cette
+  raison — pas pour un défaut du code. Les deux niveaux de garde sont désormais testés
+  **séparément** : la contrainte HTML (rien ne part), puis la garde JS atteinte via
+  `fireEvent.submit`, qui contourne la validation comme le ferait un `novalidate` ou une
+  modification dans les outils de développement.
+- 🔴 **Contre-épreuves faites.** `FoodEditScreen` : retirer le `return` après validation, le
+  `setFieldErrors({})` et le `readOnly` de la clé d'import fait rougir **6** tests.
+  `ProgramCreateScreen` : casser la normalisation de durée et le `return` après échec en fait
+  rougir **6** également.
+- **Ce que la couche data ne pouvait pas dire, encore une fois** : `validateFoodInput` est couvert
+  à 100 % dans `shared`, mais rien ne garantissait que l'écran **n'écrive pas quand même** après un
+  refus, ni que chaque erreur atterrisse **sous son champ** — sur 26 champs, une clé mal recopiée
+  dans le mapping `errors[].field` passe inaperçue en recette.
+- 🔴 **`ProgramCreateScreen` traite « pas d'erreur mais pas d'identifiant » comme un échec** (`error
+  || !id`) — cas réel d'une écriture qui « réussit » sans rien rendre (RLS silencieuse,
+  `maybeSingle` vide). Test dédié : naviguer là enverrait vers une liste sans le programme attendu.
+- ⚠️ **Observation d'accessibilité sur `FoodEditScreen`** : ses **26 champs n'ont aucun label
+  associé** — le composant `Field` rend un `<label>` sans `htmlFor` et sans envelopper son contenu.
+  `getByLabelText` est inutilisable, et un lecteur d'écran annonce « zone de texte » sans nom. Les
+  tests ciblent donc par structure. **Non corrigé** : ce lot couvre, il ne redessine pas.
+  → à verser à la dette a11y (CONF-07 est déjà en recette).
+- **Le typecheck a rattrapé une signature mal mockée** (`saveFood` rend `{ id, error }`, pas
+  `{ error }`) — les tests passaient au vert avec le mauvais contrat.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+
+### 12/08/2026 — `chore/tests-ecrans-admin` — la porte d'entrée et le plus gros formulaire du back-office
+
+Commit précédent : `795cc8c`. Lot 5, **volet back-office** : les écrans React restants (point 5 du
+§8 de [strategie-tests.md](docs/specs/technical/strategie-tests.md)).
+Vérifié : typecheck **0**, lint **0**, **498 tests admin verts**, `test:coverage` **0** — codes de
+sortie relevés **sans pipe**.
+
+#### Ajouté
+
+- `LoginScreen.test.tsx` — **17 tests**. Écran **100 % couvert**.
+- `ExerciseEditScreen.test.tsx` — **36 tests** (543 lignes d'écran, jusqu'ici à 0 %).
+
+Couverture `apps/admin` : **68,37 % → 78,46 %** de statements.
+
+#### Technique — Notes
+
+- 🟠 **Trouvaille : la recherche de variantes d'exercice est SENSIBLE AUX ACCENTS.** Taper « dev »
+  ne trouve pas « Développé » — `'développé'.includes('dev')` est **faux**, c'est `d-é-v` et non
+  `d-e-v`. Le filtre (`nameFr.toLowerCase().includes(terme)`) ne normalise pas les diacritiques,
+  alors que la bibliothèque est francophone et que saisir sans accent est le réflexe courant.
+  **Comportement figé par un test, pas corrigé** : ce lot couvre, il ne change pas le produit. Le
+  correctif tiendrait en un `.normalize('NFD').replace(/\p{Diacritic}/gu, '')` des deux côtés.
+  → arbitrage Damien/Florian.
+- 🔴 **Contre-épreuve faite sur les deux écrans, comme l'exige le §8.** `LoginScreen` : retirer le
+  `return` après l'erreur et le `disabled={submitting}` fait rougir **3** tests.
+  `ExerciseEditScreen` : casser les quatre règles (purge des muscles secondaires, `trim` des noms,
+  `null` au lieu de `''`, `return` après échec) fait rougir **exactement les 5** tests qui les
+  protègent. Sans cette vérification, 8 tests auraient été verts sans rien démontrer.
+- **Ce que la couche data ne pouvait pas dire** : `exercises.test.ts` sait que `saveExercise` émet
+  la bonne requête ; il ne sait pas ce que l'écran décide **avant** d'appeler. D'où les assertions
+  sur ce qui part — noms nettoyés, `null` distinct de `''`, `id` présent en édition et absent en
+  création, et surtout **un muscle jamais primaire et secondaire à la fois**.
+- ⚠️ **Trois libellés sont ambigus à l'écran** : « Pectoraux », « Dos » et « Épaules » désignent à
+  la fois un groupe secondaire et un muscle fin, donc deux cases distinctes s'annoncent pareil pour
+  un lecteur d'écran. `getByLabelText` remontait deux nœuds — les tests ciblent donc par `id`. Noté
+  comme observation d'accessibilité, non corrigé ici.
+- **Deux faux rouges de test, pas de code** : le `name` accessible du bouton de résultat inclut une
+  mention d'aide (clic porté sur le libellé, qui remonte au parent), et un test initial cherchait
+  « dev » — c'est ce dernier qui a mis la sensibilité aux accents au jour.
+- Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Planification d'un programme et détail de séance (73 tests)
 
 **73 tests** sur `planning/plan.tsx` (86 instructions) et `history/[id].tsx` (81), tous deux à 0 %.

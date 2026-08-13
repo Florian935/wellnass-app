@@ -356,6 +356,87 @@ export function useHasPlannedStrengthSessionToday(dayKey: string): {
 }
 
 // ---------------------------------------------------------------------------
+// US HORAIRE-01 — l'heure des séances muscu du jour (roadmap 2.4)
+// ---------------------------------------------------------------------------
+
+/**
+ * Heures des occurrences muscu **encore à faire** d'un jour, les plus tôt d'abord.
+ *
+ * ⚠️ **Mêmes filtres que `SELECT_HAS_PLANNED_STRENGTH_TODAY`** — `status = 'planned'` strictement et
+ * `p.pillar = 'strength'`. Deux conventions différentes de « séance du jour à faire » dans le même
+ * fichier finiraient par diverger, et le rappel se calerait sur une séance que l'autre requête ne
+ * voit pas.
+ *
+ * ⚠️ **Les occurrences SANS heure sont écartées** (`scheduled_time IS NOT NULL`) : elles relèvent du
+ * régime d'échéance apprise (R5), et les inclure ici mêlerait les deux.
+ *
+ * Le nom vient de `sessions.name` — cette table le porte **directement**, sans table de traduction
+ * (contrairement à `programs` ou `exercises`). Le corps de la notification l'affiche tel quel, comme
+ * le fait déjà le planning.
+ */
+export const SELECT_PLANNED_STRENGTH_TIMES_TODAY = `
+  SELECT ps.id, ps.scheduled_time, s.name AS name
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND ps.status = 'planned' AND ps.scheduled_date = ? AND p.pillar = 'strength'
+    AND ps.scheduled_time IS NOT NULL
+  ORDER BY ps.scheduled_time ASC
+`;
+
+/** Une occurrence muscu du jour portant une heure. */
+export type PlannedSessionTime = {
+  id: string;
+  /** `HH:MM:SS` tel que rendu par la base. */
+  scheduledTime: string;
+  name: string | null;
+};
+
+/**
+ * Occurrences muscu **à heure connue** du jour, dans l'ordre chronologique.
+ *
+ * L'appelant prend la **première dont la convocation est encore à venir** (décision D6 : un seul
+ * rappel, pour la prochaine séance). Le tri est fait en SQL, donc ce choix est un simple `find`.
+ */
+export function usePlannedStrengthTimesToday(dayKey: string): {
+  sessions: PlannedSessionTime[];
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{
+    id: string;
+    scheduled_time: string;
+    name: string | null;
+  }>(SELECT_PLANNED_STRENGTH_TIMES_TODAY, [userId, dayKey]);
+
+  const sessions = useMemo(
+    () =>
+      data.map((row) => ({
+        id: row.id,
+        scheduledTime: row.scheduled_time,
+        name: row.name,
+      })),
+    [data],
+  );
+
+  return { sessions, isLoading };
+}
+
+/**
+ * Pose ou retire l'heure d'une occurrence planifiée (US HORAIRE-01).
+ *
+ * `null` **retire** l'heure — ce n'est pas un effacement accidentel mais l'action « Retirer
+ * l'heure » (décision D7), qui fait retomber la séance sur le régime d'échéance apprise.
+ */
+export async function setPlannedSessionTime(
+  id: string,
+  scheduledTime: string | null,
+): Promise<void> {
+  await patch('planned_sessions', id, { scheduled_time: scheduledTime });
+}
+
+// ---------------------------------------------------------------------------
 // Écritures (hors contexte hook) — toutes optimistes (SQLite immédiat)
 // ---------------------------------------------------------------------------
 

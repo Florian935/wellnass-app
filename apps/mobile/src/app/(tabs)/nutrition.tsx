@@ -48,7 +48,7 @@ import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard'
 import { DayBalanceCard } from '@/components/nutrition/DayBalanceCard';
 import { MacroTriple, type MacroKey } from '@/components/nutrition/MacroTriple';
 import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
-import { useRecentFoods } from '@/data/repositories/food-repository';
+import { useDenseFoodCandidates, useRecentFoods } from '@/data/repositories/food-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -174,18 +174,25 @@ export default function NutritionScreen() {
     month: 'short',
   });
 
-  // US NUTR-F2 — vivier de suggestion : les **aliments récents** (décision D4 — on mange ce qu'on a
-  // chez soi, et suggérer un aliment jamais consommé reste un conseil théorique).
+  // US NUTR-F2 — vivier de suggestion : les **aliments récents d'abord, puis la base** (décision
+  // D4). On mange ce qu'on a chez soi, donc les récents restent prioritaires — c'est `recentIds`
+  // qui les fait gagner à densité comparable, dans la brique de score.
   //
-  // ⚠️ Réduction assumée par rapport à la spec, qui prévoyait « récents **puis la base** » : scorer la
-  // base côté client obligerait à charger l'intégralité de CIQUAL en mémoire à chaque rendu de
-  // l'onglet. Un repli sur la base demande un **pré-filtrage SQL** (les N aliments les plus denses
-  // pour le macro visé) — voir la spec §2.
+  // 🔴 Le repli sur la base a été ouvert le 12/08/2026, et pas parce que la recette l'a réclamé :
+  // **au lancement, aucun compte n'a d'aliment récent.** Sans repli, la carte ne peut rien proposer
+  // à 100 % des nouveaux utilisateurs — précisément quand le conseil vaut le plus. Le pré-filtrage
+  // vit en SQL (`useDenseFoodCandidates`), donc CIQUAL n'est jamais chargé en mémoire : c'est ce
+  // qui avait motivé le report.
   const { foods: recentFoods } = useRecentFoods(40);
+  const { foods: denseFoods } = useDenseFoodCandidates();
   const recentIds = useMemo(() => recentFoods.map((f) => f.id), [recentFoods]);
-  const suggestionCandidates = useMemo(
-    () =>
-      recentFoods.map((f) => ({
+  const suggestionCandidates = useMemo(() => {
+    const vus = new Set<string>();
+    // Récents en tête : à densité égale la brique préfère déjà un aliment connu, et l'ordre du
+    // vivier départage les ex æquo restants.
+    return [...recentFoods, ...denseFoods]
+      .filter((f) => (vus.has(f.id) ? false : (vus.add(f.id), true)))
+      .map((f) => ({
         id: f.id,
         name: f.name,
         kcalPer100g: f.kcalPer100g,
@@ -195,9 +202,8 @@ export default function NutritionScreen() {
         // Première portion déclarée = portion de référence (« 1 banane » = 120 g). C'est le
         // plafond de quantité de la suggestion : sans elle, on retombe sur une borne générique.
         portionG: f.portions[0]?.grams ?? null,
-      })),
-    [recentFoods],
-  );
+      }));
+  }, [recentFoods, denseFoods]);
 
   const consumedMacros: Record<MacroKey, number> = {
     protein: totals.proteinG,

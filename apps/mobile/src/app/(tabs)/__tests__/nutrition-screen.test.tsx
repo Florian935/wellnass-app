@@ -72,6 +72,9 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 }));
 jest.mock('@/data/repositories/food-repository', () => ({
   useRecentFoods: jest.fn(() => ({ foods: [] })),
+  // US NUTR-F2 — vivier de repli ouvert le 12/08/2026. Vide par défaut : ces tests portent sur la
+  // navigation et les repas, pas sur la carte de suggestion.
+  useDenseFoodCandidates: jest.fn(() => ({ foods: [], isLoading: false })),
 }));
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn() }));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
