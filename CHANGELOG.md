@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — ✅ Plus aucun écran à 0 % : le lot 5 est terminé (49 tests)
+
+Les **deux derniers écrans** de `src/app` sous le seuil sont couverts. Le lot 5 (« écrans à état »)
+est clos, côté mobile comme côté back-office.
+
+#### Ajouté
+
+- **`running-profile-screen.test.tsx` — 28 tests.** L'écran fixe l'**allure de référence 5 km**, dont
+  dérivent toutes les allures cibles de l'app — programmes, planning, détail de séance. Une erreur
+  n'y est pas visible : elle se voit dans une fourchette fausse, trois écrans plus loin.
+  - **🔴 La saisie n'écrit QUE si elle parse.** « 4:3 » en cours de frappe n'est pas une allure ;
+    l'écrire enregistrerait des valeurs absurdes entre deux touches, chacune recalculant les quatre
+    allures cibles. Mais **le champ affiche quand même la frappe** — refuser d'écrire ne doit pas
+    refuser d'afficher, un champ qui n'avance pas se lit comme un clavier bloqué.
+  - **🔴 La saisie locale prime sur la valeur persistée** : sans cet état, PowerSync réécrirait le
+    champ sous les doigts de l'utilisateur à chaque flush.
+  - **🔴 Sans référence, aucune allure n'est calculée** — quatre fourchettes dérivées de rien
+    seraient quatre chiffres faux présentés comme des consignes d'entraînement.
+  - **🔴 Les deux réglages vocaux sont indépendants et éteints par défaut** (R1/R3), et l'intervalle
+    est stocké en **mètres** là où il s'affiche en kilomètres — écrire « 2 » ferait annoncer tous
+    les deux mètres.
+- **`wellbeing-screen.test.tsx` — 21 tests.**
+  - **🔴 Un jour non renseigné est un TROU, jamais un zéro** : un 0 ferait plonger la courbe pour un
+    jour où l'utilisateur n'a rien dit — et **transformerait un silence en mal-être**.
+  - **🔴 Sans aucun jour enregistré, le check-in reste lançable.** Il s'ouvre normalement en tapant
+    un jour du journal ; sans jour, l'écran était un **cul-de-sac** atteint par lien direct ou par
+    le widget d'accueil (constaté le 30/07/2026 sur device).
+  - **🔴 Un jour trop ancien n'est plus éditable** : le bien-être se déclare à chaud, et rouvrir un
+    jour d'il y a six semaines produirait une donnée reconstruite de mémoire.
+  - Plus : la moyenne qui annonce **sur combien de jours** elle porte (deux jours et trente ne
+    valent pas la même chose), les glyphes doublés d'un libellé parlé (les symboles ne se
+    prononcent pas), et la fenêtre qui coupe la courbe **mais pas le journal**.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 71/66/63 → **72/68/65** (réel 73,5/69,0/66,7).
+
+#### Technique / Notes
+
+- **5 390 tests verts** (2 194 shared + 2 613 mobile + 583 admin). Couverture mobile **64,6 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+- **Le prochain gisement n'est plus « les écrans ».** Ce qui reste à 0 % est d'une autre nature :
+  quatre écrans courts, deux composants de saisie, deux repositories et `interval-guidance.ts`.
+  Le vrai sujet est désormais **l'écart instructions ↔ branches** du code déjà testé — 73,5 % contre
+  69,0 % sur le reste mobile, soit 4,5 points de chemins jamais empruntés.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Le tracker GPS était INATTEIGNABLE, pas non testé (45 tests)
 
 #### Technique / Notes — ⚠️ une septième famille de faux vert
