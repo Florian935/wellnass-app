@@ -554,6 +554,15 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen name="history" options={{ headerShown: false }} />
+        {/* US CYCLE-01 — suivi du cycle (détail + insights). Route **oubliée jusqu'au 14/08/2026** :
+            ses deux écrans n'avaient donc ni en-tête de navigation ni zone sûre, et leur titre se
+            dessinait sous la barre d'état. Exactement le défaut PAS-01 décrit trois fois plus haut
+            dans ce fichier — d'où le test `route-declarations.test.ts`, qui compare désormais le
+            contenu de `src/app` à cette liste. */}
+        <Stack.Screen name="cycle" options={{ headerShown: false }} />
+        {/* Modèles de séance libre : pile propre (`templates/_layout.tsx`), déclarée ici pour que
+            l'invariant « une route = une ligne » reste vérifiable. */}
+        <Stack.Screen name="templates" options={{ headerShown: false }} />
         <Stack.Screen name="run" options={{ headerShown: false }} />
         {/* US REPAS-01 : planning repas + liste de courses. Une route de dossier non déclarée ici
             n'échoue ni au typecheck ni aux tests — seul l'œil voit l'en-tête manquant (cf. PAS-01). */}

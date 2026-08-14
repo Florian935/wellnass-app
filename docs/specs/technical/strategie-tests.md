@@ -449,15 +449,15 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 12/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 206 (mobile) + 583 (admin) = 4 983 tests, tous verts**, typecheck, lint et **seuils de
+État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
+(shared) + 2 239 (mobile) + 583 (admin) = 5 016 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **56,2 %** |
+| Couverture mobile | 15,0 % | **57,1 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
@@ -494,6 +494,21 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
    risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
    + Testing Library.
+
+   ⚠️ **Un avertissement répété trois fois dans le code est un test qui manque.** `_layout.tsx`
+   portait trois fois la même phrase, écrite après trois défauts distincts (PAS-01, INSIGHTS-01,
+   REPAS-01) : « une route non déclarée ici n'échoue ni au typecheck ni aux tests — seul l'œil voit
+   l'en-tête manquant ». Le 14/08/2026, ce constat est devenu
+   [`route-declarations.test.ts`](../../../apps/mobile/src/app/__tests__/route-declarations.test.ts),
+   qui **compare le contenu de `src/app` à la liste des `<Stack.Screen>`** — et a immédiatement
+   trouvé une quatrième occurrence : **`cycle`**, deux écrans livrés et recettés dont le titre se
+   dessinait sous la barre d'état.
+
+   Deux choses à retenir. D'abord, **ce test lit le fichier, il ne le rend pas** : monter le Stack
+   demanderait PowerSync, l'auth, les polices et vingt hooks pour vérifier une liste de chaînes, et
+   un mock mal posé le rendrait vert à tort. La lecture statique est ici *plus* fiable que le rendu.
+   Ensuite, quand un commentaire dit « ça ne se teste pas », il décrit presque toujours ce qui ne se
+   teste pas *par le chemin habituel* — pas ce qui échappe à toute vérification.
 
    ⚠️ **RNTL 14 a supprimé `createNodeMock`** — et avec lui le seul levier pour donner une géométrie
    aux composants hôtes sous Jest. Conséquence pour tout code qui appelle `ref.measureInWindow`

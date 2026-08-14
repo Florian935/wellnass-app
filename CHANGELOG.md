@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — La gate de routing, et une route oubliée depuis CYCLE-01 (33 tests)
+
+#### Corrigé
+
+- **🔴 La route `cycle` n'était PAS déclarée dans le Stack racine.** Ses deux écrans (US CYCLE-01,
+  livrés et recettés) n'avaient donc **ni en-tête de navigation ni zone sûre** : leur titre se
+  dessinait **sous la barre d'état**. C'est exactement le défaut PAS-01 — celui que `_layout.tsx`
+  décrit **trois fois** comme « invisible au typecheck comme aux tests ». Les deux écrans sont
+  désormais enveloppés dans `Screen edges={['top']}` (le rembourrage venant de `Screen`, `page` ne
+  garde que le bas), et la route est déclarée. `templates` l'est aussi, par cohérence.
+
+#### Ajouté
+
+- **`route-declarations.test.ts` — 5 tests.** Un avertissement répété trois fois dans le code est un
+  test qui manque : celui-ci **compare le contenu de `src/app` à la liste des `<Stack.Screen>`**, dans
+  les deux sens (route non déclarée / déclaration orpheline). Il a trouvé `cycle` à sa première
+  exécution, et la contre-épreuve a été faite — déclaration retirée, test rouge.
+  Il vérifie aussi que `password-reset` porte **exactement** le nom attendu par le deep link (un
+  autre nom produit « Unmatched Route », la navigation d'Expo Router gagnant la course contre la
+  gate) et que les écrans qui piègent l'utilisateur désactivent le geste de retour.
+  ⚠️ **Ce test lit le fichier, il ne le rend pas** : monter le Stack demanderait PowerSync, l'auth,
+  les polices et vingt hooks pour vérifier une liste de chaînes — et un mock mal posé le rendrait
+  vert à tort.
+- **`root-layout-gate.test.tsx` — 28 tests** sur le premier code qui tourne au démarrage. La
+  *décision* de route vit dans `resolveRootRoute` (pure, déjà testée) ; ce qui est couvert ici, c'est
+  ce que le layout en fait :
+  - **🔴 Quatre formes d'attente** (auth, profil, réglages, contrôle de suppression) : aucune
+    redirection, aucun écran monté, splash conservé. Rediriger pendant le chargement produit un
+    flash d'onboarding puis une boucle quand le profil arrive.
+  - **🔴 On ne redirige que si l'on n'est pas déjà au bon endroit** — un `replace` inconditionnel
+    remonterait la pile en boucle. Vérifié pour l'auth, l'onboarding et l'app.
+  - **🔴 `auth-callback` est une échappatoire, pas une route** : le lien de confirmation d'e-mail
+    fait naviguer Expo Router sur un chemin **sans écran**, et sans cette sortie un compte **déjà
+    onboardé** reste bloqué sur « Unmatched Route » — cas invisible sur un compte neuf.
+  - **🔴 Les réglages ne sont créés qu'après la synchro initiale** : une ligne locale que le serveur
+    a déjà viole la contrainte unique `user_id`, l'envoi échoue en boucle et **bloque toute la
+    synchro**. Même garde pour la clôture d'une séance périmée, qui n'a lieu qu'**une** fois par
+    lancement.
+  - **🔴 Des polices en erreur ne bloquent pas le démarrage**, et la déconnexion **réinitialise** le
+    contrôle de suppression — sinon l'état du compte précédent piégerait le suivant sur l'écran-gate.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 58/54/51 → **59/55/52** (réel 61,8/57,8/54,5).
+
+#### Technique / Notes
+
+- **5 016 tests verts** (2 194 shared + 2 239 mobile + 583 admin). Couverture mobile **57,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : le rappel bascule en convocation
 
 Commit précédent : `696a5c2`. Étape 4 du plan ; reste la saisie de l'heure (UI).

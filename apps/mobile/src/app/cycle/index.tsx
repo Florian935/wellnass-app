@@ -26,6 +26,7 @@ import {
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
+import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { CycleTrackingGuard } from '@/components/cycle/CycleTrackingGuard';
 import { CycleDaySheet } from '@/components/cycle/CycleDaySheet';
@@ -109,123 +110,129 @@ function CycleScreenContent() {
   const dayLabel = view.day !== null ? t('cycle.widget.dayOfCycle', { day: view.day }) : null;
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <ScreenHeader title={t('cycle.title')} subtitle={t('cycle.subtitle')} />
+    // `Screen` fournit la zone sûre du haut. Sans lui — et sans en-tête de navigation, la route
+    // `cycle` n'étant pas déclarée dans le Stack racine — le titre se dessinait **sous la barre
+    // d'état** : c'est le défaut PAS-01, invisible au typecheck comme aux tests jusqu'au
+    // 14/08/2026. Le padding est repris de `Screen`, `page` ne garde que le bas et l'espacement.
+    <Screen edges={['top']}>
+      <ScrollView contentContainerStyle={styles.page}>
+        <ScreenHeader title={t('cycle.title')} subtitle={t('cycle.subtitle')} />
 
-      {/* Bandeau d'avertissement — en tête, jamais escamotable. */}
-      <View
-        style={[styles.disclaimer, { backgroundColor: colors.warn, borderColor: colors.warnBorder }]}
-      >
-        <Text style={[styles.disclaimerText, { color: colors.warnText }]}>
-          {t('cycle.disclaimer')}
-        </Text>
-      </View>
+        {/* Bandeau d'avertissement — en tête, jamais escamotable. */}
+        <View
+          style={[styles.disclaimer, { backgroundColor: colors.warn, borderColor: colors.warnBorder }]}
+        >
+          <Text style={[styles.disclaimerText, { color: colors.warnText }]}>
+            {t('cycle.disclaimer')}
+          </Text>
+        </View>
 
-      {/* ── État courant ─────────────────────────────────────────────────────────────────────── */}
-      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        {dayLabel !== null ? (
-          <View style={styles.headline}>
-            <Text style={[styles.day, { color: colors.text }]}>{dayLabel}</Text>
-            {view.phase !== null && (
-              <Text style={[styles.phase, { color: colors.accent, borderColor: colors.accent }]}>
-                {t(`cycle.phase.${view.phase}`)}
-              </Text>
-            )}
-          </View>
-        ) : (
-          <Text style={[styles.empty, { color: colors.textMuted }]}>{t('cycle.noData')}</Text>
-        )}
-
-        <PredictionBlock prediction={view.prediction} />
-      </View>
-
-      {/* ── Actions ──────────────────────────────────────────────────────────────────────────── */}
-      <View style={styles.actions}>
-        {openPeriod === null ? (
-          <Button
-            label={t('cycle.actions.startPeriod')}
-            onPress={() => void startPeriod(todayKey)}
-          />
-        ) : (
-          <Button
-            label={t('cycle.actions.endPeriod')}
-            variant="ghost"
-            // La période close devient exportable (R20/D) : synchro fire-and-forget, comme
-            // `pushWorkout` à la clôture d'une séance — elle ne doit jamais bloquer l'UI.
-            onPress={() => void endPeriod(openPeriod.id, todayKey).then(() => void pushCycleData())}
-          />
-        )}
-        <Button
-          label={t('cycle.actions.logDay')}
-          variant="ghost"
-          onPress={() => void openDaySheet(todayKey)}
-        />
-        <Button
-          label={t('cycle.actions.insights')}
-          variant="ghost"
-          onPress={() => router.push('/cycle/insights')}
-        />
-      </View>
-
-      {/* ── Calendrier ───────────────────────────────────────────────────────────────────────── */}
-      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        {t('cycle.calendar.title')}
-      </Text>
-      <CycleMonthCalendar
-        periods={periods}
-        logs={logs}
-        todayKey={todayKey}
-        onSelectDay={(dateKey) => void openDaySheet(dateKey)}
-      />
-
-      {/* ── Historique ───────────────────────────────────────────────────────────────────────── */}
-      <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
-        {t('cycle.history.title')}
-      </Text>
-      {periods.length === 0 ? (
-        <Text style={[styles.empty, { color: colors.textMuted }]}>{t('cycle.history.empty')}</Text>
-      ) : (
-        [...periods].reverse().map((p) => {
-          const length = view.lengthByStart.get(p.startedOn) ?? null;
-          const ignored = view.ignoredStarts.has(p.startedOn);
-          return (
-            <View
-              key={p.id}
-              style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <View style={styles.rowMain}>
-                <Text style={[styles.rowDate, { color: colors.text }]}>
-                  {p.endedOn
-                    ? t('cycle.history.range', {
-                        from: formatDayFull(p.startedOn),
-                        to: formatDayFull(p.endedOn),
-                      })
-                    : t('cycle.history.ongoing', { from: formatDayFull(p.startedOn) })}
-                </Text>
-                {/* Un cycle aberrant reste VISIBLE et signalé — l'app n'efface jamais une saisie. */}
-                {ignored && (
-                  <Text style={[styles.ignored, { color: colors.warnText }]}>
-                    {t('cycle.history.ignored')}
-                  </Text>
-                )}
-              </View>
-              {length !== null && (
-                <Text style={[styles.rowLength, { color: ignored ? colors.warnText : colors.textMuted }]}>
-                  {t('cycle.history.cycleLength', { days: length })}
+        {/* ── État courant ─────────────────────────────────────────────────────────────────────── */}
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {dayLabel !== null ? (
+            <View style={styles.headline}>
+              <Text style={[styles.day, { color: colors.text }]}>{dayLabel}</Text>
+              {view.phase !== null && (
+                <Text style={[styles.phase, { color: colors.accent, borderColor: colors.accent }]}>
+                  {t(`cycle.phase.${view.phase}`)}
                 </Text>
               )}
             </View>
-          );
-        })
-      )}
+          ) : (
+            <Text style={[styles.empty, { color: colors.textMuted }]}>{t('cycle.noData')}</Text>
+          )}
 
-      <CycleDaySheet
-        visible={daySheet !== null}
-        onClose={() => setDaySheet(null)}
-        logDate={daySheet?.dateKey ?? todayKey}
-        existing={daySheet?.existing ?? null}
-      />
-    </ScrollView>
+          <PredictionBlock prediction={view.prediction} />
+        </View>
+
+        {/* ── Actions ──────────────────────────────────────────────────────────────────────────── */}
+        <View style={styles.actions}>
+          {openPeriod === null ? (
+            <Button
+              label={t('cycle.actions.startPeriod')}
+              onPress={() => void startPeriod(todayKey)}
+            />
+          ) : (
+            <Button
+              label={t('cycle.actions.endPeriod')}
+              variant="ghost"
+              // La période close devient exportable (R20/D) : synchro fire-and-forget, comme
+              // `pushWorkout` à la clôture d'une séance — elle ne doit jamais bloquer l'UI.
+              onPress={() => void endPeriod(openPeriod.id, todayKey).then(() => void pushCycleData())}
+            />
+          )}
+          <Button
+            label={t('cycle.actions.logDay')}
+            variant="ghost"
+            onPress={() => void openDaySheet(todayKey)}
+          />
+          <Button
+            label={t('cycle.actions.insights')}
+            variant="ghost"
+            onPress={() => router.push('/cycle/insights')}
+          />
+        </View>
+
+        {/* ── Calendrier ───────────────────────────────────────────────────────────────────────── */}
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+          {t('cycle.calendar.title')}
+        </Text>
+        <CycleMonthCalendar
+          periods={periods}
+          logs={logs}
+          todayKey={todayKey}
+          onSelectDay={(dateKey) => void openDaySheet(dateKey)}
+        />
+
+        {/* ── Historique ───────────────────────────────────────────────────────────────────────── */}
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+          {t('cycle.history.title')}
+        </Text>
+        {periods.length === 0 ? (
+          <Text style={[styles.empty, { color: colors.textMuted }]}>{t('cycle.history.empty')}</Text>
+        ) : (
+          [...periods].reverse().map((p) => {
+            const length = view.lengthByStart.get(p.startedOn) ?? null;
+            const ignored = view.ignoredStarts.has(p.startedOn);
+            return (
+              <View
+                key={p.id}
+                style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              >
+                <View style={styles.rowMain}>
+                  <Text style={[styles.rowDate, { color: colors.text }]}>
+                    {p.endedOn
+                      ? t('cycle.history.range', {
+                          from: formatDayFull(p.startedOn),
+                          to: formatDayFull(p.endedOn),
+                        })
+                      : t('cycle.history.ongoing', { from: formatDayFull(p.startedOn) })}
+                  </Text>
+                  {/* Un cycle aberrant reste VISIBLE et signalé — l'app n'efface jamais une saisie. */}
+                  {ignored && (
+                    <Text style={[styles.ignored, { color: colors.warnText }]}>
+                      {t('cycle.history.ignored')}
+                    </Text>
+                  )}
+                </View>
+                {length !== null && (
+                  <Text style={[styles.rowLength, { color: ignored ? colors.warnText : colors.textMuted }]}>
+                    {t('cycle.history.cycleLength', { days: length })}
+                  </Text>
+                )}
+              </View>
+            );
+          })
+        )}
+
+        <CycleDaySheet
+          visible={daySheet !== null}
+          onClose={() => setDaySheet(null)}
+          logDate={daySheet?.dateKey ?? todayKey}
+          existing={daySheet?.existing ?? null}
+        />
+      </ScrollView>
+    </Screen>
   );
 }
 
@@ -272,7 +279,8 @@ function PredictionBlock({
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 20, paddingBottom: 48, gap: 12 },
+  // Le rembourrage vient de `Screen` : le répéter ici doublerait les marges latérales.
+  page: { paddingBottom: 48, gap: 12 },
   disclaimer: { borderWidth: 1, borderRadius: 12, padding: 12 },
   disclaimerText: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 18 },
   card: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
