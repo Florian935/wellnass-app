@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — La dette du 17ᵉ verrou est close, et les stats nutrition (47 tests)
+
+Le commit précédent livrait `run/index.tsx` **corrigé mais non couvert**, et le disait. C'est fait.
+
+#### Ajouté
+
+- **`run-start-screen.test.tsx` — 17 tests.** Le verrou est vérifié (contre-épreuve faite), mais le
+  vrai risque de l'écran est ailleurs : **la course est créée AVANT que la permission GPS ne soit
+  connue.** C'est nécessaire — le tracker a besoin d'un identifiant — et ça ouvre une fenêtre où une
+  ligne `runs` existe sans suivi possible. Les trois issues sont testées :
+  - **🔴 Refus AVANT-PLAN** → on ne navigue **pas** vers le suivi (l'ouvrir afficherait un suivi qui
+    n'avance jamais : dix minutes de course pour rien), et les **deux** sorties proposées annulent
+    la ligne GPS créée — sans quoi elle resterait ouverte et l'app proposerait de « reprendre » une
+    course qui n'a jamais démarré.
+  - **🔴 Refus ARRIÈRE-PLAN seul** → on continue (R1) : bloquer ici priverait de GPS la majorité des
+    utilisateurs, Android refusant l'arrière-plan par défaut.
+  - **🔴 Le tracker part de l'heure en BASE**, pas de l'horloge du téléphone : l'écart serait égal au
+    temps d'écriture, et les allures du premier kilomètre fausses. Repli sur l'heure courante si la
+    lecture échoue — mieux vaut quelques millisecondes de décalage qu'une course qui refuse de partir.
+  - Plus : le repli manuel qui **conserve la séance planifiée** (le refus de permission n'a rien à
+    voir avec le planning), et le mode manuel qui ne demande **aucune** permission.
+- **`nutrition-stats-screen.test.tsx` — 30 tests.** Six cartes, et une contrainte qui les relie :
+  **une seule fenêtre 7 j / 30 j** pilote apports, répartition par repas, adhérence et régularité —
+  quatre toggles indépendants produiraient quatre chiffres qu'on croirait comparables.
+  - **🔴 La comparaison de période charge DEUX fenêtres** puis coupe au seuil : un seul chargement
+    donnerait un écart calculé contre du vide, donc toujours positif.
+  - **🔴 Le badge d'écart attend la fin du chargement** — affiché trop tôt, il compare une moyenne
+    partielle à une moyenne complète.
+  - **🔴 Le bilan calorique est SIGNÉ et localisé** (`Intl.NumberFormat`) : « 8400 » ne dit pas si
+    l'on est au-dessus ou en dessous de sa cible, et c'est toute l'information.
+  - **🔴 L'adhérence distingue trois silences** — pas d'objectif, objectif sans jour journalisé,
+    chargement — parce qu'ils appellent trois gestes différents.
+  - Plus : un repas custom sans nom qui retombe sur son **rang** et jamais sur sa clé technique
+    (défaut déjà corrigé côté journal), une courbe qui exige **deux** points, et une pesée nulle ou
+    illisible qui n'écrit rien.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 66/62/59 → **68/63/61** (réel 69,6/64,6/62,8).
+
+#### Technique / Notes
+
+- **5 246 tests verts** (2 194 shared + 2 469 mobile + 583 admin). Couverture mobile **62,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Trois verrous de plus, trouvés par le BON grep (38 tests)
 
 #### Corrigé
