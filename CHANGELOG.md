@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le défaut du lien direct était sur DEUX autres écrans (42 tests)
+
+#### Corrigé
+
+- **🔴 `meal-quick-entry.tsx` et `food-scan.tsx` portaient encore `params.date ?? ''`.** C'est le
+  défaut de recette du 01/08/2026 — des entrées rattachées à **aucune journée**, écrites sans
+  erreur, comptées par le bouton d'ajout, et invisibles dans tous les journaux. Le correctif avait
+  été appliqué à `food-picker` seul ; les deux autres écrans qui écrivent au journal avec les mêmes
+  paramètres d'URL ne l'avaient jamais reçu. Le scan est le plus exposé : c'est celui qu'on ouvre
+  en raccourci, donc sans paramètres. Les deux tests ont été vus rouges avant correction.
+
+  **Leçon notée dans [strategie-tests.md](docs/specs/technical/strategie-tests.md)** : un correctif
+  de recette ne s'applique presque jamais à un seul fichier. Après correction, refaire le `grep` du
+  motif — une seconde qui aurait épargné deux semaines de défaut latent sur deux chemins d'écriture.
+
+#### Ajouté
+
+- **`meal-quick-entry-screen.test.tsx` — 24 tests.** Un écran où **on devine** : `parseMealText` et
+  `bestMatchIndex` sont des heuristiques pures, testées ailleurs et reprises telles quelles. Ce qui
+  compte ici, c'est ce qu'on fait de leurs **échecs** :
+  - **🔴 Une ligne non reconnue est MONTRÉE, avec son texte d'origine**, sans champ de grammes, et
+    **non comptée** dans le bouton d'ajout. La faire disparaître laisserait croire que tout a été
+    ajouté, sans dire quoi ressaisir.
+  - **🔴 Rien n'est écrit sans relecture** : le bouton annonce combien de lignes vont partir, et
+    une ligne mise à zéro est ignorée **sans empêcher les autres** — la relecture porte ligne par
+    ligne.
+  - **🔴 Les grammes sont déduits de l'unité ET des portions de l'aliment** : « 2 tranches de pain »
+    vaut 2 × 30 g, pas 2 g — une erreur d'un facteur 30 qui passerait inaperçue dans un total.
+    Repli générique quand l'aliment ne connaît pas l'unité nommée.
+- **`food-scan-screen.test.tsx` — 18 tests.** La caméra est de la recette ; la **machine à états**
+  derrière elle ne l'est pas :
+  - **🔴 Un code n'est résolu QU'UNE FOIS.** La caméra rappelle en continu tant qu'un code est
+    visible : sans verrou, un seul produit devant l'objectif déclencherait des dizaines d'imports
+    OpenFoodFacts et autant de lignes `foods` en double. Double garde testée — le verrou *et* le
+    retrait du rappel hors phase de scan, qui couvre le cas d'un **autre** code entrant dans le
+    cadre pendant la requête.
+  - **🔴 Le local avant le réseau** : ce qui rend le scan utilisable hors ligne sur ses propres
+    produits.
+  - **🔴 Trois échecs, trois messages** (réseau / code inconnu / fiche incomplète) : trois gestes
+    différents, et un message unique ferait recommencer le scan dans deux cas sur trois. Le code
+    inconnu est rappelé — il permet de comprendre qu'on a scanné l'emballage.
+  - **🔴 « Rescanner » et « annuler » libèrent le verrou** : sans quoi rescanner le même produit ne
+    ferait rien, et l'utilisateur conclurait que le bouton est cassé.
+  - Plus : la permission **inconnue** distinguée du refus (accuser d'un refus non donné), une sortie
+    laissée sur le refus, les micronutriments mis à l'échelle comme les macros, et `dismissAll`
+    plutôt que `back` — un simple retour ramènerait sur le sélecteur d'aliment, l'ajout étant fait.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 63/59/56 → **65/61/58** (réel 66,8/62,5/60,1).
+
+#### Technique / Notes
+
+- **5 161 tests verts** (2 194 shared + 2 384 mobile + 583 admin). Couverture mobile **60,3 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Le profil nutritionnel, l'écran qui fixe la cible (41 tests)
 
 **41 tests** sur `nutrition-profile.tsx` (76 instructions, à 0 %). Tout ce que cet écran écrit se

@@ -450,14 +450,14 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 342 (mobile) + 583 (admin) = 5 119 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 384 (mobile) + 583 (admin) = 5 161 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **59,2 %** |
+| Couverture mobile | 15,0 % | **60,3 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
@@ -494,6 +494,19 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
    risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
    + Testing Library.
+
+   ⚠️ **Un correctif de recette ne s'applique presque jamais à un seul fichier.** Le repli
+   `params.date ?? ''` corrigé sur `food-picker` le 01/08/2026 — celui qui écrivait des entrées
+   rattachées à **aucune journée** — était **encore présent** sur `meal-quick-entry` et `food-scan`
+   le 14/08. Les deux écrans écrivent au journal avec les mêmes paramètres d'URL ; le correctif
+   n'avait suivi ni l'un ni l'autre. **Après tout correctif, chercher le motif ailleurs** :
+
+   ```bash
+   grep -rn "params\.\w* ?? ''" apps/mobile/src/app --include=*.tsx
+   ```
+
+   Et le refaire **après** la correction, pas seulement avant : c'est un `grep` d'une seconde qui
+   aurait épargné deux semaines de défaut latent sur deux chemins d'écriture.
 
    ⚠️ **Un avertissement répété trois fois dans le code est un test qui manque.** `_layout.tsx`
    portait trois fois la même phrase, écrite après trois défauts distincts (PAS-01, INSIGHTS-01,

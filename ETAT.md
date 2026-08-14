@@ -97,7 +97,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1174 · `main` a **1171** commits de retard sur `dev` |
+| Commits | 1175 · `main` a **1172** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d25710c` test(nutrition-profile): l'écran qui fixe la cible (41 tests)
 - `3377b10` fix(food-custom): des faux zéros à la place de « non renseigné » (62 tests)
 - `0cfb4d3` fix(cycle): route non déclarée depuis CYCLE-01, et test de l'invariant (33 tests)
 - `4f51695` Merge branch 'chore/socle-tests-unitaires' into dev
 - `b9917b5` docs(tests): réconcilie le tableau de bord après la fusion de dev
-- `ac67ba2` Merge remote-tracking branch 'origin/dev' into chore/socle-tests-unitaires
 
 ---
 

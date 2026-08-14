@@ -14,6 +14,7 @@ import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { useFoods, type FoodListItem } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -55,7 +56,16 @@ export default function MealQuickEntryScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ date?: string; meal?: string }>();
-  const date = params.date ?? '';
+  /**
+   * Repli sur **aujourd'hui**, et non sur la chaîne vide — exactement le correctif appliqué à
+   * `food-picker` le 01/08/2026, dont cet écran avait gardé la version fautive. `date` alimente
+   * directement la clé de jour de l'entrée : `''` produisait des lignes rattachées à **aucune
+   * journée**, écrites sans erreur, comptées par le bouton « ajouter N », et invisibles dans tous
+   * les journaux. Un écran qui accuse réception d'enregistrements fantômes est pire qu'un écran qui
+   * échoue. Trouvé le 14/08/2026 en écrivant les tests de cet écran.
+   */
+  const todayKey = useTodayKey();
+  const date = params.date ?? todayKey;
   const meal = params.meal ?? 'breakfast';
 
   const { foods } = useFoods();
