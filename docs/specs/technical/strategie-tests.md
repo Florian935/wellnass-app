@@ -450,14 +450,14 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 469 (mobile) + 583 (admin) = 5 246 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 519 (mobile) + 583 (admin) = 5 296 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **62,1 %** |
+| Couverture mobile | 15,0 % | **63,0 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |

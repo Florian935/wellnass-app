@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le catalogue d'exercices et la garde anti-dérive du profil (50 tests)
+
+#### Ajouté
+
+- **`exercises-screen.test.tsx` — 24 tests.** **Un écran, quatre métiers**, choisis par l'URL :
+  consulter, **ajouter** à la séance, **remplacer** un exercice, **lier une variante**. Un même
+  appui sur une ligne fait donc quatre choses différentes, et chaque mode exclut ce qui n'a pas de
+  sens :
+  - **🔴 Remplacer ne propose pas ce qui est déjà dans la séance** — sinon on remplace un exercice
+    par son voisin déjà présent, ce qui le duplique.
+  - **🔴 Lier une variante exclut l'exercice LUI-MÊME** (une variante circulaire que rien en aval ne
+    sait démêler) **et ceux déjà liés**.
+  - **🔴 Les suggestions de substitution n'existent qu'en mode remplacement** : ailleurs il n'y a pas
+    d'exercice source, et `useSubstitutions` reçoit `null`. Ce qui est déjà dans la séance n'est pas
+    une suggestion non plus — c'est un doublon.
+  - **🔴 Les favoris remontent en tête** : le SQL ne fournit que l'ordre alphabétique, et perdre ce
+    tri rend un catalogue de 400 entrées inutilisable sans qu'aucun test ne rougisse.
+  - **🔴 « Vide à cause d'un filtre » ≠ « vide tout court »**, et seul le premier propose une
+    réinitialisation. Un catalogue qui paraît vide à cause d'un filtre oublié se lit comme une app
+    cassée.
+  - Plus : sans séance active, un appui n'écrit **rien** (écran ouvert en lien direct, ou séance
+    clôturée ailleurs), et l'étoile de favori ne déclenche pas la navigation de la ligne qui la
+    contient.
+- **`profile-screen.test.tsx` — 26 tests.** Deux mécanismes qu'aucun typage n'attrape :
+  - **🔴 La garde anti-dérive.** En unités impériales, le poids stocké en kg est affiché en livres
+    puis reconverti à l'enregistrement : **ouvrir l'écran et le sauver ferait glisser le poids** à
+    chaque passage, par arrondis successifs. La parade — mémoriser la chaîne affichée au montage et
+    réécrire la valeur *stockée* si elle n'a pas bougé — est testée avec un facteur de conversion
+    volontairement non rond, un facteur entier masquant exactement le défaut cherché. Même garde
+    pour la taille et le poids cible.
+  - **🔴 Un champ invalide BLOQUE, un champ vide EFFACE.** « abc » dans le poids est une faute de
+    frappe qu'on ne doit pas transformer en effacement silencieux ; vider le poids cible est un
+    geste délibéré. La garde tient **aussi dans `onSave`**, pas seulement sur le bouton.
+  - Plus : le formulaire monté seulement **après** résolution du profil (sinon `useState` fige les
+    champs sur les valeurs vides du premier rendu, et l'écran enregistre un profil vide), les zéros
+    de la date conservés, et l'objectif « santé » affiché par défaut **sans être écrit**.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 68/63/61 → **69/65/62** (réel 71,1/66,4/63,9).
+
+#### Technique / Notes
+
+- **5 296 tests verts** (2 194 shared + 2 519 mobile + 583 admin). Couverture mobile **63,0 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — La dette du 17ᵉ verrou est close, et les stats nutrition (47 tests)
 
 Le commit précédent livrait `run/index.tsx` **corrigé mais non couvert**, et le disait. C'est fait.

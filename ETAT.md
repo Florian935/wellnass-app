@@ -97,7 +97,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `chore/socle-tests-unitaires` (modifications non commitées) |
-| Commits | 1177 · `main` a **1174** commits de retard sur `dev` |
+| Commits | 1178 · `main` a **1175** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `952d1b6` test(run,nutrition-stats): la dette du 17e verrou est close (47 tests)
 - `f84a2c1` fix(verrous): trois sites de double appui de plus, trouvés par le bon grep (38 tests)
 - `60f9d77` fix(journal): le défaut du lien direct était sur deux autres écrans (42 tests)
 - `d25710c` test(nutrition-profile): l'écran qui fixe la cible (41 tests)
 - `3377b10` fix(food-custom): des faux zéros à la place de « non renseigné » (62 tests)
-- `0cfb4d3` fix(cycle): route non déclarée depuis CYCLE-01, et test de l'invariant (33 tests)
 
 ---
 
