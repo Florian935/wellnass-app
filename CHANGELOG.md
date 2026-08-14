@@ -10,6 +10,49 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le profil nutritionnel, l'écran qui fixe la cible (41 tests)
+
+**41 tests** sur `nutrition-profile.tsx` (76 instructions, à 0 %). Tout ce que cet écran écrit se
+répercute sur le journal, le bilan du jour, le planning repas et les suggestions de macros : une
+erreur n'y est **jamais visible sur place**, elle se voit dans un objectif qui a bougé sans raison,
+ailleurs dans l'app.
+
+#### Ajouté
+
+- **🔴 Un profil incomplet ne produit AUCUNE cible.** Sans poids, taille ni âge, `tdee` renvoie
+  `null` : l'écran propose de compléter le profil général plutôt que d'afficher un objectif inventé,
+  que l'utilisateur suivrait. Les macros disparaissent avec — elles dérivent des calories — mais
+  les réglages qui ne dépendent pas du corps (objectif, restrictions, micros) restent accessibles.
+- **🔴 L'objectif nutritionnel est DÉRIVÉ de l'objectif d'entraînement** à la première ouverture :
+  qui a dit « prendre du muscle » n'a pas à le redire, et proposer « maintien » par défaut irait à
+  contresens de ce qui a déjà été saisi.
+- **🔴 Manuel bat calculé, et le retour au calculé est un geste explicite.** Le bouton
+  « recalculer » n'apparaît que si une cible manuelle existe — sans lui, on ne pourrait jamais
+  défaire une saisie. Quatre formes de saisie invalide écrivent `null` (et non `0`, qui figerait une
+  cible à zéro calorie qu'aucun écran ne saurait interpréter).
+- **🔴 Toucher UNE macro les fige TOUTES LES TROIS** : une répartition à moitié manuelle donnerait
+  un total qui ne correspond ni à l'objectif calculé ni au choix de l'utilisateur. Et les
+  pourcentages affichés suivent alors les grammes **manuels** — sinon on lirait des pourcentages qui
+  ne correspondent à aucun des chiffres saisis.
+- **🔴 Un bonus jour de séance nul s'affiche VIDE, pas « 0 »** — un zéro dans un champ se lit comme
+  une valeur choisie. Cinq formes de saisie testées, dont la virgule décimale ; tout ce qui n'est
+  pas un entier positif désactive le bonus, un négatif abaisserait la cible les jours de séance.
+- **🔴 La marge d'adhérence est écrite comme un NOMBRE** : le segment porte des chaînes (contrainte
+  du composant) et sans `parseInt` la base recevrait `"15"`, rendant fausse toute comparaison en aval.
+- Plus : les allergènes découpés sur la virgule puis détourés et vidés des blancs (une entrée vide
+  produirait un allergène `""`), une restriction décochée sans emporter les autres, le facteur
+  d'activité affiché à côté de son libellé (« ×1,55 » explique pourquoi la cible bouge de 300 kcal),
+  et les micros suivis qui restent une préférence **locale**, hors profil synchronisé.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 61/57/54 → **63/59/56** (réel 65,1/61,1/58,6).
+
+#### Technique / Notes
+
+- **5 119 tests verts** (2 194 shared + 2 342 mobile + 583 admin). Couverture mobile **59,2 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Liste de courses et aliment perso (62 tests) — des faux zéros corrigés
 
 #### Corrigé
