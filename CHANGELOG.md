@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le tracker GPS était INATTEIGNABLE, pas non testé (45 tests)
+
+#### Technique / Notes — ⚠️ une septième famille de faux vert
+
+**`running/tracker.ts` était à 0 % parce qu'aucun test ne pouvait l'exécuter**, pas parce que
+personne n'en avait écrit : `jest.setup.ts` le remplace globalement par
+`startTracking: jest.fn().mockResolvedValue({ ok: true })`. Un fichier de test écrit naïvement
+aurait porté sur le mock — **tout vert, rien d'exécuté**. C'est ce qui s'est passé à la première
+exécution : 19 tests rouges d'un coup, et la cause n'était dans aucun d'eux.
+
+La parade tient en une ligne avant les imports : `jest.unmock('@/running/tracker')`. Seuls **deux**
+modules du projet sont dans ce cas (`grep "^jest.mock('@/" jest.setup.ts`) — l'autre,
+`@/powersync/system`, fait 3 instructions. **Avant de lire un 0 % comme une dette de tests, vérifier
+que le module est atteignable.**
+
+#### Ajouté
+
+- **`tracker.test.ts` — 24 tests** sur le module qui décide de ce qui arrive à une course pendant
+  qu'on court :
+  - **🔴 Le contrat `stop → drain → finish`.** L'OS peut livrer **un dernier lot après l'arrêt**, qui
+    installe un flush *postérieur* à celui qu'on attendait : le drain ré-attend tant que la poignée
+    change. Sans lui, `avg_pace` serait calculé sur une distance périmée. La boucle est **bornée** —
+    et ce test-là devait être écrit avec soin : une chaîne réellement infinie ferait tourner le test
+    indéfiniment, le défaut se manifestant par un *timeout* et jamais par un échec lisible. Le
+    compteur de réinstallations **est** le test.
+  - **🔴 Les deux permissions ne sont pas de même nature** : l'avant-plan est bloquant, l'arrière-plan
+    ne l'est pas — et le suivi doit **quand même démarrer** avant de le signaler, Android refusant
+    l'arrière-plan par défaut.
+  - **🔴 L'état module est remis à neuf** à chaque course (les cumuls y survivent, sinon la seconde
+    course démarre avec la distance de la première) et **une pause restée active est levée**.
+  - **🔴 Pause et reprise sont idempotentes**, la pause persiste immédiatement (le repository
+    `pauseRun` est un no-op : c'est le tracker qui porte cette responsabilité) avec un **segment
+    vide** — ajouter un point à la pause dessinerait un aller-retour immobile sur la trace.
+- **`measurements-screen.test.tsx` — 21 tests.** Les trois choix de lecture de MESUR-01, plus tout
+  ce qui touche aux unités (stockage en cm, affichage possible en pouces) :
+  - **🔴 Une courbe à la fois**, et changer de mesure change **aussi** le tableau — sinon deux
+    chiffres justes parlent de deux choses différentes sans le dire.
+  - **🔴 Un point n'est pas une tendance** : on le dit plutôt que de tracer une ligne plate.
+  - **🔴 Le premier relevé n'a pas de delta « 0 »** — rien à comparer n'est pas la même information
+    qu'aucun changement.
+  - **🔴 Le signe est dans le TEXTE** (`−` / `+` / `=`), la couleur ne porte jamais seule le sens :
+    un écran qui ne distinguerait baisse et hausse que par du vert et de l'ambre serait illisible
+    pour un daltonien, sur l'information même qu'on vient chercher.
+  - **🔴 La fenêtre coupe la courbe, pas le tableau**, et le delta est **converti** dans l'unité
+    affichée (−1,54 cm = −0,6 in : afficher « −1,5 » donnerait un écart trois fois trop grand).
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 69/65/62 → **71/66/63** (réel 72,3/67,6/65,0).
+
+#### Technique / Notes
+
+- **5 341 tests verts** (2 194 shared + 2 564 mobile + 583 admin). Couverture mobile **63,8 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Le catalogue d'exercices et la garde anti-dérive du profil (50 tests)
 
 #### Ajouté

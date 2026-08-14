@@ -450,14 +450,14 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 519 (mobile) + 583 (admin) = 5 296 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 564 (mobile) + 583 (admin) = 5 341 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **63,0 %** |
+| Couverture mobile | 15,0 % | **63,8 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
@@ -507,6 +507,21 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 
    Et le refaire **après** la correction, pas seulement avant : c'est un `grep` d'une seconde qui
    aurait épargné deux semaines de défaut latent sur deux chemins d'écriture.
+
+   ⚠️ **Un module mocké dans `jest.setup.ts` est INATTEIGNABLE, pas seulement non testé.**
+   `running/tracker.ts` est resté à **0 %** non parce que personne n'avait écrit de test, mais parce
+   qu'aucun test ne pouvait l'exécuter : le setup global le remplace par
+   `startTracking: jest.fn().mockResolvedValue({ ok: true })`. Un fichier de test écrit naïvement
+   aurait donc porté sur le mock — **tout vert, rien d'exécuté**. La parade tient en une ligne, à
+   poser AVANT les imports :
+
+   ```ts
+   jest.unmock('@/running/tracker');
+   ```
+
+   Seuls deux modules du projet sont dans ce cas (`grep "^jest.mock('@/" jest.setup.ts`) :
+   `@/powersync/system` — 3 instructions, sans intérêt — et `@/running/tracker`, désormais couvert.
+   **Avant de lire un 0 % comme une dette de tests, vérifier que le module est atteignable.**
 
    ⚠️ **Un avertissement répété trois fois dans le code est un test qui manque.** `_layout.tsx`
    portait trois fois la même phrase, écrite après trois défauts distincts (PAS-01, INSIGHTS-01,
