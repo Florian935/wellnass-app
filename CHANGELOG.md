@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Lot 7 : les branches, pas les fichiers (68 tests)
+
+Premier incrément du nouveau gisement annoncé au commit précédent : **les chemins jamais empruntés
+des fichiers déjà testés**. Un fichier à 90 % d'instructions et 40 % de branches est un fichier dont
+on n'a vérifié qu'un scénario — les cas limites (unité impériale, valeur nulle, échec) y sont
+intacts. La commande de tri par **nombre de branches manquantes** est notée dans
+[strategie-tests.md](docs/specs/technical/strategie-tests.md).
+
+#### Ajouté
+
+- **`useUnits.test.tsx` — 37 tests ajoutés aux 2 existants (32 → 100 % de branches).** Le hook ne
+  calcule rien : il décide **quel formateur appliquer à quoi**, et chaque défaut couvert ici a été
+  constaté :
+  - **🔴 `formatHeight` ≠ `formatCircumference`.** Le premier rend l'impérial en pieds-pouces —
+    juste pour une taille humaine, **absurde pour un tour de bras** : 35 cm donnerait « 1 ft 2 in »
+    au lieu de 13,8 in. Les deux fonctions existent précisément pour ne pas être confondues, et le
+    test les compare sur la même valeur.
+  - **🔴 `formatAxisNumber` ≠ `*InputValue`.** Les seconds passent par `String(Number(...))`, donc
+    un **point** décimal : juste dans un champ, faux sur un axe. C'est ce mélange qui donnait un
+    graphe français « 90.2 | 67.7 » (recette du 01/08/2026) — les deux sont désormais comparés
+    côte à côte.
+  - **🔴 Chaque grandeur a son nombre de décimales** (1 poids, 2 distance, 0 taille) : les
+    uniformiser donnerait « 5,00 km » ou « 178,00 cm ».
+  - **🔴 `null` n'est jamais `0`** — cinq formateurs vérifiés, plus `undefined` traité comme `null`
+    (un champ optionnel arrive ainsi de la base, et le distinguer produirait « undefined kg »).
+  - **🔴 Une allure nulle, négative, `NaN` ou infinie n'est pas une allure** : « 0:00 /km » se
+    lirait comme une performance surhumaine.
+  - Plus : le réglage absent qui retombe sur le métrique (l'impérial par défaut afficherait des
+    livres pendant la synchro initiale), et l'allure qui porte le symbole de **distance** — les
+    deux symboles venant du même objet, « 8:03 /lb » est une erreur facile.
+- **`workout-summary-screen.test.tsx` — 31 tests (7,5 → 95 % de branches).** Le plus gros écart
+  instructions ↔ branches de `src/app`, sur le dernier écran qu'on voit après un entraînement :
+  - **🔴 « Enregistrer comme modèle » n'apparaît QUE sur une séance libre non vide** — une séance de
+    programme a déjà sa structure ailleurs, et en refaire un modèle créerait un doublon orphelin.
+  - **🔴 Le nom par défaut est daté en LOCAL** : un `slice` de la chaîne ISO UTC décalerait le jour
+    d'un fuseau, une séance du soir devenant celle du lendemain.
+  - **🔴 Un RPE hors bornes est ramené à 0–5 étoiles** (donnée héritée d'une échelle 1–10) : six
+    étoiles casseraient la mise en page.
+  - **🔴 Une note vidée est effacée (`null`), une note non vide est gardée telle quelle** — le
+    détourage sert à décider si la note existe, pas à réécrire ce que l'utilisateur a tapé.
+  - **🔴 Pas de carte partageable sans exercice** : une carte vide envoyée à des tiers est le pire
+    moment pour découvrir un état limite. Et les records y arrivent **déjà formatés**, le volume
+    n'étant pas formaté en poids.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 72/68/65 → **74/70/67** (réel 75,2/71,1/68,4).
+
+#### Technique / Notes
+
+- **5 458 tests verts** (2 194 shared + 2 681 mobile + 583 admin). Couverture mobile **65,7 %**
+  (départ 15,0 %). Le reste mobile passe de 69,0 à **71,1 % de branches** ; l'écart
+  instructions ↔ branches se resserre de 4,5 à 4,1 points. Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — ✅ Plus aucun écran à 0 % : le lot 5 est terminé (49 tests)
 
 Les **deux derniers écrans** de `src/app` sous le seuil sont couverts. Le lot 5 (« écrans à état »)

@@ -450,14 +450,14 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 613 (mobile) + 583 (admin) = 5 390 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 681 (mobile) + 583 (admin) = 5 458 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **64,6 %** |
+| Couverture mobile | 15,0 % | **65,7 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
@@ -511,9 +511,22 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    ✅ **Le lot 5 est terminé : plus aucun écran de `src/app` n'est à 0 %** (14/08/2026). Ce qui
    reste sous ce seuil est d'une autre nature — quatre écrans courts (`account-delete`,
    `deletion-pending`, `pain`, `(onboarding)/infos`), deux composants de saisie, deux repositories
-   et `running/interval-guidance.ts`. **Le prochain gisement n'est plus « les écrans » mais les
-   branches non couvertes des fichiers déjà testés** : le reste mobile est à 73,5 % d'instructions
-   pour 69,0 % de branches, et c'est cet écart de 4,5 points qui porte désormais le risque.
+   et `running/interval-guidance.ts`.
+
+   ### Lot 7 — les branches, pas les fichiers
+
+   **Le gisement n'est plus « les écrans à 0 % » mais les chemins jamais empruntés des fichiers
+   déjà testés.** Un fichier à 90 % d'instructions et 40 % de branches est un fichier dont on n'a
+   vérifié qu'un scénario : les cas limites — l'unité impériale, la valeur nulle, l'échec — y sont
+   intacts. La commande qui trie par **nombre de branches manquantes** (et non par pourcentage) :
+
+   ```bash
+   node -e "const j=require('./apps/mobile/coverage/coverage-summary.json');   Object.entries(j).filter(([k])=>k!=='total').map(([k,v])=>[k,v.branches.total-v.branches.covered,v.branches.pct])   .filter(([,m])=>m>=12).sort((a,b)=>b[1]-a[1]).slice(0,15).forEach(r=>console.log(r.join('  ')))"
+   ```
+
+   Premiers traités le 14/08 : **`useUnits`** (32 → **100 %** de branches) et
+   **`workout-summary`** (7,5 → **95 %**). Le reste mobile passe de 69,0 à **71,1 %** de branches,
+   et l'écart instructions ↔ branches de 4,5 à 4,1 points.
 
    ⚠️ **Un module mocké dans `jest.setup.ts` est INATTEIGNABLE, pas seulement non testé.**
    `running/tracker.ts` est resté à **0 %** non parce que personne n'avait écrit de test, mais parce
