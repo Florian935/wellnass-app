@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Trois verrous de plus, trouvés par le BON grep (38 tests)
+
+#### Corrigé
+
+- **🔴 Trois sites du défaut de double appui, en une passe.** Après la leçon du commit précédent
+  (« chercher le motif fautif, pas le correctif appliqué »), un `grep` sur le motif — et non sur
+  `useActionLock` — a sorti cinq résultats, dont **trois vrais** :
+  - **`programs/edit.tsx`** (15ᵉ) — jumeau exact de celui trouvé la veille dans
+    `running-programs/edit.tsx` : deux appuis créaient **deux séances portant la même lettre**,
+    l'index étant calculé avant l'écriture ;
+  - **`(tabs)/strength.tsx`** (16ᵉ) — deux appuis créaient **deux séances**, dont une orpheline que
+    rien ne rouvrirait, l'app n'en affichant qu'une ;
+  - **`run/index.tsx`** (17ᵉ) — deux appuis créaient **deux courses**, avec le suivi GPS rattaché à
+    une seule des deux.
+
+  Les deux autres résultats gardaient l'ouverture d'une `Alert`, l'écriture étant déjà verrouillée
+  derrière : faux positifs légitimes, vérifiés un par un. **Le compte réel est de 18 `useActionLock`
+  sur 12 fichiers.** Contre-épreuves faites sur les deux sites testés — verrou retiré, test rouge.
+
+  ```bash
+  grep -rn "if (\w*ing) return;\|if (busy) return;\|if (saving) return;" apps/mobile/src --include=*.tsx
+  ```
+
+#### Ajouté
+
+- **`strength-screen.test.tsx` — 18 tests.** Au-delà du verrou, l'écran décide **quelle carte
+  d'action épinglée** afficher, et l'ordre est une règle produit : une séance **en cours** passe
+  avant tout (proposer d'en démarrer une autre par-dessus produirait exactement le doublon que le
+  verrou empêche), puis la séance **planifiée du jour**, sinon la **séance libre** — dont le choix
+  vierge/modèle est posé **avant** toute création, pour ne pas laisser un enregistrement à nettoyer
+  si l'utilisateur change d'avis. Plus les deux repères discrets : ce qui a été fait aujourd'hui, et
+  la prochaine séance prévue en JJ/MM — sans eux, un planning à venir se lit comme un planning vide.
+- **`program-edit-screen.test.tsx` — 20 tests.** Même contrat que son jumeau running, et c'est
+  l'intérêt de le tester : les deux écrans ont **déjà divergé une fois** (le verrou), ils peuvent
+  diverger encore. Couvert : le pilier `strength` écrit explicitement (sans lui le programme
+  atterrit dans l'onglet course), la sentinelle `none` jamais écrite en base, six formes de durée
+  invalide qui valent « non renseignée », et la création qui **remplace** le formulaire dans
+  l'historique — y revenir et réappuyer produirait un doublon.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 65/61/58 → **66/62/59** (réel 68,1/63,5/61,3).
+
+#### Technique / Notes
+
+- **5 199 tests verts** (2 194 shared + 2 422 mobile + 583 admin). Couverture mobile **61,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+- `run/index.tsx` est corrigé mais **pas encore couvert** : son test demande de simuler la
+  permission GPS et le suivi en arrière-plan, ce qui mérite son propre incrément.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — Le défaut du lien direct était sur DEUX autres écrans (42 tests)
 
 #### Corrigé

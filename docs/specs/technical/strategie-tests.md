@@ -450,14 +450,14 @@ npm run test:coverage      # idem + application des seuils (§5 bis) — ce que 
 ```
 
 État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
-(shared) + 2 384 (mobile) + 583 (admin) = 5 161 tests, tous verts**, typecheck, lint et **seuils de
+(shared) + 2 422 (mobile) + 583 (admin) = 5 199 tests, tous verts**, typecheck, lint et **seuils de
 couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
 (`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
 `AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **60,3 %** |
+| Couverture mobile | 15,0 % | **61,1 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
 | `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
@@ -572,7 +572,23 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    ci-dessus ne pouvait pas le voir : il cherche `useActionLock`, c'est-à-dire les sites **déjà
    corrigés**. **Le bon filet, c'est le test de l'écran, pas la recherche textuelle** : celui-ci a
    été trouvé en écrivant la couverture d'un écran à 0 %, exactement comme le dixième l'avait été
-   en août. Tant qu'il reste des écrans non couverts, il faut supposer qu'il en reste.
+   en août.
+
+   ⚠️ **Puis trois de plus le 14/08/2026 — et cette fois par le BON `grep`.** Plutôt que de chercher
+   les sites corrigés, chercher le **motif fautif** :
+
+   ```bash
+   grep -rn "if (\w*ing) return;\|if (busy) return;\|if (saving) return;" apps/mobile/src --include=*.tsx
+   ```
+
+   Cinq résultats, dont **trois vrais** : `programs/edit.tsx` (jumeau exact du 14ᵉ),
+   `(tabs)/strength.tsx` et `run/index.tsx` — ces deux derniers créaient **deux séances** et **deux
+   courses**. Les deux autres résultats gardaient l'ouverture d'une `Alert`, l'écriture étant déjà
+   verrouillée derrière : faux positifs légitimes, vérifiés un par un.
+
+   **Le compte réel est de 18 `useActionLock` sur 12 fichiers**, et la leçon est la même que pour le
+   repli `?? ''` : **on cherche le motif fautif, pas le correctif appliqué**. La liste des sites
+   corrigés dit ce qui est déjà fait ; seule la recherche du défaut dit ce qui reste.
 
    ⚠️ **Vérifier qu'un test de non-régression échoue vraiment.** Les deux gardes de double appui
    ont été retirées à la main pour voir les tests passer au rouge. Un test écrit **après** le
