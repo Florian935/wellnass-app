@@ -10,6 +10,55 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 14/08/2026 — `chore/socle-tests-unitaires` — Liste de courses et aliment perso (62 tests) — des faux zéros corrigés
+
+#### Corrigé
+
+- **🔴 `food-custom.tsx` écrivait des ZÉROS AFFIRMÉS à la place de « non renseigné ».** `Number('')`
+  vaut `0` : chaque champ facultatif laissé vide partait en base comme un zéro — « 0 g de fibres »,
+  « 0 g de sucres » — et `collectMicros` écrivait les **onze micronutriments à zéro sur tout aliment
+  créé**. La nuance n'est pas cosmétique : l'app distingue partout « nul » de « inconnu » (un tiret
+  plutôt qu'un chiffre, une VNR non calculée), et ces faux zéros la rendaient impossible à faire —
+  un aliment perso déclarait zéro fer, zéro sodium, zéro vitamine C, et la grille de couverture du
+  journal les comptait comme des valeurs connues. `parse` traite désormais le cas vide en premier.
+  Trouvé en écrivant le test, qui distingue explicitement le **zéro saisi** (conservé — c'est une
+  information réelle pour un fruit) du **champ vide** (`null`).
+
+#### Ajouté
+
+- **`shopping-screen.test.tsx` — 30 tests.** Écran dont la particularité est qu'**on s'en sert
+  debout dans un magasin**, une main sur le chariot :
+  - **🔴 Cocher un rayon entier est gratuit, le DÉ-cocher est confirmé** (D13) — cocher se rattrape
+    d'un geste, dé-cocher efface un travail qu'on ne peut pas reconstituer de mémoire. Compléter un
+    rayon partiellement coché ne demande rien non plus : c'est le cas courant en fin de rayon.
+  - **🔴 Régénérer COMPTE les cases qu'on va perdre** (critère de recette 16) : « tu vas perdre 2
+    cases » n'est pas la même décision que « tu vas perdre 40 cases ». Sans case cochée, le message
+    reste neutre — dramatiser banaliserait l'avertissement.
+  - **🔴 L'ordre des rayons est celui du PARCOURS de magasin**, pas celui des données : trier par
+    nom ferait traverser le magasin plusieurs fois. Un rayon absent est sauté sans laisser de trou.
+  - **🔴 La liste dit ce qu'elle ne sait pas** (R12) : entrées non résolues annoncées, et une
+    quantité **partielle** signalée comme telle — afficher « 500 g » tout court sous-estimerait, ce
+    qui est précisément l'erreur à ne pas commettre en silence.
+  - Plus : un article est une **case à cocher** pour les lecteurs d'écran (un bouton n'annoncerait
+    pas s'il est déjà pris), une route ouverte nue retombe sur la semaine courante, et un partage
+    annulé ne laisse pas d'indicateur bloqué.
+- **`food-custom-screen.test.tsx` — 32 tests.** Cet écran écrit une **densité pour 100 g** réutilisée
+  par toutes les pesées : une erreur ne s'y voit pas, elle se voit des semaines plus tard dans des
+  totaux faux dont on ignore l'origine. Couvert : les cinq formes de saisie refusée pour les
+  calories, la virgule décimale, la distinction **zéro saisi / champ vide**, les micros qui
+  **s'ouvrent d'eux-mêmes** quand l'aliment en porte (un import OpenFoodFacts en a souvent, repliés
+  ils seraient invisibles à la relecture), et la bascule création/édition — se tromper de branche
+  dupliquerait l'aliment à chaque correction, les anciennes entrées pointant vers la version d'avant.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 59/55/52 → **61/57/54** (réel 64,0/59,3/56,8).
+
+#### Technique / Notes
+
+- **5 078 tests verts** (2 194 shared + 2 301 mobile + 583 admin). Couverture mobile **58,5 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
 ### 14/08/2026 — `chore/socle-tests-unitaires` — La gate de routing, et une route oubliée depuis CYCLE-01 (33 tests)
 
 #### Corrigé
