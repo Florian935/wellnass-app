@@ -167,7 +167,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | 3.40 | Volume par groupe musculaire | Séries par groupe sur la semaine — détecte les déséquilibres. | Moyen | 3h | 🟢 | ✅ | `MuscleVolumeBarChart` + `useMuscleVolumeThisWeek`. |
 | 3.41 | Alerte déséquilibre musculaire | Si un groupe très sous-sollicité sur 2 semaines. | Moyen | 3h | 🟢 | ✅ | `useMuscleBalance` + alerte groupes négligés (MUSC-05). |
 | 3.42 | Notification nouveau record | Push + animation quand un record est battu. | Facile | 2h | 🟢 | ✅ | US MUSC-F8. Push **agrégé** (1 par séance, jamais 1 par record) + célébration animée transposée de la course. |
-| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | 🟡 | US MUSC-F8. **Recadré en échéance apprise** (p90 de `finished_at`) : `scheduled_date` est un jour sans heure, « 30 min avant » est incalculable en l'état. Vrai horaire = US à part (heure de séance en base) → **US HORAIRE-01 cadrée le 12/08/2026** (spec + plan + maquette), `etape: validation`. L'échéance apprise **reste** comme régime de repli : l'heure est facultative, les deux régimes sont exclusifs. |
+| 2.4 | Notif — Rappel séance | Push 30 min avant une séance planifiée. | Moyen | 3h | 🟢 | ✅ | US MUSC-F8. **Recadré en échéance apprise** (p90 de `finished_at`) : `scheduled_date` est un jour sans heure, « 30 min avant » est incalculable en l'état. Vrai horaire = US à part (heure de séance en base) → **US HORAIRE-01 livrée le 12/08/2026** (heure facultative sur `planned_sessions`, convocation à H−30), `etape: recette`. L'échéance apprise **reste** comme régime de repli : l'heure est facultative, les deux régimes sont exclusifs. |
 | 2.7 | Notif — Nouveau record | Push immédiat. | Facile | 1h | 🟢 | ✅ | US MUSC-F8. Muscu uniquement (course écartée : son chemin de détection est aussi celui du backfill, qui rejouerait tout l'historique). Plafond de 3/jour réellement appliqué (D14, solde D3 de NUTR-F1). |
 | 3.56 | Record par plage de répétitions | Meilleure charge par tranche de reps (1/3/5/8/10/12+) sur la fiche exercice. | Facile | 2h | 🟢 | ✅ | **MUSC-09, code livré le 02/08/2026**, en recette → [RECETTES.md](../../RECETTES.md). `resolveRepBucketRecords` (packages/shared, pur, 7 tests) + section sous les 3 tuiles de records existantes (`[id].tsx`). Même éligibilité de série que le reste du système de records, plage jamais travaillée absente (pas à 0), ordre fixe 1→12+. Aucune migration. |
 
@@ -458,8 +458,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 215 | ~95 % |
-| 🟡 Partiel (2.4, 5.24, 3.52 — les **seules** lignes à trou réel) | 3 | ~1 % |
+| ✅ Livré | 216 | ~96 % |
+| 🟡 Partiel (5.24, 3.52 — les **seules** lignes à trou réel) | 2 | ~1 % |
 | ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -532,6 +532,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**12/08/2026 — HORAIRE-01 : heure de séance et convocation livrées (2.4 🟡 → ✅)**
+Compteurs : **216 livré / 2 partiel / 2 à faire sur 226** (~96 %). Le 🟡 tenait à « 30 min avant
+incalculable sans heure ». L'échéance apprise **reste** le régime de repli : les deux sont exclusifs.
 
 **12/08/2026 — NUTR-F2 : repli du vivier sur la base livré (4.37 🟡 → ✅)**
 Compteurs : **215 livré / 3 partiel / 2 à faire sur 226** (~95 %). Le 🟡 tenait au vivier limité

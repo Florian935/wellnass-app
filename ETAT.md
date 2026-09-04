@@ -1,4 +1,4 @@
-# État du projet — 12/08/2026
+# État du projet — 04/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 215 livré · 3 partiel · 2 à faire (sur 226)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 216 livré · 2 partiel · 2 à faire (sur 226)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -30,6 +30,7 @@ avant de pouvoir publier.
 | **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `recette` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **FUEL-01** — Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles | `recette` | `feature/fuel01-socle-glucidique-coureur` | — |
 | **GARDE-01** — Garde-fou unifié charge & récupération (fusion TRI-12 + MR-14) | `recette` | `refactor/garde01-fusion-garde-fou` | — |
+| **HORAIRE-01** — Heure d'une séance planifiée — et le rappel « ça commence bientôt » | `recette` | `feature/horaire01-heure-seance` | [2.4] |
 | **INSIGHTS-01** — Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3) | `recette` | `feature/insights01-ecran-insights` | [7.20] |
 | **INSIGHTS-02** — Dégonflage du Tier 0 — ramener l'accueil au plafond d'ADR-007 | `recette` | `feature/insights02-degonflage-tier0` | [7.21] |
 | **LAUNCHER-01** — Widget écran d'accueil Android | `recette` | `feature/launcher01-widget-ecran-accueil` | [7.19] |
@@ -69,13 +70,12 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
-| **HORAIRE-01** — Heure d'une séance planifiée — et le rappel « ça commence bientôt » | `code` | `feature/horaire01-heure-seance` | [2.4] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **53 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **54 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -97,7 +97,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/horaire01-heure-seance` (modifications non commitées) |
-| Commits | 1167 · `main` a **1164** commits de retard sur `dev` |
+| Commits | 1168 · `main` a **1165** commits de retard sur `dev` |
 | Specs d'US | 134 au total — 79 clôturées, 55 en cours |
 | Migrations | 80/80 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -108,11 +108,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `1e7546b` feat(horaire01): le rappel bascule en convocation quand lheure est connue
 - `696a5c2` feat(horaire01): socle de lheure de seance - migration, calcul, lecture
 - `67979bd` docs(horaire01): cadrage de lheure de seance planifiee (spec + plan + maquette)
 - `a9d7596` feat(nutrf2): le vivier de suggestion voit enfin la base (4.37 partiel vers livre)
 - `944b3e5` test(admin): dernier ecran a 0 %, et un rejet non capture corrige (36 tests)
-- `d14a66f` test(admin): les deux formulaires d ecriture restants (49 tests)
 
 ---
 

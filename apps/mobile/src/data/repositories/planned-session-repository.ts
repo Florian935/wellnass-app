@@ -71,6 +71,11 @@ export type PlannedSessionItem = {
   programId: string;
   sessionId: string;
   scheduledDate: string; // AAAA-MM-JJ
+  /**
+   * US HORAIRE-01 — heure locale de début, `HH:MM:SS` ou `null` (pas d'heure définie).
+   * `null` est un **état normal** et non un trou : le rappel retombe alors sur l'échéance apprise.
+   */
+  scheduledTime: string | null;
   status: PlannedSessionStatus;
   weekIndex: number | null;
   sessionName: string | null;
@@ -95,6 +100,7 @@ type PlannedSessionDbRow = {
   program_id: string;
   session_id: string;
   scheduled_date: string;
+  scheduled_time: string | null;
   status: string;
   week_index: number | null;
   session_name: string | null;
@@ -117,7 +123,7 @@ type PlannedSessionDbRow = {
  * Params : owner_id, date début (>=), date fin (<=).
  */
 const SELECT_PLANNED_BETWEEN = `
-  SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.status, ps.week_index,
+  SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.scheduled_time, ps.status, ps.week_index,
          s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index,
          p.pillar AS pillar,
          (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count
@@ -136,7 +142,7 @@ const SELECT_PLANNED_BETWEEN = `
  * Params : owner_id, date du jour (<).
  */
 const SELECT_MISSED = `
-  SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.status, ps.week_index,
+  SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.scheduled_time, ps.status, ps.week_index,
          s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index,
          p.pillar AS pillar,
          (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count
@@ -158,6 +164,7 @@ function rowToItem(row: PlannedSessionDbRow): PlannedSessionItem {
     programId: row.program_id,
     sessionId: row.session_id,
     scheduledDate: row.scheduled_date,
+    scheduledTime: row.scheduled_time,
     status: row.status as PlannedSessionStatus,
     weekIndex: row.week_index,
     sessionName: row.session_name,

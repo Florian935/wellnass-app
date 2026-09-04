@@ -2065,7 +2065,18 @@
       "body": "{{legSets}} séries sur les jambes la veille, puis « {{runType}} » le lendemain. Tes jambes n’auront pas récupéré.",
       "swap": "Déplacer au {{day}}",
       "noSlot": "Aucun autre jour libre cette semaine."
-    }
+    },
+    "timeLabel": "Heure de la séance",
+    "timeNone": "Pas d'heure définie",
+    "timeSet": "Définir une heure",
+    "timeClear": "Retirer l'heure",
+    "timeHint": "À l'heure près n'est pas garanti : Android peut retarder un rappel pour économiser la batterie.",
+    "hours": "Heures",
+    "minutes": "Minutes",
+    "decreaseHour": "Heure précédente",
+    "increaseHour": "Heure suivante",
+    "decreaseMinute": "Cinq minutes de moins",
+    "increaseMinute": "Cinq minutes de plus"
   },
   "notifications": {
     "streakDanger": {

@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **07/08/2026** — **50 sections, une par US en recette**. 🔴 **Commence par
+> Dernière mise à jour : **12/08/2026** — **54 sections, une par US en recette** (HORAIRE-01 ajoutée, §54). 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
@@ -2055,3 +2055,66 @@ supprime sa section ici**. Passe par [`/commit`](.claude/commands/commit.md), qu
 
 **Quand un critère échoue** : ne pas cocher, noter le constat sous le critère. Si c'est un défaut
 réel, il devient une entrée de [BACKLOG.md](BACKLOG.md) ou un correctif sur la branche de l'US.
+
+---
+
+## 54. HORAIRE-01 — Heure d'une séance planifiée et convocation
+
+Spec : [horaire01-heure-seance-planifiee.md](docs/specs/functional/us/horaire01-heure-seance-planifiee.md) ·
+roadmap **2.4** (🟡 → ✅ le 12/08/2026).
+
+> 🔴 **Le critère 4 est le plus important, et c'est le seul qui vérifie une NON-action.** Une
+> notification « ça commence dans 30 min » reçue **après** le début est pire que pas de notification :
+> c'est ce que la règle R3 empêche, et un test de scheduler le couvre — mais seul un device dit si la
+> chaîne complète (calcul → programmation → Android) se comporte pareil.
+>
+> ⚠️ **La précision n'est pas garantie**, et c'est un choix assumé (décision D5) : pas de permission
+> `SCHEDULE_EXACT_ALARM`, parce qu'elle est sensible au Play Store et que LANCE-00 est déjà sur le
+> chemin critique. Un rappel qui arrive à 18 h 03 pour une séance de 18 h 30 **n'est pas un défaut**.
+> Ne le remonter que s'il dérive de plus de ~10 minutes.
+>
+> ✅ **Aucune sync rule à déployer** — `planned_sessions` est lue en `select *`, la colonne descend
+> seule. (Le cadrage affirmait le contraire ; c'était faux, corrigé le 12/08.)
+
+### Saisie de l'heure — planning
+
+- [ ] 1. Ouvrir la feuille d'actions d'une séance muscu planifiée : la section « Heure de la séance »
+      propose **Définir une heure**.
+- [ ] 2. Appuyer : l'heure se pose à **18:00** et le sélecteur apparaît.
+- [ ] 3. Les boutons **+ / −** des minutes avancent par pas de **5** ; ceux des heures par pas de 1.
+- [ ] 4. 🔴 **Les minutes bouclent sans changer l'heure** : à 18:55, « + » donne **18:00** et non 19:00.
+- [ ] 5. Les heures bouclent aussi : à 23:15, « + » donne **00:15**.
+- [ ] 6. **Retirer l'heure** : la section repasse sur « Définir une heure ».
+- [ ] 7. L'heure posée s'affiche **sur la ligne** du planning, au format `18:30` — **jamais**
+      `18:30:00`.
+- [ ] 8. Une séance **déjà faite** n'offre **pas** la section « Heure de la séance ».
+- [ ] 9. L'avertissement de précision est visible sous le sélecteur.
+- [ ] 10. En **anglais** : les 11 libellés sont traduits (dont « Hours » / « Minutes » et les libellés
+      d'accessibilité des boutons).
+
+### Le rappel — c'est là que ça compte
+
+- [ ] 11. Poser une heure à **H+40 min** sur une séance muscu du jour → la notification arrive
+      **autour de H+10** (soit 30 min avant), titre « Ta séance commence bientôt », corps
+      « <nom> dans 30 min ».
+- [ ] 12. 🔴 Poser une heure à **H+10 min** (convocation déjà passée) → **AUCUNE notification**, ni
+      différée **ni immédiate**. C'est le critère qui protège R3.
+- [ ] 13. **Non-régression** : une séance **sans heure** déclenche toujours le rappel d'échéance
+      apprise (« Ta séance du jour t'attend »), comme avant cette US.
+- [ ] 14. 🔴 **Jamais deux notifications** pour la même séance : après avoir posé une heure, on ne
+      reçoit **pas** aussi l'échéance apprise.
+- [ ] 15. Marquer la séance **faite** avant l'heure → aucune notification.
+- [ ] 16. Désactiver **Rappel de séance** dans les réglages → aucune notification malgré l'heure.
+- [ ] 17. Deux séances muscu le même jour, à deux heures différentes, toutes deux à venir → **une
+      seule** notification, pour la **plus proche**.
+
+### Persistance et offline
+
+- [ ] 18. 🔴 Poser une heure, **fermer et relancer l'app** : l'heure est toujours là. (Si elle
+      disparaît, c'est la panne de schéma que le test d'écriture-relecture couvre — mais un device
+      reste la preuve finale.)
+- [ ] 19. **Mode avion** : poser, modifier et retirer une heure fonctionne ; la notification se
+      programme quand même.
+- [ ] 20. Poser une heure sur l'appareil A → après synchro, elle apparaît sur l'appareil B *(si un
+      second appareil est disponible ; sinon, cocher après vérification dans Supabase)*.
+- [ ] 21. Déplacer la séance en **glisser-déposer** vers un autre jour : l'heure **suit** la séance.

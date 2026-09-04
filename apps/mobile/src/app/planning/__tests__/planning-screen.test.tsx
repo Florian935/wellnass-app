@@ -29,6 +29,7 @@ import {
   useSessionConflicts,
   useWeekPainSignals,
   useWeekPlan,
+  setPlannedSessionTime,
 } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import {
@@ -49,6 +50,8 @@ jest.mock('@/data/repositories/planned-session-repository', () => ({
   reschedulePlannedSession: jest.fn(),
   skipPlannedSession: jest.fn(),
   markPlannedSessionDone: jest.fn(),
+  // US HORAIRE-01 — pose / retrait de l'heure d'une occurrence.
+  setPlannedSessionTime: jest.fn(),
 }));
 jest.mock('@/data/repositories/running-profile-repository', () => ({
   useRunnerProfile: jest.fn(() => ({ runnerProfile: null })),
@@ -461,6 +464,125 @@ describe('ligne de séance', () => {
 // ---------------------------------------------------------------------------
 // Statuts
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// US HORAIRE-01 — heure de la séance (roadmap 2.4)
+// ---------------------------------------------------------------------------
+
+describe('HORAIRE-01 — heure de la séance', () => {
+  it('n’affiche aucune heure quand la séance n’en a pas', async () => {
+    await afficher({ items: [seance()] });
+
+    // « Pas d'heure » est l'état normal (D1), pas un trou à signaler dans la liste : la ligne reste
+    // muette, et c'est la feuille d'actions qui offre d'en poser une.
+    expect(screen.queryByText('18:30')).toBeNull();
+  });
+
+  it('affiche l’heure en HH:MM, jamais le HH:MM:SS de la base', async () => {
+    await afficher({ items: [seance({ scheduledTime: '18:30:00' })] });
+
+    // R8 : la base rend un `time` en `HH:MM:SS`. L'afficher tel quel donnerait « 18:30:00 ».
+    expect(screen.getByText('18:30')).toBeTruthy();
+    expect(screen.queryByText('18:30:00')).toBeNull();
+  });
+
+  it('🔴 survit à une séance dont le champ d’heure est ABSENT', async () => {
+    // Le type annonce `string | null`, mais une ligne construite sans le champ rend `undefined` —
+    // et `undefined !== null` est vrai. Un garde écrit `!== null` faisait lever `.slice` sur
+    // 43 tests d'écran. Une valeur absente est absente, quelle que soit sa forme.
+    const sansChamp = seance();
+    delete (sansChamp as Record<string, unknown>).scheduledTime;
+
+    await afficher({ items: [sansChamp] });
+
+    expect(screen.getByLabelText('Haut du corps')).toBeTruthy();
+  });
+
+  it('propose de définir une heure depuis la feuille d’actions', async () => {
+    await afficher({ items: [seance()] });
+    await ouvrirFeuille('Haut du corps');
+
+    expect(screen.getByText('planning.timeSet')).toBeTruthy();
+    // Pas de stepper tant qu'aucune heure n'existe : un sélecteur affiché sans valeur laisserait
+    // croire qu'une heure est déjà posée.
+    expect(screen.queryByText('planning.timeClear')).toBeNull();
+  });
+
+  it('🔴 pose 18:00 au premier appui, et n’ouvre pas un sélecteur vide', async () => {
+    await afficher({ items: [seance()] });
+    await ouvrirFeuille('Haut du corps');
+
+    await taper(screen.getByText('planning.timeSet'));
+
+    // 18 h 00 plutôt que minuit : partir de minuit obligerait presque tout le monde à remonter de
+    // dix-huit crans.
+    expect(setPlannedSessionTime).toHaveBeenCalledWith('ps-1', '18:00');
+  });
+
+  it('🔴 offre de RETIRER l’heure quand il y en a une (D7)', async () => {
+    await afficher({ items: [seance({ scheduledTime: '18:30:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    // Sans cette action, poser une heure serait irréversible et le régime d'échéance apprise
+    // inatteignable une fois qu'on en est sorti.
+    expect(screen.getByText('planning.timeClear')).toBeTruthy();
+    expect(screen.queryByText('planning.timeSet')).toBeNull();
+  });
+
+  it('🔴 retirer l’heure écrit `null`, pas une chaîne vide', async () => {
+    await afficher({ items: [seance({ scheduledTime: '18:30:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    await taper(screen.getByText('planning.timeClear'));
+
+    expect(setPlannedSessionTime).toHaveBeenCalledWith('ps-1', null);
+  });
+
+  it('avance l’heure de cinq minutes au tap sur « + »', async () => {
+    await afficher({ items: [seance({ scheduledTime: '18:30:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    await taper(screen.getByLabelText('planning.increaseMinute'));
+
+    expect(setPlannedSessionTime).toHaveBeenCalledWith('ps-1', '18:35');
+  });
+
+  it('🔴 les minutes BOUCLENT sans changer l’heure', async () => {
+    await afficher({ items: [seance({ scheduledTime: '18:55:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    await taper(screen.getByLabelText('planning.increaseMinute'));
+
+    // Le stepper des minutes ne touche pas les heures : 18:55 + 5 donne 18:00, pas 19:00. C'est
+    // délibéré — deux commandes indépendantes valent mieux qu'un report implicite.
+    expect(setPlannedSessionTime).toHaveBeenCalledWith('ps-1', '18:00');
+  });
+
+  it('les heures bouclent aussi (23 → 00)', async () => {
+    await afficher({ items: [seance({ scheduledTime: '23:15:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    await taper(screen.getByLabelText('planning.increaseHour'));
+
+    expect(setPlannedSessionTime).toHaveBeenCalledWith('ps-1', '00:15');
+  });
+
+  it('affiche l’avertissement de précision (conséquence de D5)', async () => {
+    await afficher({ items: [seance()] });
+    await ouvrirFeuille('Haut du corps');
+
+    // Sans lui, un rappel arrivé à 17 h 50 pour 18 h passe pour un bug.
+    expect(screen.getByText('planning.timeHint')).toBeTruthy();
+  });
+
+  it('🔴 n’offre pas de régler l’heure d’une séance déjà faite', async () => {
+    await afficher({ items: [seance({ status: 'done', scheduledTime: '18:30:00' })] });
+    await ouvrirFeuille('Haut du corps');
+
+    // Une séance faite ne se convoque plus : offrir le réglage serait une impasse.
+    expect(screen.queryByText('planning.timeLabel')).toBeNull();
+  });
+});
 
 describe('statuts', () => {
   it('🔴 « manqué » est CALCULÉ : planifiée + date passée', async () => {

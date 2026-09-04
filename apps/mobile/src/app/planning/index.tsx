@@ -27,6 +27,7 @@ import {
   type ProgramSessionType,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { TimeStepper } from '@/components/TimeStepper';
 import { EmptyState } from '@/components/EmptyState';
 import { PainSignalBanner } from '@/components/planning/PainSignalBanner';
 import { SessionConflictBanner } from '@/components/planning/SessionConflictBanner';
@@ -35,6 +36,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   markPlannedSessionDone,
   reschedulePlannedSession,
+  setPlannedSessionTime,
   skipPlannedSession,
   useMissedSessions,
   useSessionConflicts,
@@ -205,6 +207,37 @@ export default function PlanningScreen() {
     closeSheet();
     try {
       await skipPlannedSession(id);
+    } catch {
+      // Écriture offline-first optimiste.
+    }
+  };
+
+  /**
+   * US HORAIRE-01 — pose l'heure de la séance sélectionnée.
+   *
+   * La feuille reste **ouverte** : on règle souvent l'heure par petits pas, et se faire fermer la
+   * feuille à chaque appui obligerait à la rouvrir douze fois. `selected` est mis à jour localement
+   * pour que le stepper suive, la requête surveillée rafraîchira la liste derrière.
+   */
+  const onSetTime = async (next: string) => {
+    if (!selected) return;
+    setSelected({ ...selected, scheduledTime: next });
+    try {
+      await setPlannedSessionTime(selected.id, next);
+    } catch {
+      // Écriture offline-first optimiste.
+    }
+  };
+
+  /**
+   * US HORAIRE-01 (décision D7) — retire l'heure, et fait donc **retomber** la séance sur le régime
+   * d'échéance apprise. Sans cette action, poser une heure serait irréversible.
+   */
+  const onClearTime = async () => {
+    if (!selected) return;
+    setSelected({ ...selected, scheduledTime: null });
+    try {
+      await setPlannedSessionTime(selected.id, null);
     } catch {
       // Écriture offline-first optimiste.
     }
@@ -438,6 +471,36 @@ export default function PlanningScreen() {
               variant="ghost"
               onPress={() => void onMarkDone()}
             />
+            {/* US HORAIRE-01 — heure de la séance. Placée AVANT le report : c'est un réglage de
+                la séance, pas une action qui la déplace. */}
+            {selected?.status === 'planned' ? (
+              <>
+                <Text style={[styles.sheetSection, { color: colors.textMuted }]}>
+                  {t('planning.timeLabel')}
+                </Text>
+                {!selected.scheduledTime ? (
+                  <Button
+                    label={t('planning.timeSet')}
+                    variant="ghost"
+                    onPress={() => void onSetTime(DEFAULT_SESSION_TIME)}
+                  />
+                ) : (
+                  <>
+                    <TimeStepper value={selected.scheduledTime} onChange={(v) => void onSetTime(v)} />
+                    <Button
+                      label={t('planning.timeClear')}
+                      variant="ghost"
+                      onPress={() => void onClearTime()}
+                    />
+                  </>
+                )}
+                {/* Conséquence de la décision D5, dite plutôt que laissée passer pour un bug. */}
+                <Text style={[styles.sheetHint, { color: colors.textMuted }]}>
+                  {t('planning.timeHint')}
+                </Text>
+              </>
+            ) : null}
+
             <Text style={[styles.sheetSection, { color: colors.textMuted }]}>
               {t('planning.reschedule')}
             </Text>
@@ -635,6 +698,17 @@ function PlannedSessionRow({
                 {formatDayKey(item.scheduledDate)}
               </Text>
             ) : null}
+            {/* US HORAIRE-01 — l'heure sert à LIRE son planning, pas seulement à notifier. Affichée
+                en `HH:MM` (R8), jamais le `HH:MM:SS` brut de la base.
+                ⚠️ Test de **véracité** et non `!== null` : le type annonce `string | null`, mais une
+                ligne construite sans le champ rend `undefined`, et `undefined !== null` est vrai —
+                le `.slice` levait alors sur 43 tests d'écran. Une valeur absente est absente, quelle
+                que soit la forme qu'elle prend. */}
+            {item.scheduledTime ? (
+              <Text style={[styles.rowTime, { color: pillarColor }]}>
+                {item.scheduledTime.slice(0, 5)}
+              </Text>
+            ) : null}
             {exerciseLabel ? (
               <Text style={[styles.rowMeta, { color: colors.textMuted }]}>{exerciseLabel}</Text>
             ) : null}
@@ -660,6 +734,14 @@ function PlannedSessionRow({
     </GestureDetector>
   );
 }
+
+/**
+ * Heure proposée au premier appui sur « Définir une heure ».
+ *
+ * 18 h 00 plutôt que l'heure courante ou minuit : c'est le créneau d'entraînement le plus fréquent,
+ * et partir de minuit obligerait presque tout le monde à remonter de dix-huit crans.
+ */
+const DEFAULT_SESSION_TIME = '18:00';
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 32, gap: 12 },
@@ -744,6 +826,7 @@ const styles = StyleSheet.create({
   rowTitle: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   strike: { textDecorationLine: 'line-through' },
   rowMeta: { fontFamily: fontFamily.body, fontSize: 12 },
+  rowTime: { fontFamily: fontFamily.bodySemi, fontSize: 12.5, marginTop: 2 },
   rowPace: { fontFamily: fontFamily.mono, fontSize: 12 },
   statusBadge: {
     paddingHorizontal: 8,
@@ -771,6 +854,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 6,
   },
+  sheetHint: { fontFamily: fontFamily.body, fontSize: 11.5, lineHeight: 16, paddingHorizontal: 4, paddingTop: 4 },
   toast: {
     borderRadius: 12,
     borderWidth: 1,

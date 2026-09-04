@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : la saisie de l'heure, US complète
+
+Commit précédent : `1e7546b`. Étapes 5 et 6 du plan — **US livrée**, `etape: recette`.
+**Roadmap 2.4 : 🟡 → ✅** (compteurs **216 livré / 2 partiel** sur 226).
+Vérifié : typecheck **0**, lint **0**, **2 145 tests mobile + 24 fichiers admin + 92 shared verts**.
+
+#### Ajouté
+
+- `components/TimeStepper.tsx` — sélecteur `HH:MM` en **pur JS**, pas de dépendance native.
+- Section « Heure de la séance » dans la feuille d'actions du planning : poser, régler, **retirer**.
+- L'heure sur la ligne du planning, au format `HH:MM`.
+- **12 tests d'écran** + **11 clés i18n** × 2 langues.
+- `RECETTES.md` §54 — **21 critères** cochables.
+
+#### Technique — Notes
+
+- 🔴 **Un vrai bug introduit, attrapé par les tests de Damien, et la leçon vaut plus que le
+  correctif.** Le garde d'affichage était écrit `item.scheduledTime !== null`. Or le type annonce
+  `string | null` mais une ligne **construite sans le champ** rend `undefined` — et
+  `undefined !== null` est **vrai**. Le `.slice(0, 5)` levait donc, et **43 tests d'écran** sont
+  passés au rouge d'un coup. Corrigé en test de **véracité** (`item.scheduledTime ?`), qui couvre
+  `null`, `undefined` et la chaîne vide. **Contre-épreuve faite** : remettre `!== null` fait rougir
+  **48 tests**. Un test d'écran écrit par quelqu'un d'autre a rattrapé une erreur que le typecheck ne
+  pouvait pas voir — c'est exactement ce à quoi sert la couverture d'écrans.
+- **Aucune dépendance native ajoutée**, et c'était un choix : le plan prévoyait
+  `@react-native-community/datetimepicker` « à confirmer ». Le dépôt n'en a aucune, et `settings.tsx`
+  avait **déjà résolu le même problème en pur JS** (`HourStepper`, NUTR-F1). Ajouter un module natif
+  pour un champ, sur un build dont la publication est le chemin critique, n'était pas payant.
+- **Le pas des minutes est de 5, et les deux steppers bouclent** (23 → 00, 55 → 00) : pas de
+  cul-de-sac quand on dépasse la valeur voulue, et **pas de report implicite** des minutes sur les
+  heures — 18:55 + 5 donne 18:00. Deux commandes indépendantes valent mieux qu'un report qu'on ne
+  voit pas venir. Deux tests figent ce comportement.
+- **18 h 00 au premier appui**, pas minuit ni l'heure courante : c'est le créneau d'entraînement le
+  plus fréquent, et partir de minuit imposerait dix-huit crans à presque tout le monde.
+- **La feuille reste ouverte pendant le réglage** : on ajuste par petits pas, et la refermer à chaque
+  appui obligerait à la rouvrir douze fois. L'état local suit le stepper, la requête surveillée
+  rafraîchit la liste derrière.
+- **Cibles tactiles à 44 dp** sur les boutons du stepper, et **libellés d'accessibilité** sur les
+  quatre — sans eux, ils s'annoncent « − » et « + » (patron CONF-07).
+- ⚠️ **Collision de numéro évitée dans `RECETTES.md`** : la numérotation des sections monte à **53**
+  alors que l'en-tête annonçait « 50 sections ». Ajouter une §51 en aurait fait un **doublon**
+  d'EXEC-01. La section est donc §54, et l'en-tête corrigé.
+- **Reste hors périmètre, comme cadré** : le délai réglable (D4), les notifications exactes (D5), une
+  heure sur le gabarit de séance, et le rappel côté course.
+
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : le rappel bascule en convocation
 
 Commit précédent : `696a5c2`. Étape 4 du plan ; reste la saisie de l'heure (UI).
