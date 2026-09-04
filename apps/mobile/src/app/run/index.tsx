@@ -12,6 +12,7 @@ import { cancelRun, startRun, useActiveRun } from '@/data/repositories/run-repos
 import { powerSync } from '@/powersync/system';
 import { startTracking } from '@/running/tracker';
 import { fontFamily } from '@/theme/fonts';
+import { useActionLock } from '@/hooks/useActionLock';
 import { useTheme } from '@/theme/useTheme';
 
 /**
@@ -36,6 +37,7 @@ export default function RunStartScreen() {
 
   const [source, setSource] = useState<RunSource>('gps');
   const [starting, setStarting] = useState(false);
+  const lockStart = useActionLock();
 
   /** Lit l'epoch (ms) de démarrage de la course active en base (source de vérité). */
   const readStartedAtMs = async (runId: string): Promise<number> => {
@@ -46,30 +48,33 @@ export default function RunStartScreen() {
     return row ? new Date(row.started_at).getTime() : Date.now();
   };
 
-  const onStart = async () => {
-    if (starting) return;
-    setStarting(true);
-    try {
-      const id = await startRun(source, plannedSessionId);
+  // `starting` ne pilote que l'affichage : la garde est portée par `useActionLock`. Sans le
+  // verrou, deux appuis du même cycle de rendu créaient DEUX courses — dont une orpheline, et le
+  // suivi GPS rattaché à une seule des deux. Dix-septième site du défaut du 08/08/2026.
+  const onStart = () =>
+    void lockStart(async () => {
+      setStarting(true);
+      try {
+        const id = await startRun(source, plannedSessionId);
 
-      if (source === 'gps') {
-        const startedAtMs = await readStartedAtMs(id);
-        const res = await startTracking(id, startedAtMs, { autoPause: true });
+        if (source === 'gps') {
+          const startedAtMs = await readStartedAtMs(id);
+          const res = await startTracking(id, startedAtMs, { autoPause: true });
 
-        // Permission avant-plan refusée : suivi impossible. On propose de
-        // continuer en mode manuel ou d'annuler ; on ne navigue PAS vers le suivi.
-        if (!res.ok && res.reason === 'foreground-denied') {
-          promptPermissionDenied(id);
-          return;
+          // Permission avant-plan refusée : suivi impossible. On propose de
+          // continuer en mode manuel ou d'annuler ; on ne navigue PAS vers le suivi.
+          if (!res.ok && res.reason === 'foreground-denied') {
+            promptPermissionDenied(id);
+            return;
+          }
+          // `background-denied` : le suivi avant-plan fonctionne, on continue (R1).
         }
-        // `background-denied` : le suivi avant-plan fonctionne, on continue (R1).
-      }
 
-      router.push('/run/active');
-    } finally {
-      setStarting(false);
-    }
-  };
+        router.push('/run/active');
+      } finally {
+        setStarting(false);
+      }
+    });
 
   /**
    * Boîte de dialogue affichée quand la localisation est refusée : continuer en

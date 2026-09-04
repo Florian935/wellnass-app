@@ -449,16 +449,18 @@ npm run test               # shared + mobile + admin — lire le code de sortie,
 npm run test:coverage      # idem + application des seuils (§5 bis) — ce que lance la CI
 ```
 
-État au 11/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 172
-(shared) + 2 100 (mobile) + 445 (admin) = 4 717 tests, tous verts**, typecheck, lint et **seuils de
-couverture** propres.
+État au 14/08/2026, **lots 0 à 4 et 6 terminés**, lot 5 en cours : **2 194
+(shared) + 2 681 (mobile) + 583 (admin) = 5 458 tests, tous verts**, typecheck, lint et **seuils de
+couverture** propres. **Le lot 5 côté back-office est terminé** : les sept écrans qui restaient
+(`ProgramsScreen`, `ExerciseEditScreen`, `FoodEditScreen`, `ProgramCreateScreen`, `LoginScreen`,
+`AccessDenied`, le layout) ont été couverts en parallèle sur `feature/horaire01-heure-seance`.
 
 | | Départ | Maintenant |
 |---|---:|---:|
-| Couverture mobile | 15,0 % | **54,8 %** |
+| Couverture mobile | 15,0 % | **65,7 %** |
 | `apps/mobile/src/data/repositories` | 9 % | **45,4 %** |
 | `apps/mobile/src/lib` · `src/stores` | 28 % · 16 % | **53,5 % · 48,1 %** |
-| `apps/admin` | aucun runner | **445 tests** · data **97,7 %** · 8 écrans React couverts |
+| `apps/admin` | aucun runner | **583 tests** · data **97,7 %** · **les 15 écrans React couverts** |
 
 ## 8. Reprise — par où continuer
 
@@ -492,6 +494,69 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    `src/app` (écrans de saisie et de réglages) et `src/components` — plus nombreux mais moins
    risqués, à prendre par ordre de risque et non de taille. Côté admin, il faudra en plus `jsdom`
    + Testing Library.
+
+   ⚠️ **Un correctif de recette ne s'applique presque jamais à un seul fichier.** Le repli
+   `params.date ?? ''` corrigé sur `food-picker` le 01/08/2026 — celui qui écrivait des entrées
+   rattachées à **aucune journée** — était **encore présent** sur `meal-quick-entry` et `food-scan`
+   le 14/08. Les deux écrans écrivent au journal avec les mêmes paramètres d'URL ; le correctif
+   n'avait suivi ni l'un ni l'autre. **Après tout correctif, chercher le motif ailleurs** :
+
+   ```bash
+   grep -rn "params\.\w* ?? ''" apps/mobile/src/app --include=*.tsx
+   ```
+
+   Et le refaire **après** la correction, pas seulement avant : c'est un `grep` d'une seconde qui
+   aurait épargné deux semaines de défaut latent sur deux chemins d'écriture.
+
+   ✅ **Le lot 5 est terminé : plus aucun écran de `src/app` n'est à 0 %** (14/08/2026). Ce qui
+   reste sous ce seuil est d'une autre nature — quatre écrans courts (`account-delete`,
+   `deletion-pending`, `pain`, `(onboarding)/infos`), deux composants de saisie, deux repositories
+   et `running/interval-guidance.ts`.
+
+   ### Lot 7 — les branches, pas les fichiers
+
+   **Le gisement n'est plus « les écrans à 0 % » mais les chemins jamais empruntés des fichiers
+   déjà testés.** Un fichier à 90 % d'instructions et 40 % de branches est un fichier dont on n'a
+   vérifié qu'un scénario : les cas limites — l'unité impériale, la valeur nulle, l'échec — y sont
+   intacts. La commande qui trie par **nombre de branches manquantes** (et non par pourcentage) :
+
+   ```bash
+   node -e "const j=require('./apps/mobile/coverage/coverage-summary.json');   Object.entries(j).filter(([k])=>k!=='total').map(([k,v])=>[k,v.branches.total-v.branches.covered,v.branches.pct])   .filter(([,m])=>m>=12).sort((a,b)=>b[1]-a[1]).slice(0,15).forEach(r=>console.log(r.join('  ')))"
+   ```
+
+   Premiers traités le 14/08 : **`useUnits`** (32 → **100 %** de branches) et
+   **`workout-summary`** (7,5 → **95 %**). Le reste mobile passe de 69,0 à **71,1 %** de branches,
+   et l'écart instructions ↔ branches de 4,5 à 4,1 points.
+
+   ⚠️ **Un module mocké dans `jest.setup.ts` est INATTEIGNABLE, pas seulement non testé.**
+   `running/tracker.ts` est resté à **0 %** non parce que personne n'avait écrit de test, mais parce
+   qu'aucun test ne pouvait l'exécuter : le setup global le remplace par
+   `startTracking: jest.fn().mockResolvedValue({ ok: true })`. Un fichier de test écrit naïvement
+   aurait donc porté sur le mock — **tout vert, rien d'exécuté**. La parade tient en une ligne, à
+   poser AVANT les imports :
+
+   ```ts
+   jest.unmock('@/running/tracker');
+   ```
+
+   Seuls deux modules du projet sont dans ce cas (`grep "^jest.mock('@/" jest.setup.ts`) :
+   `@/powersync/system` — 3 instructions, sans intérêt — et `@/running/tracker`, désormais couvert.
+   **Avant de lire un 0 % comme une dette de tests, vérifier que le module est atteignable.**
+
+   ⚠️ **Un avertissement répété trois fois dans le code est un test qui manque.** `_layout.tsx`
+   portait trois fois la même phrase, écrite après trois défauts distincts (PAS-01, INSIGHTS-01,
+   REPAS-01) : « une route non déclarée ici n'échoue ni au typecheck ni aux tests — seul l'œil voit
+   l'en-tête manquant ». Le 14/08/2026, ce constat est devenu
+   [`route-declarations.test.ts`](../../../apps/mobile/src/app/__tests__/route-declarations.test.ts),
+   qui **compare le contenu de `src/app` à la liste des `<Stack.Screen>`** — et a immédiatement
+   trouvé une quatrième occurrence : **`cycle`**, deux écrans livrés et recettés dont le titre se
+   dessinait sous la barre d'état.
+
+   Deux choses à retenir. D'abord, **ce test lit le fichier, il ne le rend pas** : monter le Stack
+   demanderait PowerSync, l'auth, les polices et vingt hooks pour vérifier une liste de chaînes, et
+   un mock mal posé le rendrait vert à tort. La lecture statique est ici *plus* fiable que le rendu.
+   Ensuite, quand un commentaire dit « ça ne se teste pas », il décrit presque toujours ce qui ne se
+   teste pas *par le chemin habituel* — pas ce qui échappe à toute vérification.
 
    ⚠️ **RNTL 14 a supprimé `createNodeMock`** — et avec lui le seul levier pour donner une géométrie
    aux composants hôtes sous Jest. Conséquence pour tout code qui appelle `ref.measureInWindow`
@@ -542,7 +607,23 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
    ci-dessus ne pouvait pas le voir : il cherche `useActionLock`, c'est-à-dire les sites **déjà
    corrigés**. **Le bon filet, c'est le test de l'écran, pas la recherche textuelle** : celui-ci a
    été trouvé en écrivant la couverture d'un écran à 0 %, exactement comme le dixième l'avait été
-   en août. Tant qu'il reste des écrans non couverts, il faut supposer qu'il en reste.
+   en août.
+
+   ⚠️ **Puis trois de plus le 14/08/2026 — et cette fois par le BON `grep`.** Plutôt que de chercher
+   les sites corrigés, chercher le **motif fautif** :
+
+   ```bash
+   grep -rn "if (\w*ing) return;\|if (busy) return;\|if (saving) return;" apps/mobile/src --include=*.tsx
+   ```
+
+   Cinq résultats, dont **trois vrais** : `programs/edit.tsx` (jumeau exact du 14ᵉ),
+   `(tabs)/strength.tsx` et `run/index.tsx` — ces deux derniers créaient **deux séances** et **deux
+   courses**. Les deux autres résultats gardaient l'ouverture d'une `Alert`, l'écriture étant déjà
+   verrouillée derrière : faux positifs légitimes, vérifiés un par un.
+
+   **Le compte réel est de 18 `useActionLock` sur 12 fichiers**, et la leçon est la même que pour le
+   repli `?? ''` : **on cherche le motif fautif, pas le correctif appliqué**. La liste des sites
+   corrigés dit ce qui est déjà fait ; seule la recherche du défaut dit ce qui reste.
 
    ⚠️ **Vérifier qu'un test de non-régression échoue vraiment.** Les deux gardes de double appui
    ont été retirées à la main pour voir les tests passer au rouge. Un test écrit **après** le

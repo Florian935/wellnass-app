@@ -18,6 +18,7 @@ import {
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
 import { useTodaySession } from '@/data/repositories/dashboard-repository';
+import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -29,6 +30,7 @@ export default function StrengthScreen() {
   const { workout: active } = useActiveWorkout();
   const today = useTodaySession('strength');
   const [starting, setStarting] = useState(false);
+  const lockStart = useActionLock();
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -48,18 +50,22 @@ export default function StrengthScreen() {
     ]);
   };
 
-  const onStartToday = async (sessionId: string, plannedSessionId: string) => {
-    if (starting) return;
-    setStarting(true);
-    try {
-      await startWorkoutFromSession(sessionId, { plannedSessionId });
-      router.push('/workout');
-    } catch {
-      // offline-first : échec improbable
-    } finally {
-      setStarting(false);
-    }
-  };
+  // `starting` ne pilote que l'affichage : la garde est portée par `useActionLock`. Un état React
+  // ne voit pas un second appui du même cycle de rendu — sans le verrou, deux appuis créaient
+  // DEUX séances, dont une orpheline que rien ne rouvrirait (l'app n'en affiche qu'une).
+  // Seizième site du défaut du 08/08/2026, trouvé le 14/08.
+  const onStartToday = (sessionId: string, plannedSessionId: string) =>
+    void lockStart(async () => {
+      setStarting(true);
+      try {
+        await startWorkoutFromSession(sessionId, { plannedSessionId });
+        router.push('/workout');
+      } catch {
+        // offline-first : échec improbable
+      } finally {
+        setStarting(false);
+      }
+    });
 
   const renderWidget = (id: WidgetId, size: WidgetSize) => {
     const Widget = STRENGTH_WIDGETS[id as StrengthWidgetId];

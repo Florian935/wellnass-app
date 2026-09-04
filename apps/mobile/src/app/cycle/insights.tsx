@@ -19,6 +19,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { CYCLE_PHASES, type CyclePhase, type CrossPhaseResult } from '@wellness/shared';
 
+import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { CycleTrackingGuard } from '@/components/cycle/CycleTrackingGuard';
 import {
@@ -62,15 +63,19 @@ function CycleInsightsContent() {
   if (isLoading) return null;
 
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <ScreenHeader title={t('cycle.insights.title')} subtitle={t('cycle.insights.subtitle')} />
+    // Même correctif que `cycle/index.tsx` : sans `Screen`, et la route `cycle` n'étant pas
+    // déclarée dans le Stack racine, le titre se dessinait sous la barre d'état (défaut PAS-01).
+    <Screen edges={['top']}>
+      <ScrollView contentContainerStyle={styles.page}>
+        <ScreenHeader title={t('cycle.insights.title')} subtitle={t('cycle.insights.subtitle')} />
 
-      <Text style={[styles.lead, { color: colors.textMuted }]}>{t('cycle.insights.lead')}</Text>
+        <Text style={[styles.lead, { color: colors.textMuted }]}>{t('cycle.insights.lead')}</Text>
 
-      {CYCLE_INSIGHT_METRICS.map((metric) => (
-        <MetricBlock key={metric} metric={metric} result={byMetric[metric]} />
-      ))}
-    </ScrollView>
+        {CYCLE_INSIGHT_METRICS.map((metric) => (
+          <MetricBlock key={metric} metric={metric} result={byMetric[metric]} />
+        ))}
+      </ScrollView>
+    </Screen>
   );
 }
 
@@ -159,7 +164,8 @@ function MetricBlock({
 }
 
 const styles = StyleSheet.create({
-  page: { padding: 20, paddingBottom: 48, gap: 12 },
+  // Le rembourrage vient de `Screen` : le répéter ici doublerait les marges latérales.
+  page: { paddingBottom: 48, gap: 12 },
   lead: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 19 },
   card: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },

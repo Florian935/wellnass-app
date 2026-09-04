@@ -13,6 +13,7 @@ import {
   createProgram,
   useProgramDetail,
 } from '@/data/repositories/program-repository';
+import { useActionLock } from '@/hooks/useActionLock';
 import { SessionEditor } from '@/components/programs/SessionEditor';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -167,20 +168,26 @@ function ProgramComposer({ programId }: { programId: string }) {
   const router = useRouter();
 
   const { detail, isLoading } = useProgramDetail(programId);
+  // `addingSession` ne pilote que l'affichage : la garde contre le double appui est portée par
+  // `useActionLock`. L'ancien `if (addingSession) return` ne gardait rien — deux appuis rapides
+  // tombent dans le MÊME cycle de rendu et lisent tous deux `false`, ce qui creait deux séances
+  // portant la même lettre (l'index est calculé avant l'écriture). Quinzième site du défaut du
+  // 08/08/2026, trouvé le 14/08 — jumeau exact de celui de `running-programs/edit.tsx`.
   const [addingSession, setAddingSession] = useState(false);
+  const lockAddSession = useActionLock();
 
-  const onAddSession = async () => {
-    if (addingSession) return;
-    setAddingSession(true);
-    try {
-      const index = detail?.sessions.length ?? 0;
-      await addSession(programId, {
-        name: t('programs.edit.sessionDefaultName', { letter: sessionLetter(index) }),
-      });
-    } finally {
-      setAddingSession(false);
-    }
-  };
+  const onAddSession = () =>
+    void lockAddSession(async () => {
+      setAddingSession(true);
+      try {
+        const index = detail?.sessions.length ?? 0;
+        await addSession(programId, {
+          name: t('programs.edit.sessionDefaultName', { letter: sessionLetter(index) }),
+        });
+      } finally {
+        setAddingSession(false);
+      }
+    });
 
   if (isLoading && !detail) {
     return (
@@ -229,7 +236,7 @@ function ProgramComposer({ programId }: { programId: string }) {
           <Button
             label={t('programs.edit.addSession')}
             variant="ghost"
-            onPress={() => void onAddSession()}
+            onPress={onAddSession}
             disabled={addingSession}
           />
         </View>

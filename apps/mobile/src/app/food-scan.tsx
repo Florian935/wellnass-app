@@ -10,6 +10,7 @@ import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { findFoodByBarcode, importOpenFoodFactsFood } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { fetchOpenFoodFactsByBarcode } from '@/lib/openfoodfacts';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -31,7 +32,14 @@ export default function FoodScanScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams<{ date?: string; meal?: string }>();
-  const date = params.date ?? '';
+  /**
+   * Repli sur **aujourd'hui** : même correctif que `food-picker` (01/08/2026) et
+   * `meal-quick-entry`. Une chaîne vide produit une entrée rattachée à AUCUNE journée, écrite
+   * sans erreur et invisible dans tous les journaux. Le scan est le chemin le plus exposé :
+   * c'est celui qu'on ouvre en raccourci, donc sans paramètres.
+   */
+  const todayKey = useTodayKey();
+  const date = params.date ?? todayKey;
   const meal = params.meal ?? 'breakfast';
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 

@@ -54,6 +54,499 @@ Vérifié : typecheck **0**, lint **0**, **2 145 tests mobile + 24 fichiers admi
   d'EXEC-01. La section est donc §54, et l'en-tête corrigé.
 - **Reste hors périmètre, comme cadré** : le délai réglable (D4), les notifications exactes (D5), une
   heure sur le gabarit de séance, et le rappel côté course.
+### 14/08/2026 — `chore/socle-tests-unitaires` — Lot 7 : les branches, pas les fichiers (68 tests)
+
+Premier incrément du nouveau gisement annoncé au commit précédent : **les chemins jamais empruntés
+des fichiers déjà testés**. Un fichier à 90 % d'instructions et 40 % de branches est un fichier dont
+on n'a vérifié qu'un scénario — les cas limites (unité impériale, valeur nulle, échec) y sont
+intacts. La commande de tri par **nombre de branches manquantes** est notée dans
+[strategie-tests.md](docs/specs/technical/strategie-tests.md).
+
+#### Ajouté
+
+- **`useUnits.test.tsx` — 37 tests ajoutés aux 2 existants (32 → 100 % de branches).** Le hook ne
+  calcule rien : il décide **quel formateur appliquer à quoi**, et chaque défaut couvert ici a été
+  constaté :
+  - **🔴 `formatHeight` ≠ `formatCircumference`.** Le premier rend l'impérial en pieds-pouces —
+    juste pour une taille humaine, **absurde pour un tour de bras** : 35 cm donnerait « 1 ft 2 in »
+    au lieu de 13,8 in. Les deux fonctions existent précisément pour ne pas être confondues, et le
+    test les compare sur la même valeur.
+  - **🔴 `formatAxisNumber` ≠ `*InputValue`.** Les seconds passent par `String(Number(...))`, donc
+    un **point** décimal : juste dans un champ, faux sur un axe. C'est ce mélange qui donnait un
+    graphe français « 90.2 | 67.7 » (recette du 01/08/2026) — les deux sont désormais comparés
+    côte à côte.
+  - **🔴 Chaque grandeur a son nombre de décimales** (1 poids, 2 distance, 0 taille) : les
+    uniformiser donnerait « 5,00 km » ou « 178,00 cm ».
+  - **🔴 `null` n'est jamais `0`** — cinq formateurs vérifiés, plus `undefined` traité comme `null`
+    (un champ optionnel arrive ainsi de la base, et le distinguer produirait « undefined kg »).
+  - **🔴 Une allure nulle, négative, `NaN` ou infinie n'est pas une allure** : « 0:00 /km » se
+    lirait comme une performance surhumaine.
+  - Plus : le réglage absent qui retombe sur le métrique (l'impérial par défaut afficherait des
+    livres pendant la synchro initiale), et l'allure qui porte le symbole de **distance** — les
+    deux symboles venant du même objet, « 8:03 /lb » est une erreur facile.
+- **`workout-summary-screen.test.tsx` — 31 tests (7,5 → 95 % de branches).** Le plus gros écart
+  instructions ↔ branches de `src/app`, sur le dernier écran qu'on voit après un entraînement :
+  - **🔴 « Enregistrer comme modèle » n'apparaît QUE sur une séance libre non vide** — une séance de
+    programme a déjà sa structure ailleurs, et en refaire un modèle créerait un doublon orphelin.
+  - **🔴 Le nom par défaut est daté en LOCAL** : un `slice` de la chaîne ISO UTC décalerait le jour
+    d'un fuseau, une séance du soir devenant celle du lendemain.
+  - **🔴 Un RPE hors bornes est ramené à 0–5 étoiles** (donnée héritée d'une échelle 1–10) : six
+    étoiles casseraient la mise en page.
+  - **🔴 Une note vidée est effacée (`null`), une note non vide est gardée telle quelle** — le
+    détourage sert à décider si la note existe, pas à réécrire ce que l'utilisateur a tapé.
+  - **🔴 Pas de carte partageable sans exercice** : une carte vide envoyée à des tiers est le pire
+    moment pour découvrir un état limite. Et les records y arrivent **déjà formatés**, le volume
+    n'étant pas formaté en poids.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 72/68/65 → **74/70/67** (réel 75,2/71,1/68,4).
+
+#### Technique / Notes
+
+- **5 458 tests verts** (2 194 shared + 2 681 mobile + 583 admin). Couverture mobile **65,7 %**
+  (départ 15,0 %). Le reste mobile passe de 69,0 à **71,1 % de branches** ; l'écart
+  instructions ↔ branches se resserre de 4,5 à 4,1 points. Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — ✅ Plus aucun écran à 0 % : le lot 5 est terminé (49 tests)
+
+Les **deux derniers écrans** de `src/app` sous le seuil sont couverts. Le lot 5 (« écrans à état »)
+est clos, côté mobile comme côté back-office.
+
+#### Ajouté
+
+- **`running-profile-screen.test.tsx` — 28 tests.** L'écran fixe l'**allure de référence 5 km**, dont
+  dérivent toutes les allures cibles de l'app — programmes, planning, détail de séance. Une erreur
+  n'y est pas visible : elle se voit dans une fourchette fausse, trois écrans plus loin.
+  - **🔴 La saisie n'écrit QUE si elle parse.** « 4:3 » en cours de frappe n'est pas une allure ;
+    l'écrire enregistrerait des valeurs absurdes entre deux touches, chacune recalculant les quatre
+    allures cibles. Mais **le champ affiche quand même la frappe** — refuser d'écrire ne doit pas
+    refuser d'afficher, un champ qui n'avance pas se lit comme un clavier bloqué.
+  - **🔴 La saisie locale prime sur la valeur persistée** : sans cet état, PowerSync réécrirait le
+    champ sous les doigts de l'utilisateur à chaque flush.
+  - **🔴 Sans référence, aucune allure n'est calculée** — quatre fourchettes dérivées de rien
+    seraient quatre chiffres faux présentés comme des consignes d'entraînement.
+  - **🔴 Les deux réglages vocaux sont indépendants et éteints par défaut** (R1/R3), et l'intervalle
+    est stocké en **mètres** là où il s'affiche en kilomètres — écrire « 2 » ferait annoncer tous
+    les deux mètres.
+- **`wellbeing-screen.test.tsx` — 21 tests.**
+  - **🔴 Un jour non renseigné est un TROU, jamais un zéro** : un 0 ferait plonger la courbe pour un
+    jour où l'utilisateur n'a rien dit — et **transformerait un silence en mal-être**.
+  - **🔴 Sans aucun jour enregistré, le check-in reste lançable.** Il s'ouvre normalement en tapant
+    un jour du journal ; sans jour, l'écran était un **cul-de-sac** atteint par lien direct ou par
+    le widget d'accueil (constaté le 30/07/2026 sur device).
+  - **🔴 Un jour trop ancien n'est plus éditable** : le bien-être se déclare à chaud, et rouvrir un
+    jour d'il y a six semaines produirait une donnée reconstruite de mémoire.
+  - Plus : la moyenne qui annonce **sur combien de jours** elle porte (deux jours et trente ne
+    valent pas la même chose), les glyphes doublés d'un libellé parlé (les symboles ne se
+    prononcent pas), et la fenêtre qui coupe la courbe **mais pas le journal**.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 71/66/63 → **72/68/65** (réel 73,5/69,0/66,7).
+
+#### Technique / Notes
+
+- **5 390 tests verts** (2 194 shared + 2 613 mobile + 583 admin). Couverture mobile **64,6 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+- **Le prochain gisement n'est plus « les écrans ».** Ce qui reste à 0 % est d'une autre nature :
+  quatre écrans courts, deux composants de saisie, deux repositories et `interval-guidance.ts`.
+  Le vrai sujet est désormais **l'écart instructions ↔ branches** du code déjà testé — 73,5 % contre
+  69,0 % sur le reste mobile, soit 4,5 points de chemins jamais empruntés.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le tracker GPS était INATTEIGNABLE, pas non testé (45 tests)
+
+#### Technique / Notes — ⚠️ une septième famille de faux vert
+
+**`running/tracker.ts` était à 0 % parce qu'aucun test ne pouvait l'exécuter**, pas parce que
+personne n'en avait écrit : `jest.setup.ts` le remplace globalement par
+`startTracking: jest.fn().mockResolvedValue({ ok: true })`. Un fichier de test écrit naïvement
+aurait porté sur le mock — **tout vert, rien d'exécuté**. C'est ce qui s'est passé à la première
+exécution : 19 tests rouges d'un coup, et la cause n'était dans aucun d'eux.
+
+La parade tient en une ligne avant les imports : `jest.unmock('@/running/tracker')`. Seuls **deux**
+modules du projet sont dans ce cas (`grep "^jest.mock('@/" jest.setup.ts`) — l'autre,
+`@/powersync/system`, fait 3 instructions. **Avant de lire un 0 % comme une dette de tests, vérifier
+que le module est atteignable.**
+
+#### Ajouté
+
+- **`tracker.test.ts` — 24 tests** sur le module qui décide de ce qui arrive à une course pendant
+  qu'on court :
+  - **🔴 Le contrat `stop → drain → finish`.** L'OS peut livrer **un dernier lot après l'arrêt**, qui
+    installe un flush *postérieur* à celui qu'on attendait : le drain ré-attend tant que la poignée
+    change. Sans lui, `avg_pace` serait calculé sur une distance périmée. La boucle est **bornée** —
+    et ce test-là devait être écrit avec soin : une chaîne réellement infinie ferait tourner le test
+    indéfiniment, le défaut se manifestant par un *timeout* et jamais par un échec lisible. Le
+    compteur de réinstallations **est** le test.
+  - **🔴 Les deux permissions ne sont pas de même nature** : l'avant-plan est bloquant, l'arrière-plan
+    ne l'est pas — et le suivi doit **quand même démarrer** avant de le signaler, Android refusant
+    l'arrière-plan par défaut.
+  - **🔴 L'état module est remis à neuf** à chaque course (les cumuls y survivent, sinon la seconde
+    course démarre avec la distance de la première) et **une pause restée active est levée**.
+  - **🔴 Pause et reprise sont idempotentes**, la pause persiste immédiatement (le repository
+    `pauseRun` est un no-op : c'est le tracker qui porte cette responsabilité) avec un **segment
+    vide** — ajouter un point à la pause dessinerait un aller-retour immobile sur la trace.
+- **`measurements-screen.test.tsx` — 21 tests.** Les trois choix de lecture de MESUR-01, plus tout
+  ce qui touche aux unités (stockage en cm, affichage possible en pouces) :
+  - **🔴 Une courbe à la fois**, et changer de mesure change **aussi** le tableau — sinon deux
+    chiffres justes parlent de deux choses différentes sans le dire.
+  - **🔴 Un point n'est pas une tendance** : on le dit plutôt que de tracer une ligne plate.
+  - **🔴 Le premier relevé n'a pas de delta « 0 »** — rien à comparer n'est pas la même information
+    qu'aucun changement.
+  - **🔴 Le signe est dans le TEXTE** (`−` / `+` / `=`), la couleur ne porte jamais seule le sens :
+    un écran qui ne distinguerait baisse et hausse que par du vert et de l'ambre serait illisible
+    pour un daltonien, sur l'information même qu'on vient chercher.
+  - **🔴 La fenêtre coupe la courbe, pas le tableau**, et le delta est **converti** dans l'unité
+    affichée (−1,54 cm = −0,6 in : afficher « −1,5 » donnerait un écart trois fois trop grand).
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 69/65/62 → **71/66/63** (réel 72,3/67,6/65,0).
+
+#### Technique / Notes
+
+- **5 341 tests verts** (2 194 shared + 2 564 mobile + 583 admin). Couverture mobile **63,8 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le catalogue d'exercices et la garde anti-dérive du profil (50 tests)
+
+#### Ajouté
+
+- **`exercises-screen.test.tsx` — 24 tests.** **Un écran, quatre métiers**, choisis par l'URL :
+  consulter, **ajouter** à la séance, **remplacer** un exercice, **lier une variante**. Un même
+  appui sur une ligne fait donc quatre choses différentes, et chaque mode exclut ce qui n'a pas de
+  sens :
+  - **🔴 Remplacer ne propose pas ce qui est déjà dans la séance** — sinon on remplace un exercice
+    par son voisin déjà présent, ce qui le duplique.
+  - **🔴 Lier une variante exclut l'exercice LUI-MÊME** (une variante circulaire que rien en aval ne
+    sait démêler) **et ceux déjà liés**.
+  - **🔴 Les suggestions de substitution n'existent qu'en mode remplacement** : ailleurs il n'y a pas
+    d'exercice source, et `useSubstitutions` reçoit `null`. Ce qui est déjà dans la séance n'est pas
+    une suggestion non plus — c'est un doublon.
+  - **🔴 Les favoris remontent en tête** : le SQL ne fournit que l'ordre alphabétique, et perdre ce
+    tri rend un catalogue de 400 entrées inutilisable sans qu'aucun test ne rougisse.
+  - **🔴 « Vide à cause d'un filtre » ≠ « vide tout court »**, et seul le premier propose une
+    réinitialisation. Un catalogue qui paraît vide à cause d'un filtre oublié se lit comme une app
+    cassée.
+  - Plus : sans séance active, un appui n'écrit **rien** (écran ouvert en lien direct, ou séance
+    clôturée ailleurs), et l'étoile de favori ne déclenche pas la navigation de la ligne qui la
+    contient.
+- **`profile-screen.test.tsx` — 26 tests.** Deux mécanismes qu'aucun typage n'attrape :
+  - **🔴 La garde anti-dérive.** En unités impériales, le poids stocké en kg est affiché en livres
+    puis reconverti à l'enregistrement : **ouvrir l'écran et le sauver ferait glisser le poids** à
+    chaque passage, par arrondis successifs. La parade — mémoriser la chaîne affichée au montage et
+    réécrire la valeur *stockée* si elle n'a pas bougé — est testée avec un facteur de conversion
+    volontairement non rond, un facteur entier masquant exactement le défaut cherché. Même garde
+    pour la taille et le poids cible.
+  - **🔴 Un champ invalide BLOQUE, un champ vide EFFACE.** « abc » dans le poids est une faute de
+    frappe qu'on ne doit pas transformer en effacement silencieux ; vider le poids cible est un
+    geste délibéré. La garde tient **aussi dans `onSave`**, pas seulement sur le bouton.
+  - Plus : le formulaire monté seulement **après** résolution du profil (sinon `useState` fige les
+    champs sur les valeurs vides du premier rendu, et l'écran enregistre un profil vide), les zéros
+    de la date conservés, et l'objectif « santé » affiché par défaut **sans être écrit**.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 68/63/61 → **69/65/62** (réel 71,1/66,4/63,9).
+
+#### Technique / Notes
+
+- **5 296 tests verts** (2 194 shared + 2 519 mobile + 583 admin). Couverture mobile **63,0 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — La dette du 17ᵉ verrou est close, et les stats nutrition (47 tests)
+
+Le commit précédent livrait `run/index.tsx` **corrigé mais non couvert**, et le disait. C'est fait.
+
+#### Ajouté
+
+- **`run-start-screen.test.tsx` — 17 tests.** Le verrou est vérifié (contre-épreuve faite), mais le
+  vrai risque de l'écran est ailleurs : **la course est créée AVANT que la permission GPS ne soit
+  connue.** C'est nécessaire — le tracker a besoin d'un identifiant — et ça ouvre une fenêtre où une
+  ligne `runs` existe sans suivi possible. Les trois issues sont testées :
+  - **🔴 Refus AVANT-PLAN** → on ne navigue **pas** vers le suivi (l'ouvrir afficherait un suivi qui
+    n'avance jamais : dix minutes de course pour rien), et les **deux** sorties proposées annulent
+    la ligne GPS créée — sans quoi elle resterait ouverte et l'app proposerait de « reprendre » une
+    course qui n'a jamais démarré.
+  - **🔴 Refus ARRIÈRE-PLAN seul** → on continue (R1) : bloquer ici priverait de GPS la majorité des
+    utilisateurs, Android refusant l'arrière-plan par défaut.
+  - **🔴 Le tracker part de l'heure en BASE**, pas de l'horloge du téléphone : l'écart serait égal au
+    temps d'écriture, et les allures du premier kilomètre fausses. Repli sur l'heure courante si la
+    lecture échoue — mieux vaut quelques millisecondes de décalage qu'une course qui refuse de partir.
+  - Plus : le repli manuel qui **conserve la séance planifiée** (le refus de permission n'a rien à
+    voir avec le planning), et le mode manuel qui ne demande **aucune** permission.
+- **`nutrition-stats-screen.test.tsx` — 30 tests.** Six cartes, et une contrainte qui les relie :
+  **une seule fenêtre 7 j / 30 j** pilote apports, répartition par repas, adhérence et régularité —
+  quatre toggles indépendants produiraient quatre chiffres qu'on croirait comparables.
+  - **🔴 La comparaison de période charge DEUX fenêtres** puis coupe au seuil : un seul chargement
+    donnerait un écart calculé contre du vide, donc toujours positif.
+  - **🔴 Le badge d'écart attend la fin du chargement** — affiché trop tôt, il compare une moyenne
+    partielle à une moyenne complète.
+  - **🔴 Le bilan calorique est SIGNÉ et localisé** (`Intl.NumberFormat`) : « 8400 » ne dit pas si
+    l'on est au-dessus ou en dessous de sa cible, et c'est toute l'information.
+  - **🔴 L'adhérence distingue trois silences** — pas d'objectif, objectif sans jour journalisé,
+    chargement — parce qu'ils appellent trois gestes différents.
+  - Plus : un repas custom sans nom qui retombe sur son **rang** et jamais sur sa clé technique
+    (défaut déjà corrigé côté journal), une courbe qui exige **deux** points, et une pesée nulle ou
+    illisible qui n'écrit rien.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 66/62/59 → **68/63/61** (réel 69,6/64,6/62,8).
+
+#### Technique / Notes
+
+- **5 246 tests verts** (2 194 shared + 2 469 mobile + 583 admin). Couverture mobile **62,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Trois verrous de plus, trouvés par le BON grep (38 tests)
+
+#### Corrigé
+
+- **🔴 Trois sites du défaut de double appui, en une passe.** Après la leçon du commit précédent
+  (« chercher le motif fautif, pas le correctif appliqué »), un `grep` sur le motif — et non sur
+  `useActionLock` — a sorti cinq résultats, dont **trois vrais** :
+  - **`programs/edit.tsx`** (15ᵉ) — jumeau exact de celui trouvé la veille dans
+    `running-programs/edit.tsx` : deux appuis créaient **deux séances portant la même lettre**,
+    l'index étant calculé avant l'écriture ;
+  - **`(tabs)/strength.tsx`** (16ᵉ) — deux appuis créaient **deux séances**, dont une orpheline que
+    rien ne rouvrirait, l'app n'en affichant qu'une ;
+  - **`run/index.tsx`** (17ᵉ) — deux appuis créaient **deux courses**, avec le suivi GPS rattaché à
+    une seule des deux.
+
+  Les deux autres résultats gardaient l'ouverture d'une `Alert`, l'écriture étant déjà verrouillée
+  derrière : faux positifs légitimes, vérifiés un par un. **Le compte réel est de 18 `useActionLock`
+  sur 12 fichiers.** Contre-épreuves faites sur les deux sites testés — verrou retiré, test rouge.
+
+  ```bash
+  grep -rn "if (\w*ing) return;\|if (busy) return;\|if (saving) return;" apps/mobile/src --include=*.tsx
+  ```
+
+#### Ajouté
+
+- **`strength-screen.test.tsx` — 18 tests.** Au-delà du verrou, l'écran décide **quelle carte
+  d'action épinglée** afficher, et l'ordre est une règle produit : une séance **en cours** passe
+  avant tout (proposer d'en démarrer une autre par-dessus produirait exactement le doublon que le
+  verrou empêche), puis la séance **planifiée du jour**, sinon la **séance libre** — dont le choix
+  vierge/modèle est posé **avant** toute création, pour ne pas laisser un enregistrement à nettoyer
+  si l'utilisateur change d'avis. Plus les deux repères discrets : ce qui a été fait aujourd'hui, et
+  la prochaine séance prévue en JJ/MM — sans eux, un planning à venir se lit comme un planning vide.
+- **`program-edit-screen.test.tsx` — 20 tests.** Même contrat que son jumeau running, et c'est
+  l'intérêt de le tester : les deux écrans ont **déjà divergé une fois** (le verrou), ils peuvent
+  diverger encore. Couvert : le pilier `strength` écrit explicitement (sans lui le programme
+  atterrit dans l'onglet course), la sentinelle `none` jamais écrite en base, six formes de durée
+  invalide qui valent « non renseignée », et la création qui **remplace** le formulaire dans
+  l'historique — y revenir et réappuyer produirait un doublon.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 65/61/58 → **66/62/59** (réel 68,1/63,5/61,3).
+
+#### Technique / Notes
+
+- **5 199 tests verts** (2 194 shared + 2 422 mobile + 583 admin). Couverture mobile **61,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+- `run/index.tsx` est corrigé mais **pas encore couvert** : son test demande de simuler la
+  permission GPS et le suivi en arrière-plan, ce qui mérite son propre incrément.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le défaut du lien direct était sur DEUX autres écrans (42 tests)
+
+#### Corrigé
+
+- **🔴 `meal-quick-entry.tsx` et `food-scan.tsx` portaient encore `params.date ?? ''`.** C'est le
+  défaut de recette du 01/08/2026 — des entrées rattachées à **aucune journée**, écrites sans
+  erreur, comptées par le bouton d'ajout, et invisibles dans tous les journaux. Le correctif avait
+  été appliqué à `food-picker` seul ; les deux autres écrans qui écrivent au journal avec les mêmes
+  paramètres d'URL ne l'avaient jamais reçu. Le scan est le plus exposé : c'est celui qu'on ouvre
+  en raccourci, donc sans paramètres. Les deux tests ont été vus rouges avant correction.
+
+  **Leçon notée dans [strategie-tests.md](docs/specs/technical/strategie-tests.md)** : un correctif
+  de recette ne s'applique presque jamais à un seul fichier. Après correction, refaire le `grep` du
+  motif — une seconde qui aurait épargné deux semaines de défaut latent sur deux chemins d'écriture.
+
+#### Ajouté
+
+- **`meal-quick-entry-screen.test.tsx` — 24 tests.** Un écran où **on devine** : `parseMealText` et
+  `bestMatchIndex` sont des heuristiques pures, testées ailleurs et reprises telles quelles. Ce qui
+  compte ici, c'est ce qu'on fait de leurs **échecs** :
+  - **🔴 Une ligne non reconnue est MONTRÉE, avec son texte d'origine**, sans champ de grammes, et
+    **non comptée** dans le bouton d'ajout. La faire disparaître laisserait croire que tout a été
+    ajouté, sans dire quoi ressaisir.
+  - **🔴 Rien n'est écrit sans relecture** : le bouton annonce combien de lignes vont partir, et
+    une ligne mise à zéro est ignorée **sans empêcher les autres** — la relecture porte ligne par
+    ligne.
+  - **🔴 Les grammes sont déduits de l'unité ET des portions de l'aliment** : « 2 tranches de pain »
+    vaut 2 × 30 g, pas 2 g — une erreur d'un facteur 30 qui passerait inaperçue dans un total.
+    Repli générique quand l'aliment ne connaît pas l'unité nommée.
+- **`food-scan-screen.test.tsx` — 18 tests.** La caméra est de la recette ; la **machine à états**
+  derrière elle ne l'est pas :
+  - **🔴 Un code n'est résolu QU'UNE FOIS.** La caméra rappelle en continu tant qu'un code est
+    visible : sans verrou, un seul produit devant l'objectif déclencherait des dizaines d'imports
+    OpenFoodFacts et autant de lignes `foods` en double. Double garde testée — le verrou *et* le
+    retrait du rappel hors phase de scan, qui couvre le cas d'un **autre** code entrant dans le
+    cadre pendant la requête.
+  - **🔴 Le local avant le réseau** : ce qui rend le scan utilisable hors ligne sur ses propres
+    produits.
+  - **🔴 Trois échecs, trois messages** (réseau / code inconnu / fiche incomplète) : trois gestes
+    différents, et un message unique ferait recommencer le scan dans deux cas sur trois. Le code
+    inconnu est rappelé — il permet de comprendre qu'on a scanné l'emballage.
+  - **🔴 « Rescanner » et « annuler » libèrent le verrou** : sans quoi rescanner le même produit ne
+    ferait rien, et l'utilisateur conclurait que le bouton est cassé.
+  - Plus : la permission **inconnue** distinguée du refus (accuser d'un refus non donné), une sortie
+    laissée sur le refus, les micronutriments mis à l'échelle comme les macros, et `dismissAll`
+    plutôt que `back` — un simple retour ramènerait sur le sélecteur d'aliment, l'ajout étant fait.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 63/59/56 → **65/61/58** (réel 66,8/62,5/60,1).
+
+#### Technique / Notes
+
+- **5 161 tests verts** (2 194 shared + 2 384 mobile + 583 admin). Couverture mobile **60,3 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Le profil nutritionnel, l'écran qui fixe la cible (41 tests)
+
+**41 tests** sur `nutrition-profile.tsx` (76 instructions, à 0 %). Tout ce que cet écran écrit se
+répercute sur le journal, le bilan du jour, le planning repas et les suggestions de macros : une
+erreur n'y est **jamais visible sur place**, elle se voit dans un objectif qui a bougé sans raison,
+ailleurs dans l'app.
+
+#### Ajouté
+
+- **🔴 Un profil incomplet ne produit AUCUNE cible.** Sans poids, taille ni âge, `tdee` renvoie
+  `null` : l'écran propose de compléter le profil général plutôt que d'afficher un objectif inventé,
+  que l'utilisateur suivrait. Les macros disparaissent avec — elles dérivent des calories — mais
+  les réglages qui ne dépendent pas du corps (objectif, restrictions, micros) restent accessibles.
+- **🔴 L'objectif nutritionnel est DÉRIVÉ de l'objectif d'entraînement** à la première ouverture :
+  qui a dit « prendre du muscle » n'a pas à le redire, et proposer « maintien » par défaut irait à
+  contresens de ce qui a déjà été saisi.
+- **🔴 Manuel bat calculé, et le retour au calculé est un geste explicite.** Le bouton
+  « recalculer » n'apparaît que si une cible manuelle existe — sans lui, on ne pourrait jamais
+  défaire une saisie. Quatre formes de saisie invalide écrivent `null` (et non `0`, qui figerait une
+  cible à zéro calorie qu'aucun écran ne saurait interpréter).
+- **🔴 Toucher UNE macro les fige TOUTES LES TROIS** : une répartition à moitié manuelle donnerait
+  un total qui ne correspond ni à l'objectif calculé ni au choix de l'utilisateur. Et les
+  pourcentages affichés suivent alors les grammes **manuels** — sinon on lirait des pourcentages qui
+  ne correspondent à aucun des chiffres saisis.
+- **🔴 Un bonus jour de séance nul s'affiche VIDE, pas « 0 »** — un zéro dans un champ se lit comme
+  une valeur choisie. Cinq formes de saisie testées, dont la virgule décimale ; tout ce qui n'est
+  pas un entier positif désactive le bonus, un négatif abaisserait la cible les jours de séance.
+- **🔴 La marge d'adhérence est écrite comme un NOMBRE** : le segment porte des chaînes (contrainte
+  du composant) et sans `parseInt` la base recevrait `"15"`, rendant fausse toute comparaison en aval.
+- Plus : les allergènes découpés sur la virgule puis détourés et vidés des blancs (une entrée vide
+  produirait un allergène `""`), une restriction décochée sans emporter les autres, le facteur
+  d'activité affiché à côté de son libellé (« ×1,55 » explique pourquoi la cible bouge de 300 kcal),
+  et les micros suivis qui restent une préférence **locale**, hors profil synchronisé.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 61/57/54 → **63/59/56** (réel 65,1/61,1/58,6).
+
+#### Technique / Notes
+
+- **5 119 tests verts** (2 194 shared + 2 342 mobile + 583 admin). Couverture mobile **59,2 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — Liste de courses et aliment perso (62 tests) — des faux zéros corrigés
+
+#### Corrigé
+
+- **🔴 `food-custom.tsx` écrivait des ZÉROS AFFIRMÉS à la place de « non renseigné ».** `Number('')`
+  vaut `0` : chaque champ facultatif laissé vide partait en base comme un zéro — « 0 g de fibres »,
+  « 0 g de sucres » — et `collectMicros` écrivait les **onze micronutriments à zéro sur tout aliment
+  créé**. La nuance n'est pas cosmétique : l'app distingue partout « nul » de « inconnu » (un tiret
+  plutôt qu'un chiffre, une VNR non calculée), et ces faux zéros la rendaient impossible à faire —
+  un aliment perso déclarait zéro fer, zéro sodium, zéro vitamine C, et la grille de couverture du
+  journal les comptait comme des valeurs connues. `parse` traite désormais le cas vide en premier.
+  Trouvé en écrivant le test, qui distingue explicitement le **zéro saisi** (conservé — c'est une
+  information réelle pour un fruit) du **champ vide** (`null`).
+
+#### Ajouté
+
+- **`shopping-screen.test.tsx` — 30 tests.** Écran dont la particularité est qu'**on s'en sert
+  debout dans un magasin**, une main sur le chariot :
+  - **🔴 Cocher un rayon entier est gratuit, le DÉ-cocher est confirmé** (D13) — cocher se rattrape
+    d'un geste, dé-cocher efface un travail qu'on ne peut pas reconstituer de mémoire. Compléter un
+    rayon partiellement coché ne demande rien non plus : c'est le cas courant en fin de rayon.
+  - **🔴 Régénérer COMPTE les cases qu'on va perdre** (critère de recette 16) : « tu vas perdre 2
+    cases » n'est pas la même décision que « tu vas perdre 40 cases ». Sans case cochée, le message
+    reste neutre — dramatiser banaliserait l'avertissement.
+  - **🔴 L'ordre des rayons est celui du PARCOURS de magasin**, pas celui des données : trier par
+    nom ferait traverser le magasin plusieurs fois. Un rayon absent est sauté sans laisser de trou.
+  - **🔴 La liste dit ce qu'elle ne sait pas** (R12) : entrées non résolues annoncées, et une
+    quantité **partielle** signalée comme telle — afficher « 500 g » tout court sous-estimerait, ce
+    qui est précisément l'erreur à ne pas commettre en silence.
+  - Plus : un article est une **case à cocher** pour les lecteurs d'écran (un bouton n'annoncerait
+    pas s'il est déjà pris), une route ouverte nue retombe sur la semaine courante, et un partage
+    annulé ne laisse pas d'indicateur bloqué.
+- **`food-custom-screen.test.tsx` — 32 tests.** Cet écran écrit une **densité pour 100 g** réutilisée
+  par toutes les pesées : une erreur ne s'y voit pas, elle se voit des semaines plus tard dans des
+  totaux faux dont on ignore l'origine. Couvert : les cinq formes de saisie refusée pour les
+  calories, la virgule décimale, la distinction **zéro saisi / champ vide**, les micros qui
+  **s'ouvrent d'eux-mêmes** quand l'aliment en porte (un import OpenFoodFacts en a souvent, repliés
+  ils seraient invisibles à la relecture), et la bascule création/édition — se tromper de branche
+  dupliquerait l'aliment à chaque correction, les anciennes entrées pointant vers la version d'avant.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 59/55/52 → **61/57/54** (réel 64,0/59,3/56,8).
+
+#### Technique / Notes
+
+- **5 078 tests verts** (2 194 shared + 2 301 mobile + 583 admin). Couverture mobile **58,5 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
+
+### 14/08/2026 — `chore/socle-tests-unitaires` — La gate de routing, et une route oubliée depuis CYCLE-01 (33 tests)
+
+#### Corrigé
+
+- **🔴 La route `cycle` n'était PAS déclarée dans le Stack racine.** Ses deux écrans (US CYCLE-01,
+  livrés et recettés) n'avaient donc **ni en-tête de navigation ni zone sûre** : leur titre se
+  dessinait **sous la barre d'état**. C'est exactement le défaut PAS-01 — celui que `_layout.tsx`
+  décrit **trois fois** comme « invisible au typecheck comme aux tests ». Les deux écrans sont
+  désormais enveloppés dans `Screen edges={['top']}` (le rembourrage venant de `Screen`, `page` ne
+  garde que le bas), et la route est déclarée. `templates` l'est aussi, par cohérence.
+
+#### Ajouté
+
+- **`route-declarations.test.ts` — 5 tests.** Un avertissement répété trois fois dans le code est un
+  test qui manque : celui-ci **compare le contenu de `src/app` à la liste des `<Stack.Screen>`**, dans
+  les deux sens (route non déclarée / déclaration orpheline). Il a trouvé `cycle` à sa première
+  exécution, et la contre-épreuve a été faite — déclaration retirée, test rouge.
+  Il vérifie aussi que `password-reset` porte **exactement** le nom attendu par le deep link (un
+  autre nom produit « Unmatched Route », la navigation d'Expo Router gagnant la course contre la
+  gate) et que les écrans qui piègent l'utilisateur désactivent le geste de retour.
+  ⚠️ **Ce test lit le fichier, il ne le rend pas** : monter le Stack demanderait PowerSync, l'auth,
+  les polices et vingt hooks pour vérifier une liste de chaînes — et un mock mal posé le rendrait
+  vert à tort.
+- **`root-layout-gate.test.tsx` — 28 tests** sur le premier code qui tourne au démarrage. La
+  *décision* de route vit dans `resolveRootRoute` (pure, déjà testée) ; ce qui est couvert ici, c'est
+  ce que le layout en fait :
+  - **🔴 Quatre formes d'attente** (auth, profil, réglages, contrôle de suppression) : aucune
+    redirection, aucun écran monté, splash conservé. Rediriger pendant le chargement produit un
+    flash d'onboarding puis une boucle quand le profil arrive.
+  - **🔴 On ne redirige que si l'on n'est pas déjà au bon endroit** — un `replace` inconditionnel
+    remonterait la pile en boucle. Vérifié pour l'auth, l'onboarding et l'app.
+  - **🔴 `auth-callback` est une échappatoire, pas une route** : le lien de confirmation d'e-mail
+    fait naviguer Expo Router sur un chemin **sans écran**, et sans cette sortie un compte **déjà
+    onboardé** reste bloqué sur « Unmatched Route » — cas invisible sur un compte neuf.
+  - **🔴 Les réglages ne sont créés qu'après la synchro initiale** : une ligne locale que le serveur
+    a déjà viole la contrainte unique `user_id`, l'envoi échoue en boucle et **bloque toute la
+    synchro**. Même garde pour la clôture d'une séance périmée, qui n'a lieu qu'**une** fois par
+    lancement.
+  - **🔴 Des polices en erreur ne bloquent pas le démarrage**, et la déconnexion **réinitialise** le
+    contrôle de suppression — sinon l'état du compte précédent piégerait le suivant sur l'écran-gate.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 58/54/51 → **59/55/52** (réel 61,8/57,8/54,5).
+
+#### Technique / Notes
+
+- **5 016 tests verts** (2 194 shared + 2 239 mobile + 583 admin). Couverture mobile **57,1 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
 
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : le rappel bascule en convocation
 
@@ -359,6 +852,55 @@ Couverture `apps/admin` : **68,37 % → 78,46 %** de statements.
   mention d'aide (clic porté sur le libellé, qui remonte au parent), et un test initial cherchait
   « dev » — c'est ce dernier qui a mis la sensibilité aux accents au jour.
 - Aucune migration, aucune sync rule, **aucune ligne de roadmap concernée**.
+### 11/08/2026 — `chore/socle-tests-unitaires` — Planification d'un programme et détail de séance (73 tests)
+
+**73 tests** sur `planning/plan.tsx` (86 instructions) et `history/[id].tsx` (81), tous deux à 0 %.
+
+#### Ajouté
+
+- **`plan-screen.test.tsx` — 34 tests.** C'est le seul écran qui **génère des séances en masse** :
+  durée × nombre de séances, couramment plusieurs dizaines de lignes en une pression. Les garde-fous
+  testés sont donc ceux d'une écriture irréversible en pratique.
+  - **🔴 Rien ne part tant que TOUTES les séances n'ont pas de jour.** Une séance sans jour ne serait
+    simplement pas planifiée : l'utilisateur croirait avoir posé son programme entier et
+    découvrirait le trou trois semaines plus tard. Et un programme **sans séance** ne peut pas être
+    planifié — sans la condition `length > 0`, `every` sur un tableau vide renvoie `true`.
+  - **🔴 Le défaut de départ est LUNDI PROCHAIN**, pas aujourd'hui : planifier une semaine déjà
+    entamée poserait des séances sur des jours passés, comptées « manquées » à l'instant du départ.
+  - **🔴 Activer un second programme ouvre un arbitrage à TROIS issues** (supprimer les séances
+    futures de l'ancien / les garder / annuler). Trancher à sa place produirait soit une perte
+    silencieuse, soit un planning illisible. Replanifier le programme **déjà actif** ne pose aucune
+    question — ce serait une question sur soi-même — et l'arbitrage porte sur le **pilier du
+    programme planifié**, pas sur un pilier fixe.
+  - **🔴 « Programme introuvable » offre un retour** : la pile `planning` est en `headerShown: false`,
+    sans bouton l'écran est un cul-de-sac. Constaté le 30/07/2026.
+  - Plus : le libellé du bouton qui **annonce le nombre de séances** avant de les créer, six formes
+    de durée invalide qui bloquent l'action, et deux séances autorisées le même jour (haut/bas du
+    corps est un choix légitime que l'app n'a pas à trancher).
+- **`workout-detail-screen.test.tsx` — 39 tests.** Écran en lecture seule — ce qui pourrait laisser
+  croire qu'il ne risque rien. Au contraire : **une valeur mal formatée y devient un souvenir faux.**
+  - **🔴 Chaque type de série est lu dans SON unité.** Le même champ `weightKg` veut dire « charge
+    soulevée » sur une série normale et **« lest »** sur une série à la durée, où il s'affiche
+    « 0:45 · +10 kg » — sans le préfixe, un gainage lesté se lirait comme un mouvement à 10 kg. Les
+    sept types ont leur libellé, et un type **inconnu** (venu d'une version plus récente via la
+    synchro) retombe sur « normale » au lieu de laisser une ligne muette.
+  - **🔴 L'écart à la charge planifiée est signé** `=` / `▲` / `▼` : la seule information qui
+    distingue « j'ai suivi le programme » de « j'ai forcé » ou « j'ai réduit ».
+  - **🔴 L'intensité suit l'échelle CHOISIE** (RPE ou RIR, UX-05) alors que la base stocke le RPE —
+    afficher la donnée brute contredirait le réglage sans que rien n'échoue.
+  - **🔴 Le titre est la date de FIN** : une séance à cheval sur minuit se range dans l'historique au
+    jour où elle s'est terminée, et afficher le début ferait diverger le titre de sa position.
+  - **🔴 Un volume nul disparaît, un RPE de 0 reste** : « 0 kg » sur une séance au poids de corps est
+    faux (le volume n'est pas nul, il n'est pas mesurable), tandis que 0 est une intensité légitime.
+
+#### Modifié
+
+- **Cliquet du reste mobile relevé** : 56/52/49 → **58/54/51** (réel 60,5/56,8/53,7).
+
+#### Technique / Notes
+
+- **4 790 tests verts** (2 172 shared + 2 173 mobile + 445 admin). Couverture mobile **56,3 %**
+  (départ 15,0 %). Typecheck, lint à 0, seuils tenus.
 
 ### 11/08/2026 — `chore/socle-tests-unitaires` — Planning repas et éditeur de programme (62 tests) — un 14ᵉ verrou trouvé
 

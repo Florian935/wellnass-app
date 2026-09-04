@@ -88,8 +88,20 @@ export default function FoodCustomScreen() {
     };
   }, [editing, foodId, i18n.language]);
 
+  /**
+   * Nombre saisi, ou `null` si le champ n'apprend rien.
+   *
+   * ⚠️ **Le cas vide est traité en premier, et c'est le cœur de la fonction.** `Number('')` vaut
+   * `0` : sans cette garde, chaque champ facultatif laissé vide était enregistré comme un **zéro
+   * affirmé** — « 0 g de fibres », « 0 mg de fer » — et `collectMicros` écrivait les **onze**
+   * micronutriments à zéro sur tout aliment créé. La nuance n'est pas cosmétique : l'app distingue
+   * partout « nul » de « inconnu » (un tiret plutôt qu'un chiffre, une VNR non calculée), et ces
+   * faux zéros la rendaient impossible à faire. Corrigé le 14/08/2026.
+   */
   const parse = (s: string) => {
-    const n = Number(s.replace(',', '.'));
+    const trimmed = s.trim();
+    if (trimmed === '') return null;
+    const n = Number(trimmed.replace(',', '.'));
     return Number.isFinite(n) && n >= 0 ? n : null;
   };
   const kcalNum = parse(kcal);
