@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+### 12/08/2026 — `fix/promesses-non-capturees` — treize rejets non capturés, et le garde-fou qui va avec
+
+Commit précédent : `450d6f9`. **Cinquième rencontre du même motif** — d'où le passage de la
+correction au garde-fou.
+Vérifié : typecheck **0**, lint **0**, **2 696 tests mobile + 24 admin + 92 shared verts**.
+
+#### Corrigé
+
+- **13 chaînes `void … .then(…)` sans `.catch`** : `auth-store`, `(onboarding)/pillars`,
+  `settings` (×2), `(tabs)/nutrition` (×3), `cycle/index`, `food-custom`, `workout-summary`,
+  `useAuthDeepLink`, `useHealthConnectState` (×2).
+- 🔴 **Le plus grave n'était pas un avertissement : `auth-store` bloquait le DÉMARRAGE de l'app.**
+  `void supabase.auth.getSession().then(…)` — si la lecture de session rejetait (stockage sécurisé
+  illisible, jeton corrompu, panne réseau au premier lancement), `initializing` restait à `true`
+  **pour toujours** : écran de chargement définitif, et un rejet visible seulement dans les logs
+  natifs. On retombe désormais sur « pas de session » → l'écran de connexion. Un état peut-être faux
+  mais **actionnable**, ce qu'un écran mort n'est pas.
+
+#### Ajouté
+
+- `lib/__tests__/no-uncaught-void-then.test.ts` — garde-fou **sur l'AST** (`@babel/parser`) : il
+  parcourt tout `src` hors tests et échoue sur toute chaîne `void … .then(…)` sans `.catch`.
+
+#### Technique — Notes
+
+- 🔴 **Pourquoi un garde-fou plutôt qu'une consigne : le motif s'est présenté CINQ fois, et jamais
+  deux fois par le même chemin.** Deux `void p.finally(…)` le 11/08 en couvrant des composants à
+  0 % · `AccessDenied` en `try/finally` sans `catch` le 12/08 · treize sites `.then` recensés
+  ensuite · et **un quatorzième attrapé par le garde-fou lui-même** (voir ci-dessous). Ni `tsc` ni
+  ESLint ne peuvent le voir : le premier lit du code bien typé, le second considère `void` comme la
+  solution — c'est la façon officielle de satisfaire `no-floating-promises`.
+- 🔴 **Le garde-fou a immédiatement trouvé un site que je croyais corrigé.** `food-custom.tsx` :
+  j'avais reformaté la chaîne en multi-ligne **sans ajouter le `.catch`**. Écrit, lancé, rouge,
+  corrigé — exactement ce qu'on attend d'un filet, et la démonstration qu'une relecture humaine du
+  même diff ne l'aurait pas vu.
+- **Le test porte sa propre contre-épreuve** (`détecte bien le motif`) : sans elle, un parcours
+  d'AST cassé rendrait le garde-fou vert pour toujours et personne ne le saurait. C'est la leçon des
+  quatre découvertes fortuites — un garde-fou qu'on n'a jamais vu échouer ne garde rien.
+- **Périmètre volontairement limité aux chaînes**, pas aux `void appel()` nus : il y en a **~287**
+  dans le dépôt, la plupart légitimes (la fonction appelée capture déjà). Une chaîne, elle, signale
+  que quelqu'un a écrit une suite pour le succès — **et donc pensé au succès seulement**. Noté au
+  BACKLOG en 🟢 plutôt que traité en 287 diffs de bruit.
+- **Trois traitements distincts, pas un `.catch` mécanique** : (1) *débloquer un état* —
+  `auth-store`, `settings` (la permission refusée doit afficher son bandeau) ; (2) *taire une
+  confirmation* — `saveMealAsTemplate` : annoncer « modèle enregistré » après un échec serait pire
+  que se taire ; (3) *écriture offline-first optimiste* — patron déjà en place dans
+  `planning/index.tsx`, avec le commentaire qui va avec.
+- ⚠️ **Deux `togglePillar` corrigés, et ce n'est pas anodin** : c'est la panne de **CYCLE-01**
+  (recette du 31/07/2026), déjà documentée au registre des migrations — « `void updateSettings()`
+  avale l'erreur, l'interrupteur restant éteint sans message ». Le même code vivait encore à
+  l'onboarding et dans les réglages.
+- ⚠️ **Deux réserves ouvertes au BACKLOG, parce que le `catch` ne les corrige pas** :
+  `food-custom` laisse le formulaire d'édition **vide** en cas d'échec de chargement — et
+  enregistrer écraserait alors l'aliment par du vide (même trou qu'`ExerciseEditScreen`) ; et les
+  ~287 `void` nus.
+- ⚠️ **Le piège du pipe m'a eu, sur `git` cette fois** : `git merge --ff-only … | tail -2 && git
+  push` — `tail` renvoie 0, le merge avait échoué, le push s'est exécuté quand même. Sans
+  conséquence (`dev` était à jour, push no-op), mais c'est exactement l'avertissement que le
+  CLAUDE.md porte sur `npm run test | tail`.
+
 ### 12/08/2026 — `feature/horaire01-heure-seance` — HORAIRE-01 : la saisie de l'heure, US complète
 
 Commit précédent : `1e7546b`. Étapes 5 et 6 du plan — **US livrée**, `etape: recette`.

@@ -67,22 +67,27 @@ export default function FoodCustomScreen() {
     if (!editing) return;
     const lang = i18n.language === 'en' ? 'en' : 'fr';
     let active = true;
-    void getFood(foodId, lang).then((food) => {
-      if (!active || !food) return;
-      setName(food.name);
-      setCategory(food.category);
-      setKcal(numToField(food.kcalPer100g));
-      setProtein(numToField(food.proteinPer100g));
-      setCarbs(numToField(food.carbsPer100g));
-      setSugars(numToField(food.sugarsPer100g));
-      setFat(numToField(food.fatPer100g));
-      setSaturated(numToField(food.saturatedFatPer100g));
-      setFiber(numToField(food.fiberPer100g));
-      const m: Partial<Record<MicronutrientKey, string>> = {};
-      for (const [k, v] of Object.entries(food.micronutrients)) m[k as MicronutrientKey] = String(v);
-      setMicros(m);
-      if (Object.keys(food.micronutrients).length > 0) setMicrosOpen(true);
-    });
+    void getFood(foodId, lang)
+      .then((food) => {
+        if (!active || !food) return;
+        setName(food.name);
+        setCategory(food.category);
+        setKcal(numToField(food.kcalPer100g));
+        setProtein(numToField(food.proteinPer100g));
+        setCarbs(numToField(food.carbsPer100g));
+        setSugars(numToField(food.sugarsPer100g));
+        setFat(numToField(food.fatPer100g));
+        setSaturated(numToField(food.saturatedFatPer100g));
+        setFiber(numToField(food.fiberPer100g));
+        const m: Partial<Record<MicronutrientKey, string>> = {};
+        for (const [k, v] of Object.entries(food.micronutrients)) m[k as MicronutrientKey] = String(v);
+        setMicros(m);
+        if (Object.keys(food.micronutrients).length > 0) setMicrosOpen(true);
+      })
+      // 🔴 Un échec laisse le formulaire d'édition **vide** — et enregistrer écraserait alors
+      // l'aliment par du vide. Le `catch` ne corrige pas ça (le repli propre demanderait un état
+      // d'erreur et un cadrage), mais il évite au moins le rejet non capturé. Noté au BACKLOG.
+      .catch(() => undefined);
     return () => {
       active = false;
     };

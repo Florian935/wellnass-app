@@ -46,7 +46,11 @@ export function useAuthDeepLink(): void {
     };
 
     // Ouverture à froid (app lancée par le lien) + ouverture à chaud (app déjà ouverte).
-    void Linking.getInitialURL().then(handle);
+    void Linking.getInitialURL()
+      .then(handle)
+      // `handle` pose la session : un échec laisse l'utilisateur sur l'écran de connexion, ce qui
+      // est le bon repli. Sans `catch`, il produisait en plus un rejet non capturé au démarrage.
+      .catch(() => undefined);
     const sub = Linking.addEventListener('url', (event) => handle(event.url));
     return () => sub.remove();
   }, []);

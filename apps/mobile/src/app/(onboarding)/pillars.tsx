@@ -39,9 +39,15 @@ export default function OnboardingPillars() {
             <Switch
               value={activePillars.includes(pillar)}
               onValueChange={() =>
-                void togglePillar(pillar).then(({ activated }) => {
-                  if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
-                })
+                void togglePillar(pillar)
+                  .then(({ activated }) => {
+                    if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
+                  })
+                  // Écriture offline-first optimiste : l'interrupteur suit la base locale, qui a
+                  // déjà répondu. ⚠️ Le `catch` n'est pas décoratif — c'est la panne de CYCLE-01
+                  // (recette du 31/07/2026) : sans lui, un échec d'écriture remonte en rejet non
+                  // capturé et l'interrupteur reste éteint **sans aucun message**.
+                  .catch(() => undefined)
               }
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"

@@ -23,15 +23,21 @@ export function useHealthConnectState(): {
   const load = useCallback(async (): Promise<HealthConnectState> => getState(), []);
 
   const refresh = useCallback(() => {
-    void load().then(setState);
+    void load()
+      .then(setState)
+      // `getState()` capture déjà en interne et rend un état « indisponible » ; ce `catch` ne
+      // couvre que l'imprévu, pour ne pas le transformer en rejet non capturé.
+      .catch(() => undefined);
   }, [load]);
 
   useEffect(() => {
     let cancelled = false;
     const run = () => {
-      void load().then((next) => {
-        if (!cancelled) setState(next);
-      });
+      void load()
+        .then((next) => {
+          if (!cancelled) setState(next);
+        })
+        .catch(() => undefined);
     };
     run();
     const sub = AppState.addEventListener('change', (status) => {

@@ -123,6 +123,22 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       Piste de reproduction inchangée : suite mobile sous charge (typecheck + lint + test + coverage
       enchaînés dans le même shell).
 
+- [ ] 🟠 **`food-custom.tsx` : un échec de chargement laisse le formulaire d'édition VIDE.**
+      Relevé le 12/08/2026 en corrigeant les rejets non capturés. `getFood` échoue → aucun champ
+      n'est rempli, et **enregistrer écrase alors l'aliment par du vide**. Le `.catch` posé évite le
+      rejet non capturé mais **ne corrige pas ce comportement** : un repli propre demande un état
+      d'erreur à l'écran (« impossible de charger cet aliment ») et le blocage de l'enregistrement,
+      donc un petit cadrage. Même famille que le `loadError` d'`ExerciseEditScreen` côté back-office,
+      qui a exactement le même trou (noté dans son test).
+
+- [ ] 🟢 **~287 `void appel()` nus, non couverts par le garde-fou.**
+      [`no-uncaught-void-then.test.ts`](apps/mobile/src/lib/__tests__/no-uncaught-void-then.test.ts)
+      ne surveille que les **chaînes** `void … .then(…)` — c'est-à-dire les cas où quelqu'un a écrit
+      une suite pour le succès, et donc pensé au succès seulement. Les `void appel()` sans
+      continuation sont hors périmètre **volontairement** : la plupart appellent une fonction qui
+      capture déjà en interne, et leur ajouter un `.catch` produirait ~287 diffs de bruit pour une
+      valeur non démontrée. À rouvrir seulement si un rejet non capturé en vient réellement.
+
 - [ ] 🟠 **Socle de tests unitaires — lot 5 (écrans).** Chantier ouvert le 03/08/2026 :
       1 681 → **2 215 tests**, couverture mobile 15,0 % → **23,3 %**, `data/repositories`
       9 % → **31 %**, `lib` 28 % → **54 %**, `stores` 16 % → **48 %**, et `apps/admin` passé de

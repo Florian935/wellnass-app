@@ -220,9 +220,14 @@ export default function NutritionScreen() {
 
   // Copier toute la journée d'hier (4.18) — proposé uniquement si le jour est vide.
   const copyYesterday = () => {
-    void duplicateDay(addDays(day, -1), day).then((n) => {
-      if (n === 0) Alert.alert(t('journal.copyDayYesterday'), t('journal.nothingYesterdayFull'));
-    });
+    void duplicateDay(addDays(day, -1), day)
+      .then((n) => {
+        if (n === 0) Alert.alert(t('journal.copyDayYesterday'), t('journal.nothingYesterdayFull'));
+      })
+      // Écriture offline-first optimiste : la base locale a déjà répondu, le journal se rafraîchit
+      // par la requête surveillée. Rien à annoncer de plus — mais sans `catch`, un échec remonte
+      // en rejet non capturé.
+      .catch(() => undefined);
   };
 
   // Repas configurés résolus (clé + libellé d'affichage). Un repas custom sans nom
@@ -822,9 +827,11 @@ function MealSection({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const copyFromYesterday = () => {
-    void copyMeal(addDays(day, -1), mealKey, day).then((n) => {
-      if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
-    });
+    void copyMeal(addDays(day, -1), mealKey, day)
+      .then((n) => {
+        if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
+      })
+      .catch(() => undefined);
   };
 
   const saveAsTemplate = () => {
@@ -837,9 +844,11 @@ function MealSection({
       carbsG: e.carbsG,
       fatG: e.fatG,
     }));
-    void saveMealAsTemplate(mealLabel, items).then(() =>
-      Alert.alert(t('journal.templateSaved'), mealLabel),
-    );
+    void saveMealAsTemplate(mealLabel, items)
+      .then(() => Alert.alert(t('journal.templateSaved'), mealLabel))
+      // 🔴 Ici l'alerte est une CONFIRMATION : la taire sur échec est le comportement voulu —
+      // annoncer « modèle enregistré » alors que l'écriture a échoué serait pire que se taire.
+      .catch(() => undefined);
   };
 
   // Repas vide et ajoutable → carte pointillée, sans en-tête ni total : il n'y a rien à totaliser,

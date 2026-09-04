@@ -158,7 +158,14 @@ function CycleScreenContent() {
               variant="ghost"
               // La période close devient exportable (R20/D) : synchro fire-and-forget, comme
               // `pushWorkout` à la clôture d'une séance — elle ne doit jamais bloquer l'UI.
-              onPress={() => void endPeriod(openPeriod.id, todayKey).then(() => void pushCycleData())}
+              onPress={() =>
+                void endPeriod(openPeriod.id, todayKey)
+                  .then(() => void pushCycleData())
+                  // Fire-and-forget assumé (voir ci-dessus) — mais capturé : une donnée de santé
+                  // dont la synchro échoue ne doit pas produire un rejet non capturé au milieu de
+                  // l'écran cycle.
+                  .catch(() => undefined)
+              }
             />
           )}
           <Button

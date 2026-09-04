@@ -259,11 +259,15 @@ export default function WorkoutSummaryScreen() {
       return;
     }
     let cancelled = false;
-    void buildSummary(id, durationSeconds).then((result) => {
-      if (!cancelled) {
-        setSummary(result);
-      }
-    });
+    void buildSummary(id, durationSeconds)
+      .then((result) => {
+        if (!cancelled) {
+          setSummary(result);
+        }
+      })
+      // L'écran reste sur son état de chargement si le résumé ne se construit pas — c'est déjà le
+      // cas aujourd'hui. Le `catch` ne change que le rejet non capturé.
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };

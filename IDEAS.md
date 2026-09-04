@@ -22,7 +22,59 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
-<!-- (rien à trier pour l'instant) -->
+- [04/09/2026] 🔍 **Une séance de course qui porte enfin sa consigne (allure cible, échauffement, chrono par fraction)** :
+  remonté par Florian après avoir suivi sur le terrain un plan « 5 km en moins de 20 min » (généré par
+  ChatGPT, 12 semaines / 24 séances) et constaté que l'app ne sait pas porter ses séances.
+  **Analyse complète : [docs/product/analyse-seances-structurees-running.md](docs/product/analyse-seances-structurees-running.md)**
+  (24 séances passées au tamis du modèle, 15 murs identifiés avec la preuve dans le code, 10 lots proposés).
+  _Le constat en une phrase :_ **il n'existe nulle part une allure cible saisie par un humain** — toutes les
+  allures de l'app sont **calculées** depuis l'unique allure de réf 5 km du profil, par une fonction à 5 bandes
+  figées (`sessionTargetPace`). Résultat mesuré : **0 des 24 séances intégralement représentable** ; 13 le sont
+  dans leur structure mais perdent leur consigne d'allure ; **24 échauffements sur 24 sont inexprimables**.
+  _Trois contraintes à desserrer, qui forment un tout cohérent :_ **(A)** une plage d'allure cible saisissable
+  sur la séance et sur la phase rapide (aujourd'hui : un `%VMA` **entier**, dérivé d'une dérivée) ; **(B)** une
+  nature de segment (échauffement / gammes / corps / récup / retour au calme, patron déjà en place côté muscu
+  avec `exercise_plans.set_type='warmup'`) **et la levée de la restriction « blocs réservés au type
+  fractionné »** — c'est elle qui bloque le plus de séances (footings avec lignes droites, tempo inséré) ;
+  **(C)** distance **et** temps sur une même phase (« 400 m en 1:38 »), aujourd'hui exclusifs.
+  🟢 _Bonne nouvelle :_ **le moteur existe et est testé** (RUN-F2c/F2d — linéarisation en phases, suivi live,
+  voix, rattrapage après remontage d'écran). C'est du modèle de données et de l'éditeur, pas du moteur.
+  ⚠️ [running.md §4.6](docs/specs/functional/running.md) **annonce déjà** ces 3 champs (allure cible, structure
+  échauffement/corps/retour au calme, consignes) : la spec avait prévu juste, l'implémentation s'est arrêtée
+  avant — à corriger dans la spec ou à livrer, mais pas à laisser croire que c'est couvert.
+  ❗ **Non bloquant pour le lancement.** _Prochaine étape :_ arbitrage Florian/Damien sur la séquence, puis `/us`.
+
+- [04/09/2026] 🔍 **Piloter à l'allure pendant la course (et pas seulement la distance)** : issue de la même
+  analyse (lot E). `run/active.tsx` affiche l'allure instantanée et moyenne, et depuis RUN-F2b la cible **de
+  distance/durée** — mais **jamais une allure cible**, aucun signal de sortie de plage, aucune alerte vocale
+  d'écart. Le plan analysé demande explicitement, pour sa séance de tempo, « un bloc de 20 min avec **alerte
+  d'allure** 4:20–4:25/km ». RUN-F2d annonce le **changement de phase** ; personne n'annonce **l'écart à
+  l'allure**. Extension de la chaîne RUN-F2a/F2b/F2d, pas une chaîne neuve. _Dépend du lot A ci-dessus._
+
+- [04/09/2026] 🔍 **Le réalisé descend au niveau de la répétition** : issue de la même analyse (lot F).
+  Aujourd'hui `runs` = 12 champs globaux + trace GPS ; les colonnes `interval_phase_*` de RUN-F2d sont un
+  **curseur de position en direct**, écrasé à chaque transition — **pas un résultat**. Une séance de fractionné
+  se lit pourtant « rep 1 à 5 à 4:01, la 7ᵉ a lâché à 4:40 », pas « j'ai couru 8 km ». Table `run_intervals`
+  (une ligne par phase : prévu / réalisé / allure), alimentée par le curseur **qui existe déjà**, puis tableau
+  rep-par-rep au résumé. _Débloque **RUN-07** (⏳ du [catalogue](docs/product/analyses-donnees.md), faute de
+  `session_type` sur `runs`) et enrichit RUN-19 (prévu vs réalisé, aujourd'hui global) et RUN-13._
+
+- [04/09/2026] 🆕 **Un programme ancré sur une date de course et un objectif chrono** : issue de la même
+  analyse (lot H, le plus petit). `programs` porte `duration_weeks` et un `goal` en texte libre — **ni date
+  cible, ni chrono visé, ni événement**. Le calendrier existe déjà (`planned_sessions` + `week_index` + l'heure
+  via HORAIRE-01) : **il manque l'ancre, pas le calendrier**. Débloquerait le « J-42 », le taux de réalisation
+  du bloc et la logique d'affûtage. Paradoxe actuel : **RUN-14 sait prédire** un temps de course (Riegel) et
+  la 5.31 sait **recaler** l'allure de réf sur un record — mais on ne peut nulle part écrire « ma course est le
+  25/10/2026 et je vise 20:00 ».
+
+- [04/09/2026] 🔍 **Des règles d'adaptation qui modifient vraiment la séance du jour** : issue de la même
+  analyse (lot J, le plus produit). Le plan analysé se termine par une table « situation → décision » (douleur
+  → arrêter ; jambes lourdes après squat/deadlift → décaler 24 h ; sommeil < 6 h ou HRV dégradée → garder
+  l'échauffement et **retirer 20–30 % des répétitions** ; 2 premières reps trop dures → −3 à 5 s/km ; chaleur →
+  courir à l'effort, pas au chrono). **Nous avons toutes les entrées** — DOUL-01, BIEN-01, RUN-18/META-19/
+  GARDE-01, COLLIS-01 — et **aucune sortie** : rien ne modifie jamais la séance prévue. C'est la marche qui
+  sépare un carnet d'entraînement d'un coach. _Recoupe :_ [[module-coach-coache]], et la salve « plan unique
+  muscu+course+nutrition » du 13/07. _Gros sujet, à cadrer seul, après les lots de modélisation._
 
 - [25/07/2026] 🔍 **Note — benchmark « 4 modèles IA » (source de la salve du 25/07)** : les 4 dumps
   (Gemini, ChatGPT, Qwen-3.7-plus, Qwen-3.8-max — ~93 propositions au total) ont été croisés avec ce

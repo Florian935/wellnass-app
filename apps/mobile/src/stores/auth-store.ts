@@ -200,9 +200,22 @@ export const useAuthStore = create<AuthState>(() => ({
 
 // Résolution de la session au démarrage + abonnement aux changements (persistance,
 // refresh silencieux, connexion/déconnexion). Voir compte-profil-onboarding §2.2.
-void supabase.auth.getSession().then(({ data }) => {
-  useAuthStore.setState({ session: data.session, initializing: false });
-});
+void supabase.auth
+  .getSession()
+  .then(({ data }) => {
+    useAuthStore.setState({ session: data.session, initializing: false });
+  })
+  .catch(() => {
+    // 🔴 **Sans ce `catch`, un échec de lecture de session bloquait le DÉMARRAGE de l'app.**
+    // `void p.then(cb)` ne capture rien : si `getSession()` rejette (stockage sécurisé illisible,
+    // jeton corrompu, panne réseau au premier lancement), `initializing` restait à `true` **pour
+    // toujours** — l'app demeurait sur son écran de chargement, et le rejet n'apparaissait que
+    // dans les logs natifs.
+    //
+    // On retombe donc sur « pas de session » : l'utilisateur arrive sur l'écran de connexion.
+    // C'est un état peut-être faux, mais **actionnable** — ce qu'un écran mort n'est pas.
+    useAuthStore.setState({ session: null, initializing: false });
+  });
 
 supabase.auth.onAuthStateChange((_event, session) => {
   // Filet de sécurité : toute perte de session éteint le mode récupération. Sans ça, un drapeau resté

@@ -257,7 +257,11 @@ export default function SettingsScreen() {
   // État de permission système — pour afficher le bandeau informatif si refusée.
   const [notificationsGranted, setNotificationsGranted] = useState(true);
   useEffect(() => {
-    void ensurePermissionAndChannel().then(setNotificationsGranted);
+    void ensurePermissionAndChannel()
+      .then(setNotificationsGranted)
+      // Un échec d'interrogation vaut « pas accordée » : mieux vaut afficher le bandeau
+      // d'information à tort que le taire alors que les rappels ne partiront pas.
+      .catch(() => setNotificationsGranted(false));
   }, []);
 
   const patchNotifications = (patch: Partial<NotificationPrefs>) =>
@@ -369,9 +373,13 @@ export default function SettingsScreen() {
             <Switch
               value={activePillars.includes(pillar)}
               onValueChange={() =>
-                void togglePillar(pillar).then(({ activated }) => {
-                  if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
-                })
+                void togglePillar(pillar)
+                  .then(({ activated }) => {
+                    if (activated) void track(ANALYTICS_EVENTS.pillarActivated, { pillar });
+                  })
+                  // Même raison qu'à l'onboarding : sans `catch`, un échec d'écriture laisse
+                  // l'interrupteur dans son ancien état sans le moindre message (panne CYCLE-01).
+                  .catch(() => undefined)
               }
               trackColor={{ true: colors.accent, false: colors.border }}
               thumbColor="#ffffff"
