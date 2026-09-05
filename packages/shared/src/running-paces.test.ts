@@ -96,7 +96,16 @@ describe('sessionTargetPace avec ref = 300 s/km', () => {
 describe('PROGRAM_SESSION_TYPES', () => {
   it('exclut course_libre', () => {
     expect(PROGRAM_SESSION_TYPES).not.toContain('course_libre');
-    expect(PROGRAM_SESSION_TYPES).toEqual(['endurance', 'fractionne', 'sortie_longue', 'recuperation']);
+    // US RUN-F4 (lot G) : `test` et `course` rejoignent la liste — ce sont les deux seances qui
+    // calibrent un plan, et aucun type ne les portait.
+    expect(PROGRAM_SESSION_TYPES).toEqual([
+      'endurance',
+      'fractionne',
+      'sortie_longue',
+      'recuperation',
+      'test',
+      'course',
+    ]);
   });
   it('est un sous-ensemble de SESSION_TYPES', () => {
     expect(PROGRAM_SESSION_TYPES.every((t) => (SESSION_TYPES as readonly string[]).includes(t))).toBe(true);

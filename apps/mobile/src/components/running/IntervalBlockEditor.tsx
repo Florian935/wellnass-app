@@ -2,7 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { hasRunningSessionTarget } from '@wellness/shared';
+import {
+  RECOVERY_KINDS,
+  SEGMENT_KINDS,
+  formatMmSs,
+  hasRunningSessionTarget,
+  parseMmSs,
+  type RecoveryKind as RecoveryIntensity,
+  type SegmentKind,
+} from '@wellness/shared';
 import {
   removeIntervalBlock,
   updateIntervalBlock,
@@ -77,6 +85,66 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
     void updateIntervalBlock(block.id, { fastDistanceM, fastDurationSeconds });
   };
 
+  // ---- US RUN-F4 : nature, allure absolue, chrono cible, récup, groupe ----
+
+  const [kind, setKind] = useState<SegmentKind>(block.kind);
+  const commitKind = (next: SegmentKind) => {
+    setKind(next);
+    void updateIntervalBlock(block.id, { kind: next });
+  };
+
+  const [fastPaceMin, setFastPaceMin] = useState(formatMmSs(block.fastPaceMinSPerKm));
+  const [fastPaceMax, setFastPaceMax] = useState(formatMmSs(block.fastPaceMaxSPerKm));
+  const commitFastPace = () => {
+    const min = parseMmSs(fastPaceMin);
+    const max = parseMmSs(fastPaceMax);
+    void updateIntervalBlock(block.id, {
+      fastPaceMinSPerKm: min,
+      fastPaceMaxSPerKm: max,
+    });
+    // On repose la valeur normalisée : une saisie illisible ne doit pas rester à l'écran comme
+    // si elle avait été enregistrée.
+    setFastPaceMin(formatMmSs(min));
+    setFastPaceMax(formatMmSs(max));
+  };
+
+  const [targetTimeMin, setTargetTimeMin] = useState(formatMmSs(block.fastTargetTimeMinSeconds));
+  const [targetTimeMax, setTargetTimeMax] = useState(formatMmSs(block.fastTargetTimeMaxSeconds));
+  const commitTargetTime = () => {
+    const min = parseMmSs(targetTimeMin);
+    const max = parseMmSs(targetTimeMax);
+    void updateIntervalBlock(block.id, {
+      fastTargetTimeMinSeconds: min,
+      fastTargetTimeMaxSeconds: max,
+    });
+    setTargetTimeMin(formatMmSs(min));
+    setTargetTimeMax(formatMmSs(max));
+  };
+
+  const [recoveryIntensity, setRecoveryIntensity] = useState<RecoveryIntensity | null>(
+    block.recoveryKind,
+  );
+  const commitRecoveryIntensity = (next: RecoveryIntensity | null) => {
+    // Re-toucher la puce déjà choisie l'efface : c'est un champ facultatif, il doit pouvoir
+    // redevenir vide sans passer par une puce « aucune » de plus.
+    setRecoveryIntensity(next);
+    void updateIntervalBlock(block.id, { recoveryKind: next });
+  };
+
+  const [groupKey, setGroupKey] = useState(block.groupKey ?? '');
+  const [groupReps, setGroupReps] = useState(numToStr(block.groupReps));
+  const commitGroup = () => {
+    const key = groupKey.trim();
+    const reps = toPositiveInt(groupReps);
+    // Sans clé, la notion de répétition de groupe n'a aucun sens : on efface les deux ensemble
+    // plutôt que de laisser un `groupReps` orphelin que le moteur ignorerait en silence.
+    void updateIntervalBlock(block.id, {
+      groupKey: key === '' ? null : key,
+      groupReps: key === '' ? null : reps,
+    });
+    if (key === '') setGroupReps('');
+  };
+
   // % VMA — nullable, jamais de valeur inventée (R4).
   const [pctVma, setPctVma] = useState(numToStr(block.fastPacePctVma));
   const commitPctVma = () => {
@@ -144,16 +212,49 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
     <View style={[styles.container, { borderColor: colors.border }]}>
       <View style={styles.headerRow}>
         <Text style={[styles.title, { color: colors.text }]}>
-          {t('running.intervals.blockTitle', { index: index + 1 })}
+          {t('running.intervalsF4.segmentTitle', { index: index + 1 })}
         </Text>
         <Pressable
           onPress={onRemove}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel={t('running.intervals.removeBlockA11y', { index: index + 1 })}
+          accessibilityLabel={t('running.intervalsF4.removeSegmentA11y', { index: index + 1 })}
         >
           <Ionicons name="trash-outline" size={20} color={colors.textMuted} />
         </Pressable>
+      </View>
+
+      {/* Nature du segment (US RUN-F4, lot B) — c'est elle qui permet enfin d'écrire un
+          échauffement et un retour au calme, prescrits par 24 séances sur 24 du plan analysé et
+          représentables par aucune jusqu'ici. */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.kind')}
+        </Text>
+        <View style={styles.chipGrid}>
+          {SEGMENT_KINDS.map((k) => {
+            const selected = kind === k;
+            return (
+              <Pressable
+                key={k}
+                onPress={() => commitKind(k)}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.border },
+                  selected && { backgroundColor: colors.accent, borderColor: colors.accent },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+              >
+                <Text
+                  style={[styles.chipLabel, { color: selected ? colors.accentText : colors.text }]}
+                >
+                  {t(`running.segmentKind.${k}`)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.field}>
@@ -242,6 +343,133 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
           placeholderTextColor={colors.textMuted}
           accessibilityLabel={t('running.intervals.pctVma')}
         />
+      </View>
+
+      {/* Allure ABSOLUE de la fraction (US RUN-F4, lot A) — prioritaire sur le %VMA ci-dessus,
+          qui reste comme repli. Les deux coexistent : le %VMA est la seule source des séances
+          déjà saisies, et un profil sans allure de référence ne pourrait pas le convertir. */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.fastPace')}
+        </Text>
+        <View style={styles.rangeRow}>
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={fastPaceMin}
+            onChangeText={setFastPaceMin}
+            onBlur={commitFastPace}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.consigne.targetPacePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.consigne.targetPaceMin')}
+          />
+          <Text style={[styles.label, { color: colors.textMuted }]}>–</Text>
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={fastPaceMax}
+            onChangeText={setFastPaceMax}
+            onBlur={commitFastPace}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.consigne.targetPacePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.consigne.targetPaceMax')}
+          />
+        </View>
+      </View>
+
+      {/* Chrono cible de la fraction (lot C) — « 400 m en 1:38 ». Distinct de l'étendue : la
+          distance ci-dessus borne la phase, ce champ est la cible à tenir dedans. */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.fastTargetTime')}
+        </Text>
+        <View style={styles.rangeRow}>
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={targetTimeMin}
+            onChangeText={setTargetTimeMin}
+            onBlur={commitTargetTime}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.intervalsF4.fastTargetTimePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervalsF4.fastTargetTime')}
+          />
+          <Text style={[styles.label, { color: colors.textMuted }]}>–</Text>
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={targetTimeMax}
+            onChangeText={setTargetTimeMax}
+            onBlur={commitTargetTime}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.intervalsF4.fastTargetTimePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervalsF4.fastTargetTime')}
+          />
+        </View>
+      </View>
+
+      {/* Nature de la récupération (lot A) — « trot très lent » ≠ « marche active », distinction
+          que le plan analysé fait systématiquement et que le modèle ne portait pas. */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.recoveryKindLabel')}
+        </Text>
+        <View style={styles.chipGrid}>
+          {RECOVERY_KINDS.map((k) => {
+            const selected = recoveryIntensity === k;
+            return (
+              <Pressable
+                key={k}
+                onPress={() => commitRecoveryIntensity(selected ? null : k)}
+                style={[
+                  styles.chip,
+                  { borderColor: colors.border },
+                  selected && { backgroundColor: colors.accent, borderColor: colors.accent },
+                ]}
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+              >
+                <Text
+                  style={[styles.chipLabel, { color: selected ? colors.accentText : colors.text }]}
+                >
+                  {t(`running.recoveryKind.${k}`)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Groupe répété (lot D) — « 3 × (800 m + 400 m) ». Deux segments qui se suivent avec la
+          même clé sont répétés ensemble. */}
+      <View style={styles.field}>
+        <Text style={[styles.label, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.group')}
+        </Text>
+        <View style={styles.rangeRow}>
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={groupKey}
+            onChangeText={setGroupKey}
+            onBlur={commitGroup}
+            placeholder={t('running.intervalsF4.groupNone')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervalsF4.group')}
+          />
+          <TextInput
+            style={[fieldStyle, styles.rangeInput]}
+            value={groupReps}
+            onChangeText={setGroupReps}
+            onBlur={commitGroup}
+            keyboardType="number-pad"
+            placeholder={t('running.intervalsF4.groupReps')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.intervalsF4.groupReps')}
+          />
+        </View>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.groupHint')}
+        </Text>
       </View>
 
       {/* Récupération (optionnelle) */}
@@ -343,4 +571,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
+  chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
+  chipLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
+  rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rangeInput: { flex: 1 },
+  hint: { fontFamily: fontFamily.body, fontSize: 11, lineHeight: 15 },
 });

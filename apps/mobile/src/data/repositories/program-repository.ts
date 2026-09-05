@@ -33,8 +33,24 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type { FineMuscle, MuscleGroup, Pillar, ProgramLevel, ProgramSessionType, SetType } from '@wellness/shared';
-import { normalizeFineMuscles, normalizeSecondaryMuscles, parseJsonColumn } from '@wellness/shared';
+import type {
+  FineMuscle,
+  MuscleGroup,
+  PacingPlan,
+  Pillar,
+  ProgramLevel,
+  ProgramSessionType,
+  RecoveryKind,
+  SegmentKind,
+  SetType,
+} from '@wellness/shared';
+import {
+  DEFAULT_SEGMENT_KIND,
+  normalizeFineMuscles,
+  normalizeSecondaryMuscles,
+  parseJsonColumn,
+  parsePacingPlan,
+} from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -90,6 +106,22 @@ export type IntervalBlockItem = {
   fastPacePctVma: number | null;
   recoveryDistanceM: number | null;
   recoveryDurationSeconds: number | null;
+  // ---- US RUN-F4 : le bloc devient un SEGMENT typé (lots A, B, C, D) ----
+  /** Nature du segment. Jamais null en lecture : une ligne sans nature vaut `'work'`. */
+  kind: SegmentKind;
+  label: string | null;
+  /** Plage d'allure ABSOLUE de la phase rapide (s/km) — prioritaire sur `fastPacePctVma`. */
+  fastPaceMinSPerKm: number | null;
+  fastPaceMaxSPerKm: number | null;
+  /** Chrono cible de la fraction bornée en distance (« 400 m en 1:38 »). Pas l'étendue. */
+  fastTargetTimeMinSeconds: number | null;
+  fastTargetTimeMaxSeconds: number | null;
+  recoveryKind: RecoveryKind | null;
+  recoveryPaceMinSPerKm: number | null;
+  recoveryPaceMaxSPerKm: number | null;
+  /** Segments consécutifs de même clé = un groupe répété `groupReps` fois. */
+  groupKey: string | null;
+  groupReps: number | null;
 };
 
 /** Une séance avec ses exercices planifiés (triés par `order_index`). */
@@ -104,8 +136,25 @@ export type SessionDetail = {
   targetDistanceM: number | null;
   /** Running uniquement (secondes) — null pour les séances muscu. */
   targetDurationSeconds: number | null;
-  /** Running uniquement, type `fractionne` — vide pour les autres types (US RUN-F2c). */
+  /**
+   * Segments de la séance. **US RUN-F4 (lot B) a levé la restriction au type `fractionne`** :
+   * un footing peut désormais porter ses lignes droites, un tempo son bloc inséré. C'est ce
+   * verrou qui bloquait le plus de séances (6 sur 24 dans l'analyse du 04/09/2026).
+   */
   intervals: IntervalBlockItem[];
+  // ---- US RUN-F4 : la consigne de la séance (lots A, G, I) ----
+  /** Plage d'allure cible SAISIE (s/km). Null = allure dérivée, comportement historique. */
+  targetPaceMinSPerKm: number | null;
+  targetPaceMaxSPerKm: number | null;
+  /** RPE visé (1-10) — la consigne, à distinguer du RPE ressenti stocké sur `runs`. */
+  targetRpe: number | null;
+  /** Objectif chrono (s) sur `targetDistanceM` — séances `test` / `course`. */
+  targetTimeSeconds: number | null;
+  /** Plan de passage par km, relu sans jamais lever (`parsePacingPlan`). */
+  pacingPlan: PacingPlan | null;
+  description: string | null;
+  instructions: string | null;
+  adaptationCriterion: string | null;
 };
 
 /** Détail complet d'un programme : entête + séances + plans. */
@@ -120,6 +169,13 @@ export type ProgramDetail = {
   durationWeeks: number | null;
   isActive: boolean;
   sessions: SessionDetail[];
+  // ---- US RUN-F4 (lot H) : l'ancre qui manquait au calendrier ----
+  /** Date de l'échéance (`AAAA-MM-JJ`). Null = programme sans échéance (la majorité). */
+  targetDate: string | null;
+  /** Chrono visé sur la course objectif (s). */
+  targetTimeSeconds: number | null;
+  /** Nom de l'événement (« Course caritative »). Non traduit : c'est un nom propre. */
+  eventName: string | null;
 };
 
 /** Filtres facultatifs pour la bibliothèque éditoriale. */
@@ -139,7 +195,7 @@ export type ExercisePlanPatch = {
   restSeconds?: number | null;
 };
 
-/** Champs modifiables d'un bloc fractionné via `updateIntervalBlock` (US RUN-F2c). */
+/** Champs modifiables d'un bloc fractionné via `updateIntervalBlock` (US RUN-F2c, RUN-F4). */
 export type IntervalBlockPatch = {
   reps?: number;
   fastDistanceM?: number | null;
@@ -147,6 +203,17 @@ export type IntervalBlockPatch = {
   fastPacePctVma?: number | null;
   recoveryDistanceM?: number | null;
   recoveryDurationSeconds?: number | null;
+  kind?: SegmentKind;
+  label?: string | null;
+  fastPaceMinSPerKm?: number | null;
+  fastPaceMaxSPerKm?: number | null;
+  fastTargetTimeMinSeconds?: number | null;
+  fastTargetTimeMaxSeconds?: number | null;
+  recoveryKind?: RecoveryKind | null;
+  recoveryPaceMinSPerKm?: number | null;
+  recoveryPaceMaxSPerKm?: number | null;
+  groupKey?: string | null;
+  groupReps?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -176,6 +243,16 @@ type SessionDbRow = {
   session_type: string | null;
   target_distance_m: number | null;
   target_duration_seconds: number | null;
+  // US RUN-F4 — consigne de séance. `description`/`instructions` sont résolus par COALESCE sur
+  // `session_translations` (lot I) ; les autres viennent directement de `sessions`.
+  target_pace_min_s_per_km: number | null;
+  target_pace_max_s_per_km: number | null;
+  target_rpe: number | null;
+  target_time_seconds: number | null;
+  pacing_plan: string | null;
+  description: string | null;
+  instructions: string | null;
+  adaptation_criterion: string | null;
 };
 
 /**
@@ -213,6 +290,19 @@ export type IntervalDbRow = {
   fast_pace_pct_vma: number | null;
   recovery_distance_m: number | null;
   recovery_duration_seconds: number | null;
+  // US RUN-F4 — segments typés. `kind` a un `default 'work'` en base, mais reste typé nullable
+  // ici : une base locale synchronisée avant la migration peut rendre la colonne absente.
+  kind: string | null;
+  label: string | null;
+  fast_pace_min_s_per_km: number | null;
+  fast_pace_max_s_per_km: number | null;
+  fast_target_time_min_seconds: number | null;
+  fast_target_time_max_seconds: number | null;
+  recovery_kind: string | null;
+  recovery_pace_min_s_per_km: number | null;
+  recovery_pace_max_s_per_km: number | null;
+  group_key: string | null;
+  group_reps: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -241,6 +331,10 @@ const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
  */
 type ProgramDetailDbRow = ProgramListDbRow & {
   summary: string | null;
+  // US RUN-F4 (lot H) — l'ancre du bloc de préparation.
+  target_date: string | null;
+  target_time_seconds: number | null;
+  event_name: string | null;
 };
 
 /**
@@ -250,6 +344,7 @@ type ProgramDetailDbRow = ProgramListDbRow & {
  */
 const SELECT_PROGRAM_DETAIL_HEADER = `
   SELECT p.id, p.pillar, p.level, p.goal, p.duration_weeks, p.is_active,
+         p.target_date, p.target_time_seconds, p.event_name,
          COALESCE(tl.name, tfr.name) AS name,
          COALESCE(tl.summary, tfr.summary) AS summary
   FROM programs p
@@ -263,11 +358,32 @@ const SELECT_PROGRAM_DETAIL_HEADER = `
  * Séances d'un programme, triées par position. Premier `?` = id du programme.
  * Colonnes running incluses (nulles pour les séances muscu — harmless).
  */
+/**
+ * Séances d'un programme, triées par position, avec la consigne RUN-F4 et le nom/les textes
+ * résolus par traduction.
+ *
+ * Repli en trois temps (US RUN-F4, lot I) : traduction de la langue courante → traduction `fr`
+ * → **`sessions.name`**. Ce troisième niveau est ce qui rend la table `session_translations`
+ * purement additive : les 3 programmes éditoriaux déjà publiés et toutes les séances
+ * personnelles existantes s'affichent sans qu'une seule ligne de traduction existe.
+ *
+ * Même patron de jointures que `SELECT_PROGRAM_BASE`. Premier `?` = langue courante ;
+ * second `?` = id du programme.
+ */
 const SELECT_SESSIONS_FOR_PROGRAM = `
-  SELECT id, name, order_index, session_type, target_distance_m, target_duration_seconds
-  FROM sessions
-  WHERE program_id = ? AND deleted_at IS NULL
-  ORDER BY order_index
+  SELECT s.id,
+         COALESCE(tl.name, tfr.name, s.name) AS name,
+         s.order_index, s.session_type, s.target_distance_m, s.target_duration_seconds,
+         s.target_pace_min_s_per_km, s.target_pace_max_s_per_km, s.target_rpe,
+         s.target_time_seconds, s.pacing_plan,
+         COALESCE(tl.description, tfr.description, s.description) AS description,
+         COALESCE(tl.instructions, tfr.instructions, s.instructions) AS instructions,
+         s.adaptation_criterion
+  FROM sessions s
+  LEFT JOIN session_translations tl  ON tl.session_id = s.id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN session_translations tfr ON tfr.session_id = s.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE s.program_id = ? AND s.deleted_at IS NULL
+  ORDER BY s.order_index
 `;
 
 /**
@@ -298,7 +414,12 @@ const SELECT_PLANS_FOR_PROGRAM = `
 const SELECT_INTERVALS_FOR_PROGRAM = `
   SELECT si.id, si.session_id, si.order_index, si.reps,
          si.fast_distance_m, si.fast_duration_seconds, si.fast_pace_pct_vma,
-         si.recovery_distance_m, si.recovery_duration_seconds
+         si.recovery_distance_m, si.recovery_duration_seconds,
+         si.kind, si.label,
+         si.fast_pace_min_s_per_km, si.fast_pace_max_s_per_km,
+         si.fast_target_time_min_seconds, si.fast_target_time_max_seconds,
+         si.recovery_kind, si.recovery_pace_min_s_per_km, si.recovery_pace_max_s_per_km,
+         si.group_key, si.group_reps
   FROM session_intervals si
   JOIN sessions s ON s.id = si.session_id AND s.deleted_at IS NULL
   WHERE s.program_id = ? AND si.deleted_at IS NULL
@@ -358,6 +479,19 @@ export function rowToIntervalItem(row: IntervalDbRow): IntervalBlockItem {
     fastPacePctVma: row.fast_pace_pct_vma,
     recoveryDistanceM: row.recovery_distance_m,
     recoveryDurationSeconds: row.recovery_duration_seconds,
+    // Repli sur `work` plutôt que de propager un null : une ligne écrite avant RUN-F4 EST un
+    // segment de corps de séance, et le typer ainsi évite un cas particulier partout en aval.
+    kind: (row.kind as SegmentKind | null) ?? DEFAULT_SEGMENT_KIND,
+    label: row.label,
+    fastPaceMinSPerKm: row.fast_pace_min_s_per_km,
+    fastPaceMaxSPerKm: row.fast_pace_max_s_per_km,
+    fastTargetTimeMinSeconds: row.fast_target_time_min_seconds,
+    fastTargetTimeMaxSeconds: row.fast_target_time_max_seconds,
+    recoveryKind: (row.recovery_kind as RecoveryKind | null) ?? null,
+    recoveryPaceMinSPerKm: row.recovery_pace_min_s_per_km,
+    recoveryPaceMaxSPerKm: row.recovery_pace_max_s_per_km,
+    groupKey: row.group_key,
+    groupReps: row.group_reps,
   };
 }
 
@@ -379,6 +513,16 @@ function buildSessionDetails(
     targetDistanceM: s.target_distance_m,
     targetDurationSeconds: s.target_duration_seconds,
     intervals: [],
+    targetPaceMinSPerKm: s.target_pace_min_s_per_km,
+    targetPaceMaxSPerKm: s.target_pace_max_s_per_km,
+    targetRpe: s.target_rpe,
+    targetTimeSeconds: s.target_time_seconds,
+    // Tolérant par conception : une colonne jsonb libre peut contenir n'importe quoi, et une
+    // exception ici ferait planter l'écran de détail à cause d'une donnée décorative.
+    pacingPlan: parsePacingPlan(s.pacing_plan),
+    description: s.description,
+    instructions: s.instructions,
+    adaptationCriterion: s.adaptation_criterion,
   }));
 
   const bySessionId = new Map<string, SessionDetail>();
@@ -528,8 +672,10 @@ export function useProgramDetail(programId: string): {
 
   const { data: headerRows, isLoading: headerLoading } =
     useQuery<ProgramDetailDbRow>(SELECT_PROGRAM_DETAIL_HEADER, [lang, programId]);
+  // US RUN-F4 (lot I) : la requête prend désormais la langue en 1er paramètre — les séances
+  // sont traduites comme les programmes l'étaient déjà.
   const { data: sessionRows, isLoading: sessionsLoading } =
-    useQuery<SessionDbRow>(SELECT_SESSIONS_FOR_PROGRAM, [programId]);
+    useQuery<SessionDbRow>(SELECT_SESSIONS_FOR_PROGRAM, [lang, programId]);
   const { data: planRows, isLoading: plansLoading } = useQuery<PlanDbRow>(
     SELECT_PLANS_FOR_PROGRAM,
     [lang, programId],
@@ -551,6 +697,9 @@ export function useProgramDetail(programId: string): {
     ...base,
     summary: header.summary,
     sessions: buildSessionDetails(sessionRows, planRows, intervalRows),
+    targetDate: header.target_date,
+    targetTimeSeconds: header.target_time_seconds,
+    eventName: header.event_name,
   };
 
   return { detail, isLoading };
@@ -723,7 +872,18 @@ export async function addIntervalBlock(
     fastPacePctVma?: number | null;
     recoveryDistanceM?: number | null;
     recoveryDurationSeconds?: number | null;
-  },
+    kind?: SegmentKind;
+    label?: string | null;
+    fastPaceMinSPerKm?: number | null;
+    fastPaceMaxSPerKm?: number | null;
+    fastTargetTimeMinSeconds?: number | null;
+    fastTargetTimeMaxSeconds?: number | null;
+    recoveryKind?: RecoveryKind | null;
+    recoveryPaceMinSPerKm?: number | null;
+    recoveryPaceMaxSPerKm?: number | null;
+    groupKey?: string | null;
+    groupReps?: number | null;
+  } = {},
 ): Promise<void> {
   const ownerId = currentUserId();
   const orderIndex = await nextOrderIndex(
@@ -742,6 +902,17 @@ export async function addIntervalBlock(
     fast_pace_pct_vma: input.fastPacePctVma ?? null,
     recovery_distance_m: input.recoveryDistanceM ?? null,
     recovery_duration_seconds: input.recoveryDurationSeconds ?? null,
+    kind: input.kind ?? DEFAULT_SEGMENT_KIND,
+    label: input.label ?? null,
+    fast_pace_min_s_per_km: input.fastPaceMinSPerKm ?? null,
+    fast_pace_max_s_per_km: input.fastPaceMaxSPerKm ?? null,
+    fast_target_time_min_seconds: input.fastTargetTimeMinSeconds ?? null,
+    fast_target_time_max_seconds: input.fastTargetTimeMaxSeconds ?? null,
+    recovery_kind: input.recoveryKind ?? null,
+    recovery_pace_min_s_per_km: input.recoveryPaceMinSPerKm ?? null,
+    recovery_pace_max_s_per_km: input.recoveryPaceMaxSPerKm ?? null,
+    group_key: input.groupKey ?? null,
+    group_reps: input.groupReps ?? null,
   });
 }
 
@@ -760,6 +931,17 @@ export async function updateIntervalBlock(
   if ('fastPacePctVma' in input) columns['fast_pace_pct_vma'] = input.fastPacePctVma;
   if ('recoveryDistanceM' in input) columns['recovery_distance_m'] = input.recoveryDistanceM;
   if ('recoveryDurationSeconds' in input) columns['recovery_duration_seconds'] = input.recoveryDurationSeconds;
+  if ('kind' in input) columns['kind'] = input.kind;
+  if ('label' in input) columns['label'] = input.label;
+  if ('fastPaceMinSPerKm' in input) columns['fast_pace_min_s_per_km'] = input.fastPaceMinSPerKm;
+  if ('fastPaceMaxSPerKm' in input) columns['fast_pace_max_s_per_km'] = input.fastPaceMaxSPerKm;
+  if ('fastTargetTimeMinSeconds' in input) columns['fast_target_time_min_seconds'] = input.fastTargetTimeMinSeconds;
+  if ('fastTargetTimeMaxSeconds' in input) columns['fast_target_time_max_seconds'] = input.fastTargetTimeMaxSeconds;
+  if ('recoveryKind' in input) columns['recovery_kind'] = input.recoveryKind;
+  if ('recoveryPaceMinSPerKm' in input) columns['recovery_pace_min_s_per_km'] = input.recoveryPaceMinSPerKm;
+  if ('recoveryPaceMaxSPerKm' in input) columns['recovery_pace_max_s_per_km'] = input.recoveryPaceMaxSPerKm;
+  if ('groupKey' in input) columns['group_key'] = input.groupKey;
+  if ('groupReps' in input) columns['group_reps'] = input.groupReps;
 
   await patch('session_intervals', blockId, columns);
 }
@@ -782,6 +964,15 @@ export async function updateRunningSession(
     targetDistanceM?: number | null;
     targetDurationSeconds?: number | null;
     name?: string;
+    // ---- US RUN-F4 : la consigne (lots A, G, I) ----
+    targetPaceMinSPerKm?: number | null;
+    targetPaceMaxSPerKm?: number | null;
+    targetRpe?: number | null;
+    targetTimeSeconds?: number | null;
+    pacingPlan?: PacingPlan | null;
+    description?: string | null;
+    instructions?: string | null;
+    adaptationCriterion?: string | null;
   },
 ): Promise<void> {
   const columns: Record<string, unknown> = {};
@@ -789,8 +980,39 @@ export async function updateRunningSession(
   if ('targetDistanceM' in input) columns['target_distance_m'] = input.targetDistanceM;
   if ('targetDurationSeconds' in input) columns['target_duration_seconds'] = input.targetDurationSeconds;
   if ('name' in input) columns['name'] = input.name;
+  if ('targetPaceMinSPerKm' in input) columns['target_pace_min_s_per_km'] = input.targetPaceMinSPerKm;
+  if ('targetPaceMaxSPerKm' in input) columns['target_pace_max_s_per_km'] = input.targetPaceMaxSPerKm;
+  if ('targetRpe' in input) columns['target_rpe'] = input.targetRpe;
+  if ('targetTimeSeconds' in input) columns['target_time_seconds'] = input.targetTimeSeconds;
+  // Sérialisé ici et nulle part ailleurs : l'UI manipule un tableau typé, la colonne est du JSON.
+  if ('pacingPlan' in input) {
+    columns['pacing_plan'] = input.pacingPlan == null ? null : JSON.stringify(input.pacingPlan);
+  }
+  if ('description' in input) columns['description'] = input.description;
+  if ('instructions' in input) columns['instructions'] = input.instructions;
+  if ('adaptationCriterion' in input) columns['adaptation_criterion'] = input.adaptationCriterion;
 
   await patch('sessions', sessionId, columns);
+}
+
+/**
+ * Met à jour l'échéance d'un programme (US RUN-F4, lot H) — la date de course, le chrono visé
+ * et le nom de l'événement. `null` efface l'échéance et le compte à rebours disparaît.
+ */
+export async function updateProgramTarget(
+  programId: string,
+  input: {
+    targetDate?: string | null;
+    targetTimeSeconds?: number | null;
+    eventName?: string | null;
+  },
+): Promise<void> {
+  const columns: Record<string, unknown> = {};
+  if ('targetDate' in input) columns['target_date'] = input.targetDate;
+  if ('targetTimeSeconds' in input) columns['target_time_seconds'] = input.targetTimeSeconds;
+  if ('eventName' in input) columns['event_name'] = input.eventName;
+
+  await patch('programs', programId, columns);
 }
 
 /**
@@ -854,8 +1076,10 @@ export async function duplicateProgram(
       level: string | null;
       goal: string | null;
       duration_weeks: number | null;
+      target_time_seconds: number | null;
+      event_name: string | null;
     }>(
-      `SELECT pillar, level, goal, duration_weeks FROM programs
+      `SELECT pillar, level, goal, duration_weeks, target_time_seconds, event_name FROM programs
        WHERE id = ? AND deleted_at IS NULL`,
       [sourceProgramId],
     );
@@ -864,6 +1088,11 @@ export async function duplicateProgram(
     }
 
     // 1. Nouvel entête programme.
+    //
+    // ⚠️ US RUN-F4 (lot H) : on recopie l'objectif chrono et le nom de l'événement, mais
+    // **délibérément PAS `target_date`**. Dupliquer un plan sert à le refaire, sur une NOUVELLE
+    // échéance : recopier la date afficherait un « J-42 » déjà périmé (souvent négatif) dès la
+    // première ouverture du programme dupliqué. L'utilisateur repose la date, le reste suit.
     const newProgramId = await txInsert(tx, 'programs', {
       owner_id: ownerId,
       pillar: source.pillar,
@@ -872,6 +1101,9 @@ export async function duplicateProgram(
       level: source.level,
       goal: source.goal,
       duration_weeks: source.duration_weeks,
+      target_date: null,
+      target_time_seconds: source.target_time_seconds,
+      event_name: source.event_name,
     });
 
     // 2. Copie des traductions (toutes langues disponibles).
@@ -905,8 +1137,18 @@ export async function duplicateProgram(
       session_type: string | null;
       target_distance_m: number | null;
       target_duration_seconds: number | null;
+      target_pace_min_s_per_km: number | null;
+      target_pace_max_s_per_km: number | null;
+      target_rpe: number | null;
+      target_time_seconds: number | null;
+      pacing_plan: string | null;
+      description: string | null;
+      instructions: string | null;
+      adaptation_criterion: string | null;
     }>(
-      `SELECT id, order_index, name, session_type, target_distance_m, target_duration_seconds
+      `SELECT id, order_index, name, session_type, target_distance_m, target_duration_seconds,
+              target_pace_min_s_per_km, target_pace_max_s_per_km, target_rpe,
+              target_time_seconds, pacing_plan, description, instructions, adaptation_criterion
        FROM sessions
        WHERE program_id = ? AND deleted_at IS NULL
        ORDER BY order_index`,
@@ -923,8 +1165,45 @@ export async function duplicateProgram(
         session_type: s.session_type,
         target_distance_m: s.target_distance_m,
         target_duration_seconds: s.target_duration_seconds,
+        // US RUN-F4 : la consigne suit la séance. Sans ces 8 colonnes, dupliquer un programme
+        // rendrait des séances vidées de leur allure et de leurs instructions — exactement le
+        // vide que cette US comble.
+        target_pace_min_s_per_km: s.target_pace_min_s_per_km,
+        target_pace_max_s_per_km: s.target_pace_max_s_per_km,
+        target_rpe: s.target_rpe,
+        target_time_seconds: s.target_time_seconds,
+        pacing_plan: s.pacing_plan,
+        description: s.description,
+        instructions: s.instructions,
+        adaptation_criterion: s.adaptation_criterion,
       });
       sessionIdMap.set(s.id, newSessionId);
+    }
+
+    // 3 bis. Copie des traductions de séance (US RUN-F4, lot I) — même raisonnement que les
+    // traductions de programme juste au-dessus : un programme éditorial bilingue dupliqué doit
+    // rester bilingue, séance par séance.
+    for (const [oldSessionId, newSessionId] of sessionIdMap) {
+      const sessionTranslations = await tx.getAll<{
+        lang: string;
+        name: string | null;
+        description: string | null;
+        instructions: string | null;
+      }>(
+        `SELECT lang, name, description, instructions FROM session_translations
+         WHERE session_id = ? AND deleted_at IS NULL`,
+        [oldSessionId],
+      );
+      for (const t of sessionTranslations) {
+        await txInsert(tx, 'session_translations', {
+          session_id: newSessionId,
+          owner_id: ownerId,
+          lang: t.lang,
+          name: t.name,
+          description: t.description,
+          instructions: t.instructions,
+        });
+      }
     }
 
     // 4. Copie des plans d'exercice (nouveaux id, session_id remappé).
@@ -970,9 +1249,24 @@ export async function duplicateProgram(
         fast_pace_pct_vma: number | null;
         recovery_distance_m: number | null;
         recovery_duration_seconds: number | null;
+        kind: string | null;
+        label: string | null;
+        fast_pace_min_s_per_km: number | null;
+        fast_pace_max_s_per_km: number | null;
+        fast_target_time_min_seconds: number | null;
+        fast_target_time_max_seconds: number | null;
+        recovery_kind: string | null;
+        recovery_pace_min_s_per_km: number | null;
+        recovery_pace_max_s_per_km: number | null;
+        group_key: string | null;
+        group_reps: number | null;
       }>(
         `SELECT order_index, reps, fast_distance_m, fast_duration_seconds, fast_pace_pct_vma,
-                recovery_distance_m, recovery_duration_seconds
+                recovery_distance_m, recovery_duration_seconds,
+                kind, label, fast_pace_min_s_per_km, fast_pace_max_s_per_km,
+                fast_target_time_min_seconds, fast_target_time_max_seconds,
+                recovery_kind, recovery_pace_min_s_per_km, recovery_pace_max_s_per_km,
+                group_key, group_reps
          FROM session_intervals
          WHERE session_id = ? AND deleted_at IS NULL
          ORDER BY order_index`,
@@ -989,6 +1283,21 @@ export async function duplicateProgram(
           fast_pace_pct_vma: block.fast_pace_pct_vma,
           recovery_distance_m: block.recovery_distance_m,
           recovery_duration_seconds: block.recovery_duration_seconds,
+          // US RUN-F4 : nature, allures, chrono cible et imbrication suivent le segment.
+          // ⚠️ `group_key` est recopiée telle quelle : elle n'a de sens que RELATIVEMENT aux
+          // segments consécutifs de la même séance (jamais une référence globale), donc la
+          // réutiliser dans le programme dupliqué est correct et préserve les groupes.
+          kind: block.kind ?? DEFAULT_SEGMENT_KIND,
+          label: block.label,
+          fast_pace_min_s_per_km: block.fast_pace_min_s_per_km,
+          fast_pace_max_s_per_km: block.fast_pace_max_s_per_km,
+          fast_target_time_min_seconds: block.fast_target_time_min_seconds,
+          fast_target_time_max_seconds: block.fast_target_time_max_seconds,
+          recovery_kind: block.recovery_kind,
+          recovery_pace_min_s_per_km: block.recovery_pace_min_s_per_km,
+          recovery_pace_max_s_per_km: block.recovery_pace_max_s_per_km,
+          group_key: block.group_key,
+          group_reps: block.group_reps,
         });
       }
     }

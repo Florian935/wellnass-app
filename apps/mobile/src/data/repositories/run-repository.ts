@@ -50,6 +50,10 @@ import {
   computePolarisation,
   decodeTrack,
   type Polarisation,
+  // US RUN-F4 (lot F) — réalisé par répétition.
+  type RunIntervalDraft,
+  type RunIntervalRow,
+  type SegmentKind,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -386,9 +390,21 @@ export function useTodayRunSession(): { session: TodayRunSession | null; isLoadi
 export function useRunTarget(plannedSessionId: string | null): {
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
+  /** US RUN-F4 (lot A) — plage d'allure SAISIE de la séance, `null` si aucune. */
+  targetPaceMinSPerKm: number | null;
+  targetPaceMaxSPerKm: number | null;
+  /** US RUN-F4 (lot G) — objectif chrono d'un test ou d'une course. */
+  targetTimeSeconds: number | null;
 } | null {
-  const { data } = useQuery<{ target_distance_m: number | null; target_duration_seconds: number | null }>(
-    `SELECT s.target_distance_m, s.target_duration_seconds
+  const { data } = useQuery<{
+    target_distance_m: number | null;
+    target_duration_seconds: number | null;
+    target_pace_min_s_per_km: number | null;
+    target_pace_max_s_per_km: number | null;
+    target_time_seconds: number | null;
+  }>(
+    `SELECT s.target_distance_m, s.target_duration_seconds,
+            s.target_pace_min_s_per_km, s.target_pace_max_s_per_km, s.target_time_seconds
      FROM planned_sessions ps
      JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
      WHERE ps.id = ? AND ps.deleted_at IS NULL
@@ -397,7 +413,13 @@ export function useRunTarget(plannedSessionId: string | null): {
   );
   const row = data[0];
   if (!plannedSessionId || !row) return null;
-  return { targetDistanceM: row.target_distance_m, targetDurationSeconds: row.target_duration_seconds };
+  return {
+    targetDistanceM: row.target_distance_m,
+    targetDurationSeconds: row.target_duration_seconds,
+    targetPaceMinSPerKm: row.target_pace_min_s_per_km,
+    targetPaceMaxSPerKm: row.target_pace_max_s_per_km,
+    targetTimeSeconds: row.target_time_seconds,
+  };
 }
 
 /**
@@ -423,7 +445,11 @@ export function useIntervalBlocksForRun(plannedSessionId: string | null): {
 
   const { data: intervalRows } = useQuery<IntervalDbRow>(
     `SELECT id, session_id, order_index, reps, fast_distance_m, fast_duration_seconds,
-            fast_pace_pct_vma, recovery_distance_m, recovery_duration_seconds
+            fast_pace_pct_vma, recovery_distance_m, recovery_duration_seconds,
+            kind, label, fast_pace_min_s_per_km, fast_pace_max_s_per_km,
+            fast_target_time_min_seconds, fast_target_time_max_seconds,
+            recovery_kind, recovery_pace_min_s_per_km, recovery_pace_max_s_per_km,
+            group_key, group_reps
      FROM session_intervals
      WHERE session_id = ? AND deleted_at IS NULL
      ORDER BY order_index`,
@@ -630,6 +656,109 @@ export async function advanceIntervalPhase(
     interval_phase_start_distance_m: input.phaseStartDistanceM,
     interval_phase_start_duration_s: input.phaseStartDurationS,
   });
+}
+
+/**
+ * Enregistre le réalisé d'UNE phase franchie (US RUN-F4, lot F).
+ *
+ * ⚠️ **Idempotent par construction.** Le rattrapage silencieux de RUN-F2d (R8 bis) rejoue la
+ * progression au remontage de l'écran : sans garde, une même phase produirait plusieurs lignes.
+ * On vérifie donc `(run_id, phase_index)` avant d'insérer — ce que l'index unique partiel
+ * garantit côté Postgres, mais qui doit aussi tenir **en local**, où l'écriture est optimiste et
+ * où une violation de contrainte bloquerait la file d'upload PowerSync entière.
+ *
+ * Le prévu est RECOPIÉ dans la ligne, jamais joint : modifier la séance planifiée ensuite ne
+ * doit pas réécrire l'histoire d'une course déjà courue.
+ */
+export async function recordIntervalResult(
+  runId: string,
+  draft: RunIntervalDraft & { blockId?: string | null; startedAt?: string | null },
+): Promise<void> {
+  const userId = currentUserId();
+
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM run_intervals
+     WHERE run_id = ? AND phase_index = ? AND deleted_at IS NULL
+     LIMIT 1`,
+    [runId, draft.phaseIndex],
+  );
+  if (existing) return;
+
+  await insertWithSyncFields('run_intervals', {
+    run_id: runId,
+    user_id: userId,
+    phase_index: draft.phaseIndex,
+    block_id: draft.blockId ?? null,
+    phase_kind: draft.phaseKind,
+    segment_kind: draft.segmentKind,
+    rep: draft.rep,
+    total_reps: draft.totalReps,
+    planned_distance_m: draft.plannedDistanceM,
+    planned_duration_seconds: draft.plannedDurationSeconds,
+    planned_pace_min_s_per_km: draft.plannedPaceMinSPerKm,
+    planned_pace_max_s_per_km: draft.plannedPaceMaxSPerKm,
+    actual_distance_m: draft.actualDistanceM,
+    actual_duration_seconds: draft.actualDurationSeconds,
+    actual_pace_s_per_km: draft.actualPaceSPerKm,
+    started_at: draft.startedAt ?? null,
+    finished_at: nowUtc(),
+  });
+}
+
+/** Ligne brute de `run_intervals` (US RUN-F4, lot F). */
+type RunIntervalDbRow = {
+  phase_index: number;
+  phase_kind: string;
+  segment_kind: string | null;
+  rep: number | null;
+  total_reps: number | null;
+  planned_distance_m: number | null;
+  planned_duration_seconds: number | null;
+  planned_pace_min_s_per_km: number | null;
+  planned_pace_max_s_per_km: number | null;
+  actual_distance_m: number | null;
+  actual_duration_seconds: number | null;
+  actual_pace_s_per_km: number | null;
+};
+
+/**
+ * Le réalisé par répétition d'une course, dans l'ordre des phases (US RUN-F4, lot F).
+ * Vide pour une course libre ou pour toute course antérieure à cette US — l'écran de résumé
+ * n'affiche alors simplement pas la section, il n'écrit pas « 0 fraction ».
+ */
+export function useRunIntervals(runId: string | undefined): {
+  intervals: RunIntervalRow[];
+  isLoading: boolean;
+} {
+  const { data, isLoading } = useQuery<RunIntervalDbRow>(
+    `SELECT phase_index, phase_kind, segment_kind, rep, total_reps,
+            planned_distance_m, planned_duration_seconds,
+            planned_pace_min_s_per_km, planned_pace_max_s_per_km,
+            actual_distance_m, actual_duration_seconds, actual_pace_s_per_km
+     FROM run_intervals
+     WHERE run_id = ? AND deleted_at IS NULL
+     ORDER BY phase_index`,
+    [runId ?? ''],
+  );
+
+  const intervals: RunIntervalRow[] = runId
+    ? data.map((row) => ({
+        phaseIndex: row.phase_index,
+        phaseKind: row.phase_kind === 'recovery' ? 'recovery' : 'fast',
+        segmentKind: (row.segment_kind as SegmentKind | null) ?? 'work',
+        rep: row.rep ?? 1,
+        totalReps: row.total_reps ?? 1,
+        plannedDistanceM: row.planned_distance_m,
+        plannedDurationSeconds: row.planned_duration_seconds,
+        plannedPaceMinSPerKm: row.planned_pace_min_s_per_km,
+        plannedPaceMaxSPerKm: row.planned_pace_max_s_per_km,
+        actualDistanceM: row.actual_distance_m,
+        actualDurationSeconds: row.actual_duration_seconds,
+        actualPaceSPerKm: row.actual_pace_s_per_km,
+      }))
+    : [];
+
+  return { intervals, isLoading };
 }
 
 // ---------------------------------------------------------------------------

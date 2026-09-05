@@ -34,8 +34,12 @@ bucket_definitions:
       - select * from programs              where owner_id = bucket.user_id and deleted_at is null
       - select * from program_translations  where owner_id = bucket.user_id and deleted_at is null
       - select * from sessions              where owner_id = bucket.user_id and deleted_at is null
+      # US RUN-F4 (lot I) : traductions de séance. 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN.
+      - select * from session_translations  where owner_id = bucket.user_id and deleted_at is null
       - select * from exercise_plans        where owner_id = bucket.user_id and deleted_at is null
       # US RUN-F2c : blocs fractionné/intervalles (une ligne = un bloc de répétitions).
+      # Étendus en SEGMENTS typés par RUN-F4 (nature, allure absolue, chrono cible, groupes) :
+      # colonnes additives, la règle `select *` les fait descendre sans modification.
       - select * from session_intervals     where owner_id = bucket.user_id and deleted_at is null
       - select * from personal_records      where user_id = bucket.user_id and deleted_at is null
       # ── Alimentation ──────────────────────────────────────────────────────
@@ -74,6 +78,10 @@ bucket_definitions:
       # (opt-in strict, `user_settings.pain_journal_enabled`, désactivé par défaut). Rien n'est
       # écrit dans Health Connect — c'est ce qui garde la déclaration Play « Health apps » à 6 types.
       - select * from pain_reports          where user_id = bucket.user_id and deleted_at is null
+      # US RUN-F4 (lot F) : réalisé par répétition — une ligne par phase franchie.
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN. Le PRÉVU y est recopié, pas joint : modifier la
+      # séance planifiée ne doit jamais réécrire l'histoire d'une course déjà courue.
+      - select * from run_intervals         where user_id = bucket.user_id and deleted_at is null
       # US REPAS-01 : planning repas (4.27) et liste de courses (4.28).
       # `meal_plan_entries` est une INTENTION, jamais du consommé : elle n'a aucun lien avec
       # `food_entries`, que seul un geste explicite de l'utilisateur alimente (règle R1).
@@ -110,6 +118,9 @@ bucket_definitions:
       - select * from programs              where owner_id is null and status = 'published' and deleted_at is null
       - select * from program_translations  where owner_id is null and deleted_at is null
       - select * from sessions              where owner_id is null and deleted_at is null
+      # US RUN-F4 (lot I) : traductions des séances ÉDITORIALES (owner_id null) — elles doivent
+      # descendre à tout le monde, comme `program_translations` juste au-dessus.
+      - select * from session_translations  where owner_id is null and deleted_at is null
       - select * from exercise_plans        where owner_id is null and deleted_at is null
       - select * from session_intervals     where owner_id is null and deleted_at is null
       - select * from foods                 where owner_id is null and deleted_at is null

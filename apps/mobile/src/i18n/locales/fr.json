@@ -1746,7 +1746,9 @@
       "endurance": "Endurance fondamentale",
       "fractionne": "Fractionné (VMA)",
       "sortie_longue": "Sortie longue",
-      "recuperation": "Récupération active"
+      "recuperation": "Récupération active",
+      "test": "Test chronométré",
+      "course": "Course objectif"
     },
     "paces": {
       "range": "{{min}} – {{max}}"
@@ -2002,7 +2004,13 @@
       "fastStart": "C'est parti, {{amount}}.",
       "fastStartWithPace": "C'est parti, {{amount}} à {{pct}} % VMA.",
       "recoveryStart": "Récupération, {{amount}}.",
-      "sessionComplete": "Séance fractionné terminée !"
+      "sessionComplete": "Séance fractionné terminée !",
+      "fastStartWithTargetPace": "C'est parti, {{amount}} à {{pace}}.",
+      "segmentStart": {
+        "warmup": "Échauffement, {{amount}}.",
+        "drills": "Gammes, {{amount}}.",
+        "cooldown": "Retour au calme, {{amount}}."
+      }
     },
     "polarisation": {
       "title": "Polarisation de l'entraînement",
@@ -2013,6 +2021,124 @@
       "basis": "sur {{km}} km · {{count}} sortie",
       "basis_plural": "sur {{km}} km · {{count}} sorties",
       "reference": "Le repère souvent cité est ~{{pct}} / 20."
+    },
+    "segmentKind": {
+      "warmup": "Échauffement",
+      "drills": "Gammes",
+      "work": "Corps de séance",
+      "recovery": "Récupération",
+      "cooldown": "Retour au calme"
+    },
+    "recoveryKind": {
+      "jog": "Trot",
+      "walk": "Marche",
+      "static": "Arrêt",
+      "free": "Libre"
+    },
+    "paceGuidance": {
+      "targetLabel": "Allure cible",
+      "range": "{{min}} – {{max}}",
+      "tooFast": "Tu es {{delta}} secondes trop rapide. Vise {{target}}.",
+      "tooSlow": "Tu es {{delta}} secondes trop lent. Vise {{target}}.",
+      "hintTooFast": "{{delta}} s/km trop rapide",
+      "hintTooSlow": "{{delta}} s/km trop lent"
+    },
+    "consigne": {
+      "title": "Consigne",
+      "targetPace": "Allure cible",
+      "targetPacePlaceholder": "Ex. 4:05",
+      "targetPaceMin": "Allure la plus rapide",
+      "targetPaceMax": "Allure la plus lente",
+      "targetRpe": "RPE cible (1-10)",
+      "targetRpePlaceholder": "Ex. 8",
+      "targetTime": "Objectif chrono",
+      "targetTimePlaceholder": "Ex. 20:00",
+      "description": "Objectif de la séance",
+      "descriptionPlaceholder": "Ex. Accumuler du volume à l'allure cible",
+      "instructions": "Consigne",
+      "instructionsPlaceholder": "Ex. Ne pas accélérer le premier 1 000 m",
+      "adaptationCriterion": "Critère d'adaptation",
+      "adaptationCriterionPlaceholder": "Ex. Réduire à 4 répétitions si la foulée se dégrade",
+      "paceSourceExplicit": "Allure saisie",
+      "paceSourceTargetTime": "Déduite de l'objectif chrono",
+      "paceSourceDerived": "Déduite de ton allure de référence",
+      "noPace": "Aucune allure cible",
+      "noPaceHint": "Renseigne ton allure de référence 5 km dans ton profil, ou saisis une allure ici."
+    },
+    "intervalsF4": {
+      "kind": "Nature du segment",
+      "label": "Libellé (facultatif)",
+      "labelPlaceholder": "Ex. Lignes droites",
+      "fastPace": "Allure de la fraction",
+      "fastTargetTime": "Chrono cible de la fraction",
+      "fastTargetTimePlaceholder": "Ex. 1:38",
+      "recoveryKindLabel": "Nature de la récupération",
+      "recoveryPace": "Allure de récupération",
+      "group": "Groupe répété",
+      "groupNone": "Aucun",
+      "groupReps": "Répétitions du groupe",
+      "groupHint": "Les segments qui se suivent avec le même groupe sont répétés ensemble.",
+      "addSegment": "+ Ajouter un segment",
+      "segmentTitle": "Segment {{index}}",
+      "removeSegmentA11y": "Supprimer le segment {{index}}",
+      "volume": "Volume estimé",
+      "volumePartial": "au moins {{value}}"
+    },
+    "realise": {
+      "title": "Fraction par fraction",
+      "rep": "Fraction",
+      "planned": "Prévu",
+      "actual": "Réalisé",
+      "pace": "Allure",
+      "noData": "—",
+      "avgPace": "Allure moyenne des fractions",
+      "regularity": "Régularité",
+      "regularityValue": "± {{value}} s/km",
+      "inRange": "{{done}} sur {{total}} dans la plage",
+      "slowest": "Fraction la plus lente : n° {{rep}}",
+      "fastest": "Fraction la plus rapide : n° {{rep}}",
+      "recoveryRow": "Récup"
+    },
+    "prepa": {
+      "title": "Objectif",
+      "targetDate": "Date de la course",
+      "eventName": "Nom de l'événement",
+      "eventNamePlaceholder": "Ex. Course caritative",
+      "targetTime": "Chrono visé",
+      "countdown_one": "J-{{count}}",
+      "countdown_other": "J-{{count}}",
+      "today": "C'est aujourd'hui !",
+      "past": "Course passée",
+      "taperWeek": "Semaine d'affûtage",
+      "weeksRemaining_one": "{{count}} semaine restante",
+      "weeksRemaining_other": "{{count}} semaines restantes",
+      "progress": "{{done}} séances sur {{total}}",
+      "progressRatio": "{{value}} %",
+      "pacingPlan": "Plan de passage",
+      "pacingPlanKm": "km {{km}}",
+      "pacingPlanSplit": "passage {{time}}",
+      "generatePlan": "Générer un plan régulier"
+    },
+    "adaptation": {
+      "title": "Séance du jour",
+      "stop": "Ne pars pas courir aujourd’hui.",
+      "postpone": "Décale cette séance de 24 h.",
+      "convert_easy": "Transforme-la en footing facile.",
+      "reduce_reps": "Garde l'échauffement, retire {{pct}} % des répétitions.",
+      "slow_pace": "Même structure, ralentis de {{delta}} s/km.",
+      "effort_based": "Cours à l'effort plutôt qu'au chrono.",
+      "reasonPrefix": "Parce que :",
+      "reason": {
+        "pain_blocking": "tu as déclaré une douleur bloquante",
+        "pain_present": "tu as déclaré une douleur",
+        "pain_discomfort": "tu as déclaré une gêne",
+        "low_energy": "ton énergie déclarée est basse",
+        "load_risk": "ta charge récente est en zone de risque",
+        "heavy_legs_yesterday": "tu as fait une grosse séance de jambes hier",
+        "heat": "il fait chaud"
+      },
+      "advisory": "C'est une suggestion : la séance prévue n'est pas modifiée.",
+      "repsHint": "{{from}} → {{to}} répétitions"
     }
   },
   "planning": {

@@ -309,20 +309,23 @@ describe('allure calculée', () => {
 // ---------------------------------------------------------------------------
 
 describe('blocs de fractionné', () => {
-  it('🔴 ne sont proposés QUE sur une séance de fractionné (R5)', async () => {
+  it('🔴 sont proposés sur TOUS les types de séance (US RUN-F4, lot B)', async () => {
+    // Le verrou « fractionné uniquement » de RUN-F2c (R5) est LEVÉ. C'était le mur qui bloquait
+    // le plus de séances de l'analyse du 04/09/2026 : un footing avec lignes droites, une sortie
+    // avec tempo inséré, une endurance progressive sont des séances d'endurance QUI PORTENT UNE
+    // STRUCTURE. Les typer « fractionné » pour leur donner des blocs aurait détruit leur nature
+    // et faussé toutes les analyses par type.
     await afficher(seance({ sessionType: 'endurance' }));
 
-    // Des répétitions sur une sortie d'endurance produiraient une séance incohérente, et le
-    // guidage vocal annoncerait des phases qui n'existent pas.
-    expect(screen.queryByText('running.intervals.addBlock')).toBeNull();
+    expect(screen.getByText('running.intervalsF4.addSegment')).toBeTruthy();
   });
 
-  it('apparaissent dès que le type devient « fractionné »', async () => {
+  it('restent proposés quand le type devient « fractionné »', async () => {
     await afficher(seance({ sessionType: null }));
 
     await taper(screen.getByText('running.sessionType.fractionne'));
 
-    expect(screen.getByText('running.intervals.addBlock')).toBeTruthy();
+    expect(screen.getByText('running.intervalsF4.addSegment')).toBeTruthy();
   });
 
   it('monte un éditeur par bloc existant', async () => {
@@ -340,7 +343,7 @@ describe('blocs de fractionné', () => {
   it('ajoute un bloc à une répétition', async () => {
     await afficher(seance({ sessionType: 'fractionne' }));
 
-    await taper(screen.getByText('running.intervals.addBlock'));
+    await taper(screen.getByText('running.intervalsF4.addSegment'));
 
     // `reps: 1` est le minimum valide : un bloc créé à zéro serait immédiatement invalide.
     expect(mockAddBlock).toHaveBeenCalledWith('s-1', { reps: 1 });
@@ -351,7 +354,7 @@ describe('blocs de fractionné', () => {
     mockAddBlock.mockReturnValue(new Promise((r) => (resoudre = r)));
     await afficher(seance({ sessionType: 'fractionne' }));
 
-    const bouton = screen.getByText('running.intervals.addBlock');
+    const bouton = screen.getByText('running.intervalsF4.addSegment');
     await act(async () => {
       fireEvent.press(bouton);
       fireEvent.press(bouton);

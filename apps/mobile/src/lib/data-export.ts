@@ -36,13 +36,22 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // sans eux, un programme fractionné personnel s'exportait avec ses séances mais **sans leur
   // contenu**. Oubli de l'US d'origine, rattrapé le 03/08/2026 par le test de complétude.
   { table: 'session_intervals', col: 'owner_id' },
+  // US RUN-F4 (lot I) — traductions de séance. Même raison que `program_translations` juste
+  // au-dessus : sans elles, un programme personnel bilingue s'exporterait avec ses séances mais
+  // sans leurs noms traduits.
+  { table: 'session_translations', col: 'owner_id' },
   { table: 'personal_records', col: 'user_id' },
   { table: 'exercise_notes', col: 'user_id' }, { table: 'workout_superset_pairs', col: 'user_id' },
   { table: 'workout_templates', col: 'user_id' }, { table: 'workout_template_exercises', col: 'user_id' },
   { table: 'planned_sessions', col: 'owner_id' }, { table: 'exercise_favorites', col: 'user_id' },
   { table: 'exercises', col: 'owner_id' }, { table: 'exercise_translations', col: 'owner_id' },
   { table: 'exercise_variants', col: 'owner_id' },
-  { table: 'runs', col: 'user_id' }, { table: 'running_pace_records', col: 'user_id' },
+  { table: 'runs', col: 'user_id' },
+  // US RUN-F4 (lot F) — réalisé par répétition. C'est de la donnée d'entraînement personnelle
+  // au même titre que `runs` : l'omettre exporterait « j'ai couru 8 km » sans les 8 fractions
+  // qui font la séance. Exactement l'oubli que RUN-F2c avait commis sur `session_intervals`.
+  { table: 'run_intervals', col: 'user_id' },
+  { table: 'running_pace_records', col: 'user_id' },
   { table: 'food_entries', col: 'user_id' }, { table: 'recipes', col: 'user_id' },
   { table: 'recipe_ingredients', col: 'user_id' }, { table: 'meal_templates', col: 'user_id' },
   { table: 'meal_template_items', col: 'user_id' },

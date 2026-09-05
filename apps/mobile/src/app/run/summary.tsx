@@ -1,6 +1,7 @@
 import {
   compareToTarget,
   computeKmSplits,
+  summarizeIntervalSeries,
   decodeTrack,
   formatDayFull,
   formatPaceMMSS,
@@ -35,6 +36,7 @@ import {
   setRunFeedback,
   setRunTerrain,
   useRun,
+  useRunIntervals,
   useRunTarget,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
@@ -237,6 +239,11 @@ export default function RunSummaryScreen() {
 
   // Splits par km plein (course GPS avec trace ≥ 1 km) : durée de chaque km + km le plus rapide.
   const splits = useMemo(() => computeKmSplits(points), [points]);
+
+  // US RUN-F4 (lot F) — le réalisé par répétition de cette course. Vide (donc section absente)
+  // sur une course libre et sur toute course antérieure à cette US.
+  const { intervals: intervalRows } = useRunIntervals(id);
+  const intervalSummary = useMemo(() => summarizeIntervalSeries(intervalRows), [intervalRows]);
   const fastestSplitKm = useMemo(() => {
     if (splits.length === 0) return null;
     return splits.reduce((best, s) => (s.seconds < best.seconds ? s : best), splits[0]!).km;
@@ -572,6 +579,84 @@ export default function RunSummaryScreen() {
               </View>
             );
           })}
+        </Card>
+      ) : null}
+
+      {/*
+        US RUN-F4 (lot F) — fraction par fraction.
+
+        C'est l'équivalent de l'onglet « Détail des tours » d'une montre, et le mur M10 de
+        l'analyse du 04/09/2026 : une séance de fractionné se lit « reps 1 à 5 à 4:01, la 7ᵉ a
+        lâché à 4:40 », pas « j'ai couru 8 km ». La section est absente — pas vide — sur une
+        course libre ou une course antérieure à cette US : il n'y a rien à dire, on ne dit rien.
+      */}
+      {intervalRows.length > 0 ? (
+        <Card>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {t('running.realise.title')}
+          </Text>
+
+          {intervalRows.map((row) => {
+            const isFast = row.phaseKind === 'fast';
+            const range =
+              row.plannedPaceMinSPerKm != null || row.plannedPaceMaxSPerKm != null
+                ? { min: row.plannedPaceMinSPerKm, max: row.plannedPaceMaxSPerKm }
+                : null;
+            // Hors plage se signale en accent, jamais en rouge : une fraction 3 s trop lente
+            // n'est pas une faute (même règle de ton que RUN-F2b R4).
+            const outOfRange =
+              range != null &&
+              row.actualPaceSPerKm != null &&
+              (row.actualPaceSPerKm < (range.min ?? 0) ||
+                row.actualPaceSPerKm > (range.max ?? Number.POSITIVE_INFINITY));
+
+            return (
+              <View key={row.phaseIndex} style={styles.splitRow}>
+                <Text style={[styles.splitKm, { color: colors.textMuted }]}>
+                  {isFast
+                    ? t('running.realise.rep', { defaultValue: 'Fraction' })
+                    : t('running.realise.recoveryRow')}
+                  {isFast ? ` ${row.rep}` : ''}
+                </Text>
+                <Text style={[styles.splitKm, { color: colors.textMuted, flex: 1 }]}>
+                  {range
+                    ? formatPaceMMSS(Math.round(range.min ?? range.max ?? 0), '—')
+                    : t('running.realise.noData')}
+                </Text>
+                <Text
+                  style={[
+                    styles.splitPace,
+                    { color: outOfRange ? colors.accent : colors.text },
+                  ]}
+                >
+                  {row.actualPaceSPerKm != null
+                    ? formatPaceMMSS(Math.round(row.actualPaceSPerKm), '—')
+                    : t('running.realise.noData')}
+                </Text>
+              </View>
+            );
+          })}
+
+          {/* La régularité est LE sujet d'une séance de VMA — plus que la moyenne. */}
+          {intervalSummary.avgFastPaceSPerKm != null ? (
+            <Text style={[styles.splitKm, { color: colors.textMuted, marginTop: 8 }]}>
+              {t('running.realise.avgPace')} :{' '}
+              {formatPaceMMSS(Math.round(intervalSummary.avgFastPaceSPerKm), '—')}
+              {intervalSummary.paceStdDevSPerKm != null
+                ? ` · ${t('running.realise.regularity')} ${t('running.realise.regularityValue', {
+                    value: Math.round(intervalSummary.paceStdDevSPerKm),
+                  })}`
+                : ''}
+            </Text>
+          ) : null}
+          {intervalSummary.ratedCount > 0 ? (
+            <Text style={[styles.splitKm, { color: colors.textMuted }]}>
+              {t('running.realise.inRange', {
+                done: intervalSummary.inRangeCount,
+                total: intervalSummary.ratedCount,
+              })}
+            </Text>
+          ) : null}
         </Card>
       ) : null}
 

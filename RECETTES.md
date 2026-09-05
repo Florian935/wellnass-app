@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **12/08/2026** — **55 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
+> Dernière mise à jour : **05/09/2026** — **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
@@ -2186,3 +2186,96 @@ Commit `46a6692` · garde-fou :
   comportement, il évite seulement le rejet non capturé. Un repli propre demande un état d'erreur à
   l'écran et le blocage de l'enregistrement → **inscrit au [BACKLOG](BACKLOG.md)** (🟠), même famille
   que le `loadError` d'`ExerciseEditScreen`.
+
+---
+
+## 56. RUN-F4 — La séance de course porte enfin sa consigne
+
+> [Spec](docs/specs/functional/us/runf4-seances-structurees.md) · Roadmap 5.36 → 5.39 ·
+> Branche `feature/run-seances-structurees` · Livré le **05/09/2026**
+>
+> Origine : [analyse du 04/09/2026](docs/product/analyse-seances-structurees-running.md).
+> 10 lots livrés en une passe, à ta demande, retours reportés à cette recette.
+
+### 🔴 AVANT TOUT — deux étapes manuelles, sinon rien ne marche
+
+- [ ] 0a. **`npm run db:push`** puis **`npm run db:types`**. Les 7 migrations sont écrites et
+      validées par `db:push:dry`, mais **je n'ai pas pu les appliquer** (écriture sur la base
+      partagée refusée en session). **Sans ça, l'app plante ou ignore tout ce qui suit.**
+- [ ] 0b. **Déployer 2 sync rules à la main** dans le dashboard PowerSync (`run_intervals`,
+      `session_translations`) depuis
+      [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
+      ⚠️ Étape **oubliée trois fois** au registre : sans elle, tout reste local et ne remonte
+      jamais, **sans aucune erreur visible**.
+- [ ] 0c. Pas de nouveau build : **aucune dépendance native neuve**.
+
+### Lot A — l'allure cible saisie (le cœur)
+
+- [ ] 1. Éditer une séance de programme running : les champs **Allure cible** (deux bornes),
+      **RPE cible**, **Consigne** et **Critère d'adaptation** sont présents.
+- [ ] 2. Saisir `4:05` et `4:10` → quitter le champ → rouvrir l'écran : **les valeurs sont
+      toujours là** (c'est le test de la panne d'écriture silencieuse).
+- [ ] 3. Saisir **une seule** borne (`4:00`) → elle est acceptée et s'affiche telle quelle.
+- [ ] 4. Saisir les bornes **à l'envers** (`4:10` puis `4:05`) → l'app les remet dans l'ordre.
+- [ ] 5. Saisir n'importe quoi (`abc`) → le champ **revient à sa valeur d'origine**, la consigne
+      existante n'est pas effacée.
+- [ ] 6. Vider les deux bornes → l'allure **redevient dérivée** de l'allure de réf. 5 km.
+
+### Lot B — segments typés, et le verrou levé
+
+- [ ] 7. Sur une séance **d'endurance** (pas fractionné) : le bouton **« + Ajouter un segment »
+      est présent**. *(C'était impossible avant : c'est le changement le plus structurant.)*
+- [ ] 8. Créer un segment **Échauffement** de 12 min, un **Corps** 8×400 m, un **Retour au
+      calme** 8 min → les trois s'affichent dans l'ordre avec leur nature.
+- [ ] 9. Choisir une **nature de récupération** (Trot / Marche) → elle se garde.
+
+### Lot C/D — chrono cible et groupes
+
+- [ ] 10. Sur un segment 400 m, saisir un **chrono cible** `1:38` → la distance **et** le chrono
+      coexistent (avant, c'était l'un OU l'autre).
+- [ ] 11. Créer deux segments qui se suivent avec le **même groupe** (`g1`) et **3 répétitions**
+      → au démarrage de la course, le guidage annonce bien **3 passages** des deux fractions.
+
+### Lot E — piloter à l'allure (⚠️ demande de sortir courir)
+
+- [ ] 12. Démarrer une séance qui porte une allure cible → **« Allure cible »** s'affiche sous les
+      allures, avec la plage.
+- [ ] 13. Courir nettement trop lentement → l'allure instantanée **passe en teinte d'accent** et
+      une annonce vocale dit l'écart. ⚠️ **Jamais en rouge** : hors plage n'est pas une faute.
+- [ ] 14. Rester hors plage longtemps → l'annonce **ne se répète pas** en boucle.
+- [ ] 15. ⚠️ **Juge le seuil de tolérance (5 s/km)** : trop bavard ? pas assez réactif ?
+      C'est le **seul nombre inventé** du lot, il attend ton verdict terrain.
+
+### Lot F — le réalisé par répétition (⚠️ demande une séance de fractionné réelle)
+
+- [ ] 16. Faire une séance structurée → au résumé, la section **« Fraction par fraction »**
+      liste chaque fraction avec son allure prévue et réalisée.
+- [ ] 17. Les fractions **hors plage** ressortent en accent.
+- [ ] 18. **Allure moyenne**, **régularité (± x s/km)** et **« X sur Y dans la plage »** s'affichent.
+- [ ] 19. **Quitter l'écran de suivi pendant la séance puis y revenir** → au résumé, il n'y a
+      **ni doublon ni trou** dans les fractions. *(Les fractions rattrapées peuvent afficher
+      « — » en allure : c'est **voulu**, la durée par fraction n'est pas mesurable dans ce cas.)*
+- [ ] 20. Une **course libre** n'affiche **pas** cette section (et non une section vide).
+
+### Lot G/H — test, course, échéance
+
+- [ ] 21. Les types **« Test chronométré »** et **« Course objectif »** apparaissent au choix du
+      type de séance (app **et** back-office).
+- [ ] 22. Sur ces deux types seulement, le champ **Objectif chrono** apparaît.
+
+### Non-régression (le plus important)
+
+- [ ] 23. Une séance de fractionné **créée avant cette US** s'affiche et se joue **exactement
+      comme avant** (blocs, %VMA, guidage vocal).
+- [ ] 24. **Dupliquer un programme** running → la copie garde allures, consignes et segments.
+      La **date de course n'est PAS recopiée** (voulu : on refait le plan sur une autre échéance).
+- [ ] 25. Une séance **muscu** n'est pas affectée.
+- [ ] 26. **Export RGPD** (Réglages → Exporter mes données) : le JSON contient bien
+      `run_intervals` et `session_translations`.
+
+### 🟡 Ce qui n'est PAS à recetter (non livré, assumé)
+
+Le calcul, les données, les tests et l'i18n existent, **mais aucun écran ne les affiche** :
+carte **« J-42 » / taux de réalisation** (lot H), carte **« séance du jour adaptée »** (lot J),
+**éditeur de plan de passage par km**, **champs de consigne dans le back-office**, et l'**UI
+d'écriture des traductions de séance**. Détail en §4 de la spec. À arbitrer après ta recette.

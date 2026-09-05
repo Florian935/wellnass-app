@@ -7,6 +7,9 @@ import {
   hasRunningSessionTarget,
   sessionTargetPace,
   type ProgramSessionType,
+  formatMmSs,
+  isTimedSessionType,
+  parseMmSs,
 } from '@wellness/shared';
 import {
   addIntervalBlock,
@@ -148,6 +151,56 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
         });
       }
     }
+  };
+
+  // ---- US RUN-F4 : la consigne de la séance (lots A, G, I) ----
+  //
+  // Saisie en `m:ss` et jamais en secondes : personne n'écrit « 245 s/km », tout le monde écrit
+  // « 4:05 ». `parseMmSs` accepte aussi un nombre nu (interprété comme des minutes entières) et
+  // rend `null` sur une saisie illisible — auquel cas on repose la valeur d'origine plutôt que
+  // d'écrire un `null` qui effacerait silencieusement une consigne existante.
+  const [paceMin, setPaceMin] = useState(formatMmSs(session.targetPaceMinSPerKm));
+  const [paceMax, setPaceMax] = useState(formatMmSs(session.targetPaceMaxSPerKm));
+  const commitPace = () => {
+    const min = parseMmSs(paceMin);
+    const max = parseMmSs(paceMax);
+    // Les deux champs vides = on efface la consigne et l'allure redevient dérivée.
+    void updateRunningSession(session.id, {
+      targetPaceMinSPerKm: min,
+      targetPaceMaxSPerKm: max,
+    });
+    setPaceMin(formatMmSs(min));
+    setPaceMax(formatMmSs(max));
+  };
+
+  const [targetTime, setTargetTime] = useState(formatMmSs(session.targetTimeSeconds));
+  const commitTargetTime = () => {
+    const value = parseMmSs(targetTime);
+    void updateRunningSession(session.id, { targetTimeSeconds: value });
+    setTargetTime(formatMmSs(value));
+  };
+
+  const [targetRpe, setTargetRpe] = useState(
+    session.targetRpe != null ? String(session.targetRpe) : '',
+  );
+  const commitTargetRpe = () => {
+    const parsed = Number.parseInt(targetRpe.trim(), 10);
+    // Hors 1-10 = saisie invalide, pas une valeur à écrire : le RPE est une échelle fermée.
+    const value = Number.isFinite(parsed) && parsed >= 1 && parsed <= 10 ? parsed : null;
+    void updateRunningSession(session.id, { targetRpe: value });
+    setTargetRpe(value != null ? String(value) : '');
+  };
+
+  const [instructions, setInstructions] = useState(session.instructions ?? '');
+  const commitInstructions = () => {
+    const value = instructions.trim();
+    void updateRunningSession(session.id, { instructions: value === '' ? null : value });
+  };
+
+  const [adaptation, setAdaptation] = useState(session.adaptationCriterion ?? '');
+  const commitAdaptation = () => {
+    const value = adaptation.trim();
+    void updateRunningSession(session.id, { adaptationCriterion: value === '' ? null : value });
   };
 
   // Blocs fractionné (US RUN-F2c) — uniquement pour session_type='fractionne' (R5).
@@ -355,27 +408,133 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
         </Text>
       ) : null}
 
-      {/* Blocs fractionné (US RUN-F2c) — uniquement pour ce type de séance (R5) */}
-      {sessionType === 'fractionne' ? (
-        <View style={styles.intervalsSection}>
+      {/* Consigne de la séance (US RUN-F4, lots A/G/I) — le cœur de cette US : jusqu'ici une
+          séance ne pouvait porter qu'un type et une cible chiffrée, jamais son allure. */}
+      <View style={styles.field}>
+        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+          {t('running.consigne.targetPace')}
+        </Text>
+        <View style={styles.paceRow}>
+          <TextInput
+            style={[inputStyle, styles.paceInput]}
+            value={paceMin}
+            onChangeText={setPaceMin}
+            onBlur={commitPace}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.consigne.targetPacePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.consigne.targetPaceMin')}
+          />
+          <Text style={[styles.paceSeparator, { color: colors.textMuted }]}>–</Text>
+          <TextInput
+            style={[inputStyle, styles.paceInput]}
+            value={paceMax}
+            onChangeText={setPaceMax}
+            onBlur={commitPace}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.consigne.targetPacePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.consigne.targetPaceMax')}
+          />
+        </View>
+      </View>
+
+      {/* Objectif chrono — n'a de sens que pour un test ou une course (lot G). Afficher ce
+          champ sur un footing inviterait à confondre « durée à couvrir » et « temps à ne pas
+          dépasser », qui sont deux colonnes distinctes et deux intentions opposées. */}
+      {isTimedSessionType(sessionType) ? (
+        <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-            {t('running.intervals.title')}
+            {t('running.consigne.targetTime')}
           </Text>
-          {session.intervals.length > 0 ? (
-            <View style={styles.intervalsList}>
-              {session.intervals.map((block, index) => (
-                <IntervalBlockEditor key={block.id} block={block} index={index} />
-              ))}
-            </View>
-          ) : null}
-          <Button
-            label={t('running.intervals.addBlock')}
-            variant="ghost"
-            onPress={onAddBlock}
-            disabled={addingBlock}
+          <TextInput
+            style={inputStyle}
+            value={targetTime}
+            onChangeText={setTargetTime}
+            onBlur={commitTargetTime}
+            keyboardType="numbers-and-punctuation"
+            placeholder={t('running.consigne.targetTimePlaceholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('running.consigne.targetTime')}
           />
         </View>
       ) : null}
+
+      <View style={styles.field}>
+        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+          {t('running.consigne.targetRpe')}
+        </Text>
+        <TextInput
+          style={inputStyle}
+          value={targetRpe}
+          onChangeText={setTargetRpe}
+          onBlur={commitTargetRpe}
+          keyboardType="number-pad"
+          placeholder={t('running.consigne.targetRpePlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          accessibilityLabel={t('running.consigne.targetRpe')}
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+          {t('running.consigne.instructions')}
+        </Text>
+        <TextInput
+          style={[inputStyle, styles.multiline]}
+          value={instructions}
+          onChangeText={setInstructions}
+          onBlur={commitInstructions}
+          multiline
+          placeholder={t('running.consigne.instructionsPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          accessibilityLabel={t('running.consigne.instructions')}
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+          {t('running.consigne.adaptationCriterion')}
+        </Text>
+        <TextInput
+          style={[inputStyle, styles.multiline]}
+          value={adaptation}
+          onChangeText={setAdaptation}
+          onBlur={commitAdaptation}
+          multiline
+          placeholder={t('running.consigne.adaptationCriterionPlaceholder')}
+          placeholderTextColor={colors.textMuted}
+          accessibilityLabel={t('running.consigne.adaptationCriterion')}
+        />
+      </View>
+
+      {/*
+        Structure de la séance (US RUN-F2c, étendue par RUN-F4 lot B).
+
+        ⚠️ **La restriction `sessionType === 'fractionne'` est levée ici.** C'était le verrou qui
+        bloquait le plus de séances de l'analyse du 04/09/2026 (6 sur 24) : un footing avec
+        lignes droites, une sortie avec tempo inséré, une endurance progressive sont des séances
+        d'endurance QUI PORTENT UNE STRUCTURE. Les typer `fractionne` pour leur donner des blocs
+        aurait détruit leur nature et faussé toutes les analyses par type.
+      */}
+      <View style={styles.intervalsSection}>
+        <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+          {t('running.intervals.title')}
+        </Text>
+        {session.intervals.length > 0 ? (
+          <View style={styles.intervalsList}>
+            {session.intervals.map((block, index) => (
+              <IntervalBlockEditor key={block.id} block={block} index={index} />
+            ))}
+          </View>
+        ) : null}
+        <Button
+          label={t('running.intervalsF4.addSegment')}
+          variant="ghost"
+          onPress={onAddBlock}
+          disabled={addingBlock}
+        />
+      </View>
     </View>
   );
 }
@@ -457,6 +616,10 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.mono,
     fontSize: 13,
   },
+  paceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  paceInput: { flex: 1 },
+  paceSeparator: { fontSize: 16 },
+  multiline: { minHeight: 64, textAlignVertical: 'top' },
   intervalsSection: { gap: 10 },
   intervalsList: { gap: 10 },
 });

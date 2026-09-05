@@ -365,6 +365,10 @@ export const fr = {
       fractionne: 'Fractionné',
       sortie_longue: 'Sortie longue',
       recuperation: 'Récupération',
+      // US RUN-F4 (lot G) — les deux séances qui calibrent un plan : contre-la-montre de
+      // contrôle et course objectif. Leur intensité vient d'un chrono, pas d'une bande dérivée.
+      test: 'Test chronométré',
+      course: 'Course objectif',
     },
     targetDistanceKm: 'Distance cible (km)',
     targetDurationLabel: 'Durée cible',

@@ -1,5 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { averagePace, compareToTarget, decodeTrack, instantPace, simplifyTrack } from '@wellness/shared';
+import {
+  averagePace,
+  compareToTarget,
+  decodeTrack,
+  derivedVmaPace,
+  evaluatePace,
+  instantPace,
+  resolveSessionPace,
+  simplifyTrack,
+} from '@wellness/shared';
 import { useRouter } from 'expo-router';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,6 +30,7 @@ import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
 import { useDistanceAnnouncements } from '@/running/announcements';
 import { useIntervalGuidance } from '@/running/interval-guidance';
+import { usePaceGuidance } from '@/running/pace-guidance';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
@@ -119,12 +129,19 @@ export default function RunActiveScreen() {
   const { sessionType: plannedSessionType, blocks: intervalBlocks } = useIntervalBlocksForRun(
     active?.plannedSessionId ?? null,
   );
+  // US RUN-F4 (lot B) : le guidage n'est plus réservé au type `fractionne`. Un footing peut
+  // porter ses lignes droites, une sortie son tempo inséré — c'est le verrou qui bloquait le
+  // plus de séances (6 sur 24 dans l'analyse du 04/09/2026). Le gating devient « la séance a
+  // une structure », ce qui est la vraie condition.
   useIntervalGuidance({
     enabled:
       isGps &&
       runnerProfile?.intervalGuidanceEnabled === true &&
-      plannedSessionType === 'fractionne' &&
       intervalBlocks.length > 0,
+    vmaPaceSPerKm:
+      runnerProfile?.ref5kPaceSPerKm != null
+        ? derivedVmaPace(runnerProfile.ref5kPaceSPerKm)
+        : null,
     runId: active?.id ?? null,
     blocks: intervalBlocks,
     distanceM,
@@ -140,6 +157,37 @@ export default function RunActiveScreen() {
   // US RUN-F2b (5.23) : cible de la séance planifiée, comparée en direct — même fonction pure et
   // mêmes clés i18n que le résumé post-course (RUN-F3), aucune n'est modifiée (spec R1/R2).
   const target = useRunTarget(active?.plannedSessionId ?? null);
+
+  // US RUN-F4 (lot A + E) : l'allure cible de la séance, et le pilotage en direct dessus.
+  // C'est le mur M1 de l'analyse — jusqu'ici l'écran affichait l'allure réalisée sans jamais
+  // dire à quelle allure courir.
+  const targetPace = useMemo(
+    () =>
+      resolveSessionPace({
+        explicitMinSPerKm: target?.targetPaceMinSPerKm,
+        explicitMaxSPerKm: target?.targetPaceMaxSPerKm,
+        sessionType: plannedSessionType,
+        targetDistanceM: target?.targetDistanceM,
+        targetTimeSeconds: target?.targetTimeSeconds,
+        ref5kPaceSPerKm: runnerProfile?.ref5kPaceSPerKm ?? null,
+      }),
+    [target, plannedSessionType, runnerProfile?.ref5kPaceSPerKm],
+  );
+
+  // Verdict affiché : sur l'allure INSTANTANÉE, c'est elle qu'on corrige en courant.
+  const paceEvaluation = useMemo(
+    () => evaluatePace(instantPaceValue, targetPace?.range ?? null),
+    [instantPaceValue, targetPace],
+  );
+
+  usePaceGuidance({
+    // Même réglage que le guidage fractionné : un coureur qui a coupé la voix l'a coupée pour
+    // toute la séance, pas seulement pour les changements de bloc.
+    enabled: isGps && runnerProfile?.intervalGuidanceEnabled === true && targetPace !== null,
+    currentPaceSPerKm: instantPaceValue,
+    targetRange: targetPace?.range ?? null,
+    durationSeconds: active?.durationSeconds ?? 0,
+  });
   const comparison = useMemo(
     () =>
       compareToTarget(
@@ -292,10 +340,52 @@ export default function RunActiveScreen() {
               <Text style={[styles.statLabel, { color: colors.textMuted }]}>
                 {t('running.active.instantPace')}
               </Text>
-              <Text style={[styles.paceValue, { color: colors.text }]}>
+              <Text
+                style={[
+                  styles.paceValue,
+                  {
+                    // US RUN-F4 (lot E) : l'allure instantanée se colore selon l'écart à la
+                    // cible. Jamais une couleur d'alerte (règle de ton RUN-F2b R4) — hors
+                    // plage se dit en teinte d'accent, pas en rouge d'erreur : courir 3 s trop
+                    // vite n'est pas une faute.
+                    color:
+                      paceEvaluation == null || paceEvaluation.verdict === 'in_range'
+                        ? colors.text
+                        : colors.accent,
+                  },
+                ]}
+              >
                 {units.formatPace(instantPaceValue)}
               </Text>
             </View>
+          </View>
+        ) : null}
+
+        {/* Allure cible du moment (US RUN-F4, lot A/E) — absente si la séance n'en porte pas,
+            et c'est le cas de toute course libre. Aucune allure n'est inventée. */}
+        {isGps && targetPace ? (
+          <View style={styles.targetPaceRow}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>
+              {t('running.paceGuidance.targetLabel')}
+            </Text>
+            <Text style={[styles.targetPaceValue, { color: colors.text }]}>
+              {targetPace.range.minSPerKm === targetPace.range.maxSPerKm
+                ? units.formatPace(targetPace.range.minSPerKm)
+                : t('running.paceGuidance.range', {
+                    min: units.formatPace(targetPace.range.minSPerKm),
+                    max: units.formatPace(targetPace.range.maxSPerKm),
+                  })}
+            </Text>
+            {paceEvaluation && paceEvaluation.verdict !== 'in_range' ? (
+              <Text style={[styles.targetPaceHint, { color: colors.accent }]}>
+                {t(
+                  paceEvaluation.verdict === 'too_fast'
+                    ? 'running.paceGuidance.hintTooFast'
+                    : 'running.paceGuidance.hintTooSlow',
+                  { delta: Math.abs(Math.round(paceEvaluation.deltaSPerKm)) },
+                )}
+              </Text>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -397,6 +487,9 @@ const styles = StyleSheet.create({
   paces: { flexDirection: 'row', justifyContent: 'center', gap: 40 },
   paceItem: { alignItems: 'center', gap: 4 },
   paceValue: { fontFamily: fontFamily.monoBold, fontSize: 24 },
+  targetPaceRow: { alignItems: 'center', gap: 2, marginTop: 12 },
+  targetPaceValue: { fontFamily: fontFamily.monoBold, fontSize: 18 },
+  targetPaceHint: { fontFamily: fontFamily.body, fontSize: 12 },
   targetWrap: { paddingHorizontal: 20, paddingBottom: 4 },
   targetTitle: { fontFamily: fontFamily.bodySemi, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
   targetText: { fontFamily: fontFamily.bodyBold, fontSize: 14, lineHeight: 19 },

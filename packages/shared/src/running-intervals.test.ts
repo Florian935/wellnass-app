@@ -56,16 +56,36 @@ describe('expandIntervalPhases', () => {
   });
 });
 
+/**
+ * Fabrique de phase pour les tests. US RUN-F4 a ajoute 8 champs a `ExpandedIntervalPhase`
+ * (nature du segment, allures, chrono cible, groupe) ; les remplir a la main dans chaque
+ * litteral rendrait ces tests illisibles alors qu'ils ne portent pas dessus.
+ */
+function makePhase(overrides: Partial<ExpandedIntervalPhase> = {}): ExpandedIntervalPhase {
+  return {
+    kind: 'fast',
+    blockIndex: 0,
+    rep: 1,
+    totalReps: 1,
+    distanceM: null,
+    durationSeconds: null,
+    fastPacePctVma: null,
+    segmentKind: 'work',
+    label: null,
+    paceMinSPerKm: null,
+    paceMaxSPerKm: null,
+    targetTimeSeconds: null,
+    recoveryKind: null,
+    groupRep: 1,
+    groupTotalReps: 1,
+    ...overrides,
+  };
+}
+
 describe('isIntervalPhaseComplete', () => {
-  const distancePhase: ExpandedIntervalPhase = {
-    kind: 'fast', blockIndex: 0, rep: 1, totalReps: 1, distanceM: 400, durationSeconds: null, fastPacePctVma: null,
-  };
-  const durationPhase: ExpandedIntervalPhase = {
-    kind: 'recovery', blockIndex: 0, rep: 1, totalReps: 1, distanceM: null, durationSeconds: 90, fastPacePctVma: null,
-  };
-  const emptyPhase: ExpandedIntervalPhase = {
-    kind: 'fast', blockIndex: 0, rep: 1, totalReps: 1, distanceM: null, durationSeconds: null, fastPacePctVma: null,
-  };
+  const distancePhase = makePhase({ distanceM: 400 });
+  const durationPhase = makePhase({ kind: 'recovery', durationSeconds: 90 });
+  const emptyPhase = makePhase();
 
   it('phase distance : sous le seuil -> false, au seuil -> true, au-dessus -> true', () => {
     expect(isIntervalPhaseComplete(distancePhase, 399, 0)).toBe(false);

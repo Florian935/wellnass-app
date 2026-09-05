@@ -283,6 +283,12 @@ const programs = new Table({
   level: column.text,
   goal: column.text,
   duration_weeks: column.integer,
+  // US RUN-F4 (lot H) — l'ancre du bloc de préparation : date de course, chrono visé, événement.
+  // Migration : 20260905090004_runf4_programs_objectif.sql
+  // `target_date` est une date nue `AAAA-MM-JJ` (jamais un instant), comme `scheduled_date`.
+  target_date: column.text,
+  target_time_seconds: column.integer,
+  event_name: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -309,6 +315,37 @@ const sessions = new Table({
   session_type: column.text,
   target_distance_m: column.integer,
   target_duration_seconds: column.integer,
+  // US RUN-F4 (lots A, G, I) — la consigne de la séance : allure cible SAISIE, RPE cible,
+  // objectif chrono, plan de passage, et les trois textes du plan d'entraînement.
+  // Migration : 20260905090000_runf4_sessions_consigne.sql
+  // 🔴 Ces 8 colonnes doivent être déclarées ICI, sinon l'écriture échoue et l'erreur est
+  // avalée (panne CYCLE-01 du 31/07/2026, répétée par HORAIRE-01). Couvert par un test
+  // d'écriture-relecture dans `run-structured-sql.test.ts`.
+  target_pace_min_s_per_km: column.integer,
+  target_pace_max_s_per_km: column.integer,
+  target_rpe: column.integer,
+  target_time_seconds: column.integer,
+  pacing_plan: column.text, // jsonb côté Postgres, texte côté SQLite local
+  description: column.text,
+  instructions: column.text,
+  adaptation_criterion: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── US RUN-F4 (lot I) : traductions de séance ───────────────────────────────
+// Migration : supabase/migrations/20260905090005_runf4_session_translations.sql
+// Miroir de `program_translations`. `sessions.name` reste le repli final : cette table est
+// additive, aucune séance existante n'a besoin d'une ligne ici pour continuer à s'afficher.
+
+const session_translations = new Table({
+  session_id: column.text,
+  owner_id: column.text,
+  lang: column.text,
+  name: column.text,
+  description: column.text,
+  instructions: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -341,6 +378,22 @@ const session_intervals = new Table({
   fast_pace_pct_vma: column.integer,
   recovery_distance_m: column.integer,
   recovery_duration_seconds: column.integer,
+  // US RUN-F4 (lots A, B, C, D) — le bloc devient un SEGMENT typé : sa nature, son allure
+  // absolue, le chrono cible de la fraction, l'intensité de la récup, et l'imbrication.
+  // Migration : 20260905090001_runf4_session_segments.sql
+  // 🔴 Même avertissement que ci-dessus : colonne non déclarée = écriture silencieusement
+  // perdue. Couvert par `run-structured-sql.test.ts`.
+  kind: column.text,
+  label: column.text,
+  fast_pace_min_s_per_km: column.integer,
+  fast_pace_max_s_per_km: column.integer,
+  fast_target_time_min_seconds: column.integer,
+  fast_target_time_max_seconds: column.integer,
+  recovery_kind: column.text,
+  recovery_pace_min_s_per_km: column.integer,
+  recovery_pace_max_s_per_km: column.integer,
+  group_key: column.text,
+  group_reps: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -412,6 +465,35 @@ const runs = new Table({
   interval_phase_index: column.integer,
   interval_phase_start_distance_m: column.integer,
   interval_phase_start_duration_s: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── US RUN-F4 (lot F) : le réalisé par répétition ───────────────────────────
+// Migration : supabase/migrations/20260905090002_runf4_run_intervals.sql
+// Une ligne par phase franchie — l'équivalent de l'onglet « Détail des tours » d'une montre.
+// Le prévu y est RECOPIÉ, pas référencé : modifier la séance planifiée ne doit jamais réécrire
+// l'histoire d'une course passée (d'où `block_id` sans FK côté Postgres).
+
+const run_intervals = new Table({
+  run_id: column.text,
+  user_id: column.text,
+  phase_index: column.integer,
+  block_id: column.text,
+  phase_kind: column.text,
+  segment_kind: column.text,
+  rep: column.integer,
+  total_reps: column.integer,
+  planned_distance_m: column.integer,
+  planned_duration_seconds: column.integer,
+  planned_pace_min_s_per_km: column.integer,
+  planned_pace_max_s_per_km: column.integer,
+  actual_distance_m: column.real,
+  actual_duration_seconds: column.real,
+  actual_pace_s_per_km: column.real,
+  started_at: column.text,
+  finished_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -786,11 +868,13 @@ export const AppSchema = new Schema({
   programs,
   program_translations,
   sessions,
+  session_translations,
   exercise_plans,
   session_intervals,
   personal_records,
   running_profiles,
   runs,
+  run_intervals,
   planned_sessions,
   running_pace_records,
   workout_templates,

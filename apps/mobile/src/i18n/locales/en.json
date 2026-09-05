@@ -1746,7 +1746,9 @@
       "endurance": "Base endurance",
       "fractionne": "Intervals (VO2max)",
       "sortie_longue": "Long run",
-      "recuperation": "Active recovery"
+      "recuperation": "Active recovery",
+      "test": "Timed test",
+      "course": "Goal race"
     },
     "paces": {
       "range": "{{min}} – {{max}}"
@@ -2002,7 +2004,13 @@
       "fastStart": "Go, {{amount}}.",
       "fastStartWithPace": "Go, {{amount}} at {{pct}}% VMA.",
       "recoveryStart": "Recovery, {{amount}}.",
-      "sessionComplete": "Interval session complete!"
+      "sessionComplete": "Interval session complete!",
+      "fastStartWithTargetPace": "Go, {{amount}} at {{pace}}.",
+      "segmentStart": {
+        "warmup": "Warm-up, {{amount}}.",
+        "drills": "Drills, {{amount}}.",
+        "cooldown": "Cool-down, {{amount}}."
+      }
     },
     "polarisation": {
       "title": "Training polarisation",
@@ -2013,6 +2021,124 @@
       "basis": "across {{km}} km · {{count}} run",
       "basis_plural": "across {{km}} km · {{count}} runs",
       "reference": "The commonly cited benchmark is ~{{pct}}/20."
+    },
+    "segmentKind": {
+      "warmup": "Warm-up",
+      "drills": "Drills",
+      "work": "Main set",
+      "recovery": "Recovery",
+      "cooldown": "Cool-down"
+    },
+    "recoveryKind": {
+      "jog": "Jog",
+      "walk": "Walk",
+      "static": "Standing",
+      "free": "Free"
+    },
+    "paceGuidance": {
+      "targetLabel": "Target pace",
+      "range": "{{min}} – {{max}}",
+      "tooFast": "You're {{delta}} seconds too fast. Aim for {{target}}.",
+      "tooSlow": "You're {{delta}} seconds too slow. Aim for {{target}}.",
+      "hintTooFast": "{{delta}} s/km too fast",
+      "hintTooSlow": "{{delta}} s/km too slow"
+    },
+    "consigne": {
+      "title": "Instructions",
+      "targetPace": "Target pace",
+      "targetPacePlaceholder": "e.g. 4:05",
+      "targetPaceMin": "Fastest pace",
+      "targetPaceMax": "Slowest pace",
+      "targetRpe": "Target RPE (1-10)",
+      "targetRpePlaceholder": "e.g. 8",
+      "targetTime": "Goal time",
+      "targetTimePlaceholder": "e.g. 20:00",
+      "description": "Session goal",
+      "descriptionPlaceholder": "e.g. Build volume at target pace",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "e.g. Don't speed up on the first 1,000 m",
+      "adaptationCriterion": "Adaptation criterion",
+      "adaptationCriterionPlaceholder": "e.g. Drop to 4 reps if form breaks down",
+      "paceSourceExplicit": "Pace you set",
+      "paceSourceTargetTime": "From your goal time",
+      "paceSourceDerived": "From your reference pace",
+      "noPace": "No target pace",
+      "noPaceHint": "Set your 5 km reference pace in your profile, or enter a pace here."
+    },
+    "intervalsF4": {
+      "kind": "Segment type",
+      "label": "Label (optional)",
+      "labelPlaceholder": "e.g. Strides",
+      "fastPace": "Interval pace",
+      "fastTargetTime": "Interval goal time",
+      "fastTargetTimePlaceholder": "e.g. 1:38",
+      "recoveryKindLabel": "Recovery type",
+      "recoveryPace": "Recovery pace",
+      "group": "Repeated group",
+      "groupNone": "None",
+      "groupReps": "Group repetitions",
+      "groupHint": "Consecutive segments sharing a group are repeated together.",
+      "addSegment": "+ Add segment",
+      "segmentTitle": "Segment {{index}}",
+      "removeSegmentA11y": "Remove segment {{index}}",
+      "volume": "Estimated volume",
+      "volumePartial": "at least {{value}}"
+    },
+    "realise": {
+      "title": "Rep by rep",
+      "rep": "Rep",
+      "planned": "Target",
+      "actual": "Actual",
+      "pace": "Pace",
+      "noData": "—",
+      "avgPace": "Average interval pace",
+      "regularity": "Consistency",
+      "regularityValue": "± {{value}} s/km",
+      "inRange": "{{done}} of {{total}} on target",
+      "slowest": "Slowest rep: #{{rep}}",
+      "fastest": "Fastest rep: #{{rep}}",
+      "recoveryRow": "Rec."
+    },
+    "prepa": {
+      "title": "Goal",
+      "targetDate": "Race date",
+      "eventName": "Event name",
+      "eventNamePlaceholder": "e.g. Charity run",
+      "targetTime": "Goal time",
+      "countdown_one": "{{count}} day to go",
+      "countdown_other": "{{count}} days to go",
+      "today": "It’s today!",
+      "past": "Race is behind you",
+      "taperWeek": "Taper week",
+      "weeksRemaining_one": "{{count}} week left",
+      "weeksRemaining_other": "{{count}} weeks left",
+      "progress": "{{done}} of {{total}} sessions",
+      "progressRatio": "{{value}}%",
+      "pacingPlan": "Pacing plan",
+      "pacingPlanKm": "km {{km}}",
+      "pacingPlanSplit": "split {{time}}",
+      "generatePlan": "Generate an even plan"
+    },
+    "adaptation": {
+      "title": "Today's session",
+      "stop": "Don't run today.",
+      "postpone": "Push this session back 24 h.",
+      "convert_easy": "Turn it into an easy run.",
+      "reduce_reps": "Keep the warm-up, drop {{pct}}% of the reps.",
+      "slow_pace": "Same structure, {{delta}} s/km slower.",
+      "effort_based": "Run by effort rather than by the clock.",
+      "reasonPrefix": "Because:",
+      "reason": {
+        "pain_blocking": "you reported a blocking pain",
+        "pain_present": "you reported pain",
+        "pain_discomfort": "you reported discomfort",
+        "low_energy": "your reported energy is low",
+        "load_risk": "your recent load is in the risk zone",
+        "heavy_legs_yesterday": "you did a heavy leg session yesterday",
+        "heat": "it's hot"
+      },
+      "advisory": "This is a suggestion: the planned session is unchanged.",
+      "repsHint": "{{from}} → {{to}} reps"
     }
   },
   "planning": {

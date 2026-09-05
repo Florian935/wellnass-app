@@ -10,6 +10,70 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/09/2026 — RUN-F4 : la séance de course porte enfin sa consigne
+
+Implémentation en une passe des 10 lots de l'[analyse du 04/09/2026](docs/product/analyse-seances-structurees-running.md),
+à la demande explicite de Florian (retours reportés à la recette). Roadmap **5.36 → 5.39**.
+
+### Ajouté
+- **Allure cible SAISIE** (lot A) — 4 colonnes de plage sur `sessions` et `session_intervals`, plus
+  RPE cible, objectif chrono et intensité de récupération. C'était le mur M1 : il n'existait
+  **nulle part** une allure entrée par un humain, tout était dérivé de l'unique allure de réf. 5 km.
+  `resolveSessionPace` / `resolvePhasePace` arbitrent explicite > chrono > dérivée, et **rendent
+  `null` quand rien n'est calculable** — jamais une allure inventée.
+- **Segments typés** (lot B) — `session_intervals.kind` (échauffement / gammes / corps / récup /
+  retour au calme). **24 séances sur 24** d'un plan réel prescrivent un échauffement ; aucune
+  n'était représentable.
+- **Chrono cible distinct de l'étendue** (lot C) — « 400 m en 1:38 », forme de 12 séances sur 24,
+  inécrivable jusqu'ici (le modèle imposait distance XOR durée).
+- **Un niveau d'imbrication** (lot D) — `group_key` + `group_reps` : « 3 × (800 m + 400 m) »,
+  pyramides, échelles.
+- **Pilotage à l'allure en course** (lot E) — allure cible à l'écran, verdict dans/hors plage et
+  alerte vocale d'écart (`run-pace-guidance.ts`, `usePaceGuidance`).
+- **Réalisé par répétition** (lot F) — table neuve `run_intervals`, écrite à chaque transition de
+  phase, lue au résumé sous forme de tableau « fraction par fraction » avec allure moyenne,
+  régularité (écart-type) et « X sur Y dans la plage ».
+- **Séance `test` et séance `course`** (lot G) — objectif chrono et plan de passage par km
+  (`race-plan.ts` : `parsePacingPlan`, `evenPacingPlan`, `cumulativePacingSplits`).
+- **Bloc de préparation daté** (lot H) — `programs.target_date` / `target_time_seconds` /
+  `event_name`, `raceCountdown` (J-x, semaine d'affûtage) et `blockProgress`.
+- **Consignes rédigées + i18n des séances** (lot I) — `description`, `instructions`,
+  `adaptation_criterion`, et la table `session_translations` qui manquait à la bibliothèque.
+- **Règles d'adaptation** (lot J) — `session-adaptation.ts` compose DOUL-01, BIEN-01,
+  RUN-18/META-19 et COLLIS-01. **Strictement consultatif** : rien n'est jamais modifié.
+- 7 migrations, 2 tables neuves, ~140 tests neufs, i18n FR + EN à parité (2235 clés chacune).
+
+### Modifié
+- **Verrou levé** : les blocs ne sont plus réservés au type `fractionne` (RUN-F2c R5). C'était le
+  mur qui bloquait le plus de séances (6 sur 24 : footings avec lignes droites, tempo inséré).
+  Le test qui figeait ce verrou devient le test de sa levée.
+- `PROGRAM_SESSION_TYPES` accueille `test` et `course` ; `sessionTargetPace` ne dérive
+  volontairement **aucune** bande pour eux (leur intensité vient d'un chrono explicite).
+- `duplicateProgram` recopie les 19 colonnes neuves et les traductions de séance —
+  **sauf `target_date`** : dupliquer un plan sert à le refaire sur une nouvelle échéance, et
+  recopier la date afficherait un « J-42 » déjà périmé.
+- `EXPORT_TABLES` (RGPD) accueille `run_intervals` et `session_translations` — exigé par le test
+  de complétude de l'export, exactement comme il avait rattrapé l'oubli de `session_intervals`.
+
+### Technique / Notes
+- **Rétrocompatibilité prouvée** : les 15 tests RUN-F2c/F2d passent **inchangés**. Toutes les
+  colonnes sont nullables ; une séance existante garde exactement son comportement dérivé.
+- **Pas de CHECK sur les enums applicatifs** (`session_type` droppé, `kind`/`recovery_kind` sans
+  contrainte) : leçon du registre (DOUL-01, `food_entries.meal_type`) — une valeur inconnue du
+  serveur bloquerait **toute la file d'upload PowerSync**, pas seulement la ligne fautive.
+- **Rattrapage honnête** : quand plusieurs phases sont franchies en une évaluation (écran non
+  monté), l'axe non borné par la phase n'est pas attribuable — on écrit `null`, jamais une
+  répartition inventée.
+- 🔴 **2 étapes manuelles avant recette** : `npm run db:push` (les 7 migrations sont validées par
+  `db:push:dry` mais **non appliquées** — l'action a été refusée en session) puis `npm run db:types` ;
+  et **2 sync rules à déployer à la main** dans le dashboard PowerSync (`run_intervals`,
+  `session_translations`). Étape oubliée trois fois au registre.
+- 🟡 **Surface incomplète, assumée** : les cartes « J-42 » (lot H), « séance du jour adaptée »
+  (lot J), l'éditeur de plan de passage et les champs de consigne côté **back-office** ne sont
+  posés sur aucun écran. Le calcul, les données, les tests et l'i18n sont là. Détail en §4 de la
+  [spec](docs/specs/functional/us/runf4-seances-structurees.md).
+- Aucune dépendance native neuve — **pas de nouveau build requis**.
+
 ### 12/08/2026 — `fix/promesses-non-capturees` — treize rejets non capturés, et le garde-fou qui va avec
 
 Commit précédent : `450d6f9`. **Cinquième rencontre du même motif** — d'où le passage de la

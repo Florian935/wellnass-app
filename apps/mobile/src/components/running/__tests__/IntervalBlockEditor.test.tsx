@@ -344,7 +344,7 @@ describe('suppression', () => {
     await afficher();
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('running.intervals.removeBlockA11y:{"index":1}'));
+      fireEvent.press(screen.getByLabelText('running.intervalsF4.removeSegmentA11y:{"index":1}'));
     });
 
     expect(mockRemove).toHaveBeenCalledWith('b-1');
@@ -355,6 +355,6 @@ describe('suppression', () => {
 
     // « Bloc 0 » ne veut rien dire pour un utilisateur, et deux blocs indiscernables au lecteur
     // d'écran rendraient la suppression risquée.
-    expect(screen.getByText('running.intervals.blockTitle:{"index":1}')).toBeTruthy();
+    expect(screen.getByText('running.intervalsF4.segmentTitle:{"index":1}')).toBeTruthy();
   });
 });
