@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **12/08/2026** — **54 sections, une par US en recette** (HORAIRE-01 ajoutée, §54). 🔴 **Commence par
+> Dernière mise à jour : **12/08/2026** — **55 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
@@ -2118,3 +2118,71 @@ roadmap **2.4** (🟡 → ✅ le 12/08/2026).
 - [ ] 20. Poser une heure sur l'appareil A → après synchro, elle apparaît sur l'appareil B *(si un
       second appareil est disponible ; sinon, cocher après vérification dans Supabase)*.
 - [ ] 21. Déplacer la séance en **glisser-déposer** vers un autre jour : l'heure **suit** la séance.
+
+---
+
+## 55. Rejets de promesse non capturés — 13 correctifs (`fix/promesses-non-capturees`)
+
+Commit `46a6692` · garde-fou :
+[`no-uncaught-void-then.test.ts`](apps/mobile/src/lib/__tests__/no-uncaught-void-then.test.ts).
+
+> **Ce n'est pas une US, et la recette est surtout de la NON-RÉGRESSION.** Treize chaînes
+> `void … .then(…)` ont reçu un `.catch`. Dans douze cas sur treize, le comportement visible est
+> **inchangé** — c'est le rejet non capturé qui disparaît, et il n'était visible que dans les logs
+> natifs. Il n'y a donc rien de nouveau à admirer : il faut vérifier que **rien n'a bougé** sur des
+> chemins que ces correctifs traversent tous.
+>
+> 🔴 **La seule exception, et c'est le critère 1 : le démarrage de l'app.** `auth-store` a changé de
+> comportement en cas d'échec — c'est le seul correctif qui répare un vrai blocage.
+>
+> ⚠️ **Un critère est difficile à provoquer honnêtement** (le 2) : forcer `getSession()` à rejeter
+> demande de corrompre le stockage sécurisé. S'il n'est pas reproductible, **le cocher « non
+> testé »** plutôt que de le supposer bon — un test unitaire ne couvre pas ce chemin natif.
+
+### Démarrage — le seul changement de comportement
+
+- [ ] 1. **Non-régression** : lancer l'app avec une session valide → on arrive normalement sur
+      l'accueil, sans écran de chargement prolongé.
+- [ ] 2. 🔴 *(si reproductible)* Provoquer un échec de lecture de session — **désinstaller /
+      réinstaller** puis lancer **en mode avion**, ou vider le stockage de l'app. Attendu :
+      l'app arrive sur **l'écran de connexion**, et **ne reste pas bloquée** sur le chargement.
+      Avant ce correctif, elle y restait **indéfiniment**.
+- [ ] 3. **Lien magique / réinitialisation de mot de passe** : ouvrir le lien reçu par e-mail →
+      la connexion aboutit comme avant (`useAuthDeepLink`).
+
+### Interrupteurs de piliers — l'ancienne panne CYCLE-01
+
+- [ ] 4. **À l'onboarding** : activer et désactiver chaque pilier → l'interrupteur suit, et l'état
+      persiste après un aller-retour d'écran.
+- [ ] 5. **Dans les réglages** : même vérification. *(C'est le code où vivait la panne CYCLE-01 :
+      l'interrupteur restait éteint sans message quand l'écriture échouait.)*
+- [ ] 6. Désactiver un pilier → son onglet **disparaît** de la navigation ; le réactiver → il revient.
+
+### Journal nutrition — les trois sites
+
+- [ ] 7. **Copier la journée d'hier** sur un jour vide : les entrées arrivent. Sur un hier **vide** :
+      l'alerte « rien à copier » s'affiche toujours.
+- [ ] 8. **Copier un repas depuis hier** : même double vérification (avec et sans contenu).
+- [ ] 9. **Enregistrer un repas comme modèle** : l'alerte de confirmation s'affiche, et le modèle est
+      réutilisable.
+
+### Le reste des chemins touchés
+
+- [ ] 10. **Éditer un aliment perso** : le formulaire **se remplit** avec les valeurs existantes
+      (`food-custom`). ⚠️ Voir la réserve ci-dessous.
+- [ ] 11. **Résumé de fin de séance** : terminer une séance muscu → le résumé s'affiche
+      (`workout-summary`).
+- [ ] 12. **Cycle** : clôturer une période en cours → elle se ferme et la vue se met à jour.
+- [ ] 13. **Réglages / Health Connect** : l'état affiché (connecté, permissions, indisponible) est
+      correct, et se rafraîchit au retour en avant-plan.
+- [ ] 14. **Notifications** : refuser la permission système → le **bandeau d'information** s'affiche
+      bien dans les réglages. *(Correctif réel : un échec d'interrogation vaut désormais « non
+      accordée », alors qu'il laissait le bandeau masqué.)*
+
+### ⚠️ Réserve connue, à ne PAS remonter comme un défaut
+
+- **`food-custom` (critère 10) : si le chargement échoue, le formulaire reste vide** — et
+  enregistrer écraserait alors l'aliment par du vide. Le `.catch` posé **ne corrige pas** ce
+  comportement, il évite seulement le rejet non capturé. Un repli propre demande un état d'erreur à
+  l'écran et le blocage de l'enregistrement → **inscrit au [BACKLOG](BACKLOG.md)** (🟠), même famille
+  que le `loadError` d'`ExerciseEditScreen`.
