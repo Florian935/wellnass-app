@@ -2214,9 +2214,9 @@ Commit `46a6692` · garde-fou :
 
       ```powershell
       Remove-Item -Force -ErrorAction SilentlyContinue `
-        apps\mobilendroidppuild\generatedssetseactelease\index.android.bundle, `
-        apps\mobilendroidppuild\intermediatesssetselease\mergeReleaseAssets\index.android.bundle
-      cd apps\mobilendroid ; .\gradlew.bat assembleRelease
+        apps/mobile/android/app/build/generated/assets/react/release/index.android.bundle, `
+        apps/mobile/android/app/build/intermediates/assets/release/mergeReleaseAssets/index.android.bundle
+      cd apps/mobile/android ; .\gradlew.bat assembleRelease
       ```
 
       ⚠️ **La purge du bundle n'est pas optionnelle** : Gradle ne déclare pas `packages/shared`
@@ -2226,7 +2226,7 @@ Commit `46a6692` · garde-fou :
 
       ```powershell
       Select-String -SimpleMatch -Pattern "intervalsF4" `
-        apps\mobilendroidppuild\generatedssetseactelease\index.android.bundle
+        apps/mobile/android/app/build/generated/assets/react/release/index.android.bundle
       ```
 
       Rien en retour = le bundle est l'ancien, recommence.
