@@ -1914,7 +1914,16 @@
       "blockSummaryNoPaceWithRecovery": "{{reps}} × {{fastLabel}}, recovery {{recoveryLabel}}",
       "blockSummaryNoPaceNoRecovery": "{{reps}} × {{fastLabel}}",
       "distanceLabel": "{{value}} m",
-      "durationLabel": "{{value}} min"
+      "durationLabel": "{{value}} min",
+      "repsTimes": "{{reps}} × {{fastLabel}}",
+      "atPace": "at {{pace}}/km",
+      "atPaceRange": "at {{min}}–{{max}}/km",
+      "inTime": "in {{time}}",
+      "inTimeRange": "in {{min}}–{{max}}",
+      "atPctVma": "at {{pct}}% MAS",
+      "recovery": "rec. {{recoveryLabel}}",
+      "recoveryWithKind": "rec. {{recoveryLabel}} {{kind}}",
+      "groupPrefix": "{{reps}} × ⟮"
     },
     "programLevel": {
       "beginner": "Beginner",

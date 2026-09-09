@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import {
   addDays,
   localDayKey,
-  sessionTargetPace,
   startOfWeek,
   type Pillar,
   type ProgramSessionType,
@@ -33,6 +32,7 @@ import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { sessionPaceLabelText } from '@/running/session-pace-label';
 
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -295,10 +295,15 @@ function PlanSessionCard({
     if (ref5kPaceSPerKm == null) {
       paceLabel = t('planning.noProfileHint');
     } else {
-      const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
-      if (range) {
-        paceLabel = `${units.formatPace(range.minSPerKm)} – ${units.formatPace(range.maxSPerKm)}`;
-      }
+      // US RUN-F4 (lot A) : même règle que le détail de programme — l'allure saisie gagne.
+      paceLabel = sessionPaceLabelText(t, {
+        sessionType,
+        targetDistanceM: session.targetDistanceM,
+        targetTimeSeconds: session.targetTimeSeconds,
+        targetPaceMinSPerKm: session.targetPaceMinSPerKm,
+        targetPaceMaxSPerKm: session.targetPaceMaxSPerKm,
+        ref5kPaceSPerKm,
+      }, units.formatPace);
     }
   }
 

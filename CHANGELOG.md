@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/09/2026 (bis) — RUN-F4 : la consigne saisie s'affiche enfin en lecture seule
+
+Branche `fix/runf4-affichage-consigne`. Trouvé en vérifiant, avant la recette, ce qui était
+réellement atteignable depuis l'app.
+
+### Corrigé
+- 🔴 **Le détail de programme et la carte de planning affichaient l'allure DÉRIVÉE** et ignoraient
+  celle que l'utilisateur venait de saisir : on tapait « 4:20–4:25 » et l'écran continuait
+  d'annoncer la bande d'endurance. Les deux écrans appelaient encore `sessionTargetPace(type,
+  ref5k)` — la règle de priorité de RUN-F4 (explicite > chrono > dérivée) n'était câblée que sur
+  l'écran de course. **Ça ne se lisait pas comme un manque, ça se lisait comme un bug.**
+- 🔴 **Le résumé d'un segment ne connaissait que le `%VMA`** : la nature (Échauffement, Gammes,
+  Retour au calme), l'allure absolue, le chrono cible et le groupe s'affichaient **comme s'ils
+  n'existaient pas**. « 8 × 400 m à 4:05 » rendait « 8 × 400 m » — une perte de donnée apparente.
+
+### Ajouté
+- `running/session-pace-label.ts` — formateur unique du libellé d'allure, pour ne pas écrire la
+  règle une troisième fois. Indique la **provenance** quand l'allure a été saisie (« · Allure
+  saisie ») : un nombre entré par l'utilisateur et un nombre deviné par l'app ne se lisent pas
+  pareil. `formatPace` est injecté pour que le module ignore le système d'unités.
+- 9 clés i18n FR + EN pour les fragments du résumé de segment.
+
+### Technique / Notes
+- `intervalSummary` n'applique **pas** le repli `%VMA` calculé : il affiche ce qui est **écrit**
+  sur le segment, pas ce qu'on déduirait avec le profil. Une ligne de résumé n'est pas l'endroit
+  d'une conversion silencieuse.
+- `groupReps` sans `groupKey` est ignoré à l'affichage — comme le moteur l'ignore (`groupRuns`).
+  Afficher « 3 × » sur un segment qui ne se répète pas serait un mensonge.
+- Aucun changement de modèle ni de migration. 2712 tests mobile + 2294 partagés verts, lint 0,
+  typecheck 0.
+
 ## 09/09/2026 — RUN-F4 : types régénérés, régression de test corrigée, registre remis à jour
 
 Branche `chore/db-types-runf4`. Suite du commit `b8b5b1a`, avant la recette sur APK.

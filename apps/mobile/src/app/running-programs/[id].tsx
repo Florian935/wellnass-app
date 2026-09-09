@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { sessionTargetPace, type ProgramSessionType } from '@wellness/shared';
+import { type ProgramSessionType } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { CollapsibleCard } from '@/components/CollapsibleCard';
@@ -28,6 +28,7 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
+import { sessionPaceLabelText } from '@/running/session-pace-label';
 
 export default function RunningProgramDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -269,10 +270,16 @@ function RunningSessionCard({
     if (ref5kPaceSPerKm == null) {
       paceLabel = t('running.program.noProfileHint');
     } else {
-      const range = sessionTargetPace(sessionType, ref5kPaceSPerKm);
-      if (range) {
-        paceLabel = `${units.formatPace(range.minSPerKm)} – ${units.formatPace(range.maxSPerKm)}`;
-      }
+      // US RUN-F4 (lot A) : l'allure SAISIE prime sur la bande dérivée. Avant, cet écran
+      // affichait la bande d'endurance à quelqu'un qui venait de taper « 4:20–4:25 ».
+      paceLabel = sessionPaceLabelText(t, {
+        sessionType,
+        targetDistanceM: session.targetDistanceM,
+        targetTimeSeconds: session.targetTimeSeconds,
+        targetPaceMinSPerKm: session.targetPaceMinSPerKm,
+        targetPaceMaxSPerKm: session.targetPaceMaxSPerKm,
+        ref5kPaceSPerKm,
+      }, units.formatPace);
     }
   }
 
