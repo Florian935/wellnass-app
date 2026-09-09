@@ -104,7 +104,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/accueil-refonte` (modifications non commitées) |
-| Commits | 1193 · `main` a **1190** commits de retard sur `dev` |
+| Commits | 1194 · `main` a **1190** commits de retard sur `dev` |
 | Specs d'US | 141 au total — 79 clôturées, 62 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -115,11 +115,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6e8b284` feat(accueil): refonte de l'ecran d'accueil en cinq zones (ACCUEIL-01 a 06)
 - `8db76eb` fix(recettes): repare les chemins corrompus de l'etape 0c
 - `ee2fe99` docs(recettes): l'APK doit venir de 421e948 ou plus recent
 - `421e948` feat(runf4): ecriture des traductions de seance — le lot est complet
 - `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
-- `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
 
 ---
 
