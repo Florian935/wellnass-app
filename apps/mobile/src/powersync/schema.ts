@@ -388,6 +388,9 @@ const session_intervals = new Table({
   fast_pace_min_s_per_km: column.integer,
   fast_pace_max_s_per_km: column.integer,
   fast_target_time_min_seconds: column.integer,
+  // US RUN-F4 (mur M8) — les deux bornes d'allure décrivent une RAMPE et non une tolérance.
+  // Migration : 20260909120000_runf4_segment_progression.sql
+  fast_pace_progressive: column.integer, // booléen SQLite (0/1)
   fast_target_time_max_seconds: column.integer,
   recovery_kind: column.text,
   recovery_pace_min_s_per_km: column.integer,

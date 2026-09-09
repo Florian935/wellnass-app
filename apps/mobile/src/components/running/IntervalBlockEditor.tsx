@@ -108,6 +108,16 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
     setFastPaceMax(formatMmSs(max));
   };
 
+  // Mur M8 — les deux bornes décrivent une RAMPE (« de 4:35 vers 4:25 ») et non une tolérance.
+  // Un booléen et pas deux champs d'allure de plus : les bornes existent déjà, on change leur
+  // lecture. Deux jeux de bornes pourraient se contredire.
+  const [progressive, setProgressive] = useState(block.fastPaceProgressive);
+  const toggleProgressive = () => {
+    const next = !progressive;
+    setProgressive(next);
+    void updateIntervalBlock(block.id, { fastPaceProgressive: next });
+  };
+
   const [targetTimeMin, setTargetTimeMin] = useState(formatMmSs(block.fastTargetTimeMinSeconds));
   const [targetTimeMax, setTargetTimeMax] = useState(formatMmSs(block.fastTargetTimeMaxSeconds));
   const commitTargetTime = () => {
@@ -375,6 +385,30 @@ export function IntervalBlockEditor({ block, index }: IntervalBlockEditorProps) 
             accessibilityLabel={t('running.consigne.targetPaceMax')}
           />
         </View>
+
+        {/* Mur M8 — « les 10 dernières minutes de 4:35 VERS 4:25 » : une rampe, pas une
+            tolérance. Deux consignes différentes, et la seconde était inexprimable. */}
+        <Pressable
+          onPress={toggleProgressive}
+          style={[
+            styles.chip,
+            styles.progressiveToggle,
+            { borderColor: colors.border },
+            progressive && { backgroundColor: colors.accent, borderColor: colors.accent },
+          ]}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: progressive }}
+          accessibilityLabel={t('running.intervalsF4.progressive')}
+        >
+          <Text
+            style={[styles.chipLabel, { color: progressive ? colors.accentText : colors.text }]}
+          >
+            {t('running.intervalsF4.progressive')}
+          </Text>
+        </Pressable>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>
+          {t('running.intervalsF4.progressiveHint')}
+        </Text>
       </View>
 
       {/* Chrono cible de la fraction (lot C) — « 400 m en 1:38 ». Distinct de l'étendue : la
@@ -575,6 +609,7 @@ const styles = StyleSheet.create({
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   chipLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
   rangeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  progressiveToggle: { alignSelf: 'flex-start', marginTop: 6 },
   rangeInput: { flex: 1 },
   hint: { fontFamily: fontFamily.body, fontSize: 11, lineHeight: 15 },
 });

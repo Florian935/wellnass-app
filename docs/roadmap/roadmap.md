@@ -259,7 +259,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | 5.36 | Allure cible saisie sur une séance | Une séance porte sa **plage d'allure** (« 4:20–4:25/km »), son RPE cible et ses consignes rédigées — au lieu d'une bande dérivée de l'unique allure de réf. 5 km. | Moyen | 5h | 🟢 | ✅ | **RUN-F4 lots A/I — code livré le 05/09/2026** → [spec](../specs/functional/us/runf4-seances-structurees.md), en recette → [RECETTES.md](../../RECETTES.md). Origine : [analyse du 04/09/2026](../product/analyse-seances-structurees-running.md), mur M1 — **0 des 24 séances** d'un plan réel était intégralement représentable. `resolveSessionPace` (explicite > chrono > dérivée) ; le `%VMA` de RUN-F2c **reste** comme repli. Migrations poussées sur le cloud le 09/09/2026. |
 | 5.37 | Séance = suite de segments typés | Échauffement / gammes / corps / récup / retour au calme, **sur tous les types de séance**, avec chrono cible par fraction et un niveau d'imbrication (`3×(800+400)`). | Moyen | 6h | 🟢 | ✅ | **RUN-F4 lots B/C/D — livré le 05/09/2026.** Le verrou « blocs réservés au type `fractionne` » (RUN-F2c R5) est **levé** : c'était le mur qui bloquait le plus de séances (6 sur 24 — footings avec lignes droites, tempo inséré). **24 échauffements sur 24 étaient inexprimables.** Moteur `expandIntervalPhases` étendu ; **les 15 tests RUN-F2c/F2d passent inchangés** (preuve de rétrocompatibilité). |
 | 5.38 | Piloter à l'allure + réalisé par répétition | Allure cible affichée en course, alerte vocale d'écart, et tableau « fraction par fraction » au résumé. | Moyen | 5h | 🟢 | ✅ | **RUN-F4 lots E/F — livré le 05/09/2026.** Murs M13 et M10. Table neuve `run_intervals` (le prévu y est **recopié**, jamais joint). 🔴 **1 sync rule à déployer à la main.** Débloque **RUN-07** du [catalogue](../product/analyses-donnees.md) et enrichit RUN-19/RUN-13. ⚠️ `PACE_TOLERANCE_S_PER_KM = 5` est le **seul nombre inventé** du lot, à recalibrer après recette terrain. |
-| 5.39 | Séance test / course + bloc de préparation daté | Types `test` et `course` avec objectif chrono et plan de passage par km ; date de course, compte à rebours et affûtage sur le programme. | Moyen | 4h | 🟡 | 🟡 | **RUN-F4 lots G/H/J — calcul livré le 05/09/2026, surface partielle.** Types, chrono, `race-plan.ts` (`raceCountdown`, `blockProgress`, `evenPacingPlan`, `cumulativePacingSplits`) et `session-adaptation.ts` sont livrés **et testés**, l'i18n est complète. 🟡 **Mais aucune carte « J-42 », aucune carte « séance du jour adaptée » et aucun éditeur de plan de passage n'est posé sur un écran** — la plomberie est là, la surface reste à faire. Le lot J est **strictement consultatif** : il ne modifie jamais une séance. |
+| 5.39 | Séance test / course + bloc de préparation daté | Types `test` et `course` avec objectif chrono et plan de passage par km ; date de course, compte à rebours et affûtage sur le programme. | Moyen | 4h | 🟢 | ✅ | **RUN-F4 lots G/H/J — calcul livré le 05/09/2026, surface partielle.** Types, chrono, `race-plan.ts` (`raceCountdown`, `blockProgress`, `evenPacingPlan`, `cumulativePacingSplits`) et `session-adaptation.ts` sont livrés **et testés**, l'i18n est complète. ✅ **Surfaces posées le 09/09/2026** : carte d'échéance « J-42 » (détail de programme), carte « séance du jour » (hub course, 4 signaux réels), générateur de plan de passage, et champs de consigne au back-office. Le lot J reste **strictement consultatif** : il ne modifie jamais une séance. |
 
 ---
 
@@ -462,8 +462,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 219 | ~95 % |
-| 🟡 Partiel (5.24, 3.52, 5.39 — les **seules** lignes à trou réel) | 3 | ~1 % |
+| ✅ Livré | 220 | ~96 % |
+| 🟡 Partiel (5.24, 3.52 — les **seules** lignes à trou réel) | 2 | ~1 % |
 | ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
@@ -536,6 +536,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**09/09/2026 — RUN-F4 : surfaces posées et mur M8 fermé (5.39 🟡 → ✅)**
+Compteurs : **220 livré / 2 partiel / 2 à faire sur 230** (~96 %). Le 🟡 tenait à des cartes
+calculées mais posées nulle part. M8 (allure progressive) n'était affecté à aucun lot : corrigé.
 
 **05/09/2026 — RUN-F4 : la séance de course porte sa consigne (4 lignes créées, 5.36 → 5.39)**
 Compteurs : **219 livré / 3 partiel / 2 à faire sur 230** (~95 %). Périmètre **jamais cadré**

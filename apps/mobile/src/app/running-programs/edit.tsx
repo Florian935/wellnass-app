@@ -2,7 +2,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { RUNNER_OBJECTIVES, type ProgramLevel, type RunnerObjective } from '@wellness/shared';
+import {
+  RUNNER_OBJECTIVES,
+  formatMmSs,
+  parseMmSs,
+  type ProgramLevel,
+  type RunnerObjective,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -12,6 +18,7 @@ import {
   addSession,
   createProgram,
   updateProgram,
+  updateProgramTarget,
   updateProgramTranslation,
   useProgramDetail,
 } from '@/data/repositories/program-repository';
@@ -256,6 +263,41 @@ function RunningProgramComposer({ programId }: { programId: string }) {
     }
   };
 
+  // ---- US RUN-F4 (lot H) : l'échéance du bloc de préparation ----
+  //
+  // `programs` portait `duration_weeks` et un `goal` en texte libre : ni date de course, ni
+  // chrono visé. Le calendrier existait déjà — il manquait l'ancre.
+  const [targetDate, setTargetDate] = useState<string | null>(null);
+  const [eventName, setEventName] = useState<string | null>(null);
+  const [targetTime, setTargetTime] = useState<string | null>(null);
+
+  const commitTargetDate = () => {
+    const raw = (targetDate ?? '').trim();
+    if (raw === '') {
+      void updateProgramTarget(programId, { targetDate: null });
+      return;
+    }
+    // Format `AAAA-MM-JJ` strict : c'est la clé nue que stocke la colonne, et la même que
+    // `planned_sessions.scheduled_date`. Une saisie illisible ne doit rien écrire — on repose
+    // la valeur d'origine plutôt que d'effacer une échéance déjà posée.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw) && !Number.isNaN(Date.parse(`${raw}T00:00:00Z`))) {
+      void updateProgramTarget(programId, { targetDate: raw });
+    } else {
+      setTargetDate(detail?.targetDate ?? '');
+    }
+  };
+
+  const commitEventName = () => {
+    const raw = (eventName ?? '').trim();
+    void updateProgramTarget(programId, { eventName: raw === '' ? null : raw });
+  };
+
+  const commitTargetTime = () => {
+    const value = parseMmSs(targetTime ?? '');
+    void updateProgramTarget(programId, { targetTimeSeconds: value });
+    setTargetTime(formatMmSs(value));
+  };
+
   // ---------------------------------------------------------------------------
   // Commit-on-change (offline-first) : enregistre à la frappe pour ne pas perdre
   // la saisie si l'utilisateur tape « Terminé » sans faire perdre le focus au champ
@@ -328,6 +370,34 @@ function RunningProgramComposer({ programId }: { programId: string }) {
             onBlur={commitSummary}
             autoCapitalize="sentences"
             placeholder={t('running.program.summaryPlaceholder')}
+          />
+
+          {/* US RUN-F4 (lot H) — l'échéance. Trois champs facultatifs : un programme sans
+              course reste un programme sans course, et rien ne s'affiche alors. */}
+          <TextField
+            label={t('running.prepa.eventName')}
+            value={eventName ?? (detail?.eventName ?? '')}
+            onChangeText={setEventName}
+            onBlur={commitEventName}
+            autoCapitalize="sentences"
+            placeholder={t('running.prepa.eventNamePlaceholder')}
+          />
+          <TextField
+            label={t('running.prepa.targetDate')}
+            value={targetDate ?? (detail?.targetDate ?? '')}
+            onChangeText={setTargetDate}
+            onBlur={commitTargetDate}
+            autoCapitalize="none"
+            placeholder="2026-10-25"
+          />
+          <TextField
+            label={t('running.prepa.targetTime')}
+            value={targetTime ?? formatMmSs(detail?.targetTimeSeconds ?? null)}
+            onChangeText={setTargetTime}
+            onBlur={commitTargetTime}
+            autoCapitalize="none"
+            keyboardType="numbers-and-punctuation"
+            placeholder="20:00"
           />
 
           <View style={styles.field}>

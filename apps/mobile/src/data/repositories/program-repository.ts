@@ -116,6 +116,8 @@ export type IntervalBlockItem = {
   /** Chrono cible de la fraction bornée en distance (« 400 m en 1:38 »). Pas l'étendue. */
   fastTargetTimeMinSeconds: number | null;
   fastTargetTimeMaxSeconds: number | null;
+  /** Mur M8 : les bornes d'allure sont une rampe, pas une tolérance. */
+  fastPaceProgressive: boolean;
   recoveryKind: RecoveryKind | null;
   recoveryPaceMinSPerKm: number | null;
   recoveryPaceMaxSPerKm: number | null;
@@ -209,6 +211,7 @@ export type IntervalBlockPatch = {
   fastPaceMaxSPerKm?: number | null;
   fastTargetTimeMinSeconds?: number | null;
   fastTargetTimeMaxSeconds?: number | null;
+  fastPaceProgressive?: boolean;
   recoveryKind?: RecoveryKind | null;
   recoveryPaceMinSPerKm?: number | null;
   recoveryPaceMaxSPerKm?: number | null;
@@ -298,6 +301,7 @@ export type IntervalDbRow = {
   fast_pace_max_s_per_km: number | null;
   fast_target_time_min_seconds: number | null;
   fast_target_time_max_seconds: number | null;
+  fast_pace_progressive: number | null;
   recovery_kind: string | null;
   recovery_pace_min_s_per_km: number | null;
   recovery_pace_max_s_per_km: number | null;
@@ -418,6 +422,7 @@ const SELECT_INTERVALS_FOR_PROGRAM = `
          si.kind, si.label,
          si.fast_pace_min_s_per_km, si.fast_pace_max_s_per_km,
          si.fast_target_time_min_seconds, si.fast_target_time_max_seconds,
+         si.fast_pace_progressive,
          si.recovery_kind, si.recovery_pace_min_s_per_km, si.recovery_pace_max_s_per_km,
          si.group_key, si.group_reps
   FROM session_intervals si
@@ -487,6 +492,8 @@ export function rowToIntervalItem(row: IntervalDbRow): IntervalBlockItem {
     fastPaceMaxSPerKm: row.fast_pace_max_s_per_km,
     fastTargetTimeMinSeconds: row.fast_target_time_min_seconds,
     fastTargetTimeMaxSeconds: row.fast_target_time_max_seconds,
+    // SQLite rend 0/1 : on normalise en booléen ici, une seule fois, pas dans chaque écran.
+    fastPaceProgressive: row.fast_pace_progressive === 1,
     recoveryKind: (row.recovery_kind as RecoveryKind | null) ?? null,
     recoveryPaceMinSPerKm: row.recovery_pace_min_s_per_km,
     recoveryPaceMaxSPerKm: row.recovery_pace_max_s_per_km,
@@ -878,6 +885,7 @@ export async function addIntervalBlock(
     fastPaceMaxSPerKm?: number | null;
     fastTargetTimeMinSeconds?: number | null;
     fastTargetTimeMaxSeconds?: number | null;
+    fastPaceProgressive?: boolean;
     recoveryKind?: RecoveryKind | null;
     recoveryPaceMinSPerKm?: number | null;
     recoveryPaceMaxSPerKm?: number | null;
@@ -908,6 +916,7 @@ export async function addIntervalBlock(
     fast_pace_max_s_per_km: input.fastPaceMaxSPerKm ?? null,
     fast_target_time_min_seconds: input.fastTargetTimeMinSeconds ?? null,
     fast_target_time_max_seconds: input.fastTargetTimeMaxSeconds ?? null,
+    fast_pace_progressive: input.fastPaceProgressive === true ? 1 : 0,
     recovery_kind: input.recoveryKind ?? null,
     recovery_pace_min_s_per_km: input.recoveryPaceMinSPerKm ?? null,
     recovery_pace_max_s_per_km: input.recoveryPaceMaxSPerKm ?? null,
@@ -937,6 +946,7 @@ export async function updateIntervalBlock(
   if ('fastPaceMaxSPerKm' in input) columns['fast_pace_max_s_per_km'] = input.fastPaceMaxSPerKm;
   if ('fastTargetTimeMinSeconds' in input) columns['fast_target_time_min_seconds'] = input.fastTargetTimeMinSeconds;
   if ('fastTargetTimeMaxSeconds' in input) columns['fast_target_time_max_seconds'] = input.fastTargetTimeMaxSeconds;
+  if ('fastPaceProgressive' in input) columns['fast_pace_progressive'] = input.fastPaceProgressive === true ? 1 : 0;
   if ('recoveryKind' in input) columns['recovery_kind'] = input.recoveryKind;
   if ('recoveryPaceMinSPerKm' in input) columns['recovery_pace_min_s_per_km'] = input.recoveryPaceMinSPerKm;
   if ('recoveryPaceMaxSPerKm' in input) columns['recovery_pace_max_s_per_km'] = input.recoveryPaceMaxSPerKm;
@@ -1255,6 +1265,7 @@ export async function duplicateProgram(
         fast_pace_max_s_per_km: number | null;
         fast_target_time_min_seconds: number | null;
         fast_target_time_max_seconds: number | null;
+        fast_pace_progressive: number | null;
         recovery_kind: string | null;
         recovery_pace_min_s_per_km: number | null;
         recovery_pace_max_s_per_km: number | null;
@@ -1265,7 +1276,7 @@ export async function duplicateProgram(
                 recovery_distance_m, recovery_duration_seconds,
                 kind, label, fast_pace_min_s_per_km, fast_pace_max_s_per_km,
                 fast_target_time_min_seconds, fast_target_time_max_seconds,
-                recovery_kind, recovery_pace_min_s_per_km, recovery_pace_max_s_per_km,
+                fast_pace_progressive, recovery_kind, recovery_pace_min_s_per_km, recovery_pace_max_s_per_km,
                 group_key, group_reps
          FROM session_intervals
          WHERE session_id = ? AND deleted_at IS NULL
@@ -1293,6 +1304,7 @@ export async function duplicateProgram(
           fast_pace_max_s_per_km: block.fast_pace_max_s_per_km,
           fast_target_time_min_seconds: block.fast_target_time_min_seconds,
           fast_target_time_max_seconds: block.fast_target_time_max_seconds,
+          fast_pace_progressive: block.fast_pace_progressive ?? 0,
           recovery_kind: block.recovery_kind,
           recovery_pace_min_s_per_km: block.recovery_pace_min_s_per_km,
           recovery_pace_max_s_per_km: block.recovery_pace_max_s_per_km,

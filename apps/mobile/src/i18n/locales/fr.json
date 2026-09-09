@@ -2091,7 +2091,9 @@
       "segmentTitle": "Segment {{index}}",
       "removeSegmentA11y": "Supprimer le segment {{index}}",
       "volume": "Volume estimé",
-      "volumePartial": "au moins {{value}}"
+      "volumePartial": "au moins {{value}}",
+      "progressive": "Allure progressive",
+      "progressiveHint": "Coché : on part de l'allure la plus lente pour finir sur la plus rapide, au lieu de rester entre les deux."
     },
     "realise": {
       "title": "Fraction par fraction",

@@ -99,6 +99,56 @@ export function isIntenseSessionType(type: SessionType | null | undefined): bool
   return type === 'fractionne' || type === 'test' || type === 'course';
 }
 
+/**
+ * Les zones de douleur qui concernent la COURSE.
+ *
+ * DOUL-01 journalise 18 zones ; toutes ne parlent pas d'une sortie. Une douleur au biceps ne doit
+ * pas proposer d'annuler un footing — elle rendrait l'alerte non credible, et une alerte non
+ * credible finit ignoree y compris quand elle a raison.
+ *
+ * Le bas du corps **et** le bas du dos, muscles comme articulations : `pickSessionPainSignal`
+ * (DOUL-01) ne sait relier que les MUSCLES a une seance, parce qu'il raisonne sur le tonnage
+ * d'une seance de musculation. En course, l'essentiel des douleurs est articulaire (genou,
+ * cheville) — les exclure viderait la regle de son sens.
+ */
+export const RUNNING_PAIN_ZONES = [
+  'quadriceps',
+  'hamstrings',
+  'calves',
+  'glutes',
+  'hip',
+  'knee',
+  'ankle',
+  'lower_back',
+] as const;
+
+export type RunningPainZone = (typeof RUNNING_PAIN_ZONES)[number];
+
+/**
+ * La douleur la plus grave declaree recemment sur une zone qui concerne la course, ou `null`.
+ *
+ * A gravite egale, la plus recente — meme regle que `pickSessionPainSignal`. On ne filtre PAS
+ * sur la fraicheur ici : c'est a l'appelant de ne passer que des declarations fraiches
+ * (`freshPainReports`), pour que la fenetre reste definie a un seul endroit.
+ */
+export function worstRunningPain(
+  reports: ReadonlyArray<{ zone: string; level: PainLevel; logDate: string }>,
+): PainLevel | null {
+  const rank: Record<PainLevel, number> = { discomfort: 0, pain: 1, blocking: 2 };
+  let best: { level: PainLevel; logDate: string } | null = null;
+
+  for (const report of reports) {
+    if (!(RUNNING_PAIN_ZONES as readonly string[]).includes(report.zone)) continue;
+    if (best === null) {
+      best = report;
+      continue;
+    }
+    if (rank[report.level] > rank[best.level]) best = report;
+    else if (rank[report.level] === rank[best.level] && report.logDate > best.logDate) best = report;
+  }
+  return best?.level ?? null;
+}
+
 const SEVERITY_RANK: Record<AdaptationSeverity, number> = { info: 0, caution: 1, alert: 2 };
 
 /**

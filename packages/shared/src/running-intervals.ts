@@ -66,6 +66,9 @@ export type IntervalPhaseBlockInput = {
   /** Imbrication (lot D) : segments consecutifs de meme cle = un groupe repete. */
   groupKey?: string | null;
   groupReps?: number | null;
+
+  /** Mur M8 : les bornes d'allure sont une rampe, pas une tolerance. */
+  fastPaceProgressive?: boolean | null;
 };
 
 export type ExpandedIntervalPhase = {
@@ -89,6 +92,11 @@ export type ExpandedIntervalPhase = {
   paceMaxSPerKm: number | null;
   /** Chrono cible de la fraction (lot C) — milieu de la plage saisie, `null` si absente. */
   targetTimeSeconds: number | null;
+  /**
+   * Mur M8 — les deux bornes decrivent une RAMPE (de `paceMax` vers `paceMin`) et non une
+   * tolerance. La cible instantanee se calcule avec `progressivePaceTarget`.
+   */
+  paceProgressive: boolean;
   /** Nature de la recuperation, uniquement sur `kind === 'recovery'`. */
   recoveryKind: RecoveryKind | null;
   /** 1-based : quelle repetition DU GROUPE (lot D). Vaut 1 hors groupe. */
@@ -176,6 +184,7 @@ export function expandIntervalPhases(
             paceMinSPerKm: block.fastPaceMinSPerKm ?? null,
             paceMaxSPerKm: block.fastPaceMaxSPerKm ?? null,
             targetTimeSeconds,
+            paceProgressive: block.fastPaceProgressive === true,
             recoveryKind: null,
             groupRep,
             groupTotalReps: run.reps,
@@ -197,6 +206,8 @@ export function expandIntervalPhases(
               paceMinSPerKm: block.recoveryPaceMinSPerKm ?? null,
               paceMaxSPerKm: block.recoveryPaceMaxSPerKm ?? null,
               targetTimeSeconds: null,
+              // Une recuperation n'est jamais progressive : la rampe decrit un effort.
+              paceProgressive: false,
               recoveryKind: block.recoveryKind ?? null,
               groupRep,
               groupTotalReps: run.reps,

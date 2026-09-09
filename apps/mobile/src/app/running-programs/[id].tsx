@@ -15,6 +15,9 @@ import { Card } from '@/components/Card';
 import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { RaceCountdownCard } from '@/components/running/RaceCountdownCard';
+import { useProgramSessionStatuses } from '@/data/repositories/planned-session-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import {
   deleteProgram,
   duplicateProgram,
@@ -43,6 +46,8 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
   const units = useUnits();
 
   const { detail, isLoading } = useProgramDetail(programId);
+  const { statuses: plannedStatuses } = useProgramSessionStatuses(programId);
+  const todayKey = useTodayKey();
   const { runnerProfile } = useRunnerProfile();
   const { programs: myPrograms } = useMyPrograms();
   // Un programme éditorial (non possédé) ne peut pas être planifié/activé directement : il
@@ -155,6 +160,16 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
             {metaChips.join(' · ')}
           </Text>
         ) : null}
+
+        {/* US RUN-F4 (lot H) — l'échéance du bloc. La carte se supprime elle-même sans date
+            de course, ce qui est le cas de la majorité des programmes. */}
+        <RaceCountdownCard
+          targetDate={detail.targetDate}
+          targetTimeSeconds={detail.targetTimeSeconds}
+          eventName={detail.eventName}
+          sessionStatuses={plannedStatuses}
+          todayKey={todayKey}
+        />
 
         {/* Séances */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>

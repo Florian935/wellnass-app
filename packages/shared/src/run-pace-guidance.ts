@@ -67,6 +67,35 @@ export function evaluatePace(
 }
 
 /**
+ * Cible instantanee d'un segment a allure PROGRESSIVE (mur M8).
+ *
+ * « Les 10 dernieres minutes de 4:35 vers 4:25 » : la consigne n'est pas une tolerance entre
+ * deux bornes, c'est une RAMPE. A 30 % du segment, la cible n'est ni 4:35 ni 4:25 — elle est a
+ * 30 % du chemin entre les deux.
+ *
+ * Interpolation **lineaire sur l'avancement**, pas sur le temps ecoule seul : `progress` est
+ * fourni par l'appelant (distance parcourue / distance du segment, ou duree / duree), ce qui
+ * rend la fonction valable pour un segment borne en distance comme en duree.
+ *
+ * Retourne une plage degeneree (min = max) : a un instant donne, une rampe a **une** cible, pas
+ * une fourchette. C'est ce qui permet a `evaluatePace` de la consommer sans cas particulier —
+ * la tolerance de +/- 5 s/km s'applique ensuite comme partout ailleurs.
+ */
+export function progressivePaceTarget(
+  range: PaceRange | null | undefined,
+  progress: number,
+): PaceRange | null {
+  if (range == null) return null;
+  // Hors [0, 1] : on borne plutot que d'extrapoler. Avant le depart la cible est celle du debut,
+  // apres la fin celle de l'arrivee — extrapoler produirait une allure que personne n'a demandee.
+  const clamped = Math.min(1, Math.max(0, Number.isFinite(progress) ? progress : 0));
+  // On part de la borne LENTE (`max`) et on va vers la RAPIDE (`min`) : une seance progressive
+  // accelere. L'inverse (une rampe descendante) n'existe pas dans les plans reels.
+  const target = range.maxSPerKm + (range.minSPerKm - range.maxSPerKm) * clamped;
+  return { minSPerKm: target, maxSPerKm: target };
+}
+
+/**
  * Faut-il ANNONCER cet ecart a la voix ?
  *
  * Trois garde-fous, dans cet ordre :

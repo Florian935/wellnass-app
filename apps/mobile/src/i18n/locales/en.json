@@ -2091,7 +2091,9 @@
       "segmentTitle": "Segment {{index}}",
       "removeSegmentA11y": "Remove segment {{index}}",
       "volume": "Estimated volume",
-      "volumePartial": "at least {{value}}"
+      "volumePartial": "at least {{value}}",
+      "progressive": "Progressive pace",
+      "progressiveHint": "Checked: ramp from the slower bound to the faster one, instead of staying between them."
     },
     "realise": {
       "title": "Rep by rep",

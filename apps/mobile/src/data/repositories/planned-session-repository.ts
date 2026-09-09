@@ -904,3 +904,38 @@ export function useSessionConflicts(weekStartDate: string): {
 
   return { conflicts, isLoading };
 }
+
+/**
+ * Statuts des occurrences planifiées d'un programme (US RUN-F4, lot H).
+ *
+ * Sert uniquement au **taux de réalisation** d'un bloc de préparation (« 6 séances sur 24 »).
+ * On lit les statuts bruts et rien d'autre : le calcul vit dans `blockProgress`
+ * (`@wellness/shared`, pur et testé), qui décide notamment que les séances **sautées** comptent
+ * au dénominateur mais jamais au numérateur.
+ *
+ * Vide (donc pas de taux affiché) tant que le programme n'a pas été posé au calendrier — un
+ * programme consulté dans la bibliothèque n'a aucune occurrence.
+ */
+export function useProgramSessionStatuses(programId: string | null): {
+  statuses: ('planned' | 'done' | 'skipped')[];
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ status: string }>(
+    `SELECT status FROM planned_sessions
+     WHERE owner_id = ? AND program_id = ? AND deleted_at IS NULL`,
+    [userId, programId ?? ''],
+  );
+
+  const statuses = useMemo(
+    () =>
+      programId
+        ? data.map((r) =>
+            r.status === 'done' ? 'done' : r.status === 'skipped' ? 'skipped' : 'planned',
+          )
+        : [],
+    [data, programId],
+  );
+
+  return { statuses, isLoading };
+}

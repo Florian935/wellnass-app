@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/09/2026 (ter) — RUN-F4 : les surfaces manquantes, et le mur M8
+
+Branche `feature/runf4-surfaces-restantes`. Florian a demandé de finir la vague pendant qu'un
+build tournait. Ferme tout ce que la spec §4 listait comme non livré, **sauf** l'UI d'écriture
+des traductions de séance.
+
+### Ajouté
+- **Mur M8 — l'allure progressive.** Le seul mur de l'analyse du 04/09 qui n'avait été affecté à
+  **aucun lot**, et je ne l'avais pas dit clairement. « Les 10 dernières minutes de 4:35 **vers**
+  4:25 » est une **rampe**, pas une tolérance : la plage 4:25–4:35 disait « tiens-toi entre les
+  deux », ce qui est une autre consigne. Nouvelle colonne `fast_pace_progressive` (**un booléen**,
+  pas deux colonnes d'allure de plus — les bornes existent, on change leur lecture),
+  `progressivePaceTarget` (pure, 6 tests), case à cocher dans l'éditeur, et cible mouvante
+  branchée sur l'écran de course **et** sur l'alerte vocale.
+- **Carte « séance du jour »** (lot J) sur le hub course. Assemble les 4 signaux réels —
+  DOUL-01 (filtré sur les zones qui concernent la course : `worstRunningPain`, 5 tests),
+  BIEN-01 (énergie), RUN-18/META-19 (ACWR), COLLIS-01 (jambes de la veille via le **réalisé**,
+  pas le planifié). Strictement consultative, et c'est écrit en pied de carte.
+- **Carte d'échéance « J-42 »** (lot H) sur le détail de programme : compte à rebours, semaine
+  d'affûtage, chrono visé, taux de réalisation. Plus les 3 champs de saisie (date, événement,
+  chrono) dans l'édition de programme, et `useProgramSessionStatuses`.
+- **Plan de passage par km** (lot G) : génération d'un plan **régulier** depuis l'objectif chrono,
+  et affichage des temps de passage cumulés (« 2 km ≈ 8:02 »). Régulier et pas negative split :
+  l'app sait *constater* un negative split, en *prescrire* un serait un choix d'entraîneur.
+- **Back-office** : allure cible, RPE, objectif chrono, consigne et critère d'adaptation sur la
+  séance éditoriale — mêmes helpers `m:ss` que le mobile, une seule règle de lecture.
+- Allure cible et consigne affichées sur la carte « séance du jour » du hub, avant de partir.
+
+### Technique / Notes
+- ⚠️ **1 migration de plus à pousser** (`20260909120000`), en plus des 2 sync rules déjà signalées.
+- Le mémo de la cible de segment a dû être réécrit : dépendre de l'objet `active` entier
+  empêchait le compilateur React de préserver la mémoïsation (il change à chaque flush GPS).
+  4 scalaires extraits avant le `useMemo`.
+- L'inférence de type Supabase se perd si l'argument de `select()` n'est pas un **littéral** :
+  la concaténation multi-ligne faisait retomber toute la ligne sur `GenericStringError`.
+- **Reste non livré, assumé** : l'UI d'écriture des `session_translations`. La table, la RLS, la
+  résolution SQL et la duplication sont en place ; rien n'écrit dedans, et `sessions.name` reste
+  le repli — aucune régression.
+- 2712 tests mobile + 2294 partagés verts, lint 0, typecheck 0 sur les 3 workspaces.
+
 ## 09/09/2026 (bis) — RUN-F4 : la consigne saisie s'affiche enfin en lecture seule
 
 Branche `fix/runf4-affichage-consigne`. Trouvé en vérifiant, avant la recette, ce qui était

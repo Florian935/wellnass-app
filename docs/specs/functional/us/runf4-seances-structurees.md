@@ -80,16 +80,22 @@ d'allure**, 11 pas représentables du tout, et **0 des 24 échauffements** expri
 
 ## 4. Ce qui n'est PAS livré
 
-- **Écrans de surface des lots H et J** : le calcul, les données et l'i18n sont là et testés, mais
-  la carte « J-42 / taux de réalisation » et la carte « séance du jour adaptée » **ne sont posées
-  sur aucun écran**. Rien ne les affiche aujourd'hui.
-- **Back-office** : seuls les deux nouveaux types de séance sont exposés. Les champs de consigne
-  (allure, chrono, instructions) et l'éditeur de segments enrichi **ne sont pas dans l'admin**.
-- **Édition du plan de passage par km** : lu, validé, stocké et testé (`parsePacingPlan`,
-  `evenPacingPlan`, `cumulativePacingSplits`), mais aucun écran ne permet de le saisir.
-- **`session_translations`** : la table, la RLS, la résolution SQL et la duplication sont en place ;
-  **aucune UI n'écrit dedans**. `sessions.name` reste le repli et rien ne régresse.
-- **Météo** (règle chaleur du lot J) : dépend de RUN-F3b, bloquée sur un arbitrage de confidentialité.
+Mise à jour du **09/09/2026** : Florian a demandé de finir la vague. Les surfaces manquantes
+(cartes J-42 et « séance du jour », générateur de plan de passage, champs de consigne au
+back-office) **sont posées**, et le **mur M8** — qui n'avait été affecté à aucun lot, ce que la
+première version de cette spec ne disait pas assez clairement — **est fermé** (allure
+progressive, migration `20260909120000`).
+
+Reste, et c'est assumé :
+
+- **L'UI d'écriture des `session_translations`.** La table, la RLS, la résolution SQL
+  (`COALESCE(langue, fr, sessions.name)`) et la duplication sont en place ; **rien n'écrit
+  dedans**. `sessions.name` reste le repli, donc aucune régression — mais une séance éditoriale
+  reste monolingue tant qu'un écran d'admin ne permet pas de la traduire.
+- **La météo** (règle « chaleur » du lot J) : dépend de RUN-F3b, bloquée sur un arbitrage de
+  confidentialité avant LANCE-00. La règle est écrite et testée, aucune source ne l'alimente.
+- **Les métriques physiologiques** (mur M14) : FC, cadence, foulée. Écart **déjà tranché**
+  (V2 wearables, RUN-23/RUN-24 du catalogue), hors périmètre de cette US.
 
 ## 5. Étapes manuelles obligatoires avant recette
 

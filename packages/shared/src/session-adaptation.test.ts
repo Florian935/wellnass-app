@@ -4,6 +4,7 @@ import {
   isIntenseSessionType,
   proposeSessionAdaptation,
   reducedReps,
+  worstRunningPain,
 } from './session-adaptation';
 import type { AcwrResult } from './training-time';
 
@@ -139,5 +140,41 @@ describe('reducedReps', () => {
   it('ne descend jamais sous 1 : proposer zero serait une annulation, pas une adaptation', () => {
     expect(reducedReps(2, 90)).toBe(1);
     expect(reducedReps(1, 50)).toBe(1);
+  });
+});
+
+describe('worstRunningPain — filtrage sur les zones qui concernent la course', () => {
+  const r = (zone: string, level: 'discomfort' | 'pain' | 'blocking', logDate = '2026-09-08') => ({
+    zone,
+    level,
+    logDate,
+  });
+
+  it('retient la zone la plus grave parmi celles qui concernent la course', () => {
+    expect(worstRunningPain([r('calves', 'discomfort'), r('knee', 'blocking')])).toBe('blocking');
+  });
+
+  it('🔴 ignore les zones sans rapport avec la course', () => {
+    // Une douleur au biceps ne doit pas proposer d'annuler un footing : une alerte non crédible
+    // finit ignorée, y compris quand elle a raison.
+    expect(worstRunningPain([r('biceps', 'blocking'), r('chest', 'pain')])).toBeNull();
+  });
+
+  it('retient les zones ARTICULAIRES, pas seulement les muscles', () => {
+    // En course, l'essentiel des douleurs est articulaire — les exclure viderait la règle.
+    expect(worstRunningPain([r('ankle', 'pain')])).toBe('pain');
+    expect(worstRunningPain([r('lower_back', 'discomfort')])).toBe('discomfort');
+  });
+
+  it('à gravité égale, retient la déclaration la plus récente', () => {
+    const result = worstRunningPain([
+      r('knee', 'pain', '2026-09-01'),
+      r('calves', 'pain', '2026-09-08'),
+    ]);
+    expect(result).toBe('pain');
+  });
+
+  it('rend null sans aucune déclaration', () => {
+    expect(worstRunningPain([])).toBeNull();
   });
 });

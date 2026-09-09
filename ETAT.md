@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 219 livré · 3 partiel · 2 à faire (sur 230)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 220 livré · 2 partiel · 2 à faire (sur 230)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -97,23 +97,24 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/runf4-affichage-consigne` (modifications non commitées) |
-| Commits | 1188 · `main` a **1185** commits de retard sur `dev` |
+| Branche courante | `feature/runf4-surfaces-restantes` (modifications non commitées) |
+| Commits | 1189 · `main` a **1186** commits de retard sur `dev` |
 | Specs d'US | 135 au total — 79 clôturées, 56 en cours |
-| Migrations | 87/87 poussées sur le cloud |
+| Migrations | 87/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
+- ⚠️ 1 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
 - `2550751` fix(runf4): corrige la regression de test du resume, coche les 7 migrations
 - `b8b5b1a` feat(runf4): la seance de course porte enfin sa consigne (10 lots, 5.36 vers 5.39)
 - `7e5a3a6` docs(recettes): consigner les 13 correctifs de promesses (§55)
 - `46a6692` fix(promesses): treize rejets non captures, et le garde-fou qui va avec
-- `450d6f9` Merge remote-tracking branch 'origin/dev' into feature/horaire01-heure-seance
 
 ---
 

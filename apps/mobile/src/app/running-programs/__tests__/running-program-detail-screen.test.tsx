@@ -40,6 +40,17 @@ jest.mock('@/data/repositories/program-repository', () => ({
   duplicateProgram: jest.fn(),
   deleteProgram: jest.fn(),
 }));
+// US RUN-F4 (lot H) — l'écran lit désormais les statuts du planning (taux de réalisation) et
+// la date du jour. Sans ces deux mocks, `planned-session-repository` tire l'instance i18n réelle
+// et la suite ne démarre même pas.
+jest.mock('@/data/repositories/planned-session-repository', () => ({
+  useProgramSessionStatuses: jest.fn(() => ({ statuses: [], isLoading: false })),
+}));
+
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: () => '2026-09-09',
+}));
+
 jest.mock('@/data/repositories/running-profile-repository', () => ({
   useRunnerProfile: jest.fn(() => ({ runnerProfile: null })),
 }));

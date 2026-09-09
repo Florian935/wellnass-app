@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+// US RUN-F4 — mêmes helpers de saisie `m:ss` que côté mobile : une seule règle de lecture.
+import { formatMmSs, parseMmSs } from '@wellness/shared';
 import {
   PROGRAM_LEVELS,
   PROGRAM_SESSION_TYPES,
@@ -700,6 +702,13 @@ type SessionCardProps = {
     sessionType: SessionType | null;
     targetDistanceM: number | null;
     targetDurationSeconds: number | null;
+    // US RUN-F4 — la consigne éditoriale, facultative et running uniquement.
+    targetPaceMinSPerKm?: number | null;
+    targetPaceMaxSPerKm?: number | null;
+    targetRpe?: number | null;
+    targetTimeSeconds?: number | null;
+    instructions?: string | null;
+    adaptationCriterion?: string | null;
   }) => Promise<void>;
   onRemoveSession: () => void;
   onAddPlan: (exerciseId: string) => Promise<void>;
@@ -771,6 +780,24 @@ function SessionCard({
   // préserve les saisies en cours. Cela supprime l'écrasement mi-édition.
 
   /** Persiste la séance avec l'état courant (nom + cibles running). */
+  // ---- US RUN-F4 : la consigne éditoriale ----
+  // Saisie en `m:ss` comme côté mobile (personne n'écrit « 245 s/km »), convertie par les mêmes
+  // helpers partagés — une seule règle de lecture pour les deux applications.
+  const [paceMin, setPaceMin] = useState(formatMmSs(session.targetPaceMinSPerKm));
+  const [paceMax, setPaceMax] = useState(formatMmSs(session.targetPaceMaxSPerKm));
+  const [targetTime, setTargetTime] = useState(formatMmSs(session.targetTimeSeconds));
+  const [targetRpe, setTargetRpe] = useState(
+    session.targetRpe != null ? String(session.targetRpe) : '',
+  );
+  const [instructions, setInstructions] = useState(session.instructions ?? '');
+  const [adaptation, setAdaptation] = useState(session.adaptationCriterion ?? '');
+
+  /** RPE : échelle fermée 1-10. Hors bornes ou illisible = pas de valeur, jamais un 0. */
+  function clampRpe(raw: string): number | null {
+    const n = Number.parseInt(raw.trim(), 10);
+    return Number.isFinite(n) && n >= 1 && n <= 10 ? n : null;
+  }
+
   function persistSession(overrides?: {
     name?: string | null;
     sessionType?: SessionType | null;
@@ -802,6 +829,14 @@ function SessionCard({
       sessionType: isRunning ? (nextType ?? null) : null,
       targetDistanceM: isRunning ? parsedDistance : null,
       targetDurationSeconds: isRunning ? parsedDuration : null,
+      // Consigne : running uniquement. Sur une séance muscu, tout reste à null — la colonne
+      // existe pour les deux piliers mais n'a de sens que pour l'un.
+      targetPaceMinSPerKm: isRunning ? parseMmSs(paceMin) : null,
+      targetPaceMaxSPerKm: isRunning ? parseMmSs(paceMax) : null,
+      targetTimeSeconds: isRunning ? parseMmSs(targetTime) : null,
+      targetRpe: isRunning ? clampRpe(targetRpe) : null,
+      instructions: isRunning ? (instructions.trim() || null) : null,
+      adaptationCriterion: isRunning ? (adaptation.trim() || null) : null,
     });
   }
 
@@ -899,6 +934,85 @@ function SessionCard({
             </div>
           </div>
         </div>
+
+        {/* US RUN-F4 — la consigne éditoriale. Running uniquement : sur une séance muscu,
+            « allure cible » n'a aucun sens. */}
+        {isRunning ? (
+          <div style={styles.sessionMetaRow}>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <label style={styles.label}>{fr.programs.targetPace}</label>
+              <div style={styles.durationRow}>
+                <input
+                  value={paceMin}
+                  placeholder="4:05"
+                  aria-label={fr.programs.targetPaceMin}
+                  onChange={(e) => setPaceMin(e.target.value)}
+                  onBlur={() => persistSession()}
+                  style={styles.input}
+                />
+                <input
+                  value={paceMax}
+                  placeholder="4:10"
+                  aria-label={fr.programs.targetPaceMax}
+                  onChange={(e) => setPaceMax(e.target.value)}
+                  onBlur={() => persistSession()}
+                  style={styles.input}
+                />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 120 }}>
+              <label style={styles.label}>{fr.programs.targetRpe}</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={targetRpe}
+                onChange={(e) => setTargetRpe(e.target.value)}
+                onBlur={() => persistSession()}
+                style={styles.input}
+              />
+            </div>
+            {/* Objectif chrono : n'a de sens que sur un test ou une course. Sur un footing,
+                il ferait confondre « durée à couvrir » et « temps à ne pas dépasser ». */}
+            {sessionType === 'test' || sessionType === 'course' ? (
+              <div style={{ flex: 1, minWidth: 120 }}>
+                <label style={styles.label}>{fr.programs.targetTime}</label>
+                <input
+                  value={targetTime}
+                  placeholder="20:00"
+                  onChange={(e) => setTargetTime(e.target.value)}
+                  onBlur={() => persistSession()}
+                  style={styles.input}
+                />
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {isRunning ? (
+          <div style={styles.sessionMetaRow}>
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <label style={styles.label}>{fr.programs.instructions}</label>
+              <textarea
+                value={instructions}
+                placeholder={fr.programs.instructionsPlaceholder}
+                onChange={(e) => setInstructions(e.target.value)}
+                onBlur={() => persistSession()}
+                style={{ ...styles.input, minHeight: 60 }}
+              />
+            </div>
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <label style={styles.label}>{fr.programs.adaptationCriterion}</label>
+              <textarea
+                value={adaptation}
+                placeholder={fr.programs.adaptationCriterionPlaceholder}
+                onChange={(e) => setAdaptation(e.target.value)}
+                onBlur={() => persistSession()}
+                style={{ ...styles.input, minHeight: 60 }}
+              />
+            </div>
+          </div>
+        ) : null}
 
         {sessionType === 'fractionne' ? (
           <div style={styles.exercisesBlock}>
@@ -1318,6 +1432,8 @@ const styles: Record<string, React.CSSProperties> = {
   h3: { margin: 0, fontSize: 13 },
   form: { display: 'flex', flexDirection: 'column', gap: 14 },
   row: { display: 'flex', gap: 12, flexWrap: 'wrap' },
+  // US RUN-F4 — rangée des champs de consigne d'une séance de course.
+  sessionMetaRow: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 },
   label: {
     display: 'block',
     fontSize: 12,

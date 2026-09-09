@@ -75,6 +75,7 @@ function makePhase(overrides: Partial<ExpandedIntervalPhase> = {}): ExpandedInte
     paceMinSPerKm: null,
     paceMaxSPerKm: null,
     targetTimeSeconds: null,
+    paceProgressive: false,
     recoveryKind: null,
     groupRep: 1,
     groupTotalReps: 1,

@@ -7,6 +7,8 @@ import {
   hasRunningSessionTarget,
   sessionTargetPace,
   type ProgramSessionType,
+  cumulativePacingSplits,
+  evenPacingPlan,
   formatMmSs,
   isTimedSessionType,
   parseMmSs,
@@ -189,6 +191,24 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
     const value = Number.isFinite(parsed) && parsed >= 1 && parsed <= 10 ? parsed : null;
     void updateRunningSession(session.id, { targetRpe: value });
     setTargetRpe(value != null ? String(value) : '');
+  };
+
+  // ---- US RUN-F4 (lot G) : le plan de passage par km d'une séance de course ----
+  //
+  // Généré RÉGULIER, jamais en negative split : l'app sait déjà CONSTATER un negative split
+  // (ALLURE-01 / RUN-11) ; en prescrire un d'office serait un choix d'entraîneur, pas un calcul.
+  // Le coureur ajuste ensuite km par km — le plan analysé le fait à la main.
+  const pacingSplits = session.pacingPlan ? cumulativePacingSplits(session.pacingPlan) : null;
+
+  const onGeneratePacingPlan = () => {
+    const plan = evenPacingPlan(session.targetDistanceM, session.targetTimeSeconds);
+    // Sans distance ni chrono, il n'y a rien à répartir : on ne génère pas un plan vide.
+    if (plan === null) return;
+    void updateRunningSession(session.id, { pacingPlan: plan });
+  };
+
+  const onClearPacingPlan = () => {
+    void updateRunningSession(session.id, { pacingPlan: null });
   };
 
   const [instructions, setInstructions] = useState(session.instructions ?? '');
@@ -508,6 +528,38 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
         />
       </View>
 
+      {/* Plan de passage par km (US RUN-F4, lot G) — séance de course uniquement. C'est la
+          fiche que le coureur relit au départ : « 2 km ≈ 8:02, 3 km ≈ 12:02 ». */}
+      {sessionType === 'course' ? (
+        <View style={styles.field}>
+          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+            {t('running.prepa.pacingPlan')}
+          </Text>
+
+          {pacingSplits ? (
+            <View style={styles.pacingList}>
+              {pacingSplits.map((split) => (
+                <Text key={split.km} style={[styles.pacingLine, { color: colors.textMuted }]}>
+                  {t('running.prepa.pacingPlanKm', { km: split.km })} ·{' '}
+                  {units.formatPace(split.paceMinSPerKm)} ·{' '}
+                  {t('running.prepa.pacingPlanSplit', {
+                    time: formatMmSs(split.cumulativeMinSeconds),
+                  })}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+
+          <Button
+            label={
+              pacingSplits ? t('common.delete') : t('running.prepa.generatePlan')
+            }
+            variant="ghost"
+            onPress={pacingSplits ? onClearPacingPlan : onGeneratePacingPlan}
+          />
+        </View>
+      ) : null}
+
       {/*
         Structure de la séance (US RUN-F2c, étendue par RUN-F4 lot B).
 
@@ -617,6 +669,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   paceRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pacingList: { gap: 2, marginBottom: 6 },
+  pacingLine: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 17 },
   paceInput: { flex: 1 },
   paceSeparator: { fontSize: 16 },
   multiline: { minHeight: 64, textAlignVertical: 'top' },

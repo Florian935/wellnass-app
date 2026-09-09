@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PACE_TOLERANCE_S_PER_KM,
   evaluatePace,
+  progressivePaceTarget,
   shouldAnnouncePace,
   type PaceVerdict,
 } from './run-pace-guidance';
@@ -118,5 +119,44 @@ describe('shouldAnnouncePace', () => {
         elapsedSecondsSinceLastAnnounce: null,
       }),
     ).toBe(false);
+  });
+});
+
+describe('progressivePaceTarget — la rampe du mur M8', () => {
+  /** « Les 10 dernières minutes de 4:35 vers 4:25 » (S16 du plan analysé). */
+  const ramp = { minSPerKm: 265, maxSPerKm: 275 };
+
+  it('part de la borne LENTE et arrive sur la RAPIDE', () => {
+    // Une séance progressive accélère : on démarre à 4:35 et on finit à 4:25.
+    expect(progressivePaceTarget(ramp, 0)).toEqual({ minSPerKm: 275, maxSPerKm: 275 });
+    expect(progressivePaceTarget(ramp, 1)).toEqual({ minSPerKm: 265, maxSPerKm: 265 });
+  });
+
+  it('interpole linéairement au milieu', () => {
+    expect(progressivePaceTarget(ramp, 0.5)).toEqual({ minSPerKm: 270, maxSPerKm: 270 });
+  });
+
+  it('rend une cible UNIQUE, pas une fourchette', () => {
+    // À un instant donné une rampe a une cible : c'est ce qui permet à `evaluatePace` de la
+    // consommer sans cas particulier, la tolérance s'appliquant ensuite comme partout.
+    const target = progressivePaceTarget(ramp, 0.3)!;
+    expect(target.minSPerKm).toBe(target.maxSPerKm);
+  });
+
+  it('borne au lieu d’extrapoler hors [0, 1]', () => {
+    // Extrapoler produirait une allure que personne n'a demandée.
+    expect(progressivePaceTarget(ramp, -2)).toEqual({ minSPerKm: 275, maxSPerKm: 275 });
+    expect(progressivePaceTarget(ramp, 5)).toEqual({ minSPerKm: 265, maxSPerKm: 265 });
+    expect(progressivePaceTarget(ramp, Number.NaN)).toEqual({ minSPerKm: 275, maxSPerKm: 275 });
+  });
+
+  it('se combine à evaluatePace sans cas particulier', () => {
+    const target = progressivePaceTarget(ramp, 0.5);
+    expect(evaluatePace(270, target)?.verdict).toBe('in_range');
+    expect(evaluatePace(290, target)?.verdict).toBe('too_slow');
+  });
+
+  it('rend null sans plage', () => {
+    expect(progressivePaceTarget(null, 0.5)).toBeNull();
   });
 });

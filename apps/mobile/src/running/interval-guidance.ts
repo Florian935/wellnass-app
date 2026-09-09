@@ -46,6 +46,7 @@ export function toPhaseBlockInput(block: IntervalBlockItem): IntervalPhaseBlockI
     recoveryPaceMaxSPerKm: block.recoveryPaceMaxSPerKm,
     groupKey: block.groupKey,
     groupReps: block.groupReps,
+    fastPaceProgressive: block.fastPaceProgressive,
   };
 }
 

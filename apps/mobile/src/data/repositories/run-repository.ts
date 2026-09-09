@@ -341,6 +341,13 @@ export type TodayRunSession = {
   sessionId: string;
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
+  // US RUN-F4 — le type porte l'intensité (c'est lui qui décide si une adaptation a du sens),
+  // et la consigne se lit avant de partir, pas après.
+  sessionType: ProgramSessionType | null;
+  targetPaceMinSPerKm: number | null;
+  targetPaceMaxSPerKm: number | null;
+  targetTimeSeconds: number | null;
+  instructions: string | null;
 };
 
 type TodayRunSessionDbRow = {
@@ -348,6 +355,11 @@ type TodayRunSessionDbRow = {
   session_id: string;
   target_distance_m: number | null;
   target_duration_seconds: number | null;
+  session_type: string | null;
+  target_pace_min_s_per_km: number | null;
+  target_pace_max_s_per_km: number | null;
+  target_time_seconds: number | null;
+  instructions: string | null;
 };
 
 /**
@@ -360,7 +372,9 @@ export function useTodayRunSession(): { session: TodayRunSession | null; isLoadi
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
   const todayKey = useTodayKey();
   const { data, isLoading } = useQuery<TodayRunSessionDbRow>(
-    `SELECT ps.id, ps.session_id, s.target_distance_m, s.target_duration_seconds
+    `SELECT ps.id, ps.session_id, s.target_distance_m, s.target_duration_seconds,
+            s.session_type, s.target_pace_min_s_per_km, s.target_pace_max_s_per_km,
+            s.target_time_seconds, s.instructions
      FROM planned_sessions ps
      JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
      JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
@@ -377,6 +391,11 @@ export function useTodayRunSession(): { session: TodayRunSession | null; isLoadi
         sessionId: row.session_id,
         targetDistanceM: row.target_distance_m,
         targetDurationSeconds: row.target_duration_seconds,
+        sessionType: (row.session_type as ProgramSessionType | null) ?? null,
+        targetPaceMinSPerKm: row.target_pace_min_s_per_km,
+        targetPaceMaxSPerKm: row.target_pace_max_s_per_km,
+        targetTimeSeconds: row.target_time_seconds,
+        instructions: row.instructions,
       }
     : null;
   return { session, isLoading };

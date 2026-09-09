@@ -5,7 +5,10 @@ import {
   decodeTrack,
   derivedVmaPace,
   evaluatePace,
+  expandIntervalPhases,
   instantPace,
+  progressivePaceTarget,
+  resolvePhasePace,
   resolveSessionPace,
   simplifyTrack,
 } from '@wellness/shared';
@@ -29,7 +32,7 @@ import { useRunnerProfile } from '@/data/repositories/running-profile-repository
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getPaused, subscribePaused } from '@/running/tracker-task';
 import { useDistanceAnnouncements } from '@/running/announcements';
-import { useIntervalGuidance } from '@/running/interval-guidance';
+import { useIntervalGuidance, toPhaseBlockInput } from '@/running/interval-guidance';
 import { usePaceGuidance } from '@/running/pace-guidance';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -174,18 +177,59 @@ export default function RunActiveScreen() {
     [target, plannedSessionType, runnerProfile?.ref5kPaceSPerKm],
   );
 
+  // US RUN-F4 (mur M8) — la cible du SEGMENT courant prime sur celle de la séance, et si ce
+  // segment est progressif, elle se déplace au fil de son avancement.
+  //
+  // On reconstruit la phase courante depuis le curseur déjà persisté par RUN-F2d : aucun état
+  // neuf, aucune seconde source de vérité sur « où en est la séance ».
+  // Scalaires extraits AVANT le mémo : dépendre de l'objet `active` entier empêche le
+  // compilateur React de préserver la mémoïsation (il change à chaque flush du tracker).
+  const phaseIndex = active?.intervalPhaseIndex ?? null;
+  const phaseStartD = active?.intervalPhaseStartDistanceM ?? 0;
+  const phaseStartT = active?.intervalPhaseStartDurationS ?? 0;
+  const netDurationS = active?.durationSeconds ?? 0;
+  const ref5k = runnerProfile?.ref5kPaceSPerKm ?? null;
+
+  const segmentPace = useMemo(() => {
+    if (intervalBlocks.length === 0) return null;
+    const phases = expandIntervalPhases(intervalBlocks.map(toPhaseBlockInput));
+    const index = phaseIndex;
+    if (index == null || index < 0 || index >= phases.length) return null;
+
+    const phase = phases[index]!;
+    const vma = ref5k != null ? derivedVmaPace(ref5k) : null;
+    const range = resolvePhasePace(phase, vma)?.range ?? null;
+    if (range === null) return null;
+    if (!phase.paceProgressive) return range;
+
+    // Avancement DANS le segment, sur l'axe qui le borne. Sans borne exploitable, on rend la
+    // plage telle quelle plutôt qu'une rampe fondée sur une progression inventée.
+    const startD = phaseStartD;
+    const startT = phaseStartT;
+    const done = netDurationS;
+    const progress =
+      phase.distanceM != null && phase.distanceM > 0
+        ? (distanceM - startD) / phase.distanceM
+        : phase.durationSeconds != null && phase.durationSeconds > 0
+          ? (done - startT) / phase.durationSeconds
+          : null;
+    return progress == null ? range : progressivePaceTarget(range, progress);
+  }, [intervalBlocks, phaseIndex, phaseStartD, phaseStartT, netDurationS, distanceM, ref5k]);
+
+  const effectivePaceRange = segmentPace ?? targetPace?.range ?? null;
+
   // Verdict affiché : sur l'allure INSTANTANÉE, c'est elle qu'on corrige en courant.
   const paceEvaluation = useMemo(
-    () => evaluatePace(instantPaceValue, targetPace?.range ?? null),
-    [instantPaceValue, targetPace],
+    () => evaluatePace(instantPaceValue, effectivePaceRange),
+    [instantPaceValue, effectivePaceRange],
   );
 
   usePaceGuidance({
     // Même réglage que le guidage fractionné : un coureur qui a coupé la voix l'a coupée pour
     // toute la séance, pas seulement pour les changements de bloc.
-    enabled: isGps && runnerProfile?.intervalGuidanceEnabled === true && targetPace !== null,
+    enabled: isGps && runnerProfile?.intervalGuidanceEnabled === true && effectivePaceRange !== null,
     currentPaceSPerKm: instantPaceValue,
-    targetRange: targetPace?.range ?? null,
+    targetRange: effectivePaceRange,
     durationSeconds: active?.durationSeconds ?? 0,
   });
   const comparison = useMemo(
@@ -363,17 +407,17 @@ export default function RunActiveScreen() {
 
         {/* Allure cible du moment (US RUN-F4, lot A/E) — absente si la séance n'en porte pas,
             et c'est le cas de toute course libre. Aucune allure n'est inventée. */}
-        {isGps && targetPace ? (
+        {isGps && effectivePaceRange ? (
           <View style={styles.targetPaceRow}>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>
               {t('running.paceGuidance.targetLabel')}
             </Text>
             <Text style={[styles.targetPaceValue, { color: colors.text }]}>
-              {targetPace.range.minSPerKm === targetPace.range.maxSPerKm
-                ? units.formatPace(targetPace.range.minSPerKm)
+              {effectivePaceRange!.minSPerKm === effectivePaceRange!.maxSPerKm
+                ? units.formatPace(effectivePaceRange!.minSPerKm)
                 : t('running.paceGuidance.range', {
-                    min: units.formatPace(targetPace.range.minSPerKm),
-                    max: units.formatPace(targetPace.range.maxSPerKm),
+                    min: units.formatPace(effectivePaceRange!.minSPerKm),
+                    max: units.formatPace(effectivePaceRange!.maxSPerKm),
                   })}
             </Text>
             {paceEvaluation && paceEvaluation.verdict !== 'in_range' ? (

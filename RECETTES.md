@@ -2273,9 +2273,35 @@ Commit `46a6692` · garde-fou :
 - [ ] 26. **Export RGPD** (Réglages → Exporter mes données) : le JSON contient bien
       `run_intervals` et `session_translations`.
 
+### 🔴 Une migration de plus à pousser (ajoutée le 09/09)
+
+- [ ] 27. **`npm run db:push`** — `20260909120000_runf4_segment_progression` (allure progressive,
+      mur M8). Sans elle, la case « Allure progressive » ne s'enregistre pas.
+
+### Surfaces posées le 09/09/2026 (à recetter aussi)
+
+- [ ] 28. **Allure progressive** : sur un segment, cocher « Allure progressive » avec les bornes
+      4:25 et 4:35 → en course, la cible **se déplace** de 4:35 vers 4:25 au fil du segment
+      (au lieu de rester une fourchette).
+- [ ] 29. **Carte « séance du jour »** (hub course) : elle n'apparaît **que** si un signal est
+      actif (douleur déclarée sur une zone de course, énergie basse, charge en zone risque,
+      grosse séance de jambes hier). ⚠️ Elle doit dire explicitement qu'elle **ne modifie rien**.
+- [ ] 30. **Carte « J-42 »** : renseigner une date de course sur un programme (édition →
+      *Date de la course*, format `2026-10-25`) → le détail du programme affiche le compte à
+      rebours, et « Semaine d'affûtage » dans les 7 derniers jours.
+- [ ] 31. **Taux de réalisation** : après avoir posé le programme au calendrier, la carte affiche
+      « X séances sur Y ». Une séance **sautée** doit compter au dénominateur, pas au numérateur.
+- [ ] 32. **Plan de passage** : sur une séance de type *Course objectif* avec distance + chrono,
+      « Générer un plan régulier » → la liste des km avec leur temps de passage cumulé.
+- [ ] 33. **Back-office** : sur une séance de course d'un programme éditorial, les champs
+      Allure cible / RPE / Consigne / Critère d'adaptation sont présents et s'enregistrent.
+      L'objectif chrono n'apparaît que sur *Test* et *Course objectif*.
+
 ### 🟡 Ce qui n'est PAS à recetter (non livré, assumé)
 
-Le calcul, les données, les tests et l'i18n existent, **mais aucun écran ne les affiche** :
-carte **« J-42 » / taux de réalisation** (lot H), carte **« séance du jour adaptée »** (lot J),
-**éditeur de plan de passage par km**, **champs de consigne dans le back-office**, et l'**UI
-d'écriture des traductions de séance**. Détail en §4 de la spec. À arbitrer après ta recette.
+L'**UI d'écriture des traductions de séance** : la table, la RLS et la résolution SQL sont en
+place, mais aucun écran ne permet de traduire une séance. `sessions.name` reste le repli, donc
+rien ne régresse — une séance éditoriale reste simplement monolingue.
+
+La règle « chaleur » du lot J n'a **aucune source** (météo = RUN-F3b, bloquée) : elle ne se
+déclenchera jamais, c'est normal.

@@ -122,6 +122,14 @@ const seance = (id: string, orderIndex: number, overrides: Record<string, unknow
   sessionType: null,
   targetDistanceM: null,
   targetDurationSeconds: null,
+  // US RUN-F4 — consigne éditoriale. Vide par défaut : ces tests portent sur la musculation
+  // et sur la mécanique de l'écran, pas sur la consigne de course.
+  targetPaceMinSPerKm: null,
+  targetPaceMaxSPerKm: null,
+  targetRpe: null,
+  targetTimeSeconds: null,
+  instructions: null,
+  adaptationCriterion: null,
   plans: [],
   intervals: [],
   ...overrides,

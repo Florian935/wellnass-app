@@ -87,6 +87,14 @@ export type AdminSession = {
   sessionType: string | null;
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
+  // US RUN-F4 — la consigne éditoriale : allure cible saisie, RPE visé, objectif chrono et les
+  // textes qui font la différence entre « 5×1 000 m » et « 5×1 000 m, ne pas accélérer le 1er ».
+  targetPaceMinSPerKm: number | null;
+  targetPaceMaxSPerKm: number | null;
+  targetRpe: number | null;
+  targetTimeSeconds: number | null;
+  instructions: string | null;
+  adaptationCriterion: string | null;
   plans: AdminExercisePlan[];
   intervals: AdminIntervalBlock[];
 };
@@ -137,6 +145,14 @@ export type SessionInput = {
   sessionType: SessionType | null;
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
+  // US RUN-F4 — facultatifs : une séance éditoriale sans consigne reste valide, et les 3
+  // programmes déjà publiés n'en ont aucune.
+  targetPaceMinSPerKm?: number | null;
+  targetPaceMaxSPerKm?: number | null;
+  targetRpe?: number | null;
+  targetTimeSeconds?: number | null;
+  instructions?: string | null;
+  adaptationCriterion?: string | null;
 };
 
 /** Entrée de `addExercisePlan` / `updateExercisePlan`. */
@@ -353,7 +369,7 @@ export async function getProgram(id: string): Promise<{
   const { data: sessionsData, error: sessionsError } = await supabase
     .from('sessions')
     .select(
-      'id, order_index, name, session_type, target_distance_m, target_duration_seconds',
+      'id, order_index, name, session_type, target_distance_m, target_duration_seconds, target_pace_min_s_per_km, target_pace_max_s_per_km, target_rpe, target_time_seconds, instructions, adaptation_criterion',
     )
     .eq('program_id', id)
     .is('owner_id', null)
@@ -370,6 +386,12 @@ export async function getProgram(id: string): Promise<{
     name: s.name,
     sessionType: s.session_type,
     targetDistanceM: s.target_distance_m,
+    targetPaceMinSPerKm: s.target_pace_min_s_per_km,
+    targetPaceMaxSPerKm: s.target_pace_max_s_per_km,
+    targetRpe: s.target_rpe,
+    targetTimeSeconds: s.target_time_seconds,
+    instructions: s.instructions,
+    adaptationCriterion: s.adaptation_criterion,
     targetDurationSeconds: s.target_duration_seconds,
     plans: [],
     intervals: [],
@@ -887,6 +909,12 @@ export async function updateSession(
       session_type: input.sessionType,
       target_distance_m: input.targetDistanceM,
       target_duration_seconds: input.targetDurationSeconds,
+      target_pace_min_s_per_km: input.targetPaceMinSPerKm ?? null,
+      target_pace_max_s_per_km: input.targetPaceMaxSPerKm ?? null,
+      target_rpe: input.targetRpe ?? null,
+      target_time_seconds: input.targetTimeSeconds ?? null,
+      instructions: input.instructions ?? null,
+      adaptation_criterion: input.adaptationCriterion ?? null,
     })
     .eq('id', id)
     .is('owner_id', null); // éditorial uniquement
