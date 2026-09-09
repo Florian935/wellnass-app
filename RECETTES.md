@@ -2273,10 +2273,10 @@ Commit `46a6692` · garde-fou :
 - [ ] 26. **Export RGPD** (Réglages → Exporter mes données) : le JSON contient bien
       `run_intervals` et `session_translations`.
 
-### 🔴 Une migration de plus à pousser (ajoutée le 09/09)
+### Migration de l'allure progressive (poussée le 09/09)
 
-- [ ] 27. **`npm run db:push`** — `20260909120000_runf4_segment_progression` (allure progressive,
-      mur M8). Sans elle, la case « Allure progressive » ne s'enregistre pas.
+- [x] 27. ~~`npm run db:push` — `20260909120000_runf4_segment_progression`~~ — **fait par Florian
+      le 09/09/2026** (`db:push:dry` : « Remote database is up to date », types régénérés).
 
 ### Surfaces posées le 09/09/2026 (à recetter aussi)
 
@@ -2297,11 +2297,22 @@ Commit `46a6692` · garde-fou :
       Allure cible / RPE / Consigne / Critère d'adaptation sont présents et s'enregistrent.
       L'objectif chrono n'apparaît que sur *Test* et *Course objectif*.
 
-### 🟡 Ce qui n'est PAS à recetter (non livré, assumé)
+### Traductions de séance — back-office (ajouté le 09/09)
 
-L'**UI d'écriture des traductions de séance** : la table, la RLS et la résolution SQL sont en
-place, mais aucun écran ne permet de traduire une séance. `sessions.name` reste le repli, donc
-rien ne régresse — une séance éditoriale reste simplement monolingue.
+- [ ] 34. Sur une séance d'un programme éditorial, les champs **Nom de la séance (EN)** et
+      **Consigne (EN)** sont présents et s'enregistrent.
+- [ ] 35. Renseigner le nom EN, puis **basculer l'app mobile en anglais** → la séance s'affiche
+      avec son nom anglais. Repasser en français → le nom français revient.
+- [ ] 36. **Laisser le champ EN vide** → la séance s'affiche avec son nom français en anglais
+      aussi (repli), et **jamais** un nom vide.
 
-La règle « chaleur » du lot J n'a **aucune source** (météo = RUN-F3b, bloquée) : elle ne se
-déclenchera jamais, c'est normal.
+### 🟡 Ce qui n'est PAS à recetter — et pourquoi
+
+Le lot RUN-F4 est **complet** : les 10 lots et les 15 murs de l'analyse sont traités. Restent
+deux exclusions, toutes deux extérieures à cette US :
+
+- **La règle « chaleur »** (lot J) ne se déclenchera **jamais** : la météo est RUN-F3b, bloquée
+  avant lancement sur l'arbitrage de confidentialité. La règle est écrite et testée, aucune
+  source ne l'alimente. C'est voulu.
+- **FC, cadence, foulée** (mur M14) : tranché avant cette US (V2 wearables, RUN-23/RUN-24 du
+  catalogue). Rien à chercher de ce côté.

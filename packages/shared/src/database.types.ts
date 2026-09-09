@@ -2046,6 +2046,7 @@ export type Database = {
           fast_pace_max_s_per_km: number | null
           fast_pace_min_s_per_km: number | null
           fast_pace_pct_vma: number | null
+          fast_pace_progressive: boolean
           fast_target_time_max_seconds: number | null
           fast_target_time_min_seconds: number | null
           group_key: string | null
@@ -2072,6 +2073,7 @@ export type Database = {
           fast_pace_max_s_per_km?: number | null
           fast_pace_min_s_per_km?: number | null
           fast_pace_pct_vma?: number | null
+          fast_pace_progressive?: boolean
           fast_target_time_max_seconds?: number | null
           fast_target_time_min_seconds?: number | null
           group_key?: string | null
@@ -2098,6 +2100,7 @@ export type Database = {
           fast_pace_max_s_per_km?: number | null
           fast_pace_min_s_per_km?: number | null
           fast_pace_pct_vma?: number | null
+          fast_pace_progressive?: boolean
           fast_target_time_max_seconds?: number | null
           fast_target_time_min_seconds?: number | null
           group_key?: string | null

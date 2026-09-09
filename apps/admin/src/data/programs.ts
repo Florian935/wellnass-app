@@ -95,6 +95,14 @@ export type AdminSession = {
   targetTimeSeconds: number | null;
   instructions: string | null;
   adaptationCriterion: string | null;
+  // US RUN-F4 (lot I) — traductions de la séance. `name`/`instructions` ci-dessus restent le
+  // REPLI (`sessions.name`), lu par la résolution mobile `COALESCE(langue, fr, sessions.name)` :
+  // une séance sans ligne de traduction continue de s'afficher, c'est ce qui rend la table
+  // purement additive.
+  nameFr: string | null;
+  nameEn: string | null;
+  instructionsFr: string | null;
+  instructionsEn: string | null;
   plans: AdminExercisePlan[];
   intervals: AdminIntervalBlock[];
 };
@@ -153,6 +161,14 @@ export type SessionInput = {
   targetTimeSeconds?: number | null;
   instructions?: string | null;
   adaptationCriterion?: string | null;
+};
+
+/** Entrée de `updateSessionTranslations` (US RUN-F4, lot I). */
+export type SessionTranslationsInput = {
+  nameFr: string | null;
+  nameEn: string | null;
+  instructionsFr: string | null;
+  instructionsEn: string | null;
 };
 
 /** Entrée de `addExercisePlan` / `updateExercisePlan`. */
@@ -351,7 +367,15 @@ export async function getProgram(id: string): Promise<{
     return { program: null, error: null };
   }
 
-  type FullTranslation = {
+  /** Ligne de `session_translations` jointe à une séance (US RUN-F4, lot I). */
+type SessionTranslationRow = {
+  lang: string;
+  name: string | null;
+  instructions: string | null;
+  deleted_at: string | null;
+};
+
+type FullTranslation = {
     lang: string;
     name: string;
     summary: string | null;
@@ -369,7 +393,7 @@ export async function getProgram(id: string): Promise<{
   const { data: sessionsData, error: sessionsError } = await supabase
     .from('sessions')
     .select(
-      'id, order_index, name, session_type, target_distance_m, target_duration_seconds, target_pace_min_s_per_km, target_pace_max_s_per_km, target_rpe, target_time_seconds, instructions, adaptation_criterion',
+      'id, order_index, name, session_type, target_distance_m, target_duration_seconds, target_pace_min_s_per_km, target_pace_max_s_per_km, target_rpe, target_time_seconds, instructions, adaptation_criterion, session_translations(lang, name, instructions, deleted_at)',
     )
     .eq('program_id', id)
     .is('owner_id', null)
@@ -380,7 +404,15 @@ export async function getProgram(id: string): Promise<{
     return { program: null, error: sessionsError };
   }
 
-  const sessions: AdminSession[] = (sessionsData ?? []).map((s) => ({
+  const sessions: AdminSession[] = (sessionsData ?? []).map((s) => {
+    // Traductions vivantes de CETTE séance. Une ligne soft-deletée ne compte pas — sinon un
+    // nom effacé continuerait de masquer le repli `sessions.name`.
+    const st = ((s.session_translations ?? []) as SessionTranslationRow[]).filter(
+      (t) => t.deleted_at == null,
+    );
+    const stFr = st.find((t) => t.lang === 'fr');
+    const stEn = st.find((t) => t.lang === 'en');
+    return {
     id: s.id,
     orderIndex: s.order_index,
     name: s.name,
@@ -393,9 +425,14 @@ export async function getProgram(id: string): Promise<{
     instructions: s.instructions,
     adaptationCriterion: s.adaptation_criterion,
     targetDurationSeconds: s.target_duration_seconds,
+    nameFr: stFr?.name ?? null,
+    nameEn: stEn?.name ?? null,
+    instructionsFr: stFr?.instructions ?? null,
+    instructionsEn: stEn?.instructions ?? null,
     plans: [],
     intervals: [],
-  }));
+    };
+  });
 
   const sessionIds = sessions.map((s) => s.id);
 
@@ -919,6 +956,65 @@ export async function updateSession(
     .eq('id', id)
     .is('owner_id', null); // éditorial uniquement
   return { error };
+}
+
+/**
+ * Met à jour les traductions FR/EN d'une séance éditoriale (US RUN-F4, lot I).
+ *
+ * Miroir exact d'`updateProgramMeta` : upsert sur `(session_id, lang)`, idempotent.
+ *
+ * ⚠️ **Le nom FR est AUSSI écrit dans `sessions.name`.** C'est délibéré : `sessions.name` est le
+ * 3ᵉ niveau du `COALESCE(langue, fr, sessions.name)` côté mobile, et c'est aussi la colonne que
+ * lit la **musculation**. Ne pas le tenir à jour laisserait un ancien nom s'afficher chez tout
+ * client dont les lignes de traduction ne sont pas encore descendues — soit exactement le genre
+ * d'incohérence silencieuse qu'on cherche à éviter.
+ *
+ * Une chaîne vide est écrite `null`, jamais `''` : une traduction vide doit **laisser le repli
+ * jouer**, pas masquer le nom par du blanc.
+ */
+export async function updateSessionTranslations(
+  sessionId: string,
+  input: SessionTranslationsInput,
+): Promise<{ error: unknown }> {
+  const clean = (v: string | null) => {
+    const t = (v ?? '').trim();
+    return t === '' ? null : t;
+  };
+
+  const rows: Database['public']['Tables']['session_translations']['Insert'][] = [
+    {
+      id: crypto.randomUUID(),
+      session_id: sessionId,
+      owner_id: null,
+      lang: 'fr',
+      name: clean(input.nameFr),
+      instructions: clean(input.instructionsFr),
+    },
+    {
+      id: crypto.randomUUID(),
+      session_id: sessionId,
+      owner_id: null,
+      lang: 'en',
+      name: clean(input.nameEn),
+      instructions: clean(input.instructionsEn),
+    },
+  ];
+
+  for (const row of rows) {
+    const { error } = await supabase
+      .from('session_translations')
+      .upsert(row, { onConflict: 'session_id,lang' });
+    if (error) return { error };
+  }
+
+  // Le repli reste aligné sur le FR (voir l'avertissement ci-dessus).
+  const { error: fallbackError } = await supabase
+    .from('sessions')
+    .update({ name: clean(input.nameFr) })
+    .eq('id', sessionId)
+    .is('owner_id', null);
+
+  return { error: fallbackError };
 }
 
 /**

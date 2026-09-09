@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/09/2026 (quater) — RUN-F4 : traductions de séance, le lot est complet
+
+Branche `feature/runf4-traductions-seances`. Dernier point ouvert de la spec §4.
+
+### Ajouté
+- **Écriture des `session_translations` au back-office** (lot I). La table, la RLS et la
+  résolution SQL étaient posées depuis le 05/09 ; **rien n'écrivait dedans**, et la bibliothèque
+  restait bilingue au niveau du programme mais monolingue au niveau de la séance.
+  `updateSessionTranslations` (upsert sur `(session_id, lang)`, idempotent, miroir exact
+  d'`updateProgramMeta`) + champs « Nom de la séance (EN) » et « Consigne (EN) » dans l'écran
+  d'édition de programme.
+- 4 tests sur cette écriture (`programs.test.ts`, 41 tests au total).
+
+### Technique / Notes
+- ⚠️ **Le nom FR est écrit dans DEUX endroits, délibérément** : `session_translations(fr)` **et**
+  `sessions.name`. Cette dernière est le 3ᵉ niveau du `COALESCE(langue, fr, sessions.name)` côté
+  mobile **et** la colonne que lit la musculation ; la laisser périmée afficherait l'ancien nom
+  chez tout client dont les lignes de traduction ne sont pas encore descendues. Un test couvre
+  ce réalignement.
+- **Une chaîne vide est écrite `null`, jamais `''`** : une traduction vide doit laisser le repli
+  jouer, pas masquer le nom par du blanc. Testé.
+- **Un seul champ pour le FR** : le champ « nom » existant reste la source du français. En
+  ajouter un second à côté ferait deux champs pour une même valeur.
+- 2712 tests mobile + 2294 partagés + 41 admin verts, lint 0, typecheck 0 sur les 3 workspaces.
+
 ## 09/09/2026 (ter) — RUN-F4 : les surfaces manquantes, et le mur M8
 
 Branche `feature/runf4-surfaces-restantes`. Florian a demandé de finir la vague pendant qu'un

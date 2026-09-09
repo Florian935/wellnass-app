@@ -97,24 +97,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf4-surfaces-restantes` (modifications non commitées) |
-| Commits | 1189 · `main` a **1186** commits de retard sur `dev` |
+| Branche courante | `feature/runf4-traductions-seances` (modifications non commitées) |
+| Commits | 1190 · `main` a **1187** commits de retard sur `dev` |
 | Specs d'US | 135 au total — 79 clôturées, 56 en cours |
-| Migrations | 87/88 poussées sur le cloud |
+| Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
-- ⚠️ 1 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
 - `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
 - `2550751` fix(runf4): corrige la regression de test du resume, coche les 7 migrations
 - `b8b5b1a` feat(runf4): la seance de course porte enfin sa consigne (10 lots, 5.36 vers 5.39)
 - `7e5a3a6` docs(recettes): consigner les 13 correctifs de promesses (§55)
-- `46a6692` fix(promesses): treize rejets non captures, et le garde-fou qui va avec
 
 ---
 

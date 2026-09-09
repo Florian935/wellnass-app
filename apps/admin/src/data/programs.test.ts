@@ -43,6 +43,7 @@ const {
   restoreProgram,
   setStatus,
   updateProgramMeta,
+  updateSessionTranslations,
 } = await import('./programs');
 
 /** UUID valides — `auditEntrySchema` valide `targetId` en `z.string().uuid()` (cf. `foods.test.ts`). */
@@ -344,6 +345,57 @@ describe('updateProgramMeta', () => {
     expect((await updateProgramMeta(PROGRAM_ID, input)).error).toBeInstanceOf(Error);
     expect(mock.queriesOn('program_translations')).toHaveLength(0);
     expect(mock.queriesOn('audit_log')).toHaveLength(0);
+  });
+});
+
+describe('updateSessionTranslations (US RUN-F4, lot I)', () => {
+  const input = {
+    nameFr: 'Séance A',
+    nameEn: 'Session A',
+    instructionsFr: 'Ne pas accélérer le premier 1 000 m',
+    instructionsEn: null,
+  };
+
+  it('upsert les deux langues sur (session_id, lang) — pas de doublon au ré-enregistrement', async () => {
+    await updateSessionTranslations(SESSION_A, input);
+
+    const upserts = mock.queriesOn('session_translations', 'upsert');
+    expect(upserts).toHaveLength(2);
+    expect(upserts[0]?.options).toEqual({ onConflict: 'session_id,lang' });
+    expect(upserts.map((u) => u.rows?.[0]?.lang)).toEqual(['fr', 'en']);
+  });
+
+  it('🔴 réaligne `sessions.name` sur le FR — sinon un ancien nom survit au repli', async () => {
+    // `sessions.name` est le 3ᵉ niveau du COALESCE côté mobile ET la colonne que lit la muscu.
+    // Le laisser périmé afficherait l'ancien nom chez tout client dont les traductions ne sont
+    // pas encore descendues.
+    await updateSessionTranslations(SESSION_A, input);
+
+    const update = mock.lastQuery('sessions', 'update');
+    expect(update?.rows?.[0]).toMatchObject({ name: 'Séance A' });
+    expect(mock.hasFilter(update, 'eq', 'id', SESSION_A)).toBe(true);
+    expect(mock.hasFilter(update, 'is', 'owner_id', null)).toBe(true);
+  });
+
+  it('🔴 écrit null pour une chaîne vide, jamais une chaîne blanche', async () => {
+    // Une traduction vide doit LAISSER LE REPLI JOUER, pas masquer le nom par du blanc.
+    await updateSessionTranslations(SESSION_A, {
+      nameFr: 'Séance A',
+      nameEn: '   ',
+      instructionsFr: '',
+      instructionsEn: null,
+    });
+
+    const upserts = mock.queriesOn('session_translations', 'upsert');
+    expect(upserts[0]?.rows?.[0]?.instructions).toBeNull();
+    expect(upserts[1]?.rows?.[0]?.name).toBeNull();
+  });
+
+  it('s’arrête à la première erreur, sans toucher au repli', async () => {
+    mock.setResponse('session_translations.upsert', { error: new Error('rls') });
+
+    expect((await updateSessionTranslations(SESSION_A, input)).error).toBeInstanceOf(Error);
+    expect(mock.queriesOn('sessions', 'update')).toHaveLength(0);
   });
 });
 

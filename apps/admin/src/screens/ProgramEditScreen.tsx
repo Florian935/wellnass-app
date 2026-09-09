@@ -21,6 +21,7 @@ import {
   updateIntervalBlock,
   updateProgramMeta,
   updateSession,
+  updateSessionTranslations,
   type AdminExercisePlan,
   type AdminIntervalBlock,
   type AdminSession,
@@ -320,6 +321,9 @@ export function ProgramEditScreen() {
                     busy={busy}
                     dragHandle={dragHandle}
                     onUpdateSession={(input) => runWrite(() => updateSession(session.id, input))}
+                    onUpdateTranslations={(input) =>
+                      runWrite(() => updateSessionTranslations(session.id, input))
+                    }
                     onRemoveSession={() => handleRemoveSession(session.id)}
                     onAddPlan={(exerciseId) =>
                       runWrite(async () => {
@@ -710,6 +714,13 @@ type SessionCardProps = {
     instructions?: string | null;
     adaptationCriterion?: string | null;
   }) => Promise<void>;
+  /** US RUN-F4 (lot I) — traductions FR/EN de la séance (éditorial uniquement). */
+  onUpdateTranslations: (input: {
+    nameFr: string | null;
+    nameEn: string | null;
+    instructionsFr: string | null;
+    instructionsEn: string | null;
+  }) => Promise<void>;
   onRemoveSession: () => void;
   onAddPlan: (exerciseId: string) => Promise<void>;
   onUpdatePlan: (planId: string, input: PlanInput) => Promise<void>;
@@ -737,6 +748,7 @@ function SessionCard({
   busy,
   dragHandle,
   onUpdateSession,
+  onUpdateTranslations,
   onRemoveSession,
   onAddPlan,
   onUpdatePlan,
@@ -791,6 +803,23 @@ function SessionCard({
   );
   const [instructions, setInstructions] = useState(session.instructions ?? '');
   const [adaptation, setAdaptation] = useState(session.adaptationCriterion ?? '');
+
+  // ---- US RUN-F4 (lot I) : traductions de la séance ----
+  //
+  // Le champ « nom » existant reste la source du FR (il alimente aussi `sessions.name`, le repli
+  // lu par le mobile) ; on ne saisit donc ici que l'ANGLAIS et les consignes traduites. Un
+  // deuxième champ « nom FR » à côté du premier serait deux champs pour une même valeur.
+  const [nameEn, setNameEn] = useState(session.nameEn ?? '');
+  const [instructionsEn, setInstructionsEn] = useState(session.instructionsEn ?? '');
+
+  function persistTranslations() {
+    void onUpdateTranslations({
+      nameFr: name.trim() || null,
+      nameEn: nameEn.trim() || null,
+      instructionsFr: instructions.trim() || null,
+      instructionsEn: instructionsEn.trim() || null,
+    });
+  }
 
   /** RPE : échelle fermée 1-10. Hors bornes ou illisible = pas de valeur, jamais un 0. */
   function clampRpe(raw: string): number | null {
@@ -1013,6 +1042,33 @@ function SessionCard({
             </div>
           </div>
         ) : null}
+
+        {/* US RUN-F4 (lot I) — version anglaise. Le FR vient des champs ci-dessus : la
+            bibliothèque est bilingue au niveau du programme depuis toujours, elle l'est enfin
+            au niveau de la séance. Laisser vide = le nom FR s'affiche pour tout le monde. */}
+        <div style={styles.sessionMetaRow}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <label style={styles.label}>{fr.programs.sessionNameEn}</label>
+            <input
+              value={nameEn}
+              placeholder={fr.programs.sessionNameEnPlaceholder}
+              onChange={(e) => setNameEn(e.target.value)}
+              onBlur={persistTranslations}
+              style={styles.input}
+            />
+          </div>
+          {isRunning ? (
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <label style={styles.label}>{fr.programs.instructionsEn}</label>
+              <textarea
+                value={instructionsEn}
+                onChange={(e) => setInstructionsEn(e.target.value)}
+                onBlur={persistTranslations}
+                style={{ ...styles.input, minHeight: 60 }}
+              />
+            </div>
+          ) : null}
+        </div>
 
         {sessionType === 'fractionne' ? (
           <div style={styles.exercisesBlock}>

@@ -372,6 +372,9 @@ export const fr = {
     },
     targetDistanceKm: 'Distance cible (km)',
     // US RUN-F4 — la consigne éditoriale d'une séance de course.
+    sessionNameEn: 'Nom de la séance (EN)',
+    sessionNameEnPlaceholder: 'Ex. Session A',
+    instructionsEn: 'Consigne (EN)',
     targetPace: 'Allure cible (m:ss/km)',
     targetPaceMin: 'Allure la plus rapide',
     targetPaceMax: 'Allure la plus lente',
