@@ -97,8 +97,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/runf4-traductions-seances` (modifications non commitées) |
-| Commits | 1190 · `main` a **1187** commits de retard sur `dev` |
+| Branche courante | `docs/runf4-note-build` (modifications non commitées) |
+| Commits | 1191 · `main` a **1188** commits de retard sur `dev` |
 | Specs d'US | 135 au total — 79 clôturées, 56 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -109,11 +109,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `421e948` feat(runf4): ecriture des traductions de seance — le lot est complet
 - `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
 - `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
 - `2550751` fix(runf4): corrige la regression de test du resume, coche les 7 migrations
 - `b8b5b1a` feat(runf4): la seance de course porte enfin sa consigne (10 lots, 5.36 vers 5.39)
-- `7e5a3a6` docs(recettes): consigner les 13 correctifs de promesses (§55)
 
 ---
 

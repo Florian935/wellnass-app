@@ -2207,7 +2207,29 @@ Commit `46a6692` · garde-fou :
       [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).
       ⚠️ Étape **oubliée trois fois** au registre : sans elle, tout reste local et ne remonte
       jamais, **sans aucune erreur visible**.
-- [ ] 0c. Pas de nouveau build : **aucune dépendance native neuve**.
+- [ ] 0c. 🔴 **L'APK doit être construit depuis le commit `421e948` ou plus récent.**
+      Aucune dépendance native neuve — donc **pas besoin d'un nouveau dev build EAS** — mais le
+      JS est figé dans l'APK release : un APK plus ancien ne contient **rien** de RUN-F4, et la
+      recette porterait sur l'app d'avant.
+
+      ```powershell
+      Remove-Item -Force -ErrorAction SilentlyContinue `
+        apps\mobilendroidppuild\generatedssetseactelease\index.android.bundle, `
+        apps\mobilendroidppuild\intermediatesssetselease\mergeReleaseAssets\index.android.bundle
+      cd apps\mobilendroid ; .\gradlew.bat assembleRelease
+      ```
+
+      ⚠️ **La purge du bundle n'est pas optionnelle** : Gradle ne déclare pas `packages/shared`
+      comme entrée, se croit à jour et réemballe l'ancien JS — `BUILD SUCCESSFUL` avec le
+      correctif absent (piège documenté, deux itérations perdues en recette de CONF-06).
+      Contrôle avant d'envoyer l'APK, depuis la racine :
+
+      ```powershell
+      Select-String -SimpleMatch -Pattern "intervalsF4" `
+        apps\mobilendroidppuild\generatedssetseactelease\index.android.bundle
+      ```
+
+      Rien en retour = le bundle est l'ancien, recommence.
 
 ### Lot A — l'allure cible saisie (le cœur)
 
