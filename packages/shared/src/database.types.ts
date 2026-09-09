@@ -1563,6 +1563,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           duration_weeks: number | null
+          event_name: string | null
           goal: string | null
           id: string
           is_active: boolean
@@ -1570,12 +1571,15 @@ export type Database = {
           owner_id: string | null
           pillar: string
           status: string
+          target_date: string | null
+          target_time_seconds: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           deleted_at?: string | null
           duration_weeks?: number | null
+          event_name?: string | null
           goal?: string | null
           id: string
           is_active?: boolean
@@ -1583,12 +1587,15 @@ export type Database = {
           owner_id?: string | null
           pillar: string
           status?: string
+          target_date?: string | null
+          target_time_seconds?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           deleted_at?: string | null
           duration_weeks?: number | null
+          event_name?: string | null
           goal?: string | null
           id?: string
           is_active?: boolean
@@ -1596,6 +1603,8 @@ export type Database = {
           owner_id?: string | null
           pillar?: string
           status?: string
+          target_date?: string | null
+          target_time_seconds?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -1747,6 +1756,93 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "recipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      run_intervals: {
+        Row: {
+          actual_distance_m: number | null
+          actual_duration_seconds: number | null
+          actual_pace_s_per_km: number | null
+          block_id: string | null
+          created_at: string
+          deleted_at: string | null
+          finished_at: string | null
+          id: string
+          phase_index: number
+          phase_kind: string
+          planned_distance_m: number | null
+          planned_duration_seconds: number | null
+          planned_pace_max_s_per_km: number | null
+          planned_pace_min_s_per_km: number | null
+          rep: number | null
+          run_id: string
+          segment_kind: string | null
+          started_at: string | null
+          total_reps: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_distance_m?: number | null
+          actual_duration_seconds?: number | null
+          actual_pace_s_per_km?: number | null
+          block_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          finished_at?: string | null
+          id: string
+          phase_index: number
+          phase_kind: string
+          planned_distance_m?: number | null
+          planned_duration_seconds?: number | null
+          planned_pace_max_s_per_km?: number | null
+          planned_pace_min_s_per_km?: number | null
+          rep?: number | null
+          run_id: string
+          segment_kind?: string | null
+          started_at?: string | null
+          total_reps?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_distance_m?: number | null
+          actual_duration_seconds?: number | null
+          actual_pace_s_per_km?: number | null
+          block_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          finished_at?: string | null
+          id?: string
+          phase_index?: number
+          phase_kind?: string
+          planned_distance_m?: number | null
+          planned_duration_seconds?: number | null
+          planned_pace_max_s_per_km?: number | null
+          planned_pace_min_s_per_km?: number | null
+          rep?: number | null
+          run_id?: string
+          segment_kind?: string | null
+          started_at?: string | null
+          total_reps?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "run_intervals_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "run_intervals_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "admin_users"
@@ -1947,12 +2043,23 @@ export type Database = {
           deleted_at: string | null
           fast_distance_m: number | null
           fast_duration_seconds: number | null
+          fast_pace_max_s_per_km: number | null
+          fast_pace_min_s_per_km: number | null
           fast_pace_pct_vma: number | null
+          fast_target_time_max_seconds: number | null
+          fast_target_time_min_seconds: number | null
+          group_key: string | null
+          group_reps: number | null
           id: string
+          kind: string
+          label: string | null
           order_index: number
           owner_id: string | null
           recovery_distance_m: number | null
           recovery_duration_seconds: number | null
+          recovery_kind: string | null
+          recovery_pace_max_s_per_km: number | null
+          recovery_pace_min_s_per_km: number | null
           reps: number
           session_id: string
           updated_at: string
@@ -1962,12 +2069,23 @@ export type Database = {
           deleted_at?: string | null
           fast_distance_m?: number | null
           fast_duration_seconds?: number | null
+          fast_pace_max_s_per_km?: number | null
+          fast_pace_min_s_per_km?: number | null
           fast_pace_pct_vma?: number | null
+          fast_target_time_max_seconds?: number | null
+          fast_target_time_min_seconds?: number | null
+          group_key?: string | null
+          group_reps?: number | null
           id: string
+          kind?: string
+          label?: string | null
           order_index?: number
           owner_id?: string | null
           recovery_distance_m?: number | null
           recovery_duration_seconds?: number | null
+          recovery_kind?: string | null
+          recovery_pace_max_s_per_km?: number | null
+          recovery_pace_min_s_per_km?: number | null
           reps?: number
           session_id: string
           updated_at?: string
@@ -1977,12 +2095,23 @@ export type Database = {
           deleted_at?: string | null
           fast_distance_m?: number | null
           fast_duration_seconds?: number | null
+          fast_pace_max_s_per_km?: number | null
+          fast_pace_min_s_per_km?: number | null
           fast_pace_pct_vma?: number | null
+          fast_target_time_max_seconds?: number | null
+          fast_target_time_min_seconds?: number | null
+          group_key?: string | null
+          group_reps?: number | null
           id?: string
+          kind?: string
+          label?: string | null
           order_index?: number
           owner_id?: string | null
           recovery_distance_m?: number | null
           recovery_duration_seconds?: number | null
+          recovery_kind?: string | null
+          recovery_pace_max_s_per_km?: number | null
+          recovery_pace_min_s_per_km?: number | null
           reps?: number
           session_id?: string
           updated_at?: string
@@ -2004,44 +2133,122 @@ export type Database = {
           },
         ]
       }
-      sessions: {
+      session_translations: {
         Row: {
           created_at: string
           deleted_at: string | null
+          description: string | null
           id: string
+          instructions: string | null
+          lang: string
           name: string | null
-          order_index: number
           owner_id: string | null
-          program_id: string
-          session_type: string | null
-          target_distance_m: number | null
-          target_duration_seconds: number | null
+          session_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           deleted_at?: string | null
+          description?: string | null
           id: string
+          instructions?: string | null
+          lang: string
           name?: string | null
-          order_index?: number
           owner_id?: string | null
-          program_id: string
-          session_type?: string | null
-          target_distance_m?: number | null
-          target_duration_seconds?: number | null
+          session_id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           deleted_at?: string | null
+          description?: string | null
           id?: string
+          instructions?: string | null
+          lang?: string
+          name?: string | null
+          owner_id?: string | null
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_translations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_translations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          adaptation_criterion: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          instructions: string | null
+          name: string | null
+          order_index: number
+          owner_id: string | null
+          pacing_plan: Json | null
+          program_id: string
+          session_type: string | null
+          target_distance_m: number | null
+          target_duration_seconds: number | null
+          target_pace_max_s_per_km: number | null
+          target_pace_min_s_per_km: number | null
+          target_rpe: number | null
+          target_time_seconds: number | null
+          updated_at: string
+        }
+        Insert: {
+          adaptation_criterion?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id: string
+          instructions?: string | null
           name?: string | null
           order_index?: number
           owner_id?: string | null
+          pacing_plan?: Json | null
+          program_id: string
+          session_type?: string | null
+          target_distance_m?: number | null
+          target_duration_seconds?: number | null
+          target_pace_max_s_per_km?: number | null
+          target_pace_min_s_per_km?: number | null
+          target_rpe?: number | null
+          target_time_seconds?: number | null
+          updated_at?: string
+        }
+        Update: {
+          adaptation_criterion?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          name?: string | null
+          order_index?: number
+          owner_id?: string | null
+          pacing_plan?: Json | null
           program_id?: string
           session_type?: string | null
           target_distance_m?: number | null
           target_duration_seconds?: number | null
+          target_pace_max_s_per_km?: number | null
+          target_pace_min_s_per_km?: number | null
+          target_rpe?: number | null
+          target_time_seconds?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -2763,12 +2970,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2792,11 +2999,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2817,11 +3024,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2842,11 +3049,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2859,11 +3066,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

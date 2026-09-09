@@ -2199,9 +2199,9 @@ Commit `46a6692` · garde-fou :
 
 ### 🔴 AVANT TOUT — deux étapes manuelles, sinon rien ne marche
 
-- [ ] 0a. **`npm run db:push`** puis **`npm run db:types`**. Les 7 migrations sont écrites et
-      validées par `db:push:dry`, mais **je n'ai pas pu les appliquer** (écriture sur la base
-      partagée refusée en session). **Sans ça, l'app plante ou ignore tout ce qui suit.**
+- [x] 0a. ~~`npm run db:push` puis `npm run db:types`~~ — **fait par Florian le 09/09/2026.**
+      `db:push:dry` répond « Remote database is up to date », et les types régénérés contiennent
+      bien les 2 tables et les colonnes RUN-F4.
 - [ ] 0b. **Déployer 2 sync rules à la main** dans le dashboard PowerSync (`run_intervals`,
       `session_translations`) depuis
       [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml).

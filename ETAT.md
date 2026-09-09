@@ -1,4 +1,4 @@
-# État du projet — 05/09/2026
+# État du projet — 09/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -97,24 +97,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/run-seances-structurees` (modifications non commitées) |
-| Commits | 1186 · `main` a **1183** commits de retard sur `dev` |
+| Branche courante | `chore/db-types-runf4` (modifications non commitées) |
+| Commits | 1187 · `main` a **1184** commits de retard sur `dev` |
 | Specs d'US | 135 au total — 79 clôturées, 56 en cours |
-| Migrations | 80/87 poussées sur le cloud |
+| Migrations | 87/87 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
-- ⚠️ 7 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `b8b5b1a` feat(runf4): la seance de course porte enfin sa consigne (10 lots, 5.36 vers 5.39)
 - `7e5a3a6` docs(recettes): consigner les 13 correctifs de promesses (§55)
 - `46a6692` fix(promesses): treize rejets non captures, et le garde-fou qui va avec
 - `450d6f9` Merge remote-tracking branch 'origin/dev' into feature/horaire01-heure-seance
 - `60b290b` feat(horaire01): saisie de lheure de seance, US complete (2.4 partiel vers livre)
-- `0225c53` test(units,workout-summary): lot 7 — les branches, pas les fichiers (68 tests)
 
 ---
 

@@ -5,7 +5,7 @@ roadmap: [5.36, 5.37, 5.38, 5.39]
 catalogue: [RUN-07, RUN-13, RUN-19]
 etape: recette
 branche: feature/run-seances-structurees
-maj: 05/09/2026
+maj: 09/09/2026
 ---
 
 # US RUN-F4 — La séance de course porte enfin sa consigne

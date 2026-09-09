@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/09/2026 — RUN-F4 : types régénérés, régression de test corrigée, registre remis à jour
+
+Branche `chore/db-types-runf4`. Suite du commit `b8b5b1a`, avant la recette sur APK.
+
+### Corrigé
+- 🔴 **Régression introduite par `b8b5b1a`** : `run-summary-screen.test.tsx` tombait sur
+  `useRunIntervals is not a function` (18 tests). Le fichier mocke `run-repository` module entier,
+  et le hook ajouté pour le lot F n'y figurait pas. **Cause de fond, à retenir** : ma dernière
+  exécution complète de Jest datait d'**avant** l'ajout de la section « fraction par fraction » —
+  je n'avais relancé que `lint` et `typecheck` après cette modification. Le rouge est donc parti
+  dans le commit précédent.
+
+### Ajouté
+- 4 tests sur la section « fraction par fraction » du résumé de course, jusqu'ici **sans aucune
+  couverture** : section absente quand il n'y a pas de fraction (et non vide), liste des
+  fractions, régularité + compte dans la plage, et le cas d'une fraction sans allure mesurable
+  (rattrapage silencieux) qui doit afficher un tiret et **jamais** un zéro.
+
+### Modifié
+- `packages/shared/src/database.types.ts` — régénéré par Florian après `npm run db:push`
+  (+217/−10). Les ajouts sont exactement les colonnes et tables RUN-F4 ; les 10 suppressions sont
+  du remaniement cosmétique de types génériques par une CLI Supabase plus récente, **aucune perte
+  de schéma**.
+- [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md) — les **7 migrations RUN-F4 sont cochées**
+  (09/09/2026). Elles étaient consignées « 🔴 NON POUSSÉE » : c'est désormais faux, `db:push:dry`
+  répond « Remote database is up to date ».
+- [`docs/roadmap/roadmap.md`](docs/roadmap/roadmap.md) — la remarque « 🔴 2 migrations non
+  poussées » de la ligne 5.36 est corrigée.
+- [`RECETTES.md`](RECETTES.md) §56 — étape 0a (push + types) cochée, pour ne pas la faire refaire
+  pendant la recette.
+
+### Technique / Notes
+- ⚠️ **Il reste l'étape 0b** : les **2 sync rules** (`run_intervals`, `session_translations`) ne
+  sont **pas** déployées dans le dashboard PowerSync. Invisible sur un seul appareil — le trou
+  n'apparaîtra qu'à la resynchro.
+- Aucun changement fonctionnel dans ce commit. Suite complète : **2712 tests mobile** (+4) et
+  **2294 partagés** verts, lint 0, typecheck 0.
+
 ## 05/09/2026 — RUN-F4 : la séance de course porte enfin sa consigne
 
 Implémentation en une passe des 10 lots de l'[analyse du 04/09/2026](docs/product/analyse-seances-structurees-running.md),

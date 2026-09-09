@@ -28,6 +28,7 @@ import {
   setRunTerrain,
   useRun,
   useRunTarget,
+  useRunIntervals,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
 import { useRouter } from 'expo-router';
@@ -39,6 +40,10 @@ import { useRouter } from 'expo-router';
 jest.mock('@/data/repositories/run-repository', () => ({
   useRun: jest.fn(() => ({ run: null, isLoading: false })),
   useRunTarget: jest.fn(() => null),
+  // US RUN-F4 (lot F) — réalisé par répétition. Défaut vide : la section « fraction par
+  // fraction » est alors absente, ce qui est le cas de toutes les courses de ce fichier
+  // (libres ou manuelles). Les tests qui portent sur la section la surchargent.
+  useRunIntervals: jest.fn(() => ({ intervals: [], isLoading: false })),
   setRunFeedback: jest.fn().mockResolvedValue(undefined),
   setRunTerrain: jest.fn().mockResolvedValue(undefined),
   setManualRunDistance: jest.fn().mockResolvedValue(undefined),
@@ -127,6 +132,7 @@ const mockFeedback = setRunFeedback as jest.Mock;
 const mockTerrain = setRunTerrain as jest.Mock;
 const mockManualDistance = setManualRunDistance as jest.Mock;
 const mockDetect = detectAndStoreRunRecords as jest.Mock;
+const mockUseRunIntervals = useRunIntervals as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
 const replace = jest.fn();
@@ -381,5 +387,84 @@ describe('distance manuelle', () => {
 
     // La distance vient du tracker : laisser la corriger à la main la ferait diverger de la trace.
     expect(screen.queryByPlaceholderText(/running\.summary\.manualDistance/)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US RUN-F4 (lot F) — le réalisé par répétition
+// ---------------------------------------------------------------------------
+
+describe('fraction par fraction (US RUN-F4)', () => {
+  /** Une fraction réalisée, avec sa plage prévue. */
+  const fraction = (overrides: Record<string, unknown> = {}) => ({
+    phaseIndex: 0,
+    phaseKind: 'fast',
+    segmentKind: 'work',
+    rep: 1,
+    totalReps: 8,
+    plannedDistanceM: 400,
+    plannedDurationSeconds: null,
+    plannedPaceMinSPerKm: 245,
+    plannedPaceMaxSPerKm: 250,
+    actualDistanceM: 400,
+    actualDurationSeconds: 98,
+    actualPaceSPerKm: 245,
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    mockUseRun.mockReturnValue({ run: course(), isLoading: false });
+  });
+
+  it('🔴 la section est ABSENTE quand la course n’a aucune fraction', async () => {
+    // Une course libre n'a rien à dire ici : on n'affiche pas une section vide, on n'affiche rien.
+    mockUseRunIntervals.mockReturnValue({ intervals: [], isLoading: false });
+
+    await render(<RunSummaryScreen />);
+
+    expect(screen.queryByText('running.realise.title')).toBeNull();
+  });
+
+  it('liste les fractions réalisées', async () => {
+    mockUseRunIntervals.mockReturnValue({
+      intervals: [fraction(), fraction({ phaseIndex: 1, rep: 2, actualPaceSPerKm: 252 })],
+      isLoading: false,
+    });
+
+    await render(<RunSummaryScreen />);
+
+    expect(screen.getByText('running.realise.title')).toBeTruthy();
+    // `formatPaceMMSS` rend l'allure en m:ss — 245 s/km = 4:05. La valeur apparaît PLUSIEURS
+    // fois par ligne : c'est à la fois l'allure prévue (borne basse) et l'allure réalisée de la
+    // 1ʳᵉ fraction, qui l'a tenue pile. D'où `getAllByText`.
+    expect(screen.getAllByText('4:05').length).toBeGreaterThanOrEqual(2);
+    // 252 s/km = 4:12, réalisé de la 2ᵉ fraction : unique, lui.
+    expect(screen.getByText('4:12')).toBeTruthy();
+  });
+
+  it('affiche la régularité et le compte dans la plage', async () => {
+    mockUseRunIntervals.mockReturnValue({
+      intervals: [fraction(), fraction({ phaseIndex: 1, rep: 2, actualPaceSPerKm: 280 })],
+      isLoading: false,
+    });
+
+    await render(<RunSummaryScreen />);
+
+    // 1 fraction sur 2 dans la plage 245–250 : la seconde est à 280.
+    expect(screen.getByText(/running\.realise\.inRange/)).toBeTruthy();
+    expect(screen.getByText(/running\.realise\.avgPace/)).toBeTruthy();
+  });
+
+  it('🔴 une fraction sans allure mesurable affiche un tiret, pas un zéro', async () => {
+    // Cas du rattrapage silencieux : la durée par fraction n'est pas attribuable, on l'écrit
+    // `null`. Afficher « 0:00 » laisserait croire à une mesure.
+    mockUseRunIntervals.mockReturnValue({
+      intervals: [fraction({ actualDurationSeconds: null, actualPaceSPerKm: null })],
+      isLoading: false,
+    });
+
+    await render(<RunSummaryScreen />);
+
+    expect(screen.getAllByText('running.realise.noData').length).toBeGreaterThan(0);
   });
 });
