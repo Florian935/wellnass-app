@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDayFull, type WidgetSize } from '@wellness/shared';
 
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
 import { RealLifeSheet } from '@/components/real-life/RealLifeSheet';
 import { useMinimalWeekTargets } from '@/data/repositories/dashboard-repository';
 import {
@@ -40,17 +41,36 @@ export function RealLifeCard({ size = 'wide' }: { size?: WidgetSize }) {
   const [busy, setBusy] = useState(false);
 
   // ── Hors période : le point d'entrée ────────────────────────────────────────
+  //
+  // ⚠️ **C'est ce cas précis qui a fait naître la forme `row`** (US ACCUEIL-04) : une ligne de
+  // texte occupait une cellule `wide`, remplie à 26 %, plantée au milieu de la pile. Et comme
+  // c'est l'état de très loin le plus fréquent — une période « vie réelle » dure quelques semaines
+  // par an — la cellule était vide onze mois sur douze.
+  //
+  // La forme par défaut du widget est donc `row`, et l'accueil la **remonte à `wide` pendant une
+  // période** via `sizeFor` : la carte active, elle, porte deux boutons et n'entre pas dans une
+  // bande. Rien n'est réécrit dans la disposition de l'utilisateur.
   if (activePeriod === null) {
     return (
       <>
-        <WidgetFrame pad={16} onPress={() => setSheetOpen(true)}>
-          <View accessible accessibilityLabel={t('realLife.cta')} style={styles.entryRow}>
-            <Text style={[styles.entryLabel, { color: colors.textMuted }]} numberOfLines={2}>
-              {t('realLife.cta')}
-            </Text>
-            <Text style={[styles.chevron, { color: colors.textMuted }]}>›</Text>
-          </View>
-        </WidgetFrame>
+        {size === 'row' ? (
+          <RowLine
+            eyebrow={t('realLife.title')}
+            value={t('realLife.cta')}
+            muted
+            onPress={() => setSheetOpen(true)}
+            accessibilityLabel={t('realLife.cta')}
+          />
+        ) : (
+          <WidgetFrame pad={16} onPress={() => setSheetOpen(true)}>
+            <View accessible accessibilityLabel={t('realLife.cta')} style={styles.entryRow}>
+              <Text style={[styles.entryLabel, { color: colors.textMuted }]} numberOfLines={2}>
+                {t('realLife.cta')}
+              </Text>
+              <Text style={[styles.chevron, { color: colors.textMuted }]}>›</Text>
+            </View>
+          </WidgetFrame>
+        )}
         <RealLifeSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} />
       </>
     );
@@ -95,7 +115,25 @@ export function RealLifeCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   const a11yLabel = `${until}. ${remaining}. ${targetLines.join('. ')}`;
 
-  // ── Petit carré : l'essentiel, sans les actions ─────────────────────────────
+  // ── Bande / petit carré : l'essentiel, sans les actions ─────────────────────
+  //
+  // En période, `sizeFor` remonte la carte à `wide` : ce cas n'est donc **pas atteignable depuis
+  // l'accueil**. Il est traité quand même, pour que la bande reste lisible plutôt que tronquée si
+  // un autre écran venait à rendre ce widget.
+  //
+  // ⚠️ **Sans action** : `RealLifeSheet` n'est monté que dans la branche hors période (c'est le
+  // panneau de *déclaration*, il n'a aucun sens pendant), et « Prolonger »/« Reprendre » ne
+  // tiennent pas dans 79 px. Un appui qui n'ouvrirait rien serait pire que pas d'appui.
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('realLife.title')}
+        value={remaining}
+        trailing={until}
+        accessibilityLabel={a11yLabel}
+      />
+    );
+  }
   if (size === 'small') {
     return (
       <WidgetFrame pad={16}>

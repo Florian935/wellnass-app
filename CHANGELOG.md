@@ -10,6 +10,142 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 09/09/2026 (quinquies) — Refonte de l'écran d'accueil : les cinq zones (ACCUEIL-01 → 06)
+
+Branche `feature/accueil-refonte`. **Six US en un seul lot** (arbitrage de Florian : maquettes et
+compte rendu validés, recette groupée à la fin). Origine : analyse en cinq passes du 09/09/2026,
+**20 défauts** référencés au fichier et à la ligne — `design/accueil-refonte/Refonte-accueil-analyse.pdf`
+(10 pages) et canvas de maquettes « Accueil FitTrio » (6 planches).
+
+Le constat de départ : l'accueil n'était pas mal dessiné, il n'était pas **dessiné**. C'était le
+conteneur générique des hubs (`WidgetGrid`) appliqué à l'écran d'atterrissage, sans rien d'épinglé —
+alors que les deux hubs pilier ont, eux, une carte d'action garantie. Tout y était déplaçable et
+masquable, donc rien n'y était certain d'être vu.
+
+### Ajouté
+
+- **Zone 1 — la carte « maintenant »** (`NowCard`, ACCUEIL-01) : une carte épinglée hors grille,
+  un seul sujet, la prochaine action. Décision par **table ordonnée** pure et testée
+  (`resolveNowAction`, `NOW_ACTION_ORDER` — patron d'`INSIGHT_ORDER`) : séance/course en cours →
+  planifiée du jour avec son heure → repas dû → pesée → check-in du soir → compte rendu → repli.
+- **Zone 0 — l'en-tête utile** (`HomeHeader`, ACCUEIL-02) : date en clair + accroche contextuelle
+  dérivée de la **même** décision que la carte, donc incapable de la contredire.
+- **Zone 2 — les actions rapides** (`QuickActions`, ACCUEIL-03) : quatre pastilles filtrées par
+  piliers actifs — Repas (au repas de l'heure) · Course · Pesée · Bien-être.
+- **Zone 4 — le pied « la suite »** (`UpNext`, ACCUEIL-05) : les trois prochaines occurrences
+  planifiées, tous piliers, **en texte** et non en widgets.
+- **La forme de grille `row`** (2 × ½ case) et la **résolution verticale doublée** (ACCUEIL-04) :
+  `small` 1×2, `wide` 2×2, `large` 2×4, `row` 2×1.
+- **Deux modules purs dans `packages/shared`** : `day-moment.ts` (`dayMoment`, `mealForHour`) et
+  `now-action.ts` (`resolveNowAction`, `sortTrainingsByTime`, `hasDoneSomething`) — 32 tests.
+- **`grid-geometry.ts`** : la géométrie pixel de la grille, en **source unique**.
+- **`WidgetSkeleton`** (réserve la cellule pendant le chargement) et **`RowLine`** (la déclinaison
+  `row`, écrite une fois au lieu de huit).
+- **`useSyncRefresh`** : le **premier `RefreshControl` de l'application**, branché sur la reprise de
+  synchronisation PowerSync.
+- **Retour du widget `weight`** sur l'accueil, restauré depuis l'historique (`c83afad^`) — il
+  figurait dans `navigation-ux.md` §3.1 et dans la maquette validée depuis l'origine.
+- **`{ kind: 'home-pinned' }`** dans la table des destinations : un signal peut désormais être
+  « toujours sur l'accueil, mais épinglé hors grille ».
+- **`home-screen.test.tsx`** — 9 tests sur le vrai écran monté. L'accueil était à **0 %** de
+  couverture d'écran, alors que les hubs Muscu et Nutrition avaient chacun le leur.
+- **`NowCard.test.tsx`** — 16 tests, en remplacement de `TodaySessionCard.test.tsx`.
+- **Amendement d'ADR-007 §2** : le plafond du Tier 0 porte sur la **grille**, pas sur le chrome de
+  l'écran.
+
+### Modifié
+
+- **Fin de `uniformSize` sur l'accueil** : les huit formes par défaut sont déclarées une par une.
+  Elles valaient **toutes** `'wide'`, ce qui donnait cinq à six rectangles strictement identiques
+  empilés — aucune hiérarchie, et le point d'entrée « vie réelle » aussi lourd à l'œil que la
+  nutrition du jour.
+- **`today-session` quitte le registre**, promu en zone 1 épinglée. Le registre **reste à 8** :
+  échange exact avec le retour de `weight`, donc `MAX_HOME_WIDGETS` **inchangé** — le cliquet posé
+  par INSIGHTS-02 n'est pas consommé (l'analyse recommandait 8 → 9 ; la promotion l'a rendu inutile).
+- **Carte nutrition densifiée à surface constante** : les trois lignes « libellé ⋯ valeur » —
+  qui redisaient ce que l'anneau montrait déjà — cèdent la place aux **trois macros et leur
+  progression**. 51 % → 85 % de remplissage, sans agrandir la cellule.
+- **Carte Régularité** : le bandeau de semaine remonte de `large` à `wide` (50 % → 90 %), et la
+  carte devient **tappable** vers `/review` — elle était un cul-de-sac, et le bilan hebdomadaire
+  n'avait qu'un seul point d'entrée, enfoui dans Réglages › Suivi.
+- **`steps` passe en `small`** et partage sa ligne avec `weight` : 182 px de hauteur d'écran rendus.
+- **`real-life` passe en `row`** hors période, avec une **forme effective** (`sizeFor`) qui la
+  remonte à `wide` pendant une période — sans réécrire la disposition de l'utilisateur.
+- **Les huit widgets déclinent désormais quatre formes** au lieu de trois.
+- **`useTodaySession` remonte `scheduled_time`** ; **`useTodayRunSession` remonte l'heure et le nom**.
+- **Cycle des formes en édition** : `row → small → wide → large → row`.
+
+### Corrigé
+
+- 🔴 **La séance de course du jour n'apparaissait jamais sur l'accueil.** Le widget appelait
+  `useTodaySession('strength')` avec le pilier **câblé en dur** : un coureur lisait « Rien de prévu
+  aujourd'hui » le jour de sa sortie longue. Le widget d'écran d'accueil **Android**, lui, balayait
+  correctement les deux piliers — le tableau de bord *hors* de l'app était donc plus juste que
+  celui *dedans*.
+- 🔴 **Le sélecteur d'aliments ouvrait toujours le petit-déjeuner** (`meal: 'breakfast'` en dur),
+  à 20 h comme à 7 h. Le geste le plus fréquent du pilier nutrition était systématiquement à
+  reprendre. Corrigé par `mealForHour`.
+- 🔴 **L'heure d'une séance planifiée n'était affichée nulle part**, bien que saisissable et
+  stockée depuis HORAIRE-01 — et présente dans la maquette validée (« SÉANCE DU JOUR · 18:30 »).
+  Aucun hook ne la remontait.
+- **Le nom de l'application occupait le titre H1** de l'écran le plus ouvert (Bricolage 28 px
+  extra-bold), pour une information que l'utilisateur possède déjà. Remplacé par la date et
+  l'accroche.
+- **Le salut était figé** dans le JSON i18n (« Bonjour 👋 » à 22 h) : il suit désormais le moment.
+- **L'écran sautait à chaque ouverture.** Les huit widgets faisaient `if (isLoading) return null` ;
+  l'accueil était vide puis se remplissait carte par carte, et `compactLayout` recompactant à
+  chaque arrivée, la grille se réagençait sous le doigt — au moment du premier contact, chaque
+  matin. Les squelettes réservent la cellule.
+- **La géométrie de la grille vivait en double** (`cellRect` dans `WidgetGrid`, `rectOf` dans
+  `SortableWidgetGrid`) : deux formules identiques, donc deux à corriger. Le passage en demi-cases
+  n'en aurait corrigé qu'une, et le symptôme aurait été un widget qui se pose une demi-cellule trop
+  bas au glisser-déposer.
+- **`WeightCard` lisait l'horloge dans le corps du composant** (`new Date()` hors hook) — le piège
+  React Compiler documenté dans `useTodayKey`, invisible hors build release. Remplacé par
+  `useWindowStartKey`.
+- **Le pas de déplacement du glisser-déposer** est désormais distinct sur les deux axes.
+- **Aucun pull-to-refresh dans toute l'application** : il n'existait pas un seul `RefreshControl`.
+
+### Supprimé
+
+- **`TodaySessionCard.tsx`** et son test — remplacés par `NowCard`. Le widget n'a pas disparu du
+  produit : il est **promu** en zone épinglée, ce que sa destination `home-pinned` déclare et
+  qu'un test vérifie.
+
+### Technique / Notes
+
+- ⚠️ **Aucune migration de données, et c'est prouvé par test.** Les dispositions enregistrées se
+  migrent **seules** : `resolveScreenLayout` conserve l'ordre des lignes stockées puis
+  `compactVertical` les **recalcule** dans la nouvelle unité (un layout `[0,1,2,3]` de `wide`
+  ressort en `[0,2,4,6]`). **4 tests** couvrent cette migration implicite — sans eux la garantie ne
+  serait qu'une intention de docstring, et le symptôme serait des widgets superposés chez tous ceux
+  qui avaient personnalisé leur accueil. C'est le critère n° 1 de la recette.
+- ⚠️ **La demi-case vaut `(colW - gap) / 2` = 79 px**, pas `colW / 2`. C'est cette soustraction qui
+  fait que deux `row` empilées pavent exactement un `wide` (79 + 12 + 79 = 170) ; sans elle, chaque
+  paire de lignes dériverait d'une demi-gouttière.
+- **Aucune sync rule à déployer, aucune dépendance native** → recettable sur un APK reconstruit
+  depuis ce lot, sans nouveau dev build EAS.
+- 📌 **Ce que ce lot rend visible pour la première fois** : `useMealDeadline`, `useWeighInDeadline`
+  et `useSessionDeadline` (NUTR-F1, MUSC-F8) existaient et ne servaient **qu'à programmer des
+  notifications**. L'app savait, à l'heure près et par apprentissage, ce qu'il restait à faire
+  aujourd'hui — sans jamais le montrer à l'ouverture.
+- ⚠️ **Une affirmation de l'analyse était fausse et a été corrigée avant de coder** : le halo
+  d'accent n'est **pas** appliqué à toutes les cartes. `hasHaloFor` n'en pose que sur ~1 widget sur
+  3 (roadmap 7.22), avec exactement le raisonnement que l'analyse proposait. `WidgetFrame` avait été
+  lu sans lire `AccentHalo`. Rien n'a été touché de ce côté.
+- **Écart de périmètre assumé** : la ligne « objectif personnel » du pied de page, présente sur la
+  maquette validée, n'est pas livrée. Un `PersonalGoal` ne porte ni titre ni libellé — la phrase
+  lisible est composée par la carte de `/goals` ; en écrire une seconde version pour une ligne de
+  13 px serait la duplication qu'ADR-007 §3 proscrit. À reprendre quand ce libellé sera une brique.
+- **41 tests existants mis à jour**, tous sur des changements voulus : 13 codaient des numéros de
+  ligne de grille en dur, 28 vérifiaient le `return null` de chargement. Leur **intention** a été
+  conservée (« aucun chiffre provisoire ») plutôt que leur assertion littérale.
+- Tests : **3 121** Vitest (+32) · **2 721** Jest (+31). Typecheck et lint sans erreur ni
+  avertissement.
+- ⚠️ **Hors périmètre, à traiter séparément** : les **36 tests de
+  `apps/admin/src/screens/ExerciseEditScreen.test.tsx`** échouent — vérifié par `git stash`, ils
+  échouaient **déjà sur `dev` sans ce lot**. Régression préexistante du back-office.
+
 ## 09/09/2026 (quater) — RUN-F4 : traductions de séance, le lot est complet
 
 Branche `feature/runf4-traductions-seances`. Dernier point ouvert de la spec §4.

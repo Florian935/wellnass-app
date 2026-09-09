@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8f3f22; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+    .disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+    /* flex-shrink: 0 — sans lui les formes se compriment et n'illustrent plus leur propre cote */
+    .shape { position: relative; flex-shrink: 0; border-radius: 22px; background: #fffaf2; border: 1px solid #ece0cd; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: 16px; }
+    .sname { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .4px; color: #33291f; }
+    .sdim { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; margin-top: 3px; }
+    .badge { position: absolute; top: 10px; right: 12px; border-radius: 999px; background: rgba(177,79,43,.14); color: #8f3f22; font-weight: 700; font-size: 9.5px; padding: 3px 8px; letter-spacing: .3px; }
+    .th { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 9.5px; letter-spacing: .5px; text-transform: uppercase; color: #786a59; padding: 0 10px 8px 0; text-align: left; vertical-align: bottom; }
+    .td { font-size: 12px; color: #33291f; padding: 9px 10px 9px 0; border-top: 1px solid #ece0cd; vertical-align: middle; line-height: 1.4; }
+    .tdn { font-weight: 600; font-size: 12.5px; color: #33291f; padding: 9px 10px 9px 0; border-top: 1px solid #ece0cd; vertical-align: middle; }
+    .num { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; }
+  </style>
+</helmet>
+
+<div style="width: 900px; height: 740px; background: #f7eede; box-sizing: border-box; padding: 32px 34px; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <div style="margin-bottom: 20px; flex-shrink: 0;">
+    <div class="eyebrow" style="margin-bottom: 6px;">Refonte de l&#39;accueil · grille</div>
+    <div class="disp" style="font-weight: 800; font-size: 30px; letter-spacing: -.9px; color: #33291f;">Densifier, ce n&#39;est pas agrandir</div>
+    <div style="font-size: 13.5px; color: #786a59; margin-top: 6px; max-width: 780px; line-height: 1.5;">Les cellules gardent leur taille : on y met plus d&#39;information. Deux widgets descendent en petit carré pour partager une ligne, et l&#39;on ajoute une forme pour ce qui tient en une ligne — au lieu de lui donner une cellule pleine remplie à 26 %.</div>
+  </div>
+
+  <div style="display: flex; gap: 34px; flex: 1; min-height: 0;">
+
+    <!-- formes à l&#39;échelle réelle du cadre 392 (colW = 170) -->
+    <div style="width: 352px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;">
+
+      <div class="shape" style="height: 79px;">
+        <div class="badge">Nouvelle</div>
+        <div class="sname">row</div>
+        <div class="sdim">352 &times; 79 &middot; une demi-case de haut</div>
+      </div>
+
+      <div class="shape" style="height: 170px;">
+        <div class="sname">wide</div>
+        <div class="sdim">352 &times; 170 &middot; 2 &times; 1 case</div>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="height: 6px; border-radius: 4px; background: #eadcc6; overflow: hidden;"><div style="height: 100%; width: 85%; background: #b14f2b; border-radius: 4px;"></div></div>
+          <div class="sdim" style="margin: 0;">Nutrition : 85 % rempli après densification, contre 51 % aujourd&#39;hui</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-shrink: 0;">
+        <div class="shape" style="width: 170px; height: 170px;">
+          <div class="sname">small</div>
+          <div class="sdim">170 &times; 170</div>
+        </div>
+        <div class="shape" style="width: 170px; height: 170px;">
+          <div class="sname">small</div>
+          <div class="sdim">170 &times; 170</div>
+        </div>
+      </div>
+
+      <div style="font-size: 11.5px; color: #786a59; line-height: 1.5; flex-shrink: 0;">Deux <span class="mono" style="font-size: 11px;">small</span> côte à côte occupent la hauteur d&#39;un seul <span class="mono" style="font-size: 11px;">wide</span>. La forme <span class="mono" style="font-size: 11px;">large</span> (352 &times; 352) reste disponible mais ne devient la valeur par défaut d&#39;aucun widget : à 7 h du matin, un grand carré nutrition serait vide.</div>
+    </div>
+
+    <!-- tableau des tailles par défaut -->
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th class="th" style="width: 108px;">Widget</th>
+            <th class="th" style="width: 72px;">Auj.</th>
+            <th class="th">Proposé</th>
+            <th class="th" style="width: 132px;">Gain</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tdn">Séance du jour</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td">Promue en zone 1, épinglée hors grille</td>
+            <td class="td">Priorité garantie</td>
+          </tr>
+          <tr>
+            <td class="tdn">Nutrition</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td"><span class="num">wide</span> + les macros dans la cellule</td>
+            <td class="td"><span class="num" style="color: #786a59;">51 %</span> <span class="num" style="color: #66714b;">&rarr; 85 %</span></td>
+          </tr>
+          <tr>
+            <td class="tdn">Régularité</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td"><span class="num">wide</span> + bandeau de semaine, et tappable</td>
+            <td class="td"><span class="num" style="color: #786a59;">50 %</span> <span class="num" style="color: #66714b;">&rarr; 90 %</span></td>
+          </tr>
+          <tr>
+            <td class="tdn">Pas</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td"><span class="num">small</span> — anneau et total suffisent</td>
+            <td class="td">Partage sa ligne :<br><span class="num" style="color: #66714b;">182 px rendus</span></td>
+          </tr>
+          <tr>
+            <td class="tdn">Poids</td>
+            <td class="td"><span class="num" style="color: #b23b2e;">absent</span></td>
+            <td class="td"><span class="num">small</span> — chiffre, tendance 7 j, courbe</td>
+            <td class="td">Revient sans coûter une ligne</td>
+          </tr>
+          <tr>
+            <td class="tdn">Vie réelle</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td"><span class="num">row</span> — une ligne, une hauteur de ligne</td>
+            <td class="td"><span class="num" style="color: #66714b;">91 px rendus</span></td>
+          </tr>
+          <tr>
+            <td class="tdn">Insights</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td">Inchangé — conditionnel, il ne paraît que s&#39;il a quelque chose à dire</td>
+            <td class="td"><span class="num" style="color: #786a59;">&mdash;</span></td>
+          </tr>
+          <tr>
+            <td class="tdn">Cycle · Parcours</td>
+            <td class="td"><span class="num">wide</span></td>
+            <td class="td">Inchangés — opt-in strict, et fenêtre de 7 jours</td>
+            <td class="td"><span class="num" style="color: #786a59;">&mdash;</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: auto; display: flex; gap: 12px; flex-shrink: 0;">
+        <div style="flex: 1; border-radius: 16px; background: #f7ead6; border: 1px solid #e9cfa0; padding: 13px 15px;">
+          <div class="eyebrow" style="color: #8a6419; margin-bottom: 5px;">Le coût technique de la forme row</div>
+          <div style="font-size: 12px; color: #33291f; line-height: 1.5;">La grille compte en cases carrées (<span class="mono" style="font-size: 11px;">cellH = colW</span>). Une demi-hauteur impose de doubler la résolution verticale — <span class="mono" style="font-size: 11px;">small {1,2}</span>, <span class="mono" style="font-size: 11px;">wide {2,2}</span>, <span class="mono" style="font-size: 11px;">large {2,4}</span>, <span class="mono" style="font-size: 11px;">row {2,1}</span> — et de migrer les <span class="mono" style="font-size: 11px;">row</span> déjà stockées (&times; 2). Le parseur sait déjà migrer un layout : <span class="mono" style="font-size: 11px;">coerceSize</span> traduit <span class="mono" style="font-size: 11px;">full &rarr; wide</span> depuis l&#39;origine.</div>
+        </div>
+        <div style="width: 214px; border-radius: 16px; background: #fffaf2; border: 1px solid #ece0cd; padding: 13px 15px;">
+          <div class="eyebrow" style="margin-bottom: 5px;">Registre</div>
+          <div class="disp" style="font-weight: 800; font-size: 34px; letter-spacing: -1.2px; color: #33291f; line-height: 1;">8 <span style="font-size: 15px; color: #786a59; letter-spacing: 0;">&rarr; 9</span></div>
+          <div style="font-size: 11.5px; color: #786a59; line-height: 1.45; margin-top: 5px;">Le retour du poids est le seul <span class="mono" style="font-size: 11px;">+1</span>. Il faudra donc relever <span class="mono" style="font-size: 11px;">MAX_HOME_WIDGETS</span> — l&#39;arbitrage conscient que ce test existe pour imposer.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

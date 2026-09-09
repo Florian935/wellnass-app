@@ -47,7 +47,14 @@ jest.mock('@/data/repositories/profile-repository', () => ({
 
 // `useTodayKey` lit l'horloge et s'abonne à `AppState` : figé, sinon le paramètre `date` du
 // deep-link changerait de valeur à minuit et le test tomberait une nuit sur deux.
-jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: () => '2026-08-11' }));
+//
+// `useTodayDate` est figé pour la même raison, et à une heure choisie : depuis ACCUEIL-02, la
+// carte ouvre le sélecteur sur **le repas de l'heure courante** (`mealForHour`). Sans horloge
+// fixe, ce test changerait de repas attendu selon l'heure d'exécution de la CI.
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: () => '2026-08-11',
+  useTodayDate: () => new Date(2026, 7, 11, 9, 0, 0), // 9 h → petit-déjeuner
+}));
 
 jest.mock('@/components/widgets/primitives', () => {
   const { Text, View } = require('react-native');
@@ -177,13 +184,26 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('chargement', () => {
-  it.each(TAILLES)('🔴 ne rend RIEN tant que la donnée charge (%s)', async (size) => {
+  it.each(TAILLES)('🔴 n’affiche AUCUN chiffre tant que la donnée charge (%s)', async (size) => {
     await afficher(size, { isLoading: true, kcal: 0, hasProfile: false });
 
-    // Un « 0 kcal » affiché une fraction de seconde à chaque ouverture de l'accueil se lit comme
-    // « tu n'as rien mangé aujourd'hui ». Le vide franc est moins faux qu'un zéro provisoire.
-    expect(screen.queryByText('home.nutrition.eyebrow')).toBeNull();
+    // L'exigence n'a pas changé : un « 0 kcal » affiché une fraction de seconde à chaque ouverture
+    // de l'accueil se lit comme « tu n'as rien mangé aujourd'hui ». Aucun chiffre provisoire.
     expect(screen.queryByText('0')).toBeNull();
+  });
+
+  it.each(TAILLES)('réserve sa cellule au lieu de disparaître (%s)', async (size) => {
+    await afficher(size, { isLoading: true, kcal: 0, hasProfile: false });
+
+    // ⚠️ **Changement assumé (US ACCUEIL-04)** : le composant rendait `null`. Sur un accueil de
+    // six widgets qui font tous de même, l'écran était vide à l'ouverture puis les cartes
+    // arrivaient une à une — et comme `WidgetGrid` recompacte à chaque changement
+    // (`compactLayout`), la grille se réagençait sous le doigt à chaque arrivée. L'écran sautait,
+    // au moment du premier contact, chaque matin.
+    //
+    // Un squelette réserve la cellule : la disposition est stable dès le premier rendu. Le
+    // sur-titre est le seul texte affiché — il suffit à reconnaître la carte qui arrive.
+    expect(screen.getByText('home.nutrition.eyebrow')).toBeTruthy();
   });
 });
 
@@ -277,16 +297,35 @@ describe('rectangle', () => {
     expect(screen.getByText('anneau:1')).toBeTruthy();
   });
 
-  it('détaille consommé et objectif', async () => {
-    await afficher('wide', { kcal: 1200, effectiveTarget: 2200 });
+  it('porte les MACROS dans la cellule, à surface inchangée', async () => {
+    // ⚠️ **Changement assumé (US ACCUEIL-04)** : la forme `wide` affichait l'anneau et trois
+    // lignes « libellé ⋯ valeur » (Consommé / Objectif / Sport), soit ~51 % de la cellule remplie
+    // — et ces trois lignes redisaient ce que l'anneau montrait déjà.
+    //
+    // La même place porte désormais les trois macros et leur progression, information qu'il
+    // fallait auparavant aller chercher dans la forme `large` ou sur l'écran nutrition. La
+    // cellule n'a pas grandi : c'est ce que « densifier » veut dire ici.
+    await afficher('wide', { kcal: 1200, effectiveTarget: 2200, target: 2200 });
+
+    expect(screen.getByText('nutrition.macros.protein')).toBeTruthy();
+    expect(screen.getByText('nutrition.macros.carbs')).toBeTruthy();
+    expect(screen.getByText('nutrition.macros.fat')).toBeTruthy();
+  });
+
+  it('retombe sur consommé / objectif quand aucune cible macro n’est calculable', async () => {
+    // Sans objectif de base, `trainingDayMacroGrams` ne peut rien produire : mieux vaut deux
+    // lignes justes qu'une grille de barres sans référence.
+    await afficher('wide', { kcal: 1200, effectiveTarget: null, target: null });
 
     expect(screen.getByText('home.nutrition.consumed')).toBeTruthy();
-    expect(screen.getByText('home.nutrition.kcalValue:{"kcal":2200}')).toBeTruthy();
+    expect(screen.queryByText('nutrition.macros.protein')).toBeNull();
   });
 
   it('affiche le bonus sport UNIQUEMENT un jour d’entraînement avec bonus', async () => {
     await afficher('wide', { isTrainingDay: true, trainingBonus: 300, effectiveTarget: 2300 });
-    expect(screen.getByText('+300')).toBeTruthy();
+    // Format court depuis ACCUEIL-04 : la place laissée par les trois lignes va aux macros, le
+    // bonus se réduit donc à une mention en tête de cellule.
+    expect(screen.getByText('home.nutrition.bonusShort:{"kcal":300}')).toBeTruthy();
   });
 
   it.each([

@@ -33,11 +33,18 @@ import {
 } from '@wellness/shared';
 import { updateSettings, useSettings } from './settings-repository';
 
-/** Cycle des 3 formes pour le sélecteur d'édition : small → wide → large → small. */
+/**
+ * Cycle des formes pour le sélecteur d'édition : row → small → wide → large → row.
+ *
+ * `row` entre dans le cycle par le bas (US ACCUEIL-04) : c'est la plus petite forme, et l'ordre du
+ * cycle suit la taille croissante pour que des appuis répétés agrandissent, puis reviennent au
+ * plus compact — comportement qu'un utilisateur peut anticiper sans l'apprendre.
+ */
 const SIZE_CYCLE: Record<WidgetSize, WidgetSize> = {
+  row: 'small',
   small: 'wide',
   wide: 'large',
-  large: 'small',
+  large: 'row',
 };
 
 /**

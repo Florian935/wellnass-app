@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import type { WidgetSize } from '@wellness/shared';
 
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
 import { InsightCard, resolveInsightSubject } from '@/components/insights/InsightCard';
 import { useSharedInsights } from '@/data/repositories/insights-context';
 import { fontFamily } from '@/theme/fonts';
@@ -48,6 +49,20 @@ export function InsightsCard({ size = 'wide' }: { size?: WidgetSize }) {
   const open = () => router.push('/insights');
   const a11yLabel = `${t('insights.widget.title')}. ${title}`;
   const more = insights.length - 1;
+
+  // ── Bande ──────────────────────────────────────────────────────────────────
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('insights.widget.title')}
+        value={title}
+        trailing={more > 0 ? `+${more}` : undefined}
+        trailingTone="accent"
+        onPress={open}
+        accessibilityLabel={a11yLabel}
+      />
+    );
+  }
 
   // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {

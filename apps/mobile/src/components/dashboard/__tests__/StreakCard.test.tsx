@@ -200,10 +200,10 @@ describe('StreakCard — smoke test', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 3. État de chargement (isLoading === true) → null
+  // 3. État de chargement (isLoading === true) → squelette
   // -------------------------------------------------------------------------
 
-  it('isLoading=true : le composant retourne null (arbre vide)', async () => {
+  it('isLoading=true : un squelette, sans jamais afficher une série de 0', async () => {
     (useStreakData as jest.Mock).mockReturnValueOnce({
       current: 0,
       activeToday: false,
@@ -211,9 +211,16 @@ describe('StreakCard — smoke test', () => {
       isLoading: true,
     });
 
-    const { toJSON } = await render(<StreakCard />);
+    const { toJSON, queryByText } = await render(<StreakCard />);
 
-    // Le composant retourne null quand isLoading est vrai.
-    expect(toJSON()).toBeNull();
+    // ⚠️ **Changement assumé (US ACCUEIL-04)** : le composant rendait `null`. Sur un accueil dont
+    // les six widgets faisaient tous de même, l'écran était vide à l'ouverture puis se remplissait
+    // carte par carte, en se réagençant à chaque arrivée.
+    expect(toJSON()).not.toBeNull();
+
+    // Ce qui compte autant : le squelette ne montre **aucun chiffre**. Afficher « 0 jour
+    // d'affilée » une fraction de seconde à quelqu'un qui tient une série de 40 jours serait le
+    // pire message possible de l'écran.
+    expect(queryByText('0')).toBeNull();
   });
 });

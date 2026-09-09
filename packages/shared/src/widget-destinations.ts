@@ -83,8 +83,17 @@ export const HOME_WIDGET_IDS_WITH_DESTINATION: ReadonlyArray<HomeWidgetIdWithDes
 // ---------------------------------------------------------------------------
 
 export type WidgetDestination =
-  /** Conservé sur l'accueil. */
+  /** Conservé sur l'accueil, dans la grille personnalisable. */
   | { kind: 'home' }
+  /**
+   * **Promu** : toujours sur l'accueil, mais en zone épinglée hors grille (US ACCUEIL-01).
+   *
+   * Distinct de `home` à dessein, et pas seulement par cosmétique : un widget `home` est
+   * déplaçable et **masquable** par l'utilisateur, une zone épinglée est garantie à l'écran. Le
+   * signal n'a donc pas seulement survécu, il est mieux exposé qu'avant — et `KEPT_ON_HOME`, qui
+   * dérive de `kind === 'home'`, reste exactement égal au registre des widgets.
+   */
+  | { kind: 'home-pinned'; zone: string }
   /**
    * Devenu une carte de l'écran « Insights ». **Réservé aux alertes** : un signal qui ne se
    * déclenche qu'en cas de problème n'a jamais eu de présence permanente à préserver.
@@ -107,8 +116,10 @@ export type WidgetDestination =
  * réponse dans l'app.
  */
 export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDestination> = {
-  // ── Conservés (7) ─────────────────────────────────────────────────────────
-  'today-session': { kind: 'home' },
+  // ── Conservés sur l'accueil ───────────────────────────────────────────────
+  // US ACCUEIL-01 (09/09/2026) : promu de la grille à la **zone 1 épinglée**. Il n'est plus dans
+  // `HOME_WIDGET_IDS` — non pas parce qu'il a été retiré, mais parce qu'il n'est plus un widget.
+  'today-session': { kind: 'home-pinned', zone: 'Accueil › carte « maintenant » (zone 1)' },
   'nutrition-summary': { kind: 'home' },
   streak: { kind: 'home' },
   // Conservé aussi parce qu'il est le seul accès à `/steps` : le retirer créait un 4ᵉ orphelin.
@@ -143,11 +154,12 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDest
     // Et non le hub course, qui montre la *dernière course*.
     path: 'Course › Historique › Stats (période « semaine » par défaut)',
   },
-  weight: {
-    kind: 'screen',
-    route: '/measurements',
-    path: 'Muscu › Progression › Mensurations',
-  },
+  // ── Revenu sur l'accueil (US ACCUEIL-04, 09/09/2026) ──────────────────────
+  // INSIGHTS-02 l'avait rangé dans « Muscu › Progression › Mensurations ». Cette destination était
+  // valable, mais elle contredisait `navigation-ux.md` §3.1 — qui liste le poids parmi les **quatre
+  // blocs** de l'accueil — et la maquette validée, qui le montrait en tuile avec sa tendance 7 jours.
+  // L'écran `/measurements` reste évidemment là ; c'est le widget qui revient.
+  weight: { kind: 'home' },
   'record-recent': {
     kind: 'screen',
     route: '/strength',

@@ -41,6 +41,8 @@ import {
 } from '@wellness/shared';
 
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
+import { WidgetSkeleton } from '@/components/widgets/WidgetSkeleton';
 import {
   useMenstrualDailyLogs,
   useMenstrualPeriods,
@@ -99,7 +101,7 @@ export function CycleCard({ size = 'wide' }: { size?: WidgetSize }) {
     };
   }, [periods, todayKey]);
 
-  if (isLoading) return null;
+  if (isLoading) return <WidgetSkeleton size={size} label={t('cycle.title')} />;
 
   const open = () => router.push('/cycle');
 
@@ -138,6 +140,18 @@ export function CycleCard({ size = 'wide' }: { size?: WidgetSize }) {
       </View>
     </>
   );
+
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('cycle.title')}
+        value={dayLabel ?? phaseLabel ?? ''}
+        trailing={dayLabel != null ? (phaseLabel ?? undefined) : undefined}
+        onPress={open}
+        accessibilityLabel={a11y}
+      />
+    );
+  }
 
   if (size === 'small') {
     return (

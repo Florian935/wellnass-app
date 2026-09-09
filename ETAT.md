@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 220 livré · 2 partiel · 2 à faire (sur 230)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 226 livré · 2 partiel · 2 à faire (sur 236)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -16,6 +16,12 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
+| **ACCUEIL-01** — La carte « maintenant » — l'accueil a enfin une priorité | `recette` | `feature/accueil-refonte` | [7.23] |
+| **ACCUEIL-02** — En-tête utile & moment de la journée — et la fin du petit-déjeuner à 20 h | `recette` | `feature/accueil-refonte` | [7.24] |
+| **ACCUEIL-03** — Actions rapides — les gestes du quotidien à un tap | `recette` | `feature/accueil-refonte` | [7.25] |
+| **ACCUEIL-04** — Densification de la grille — la forme « row », le retour du poids et les squelettes | `recette` | `feature/accueil-refonte` | [7.26] |
+| **ACCUEIL-05** — Le pied « la suite » et le tirer-pour-rafraîchir | `recette` | `feature/accueil-refonte` | [7.27] |
+| **ACCUEIL-06** — Amendement d'ADR-007 & premier test d'écran de l'accueil | `recette` | `feature/accueil-refonte` | [7.28] |
 | **ACTIV-01** — Parcours « 7 jours pour démarrer » | `recette` | `feature/activ01-parcours-7-jours` | [1.27] |
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **ALLURE-01** — La courbe d'allure — ce que ta façon de courir dit | `recette` | `feature/allure01-courbe-allure` | [5.35] |
@@ -76,7 +82,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **55 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **61 US attendent une recette humaine** (ACCUEIL-01, ACCUEIL-02, ACCUEIL-03, ACCUEIL-04, ACCUEIL-05, ACCUEIL-06, ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -97,9 +103,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/recettes-chemins-corrompus` (modifications non commitées) |
-| Commits | 1192 · `main` a **1189** commits de retard sur `dev` |
-| Specs d'US | 135 au total — 79 clôturées, 56 en cours |
+| Branche courante | `feature/accueil-refonte` (modifications non commitées) |
+| Commits | 1193 · `main` a **1190** commits de retard sur `dev` |
+| Specs d'US | 141 au total — 79 clôturées, 62 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -109,11 +115,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8db76eb` fix(recettes): repare les chemins corrompus de l'etape 0c
 - `ee2fe99` docs(recettes): l'APK doit venir de 421e948 ou plus recent
 - `421e948` feat(runf4): ecriture des traductions de seance — le lot est complet
 - `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
 - `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
-- `2550751` fix(runf4): corrige la regression de test du resume, coche les 7 migrations
 
 ---
 

@@ -131,6 +131,14 @@ export type TodaySessionState =
         orderIndex: number;
         /** Nombre d'exercices planifiés. */
         exerciseCount: number;
+        /**
+         * Heure locale `HH:MM` de l'occurrence (HORAIRE-01), ou `null` si elle n'en porte pas.
+         *
+         * Ajouté par ACCUEIL-01. L'heure était saisissable et stockée depuis HORAIRE-01, mais
+         * **n'était remontée par aucun hook** : la maquette validée de l'accueil annonçait
+         * pourtant « SÉANCE DU JOUR · 18:30 » depuis l'origine.
+         */
+        scheduledTime: string | null;
         /** Nom du programme (traduit langue courante → repli fr). */
         programName: string | null;
       };
@@ -163,6 +171,7 @@ type TodayOccurrenceDbRow = {
   id: string;
   session_id: string;
   status: string;
+  scheduled_time: string | null;
   session_name: string | null;
   order_index: number;
   exercise_count: number;
@@ -175,7 +184,7 @@ type TodayOccurrenceDbRow = {
  * `done` le même jour. Paramètres : `[lang, userId, pillar, todayKey]`.
  */
 export const SELECT_TODAY_OCCURRENCES = `
-  SELECT ps.id, ps.session_id, ps.status, s.name AS session_name, s.order_index,
+  SELECT ps.id, ps.session_id, ps.status, ps.scheduled_time, s.name AS session_name, s.order_index,
          (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count,
          COALESCE(tl.name, tfr.name) AS program_name
   FROM planned_sessions ps
@@ -252,6 +261,7 @@ export function useTodaySession(pillar: Pillar): TodaySessionState {
         name: planned.session_name,
         orderIndex: planned.order_index,
         exerciseCount: planned.exercise_count,
+        scheduledTime: planned.scheduled_time,
         programName: planned.program_name,
       },
       isLoading,

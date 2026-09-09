@@ -21,8 +21,16 @@ import type { Pillar } from './pillar';
 // Formes & hubs
 // ---------------------------------------------------------------------------
 
-/** Forme d'un widget : petit carré (½ largeur) / rectangle / grand carré (pleine largeur). */
-export type WidgetSize = 'small' | 'wide' | 'large';
+/**
+ * Forme d'un widget : bande (pleine largeur, demi-hauteur) / petit carré (½ largeur) /
+ * rectangle / grand carré (pleine largeur).
+ *
+ * ⚠️ **`row` est arrivée avec ACCUEIL-04** et c'est la seule forme qui ne fasse pas une hauteur
+ * entière de case. Motif : la carte « vie réelle » hors période affiche **une ligne de texte** et
+ * occupait une cellule `wide` remplie à 26 %. Il n'existait aucune forme pour « ce qui tient en une
+ * ligne », donc personne ne pouvait la demander.
+ */
+export type WidgetSize = 'row' | 'small' | 'wide' | 'large';
 
 /** Hubs qui hébergent une grille de widgets. */
 export const WIDGET_SCREENS = ['home', 'strength', 'running'] as const;
@@ -52,12 +60,23 @@ export const HOME_WIDGET_IDS = [
   // `cycle` ne s'affichent jamais tous ensemble par défaut. Le compte **visible** typique est donc de
   // 5 (les 4 permanents + `real-life`) à 6 (quand `insights` a quelque chose à dire) — dans la
   // fourchette 4-6 de l'ADR.
-  'today-session',
+  // ── US ACCUEIL-01/04 (09/09/2026) — `today-session` n'est plus un widget ─────────────────────────
+  // Il est devenu la **zone 1 épinglée** de l'accueil (`NowCard`), hors grille : la séance du jour
+  // est l'action du moment, pas une tuile qu'on peut masquer ou reléguer en bas. Sa destination le
+  // déclare (`{ kind: 'home-pinned' }`) et un test le vérifie — il n'a donc pas disparu, il a été
+  // promu. La place ainsi libérée accueille le retour de `weight` : le registre **reste à 8**, et
+  // `MAX_HOME_WIDGETS` n'a pas eu à bouger.
   'nutrition-summary',
   'streak',
   // Conservé bien qu'il ne soit pas au cœur des 3 piliers : c'est du live du jour, **et** son
   // widget est le seul point d'entrée de `/steps` — le retirer créait un écran orphelin.
   'steps',
+  // ── Revenu le 09/09/2026 (US ACCUEIL-04) ────────────────────────────────────────────────────────
+  // INSIGHTS-02 l'avait déporté vers `/measurements`. Mais le poids figure comme l'un des quatre
+  // blocs de l'accueil dans `navigation-ux.md` §3.1 **et** dans la maquette validée : son absence
+  // était un écart à la spec, pas une décision. En `small`, il partage sa ligne avec les pas et ne
+  // coûte donc aucune hauteur d'écran supplémentaire.
+  'weight',
   // Conditionnel : rendu `null` quand le moteur ne retient aucune carte (US INSIGHTS-01).
   'insights',
   // Conditionnel et temporaire : 7 jours après l'onboarding (US ACTIV-01).
@@ -181,9 +200,12 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
   home: {
     ids: HOME_WIDGET_IDS,
     pillars: {
-      'today-session': ['strength'],
       'nutrition-summary': ['nutrition'],
       streak: 'always',
+      // US ACCUEIL-04 : transverse, comme `steps` et pour la même raison — le poids corporel
+      // n'appartient à aucun des trois piliers, et quelqu'un qui ne suit que la musculation a
+      // autant de raisons de le suivre que quelqu'un qui ne suit que l'alimentation.
+      weight: 'always',
       // Transverse comme `streak` : la marche n'appartient à aucun pilier, et un utilisateur
       // « nutrition seule » doit pouvoir suivre ses pas (US PAS-01).
       steps: 'always',
@@ -202,7 +224,43 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // l'objectif de semaine minimal n'affiche de toute façon que les piliers actifs (règle R3).
       'real-life': 'always',
     },
-    defaultSize: uniformSize(HOME_WIDGET_IDS, 'wide'),
+    /**
+     * ── Fin de `uniformSize` sur l'accueil (US ACCUEIL-04) ──────────────────────────────────────
+     * Toutes les entrées valaient `'wide'`, ce qui donnait cinq à six rectangles **strictement
+     * identiques** empilés : aucune hiérarchie, 47 % de remplissage moyen, et le point d'entrée
+     * « vie réelle » exactement aussi lourd à l'œil que la nutrition du jour.
+     *
+     * Chaque forme est désormais choisie d'après **ce que la carte a à dire**, et déclarée
+     * explicitement : `defaultSizeOf` retombe sur `'wide'` en l'absence d'entrée, ce qui donnerait
+     * le bon rendu **par accident** pour la moitié d'entre elles.
+     */
+    defaultSize: {
+      // Anneau calorique + les trois macros du jour : c'est la carte la plus dense de l'accueil.
+      'nutrition-summary': 'wide',
+      // Sept pastilles de semaine + le bandeau de récapitulatif : une ligne de grille pleine.
+      streak: 'wide',
+      // Un anneau et un total suffisent. En `small`, les pas partagent leur ligne avec le poids —
+      // 182 px de hauteur d'écran rendus par rapport à deux `wide` empilés.
+      steps: 'small',
+      weight: 'small',
+      // Un titre d'insight sur deux lignes, plus le compte des suivants.
+      insights: 'wide',
+      // Jour N/7, titre, description et action : le parcours d'activation a besoin de la place.
+      'activation-path': 'wide',
+      // Hors période, cette carte n'affiche **qu'une ligne** — c'est le cas qui a motivé `row`,
+      // et c'est l'état de loin le plus fréquent (une période « vie réelle » dure quelques
+      // semaines par an).
+      //
+      // ⚠️ **En période, elle ne tient pas dans une bande** : la carte active porte l'échéance, les
+      // jours restants, l'objectif de semaine minimal et deux boutons. La forme stockée reste
+      // `row`, mais l'accueil en calcule une **forme effective** au rendu (`sizeFor` de
+      // `WidgetGrid`) qui la remonte à `wide` tant que la période court. Le layout de
+      // l'utilisateur n'est pas réécrit pour autant : c'est un besoin d'affichage, pas une
+      // préférence — et il redevient `row` de lui-même à la fin de la période.
+      'real-life': 'row',
+      // Jour du cycle, phase, prédiction : trois lignes.
+      cycle: 'wide',
+    },
   },
   strength: {
     ids: STRENGTH_WIDGET_IDS,
@@ -257,15 +315,37 @@ export interface WidgetSpan {
 }
 
 /**
- * Empreinte de chaque forme (case unité = 1 petit carré) :
- *  - `small` = 1×1 (petit carré) ;
- *  - `wide`  = 2×1 (rectangle pleine largeur, mi-hauteur) ;
- *  - `large` = 2×2 (grand carré pleine largeur).
+ * Empreinte de chaque forme, **en demi-cases de hauteur** :
+ *  - `row`   = 2×1 (bande pleine largeur, une demi-case de haut) ;
+ *  - `small` = 1×2 (petit carré, ½ largeur) ;
+ *  - `wide`  = 2×2 (rectangle pleine largeur) ;
+ *  - `large` = 2×4 (grand carré pleine largeur).
+ *
+ * ── Pourquoi la résolution verticale est DOUBLE (ACCUEIL-04) ──────────────────────────────────────
+ * Avant, la case unité était carrée (`small` 1×1, `cellH = colW`) et la plus petite hauteur
+ * exprimable valait donc une demi-largeur d'écran : ~170 px sur le cadre de référence. Une carte
+ * qui affiche une ligne de texte y était remplie à 26 %.
+ *
+ * En comptant les hauteurs en **demi-cases**, une bande devient exprimable sans changer aucune
+ * autre forme : les rapports entre `small`, `wide` et `large` sont exactement ceux d'avant
+ * (1×1 → 1×2, 2×1 → 2×2, 2×2 → 2×4). Seul le rendu doit savoir qu'une ligne de grille vaut
+ * désormais une demi-case — voir `cellRect` côté mobile, où `cellH` passe de `colW` à
+ * `(colW - gap) / 2`. Cette division est ce qui fait que **deux `row` empilées pavent exactement
+ * un `wide`** : 79 + 12 + 79 = 170.
+ *
+ * ── Et les dispositions déjà enregistrées ? ──────────────────────────────────────────────────────
+ * Elles se migrent **toutes seules**, sans champ de version ni code dédié : `resolveScreenLayout`
+ * conserve l'ordre des `row` stockées puis appelle `compactVertical`, qui **recalcule** chaque
+ * ligne en repartant de zéro dans la nouvelle résolution. Un layout v1 `[0, 1, 2, 3]` de `wide`
+ * ressort en `[0, 2, 4, 6]`, dans le même ordre et sans trou. C'est testé (`widgets.test.ts`,
+ * « migration implicite de l'ancienne résolution ») — sans ce test, la garantie ne serait qu'une
+ * intention de docstring.
  */
 export function sizeSpan(size: WidgetSize): WidgetSpan {
-  if (size === 'small') return { w: 1, h: 1 };
-  if (size === 'wide') return { w: 2, h: 1 };
-  return { w: 2, h: 2 };
+  if (size === 'row') return { w: 2, h: 1 };
+  if (size === 'small') return { w: 1, h: 2 };
+  if (size === 'wide') return { w: 2, h: 2 };
+  return { w: 2, h: 4 };
 }
 
 /** Borne une colonne pour qu'un widget de largeur `w` tienne dans la grille. */
@@ -310,7 +390,7 @@ export interface MultiScreenLayout {
  * `full → wide`, `compact → small`. Toute autre valeur → `fallback`.
  */
 export function coerceSize(raw: unknown, fallback: WidgetSize): WidgetSize {
-  if (raw === 'small' || raw === 'wide' || raw === 'large') return raw;
+  if (raw === 'row' || raw === 'small' || raw === 'wide' || raw === 'large') return raw;
   if (raw === 'full') return 'wide';
   if (raw === 'compact') return 'small';
   return fallback;
@@ -346,7 +426,9 @@ function rectsOverlap(a: GridRect, b: GridRect): boolean {
 /** Première case libre (ligne asc, colonne asc) pour une forme, parmi `occupied`. */
 function firstFreeCell(occupied: WidgetLayoutEntry[], size: WidgetSize): { col: number; row: number } {
   const { w, h } = sizeSpan(size);
-  const maxRow = occupied.length * 4 + 8; // garde-fou
+  // Garde-fou. Relevé de ×4 à ×8 par ACCUEIL-04 : les hauteurs comptent désormais en demi-cases,
+  // donc un hub entier de `large` (h=4) peut légitimement occuper deux fois plus de lignes qu'avant.
+  const maxRow = occupied.length * 8 + 8;
   for (let row = 0; row <= maxRow; row += 1) {
     for (let col = 0; col + w <= GRID_COLS; col += 1) {
       const cand: GridRect = { col, row, w, h };

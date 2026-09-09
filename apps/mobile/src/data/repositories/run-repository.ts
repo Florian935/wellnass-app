@@ -339,6 +339,15 @@ export function useActiveRun(): { run: ActiveRun | null; isLoading: boolean } {
 export type TodayRunSession = {
   id: string;
   sessionId: string;
+  /** Nom de la seance, pour l affichage sur l accueil (US ACCUEIL-01). */
+  name: string | null;
+  /**
+   * Heure locale HH:MM de l occurrence (HORAIRE-01), ou null si elle n en porte pas.
+   *
+   * Ajoutee par ACCUEIL-01 : la carte epinglee de l accueil annonce l heure de la seance, et
+   * l heure etait stockee depuis HORAIRE-01 sans jamais etre remontee ni affichee nulle part.
+   */
+  scheduledTime: string | null;
   targetDistanceM: number | null;
   targetDurationSeconds: number | null;
   // US RUN-F4 — le type porte l'intensité (c'est lui qui décide si une adaptation a du sens),
@@ -353,6 +362,8 @@ export type TodayRunSession = {
 type TodayRunSessionDbRow = {
   id: string;
   session_id: string;
+  session_name: string | null;
+  scheduled_time: string | null;
   target_distance_m: number | null;
   target_duration_seconds: number | null;
   session_type: string | null;
@@ -372,7 +383,8 @@ export function useTodayRunSession(): { session: TodayRunSession | null; isLoadi
   const userId = useAuthStore((s) => s.session?.user.id ?? '');
   const todayKey = useTodayKey();
   const { data, isLoading } = useQuery<TodayRunSessionDbRow>(
-    `SELECT ps.id, ps.session_id, s.target_distance_m, s.target_duration_seconds,
+    `SELECT ps.id, ps.session_id, ps.scheduled_time, s.name AS session_name,
+            s.target_distance_m, s.target_duration_seconds,
             s.session_type, s.target_pace_min_s_per_km, s.target_pace_max_s_per_km,
             s.target_time_seconds, s.instructions
      FROM planned_sessions ps
@@ -389,6 +401,8 @@ export function useTodayRunSession(): { session: TodayRunSession | null; isLoadi
     ? {
         id: row.id,
         sessionId: row.session_id,
+        name: row.session_name,
+        scheduledTime: row.scheduled_time,
         targetDistanceM: row.target_distance_m,
         targetDurationSeconds: row.target_duration_seconds,
         sessionType: (row.session_type as ProgramSessionType | null) ?? null,

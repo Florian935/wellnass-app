@@ -17,14 +17,12 @@ import { useTranslation } from 'react-i18next';
 import {
   compactLayout,
   GRID_COLS,
-  gridRowCount,
-  sizeSpan,
   type WidgetId,
-  type WidgetLayoutEntry,
   type WidgetScreen,
   type WidgetSize,
 } from '@wellness/shared';
 import { SortableWidgetGrid } from '@/components/widgets/SortableWidgetGrid';
+import { cellRect, gridHeight } from '@/components/widgets/grid-geometry';
 import { useScreenLayout } from '@/data/repositories/widget-layout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -33,30 +31,13 @@ import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
 /** Gouttière entre cases (px). */
 export const GRID_GAP = 12;
 
-/** Rectangle pixel d'une case (col/row + empreinte) selon la largeur de colonne. */
-export function cellRect(entry: WidgetLayoutEntry, colW: number, gap: number) {
-  const { w, h } = sizeSpan(entry.size);
-  const cellH = colW; // case unité carrée
-  return {
-    left: entry.col * (colW + gap),
-    top: entry.row * (cellH + gap),
-    width: w * colW + (w - 1) * gap,
-    height: h * cellH + (h - 1) * gap,
-  };
-}
-
-/** Hauteur totale de la grille (px) pour une largeur de colonne donnée. */
-export function gridHeight(widgets: WidgetLayoutEntry[], colW: number, gap: number): number {
-  const rows = gridRowCount(widgets);
-  return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
-}
-
 export function WidgetGrid({
   screen,
   editing,
   renderWidget,
   onDragActiveChange,
   isActive,
+  sizeFor,
 }: {
   screen: WidgetScreen;
   editing: boolean;
@@ -69,6 +50,22 @@ export function WidgetGrid({
    * en édition — un widget absent n'a pas à être positionné/déplacé ; il réapparaît quand il redevient actif.
    */
   isActive?: (id: WidgetId) => boolean;
+  /**
+   * **Forme effective** d'un widget à l'affichage (US ACCUEIL-04), quand son contenu impose une
+   * hauteur que la forme stockée ne peut pas tenir.
+   *
+   * Le cas qui l'a rendue nécessaire : `real-life` vaut `row` par défaut parce qu'il n'affiche
+   * qu'une ligne **hors période** — mais pendant une période, la carte porte une échéance, des
+   * objectifs et deux boutons, qui ne tiennent pas dans une bande. Sans cette surcharge, il
+   * fallait choisir entre une cellule remplie à 26 % onze mois par an et une carte tronquée le
+   * douzième.
+   *
+   * ⚠️ **Ne s'applique qu'à l'affichage, jamais à l'édition** : en mode édition, l'utilisateur
+   * manipule sa préférence, et voir la forme changer sous son doigt serait incompréhensible. La
+   * disposition enregistrée n'est donc pas réécrite — le widget retrouve sa forme de lui-même
+   * quand son état revient à la normale.
+   */
+  sizeFor?: (id: WidgetId, stored: WidgetSize) => WidgetSize;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -111,7 +108,18 @@ export function WidgetGrid({
 
   // Affichage : positions absolues dérivées de (col, row). On **recompacte les widgets
   // visibles** pour qu'un widget masqué ne laisse pas de trou (sa case n'est pas rendue).
-  const positioned = compactLayout(rendered);
+  //
+  // La forme effective est appliquée AVANT la compaction, et c'est ce qui rend la surcharge sûre :
+  // agrandir une cellule peut créer un chevauchement, que `compactLayout` résout exactement comme
+  // il résout ceux d'un changement de forme en édition. Sans cet ordre, une carte agrandie
+  // recouvrirait sa voisine.
+  const effective = sizeFor
+    ? rendered.map((w) => {
+        const size = sizeFor(w.id, w.size);
+        return size === w.size ? w : { ...w, size };
+      })
+    : rendered;
+  const positioned = compactLayout(effective);
   return (
     <View onLayout={onLayout} style={{ height: gridHeight(positioned, colW, GRID_GAP) }}>
       {colW > 0

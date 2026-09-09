@@ -92,9 +92,20 @@ describe('CycleCard', () => {
     expect(getByLabelText('cycle.widget.periodStripA11y')).toBeTruthy();
   });
 
-  it('isLoading → ne rend rien (pas de flash de contenu vide)', async () => {
+  it('isLoading → un squelette, et AUCUNE donnée de cycle', async () => {
+    // ⚠️ **Changement assumé (US ACCUEIL-04)** : le composant rendait `null`, ce qui faisait
+    // sauter la grille de l'accueil à chaque ouverture (`compactLayout` recompacte à chaque
+    // arrivée de carte). Il réserve désormais sa cellule.
+    //
+    // L'exigence de confidentialité, elle, ne bouge pas d'un pouce : le squelette n'affiche que
+    // le sur-titre. Aucun jour de cycle, aucune phase, aucune prédiction — rien qui puisse
+    // apparaître fugacement sur une donnée de santé en opt-in strict.
     mockUseMenstrualPeriods.mockReturnValue({ periods: [], isLoading: true });
-    const { toJSON } = await render(<CycleCard size="wide" />);
-    expect(toJSON()).toBeNull();
+    const { toJSON, queryByText } = await render(<CycleCard size="wide" />);
+
+    expect(toJSON()).not.toBeNull();
+    expect(queryByText('cycle.widget.dayOfCycle')).toBeNull();
+    expect(queryByText(/cycle\.phase/)).toBeNull();
+    expect(queryByText(/cycle\.prediction/)).toBeNull();
   });
 });

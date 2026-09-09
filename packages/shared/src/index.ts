@@ -29,6 +29,9 @@ export * from './notifications';
 export * from './learned-hour';
 export * from './record-notification';
 export * from './widgets';
+// US ACCUEIL-01/02 — le moment de la journée, et la décision de la carte « maintenant ».
+export * from './day-moment';
+export * from './now-action';
 export * from './exercise';
 export * from './exercise-filter';
 export * from './exercise-variant';

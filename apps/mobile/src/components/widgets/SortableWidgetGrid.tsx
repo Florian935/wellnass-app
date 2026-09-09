@@ -26,13 +26,13 @@ import Animated, {
 import { useTranslation } from 'react-i18next';
 import {
   clampCol,
-  gridRowCount,
   moveWidgetToCell,
   sizeSpan,
   type WidgetId,
   type WidgetLayoutEntry,
   type WidgetSize,
 } from '@wellness/shared';
+import { cellRect, gridHeight, stepX, stepY } from '@/components/widgets/grid-geometry';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
@@ -40,18 +40,11 @@ import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
 const LONG_PRESS_MS = 700;
 const REFLOW_MS = 180;
 
-type Rect = { left: number; top: number; width: number; height: number };
-
-/** Rect pixel d'une case (col/row + empreinte). */
-function rectOf(entry: WidgetLayoutEntry, colW: number, gap: number): Rect {
-  const { w, h } = sizeSpan(entry.size);
-  return {
-    left: entry.col * (colW + gap),
-    top: entry.row * (colW + gap),
-    width: w * colW + (w - 1) * gap,
-    height: h * colW + (h - 1) * gap,
-  };
-}
+// US ACCUEIL-04 : la géométrie vivait ici EN DOUBLE de `WidgetGrid.cellRect`, avec la même
+// formule à deux endroits. Le passage en demi-cases n'en aurait corrigé qu'une, et le symptôme
+// aurait été des widgets qui sautent au moment précis où on les déplace. Source unique désormais :
+// `grid-geometry.ts`.
+type Rect = ReturnType<typeof cellRect>;
 
 export function SortableWidgetGrid({
   items,
@@ -94,19 +87,23 @@ export function SortableWidgetGrid({
     return () => clearTimeout(h);
   }, [committed]);
 
-  const step = colW + gap;
+  // ⚠️ **Deux pas distincts** depuis ACCUEIL-04 : les cellules ne sont plus carrées (une ligne de
+  // grille vaut une demi-case). Un pas unique appliqué aux deux axes viserait une ligne sur deux
+  // pendant le déplacement — le widget se poserait systématiquement une demi-cellule trop bas.
+  const sx = stepX(colW, gap);
+  const sy = stepY(colW, gap);
 
   /** Case cible à partir de la position visuelle (rect d'origine + translation). */
   const targetCell = useCallback(
     (entry: WidgetLayoutEntry, tx: number, ty: number) => {
-      const r = rectOf(entry, colW, gap);
+      const r = cellRect(entry, colW, gap);
       const { w } = sizeSpan(entry.size);
       return {
-        col: clampCol(Math.round((r.left + tx) / step), w),
-        row: Math.max(0, Math.round((r.top + ty) / step)),
+        col: clampCol(Math.round((r.left + tx) / sx), w),
+        row: sy > 0 ? Math.max(0, Math.round((r.top + ty) / sy)) : 0,
       };
     },
-    [colW, gap, step],
+    [colW, gap, sx, sy],
   );
 
   const begin = useCallback(
@@ -162,17 +159,20 @@ export function SortableWidgetGrid({
     return m;
   }, [preview, layout]);
 
-  const height = useMemo(() => {
-    const rows = gridRowCount(preview ?? layout);
-    return rows > 0 ? rows * colW + (rows - 1) * gap : 0;
-  }, [preview, layout, colW, gap]);
+  // `gridHeight` mesure le bas le plus bas plutôt que `nb de lignes × pas` : pendant une
+  // prévisualisation de drag, la disposition n'est pas encore compactée et les deux diffèrent —
+  // une hauteur sous-estimée rognerait le widget en cours de déplacement.
+  const height = useMemo(
+    () => gridHeight(preview ?? layout, colW, gap),
+    [preview, layout, colW, gap],
+  );
 
   // Case fantôme = emplacement d'atterrissage du module tiré (dans la disposition prévisualisée).
   const previewRect =
     activeId != null && preview != null
       ? (() => {
           const dragged = preview.find((e) => e.id === activeId);
-          return dragged ? rectOf(dragged, colW, gap) : null;
+          return dragged ? cellRect(dragged, colW, gap) : null;
         })()
       : null;
 
@@ -195,9 +195,9 @@ export function SortableWidgetGrid({
       ) : null}
 
       {layout.map((entry) => {
-        const base = rectOf(entry, colW, gap); // position de montage (absolue, d'après `layout`)
+        const base = cellRect(entry, colW, gap); // position de montage (absolue, d'après `layout`)
         const target = posById.get(entry.id) ?? entry;
-        const tRect = rectOf(target, colW, gap);
+        const tRect = cellRect(target, colW, gap);
         return (
           <Cell
             key={entry.id}

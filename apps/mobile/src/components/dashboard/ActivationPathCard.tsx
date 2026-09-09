@@ -21,6 +21,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ActivationDayTheme, WidgetSize } from '@wellness/shared';
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
 import { dismissActivationPath } from '@/data/repositories/profile-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { fontFamily } from '@/theme/fonts';
@@ -72,6 +73,23 @@ export function ActivationPathCard({ size = 'wide' }: { size?: WidgetSize }) {
       </Text>
     </Pressable>
   );
+
+  // ── Bande ──────────────────────────────────────────────────────────────────
+  // Le parcours perd son bouton d'action à cette taille : une bande de 79 px ne peut pas porter
+  // à la fois le titre du jour et une cible tactile de 44 dp. L'appui sur la carte mène à la même
+  // destination que le bouton — l'action n'est donc pas perdue, seulement implicite.
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={progress}
+        value={title}
+        trailing={completed ? t('activationPath.doneBadge') : undefined}
+        trailingTone="success"
+        onPress={route ? onPressCta : undefined}
+        accessibilityLabel={a11yLabel}
+      />
+    );
+  }
 
   // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {

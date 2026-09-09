@@ -7,8 +7,8 @@
  */
 
 import type { HomeWidgetId, WidgetSize } from '@wellness/shared';
-import { TodaySessionCard } from '@/components/dashboard/TodaySessionCard';
 import { NutritionSummaryCard } from '@/components/dashboard/NutritionSummaryCard';
+import { WeightCard } from '@/components/dashboard/WeightCard';
 import { StreakCard } from '@/components/dashboard/StreakCard';
 import { StepsCard } from '@/components/dashboard/StepsCard';
 import { CycleCard } from '@/components/dashboard/CycleCard';
@@ -23,10 +23,13 @@ const WIDGET_COMPONENTS: Record<HomeWidgetId, WidgetComponent> = {
   // vérifiée par test (`widget-destinations.ts`, `packages/shared`) — aucun signal n'a disparu.
   // Le typage `Record<HomeWidgetId, …>` est ici un garde-fou : retirer un id du registre sans
   // retirer son entrée casse la compilation.
-  'today-session': TodaySessionCard,
+  // US ACCUEIL-01 : `today-session` n'est plus ici — la séance du jour est rendue par la zone
+  // épinglée de l'accueil (`NowCard`), pas par une cellule de grille.
   'nutrition-summary': NutritionSummaryCard,
   streak: StreakCard,
   steps: StepsCard,
+  // US ACCUEIL-04 : de retour, en `small`, pour partager sa ligne avec les pas.
+  weight: WeightCard,
   insights: InsightsCard,
   'activation-path': ActivationPathCard,
   // US VIE-01 : deux états dans un seul id — point d'entrée hors période, carte active pendant.
