@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  mealForHour,
   perServing,
   scaleMicronutrients,
   scaleNutrition,
@@ -28,7 +29,7 @@ import {
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { addRecipeIngredient, useRecipes, type RecipeListItem } from '@/data/repositories/recipe-repository';
 import { applyTemplate, useMealTemplates } from '@/data/repositories/meal-template-repository';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { searchOpenFoodFacts, type OffFood } from '@/lib/openfoodfacts';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -50,8 +51,16 @@ export default function FoodPickerScreen() {
    * qui échoue.
    */
   const todayKey = useTodayKey();
+  const hour = useCurrentHour();
   const date = params.date ?? todayKey;
-  const meal = params.meal ?? 'breakfast';
+  /**
+ * Repli sur **le repas de l'heure courante**, et non `'breakfast'` en dur (US NUTRI-UX01, R2.6).
+ *
+ * Ouvert sans paramètre — lien direct, raccourci, retour arrière —, cet écran journalisait
+ * systématiquement au petit-déjeuner : à 20 h, l'ajout partait dans le mauvais repas et était à
+ * reprendre. Même correctif que celui posé sur l'accueil par ACCUEIL-02.
+ */
+const meal = params.meal ?? mealForHour(hour);
   const recipeId = params.recipeId ?? '';
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 

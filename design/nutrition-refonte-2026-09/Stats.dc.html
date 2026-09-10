@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8d3f22; }
+    .disp { font-family: 'Bricolage Grotesque', Georgia, serif; }
+    .body { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+    .hcell { width: 100%; aspect-ratio: 1; border-radius: 5px; }
+  </style>
+</helmet>
+
+<div style="width: 392px; background: #f7eede; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px;">
+
+  <!-- En-tête -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+      <div class="disp" style="font-size: 28px; font-weight: 800; letter-spacing: -0.8px; color: #33291f;">Suivi</div>
+      <div class="body" style="font-size: 14px; line-height: 19px; color: #786a59;">Ce que disent tes 30 derniers jours</div>
+    </div>
+  </div>
+
+  <!-- ══ SOUS-ONGLETS : l'écran actuel empile 8 sections + 4 cartes (ADR-007 : 4-5 max) ══ -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 4px; display: flex; gap: 4px;">
+    <div onClick="{{ pickA }}" style="{{ styleA }}"><div class="body" style="font-size: 13.5px; font-weight: 700; color: {{ inkA }};">Régularité</div></div>
+    <div onClick="{{ pickB }}" style="{{ styleB }}"><div class="body" style="font-size: 13.5px; font-weight: 700; color: {{ inkB }};">Apports</div></div>
+    <div onClick="{{ pickC }}" style="{{ styleC }}"><div class="body" style="font-size: 13.5px; font-weight: 700; color: {{ inkC }};">Poids</div></div>
+    <div onClick="{{ pickD }}" style="{{ styleD }}"><div class="body" style="font-size: 13.5px; font-weight: 700; color: {{ inkD }};">Qualité</div></div>
+  </div>
+
+  <!-- ══ Heatmap : remplace « 71 % » nu — c'est la donnée la plus motivante du pilier ══ -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+      <div>
+        <div class="body" style="font-size: 13.5px; font-weight: 700; color: #33291f;">Journal rempli</div>
+        <div class="body" style="font-size: 12px; color: #786a59;">30 derniers jours</div>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <div class="disp" style="font-size: 30px; font-weight: 800; letter-spacing: -1px; color: #33291f;">83</div>
+        <div class="body" style="font-size: 14px; font-weight: 600; color: #786a59;">%</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px;">
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #eadcc6;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #b47f31;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #b47f31;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #eadcc6;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #eadcc6;"></div>
+      <div class="hcell" style="background: #eadcc6;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #b47f31;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #eadcc6;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #66714b;"></div>
+      <div class="hcell" style="background: #b14f2b;"></div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #ece0cd; padding-top: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 1px;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: .6px; color: #786a59;">SÉRIE EN COURS</div>
+        <div class="mono" style="font-size: 15px; font-weight: 700; color: #33291f;">3 jours</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: .6px; color: #786a59;">MEILLEURE SÉRIE</div>
+        <div class="mono" style="font-size: 15px; font-weight: 700; color: #33291f;">12 jours</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px;">
+        <div class="mono" style="font-size: 10.5px; letter-spacing: .6px; color: #786a59;">JOURS VIDES</div>
+        <div class="mono" style="font-size: 15px; font-weight: 700; color: #33291f;">5</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Adhérence : une zone-cible visuelle au lieu de 4 phrases en mono ══ -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 15px;">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+      <div>
+        <div class="body" style="font-size: 13.5px; font-weight: 700; color: #33291f;">Dans la cible</div>
+        <div class="body" style="font-size: 12px; color: #786a59;">± 10 % de ton objectif du jour</div>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <div class="disp" style="font-size: 30px; font-weight: 800; letter-spacing: -1px; color: #33291f;">19</div>
+        <div class="body" style="font-size: 14px; font-weight: 600; color: #786a59;">/ 25 j</div>
+      </div>
+    </div>
+
+    <!-- Chaque jour, un trait : sous, dans, au-dessus de la cible -->
+    <div>
+      <div style="position: relative; height: 74px;">
+        <!-- Zone cible -->
+        <div style="position: absolute; left: 0; right: 0; top: 25px; height: 24px; background: #f0efe0; border-top: 1px dashed #7c8a5b; border-bottom: 1px dashed #7c8a5b;"></div>
+        <div style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: flex-end; gap: 3px;">
+          <div style="flex-grow: 1; height: 44px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 38px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 34px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 58px; border-radius: 3px; background: #b14f2b;"></div>
+          <div style="flex-grow: 1; height: 40px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 36px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 22px; border-radius: 3px; background: #b47f31;"></div>
+          <div style="flex-grow: 1; height: 42px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 39px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 62px; border-radius: 3px; background: #b14f2b;"></div>
+          <div style="flex-grow: 1; height: 37px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 41px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 35px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 20px; border-radius: 3px; background: #b47f31;"></div>
+          <div style="flex-grow: 1; height: 43px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 38px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 40px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 56px; border-radius: 3px; background: #b14f2b;"></div>
+          <div style="flex-grow: 1; height: 36px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 42px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 39px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 24px; border-radius: 3px; background: #b47f31;"></div>
+          <div style="flex-grow: 1; height: 41px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 37px; border-radius: 3px; background: #7c8a5b;"></div>
+          <div style="flex-grow: 1; height: 40px; border-radius: 3px; background: #7c8a5b;"></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+        <div class="body" style="font-size: 11.5px; color: #786a59;">il y a 25 j</div>
+        <div class="body" style="font-size: 11.5px; color: #786a59;">hier</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px; border-top: 1px solid #ece0cd; padding-top: 12px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <div style="width: 9px; height: 9px; border-radius: 3px; background: #b14f2b;"></div>
+        <div class="body" style="font-size: 11.5px; color: #786a59;">3 j au-dessus</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <div style="width: 9px; height: 9px; border-radius: 3px; background: #7c8a5b;"></div>
+        <div class="body" style="font-size: 11.5px; color: #786a59;">19 j dans la cible</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <div style="width: 9px; height: 9px; border-radius: 3px; background: #b47f31;"></div>
+        <div class="body" style="font-size: 11.5px; color: #786a59;">3 j en dessous</div>
+      </div>
+    </div>
+
+    <!-- Le bilan hebdo, une phrase au lieu d'une ligne mono de plus -->
+    <div style="background: #f0efe0; border: 1px solid #dfe0c4; border-radius: 13px; padding: 11px 13px; display: flex; align-items: center; gap: 10px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+        <path d="M4 17l5-5 4 3 7-8"></path><path d="M15 7h5v5"></path>
+      </svg>
+      <div class="body" style="font-size: 12.5px; font-weight: 600; color: #4d552f; flex-grow: 1;">Sur 30 jours tu es à −1 240 kcal du cumul visé : la trajectoire tient.</div>
+    </div>
+  </div>
+
+  <!-- ══ Repères de qualité : les données sont stockées, jamais rapportées à un seuil ══ -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 15px;">
+    <div>
+      <div class="body" style="font-size: 13.5px; font-weight: 700; color: #33291f;">Qualité de l'assiette</div>
+      <div class="body" style="font-size: 12px; color: #786a59;">Moyenne sur 7 jours, face aux repères</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 13px;">
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px;">
+          <div class="body" style="font-size: 13px; color: #33291f;">Fibres</div>
+          <div class="mono" style="font-size: 12.5px; font-weight: 700; color: #b47f31;">21 g <span style="font-weight: 400; color: #786a59;">/ 25–30</span></div>
+        </div>
+        <div style="position: relative; height: 8px; border-radius: 5px; background: #eadcc6; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 70%; background: #b47f31; border-radius: 5px;"></div>
+          <div style="position: absolute; left: 83%; top: 0; bottom: 0; width: 2px; background: #66714b;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px;">
+          <div class="body" style="font-size: 13px; color: #33291f;">Sucres ajoutés</div>
+          <div class="mono" style="font-size: 12.5px; font-weight: 700; color: #7c8a5b;">38 g <span style="font-weight: 400; color: #786a59;">/ 50 max</span></div>
+        </div>
+        <div style="position: relative; height: 8px; border-radius: 5px; background: #eadcc6; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 76%; background: #7c8a5b; border-radius: 5px;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px;">
+          <div class="body" style="font-size: 13px; color: #33291f;">Acides gras saturés</div>
+          <div class="mono" style="font-size: 12.5px; font-weight: 700; color: #b14f2b;">26 g <span style="font-weight: 400; color: #786a59;">/ 22 max</span></div>
+        </div>
+        <div style="position: relative; height: 8px; border-radius: 5px; background: #eadcc6; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: #b14f2b; border-radius: 5px;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px;">
+          <div class="body" style="font-size: 13px; color: #33291f;">Protéines par kg</div>
+          <div class="mono" style="font-size: 12.5px; font-weight: 700; color: #7c8a5b;">1,8 g <span style="font-weight: 400; color: #786a59;">/ 1,6–2,2</span></div>
+        </div>
+        <div style="position: relative; height: 8px; border-radius: 5px; background: #eadcc6; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 82%; background: #7c8a5b; border-radius: 5px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"tab":{"editor":"enum","options":["reg","apports","poids","qualite"],"default":"reg","tsType":"string"}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: null };
+  }
+  seg(active) {
+    const base = 'flex-grow: 1; flex-basis: 0; height: 44px; border-radius: 12px;'
+      + ' display: flex; align-items: center; justify-content: center; box-sizing: border-box;';
+    return active ? base + ' background: #b14f2b;' : base + ' background: transparent;';
+  }
+  renderVals() {
+    const tab = this.state.tab ?? this.props.tab ?? 'reg';
+    const set = (v) => () => this.setState({ tab: v });
+    return {
+      styleA: this.seg(tab === 'reg'), inkA: tab === 'reg' ? '#ffffff' : '#786a59', pickA: set('reg'),
+      styleB: this.seg(tab === 'apports'), inkB: tab === 'apports' ? '#ffffff' : '#786a59', pickB: set('apports'),
+      styleC: this.seg(tab === 'poids'), inkC: tab === 'poids' ? '#ffffff' : '#786a59', pickC: set('poids'),
+      styleD: this.seg(tab === 'qualite'), inkD: tab === 'qualite' ? '#ffffff' : '#786a59', pickD: set('qualite'),
+    };
+  }
+}
+</script>
+</body>
+</html>

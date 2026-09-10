@@ -13,7 +13,17 @@
       "sun": "Dim"
     },
     "today": "Aujourd'hui",
-    "yesterday": "Hier"
+    "yesterday": "Hier",
+    "close": "Fermer",
+    "weekdayShort": {
+      "mon": "L",
+      "tue": "M",
+      "wed": "M",
+      "thu": "J",
+      "fri": "V",
+      "sat": "S",
+      "sun": "D"
+    }
   },
   "sync": {
     "connected": "Synchronisé",
@@ -335,7 +345,10 @@
         "moderate": "Modérément actif (3-5 j/sem)",
         "active": "Très actif (6-7 j/sem)",
         "very_active": "Extrêmement actif"
-      }
+      },
+      "defaultNotice": "Valeur par défaut — tu n'as pas encore répondu",
+      "defaultHint": "On applique « modérément actif » en attendant. Si tu bouges moins, ton objectif est surestimé de plusieurs centaines de calories par jour.",
+      "chooseNow": "Choisir mon niveau"
     },
     "calories": {
       "title": "Besoin calorique",
@@ -357,7 +370,8 @@
         "hint": "Tolérance autour de l'objectif pour compter un jour « dans la cible » (stats d'adhérence)."
       },
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
-      "completeProfile": "Compléter mon profil"
+      "completeProfile": "Compléter mon profil",
+      "tdeeHint": "Ce que ton corps dépense en une journée, repos et activité compris — estimé d'après ton poids, ta taille, ton âge et ton niveau d'activité."
     },
     "macros": {
       "title": "Répartition des macros",
@@ -438,7 +452,18 @@
         "kosher": "Casher"
       },
       "allergens": "Allergènes",
-      "allergensPlaceholder": "Ex. arachides, fruits à coque…"
+      "allergensPlaceholder": "Ex. arachides, fruits à coque…",
+      "allergenOptions": {
+        "gluten": "Gluten",
+        "peanuts": "Arachides",
+        "nuts": "Fruits à coque",
+        "milk": "Lait",
+        "eggs": "Œufs",
+        "soy": "Soja",
+        "fish": "Poisson",
+        "shellfish": "Crustacés",
+        "sesame": "Sésame"
+      }
     },
     "crossTraining": {
       "title": "Manges-tu comme tu t'entraînes ?",
@@ -491,7 +516,16 @@
       "fiber": "Fibres",
       "moreMacros": "Détail (facultatif)",
       "save": "Créer l'aliment",
-      "update": "Enregistrer les modifications"
+      "update": "Enregistrer les modifications",
+      "preparation": "Cru ou cuit ?",
+      "preparationOptions": {
+        "raw": "Cru",
+        "cooked": "Cuit"
+      },
+      "portion": "Portion usuelle (facultatif)",
+      "portionLabel": "Nom de la portion",
+      "portionGrams": "Grammes",
+      "portionPlaceholder": "1 tranche, 1 bol…"
     },
     "editTitle": "Modifier l'aliment",
     "edit": "Modifier",
@@ -585,7 +619,67 @@
       "title": "Journée encore vide",
       "body": "Note ton premier repas, ou repars de ce que tu mangeais hier."
     },
-    "mealMenu": "Actions du repas {{meal}}"
+    "mealMenu": "Actions du repas {{meal}}",
+    "addSheet": {
+      "title": "Ajouter au {{meal}}",
+      "subtitle": "Repas déduit de l'heure — touche un aliment pour ajuster",
+      "remainingLabel": "Il te reste aujourd'hui",
+      "remainingValue": "{{kcal}} kcal · {{protein}} g de protéines",
+      "modes": {
+        "search": "Rechercher",
+        "scan": "Scanner",
+        "text": "Texte libre"
+      },
+      "searchLabel": "Rechercher",
+      "searchPlaceholder": "Aliment, recette, repas type…",
+      "habits": "TES HABITUDES",
+      "results": "RÉSULTATS",
+      "wholeBase": "Toute la base",
+      "noHabit": "Rien encore. Cherche un aliment ou scanne un produit.",
+      "noResult": "Aucun résultat. Essaie un autre mot, ou crée l'aliment.",
+      "refine": "Affine ta recherche pour voir plus de résultats.",
+      "usualQuantity": "{{grams}} g · ta quantité habituelle",
+      "grams": "{{grams}} g",
+      "recipeMeta": "Recette · {{count}} portion",
+      "recipeMeta_plural": "Recette · {{count}} portions",
+      "templateMeta": "Repas type · {{count}} aliment",
+      "templateMeta_plural": "Repas type · {{count}} aliments",
+      "addA11y": "Ajouter {{name}}"
+    },
+    "calendar": {
+      "title": "Aller à un jour",
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "legend": {
+        "complete": "Journée complète",
+        "partial": "Partielle",
+        "empty": "Rien saisi"
+      },
+      "shortcuts": {
+        "yesterday": "Hier",
+        "today": "Aujourd'hui"
+      },
+      "dayA11y": {
+        "complete": "{{day}} — journée complète",
+        "partial": "{{day}} — journée partielle",
+        "empty": "{{day}} — rien saisi"
+      },
+      "open": "Choisir un jour"
+    },
+    "quantity": {
+      "per100": "{{kcal}} kcal pour 100 g",
+      "increase": "Augmenter la quantité",
+      "decrease": "Diminuer la quantité",
+      "factor": {
+        "0_5": "½ {{portion}}",
+        "1": "{{portion}}",
+        "2": "2 × {{portion}}"
+      },
+      "lastTime": "La dernière fois : {{grams}} g",
+      "effect": "CE QUE ÇA CHANGE",
+      "willRemain": "Il te restera {{kcal}} kcal aujourd'hui",
+      "willExceed": "Tu dépasseras de {{kcal}} kcal"
+    }
   },
   "meals": {
     "manage": "Gérer les repas",
@@ -624,7 +718,10 @@
     "unmatched": "non reconnu",
     "nothing": "Aucun aliment détecté.",
     "addCount_one": "Ajouter {{count}} aliment",
-    "addCount_other": "Ajouter {{count}} aliments"
+    "addCount_other": "Ajouter {{count}} aliments",
+    "pickSuggestion": "Choisir {{name}}",
+    "search": "Rechercher",
+    "addRow": "Ajouter une ligne"
   },
   "recipes": {
     "title": "Recette",
@@ -640,7 +737,12 @@
     "addIngredient": "+ Ajouter un ingrédient",
     "removeIngredient": "Retirer cet ingrédient ?",
     "done": "Terminer",
-    "none": "Aucune recette."
+    "none": "Aucune recette.",
+    "rename": "Renommer la recette",
+    "deleteRecipe": "Supprimer la recette",
+    "deleteConfirm": "Supprimer cette recette ? Les repas déjà journalisés ne changent pas.",
+    "editQuantity": "Modifier la quantité de {{name}}",
+    "removeIngredientA11y": "Retirer {{name}}"
   },
   "stats": {
     "title": "Suivi",
@@ -655,7 +757,8 @@
         "up": "en hausse",
         "down": "en baisse",
         "stable": "stable"
-      }
+      },
+      "logHint": "Pèse-toi de préférence le matin, à jeun."
     },
     "weightGoal": {
       "title": "Progression vers l'objectif",
@@ -681,7 +784,18 @@
       "balance": "Bilan : {{value}} kcal",
       "aboveBelow": "{{above}} j au-dessus, {{below}} j en dessous",
       "empty": "Aucun jour renseigné",
-      "noTarget": "Définis ton objectif calorique"
+      "noTarget": "Définis ton objectif calorique",
+      "inTargetTitle": "Dans la cible",
+      "marginShort": "± {{pct}} % de ton objectif du jour",
+      "outOfDays": "/ {{total}} j",
+      "axisStart": "il y a {{count}} j",
+      "axisEnd": "hier",
+      "legend": {
+        "over": "{{count}} j au-dessus",
+        "in": "{{count}} j dans la cible",
+        "under": "{{count}} j en dessous"
+      },
+      "balanceSentence": "Sur {{days}} jours renseignés, ton bilan est de {{value}} kcal."
     },
     "completion": {
       "title": "Régularité du journal",
@@ -750,6 +864,22 @@
         "easy": "Journée facile — bas de la fourchette",
         "rest": "Aucune course planifiée aujourd’hui"
       }
+    },
+    "tabs": {
+      "regularity": "Régularité",
+      "intake": "Apports",
+      "weight": "Poids",
+      "quality": "Qualité"
+    },
+    "regularity": {
+      "title": "Journal rempli",
+      "window": "{{days}} derniers jours",
+      "currentStreak": "SÉRIE EN COURS",
+      "bestStreak": "MEILLEURE SÉRIE",
+      "emptyDays": "JOURS VIDES",
+      "days": "{{count}} jour",
+      "days_plural": "{{count}} jours",
+      "a11y": "Journal rempli à {{pct}} % sur {{days}} jours"
     }
   },
   "widgets": {
@@ -1225,6 +1355,18 @@
       "none": "Non défini",
       "note": "Ton profil est enregistré et synchronisé de façon sécurisée. Tu peux commencer à utiliser l'app.",
       "cta": "C'est parti"
+    },
+    "activity": {
+      "title": "À quel point bouges-tu ?",
+      "subtitle": "C'est ce qui décide de ton objectif calorique — de 2 100 à 3 300 kcal pour une même personne.",
+      "hint": "Tu pourras le changer à tout moment dans tes réglages nutrition.",
+      "descriptions": {
+        "sedentary": "Travail assis, peu de marche, pas de sport",
+        "light": "Un peu de marche, 1 à 2 séances par semaine",
+        "moderate": "3 à 5 séances par semaine, ou un travail debout",
+        "active": "6 à 7 séances par semaine, ou un travail physique",
+        "very_active": "Travail de force et entraînement quotidien"
+      }
     }
   },
   "auth": {
@@ -2944,7 +3086,12 @@
       "servingsMinus": "Une portion en moins",
       "servingsPlus": "Une portion en plus",
       "portionHint": "{{servings}} portions sur les {{total}} de la recette : les courses seront calculées au prorata.",
-      "confirm": "Ajouter · {{kcal}} kcal"
+      "confirm": "Ajouter · {{kcal}} kcal",
+      "foods": "Aliments",
+      "quick": "Calories",
+      "searchFood": "Chercher un aliment",
+      "foodMeta": "{{kcal}} kcal / 100 g",
+      "quickPlaceholder": "Restaurant, repas de famille…"
     },
     "shopping": {
       "open": "Liste de courses",
@@ -2979,6 +3126,12 @@
         "uncheckBody_other": "Les {{count}} articles de {{aisle}} seront décochés.",
         "uncheckConfirm": "Décocher"
       }
+    },
+    "grid": {
+      "showList": "Voir en liste",
+      "showGrid": "Voir en grille",
+      "more": "+{{count}} · {{kcal}}",
+      "openDayA11y": "Voir le détail du {{day}}"
     }
   },
   "strength": {
@@ -3183,5 +3336,26 @@
       "seeAll_one": "Voir le programme",
       "seeAll_other": "Voir les {{count}} programmes"
     }
+  },
+  "hydration": {
+    "title": "Hydratation",
+    "amount": "{{current}} / {{target}} L",
+    "add": "Ajouter un verre de {{ml}} ml",
+    "undo": "Retirer le dernier verre",
+    "a11y": "{{glasses}} verres sur {{target}}",
+    "targetLabel": "Objectif d'hydratation (ml)",
+    "glassLabel": "Volume d'un verre (ml)"
+  },
+  "quality": {
+    "title": "Qualité de l'assiette",
+    "subtitle": "Face aux repères de santé publique",
+    "range": "/ {{min}}–{{max}}",
+    "cap": "/ {{max}} max",
+    "keys": {
+      "fiber": "Fibres",
+      "sugars": "Sucres",
+      "saturatedFat": "Acides gras saturés"
+    },
+    "coverage": "Calculé sur {{pct}} % de tes calories : les ajouts sans aliment identifié n'y contribuent pas."
   }
 }

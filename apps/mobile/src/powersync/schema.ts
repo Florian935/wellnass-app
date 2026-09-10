@@ -111,6 +111,11 @@ const nutrition_profiles = new Table({
   training_bonus_mode: column.text,
   adherence_margin_pct: column.integer, // % de marge d'adhérence (NUTR-10)
   meals: column.text, // JSON [{key,label}] — repas personnalisés (4.15)
+  // US NUTRI-UX01 (R5) — réglages d'hydratation. 🔴 Déclarées ici sous peine de panne
+  // silencieuse : sans la colonne locale, l'écriture échoue et `void upsertNutritionProfile()`
+  // avale l'erreur — le réglage ne se pose jamais, sans message (panne exacte de CYCLE-01).
+  water_target_ml: column.integer,
+  glass_size_ml: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -132,6 +137,10 @@ const foods = new Table({
   fiber_per_100g: column.real,
   portions: column.text, // JSON [{labelFr,labelEn,grams}]
   micronutrients: column.text, // JSON socle 4.33 (pour 100 g)
+  // US NUTRI-UX01 (R6.7) — état de préparation déclaré (« raw » / « cooked »). Nullable : la
+  // bibliothèque porte l'information dans son nom, l'app la dérive alors (voir
+  // `resolvePreparationState`). 🔴 Sans cette déclaration, l'écriture locale échoue en silence.
+  preparation_state: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -603,6 +612,11 @@ const meal_plan_entries = new Table({
   source_type: column.text,
   recipe_id: column.text,
   template_id: column.text,
+  // US NUTRI-UX01 (R7.1) — le planning accepte un aliment simple et un ajout rapide, en plus des
+  // recettes et des repas types. Sans ces colonnes ici, l'écriture locale échoue et l'erreur est
+  // avalée : l'entrée ne se pose jamais, sans message (panne exacte de CYCLE-01).
+  food_id: column.text,
+  quantity_g: column.integer,
   servings: column.real,
   label: column.text,
   kcal: column.integer,
@@ -654,6 +668,21 @@ const body_weight_entries = new Table({
   user_id: column.text,
   log_date: column.text,
   weight_kg: column.real,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── US NUTRI-UX01 (R5) : hydratation ───────────────────────────────────────
+// Migration : supabase/migrations/20260910153006_nutri_ux01_hydration_and_plan_food.sql
+// Une ligne PAR AJOUT (jamais un total mis à jour) : annuler doit défaire le dernier geste, et
+// deux appareils hors réseau doivent s'additionner plutôt que s'écraser.
+// 🔴 Déclarer la table ICI est obligatoire : sans elle l'écriture locale échoue et l'erreur est
+// avalée par `void addWater()` — le verre ne se pose jamais, sans message (panne CYCLE-01).
+const water_entries = new Table({
+  user_id: column.text,
+  log_date: column.text,
+  volume_ml: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -851,6 +880,7 @@ export const AppSchema = new Schema({
   shopping_lists,
   shopping_list_items,
   body_weight_entries,
+  water_entries,
   daily_steps,
   daily_wellbeing,
   menstrual_periods,

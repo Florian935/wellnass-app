@@ -24,16 +24,21 @@ import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { MealPlanDayCard } from '@/components/nutrition/MealPlanDayCard';
+import { MealPlanWeekGrid } from '@/components/nutrition/MealPlanWeekGrid';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useWeekPlan } from '@/data/repositories/planned-session-repository';
 import { useRecipes } from '@/data/repositories/recipe-repository';
+import { useFoods } from '@/data/repositories/food-repository';
+import { TextField } from '@/components/TextField';
 import { useMealTemplates } from '@/data/repositories/meal-template-repository';
 import {
   consumePlannedEntry,
   duplicateWeek,
+  planFood,
+  planQuickAdd,
   planRecipe,
   planTemplate,
   removePlannedEntry,
@@ -64,6 +69,14 @@ export default function MealPlanScreen() {
   const router = useRouter();
 
   const [weekStart, setWeekStart] = useState(() => localDayKey(startOfWeek(new Date())));
+  /**
+   * Vue par défaut : la **grille** (US NUTRI-UX01, R7.2).
+   *
+   * La pile de sept cartes imposait jusqu'à 35 zones « + Ajouter » dans un scroll vertical, sans
+   * jamais montrer la semaine d'un coup d'œil — ce qui est l'usage même d'un planning. Elle
+   * reste accessible : c'est la vue de travail quand on détaille une journée.
+   */
+  const [view, setView] = useState<'grid' | 'list'>('grid');
   const [addTarget, setAddTarget] = useState<AddTarget | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -183,7 +196,25 @@ export default function MealPlanScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title={t('mealPlan.title')} subtitle={t('mealPlan.subtitle')} />
+      <ScreenHeader
+        title={t('mealPlan.title')}
+        subtitle={t('mealPlan.subtitle')}
+        action={
+          <Pressable
+            onPress={() => setView((v) => (v === 'grid' ? 'list' : 'grid'))}
+            accessibilityRole="button"
+            accessibilityLabel={t(view === 'grid' ? 'mealPlan.grid.showList' : 'mealPlan.grid.showGrid')}
+            hitSlop={8}
+            style={[styles.viewToggle, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Ionicons
+              name={view === 'grid' ? 'list-outline' : 'grid-outline'}
+              size={20}
+              color={colors.accent}
+            />
+          </Pressable>
+        }
+      />
 
       <View style={[styles.weekNav, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Pressable
@@ -222,7 +253,19 @@ export default function MealPlanScreen() {
           </View>
         )}
 
-        {dayKeys.map((dayKey, index) => {
+        {view === 'grid' ? (
+          <MealPlanWeekGrid
+            dayKeys={dayKeys}
+            entriesByDay={entriesByDay}
+            mealConfig={mealConfig}
+            mealLabels={mealLabels}
+            todayKey={todayKey}
+            onAdd={(dayKey, mealKey) => setAddTarget({ dayKey, mealKey })}
+            onOpenDay={() => setView('list')}
+          />
+        ) : null}
+
+        {view === 'list' ? dayKeys.map((dayKey, index) => {
           const dayEntries = entriesByDay.get(dayKey) ?? [];
           const hasTrainingSession = trainingDays.has(dayKey);
           const appliedBonus =
@@ -250,7 +293,7 @@ export default function MealPlanScreen() {
               onRemove={(entry) => void removePlannedEntry(entry.id)}
             />
           );
-        })}
+        }) : null}
 
         {/* Dupliquer n'est proposé que si la semaine précédente a du contenu (arbitrage Florian du
             04/08/2026). Sinon l'appel « réussissait » en ne copiant rien, sans le moindre retour.
@@ -305,8 +348,20 @@ function AddEntrySheet({
   const { colors } = useTheme();
   const { recipes } = useRecipes();
   const { templates } = useMealTemplates();
+  const [foodTerm, setFoodTerm] = useState('');
+  const { foods } = useFoods(foodTerm);
 
-  const [tab, setTab] = useState<'recipes' | 'templates'>('recipes');
+  /**
+   * Sources d'ajout — quatre depuis l'US NUTRI-UX01 (R7.1).
+   *
+   * Le planning n'acceptait que `recipes` et `templates` : un utilisateur qui l'ouvrait pour la
+   * première fois lisait « Aucune recette », devait sortir, créer une recette, revenir. Une
+   * vingtaine de taps avant le premier résultat — c'est cela qui condamnait le module.
+   */
+  const [tab, setTab] = useState<'recipes' | 'templates' | 'foods' | 'quick'>('recipes');
+  const [grams, setGrams] = useState('100');
+  const [quickLabel, setQuickLabel] = useState('');
+  const [quickKcal, setQuickKcal] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [servings, setServings] = useState(1);
   const [saving, setSaving] = useState(false);
@@ -315,6 +370,10 @@ function AddEntrySheet({
     setSelectedId(null);
     setServings(1);
     setTab('recipes');
+    setGrams('100');
+    setQuickLabel('');
+    setQuickKcal('');
+    setFoodTerm('');
     onClose();
   };
 
@@ -323,18 +382,35 @@ function AddEntrySheet({
 
   // Une recette porte ses macros pour la TOTALITÉ de son rendement : ce qu'on ajoute est
   // proportionnel aux portions demandées (règle R8).
+  const selectedFood = foods.find((f) => f.id === selectedId) ?? null;
   const previewKcal =
-    tab === 'recipes' && selectedRecipe
-      ? Math.round((selectedRecipe.totalKcal * servings) / Math.max(1, selectedRecipe.servings))
-      : (selectedTemplate?.totalKcal ?? 0);
+    tab === 'quick'
+      ? Math.max(0, Math.round(Number(quickKcal.replace(',', '.')) || 0))
+      : tab === 'foods' && selectedFood
+        ? Math.round((selectedFood.kcalPer100g * Math.max(1, Number(grams.replace(',', '.')) || 0)) / 100)
+        : tab === 'recipes' && selectedRecipe
+          ? Math.round((selectedRecipe.totalKcal * servings) / Math.max(1, selectedRecipe.servings))
+          : (selectedTemplate?.totalKcal ?? 0);
+
+  const quickKcalNum = Math.max(0, Math.round(Number(quickKcal.replace(',', '.')) || 0));
+  const gramsNum = Math.max(1, Math.round(Number(grams.replace(',', '.')) || 0));
+  /** Un ajout rapide n'a pas d'élément à sélectionner : ce sont ses calories qui l'autorisent. */
+  const canConfirm = tab === 'quick' ? quickKcalNum > 0 : selectedId !== null;
 
   const onConfirm = async () => {
-    if (!target || !selectedId) return;
+    if (!target || !canConfirm) return;
     setSaving(true);
     try {
-      if (tab === 'recipes') {
+      if (tab === 'quick') {
+        await planQuickAdd(target.dayKey, target.mealKey, {
+          label: quickLabel.trim() || t('journal.quickAdd'),
+          kcal: quickKcalNum,
+        });
+      } else if (tab === 'foods' && selectedId) {
+        await planFood(target.dayKey, target.mealKey, selectedId, gramsNum);
+      } else if (tab === 'recipes' && selectedId) {
         await planRecipe(target.dayKey, target.mealKey, selectedId, servings);
-      } else {
+      } else if (selectedId) {
         await planTemplate(target.dayKey, target.mealKey, selectedId);
       }
       close();
@@ -353,7 +429,7 @@ function AddEntrySheet({
         </Text>
 
         <View style={[styles.segment, { borderColor: colors.border }]}>
-          {(['recipes', 'templates'] as const).map((key) => (
+          {(['recipes', 'templates', 'foods', 'quick'] as const).map((key) => (
             <Pressable
               key={key}
               onPress={() => {
@@ -383,6 +459,33 @@ function AddEntrySheet({
           ))}
         </View>
 
+        {tab === 'foods' ? (
+          <TextField
+            label={t('mealPlan.add.searchFood')}
+            value={foodTerm}
+            onChangeText={setFoodTerm}
+            autoCapitalize="none"
+            placeholder={t('journal.searchPlaceholder')}
+          />
+        ) : null}
+
+        {tab === 'quick' ? (
+          <View style={styles.quickForm}>
+            <TextField
+              label={t('journal.name')}
+              value={quickLabel}
+              onChangeText={setQuickLabel}
+              placeholder={t('mealPlan.add.quickPlaceholder')}
+            />
+            <TextField
+              label={`${t('nutrition.calories.title')} (${t('nutrition.kcal')})`}
+              value={quickKcal}
+              onChangeText={setQuickKcal}
+              keyboardType="number-pad"
+            />
+          </View>
+        ) : null}
+
         <ScrollView style={styles.options} showsVerticalScrollIndicator={false}>
           {tab === 'recipes' &&
             recipes.length === 0 && (
@@ -390,6 +493,9 @@ function AddEntrySheet({
                 {t('mealPlan.add.noRecipe')}
               </Text>
             )}
+          {tab === 'foods' && foods.length === 0 && (
+            <Text style={[styles.hint, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>
+          )}
           {tab === 'templates' &&
             templates.length === 0 && (
               <Text style={[styles.hint, { color: colors.textMuted }]}>
@@ -397,7 +503,36 @@ function AddEntrySheet({
               </Text>
             )}
 
-          {tab === 'recipes'
+          {tab === 'foods'
+            ? foods.slice(0, 40).map((f) => (
+                <Pressable
+                  key={f.id}
+                  onPress={() => setSelectedId(f.id)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedId === f.id }}
+                  style={[
+                    styles.option,
+                    {
+                      backgroundColor: selectedId === f.id ? colors.surface : colors.background,
+                      borderColor: selectedId === f.id ? colors.accent : colors.border,
+                      borderWidth: selectedId === f.id ? 1.5 : 1,
+                    },
+                  ]}
+                >
+                  <View style={styles.optionTexts}>
+                    <Text style={[styles.optionName, { color: colors.text }]}>{f.name}</Text>
+                    <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
+                      {t('mealPlan.add.foodMeta', { kcal: Math.round(f.kcalPer100g) })}
+                    </Text>
+                  </View>
+                  {selectedId === f.id && (
+                    <Ionicons name="checkmark" size={20} color={colors.accent} />
+                  )}
+                </Pressable>
+              ))
+            : tab === 'quick'
+            ? null
+            : tab === 'recipes'
             ? recipes.map((r) => (
                 <Pressable
                   key={r.id}
@@ -458,6 +593,15 @@ function AddEntrySheet({
               ))}
         </ScrollView>
 
+        {tab === 'foods' && selectedId ? (
+          <TextField
+            label={t('journal.grams')}
+            value={grams}
+            onChangeText={setGrams}
+            keyboardType="number-pad"
+          />
+        ) : null}
+
         {/* Portions : recettes seulement. Un repas type n'a pas cette notion (décision D1). */}
         {tab === 'recipes' && selectedRecipe && (
           <>
@@ -504,7 +648,7 @@ function AddEntrySheet({
         <Button
           label={t('mealPlan.add.confirm', { kcal: previewKcal })}
           onPress={() => void onConfirm()}
-          disabled={selectedId === null}
+          disabled={!canConfirm}
           loading={saving}
         />
       </View>
@@ -513,6 +657,8 @@ function AddEntrySheet({
 }
 
 const styles = StyleSheet.create({
+  quickForm: { gap: 10 },
+  viewToggle: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   weekNav: {
     flexDirection: 'row',
     alignItems: 'center',

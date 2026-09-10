@@ -13,7 +13,15 @@ import { addDays, localDateFromDayKey, localDayKey } from './date';
 import { OTHER_MEAL_KEY, trainingDayCalories, type MealConfigItem } from './nutrition';
 
 /** Ce qu'on peut déposer dans une case du planning (décision D1). */
-export type MealPlanSourceType = 'recipe' | 'template';
+/**
+ * Origine d'une entrée de planning.
+ *
+ * 🔴 `food` et `quick` ouverts par l'US NUTRI-UX01 (R7.1). Le planning n'acceptait que `recipe`
+ * et `template` : planifier son premier repas imposait donc de **créer une recette d'abord**,
+ * soit une vingtaine de taps avant le moindre résultat. Ce n'était pas l'ergonomie interne du
+ * module qui le condamnait, c'était cette porte fermée à l'entrée.
+ */
+export type MealPlanSourceType = 'recipe' | 'template' | 'food' | 'quick';
 
 /**
  * Une case remplie du planning. `label` et les macros sont un **snapshot** pris à la
@@ -27,6 +35,10 @@ export type PlannedMealEntry = {
   sourceType: MealPlanSourceType;
   recipeId: string | null;
   templateId: string | null;
+  /** Aliment planifié (`source_type = 'food'`), sinon `null`. */
+  foodId: string | null;
+  /** Grammes de l'aliment planifié ; `null` pour les autres sources, qui portent `servings`. */
+  quantityG: number | null;
   servings: number;
   label: string;
   kcal: number;
@@ -66,7 +78,9 @@ export function portionFactor(
   servings: number,
   recipeServings: number | null | undefined,
 ): number {
-  if (sourceType === 'template') return servings;
+  // `template`, `food` et `quick` portent déjà leurs valeurs pour la quantité voulue : le
+  // snapshot est pris tel quel, `servings` n'est qu'un multiplicateur (1 dans le cas courant).
+  if (sourceType !== 'recipe') return servings;
   // Une recette a toujours `servings >= 1` en base (CHECK) ; une donnée corrompue ou absente ne
   // doit pas produire Infinity ni NaN dans une liste de courses.
   const yieldServings = recipeServings && recipeServings > 0 ? recipeServings : 1;

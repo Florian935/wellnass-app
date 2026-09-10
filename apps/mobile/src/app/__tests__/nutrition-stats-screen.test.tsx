@@ -45,9 +45,23 @@ jest.mock('@/data/repositories/journal-repository', () => ({
   useDailyTotals: jest.fn(() => ({ totals: [], isLoading: false })),
   useMealTotals: jest.fn(() => ({ mealTotals: [] })),
   useJournalCompletion: jest.fn(() => ({ isLoading: false, effectiveWindow: 0, loggedDays: 0, pct: 0 })),
+  // US NUTRI-UX01 (R4.1) — onglet « Qualité » : fibres / sucres / AGS, moyennés sur la fenêtre.
+  useQualityAverage: jest.fn(() => ({
+    quality: { fiber: 0, sugars: 0, saturatedFat: 0, coverageRatio: 0 },
+    loggedDays: 0,
+    isLoading: false,
+  })),
 }));
 jest.mock('@/data/repositories/dashboard-repository', () => ({
   useGoalAdherence: jest.fn(() => ({ isLoading: false, hasTarget: false })),
+  // US NUTRI-UX01 (R4.3) — le graphe d'adhérence a besoin du détail par jour, pas d'un seul taux.
+  useDailyCalorieTargets: jest.fn(() => ({
+    days: [],
+    marginPct: 10,
+    hasTarget: false,
+    weightKg: null,
+    isLoading: false,
+  })),
 }));
 jest.mock('@/data/repositories/nutrition-repository', () => ({
   useNutritionProfile: jest.fn(() => ({ nutritionProfile: null })),
@@ -212,13 +226,36 @@ const jour = (logDate: string, kcal: number, overrides: Record<string, unknown> 
   ...overrides,
 });
 
+/**
+ * Monte l'écran **et ouvre l'onglet demandé**.
+ *
+ * ⚠️ Depuis l'US NUTRI-UX01 (R4.1), l'écran est découpé en quatre sous-onglets — Régularité ·
+ * Apports · Poids · Qualité. Il empilait auparavant 8 sections permanentes et 4 cartes dans un
+ * seul scroll, là où l'ADR-007 §2 plafonne le Tier 1 à 4-5 sections **et nommait déjà cet écran**
+ * comme le point de saturation. Une assertion doit donc dire dans quel onglet elle se place.
+ */
+type Onglet = 'regularity' | 'intake' | 'weight' | 'quality';
+
+/** Onglet ouvert par défaut — chaque `describe` fixe celui qui porte la section qu'il teste. */
+let ongletParDefaut: Onglet = 'intake';
+
 const afficher = async ({
   totals = [] as unknown[],
   isLoading = false,
-}: { totals?: unknown[]; isLoading?: boolean } = {}) => {
+  onglet = ongletParDefaut,
+}: { totals?: unknown[]; isLoading?: boolean; onglet?: Onglet } = {}) => {
   mockTotals.mockReturnValue({ totals, isLoading });
   await render(<NutritionStatsScreen />);
+  if (onglet !== 'regularity') {
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText(`plage-${onglet}`));
+    });
+  }
 };
+
+afterEach(() => {
+  ongletParDefaut = 'intake';
+});
 
 const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   await act(async () => {
@@ -256,6 +293,10 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('pesée', () => {
+  beforeEach(() => {
+    ongletParDefaut = 'weight';
+  });
+
   it('sans pesée, un message plutôt qu’un zéro', async () => {
     await afficher();
 
@@ -481,6 +522,10 @@ describe('répartition par repas', () => {
 // ---------------------------------------------------------------------------
 
 describe('adhérence à l’objectif', () => {
+  beforeEach(() => {
+    ongletParDefaut = 'regularity';
+  });
+
   it('🔴 trois silences distincts, trois messages', async () => {
     mockAdherence.mockReturnValue({ isLoading: true });
     await afficher();
@@ -497,7 +542,7 @@ describe('adhérence à l’objectif', () => {
     expect(screen.getByText('stats.adherence.empty')).toBeTruthy();
   });
 
-  it('affiche le pourcentage, le détail et la marge', async () => {
+  it('affiche le score, la marge et le décompte par état', async () => {
     mockAdherence.mockReturnValue({
       isLoading: false,
       hasTarget: true,
@@ -511,10 +556,12 @@ describe('adhérence à l’objectif', () => {
     });
     await afficher({ totals: [jour('2026-08-12', 2000)] });
 
-    expect(screen.getByText('71 %')).toBeTruthy();
-    expect(screen.getByText('stats.adherence.inTarget:{"count":5,"total":7}')).toBeTruthy();
-    // La marge est affichée : « 71 % dans la cible » ne veut rien dire sans la tolérance retenue.
-    expect(screen.getByText('stats.adherence.margin:{"pct":10}')).toBeTruthy();
+    // Depuis l'US NUTRI-UX01 (R4.3), l'adhérence n'est plus quatre phrases en texte mono mais un
+    // graphe à zone-cible : le score se lit « 5 / 7 j », et la marge reste affichée — « dans la
+    // cible » ne veut rien dire sans la tolérance retenue.
+    expect(screen.getByText('5')).toBeTruthy();
+    expect(screen.getByText('stats.adherence.outOfDays:{"total":7}')).toBeTruthy();
+    expect(screen.getByText('stats.adherence.marginShort:{"pct":10}')).toBeTruthy();
   });
 
   it.each([
@@ -538,7 +585,7 @@ describe('adhérence à l’objectif', () => {
     // « 8400 » ne dit pas si l'on est au-dessus ou en dessous de sa cible, et c'est toute
     // l'information. `Intl.NumberFormat` apporte aussi le séparateur de milliers de la langue —
     // une concaténation manuelle donnerait « +8400 », illisible.
-    const balance = screen.getByText(/stats\.adherence\.balance/).children.join('');
+    const balance = screen.getByText(/stats\.adherence\.balanceSentence/).children.join('');
     expect(balance).toContain(attendu.replace('−', '-').replace(/ /g, ' ').split(' ')[0]!);
   });
 
@@ -557,8 +604,10 @@ describe('adhérence à l’objectif', () => {
     await afficher({ totals: [jour('2026-08-12', 2000)] });
 
     // Un bilan à zéro peut cacher deux jours très hauts et un très bas : le détail est ce qui
-    // rend le chiffre actionnable.
-    expect(screen.getByText('stats.adherence.aboveBelow:{"above":2,"below":1}')).toBeTruthy();
+    // rend le chiffre actionnable. Il vient de `useGoalAdherence` — le graphe ne recompte rien,
+    // sous peine d'afficher deux chiffres différents pour la même semaine.
+    expect(screen.getByText('stats.adherence.legend.over:{"count":2}')).toBeTruthy();
+    expect(screen.getByText('stats.adherence.legend.under:{"count":1}')).toBeTruthy();
   });
 });
 
@@ -567,6 +616,10 @@ describe('adhérence à l’objectif', () => {
 // ---------------------------------------------------------------------------
 
 describe('régularité du journal', () => {
+  beforeEach(() => {
+    ongletParDefaut = 'regularity';
+  });
+
   it('🔴 une fenêtre effective NULLE affiche l’état vide, pas 0 %', async () => {
     mockCompletion.mockReturnValue({ isLoading: false, effectiveWindow: 0, loggedDays: 0, pct: 0 });
     await afficher();
@@ -576,11 +629,15 @@ describe('régularité du journal', () => {
     expect(screen.getByText('stats.completion.empty')).toBeTruthy();
   });
 
-  it('affiche le pourcentage et le détail', async () => {
+  it('affiche la heatmap dès que la fenêtre existe', async () => {
     mockCompletion.mockReturnValue({ isLoading: false, effectiveWindow: 7, loggedDays: 5, pct: 71 });
     await afficher();
 
-    expect(screen.getByText('stats.completion.logged:{"count":5,"total":7}')).toBeTruthy();
+    // R4.2 — le taux nu (« 71 % ») est remplacé par 30 cases et trois compteurs : un pourcentage
+    // ne dit ni QUAND on a décroché, ni depuis combien de jours on tient.
+    expect(screen.getByText('stats.regularity.title')).toBeTruthy();
+    expect(screen.getByText('stats.regularity.currentStreak')).toBeTruthy();
+    expect(screen.getByText('stats.regularity.bestStreak')).toBeTruthy();
   });
 
   it('l’ouverture de l’écran est tracée UNE fois', async () => {
@@ -590,15 +647,26 @@ describe('régularité du journal', () => {
     expect(mockTrack).toHaveBeenCalledWith('stats_viewed', { pillar: 'nutrition' });
   });
 
-  it('🔴 une SEULE fenêtre pilote apports, repas, adhérence et régularité', async () => {
+  it('🔴 une SEULE fenêtre pilote tout ce qui est visible dans l’onglet', async () => {
     await afficher({ totals: [jour('2026-08-12', 2000)] });
+
+    await taper(screen.getByLabelText('plage-7d'));
+
+    // La règle n'a pas changé avec les sous-onglets (US NUTRI-UX01, R4.1), elle s'applique
+    // seulement à ce qui est **affiché ensemble** : ici la heatmap et le graphe d'adhérence.
+    // Deux fenêtres côte à côte donneraient deux périodes qu'on croirait comparables — c'est
+    // d'ailleurs le défaut que la première version de cette refonte avait introduit, la heatmap
+    // restant figée à 30 jours en face d'une adhérence sur 7.
+    expect(mockAdherence).toHaveBeenLastCalledWith(7);
+    expect(mockCompletion).toHaveBeenLastCalledWith(7);
+  });
+
+  it('🔴 la répartition par repas suit la fenêtre de SON onglet', async () => {
+    await afficher({ totals: [jour('2026-08-12', 2000)], onglet: 'intake' });
 
     await taper(screen.getByLabelText('plage-30d'));
 
-    // Quatre toggles indépendants produiraient quatre chiffres qu'on croirait comparables sans
-    // qu'ils le soient.
-    expect(mockAdherence).toHaveBeenLastCalledWith(30);
-    expect(mockCompletion).toHaveBeenLastCalledWith(30);
+    // Les apports et la répartition sont affichés ensemble : ils partagent donc leur sélecteur.
     expect(mockMealTotals).toHaveBeenLastCalledWith('2026-07-15');
   });
 });

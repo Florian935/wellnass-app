@@ -11,7 +11,13 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **10/09/2026 (bis)** — **57 sections**. Deux mouvements le même jour, en
+> Dernière mise à jour : **10/09/2026 (ter)** — **58 sections**.
+>
+> **③ une §58 est arrivée** : NUTRI-UX01, refonte du pilier Nutrition — troisième pilier repris
+> dans la même semaine, après l'accueil et la musculation. 🔴 **Elle a deux prérequis**, dont un
+> geste manuel dans le dashboard PowerSync : lire son encadré avant de commencer.
+>
+> *Historique du jour :* Deux mouvements le même jour, en
 > sens inverse :
 > **① l'ancienne §57 est partie** (refonte de l'accueil, ACCUEIL-01 → 06, recette validée par
 > Florian après une passe de 5 correctifs) — supprimée conformément à la règle de purge ci-dessus ;
@@ -2499,3 +2505,196 @@ deux exclusions, toutes deux extérieures à cette US :
 - **La fréquence hebdomadaire à l'onboarding.** Les trois programmes suggérés se trient sur le
   niveau d'affichage, seul signal d'expérience disponible — le profil ne stocke ni niveau de
   pratique ni disponibilité. Le vrai tri demanderait une US d'onboarding.
+
+## 58. NUTRI-UX01 — Refonte UX du pilier Nutrition (`feature/nutri-refonte-ux`)
+
+> Spec : [nutri-ux01-refonte-pilier-nutrition.md](docs/specs/functional/us/nutri-ux01-refonte-pilier-nutrition.md) ·
+> Plan : [nutri-ux01-refonte-pilier-nutrition.md](docs/plans/nutri-ux01-refonte-pilier-nutrition.md) ·
+> Audit : [audit-nutrition-2026-09.md](docs/product/audit-nutrition-2026-09.md) (13 pages) ·
+> Maquettes : [design/nutrition-refonte-2026-09/](design/nutrition-refonte-2026-09/) (7 planches).
+>
+> 🔴 **DEUX PRÉREQUIS AVANT DE COMMENCER — dans cet ordre.**
+>
+> **① Déployer la sync rule PowerSync.** `water_entries` est une **table neuve**. Coller
+> [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
+> PowerSync (Settings → Sync Rules) puis **Deploy**. Sans ce geste, les verres bus restent
+> **locaux** et ne remontent jamais — *sans aucune erreur visible*. Étape déjà oubliée **trois
+> fois** dans ce projet (BIEN-01, RUN-F2c, VIE-01).
+>
+> **② Un build neuf est obligatoire.** Trois migrations sont déjà poussées sur le cloud
+> (cochées dans [MIGRATIONS.md](supabase/MIGRATIONS.md)), mais le **schéma local** a changé :
+> `water_entries`, `foods.preparation_state`, `meal_plan_entries.food_id`/`quantity_g`,
+> `nutrition_profiles.water_target_ml`/`glass_size_ml`. Un APK antérieur écrira dans des
+> colonnes qui n'existent pas chez lui — et **avalera l'erreur**.
+>
+> ⚠️ **Trois sessions ont travaillé la même semaine** (accueil, musculation, course). Cette US
+> vit dans un worktree isolé et ne touche que le pilier nutrition, mais au merge : vérifier que
+> l'accueil et le hub muscu n'ont pas bougé.
+
+### A. L'objectif calorique devient juste (R1) — le défaut le plus grave
+
+- [ ] 1. **Compte neuf, pilier nutrition actif** : l'onboarding pose une **5ᵉ étape « À quel
+      point bouges-tu ? »**, après le niveau d'affichage. Le badge indique « étape 5 sur 5 ».
+- [ ] 2. Chaque niveau porte une **description concrète** (« Travail assis, peu de marche, pas
+      de sport ») et son facteur en petit (×1,2). ⚠️ Si tu ne vois que « Sédentaire ×1,2 » sans
+      la phrase, c'est un défaut : c'est la phrase qui permet de se reconnaître.
+- [ ] 3. **Pilier nutrition désactivé** à l'étape 2 : l'étape n'apparaît pas, et le badge
+      affiche « étape 4 sur 4 ». La question n'a pas de sens sans nutrition (décision H).
+- [ ] 4. **Passer l'étape n'écrit rien.** Ouvrir ensuite Nutrition → réglages (icône options) :
+      un bandeau ambre dit « Valeur par défaut — tu n'as pas encore répondu », et **aucun
+      niveau n'est coché**.
+- [ ] 5. 🔴 **Le cœur du correctif** : avant cette US, « Modérément actif » était coché comme si
+      tu l'avais choisi. Pour un sédentaire, l'objectif était surestimé de **~600 kcal/jour** —
+      de quoi annuler entièrement un déficit de sèche, sans le moindre signal.
+- [ ] 6. Choisir un niveau : le bandeau **disparaît**, le niveau est coché, et l'objectif
+      calorique du journal **change immédiatement** (vérifier l'anneau du bilan).
+- [ ] 7. Le **TDEE est expliqué** en une phrase sous le chiffre (« ce que ton corps dépense en
+      une journée… »). Le sigle nu ne veut rien dire pour qui n'est pas nutritionniste.
+
+### B. Le geste de saisie (R2) — ce qui se fait cinq fois par jour
+
+- [ ] 8. Depuis le journal, « + Ajouter un aliment » ouvre une **feuille par le bas**, plus un
+      écran plein. Elle nomme le repas visé dans son titre.
+- [ ] 9. La feuille expose **trois modes** en haut : `Rechercher · Scanner · Texte libre`.
+      ⚠️ Avant : 5 onglets + 4 boutons de pied, soit **9 entrées de même poids**.
+- [ ] 10. **Le budget reste affiché** pendant toute la saisie : « Il te reste N kcal · P g de
+      protéines ». ⚠️ C'est l'information qui disparaissait au moment précis où l'on décide.
+- [ ] 11. **À l'ouverture, la liste montre tes habitudes** (récents + favoris), pas la base par
+      ordre alphabétique. Sur un compte neuf, elle invite à chercher ou scanner.
+- [ ] 12. Un aliment déjà consommé affiche « 150 g · **ta quantité habituelle** », en vert.
+- [ ] 13. **Le « + » de la ligne journalise en UN tap**, avec cette quantité. Vérifier que
+      l'entrée apparaît bien dans le bon repas, avec le bon poids.
+- [ ] 14. **Toucher la ligne** (et non le +) ouvre le détail pour ajuster la quantité.
+- [ ] 15. **La recherche mélange les trois familles** : tape un mot qui existe à la fois comme
+      aliment et comme recette → les deux apparaissent dans **une seule liste**, avec un
+      sous-titre « Recette · N portions » ou « Repas type · N aliments ».
+- [ ] 16. 🔴 **Le classement est par pertinence, pas alphabétique.** Tape « pain » : « Pain »
+      doit sortir **avant** « Chapelure de pain ».
+- [ ] 17. 🔴 **Tolérance aux fautes** : tape « poullet » → le poulet doit sortir. Avant, la
+      recherche ne rendait rien.
+- [ ] 18. **Scanner** depuis la feuille ouvre la caméra sur le bon jour et le bon repas.
+- [ ] 19. **Le scan est aussi en en-tête du journal** (bouton terracotta) : deux taps depuis
+      l'ouverture de l'app. Avant : six.
+- [ ] 20. **Le repas se déduit de l'heure.** Ouvre le scan à 20 h sans passer par un repas :
+      l'entrée doit tomber au **dîner**, pas au petit-déjeuner.
+
+### C. La quantité (R2.5)
+
+- [ ] 21. Le panneau de quantité a un **stepper − / +** : plus besoin du clavier pour ajuster.
+      Le pas s'adapte (1 g sous 20 g, 5 g sous 100, 10 au-delà).
+- [ ] 22. Les portions sont **multipliables** : « ½ bol · 1 bol · 2 bols », avec les grammes de
+      chacune. ⚠️ Avant, une puce **écrasait** la quantité : « deux bananes » imposait un calcul
+      mental.
+- [ ] 23. Un aliment déjà journalisé affiche « **La dernière fois : 65 g** » et pré-remplit
+      cette quantité.
+- [ ] 24. Le bloc sombre « CE QUE ÇA CHANGE » montre les kcal de la quantité **et** ce qu'il
+      restera après l'ajout. En cas de dépassement, il l'annonce sans dramatiser.
+- [ ] 25. Les « Valeurs détaillées » (micros) sont **repliées**. Avant, jusqu'à 33 lignes
+      s'ouvraient au-dessus des boutons d'action.
+
+### D. Le journal (R3)
+
+- [ ] 26. La **date est tapable** (chevron ▾) et ouvre un **calendrier mensuel**.
+- [ ] 27. Les jours renseignés portent une **pastille** : vert (journée complète), ambre
+      (partielle), gris (rien). Les jours à venir n'en ont pas.
+- [ ] 28. Naviguer sur un mois passé fonctionne, et sélectionner un jour ramène au journal de
+      ce jour. ⚠️ Avant : **15 taps sur ◀** pour remonter de deux semaines.
+- [ ] 29. Sous la barre de jour, une **trame de la semaine** (7 pastilles) montre la régularité.
+      Un tap sur une pastille change de jour.
+- [ ] 30. **Hydratation** : la carte affiche « 0 / 2 L » et une grille de verres vides.
+- [ ] 31. **Un tap sur +** ajoute un verre (250 ml par défaut) : la grille se remplit, le total
+      monte. 🔴 Fermer et rouvrir l'app : le verre est **toujours là** (c'est ce qui teste la
+      persistance locale).
+- [ ] 32. Le bouton **annuler** n'apparaît que s'il y a quelque chose à défaire, et retire
+      **le dernier verre**.
+- [ ] 33. Dépasser l'objectif **n'est pas traité comme une faute** : pas de rouge, pas d'alerte.
+- [ ] 34. 🔴 **Sur un second appareil** (ou après réinstallation) : les verres bus remontent.
+      *C'est ce critère qui teste la sync rule du prérequis ①.*
+- [ ] 35. **Les micronutriments sont visibles par défaut** : fer, calcium, magnésium, vitamine D,
+      vitamine C, potassium — avec leurs anneaux de couverture. ⚠️ Avant, la grille était vide
+      tant qu'on n'allait pas cocher dans un mur de 33 pastilles.
+- [ ] 36. Tout décocher dans les réglages **masque** la grille : le suivi reste refusable.
+- [ ] 37. 🔴 **Les micros sont SOUS les repas**, plus au-dessus. Vérifier qu'au chargement du
+      journal, **le premier repas est visible sans scroller**.
+- [ ] 38. **Repères de qualité** (fibres / sucres / AGS) sous les repas, avec la plage de
+      référence. Ils n'apparaissent que si la journée a des aliments identifiés.
+
+### E. Le suivi (R4)
+
+- [ ] 39. L'écran Suivi s'ouvre sur **quatre sous-onglets** : `Régularité · Apports · Poids ·
+      Qualité`. ⚠️ Avant : 8 sections + 4 cartes dans un seul scroll.
+- [ ] 40. **Régularité** : une **heatmap de 30 cases** remplace le pourcentage nu, avec série en
+      cours, meilleure série et jours vides.
+- [ ] 41. **Compte neuf** : la heatmap ne dit **pas** « 0 % » — elle affiche l'état vide.
+      Reprocher une régularité nulle à quelqu'un qui vient d'installer l'app serait absurde.
+- [ ] 42. **Adhérence** : un graphe à **zone-cible**, un trait par jour, sous / dans / au-dessus.
+      Le bilan cumulé est une phrase, plus une ligne en texte mono.
+- [ ] 43. Changer la fenêtre (7 j / 30 j) déplace **la heatmap et le graphe ensemble** : deux
+      périodes différentes côte à côte se croiraient comparables.
+- [ ] 44. **Poids** : la courbe et l'objectif sont en haut, **la saisie de la pesée en bas**.
+      Avant, saisir son poids était le premier bloc d'un écran de lecture.
+- [ ] 45. **Qualité** : fibres, sucres et AGS face à leurs repères, plus protéines/kg. Si une
+      partie des calories vient d'ajouts rapides, une phrase dit sur quel pourcentage le calcul
+      porte — l'app annonce ce qu'elle ne sait pas.
+
+### F. Le planning (R7)
+
+- [ ] 46. Le planning s'ouvre en **grille de semaine** (7 colonnes × repas), plus en pile de
+      sept cartes. Le total du jour est en tête de colonne.
+- [ ] 47. La bascule en haut à droite ramène à la **liste**, qui reste la vue de détail.
+- [ ] 48. 🔴 **La feuille d'ajout propose QUATRE sources** : Recettes · Repas types · **Aliments**
+      · **Calories**. ⚠️ Avant, seules les deux premières existaient : planifier son premier
+      repas imposait d'aller créer une recette (~20 taps).
+- [ ] 49. Planifier un **aliment simple** avec une quantité : il apparaît dans la case, avec ses
+      kcal.
+- [ ] 50. Planifier un **ajout rapide** (« Restaurant, 800 kcal ») : accepté sans aliment.
+- [ ] 51. **Le planning n'écrit toujours pas dans le journal** (règle R1 de REPAS-01) : seul
+      « J'ai mangé ça » crée des entrées, et il reste réversible.
+- [ ] 52. La **liste de courses** fonctionne toujours ; un ajout rapide y est compté comme non
+      résolu, ce qu'elle annonce.
+
+### G. Recettes et aliments perso (R6)
+
+- [ ] 53. Une recette se **renomme** (crayon à côté du titre) et se **supprime** (corbeille).
+      Aucun des deux n'était possible.
+- [ ] 54. La **quantité d'un ingrédient se modifie** (crayon sur la ligne) : les kcal de la
+      recette suivent.
+- [ ] 55. Supprimer un ingrédient a une **corbeille visible**. ⚠️ Avant : appui long, sans la
+      moindre affordance.
+- [ ] 56. **Créer un aliment** : on peut déclarer une **portion usuelle** (« 1 tranche · 25 g »)
+      et l'état **cru / cuit**.
+- [ ] 57. Cette portion se retrouve ensuite dans le panneau de quantité, multipliable.
+      ⚠️ Avant, un aliment perso ou scanné se saisissait **en grammes à vie**.
+- [ ] 58. Les **allergènes** se cochent dans une liste (gluten, arachides, lait…) en plus de la
+      saisie libre (spec §2.4).
+
+### H. Saisie en texte libre (R6.5)
+
+- [ ] 59. Décrire un repas puis analyser : les lignes reconnues s'affichent avec leur quantité.
+- [ ] 60. 🔴 **Une ligne non reconnue n'est plus un cul-de-sac** : elle propose les **meilleures
+      correspondances**, plus « Rechercher » et « Créer l'aliment ».
+- [ ] 61. Choisir une proposition **remplit la ligne**, qui redevient modifiable.
+- [ ] 62. Un bouton **« Ajouter une ligne »** permet de compléter à la main (spec §4.5).
+
+### I. Non-régression — ce qui ne doit PAS avoir bougé
+
+- [ ] 63. Le **bilan du jour** (anneau, badge de séance) est inchangé.
+- [ ] 64. Les **macros en trois colonnes** sont inchangées.
+- [ ] 65. « **Copier hier** » (menu ⋯ d'un repas) fonctionne toujours.
+- [ ] 66. Le **détail d'une entrée** (tap sur une ligne) : modifier, supprimer, déplacer vers un
+      autre repas.
+- [ ] 67. Les réglages du profil nutritionnel s'enregistrent — mais **à la sortie du champ**,
+      plus à chaque frappe. Taper « 2500 » ne doit plus produire quatre écritures.
+- [ ] 68. Vider un champ de macro puis quitter le champ : la valeur passe à 0. Vider **sans**
+      quitter : rien n'est écrit.
+- [ ] 69. Le **widget nutrition de l'accueil** ouvre toujours le bon repas selon l'heure.
+- [ ] 70. **Aucun texte anglais** n'apparaît en français, et inversement (basculer la langue).
+
+### J. Ce qui reste ouvert après cette recette
+
+- [ ] 71. 🔴 **La bibliothèque compte toujours 80 aliments.** Ce n'est pas un défaut de l'US :
+      le remplissage exige le CSV CIQUAL, non versionné et absent de la machine. L'outillage est
+      livré (`generate.py --bulk`), la procédure est en spec §9 — **c'est le premier
+      reste-à-faire du pilier, et il ne demande aucun développement**.
+- [ ] 72. La **traduction EN** des aliments importés reste à faire (CIQUAL est monolingue) :
+      le script annonce le nombre concerné à chaque import.

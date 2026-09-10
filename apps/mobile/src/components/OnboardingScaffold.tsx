@@ -9,10 +9,19 @@ import { completeOnboarding } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-const TOTAL_STEPS = 4;
+/**
+ * Nombre d'étapes du parcours **de base**.
+ *
+ * Il est variable depuis l'US NUTRI-UX01 : l'étape « niveau d'activité » ne s'affiche que si le
+ * pilier nutrition est actif (décision H — ne rien imposer à qui ne suit pas son alimentation).
+ * Le total est donc passé par l'appelant quand il diffère.
+ */
+const DEFAULT_TOTAL_STEPS = 4;
 
 type OnboardingScaffoldProps = {
   step: number;
+  /** Total affiché dans le badge « étape N sur M ». Défaut : le parcours de base. */
+  total?: number;
   title: string;
   subtitle?: string;
   children: ReactNode;
@@ -23,6 +32,7 @@ type OnboardingScaffoldProps = {
 /** Étape d'onboarding : badge de progression, lien « Passer tout », contenu, Passer / Continuer. */
 export function OnboardingScaffold({
   step,
+  total = DEFAULT_TOTAL_STEPS,
   title,
   subtitle,
   children,
@@ -42,7 +52,7 @@ export function OnboardingScaffold({
     <FormScreen>
       <View style={styles.topRow}>
         <Text style={[styles.stepBadge, { color: colors.textMuted }]}>
-          {t('onboarding.step', { current: step, total: TOTAL_STEPS })}
+          {t('onboarding.step', { current: step, total })}
         </Text>
         <Pressable accessibilityRole="button" onPress={skipAll} hitSlop={8}>
           <Text style={[styles.skipAll, { color: colors.accent }]}>{t('onboarding.skipAll')}</Text>

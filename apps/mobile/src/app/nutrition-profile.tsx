@@ -8,6 +8,8 @@ import {
   NUTRITION_OBJECTIVES,
   activityFactor,
   computeAge,
+  effectiveActivityLevel,
+  hasChosenActivityLevel,
   defaultMacroRatios,
   macroGramsFromCalories,
   macroRatiosFromGrams,
@@ -23,7 +25,7 @@ import {
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Segment } from '@/components/Segment';
-import { TextField } from '@/components/TextField';
+import { DeferredTextField } from '@/components/DeferredTextField';
 import { useProfile } from '@/data/repositories/profile-repository';
 import {
   upsertNutritionProfile,
@@ -43,6 +45,18 @@ const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
 
 /** Modes du bonus calorique des jours d'entraînement (item RN-02). */
 const TRAINING_BONUS_MODES: readonly TrainingBonusMode[] = ['fixed', 'auto'];
+
+/**
+ * Allergènes les plus courants, proposés à cocher (spec §2.4).
+ *
+ * La spec demandait « liste libre **+ sélection dans une liste prédéfinie** » ; seule la liste
+ * libre existait. Les clés sont techniques, les libellés viennent de l'i18n — un allergène coché
+ * est stocké **par son libellé traduit**, comme ceux saisis à la main, pour que la liste reste
+ * une simple liste de mots.
+ */
+const COMMON_ALLERGENS = [
+  'gluten', 'peanuts', 'nuts', 'milk', 'eggs', 'soy', 'fish', 'shellfish', 'sesame',
+] as const;
 
 /** Marges d'adhérence proposées (%, item NUTR-10). */
 const ADHERENCE_MARGINS = ['5', '10', '15'] as const;
@@ -68,7 +82,12 @@ export default function NutritionProfileScreen() {
 
   const objective: NutritionObjective =
     nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const activityLevel: ActivityLevel = nutritionProfile?.activityLevel ?? 'moderate';
+  // 🔴 Deux notions distinctes, et c'est tout l'objet de R1.3 : ce qui est APPLIQUÉ aux calculs
+  // (repli historique inclus) et ce qui a été CHOISI. Confondre les deux revenait à afficher
+  // « Modérément actif » comme une sélection de l'utilisateur alors que personne n'avait posé la
+  // question — pour un sédentaire, ~614 kcal/jour d'objectif en trop, en silence.
+  const activityLevel: ActivityLevel = effectiveActivityLevel(nutritionProfile);
+  const activityChosen = hasChosenActivityLevel(nutritionProfile);
   const manualCalories = nutritionProfile?.manualCalories ?? null;
   const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const trainingBonusMode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
@@ -119,6 +138,15 @@ export default function NutritionProfileScreen() {
     });
   };
 
+  /** Ajoute / retire un allergène de la liste, en respectant la casse déjà saisie. */
+  const toggleAllergen = (label: string) => {
+    const exists = allergens.some((x) => x.toLowerCase() === label.toLowerCase());
+    const next = exists
+      ? allergens.filter((x) => x.toLowerCase() !== label.toLowerCase())
+      : [...allergens, label];
+    void upsertNutritionProfile({ allergens: next });
+  };
+
   const toggleRestriction = (r: DietRestriction) => {
     const next = restrictions.includes(r)
       ? restrictions.filter((x) => x !== r)
@@ -143,9 +171,19 @@ export default function NutritionProfileScreen() {
 
       {/* Niveau d'activité (4.2 / spec §2.2) */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('nutrition.activity.title')}</Text>
+      {!activityChosen ? (
+        <View style={[styles.notice, { backgroundColor: colors.warn, borderColor: colors.warnBorder }]}>
+          <Text style={[styles.noticeTitle, { color: colors.warnText }]}>
+            {t('nutrition.activity.defaultNotice')}
+          </Text>
+          <Text style={[styles.noticeBody, { color: colors.warnText }]}>
+            {t('nutrition.activity.defaultHint')}
+          </Text>
+        </View>
+      ) : null}
       <OptionList
         options={ACTIVITY_LEVELS}
-        value={activityLevel}
+        value={activityChosen ? activityLevel : null}
         onChange={(l) => void upsertNutritionProfile({ activityLevel: l })}
         label={(l) => t(`nutrition.activity.options.${l}`)}
         trailing={(l: ActivityLevel) => `×${activityFactor(l).toString().replace('.', ',')}`}
@@ -168,14 +206,18 @@ export default function NutritionProfileScreen() {
             <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{t('nutrition.calories.tdee')}</Text>
             <Text style={[styles.rowValue, { color: colors.text }]}>{tdeeValue} {t('nutrition.kcal')}</Text>
           </View>
+          {/* R1.4 — « TDEE » est un sigle de nutritionniste posé sur le chiffre central du pilier. */}
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('nutrition.calories.tdeeHint')}
+          </Text>
           <View style={styles.row}>
             <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{t('nutrition.calories.target')}</Text>
             <Text style={[styles.rowValue, { color: colors.accent }]}>{target} {t('nutrition.kcal')}</Text>
           </View>
-          <TextField
+          <DeferredTextField
             label={t('nutrition.calories.manual')}
             value={manualCalories?.toString() ?? ''}
-            onChangeText={(v) => void upsertNutritionProfile({ manualCalories: parseNumber(v) })}
+            onCommit={(v) => void upsertNutritionProfile({ manualCalories: parseNumber(v) })}
             keyboardType="number-pad"
             placeholder={String(autoTarget)}
           />
@@ -200,10 +242,10 @@ export default function NutritionProfileScreen() {
             {t('nutrition.calories.bonusMode.hint')}
           </Text>
           {/* Bonus jour d'entraînement (4.7) — 0/vide = désactivé */}
-          <TextField
+          <DeferredTextField
             label={t('nutrition.calories.trainingBonus')}
             value={trainingBonus > 0 ? String(trainingBonus) : ''}
-            onChangeText={(v) => void upsertNutritionProfile({ trainingDayBonus: parseBonus(v) })}
+            onCommit={(v) => void upsertNutritionProfile({ trainingDayBonus: parseBonus(v) })}
             keyboardType="number-pad"
             placeholder="0"
           />
@@ -252,10 +294,10 @@ export default function NutritionProfileScreen() {
                     />
                   </View>
                   <View style={styles.gramField}>
-                    <TextField
+                    <DeferredTextField
                       label={t('nutrition.macros.grams')}
                       value={grams[key].toString()}
-                      onChangeText={(v) => onEditGram(key, v)}
+                      onCommit={(v) => onEditGram(key, v)}
                       keyboardType="number-pad"
                     />
                   </View>
@@ -305,14 +347,39 @@ export default function NutritionProfileScreen() {
           );
         })}
       </View>
-      <TextField
+      {/* Liste prédéfinie à cocher (spec §2.4, jamais livrée : seule la saisie libre existait). */}
+      <View style={styles.chips}>
+        {COMMON_ALLERGENS.map((a) => {
+          const active = allergens.some((x) => x.toLowerCase() === t(`nutrition.restrictions.allergenOptions.${a}`).toLowerCase());
+          return (
+            <Pressable
+              key={a}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              onPress={() => toggleAllergen(t(`nutrition.restrictions.allergenOptions.${a}`))}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: active ? colors.accent : colors.surface,
+                  borderColor: active ? colors.accent : colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.chipLabel, { color: active ? colors.accentText : colors.text }]}>
+                {t(`nutrition.restrictions.allergenOptions.${a}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <DeferredTextField
         label={t('nutrition.restrictions.allergens')}
         value={allergens.join(', ')}
-        onChangeText={(v) =>
+        onCommit={(v) =>
           void upsertNutritionProfile({
             allergens: v
               .split(',')
-              .map((s) => s.trim())
+              .map((x) => x.trim())
               .filter(Boolean),
           })
         }
@@ -357,7 +424,8 @@ export default function NutritionProfileScreen() {
 
 type OptionListProps<T extends string> = {
   options: readonly T[];
-  value: T;
+  /** `null` = aucune option cochée — l'app applique un repli qu'elle affiche par ailleurs (R1.3). */
+  value: T | null;
   onChange: (value: T) => void;
   label: (option: T) => string;
   trailing?: (option: T) => string;
@@ -420,6 +488,9 @@ const styles = StyleSheet.create({
   track: { flex: 1, height: 10, borderRadius: 5, overflow: 'hidden', marginBottom: 16 },
   fill: { height: '100%', borderRadius: 5 },
   gramField: { width: 96 },
+  notice: { borderWidth: 1, borderRadius: 14, padding: 13, gap: 4 },
+  noticeTitle: { fontFamily: fontFamily.bodyBold, fontSize: 13.5 },
+  noticeBody: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, borderWidth: 1 },
   chipLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },

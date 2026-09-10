@@ -805,6 +805,7 @@ export type Database = {
           micronutrients: Json
           owner_id: string | null
           portions: Json
+          preparation_state: string | null
           protein_per_100g: number | null
           saturated_fat_per_100g: number | null
           source: string
@@ -825,6 +826,7 @@ export type Database = {
           micronutrients?: Json
           owner_id?: string | null
           portions?: Json
+          preparation_state?: string | null
           protein_per_100g?: number | null
           saturated_fat_per_100g?: number | null
           source?: string
@@ -845,6 +847,7 @@ export type Database = {
           micronutrients?: Json
           owner_id?: string | null
           portions?: Json
+          preparation_state?: string | null
           protein_per_100g?: number | null
           saturated_fat_per_100g?: number | null
           source?: string
@@ -869,6 +872,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           fat_g: number
+          food_id: string | null
           id: string
           kcal: number
           label: string
@@ -876,6 +880,7 @@ export type Database = {
           order_index: number
           plan_date: string
           protein_g: number
+          quantity_g: number | null
           recipe_id: string | null
           servings: number
           source_type: string
@@ -890,6 +895,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           fat_g?: number
+          food_id?: string | null
           id: string
           kcal?: number
           label: string
@@ -897,6 +903,7 @@ export type Database = {
           order_index?: number
           plan_date: string
           protein_g?: number
+          quantity_g?: number | null
           recipe_id?: string | null
           servings?: number
           source_type: string
@@ -911,6 +918,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           fat_g?: number
+          food_id?: string | null
           id?: string
           kcal?: number
           label?: string
@@ -918,6 +926,7 @@ export type Database = {
           order_index?: number
           plan_date?: string
           protein_g?: number
+          quantity_g?: number | null
           recipe_id?: string | null
           servings?: number
           source_type?: string
@@ -926,6 +935,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "meal_plan_entries_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "foods"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "meal_plan_entries_recipe_id_fkey"
             columns: ["recipe_id"]
@@ -1138,11 +1154,12 @@ export type Database = {
       }
       nutrition_profiles: {
         Row: {
-          activity_level: string
+          activity_level: string | null
           adherence_margin_pct: number
           allergens: Json
           created_at: string
           deleted_at: string | null
+          glass_size_ml: number | null
           id: string
           manual_calories: number | null
           manual_carbs_g: number | null
@@ -1155,13 +1172,15 @@ export type Database = {
           training_day_bonus: number
           updated_at: string
           user_id: string
+          water_target_ml: number | null
         }
         Insert: {
-          activity_level?: string
+          activity_level?: string | null
           adherence_margin_pct?: number
           allergens?: Json
           created_at?: string
           deleted_at?: string | null
+          glass_size_ml?: number | null
           id: string
           manual_calories?: number | null
           manual_carbs_g?: number | null
@@ -1174,13 +1193,15 @@ export type Database = {
           training_day_bonus?: number
           updated_at?: string
           user_id: string
+          water_target_ml?: number | null
         }
         Update: {
-          activity_level?: string
+          activity_level?: string | null
           adherence_margin_pct?: number
           allergens?: Json
           created_at?: string
           deleted_at?: string | null
+          glass_size_ml?: number | null
           id?: string
           manual_calories?: number | null
           manual_carbs_g?: number | null
@@ -1193,6 +1214,7 @@ export type Database = {
           training_day_bonus?: number
           updated_at?: string
           user_id?: string
+          water_target_ml?: number | null
         }
         Relationships: [
           {
@@ -2598,6 +2620,44 @@ export type Database = {
             foreignKeyName: "user_settings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      water_entries: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          log_date: string
+          updated_at: string
+          user_id: string
+          volume_ml: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          log_date: string
+          updated_at?: string
+          user_id: string
+          volume_ml: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          log_date?: string
+          updated_at?: string
+          user_id?: string
+          volume_ml?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "water_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "admin_users"
             referencedColumns: ["id"]
           },

@@ -5,6 +5,7 @@
  */
 
 import { useQuery } from '@powersync/react';
+import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
 
@@ -133,6 +134,51 @@ export async function addRecipeIngredient(
     protein_g: ingredient.proteinG,
     carbs_g: ingredient.carbsG,
     fat_g: ingredient.fatG,
+  });
+}
+
+/** Renomme une recette (US NUTRI-UX01, R7.4) — impossible jusqu'ici après la création. */
+export async function renameRecipe(recipeId: string, name: string): Promise<void> {
+  const trimmed = name.trim();
+  if (trimmed.length === 0) return;
+  await patch('recipes', recipeId, { name: trimmed });
+}
+
+/**
+ * Change la quantité d'un ingrédient (US NUTRI-UX01, R7.4).
+ *
+ * Les valeurs sont **remises à l'échelle** depuis celles déjà enregistrées, comme au journal :
+ * on ne relit pas l'aliment. Modifier la recette ne doit pas faire bouger ce qui a été composé
+ * avec une fiche d'aliment qui a changé depuis — même principe que le snapshot de `food_entries`.
+ *
+ * Sans quantité d'origine (ingrédient saisi en calories libres), il n'y a **rien à mettre à
+ * l'échelle** : la fonction ne fait rien plutôt que d'inventer une règle de trois sur zéro.
+ */
+export async function setRecipeIngredientQuantity(
+  ingredientId: string,
+  grams: number,
+): Promise<void> {
+  const row = await powerSync.getOptional<{
+    quantity_g: number | null;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  }>(
+    `SELECT quantity_g, kcal, protein_g, carbs_g, fat_g FROM recipe_ingredients
+     WHERE id = ? AND deleted_at IS NULL`,
+    [ingredientId],
+  );
+  if (!row || row.quantity_g == null || row.quantity_g <= 0) return;
+
+  const next = Math.max(1, Math.round(grams));
+  const factor = next / row.quantity_g;
+  await patch('recipe_ingredients', ingredientId, {
+    quantity_g: next,
+    kcal: Math.round(row.kcal * factor),
+    protein_g: row.protein_g * factor,
+    carbs_g: row.carbs_g * factor,
+    fat_g: row.fat_g * factor,
   });
 }
 

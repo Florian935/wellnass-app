@@ -65,7 +65,11 @@ jest.mock('@/data/repositories/meal-template-repository', () => ({
   applyTemplate: jest.fn(),
 }));
 jest.mock('@/lib/openfoodfacts', () => ({ searchOpenFoodFacts: jest.fn() }));
-jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-08-12') }));
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: jest.fn(() => '2026-08-12'),
+  // US NUTRI-UX01 (R2.6) : le repas se déduit désormais de l'heure. 12 h → déjeuner.
+  useCurrentHour: jest.fn(() => 12),
+}));
 
 /** Le panneau de quantité a ses propres tests : sonde, avec un bouton de confirmation à 150 g. */
 jest.mock('@/components/QuantityPanel', () => {
@@ -297,15 +301,18 @@ describe('paramètres d’entrée', () => {
     expect(mockAddEntry).toHaveBeenCalledWith('2026-08-12', expect.anything(), expect.anything());
   });
 
-  it('🔴 sans `meal`, l’entrée tombe au petit-déjeuner, pas dans un repas vide', async () => {
+  it('🔴 sans `meal`, l’entrée tombe dans le repas de l’heure, jamais dans un repas vide', async () => {
     await afficher({ params: { date: '2026-08-10' } });
 
     await taper(screen.getByText('Banane'));
     await taper(screen.getByLabelText('confirmer-150'));
 
-    // Une `mealType` vide produirait une entrée orpheline dès sa création — le journal la
-    // remonterait dans « Autres » alors que l'utilisateur n'a rien fait de spécial.
-    expect(mockAddEntry).toHaveBeenCalledWith('2026-08-10', 'breakfast', expect.anything());
+    // Deux garanties tiennent ici, et elles sont distinctes :
+    //  • une `mealType` vide produirait une entrée orpheline dès sa création — le journal la
+    //    remonterait dans « Autres » alors que l'utilisateur n'a rien fait de spécial ;
+    //  • le repli n'est plus `'breakfast'` en dur mais **le repas de l'heure** (US NUTRI-UX01,
+    //    R2.6) : à 20 h, l'ancien repli journalisait au petit-déjeuner. Mock d'heure : 12 h.
+    expect(mockAddEntry).toHaveBeenCalledWith('2026-08-10', 'lunch', expect.anything());
   });
 
   it('les paramètres fournis sont respectés', async () => {

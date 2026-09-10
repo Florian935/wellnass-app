@@ -1,11 +1,31 @@
-import { useEffect, useState } from 'react';
+/**
+ * Suivi nutritionnel (US NUTRI-UX01, R4).
+ *
+ * ── Le défaut corrigé ────────────────────────────────────────────────────────────────────────
+ * L'écran empilait **8 sections permanentes et 4 cartes auto-portantes** dans un seul scroll —
+ * poids, courbe, objectif de poids, apports moyens, répartition par repas, adhérence,
+ * régularité, protéines/kg, puis les croisements. L'ADR-007 §2 plafonne pourtant le Tier 1 à
+ * « ~4-5 sections » avant repli ou sous-onglets, **et nommait déjà cet écran** comme le point de
+ * saturation à surveiller. Le seuil était franchi.
+ *
+ * Quatre sous-onglets, quatre questions distinctes :
+ *   • Régularité — est-ce que je tiens le journal, et depuis quand ?
+ *   • Apports    — combien je mange, et comment ça évolue ?
+ *   • Poids      — où va la trajectoire ?
+ *   • Qualité    — au-delà des calories, qu'est-ce qu'il y a dans l'assiette ?
+ *
+ * La **pesée quitte l'écran de consultation** (R4.4) : saisir son poids en premier bloc d'un
+ * écran de lecture n'avait pas de sens. Elle vit dans l'onglet Poids, en action secondaire.
+ */
+
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  averageIntake,
   DEFAULT_MEAL_KEYS,
-  formatDayFull,
   OTHER_MEAL_KEY,
+  averageIntake,
+  formatDayFull,
   percentChange,
   resolveMealConfig,
   resolveMealSplit,
@@ -13,7 +33,6 @@ import {
   type MealSplitRow,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { CrossTrainingSection } from '@/components/nutrition/CrossTrainingSection';
 import { Card } from '@/components/Card';
 import { DeltaBadge } from '@/components/DeltaBadge';
 import { Segment } from '@/components/Segment';
@@ -22,10 +41,18 @@ import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
 import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { WeightGoalCard } from '@/components/WeightGoalCard';
+import { AdherenceChart, type AdherenceDay } from '@/components/nutrition/AdherenceChart';
+import { CrossTrainingSection } from '@/components/nutrition/CrossTrainingSection';
+import { QualityCard } from '@/components/nutrition/QualityCard';
+import { RegularityCard } from '@/components/nutrition/RegularityCard';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { logWeight, useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
-import { useDailyTotals, useJournalCompletion, useMealTotals } from '@/data/repositories/journal-repository';
-import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
+import {
+  useDailyTotals,
+  useMealTotals,
+  useQualityAverage,
+} from '@/data/repositories/journal-repository';
+import { useDailyCalorieTargets, useGoalAdherence } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -43,11 +70,7 @@ const shortLabel = (iso: string) => {
   return `${d}/${m}`;
 };
 
-/**
- * Bilan calorique signé (US NUTR-18), toujours avec un signe explicite (+/−) — `Intl.NumberFormat`
- * plutôt qu'une concaténation manuelle, séparateur de milliers correct selon la langue (même
- * patron que `formatSteps`, `StepsCard.tsx`).
- */
+/** Bilan calorique signé (US NUTR-18) — signe explicite, séparateur de milliers localisé. */
 const formatSignedKcal = (value: number, language: string): string =>
   new Intl.NumberFormat(language === 'en' ? 'en-GB' : 'fr-FR', { signDisplay: 'exceptZero' }).format(
     value,
@@ -58,42 +81,127 @@ type WeightRange = keyof typeof WEIGHT_RANGES;
 const INTAKE_RANGES = { '7d': 7, '30d': 30 } as const;
 type IntakeRange = keyof typeof INTAKE_RANGES;
 
-export default function NutritionStatsScreen() {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-  const units = useUnits();
+const TABS = ['regularity', 'intake', 'weight', 'quality'] as const;
+type Tab = (typeof TABS)[number];
 
-  // Analytics : ouverture de l'écran de stats nutrition (une fois au montage). Fire-and-forget.
+export default function NutritionStatsScreen() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+
+  const [tab, setTab] = useState<Tab>('regularity');
+
   useEffect(() => {
     void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'nutrition' });
   }, []);
 
-  const { latest } = useLatestWeight();
-  const [weightInput, setWeightInput] = useState('');
-  const [weightRange, setWeightRange] = useState<WeightRange>('3m');
-  const { entries: weightEntries } = useWeightEntries(daysAgo(WEIGHT_RANGES[weightRange]));
+  return (
+    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+      <Segment
+        scrollable
+        options={TABS}
+        value={tab}
+        onChange={(v) => setTab(v)}
+        label={(o) => t(`stats.tabs.${o}`)}
+      />
 
-  const [intakeRange, setIntakeRange] = useState<IntakeRange>('7d');
-  const intakeWindowDays = INTAKE_RANGES[intakeRange];
-  const { totals: totalsWithPrevious, isLoading: isIntakeLoading } = useDailyTotals(daysAgo(2 * intakeWindowDays));
-  const intakeThreshold = daysAgo(intakeWindowDays);
-  const totals = totalsWithPrevious.filter((d) => d.logDate >= intakeThreshold);
-  const previousTotals = totalsWithPrevious.filter((d) => d.logDate < intakeThreshold);
+      {tab === 'regularity' ? <RegularityTab /> : null}
+      {tab === 'intake' ? <IntakeTab /> : null}
+      {tab === 'weight' ? <WeightTab /> : null}
+      {tab === 'quality' ? <QualityTab /> : null}
+    </ScrollView>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Régularité — tiens-je le journal, et depuis quand ?
+// ───────────────────────────────────────────────────────────────────────────
+
+function RegularityTab() {
+  const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const [range, setRange] = useState<IntakeRange>('30d');
+  const windowDays = INTAKE_RANGES[range];
+
+  const adherence = useGoalAdherence(windowDays);
+  const { days: targets } = useDailyCalorieTargets(daysAgo(windowDays), null);
+
+  /**
+   * Un point par jour **renseigné**, avec son écart relatif à la cible du jour.
+   *
+   * Les jours vides sont exclus, pas comptés comme un déficit : ne rien avoir saisi n'est pas
+   * la même chose qu'avoir peu mangé — c'est déjà la convention de `computeGoalAdherence`.
+   */
+  const days: AdherenceDay[] = useMemo(() => {
+    const margin = adherence.marginPct / 100;
+    return targets
+      .filter((d) => d.kcal > 0 && d.effectiveTarget != null && d.effectiveTarget > 0)
+      .map((d) => {
+        const deviation = (d.kcal - d.effectiveTarget!) / d.effectiveTarget!;
+        const status: AdherenceDay['status'] =
+          deviation > margin ? 'over' : deviation < -margin ? 'under' : 'in';
+        return { logDate: d.dayKey, deviation, status };
+      });
+  }, [targets, adherence.marginPct]);
+
+  return (
+    <>
+      <Segment
+        options={Object.keys(INTAKE_RANGES) as IntakeRange[]}
+        value={range}
+        onChange={setRange}
+        label={(o) => t(`stats.ranges.${o}`)}
+      />
+
+      <RegularityCard targetKcal={null} windowDays={windowDays} />
+
+      {adherence.isLoading ? null : !adherence.hasTarget ? (
+        <Card>
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('stats.adherence.noTarget')}
+          </Text>
+        </Card>
+      ) : adherence.loggedDays === 0 ? (
+        <Card>
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.empty')}</Text>
+        </Card>
+      ) : (
+        <AdherenceChart
+          days={days}
+          marginPct={adherence.marginPct}
+          inTarget={adherence.daysInTarget}
+          loggedDays={adherence.loggedDays}
+          balanceKcal={formatSignedKcal(adherence.balanceKcal, i18n.language)}
+          daysAbove={adherence.daysAbove}
+          daysBelow={adherence.daysBelow}
+        />
+      )}
+    </>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Apports — combien, et comment ça évolue ?
+// ───────────────────────────────────────────────────────────────────────────
+
+function IntakeTab() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const [range, setRange] = useState<IntakeRange>('7d');
+  const windowDays = INTAKE_RANGES[range];
+
+  const { totals: withPrevious, isLoading } = useDailyTotals(daysAgo(2 * windowDays));
+  const threshold = daysAgo(windowDays);
+  const totals = withPrevious.filter((d) => d.logDate >= threshold);
+  const previous = withPrevious.filter((d) => d.logDate < threshold);
   const avg = averageIntake(totals);
-  const previousAvg = averageIntake(previousTotals);
+  const previousAvg = averageIntake(previous);
   const kcalChange = percentChange(avg.kcal, previousAvg.kcal);
-  const adherence = useGoalAdherence(intakeWindowDays);
-  const completion = useJournalCompletion(intakeWindowDays);
 
-  // Répartition par repas (US NUTR-16) — même fenêtre que « Apports moyens », pas un 2ᵉ toggle.
-  // `totals.length` = jours effectivement renseignés dans la fenêtre (même diviseur qu'`averageIntake`).
   const { nutritionProfile } = useNutritionProfile();
   const configuredMeals = resolveMealConfig(nutritionProfile?.meals);
-  const { mealTotals } = useMealTotals(intakeThreshold);
+  const { mealTotals } = useMealTotals(threshold);
   const mealSplit = resolveMealSplit(mealTotals, configuredMeals, totals.length);
 
-  // Même repli que le journal ((tabs)/nutrition.tsx) : repas custom sans nom → « Repas N » (position
-  // parmi les repas configurés), jamais sa clé technique. Bucket « Autres » via sa propre clé i18n.
   const mealSplitLabel = (row: MealSplitRow): string => {
     if (row.mealKey === OTHER_MEAL_KEY) return t('journal.meals.other');
     if (row.label) return row.label;
@@ -102,84 +210,44 @@ export default function NutritionStatsScreen() {
     return t('meals.mealN', { n: idx + 1 });
   };
 
-  const trend = weightTrend(weightEntries);
-  // `label` = abrégé d'axe ; `detail` = date complète affichée dans l'infobulle (UX-01).
-  const weightData = weightEntries.map((e) => ({
-    label: shortLabel(e.logDate),
-    detail: formatDayFull(e.logDate),
-    value: units.toWeightValue(e.weightKg),
-  }));
   const intakeData = totals.map((d) => ({
     label: shortLabel(d.logDate),
     detail: formatDayFull(d.logDate),
     value: d.kcal,
   }));
 
-  const saveWeight = async () => {
-    const kg = units.parseWeightToKg(weightInput);
-    if (kg == null || kg <= 0) return;
-    await logWeight(isoDay(new Date()), kg);
-    setWeightInput('');
-  };
-
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
-      {/* Pesée du jour (1.13) */}
-      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.weight.title')}</Text>
+    <>
+      <Segment
+        options={Object.keys(INTAKE_RANGES) as IntakeRange[]}
+        value={range}
+        onChange={setRange}
+        label={(o) => t(`stats.ranges.${o}`)}
+      />
+
       <Card>
-        {latest ? (
-          <View style={styles.latestRow}>
-            <Text style={[styles.latestValue, { color: colors.text }]}>{units.formatWeight(latest.weightKg)}</Text>
-            <Text style={[styles.trend, { color: trend === 'down' ? colors.success : trend === 'up' ? colors.danger : colors.textMuted }]}>
-              {t(`stats.weight.trend.${trend}`)}
-            </Text>
-          </View>
-        ) : (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.weight.empty')}</Text>
-        )}
-        <View style={styles.logRow}>
-          <View style={{ flex: 1 }}>
-            <TextField label={`${t('stats.weight.log')} (${units.weightSymbol})`} value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t(units.system === 'imperial' ? 'stats.weight.logPlaceholderImperial' : 'stats.weight.logPlaceholderMetric')} />
-          </View>
-          <View style={styles.logBtn}>
-            <Button label={t('stats.weight.save')} onPress={() => void saveWeight()} disabled={!weightInput} />
-          </View>
-        </View>
-      </Card>
-
-      {/* Courbe poids (4.30) */}
-      {weightData.length >= 2 ? (
-        <Card>
-          <Segment options={Object.keys(WEIGHT_RANGES) as WeightRange[]} value={weightRange} onChange={setWeightRange} label={(o) => t(`stats.ranges.${o}`)} />
-          <ProgressLineChart data={weightData} unit={units.weightSymbol} smooth />
-        </Card>
-      ) : null}
-
-      {/* Progression vers l'objectif de poids (NUTR-11) — auto-portante */}
-      <WeightGoalCard />
-
-      {/* Apports moyens (4.31) */}
-      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.intake.title')}</Text>
-      <Card>
-        <Segment options={Object.keys(INTAKE_RANGES) as IntakeRange[]} value={intakeRange} onChange={setIntakeRange} label={(o) => t(`stats.ranges.${o}`)} />
         {totals.length === 0 ? (
           <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.intake.empty')}</Text>
         ) : (
           <>
             <View style={styles.avgRow}>
               <Text style={[styles.avgKcal, { color: colors.text }]}>{avg.kcal}</Text>
-              <Text style={[styles.avgUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')} · {t('stats.intake.perDay')}</Text>
-              {!isIntakeLoading ? <DeltaBadge change={kcalChange} /> : null}
+              <Text style={[styles.avgUnit, { color: colors.textMuted }]}>
+                {t('nutrition.kcal')} · {t('stats.intake.perDay')}
+              </Text>
+              {!isLoading ? <DeltaBadge change={kcalChange} /> : null}
             </View>
             <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('nutrition.macros.protein')} {avg.proteinG} g · {t('nutrition.macros.carbs')} {avg.carbsG} g · {t('nutrition.macros.fat')} {avg.fatG} g
+              {t('nutrition.macros.protein')} {avg.proteinG} g · {t('nutrition.macros.carbs')}{' '}
+              {avg.carbsG} g · {t('nutrition.macros.fat')} {avg.fatG} g
             </Text>
-            {intakeData.length >= 2 ? <ProgressLineChart data={intakeData} unit={t('nutrition.kcal')} smooth /> : null}
+            {intakeData.length >= 2 ? (
+              <ProgressLineChart data={intakeData} unit={t('nutrition.kcal')} smooth />
+            ) : null}
           </>
         )}
       </Card>
 
-      {/* Répartition par repas (US NUTR-16) — même fenêtre 7 j/30 j que les apports, pas de 2ᵉ toggle */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.mealSplit.title')}</Text>
       <Card>
         {mealSplit.length === 0 ? (
@@ -197,7 +265,8 @@ export default function NutritionStatsScreen() {
                       styles.mealSplitBar,
                       {
                         width: `${row.pct}%`,
-                        backgroundColor: row.mealKey === OTHER_MEAL_KEY ? colors.textMuted : colors.accent,
+                        backgroundColor:
+                          row.mealKey === OTHER_MEAL_KEY ? colors.textMuted : colors.accent,
                       },
                     ]}
                   />
@@ -210,80 +279,172 @@ export default function NutritionStatsScreen() {
           </View>
         )}
       </Card>
+    </>
+  );
+}
 
-      {/* Adhérence à l'objectif (NUTR-10) — même fenêtre 7 j/30 j que les apports */}
-      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.adherence.title')}</Text>
+// ───────────────────────────────────────────────────────────────────────────
+// Poids — où va la trajectoire ? (la saisie vit ici, R4.4)
+// ───────────────────────────────────────────────────────────────────────────
+
+function WeightTab() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const units = useUnits();
+
+  const { latest } = useLatestWeight();
+  const [weightInput, setWeightInput] = useState('');
+  const [range, setRange] = useState<WeightRange>('3m');
+  const { entries } = useWeightEntries(daysAgo(WEIGHT_RANGES[range]));
+
+  const trend = weightTrend(entries);
+  const data = entries.map((e) => ({
+    label: shortLabel(e.logDate),
+    detail: formatDayFull(e.logDate),
+    value: units.toWeightValue(e.weightKg),
+  }));
+
+  const saveWeight = async () => {
+    const kg = units.parseWeightToKg(weightInput);
+    if (kg == null || kg <= 0) return;
+    await logWeight(isoDay(new Date()), kg);
+    setWeightInput('');
+  };
+
+  return (
+    <>
       <Card>
-        {adherence.isLoading ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>…</Text>
-        ) : !adherence.hasTarget ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.noTarget')}</Text>
-        ) : adherence.loggedDays === 0 ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.adherence.empty')}</Text>
+        {latest ? (
+          <View style={styles.latestRow}>
+            <Text style={[styles.latestValue, { color: colors.text }]}>
+              {units.formatWeight(latest.weightKg)}
+            </Text>
+            <Text
+              style={[
+                styles.trend,
+                {
+                  color:
+                    trend === 'down' ? colors.success : trend === 'up' ? colors.danger : colors.textMuted,
+                },
+              ]}
+            >
+              {t(`stats.weight.trend.${trend}`)}
+            </Text>
+          </View>
         ) : (
-          <>
-            <View style={styles.avgRow}>
-              <Text style={[styles.avgKcal, { color: colors.text }]}>{adherence.pct} %</Text>
-            </View>
-            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('stats.adherence.inTarget', { count: adherence.daysInTarget, total: adherence.loggedDays })}
-            </Text>
-            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('stats.adherence.margin', { pct: adherence.marginPct })}
-            </Text>
-            {/* US NUTR-18 — regroupée ici plutôt qu'une nouvelle carte (ADR-007, voir spec §0) */}
-            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('stats.adherence.balance', {
-                value: formatSignedKcal(adherence.balanceKcal, i18n.language),
-              })}
-            </Text>
-            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('stats.adherence.aboveBelow', {
-                above: adherence.daysAbove,
-                below: adherence.daysBelow,
-              })}
-            </Text>
-          </>
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.weight.empty')}</Text>
         )}
+        {data.length >= 2 ? (
+          <>
+            <Segment
+              options={Object.keys(WEIGHT_RANGES) as WeightRange[]}
+              value={range}
+              onChange={setRange}
+              label={(o) => t(`stats.ranges.${o}`)}
+            />
+            <ProgressLineChart data={data} unit={units.weightSymbol} smooth />
+          </>
+        ) : null}
       </Card>
 
-      {/* Régularité du journal (NUTR-17) — même fenêtre 7 j/30 j */}
-      <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.completion.title')}</Text>
-      <Card>
-        {completion.isLoading ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>…</Text>
-        ) : completion.effectiveWindow === 0 ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.completion.empty')}</Text>
-        ) : (
-          <>
-            <View style={styles.avgRow}>
-              <Text style={[styles.avgKcal, { color: colors.text }]}>{completion.pct} %</Text>
-            </View>
-            <Text style={[styles.macroLine, { color: colors.textMuted }]}>
-              {t('stats.completion.logged', { count: completion.loggedDays, total: completion.effectiveWindow })}
-            </Text>
-          </>
-        )}
-      </Card>
+      <WeightGoalCard />
 
-      {/* Apport protéique / poids (MN-06) — auto-portant */}
+      {/* R4.4 — la saisie descend en pied d'onglet : c'est une action, pas une lecture. */}
+      <Card>
+        <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.weight.logHint')}</Text>
+        <View style={styles.logRow}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label={`${t('stats.weight.log')} (${units.weightSymbol})`}
+              value={weightInput}
+              onChangeText={setWeightInput}
+              keyboardType="decimal-pad"
+              placeholder={t(
+                units.system === 'imperial'
+                  ? 'stats.weight.logPlaceholderImperial'
+                  : 'stats.weight.logPlaceholderMetric',
+              )}
+            />
+          </View>
+          <View style={styles.logBtn}>
+            <Button label={t('stats.weight.save')} onPress={() => void saveWeight()} disabled={!weightInput} />
+          </View>
+        </View>
+      </Card>
+    </>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Qualité — qu'y a-t-il dans l'assiette, au-delà des calories ?
+// ───────────────────────────────────────────────────────────────────────────
+
+function QualityTab() {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const [range, setRange] = useState<IntakeRange>('7d');
+  const windowDays = INTAKE_RANGES[range];
+
+  const { quality, loggedDays } = useQualityAverage(daysAgo(windowDays));
+  const { days: targets } = useDailyCalorieTargets(daysAgo(windowDays), null);
+
+  // Cible moyenne de la fenêtre : les plafonds proportionnels (sucres, AGS) doivent suivre
+  // l'objectif réel, y compris quand il varie d'un jour à l'autre (jours de séance, VIE-01).
+  const avgTarget = useMemo(() => {
+    const values = targets.map((d) => d.effectiveTarget).filter((v): v is number => v != null);
+    if (values.length === 0) return null;
+    return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+  }, [targets]);
+
+  return (
+    <>
+      <Segment
+        options={Object.keys(INTAKE_RANGES) as IntakeRange[]}
+        value={range}
+        onChange={setRange}
+        label={(o) => t(`stats.ranges.${o}`)}
+      />
+
+      {loggedDays === 0 ? (
+        <Card>
+          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('stats.intake.empty')}</Text>
+        </Card>
+      ) : (
+        <>
+          <QualityCard
+            values={{
+              fiber: quality.fiber,
+              sugars: quality.sugars,
+              saturatedFat: quality.saturatedFat,
+            }}
+            targetKcal={avgTarget}
+          />
+          {/* Honnêteté sur ce qui n'est pas mesurable : les sous-macros vivent sur l'aliment,
+              donc un ajout rapide en calories n'y contribue pas (voir `useDayQuality`). */}
+          {quality.coverageRatio < 0.9 ? (
+            <Text style={[styles.coverage, { color: colors.textMuted }]}>
+              {t('quality.coverage', { pct: Math.round(quality.coverageRatio * 100) })}
+            </Text>
+          ) : null}
+        </>
+      )}
+
       <ProteinPerKgCard />
-
-      {/* Vue croisée charge muscu ↔ apports (MN-03) — auto-portante, gating muscu+nutrition */}
       <TrainingNutritionCrossCard />
-
-      {/* US APPORT-01 — « manges-tu comme tu t'entraînes ? » (MN-20/16/15/10).
-          Conditionnelle et repliée : rend `null` quand ses 4 analyses se taisent, donc un compte
-          neuf ne voit rien de plus qu'avant. Même patron que StrengthSection, ExecutionSection et
-          PolarisationSection — la place d'affichage est une ressource rare. */}
       <CrossTrainingSection />
-    </ScrollView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   content: { padding: 20, gap: 14 },
-  section: { fontFamily: fontFamily.bodySemi, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 },
+  section: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
   latestRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
   latestValue: { fontFamily: fontFamily.displayBold, fontSize: 30 },
   trend: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
@@ -300,4 +461,5 @@ const styles = StyleSheet.create({
   mealSplitBarTrack: { height: 10, borderRadius: 6, overflow: 'hidden' },
   mealSplitBar: { height: '100%', borderRadius: 6 },
   mealSplitValue: { fontFamily: fontFamily.mono, fontSize: 12.5 },
+  coverage: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 17, paddingHorizontal: 4 },
 });

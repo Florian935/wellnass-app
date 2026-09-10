@@ -6,14 +6,18 @@
  */
 
 import { useQuery } from '@powersync/react';
-import type {
+import {
+  parseJsonColumn,
+  parseMicronutrients,
   FoodCategory,
   FoodPortion,
   FoodSource,
+  matchesSearch,
   Micronutrients,
+  type PreparationState,
   SuggestibleMacro,
 } from '@wellness/shared';
-import { matchesSearch, parseJsonColumn, parseMicronutrients } from '@wellness/shared';
+
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
@@ -38,6 +42,8 @@ export type FoodListItem = {
   /** Micronutriments pour 100 g (socle 4.33). Clés absentes = non renseignées. */
   micronutrients: Micronutrients;
   isFavorite: boolean;
+  /** État de préparation **déclaré** ; `null` = à dériver du nom (US NUTRI-UX01, R6.7). */
+  preparationState: PreparationState | null;
 };
 
 type FoodListDbRow = {
@@ -55,6 +61,7 @@ type FoodListDbRow = {
   micronutrients: string | null;
   name: string | null;
   is_favorite: number;
+  preparation_state: string | null;
 };
 
 function parsePortions(raw: string | null): FoodPortion[] {
@@ -66,7 +73,7 @@ function parsePortions(raw: string | null): FoodPortion[] {
 const SELECT_FOODS = `
   SELECT f.id, f.source, f.category, f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g,
          f.sugars_per_100g, f.fat_per_100g, f.saturated_fat_per_100g, f.fiber_per_100g,
-         f.portions, f.micronutrients,
+         f.portions, f.micronutrients, f.preparation_state,
          COALESCE(tl.name, tfr.name) AS name,
          (fav.id IS NOT NULL) AS is_favorite
   FROM foods f
@@ -93,6 +100,7 @@ function rowToItem(row: FoodListDbRow): FoodListItem {
     portions: parsePortions(row.portions),
     micronutrients: parseMicronutrients(row.micronutrients),
     isFavorite: row.is_favorite === 1,
+    preparationState: (row.preparation_state as PreparationState | null) ?? null,
   };
 }
 
@@ -275,12 +283,37 @@ export type CustomFoodInput = {
   fiberPer100g?: number | null;
   /** Micronutriments pour 100 g (facultatif, socle 4.33). */
   micronutrients?: Micronutrients;
+  /** Libellé de la portion usuelle (« 1 tranche »), facultatif (US NUTRI-UX01, R6.6). */
+  portionLabel?: string | null;
+  /** Grammes de cette portion. Sans les deux, aucune portion n'est enregistrée. */
+  portionGrams?: number | null;
+  /** État déclaré : cru ou cuit (R6.7). `null` = non précisé, l'app dérivera du nom. */
+  preparationState?: PreparationState | null;
 };
 
 /** Colonnes `foods` communes à la création et à l'édition d'un aliment perso. */
 function customFoodColumns(input: CustomFoodInput): Record<string, unknown> {
   return {
     category: input.category,
+    // US NUTRI-UX01 (R6.6) — portion usuelle d'un aliment perso ou scanné.
+    // 🔴 C'était le trou le plus coûteux de l'écran de création : ces aliments-là sont
+    // précisément ceux qu'on mange le plus, et sans portion ils se saisissaient **en grammes à
+    // vie**. Les imports OpenFoodFacts arrivaient d'ailleurs avec `portions: []` en dur.
+    portions: JSON.stringify(
+      input.portionLabel && input.portionGrams && input.portionGrams > 0
+        ? [
+            {
+              labelFr: input.portionLabel.trim(),
+              labelEn: input.portionLabel.trim(),
+              grams: Math.round(input.portionGrams),
+            },
+          ]
+        : [],
+    ),
+    // US NUTRI-UX01 (R6.7) — mention « cru / cuit », exigée par la règle métier §8 et absente
+    // du code. Riz cru contre riz cuit : facteur 3 sur les calories, première source d'erreur
+    // de saisie de la catégorie.
+    preparation_state: input.preparationState ?? null,
     kcal_per_100g: input.kcalPer100g,
     protein_per_100g: input.proteinPer100g ?? null,
     carbs_per_100g: input.carbsPer100g ?? null,
@@ -302,7 +335,6 @@ export async function addCustomFood(input: CustomFoodInput): Promise<string> {
     owner_id: ownerId,
     source: 'custom',
     barcode: null,
-    portions: JSON.stringify([]),
     ...customFoodColumns(input),
   });
   await insertWithSyncFields('food_translations', {

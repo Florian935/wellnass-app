@@ -71,6 +71,8 @@ export type NutritionProfileInput = Pick<
   | 'trainingBonusMode'
   | 'adherenceMarginPct'
   | 'meals'
+  | 'waterTargetMl'
+  | 'glassSizeMl'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -78,7 +80,7 @@ type NutritionDbRow = {
   id: string;
   user_id: string;
   objective: string | null;
-  activity_level: string;
+  activity_level: string | null;
   manual_calories: number | null;
   manual_protein_g: number | null;
   manual_carbs_g: number | null;
@@ -89,6 +91,8 @@ type NutritionDbRow = {
   training_bonus_mode: string | null;
   adherence_margin_pct: number | null;
   meals: string | null;
+  water_target_ml: number | null;
+  glass_size_ml: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -107,7 +111,8 @@ function rowToNutritionProfile(row: NutritionDbRow): NutritionProfile {
     id: row.id,
     userId: row.user_id,
     objective: row.objective as NutritionProfile['objective'],
-    activityLevel: row.activity_level as NutritionProfile['activityLevel'],
+    // `null` = jamais choisi (US NUTRI-UX01, R1.3) — distinct de « choisi : modéré ».
+    activityLevel: (row.activity_level as NutritionProfile['activityLevel']) ?? null,
     manualCalories: row.manual_calories,
     manualProteinG: row.manual_protein_g,
     manualCarbsG: row.manual_carbs_g,
@@ -118,6 +123,8 @@ function rowToNutritionProfile(row: NutritionDbRow): NutritionProfile {
     trainingBonusMode: (row.training_bonus_mode as TrainingBonusMode | null) ?? 'fixed',
     adherenceMarginPct: row.adherence_margin_pct ?? 10,
     meals: parseJsonColumn<MealConfigItem[] | null>(row.meals, null),
+    waterTargetMl: row.water_target_ml,
+    glassSizeMl: row.glass_size_ml,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -139,6 +146,8 @@ function inputToColumns(input: Partial<NutritionProfileInput>): Record<string, u
   if ('trainingBonusMode' in input) columns['training_bonus_mode'] = input.trainingBonusMode;
   if ('adherenceMarginPct' in input) columns['adherence_margin_pct'] = input.adherenceMarginPct;
   if ('meals' in input) columns['meals'] = input.meals ? JSON.stringify(input.meals) : null;
+  if ('waterTargetMl' in input) columns['water_target_ml'] = input.waterTargetMl;
+  if ('glassSizeMl' in input) columns['glass_size_ml'] = input.glassSizeMl;
   return columns;
 }
 

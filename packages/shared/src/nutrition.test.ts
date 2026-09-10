@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  effectiveActivityLevel,
+  hasChosenActivityLevel,
   ACTIVITY_LEVELS,
   DIET_RESTRICTIONS,
   NUTRITION_OBJECTIVES,
@@ -369,6 +371,31 @@ describe('FUEL-01 — frontière avec MN-04 (spec R1, décision D1)', () => {
   });
 });
 
+describe('hasChosenActivityLevel / effectiveActivityLevel (US NUTRI-UX01, R1.3)', () => {
+  it('distingue « jamais répondu » de « choisi : modéré »', () => {
+    expect(hasChosenActivityLevel({ activityLevel: null })).toBe(false);
+    expect(hasChosenActivityLevel({ activityLevel: 'moderate' })).toBe(true);
+  });
+
+  it('traite un profil absent comme « jamais répondu »', () => {
+    expect(hasChosenActivityLevel(null)).toBe(false);
+    expect(hasChosenActivityLevel(undefined)).toBe(false);
+  });
+
+  it('applique le repli historique au calcul, sans le confondre avec un choix', () => {
+    expect(effectiveActivityLevel(null)).toBe('moderate');
+    expect(effectiveActivityLevel({ activityLevel: null })).toBe('moderate');
+    expect(effectiveActivityLevel({ activityLevel: 'sedentary' })).toBe('sedentary');
+  });
+
+  it('🔴 le repli coûte cher : ×1,55 contre ×1,2, soit ~600 kcal sur un TDEE courant', () => {
+    const bmr = 1755; // homme 35 ans, 80 kg, 180 cm (Mifflin-St Jeor)
+    const applique = Math.round(bmr * activityFactor(effectiveActivityLevel({ activityLevel: null })));
+    const reel = Math.round(bmr * activityFactor('sedentary'));
+    expect(applique - reel).toBeGreaterThan(500);
+  });
+});
+
 describe('nutritionProfileRowSchema', () => {
   const base = {
     id: '11111111-1111-4111-8111-111111111111',
@@ -381,7 +408,12 @@ describe('nutritionProfileRowSchema', () => {
   it('valide une ligne minimale et applique les valeurs par défaut', () => {
     const parsed = nutritionProfileRowSchema.parse(base);
     expect(parsed.objective).toBeNull();
-    expect(parsed.activityLevel).toBe('moderate');
+    // 🔴 `null`, et non `'moderate'` : depuis l'US NUTRI-UX01 (R1.3), l'absence de valeur veut
+    // dire « la question n'a jamais été posée ». Le repli de calcul reste `'moderate'`
+    // (`effectiveActivityLevel`), mais il est désormais **affiché comme un repli** au lieu de se
+    // faire passer pour un choix — un sédentaire à qui l'on applique ×1,55 en silence reçoit un
+    // objectif surestimé de ~614 kcal/jour.
+    expect(parsed.activityLevel).toBeNull();
     expect(parsed.restrictions).toEqual([]);
     expect(parsed.trainingDayBonus).toBe(0);
   });

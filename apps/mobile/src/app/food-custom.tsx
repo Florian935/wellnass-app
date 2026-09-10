@@ -5,6 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   FOOD_CATEGORIES,
+  PREPARATION_STATES,
+  type PreparationState,
   type FoodCategory,
   type MicronutrientKey,
   type Micronutrients,
@@ -60,6 +62,10 @@ export default function FoodCustomScreen() {
   const [saturated, setSaturated] = useState('');
   const [fiber, setFiber] = useState('');
   const [microsOpen, setMicrosOpen] = useState(false);
+  // US NUTRI-UX01 — R6.6 (portion usuelle) et R6.7 (cru / cuit).
+  const [portionLabel, setPortionLabel] = useState('');
+  const [portionGrams, setPortionGrams] = useState('');
+  const [preparationState, setPreparationState] = useState<PreparationState | null>(null);
   const [micros, setMicros] = useState<Partial<Record<MicronutrientKey, string>>>({});
 
   // Mode édition : préremplit depuis l'aliment existant (aliment perso ou OFF importé).
@@ -79,6 +85,16 @@ export default function FoodCustomScreen() {
         setFat(numToField(food.fatPer100g));
         setSaturated(numToField(food.saturatedFatPer100g));
         setFiber(numToField(food.fiberPer100g));
+        setPreparationState(food.preparationState ?? null);
+        // `?.` volontaire : `getFood` lit une ligne SQLite, et une fiche sans portions est un
+        // cas normal (tous les aliments OpenFoodFacts importés en sont là). Une lecture nue
+        // faisait échouer l'effet **entier**, donc aussi le préremplissage des micros — sans
+        // message, puisque le `.catch` du chargement l'avale.
+        const portion = food.portions?.[0];
+        if (portion) {
+          setPortionLabel(i18n.language === 'en' ? portion.labelEn : portion.labelFr);
+          setPortionGrams(String(portion.grams));
+        }
         const m: Partial<Record<MicronutrientKey, string>> = {};
         for (const [k, v] of Object.entries(food.micronutrients)) m[k as MicronutrientKey] = String(v);
         setMicros(m);
@@ -140,6 +156,9 @@ export default function FoodCustomScreen() {
       saturatedFatPer100g: parse(saturated),
       fiberPer100g: parse(fiber),
       micronutrients: collectMicros(),
+      portionLabel: portionLabel.trim() || null,
+      portionGrams: parse(portionGrams),
+      preparationState,
     };
     if (editing) {
       await updateFood(foodId, input);
@@ -177,6 +196,58 @@ export default function FoodCustomScreen() {
             </Pressable>
           );
         })}
+      </View>
+
+      {/* R6.7 — cru / cuit. Riz cru contre riz cuit : facteur 3 sur les calories, et c'est la
+          première source d'erreur de saisie de la catégorie (règle métier §8). */}
+      <Text style={[styles.label, { color: colors.textMuted }]}>{t('food.custom.preparation')}</Text>
+      <View style={styles.chips}>
+        {PREPARATION_STATES.map((state) => {
+          const active = preparationState === state;
+          return (
+            <Pressable
+              key={state}
+              onPress={() => setPreparationState(active ? null : state)}
+              accessibilityRole="button"
+              accessibilityLabel={t(`food.custom.preparationOptions.${state}`)}
+              accessibilityState={{ selected: active }}
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: active ? colors.accent : colors.surface,
+                  borderColor: active ? colors.accent : colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.chipLabel, { color: active ? colors.accentText : colors.text }]}>
+                {t(`food.custom.preparationOptions.${state}`)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* R6.6 — portion usuelle. Sans elle, un aliment perso ou scanné se saisit **en grammes à
+          vie** — or ce sont précisément ceux qu'on mange le plus. */}
+      <Text style={[styles.label, { color: colors.textMuted }]}>{t('food.custom.portion')}</Text>
+      <View style={styles.macroRow}>
+        <View style={styles.portionLabelField}>
+          <TextField
+            label={t('food.custom.portionLabel')}
+            value={portionLabel}
+            onChangeText={setPortionLabel}
+            placeholder={t('food.custom.portionPlaceholder')}
+            autoCapitalize="none"
+          />
+        </View>
+        <View style={styles.macroField}>
+          <TextField
+            label={t('food.custom.portionGrams')}
+            value={portionGrams}
+            onChangeText={setPortionGrams}
+            keyboardType="number-pad"
+          />
+        </View>
       </View>
 
       <Text style={[styles.label, { color: colors.textMuted }]}>{t('food.custom.per100')}</Text>
@@ -252,6 +323,7 @@ const styles = StyleSheet.create({
   chipLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   macroRow: { flexDirection: 'row', gap: 10 },
   macroField: { flex: 1 },
+  portionLabelField: { flex: 2 },
   microsHeader: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 16, paddingHorizontal: 18, paddingVertical: 15, gap: 12, marginTop: 4 },
   microsTitle: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   microsSub: { fontFamily: fontFamily.body, fontSize: 12.5, marginTop: 1, opacity: 0.8 },

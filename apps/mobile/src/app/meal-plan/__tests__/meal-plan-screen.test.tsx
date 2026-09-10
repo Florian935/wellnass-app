@@ -75,6 +75,12 @@ jest.mock('@/data/repositories/recipe-repository', () => ({ useRecipes: jest.fn(
 jest.mock('@/data/repositories/meal-template-repository', () => ({
   useMealTemplates: jest.fn(() => ({ templates: [] })),
 }));
+// US NUTRI-UX01 (R7.1) : la feuille d'ajout propose désormais aussi des aliments. Le mock est
+// indispensable — `food-repository` importe `@/i18n`, dont l'initialisation échoue quand
+// `react-i18next` est mocké.
+jest.mock('@/data/repositories/food-repository', () => ({
+  useFoods: jest.fn(() => ({ foods: [], isLoading: false })),
+}));
 
 /**
  * La carte-jour a ses propres tests : sonde qui expose ce que l'écran lui passe — la cible du jour,
@@ -137,8 +143,16 @@ jest.mock('@/components/Screen', () => {
   return { Screen: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
 });
 jest.mock('@/components/ScreenHeader', () => {
-  const { Text } = require('react-native');
-  return { ScreenHeader: ({ title }: { title: string }) => <Text>{title}</Text> };
+  const { Text, View } = require('react-native');
+  // `action` doit être rendu : il porte la bascule grille / liste depuis l'US NUTRI-UX01 (R7.2).
+  return {
+    ScreenHeader: ({ title, action }: { title: string; action?: React.ReactNode }) => (
+      <View>
+        <Text>{title}</Text>
+        {action}
+      </View>
+    ),
+  };
 });
 jest.mock('@/components/Button', () => {
   const { Pressable, Text } = require('react-native');
@@ -259,13 +273,27 @@ const recette = {
 
 const modele = { id: 'tpl-1', name: 'Petit-déj type', itemCount: 3, totalKcal: 450 };
 
+/**
+ * Monte l'écran, **en vue liste par défaut**.
+ *
+ * ⚠️ Depuis l'US NUTRI-UX01 (R7.2), l'écran ouvre sur la **grille** : la pile de sept cartes
+ * imposait jusqu'à 35 zones « + Ajouter » dans un scroll vertical, sans jamais montrer la
+ * semaine d'un coup d'œil. Les tests qui portent sur les cartes basculent donc explicitement —
+ * et ceux qui portent sur la grille passent `vue: 'grid'`.
+ */
 const afficher = async ({
   entries = [] as unknown[],
   countPrecedente = 0,
-}: { entries?: unknown[]; countPrecedente?: number } = {}) => {
+  vue = 'list' as 'grid' | 'list',
+}: { entries?: unknown[]; countPrecedente?: number; vue?: 'grid' | 'list' } = {}) => {
   mockPlan.mockReturnValue({ entries });
   mockCount.mockReturnValue({ count: countPrecedente });
   await render(<MealPlanScreen />);
+  if (vue === 'list') {
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('mealPlan.grid.showList'));
+    });
+  }
 };
 
 const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
@@ -656,5 +684,40 @@ describe('feuille d’ajout', () => {
     expect(screen.getByText('mealPlan.add.noRecipe')).toBeTruthy();
     await taper(screen.getByLabelText('mealPlan.add.templates'));
     expect(screen.getByText('mealPlan.add.noTemplate')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US NUTRI-UX01 — la grille et les sources élargies
+// ---------------------------------------------------------------------------
+
+describe('R7 — grille de la semaine et sources d’ajout', () => {
+  it('🔴 l’écran ouvre sur la GRILLE, pas sur la pile de sept cartes', async () => {
+    await afficher({ vue: 'grid' });
+
+    // La pile imposait jusqu'à 35 zones « + Ajouter » dans un scroll vertical, sans jamais
+    // montrer la semaine d'un coup d'œil — l'usage même d'un planning.
+    expect(screen.getByLabelText('mealPlan.grid.showList')).toBeTruthy();
+  });
+
+  it('la bascule ramène à la pile, qui reste la vue de détail', async () => {
+    await afficher({ vue: 'grid' });
+
+    await taper(screen.getByLabelText('mealPlan.grid.showList'));
+
+    expect(screen.getByLabelText('mealPlan.grid.showGrid')).toBeTruthy();
+  });
+
+  it('🔴 la feuille d’ajout propose QUATRE sources, pas deux', async () => {
+    await afficher({ vue: 'list' });
+
+    await taper(screen.getByLabelText(`ajouter-${AUJOURDHUI}`));
+
+    // Le planning n'acceptait que recettes et repas types : planifier son premier repas imposait
+    // d'aller créer une recette d'abord (~20 taps). C'est cela qui condamnait le module.
+    expect(screen.getByLabelText('mealPlan.add.recipes')).toBeTruthy();
+    expect(screen.getByLabelText('mealPlan.add.templates')).toBeTruthy();
+    expect(screen.getByLabelText('mealPlan.add.foods')).toBeTruthy();
+    expect(screen.getByLabelText('mealPlan.add.quick')).toBeTruthy();
   });
 });

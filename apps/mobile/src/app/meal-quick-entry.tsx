@@ -4,9 +4,11 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  mealForHour,
   DEFAULT_UNIT_GRAMS,
   bestMatchIndex,
   parseMealText,
+  rankFoodMatches,
   scaleNutrition,
   type ParsedUnit,
 } from '@wellness/shared';
@@ -14,7 +16,7 @@ import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { useFoods, type FoodListItem } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -49,6 +51,15 @@ type Row = {
   raw: string;
   food: FoodListItem | null;
   grams: string;
+  /**
+   * Meilleures correspondances proposees pour une ligne non reconnue (spec §4.5).
+   *
+   * 🔴 Sans elles, une ligne rouge etait un **cul-de-sac** : l'app disait « non reconnu » et
+   * n'offrait aucune issue — ni choisir, ni chercher, ni creer. La spec l'exigeait pourtant
+   * noir sur blanc, et c'est le seul endroit du parcours ou l'utilisateur a deja fait l'effort
+   * d'ecrire son repas.
+   */
+  suggestions: FoodListItem[];
 };
 
 export default function MealQuickEntryScreen() {
@@ -65,8 +76,16 @@ export default function MealQuickEntryScreen() {
    * échoue. Trouvé le 14/08/2026 en écrivant les tests de cet écran.
    */
   const todayKey = useTodayKey();
+  const hour = useCurrentHour();
   const date = params.date ?? todayKey;
-  const meal = params.meal ?? 'breakfast';
+  /**
+ * Repli sur **le repas de l'heure courante**, et non `'breakfast'` en dur (US NUTRI-UX01, R2.6).
+ *
+ * Ouvert sans paramètre — lien direct, raccourci, retour arrière —, cet écran journalisait
+ * systématiquement au petit-déjeuner : à 20 h, l'ajout partait dans le mauvais repas et était à
+ * reprendre. Même correctif que celui posé sur l'accueil par ACCUEIL-02.
+ */
+const meal = params.meal ?? mealForHour(hour);
 
   const { foods } = useFoods();
   const candidateNames = useMemo(() => foods.map((f) => f.name), [foods]);
@@ -80,7 +99,23 @@ export default function MealQuickEntryScreen() {
       const mi = bestMatchIndex(item.foodName, candidateNames);
       const food = mi >= 0 ? foods[mi]! : null;
       const grams = food ? resolveGrams(item.unit, item.quantity, food) : 0;
-      return { key: `${idx}-${item.foodName}`, raw: item.raw, food, grams: grams ? String(grams) : '' };
+      return {
+        key: `${idx}-${item.foodName}`,
+        raw: item.raw,
+        food,
+        grams: grams ? String(grams) : '',
+        // Les propositions ne sont calculees que pour ce qui n'a pas ete reconnu : c'est la
+        // seule ligne ou elles servent, et le classement coute sur toute la base.
+        suggestions: food
+          ? []
+          : rankFoodMatches(
+              foods.map((f) => ({ id: f.id, name: f.name, kind: 'food' as const })),
+              item.foodName,
+              { limit: 3 },
+            )
+              .map((m) => foods.find((f) => f.id === m.item.id))
+              .filter((f): f is FoodListItem => f != null),
+      };
     });
     setRows(next);
   };
@@ -114,6 +149,31 @@ export default function MealQuickEntryScreen() {
     }
     router.back();
   };
+
+  /** Adopte une proposition : la ligne cesse d'etre un echec et redevient modifiable. */
+  const pickSuggestion = (key: string, food: FoodListItem) =>
+    setRows(
+      (prev) =>
+        prev?.map((r) =>
+          r.key === key
+            ? {
+                ...r,
+                food,
+                // La quantite repart de la portion usuelle de l'aliment retenu, pas de celle
+                // qu'on avait devinee pour un mot qu'on ne comprenait pas.
+                grams: String(resolveGrams(null, 1, food)),
+                suggestions: [],
+              }
+            : r,
+        ) ?? null,
+    );
+
+  /** Ajoute une ligne vide a la revue (spec §4.5 : « ajout d'une ligne a la main possible »). */
+  const addRow = () =>
+    setRows((prev) => [
+      ...(prev ?? []),
+      { key: `manuel-${Date.now()}`, raw: '', food: null, grams: '', suggestions: [] },
+    ]);
 
   const setGrams = (key: string, value: string) =>
     setRows((prev) => prev?.map((r) => (r.key === key ? { ...r, grams: value } : r)) ?? null);
@@ -171,6 +231,45 @@ export default function MealQuickEntryScreen() {
                       « {r.raw} »
                     </Text>
                     <Text style={[styles.unmatched, { color: colors.danger }]}>{t('quickList.unmatched')}</Text>
+                    {/* R6.5 — les meilleures correspondances, puis la recherche, puis la
+                        creation : trois issues, la ou il n'y en avait aucune. */}
+                    {r.suggestions.length > 0 ? (
+                      <View style={styles.suggestions}>
+                        {r.suggestions.map((sugg) => (
+                          <Pressable
+                            key={sugg.id}
+                            onPress={() => pickSuggestion(r.key, sugg)}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('quickList.pickSuggestion', { name: sugg.name })}
+                            style={[styles.suggestion, { backgroundColor: colors.surfaceAlt, borderColor: colors.accent }]}
+                          >
+                            <Text style={[styles.suggestionLabel, { color: colors.accent }]} numberOfLines={1}>
+                              {sugg.name}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    ) : null}
+                    <View style={styles.suggestions}>
+                      <Pressable
+                        onPress={() => router.push({ pathname: '/food-picker', params: { date, meal } })}
+                        accessibilityRole="button"
+                        style={[styles.suggestion, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      >
+                        <Text style={[styles.suggestionLabel, { color: colors.text }]}>
+                          {t('quickList.search')}
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => router.push('/food-custom')}
+                        accessibilityRole="button"
+                        style={[styles.suggestion, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                      >
+                        <Text style={[styles.suggestionLabel, { color: colors.text }]}>
+                          {t('journal.createFood')}
+                        </Text>
+                      </Pressable>
+                    </View>
                   </View>
                 )}
                 <Pressable onPress={() => removeRow(r.key)} hitSlop={8} accessibilityLabel={t('journal.delete')}>
@@ -180,6 +279,19 @@ export default function MealQuickEntryScreen() {
             ))}
           </View>
         )
+      ) : null}
+
+      {rows != null && rows.length > 0 ? (
+        <Pressable
+          onPress={addRow}
+          accessibilityRole="button"
+          style={[styles.addRow, { borderColor: colors.borderStrong }]}
+        >
+          <Ionicons name="add" size={16} color={colors.textMuted} />
+          <Text style={[styles.addRowLabel, { color: colors.textMuted }]}>
+            {t('quickList.addRow')}
+          </Text>
+        </Pressable>
       ) : null}
 
       {matchedCount > 0 ? (
@@ -203,6 +315,20 @@ const styles = StyleSheet.create({
   rowName: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   rowKcal: { fontFamily: fontFamily.mono, fontSize: 12 },
   unmatched: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  suggestions: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 7 },
+  suggestion: { borderWidth: 1, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 13 },
+  suggestionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    paddingVertical: 12,
+  },
+  addRowLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   gramField: { width: 92 },
   footer: { marginTop: 8 },
 });

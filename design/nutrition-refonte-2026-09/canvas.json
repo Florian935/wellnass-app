@@ -1,0 +1,139 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Le geste quotidien"
+    },
+    {
+      "id": "page-2",
+      "name": "Suivi & saisie texte"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 392,
+      "h": 1780,
+      "title": "Journal — écran déroulé",
+      "page": "page-1"
+    },
+    {
+      "file": "AjoutSheet.dc.html",
+      "x": 512,
+      "y": 0,
+      "w": 392,
+      "h": 812,
+      "title": "Ajout — 3 modes",
+      "page": "page-1"
+    },
+    {
+      "file": "Quantite.dc.html",
+      "x": 1024,
+      "y": 0,
+      "w": 392,
+      "h": 812,
+      "title": "Quantité",
+      "page": "page-1"
+    },
+    {
+      "file": "Calendrier.dc.html",
+      "x": 1536,
+      "y": 0,
+      "w": 392,
+      "h": 812,
+      "title": "Calendrier",
+      "page": "page-1"
+    },
+    {
+      "file": "AvantApres.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 820,
+      "h": 1080,
+      "title": "Sélecteur — avant / après",
+      "page": "page-2"
+    },
+    {
+      "file": "Stats.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 392,
+      "h": 1200,
+      "title": "Suivi — sous-onglets",
+      "page": "page-2"
+    },
+    {
+      "file": "TexteLibre.dc.html",
+      "x": 1452,
+      "y": 0,
+      "w": 392,
+      "h": 812,
+      "title": "Texte libre",
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-flottaison",
+      "x": 0,
+      "y": -190,
+      "w": 392,
+      "page": "page-1",
+      "text": "JOURNAL — écran déroulé\n\nLa ligne rouge marque le bas de l'écran physique (812 px).\nAu-dessus : tout ce qui se voit sans scroller.\n\nNouveautés : scan en en-tête (2 taps au lieu de 6),\ntrame de la semaine dans la barre de jour,\nhydratation (1 tap), micros activés par défaut.\n\nLes micros sont placés SOUS les repas : en haut de l'écran,\nils repoussaient le premier repas hors de vue — or le\njournal, c'est d'abord les repas."
+    },
+    {
+      "id": "note-modes",
+      "x": 512,
+      "y": -190,
+      "w": 392,
+      "page": "page-1",
+      "text": "AJOUT — les 3 modes cliquables\n\nC'est l'arbitrage écrit dans la maquette du 30/07/2026\net jamais posé dans le code (qui a 5 onglets + 4 boutons).\n\nLe bandeau de budget ne quitte plus l'écran, et le repas\nse déduit de l'heure au lieu de « breakfast » en dur."
+    },
+    {
+      "id": "note-quantite",
+      "x": 1024,
+      "y": -190,
+      "w": 392,
+      "page": "page-1",
+      "text": "QUANTITÉ\n\nTrois ajouts : portions MULTIPLIABLES (½, 1, 2 bols —\nplus de calcul mental), rappel de la dernière quantité\n(la donnée existe déjà en base), et l'effet sur la journée.\n\nLes valeurs détaillées passent repliées : aujourd'hui\n33 lignes s'ouvrent avant les boutons d'action."
+    },
+    {
+      "id": "note-calendrier",
+      "x": 1536,
+      "y": -190,
+      "w": 392,
+      "page": "page-1",
+      "text": "CALENDRIER\n\nExigé par la spec §4.7 (« vue mensuelle, jours complétés\nsurlignés »), jamais livré. Aujourd'hui : 15 taps sur ◀\npour remonter de deux semaines.\n\nLes pastilles utilisent une donnée déjà calculée\n(useJournalCompletion), qui n'était affichée nulle part."
+    },
+    {
+      "id": "note-avant-apres",
+      "x": 0,
+      "y": -170,
+      "w": 820,
+      "page": "page-2",
+      "text": "SÉLECTEUR — l'écran livré, à gauche, reproduit fidèlement (5 onglets, 4 boutons de pied, base alphabétique).\nÀ droite la proposition. C'est le seul écran du pilier que l'utilisateur verra 5 fois par jour, mille fois par an."
+    },
+    {
+      "id": "note-stats",
+      "x": 940,
+      "y": -170,
+      "w": 392,
+      "page": "page-2",
+      "text": "SUIVI — sous-onglets cliquables\n\nL'écran actuel empile 8 sections permanentes + 4 cartes,\nlà où l'ADR-007 plafonne le Tier 1 à 4-5 sections.\n\nLa régularité devient une heatmap (elle était un « 83 % » nu),\net l'adhérence un graphe à zone-cible au lieu de 4 phrases\nen texte mono."
+    },
+    {
+      "id": "note-texte",
+      "x": 1452,
+      "y": -170,
+      "w": 392,
+      "page": "page-2",
+      "text": "TEXTE LIBRE\n\nLa spec §4.5 exige des propositions sur une ligne non\nreconnue, l'ajout manuel d'une ligne, et la dictée.\nAucun des trois n'existe : la ligne rouge est inerte.\n\nIci chaque ligne a une issue."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

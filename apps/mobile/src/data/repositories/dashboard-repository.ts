@@ -63,6 +63,7 @@ import {
   sessionLoad,
   stepsActiveDays,
   suggestActivityLevel,
+  effectiveActivityLevel,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -1366,13 +1367,17 @@ export function useActivityLevelSuggestion(): ActivityLevelSuggestion {
       .map((r) => localDayKey(new Date(r.finishedAt as string))),
   ).size;
 
+  // `activityLevel` peut être `null` depuis NUTRI-UX01 (R1.3) : « jamais choisi ». La suggestion
+  // compare au niveau **effectivement appliqué**, repli compris — c'est bien lui qui produit
+  // l'objectif que l'utilisateur voit, et donc lui qu'il faut proposer de corriger.
+  const current = effectiveActivityLevel(nutritionProfile);
   const suggested = suggestActivityLevel({
-    currentLevel: nutritionProfile.activityLevel,
+    currentLevel: current,
     runningDaysInWindow: runningDays,
   });
 
   if (suggested == null) return { show: false };
-  return { show: true, current: nutritionProfile.activityLevel, suggested, runningDays };
+  return { show: true, current, suggested, runningDays };
 }
 
 // ---------------------------------------------------------------------------

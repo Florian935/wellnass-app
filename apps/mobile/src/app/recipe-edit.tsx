@@ -9,7 +9,10 @@ import { Card } from '@/components/Card';
 import { TextField } from '@/components/TextField';
 import {
   createRecipe,
+  deleteRecipe,
   removeRecipeIngredient,
+  renameRecipe,
+  setRecipeIngredientQuantity,
   setRecipeServings,
   useRecipeIngredients,
   useRecipes,
@@ -25,6 +28,11 @@ export default function RecipeEditScreen() {
 
   const [id, setId] = useState<string | null>(params.id ?? null);
   const [name, setName] = useState('');
+  const [renaming, setRenaming] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [editingIngredient, setEditingIngredient] = useState<{ id: string; grams: string } | null>(
+    null,
+  );
 
   const { recipes } = useRecipes();
   const recipe = id ? recipes.find((r) => r.id === id) : undefined;
@@ -53,7 +61,66 @@ export default function RecipeEditScreen() {
 
   return (
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
-      <Text style={[styles.title, { color: colors.text }]}>{recipe?.name}</Text>
+      {/* R7.4 — la recette etait **impossible a renommer** apres sa creation, et impossible a
+          supprimer depuis cet ecran. */}
+      {renaming ? (
+        <View style={styles.renameRow}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label={t('recipes.name')}
+              value={draftName}
+              onChangeText={setDraftName}
+              autoCapitalize="sentences"
+              autoFocus
+            />
+          </View>
+          <Button
+            label={t('journal.detail.save')}
+            onPress={() => {
+              void renameRecipe(id, draftName);
+              setRenaming(false);
+            }}
+            disabled={draftName.trim().length === 0}
+          />
+        </View>
+      ) : (
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.text }]}>{recipe?.name}</Text>
+          <Pressable
+            onPress={() => {
+              setDraftName(recipe?.name ?? '');
+              setRenaming(true);
+            }}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('recipes.rename')}
+            style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Ionicons name="create-outline" size={18} color={colors.accent} />
+          </Pressable>
+          <Pressable
+            onPress={() =>
+              Alert.alert(recipe?.name ?? '', t('recipes.deleteConfirm'), [
+                { text: t('common.cancel'), style: 'cancel' },
+                {
+                  text: t('journal.delete'),
+                  style: 'destructive',
+                  onPress: () => {
+                    void deleteRecipe(id);
+                    router.back();
+                  },
+                },
+              ])
+            }
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('recipes.deleteRecipe')}
+            style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt }]}
+          >
+            <Ionicons name="trash-outline" size={18} color={colors.danger} />
+          </Pressable>
+        </View>
+      )}
 
       {/* Portions */}
       <View style={styles.servingsRow}>
@@ -84,22 +151,40 @@ export default function RecipeEditScreen() {
       <Text style={[styles.label, { color: colors.textMuted }]}>{t('recipes.ingredients')}</Text>
       <View style={[styles.list, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {ingredients.map((ing) => (
-          <Pressable
-            key={ing.id}
-            style={styles.ingredient}
-            onLongPress={() =>
-              Alert.alert(ing.name, t('recipes.removeIngredient'), [
-                { text: t('common.cancel'), style: 'cancel' },
-                { text: t('journal.delete'), style: 'destructive', onPress: () => void removeRecipeIngredient(ing.id) },
-              ])
-            }
-          >
+          <View key={ing.id} style={styles.ingredient}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.ingName, { color: colors.text }]} numberOfLines={1}>{ing.name}</Text>
               {ing.quantityG != null ? <Text style={[styles.ingQty, { color: colors.textMuted }]}>{ing.quantityG} g</Text> : null}
             </View>
             <Text style={[styles.ingKcal, { color: colors.textMuted }]}>{ing.kcal} {t('nutrition.kcal')}</Text>
-          </Pressable>
+            {/* R7.4 / R6.3 — modifier la quantite etait **impossible**, et supprimer un
+                ingredient se cachait derriere un appui long sans la moindre affordance. */}
+            {ing.quantityG != null ? (
+              <Pressable
+                onPress={() => setEditingIngredient({ id: ing.id, grams: String(ing.quantityG) })}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={t('recipes.editQuantity', { name: ing.name })}
+                style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt }]}
+              >
+                <Ionicons name="create-outline" size={17} color={colors.accent} />
+              </Pressable>
+            ) : null}
+            <Pressable
+              onPress={() =>
+                Alert.alert(ing.name, t('recipes.removeIngredient'), [
+                  { text: t('common.cancel'), style: 'cancel' },
+                  { text: t('journal.delete'), style: 'destructive', onPress: () => void removeRecipeIngredient(ing.id) },
+                ])
+              }
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={t('recipes.removeIngredientA11y', { name: ing.name })}
+              style={[styles.iconBtn, { backgroundColor: colors.surfaceAlt }]}
+            >
+              <Ionicons name="trash-outline" size={17} color={colors.danger} />
+            </Pressable>
+          </View>
         ))}
         <Pressable
           style={styles.addRow}
@@ -111,6 +196,29 @@ export default function RecipeEditScreen() {
           <Text style={[styles.addLabel, { color: colors.accent }]}>{t('recipes.addIngredient')}</Text>
         </Pressable>
       </View>
+
+      {editingIngredient ? (
+        <View style={[styles.editRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label={t('journal.grams')}
+              value={editingIngredient.grams}
+              onChangeText={(v) => setEditingIngredient((e) => (e ? { ...e, grams: v } : e))}
+              keyboardType="number-pad"
+              autoFocus
+            />
+          </View>
+          <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditingIngredient(null)} />
+          <Button
+            label={t('journal.detail.save')}
+            onPress={() => {
+              const grams = Math.round(Number(editingIngredient.grams.replace(',', '.')) || 0);
+              if (grams > 0) void setRecipeIngredientQuantity(editingIngredient.id, grams);
+              setEditingIngredient(null);
+            }}
+          />
+        </View>
+      ) : null}
 
       <View style={styles.footer}>
         <Button label={t('recipes.done')} onPress={() => router.back()} />
@@ -131,7 +239,11 @@ function Value({ label, kcal, unit, colors, accent }: { label: string; kcal: num
 const styles = StyleSheet.create({
   content: { padding: 20, gap: 14 },
   hint: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 19 },
-  title: { fontFamily: fontFamily.displayBold, fontSize: 24 },
+  title: { fontFamily: fontFamily.displayBold, fontSize: 24, flex: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  renameRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
+  iconBtn: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  editRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, borderWidth: 1, borderRadius: 16, padding: 12 },
   label: { fontFamily: fontFamily.bodySemi, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 },
   servingsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 16 },

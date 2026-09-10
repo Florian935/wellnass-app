@@ -58,6 +58,9 @@ function entry(over: Partial<PlannedMealEntry> = {}): PlannedMealEntry {
     orderIndex: 0,
     sourceType: 'recipe',
     recipeId: 'r1',
+    // US NUTRI-UX01 (R7.1) : le planning accepte désormais aussi un aliment et un ajout rapide.
+    foodId: null,
+    quantityG: null,
     templateId: null,
     servings: 2,
     label: 'Poulet riz',

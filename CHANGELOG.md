@@ -10,6 +10,144 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 10/09/2026 — NUTRI-UX01 : refonte UX du pilier Nutrition (11 écrans)
+
+Branche `feature/nutri-refonte-ux`, développée dans un **worktree isolé** — deux autres sessions
+travaillaient la même semaine sur `feature/cardio-refonte-ux` et `feature/muscu-refonte-ux`.
+
+Troisième pilier repris en une semaine, après l'accueil et la musculation. La refonte visuelle du
+30/07 (4.39) n'avait touché **qu'un écran** ; l'audit du 09/09 montre que le problème est ailleurs :
+le pilier a été construit **fonction par fonction, jamais autour du geste**. 26 constats vérifiés
+dans le code. Le geste fait cinq fois par jour coûtait autant que celui fait trois fois dans une vie.
+
+🔴 **Le défaut le plus grave n'était pas ergonomique.** L'onboarding ne demandait **jamais** le
+niveau d'activité, et six sites de code retombaient sur `?? 'moderate'` (×1,55). Pour un sédentaire
+(×1,2), l'objectif calorique était **surestimé de ~614 kcal/jour** — de quoi annuler entièrement un
+déficit de sèche, sans qu'aucun écran ne le signale. Pire : l'écran de réglage affichait
+« Modérément actif » comme une sélection radio, exactement comme si l'utilisateur l'avait cochée.
+
+### Ajouté
+
+- **Étape d'onboarding « À quel point bouges-tu ? »** (R1) — cinq niveaux avec une **description
+  concrète** chacun (« travail assis, peu de marche ») plutôt qu'un facteur seul. Ne s'affiche
+  que si le pilier nutrition est actif (décision H) ; `OnboardingScaffold` accepte un total
+  variable (4 ou 5 étapes).
+- **Feuille d'ajout à 3 modes** `Rechercher · Scanner · Texte libre` (R2.1) — c'est l'arbitrage
+  écrit dans la maquette du 30/07/2026, resté sans suite : le code livrait **9 entrées de même
+  poids** (5 onglets + 4 boutons `ghost` de pied de page).
+- **Recherche unifiée et classée** (R2.3) — `food-search.ts` : quatre paliers (égalité > préfixe >
+  début de mot > sous-chaîne), bonus « récent », repli flou tolérant aux fautes. Elle balaye
+  **aliments + recettes + repas types** dans une seule liste, ce que la spec §5.2 demandait depuis
+  le début. `bestMatchIndex` existait dans le dépôt et n'était branché nulle part sur la recherche
+  manuelle.
+- **Calendrier mensuel** avec jours renseignés surlignés (R3.1) — exigé par la spec §4.7, jamais
+  livré : remonter de quinze jours coûtait **15 taps sur ◀**.
+- **Trame de la semaine** dans la barre de jour (R3.2) — la donnée existait (`useJournalCompletion`)
+  et n'était affichée nulle part d'utile.
+- **Hydratation** (R5, catalogue NUTR-12) — table `water_entries`, **une ligne par ajout** et non
+  un compteur : annuler défait *le dernier geste*, et deux appareils hors réseau s'additionnent au
+  lieu de s'écraser. Ouverte en V1 par arbitrage de Florian, contre le report en V2 de la spec §8.
+- **Repères de qualité** fibres / sucres / AGS (R3.5, NUTR-15) — `diet-quality.ts`. Deux seuils sur
+  trois sont **proportionnels à l'objectif du jour** (10 % de l'énergie, OMS) : un plafond figé à
+  2 000 kcal signalerait à tort un sportif à 2 800 et laisserait passer une sèche à 1 600.
+- **Heatmap de régularité** et **graphe d'adhérence à zone-cible** (R4.2 / R4.3) —
+  `journal-regularity.ts`.
+- **Le planning accepte un aliment simple et un ajout rapide** (R7.1) et s'ouvre en **grille de
+  semaine** (R7.2). Il n'acceptait que recettes et repas types : planifier un premier repas imposait
+  d'aller créer une recette d'abord, ~20 taps avant le moindre résultat.
+- **Recettes éditables** (R7.4) : renommer, supprimer, changer la quantité d'un ingrédient.
+- **Portion usuelle et mention cru / cuit sur un aliment perso** (R6.6 / R6.7) — la mention est
+  exigée par la règle métier §8 et n'existait nulle part. `preparation-state.ts` la **dérive du nom**
+  quand elle n'est pas déclarée, ce qui la fait apparaître sur toute la bibliothèque CIQUAL sans
+  migrer une seule ligne de données.
+- **Sorties de secours de la saisie texte** (R6.5) — meilleures correspondances, rechercher, créer,
+  ajouter une ligne. Les trois sont exigées par la spec §4.5 ; une ligne non reconnue était un
+  **cul-de-sac rouge**.
+- **Mode `--bulk` du générateur CIQUAL** — construit le catalogue depuis le CSV en une commande :
+  idempotent (id dérivé du code CIQUAL), non destructif (une entrée existante est conservée),
+  aucune valeur inventée.
+- Tests : `food-search` (21), `portions` (12), `hydration` (11), `diet-quality` (12),
+  `journal-regularity` (20), `preparation-state` (10), `HydrationCard` (8), `AddFoodSheet` (14).
+
+### Modifié
+
+- **`nutrition_profiles.activity_level` devient NULLABLE** : `null` = « la question n'a jamais été
+  posée », distinct de « choisi : modéré ». Les lecteurs gardent leur repli `'moderate'` —
+  `effectiveActivityLevel()` — mais le repli devient **visible** au lieu de se faire passer pour un
+  choix.
+- **Le sélecteur ouvre sur les habitudes** (récents + favoris), plus sur la base par ordre
+  alphabétique. 80 % des ajouts portent sur une vingtaine d'aliments, et l'app possédait déjà cette
+  liste : elle la rangeait dans le 3ᵉ onglet.
+- **Le budget du jour ne quitte plus l'écran** pendant la saisie (R2.4), et le panneau de quantité
+  montre **la projection après ajout**. L'information disparaissait au moment précis où la décision
+  se prend.
+- **Portions multipliables** (½ · 1 · 2) et **dernière quantité utilisée** rappelée (R2.5) — la
+  donnée était dans `food_entries.quantity_g` et n'était jamais lue. Une puce **écrasait** la
+  quantité : « deux bananes » imposait un calcul mental puis le clavier.
+- **Micronutriments suivis par défaut** (6 clés à VNR) — `tracked: []` rendait invisible le seul
+  vrai différenciateur du pilier. Distinction préservée entre « jamais réglé » et « tout décoché ».
+- **Les micros passent sous les repas** (R3.4) : en tête d'écran, ils repoussaient le premier repas
+  entièrement hors de vue — un journal alimentaire dont aucun repas n'est visible sans scroller.
+- **L'écran Suivi passe de 8 sections + 4 cartes à 4 sous-onglets** (R4.1) — l'ADR-007 §2 plafonne
+  le Tier 1 à « ~4-5 sections » **et nommait déjà cet écran** comme le point de saturation. La
+  pesée quitte l'écran de consultation.
+- **Le repas se déduit de l'heure** dans `food-picker`, `food-scan` et `meal-quick-entry` (R2.6) :
+  ces trois écrans gardaient `'breakfast'` en dur comme repli. Même correctif qu'ACCUEIL-02.
+- **Le scan est en en-tête du journal** (R2.7) : deux taps au lieu de six.
+- **Le profil nutritionnel n'écrit plus à chaque frappe** (R6.1) — `DeferredTextField`. Taper
+  « 2500 » produisait **quatre écritures** (2, 25, 250, 2500), et vider un champ de macro écrivait
+  un **0 affirmé** alors que l'app distingue partout « nul » de « non renseigné ».
+- **Allergènes** : liste prédéfinie à cocher en plus de la saisie libre (spec §2.4).
+- **Icônes de repas vectorielles** au lieu de quatre emojis avec repli sur l'assiette — deux repas
+  sur cinq portaient le même glyphe. Vignette de catégorie sur chaque ligne de résultat.
+
+### Corrigé
+
+- **La feuille d'ajout n'est plus montée quand elle est fermée** : elle portait trois requêtes
+  surveillées et un `setTimeout` de debounce qui tournaient en permanence sur le journal, l'écran
+  le plus ouvert de l'app.
+- **`AdherenceChart` ne recompte plus les jours au-dessus / en dessous** : ils viennent de
+  `computeGoalAdherence` / `computeCaloricBalance`. Un second comptage local aurait fini par
+  diverger au premier ajustement de la marge — et cette divergence-là n'échoue pas, elle affiche
+  deux chiffres différents pour la même semaine.
+- **La heatmap n'affiche plus « 0 % » à un compte neuf** : elle borne sa fenêtre à l'ancienneté du
+  compte (`useJournalCompletion`), garde-fou que portait déjà l'ancienne carte de complétude.
+- **L'adhérence n'annonce plus « aucun objectif » pendant le chargement** — `isLoading` était
+  évalué après `hasTarget`.
+- **La heatmap suit la fenêtre choisie** : figée à 30 jours en face d'une adhérence sur 7, elle
+  mettait deux périodes différentes côte à côte dans le même onglet.
+- **Le préremplissage de l'aliment perso ne casse plus sur une fiche sans portions** : la lecture
+  nue faisait échouer l'effet entier, donc aussi les micronutriments — sans message, le `.catch`
+  du chargement l'avalant.
+
+### Technique / Notes
+
+- **3 migrations poussées sur le cloud** (cochées dans `supabase/MIGRATIONS.md`) :
+  `…_nutri_ux01_hydration_and_plan_food` (table `water_entries` + `meal_plan_entries` en
+  `food`/`quick` + 2 colonnes d'hydratation sur `nutrition_profiles`),
+  `…_nutri_ux01_water_entries_publication` (publication logique),
+  `…_nutri_ux01_activity_level_nullable`, `…_nutri_ux01_food_preparation_state`.
+- 🔴 **1 sync rule neuve à déployer À LA MAIN** (`water_entries`, bucket `user_data`). Étape
+  oubliée **trois fois** dans ce projet — sans elle, les verres bus restent locaux, *sans erreur
+  visible*. Critère de recette en tête de RECETTES.md §58.
+- 🔴 **5 colonnes déclarées dans `powersync/schema.ts`** et la table enregistrée dans le `Schema` :
+  sans cette déclaration, l'écriture locale échoue et l'erreur est avalée (panne exacte de
+  CYCLE-01). `water_entries` ajoutée à `EXPORT_TABLES` (RGPD) — le test de complétude l'exigeait.
+- ⚠️ **Le remplissage de la bibliothèque (80 aliments) n'est PAS dans cette US**, et ce n'est pas
+  un arbitrage de périmètre : le générateur tire toute la nutrition du CSV CIQUAL, non versionné
+  (`.gitignore`, licence Etalab) et **absent de la machine** — vérifié. Produire 700 fiches
+  reviendrait à **fabriquer des données de santé** que l'app utiliserait pour calculer des apports
+  réels. Livré à la place : le mode `--bulk` et la procédure (spec §9). C'est le **premier
+  reste-à-faire du pilier**, et il ne demande aucun développement.
+- ⚠️ **La pagination (R6.2) est un prérequis du remplissage** : la recherche chargeait toute la
+  table en mémoire avant de filtrer en JS. Indolore à 80 aliments, intenable au millier.
+- **Vérifié** : `npm run typecheck` à 0 sur les 3 workspaces, `npm run lint` à 0 (**0 warning**),
+  `npm run test` à 0 — **2 748 tests mobile** (Jest) et **2 498 tests `shared`** (Vitest) verts.
+  Parité i18n FR/EN contrôlée par `scripts/check-i18n-parity.mjs` : **2 449 clés alignées**.
+- Même warning CLI `pg-delta` qu'aux push précédents (cache du catalogue, Docker absent) : il ne
+  porte pas sur l'application du SQL — vérifié par `npm run db:types`.
+
+
 ## 10/09/2026 — MUSCU-UX01 : refonte UX du pilier Musculation (5 écrans)
 
 Branche `feature/muscu-refonte-ux`, développée dans un **worktree isolé** pour ne pas entrer en

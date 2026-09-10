@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #33291f; }
+    a { color: #b14f2b; } a:hover { color: #8d3f22; }
+    .disp { font-family: 'Bricolage Grotesque', Georgia, serif; }
+    .body { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+    .cell { height: 42px; border-radius: 12px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 3px; box-sizing: border-box; }
+    .num { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; }
+    .dot { width: 5px; height: 5px; border-radius: 3px; }
+  </style>
+</helmet>
+
+<div style="width: 392px; height: 812px; box-sizing: border-box; background: rgba(51,41,31,.45); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;">
+
+  <div style="background: #f7eede; border-top-left-radius: 24px; border-top-right-radius: 24px; height: 620px; display: flex; flex-direction: column; overflow: hidden;">
+
+    <div style="padding: 10px 20px 0; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <div style="width: 42px; height: 4px; border-radius: 2px; background: #90897d;"></div>
+      <div style="align-self: stretch; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div class="disp" style="font-size: 20px; font-weight: 700; letter-spacing: -0.4px; color: #33291f;">Aller à un jour</div>
+        <div style="width: 40px; height: 40px; border-radius: 13px; background: #eadcc6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 16px 20px 0; display: flex; flex-direction: column; gap: 14px;">
+
+      <!-- Mois -->
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>
+        </div>
+        <div class="disp" style="font-size: 17px; font-weight: 700; color: #33291f;">Septembre 2026</div>
+        <div style="width: 44px; height: 44px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#90897d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg>
+        </div>
+      </div>
+
+      <!-- Grille -->
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 14px 12px;">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 6px;">
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">L</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">M</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">M</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">J</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">V</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">S</div>
+          <div class="mono" style="font-size: 10.5px; color: #786a59; text-align: center;">D</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;">
+          <!-- Semaine 1 : 1er sept. = mardi -->
+          <div class="cell"></div>
+          <div class="cell"><div class="num" style="color: #33291f;">1</div><div class="dot" style="background: #66714b;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">2</div><div class="dot" style="background: #66714b;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">3</div><div class="dot" style="background: #66714b;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">4</div><div class="dot" style="background: #b47f31;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">5</div><div class="dot" style="background: #66714b;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">6</div><div class="dot" style="background: #eadcc6;"></div></div>
+
+          <!-- Semaine 2 -->
+          <div class="cell"><div class="num" style="color: #33291f;">7</div><div class="dot" style="background: #66714b;"></div></div>
+          <div class="cell"><div class="num" style="color: #33291f;">8</div><div class="dot" style="background: #66714b;"></div></div>
+          <!-- Aujourd'hui -->
+          <div class="cell" style="background: #b14f2b; box-shadow: 0 8px 18px -8px rgba(177,79,43,.55);">
+            <div class="num" style="color: #ffffff; font-weight: 700;">9</div><div class="dot" style="background: #ffffff;"></div>
+          </div>
+          <div class="cell"><div class="num" style="color: #90897d;">10</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">11</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">12</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">13</div></div>
+
+          <!-- Semaines à venir -->
+          <div class="cell"><div class="num" style="color: #90897d;">14</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">15</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">16</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">17</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">18</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">19</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">20</div></div>
+
+          <div class="cell"><div class="num" style="color: #90897d;">21</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">22</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">23</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">24</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">25</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">26</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">27</div></div>
+
+          <div class="cell"><div class="num" style="color: #90897d;">28</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">29</div></div>
+          <div class="cell"><div class="num" style="color: #90897d;">30</div></div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+        </div>
+      </div>
+
+      <!-- Légende : le sens des pastilles -->
+      <div style="display: flex; align-items: center; gap: 16px; padding: 0 4px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <div class="dot" style="background: #66714b;"></div>
+          <div class="body" style="font-size: 12px; color: #786a59;">Journée complète</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <div class="dot" style="background: #b47f31;"></div>
+          <div class="body" style="font-size: 12px; color: #786a59;">Partielle</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <div class="dot" style="background: #eadcc6;"></div>
+          <div class="body" style="font-size: 12px; color: #786a59;">Rien saisi</div>
+        </div>
+      </div>
+
+      <!-- Raccourcis -->
+      <div style="display: flex; gap: 8px;">
+        <div style="flex-grow: 1; height: 46px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+          <div class="body" style="font-size: 13.5px; font-weight: 700; color: #33291f;">Hier</div>
+        </div>
+        <div style="flex-grow: 1; height: 46px; border-radius: 14px; background: #f3ddd0; border: 1.5px solid #b14f2b; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+          <div class="body" style="font-size: 13.5px; font-weight: 700; color: #b14f2b;">Aujourd'hui</div>
+        </div>
+        <div style="flex-grow: 1; height: 46px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+          <div class="body" style="font-size: 13.5px; font-weight: 700; color: #33291f;">Demain</div>
+        </div>
+      </div>
+
+      <!-- Régularité : la donnée est déjà calculée, elle n'était affichée nulle part d'utile -->
+      <div style="background: #33291f; border-radius: 16px; padding: 14px 16px; display: flex; align-items: center; gap: 13px;">
+        <svg width="34" height="34" viewBox="0 0 34 34" style="flex-shrink: 0;">
+          <circle cx="17" cy="17" r="15" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="4"></circle>
+          <circle cx="17" cy="17" r="15" fill="none" stroke="#a9ba7e" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="10.5" transform="rotate(-90 17 17)"></circle>
+        </svg>
+        <div style="flex-grow: 1;">
+          <div class="body" style="font-size: 13px; font-weight: 700; color: #f0e4d0;">8 jours sur 9 remplis ce mois</div>
+          <div class="body" style="font-size: 11.5px; color: #c9b79a;">Ta meilleure série : 12 jours · en cours : 3</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

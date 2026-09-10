@@ -42,10 +42,13 @@ type PlanDbRow = {
   fat_g: number;
   consumed_at: string | null;
   consumed_entry_ids: string | null;
+  food_id: string | null;
+  quantity_g: number | null;
 };
 
 const PLAN_COLUMNS = `
   id, plan_date, meal_key, order_index, source_type, recipe_id, template_id,
+  food_id, quantity_g,
   servings, label, kcal, protein_g, carbs_g, fat_g, consumed_at, consumed_entry_ids
 `;
 
@@ -81,6 +84,8 @@ function rowToEntry(r: PlanDbRow): PlannedMealEntry {
     sourceType: r.source_type as MealPlanSourceType,
     recipeId: r.recipe_id,
     templateId: r.template_id,
+    foodId: r.food_id,
+    quantityG: r.quantity_g,
     servings: r.servings,
     label: r.label,
     kcal: Math.round(r.kcal),
@@ -217,6 +222,8 @@ export async function planRecipe(
     source_type: 'recipe',
     recipe_id: recipeId,
     template_id: null,
+    food_id: null,
+    quantity_g: null,
     servings,
     label: recipe.name,
     kcal: Math.round(recipe.total_kcal * factor),
@@ -225,6 +232,111 @@ export async function planRecipe(
     fat_g: recipe.total_fat_g * factor,
     consumed_at: null,
     consumed_entry_ids: null,
+  });
+}
+
+/**
+ * Planifie un **aliment simple** (US NUTRI-UX01, R7.1).
+ *
+ * Le snapshot est pris pour la quantité demandée, exactement comme au journal : modifier
+ * l'aliment ensuite ne fait pas bouger un planning déjà posé. La liste de courses, elle, relit
+ * l'aliment vivant — c'est la règle R6 de REPAS-01, et `food_id` la rend applicable ici aussi.
+ */
+export async function planFood(
+  dayKey: string,
+  mealKey: string,
+  foodId: string,
+  grams: number,
+): Promise<string> {
+  const food = await powerSync.getOptional<{
+    name: string | null;
+    kcal_per_100g: number;
+    protein_per_100g: number | null;
+    carbs_per_100g: number | null;
+    fat_per_100g: number | null;
+  }>(
+    `SELECT COALESCE(tl.name, tfr.name) AS name,
+            f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g, f.fat_per_100g
+     FROM foods f
+     LEFT JOIN food_translations tl  ON tl.food_id = f.id AND tl.lang = 'fr' AND tl.deleted_at IS NULL
+     LEFT JOIN food_translations tfr ON tfr.food_id = f.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+     WHERE f.id = ? AND f.deleted_at IS NULL`,
+    [foodId],
+  );
+  if (!food) throw new Error(`Aliment introuvable ou archivé : ${foodId}`);
+
+  const quantity = Math.max(1, Math.round(grams));
+  const factor = quantity / 100;
+  return insertWithSyncFields('meal_plan_entries', {
+    user_id: currentUserId(),
+    plan_date: dayKey,
+    meal_key: mealKey,
+    order_index: await nextOrderIndex(dayKey, mealKey),
+    source_type: 'food',
+    recipe_id: null,
+    template_id: null,
+    food_id: foodId,
+    quantity_g: quantity,
+    servings: 1,
+    label: food.name ?? '',
+    kcal: Math.round(food.kcal_per_100g * factor),
+    protein_g: (food.protein_per_100g ?? 0) * factor,
+    carbs_g: (food.carbs_per_100g ?? 0) * factor,
+    fat_g: (food.fat_per_100g ?? 0) * factor,
+    consumed_at: null,
+    consumed_entry_ids: null,
+  });
+}
+
+/**
+ * Planifie un **ajout rapide** : des calories, sans aliment (US NUTRI-UX01, R7.1).
+ *
+ * « Restaurant vendredi soir, ~800 kcal » est une intention parfaitement légitime, et c'était
+ * jusqu'ici impossible à poser. Sans `food_id`, la liste de courses ne peut rien en tirer — elle
+ * le comptera dans ses entrées non résolues, ce qu'elle sait déjà annoncer (règle R12).
+ */
+export async function planQuickAdd(
+  dayKey: string,
+  mealKey: string,
+  input: { label: string; kcal: number; proteinG?: number; carbsG?: number; fatG?: number },
+): Promise<string> {
+  return insertWithSyncFields('meal_plan_entries', {
+    user_id: currentUserId(),
+    plan_date: dayKey,
+    meal_key: mealKey,
+    order_index: await nextOrderIndex(dayKey, mealKey),
+    source_type: 'quick',
+    recipe_id: null,
+    template_id: null,
+    food_id: null,
+    quantity_g: null,
+    servings: 1,
+    label: input.label,
+    kcal: Math.max(0, Math.round(input.kcal)),
+    protein_g: Math.max(0, input.proteinG ?? 0),
+    carbs_g: Math.max(0, input.carbsG ?? 0),
+    fat_g: Math.max(0, input.fatG ?? 0),
+    consumed_at: null,
+    consumed_entry_ids: null,
+  });
+}
+
+/**
+ * Déplace une entrée planifiée vers un autre jour / repas (US NUTRI-UX01, R7.3).
+ *
+ * Déplacer plutôt que supprimer-recréer préserve l'identité de la ligne : une entrée **déjà
+ * portée au journal** (`consumed_at`) garde son lien, et son annulation reste possible. Le
+ * patron est celui du glisser-déposer muscu (MUSC-F9).
+ */
+export async function movePlannedEntry(
+  id: string,
+  dayKey: string,
+  mealKey: string,
+): Promise<void> {
+  await patch('meal_plan_entries', id, {
+    plan_date: dayKey,
+    meal_key: mealKey,
+    order_index: await nextOrderIndex(dayKey, mealKey),
   });
 }
 
@@ -265,6 +377,8 @@ export async function planTemplate(
     meal_key: mealKey,
     order_index: await nextOrderIndex(dayKey, mealKey),
     source_type: 'template',
+    food_id: null,
+    quantity_g: null,
     recipe_id: null,
     template_id: templateId,
     servings: 1,

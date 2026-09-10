@@ -178,7 +178,26 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
+/**
+ * Saisit une valeur **et sort du champ**.
+ *
+ * ⚠️ Depuis l'US NUTRI-UX01 (R6.1), les champs numériques du profil n'écrivent plus à chaque
+ * frappe mais **à la sortie du champ** : taper « 2500 » produisait quatre écritures (2, 25, 250,
+ * 2500), et vider un champ de macro écrivait un **0 affirmé** au passage. Le `blur` fait donc
+ * partie du geste que ce helper reproduit.
+ */
 const saisir = async (label: string, valeur: string) => {
+  const champ = screen.getByLabelText(label);
+  await act(async () => {
+    fireEvent.changeText(champ, valeur);
+  });
+  await act(async () => {
+    fireEvent(champ, 'blur');
+  });
+};
+
+/** Saisit sans sortir du champ — pour vérifier que rien n'est encore écrit. */
+const saisirSansQuitter = async (label: string, valeur: string) => {
   await act(async () => {
     fireEvent.changeText(screen.getByLabelText(label), valeur);
   });
@@ -281,10 +300,26 @@ describe('objectif et activité', () => {
     expect(screen.getByText('×1,55')).toBeTruthy();
   });
 
-  it('le niveau par défaut est « modéré »', async () => {
+  it('🔴 sans réponse, AUCUN niveau n’est présenté comme choisi', async () => {
     await afficher();
 
-    expect(option('nutrition.activity.options.moderate').props.accessibilityState.selected).toBe(true);
+    // Le défaut appliqué au calcul reste « modéré » — mais l'écran ne doit pas le faire passer
+    // pour une sélection de l'utilisateur. C'est tout l'objet de R1.3 : le niveau multiplie le
+    // TDEE de ×1,2 à ×1,9, et un sédentaire à qui l'on applique ×1,55 en silence reçoit un
+    // objectif surestimé de ~614 kcal/jour, sans qu'aucun écran ne le signale.
+    expect(option('nutrition.activity.options.moderate').props.accessibilityState.selected).toBe(
+      false,
+    );
+    expect(screen.getByText('nutrition.activity.defaultNotice')).toBeTruthy();
+  });
+
+  it('un niveau choisi est coché, et le bandeau de défaut disparaît', async () => {
+    await afficher({ nutritionProfile: { activityLevel: 'sedentary' } });
+
+    expect(option('nutrition.activity.options.sedentary').props.accessibilityState.selected).toBe(
+      true,
+    );
+    expect(screen.queryByText('nutrition.activity.defaultNotice')).toBeNull();
   });
 
   it('changer de niveau d’activité écrit immédiatement', async () => {
@@ -394,13 +429,27 @@ describe('bonus jour d’entraînement', () => {
     ['abc', 0],
     ['250,6', 251],
   ])('bonus « %s » → %i', async (saisie, attendu) => {
-    await afficher();
+    // On part d'un bonus **déjà posé** : depuis R6.1, l'écriture a lieu à la sortie du champ et
+    // seulement si le texte a changé. Vider un champ déjà vide n'écrit donc rien — et c'est
+    // voulu : le simple passage dans un champ ne doit pas produire d'écriture.
+    await afficher({ nutritionProfile: { trainingDayBonus: 150 } });
 
     await saisir(CHAMP.bonus, saisie);
 
     // Tout ce qui n'est pas un entier positif désactive le bonus. Un bonus négatif abaisserait la
     // cible les jours de séance — l'inverse de ce que le réglage promet.
     expect(mockUpsert).toHaveBeenCalledWith({ trainingDayBonus: attendu });
+  });
+
+  it('🔴 R6.1 — rien n’est écrit tant qu’on n’a pas quitté le champ', async () => {
+    await afficher();
+
+    await saisirSansQuitter(CHAMP.manuel, '2500');
+
+    // Avant l'US NUTRI-UX01, `onChangeText` appelait directement `upsertNutritionProfile` :
+    // taper « 2500 » produisait QUATRE écritures (2, 25, 250, 2500), toutes synchronisées, et la
+    // valeur affichée était relue depuis la base pendant la frappe.
+    expect(mockUpsert).not.toHaveBeenCalled();
   });
 
   it('la marge d’adhérence par défaut est 10 %', async () => {
@@ -440,6 +489,9 @@ describe('macros', () => {
     await act(async () => {
       fireEvent.changeText(champs[0]!, '200');
     });
+    await act(async () => {
+      fireEvent(champs[0]!, 'blur');
+    });
 
     // Comportement délibéré : une répartition à moitié manuelle donnerait un total qui ne
     // correspond ni à l'objectif calculé ni au choix de l'utilisateur.
@@ -455,6 +507,9 @@ describe('macros', () => {
     const champs = screen.getAllByLabelText(CHAMP.grammes);
     await act(async () => {
       fireEvent.changeText(champs[2]!, '');
+    });
+    await act(async () => {
+      fireEvent(champs[2]!, 'blur');
     });
 
     // Ici, contrairement à l'aliment perso, `0` est le bon choix : une répartition manuelle est un

@@ -38,7 +38,11 @@ jest.mock('@/data/repositories/food-repository', () => ({
 }));
 jest.mock('@/data/repositories/journal-repository', () => ({ addFoodEntry: jest.fn() }));
 jest.mock('@/lib/openfoodfacts', () => ({ fetchOpenFoodFactsByBarcode: jest.fn() }));
-jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-08-14') }));
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: jest.fn(() => '2026-08-14'),
+  // US NUTRI-UX01 (R2.6) : le repas se déduit désormais de l'heure. 12 h → déjeuner.
+  useCurrentHour: jest.fn(() => 12),
+}));
 
 /**
  * La caméra est native : elle ne se monte pas ici. La sonde expose son rappel de scan sous forme
@@ -364,7 +368,10 @@ describe('ajout au journal', () => {
     // Le scan est le chemin le plus exposé au lien direct : c'est celui qu'on ouvre en raccourci,
     // donc sans paramètres. Même défaut que `food-picker`, corrigé le 01/08/2026 — le correctif
     // n'avait pas suivi ici.
-    expect(mockAddEntry).toHaveBeenCalledWith('2026-08-14', 'breakfast', expect.anything());
+    // ⚠️ Le repas attendu est **le repas de l'heure** (US NUTRI-UX01, R2.6), plus `'breakfast'`
+    // en dur : ouvert sans paramètre à 20 h, cet écran journalisait au petit-déjeuner et l'ajout
+    // était à reprendre. Le mock d'heure rend 12 h → déjeuner.
+    expect(mockAddEntry).toHaveBeenCalledWith('2026-08-14', 'lunch', expect.anything());
   });
 
   it('🔴 le snapshot ET les micronutriments sont mis à l’échelle', async () => {

@@ -115,6 +115,148 @@ export function useDailyTotals(sinceDate: string): { totals: DailyTotal[]; isLoa
   };
 }
 
+/**
+ * Totaux quotidiens sur un intervalle **borné** (US NUTRI-UX01, R3.1).
+ *
+ * `useDailyTotals` part d'une date et remonte jusqu'à aujourd'hui : elle ne sait pas cadrer un
+ * mois passé, dont le calendrier a besoin pour peindre ses pastilles. Deux bornes, donc — et pas
+ * de fenêtre glissante, sans quoi feuilleter les mois rechargerait tout l'historique.
+ */
+export function useMonthTotals(
+  fromDate: string,
+  toDate: string,
+): { totals: DailyTotal[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{
+    log_date: string;
+    kcal: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  }>(
+    `SELECT log_date,
+            SUM(kcal) AS kcal, SUM(protein_g) AS protein_g,
+            SUM(carbs_g) AS carbs_g, SUM(fat_g) AS fat_g
+     FROM food_entries
+     WHERE deleted_at IS NULL AND log_date >= ? AND log_date <= ?
+     GROUP BY log_date ORDER BY log_date`,
+    [fromDate, toDate],
+  );
+  return {
+    totals: data.map((r) => ({
+      logDate: r.log_date,
+      kcal: Math.round(r.kcal),
+      proteinG: Math.round(r.protein_g),
+      carbsG: Math.round(r.carbs_g),
+      fatG: Math.round(r.fat_g),
+    })),
+    isLoading,
+  };
+}
+
+/**
+ * Fibres, sucres et acides gras saturés du jour (US NUTRI-UX01, R3.5 — catalogue NUTR-15).
+ *
+ * 🔴 **Ces trois valeurs ne sont pas dans `food_entries`.** L'entrée de journal fige les macros et
+ * les 33 micronutriments, mais pas les sous-macros : elles vivent sur l'aliment (`foods`). On les
+ * recalcule donc par jointure, mises à l'échelle par la quantité journalisée.
+ *
+ * Conséquence assumée : une entrée **sans aliment identifié** — ajout rapide en calories, recette
+ * posée en snapshot — n'y contribue pas. Plutôt que de sous-estimer en silence, on renvoie la
+ * **part des calories couvertes** (`coverageRatio`) : l'écran peut alors dire ce qu'il ne sait
+ * pas, comme la liste de courses le fait pour ses quantités manquantes (REPAS-01, règle R7).
+ */
+export type DayQuality = {
+  fiber: number;
+  sugars: number;
+  saturatedFat: number;
+  /** Part des kcal du jour provenant d'entrées rattachées à un aliment, dans [0, 1]. */
+  coverageRatio: number;
+};
+
+export function useDayQuality(dayKey: string): { quality: DayQuality; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{
+    fiber: number | null;
+    sugars: number | null;
+    saturated: number | null;
+    covered_kcal: number | null;
+    total_kcal: number | null;
+  }>(
+    `SELECT
+       SUM(CASE WHEN f.fiber_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.fiber_per_100g * e.quantity_g / 100.0 END)         AS fiber,
+       SUM(CASE WHEN f.sugars_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.sugars_per_100g * e.quantity_g / 100.0 END)        AS sugars,
+       SUM(CASE WHEN f.saturated_fat_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.saturated_fat_per_100g * e.quantity_g / 100.0 END) AS saturated,
+       SUM(CASE WHEN f.id IS NOT NULL THEN e.kcal ELSE 0 END)             AS covered_kcal,
+       SUM(e.kcal)                                                        AS total_kcal
+     FROM food_entries e
+     LEFT JOIN foods f ON f.id = e.food_id AND f.deleted_at IS NULL
+     WHERE e.log_date = ? AND e.deleted_at IS NULL`,
+    [dayKey],
+  );
+  const row = data[0];
+  const total = row?.total_kcal ?? 0;
+  return {
+    quality: {
+      fiber: Math.round(row?.fiber ?? 0),
+      sugars: Math.round(row?.sugars ?? 0),
+      saturatedFat: Math.round(row?.saturated ?? 0),
+      coverageRatio: total > 0 ? Math.min(1, (row?.covered_kcal ?? 0) / total) : 0,
+    },
+    isLoading,
+  };
+}
+
+/**
+ * Moyenne des repères de qualité sur une fenêtre (US NUTRI-UX01, R4.1 onglet « Qualité »).
+ *
+ * Divisée par les **jours réellement renseignés**, jamais par la longueur de la fenêtre : c'est
+ * la convention d'`averageIntake` (NUTR-05), et diviser par 30 quand on a loggé 12 jours
+ * afficherait une assiette deux fois plus pauvre qu'elle ne l'est.
+ */
+export function useQualityAverage(
+  sinceDate: string,
+): { quality: DayQuality; loggedDays: number; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{
+    fiber: number | null;
+    sugars: number | null;
+    saturated: number | null;
+    covered_kcal: number | null;
+    total_kcal: number | null;
+    logged_days: number | null;
+  }>(
+    `SELECT
+       SUM(CASE WHEN f.fiber_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.fiber_per_100g * e.quantity_g / 100.0 END)         AS fiber,
+       SUM(CASE WHEN f.sugars_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.sugars_per_100g * e.quantity_g / 100.0 END)        AS sugars,
+       SUM(CASE WHEN f.saturated_fat_per_100g IS NOT NULL AND e.quantity_g IS NOT NULL
+                THEN f.saturated_fat_per_100g * e.quantity_g / 100.0 END) AS saturated,
+       SUM(CASE WHEN f.id IS NOT NULL THEN e.kcal ELSE 0 END)             AS covered_kcal,
+       SUM(e.kcal)                                                        AS total_kcal,
+       COUNT(DISTINCT e.log_date)                                         AS logged_days
+     FROM food_entries e
+     LEFT JOIN foods f ON f.id = e.food_id AND f.deleted_at IS NULL
+     WHERE e.log_date >= ? AND e.deleted_at IS NULL`,
+    [sinceDate],
+  );
+  const row = data[0];
+  const loggedDays = row?.logged_days ?? 0;
+  const divisor = Math.max(1, loggedDays);
+  const total = row?.total_kcal ?? 0;
+  return {
+    quality: {
+      fiber: Math.round((row?.fiber ?? 0) / divisor),
+      sugars: Math.round((row?.sugars ?? 0) / divisor),
+      saturatedFat: Math.round((row?.saturated ?? 0) / divisor),
+      coverageRatio: total > 0 ? Math.min(1, (row?.covered_kcal ?? 0) / total) : 0,
+    },
+    loggedDays,
+    isLoading,
+  };
+}
+
 /** Total de kcal par repas (clé réelle `meal_type`, pas `MEAL_TYPES` — voir spec NUTR-16 §0). */
 export type MealTotal = { mealKey: string; kcal: number };
 

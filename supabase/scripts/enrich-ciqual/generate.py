@@ -13,11 +13,66 @@ Sorties (dans ce dossier) :
 Règles : macros de base + sous-macros + micros = 100 % CIQUAL (present-only : traces/NC/'<x'/'-' -> omis).
 oméga = somme des AG mesurés. trans_fat_g / vitamin_b7_ug : absents de CIQUAL 2025 -> jamais renseignés.
 Usage : python generate.py [chemin/vers/ciqual.csv]   (défaut : ./ciqual2025.csv)
+        python generate.py <csv> --bulk [--limit N]      (import massif, voir ci-dessous)
+
+── Mode --bulk (US NUTRI-UX01, décision D1) ────────────────────────────────────────────────────
+Le catalogue se remplissait **une entrée à la main à la fois**, ce qui explique qu'il n'en compte
+que 80 — une base sur laquelle un utilisateur français tape le mur à son deuxième repas. `--bulk`
+la construit directement depuis le CSV CIQUAL : il sélectionne les aliments **du quotidien**
+(groupes alimentaires courants, valeurs énergétiques renseignées), leur attribue une catégorie
+interne et un id déterministe, puis fusionne dans `foods-catalog.json`.
+
+Trois garanties, dans l'ordre où elles comptent :
+  • **Aucune valeur nutritionnelle inventée** : tout vient du CSV, comme en mode normal.
+  • **Idempotent** : l'id dérive du code CIQUAL, donc relancer ne crée pas de doublon.
+  • **Non destructif** : une entrée déjà présente dans le catalogue est **conservée telle quelle**
+    (nom retouché, portions saisies à la main, traduction EN) — `--bulk` n'ajoute que ce qui manque.
+
+⚠️ **CIQUAL est monolingue.** Les entrées importées portent `nameEn = nameFr` et un marqueur
+`needsTranslation`. La base est donc utilisable en français immédiatement, et la traduction EN
+devient une tâche traçable (décision G) au lieu d'un oubli silencieux.
 """
-import csv, os, sys, json
+import csv, io, os, sys, json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CSV = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, 'ciqual2025.csv')
+ARGS = [a for a in sys.argv[1:] if not a.startswith('--')]
+FLAGS = [a for a in sys.argv[1:] if a.startswith('--')]
+CSV = ARGS[0] if ARGS else os.path.join(HERE, 'ciqual2025.csv')
+BULK = '--bulk' in FLAGS
+BULK_LIMIT = next((int(f.split('=')[1]) for f in FLAGS if f.startswith('--limit=')), None)
+if BULK_LIMIT is None and '--limit' in sys.argv:
+    i = sys.argv.index('--limit')
+    BULK_LIMIT = int(sys.argv[i + 1]) if i + 1 < len(sys.argv) else None
+BULK_LIMIT = BULK_LIMIT or 900
+
+# ── Groupes CIQUAL -> catégories internes (les 9 valeurs de `foods.category`) ──────────────
+# Colonne 3 du CSV = `alim_grp_nom_fr`. La correspondance est volontairement **grossière** : elle
+# sert à ranger, pas à qualifier. Un groupe non listé est ignoré — mieux vaut une base plus
+# petite qu'une base où les légumes sont classés en boissons.
+BULK_GROUPS = {
+    'viandes, œufs, poissons': 'meat',
+    'produits céréaliers': 'starchy',
+    'légumes': 'vegetables',
+    'fruits, légumes, légumineuses et oléagineux': 'fruits',
+    'produits laitiers et assimilés': 'dairy',
+    'lait et produits laitiers': 'dairy',
+    'boissons': 'drinks',
+    'entrées et plats composés': 'other',
+    'aides culinaires et ingrédients divers': 'other',
+    'matières grasses': 'other',
+    'produits sucrés': 'other',
+    'glaces et sorbets': 'other',
+}
+
+# Sous-groupes qui affinent le rangement quand le groupe est trop large.
+BULK_SUBGROUPS = {
+    'poissons': 'fish', 'mollusques et crustacés': 'fish',
+    'fruits': 'fruits', 'légumes': 'vegetables',
+    'fruits à coque et graines oléagineuses': 'nuts', 'légumineuses': 'starchy',
+    'pommes de terre et autres tubercules': 'starchy',
+    'pâtes, riz et céréales': 'starchy', 'pains et viennoiseries': 'starchy',
+    'œufs': 'meat', 'viandes': 'meat', 'charcuteries': 'meat', 'volailles': 'meat',
+}
 
 catalog = json.load(open(os.path.join(HERE, 'foods-catalog.json'), encoding='utf-8'))
 COL = json.load(open(os.path.join(HERE, 'mapping-columns.json'), encoding='utf-8'))
@@ -77,6 +132,63 @@ def num(v):
     return 'null' if v is None else f"{v:g}"
 
 
+def bulk_extend(catalog, rows, limit):
+    """Complète le catalogue depuis le CSV CIQUAL. Retourne (catalogue, nb ajoutés).
+
+    Ne touche jamais une entrée existante : le catalogue reste la **source éditable**, `--bulk`
+    n'est qu'un moyen de le peupler vite.
+    """
+    connus = {c['ciqualCode'] for c in catalog if c.get('ciqualCode')}
+    # Id déterministe dérivé du code CIQUAL : relancer l'import ne duplique rien, et une entrée
+    # gardera le même id d'une régénération à l'autre (sans quoi les traductions se détacheraient).
+    def bulk_id(code):
+        return f"d4{int(code):06d}-0000-4000-8000-000000000000"
+
+    ajoutes = 0
+    for r in rows[1:]:
+        if ajoutes >= limit:
+            break
+        code = r[6].strip()
+        if not code or code in connus:
+            continue
+        groupe = (r[3] or '').strip().lower()
+        sous_groupe = (r[4] or '').strip().lower()
+        categorie = BULK_SUBGROUPS.get(sous_groupe) or BULK_GROUPS.get(groupe)
+        if not categorie:
+            continue
+        # Sans énergie exploitable, l'aliment ne peut rien apporter au journal.
+        if pv(r[10]) is None:
+            continue
+        nom = (r[7] or '').strip()
+        if not nom:
+            continue
+        catalog.append({
+            'id': bulk_id(code),
+            'nameFr': nom,
+            # 🔴 CIQUAL est monolingue : on recopie le français et on le SIGNALE, plutôt que
+            # d'inventer une traduction ou de laisser un nom vide côté anglais (décision G).
+            'nameEn': nom,
+            'needsTranslation': True,
+            'category': categorie,
+            'portions': '[]',
+            'ciqualCode': code,
+            'new': True,
+        })
+        connus.add(code)
+        ajoutes += 1
+    return catalog, ajoutes
+
+
+bulk_ajoutes = 0
+if BULK:
+    catalog, bulk_ajoutes = bulk_extend(catalog, rows, BULK_LIMIT)
+    json.dump(
+        catalog,
+        io.open(os.path.join(HERE, 'foods-catalog.json'), 'w', encoding='utf-8'),
+        ensure_ascii=False,
+        indent=1,
+    )
+
 recs, audit = [], []
 for c in catalog:
     if c['ciqualCode']:
@@ -133,6 +245,13 @@ mig = [
 open(os.path.join(HERE, 'migration.sql'), 'w', encoding='utf-8').write("\n\n".join(mig) + "\n")
 
 print(f"OK — foods: {len(recs)} | nouveaux: {sum(1 for r in recs if r['new'])} | micros: {sum(1 for r in recs if r['mic'])}")
+if BULK:
+    a_traduire = sum(1 for r in recs if r.get('needsTranslation'))
+    print(f"--bulk : {bulk_ajoutes} aliments ajoutés au catalogue (limite {BULK_LIMIT}).")
+    # Pas d'emoji dans les prints : la console Windows (cp1252) les refuse et fait planter le
+    # script en toute fin de course, apres avoir ecrit le catalogue — le pire moment pour echouer.
+    print(f"ATTENTION : {a_traduire} aliments portent un nom anglais identique au francais")
+    print("            (CIQUAL est monolingue). La traduction EN reste a faire - decision G.")
 print("migration -> supabase/scripts/enrich-ciqual/migration.sql")
 if audit:
     print("Audit :")

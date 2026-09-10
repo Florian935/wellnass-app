@@ -13,7 +13,17 @@
       "sun": "Sun"
     },
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "close": "Close",
+    "weekdayShort": {
+      "mon": "M",
+      "tue": "T",
+      "wed": "W",
+      "thu": "T",
+      "fri": "F",
+      "sat": "S",
+      "sun": "S"
+    }
   },
   "sync": {
     "connected": "Synced",
@@ -335,7 +345,10 @@
         "moderate": "Moderately active (3-5 days/wk)",
         "active": "Very active (6-7 days/wk)",
         "very_active": "Extremely active"
-      }
+      },
+      "defaultNotice": "Default value — you haven't answered yet",
+      "defaultHint": "We're applying “moderately active” in the meantime. If you move less than that, your goal is overstated by several hundred calories a day.",
+      "chooseNow": "Pick my level"
     },
     "calories": {
       "title": "Calorie needs",
@@ -357,7 +370,8 @@
         "hint": "Tolerance around your goal to count a day as on target (adherence stats)."
       },
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
-      "completeProfile": "Complete my profile"
+      "completeProfile": "Complete my profile",
+      "tdeeHint": "What your body burns in a day, at rest and in activity — estimated from your weight, height, age and activity level."
     },
     "macros": {
       "title": "Macro split",
@@ -438,7 +452,18 @@
         "kosher": "Kosher"
       },
       "allergens": "Allergens",
-      "allergensPlaceholder": "e.g. peanuts, tree nuts…"
+      "allergensPlaceholder": "e.g. peanuts, tree nuts…",
+      "allergenOptions": {
+        "gluten": "Gluten",
+        "peanuts": "Peanuts",
+        "nuts": "Tree nuts",
+        "milk": "Milk",
+        "eggs": "Eggs",
+        "soy": "Soy",
+        "fish": "Fish",
+        "shellfish": "Shellfish",
+        "sesame": "Sesame"
+      }
     },
     "crossTraining": {
       "title": "Do you eat the way you train?",
@@ -491,7 +516,16 @@
       "fiber": "Fiber",
       "moreMacros": "Breakdown (optional)",
       "save": "Create food",
-      "update": "Save changes"
+      "update": "Save changes",
+      "preparation": "Raw or cooked?",
+      "preparationOptions": {
+        "raw": "Raw",
+        "cooked": "Cooked"
+      },
+      "portion": "Usual portion (optional)",
+      "portionLabel": "Portion name",
+      "portionGrams": "Grams",
+      "portionPlaceholder": "1 slice, 1 bowl…"
     },
     "editTitle": "Edit food",
     "edit": "Edit",
@@ -585,7 +619,67 @@
       "title": "Nothing logged yet",
       "body": "Log your first meal, or start from what you ate yesterday."
     },
-    "mealMenu": "{{meal}} meal actions"
+    "mealMenu": "{{meal}} meal actions",
+    "addSheet": {
+      "title": "Add to {{meal}}",
+      "subtitle": "Meal picked from the time — tap an item to adjust",
+      "remainingLabel": "Left for today",
+      "remainingValue": "{{kcal}} kcal · {{protein}} g protein",
+      "modes": {
+        "search": "Search",
+        "scan": "Scan",
+        "text": "Free text"
+      },
+      "searchLabel": "Search",
+      "searchPlaceholder": "Food, recipe, saved meal…",
+      "habits": "YOUR USUALS",
+      "results": "RESULTS",
+      "wholeBase": "Whole library",
+      "noHabit": "Nothing yet. Search for a food or scan a product.",
+      "noResult": "No match. Try another word, or create the food.",
+      "refine": "Narrow your search to see more results.",
+      "usualQuantity": "{{grams}} g · your usual amount",
+      "grams": "{{grams}} g",
+      "recipeMeta": "Recipe · {{count}} serving",
+      "recipeMeta_plural": "Recipe · {{count}} servings",
+      "templateMeta": "Saved meal · {{count}} item",
+      "templateMeta_plural": "Saved meal · {{count}} items",
+      "addA11y": "Add {{name}}"
+    },
+    "calendar": {
+      "title": "Jump to a day",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "legend": {
+        "complete": "Full day",
+        "partial": "Partial",
+        "empty": "Nothing logged"
+      },
+      "shortcuts": {
+        "yesterday": "Yesterday",
+        "today": "Today"
+      },
+      "dayA11y": {
+        "complete": "{{day}} — full day",
+        "partial": "{{day}} — partial day",
+        "empty": "{{day}} — nothing logged"
+      },
+      "open": "Pick a day"
+    },
+    "quantity": {
+      "per100": "{{kcal}} kcal per 100 g",
+      "increase": "Increase amount",
+      "decrease": "Decrease amount",
+      "factor": {
+        "0_5": "½ {{portion}}",
+        "1": "{{portion}}",
+        "2": "2 × {{portion}}"
+      },
+      "lastTime": "Last time: {{grams}} g",
+      "effect": "WHAT THIS CHANGES",
+      "willRemain": "You'll have {{kcal}} kcal left today",
+      "willExceed": "You'll go {{kcal}} kcal over"
+    }
   },
   "meals": {
     "manage": "Manage meals",
@@ -624,7 +718,10 @@
     "unmatched": "not recognized",
     "nothing": "No food detected.",
     "addCount_one": "Add {{count}} food",
-    "addCount_other": "Add {{count}} foods"
+    "addCount_other": "Add {{count}} foods",
+    "pickSuggestion": "Pick {{name}}",
+    "search": "Search",
+    "addRow": "Add a line"
   },
   "recipes": {
     "title": "Recipe",
@@ -640,7 +737,12 @@
     "addIngredient": "+ Add an ingredient",
     "removeIngredient": "Remove this ingredient?",
     "done": "Done",
-    "none": "No recipe."
+    "none": "No recipe.",
+    "rename": "Rename recipe",
+    "deleteRecipe": "Delete recipe",
+    "deleteConfirm": "Delete this recipe? Meals already logged won't change.",
+    "editQuantity": "Edit amount of {{name}}",
+    "removeIngredientA11y": "Remove {{name}}"
   },
   "stats": {
     "title": "Tracking",
@@ -655,7 +757,8 @@
         "up": "trending up",
         "down": "trending down",
         "stable": "stable"
-      }
+      },
+      "logHint": "Weigh yourself in the morning, before eating, for comparable numbers."
     },
     "weightGoal": {
       "title": "Weight goal progress",
@@ -681,7 +784,18 @@
       "balance": "Balance: {{value}} kcal",
       "aboveBelow": "{{above}} d above, {{below}} d below",
       "empty": "No day logged",
-      "noTarget": "Set your calorie goal"
+      "noTarget": "Set your calorie goal",
+      "inTargetTitle": "On target",
+      "marginShort": "± {{pct}}% of your daily goal",
+      "outOfDays": "/ {{total}} d",
+      "axisStart": "{{count}} d ago",
+      "axisEnd": "yesterday",
+      "legend": {
+        "over": "{{count}} d above",
+        "in": "{{count}} d on target",
+        "under": "{{count}} d below"
+      },
+      "balanceSentence": "Across {{days}} logged days, your balance is {{value}} kcal."
     },
     "completion": {
       "title": "Logging consistency",
@@ -750,6 +864,22 @@
         "easy": "Easy day — lower end of the range",
         "rest": "No run planned today"
       }
+    },
+    "tabs": {
+      "regularity": "Consistency",
+      "intake": "Intake",
+      "weight": "Weight",
+      "quality": "Quality"
+    },
+    "regularity": {
+      "title": "Journal filled",
+      "window": "Last {{days}} days",
+      "currentStreak": "CURRENT STREAK",
+      "bestStreak": "BEST STREAK",
+      "emptyDays": "EMPTY DAYS",
+      "days": "{{count}} day",
+      "days_plural": "{{count}} days",
+      "a11y": "Journal filled {{pct}}% over {{days}} days"
     }
   },
   "widgets": {
@@ -1225,6 +1355,18 @@
       "none": "Not set",
       "note": "Your profile is saved and securely synced. You can start using the app.",
       "cta": "Let's go"
+    },
+    "activity": {
+      "title": "How active are you?",
+      "subtitle": "This sets your calorie goal — anywhere from 2,100 to 3,300 kcal for the same person.",
+      "hint": "You can change this any time in your nutrition settings.",
+      "descriptions": {
+        "sedentary": "Desk job, little walking, no training",
+        "light": "Some walking, 1 to 2 sessions a week",
+        "moderate": "3 to 5 sessions a week, or a job on your feet",
+        "active": "6 to 7 sessions a week, or physical work",
+        "very_active": "Heavy physical work and daily training"
+      }
     }
   },
   "auth": {
@@ -2944,7 +3086,12 @@
       "servingsMinus": "One serving fewer",
       "servingsPlus": "One serving more",
       "portionHint": "{{servings}} of the recipe's {{total}} servings: shopping quantities are scaled accordingly.",
-      "confirm": "Add · {{kcal}} kcal"
+      "confirm": "Add · {{kcal}} kcal",
+      "foods": "Foods",
+      "quick": "Calories",
+      "searchFood": "Search a food",
+      "foodMeta": "{{kcal}} kcal / 100 g",
+      "quickPlaceholder": "Restaurant, family meal…"
     },
     "shopping": {
       "open": "Shopping list",
@@ -2979,6 +3126,12 @@
         "uncheckBody_other": "The {{count}} items in {{aisle}} will be unticked.",
         "uncheckConfirm": "Untick"
       }
+    },
+    "grid": {
+      "showList": "Show as list",
+      "showGrid": "Show as grid",
+      "more": "+{{count}} · {{kcal}}",
+      "openDayA11y": "Open day {{day}}"
     }
   },
   "strength": {
@@ -3183,5 +3336,26 @@
       "seeAll_one": "See the program",
       "seeAll_other": "See all {{count}} programs"
     }
+  },
+  "hydration": {
+    "title": "Hydration",
+    "amount": "{{current}} / {{target}} L",
+    "add": "Add a {{ml}} ml glass",
+    "undo": "Remove last glass",
+    "a11y": "{{glasses}} glasses out of {{target}}",
+    "targetLabel": "Daily hydration goal (ml)",
+    "glassLabel": "Glass size (ml)"
+  },
+  "quality": {
+    "title": "Plate quality",
+    "subtitle": "Against public health references",
+    "range": "/ {{min}}–{{max}}",
+    "cap": "/ {{max}} max",
+    "keys": {
+      "fiber": "Fibre",
+      "sugars": "Sugars",
+      "saturatedFat": "Saturated fat"
+    },
+    "coverage": "Based on {{pct}}% of your calories: quick calorie entries can't contribute."
   }
 }

@@ -489,8 +489,20 @@ export function resolveMealSplit(
 export const nutritionProfileRowSchema = syncFieldsSchema.extend({
   /** Objectif nutritionnel ; `null` = dérivé de l'objectif d'entraînement du profil. */
   objective: nutritionObjectiveSchema.nullable().default(null),
-  /** Niveau d'activité (facteur TDEE). */
-  activityLevel: activityLevelSchema.default('moderate'),
+  /**
+   * Niveau d'activité (facteur TDEE).
+   *
+   * 🔴 `null` = **la question n'a jamais été posée**, et ce n'est pas la même chose que
+   * « modérément actif ». Le niveau multiplie le TDEE de ×1,2 à ×1,9 : appliquer ×1,55 en
+   * silence à un sédentaire surestime son objectif de ~614 kcal/jour et annule tout déficit de
+   * sèche. Les lecteurs replient sur `'moderate'` pour calculer — mais l'écran, lui, doit dire
+   * que c'est un défaut (US NUTRI-UX01, R1.3).
+   */
+  activityLevel: activityLevelSchema.nullable().default(null),
+  /** Objectif d'hydratation du jour, en ml ; `null` = défaut applicatif (US NUTRI-UX01, R5). */
+  waterTargetMl: z.number().int().positive().nullable().default(null),
+  /** Volume d'un verre, en ml ; `null` = défaut applicatif. */
+  glassSizeMl: z.number().int().positive().nullable().default(null),
   /** Surcharge calorique manuelle (item 4.3) ; `null` = objectif calculé automatiquement. */
   manualCalories: z.number().positive().nullable().default(null),
   /** Macros manuelles en grammes (item 4.5) ; `null` = macros par défaut de l'objectif. */
@@ -512,3 +524,23 @@ export const nutritionProfileRowSchema = syncFieldsSchema.extend({
 });
 
 export type NutritionProfileRow = z.infer<typeof nutritionProfileRowSchema>;
+
+/**
+ * Le niveau d'activité a-t-il été **choisi**, ou l'app applique-t-elle son repli ?
+ *
+ * Sert à afficher le repli comme un repli (US NUTRI-UX01, R1.3) plutôt que comme une sélection.
+ * Un profil absent compte comme « jamais choisi » : c'est le cas de tout compte qui n'a jamais
+ * ouvert les réglages nutritionnels.
+ */
+export function hasChosenActivityLevel(
+  profile: { activityLevel: ActivityLevel | null } | null | undefined,
+): boolean {
+  return profile?.activityLevel != null;
+}
+
+/** Niveau effectivement appliqué aux calculs : le choix, sinon le repli historique. */
+export function effectiveActivityLevel(
+  profile: { activityLevel: ActivityLevel | null } | null | undefined,
+): ActivityLevel {
+  return profile?.activityLevel ?? 'moderate';
+}

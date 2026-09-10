@@ -55,6 +55,38 @@ Produit `migration.sql`. Puis :
 3. **Cloud** : `npm run db:push` (jamais la console) et cocher la ligne dans
    [supabase/MIGRATIONS.md](../../MIGRATIONS.md).
 
+## Remplir la bibliothèque en masse (`--bulk`)
+
+> Ajouté par l'US **NUTRI-UX01** (décision D1). La bibliothèque comptait **80 aliments** — une
+> base sur laquelle un utilisateur français tape le mur à son deuxième repas — parce que le
+> catalogue se remplissait **une entrée à la main à la fois**.
+
+```bash
+python supabase/scripts/enrich-ciqual/generate.py ciqual2025.csv --bulk --limit 900
+```
+
+Le mode sélectionne les aliments **du quotidien** dans le CSV (groupes alimentaires courants,
+énergie renseignée), leur attribue une catégorie interne et un id déterministe dérivé du code
+CIQUAL, puis les **ajoute** à `foods-catalog.json` avant de régénérer `migration.sql`.
+
+| Garantie | Ce que ça implique |
+|---|---|
+| **Aucune valeur inventée** | Toute la nutrition vient du CSV, comme en mode normal. |
+| **Idempotent** | L'id dérive du code CIQUAL : relancer n'ajoute aucun doublon (vérifié). |
+| **Non destructif** | Une entrée déjà au catalogue est conservée telle quelle — nom retouché, portions saisies, traduction EN. |
+
+⚠️ **CIQUAL est monolingue.** Les entrées importées portent `nameEn = nameFr` et un marqueur
+`needsTranslation`, et le script annonce leur nombre en fin d'exécution. La base est utilisable en
+français immédiatement ; la traduction anglaise reste une tâche **traçable** (décision G) plutôt
+qu'un oubli silencieux.
+
+⚠️ **Deux choses à faire avant de pousser une base élargie** :
+1. relire l'échantillon (`foods-catalog.json`) — le rangement par groupe est grossier, il range,
+   il ne qualifie pas ;
+2. les **portions usuelles** restent vides (`[]`) : elles ne sont pas dans CIQUAL. Sans elles, la
+   saisie retombe sur 100 g — voir la migration `…nutrf2_portions_reference_aliments.sql` pour le
+   patron de complétion.
+
 ## Ajouter / modifier un aliment
 
 Éditer `foods-catalog.json` (ajouter une entrée avec un `id` UUID unique `d1000NNN-…`, `nameFr`,

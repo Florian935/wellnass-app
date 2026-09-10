@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
   computeAge,
+  effectiveActivityLevel,
+  mealForHour,
   effectiveNutritionObjective,
   isRealLifeDay,
   objectiveFromGoal,
@@ -38,6 +40,7 @@ import {
   removeEntry,
   updateEntry,
   useDayEntries,
+  useDayQuality,
   type JournalEntry,
 } from '@/data/repositories/journal-repository';
 import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
@@ -49,7 +52,13 @@ import { DayBalanceCard } from '@/components/nutrition/DayBalanceCard';
 import { MacroTriple, type MacroKey } from '@/components/nutrition/MacroTriple';
 import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
 import { useDenseFoodCandidates, useRecentFoods } from '@/data/repositories/food-repository';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
+import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
+import { DayCalendarSheet } from '@/components/nutrition/DayCalendarSheet';
+import { HydrationCard } from '@/components/nutrition/HydrationCard';
+import { QualityCard } from '@/components/nutrition/QualityCard';
+import { WeekStrip } from '@/components/nutrition/WeekStrip';
+import { MealGlyph } from '@/components/nutrition/CategoryGlyph';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -68,13 +77,6 @@ function fmtMicro(n: number, lang: 'fr' | 'en', decimals?: number): string {
   const s = n.toFixed(d);
   return lang === 'fr' ? s.replace('.', ',') : s;
 }
-/** Emoji d'en-tête de repas — repère visuel de la maquette, replié sur 🍽️ pour un repas perso. */
-const MEAL_ICONS: Record<string, string> = {
-  breakfast: '🥐',
-  lunch: '🍽️',
-  dinner: '🍲',
-  snack: '🍎',
-};
 
 export default function NutritionScreen() {
   useMenuFocus('nutrition');
@@ -95,6 +97,11 @@ export default function NutritionScreen() {
     previousToday.current = todayKey;
   }, [todayKey]);
   const { entries } = useDayEntries(day);
+
+  const hour = useCurrentHour();
+  // R2.1 / R3.1 — les deux feuilles du journal. `addTarget` porte le repas visé : `null` ferme.
+  const [addTarget, setAddTarget] = useState<{ mealKey: string } | null>(null);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Entrée sélectionnée pour le détail (4.34) — tap sur une entrée du journal.
   const [detailEntry, setDetailEntry] = useState<JournalEntry | null>(null);
@@ -119,7 +126,7 @@ export default function NutritionScreen() {
     weightKg: profile?.weightKg ?? undefined,
     heightCm: profile?.heightCm ?? undefined,
     age: age ?? undefined,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
+      activityLevel: effectiveActivityLevel(nutritionProfile),
   });
   // US VIE-01 (R4) : objectif au maintien pendant une période « vie réelle ». Évalué sur le jour
   // **sélectionné** (`day`), pas sur aujourd'hui : cet écran navigue dans l'historique, et une cible
@@ -261,6 +268,22 @@ export default function NutritionScreen() {
         subtitle={t('pillarScreens.nutrition.tagline')}
         action={
           <View style={styles.headerActions}>
+            {/* R2.7 — le scan était au 4ᵉ niveau, derrière un bouton `ghost` de pied de page.
+                C'est pourtant le geste le plus rapide du pilier : il passe en tête. */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('scan.title')}
+              onPress={() =>
+                router.push({
+                  pathname: '/food-scan',
+                  params: { date: day, meal: mealForHour(hour) },
+                })
+              }
+              hitSlop={8}
+              style={[styles.scanBtn, { backgroundColor: colors.accent }]}
+            >
+              <Ionicons name="barcode-outline" size={22} color={colors.accentText} />
+            </Pressable>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('stats.title')}
@@ -284,6 +307,7 @@ export default function NutritionScreen() {
       {/* Navigation entre les jours (4.22) — encartée : elle appartient au contenu du journal,
           pas à l'en-tête de l'app, et se distingue ainsi des actions de la barre de titre. */}
       <View style={[styles.dayNav, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.dayNavRow}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('journal.prevDay')}
@@ -293,10 +317,20 @@ export default function NutritionScreen() {
         >
           <Ionicons name="chevron-back" size={22} color={colors.accent} />
         </Pressable>
-        <Pressable onPress={() => setDay(isoDay(new Date()))} style={styles.dayNavCenter}>
-          <Text style={[styles.dayLabel, { color: colors.text }]}>
-            {isToday ? t('journal.today') : dayLabel}
-          </Text>
+        {/* R3.1 — le libellé du jour ouvre le calendrier ; le chevron est l'affordance. Sans lui,
+            remonter de quinze jours coûtait quinze taps sur ◀. */}
+        <Pressable
+          onPress={() => setCalendarOpen(true)}
+          style={styles.dayNavCenter}
+          accessibilityRole="button"
+          accessibilityLabel={t('journal.calendar.open')}
+        >
+          <View style={styles.dayLabelRow}>
+            <Text style={[styles.dayLabel, { color: colors.text }]}>
+              {isToday ? t('journal.today') : dayLabel}
+            </Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textMuted} />
+          </View>
           {isToday ? <Text style={[styles.dayDate, { color: colors.textMuted }]}>{dayLabel}</Text> : null}
         </Pressable>
         <Pressable
@@ -308,6 +342,10 @@ export default function NutritionScreen() {
         >
           <Ionicons name="chevron-forward" size={22} color={colors.textMuted} />
         </Pressable>
+        </View>
+        {/* R3.2 — la trame de la semaine. La donnée était déjà calculée et n'était affichée
+            nulle part d'utile : le journal était le seul écran aveugle à sa propre régularité. */}
+        <WeekStrip selectedDay={day} targetKcal={effectiveTarget} onSelectDay={setDay} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -323,8 +361,8 @@ export default function NutritionScreen() {
 
         <MacroTriple consumed={consumedMacros} targets={targetMacros} />
 
-        {/* Micronutriments suivis du jour (4.35) */}
-        <TrackedMicrosRecap entries={entries} />
+        {/* R5.2 — hydratation : un tap, aucune saisie. */}
+        <HydrationCard day={day} />
 
         {/* Journée vide (4.18) — un état plein plutôt qu'une simple ligne pointillée : c'est le
             premier écran d'un nouvel utilisateur, et « copier hier » y est l'action la plus utile. */}
@@ -347,12 +385,7 @@ export default function NutritionScreen() {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() =>
-                router.push({
-                  pathname: '/food-picker',
-                  params: { date: day, meal: mealList[0]?.key ?? 'breakfast' },
-                })
-              }
+              onPress={() => setAddTarget({ mealKey: mealForHour(hour) })}
               style={[styles.emptySecondary, { borderColor: colors.borderStrong }]}
               accessibilityRole="button"
             >
@@ -373,7 +406,7 @@ export default function NutritionScreen() {
             mealLabel={m.label}
             day={day}
             entries={entries.filter((e) => e.mealType === m.key)}
-            onAdd={() => router.push({ pathname: '/food-picker', params: { date: day, meal: m.key } })}
+            onAdd={() => setAddTarget({ mealKey: m.key })}
             onDeleteEntry={onDeleteEntry}
             onSelectEntry={onSelectEntry}
             onEditEntry={onEditEntry}
@@ -412,6 +445,14 @@ export default function NutritionScreen() {
           />
         ) : null}
 
+        {/* R3.4 — les micronutriments passent SOUS les repas. En tête d'écran, ils repoussaient
+            le premier repas entièrement hors de vue : un journal alimentaire dont aucun repas
+            n'est visible sans scroller. */}
+        <TrackedMicrosRecap entries={entries} />
+
+        {/* R3.5 — repères de qualité, uniquement quand la journée a de quoi les calculer. */}
+        {entries.length > 0 ? <DayQualitySection day={day} targetKcal={effectiveTarget} /> : null}
+
         {/* US REPAS-01 (4.27) — carte dédiée, arbitrage Florian du 04/08/2026 (point P1) : le
             planning repas demande un investissement de saisie avant de rendre sa valeur. Rangé
             dans un sous-menu, il ne serait jamais adopté. */}
@@ -439,6 +480,41 @@ export default function NutritionScreen() {
         </Pressable>
       </ScrollView>
 
+      {/* R2.1 — la feuille d'ajout à 3 modes remplace l'écran plein à 9 entrées.
+          🔴 Montée **à la demande** : la feuille porte trois requêtes surveillées (habitudes,
+          recherche, récents) et un `setTimeout` de debounce. Laissée montée avec `visible={false}`,
+          elle les faisait tourner en permanence sur le journal — l'écran le plus ouvert de l'app —
+          pour un contenu que personne ne regarde. */}
+      {addTarget != null ? (
+      <AddFoodSheet
+        visible
+        date={day}
+        mealKey={addTarget?.mealKey ?? mealForHour(hour)}
+        mealLabel={
+          mealList.find((m) => m.key === addTarget?.mealKey)?.label ?? t('journal.meals.other')
+        }
+        kcalRemaining={remaining}
+        proteinRemaining={
+          targetMacros != null ? Math.max(0, targetMacros.protein - totals.proteinG) : null
+        }
+        consumedRatio={
+          effectiveTarget != null && effectiveTarget > 0 ? totals.kcal / effectiveTarget : 0
+        }
+        onClose={() => setAddTarget(null)}
+      />
+      ) : null}
+
+      {/* R3.1 — calendrier mensuel : la spec §4.7 le prévoyait, il n'existait pas. */}
+      {calendarOpen ? (
+      <DayCalendarSheet
+        visible
+        selectedDay={day}
+        targetKcal={effectiveTarget}
+        onSelect={setDay}
+        onClose={() => setCalendarOpen(false)}
+      />
+      ) : null}
+
       {/* Détail d'une entrée de journal (4.34) — snapshot de la quantité journalisée */}
       <EntryDetailModal
         entry={detailEntry}
@@ -461,6 +537,29 @@ export default function NutritionScreen() {
         }}
       />
     </Screen>
+  );
+}
+
+/**
+ * Repères de qualité du jour (R3.5).
+ *
+ * Se tait tant que rien n'est calculable : sans aliment identifié, les trois valeurs seraient
+ * des zéros trompeurs plutôt qu'une information (les sous-macros vivent sur `foods`, pas sur
+ * l'entrée de journal — voir `useDayQuality`).
+ */
+function DayQualitySection({ day, targetKcal }: { day: string; targetKcal: number | null }) {
+  const { quality } = useDayQuality(day);
+  if (quality.coverageRatio === 0) return null;
+  return (
+    <QualityCard
+      compact
+      targetKcal={targetKcal}
+      values={{
+        fiber: quality.fiber,
+        sugars: quality.sugars,
+        saturatedFat: quality.saturatedFat,
+      }}
+    />
   );
 }
 
@@ -862,7 +961,7 @@ function MealSection({
         style={[styles.mealEmpty, { backgroundColor: colors.surface, borderColor: colors.borderStrong }]}
       >
         <View style={styles.mealEmptyLeft}>
-          <Text style={styles.mealIcon}>{MEAL_ICONS[mealKey] ?? '🍽️'}</Text>
+          <MealGlyph mealKey={mealKey} />
           <Text style={[styles.mealEmptyName, { color: colors.textMuted }]} numberOfLines={1}>
             {mealLabel}
           </Text>
@@ -875,7 +974,7 @@ function MealSection({
   return (
     <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={[styles.mealHead, { borderBottomColor: colors.border }]}>
-        <Text style={styles.mealIcon}>{MEAL_ICONS[mealKey] ?? '🍽️'}</Text>
+        <MealGlyph mealKey={mealKey} />
         <Text style={[styles.mealName, { color: colors.text }]} numberOfLines={1}>{mealLabel}</Text>
         <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
           {mealKcal}
@@ -979,9 +1078,6 @@ function MealSection({
 
 const styles = StyleSheet.create({
   dayNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     borderRadius: 16,
     borderWidth: 1,
     paddingVertical: 6,
@@ -992,7 +1088,10 @@ const styles = StyleSheet.create({
   dayNavCenter: { alignItems: 'center' },
   dayLabel: { fontFamily: fontFamily.displayBold, fontSize: 15, textTransform: 'capitalize' },
   dayDate: { fontFamily: fontFamily.mono, fontSize: 11.5, textTransform: 'capitalize' },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  scanBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  dayNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dayLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   content: { gap: 12, paddingBottom: 32 },
   emptyDay: { borderRadius: 20, borderWidth: 1, paddingVertical: 34, paddingHorizontal: 24, alignItems: 'center' },
   emptyIcon: { width: 62, height: 62, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
@@ -1058,7 +1157,6 @@ const styles = StyleSheet.create({
     paddingBottom: 11,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  mealIcon: { fontSize: 19 },
   mealName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flex: 1 },
   mealKcal: { fontFamily: fontFamily.monoBold, fontSize: 13 },
   mealKcalUnit: { fontFamily: fontFamily.mono, fontSize: 10 },

@@ -40,6 +40,7 @@ import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useRecentFoods } from '@/data/repositories/food-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
+import { DEFAULT_TRACKED_MICROS, useTrackedMicros } from '@/stores/tracked-micros';
 import { useRouter } from 'expo-router';
 
 // ---------------------------------------------------------------------------
@@ -54,6 +55,25 @@ jest.mock('@/data/repositories/journal-repository', () => ({
   reassignEntryMeal: jest.fn(),
   duplicateDay: jest.fn(),
   copyMeal: jest.fn(),
+  // US NUTRI-UX01 : la trame de semaine (R3.2) et le calendrier (R3.1) lisent les totaux d'une
+  // plage bornée ; la carte qualité (R3.5) lit les sous-macros par jointure.
+  useMonthTotals: jest.fn(() => ({ totals: [], isLoading: false })),
+  useDayQuality: jest.fn(() => ({
+    quality: { fiber: 0, sugars: 0, saturatedFat: 0, coverageRatio: 0 },
+    isLoading: false,
+  })),
+}));
+jest.mock('@/data/repositories/water-repository', () => ({
+  useDayWater: jest.fn(() => ({ totalMl: 0, isLoading: false })),
+  addWater: jest.fn(),
+  removeLastWater: jest.fn(),
+}));
+jest.mock('@/data/repositories/food-catalog-repository', () => ({
+  useHabitFoods: jest.fn(() => ({ entries: [], isLoading: false })),
+  useCatalogSearch: jest.fn(() => ({ entries: [], isLoading: false })),
+  useRecentFoodIds: jest.fn(() => []),
+  getLastQuantityFor: jest.fn(() => Promise.resolve(null)),
+  SEARCH_RESULT_LIMIT: 40,
 }));
 jest.mock('@/data/repositories/meal-template-repository', () => ({
   saveMealAsTemplate: jest.fn(),
@@ -76,7 +96,11 @@ jest.mock('@/data/repositories/food-repository', () => ({
   // navigation et les repas, pas sur la carte de suggestion.
   useDenseFoodCandidates: jest.fn(() => ({ foods: [], isLoading: false })),
 }));
-jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn() }));
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: jest.fn(),
+  // US NUTRI-UX01 (R2.6) : le repas se déduit désormais de l'heure. 12 h → déjeuner.
+  useCurrentHour: jest.fn(() => 12),
+}));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
 /** Le balayage n'est pas rejouable hors device : on rend directement la ligne ET ses actions. */
@@ -285,6 +309,9 @@ let titreAlerte: string | undefined;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // Le store des micros suivis est un singleton : sans remise à zéro, un test qui vide la
+  // sélection la laisserait vide pour les suivants.
+  useTrackedMicros.setState({ tracked: DEFAULT_TRACKED_MICROS, hydrated: true });
   // L'écran compare le jour affiché à `new Date()` pour décider du libellé « Aujourd'hui » :
   // sans horloge figée, le test change de verdict chaque jour.
   jest.useFakeTimers();
@@ -314,6 +341,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // 🔴 Purger les timers AVANT de repasser en horloge réelle : la feuille d'ajout arme un
+  // `setTimeout` de debounce (US NUTRI-UX01, R6.2), et un timer laissé en attente sous fausse
+  // horloge se déclenche au test suivant — pendant son rendu, donc hors de tout `act()`.
+  jest.clearAllTimers();
   jest.useRealTimers();
   jest.restoreAllMocks();
 });
@@ -467,17 +498,16 @@ describe('repas', () => {
     expect(screen.getByText('210 nutrition.kcal')).toBeTruthy();
   });
 
-  it('ajouter depuis un repas ouvre le sélecteur SUR ce repas et ce jour', async () => {
+  it('ajouter depuis un repas ouvre la feuille SUR ce repas', async () => {
     await afficher({ entries: [entree({ mealType: 'lunch' })] });
 
     await taper(screen.getByLabelText('journal.meals.breakfast · journal.addFood'));
 
-    // Sans les deux paramètres, l'aliment atterrirait au petit-déjeuner d'aujourd'hui quel que
-    // soit le repas et le jour d'où l'on vient.
-    expect(push).toHaveBeenCalledWith({
-      pathname: '/food-picker',
-      params: { date: AUJOURDHUI, meal: 'breakfast' },
-    });
+    // US NUTRI-UX01 (R2.1) : « + Ajouter » n'envoie plus vers un écran plein à 9 entrées, il
+    // ouvre la feuille à 3 modes — et celle-ci nomme le repas visé, sans quoi l'aliment
+    // atterrirait au repas de l'heure plutôt qu'à celui d'où l'on vient.
+    expect(screen.getByText('journal.addSheet.title:{"meal":"journal.meals.breakfast"}')).toBeTruthy();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it('🔴 les entrées ORPHELINES remontent dans « Autres »', async () => {
@@ -868,10 +898,26 @@ describe('objectif du jour', () => {
 // ---------------------------------------------------------------------------
 
 describe('micronutriments suivis', () => {
-  it('aucune grille tant qu’aucun micro n’est suivi', async () => {
+  it('🔴 R3.3 — six micros sont suivis PAR DÉFAUT', async () => {
     await afficher({ entries: [entree()] });
 
-    // Le suivi micro est opt-in : afficher une grille vide imposerait la fonctionnalité.
+    // Le défaut était `[]`, et c'est ce qui rendait invisible le seul vrai différenciateur du
+    // pilier : 33 micros CIQUAL avec leurs VNR, que personne ne voyait faute de savoir qu'il
+    // fallait aller les cocher au fond d'un écran de réglages.
+    const grille = screen.getByText(/^micros:/).children.join('');
+    expect(grille).toContain('iron_mg');
+    expect(grille).toContain('calcium_mg');
+    expect(grille).toContain('vitamin_d_ug');
+  });
+
+  it('tout décocher masque la grille — le suivi reste refusable', async () => {
+    // Pas d'`act()` ici : le store est modifié **avant** tout rendu, donc aucun composant monté
+    // n'y est encore abonné. Un `act()` sans arbre monté laisse l'environnement de test dans un
+    // état que les tests suivants paient — c'est ce qui faisait échouer les trois derniers.
+    useTrackedMicros.setState({ tracked: [], hydrated: true });
+    await afficher({ entries: [entree()] });
+
+    // Ouvrir la porte par défaut ne doit pas la condamner : une liste **vidée** reste vide.
     expect(screen.queryByText(/^micros:/)).toBeNull();
   });
 });

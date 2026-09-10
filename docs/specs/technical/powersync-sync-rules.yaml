@@ -52,6 +52,9 @@ bucket_definitions:
       - select * from meal_templates        where user_id = bucket.user_id and deleted_at is null
       - select * from meal_template_items   where user_id = bucket.user_id and deleted_at is null
       - select * from body_weight_entries   where user_id = bucket.user_id and deleted_at is null
+      # US NUTRI-UX01 (R5) : hydratation, une ligne par ajout.
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN — table créée le 10/09/2026.
+      - select * from water_entries         where user_id = bucket.user_id and deleted_at is null
       # US PAS-01 : pas quotidiens lus dans Health Connect (une ligne par jour, synchronisée).
       - select * from daily_steps           where user_id = bucket.user_id and deleted_at is null
       # US BIEN-01 : check-in de bien-être (humeur / énergie / stress, une ligne par jour).

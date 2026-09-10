@@ -11,6 +11,27 @@ import { secureStorage } from '@/lib/secure-storage';
  */
 const STORAGE_KEY = 'tracked_micros';
 
+/**
+ * Micronutriments suivis **par défaut** (US NUTRI-UX01, R3.3).
+ *
+ * 🔴 Le défaut était `[]`, et c'est ce qui rendait invisible le seul vrai différenciateur du
+ * pilier : 33 micros CIQUAL, les VNR européennes et des anneaux de couverture — que personne ne
+ * voyait, puisqu'il fallait deviner l'existence de la fonction, ouvrir le profil nutritionnel,
+ * scroller sept sections et cocher dans un mur de 33 pastilles.
+ *
+ * Ces six-là sont retenus parce qu'ils **ont une VNR** (donc un anneau lisible) et couvrent les
+ * insuffisances les plus fréquentes en population française. Le choix des 33 reste offert : ce
+ * défaut ouvre la porte, il ne la referme pas.
+ */
+export const DEFAULT_TRACKED_MICROS: MicronutrientKey[] = [
+  'iron_mg',
+  'calcium_mg',
+  'magnesium_mg',
+  'vitamin_d_ug',
+  'vitamin_c_mg',
+  'potassium_mg',
+];
+
 /** Filtre + réordonne selon `MICRONUTRIENT_KEYS` (ordre stable, clés inconnues ignorées). */
 function sanitize(list: unknown): MicronutrientKey[] {
   if (!Array.isArray(list)) return [];
@@ -37,13 +58,16 @@ type TrackedMicrosState = {
 };
 
 export const useTrackedMicros = create<TrackedMicrosState>((set, get) => ({
-  tracked: [],
+  tracked: DEFAULT_TRACKED_MICROS,
   hydrated: false,
   hydrate: async () => {
     if (get().hydrated) return;
     try {
       const raw = await secureStorage.getItem(STORAGE_KEY);
-      set({ tracked: raw ? sanitize(JSON.parse(raw)) : [], hydrated: true });
+      // 🔴 Distinguer « jamais réglé » de « tout décoché » : une clé absente du stockage rend
+      // les défauts, une liste vide **stockée** reste vide. Sans cette nuance, un utilisateur
+      // qui décoche tout se verrait réimposer six micros au prochain lancement.
+      set({ tracked: raw != null ? sanitize(JSON.parse(raw)) : DEFAULT_TRACKED_MICROS, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
