@@ -636,10 +636,15 @@ export async function markPlannedSessionDone(id: string): Promise<void> {
  * **toutes** les tables, pas seulement de celle-ci. Le coût d'un oubli est disproportionné, d'où
  * ce garde-fou explicite plutôt qu'un `try/catch`.
  *
- * ▶️ **Après `npm run db:push`** : passer à `true`, cocher la migration dans
- * `supabase/MIGRATIONS.md`, et le bouton « Appliquer aujourd'hui » apparaît. Rien d'autre à faire.
+ * ✅ **Migration appliquée sur le cloud le 10/09/2026** (`npm run db:push` par Florian, colonnes
+ * confirmées dans `database.types.ts` après `npm run db:types`). Le drapeau est donc à `true` et
+ * le bouton « Appliquer aujourd'hui » est rendu.
+ *
+ * Il reste comme **garde-fou documentaire** plutôt que d'être supprimé : il nomme la dépendance
+ * entre ce code et une colonne distante, et il donne un point de retour immédiat si la migration
+ * devait être annulée.
  */
-export const ADAPTATION_WRITE_READY = false;
+export const ADAPTATION_WRITE_READY = true;
 
 /** Variante adaptée d'une occurrence : ce que l'utilisateur a accepté pour aujourd'hui. */
 export type TodayAdaptation = {

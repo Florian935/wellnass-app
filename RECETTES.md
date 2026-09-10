@@ -2709,17 +2709,17 @@ deux exclusions, toutes deux extérieures à cette US :
 
 ## 59. CARDIO-UX01 — Refonte UX du pilier Course (`feature/cardio-refonte-ux`)
 
-> Spec : [cardio-ux01-refonte-pilier-course.md](docs/specs/functional/us/cardio-ux01-refonte-pilier-course.md) ·
+> **42 critères.** Spec : [cardio-ux01-refonte-pilier-course.md](docs/specs/functional/us/cardio-ux01-refonte-pilier-course.md) ·
 > Plan : [cardio-ux01-refonte-pilier-course.md](docs/plans/cardio-ux01-refonte-pilier-course.md) ·
 > Audit : [audit-ergonomie-pilier-course.md](docs/product/audit-ergonomie-pilier-course.md) (22 pages, 40 constats) ·
 > Maquettes : [design/audit-course/](design/audit-course/) (11 planches, dont 2 relevés de l'existant).
 >
-> **🔴 Une migration est écrite et NON POUSSÉE** —
-> `20260910214329_cardio_ux01_semaines_et_adaptation`. Elle n'est **pas** nécessaire pour recetter
-> cette section : tout ce qui suit fonctionne sans elle. Elle conditionne deux choses seulement, qui
-> ne sont donc **pas** recettables aujourd'hui : les semaines qui progressent (F35) et le bouton
-> « Appliquer aujourd'hui » de la carte d'adaptation (F36). Voir « Ce qui attend la migration » en
-> fin de section.
+> ✅ **Migration appliquée le 10/09/2026** —
+> `20260910214329_cardio_ux01_semaines_et_adaptation` (3 colonnes additives), types régénérés et
+> `ADAPTATION_WRITE_READY` basculé. Toute cette section est donc recettable, y compris les
+> critères 40 à 42 sur la carte d'adaptation.
+> ⚠️ Elle a dû être **redatée** avant de passer : voir
+> [MIGRATIONS.md](supabase/MIGRATIONS.md) pour la raison et la leçon.
 >
 > **✅ Aucune sync rule à redéployer** (`sessions` et `planned_sessions` sont déjà lues en
 > `select *`) · **aucune dépendance native neuve** → recettable sur un build de la branche.
@@ -2858,18 +2858,24 @@ n'étaient pas les siens**.
 - [ ] 38. **L'export GPX fonctionne toujours** (depuis « Analyser »).
 - [ ] 39. **La carte partageable fonctionne toujours** (depuis « Analyser »).
 
-### 🔴 Ce qui attend la migration — NON recettable aujourd'hui
+### La carte d'adaptation — ✅ migration passée le 10/09/2026, c'est recettable
 
-`npm run db:push` vise la base **cloud de production** : c'est une décision de Florian ou Damien,
-pas une étape de recette. Tant qu'elle n'est pas passée, ces deux points sont **volontairement
-invisibles** dans l'app.
+> `npm run db:push` a été joué par Florian le 10/09/2026, les 3 colonnes sont confirmées dans
+> `database.types.ts`, et `ADAPTATION_WRITE_READY` est passé à `true`. Le bouton est donc rendu.
 
-- [ ] 40. *(après `npm run db:push` + `npm run db:types` + passer `ADAPTATION_WRITE_READY` à `true`)*
-      **La carte d'adaptation agit.** Le bouton « Appliquer aujourd'hui » apparaît, l'appliquer
-      n'allège **que** la séance du jour, et le programme des semaines suivantes reste intact.
-- [ ] 41. *(après la même migration)* **Un programme peut progresser d'une semaine à l'autre.**
-      ⚠️ Le code de génération n'est **pas encore** livré (voir ci-dessous) : la colonne existe, son
-      exploitation reste à faire.
+- [ ] 40. **🔴 La carte d'adaptation agit.** Provoquer une proposition (déclarer une douleur ou une
+      énergie basse la veille d'une séance planifiée), puis taper **« Appliquer aujourd'hui »** sur
+      le hub course. La carte confirme « Appliqué à la séance d'aujourd'hui » et le bouton
+      disparaît.
+- [ ] 41. **🔴 Appliquer n'allège QUE le jour.** Après le critère 40 : ouvrir le **programme** et
+      vérifier que la séance type est **inchangée** (mêmes répétitions, même allure), puis vérifier
+      que la **semaine suivante** l'est aussi.
+      ⚠️ **C'est le critère qui compte** : « j'allège aujourd'hui parce que j'ai mal dormi » ne doit
+      jamais devenir « j'ai changé mon plan ». L'écriture porte sur l'occurrence
+      (`planned_sessions`), jamais sur le template (`sessions`) — 11 tests le vérifient, mais c'est
+      sur device que ça se voit.
+- [ ] 42. **Appliquer deux fois n'écrit qu'une fois.** Le bouton disparaît après le premier appui ;
+      il n'y a pas de moyen d'empiler deux réductions.
 
 ### 🟡 Ce qui reste ouvert dans cette US — à ne pas chercher dans l'app
 
@@ -2882,5 +2888,5 @@ pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
 | F4 → F8, F26 | Écran de **départ** : fix GPS attendu, mode mémorisé, compte à rebours, contexte de séance, **saisie rétroactive** | `createPastRun` livrée et typée côté repository — **écran à faire** |
 | F22, F23, F24 | **Historique** en trois onglets, liste virtualisée et filtrable | Requête enrichie livrée (type de séance, terrain, RPE remontent déjà) — **écran à faire** |
 | F27 → F34 | **Éditeur de séance** à trois niveaux, « Répéter la sélection », modèles, saisie en une ligne | Grammaire complète livrée et testée (`parseSessionLine`, `SESSION_TEMPLATES`, 20 tests) — **éditeurs à réécrire** |
-| F35 | Génération des **semaines qui progressent** | Colonne livrée (migration non poussée) — **`planProgram` à étendre** |
+| F35 | Génération des **semaines qui progressent** | Colonne livrée **et poussée** (10/09/2026) — il reste `planProgram` à étendre et la vue par semaine de l'éditeur. Rien à chercher dans l'app aujourd'hui |
 | F25 | **Import** GPX et Health Connect | Rien de livré. ⚠️ La lecture Health Connect ajoute deux permissions, donc **change la déclaration « Health apps » du Play Store** — chemin critique du lancement (9.2) |

@@ -1393,6 +1393,8 @@ export type Database = {
       }
       planned_sessions: {
         Row: {
+          adapted_pace_delta_s: number | null
+          adapted_reps_pct: number | null
           completed_at: string | null
           created_at: string
           deleted_at: string | null
@@ -1407,6 +1409,8 @@ export type Database = {
           week_index: number | null
         }
         Insert: {
+          adapted_pace_delta_s?: number | null
+          adapted_reps_pct?: number | null
           completed_at?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -1421,6 +1425,8 @@ export type Database = {
           week_index?: number | null
         }
         Update: {
+          adapted_pace_delta_s?: number | null
+          adapted_reps_pct?: number | null
           completed_at?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -2233,6 +2239,7 @@ export type Database = {
           target_rpe: number | null
           target_time_seconds: number | null
           updated_at: string
+          week_index: number | null
         }
         Insert: {
           adaptation_criterion?: string | null
@@ -2254,6 +2261,7 @@ export type Database = {
           target_rpe?: number | null
           target_time_seconds?: number | null
           updated_at?: string
+          week_index?: number | null
         }
         Update: {
           adaptation_criterion?: string | null
@@ -2275,6 +2283,7 @@ export type Database = {
           target_rpe?: number | null
           target_time_seconds?: number | null
           updated_at?: string
+          week_index?: number | null
         }
         Relationships: [
           {

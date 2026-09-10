@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 10/09/2026 — CARDIO-UX01 : migration appliquée, la carte d'adaptation agit
+
+Suite directe du lot CARDIO-UX01. `npm run db:push` est passé (par Florian), les 3 colonnes de
+`20260910214329_cardio_ux01_semaines_et_adaptation` sont **confirmées dans `database.types.ts`**
+après `npm run db:types` — diff de 9 lignes exactement : 3 colonnes × Row/Insert/Update.
+
+⚠️ Le push a émis le warning `pg-delta` / Docker habituel (`failed to cache migrations catalog`).
+Comme aux push de REPAS-01, VIE-01, DOUL-01 et HORAIRE-01, il porte sur la **mise en cache du
+catalogue**, pas sur l'application du SQL. Vérifié colonne par colonne plutôt que cru sur parole.
+
+### Modifié
+
+- **`ADAPTATION_WRITE_READY` passe à `true`** : le bouton « Appliquer aujourd'hui » de la carte
+  « séance du jour » est désormais rendu. La carte cesse d'être strictement consultative — elle
+  écrit une **variante datée** sur `planned_sessions`, jamais sur le template (règle R3-3).
+  Le drapeau est **conservé** plutôt que supprimé : il nomme la dépendance entre ce code et une
+  colonne distante, et il donne un point de retour immédiat si la migration devait être annulée.
+- **`supabase/MIGRATIONS.md`** : la ligne passe de `[ ]` à `[x]`, avec la date de push, la
+  vérification par les types, et le warning Docker documenté à l'identique des quatre push
+  précédents.
+- **`RECETTES.md` §59** passe de 41 à **42 critères**. La sous-section « ce qui attend la
+  migration » disparaît : les critères 40 à 42 sont désormais recettables, et le plus important
+  est le **41** — vérifier sur device qu'appliquer une adaptation laisse le programme **et** la
+  semaine suivante intacts. F35 (semaines progressives) reste hors app : la colonne est là, son
+  exploitation par `planProgram` non.
+
+### Ajouté
+
+- **`SessionAdaptationCard.test.tsx`, 11 tests** — le composant n'en avait **aucun**, et c'était
+  défendable tant qu'il n'écrivait rien. Il écrit maintenant : les tests couvrent l'écriture sur
+  l'occurrence (et pas le template), la conversion `undefined → null` des deux champs optionnels,
+  le fait qu'un échec d'écriture **ne prétend pas** avoir appliqué (afficher « Appliqué » sur une
+  écriture ratée enverrait courir une séance qu'on croit allégée), la garde de double appui, et
+  les deux cas où le bouton ne doit pas apparaître.
+- ⚠️ **Le premier jet de ce fichier inventait une sévérité** (`'moderate'`, alors que
+  `AdaptationSeverity` vaut `'info' | 'caution' | 'alert'`). Les 11 tests passaient — Jest ne
+  typecheck pas — et c'est `npm run typecheck` qui l'a attrapé. Le fixture est désormais aligné
+  sur les types réels, sans assertion de type pour laisser l'inférence contrôler.
+
+### Technique / Notes
+
+- **Aucune sync rule** pour cette migration : `sessions` et `planned_sessions` étaient déjà
+  publiées et lues en `select *`, les colonnes descendent seules.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **2 793 tests verts** (+11), parité i18n
+  FR/EN à 2 520 clés, ETAT.md à jour — et plus **aucune migration non poussée** au registre.
+
 ## 10/09/2026 — NUTRI-UX01 : refonte UX du pilier Nutrition (11 écrans)
 
 Branche `feature/nutri-refonte-ux`, développée dans un **worktree isolé** — deux autres sessions

@@ -15,12 +15,12 @@
  * « Appliquer aujourd'hui » écrit une **variante datée** de la séance (sur l'occurrence, jamais
  * sur le template) : le programme des semaines suivantes reste intact. C'est la règle R3-3.
  *
- * ⚠️ **L'action attend sa migration.** Elle écrit `planned_sessions.adapted_reps_pct` /
- * `adapted_pace_delta_s`, deux colonnes additives livrées par la migration de cette US mais
- * **non poussées** sur le cloud (voir spec §1 R9). Tant que `ADAPTATION_WRITE_READY` vaut `false`,
- * le bouton n'est pas rendu et la carte reste strictement consultative, comme avant — plutôt que
- * d'écrire une colonne que le serveur refuserait, ce qui bloquerait la file de synchro pour
- * **toutes** les tables. Un seul drapeau à basculer après `npm run db:push`.
+ * ⚠️ **L'action dépend d'une colonne distante.** Elle écrit
+ * `planned_sessions.adapted_reps_pct` / `adapted_pace_delta_s`, deux colonnes additives livrées
+ * par la migration de cette US et **appliquées sur le cloud le 10/09/2026**. Le bouton n'est rendu
+ * que si `ADAPTATION_WRITE_READY` est vrai : écrire une colonne que le serveur ne connaît pas ne
+ * casse pas l'écriture locale, mais bloque la file de synchro pour **toutes** les tables. Le
+ * drapeau reste donc comme garde-fou, et comme point de retour si la migration était annulée.
  *
  * Ton : jamais de rouge d'alerte, même sur `stop`. On informe un adulte qui décide — c'est la
  * même règle que COLLIS-01 et que RUN-F2b (R4).

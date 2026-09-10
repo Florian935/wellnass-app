@@ -101,23 +101,22 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1205 · `main` a **1200** commits de retard sur `dev` |
+| Commits | 1206 · `main` a **1203** commits de retard sur `dev` |
 | Specs d'US | 144 au total — 85 clôturées, 59 en cours |
-| Migrations | 92/93 poussées sur le cloud |
+| Migrations | 93/93 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
-- ⚠️ 1 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `407087d` chore(cardio-ux01): redate la migration refusee et sort les payloads de design du suivi
 - `542b753` merge: integre CARDIO-UX01 (refonte UX du pilier Course) dans dev
 - `b710349` feat(nutri-ux01): refonte UX du pilier Nutrition — 11 ecrans, 26 constats
 - `a035e8d` feat(cardio-ux01): refonte UX du pilier Course — premier lot
 - `18cf3a3` docs(recettes): l'en-tete comptait 56 sections, il y en a 57
-- `8286ff7` docs(muscu-ux01): l'US passe en recette
 
 ---
 
