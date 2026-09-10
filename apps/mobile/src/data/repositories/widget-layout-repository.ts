@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   defaultScreenLayout,
+  LAYOUT_VERSION,
   moveWidgetToCell,
   parseMultiScreenLayout,
   resolveScreenLayout,
@@ -33,11 +34,18 @@ import {
 } from '@wellness/shared';
 import { updateSettings, useSettings } from './settings-repository';
 
-/** Cycle des 3 formes pour le sélecteur d'édition : small → wide → large → small. */
+/**
+ * Cycle des formes pour le sélecteur d'édition : row → small → wide → large → row.
+ *
+ * `row` entre dans le cycle par le bas (US ACCUEIL-04) : c'est la plus petite forme, et l'ordre du
+ * cycle suit la taille croissante pour que des appuis répétés agrandissent, puis reviennent au
+ * plus compact — comportement qu'un utilisateur peut anticiper sans l'apprendre.
+ */
 const SIZE_CYCLE: Record<WidgetSize, WidgetSize> = {
+  row: 'small',
   small: 'wide',
   wide: 'large',
-  large: 'small',
+  large: 'row',
 };
 
 /**
@@ -70,7 +78,11 @@ function mergeScreen(
     screens[s] =
       s === screen ? nextScreen : (parsed?.screens[s] ?? undefined);
   }
-  return { screens };
+  // ⚠️ **`v` doit être écrit**, sinon la migration de formes de la v2 se rejouerait à chaque
+  // lecture : un utilisateur qui remettrait ses pas en grand carré les verrait redevenir un petit
+  // carré au rechargement suivant. C'est le marqueur qui transforme « réattribution unique » en
+  // vraie migration (correctif du 10/09/2026).
+  return { screens, v: LAYOUT_VERSION };
 }
 
 /**

@@ -864,7 +864,8 @@
       "sport": "Sport",
       "ofGoal": "/ {{target}} kcal",
       "remainingEyebrow": "Restantes",
-      "budgetPct": "{{pct}} % du budget"
+      "budgetPct": "{{pct}} % du budget",
+      "bonusShort": "+{{kcal}} · séance"
     },
     "weight": {
       "title": "Poids corporel",
@@ -1010,6 +1011,116 @@
       "strengthLabel": "tonnage muscu",
       "message": "Ton {{up}} est nettement au-dessus de ta moyenne des 4 dernières semaines, pendant que ton {{down}} est nettement en dessous.",
       "hint": "Peut expliquer une stagnation sur l'un des deux — pas forcément un problème si c'est voulu."
+    },
+    "greetingMoment": {
+      "morning": "Bonjour",
+      "afternoon": "Bon après-midi",
+      "evening": "Bonsoir"
+    },
+    "headline": {
+      "workoutActive": "Séance en cours",
+      "runActive": "Course en cours",
+      "sessionToday": "Une séance au programme",
+      "meal": {
+        "breakfast": "Il te reste le petit-déjeuner à saisir",
+        "lunch": "Il te reste le déjeuner à saisir",
+        "dinner": "Il te reste le dîner à saisir",
+        "snack": "Il te reste une collation à saisir"
+      },
+      "weighIn": "Ta pesée du jour t'attend",
+      "wellbeing": "Comment s'est passée ta journée ?",
+      "dayDone": "Ta journée est faite",
+      "idle": {
+        "morning": "Rien de prévu aujourd'hui",
+        "afternoon": "Rien de prévu aujourd'hui",
+        "evening": "Journée tranquille"
+      }
+    },
+    "now": {
+      "workoutActive": {
+        "eyebrow": "Séance en cours",
+        "title": "Reprendre là où tu t'es arrêté",
+        "meta": "Ta séance est toujours ouverte",
+        "cta": "Reprendre la séance"
+      },
+      "runActive": {
+        "eyebrow": "Course en cours",
+        "title": "Ta course tourne toujours",
+        "cta": "Reprendre la course"
+      },
+      "session": {
+        "eyebrow": "Séance du jour",
+        "eyebrowAt": "Séance du jour · {{time}}",
+        "fallbackName": "Séance du jour",
+        "startStrength": "Démarrer la séance",
+        "startRunning": "Démarrer la course"
+      },
+      "meal": {
+        "eyebrow": "À saisir",
+        "eyebrowUsually": "À saisir · d'habitude vers {{hour}} h",
+        "meta": "Ta journée n'est pas complète",
+        "title": {
+          "breakfast": "Petit-déjeuner non enregistré",
+          "lunch": "Déjeuner non enregistré",
+          "dinner": "Dîner non enregistré",
+          "snack": "Collation non enregistrée"
+        },
+        "cta": {
+          "breakfast": "Ajouter mon petit-déjeuner",
+          "lunch": "Ajouter mon déjeuner",
+          "dinner": "Ajouter mon dîner",
+          "snack": "Ajouter ma collation"
+        }
+      },
+      "weighIn": {
+        "eyebrow": "Pesée",
+        "title": "Pas encore pesé aujourd'hui",
+        "meta": "Une pesée régulière lisse la courbe",
+        "cta": "Enregistrer ma pesée"
+      },
+      "wellbeing": {
+        "eyebrow": "Bien-être",
+        "title": "Comment s'est passée ta journée ?",
+        "cta": "Faire mon point du soir"
+      },
+      "dayDone": {
+        "eyebrow": "Aujourd'hui",
+        "title": "Ta journée est faite",
+        "sessions_one": "{{count}} séance",
+        "sessions_other": "{{count}} séances",
+        "runs_one": "{{count}} course",
+        "runs_other": "{{count}} courses",
+        "streak_one": "{{count}} jour d'affilée",
+        "streak_other": "{{count}} jours d'affilée"
+      },
+      "idle": {
+        "eyebrow": {
+          "morning": "Ce matin",
+          "afternoon": "Cet après-midi",
+          "evening": "Ce soir"
+        },
+        "title": "Rien de prévu aujourd'hui",
+        "meta": "Repos actif — ou lance une séance libre quand tu veux",
+        "cta": "Créer un programme"
+      }
+    },
+    "quick": {
+      "meal": {
+        "breakfast": "Petit-déj",
+        "lunch": "Déjeuner",
+        "dinner": "Dîner",
+        "snack": "Collation"
+      },
+      "run": "Course",
+      "weighIn": "Pesée",
+      "wellbeing": "Bien-être"
+    },
+    "upNext": {
+      "eyebrow": "La suite",
+      "session": "{{date}} · {{name}}",
+      "planning": "Voir mon planning",
+      "empty": "Rien de prévu cette semaine.",
+      "nothingElse": "Rien d’autre cette semaine."
     }
   },
   "activationPath": {

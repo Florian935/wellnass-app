@@ -1,0 +1,55 @@
+{
+  "artboards": [
+    { "file": "Avant.dc.html", "x": 0, "y": 0, "w": 392, "h": 812, "title": "Avant — l'accueil actuel, coté" },
+    { "file": "Main.dc.html", "x": 480, "y": 0, "w": 392, "h": 812, "title": "Après — le matin, 7:15" },
+    { "file": "ApresSoir.dc.html", "x": 960, "y": 0, "w": 392, "h": 812, "title": "Après — le soir, 22:10" },
+    { "file": "ApresSeance.dc.html", "x": 1440, "y": 0, "w": 392, "h": 812, "title": "Après — séance en cours, thème sombre" },
+    { "file": "Zones.dc.html", "x": 0, "y": 1010, "w": 900, "h": 760, "title": "Les cinq zones" },
+    { "file": "Formes.dc.html", "x": 1000, "y": 1010, "w": 900, "h": 740, "title": "Les formes de la grille" }
+  ],
+  "annotations": [
+    {
+      "id": "avant-mesures",
+      "x": 0,
+      "y": -170,
+      "w": 392,
+      "text": "L'ACCUEIL ACTUEL\nCinq widgets = 898 px empilés (cadre 392, colW 170), pour 642 px visibles : trois cartes et demie. Remplissage moyen 47 % — la grille impose la hauteur, le contenu ne la demande pas."
+    },
+    {
+      "id": "apres-matin",
+      "x": 480,
+      "y": -170,
+      "w": 392,
+      "text": "7:15 — Cinq blocs pleins tiennent dans les 736 px vus sans défiler : la date, l'accroche, la carte « maintenant » avec l'heure de la séance, les quatre gestes quotidiens, la nutrition densifiée et la régularité. L'essentiel s'arrête à 513 px."
+    },
+    {
+      "id": "apres-soir",
+      "x": 960,
+      "y": -170,
+      "w": 392,
+      "text": "22:10 — Même écran, autre moment. L'accroche dit ce qui reste, et la carte « maintenant » affiche l'échéance apprise (« d'habitude vers 20:30 ») que l'app calcule déjà sans jamais la montrer."
+    },
+    {
+      "id": "apres-seance",
+      "x": 1440,
+      "y": -170,
+      "w": 392,
+      "text": "18:54, séance en cours — en thème sombre, qui reste un réglage utilisateur et non une conséquence de l'heure. Le halo et le liseré accent ne sont plus que sur la carte « maintenant » : c'est ce qui leur rend un sens."
+    },
+    {
+      "id": "note-zones",
+      "x": 0,
+      "y": 880,
+      "w": 900,
+      "text": "LE RAISONNEMENT DE STRUCTURE — quelles zones sont épinglées, lesquelles restent négociables, et le budget de hauteur zone par zone."
+    },
+    {
+      "id": "note-formes",
+      "x": 1000,
+      "y": 880,
+      "w": 900,
+      "text": "CE QUI CHANGE DANS LA GRILLE — les tailles par défaut, la densification à surface constante, le coût technique de la demi-hauteur et le seul +1 au registre."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

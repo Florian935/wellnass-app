@@ -52,6 +52,41 @@ On adopte l'**option C**. Principes normatifs :
 - **Tier 0 — Dashboard (plafonné).** ~**4-6 widgets max**, uniquement le **live/actionnable du jour**.
   Déjà personnalisable + gating piliers (7.x). **On ne l'agrandit pas** : ajouter un widget « coûte » un
   arbitrage, pas un simple `+1`.
+
+  > 📌 **Amendement du 09/09/2026 — le plafond porte sur la GRILLE, pas sur le chrome de l'écran**
+  > (US ACCUEIL-01 → 06, refonte de l'accueil).
+  >
+  > La question s'est posée parce que la refonte ajoute **quatre zones épinglées** à l'accueil
+  > (en-tête utile, carte « maintenant », actions rapides, pied « la suite »). Rien ici ne disait si
+  > elles comptaient dans les 4-6 — et sans réponse écrite, la prochaine relecture rapide aurait
+  > tranché dans un sens ou dans l'autre, rendant le plafond soit inopérant, soit prétexte à laisser
+  > l'accueil sans hiérarchie.
+  >
+  > **Une zone épinglée n'est pas un widget et ne consomme aucune place au plafond.** Ce qui l'en
+  > distingue n'est pas sa taille mais son **contrat** : l'utilisateur ne peut ni la masquer ni la
+  > déplacer, donc elle est garantie à l'écran, donc elle n'est pas négociable.
+  >
+  > **Corollaire, et c'est là que la nuance a un coût : une zone épinglée coûte PLUS cher qu'un
+  > widget, pas moins.** Elle est imposée à tout le monde, elle doit donc valoir pour tout le monde.
+  > Les quatre livrées le 09/09/2026 sont le budget ; une cinquième demandera le même arbitrage
+  > explicite qu'un neuvième widget.
+  >
+  > ── Ce que l'épisode a appris sur le §2 lui-même ────────────────────────────────────────────────
+  > INSIGHTS-02 a appliqué ce plafond en ramenant le registre de 21 à 8. C'était juste. Mais il a
+  > retiré quatorze cartes **sans densifier les huit restantes**, et le résultat net a été le pire
+  > des deux mondes : moins de widgets *et* moins d'information, sur exactement la même surface —
+  > 47 % de remplissage moyen, mesuré carte par carte.
+  >
+  > Le plafond compte donc des **widgets**, et il avait été lu comme un plafond d'**information**.
+  > Ce §2 dit « 4-6 widgets de live et d'actionnable du jour » ; il n'a jamais dit « 6 rectangles
+  > remplis à moitié ». La densité d'une carte n'est pas plafonnée, et ne doit pas l'être.
+  >
+  > 📌 Le registre est resté à **8** au passage : `today-session` a quitté la grille pour la zone
+  > épinglée, `weight` y est revenu (il figurait depuis l'origine dans `navigation-ux.md` §3.1).
+  > Échange exact, `MAX_HOME_WIDGETS` inchangé — le cliquet posé par INSIGHTS-02 n'a pas été
+  > consommé. La table des destinations gagne un type pour l'exprimer :
+  > `{ kind: 'home-pinned' }`, distinct de `home` parce qu'un widget de grille est masquable et
+  > qu'une zone épinglée ne l'est pas.
 - **Tier 1 — Écran Stats/Progression du pilier (à la demande).** Home des analyses de fond du pilier,
   **hiérarchisé** : les 2-3 plus utiles visibles, le reste en **sections repliables** / « voir plus ».
   Dès qu'un écran dépasse **~4-5 sections**, il passe en repliable ou sous-onglets.

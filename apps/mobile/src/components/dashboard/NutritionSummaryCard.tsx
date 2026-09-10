@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  mealForHour,
   objectiveFromGoal,
   trainingDayMacroGrams,
   type WidgetSize,
@@ -22,12 +23,14 @@ import {
 import { Button } from '@/components/Button';
 import { RingGauge } from '@/components/widgets/primitives';
 import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
+import { WidgetSkeleton } from '@/components/widgets/WidgetSkeleton';
 import { useNutritionSummary } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 
 
 /** Une barre macro (consommé / cible) avec pastille de couleur. */
@@ -61,15 +64,41 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   // Hook AVANT tout retour anticipé (règle des hooks). L'ancien `isoDay(new Date())` était placé
   // après le `if (isLoading)` — légal pour un simple calcul, illégal pour un hook.
   const today = useTodayKey();
+  const hour = useCurrentHour();
 
-  if (isLoading) return null;
+  if (isLoading) {
+    // US ACCUEIL-04 : un squelette réserve la cellule. Le `return null` d'avant faisait apparaître
+    // la carte après coup, et `compactLayout` recompactait la grille sous le doigt à chaque arrivée.
+    return <WidgetSkeleton size={size} label={t('home.nutrition.eyebrow')} />;
+  }
 
+  /**
+   * Ouvre le sélecteur d'aliments sur **le repas de l'heure courante**.
+   *
+   * ⚠️ C'était `meal: 'breakfast'` **en dur** (US ACCUEIL-02) : à 20 h, un appui sur cette carte
+   * ouvrait le petit-déjeuner. Le geste le plus fréquent du pilier nutrition était donc
+   * systématiquement à reprendre.
+   */
   const openFood = () =>
-    router.push({ pathname: '/food-picker', params: { date: today, meal: 'breakfast' } });
+    router.push({
+      pathname: '/food-picker',
+      params: { date: today, meal: mealForHour(hour) },
+    });
   const openProfile = () => router.push('/nutrition-profile');
 
   // ── État sans profil configuré ────────────────────────────────────────────
   if (!hasProfile) {
+    if (size === 'row') {
+      return (
+        <RowLine
+          eyebrow={t('home.nutrition.eyebrow')}
+          value={t('home.nutrition.compactNoGoal')}
+          muted
+          onPress={openProfile}
+          accessibilityLabel={t('home.nutrition.setGoal')}
+        />
+      );
+    }
     if (size === 'small') {
       return (
         <WidgetFrame pad={16} onPress={openProfile} accessibilityLabel={t('home.nutrition.title')}>
@@ -130,23 +159,67 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
     );
   }
 
+  // ── Bande ────────────────────────────────────────────────────────────────────
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('home.nutrition.eyebrow')}
+        value={
+          remaining != null
+            ? t('home.nutrition.compactRemaining', { kcal: remaining })
+            : t('home.nutrition.compactConsumed', { kcal })
+        }
+        trailing={eff != null ? `${Math.round(pct * 100)} %` : undefined}
+        onPress={openFood}
+        accessibilityLabel={t('home.nutrition.title')}
+      />
+    );
+  }
+
   // ── Rectangle ────────────────────────────────────────────────────────────────
+  //
+  // ── Densifié par ACCUEIL-04 ─────────────────────────────────────────────────────────────────────
+  // Il portait l'anneau et **trois lignes « libellé ⋯ valeur »** (Consommé / Objectif / Sport),
+  // soit 51 % de la cellule remplie et deux bandes de vide. Les trois lignes disaient par ailleurs
+  // ce que l'anneau montrait déjà.
+  //
+  // À surface **identique**, la même place porte désormais les trois macros avec leur progression
+  // — l'information que l'utilisateur devait auparavant aller chercher dans la forme `large` ou sur
+  // l'écran nutrition. C'est ça, densifier : pas agrandir la cellule, mieux l'employer.
   if (size === 'wide') {
     return (
       <WidgetFrame pad={18} onPress={openFood} accessibilityLabel={t('home.nutrition.title')} style={styles.wideRow}>
-        <RingGauge size={86} stroke={9} pct={pct}>
+        <RingGauge size={78} stroke={9} pct={pct}>
           <Text style={[styles.ringBig, { color: colors.text }]}>{remaining ?? kcal}</Text>
           <Text style={[styles.ringSub, { color: colors.textMuted }]}>
             {remaining != null ? t('home.nutrition.remaining') : t('home.nutrition.consumedSub')}
           </Text>
         </RingGauge>
         <View style={styles.wideList}>
-          <Eyebrow>{t('home.nutrition.todayEyebrow')}</Eyebrow>
-          <DetailRow label={t('home.nutrition.consumed')} value={String(kcal)} />
-          {eff != null ? <DetailRow label={t('home.nutrition.goal')} value={t('home.nutrition.kcalValue', { kcal: eff })} /> : null}
-          {isTrainingDay && trainingBonus > 0 ? (
-            <DetailRow label={t('home.nutrition.sport')} value={`+${trainingBonus}`} accent />
-          ) : null}
+          <View style={styles.wideHead}>
+            <Eyebrow>{t('home.nutrition.eyebrow')}</Eyebrow>
+            {isTrainingDay && trainingBonus > 0 ? (
+              <Text style={[styles.bonus, { color: colors.success }]} numberOfLines={1}>
+                {t('home.nutrition.bonusShort', { kcal: trainingBonus })}
+              </Text>
+            ) : null}
+          </View>
+          {targetMacros ? (
+            <View style={styles.wideMacros}>
+              <MacroBar label={t('nutrition.macros.protein')} consumed={macros.p} target={targetMacros.protein} color={colors.accent} />
+              <MacroBar label={t('nutrition.macros.carbs')} consumed={macros.g} target={targetMacros.carbs} color={colors.amber} />
+              <MacroBar label={t('nutrition.macros.fat')} consumed={macros.l} target={targetMacros.fat} color={colors.chartGreen} />
+            </View>
+          ) : (
+            // Sans cibles de macros calculables, on retombe sur ce que la carte disait avant —
+            // mieux vaut deux lignes justes qu'une grille de barres sans référence.
+            <View style={styles.wideFallback}>
+              <DetailRow label={t('home.nutrition.consumed')} value={String(kcal)} />
+              {eff != null ? (
+                <DetailRow label={t('home.nutrition.goal')} value={t('home.nutrition.kcalValue', { kcal: eff })} />
+              ) : null}
+            </View>
+          )}
         </View>
       </WidgetFrame>
     );
@@ -201,8 +274,12 @@ const styles = StyleSheet.create({
   thinTrack: { height: 7, borderRadius: 5, overflow: 'hidden' },
   ringBig: { fontFamily: fontFamily.displayXBold, fontSize: 18, letterSpacing: -0.5 },
   ringSub: { fontFamily: fontFamily.body, fontSize: 9 },
-  wideRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  wideList: { flex: 1, gap: 4 },
+  wideRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  wideList: { flex: 1, gap: 8, minWidth: 0 },
+  wideHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  wideMacros: { gap: 8 },
+  wideFallback: { gap: 2 },
+  bonus: { fontFamily: fontFamily.mono, fontSize: 10 },
   detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 3 },
   detailLabel: { fontFamily: fontFamily.body, fontSize: 13 },
   detailValue: { fontFamily: fontFamily.bodyBold, fontSize: 13 },

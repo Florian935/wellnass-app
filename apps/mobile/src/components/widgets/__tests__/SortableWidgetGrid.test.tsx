@@ -147,10 +147,33 @@ describe('placement', () => {
     expect(styleDe(caseDe('steps'))).toMatchObject({ left: COL_W + GAP });
   });
 
-  it('la seconde rangée est décalée verticalement de la même façon', async () => {
+  it('🔴 la seconde rangée est décalée d’une DEMI-case, pas d’une case', async () => {
+    // ⚠️ **US ACCUEIL-04** : les hauteurs comptent en demi-cases depuis l'ajout de la forme `row`.
+    // Une ligne de grille vaut donc `(colW - gap) / 2`, et le pas vertical n'est plus égal au pas
+    // horizontal. Ce test est le garde-fou du défaut le plus fourbe de ce changement : un pas
+    // unique appliqué aux deux axes viserait une ligne sur deux pendant un glisser-déposer, et le
+    // widget se poserait systématiquement une demi-cellule trop bas.
     await afficher([entree({ id: 'steps', row: 1 })]);
 
+    const demiCase = (COL_W - GAP) / 2;
+    expect(styleDe(caseDe('steps'))).toMatchObject({ top: demiCase + GAP });
+  });
+
+  it('🔴 deux rangées de demi-case pavent exactement une case pleine', async () => {
+    // L'invariant qui justifie la division : sans lui, chaque paire de lignes dériverait d'une
+    // demi-gouttière et la grille cesserait d'être alignée en bas de page.
+    await afficher([entree({ id: 'steps', row: 2 })]);
+
     expect(styleDe(caseDe('steps'))).toMatchObject({ top: COL_W + GAP });
+  });
+
+  it('🔴 un widget « row » occupe une demi-case en hauteur, sur toute la largeur', async () => {
+    await afficher([entree({ id: 'real-life', size: 'row' })]);
+
+    expect(styleDe(caseDe('real-life'))).toMatchObject({
+      width: COL_W * 2 + GAP,
+      height: (COL_W - GAP) / 2,
+    });
   });
 
   it('🔴 un widget « small » occupe UNE case', async () => {

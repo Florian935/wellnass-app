@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 221 livré · 2 partiel · 2 à faire (sur 231)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 227 livré · 2 partiel · 2 à faire (sur 237)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -99,8 +99,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscu-refonte-ux` (modifications non commitées) |
-| Commits | 1193 · `main` a **1190** commits de retard sur `dev` |
-| Specs d'US | 136 au total — 79 clôturées, 57 en cours |
+| Commits | 1194 · `main` a **1195** commits de retard sur `dev` |
+| Specs d'US | 142 au total — 85 clôturées, 57 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -110,11 +110,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8cf8b7b` feat(muscu-ux01): refonte UX du pilier Musculation — 5 ecrans
 - `8db76eb` fix(recettes): repare les chemins corrompus de l'etape 0c
 - `ee2fe99` docs(recettes): l'APK doit venir de 421e948 ou plus recent
 - `421e948` feat(runf4): ecriture des traductions de seance — le lot est complet
 - `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
-- `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
 
 ---
 

@@ -11,10 +11,13 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { formatDayFull, type WidgetSize } from '@wellness/shared';
 import { WeekDots, type DayState } from '@/components/widgets/primitives';
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
+import { WidgetSkeleton } from '@/components/widgets/WidgetSkeleton';
 import { useStreakData, type WeekDay } from '@/data/repositories/dashboard-repository';
 import { consumeJoker } from '@/data/repositories/streak-joker-repository';
 import { localDayKey } from '@wellness/shared';
@@ -32,11 +35,22 @@ function dayState(day: WeekDay, todayKey: string): DayState {
 export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const router = useRouter();
   const { current, activeToday, last7, restorableGap, isLoading } = useStreakData();
   const [jokerBusy, setJokerBusy] = useState(false);
   const [jokerError, setJokerError] = useState(false);
 
-  if (isLoading) return null;
+  if (isLoading) return <WidgetSkeleton size={size} label={t('home.streak.eyebrow')} />;
+
+  /**
+   * US ACCUEIL-04 — la carte devient **tappable**, vers le bilan de la semaine.
+   *
+   * C'était un cul-de-sac : la carte la plus motivationnelle de l'accueil ne menait nulle part.
+   * `/review` est la bonne destination — c'est l'écran qui explique la régularité — et le lien
+   * lui donne au passage un **second point d'entrée** : INSIGHTS-02 avait relevé qu'il n'en avait
+   * qu'un seul, enfoui dans Réglages › Suivi, la notification hebdomadaire n'y menant pas.
+   */
+  const openReview = () => router.push('/review');
 
   const isEmpty = current === 0;
   const labels = t('home.streak.days', { returnObjects: true }) as string[];
@@ -45,10 +59,24 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
 
   const suffix = isEmpty ? t('home.streak.empty') : t('home.streak.suffix', { count: current });
 
+  // ── Bande ──────────────────────────────────────────────────────────────────
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('home.streak.eyebrow')}
+        value={`${current} 🔥`}
+        trailing={suffix}
+        trailingTone={isEmpty ? 'muted' : 'accent'}
+        onPress={openReview}
+        accessibilityLabel={`${t('home.streak.title')}. ${current} ${suffix}`}
+      />
+    );
+  }
+
   // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {
     return (
-      <WidgetFrame pad={16}>
+      <WidgetFrame pad={16} onPress={openReview} accessibilityLabel={t('home.streak.title')}>
         <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
         <View style={styles.smallCenter}>
           <Text style={[styles.bigNum, { color: isEmpty ? colors.textMuted : colors.accent }]}>
@@ -133,10 +161,42 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
     />
   );
 
+  /**
+   * Bandeau de récapitulatif de la semaine.
+   *
+   * Il n'existait qu'en forme `large` ; ACCUEIL-04 le remonte en `wide`, qui est la forme par
+   * défaut. C'est la densification de cette carte : la cellule passe d'environ 50 % à 90 %
+   * d'occupation **sans changer de taille**, et le chiffre des jours actifs répond à la question
+   * que les sept pastilles posent sans y répondre (« et donc, ça donne quoi cette semaine ? »).
+   *
+   * Effacé quand une proposition de joker est affichée : deux bandeaux superposés dans une même
+   * cellule, dont un porte une action, se disputeraient l'attention.
+   */
+  const weekBanner =
+    restorableGap != null ? null : (
+      <View
+        style={[
+          styles.banner,
+          { backgroundColor: withAlpha(colors.accent, 0.1), borderColor: withAlpha(colors.accent, 0.28) },
+        ]}
+      >
+        <Text style={[styles.bannerTitle, { color: colors.accent }]} numberOfLines={1}>
+          {activeToday
+            ? t('home.streak.bannerActive', { count: activeCount })
+            : t('home.streak.bannerIdle', { count: activeCount })}
+        </Text>
+      </View>
+    );
+
   // ── Rectangle ────────────────────────────────────────────────────────────────
   if (size === 'wide') {
     return (
-      <WidgetFrame pad={18} style={styles.wideCol}>
+      <WidgetFrame
+        pad={18}
+        style={styles.wideCol}
+        onPress={openReview}
+        accessibilityLabel={t('home.streak.title')}
+      >
         <View style={styles.wideHead}>
           <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
           <View style={styles.wideNumRow}>
@@ -147,13 +207,19 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
         </View>
         {dots(30, false)}
         {jokerOffer}
+        {weekBanner}
       </WidgetFrame>
     );
   }
 
   // ── Grand carré ──────────────────────────────────────────────────────────────
   return (
-    <WidgetFrame pad={22} style={styles.largeCol}>
+    <WidgetFrame
+      pad={22}
+      style={styles.largeCol}
+      onPress={openReview}
+      accessibilityLabel={t('home.streak.title')}
+    >
       <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
       <View style={styles.largeTop}>
         <Text style={[styles.largeNum, { color: colors.accent }]}>{current}</Text>
@@ -161,18 +227,9 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
       </View>
       {dots(38, true)}
       {jokerOffer}
-      <View
-        style={[
-          styles.banner,
-          { backgroundColor: withAlpha(colors.accent, 0.1), borderColor: withAlpha(colors.accent, 0.28) },
-        ]}
-      >
-        <Text style={[styles.bannerTitle, { color: colors.accent }]}>
-          {activeToday
-            ? t('home.streak.bannerActive', { count: activeCount })
-            : t('home.streak.bannerIdle', { count: activeCount })}
-        </Text>
-      </View>
+      {/* Même bandeau que la forme `wide` — il n'existe qu'en un seul endroit depuis ACCUEIL-04,
+          au lieu d'être recopié dans les deux formes. */}
+      {weekBanner}
     </WidgetFrame>
   );
 }

@@ -864,7 +864,8 @@
       "sport": "Workout",
       "ofGoal": "/ {{target}} kcal",
       "remainingEyebrow": "Remaining",
-      "budgetPct": "{{pct}}% of budget"
+      "budgetPct": "{{pct}}% of budget",
+      "bonusShort": "+{{kcal}} · session"
     },
     "weight": {
       "title": "Body weight",
@@ -1010,6 +1011,116 @@
       "strengthLabel": "strength tonnage",
       "message": "Your {{up}} is well above your 4-week average, while your {{down}} is well below.",
       "hint": "May explain a plateau on one side — not necessarily an issue if intentional."
+    },
+    "greetingMoment": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "headline": {
+      "workoutActive": "Workout in progress",
+      "runActive": "Run in progress",
+      "sessionToday": "One session on the plan",
+      "meal": {
+        "breakfast": "Breakfast still to log",
+        "lunch": "Lunch still to log",
+        "dinner": "Dinner still to log",
+        "snack": "A snack still to log"
+      },
+      "weighIn": "Your weigh-in is waiting",
+      "wellbeing": "How did your day go?",
+      "dayDone": "Your day is done",
+      "idle": {
+        "morning": "Nothing planned today",
+        "afternoon": "Nothing planned today",
+        "evening": "A quiet day"
+      }
+    },
+    "now": {
+      "workoutActive": {
+        "eyebrow": "Workout in progress",
+        "title": "Pick up where you left off",
+        "meta": "Your workout is still open",
+        "cta": "Resume workout"
+      },
+      "runActive": {
+        "eyebrow": "Run in progress",
+        "title": "Your run is still going",
+        "cta": "Resume run"
+      },
+      "session": {
+        "eyebrow": "Today's session",
+        "eyebrowAt": "Today's session · {{time}}",
+        "fallbackName": "Today's session",
+        "startStrength": "Start workout",
+        "startRunning": "Start run"
+      },
+      "meal": {
+        "eyebrow": "To log",
+        "eyebrowUsually": "To log · usually around {{hour}}:00",
+        "meta": "Your day isn't complete",
+        "title": {
+          "breakfast": "Breakfast not logged",
+          "lunch": "Lunch not logged",
+          "dinner": "Dinner not logged",
+          "snack": "Snack not logged"
+        },
+        "cta": {
+          "breakfast": "Log my breakfast",
+          "lunch": "Log my lunch",
+          "dinner": "Log my dinner",
+          "snack": "Log my snack"
+        }
+      },
+      "weighIn": {
+        "eyebrow": "Weigh-in",
+        "title": "Not weighed in yet today",
+        "meta": "Regular weigh-ins smooth the curve",
+        "cta": "Log my weight"
+      },
+      "wellbeing": {
+        "eyebrow": "Wellbeing",
+        "title": "How did your day go?",
+        "cta": "Do my evening check-in"
+      },
+      "dayDone": {
+        "eyebrow": "Today",
+        "title": "Your day is done",
+        "sessions_one": "{{count}} session",
+        "sessions_other": "{{count}} sessions",
+        "runs_one": "{{count}} run",
+        "runs_other": "{{count}} runs",
+        "streak_one": "{{count}} day streak",
+        "streak_other": "{{count}} day streak"
+      },
+      "idle": {
+        "eyebrow": {
+          "morning": "This morning",
+          "afternoon": "This afternoon",
+          "evening": "This evening"
+        },
+        "title": "Nothing planned today",
+        "meta": "Active rest — or start a free session anytime",
+        "cta": "Create a program"
+      }
+    },
+    "quick": {
+      "meal": {
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "dinner": "Dinner",
+        "snack": "Snack"
+      },
+      "run": "Run",
+      "weighIn": "Weigh-in",
+      "wellbeing": "Wellbeing"
+    },
+    "upNext": {
+      "eyebrow": "Up next",
+      "session": "{{date}} · {{name}}",
+      "planning": "See my plan",
+      "empty": "Nothing planned this week.",
+      "nothingElse": "Nothing else this week."
     }
   },
   "activationPath": {

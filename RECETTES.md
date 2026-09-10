@@ -11,7 +11,10 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **05/09/2026** — **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
+> Dernière mise à jour : **10/09/2026** — **56 sections**. La **§57 a été recettée et clôturée**
+> (refonte de l'accueil, ACCUEIL-01 → 06, validée par Florian le 10/09/2026 après une passe de
+> 5 correctifs) : **sa section a donc été supprimée**, conformément à la règle de purge ci-dessus.
+> Ce fichier doit rétrécir. Restent **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >

@@ -85,6 +85,71 @@ export function useTodayDate(): Date {
 }
 
 /**
+ * **L'heure locale courante** (0-23), réactive.
+ *
+ * ── Pourquoi ce hook existe (US ACCUEIL, correctif du 10/09/2026) ────────────────────────────────
+ * `useTodayDate()` renvoie **minuit** — c'est écrit dans sa docstring, et c'est le bon choix pour
+ * ce qu'elle sert (des bornes de fenêtre). Mais la refonte de l'accueil a introduit les premiers
+ * appelants qui ont réellement besoin de **l'heure** : le repas à présélectionner, le moment de la
+ * journée, et la comparaison à une échéance apprise.
+ *
+ * Le premier jet les a branchés sur `useTodayDate().getHours()`, qui vaut donc **0**. Symptômes
+ * relevés en recette : la pastille de repas affichait « Collation » à 7 h du matin, et surtout
+ * `0 >= échéance` étant toujours faux, la carte « maintenant » **ne réclamait jamais** un repas ni
+ * le check-in du soir. Le défaut était invisible au test unitaire (l'heure y est injectée) et n'a
+ * été vu que sur device.
+ *
+ * ── Quand la valeur se rafraîchit ────────────────────────────────────────────────────────────────
+ * Deux déclencheurs, et pas un de plus :
+ *  1. **au retour au premier plan** — même raisonnement que `useTodayKey` : l'utilisateur qui ne
+ *     revient pas ne regarde aucun écran, donc aucune valeur périmée ne se voit ;
+ *  2. **à l'heure pile**, via un `setTimeout` re-planifié. Un seul minuteur, un seul re-rendu par
+ *     heure. Sans lui, quelqu'un qui garde l'app ouverte de 11 h 55 à 12 h 10 verrait encore
+ *     « Petit-déj ».
+ *
+ * ⚠️ **Jamais à la seconde** : exposer un instant ferait re-rendre l'écran le plus ouvert de l'app
+ * en continu et re-souscrirait ses requêtes pour rien. C'est exactement ce que la docstring de
+ * `useTodayDate` met en garde de faire.
+ */
+export function useCurrentHour(): number {
+  const [hour, setHour] = useState(() => new Date().getHours());
+
+  useEffect(() => {
+    // Garde d'idempotence, comme `useTodayKey` : sans elle, chaque réveil re-rend tous les abonnés.
+    const sync = () => setHour((current) => {
+      const next = new Date().getHours();
+      return next === current ? current : next;
+    });
+
+    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') sync();
+    });
+
+    // Minuteur aligné sur la prochaine heure pile, puis re-planifié. `+1000` de marge : sans elle,
+    // le réveil peut tomber une poignée de millisecondes AVANT le changement d'heure et lire
+    // encore l'heure précédente, ce qui replanifierait un timeout de ~0 ms en boucle serrée.
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const now = new Date();
+      const msToNextHour =
+        (59 - now.getMinutes()) * 60_000 + (60 - now.getSeconds()) * 1_000 + 1_000;
+      timer = setTimeout(() => {
+        sync();
+        schedule();
+      }, msToNextHour);
+    };
+    schedule();
+
+    return () => {
+      sub.remove();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return hour;
+}
+
+/**
  * Borne basse d'une fenêtre glissante de `days` jours **incluant aujourd'hui**, en clé de jour local.
  *
  * `days = 7` renvoie donc J-6, pas J-7 : la convention du dépôt compte les jours **inclusivement**

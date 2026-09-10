@@ -27,15 +27,31 @@ describe('table des destinations', () => {
     expect(new Set(HOME_WIDGET_IDS_V1).size).toBe(HOME_WIDGET_IDS_V1.length);
   });
 
-  it('conserve exactement 8 widgets sur l’accueil', () => {
+  it('conserve exactement 8 widgets dans la grille de l’accueil', () => {
     // 7 au dégonflage (INSIGHTS-02), **8 depuis VIE-01** qui a ajouté `real-life` le même jour —
     // seul id né après le snapshot, d'où la liste compagne `HOME_WIDGET_IDS_POST_V1`.
+    //
+    // Toujours 8 après ACCUEIL-01/04 (09/09/2026), et c'est un équilibre exact, pas une
+    // coïncidence : `today-session` a quitté la grille pour la zone épinglée (`home-pinned`) et
+    // `weight` y est revenu. Le plafond `MAX_HOME_WIDGETS` n'a donc pas eu à bouger.
     expect(KEPT_ON_HOME).toHaveLength(8);
   });
 
-  it('retire donc 14 widgets, chacun avec une destination', () => {
+  it('garde `today-session` sur l’accueil, mais épinglé hors grille', () => {
+    // Le distinguer de `home` n'est pas cosmétique : un widget de grille est masquable par
+    // l'utilisateur, une zone épinglée est garantie à l'écran.
+    const dest = WIDGET_DESTINATIONS['today-session'];
+    expect(dest.kind).toBe('home-pinned');
+    if (dest.kind === 'home-pinned') expect(dest.zone.length).toBeGreaterThan(0);
+  });
+
+  it('ne laisse aucun widget d’avant sans destination, quelle qu’elle soit', () => {
+    // La règle R1 d'INSIGHTS-02 (« aucun signal ne disparaît ») ne dit pas *où* va un signal, elle
+    // dit qu'il va quelque part. On compte donc ce qui a quitté la grille, sans présumer de la
+    // forme : 13 rangés ailleurs + `today-session` promu = 14, le compte d'origine.
     const moved = HOME_WIDGET_IDS_V1.filter((id) => WIDGET_DESTINATIONS[id].kind !== 'home');
     expect(moved).toHaveLength(14);
+    for (const id of moved) expect(WIDGET_DESTINATIONS[id]).toBeDefined();
   });
 });
 
@@ -78,9 +94,11 @@ describe('destinations d’écran', () => {
     }
   });
 
-  it('rangent bien 8 widgets sur un écran', () => {
+  it('rangent bien 7 widgets sur un écran', () => {
+    // 8 au dégonflage, **7 depuis ACCUEIL-04** : `weight` est revenu sur l'accueil, sa destination
+    // « Muscu › Progression › Mensurations » n'a donc plus de raison d'être.
     const screens = HOME_WIDGET_IDS_V1.filter((id) => WIDGET_DESTINATIONS[id].kind === 'screen');
-    expect(screens).toHaveLength(8);
+    expect(screens).toHaveLength(7);
   });
 
   it('donnent un chemin distinct de la seule route — la recette suit des gestes, pas des URL', () => {

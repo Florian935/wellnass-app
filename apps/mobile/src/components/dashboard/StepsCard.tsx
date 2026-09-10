@@ -18,6 +18,8 @@ import { useTranslation } from 'react-i18next';
 import { localDayKey, type WidgetSize } from '@wellness/shared';
 
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
+import { RowLine } from '@/components/widgets/RowLine';
+import { WidgetSkeleton } from '@/components/widgets/WidgetSkeleton';
 import { MiniBars, RingGauge } from '@/components/widgets/primitives';
 import { useDailySteps, useTodaySteps } from '@/data/repositories/daily-steps-repository';
 import { useHealthConnectState } from '@/hooks/useHealthConnectState';
@@ -81,7 +83,7 @@ export function StepsCard({ size = 'wide' }: { size?: WidgetSize }) {
     );
   }
 
-  if (isLoading) return null;
+  if (isLoading) return <WidgetSkeleton size={size} label={t('steps.title')} />;
 
   const hasData = rows.length > 0 || steps > 0;
   if (!hasData) {
@@ -102,6 +104,20 @@ export function StepsCard({ size = 'wide' }: { size?: WidgetSize }) {
     goal: formatSteps(goal, i18n.language),
     status: t(reached ? 'steps.goalReached' : 'steps.goalNotReached'),
   });
+
+  // ── Bande ──────────────────────────────────────────────────────────────────
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('steps.title')}
+        value={formatSteps(steps, i18n.language)}
+        trailing={`${Math.round(pct * 100)} %`}
+        trailingTone={reached ? 'success' : 'muted'}
+        onPress={open}
+        accessibilityLabel={a11y}
+      />
+    );
+  }
 
   // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {
