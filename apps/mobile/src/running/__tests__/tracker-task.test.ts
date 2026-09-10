@@ -175,8 +175,10 @@ describe('tracker-task — dénivelé cumulé (US RUN-F1b)', () => {
 
   it('segment rejeté par le filtre vitesse (glitch) met quand même à jour lastAltitudeM (spec R2)', () => {
     handleLocationBatch([loc(0, 0, undefined, 100)]);
-    // Saut de 1000 m en 1 s ≈ vitesse implausible → segment rejeté pour distance/durée/dénivelé,
+    // Saut de 1000 m en 1 s ≈ vitesse implausible → segment rejeté pour distance et dénivelé,
     // mais lastPoint/lastAltitudeM avancent quand même (même règle que lastPoint aujourd'hui).
+    // ⚠️ La DURÉE, elle, n'est plus concernée par ce filtre depuis CARDIO-UX01 (R1a-2) — voir le
+    // test dédié « la durée avance même quand le segment est rejeté » ci-dessous.
     handleLocationBatch([loc(1000, 1, undefined, 250)]);
     expect(trackerState.cumulativeElevationGainM).toBe(0); // le segment glitch n'a pas compté
     expect(trackerState.lastAltitudeM).toBe(250); // mais la base a bien avancé
@@ -201,6 +203,72 @@ describe('tracker-task — dénivelé cumulé (US RUN-F1b)', () => {
     expect(flushTrackMock).toHaveBeenLastCalledWith(
       'run-1',
       expect.objectContaining({ elevationGainM: 5, elevationLossM: 0 }),
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX01 (R1a-2) — la durée nette ne dépend plus du GPS (constat F16)
+// ---------------------------------------------------------------------------
+
+describe('tracker-task — durée nette découplée du filtre de distance (CARDIO-UX01)', () => {
+  beforeEach(() => {
+    resetTracker();
+    trackerState.autoPause = false; // isole la comptabilité durée du chemin auto-pause
+  });
+
+  it('🔴 la durée avance même quand le segment est rejeté par le filtre de vitesse', () => {
+    handleLocationBatch([loc(0, 0)]);
+
+    // Saut de 1 000 m en 2 s : vitesse implausible, segment rejeté POUR LA DISTANCE.
+    handleLocationBatch([loc(1000, 2)]);
+
+    // C'était le constat F16 : `netDurationS += dt` vivait DANS la branche du filtre de vitesse,
+    // donc sous un tunnel ou en forêt la durée n'avançait pas alors que le coureur courait.
+    expect(trackerState.cumulativeDistanceM).toBe(0); // distance : toujours filtrée
+    expect(trackerState.netDurationS).toBeCloseTo(2, 6); // durée : 2 s se sont écoulées
+  });
+
+  it('la durée suit l’horodatage des points, pas leur nombre', () => {
+    handleLocationBatch([loc(0, 0)]);
+    handleLocationBatch([loc(5, 10)]);
+    handleLocationBatch([loc(10, 25)]);
+
+    // 25 s entre le premier et le dernier point : la durée les compte tous, quelle que soit la
+    // cadence de livraison des lots par l'OS.
+    expect(trackerState.netDurationS).toBeCloseTo(25, 6);
+  });
+
+  it('sans repère préalable, le premier point ne fait que le poser', () => {
+    // Repli pur de `handleLocationBatch` appelé sans passer par `startTracking` (qui, lui, pose
+    // le repère sur `started_at` — c'est ce qui fait courir le chrono depuis le départ réel).
+    // Sans repère, compter les 30 s écoulées serait inventer un passé qu'on n'a pas observé.
+    handleLocationBatch([loc(0, 30)]);
+
+    expect(trackerState.netDurationS).toBe(0);
+  });
+
+  it('🔴 une pause d’une minute ne coûte rien à la reprise', () => {
+    handleLocationBatch([loc(0, 0)]);
+    handleLocationBatch([loc(5, 10)]); // 10 s courues
+
+    setPaused(true);
+    handleLocationBatch([loc(5, 70)]); // 60 s de pause : le repère avance, la durée non
+    setPaused(false);
+
+    handleLocationBatch([loc(10, 80)]); // 10 s de plus
+
+    // 10 + 10 = 20 s. Les 60 s de pause sont perdues — c'est exactement le but.
+    expect(trackerState.netDurationS).toBeCloseTo(20, 6);
+  });
+
+  it('la durée flushée est arrondie à la seconde', () => {
+    handleLocationBatch([loc(0, 0)]);
+    handleLocationBatch([loc(5, 1.6)]);
+
+    expect(flushTrackMock).toHaveBeenLastCalledWith(
+      'run-1',
+      expect.objectContaining({ durationSeconds: 2 }),
     );
   });
 });

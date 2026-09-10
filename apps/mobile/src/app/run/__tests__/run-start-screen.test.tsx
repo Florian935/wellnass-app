@@ -37,7 +37,12 @@ jest.mock('@/data/repositories/run-repository', () => ({
   startRun: jest.fn(),
   cancelRun: jest.fn(),
 }));
-jest.mock('@/running/tracker', () => ({ startTracking: jest.fn() }));
+// `startManualClock` : le mode sans GPS a désormais son propre chrono (US CARDIO-UX01, R1b).
+// Sans ce mock, l'écran plante — et c'est exactement le chemin que le test suivant vérifie.
+jest.mock('@/running/tracker', () => ({
+  startTracking: jest.fn(),
+  startManualClock: jest.fn(),
+}));
 jest.mock('@/powersync/system', () => ({
   powerSync: { getOptional: jest.fn() },
   connector: {},

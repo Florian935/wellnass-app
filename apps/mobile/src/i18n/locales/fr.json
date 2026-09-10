@@ -1966,7 +1966,15 @@
       "pause": "Pause",
       "resume": "Reprendre",
       "stop": "Terminer",
-      "finishing": "Clôture…"
+      "finishing": "Clôture…",
+      "netHint": "hors pauses",
+      "pausedTitle": "En pause",
+      "pausedBody": "Le temps ne compte plus. La reprise est automatique si tu repars.",
+      "frozen": "figé",
+      "lock": "Bloquer",
+      "lockedTitle": "Écran verrouillé",
+      "unlock": "Déverrouiller",
+      "unlockHint": "Appui long pour déverrouiller"
     },
     "summary": {
       "title": "Course terminée 🏃",
@@ -1985,7 +1993,19 @@
       "notesPlaceholder": "Comment s'est passée cette course ?",
       "done": "Terminé",
       "splits": "Splits par km",
-      "splitKm": "Km {{km}}"
+      "splitKm": "Km {{km}}",
+      "doneTitle": "C’est fait",
+      "save": "Enregistrer",
+      "analyse": "Analyser",
+      "feeling": "Ton ressenti",
+      "sessionValidated": "Séance validée",
+      "sessionRecorded": "Elle est enregistrée dans ton programme.",
+      "targetReached": "Objectif atteint.",
+      "unlink": "Annuler",
+      "manualFigures": "Compléter les chiffres",
+      "manualDuration": "Durée (min)",
+      "manualDurationPlaceholder": "45",
+      "pauseExplained": "{{paused}} de pause exclues · {{elapsed}} écoulées."
     },
     "target": {
       "title": "Objectif de la séance",
@@ -2317,7 +2337,70 @@
         "heat": "il fait chaud"
       },
       "advisory": "C'est une suggestion : la séance prévue n'est pas modifiée.",
-      "repsHint": "{{from}} → {{to}} répétitions"
+      "repsHint": "{{from}} → {{to}} répétitions",
+      "applyCta": "Appliquer aujourd’hui",
+      "applying": "Application…",
+      "applyHint": "N’allège que la séance d’aujourd’hui. Ton programme reste intact.",
+      "applied": "Appliqué à la séance d’aujourd’hui."
+    },
+    "hero": {
+      "pace": "Allure",
+      "distance": "Distance",
+      "duration": "Temps net",
+      "cycle": "Changer le chiffre affiché",
+      "cycleHint": "Alterne entre allure, distance et temps"
+    },
+    "stop": {
+      "title": "Arrêter la course ?",
+      "body": "{{distance}} · {{duration}} — le suivi est en pause, rien n’est perdu.",
+      "resume": "Reprendre la course",
+      "finish": "Terminer et enregistrer",
+      "delete": "Supprimer cette course",
+      "deleteHint": "Une course supprimée ne compte ni dans tes statistiques, ni dans tes records.",
+      "deleteConfirmTitle": "Supprimer cette course ?",
+      "deleteConfirmBody": "Elle disparaîtra de ton historique et de tes statistiques. Cette action est définitive."
+    },
+    "segment": {
+      "remaining": "restants",
+      "target": "Cible",
+      "next": "Puis : {{name}} {{amount}}",
+      "sessionDone": "Séance terminée",
+      "sessionDoneBody": "{{count}} segments franchis. Tu peux continuer en libre ou arrêter.",
+      "repA11y": "répétition {{rep}} sur {{total}}",
+      "remainingA11y": "il reste {{value}}",
+      "targetA11y": "allure cible {{value}}"
+    },
+    "hub": {
+      "restTitle": "Rien de prévu aujourd’hui",
+      "doneTodayTitle": "Séance du jour faite",
+      "nextOn": "Prochaine séance le {{date}} — {{type}}.",
+      "nothingPlanned": "Aucune séance à venir dans ton programme.",
+      "freeRun": "Course libre",
+      "freeRunCta": "Partir en course libre",
+      "onboardingTitle": "Par où commencer ?",
+      "onboardingBody": "Suis un programme pour être guidé semaine après semaine, ou pars quand tu veux en course libre.",
+      "pickProgram": "Choisir un programme",
+      "volume": "Volume",
+      "estimated": "Durée est.",
+      "minutes": "≈ {{count}} min",
+      "seeDetail": "Voir le planning"
+    },
+    "week": {
+      "title": "Ma semaine",
+      "count": "{{done}} / {{total}} faites",
+      "countA11y": "{{done}} séances faites sur {{total}}",
+      "targetHint": "Objectif déclaré : {{count}} séances par semaine.",
+      "distance": "Distance",
+      "time": "Temps",
+      "elevation": "D+",
+      "volumeA11y": "{{distance}} parcourus en {{duration}}"
+    },
+    "analysis": {
+      "title": "Analyse",
+      "correctTitle": "Corriger cette course",
+      "correctCta": "Corriger la distance",
+      "correctHint": "La trace GPS n’est pas modifiée : seule la distance retenue change, et l’allure moyenne est recalculée.",
+      "saveCorrection": "Enregistrer la correction"
     }
   },
   "planning": {

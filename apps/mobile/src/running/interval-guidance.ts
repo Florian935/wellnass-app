@@ -125,13 +125,33 @@ function announcePhase(
 }
 
 /**
- * Détecte les changements de phase d'une séance fractionné en cours et déclenche annonce +
- * vibration (spec R1). `enabled` gate l'effet en interne (GPS + réglage + type de séance + au
- * moins un bloc, spec R2/R3/R4) — hook appelé inconditionnellement (règle des hooks), comme les
- * deux guidages précédents sur cet écran.
+ * Détecte les changements de phase d'une séance structurée en cours : avance le curseur, fige le
+ * réalisé, et — si l'utilisateur l'a demandé — annonce et vibre.
+ *
+ * ── ⚠️ Deux responsabilités, deux gates (US CARDIO-UX01, R5) ─────────────────────────────────────
+ * Jusqu'ici il n'y en avait qu'un : `enabled`, qui valait
+ * `isGps && runnerProfile?.intervalGuidanceEnabled === true && blocks.length > 0`. Il gardait
+ * l'effet **entier**, y compris `advanceIntervalPhase` et `recordIntervalResult`. Conséquence,
+ * découverte en branchant le bandeau de segment : le réglage de guidage vocal étant **désactivé
+ * par défaut**, un coureur qui n'était pas allé le chercher dans les Réglages de l'application
+ * courait ses séances structurées **sans que le curseur de phase avance jamais**. Donc :
+ *   - `runs.interval_phase_index` restait `null` → aucune allure cible de segment, et le bandeau
+ *     de segment de cette US serait resté figé sur la première phase ;
+ *   - `run_intervals` restait **vide** → le tableau « fraction par fraction » du résumé (RUN-F4,
+ *     lot F) n'avait rien à afficher pour la majorité des utilisateurs.
+ *
+ * Le suivi de phase est une **donnée** : il doit avoir lieu dès que la séance a une structure.
+ * L'annonce vocale est un **confort** : elle reste derrière son réglage. D'où la séparation ci-
+ * dessous, qui est la vraie condition de chacun.
+ *
+ * `voiceEnabled` ne gate donc plus que `Speech.speak` et `Vibration.vibrate`.
  */
 export function useIntervalGuidance(input: {
-  enabled: boolean;
+  /**
+   * Annoncer à la voix et vibrer aux changements de phase (réglage `intervalGuidanceEnabled`).
+   * **Ne gate plus le suivi de phase** — voir la note ci-dessus.
+   */
+  voiceEnabled: boolean;
   runId: string | null;
   blocks: IntervalBlockItem[];
   distanceM: number;
@@ -153,7 +173,9 @@ export function useIntervalGuidance(input: {
   const hasResyncedRef = useRef(false);
 
   useEffect(() => {
-    if (!input.enabled || !input.runId || phases.length === 0) return;
+    // Le suivi de phase a lieu dès qu'il y a une séance structurée en cours. Sans quoi le
+    // curseur ne bougerait pas et le réalisé ne serait jamais figé (voir la note du hook).
+    if (!input.runId || phases.length === 0) return;
 
     if (input.persistedPhaseIndex == null) {
       // Départ neuf (spec §1, R1) : ce n'est pas un rattrapage, c'est le tout premier
@@ -163,8 +185,10 @@ export function useIntervalGuidance(input: {
         phaseStartDistanceM: input.distanceM,
         phaseStartDurationS: input.durationSeconds,
       });
-      announcePhase(t, phases[0]!, vmaPaceSPerKm);
-      Vibration.vibrate();
+      if (input.voiceEnabled) {
+        announcePhase(t, phases[0]!, vmaPaceSPerKm);
+        Vibration.vibrate();
+      }
       hasResyncedRef.current = true;
       return;
     }
@@ -236,6 +260,8 @@ export function useIntervalGuidance(input: {
     // pendant que l'écran n'était pas monté.
     if (isFirstEvaluationSinceMount) return;
 
+    if (!input.voiceEnabled) return;
+
     if (result.index < phases.length) {
       announcePhase(t, phases[result.index]!, vmaPaceSPerKm);
       Vibration.vibrate();
@@ -245,7 +271,7 @@ export function useIntervalGuidance(input: {
     // Ré-exécuté à chaque changement de distance/durée (comme `useDistanceAnnouncements`) —
     // `resyncIntervalPhase` est un simple no-op tant qu'aucun nouveau seuil n'est franchi.
   }, [
-    input.enabled,
+    input.voiceEnabled,
     input.runId,
     phases,
     // US RUN-F4 : lu dans l'effet pour retrouver le segment d'origine d'une phase

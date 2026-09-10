@@ -1966,7 +1966,15 @@
       "pause": "Pause",
       "resume": "Resume",
       "stop": "Finish",
-      "finishing": "Finishing…"
+      "finishing": "Finishing…",
+      "netHint": "excluding pauses",
+      "pausedTitle": "Paused",
+      "pausedBody": "Time is not counting. It resumes automatically when you start moving again.",
+      "frozen": "frozen",
+      "lock": "Lock",
+      "lockedTitle": "Screen locked",
+      "unlock": "Unlock",
+      "unlockHint": "Press and hold to unlock"
     },
     "summary": {
       "title": "Run complete 🏃",
@@ -1985,7 +1993,19 @@
       "notesPlaceholder": "How did this run go?",
       "done": "Done",
       "splits": "Splits per km",
-      "splitKm": "Km {{km}}"
+      "splitKm": "Km {{km}}",
+      "doneTitle": "Done",
+      "save": "Save",
+      "analyse": "Analyse",
+      "feeling": "How it felt",
+      "sessionValidated": "Session completed",
+      "sessionRecorded": "It is recorded in your programme.",
+      "targetReached": "Target reached.",
+      "unlink": "Undo",
+      "manualFigures": "Fill in the figures",
+      "manualDuration": "Duration (min)",
+      "manualDurationPlaceholder": "45",
+      "pauseExplained": "{{paused}} of pauses excluded · {{elapsed}} elapsed."
     },
     "target": {
       "title": "Session target",
@@ -2317,7 +2337,70 @@
         "heat": "it's hot"
       },
       "advisory": "This is a suggestion: the planned session is unchanged.",
-      "repsHint": "{{from}} → {{to}} reps"
+      "repsHint": "{{from}} → {{to}} reps",
+      "applyCta": "Apply for today",
+      "applying": "Applying…",
+      "applyHint": "Only eases today’s session. Your programme stays untouched.",
+      "applied": "Applied to today’s session."
+    },
+    "hero": {
+      "pace": "Pace",
+      "distance": "Distance",
+      "duration": "Moving time",
+      "cycle": "Change the highlighted figure",
+      "cycleHint": "Cycles through pace, distance and time"
+    },
+    "stop": {
+      "title": "Stop the run?",
+      "body": "{{distance}} · {{duration}} — tracking is paused, nothing is lost.",
+      "resume": "Resume run",
+      "finish": "Finish and save",
+      "delete": "Delete this run",
+      "deleteHint": "A deleted run counts towards neither your stats nor your records.",
+      "deleteConfirmTitle": "Delete this run?",
+      "deleteConfirmBody": "It will disappear from your history and your stats. This cannot be undone."
+    },
+    "segment": {
+      "remaining": "to go",
+      "target": "Target",
+      "next": "Then: {{name}} {{amount}}",
+      "sessionDone": "Session complete",
+      "sessionDoneBody": "{{count}} segments done. You can keep going freely or stop.",
+      "repA11y": "repetition {{rep}} of {{total}}",
+      "remainingA11y": "{{value}} to go",
+      "targetA11y": "target pace {{value}}"
+    },
+    "hub": {
+      "restTitle": "Nothing planned today",
+      "doneTodayTitle": "Today’s session done",
+      "nextOn": "Next session on {{date}} — {{type}}.",
+      "nothingPlanned": "No upcoming session in your programme.",
+      "freeRun": "Free run",
+      "freeRunCta": "Go for a free run",
+      "onboardingTitle": "Where to start?",
+      "onboardingBody": "Follow a programme to be guided week after week, or head out whenever you like on a free run.",
+      "pickProgram": "Choose a programme",
+      "volume": "Volume",
+      "estimated": "Est. time",
+      "minutes": "≈ {{count}} min",
+      "seeDetail": "View planning"
+    },
+    "week": {
+      "title": "My week",
+      "count": "{{done}} / {{total}} done",
+      "countA11y": "{{done}} sessions done out of {{total}}",
+      "targetHint": "Stated goal: {{count}} sessions per week.",
+      "distance": "Distance",
+      "time": "Time",
+      "elevation": "Elev.",
+      "volumeA11y": "{{distance}} covered in {{duration}}"
+    },
+    "analysis": {
+      "title": "Analysis",
+      "correctTitle": "Correct this run",
+      "correctCta": "Correct the distance",
+      "correctHint": "The GPS track is left untouched: only the recorded distance changes, and the average pace is recomputed.",
+      "saveCorrection": "Save correction"
     }
   },
   "planning": {

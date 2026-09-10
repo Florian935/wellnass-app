@@ -173,6 +173,23 @@ export const MAX_HOME_WIDGETS = 8;
  */
 export const MAX_STRENGTH_WIDGETS = 3;
 
+/**
+ * Plafond de la grille du hub course (US CARDIO-UX01, R3-2), **appliqué par un test**.
+ *
+ * Même cliquet que `MAX_HOME_WIDGETS` et `MAX_STRENGTH_WIDGETS` : ajouter une tuile doit coûter
+ * un arbitrage, pas un `+1` silencieux.
+ *
+ * Pourquoi 4 et pas 3 comme la muscu : le hub course garde ses quatre destinations (historique,
+ * programmes, planning, temps d'entraînement) et sa zone Agir est plus compacte — une carte de
+ * séance de course tient en moins de place qu'une carte de séance de muscu, qui liste ses
+ * exercices. Le budget vertical restant vaut donc une tuile de plus.
+ *
+ * ⚠️ Le vrai gain du hub course n'est pas le nombre de tuiles mais le prédicat `isActive` : sans
+ * lui, les quatre se rendaient **même vides** sur un compte neuf, exactement comme les sept du
+ * hub muscu avant MUSCU-UX01.
+ */
+export const MAX_RUNNING_WIDGETS = 4;
+
 export type HomeWidgetId = (typeof HOME_WIDGET_IDS)[number];
 export type StrengthWidgetId = (typeof STRENGTH_WIDGET_IDS)[number];
 export type RunningWidgetId = (typeof RUNNING_WIDGET_IDS)[number];

@@ -117,6 +117,29 @@ export function useUnits() {
         // 'cm' est codé en dur : la hauteur n'a pas de clé dans `unitSymbol`.
         return `${nf0.format(cm)} cm`;
       },
+      /**
+       * Distance **courte**, en mètres bruts → texte compact (US CARDIO-UX01, constats F31/F10).
+       *
+       * ── Pourquoi elle ne suit pas bêtement le système d'affichage ──────────────────────────
+       * Une fraction se décrit universellement en **mètres** — « 400 m », convention de piste, y
+       * compris chez les coureurs anglo-saxons dont les pistes sont métriques. La convertir
+       * donnerait « 437 yd », que personne n'écrit, ou « 0,25 mi », qui n'est pas actionnable
+       * quand il en reste 250.
+       *
+       * La règle retenue : **sous 1 km, on reste en mètres** ; au-delà, on passe au système
+       * d'affichage, parce qu'un échauffement de 2 km est bien « 1,24 mi » pour qui pense en
+       * miles. Le seuil est un arbitrage assumé, pas une vérité.
+       */
+      formatDistanceShort: (meters: number | null | undefined): string => {
+        if (meters == null || !Number.isFinite(meters)) return '—';
+        const m = Math.max(0, Math.round(meters));
+        if (m < 1000) return `${nf0.format(m)} m`;
+        const km = m / 1000;
+        const v = system === 'imperial' ? kmToMi(km) : km;
+        // Une distance ronde s'écrit ronde : « 2 km », pas « 2,00 km ».
+        const text = Number.isInteger(v) ? nf0.format(v) : nf2.format(v);
+        return `${text} ${symbols.distance}`;
+      },
       formatPace: (sPerKm: number | null | undefined): string => {
         // Garde explicite (évite de comparer le résultat au sentinel par identité) :
         // reproduit le contrat de formatPaceMMSS (null / <= 0 / non fini → pas de donnée).

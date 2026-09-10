@@ -57,11 +57,13 @@ import {
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { useRunnerProfile } from './running-profile-repository';
+import { upsertRunnerProfile, useRunnerProfile } from './running-profile-repository';
 import i18n from '@/i18n';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
 import { pushRun } from '@/lib/health-connect';
+import { markPlannedSessionDone, reopenPlannedSession } from './planned-session-repository';
+import { backfillRunningRecords } from './running-record-repository';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 import {
   rowToIntervalItem,
@@ -111,6 +113,22 @@ export type RunHistoryItem = {
   /** Dénivelé cumulé (US RUN-F1b), `null` = donnée absente (course manuelle ou antérieure). */
   elevationGainM: number | null;
   elevationLossM: number | null;
+
+  // ---- US CARDIO-UX01 (R7 / constat F24) : de quoi dire CE QU'ÉTAIT la course ----
+
+  /** Terrain déclaré (US RUN-F3, D3), ou `null`. */
+  terrain: RunTerrain | null;
+  /** Séance planifiée réalisée, ou `null` pour une course libre. */
+  plannedSessionId: string | null;
+  /**
+   * Type de la séance réalisée, résolu par jointure — `null` sur une course libre.
+   *
+   * ⚠️ **`runs` ne porte pas de `session_type`** : c'est le verrou documenté par ALLURE-01, qui
+   * laisse RUN-07 en attente au catalogue. On ne l'ajoute pas ici (ce serait dupliquer une donnée
+   * qui vit sur `sessions`) : on le **joint**. Conséquence assumée : une course libre n'a pas de
+   * type, et c'est déjà une information — la ligne affiche « Course libre ».
+   */
+  sessionType: ProgramSessionType | null;
 };
 
 /** Détail complet d'une course (résumé post-clôture). */
@@ -136,17 +154,28 @@ export type RunDetail = {
   elevationLossM: number | null;
 };
 
-/** Champs persistés lors d'un flush (le tracker fournit le cumul courant). */
+/**
+ * Champs persistés lors d'un flush (le tracker fournit le cumul courant).
+ *
+ * ⚠️ **`null` ne veut pas dire zéro, il veut dire « ne pas écrire »** (US CARDIO-UX01, R1b).
+ * C'est ce qui permet à une course **manuelle** de flusher sa durée sans toucher à sa distance :
+ * sans cette nuance, le tick d'horloge écrirait `distance_m = 0`, et le résumé — qui décide
+ * d'afficher son champ de distance sur `distanceM !== null` — ne le proposerait plus jamais.
+ */
 export type FlushInput = {
   /** Segment de points GPS encodé (via `encodeSegment`) à ajouter à la trace. */
   segmentEncoded: string;
-  /** Distance cumulée en mètres (source de vérité = tracker). */
-  distanceM: number;
+  /** Distance cumulée en mètres (source de vérité = tracker), ou `null` pour ne pas l'écrire. */
+  distanceM: number | null;
   /** Durée cumulée en secondes hors pauses (source de vérité = tracker). */
   durationSeconds: number;
-  /** Dénivelé positif/négatif cumulé en mètres (US RUN-F1b, source de vérité = tracker). */
-  elevationGainM: number;
-  elevationLossM: number;
+  /**
+   * Dénivelé positif/négatif cumulé en mètres (US RUN-F1b, source de vérité = tracker), ou `null`
+   * pour ne pas l'écrire — une course sans GPS n'a pas de dénivelé, et une ligne « +0 m » serait
+   * un chiffre inventé (spec RUN-F1b R5 : jamais une ligne à zéro).
+   */
+  elevationGainM: number | null;
+  elevationLossM: number | null;
 };
 
 /** Options de clôture d'une course. */
@@ -191,6 +220,10 @@ type RunHistoryDbRow = {
   notes: string | null;
   elevation_gain_m: number | null;
   elevation_loss_m: number | null;
+  // US CARDIO-UX01 (R7 / F24) — jointes, pas stockées : voir la note de `SELECT_HISTORY`.
+  terrain: string | null;
+  planned_session_id: string | null;
+  session_type: string | null;
 };
 
 /** Ligne brute d'une course au détail (résumé post-clôture). */
@@ -225,13 +258,35 @@ const SELECT_ACTIVE_RUN = `
   LIMIT 1
 `;
 
-/** Historique des courses terminées, plus récentes d'abord. */
+/**
+ * Historique des courses terminées, plus récentes d'abord.
+ *
+ * ── Les deux jointures (US CARDIO-UX01, R7 / constat F24) ────────────────────────────────────────
+ * Une ligne d'historique affichait date · distance · durée · allure : impossible de distinguer
+ * d'un coup d'œil un footing de récupération d'un 10 × 400. Le type de séance ne vit pas sur
+ * `runs` (verrou d'ALLURE-01) mais sur `sessions`, atteignable par le lien
+ * `runs.planned_session_id`. On le **joint** plutôt que de le dupliquer.
+ *
+ * `LEFT JOIN` des deux côtés : une course libre n'a pas de séance, et c'est le cas majoritaire.
+ * Une séance supprimée depuis la course laisse aussi un lien qui ne résout à rien — la course
+ * reste valide et s'affiche comme libre.
+ *
+ * ⚠️ **`gps_track` reste hors de cette requête**, et ce n'est pas un oubli : elle n'a aucune borne
+ * de date et alimente les statistiques, la tendance d'allure et l'accueil. Y ajouter la trace
+ * ferait charger en mémoire les traces GPS de **toutes** les courses, pour tous ces consommateurs
+ * (note d'origine d'ALLURE-01, conservée).
+ */
 const SELECT_HISTORY = `
-  SELECT id, source, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes, elevation_gain_m, elevation_loss_m
-  FROM runs
-  WHERE status = 'completed' AND deleted_at IS NULL
-  ORDER BY finished_at DESC
+  SELECT r.id, r.source, r.started_at, r.finished_at, r.duration_seconds, r.distance_m,
+         r.avg_pace_s_per_km, r.rpe, r.notes, r.elevation_gain_m, r.elevation_loss_m,
+         r.terrain, r.planned_session_id, s.session_type
+  FROM runs r
+  LEFT JOIN planned_sessions ps
+         ON ps.id = r.planned_session_id AND ps.deleted_at IS NULL
+  LEFT JOIN sessions s
+         ON s.id = ps.session_id AND s.deleted_at IS NULL
+  WHERE r.status = 'completed' AND r.deleted_at IS NULL
+  ORDER BY r.finished_at DESC
 `;
 
 /**
@@ -287,6 +342,13 @@ function rowToHistoryItem(row: RunHistoryDbRow): RunHistoryItem {
     notes: row.notes,
     elevationGainM: row.elevation_gain_m,
     elevationLossM: row.elevation_loss_m,
+    // US CARDIO-UX01 (R7 / F24) — le terrain passe par son schéma Zod, comme dans `rowToRunDetail` :
+    // une valeur inconnue en base ne doit pas remonter jusqu'à une clé i18n absente.
+    terrain: runTerrainSchema.safeParse(row.terrain).success
+      ? (row.terrain as RunTerrain)
+      : null,
+    plannedSessionId: row.planned_session_id,
+    sessionType: (row.session_type as ProgramSessionType | null) ?? null,
   };
 }
 
@@ -846,13 +908,17 @@ export function flushTrack(runId: string, input: FlushInput): Promise<void> {
     const current = row.gps_track ?? '';
     const appended = appendToTrack(current, input.segmentEncoded);
 
-    await patch('runs', runId, {
+    // Seule la durée est toujours écrite. Les autres colonnes ne le sont que si le tracker en a
+    // une valeur à donner (voir la note sur `null` dans `FlushInput`).
+    const columns: Record<string, unknown> = {
       gps_track: appended,
-      distance_m: input.distanceM,
       duration_seconds: input.durationSeconds,
-      elevation_gain_m: input.elevationGainM,
-      elevation_loss_m: input.elevationLossM,
-    });
+    };
+    if (input.distanceM !== null) columns['distance_m'] = input.distanceM;
+    if (input.elevationGainM !== null) columns['elevation_gain_m'] = input.elevationGainM;
+    if (input.elevationLossM !== null) columns['elevation_loss_m'] = input.elevationLossM;
+
+    await patch('runs', runId, columns);
   });
 
   // La chaîne ne doit jamais rester rejetée (sinon tous les flushs suivants
@@ -913,8 +979,10 @@ export async function finishRun(
     source: string;
     distance_m: number | null;
     duration_seconds: number | null;
+    planned_session_id: string | null;
   }>(
-    `SELECT status, deleted_at, source, distance_m, duration_seconds FROM runs WHERE id = ?`,
+    `SELECT status, deleted_at, source, distance_m, duration_seconds, planned_session_id
+     FROM runs WHERE id = ?`,
     [runId],
   );
 
@@ -949,6 +1017,24 @@ export async function finishRun(
   if (opts && 'notes' in opts) columns['notes'] = opts.notes;
 
   await patch('runs', runId, columns);
+
+  // ── US CARDIO-UX01 (R1c) — la boucle se referme ICI ─────────────────────────────────────────
+  // `markPlannedSessionDone` existait depuis le 12/07/2026 et n'était appelée que depuis un
+  // bouton du calendrier. Terminer une course rattachée à une séance planifiée ne cochait donc
+  // rien : le lendemain, le hub proposait de **refaire** la séance de la veille (constat F20), et
+  // tout ce qui compte les séances faites était faux — progression du bloc de course, adhérence
+  // de la semaine précédente (garde de progression MUSC-F15).
+  //
+  // Idempotent par construction : on n'arrive ici qu'une fois (la garde de statut ci-dessus
+  // rejette une course déjà `completed`), et `markPlannedSessionDone` est un `patch` par id.
+  if (row.planned_session_id !== null) {
+    try {
+      await markPlannedSessionDone(row.planned_session_id);
+    } catch (error) {
+      // La course est déjà enregistrée : ne jamais la perdre parce que le pointage a échoué.
+      console.warn('[finishRun] markPlannedSessionDone a échoué (course conservée) :', error);
+    }
+  }
 
   // Analytics : course terminée et enregistrée. Fire-and-forget.
   void track(ANALYTICS_EVENTS.runCompleted);
@@ -1032,6 +1118,283 @@ export async function setManualRunDistance(
     distance_m: distanceM,
     avg_pace_s_per_km: avgPace,
   });
+}
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX01 — durée manuelle, dé-validation, suppression, correction
+// ---------------------------------------------------------------------------
+
+/**
+ * Enregistre la durée d'une course **manuelle** saisie sur l'écran de résumé (R1b).
+ *
+ * Symétrique de `setManualRunDistance`. Le tracker pose désormais la durée nette à la clôture
+ * (voir `startManualClock`), mais elle reste corrigeable : un chrono lancé en retard, un oubli
+ * d'arrêt, une saisie rétroactive. Recalcule l'allure moyenne depuis la distance persistée.
+ *
+ * No-op si la course est introuvable ou n'est pas manuelle — la durée d'une course GPS est une
+ * mesure, pas une saisie.
+ */
+export async function setManualRunDuration(
+  runId: string,
+  durationSeconds: number,
+): Promise<void> {
+  const row = await powerSync.getOptional<{ source: string; distance_m: number | null }>(
+    `SELECT source, distance_m FROM runs WHERE id = ? AND deleted_at IS NULL`,
+    [runId],
+  );
+  if (!row || row.source !== 'manual') {
+    return;
+  }
+
+  const seconds = Math.max(0, Math.round(durationSeconds));
+  const distanceM = row.distance_m;
+  const avgPace = distanceM !== null && seconds > 0 ? averagePace(distanceM, seconds) : null;
+
+  await patch('runs', runId, {
+    duration_seconds: seconds,
+    avg_pace_s_per_km: avgPace,
+  });
+}
+
+/**
+ * Détache une course de la séance planifiée qu'elle a clôturée (R1c-2).
+ *
+ * Le rattachement course ↔ séance est posé au démarrage depuis le hub. Il peut être faux : on
+ * démarre la séance du jour, puis on fait tout autre chose. Dé-valider remet la séance en
+ * `planned` **et** coupe le lien, sans quoi la prochaine clôture la recocherait.
+ */
+export async function unlinkPlannedSession(runId: string): Promise<void> {
+  const row = await powerSync.getOptional<{ planned_session_id: string | null }>(
+    `SELECT planned_session_id FROM runs WHERE id = ? AND deleted_at IS NULL`,
+    [runId],
+  );
+  if (!row || row.planned_session_id === null) {
+    return;
+  }
+  await reopenPlannedSession(row.planned_session_id);
+  await patch('runs', runId, { planned_session_id: null });
+}
+
+/**
+ * Supprime une course (R1d-1) — soft delete, et tout ce qui en dépendait.
+ *
+ * ── Pourquoi cette fonction est bloquante et pas confortable ─────────────────────────────────────
+ * Il n'existait **aucun** moyen de supprimer une course (constat F18). `cancelRun` était réservée
+ * au flux de permission refusée. Une course fantôme — démarrée par erreur, 200 m dans le salon,
+ * trace GPS délirante — restait à vie dans l'historique, gonflait les statistiques, entrait dans
+ * l'**ACWR** (donc dans le signal de risque de blessure) et dans la **polarisation**, et pouvait
+ * **décerner un record**. Un record 5 km met à jour l'**allure de référence**, qui pilote toutes
+ * les allures cibles de toutes les séances : un seul fix aberrant pouvait dérégler tout le système
+ * d'allures, sans recours.
+ *
+ * ── Les quatre effets, dans cet ordre ────────────────────────────────────────────────────────────
+ *  1. les **records portés** par la course sont supprimés — avant le soft delete, car on les
+ *     retrouve par `run_id` ;
+ *  2. la **course** est supprimée ;
+ *  3. la **séance planifiée** qu'elle avait cochée redevient à faire (sinon on perdrait la séance
+ *     en même temps que la course) ;
+ *  4. les records sont **recalculés** depuis l'historique restant (`backfillRunningRecords`, qui
+ *     réinsère le meilleur temps restant par distance et met à jour l'allure de référence).
+ *
+ * ⚠️ **L'allure de référence n'est effacée que si elle venait manifestement du record supprimé**
+ * (elle vaut exactement le temps 5 km supprimé ÷ 5). Le profil ne stocke pas la provenance de
+ * cette valeur : elle peut avoir été **saisie à la main**. L'effacer inconditionnellement
+ * détruirait une saisie utilisateur ; la garder toujours laisserait une référence fantôme. Le test
+ * d'égalité tranche les deux cas courants sans jamais écraser une saisie.
+ *
+ * Idempotent : une course déjà supprimée est un no-op.
+ */
+export async function deleteRun(runId: string): Promise<void> {
+  const row = await powerSync.getOptional<{
+    planned_session_id: string | null;
+    deleted_at: string | null;
+  }>(
+    `SELECT planned_session_id, deleted_at FROM runs WHERE id = ?`,
+    [runId],
+  );
+  if (!row || row.deleted_at !== null) {
+    return;
+  }
+
+  // 1. Records portés par cette course (retrouvés par `run_id`, joignable seulement maintenant).
+  const held = await powerSync.getAll<{
+    id: string;
+    distance_key: string;
+    best_time_seconds: number;
+  }>(
+    `SELECT id, distance_key, best_time_seconds FROM running_pace_records
+     WHERE run_id = ? AND deleted_at IS NULL`,
+    [runId],
+  );
+  const held5k = held.find((r) => r.distance_key === '5k') ?? null;
+  for (const record of held) {
+    await softDelete('running_pace_records', record.id);
+  }
+
+  // 2. La course.
+  await softDelete('runs', runId);
+
+  // 3. La séance planifiée redevient à faire.
+  if (row.planned_session_id !== null) {
+    try {
+      await reopenPlannedSession(row.planned_session_id);
+    } catch (error) {
+      console.warn('[deleteRun] reopenPlannedSession a échoué :', error);
+    }
+  }
+
+  // 4. Records recalculés depuis ce qui reste.
+  if (held.length > 0) {
+    await backfillRunningRecords();
+
+    if (held5k !== null) {
+      const remaining5k = await powerSync.getOptional<{ id: string }>(
+        `SELECT id FROM running_pace_records
+         WHERE distance_key = '5k' AND deleted_at IS NULL`,
+      );
+      if (!remaining5k) {
+        // Aucun 5 km restant : on n'efface la référence que si elle dérivait de celle-ci.
+        const derived = Math.round(held5k.best_time_seconds / 5);
+        const profile = await powerSync.getOptional<{ ref_5k_pace_s_per_km: number | null }>(
+          `SELECT ref_5k_pace_s_per_km FROM running_profiles WHERE deleted_at IS NULL`,
+        );
+        if (profile && profile.ref_5k_pace_s_per_km === derived) {
+          await upsertRunnerProfile({ ref5kPaceSPerKm: null });
+        }
+      }
+    }
+  }
+}
+
+/** Champs corrigeables d'une course terminée (R1d / constat F19). */
+export type RunCorrection = {
+  /** Distance en mètres, ou `null` pour l'effacer. */
+  distanceM?: number | null;
+  /** Durée nette en secondes. */
+  durationSeconds?: number | null;
+  /** Horodatage ISO de départ — corrige une course saisie au mauvais jour. */
+  startedAt?: string;
+};
+
+/**
+ * Corrige les données d'une course terminée (constat F19).
+ *
+ * Jusqu'ici seuls le RPE, les notes et le terrain étaient modifiables : une distance GPS aberrante
+ * ou une course datée du mauvais jour était **définitive**. La correction ne touche pas la trace
+ * (on ne réécrit pas une mesure) : elle corrige les scalaires que l'utilisateur peut connaître
+ * mieux que le capteur.
+ *
+ * Recalcule l'allure moyenne dès que distance ou durée change — sans quoi l'allure resterait celle
+ * d'avant la correction, ce qui est précisément le genre d'incohérence que cette US supprime.
+ */
+export async function updateRunCore(
+  runId: string,
+  correction: RunCorrection,
+): Promise<void> {
+  const row = await powerSync.getOptional<{
+    distance_m: number | null;
+    duration_seconds: number | null;
+  }>(
+    `SELECT distance_m, duration_seconds FROM runs WHERE id = ? AND deleted_at IS NULL`,
+    [runId],
+  );
+  if (!row) {
+    return;
+  }
+
+  const columns: Record<string, unknown> = {};
+  const distanceM =
+    'distanceM' in correction ? (correction.distanceM ?? null) : row.distance_m;
+  const durationSeconds =
+    'durationSeconds' in correction
+      ? (correction.durationSeconds ?? null)
+      : row.duration_seconds;
+
+  if ('distanceM' in correction) columns['distance_m'] = distanceM;
+  if ('durationSeconds' in correction) columns['duration_seconds'] = durationSeconds;
+  if (correction.startedAt !== undefined) columns['started_at'] = correction.startedAt;
+
+  if ('distanceM' in correction || 'durationSeconds' in correction) {
+    columns['avg_pace_s_per_km'] =
+      distanceM !== null && durationSeconds !== null && durationSeconds > 0
+        ? averagePace(distanceM, durationSeconds)
+        : null;
+  }
+
+  if (Object.keys(columns).length === 0) {
+    return;
+  }
+  await patch('runs', runId, columns);
+}
+
+/** Saisie d'une course déjà faite (constat F26). */
+export type PastRunInput = {
+  /** Horodatage ISO du départ (date + heure choisies par l'utilisateur). */
+  startedAt: string;
+  /** Durée nette en secondes. Obligatoire : c'est le minimum qui fait une course. */
+  durationSeconds: number;
+  /** Distance en mètres, ou `null` si inconnue. */
+  distanceM?: number | null;
+  terrain?: RunTerrain | null;
+  rpe?: number | null;
+  notes?: string | null;
+  /** Séance planifiée passée que cette course réalise, si l'utilisateur la rattache. */
+  plannedSessionId?: string | null;
+};
+
+/**
+ * Crée une course **déjà faite** (constat F26).
+ *
+ * ── Le trou que ça comble ────────────────────────────────────────────────────────────────────────
+ * `startRun` n'était appelable que depuis `/run`, en temps réel. Il était donc **impossible** de
+ * journaliser la course d'hier faite sans téléphone, un dossard, ou une sortie enregistrée à la
+ * montre. Combiné à l'absence d'import (constat F25), l'app ne pouvait pas être le journal
+ * d'entraînement de quelqu'un qui ne court pas téléphone en main.
+ *
+ * La course est créée **directement `completed`** : il n'y a rien à suivre. Sa source est
+ * `manual` — elle est donc exclue des records (une distance saisie n'est pas une mesure) et de la
+ * polarisation (aucune trace), exactement comme une course chronométrée sans GPS.
+ *
+ * Clôt la séance planifiée rattachée, s'il y en a une : la boucle se referme aussi pour une
+ * saisie d'après-coup.
+ */
+export async function createPastRun(input: PastRunInput): Promise<string> {
+  const userId = currentUserId();
+  const durationSeconds = Math.max(0, Math.round(input.durationSeconds));
+  const distanceM = input.distanceM ?? null;
+  const avgPace =
+    distanceM !== null && durationSeconds > 0 ? averagePace(distanceM, durationSeconds) : null;
+
+  const id = await insertWithSyncFields('runs', {
+    user_id: userId,
+    status: 'completed',
+    source: 'manual',
+    started_at: input.startedAt,
+    finished_at: new Date(
+      Date.parse(input.startedAt) + durationSeconds * 1000,
+    ).toISOString(),
+    duration_seconds: durationSeconds,
+    distance_m: distanceM,
+    avg_pace_s_per_km: avgPace,
+    gps_track: null,
+    rpe: input.rpe ?? null,
+    notes: input.notes ?? null,
+    planned_session_id: input.plannedSessionId ?? null,
+    terrain: input.terrain ?? null,
+    elevation_gain_m: null,
+    elevation_loss_m: null,
+  });
+
+  if (input.plannedSessionId) {
+    try {
+      await markPlannedSessionDone(input.plannedSessionId);
+    } catch (error) {
+      console.warn('[createPastRun] markPlannedSessionDone a échoué :', error);
+    }
+  }
+
+  refreshHomeWidget();
+  return id;
 }
 
 // ---------------------------------------------------------------------------

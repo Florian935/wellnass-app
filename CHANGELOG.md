@@ -10,6 +10,174 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 10/09/2026 — CARDIO-UX01 : refonte UX du pilier Course, premier lot
+
+Branche `feature/cardio-refonte-ux`, créée depuis `dev`. Troisième audit de pilier de la semaine,
+après l'accueil (ACCUEIL-01 → 06) et la musculation (MUSCU-UX01, la veille).
+
+Le mécanisme est **différent** des deux précédents. Là-bas, ce qui comptait avait été poussé vers
+le bas par ce qui comptait moins. Ici, **ce qui est calculé n'a jamais reçu de surface** : le
+moteur du pilier est remarquable — `resolveSessionPace`, `expandIntervalPhases`,
+`progressivePaceTarget`, `computeAcwr`, `resolveRacePredictions`, `session-adaptation` — mais
+chaque US a ajouté *une ligne de texte* à un écran existant plutôt qu'un endroit à elle.
+
+**40 constats vérifiés dans le code** (F1 → F40), dont **5 bloquants**. Audit de 22 pages,
+11 planches de maquettes, découpage validé par Florian le 10/09/2026 et traité **en un seul lot** —
+même arbitrage que MUSCU-UX01 la veille, là où l'audit proposait dix-sept US.
+
+⚠️ **Lot partiel et assumé** : les 5 bloquants sont corrigés, ainsi que le bandeau de segment, le
+hub, le résumé et le modèle de données. Six chantiers d'ergonomie restent ouverts, nommés en fin de
+[RECETTES.md](RECETTES.md) §58 — dont deux dont les briques de calcul sont déjà livrées et testées.
+
+### Corrigé — la justesse : cinq défauts qui trompaient l'utilisateur sur ses propres données
+
+Ce ne sont pas des défauts d'ergonomie. L'app perdait une donnée, ou affichait un chiffre faux.
+
+- **Le chrono affiché n'était pas celui enregistré** (F9). `run/active.tsx` affichait
+  `now − startedAt` — l'**horloge murale**, pauses incluses — quand `runs.duration_seconds` porte
+  la durée **nette**. Le coureur voyait 32:10 et retrouvait 29:45 au résumé, et pendant une pause
+  le chrono continuait de défiler : le bouton Pause semblait ne rien faire. L'incohérence était
+  visible **dans le même écran**, l'allure moyenne utilisant déjà la durée nette. La décision de
+  quoi afficher vit désormais dans `displayedNetSeconds` (`@wellness/shared`, 15 tests), et la
+  pause se **voit** : bandeau explicite, chiffre grisé et figé.
+- **Le mode sans GPS n'enregistrait aucune durée** (F15). `duration_seconds` n'était écrit que par
+  `flushTrack`, appelé seulement par le tracker, lancé seulement `if (source === 'gps')`. Une
+  course manuelle finissait à `Durée —` / `Allure —` : les 45 minutes du tapis n'étaient **nulle
+  part**. Or la roadmap 5.21 annonce « suivi à la durée seule » et « couvre aussi le tapis ».
+  ⚠️ **Le test qui couvrait ce chemin simulait le tracker à la main** —
+  `flushTrack(id, { durationSeconds: 1800 })` — avec un commentaire affirmant que « la durée d'une
+  course manuelle est posée par le tracker ». Hypothèse fausse en production : le test passait, la
+  fonctionnalité était cassée. Il est réécrit pour passer par le vrai chemin
+  (`startManualClock` → tick d'horloge → clôture).
+- **Terminer une course ne cochait pas la séance planifiée** (F20). `markPlannedSessionDone`
+  existait depuis le 12/07/2026 et n'était appelée **que** depuis un bouton du calendrier. Le
+  lendemain, le hub proposait de refaire la séance de la veille — et tout ce qui compte les séances
+  faites était faux (progression de bloc, adhérence de la semaine précédente de MUSC-F15).
+  `finishRun` la clôt désormais ; `unlinkPlannedSession` permet de dé-valider un rattachement faux.
+- **L'arrêt clôturait sans confirmation ni retour** (F11). Un appui enchaînait `stopTracking` →
+  `finishRun` → navigation : un frottement de poche clôturait une course de 90 minutes, sans
+  confirmation, sans retour arrière, sans suppression possible. L'arrêt se fait en **deux temps** —
+  pause, puis *Reprendre* / *Terminer* / *Supprimer* — et l'écran se **verrouille** (F12), ce qui
+  manquait alors que `useKeepAwake` le laisse tactile toute la course.
+- **Aucune course ne pouvait être supprimée** (F18). `cancelRun` existait et n'était appelée que
+  dans le flux de permission refusée. Une course fantôme restait à vie : elle gonflait les
+  statistiques, entrait dans l'**ACWR** (donc dans le signal de risque de blessure) et dans la
+  **polarisation**, et pouvait **décerner un record**. Un record 5 km met à jour l'**allure de
+  référence**, qui pilote toutes les allures cibles de toutes les séances : un seul fix aberrant
+  pouvait dérégler tout le système d'allures, **sans recours**. `deleteRun` retire la course, ses
+  records portés, recalcule les records restants, rouvre la séance planifiée liée — et n'efface
+  l'allure de référence **que** si elle dérivait manifestement du record supprimé, pour ne jamais
+  écraser une saisie manuelle.
+
+### Corrigé — deux défauts découverts en implémentant
+
+- **Le curseur de phase n'avançait que si le guidage vocal était activé.** `useIntervalGuidance`
+  gardait l'effet **entier** derrière `enabled`, y compris `advanceIntervalPhase` et
+  `recordIntervalResult`. Le réglage étant **désactivé par défaut**, un coureur qui ne l'avait pas
+  cherché dans les Réglages courait ses séances structurées sans que `runs.interval_phase_index`
+  bouge jamais : aucune allure cible de segment, et `run_intervals` **vide** — donc le tableau
+  « fraction par fraction » de RUN-F4 n'avait rien à afficher pour la majorité des utilisateurs.
+  Le suivi de phase est une **donnée** (il a lieu dès qu'il y a une structure) ; l'annonce vocale
+  est un **confort** (elle reste derrière son réglage, renommé `voiceEnabled`).
+- **La durée héritait du filtre de vitesse destiné à la distance** (F16). `netDurationS += dt`
+  vivait **dans** la branche « segment plausible » : sous un tunnel, en forêt dense, la durée
+  n'avançait pas alors que le coureur courait. La distance garde son filtre, la durée ne le partage
+  plus — et un tick d'horloge comble les trous entre deux points.
+- **Le tableau des fractions n'affichait qu'une borne de la plage prévue** (F21) :
+  `range.min ?? range.max` faisait lire une plage 4:05–4:10 comme une cible unique, et passer pour
+  hors cible une fraction courue à 4:09. La colonne de libellé, figée à 52 px, tronquait
+  « Récupération ».
+
+### Ajouté
+
+- **Le bandeau de segment** (`SegmentBanner`, brique `run-segment-banner.ts`, 20 tests) — le gain
+  principal côté ergonomie (F10). Toute la machinerie de RUN-F4 — segments typés, rampes, groupes,
+  curseur persisté — était pilotée **à la voix** et n'avait **aucune surface visuelle**. L'écran
+  affichait distance, chrono, deux allures et une allure cible, et jamais : dans quel segment on
+  est, quelle répétition, ce qui reste, ce qui vient. Écouteurs retirés, annonce manquée, le
+  coureur était aveugle au milieu de sa propre séance. Le bandeau se reconstruit **uniquement**
+  depuis le curseur déjà persisté : aucune seconde source de vérité, et le visuel ne peut pas
+  contredire la voix.
+- **Le grand chiffre dépend de la séance** (`resolveHeroMetric`, F13) : allure sur un fractionné,
+  distance sur une sortie longue, chrono sur une séance bornée en durée — et un tap pour changer.
+  L'écran affichait la distance en 72 px *quelle que soit la séance*, alors que c'est le seul écran
+  qu'on regarde en mouvement.
+- **Le hub à quatre états exclusifs** (`running-hub.ts`, 23 tests), calqué sur `strength-hub.ts` :
+  reprendre → séance du jour → rien de prévu → aucun programme. Il en avait **trois**, et aucun ne
+  distinguait « j'ai un programme mais rien aujourd'hui » de « je n'ai pas de programme » : la même
+  carte s'affichait à quelqu'un qui suit un plan de 8 semaines et à un compte neuf.
+- **La carte du jour porte le contenu de la séance** : structure en puces, volume réel dérivé des
+  segments, durée estimée (`estimateRunMinutes`), allure cible et consigne rédigée.
+- **La bande « Ma semaine »** (`RunWeekBand`, `resolveRunWeek`, F37) : séances faites sur prévues,
+  sept jours, distance / temps / dénivelé. Et la **fréquence hebdo visée** du profil sert enfin de
+  repère — ce champ était saisi et **lu nulle part** (F40).
+- **Le profil coureur entre dans le pilier** (F1) : entrée en en-tête du hub. Il n'était atteignable
+  que depuis les **Réglages de l'application** et un lien enfoui dans `PaceCurveCards`, alors qu'il
+  porte l'allure de référence — qui pilote toutes les allures cibles — et les **deux réglages
+  audio, désactivés par défaut**. Les fonctions livrées par RUN-F2a et RUN-F2d étaient donc éteintes
+  et leur interrupteur hors du pilier.
+- **Le résumé en deux temps** (F17). `run/summary.tsx` était un formulaire de **douze sections**
+  dans un seul défilement, avec le RPE en onzième position et « Terminé » tout en bas. Il ne porte
+  plus que quatre chiffres, la séance validée, le ressenti et deux boutons ; tout le reste passe
+  dans `run/analysis.tsx` (neuf).
+- **Le ressenti nommé sur cinq niveaux**, par réutilisation directe de `workout-feeling.ts`
+  (MUSCU-UX01) : même question, même échelle des deux côtés de l'app. `runs.rpe` continue de stocker
+  un RPE 1-10 — les cinq crans ne sont qu'une lecture, aucune migration, et un ressenti antérieur
+  reste lisible.
+- **Corriger une course** (`updateRunCore`, F19) et **la saisir après coup** (`createPastRun`,
+  F26) : deux fonctions de repository livrées et typées. `startRun` n'était appelable que depuis
+  `/run`, en temps réel — impossible de journaliser la course d'hier, un dossard, ou une sortie
+  enregistrée à la montre.
+- **La grammaire de saisie en une ligne** (`session-line.ts`, 20 tests) : `2km ech + 6x400/200 +
+  1km rac` produit trois segments. Plus six **modèles de séance**, chacun écrit dans cette même
+  grammaire — donc modifiables à la main, ce qu'un test vérifie. L'éditeur demandait **14 contrôles
+  par segment**, soit 42 pour une séance à trois segments et 70 pour une séance à cinq, pour une
+  séance qu'un coureur décrit à l'oral en huit mots. ⚠️ **Les éditeurs eux-mêmes ne sont pas encore
+  réécrits** : la brique est prête, la surface reste à faire.
+- **Une tuile vide ne réserve plus sa case** : le prédicat `isActive` existait sur `WidgetGrid`
+  depuis MUSCU-UX01 et n'avait jamais été passé côté course. Plus un plafond
+  `MAX_RUNNING_WIDGETS = 4` appliqué par un test — troisième et dernier hub à recevoir son cliquet.
+- **`formatDistanceShort`** (`useUnits`) : sous 1 km on reste en **mètres**, y compris en impérial.
+  Une fraction se décrit universellement en mètres (convention de piste) ; « 437 yd » ne s'écrit
+  nulle part et « 0,25 mi » n'est pas actionnable quand il en reste 250.
+
+### Technique / Notes
+
+- **Une migration écrite et NON POUSSÉE** —
+  `20260910154350_cardio_ux01_semaines_et_adaptation` : `sessions.week_index` (F35, un programme
+  était **une semaine type répétée**, jamais un plan progressif) et
+  `planned_sessions.adapted_reps_pct` / `adapted_pace_delta_s` (F36, la carte d'adaptation
+  conseillait sans pouvoir agir). `npm run db:push` vise la **production** : décision de Florian ou
+  Damien. ⚠️ **Aucun défaut posé sur `week_index`, délibérément** : `null` = « séance de la semaine
+  type, répétée chaque semaine », donc **tous les programmes existants restent valides sans
+  reprise** ; un `default 0` aurait vidé les semaines 2 à 8 de tous les programmes planifiés.
+  ✅ **Aucune sync rule** (les deux tables sont déjà lues en `select *` — le réflexe
+  « migration ⇒ sync rule » ne vaut que pour une table **neuve**). 🔴 Les 3 colonnes **sont**
+  déclarées dans `powersync/schema.ts` : sans ça l'écriture échoue en silence (panne CYCLE-01 du
+  31/07, répétée par HORAIRE-01).
+- **`ADAPTATION_WRITE_READY = false`** tant que la migration n'est pas poussée, et le bouton
+  « Appliquer aujourd'hui » n'est alors **pas rendu**. Écrire une colonne inconnue du serveur ne
+  casse pas l'écriture locale : ça casse l'**upload**, et PowerSync sérialise la file — donc ça
+  bloquerait la remontée de **toutes** les tables. Un seul drapeau à basculer après le push.
+- **`SELECT_HISTORY` gagne deux jointures** (`terrain`, `planned_session_id`, `session_type`) pour
+  que la ligne d'historique puisse enfin dire **ce qu'était** la course (F24). Le type de séance ne
+  vit pas sur `runs` — verrou documenté par ALLURE-01 — mais sur `sessions` : on le **joint**
+  plutôt que de le dupliquer. `gps_track` reste **hors** de cette requête, qui n'a aucune borne de
+  date et alimente aussi les statistiques et l'accueil.
+- **`FlushInput` accepte `null`** pour la distance et le dénivelé, avec le sens « ne pas écrire ».
+  Sans cette nuance, le tick d'horloge d'une course manuelle écrirait `distance_m = 0` et le résumé
+  — qui décide d'afficher son champ de distance sur `distanceM !== null` — ne le proposerait plus
+  jamais.
+- **Aucune dépendance native neuve.** Recettable sur un build de la branche.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **2 753 tests verts** (+ 10 depuis MUSCU-UX01,
+  dont **78 tests purs neufs** dans `packages/shared`), parité i18n FR/EN contrôlée par
+  `scripts/check-i18n-parity.mjs` (**2 386 clés**).
+  ⚠️ `health-connect-state.test.ts` échoue par intermittence sur un `npm run test` agrégé (16 tests,
+  mocks natifs à `Number of calls: 0`) — **flake déjà documenté dans RECETTES.md**, non
+  reproductible en isolation (32/32) et sans lien avec cette US.
+- **Recette** : 41 critères, [RECETTES.md](RECETTES.md) §58, dont **5 marqués 🔴** qui relèvent de la
+  justesse et non de l'ergonomie. Roadmap : ligne **5.40**, 238 lignes de périmètre.
+
 ## 10/09/2026 — MUSCU-UX01 : refonte UX du pilier Musculation (5 écrans)
 
 Branche `feature/muscu-refonte-ux`, développée dans un **worktree isolé** pour ne pas entrer en
