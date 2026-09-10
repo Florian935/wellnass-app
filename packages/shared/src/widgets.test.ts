@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   HOME_WIDGET_IDS,
+  LAYOUT_VERSION,
   MAX_HOME_WIDGETS,
   WIDGET_SCREENS,
   STRENGTH_WIDGET_IDS,
@@ -539,6 +540,71 @@ describe('migration implicite de l’ancienne résolution', () => {
     expect(new Set([steps.col, weight.col])).toEqual(new Set([0, 1]));
     assertNoOverlap(r.widgets);
     assertNoEmptyRow(r.widgets);
+  });
+
+  it('🔴 réattribue les formes des trois widgets dont le défaut a changé (v1 → v2)', () => {
+    // ── Le défaut constaté en recette le 10/09/2026 ────────────────────────────────────────────
+    // ACCUEIL-04 a remplacé `uniformSize(…, 'wide')` par des formes différenciées, mais une forme
+    // par défaut ne s'applique qu'aux widgets ABSENTS du layout stocké. Tout utilisateur ayant
+    // déjà ouvert l'accueil avait ses huit entrées en base, en 'wide' : les nouvelles valeurs
+    // n'atteignaient donc personne, et les pas ne se plaçaient pas à côté du poids.
+    //
+    // Pire pour `weight`, dont l'entrée dormait en base depuis AVANT INSIGHTS-02 : le
+    // réintroduire au registre a ressuscité sa vieille taille — un grand carré choisi des mois
+    // plus tôt, exactement ce que montrait la capture de recette.
+    const v1 = {
+      screens: {
+        home: {
+          widgets: [
+            { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+            { id: 'steps', visible: true, size: 'wide', col: 0, row: 1 },
+            { id: 'weight', visible: true, size: 'large', col: 0, row: 2 },
+            { id: 'real-life', visible: true, size: 'wide', col: 0, row: 4 },
+          ],
+        },
+      },
+    };
+    const parsed = parseMultiScreenLayout(v1)!;
+    const byId = new Map(parsed.screens.home!.widgets.map((w) => [w.id, w]));
+
+    expect(byId.get('steps')!.size).toBe('small');
+    expect(byId.get('weight')!.size).toBe('small');
+    expect(byId.get('real-life')!.size).toBe('row');
+    // Les widgets hors de la table ne bougent pas : on corrige un défaut, on ne réécrit pas l'écran.
+    expect(byId.get('streak')!.size).toBe('wide');
+  });
+
+  it('🔴 marque la version, pour ne PAS rejouer la réattribution à chaque lecture', () => {
+    // Sans ce marqueur, quelqu'un qui remettrait ses pas en grand carré les verrait redevenir un
+    // petit carré au rechargement suivant — la « migration » deviendrait une contrainte permanente.
+    const parsed = parseMultiScreenLayout({
+      screens: { home: { widgets: [{ id: 'steps', visible: true, size: 'wide', col: 0, row: 0 }] } },
+    })!;
+    expect(parsed.v).toBe(LAYOUT_VERSION);
+  });
+
+  it('🔴 respecte un choix explicite une fois la v2 marquée', () => {
+    const v2 = {
+      v: LAYOUT_VERSION,
+      screens: {
+        home: { widgets: [{ id: 'steps', visible: true, size: 'large', col: 0, row: 0 }] },
+      },
+    };
+    const parsed = parseMultiScreenLayout(v2)!;
+    expect(parsed.screens.home!.widgets[0]!.size).toBe('large');
+  });
+
+  it('ne réattribue rien sur les hubs muscu et course', () => {
+    // Leurs formes par défaut n'ont pas changé : y toucher écraserait des choix réels.
+    const v1 = {
+      screens: {
+        strength: {
+          widgets: [{ id: 'strength-history', visible: true, size: 'large', col: 0, row: 0 }],
+        },
+      },
+    };
+    const parsed = parseMultiScreenLayout(v1)!;
+    expect(parsed.screens.strength!.widgets[0]!.size).toBe('large');
   });
 
   it('une forme `row` inconnue d’un ancien client est acceptée telle quelle', () => {

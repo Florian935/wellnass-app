@@ -30,7 +30,7 @@ import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 
 
 /** Une barre macro (consommé / cible) avec pastille de couleur. */
@@ -64,7 +64,7 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   // Hook AVANT tout retour anticipé (règle des hooks). L'ancien `isoDay(new Date())` était placé
   // après le `if (isLoading)` — légal pour un simple calcul, illégal pour un hook.
   const today = useTodayKey();
-  const todayDate = useTodayDate();
+  const hour = useCurrentHour();
 
   if (isLoading) {
     // US ACCUEIL-04 : un squelette réserve la cellule. Le `return null` d'avant faisait apparaître
@@ -82,7 +82,7 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   const openFood = () =>
     router.push({
       pathname: '/food-picker',
-      params: { date: today, meal: mealForHour(todayDate.getHours()) },
+      params: { date: today, meal: mealForHour(hour) },
     });
   const openProfile = () => router.push('/nutrition-profile');
 

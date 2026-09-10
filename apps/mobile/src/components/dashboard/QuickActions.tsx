@@ -30,7 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { mealForHour, resolveActivePillars, type MealType } from '@wellness/shared';
 
 import { useSettings } from '@/data/repositories/settings-repository';
-import { useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -55,14 +55,14 @@ export function QuickActions({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const today = useTodayDate();
+  const hour = useCurrentHour();
   const todayKey = useTodayKey();
   const { settings } = useSettings();
   const activePillars = resolveActivePillars(settings?.activePillars);
 
   // Le repas ouvert suit l'heure — c'est la correction du `meal: 'breakfast'` en dur du widget
   // nutrition, qui ouvrait le petit-déjeuner à 20 h comme à 7 h.
-  const meal = highlightMeal ?? mealForHour(today.getHours());
+  const meal = highlightMeal ?? mealForHour(hour);
 
   const actions: QuickAction[] = [];
 

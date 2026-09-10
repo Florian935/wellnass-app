@@ -29,6 +29,7 @@ import { AccentHalo } from '@/components/AccentHalo';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useNowAction } from '@/hooks/useNowAction';
+import { useUnits } from '@/hooks/useUnits';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -46,6 +47,7 @@ export function NowCard() {
   const { colors } = useTheme();
   const router = useRouter();
   const todayKey = useTodayKey();
+  const units = useUnits();
   const { action, isLoading } = useNowAction();
   const [starting, setStarting] = useState(false);
   // Même verrou que le hub muscu : un état React ne voit pas un second appui du même cycle de
@@ -99,10 +101,34 @@ export function NowCard() {
         const name = tr.name || t('home.now.session.fallbackName');
         // L'heure entre dans le sur-titre quand elle existe — c'est l'information que la maquette
         // validée portait depuis l'origine et que le widget n'a jamais affichée.
+        //
+        // ⚠️ `scheduledTime` est stocké en `HH:MM:SS` : on ne garde que les heures et minutes,
+        // sinon la carte annoncerait « 18:30:00 ».
         const eyebrow = tr.scheduledTime
-          ? t('home.now.session.eyebrowAt', { time: tr.scheduledTime })
+          ? t('home.now.session.eyebrowAt', { time: tr.scheduledTime.slice(0, 5) })
           : t('home.now.session.eyebrow');
-        const meta = [tr.detail, tr.programName].filter(Boolean).join(' · ') || null;
+
+        // Détail composé ICI, où l'on a `t()` et les unités — le hook de collecte n'a ni l'un ni
+        // l'autre. C'est ce qui manquait : la carte n'affichait que le nom du programme.
+        const meta =
+          [
+            tr.exerciseCount != null && tr.exerciseCount > 0
+              ? t('home.today.exercises', { count: tr.exerciseCount })
+              : null,
+            tr.targetDistanceM != null
+              ? t('running.plannedToday.distance', {
+                  distance: units.formatDistance(tr.targetDistanceM / 1000),
+                })
+              : null,
+            tr.targetDurationSeconds != null
+              ? t('running.plannedToday.duration', {
+                  minutes: Math.round(tr.targetDurationSeconds / 60),
+                })
+              : null,
+            tr.programName,
+          ]
+            .filter(Boolean)
+            .join(' · ') || null;
         return {
           eyebrow,
           title: name,

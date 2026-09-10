@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { dayMoment, type NowAction } from '@wellness/shared';
 
 import { SyncStatus } from '@/components/SyncStatus';
-import { useTodayDate } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayDate } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -70,6 +70,7 @@ export function HomeHeader({
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const today = useTodayDate();
+  const hour = useCurrentHour();
 
   // Date en clair, dans la langue courante. `toLocaleDateString` avec un fuseau implicite est
   // correct ici : `today` est déjà une date **locale** réactive (`useTodayDate`).
@@ -84,7 +85,7 @@ export function HomeHeader({
 
   // Le salut n'est plus une phrase figée : il suit le moment de la journée. Il n'apparaît que
   // lorsque l'accroche ne porte pas déjà une adresse directe, pour ne pas empiler deux entrées.
-  const greeting = t(`home.greetingMoment.${dayMoment(today.getHours())}`, { name: firstName });
+  const greeting = t(`home.greetingMoment.${dayMoment(hour)}`, { name: firstName });
 
   return (
     <View style={styles.wrap}>

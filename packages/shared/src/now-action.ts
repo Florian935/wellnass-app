@@ -51,15 +51,30 @@ export const NOW_ACTION_ORDER = [
 ] as const;
 export type NowActionKind = (typeof NOW_ACTION_ORDER)[number];
 
-/** Une séance d'entraînement planifiée aujourd'hui, quel que soit son pilier. */
+/**
+ * Une séance d'entraînement planifiée aujourd'hui, quel que soit son pilier.
+ *
+ * ⚠️ **Données brutes, jamais de chaîne pré-formatée** (correctif du 10/09/2026). Le premier jet
+ * portait un champ `detail: string | null` que `useNowAction` remplissait… à `null`, faute d'avoir
+ * accès à i18n et aux unités depuis un hook de collecte. Résultat en recette : la carte affichait
+ * « Séance A » et le nom du programme, **sans le nombre d'exercices** que la maquette validée
+ * annonçait (« 6 exercices · PPL semaine 3 »).
+ *
+ * La mise en forme appartient donc à l'UI (`NowCard`), qui a `t()` et `useUnits()`. Ce module ne
+ * transporte que des nombres.
+ */
 export interface TodayTraining {
   pillar: 'strength' | 'running';
   /** Nom de séance déjà résolu par l'appelant (repli « Séance N » compris). */
   name: string;
   /** Heure locale `HH:MM` si l'occurrence en porte une (HORAIRE-01), sinon `null`. */
   scheduledTime: string | null;
-  /** Détail court à afficher sous le titre — nb d'exercices, distance cible… Déjà formaté. */
-  detail: string | null;
+  /** Nombre d'exercices planifiés (musculation). `null` si inconnu ou non pertinent. */
+  exerciseCount: number | null;
+  /** Distance cible en mètres (course). */
+  targetDistanceM: number | null;
+  /** Durée cible en secondes (course). */
+  targetDurationSeconds: number | null;
   /** Nom du programme, si connu. */
   programName: string | null;
   /** Identifiants nécessaires au démarrage, opaques pour ce module. */

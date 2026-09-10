@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **09/09/2026** — **57 sections** : la §57 couvre la refonte de l'accueil (ACCUEIL-01 → 06, six US en un lot). 🔴 **Son critère 1 passe avant tout le reste** : la grille a changé de résolution verticale, et un accueil déjà personnalisé doit se rouvrir intact. Avant cela : **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
+> Dernière mise à jour : **10/09/2026** — **57 sections**. La §57 a subi une **première passe de recette** : 5 défauts corrigés (dont un qui empêchait la carte « maintenant » de réclamer quoi que ce soit), le reste validé par Florian : la §57 couvre la refonte de l'accueil (ACCUEIL-01 → 06, six US en un lot). 🔴 **Son critère 1 passe avant tout le reste** : la grille a changé de résolution verticale, et un accueil déjà personnalisé doit se rouvrir intact. Avant cela : **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
@@ -2479,6 +2479,64 @@ deux exclusions, toutes deux extérieures à cette US :
 - [ ] 46. **L'amendement d'ADR-007 §2** — « le plafond porte sur la grille, pas sur le chrome de
       l'écran ». C'est la décision de doctrine du lot : sans elle, les quatre zones épinglées
       seraient en violation d'un plafond de 4-6. À relire et valider.
+
+### 🔁 Deuxième passe — cinq défauts corrigés le 10/09/2026
+
+> Recette de Florian sur device le 10/09/2026 (captures à l'appui). **Tout le reste était validé** ;
+> ces cinq points sont corrigés et à re-vérifier. Le plus grave, le n° 47, cassait silencieusement
+> une bonne part de la logique contextuelle du lot.
+
+- [ ] 47. 🔴 **L'heure courante était lue à minuit.** `useTodayDate()` renvoie **minuit** — c'est
+      écrit dans sa docstring — et les quatre appelants du lot faisaient `.getHours()` dessus, donc
+      lisaient **0**. Symptôme visible : la pastille affichait « Collation » à 7 h du matin
+      (critère 17). Symptôme **invisible** et bien pire : `0 >= échéance` étant toujours faux, la
+      carte « maintenant » **ne réclamait jamais** un repas ni le check-in du soir. Nouvelle
+      primitive `useCurrentHour()` (retour au premier plan + minuteur à l'heure pile).
+      → À vérifier : le libellé de la pastille suit l'heure (matin/midi/soir), **et** le soir avec
+      un repas non saisi, la carte du haut le réclame enfin.
+- [ ] 48. 🔴 **Pas et poids côte à côte** (critère 23). Une forme par défaut ne s'applique qu'aux
+      widgets **absents** de la disposition enregistrée : tout compte existant avait ses huit
+      entrées en `'wide'`, donc les nouvelles formes n'atteignaient **personne**. Pire pour le
+      poids, dont l'entrée dormait en base depuis avant INSIGHTS-02 : le réintroduire a **ressuscité
+      sa vieille taille** (le grand carré de ta capture). Migration de formes v1 → v2 ajoutée, avec
+      marqueur de version pour ne pas se rejouer.
+      → À vérifier : pas et poids **côte à côte** sur une ligne, et si tu remets ensuite les pas en
+      grand carré, **ils y restent** au rechargement.
+- [ ] 49. 🔴 **Carte « vie réelle » tronquée en période** (critère 27). Elle était remontée à `wide`
+      (170 px) ; son contenu en période fait ~230 px, d'où la coupe et les deux boutons
+      inatteignables. Remontée à `large` désormais.
+      → À vérifier : en période, « Prolonger » et « Reprendre le plan normal » sont **visibles et
+      utilisables**.
+- [ ] 50. 🔴 **La carte séance n'affichait aucun détail.** Le hook de collecte portait un champ
+      `detail` pré-formaté qu'il remplissait à `null`, faute d'accès à i18n : la carte n'affichait
+      que le nom du programme, là où la maquette annonçait « 6 exercices · PPL semaine 3 ». Les
+      données brutes passent maintenant jusqu'au composant, qui formate.
+      → À vérifier : la carte affiche **le nombre d'exercices et le programme** (muscu), **la
+      distance ou la durée cible** (course), et l'heure **sans les secondes**.
+- [ ] 51. **Le pied annonçait « Rien de prévu cette semaine » alors qu'une séance était prévue
+      aujourd'hui** (critère 35) — contradiction avec la carte du haut. Deux états vides distincts
+      désormais : « Rien d'**autre** cette semaine » quand il y a quelque chose aujourd'hui.
+      Corrigé au passage : le pied ne filtrait **pas** le statut (`SELECT_PLANNED_BETWEEN` remonte
+      `planned`, `done` **et** `skipped`), il pouvait donc annoncer comme « à venir » une séance
+      déjà faite ou sautée.
+      → À vérifier : avec un programme actif, les prochaines séances s'affichent **avec leur date** ;
+      une séance déjà faite n'y apparaît pas.
+
+### 🟢 Deux points qui n'étaient pas des défauts
+
+- **L'heure d'une séance de musculation EST saisissable** : Planning → tape sur la séance →
+  « Définir une heure » (`TimeStepper`, US HORAIRE-01). Aucun filtre de pilier, ça marche pour la
+  muscu comme pour la course. Ce n'est pas un bug, c'est **peu découvrable** — et ça mérite peut-être
+  une US à part, parce que la carte d'accueil n'affiche l'heure que si elle est renseignée.
+- **La carte « MODE VIE RÉELLE »**, puisque tu demandes à quoi elle sert : c'est l'US **VIE-01**
+  (livrée le 05/08/2026, roadmap 1.28). Elle répond à la **cause n° 1 d'abandon à 3-6 semaines**
+  identifiée au benchmark. Une semaine de vacances, de maladie ou de déplacement produit
+  aujourd'hui une cascade de reproches tous mécaniquement corrects et tous à côté de la plaque : la
+  série tombe à zéro dès le deuxième jour manqué (le joker ne couvre qu'un jour **isolé**), le
+  déficit calorique continue de courir, et les insights annoncent « ton tonnage a chuté de 40 % ».
+  Déclarer une période « vie réelle » **suspend** tout ça : objectif de semaine minimal, signaux qui
+  reprochent mis en silence, déficit suspendu. Les garde-fous de sécurité (surentraînement, charge)
+  restent armés, eux — on ne coupe pas ce qui protège.
 
 ### 🟡 Ce qui n'est PAS dans ce lot — et pourquoi
 

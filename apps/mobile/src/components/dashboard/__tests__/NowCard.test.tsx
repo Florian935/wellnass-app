@@ -52,8 +52,11 @@ function givenAction(action: NowAction, isLoading = false) {
 const training = {
   pillar: 'strength' as const,
   name: 'Push — Pecs / Épaules',
-  scheduledTime: '18:30',
-  detail: '6 exercices',
+  // Stocké en HH:MM:SS en base : la carte doit tronquer, pas afficher les secondes.
+  scheduledTime: '18:30:00',
+  exerciseCount: 6,
+  targetDistanceM: null,
+  targetDurationSeconds: null,
   programName: 'PPL',
   plannedSessionId: 'ps-1',
   sessionId: 's-1',
@@ -69,7 +72,7 @@ beforeEach(() => {
 // Séance planifiée
 // ---------------------------------------------------------------------------
 describe('séance planifiée du jour', () => {
-  it('affiche le nom de la séance et son HEURE', async () => {
+  it('affiche le nom de la séance et son HEURE, sans les secondes', async () => {
     // L'heure est stockée depuis HORAIRE-01 et n'était affichée nulle part. La maquette validée
     // l'annonçait pourtant (« SÉANCE DU JOUR · 18:30 ») depuis l'origine.
     givenAction({ kind: 'session-today', training });
@@ -77,6 +80,30 @@ describe('séance planifiée du jour', () => {
 
     expect(screen.getByText('Push — Pecs / Épaules')).toBeTruthy();
     expect(screen.getByText(/18:30/)).toBeTruthy();
+    // La base stocke `HH:MM:SS` : sans troncature, la carte annoncerait « 18:30:00 ».
+    expect(screen.queryByText(/18:30:00/)).toBeNull();
+  });
+
+  it('🔴 affiche le NOMBRE D’EXERCICES et le programme sous le titre', async () => {
+    // Défaut vu en recette le 10/09/2026 : la carte n'affichait que le nom du programme. Le hook
+    // de collecte portait un champ `detail` pré-formaté qu'il remplissait à `null`, faute d'accès
+    // à i18n — la mise en forme est désormais dans ce composant, qui a `t()`.
+    givenAction({ kind: 'session-today', training });
+    await render(<NowCard />);
+
+    expect(screen.getByText(/home\.today\.exercises.*6|6 exercices/)).toBeTruthy();
+    expect(screen.getByText(/PPL/)).toBeTruthy();
+  });
+
+  it('n’invente aucun détail quand la séance n’en porte pas', async () => {
+    givenAction({
+      kind: 'session-today',
+      training: { ...training, exerciseCount: null, programName: null },
+    });
+    await render(<NowCard />);
+
+    expect(screen.getByText('Push — Pecs / Épaules')).toBeTruthy();
+    expect(screen.queryByText(/exercice/i)).toBeNull();
   });
 
   it('démarre la séance de musculation au tap', async () => {

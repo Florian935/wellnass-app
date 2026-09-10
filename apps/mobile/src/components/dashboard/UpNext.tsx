@@ -54,9 +54,15 @@ export function UpNext({ onCustomize }: { onCustomize: () => void }) {
   const { session: runToday } = useTodayRunSession();
 
   // Occurrences STRICTEMENT après aujourd'hui : ce qui est prévu aujourd'hui appartient à la
-  // zone 1, le répéter ici serait du bruit. `status` est déjà filtré à `planned` en amont.
+  // zone 1, le répéter ici serait du bruit.
+  //
+  // ⚠️ **Le statut doit être filtré ICI** (correctif du 10/09/2026). La première rédaction
+  // affirmait qu'il l'était « déjà en amont » : c'est faux, `SELECT_PLANNED_BETWEEN` remonte
+  // **tous** les statuts (`planned`, `done`, `skipped`) — c'est voulu, le planning en a besoin
+  // pour peindre les séances faites. Sans ce filtre, le pied annoncerait comme « à venir » une
+  // séance déjà faite ou explicitement sautée.
   const lines = upcoming
-    .filter((s) => s.scheduledDate > todayKey)
+    .filter((s) => s.status === 'planned' && s.scheduledDate > todayKey)
     .sort(
       (a, b) =>
         a.scheduledDate.localeCompare(b.scheduledDate) || a.orderIndex - b.orderIndex,
@@ -105,11 +111,13 @@ export function UpNext({ onCustomize }: { onCustomize: () => void }) {
         </Pressable>
       </View>
 
-      {/* Rien de prévu aujourd'hui ET rien à venir : on le dit une fois, sobrement, plutôt que de
-          laisser un pied de page nu. */}
-      {lines.length === 0 && !hasToday ? (
+      {/* Deux états vides distincts, et la nuance compte (correctif du 10/09/2026).
+          « Rien de prévu cette semaine » affiché alors qu'une séance est prévue AUJOURD'HUI se lit
+          comme une contradiction avec la carte du haut — c'est exactement ce qu'a relevé la
+          recette. Quand il y a quelque chose aujourd'hui mais rien après, on dit « rien d'AUTRE ». */}
+      {lines.length === 0 ? (
         <Text style={[styles.line, { color: colors.textMuted, marginTop: 8 }]}>
-          {t('home.upNext.empty')}
+          {t(hasToday ? 'home.upNext.nothingElse' : 'home.upNext.empty')}
         </Text>
       ) : null}
     </View>

@@ -79,11 +79,22 @@ export default function HomeScreen() {
   };
 
   // US ACCUEIL-04 — forme **effective** de `real-life` : `row` hors période (une ligne suffit),
-  // `wide` pendant (échéance, objectifs et deux boutons n'entrent pas dans une bande). La
-  // disposition enregistrée n'est pas réécrite : le widget retrouve sa bande à la fin de la période.
+  // `large` pendant. La disposition enregistrée n'est pas réécrite : le widget retrouve sa bande à
+  // la fin de la période.
+  //
+  // ⚠️ **`large` et non `wide`** (correctif du 10/09/2026). Le premier jet remontait à `wide`
+  // (170 px) : constaté en recette, la carte active était **tronquée** et ses deux boutons
+  // inatteignables. Son contenu en période fait environ 230 px — échéance, jours restants,
+  // séparateur, trois lignes d'objectif de semaine, puis « Prolonger » et « Reprendre le plan
+  // normal » côte à côte. Seule `large` (352 px) le contient sans couper.
+  //
+  // Le vide résiduel est assumé : mieux vaut une carte trop grande pendant les quelques semaines
+  // d'une période qu'une carte dont on ne peut pas se servir.
   const { activePeriod } = useRealLifeState();
   const sizeFor = (id: WidgetId, stored: WidgetSize): WidgetSize =>
-    id === 'real-life' && activePeriod !== null && stored === 'row' ? 'wide' : stored;
+    id === 'real-life' && activePeriod !== null && (stored === 'row' || stored === 'wide')
+      ? 'large'
+      : stored;
 
   const { refreshing, onRefresh } = useSyncRefresh();
 

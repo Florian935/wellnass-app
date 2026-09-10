@@ -43,7 +43,9 @@ function training(over: Partial<TodayTraining> = {}): TodayTraining {
     pillar: 'strength',
     name: 'Push — Pecs / Épaules',
     scheduledTime: '18:30',
-    detail: '6 exercices',
+    exerciseCount: 6,
+    targetDistanceM: null,
+    targetDurationSeconds: null,
     programName: 'PPL',
     plannedSessionId: 'ps-1',
     sessionId: 's-1',
@@ -114,7 +116,7 @@ describe('resolveNowAction', () => {
     // L'accueil livré appelait `useTodaySession('strength')` avec le pilier EN DUR : un coureur
     // lisait « Rien de prévu aujourd'hui » le jour de sa sortie longue.
     const r = resolveNowAction(
-      input({ todayTrainings: [training({ pillar: 'running', name: 'Sortie longue', detail: '12 km' })] }),
+      input({ todayTrainings: [training({ pillar: 'running', name: 'Sortie longue', targetDistanceM: 12000 })] }),
     );
     expect(r.kind).toBe('session-today');
     if (r.kind === 'session-today') expect(r.training.pillar).toBe('running');

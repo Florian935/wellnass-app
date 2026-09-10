@@ -27,7 +27,7 @@ import {
   type TodayTraining,
 } from '@wellness/shared';
 
-import { useTodayDate, useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
 import { useActiveWorkout, useWorkoutHistory } from '@/data/repositories/workout-repository';
 import {
   useActiveRun,
@@ -70,9 +70,10 @@ function isSameLocalDay(iso: string | null, todayKey: string): boolean {
 }
 
 export function useNowAction(): { action: NowAction; isLoading: boolean } {
-  const today = useTodayDate();
   const todayKey = useTodayKey();
-  const hour = today.getHours();
+  // Heure COURANTE et non minuit : voir la docstring de useCurrentHour, ce hook existe pour ce
+  // defaut precis.
+  const hour = useCurrentHour();
 
   const { settings } = useSettings();
   const activePillars = resolveActivePillars(settings?.activePillars);
@@ -112,7 +113,11 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
         pillar: 'strength',
         name: s.name?.trim() || '',
         scheduledTime: s.scheduledTime ?? null,
-        detail: null,
+        // Le nombre d'exercices était disponible depuis le début et n'était pas transmis : la
+        // carte n'affichait que le nom du programme. Défaut vu en recette le 10/09/2026.
+        exerciseCount: s.exerciseCount,
+        targetDistanceM: null,
+        targetDurationSeconds: null,
         programName: s.programName,
         plannedSessionId: s.plannedSessionId,
         sessionId: s.sessionId,
@@ -124,7 +129,11 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
         pillar: 'running',
         name: runSession.name?.trim() || '',
         scheduledTime: runSession.scheduledTime ?? null,
-        detail: null,
+        exerciseCount: null,
+        // Mêmes cibles que la carte épinglée du hub course, pour que les deux écrans annoncent la
+        // même séance dans les mêmes termes.
+        targetDistanceM: runSession.targetDistanceM,
+        targetDurationSeconds: runSession.targetDurationSeconds,
         programName: null,
         plannedSessionId: runSession.id,
         sessionId: runSession.id,

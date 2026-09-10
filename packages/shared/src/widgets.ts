@@ -379,7 +379,46 @@ export interface ScreenLayout {
 /** Disposition complète des 3 hubs (JSON stocké dans `dashboard_layout`, nouveau format). */
 export interface MultiScreenLayout {
   screens: Partial<Record<WidgetScreen, ScreenLayout>>;
+  /**
+   * Version du **schéma de formes**. Absente = disposition antérieure à ACCUEIL-04.
+   *
+   * ⚠️ Ne concerne **que les formes**, pas les positions : les lignes se migrent seules
+   * (`compactVertical` les recalcule, voir `sizeSpan`). Les formes, elles, ne peuvent pas se
+   * deviner — c'est ce que le correctif du 10/09/2026 a appris.
+   */
+  v?: number;
 }
+
+/** Version courante du schéma de formes. */
+export const LAYOUT_VERSION = 2;
+
+/**
+ * Formes **réattribuées** au passage en v2 (US ACCUEIL-04, correctif du 10/09/2026).
+ *
+ * ── Le défaut que ceci corrige ───────────────────────────────────────────────────────────────────
+ * ACCUEIL-04 a remplacé `uniformSize(…, 'wide')` par des formes différenciées. Mais une forme par
+ * défaut ne s'applique qu'aux widgets **absents** de la disposition enregistrée : tout utilisateur
+ * ayant déjà ouvert l'accueil avait les huit entrées en base, en `'wide'`. Les nouvelles valeurs
+ * n'atteignaient donc **personne** — sauf un compte neuf.
+ *
+ * Constaté en recette le 10/09/2026 : les pas et le poids ne se plaçaient pas côte à côte. Pire
+ * pour `weight`, dont l'entrée dormait en base **depuis avant INSIGHTS-02** (qui l'avait retiré du
+ * registre, donc rendu inconnu, donc ignoré) : le réintroduire a **ressuscité sa vieille taille**,
+ * un grand carré choisi des mois plus tôt.
+ *
+ * ── Pourquoi écraser est légitime ici ────────────────────────────────────────────────────────────
+ * La valeur écrasée n'était pas un choix de l'utilisateur : c'était `'wide'` pour **tout le
+ * monde**, faute d'alternative — la forme `row` n'existait pas et `small` n'était proposé nulle
+ * part par défaut. On remplace donc un défaut système par un autre, une seule fois.
+ *
+ * Le risque assumé : quelqu'un qui avait délibérément mis les pas en grand carré le perd. Trois
+ * widgets, une fois, contre une refonte qui n'atteindrait sinon aucun utilisateur existant.
+ */
+export const SIZES_MIGRATED_TO_V2: Readonly<Record<string, WidgetSize>> = {
+  steps: 'small',
+  weight: 'small',
+  'real-life': 'row',
+};
 
 // ---------------------------------------------------------------------------
 // Formes — coercition & migration
@@ -748,22 +787,52 @@ export function parseMultiScreenLayout(raw: unknown): MultiScreenLayout | null {
 
   if (!isRecord(value)) return null;
 
+  // Version du schéma de formes : absente ou non finie = disposition d'avant ACCUEIL-04.
+  const rawV = value['v'];
+  const version = typeof rawV === 'number' && Number.isFinite(rawV) ? rawV : 1;
+
   // Nouveau format multi-hubs.
   if (isRecord(value['screens'])) {
     const screensRaw = value['screens'];
     const screens: Partial<Record<WidgetScreen, ScreenLayout>> = {};
     for (const screen of WIDGET_SCREENS) {
       const parsed = parseScreenLayout(screensRaw[screen], screen);
-      if (parsed) screens[screen] = parsed;
+      if (parsed) screens[screen] = migrateSizes(parsed, screen, version);
     }
-    return { screens };
+    return { screens, v: LAYOUT_VERSION };
   }
 
   // Ancien format mono-hub `{ widgets:[…] }` → accueil.
   if (Array.isArray(value['widgets'])) {
     const home = parseScreenLayout(value, 'home');
-    return home ? { screens: { home } } : null;
+    return home
+      ? { screens: { home: migrateSizes(home, 'home', version) }, v: LAYOUT_VERSION }
+      : null;
   }
 
   return null;
+}
+
+/**
+ * Applique les réattributions de formes de la v2 à une disposition lue en v1.
+ *
+ * Volontairement **limitée aux ids de `SIZES_MIGRATED_TO_V2`** et au hub `home` : c'est le seul
+ * endroit où les formes par défaut ont changé. Réappliquer partout écraserait des choix réels sur
+ * les hubs muscu et course, qui n'ont pas bougé.
+ *
+ * Idempotente : appliquée deux fois, elle donne le même résultat — et une disposition déjà en v2
+ * n'est pas touchée du tout.
+ */
+function migrateSizes(
+  layout: ScreenLayout,
+  screen: WidgetScreen,
+  version: number,
+): ScreenLayout {
+  if (version >= LAYOUT_VERSION || screen !== 'home') return layout;
+  return {
+    widgets: layout.widgets.map((w) => {
+      const forced = SIZES_MIGRATED_TO_V2[w.id];
+      return forced && w.size !== forced ? { ...w, size: forced } : w;
+    }),
+  };
 }

@@ -53,7 +53,10 @@ jest.mock('@/data/repositories/profile-repository', () => ({
 // fixe, ce test changerait de repas attendu selon l'heure d'exécution de la CI.
 jest.mock('@/hooks/useTodayKey', () => ({
   useTodayKey: () => '2026-08-11',
-  useTodayDate: () => new Date(2026, 7, 11, 9, 0, 0), // 9 h → petit-déjeuner
+  // 9 h → petit-déjeuner. `useCurrentHour` et non `useTodayDate().getHours()` : cette dernière
+  // renvoie MINUIT, ce qui faisait ouvrir la collation à toute heure (défaut vu en recette le
+  // 10/09/2026, voir la docstring de `useCurrentHour`).
+  useCurrentHour: () => 9,
 }));
 
 jest.mock('@/components/widgets/primitives', () => {

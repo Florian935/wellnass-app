@@ -10,6 +10,72 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 10/09/2026 — Accueil : cinq défauts de la première passe de recette
+
+Branche `feature/accueil-refonte`. Recette de Florian sur device, captures à l'appui. Tout le reste
+du lot était validé.
+
+### Corrigé
+
+- 🔴 **L'heure courante était lue à minuit — le défaut le plus grave du lot.**
+  `useTodayDate()` renvoie **minuit** (c'est écrit dans sa docstring, et c'est le bon choix pour ce
+  qu'elle sert : des bornes de fenêtre). Les quatre appelants introduits par la refonte faisaient
+  `.getHours()` dessus et lisaient donc **0**.
+  Symptôme visible : la pastille de repas affichait « Collation » à 7 h du matin. Symptôme
+  **invisible et bien pire** : `0 >= échéance` étant toujours faux, la carte « maintenant » ne
+  réclamait **jamais** un repas ni le check-in du soir — deux des huit états du résolveur étaient
+  donc inatteignables en production.
+  Nouvelle primitive **`useCurrentHour()`** : rafraîchie au retour au premier plan **et** à l'heure
+  pile via un minuteur re-planifié (un seul re-rendu par heure ; jamais à la seconde, ce qui
+  re-souscrirait les requêtes de l'écran le plus ouvert en continu).
+  ⚠️ Le défaut était **invisible au test unitaire**, où l'heure est injectée en paramètre : il ne
+  pouvait se voir que sur device.
+- 🔴 **Les nouvelles formes par défaut n'atteignaient aucun utilisateur existant.** Une forme par
+  défaut ne s'applique qu'aux widgets **absents** de la disposition enregistrée ; tout compte ayant
+  déjà ouvert l'accueil avait ses huit entrées en base, en `'wide'`. Les pas et le poids ne se
+  plaçaient donc pas côte à côte.
+  Pire pour `weight` : son entrée dormait en base **depuis avant INSIGHTS-02** (qui l'avait retiré
+  du registre, donc rendu inconnu, donc ignoré). Le réintroduire a **ressuscité sa taille d'alors**
+  — un grand carré choisi des mois plus tôt.
+  Ajout d'une **migration de formes v1 → v2** (`SIZES_MIGRATED_TO_V2`), avec un champ `v` persisté :
+  sans ce marqueur, la réattribution se rejouerait à chaque lecture et l'utilisateur ne pourrait
+  plus jamais choisir une autre forme pour ces trois widgets.
+- 🔴 **La carte « vie réelle » était tronquée pendant une période**, ses deux boutons
+  inatteignables. Elle était remontée à `wide` (170 px) ; son contenu en période fait ~230 px —
+  échéance, jours restants, trois lignes d'objectif de semaine, puis « Prolonger » et « Reprendre le
+  plan normal ». Remontée à `large` désormais. Le vide résiduel est assumé : mieux vaut une carte
+  trop grande pendant les quelques semaines d'une période qu'une carte inutilisable.
+- 🔴 **La carte de séance n'affichait aucun détail.** `TodayTraining` portait un champ `detail:
+  string | null` que `useNowAction` remplissait à `null`, faute d'accès à i18n et aux unités depuis
+  un hook de collecte. La carte n'affichait donc que le nom du programme, là où la maquette validée
+  annonce « 6 exercices · PPL semaine 3 ».
+  Le type transporte désormais des **données brutes** (`exerciseCount`, `targetDistanceM`,
+  `targetDurationSeconds`) et la mise en forme appartient à `NowCard`, qui a `t()` et `useUnits()`.
+  Corrigé au passage : `scheduledTime` est stocké en `HH:MM:SS`, la carte annonçait « 18:30:00 ».
+- **Le pied annonçait « Rien de prévu cette semaine » alors qu'une séance était prévue
+  aujourd'hui** — une contradiction directe avec la carte du haut. Deux états vides distincts
+  désormais, dont « Rien d'**autre** cette semaine ».
+  Et un bug de fond trouvé à cette occasion : le pied **ne filtrait pas le statut**. Un commentaire
+  affirmait qu'il l'était « déjà en amont » ; c'était faux — `SELECT_PLANNED_BETWEEN` remonte
+  `planned`, `done` **et** `skipped`, à dessein, parce que le planning en a besoin. Le pied pouvait
+  donc annoncer comme « à venir » une séance déjà faite ou explicitement sautée.
+
+### Technique / Notes
+
+- Tests : **3 125** Vitest (+4 : migration de formes) · **2 723** Jest (+2 : détail de la carte).
+  Typecheck et lint sans erreur ni avertissement, codes de sortie à 0.
+- 📌 **Deux points remontés en recette qui n'étaient pas des défauts.** L'heure d'une séance de
+  **musculation** est bien saisissable (Planning → séance → « Définir une heure », HORAIRE-01, sans
+  filtre de pilier) : le problème est la **découvrabilité**, pas la fonctionnalité — la carte
+  d'accueil n'affiche l'heure que si elle est renseignée, et rien n'invite à la renseigner. Et la
+  carte « mode vie réelle » est l'US VIE-01, qui répond à la cause n° 1 d'abandon à 3-6 semaines.
+- ⚠️ **Ce que cette passe apprend sur le lot précédent** : les quatre défauts sérieux venaient tous
+  de la **même famille** — une valeur supposée disponible qui ne l'était pas (l'heure, une forme par
+  défaut, une hauteur suffisante, un champ pré-formaté), et aucun n'était détectable par les tests
+  du dépôt, qui injectent tous leurs entrées. C'est exactement ce que la recette device existe pour
+  trouver, et l'argument le plus concret en faveur de la règle du dépôt : le code écrit n'est pas du
+  code validé.
+
 ## 09/09/2026 (quinquies) — Refonte de l'écran d'accueil : les cinq zones (ACCUEIL-01 → 06)
 
 Branche `feature/accueil-refonte`. **Six US en un seul lot** (arbitrage de Florian : maquettes et

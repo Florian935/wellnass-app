@@ -1089,7 +1089,8 @@
       "eyebrow": "Up next",
       "session": "{{date}} · {{name}}",
       "planning": "See my plan",
-      "empty": "Nothing planned this week."
+      "empty": "Nothing planned this week.",
+      "nothingElse": "Nothing else this week."
     }
   },
   "activationPath": {

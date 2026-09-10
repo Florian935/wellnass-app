@@ -211,16 +211,17 @@ describe('forme effective de la carte « vie réelle »', () => {
     expect(screen.getByText(/sonde-grille:affichage:row/)).toBeTruthy();
   });
 
-  it('🔴 la remonte à `wide` pendant une période — sinon la carte serait tronquée', async () => {
-    // En période, la carte porte l'échéance, les objectifs et DEUX boutons : ils n'entrent pas
-    // dans une demi-case de 79 px.
+  it('🔴 la remonte à `large` pendant une période — sinon la carte est tronquée', async () => {
+    // Constaté en recette le 10/09/2026 : remontée à `wide` (170 px), la carte active était
+    // coupée et ses deux boutons inatteignables. Son contenu fait ~230 px — échéance, jours
+    // restants, trois lignes d objectif, puis « Prolonger » et « Reprendre le plan normal ».
     mockRealLife.mockReturnValue({
       activePeriod: { id: 'p1', endsOn: '2026-09-16' },
       daysRemaining: 7,
     });
     await render(<HomeScreen />);
 
-    expect(screen.getByText(/sonde-grille:affichage:wide/)).toBeTruthy();
+    expect(screen.getByText(/sonde-grille:affichage:large/)).toBeTruthy();
   });
 });
 

@@ -1089,7 +1089,8 @@
       "eyebrow": "La suite",
       "session": "{{date}} · {{name}}",
       "planning": "Voir mon planning",
-      "empty": "Rien de prévu cette semaine."
+      "empty": "Rien de prévu cette semaine.",
+      "nothingElse": "Rien d’autre cette semaine."
     }
   },
   "activationPath": {

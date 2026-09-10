@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   defaultScreenLayout,
+  LAYOUT_VERSION,
   moveWidgetToCell,
   parseMultiScreenLayout,
   resolveScreenLayout,
@@ -77,7 +78,11 @@ function mergeScreen(
     screens[s] =
       s === screen ? nextScreen : (parsed?.screens[s] ?? undefined);
   }
-  return { screens };
+  // ⚠️ **`v` doit être écrit**, sinon la migration de formes de la v2 se rejouerait à chaque
+  // lecture : un utilisateur qui remettrait ses pas en grand carré les verrait redevenir un petit
+  // carré au rechargement suivant. C'est le marqueur qui transforme « réattribution unique » en
+  // vraie migration (correctif du 10/09/2026).
+  return { screens, v: LAYOUT_VERSION };
 }
 
 /**
