@@ -11,10 +11,14 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **10/09/2026** — **56 sections**. La **§57 a été recettée et clôturée**
-> (refonte de l'accueil, ACCUEIL-01 → 06, validée par Florian le 10/09/2026 après une passe de
-> 5 correctifs) : **sa section a donc été supprimée**, conformément à la règle de purge ci-dessus.
-> Ce fichier doit rétrécir. Restent **56 sections** : 54 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
+> Dernière mise à jour : **10/09/2026 (bis)** — **57 sections**. Deux mouvements le même jour, en
+> sens inverse :
+> **① l'ancienne §57 est partie** (refonte de l'accueil, ACCUEIL-01 → 06, recette validée par
+> Florian après une passe de 5 correctifs) — supprimée conformément à la règle de purge ci-dessus ;
+> ses critères restent lisibles dans l'historique (`git show 67e0755:RECETTES.md`).
+> **② une nouvelle §57 est arrivée** : MUSCU-UX01, refonte du pilier Musculation, qui a repris le
+> numéro libéré. Ne pas confondre les deux si vous relisez un message antérieur au 10/09.
+> Restent **57 sections** : 55 US en recette, plus le lot de correctifs §55 (rejets de promesse non capturés), qui est de la **non-régression** et non une US. 🔴 **Commence par
 > l'encadré du 06/08 ci-dessous** : VIE-01 et DOUL-01 ont modifié du code appartenant à **8 sections
 > déjà écrites**, dont les critères sont antérieurs à ces changements.
 >
