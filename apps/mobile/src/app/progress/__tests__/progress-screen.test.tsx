@@ -204,7 +204,16 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
   }),
+  // Requis depuis que l'onglet « Vue d'ensemble » monte `RecordRecentCard` et `TrainingTimeCard`
+  // (US MUSCU-UX01) : leur chaîne d'import initialise i18next, et `i18n.use(undefined)` échoue au
+  // chargement du fichier, avant qu'aucun test ne démarre.
+  initReactI18next: { type: '3rdParty', init: () => {} },
 }));
+
+// Les deux cartes venues du hub ont leurs propres tests : sondes muettes ici, elles n'entrent
+// dans aucune des règles vérifiées par ce fichier et tireraient PowerSync sans mock.
+jest.mock('@/components/dashboard/RecordRecentCard', () => ({ RecordRecentCard: () => null }));
+jest.mock('@/components/dashboard/TrainingTimeCard', () => ({ TrainingTimeCard: () => null }));
 
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
@@ -264,8 +273,18 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
+/**
+ * Bascule d'onglet — US MUSCU-UX01 : l'écran s'ouvre sur « Vue d'ensemble », et les sections
+ * « Par exercice » / « Mon corps » ne sont plus montées d'emblée. C'est tout l'objet de la
+ * refonte : huit sections empilées devenaient un scroll continu que personne ne parcourait.
+ */
+const allerA = async (tab: 'overview' | 'exercise' | 'body') => {
+  await taper(screen.getByText(`progress.tabs.${tab}`));
+};
+
 /** Sélectionne « Squat » via le picker. */
 const choisirSquat = async () => {
+  await allerA('exercise');
   await taper(screen.getByLabelText('progress.exercise.selectA11y'));
   await taper(screen.getByLabelText('choisir-squat'));
 };
@@ -311,13 +330,19 @@ describe('volume hebdomadaire', () => {
     expect(screen.queryByText(/barres\[progress\.weeklyVolume/)).toBeNull();
   });
 
-  it('l’état vide propose de démarrer une séance', async () => {
+  it('🔴 l’état vide mène au hub, pas dans un cul-de-sac', async () => {
     await afficher();
 
     await taper(screen.getAllByLabelText('progress.cta.startWorkout')[0]!);
 
     // Sortir de l'état vide demande une séance : sans action, l'écran constate sans aider.
-    expect(push).toHaveBeenCalledWith('/workout');
+    //
+    // ── Corrigé le 10/09/2026 (US MUSCU-UX01) ─────────────────────────────────────────────────
+    // Les quatre états vides de cet écran poussaient vers `/workout`, qui **n'ouvre pas** une
+    // séance : sans séance active, il affiche « Aucune séance en cours » et un bouton « Retour à
+    // l'accueil ». Le CTA le plus présent de l'écran ne démarrait donc rien. Il mène désormais au
+    // hub muscu, d'où une séance peut réellement partir.
+    expect(push).toHaveBeenCalledWith('/(tabs)/strength');
   });
 
   it('les volumes passent par le formateur d’unités et sont traduits', async () => {
@@ -522,8 +547,14 @@ describe('équilibre musculaire', () => {
 // ---------------------------------------------------------------------------
 
 describe('sélection d’exercice', () => {
+  // Cet onglet n'est plus celui d'ouverture (US MUSCU-UX01) : chaque cas y bascule d'abord.
+  beforeEach(() => {
+    mockRecords.mockReturnValue({ records: [], isLoading: false });
+  });
+
   it('sans exercice, le sélecteur affiche son invite et la section est vide', async () => {
     await afficher();
+    await allerA('exercise');
 
     expect(screen.getByText('progress.exercise.placeholder')).toBeTruthy();
     expect(screen.getByText('progress.exercise.empty')).toBeTruthy();
@@ -535,6 +566,7 @@ describe('sélection d’exercice', () => {
       isLoading: false,
     });
     await afficher();
+    await allerA('exercise');
 
     await choisirSquat();
 
@@ -546,6 +578,7 @@ describe('sélection d’exercice', () => {
   it('🔴 un `exerciseId` en paramètre PRÉ-SÉLECTIONNE l’exercice', async () => {
     mockExercise.mockReturnValue({ exercise: { id: 'ex-dc', name: 'Développé couché' } });
     await afficher({ exerciseId: 'ex-dc' });
+    await allerA('exercise');
 
     // Arriver depuis une fiche exercice et devoir re-choisir le même exercice serait un aller-retour
     // pour rien.
@@ -555,6 +588,7 @@ describe('sélection d’exercice', () => {
   it('🔴 un choix EXPLICITE prime sur le paramètre d’URL', async () => {
     mockExercise.mockReturnValue({ exercise: { id: 'ex-dc', name: 'Développé couché' } });
     await afficher({ exerciseId: 'ex-dc' });
+    await allerA('exercise');
 
     await choisirSquat();
 
@@ -570,6 +604,7 @@ describe('sélection d’exercice', () => {
       isLoading: false,
     });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     // Un volume est un produit charge × répétitions : l'afficher « 2400 kg » suggérerait une charge
@@ -580,6 +615,7 @@ describe('sélection d’exercice', () => {
 
   it('sans record, un message plutôt qu’une grille vide', async () => {
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     expect(screen.getByText('progress.records.empty')).toBeTruthy();
@@ -599,6 +635,7 @@ describe('courbe de progression', () => {
   it('🔴 les points d’axe sont abrégés en JJ/MM', async () => {
     mockProgression.mockReturnValue({ points, isLoading: false });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     // Une date complète par point rendrait l'axe illisible sur un écran de téléphone.
@@ -607,6 +644,7 @@ describe('courbe de progression', () => {
 
   it('🔴 sans point, une invite ET une action — jamais une courbe vide', async () => {
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     expect(screen.getByText('progress.curve.empty')).toBeTruthy();
@@ -616,6 +654,7 @@ describe('courbe de progression', () => {
   it('le chargement de la courbe ne passe pas par l’état vide', async () => {
     mockProgression.mockReturnValue({ points: [], isLoading: true });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     expect(screen.queryByText('progress.curve.empty')).toBeNull();
@@ -624,6 +663,7 @@ describe('courbe de progression', () => {
   it('changer de métrique REDEMANDE la série', async () => {
     mockProgression.mockReturnValue({ points, isLoading: false });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     await taper(screen.getByLabelText('metrique-volume'));
@@ -635,6 +675,7 @@ describe('courbe de progression', () => {
   it('changer de période REDEMANDE la série', async () => {
     mockProgression.mockReturnValue({ points, isLoading: false });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     await taper(screen.getByText('progress.curve.period.1y'));
@@ -645,6 +686,7 @@ describe('courbe de progression', () => {
   it('la période sélectionnée est annoncée aux lecteurs d’écran', async () => {
     mockProgression.mockReturnValue({ points, isLoading: false });
     await afficher();
+    await allerA('exercise');
     await choisirSquat();
 
     // Quatre puces identiques sans état annoncé : un lecteur d'écran ne dirait pas laquelle est
@@ -661,6 +703,7 @@ describe('courbe de progression', () => {
 describe('divers', () => {
   it('l’ouverture de l’écran est tracée UNE fois', async () => {
     await afficher();
+    await allerA('body');
 
     expect(mockTrack).toHaveBeenCalledTimes(1);
     expect(mockTrack).toHaveBeenCalledWith('stats_viewed', { pillar: 'strength' });
@@ -668,6 +711,7 @@ describe('divers', () => {
 
   it('les mensurations sont accessibles depuis cet écran', async () => {
     await afficher();
+    await allerA('body');
 
     await taper(screen.getByLabelText('measurements.cta'));
 

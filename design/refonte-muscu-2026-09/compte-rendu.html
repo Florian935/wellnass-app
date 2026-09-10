@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Refonte UX du pilier Musculation — compte rendu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  @page { size: A4; margin: 0; }
+  :root{
+    --bg:#f7eede; --surface:#fffaf2; --surfaceAlt:#f3ddd0; --border:#ece0cd;
+    --text:#33291f; --muted:#786a59; --accent:#b14f2b; --success:#66714b;
+    --danger:#b23b2e; --track:#eadcc6; --warn:#f7ead6; --warnBorder:#e9cfa0; --warnText:#8a6419;
+    --panel:#33291f; --panelText:#f0e4d0; --panelMuted:#c9b79a; --panelAccent:#d9a888;
+    --display:'Bricolage Grotesque', Georgia, serif;
+    --body:'Hanken Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --mono:'Space Mono', Consolas, ui-monospace, monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--body);color:var(--text);background:#fff;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:794px;height:1123px;padding:64px 68px;position:relative;overflow:hidden;
+    page-break-after:always;background:var(--surface);display:flex;flex-direction:column}
+  .page:last-child{page-break-after:auto}
+  h1{font-family:var(--display);font-weight:800;font-size:34px;letter-spacing:-1px;
+    line-height:1.12;margin:0 0 6px}
+  h2{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.5px;
+    margin:0 0 12px;padding-bottom:9px;border-bottom:2px solid var(--accent)}
+  h3{font-family:var(--display);font-weight:600;font-size:15.5px;letter-spacing:-.2px;margin:0 0 5px}
+  p{font-size:12.6px;line-height:19px;margin:0 0 11px}
+  .lead{font-size:14.5px;line-height:22px;color:var(--muted)}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:8px}
+  .muted{color:var(--muted)}
+  .mono{font-family:var(--mono);font-size:11px}
+  code{font-family:var(--mono);font-size:10.8px;background:var(--surfaceAlt);
+    padding:1px 5px;border-radius:4px;color:var(--text)}
+  .foot{position:absolute;left:68px;right:68px;bottom:32px;display:flex;
+    justify-content:space-between;font-size:9.5px;color:var(--muted);
+    border-top:1px solid var(--border);padding-top:9px}
+  .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+  .box{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:15px 17px}
+  .stat{background:var(--panel);border-radius:14px;padding:15px 17px;color:var(--panelText)}
+  .stat .n{font-family:var(--display);font-weight:800;font-size:31px;letter-spacing:-1px;
+    line-height:1;color:var(--panelAccent)}
+  .stat .l{font-size:10.5px;line-height:15px;color:var(--panelMuted);margin-top:6px}
+  .find{border-left:3px solid var(--danger);padding:2px 0 2px 14px;margin-bottom:15px}
+  .find h3{color:var(--danger)}
+  .fix{border-left:3px solid var(--success);padding:2px 0 2px 14px;margin-bottom:15px}
+  .fix h3{color:var(--success)}
+  .src{font-family:var(--mono);font-size:9.6px;color:var(--muted);margin-top:4px;display:block}
+  table{width:100%;border-collapse:collapse;font-size:11.4px}
+  th{text-align:left;font-weight:700;padding:8px 9px;background:var(--surfaceAlt);
+    border-bottom:1px solid var(--border);font-size:10.5px;letter-spacing:.02em}
+  td{padding:8px 9px;border-bottom:1px solid var(--border);vertical-align:top;line-height:16px}
+  tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:5px;
+    letter-spacing:.02em;white-space:nowrap}
+  .t-red{background:#fdeceb;color:var(--danger)}
+  .t-green{background:rgba(102,113,75,.15);color:var(--success)}
+  .t-amber{background:var(--warn);color:var(--warnText)}
+  .t-grey{background:var(--surfaceAlt);color:var(--muted)}
+  ul{margin:0 0 11px;padding-left:17px}
+  li{font-size:12.4px;line-height:18.5px;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<!-- ─────────────────────────── 1 · Couverture ─────────────────────────── -->
+<div class="page" style="background:var(--panel);color:var(--panelText);justify-content:space-between">
+  <div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--panelAccent)">AUDIT UX &amp; REFONTE</div>
+    <div style="width:56px;height:3px;background:var(--panelAccent);margin:26px 0 34px"></div>
+    <h1 style="font-size:52px;color:var(--panelText);line-height:1.04">Le pilier<br>Musculation</h1>
+    <p class="lead" style="color:var(--panelMuted);max-width:460px;margin-top:22px;font-size:16px;line-height:25px">
+      Analyse des flux, des écrans et du hub. Ce qui bloque, pour qui, et ce qu'on
+      propose de changer.
+    </p>
+  </div>
+
+  <div>
+    <div class="grid3" style="gap:14px;margin-bottom:38px">
+      <div style="border-top:2px solid var(--panelAccent);padding-top:12px">
+        <div style="font-family:var(--display);font-weight:800;font-size:30px;color:var(--panelAccent);line-height:1">18</div>
+        <div style="font-size:10.5px;color:var(--panelMuted);margin-top:5px;line-height:15px">écrans lus,<br>≈ 7 500 lignes</div>
+      </div>
+      <div style="border-top:2px solid var(--panelAccent);padding-top:12px">
+        <div style="font-family:var(--display);font-weight:800;font-size:30px;color:var(--panelAccent);line-height:1">17</div>
+        <div style="font-size:10.5px;color:var(--panelMuted);margin-top:5px;line-height:15px">constats vérifiés<br>dans le code</div>
+      </div>
+      <div style="border-top:2px solid var(--panelAccent);padding-top:12px">
+        <div style="font-family:var(--display);font-weight:800;font-size:30px;color:var(--panelAccent);line-height:1">5</div>
+        <div style="font-size:10.5px;color:var(--panelMuted);margin-top:5px;line-height:15px">lots d'US<br>proposés</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--panelMuted);
+      border-top:1px solid rgba(240,228,208,.2);padding-top:14px">
+      <span>Wellness app · pilier Musculation</span>
+      <span>09/09/2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────── 2 · Méthode & synthèse ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Ce qui a été fait</div>
+  <h1 style="font-size:28px">Méthode et périmètre</h1>
+
+  <p class="lead" style="margin:14px 0 22px">
+    Lecture du code réel de chaque écran du pilier, puis parcours simulés du point de vue
+    de trois profils. Chaque constat de ce document est vérifiable dans une ligne de source —
+    aucun n'est une impression.
+  </p>
+
+  <h2>Ce qui a été lu</h2>
+  <p>
+    Le hub <code>(tabs)/strength.tsx</code>, la séance <code>workout.tsx</code> et ses quatre
+    composants, le résumé, l'historique et son détail, la progression, le planning et son
+    assistant, les programmes, les templates, la bibliothèque d'exercices, le registre de
+    widgets partagé <code>packages/shared/src/widgets.ts</code>, les niveaux d'affichage,
+    la palette et les libellés FR.
+  </p>
+  <p>
+    Côté documentation : les specs <code>musculation.md</code> et <code>navigation-ux.md</code>,
+    l'ADR-007 sur le surfaçage des analyses, et l'audit de flux du 18/07/2026 dont les cinq
+    problèmes ont été traités par les US Refonte-A à D.
+  </p>
+
+  <div class="box" style="margin:6px 0 22px;background:var(--warn);border-color:var(--warnBorder)">
+    <h3 style="color:var(--warnText)">Ce n'est pas le même audit qu'en juillet</h3>
+    <p style="margin:0;color:var(--warnText)">
+      L'audit de juillet portait sur des <strong>trous de conception</strong> : le planning et le
+      logging ne se parlaient pas, il n'y avait pas de flux guidé en séance. Ils ont été bouchés.
+      Ce qui reste tient à <strong>l'accumulation</strong> : deux mois de fonctionnalités livrées
+      correctement, ajoutées une à une sur des écrans qui n'ont jamais été rehiérarchisés.
+      Le défaut n'est plus l'absence, c'est la densité et l'ordre.
+    </p>
+  </div>
+
+  <h2>Les quatre chiffres qui résument</h2>
+  <div class="grid2" style="gap:13px;margin-bottom:16px">
+    <div class="stat">
+      <div class="n">≈ 1 700 px</div>
+      <div class="l">de contenu calculés sur le hub muscu pour 844 px d'écran, dont sept tuiles vides
+        sur un compte neuf. L'accueil, lui, est plafonné à 4-6 widgets par un test de CI.</div>
+    </div>
+    <div class="stat">
+      <div class="n">≈ 560 px</div>
+      <div class="l">de carte de série au niveau détaillé, onze blocs empilés. « Valider la série »
+        se retrouve sous le pli, et sous le clavier pendant la saisie.</div>
+    </div>
+    <div class="stat">
+      <div class="n">6 jours</div>
+      <div class="l">d'attente avant la première séance pour qui installe l'app un mardi :
+        l'assistant fixe le début du programme au lundi suivant.</div>
+    </div>
+    <div class="stat">
+      <div class="n">0</div>
+      <div class="l">retour à la validation d'une série — ni haptique, ni son, ni animation —
+        pour le geste répété 30 à 40 fois par séance.</div>
+    </div>
+  </div>
+
+  <p class="muted" style="font-size:11.5px;line-height:17px">
+    Ces quatre-là ne sont pas les plus graves individuellement. Ils sont cités ensemble parce
+    qu'ils décrivent le même mécanisme : <strong>ce qui compte le plus a été poussé vers le bas
+    par ce qui compte moins.</strong>
+  </p>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>2 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 3 · Constats : le hub ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Constats · 1</div>
+  <h1 style="font-size:28px">Le hub et l'entrée dans un programme</h1>
+  <div style="height:16px"></div>
+
+  <div class="find">
+    <h3>La grille du hub ne masque pas les tuiles vides</h3>
+    <p style="margin-bottom:2px">
+      L'accueil passe un prédicat <code>isActive</code> à <code>WidgetGrid</code> : un widget
+      sans donnée est exclu de la grille au lieu de réserver sa case. Le hub muscu ne le passe
+      pas. Ses sept widgets sont donc rendus quoi qu'il arrive, y compris tous vides.
+    </p>
+    <span class="src">apps/mobile/src/app/(tabs)/strength.tsx · WidgetGrid sans prop isActive</span>
+  </div>
+
+  <div class="find">
+    <h3>Le hub n'a aucun plafond, alors que l'accueil en a un testé</h3>
+    <p style="margin-bottom:2px">
+      <code>MAX_HOME_WIDGETS</code> est appliqué par un test qui casse la CI — c'est ce qui a
+      forcé l'arbitrage de VIE-01 en août. Rien d'équivalent côté muscu : le registre y est passé
+      à sept sans qu'aucune décision n'ait été prise. Avec la carte d'action et la ligne
+      bibliothèque, le hub compte neuf blocs sans hiérarchie entre eux.
+    </p>
+    <span class="src">packages/shared/src/widgets.ts · STRENGTH_WIDGET_IDS</span>
+  </div>
+
+  <div class="find">
+    <h3>Sans programme, l'action mise en avant est la moins structurée</h3>
+    <p style="margin-bottom:2px">
+      Le troisième problème de l'audit de juillet n'a été traité que pour le cas « programme déjà
+      actif » : la carte du jour n'apparaît que s'il existe une séance planifiée. Un compte neuf
+      voit donc « Séance libre » en gros, et doit repérer une petite tuile parmi sept pour
+      atteindre les programmes. Les réponses données à l'onboarding — niveau, fréquence — ne
+      servent à rien à cet endroit.
+    </p>
+    <span class="src">apps/mobile/src/app/(tabs)/strength.tsx · branche today.state === 'none'</span>
+  </div>
+
+  <div class="find">
+    <h3>Un programme ne peut jamais commencer aujourd'hui</h3>
+    <p style="margin-bottom:2px">
+      L'assistant initialise la date de début au <strong>lundi suivant</strong>, et
+      <code>dayAssignments</code> démarre vide : <code>canPlan</code> reste faux tant que chaque
+      séance n'a pas reçu son jour, sans qu'aucun espacement ne soit proposé. Trois taps
+      obligatoires pour un programme à trois séances — et une attente de un à six jours avant
+      la première.
+    </p>
+    <span class="src">apps/mobile/src/app/planning/plan.tsx:72 · startOfWeek(addDays(new Date(), 7))</span>
+  </div>
+
+  <div class="find">
+    <h3>« Dupliquer » est une contrainte de modèle exposée à l'utilisateur</h3>
+    <p style="margin-bottom:2px">
+      Un programme éditorial ne peut pas être activé : il faut d'abord le dupliquer, puis démarrer
+      la copie. La raison est bonne — activer un contenu éditorial ferait diverger local et cloud —
+      mais c'est un problème d'implémentation, pas une décision qui appartient à l'utilisateur.
+    </p>
+    <span class="src">apps/mobile/src/app/programs/[id].tsx · isOwned gouverne l'affichage du bouton</span>
+  </div>
+
+  <div class="find">
+    <h3>La progression dans le programme est calculée, jamais affichée</h3>
+    <p style="margin-bottom:2px">
+      MUSC-F15 calcule l'adhérence à la semaine précédente, mais seulement pour moduler la
+      suggestion de charge à l'intérieur de <code>workout.tsx</code>. Nulle part — ni hub, ni fiche
+      programme, ni planning — on ne lit « semaine 3 sur 8 ». Pour un utilisateur engagé dans un
+      cycle de deux mois, c'est le repère qui manque le plus.
+    </p>
+    <span class="src">usePriorWeekAdherence, seul appelant : apps/mobile/src/app/workout.tsx</span>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>3 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 4 · Constats : la séance ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Constats · 2</div>
+  <h1 style="font-size:28px">La séance en cours</h1>
+  <p class="lead" style="margin:12px 0 20px">
+    C'est le cœur de valeur du produit et l'écran le plus utilisé du pilier. C'est aussi celui
+    où l'accumulation coûte le plus cher, parce que chaque défaut s'y paie autant de fois qu'il
+    y a de séries.
+  </p>
+
+  <div class="find">
+    <h3>Onze blocs avant d'atteindre le bouton</h3>
+    <p style="margin-bottom:2px">
+      Au niveau détaillé, la carte empile nom, série x/y, note, cinq chips de type scrollables,
+      raccourci échauffement, superset, dernière fois, suggestion, reps et charge, prévu et écart,
+      réglage de repos, RPE — puis « Valider la série ». Environ 560 px, sur un écran utile de
+      700 à 760. Le geste répété 30 à 40 fois par séance est le dernier de la pile.
+    </p>
+    <span class="src">apps/mobile/src/components/workout/CurrentSetCard.tsx</span>
+  </div>
+
+  <div class="find">
+    <h3>Le clavier recouvre la validation</h3>
+    <p style="margin-bottom:2px">
+      <code>windowSoftInputMode="adjustResize"</code> et aucun <code>KeyboardAvoidingView</code> :
+      dès qu'on tape les reps, la zone visible tombe à ~560 px et le bouton passe dessous.
+      Il faut fermer le clavier ou scroller pour valider — à chaque série.
+    </p>
+    <span class="src">android/app/src/main/AndroidManifest.xml:39 · workout.tsx (ScrollView nu)</span>
+  </div>
+
+  <div class="find">
+    <h3>Aucun retour à la validation</h3>
+    <p style="margin-bottom:2px">
+      La spec navigation-ux §4.2 demande « animation + son (désactivable) » à chaque série validée.
+      <code>onValidate</code> n'en produit aucun : la seule vibration du pilier est celle de la
+      <em>fin</em> du repos. Le planning a des retours haptiques pour le glisser-déposer, le running
+      pour les intervalles. La muscu, non.
+    </p>
+    <span class="src">workout.tsx:258 (Vibration, fin de repos) · aucun expo-haptics côté muscu</span>
+  </div>
+
+  <div class="find">
+    <h3>Un réglage occupe une ligne permanente</h3>
+    <p style="margin-bottom:2px">
+      Le repos s'affiche sur chaque série — libellé, deux steppers, champ en secondes — à tous les
+      niveaux d'affichage, y compris simplifié. C'est un réglage d'exercice qu'on pose une fois,
+      pas une donnée à saisir à chaque fois.
+    </p>
+  </div>
+
+  <div class="find">
+    <h3>Un tap, deux effets</h3>
+    <p style="margin-bottom:2px">
+      Dans la liste, taper un exercice appelle <code>onSelect</code> <em>et</em>
+      <code>toggleExpanded</code>. Taper l'exercice courant, déjà déplié, le replie. Deux
+      intentions distinctes — « aller à cet exercice » et « voir ses séries » — pour une seule
+      zone tactile.
+    </p>
+    <span class="src">apps/mobile/src/components/workout/ExerciseList.tsx · onPress de l'en-tête</span>
+  </div>
+
+  <div class="find">
+    <h3>Une question sans bouton, et un état qui n'existe pas</h3>
+    <p style="margin-bottom:2px">
+      Quand toutes les séries sont validées, l'écran affiche « Séance terminée ? » suivi de
+      « Toutes tes séries sont validées. » — sans aucune action. Il faut viser « Terminer », en
+      petit, en haut à droite. Par ailleurs « Mettre en pause » promet un état qui n'existe pas :
+      MUSC-F6 précise que la séance reste <code>active</code> jusqu'à la clôture automatique à 3 h.
+    </p>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>4 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 5 · Constats : après la séance ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Constats · 3</div>
+  <h1 style="font-size:28px">Après la séance</h1>
+  <div style="height:16px"></div>
+
+  <div class="find">
+    <h3>Le résumé ne montre pas la séance</h3>
+    <p style="margin-bottom:2px">
+      Cinq lignes de tableau — durée, exercices, séries, volume, densité — et rien sur ce qui a
+      été soulevé. Aucun détail par exercice, aucune comparaison avec la fois précédente. Pour
+      revoir sa propre séance, il faut ressortir et rouvrir l'historique.
+    </p>
+    <span class="src">apps/mobile/src/app/workout-summary.tsx · buildSummary + 5 Row</span>
+  </div>
+
+  <div class="find">
+    <h3>Deux échelles d'intensité pour la même notion</h3>
+    <p style="margin-bottom:2px">
+      Pendant la séance, l'intensité se note en RPE 1-10 ou en RIR, au choix de l'utilisateur
+      (UX-05). Au résumé, le ressenti se note en cinq étoiles sans échelle nommée. Même question,
+      deux formats, aucun lien entre les deux.
+    </p>
+  </div>
+
+  <div class="find">
+    <h3>L'historique ne permet pas de reconnaître une séance</h3>
+    <p style="margin-bottom:2px">
+      Une ligne affiche la date, la durée et le RPE. Ni nom de séance, ni exercices, ni tonnage —
+      alors que <code>volumeKg</code> fait déjà partie de <code>WorkoutHistoryItem</code> et que le
+      widget du hub l'affiche. Retrouver « ma séance pecs du 2 » est impossible sans ouvrir les
+      fiches une par une.
+    </p>
+    <span class="src">apps/mobile/src/app/history/index.tsx · WorkoutRow</span>
+  </div>
+
+  <div class="find">
+    <h3>Trois promesses de la spec §6.1 sans code</h3>
+    <p style="margin-bottom:2px">
+      Le filtre par programme, le filtre par groupe musculaire, et l'édition / suppression d'une
+      séance passée. Aucune fonction correspondante dans le repository : une série validée par
+      erreur ne peut pas être corrigée après coup.
+    </p>
+    <span class="src">workout-repository.ts · ni deleteWorkout ni updateWorkout</span>
+  </div>
+
+  <div class="find">
+    <h3>Huit sections empilées sur Progression</h3>
+    <p style="margin-bottom:2px">
+      Volume hebdomadaire, tonnage cumulé, régularité, équilibre musculaire, module force,
+      exécution du programme, mensurations, par exercice, le tout en scroll continu.
+      Le code le reconnaît lui-même : « 5ᵉ section de cet écran — seuil de repli ADR-007 atteint,
+      accepté tel quel ».
+    </p>
+    <span class="src">apps/mobile/src/app/progress/index.tsx:146 (commentaire)</span>
+  </div>
+
+  <div class="find">
+    <h3>Le bouton le plus répété de Progression ne démarre rien</h3>
+    <p style="margin-bottom:2px">
+      Quatre états vides proposent « Démarrer une séance », qui pousse vers <code>/workout</code>.
+      Sans séance active, cet écran affiche « Aucune séance en cours. » et un bouton « Retour à
+      l'accueil ». Le parcours se referme sur lui-même.
+    </p>
+    <span class="src">progress/index.tsx lignes 135, 153, 165, 254 · router.push('/workout')</span>
+  </div>
+
+  <div class="box" style="margin-top:4px">
+    <h3>Un détail visuel, pour mémoire</h3>
+    <p style="margin:0">
+      L'écran de repos est peint en bordeaux <code>#6b0028</code> codé en dur, hors thème, alors
+      que tout le pilier est en terracotta <code>#b14f2b</code>. C'est délibéré et commenté, mais
+      c'est le seul écran dans ce cas — à confirmer ou à aligner.
+    </p>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>5 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 6 · Personas ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Le même produit, trois expériences</div>
+  <h1 style="font-size:28px">Ce que vivent trois pratiquants</h1>
+  <p class="lead" style="margin:12px 0 20px">
+    Les mêmes écrans, parcourus avec trois niveaux d'attente différents. C'est là que les
+    constats prennent leur poids relatif.
+  </p>
+
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+      <h3 style="margin:0;font-size:17px">Léa · débutante</h3>
+      <span class="tag t-grey">n'a jamais mis les pieds en salle</span>
+    </div>
+    <p style="margin-bottom:8px">
+      Elle installe l'app un mardi soir, répond à l'onboarding — débutante, trois fois par semaine —
+      et ouvre l'onglet Muscu. Elle y trouve « Séance libre » et sept tuiles vides sur deux écrans
+      et demi. Ses réponses d'onboarding n'ont rien changé à ce qu'elle voit.
+    </p>
+    <p style="margin-bottom:0">
+      Si elle trouve les programmes, il lui faudra dupliquer, affecter trois jours à la main, et
+      accepter de commencer <strong>lundi prochain</strong>. Neuf écrans et six jours entre
+      l'installation et la première série. C'est le moment exact où une app de sport se désinstalle.
+    </p>
+  </div>
+
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:14px">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+      <h3 style="margin:0;font-size:17px">Marc · intermédiaire</h3>
+      <span class="tag t-grey">deux ans de pratique, arrive de Hevy</span>
+    </div>
+    <p style="margin-bottom:8px">
+      Son entrée en séance est bonne : deux taps depuis le hub, la carte du jour fait son travail.
+      C'est pendant la séance que ça se gâte — il valide une série, ne sent rien, vérifie que
+      c'est passé ; il tape ses reps, le bouton disparaît sous le clavier ; il recommence quinze
+      fois.
+    </p>
+    <p style="margin-bottom:0">
+      Après la séance, le résumé lui donne cinq chiffres agrégés mais pas ses charges. Dans
+      l'historique, ses séances sont des dates sans nom. Il suit un programme de huit semaines
+      sans jamais savoir où il en est. <strong>C'est le profil qui perd le plus de valeur
+      livrée</strong> : tout est calculé, rien n'est montré.
+    </p>
+  </div>
+
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:18px 20px">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px">
+      <h3 style="margin:0;font-size:17px">Sofiane · avancé</h3>
+      <span class="tag t-grey">powerlifting, RIR, supersets, bloc de force</span>
+    </div>
+    <p style="margin-bottom:8px">
+      Il a tout ce qu'il lui faut : RIR au choix, dropsets, supersets à partenaire libre,
+      deload sur stagnation, %1RM, DOTS, total SBD. Le pilier est riche pour lui.
+    </p>
+    <p style="margin-bottom:0">
+      Mais il paie cette richesse au format : en niveau détaillé, sa carte de série fait 560 px et
+      il scrolle à chaque validation. Et ses analyses — force, exécution du programme — sont en
+      sixième et septième position d'un écran de huit sections. <strong>Il est servi, mais
+      lentement.</strong>
+    </p>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>6 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 7 · Arbitrages ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Décidé le 09/09/2026</div>
+  <h1 style="font-size:28px">Les quatre arbitrages</h1>
+  <p class="lead" style="margin:12px 0 22px">
+    Quatre questions ont été posées avant de dessiner, parce que chacune changeait les maquettes.
+    Voici les réponses retenues et ce qu'elles impliquent.
+  </p>
+
+  <table style="margin-bottom:20px">
+    <thead>
+      <tr><th style="width:22%">Question</th><th style="width:30%">Retenu</th><th>Ce que ça implique</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Ampleur</strong></td>
+        <td>Tout le pilier, Progression et Historique compris</td>
+        <td>Cinq lots plutôt que trois. Surface de recette élargie : l'historique et la progression
+          devront repasser en recette device.</td>
+      </tr>
+      <tr>
+        <td><strong>Carte de série</strong></td>
+        <td>Barre d'action collante en bas</td>
+        <td>Contexte, reps, charge et validation figés au-dessus du clavier. C'est ce qui rend le
+          niveau d'affichage sans risque : il ne pilote plus que la zone scrollable.</td>
+      </tr>
+      <tr>
+        <td><strong>Niveaux d'affichage</strong></td>
+        <td>Les trois sont conservés, mieux exposés</td>
+        <td>Le sélecteur remonte des Réglages jusque dans le menu de séance. Pas de révélation
+          progressive : le choix reste explicite, mais devient modifiable là où on en voit l'effet.</td>
+      </tr>
+      <tr>
+        <td><strong>Widgets du hub</strong></td>
+        <td>Plafond testé + masquage des tuiles vides</td>
+        <td>Un test sur <code>STRENGTH_WIDGET_IDS</code> comme <code>MAX_HOME_WIDGETS</code>, et
+          <code>isActive</code> passé à la grille. Records et temps d'entraînement retournent
+          dans Progression.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Le principe qui traverse les cinq lots</h2>
+  <div class="box" style="background:var(--panel);border:none;color:var(--panelText)">
+    <p style="margin:0;font-size:14px;line-height:22px;color:var(--panelText)">
+      <strong style="color:var(--panelAccent)">L'écran s'organise autour du geste, pas autour des
+      données disponibles.</strong> Sur chaque écran du pilier, il existe une action dominante —
+      démarrer, valider, clore, reconnaître. Aujourd'hui elle est presque toujours en bas, après
+      tout ce que l'app sait dire. La refonte la remonte, et repousse le reste derrière un repli,
+      un onglet ou un menu.
+    </p>
+  </div>
+
+  <p class="muted" style="font-size:11.5px;line-height:17px;margin-top:16px">
+    Corollaire à tenir dans la durée : le pilier muscu a besoin de la même discipline que
+    l'accueil. ADR-007 a doté l'accueil d'un plafond opposable ; le hub muscu et l'écran
+    Progression n'en ont aucun, et c'est très exactement pour ça qu'ils ont dérivé pendant
+    que l'accueil, lui, se dégonflait de 21 à 7 widgets.
+  </p>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>7 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 8 · Ce que la refonte change ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Écran par écran</div>
+  <h1 style="font-size:28px">Ce que la refonte change</h1>
+  <div style="height:14px"></div>
+
+  <div class="fix">
+    <h3>Hub muscu — deux zones, Agir puis Suivre</h3>
+    <p style="margin-bottom:0">
+      La carte du jour porte le contenu de la séance (trois premiers exercices, durée estimée) :
+      on sait ce qu'on démarre. Une barre « semaine 3 sur 8 · 14/24 séances » rend visible la
+      progression que MUSC-F15 calcule déjà. Widgets ramenés de sept à trois, tous porteurs de
+      données. Sur un compte neuf, une amorce remplace le hub vide : trois programmes déjà filtrés
+      sur le niveau et la fréquence déclarés à l'onboarding.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Entrée dans un programme — un geste, zéro attente</h3>
+    <p style="margin-bottom:0">
+      Bouton unique « Suivre ce programme », la copie personnelle se faisant en silence. Assistant
+      pré-rempli : début aujourd'hui, jours espacés automatiquement selon la fréquence, validable
+      sans rien toucher. Atterrissage sur le hub avec la séance prête, plus sur le calendrier.
+      Neuf écrans et six jours deviennent quatre écrans et zéro attente.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Séance — la barre qui ne bouge jamais</h3>
+    <p style="margin-bottom:0">
+      Contexte, reps, charge et « Valider la série » fixés en bas, au-dessus du clavier. Steppers
+      sur les reps pour éviter le clavier dans la plupart des séries. Retour haptique à la
+      validation. La barre haute montre l'avancement réel (7/18 séries). Le réglage de repos quitte
+      la carte pour le menu et l'écran de repos. Les suppléments passent derrière un repli unique,
+      piloté par le niveau d'affichage — la barre du bas, elle, est identique aux trois niveaux.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Fin de séance — l'action naît sous le pouce</h3>
+    <p style="margin-bottom:0">
+      Quand tout est validé, la barre collante devient « Terminer la séance », au même endroit que
+      les dix-huit validations précédentes. « Mettre en pause » devient « Quitter et reprendre plus
+      tard », ce qui décrit le mécanisme réel.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Résumé — la séance avant les agrégats</h3>
+    <p style="margin-bottom:0">
+      Le détail par exercice passe devant, avec l'écart depuis la dernière fois — c'est ce qui donne
+      le sentiment de progresser. Les cinq stats tiennent en une bande. Le ressenti prend cinq
+      niveaux nommés au lieu d'étoiles sans échelle.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Historique — reconnaître sans ouvrir</h3>
+    <p style="margin-bottom:0">
+      Nom de séance, tonnage, nombre d'exercices, pastille de record. Regroupement par mois avec
+      cumul. Filtres par programme et par muscle, édition et suppression : les trois promesses
+      de la spec §6.1.
+    </p>
+  </div>
+
+  <div class="fix">
+    <h3>Progression — trois onglets au lieu de huit sections</h3>
+    <p style="margin-bottom:0">
+      Vue d'ensemble, Par exercice, Mon corps. La vue d'ensemble répond à la seule question qu'on
+      se pose en ouvrant l'écran. Le déséquilibre musculaire devient une alerte lisible plutôt
+      qu'un graphe à décoder. Et les états vides pointent vers le hub, plus vers un écran
+      « Aucune séance en cours ».
+    </p>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>8 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 9 · Découpage ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Proposition</div>
+  <h1 style="font-size:28px">Découpage en lots</h1>
+  <p class="lead" style="margin:12px 0 18px">
+    Cinq lots, plus un lot zéro de correctifs isolés qui ne demandent aucune maquette.
+    Ordre choisi pour livrer le gain d'activation avant le gros chantier.
+  </p>
+
+  <table style="margin-bottom:18px">
+    <thead>
+      <tr>
+        <th style="width:9%">Lot</th><th style="width:29%">Portée</th>
+        <th style="width:26%">Fichiers principaux</th><th style="width:12%">Effort</th><th>Risque</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>0</strong></td>
+        <td>Les quatre CTA en cul-de-sac de Progression · le tonnage dans l'historique
+          (déjà chargé) · le libellé « Mettre en pause » · le bordeaux en dur du repos</td>
+        <td><code>progress/index.tsx</code><br><code>history/index.tsx</code><br><code>RestOverlay.tsx</code></td>
+        <td><span class="tag t-green">≈ 1 jour</span></td>
+        <td>Nul. Correctifs isolés, aucune maquette nécessaire.</td>
+      </tr>
+      <tr>
+        <td><strong>A</strong></td>
+        <td>Entrée dans un programme : bouton unique, duplication implicite, assistant
+          pré-rempli, atterrissage sur le hub</td>
+        <td><code>programs/[id].tsx</code><br><code>planning/plan.tsx</code><br><code>program-repository.ts</code></td>
+        <td><span class="tag t-green">moyen</span></td>
+        <td>Faible. Aucune migration. Le meilleur rapport gain / coût du lot.</td>
+      </tr>
+      <tr>
+        <td><strong>B</strong></td>
+        <td>Barre d'action collante, haptique, repos déplacé, fin de séance actionnable,
+          tap dissocié, menu de séance avec niveau d'affichage</td>
+        <td><code>workout.tsx</code><br><code>CurrentSetCard.tsx</code><br><code>ExerciseList.tsx</code><br><code>RestOverlay.tsx</code></td>
+        <td><span class="tag t-red">gros</span></td>
+        <td>Le plus élevé. C'est l'écran le plus recetté du pilier — prévoir une recette
+          device complète. <strong>À trancher en spec :</strong> les deux champs de la barre
+          changent d'unité selon <code>setType</code> (reps × kg, durée × lest, reps × lest,
+          lest facultatif).</td>
+      </tr>
+      <tr>
+        <td><strong>C</strong></td>
+        <td>Hub à deux zones, plafond testé, masquage des tuiles vides, carte du jour enrichie,
+          progression programme, amorce compte neuf</td>
+        <td><code>(tabs)/strength.tsx</code><br><code>strength-widgets.tsx</code><br><code>widgets.ts</code> + son test</td>
+        <td><span class="tag t-amber">moyen</span></td>
+        <td>Faible. Attention à la compatibilité des dispositions déjà persistées
+          dans <code>dashboard_layout</code>. <strong>À trancher en spec :</strong> la zone Agir
+          a quatre états exclusifs (séance en cours, séance du jour, jour de repos, aucun
+          programme) et leur ordre de priorité.</td>
+      </tr>
+      <tr>
+        <td><strong>D</strong></td>
+        <td>Progression en trois onglets, réaffectation des sections, module force et exécution
+          rangés dans « Mon corps » / « Vue d'ensemble »</td>
+        <td><code>progress/index.tsx</code> (945 lignes, à éclater)</td>
+        <td><span class="tag t-amber">moyen</span></td>
+        <td>Faible techniquement. Remet l'écran sous le plafond d'ADR-007.</td>
+      </tr>
+      <tr>
+        <td><strong>E</strong></td>
+        <td>Résumé détaillé par exercice, ressenti aligné sur l'échelle choisie, historique
+          enrichi, filtres, édition et suppression d'une séance</td>
+        <td><code>workout-summary.tsx</code><br><code>history/index.tsx</code><br><code>workout-repository.ts</code></td>
+        <td><span class="tag t-red">moyen-gros</span></td>
+        <td>La suppression d'une séance touche records, volume et streak : à cadrer
+          soigneusement en spec.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Ordre proposé</h2>
+  <p>
+    <strong>0 → A → B → C → D → E.</strong> Le lot 0 se fait tout de suite et sans cérémonie.
+    Le lot A vient ensuite parce qu'il coûte peu et débloque l'activation — c'est le seul dont
+    le gain se mesure en jours gagnés, pas en confort. Le lot B est le plus gros et le plus
+    risqué, mais aussi celui qui porte le cœur de valeur ; le placer en deuxième laisse le temps
+    de le recetter avant les lots cosmétiques. C, D et E sont indépendants entre eux et peuvent
+    se réordonner selon les disponibilités.
+  </p>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>9 / 10</span></div>
+</div>
+
+<!-- ─────────────────────────── 10 · Réserves & suite ─────────────────────────── -->
+<div class="page">
+  <div class="eyebrow">Pour être honnête</div>
+  <h1 style="font-size:28px">Réserves et suite</h1>
+  <div style="height:16px"></div>
+
+  <h2>Ce que cet audit n'a pas fait</h2>
+  <ul>
+    <li><strong>Rien n'a été observé sur un device.</strong> Les hauteurs sont calculées à partir
+      des styles source, pas mesurées à l'écran. Les ordres de grandeur sont fiables, les valeurs
+      au pixel ne le sont pas.</li>
+    <li><strong>Aucun utilisateur réel n'a été observé.</strong> Les trois profils sont des
+      parcours simulés à partir du code, pas des entretiens. Ils servent à hiérarchiser les
+      constats, pas à les prouver.</li>
+    <li><strong>Le back-office n'entre pas dans le périmètre</strong>, ni les écrans partagés avec
+      le running — le planning et son assistant sont pilier-agnostiques : toute modification y
+      touche aussi la course, et devra être vérifiée des deux côtés.</li>
+    <li><strong>L'accessibilité n'a pas été réauditée.</strong> CONF-07 a soldé les
+      non-conformités WCAG AA le 01/08 ; les maquettes reprennent la palette corrigée, mais une
+      barre d'action collante crée de nouvelles zones à vérifier au lecteur d'écran.</li>
+  </ul>
+
+  <h2>Le point de vigilance principal</h2>
+  <div class="box" style="background:var(--warn);border-color:var(--warnBorder);margin-bottom:20px">
+    <p style="margin:0;color:var(--warnText)">
+      <strong>Cette refonte arrive à 96 % du MVP1, avec 55 US en attente de recette humaine.</strong>
+      Le lot B en particulier réécrit l'écran le plus couvert par ces recettes. Deux options se
+      défendent : livrer la refonte avant de recetter, pour ne pas recetter deux fois ; ou recetter
+      d'abord, publier, puis refondre sur une base validée. C'est un arbitrage de calendrier de
+      lancement, pas de design — il vous revient.
+    </p>
+  </div>
+
+  <h2>Prochaine étape</h2>
+  <p>
+    Rien n'est encore une US. Le workflow du dépôt impose spec → plan → design → validation avant
+    toute ligne de code, et ce document plus les maquettes ne couvrent que le troisième point.
+    Une fois le découpage validé, chaque lot part par <code>/us</code> avec sa branche, sa spec
+    et son plan.
+  </p>
+  <p>
+    Les maquettes vivent dans <code>design/refonte-muscu-2026-09/</code> et sur le canvas partagé :
+    dix-neuf planches en avant/après, sur trois pages — Hub &amp; démarrage, La séance, Après la séance.
+    Chaque écran porte une note qui reprend le constat correspondant.
+  </p>
+
+  <div style="margin-top:auto;padding-top:24px;border-top:2px solid var(--accent)">
+    <p class="muted" style="font-size:11.5px;line-height:17px;margin:0">
+      Audit et maquettes produits le 09/09/2026. Constats vérifiés dans le code du dépôt à
+      la révision <code>8db76eb</code>. Les libellés cités sont ceux du fichier
+      <code>fr.json</code> à cette date.
+    </p>
+  </div>
+
+  <div class="foot"><span>Refonte UX — pilier Musculation</span><span>10 / 10</span></div>
+</div>
+
+</body>
+</html>

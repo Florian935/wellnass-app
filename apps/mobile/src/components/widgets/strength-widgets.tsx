@@ -13,14 +13,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { percentChange, type StrengthWidgetId, type WidgetSize } from '@wellness/shared';
 import { PlanningPreview } from '@/components/PlanningPreview';
-import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
-import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 import { Sparkline } from '@/components/widgets/primitives';
 import { Chip, Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
-import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useWorkoutHistory, type WorkoutHistoryItem } from '@/data/repositories/workout-repository';
 import { useWeeklyVolumeComparison, useWeeklyVolumeSeries } from '@/data/repositories/records-repository';
-import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -35,56 +31,6 @@ function formatDayMonth(iso: string): string {
 
 // ---------------------------------------------------------------------------
 // Programmes — programme actif
-// ---------------------------------------------------------------------------
-function StrengthProgramsWidget({ size }: { size: WidgetSize }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const router = useRouter();
-  const { program } = useActiveProgram('strength');
-  const open = () => router.push('/programs');
-
-  const sub = program?.durationWeeks
-    ? t('programs.weeks', { count: program.durationWeeks })
-    : program?.goal ?? program?.level ?? '';
-
-  if (size === 'small') {
-    return (
-      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('programs.title')}>
-        <Eyebrow>{t('widgets.strength.programEyebrow')}</Eyebrow>
-        <View style={styles.smallBottom}>
-          {program ? (
-            <>
-              <Text style={[styles.progName, { color: colors.text }]} numberOfLines={2}>
-                {program.name}
-              </Text>
-              {sub ? <Text style={[styles.progSub, { color: colors.textMuted }]}>{sub}</Text> : null}
-            </>
-          ) : (
-            <Metric value={t('programs.noneActive')} muted />
-          )}
-        </View>
-      </WidgetFrame>
-    );
-  }
-
-  const pad = size === 'large' ? 22 : 18;
-  return (
-    <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('programs.title')} style={styles.centerCol}>
-      <Eyebrow>{t('widgets.strength.programActiveEyebrow')}</Eyebrow>
-      {program ? (
-        <>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={2}>
-            {program.name}
-          </Text>
-          {sub ? <Text style={[styles.metaLine, { color: colors.textMuted }]}>{sub}</Text> : null}
-        </>
-      ) : (
-        <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('programs.noneActive')}</Text>
-      )}
-    </WidgetFrame>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Historique — dernières séances
 // ---------------------------------------------------------------------------
@@ -248,71 +194,22 @@ function StrengthProgressWidget({ size }: { size: WidgetSize }) {
 // ---------------------------------------------------------------------------
 // Templates — point d'entrée permanent vers « Mes templates » (US Refonte-D)
 // ---------------------------------------------------------------------------
-function StrengthTemplatesWidget({ size }: { size: WidgetSize }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const router = useRouter();
-  const { templates } = useWorkoutTemplates();
-  const open = () => router.push('/templates');
-
-  if (size === 'small') {
-    return (
-      <WidgetFrame pad={16} onPress={open} accessibilityLabel={t('templates.title')}>
-        <Eyebrow>{t('widgets.strength.templatesEyebrow')}</Eyebrow>
-        <View style={styles.smallBottom}>
-          {templates.length > 0 ? (
-            <Metric value={t('templates.countLabel', { count: templates.length })} />
-          ) : (
-            <Metric value={t('templates.emptyList')} muted />
-          )}
-        </View>
-      </WidgetFrame>
-    );
-  }
-
-  const count = size === 'large' ? 4 : 2;
-  const preview = templates.slice(0, count);
-  const pad = size === 'large' ? 22 : 16;
-
-  return (
-    <WidgetFrame pad={pad} onPress={open} accessibilityLabel={t('templates.title')} style={styles.listCol}>
-      <Eyebrow>{t('widgets.strength.templatesEyebrow')}</Eyebrow>
-      {preview.length > 0 ? (
-        <View style={styles.list}>
-          {preview.map((tpl) => (
-            <View key={tpl.id} style={[styles.tplRow, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-              <Text style={[styles.tplName, { color: colors.text }]} numberOfLines={1}>
-                {tpl.name}
-              </Text>
-              <Text style={[styles.histMeta, { color: colors.textMuted }]}>
-                {t('templates.exerciseCount', { count: tpl.exerciseCount })}
-              </Text>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text style={[styles.metaLine, { color: colors.textMuted }]}>{t('templates.emptyList')}</Text>
-      )}
-    </WidgetFrame>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Registre de rendu du hub muscu
 // ---------------------------------------------------------------------------
+/**
+ * Registre de la zone Suivre — **3 widgets** depuis l'US MUSCU-UX01 (10/09/2026).
+ *
+ * Les quatre retirés ont chacun une destination, documentée à côté de `STRENGTH_WIDGET_IDS` :
+ * `strength-programs` → la barre de progression du hub · `strength-templates` → la ligne
+ * d'annuaire · `strength-records` et `strength-training-time` → `/progress` › Vue d'ensemble.
+ */
 export const STRENGTH_WIDGETS: Record<
   StrengthWidgetId,
   (props: { size: WidgetSize }) => React.ReactElement | null
 > = {
-  'strength-programs': StrengthProgramsWidget,
-  'strength-history': StrengthHistoryWidget,
   'strength-planning': StrengthPlanningWidget,
   'strength-progress': StrengthProgressWidget,
-  'strength-templates': StrengthTemplatesWidget,
-  // US INSIGHTS-02 : réutilise les cartes telles quelles — elles acceptent déjà `size`. C'est un
-  // déplacement, pas une réécriture, donc rien de leur comportement ne change.
-  'strength-records': RecordRecentCard,
-  'strength-training-time': TrainingTimeCard,
+  'strength-history': StrengthHistoryWidget,
 };
 
 const styles = StyleSheet.create({

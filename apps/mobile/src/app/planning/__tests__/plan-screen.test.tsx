@@ -146,6 +146,7 @@ const back = jest.fn();
 /** « Aujourd'hui » : mercredi 12/08/2026. Lundi prochain = 17/08. */
 const AUJOURDHUI = '2026-08-12';
 const LUNDI_PROCHAIN = '17/08/2026';
+const AUJOURDHUI_FR = '12/08/2026';
 
 const seance = (overrides: Record<string, unknown> = {}) => ({
   id: 's-1',
@@ -270,9 +271,11 @@ describe('durée', () => {
       programme({ durationWeeks: 4, sessions: [seance({ id: 'a' }), seance({ id: 'b' })] }),
     );
 
-    // 2 séances × 4 semaines = 8. C'est le seul endroit qui dit l'ampleur de l'écriture avant de
-    // la faire — et elle est irréversible en pratique.
-    expect(screen.getByLabelText('planning.generatedCount:{"count":8}')).toBeTruthy();
+    // C'est le seul endroit qui dit l'ampleur de l'écriture avant de la faire — et elle est
+    // irréversible en pratique. Le compte n'est plus `séances × semaines` depuis l'US MUSCU-UX01 :
+    // on démarre aujourd'hui (mercredi 12/08), donc la séance du lundi de cette semaine n'est pas
+    // générée. 1 (semaine entamée) + 3 × 2 = **7**, et c'est bien ce qu'il faut annoncer.
+    expect(screen.getByLabelText('planning.generatedCount:{"count":7}')).toBeTruthy();
   });
 
   it.each(['', '0', '-2', '3.5', 'abc'])('🔴 durée « %s » interdit la planification', async (saisie) => {
@@ -305,36 +308,48 @@ describe('durée', () => {
 // Semaine de départ
 // ---------------------------------------------------------------------------
 
-describe('semaine de départ', () => {
-  it('🔴 le défaut est LUNDI PROCHAIN, pas la semaine en cours', async () => {
+describe('date de départ', () => {
+  // ── Défaut inversé le 10/09/2026 (US MUSCU-UX01) ─────────────────────────────────────────────
+  // Il était « lundi prochain », pour éviter de poser des séances sur des jours déjà passés. La
+  // protection était réelle, mais son coût l'était aussi : un programme ne pouvait **jamais**
+  // commencer le jour où on le choisissait, et quelqu'un qui installait l'app un mardi attendait
+  // six jours. Le problème de fond est traité à la source — `generatePlannedSessions` ne génère
+  // plus rien avant la date de début, donc la première semaine est simplement partielle.
+
+  it('🔴 le défaut est AUJOURD’HUI, pour pouvoir commencer maintenant', async () => {
     await afficher();
 
-    // Planifier une semaine déjà entamée poserait des séances sur des jours passés, comptées
-    // « manquées » à l'instant même où le programme démarre.
-    expect(screen.getByText(`planning.weekOf:{"date":"${LUNDI_PROCHAIN}"}`)).toBeTruthy();
+    expect(screen.getByText(`planning.startsOn:{"date":"${AUJOURDHUI_FR}"}`)).toBeTruthy();
   });
 
-  it('les flèches déplacent la semaine de sept jours', async () => {
+  it('propose lundi prochain d’un seul tap', async () => {
+    await afficher();
+
+    await taper(screen.getByText('planning.startNextMonday'));
+
+    expect(screen.getByText(`planning.startsOn:{"date":"${LUNDI_PROCHAIN}"}`)).toBeTruthy();
+  });
+
+  it('les flèches déplacent la date de sept jours', async () => {
     await afficher();
 
     await taper(screen.getByLabelText('planning.nextWeek'));
-    expect(screen.getByText('planning.weekOf:{"date":"24/08/2026"}')).toBeTruthy();
+    expect(screen.getByText('planning.startsOn:{"date":"19/08/2026"}')).toBeTruthy();
 
     await taper(screen.getByLabelText('planning.prevWeek'));
     await taper(screen.getByLabelText('planning.prevWeek'));
-    expect(screen.getByText('planning.weekOf:{"date":"10/08/2026"}')).toBeTruthy();
+    expect(screen.getByText('planning.startsOn:{"date":"05/08/2026"}')).toBeTruthy();
   });
 
-  it('la semaine choisie est transmise telle quelle', async () => {
+  it('la date choisie est transmise telle quelle', async () => {
     await afficher(programme({ durationWeeks: 4 }));
 
-    await taper(screen.getByLabelText('planning.nextWeek'));
-    await affecterJour(0, 0);
+    await taper(screen.getByText('planning.startNextMonday'));
     await taper(boutonPlanifier());
 
     expect(mockPlan).toHaveBeenCalledWith(
       'prog-1',
-      expect.objectContaining({ startDate: '2026-08-24' }),
+      expect.objectContaining({ startDate: '2026-08-17' }),
       expect.anything(),
     );
   });
@@ -345,19 +360,47 @@ describe('semaine de départ', () => {
 // ---------------------------------------------------------------------------
 
 describe('affectation des jours', () => {
-  it('🔴 tant qu’UNE séance n’a pas de jour, rien ne part', async () => {
+  it('🔴 toutes les séances ont déjà un jour : le formulaire est validable d’emblée', async () => {
+    // ── Inversé le 10/09/2026 (US MUSCU-UX01) ──────────────────────────────────────────────────
+    // `dayAssignments` démarrait **vide** et `canPlan` restait faux tant que chaque séance n'avait
+    // pas reçu son jour : trois taps obligatoires sur un programme à trois séances, sans qu'aucune
+    // répartition ne soit suggérée. La garde d'origine (« pas de séance sans jour ») reste
+    // pleinement satisfaite — elle l'est désormais par construction, via `assignSessionDays`.
     await afficher(
       programme({ durationWeeks: 4, sessions: [seance({ id: 'a' }), seance({ id: 'b' })] }),
     );
 
-    await affecterJour(0, 0);
-
-    // Une séance sans jour ne serait simplement pas planifiée : l'utilisateur croirait avoir posé
-    // son programme entier et découvrirait le trou trois semaines plus tard.
-    expect(boutonPlanifier().props.accessibilityState.disabled).toBe(true);
-
-    await affecterJour(1, 2);
     expect(boutonPlanifier().props.accessibilityState.disabled).toBe(false);
+  });
+
+  it('🔴 la répartition suggérée espace les séances', async () => {
+    await afficher(
+      programme({ durationWeeks: 4, sessions: [seance({ id: 'a' }), seance({ id: 'b' })] }),
+    );
+
+    await taper(boutonPlanifier());
+
+    // Deux séances → lundi et jeudi. Les coller lundi/mardi serait une suggestion inutilisable.
+    expect(mockPlan).toHaveBeenCalledWith(
+      'prog-1',
+      expect.objectContaining({ dayAssignments: { a: 0, b: 3 } }),
+      expect.anything(),
+    );
+  });
+
+  it('un jour choisi à la main prime sur la suggestion', async () => {
+    await afficher(
+      programme({ durationWeeks: 4, sessions: [seance({ id: 'a' }), seance({ id: 'b' })] }),
+    );
+
+    await affecterJour(1, 5); // la 2e séance passe au samedi
+    await taper(boutonPlanifier());
+
+    expect(mockPlan).toHaveBeenCalledWith(
+      'prog-1',
+      expect.objectContaining({ dayAssignments: { a: 0, b: 5 } }),
+      expect.anything(),
+    );
   });
 
   it('🔴 un programme SANS séance ne peut pas être planifié', async () => {
@@ -520,14 +563,17 @@ describe('écriture', () => {
     await affecterJour(0, 0);
   };
 
-  it('la réussite QUITTE vers le planning', async () => {
+  it('la réussite QUITTE vers le hub du pilier, où la séance attend', async () => {
     await preparer();
 
     await taper(boutonPlanifier());
 
     // `replace` : revenir sur l'écran de planification après coup permettrait de tout regénérer
     // en double d'un seul appui.
-    expect(replace).toHaveBeenCalledWith('/planning');
+    //
+    // US MUSCU-UX01 : la destination était `/planning`, le calendrier — une vue, pas une action.
+    // On rend la main sur le hub, où la carte du jour est déjà prête à être démarrée.
+    expect(replace).toHaveBeenCalledWith('/(tabs)/strength');
   });
 
   it('🔴 un échec est ANNONCÉ et rend la main', async () => {

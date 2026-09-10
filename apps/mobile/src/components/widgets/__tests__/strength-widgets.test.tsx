@@ -178,17 +178,17 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('registre', () => {
-  it('🔴 expose exactement les sept widgets du hub', async () => {
+  it('🔴 expose exactement les trois widgets du hub', async () => {
     // Un identifiant absent de la map rendrait une case **vide** dans la grille, sans erreur ni
     // trace : le widget disparaîtrait sans que personne sache pourquoi.
+    //
+    // US MUSCU-UX01 : ramené de sept à trois le 10/09/2026. Les quatre retirés ont chacun une
+    // destination — barre de progression du hub, ligne d'annuaire, et `/progress` pour les deux
+    // cartes venues d'INSIGHTS-02.
     expect(Object.keys(STRENGTH_WIDGETS).sort()).toEqual([
       'strength-history',
       'strength-planning',
-      'strength-programs',
       'strength-progress',
-      'strength-records',
-      'strength-templates',
-      'strength-training-time',
     ]);
   });
 
@@ -203,51 +203,6 @@ describe('registre', () => {
     const vue = await rendre(id, size);
 
     expect(vue.toJSON()).not.toBeUndefined();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Programme actif
-// ---------------------------------------------------------------------------
-
-describe('programme actif', () => {
-  it.each(TAILLES)('🔴 %s dit qu’aucun programme n’est actif', async (size) => {
-    await rendre('strength-programs', size);
-
-    // Un widget vide ne se distingue pas d'un widget en panne : il faut le dire.
-    expect(screen.getByText('programs.noneActive')).toBeTruthy();
-  });
-
-  it('affiche le nom du programme et sa durée', async () => {
-    mockProgram.mockReturnValue({
-      program: { id: 'p1', name: 'Prise de masse', durationWeeks: 8, goal: null, level: null },
-      isLoading: false,
-    });
-
-    await rendre('strength-programs', 'wide');
-
-    expect(screen.getByText('Prise de masse')).toBeTruthy();
-    expect(screen.getByText('programs.weeks:{"count":8}')).toBeTruthy();
-  });
-
-  it('🔴 sans durée, retombe sur l’objectif puis le niveau', async () => {
-    mockProgram.mockReturnValue({
-      program: { id: 'p1', name: 'Prise de masse', durationWeeks: null, goal: null, level: 'beginner' },
-      isLoading: false,
-    });
-
-    await rendre('strength-programs', 'wide');
-
-    // Une ligne de méta vide sous le titre se lit comme une donnée perdue.
-    expect(screen.getByText('beginner')).toBeTruthy();
-  });
-
-  it('mène à la bibliothèque de programmes', async () => {
-    await rendre('strength-programs', 'small');
-
-    await taper(screen.getByLabelText('programs.title'));
-
-    expect(push).toHaveBeenCalledWith('/programs');
   });
 });
 
@@ -378,38 +333,6 @@ describe('progression', () => {
     await rendre('strength-progress', 'wide');
 
     expect(screen.getByText('spark-4')).toBeTruthy();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Modèles de séance
-// ---------------------------------------------------------------------------
-
-describe('modèles de séance', () => {
-  it.each(TAILLES)('%s dit quand il n’y a aucun modèle', async (size) => {
-    await rendre('strength-templates', size);
-
-    expect(screen.getByText('templates.emptyList')).toBeTruthy();
-  });
-
-  it('liste les modèles avec leur nombre d’exercices', async () => {
-    mockTemplates.mockReturnValue({
-      templates: [{ id: 't1', name: 'Full body', exerciseCount: 6 }],
-      isLoading: false,
-    });
-
-    await rendre('strength-templates', 'wide');
-
-    expect(screen.getByText('Full body')).toBeTruthy();
-    expect(screen.getByText('templates.exerciseCount:{"count":6}')).toBeTruthy();
-  });
-
-  it('mène à la liste des modèles', async () => {
-    await rendre('strength-templates', 'small');
-
-    await taper(screen.getByLabelText('templates.title'));
-
-    expect(push).toHaveBeenCalledWith('/templates');
   });
 });
 

@@ -1,0 +1,129 @@
+<div class="scr" style="height:880px">
+
+  <!-- En-tête compact -->
+  <div class="pad" style="padding-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <div class="h1">Musculation</div>
+    <div class="row" style="gap:6px;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:7px 11px;flex-shrink:0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <span class="tiny" style="font-weight:600;color:var(--muted)">Éditer</span>
+    </div>
+  </div>
+
+  <!-- ZONE AGIR — la séance du jour, carte dominante -->
+  <div class="pad" style="margin-top:16px">
+    <div style="background:var(--panel);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:14px">
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div class="eyebrow" style="color:var(--panelAccent)">Aujourd’hui · mardi 9</div>
+          <div style="font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.6px;line-height:27px;color:var(--panelText)">Push A — Pecs &amp; épaules</div>
+        </div>
+        <div style="flex-shrink:0;background:rgba(217,168,136,.16);border-radius:12px;padding:7px 10px;text-align:center">
+          <div class="mono" style="font-size:15px;font-weight:700;color:var(--panelAccent)">55 min</div>
+          <div style="font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--panelMuted)">ESTIMÉ</div>
+        </div>
+      </div>
+
+      <!-- Aperçu du contenu : absent du hub actuel -->
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div class="row" style="gap:9px">
+          <span class="mono" style="font-size:11px;color:var(--panelMuted);width:30px">4×8</span>
+          <span class="small" style="color:var(--panelText)">Développé couché barre</span>
+        </div>
+        <div class="row" style="gap:9px">
+          <span class="mono" style="font-size:11px;color:var(--panelMuted);width:30px">4×10</span>
+          <span class="small" style="color:var(--panelText)">Développé incliné haltères</span>
+        </div>
+        <div class="row" style="gap:9px">
+          <span class="mono" style="font-size:11px;color:var(--panelMuted);width:30px">3×12</span>
+          <span class="small" style="color:var(--panelText)">Élévations latérales</span>
+        </div>
+        <div class="tiny" style="color:var(--panelMuted);padding-left:39px">+ 2 autres exercices</div>
+      </div>
+
+      <div class="btn" style="background:var(--panelAccent);color:var(--panel)">Démarrer la séance</div>
+
+      <div class="row" style="gap:16px;justify-content:center">
+        <span class="tiny" style="color:var(--panelMuted);text-decoration:underline">Séance libre</span>
+        <span class="tiny" style="color:var(--panelMuted);text-decoration:underline">Depuis un template</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progression dans le programme : le signal calculé mais jamais affiché -->
+  <div class="pad" style="margin-top:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:9px">
+      <div class="row" style="justify-content:space-between;gap:12px">
+        <span class="small" style="font-weight:600">PPL 6 jours · semaine 3 sur 8</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">14/24 séances</span>
+      </div>
+      <div style="height:7px;border-radius:4px;background:var(--track);overflow:hidden">
+        <div style="height:7px;width:58%;border-radius:4px;background:var(--accent)"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE SUIVRE -->
+  <div class="pad" style="margin-top:20px;display:flex;align-items:center;gap:10px">
+    <span class="eyebrow">Suivre</span>
+    <div style="flex-grow:1;height:1px;background:var(--border)"></div>
+  </div>
+
+  <div class="pad" style="margin-top:10px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:12px">
+
+    <div class="tile" style="height:130px;justify-content:space-between">
+      <div class="eyebrow">Planning</div>
+      <div style="display:grid;grid-template-columns:repeat(7, minmax(0, 1fr));gap:4px">
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">L</div><div style="height:5px;width:5px;border-radius:3px;background:var(--accent);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;font-weight:700;color:var(--accent)">M</div><div style="height:5px;width:5px;border-radius:3px;background:var(--accent);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">M</div><div style="height:5px;width:5px;border-radius:3px;background:var(--track);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">J</div><div style="height:5px;width:5px;border-radius:3px;background:var(--accent);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">V</div><div style="height:5px;width:5px;border-radius:3px;background:var(--accent);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">S</div><div style="height:5px;width:5px;border-radius:3px;background:var(--track);margin:4px auto 0"></div></div>
+        <div style="text-align:center"><div style="font-size:10px;color:var(--muted)">D</div><div style="height:5px;width:5px;border-radius:3px;background:var(--track);margin:4px auto 0"></div></div>
+      </div>
+      <div class="tiny" style="color:var(--muted)">Prochaine : jeudi · Pull A</div>
+    </div>
+
+    <div class="tile" style="height:130px;justify-content:space-between">
+      <div class="eyebrow">Cette semaine</div>
+      <div>
+        <div style="font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-1px;line-height:1">8,4 <span style="font-size:17px;font-weight:600">t</span></div>
+        <div class="tiny" style="color:var(--success);font-weight:600;margin-top:3px">▲ +12 % vs S-1</div>
+      </div>
+      <svg width="100%" height="26" viewBox="0 0 140 26" preserveAspectRatio="none">
+        <polyline points="0,20 20,17 40,19 60,12 80,14 100,9 120,11 140,4" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="tile" style="grid-column:span 2;height:96px;justify-content:center;gap:8px">
+      <div class="row" style="justify-content:space-between">
+        <span class="eyebrow">Dernière séance</span>
+        <span class="tiny" style="color:var(--muted)">Voir tout</span>
+      </div>
+      <div class="row" style="gap:10px">
+        <div style="background:rgba(177,79,43,.12);border-radius:10px;padding:5px 9px">
+          <span class="mono" style="font-size:12px;font-weight:700;color:var(--accent)">07/09</span>
+        </div>
+        <span class="small" style="font-weight:600;flex-grow:1">Pull A — Dos &amp; biceps</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">62 min · 7,1 t</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Entrée annuaire, reléguée en pied -->
+  <div class="pad" style="margin-top:12px">
+    <div class="row" style="gap:11px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:13px 16px">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+      <span class="small" style="font-weight:600;flex-grow:1">Exercices, programmes, templates</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+  </div>
+
+  <div class="fold" style="top:844px"><div class="foldtag">PLI DE L’ÉCRAN</div></div>
+
+</div>
+</x-dc>
+</body>
+</html>

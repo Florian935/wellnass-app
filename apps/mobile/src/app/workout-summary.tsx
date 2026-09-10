@@ -3,9 +3,16 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { computeTrainingDensity, computeVolume, formatDayFull } from '@wellness/shared';
+import {
+  WORKOUT_FEELINGS,
+  computeTrainingDensity,
+  computeVolume,
+  feelingFromStoredRpe,
+  feelingToStoredRpe,
+  formatDayFull,
+  type WorkoutFeeling,
+} from '@wellness/shared';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { CelebrationCard } from '@/components/CelebrationCard';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -17,9 +24,12 @@ import {
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import {
+  useExerciseDeltas,
+  useWorkoutDetail,
   useWorkoutRecords,
   type BeatenRecord,
 } from '@/data/repositories/records-repository';
+import { SummaryExerciseList } from '@/components/workout/SummaryExerciseList';
 import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -61,19 +71,6 @@ export async function buildSummary(
   return { exercises, doneSets, warmupSets, volume, durationMin, density };
 }
 
-function Row({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.row}>
-      <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{label}</Text>
-      <View style={styles.rowValueWrap}>
-        {hint ? <Text style={[styles.rowHint, { color: colors.textMuted }]}>{hint}</Text> : null}
-        <Text style={[styles.rowValue, { color: colors.text }]}>{value}</Text>
-      </View>
-    </View>
-  );
-}
-
 /** Carte de célébration pour un record personnel battu. */
 function RecordCard({ record }: { record: BeatenRecord }) {
   const { t } = useTranslation();
@@ -105,12 +102,22 @@ function RecordCard({ record }: { record: BeatenRecord }) {
 }
 
 /**
- * Section "Ressenti" — 5 étoiles tappables (RPE borné 1-5) + note de séance,
- * éditables a posteriori. Ne monte qu'une fois la séance chargée (`workout`
- * non nul) : l'état local est initialisé une seule fois depuis `workout.rpe` /
- * `workout.notes` (le composant est démonté/remonté via sa `key` si l'id de
- * séance change côté parent), puis reste la source de vérité pour l'affichage
- * pendant que l'utilisateur édite.
+ * Section « Ressenti » — **cinq niveaux nommés** (Facile → Max) + note de séance, éditables
+ * a posteriori.
+ *
+ * ── Pourquoi plus d'étoiles (US MUSCU-UX01) ─────────────────────────────────────────────────────
+ * La séance vient d'être notée série par série en RPE ou en RIR (US UX-05), une échelle qui a un
+ * sens ; le résumé demandait la même chose en **cinq étoiles muettes**, où rien ne dit ce que vaut
+ * trois. Deux formats pour une seule question.
+ *
+ * Le **stockage ne change pas** : `workouts.rpe` reçoit toujours un RPE 1-10, via
+ * `feelingToStoredRpe`. C'est le patron d'`intensity.ts` — la base ne change jamais de nature,
+ * seule la lecture change. Les séances notées avant cette US portaient un 1-5 dans le même champ ;
+ * `feelingFromStoredRpe` documente comment elles se relisent.
+ *
+ * Ne monte qu'une fois la séance chargée : l'état local est initialisé une seule fois depuis
+ * `workout.rpe` / `workout.notes` (le composant est démonté/remonté via sa `key` si l'id de séance
+ * change côté parent), puis reste la source de vérité pendant l'édition.
  */
 function FeelingSection({
   workoutId,
@@ -123,15 +130,17 @@ function FeelingSection({
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const [rpe, setRpe] = useState(initialRpe);
+  const [feeling, setFeeling] = useState<WorkoutFeeling | null>(() =>
+    feelingFromStoredRpe(initialRpe),
+  );
   const [notes, setNotes] = useState(initialNotes ?? '');
+  const [noteOpen, setNoteOpen] = useState((initialNotes ?? '').trim() !== '');
 
-  // Ressenti affiché borné 1-5 (0/absent = aucune étoile pleine) — voir spec.
-  const displayRpe = Math.min(5, Math.max(0, rpe ?? 0));
-
-  function handleRate(value: number) {
-    setRpe(value);
-    void setWorkoutFeedback(workoutId, { rpe: value });
+  function handlePick(value: WorkoutFeeling) {
+    // Retaper le niveau déjà posé l'efface : même geste que le RPE en séance.
+    const next = value === feeling ? null : value;
+    setFeeling(next);
+    void setWorkoutFeedback(workoutId, { rpe: next ? feelingToStoredRpe(next) : null });
   }
 
   function handleNotesBlur() {
@@ -141,39 +150,71 @@ function FeelingSection({
 
   return (
     <View style={styles.feelingSection}>
-      <Text style={[styles.recordsSectionTitle, { color: colors.text }]}>
-        {t('workout.summary.feeling')}
+      <Text style={[styles.sectionEyebrow, { color: colors.textMuted }]}>
+        {t('workout.summary.feelingQuestion')}
       </Text>
-      <View style={styles.starsRow}>
-        {[1, 2, 3, 4, 5].map((value) => {
-          const filled = displayRpe >= value;
+
+      {/* Cinq niveaux **nommés**. Les étoiles ne disaient pas ce que valait trois — et la séance
+          venait pourtant d'être notée en RPE ou en RIR, une échelle qui, elle, a un sens. */}
+      <View style={styles.feelingRow}>
+        {WORKOUT_FEELINGS.map((value) => {
+          const selected = feeling === value;
           return (
             <Pressable
               key={value}
               accessibilityRole="button"
-              accessibilityLabel={t('workout.summary.starLabel', { count: value })}
-              onPress={() => handleRate(value)}
-              hitSlop={8}
+              accessibilityState={{ selected }}
+              accessibilityLabel={t(`workout.summary.feeling.${value}`)}
+              onPress={() => handlePick(value)}
+              style={({ pressed }) => [
+                styles.feelingChip,
+                {
+                  backgroundColor: selected ? colors.accent : colors.surface,
+                  borderColor: selected ? colors.accent : colors.border,
+                },
+                pressed && styles.pressed,
+              ]}
             >
-              <Ionicons
-                name={filled ? 'star' : 'star-outline'}
-                size={30}
-                color={filled ? colors.accent : colors.textMuted}
-              />
+              <Text
+                style={[
+                  styles.feelingLabel,
+                  { color: selected ? colors.accentText : colors.textMuted },
+                ]}
+              >
+                {t(`workout.summary.feeling.${value}`)}
+              </Text>
             </Pressable>
           );
         })}
       </View>
-      <TextField
-        label={t('workout.summary.note')}
-        placeholder={t('workout.summary.notePlaceholder')}
-        value={notes}
-        onChangeText={setNotes}
-        onBlur={handleNotesBlur}
-        multiline
-        numberOfLines={4}
-        style={styles.noteInput}
-      />
+
+      {noteOpen ? (
+        <TextField
+          label={t('workout.summary.note')}
+          placeholder={t('workout.summary.notePlaceholder')}
+          value={notes}
+          onChangeText={setNotes}
+          onBlur={handleNotesBlur}
+          multiline
+          numberOfLines={3}
+          style={styles.noteInput}
+        />
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setNoteOpen(true)}
+          style={({ pressed }) => [
+            styles.noteTrigger,
+            { borderColor: colors.border, backgroundColor: colors.surface },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Ionicons name="create-outline" size={16} color={colors.textMuted} />
+          <Text style={[styles.noteTriggerLabel, { color: colors.textMuted }]}>
+            {t('workout.summary.addNote')}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
@@ -232,6 +273,24 @@ function WorkoutCelebrationBanner({ workoutId }: { workoutId: string }) {
   );
 }
 
+/** Une statistique de la bande : la valeur d'abord, son nom en dessous. */
+function Stat({
+  value,
+  label,
+  colors,
+}: {
+  value: string;
+  label: string;
+  colors: ReturnType<typeof useTheme>['colors'];
+}) {
+  return (
+    <View style={styles.statCell}>
+      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label.toUpperCase()}</Text>
+    </View>
+  );
+}
+
 export default function WorkoutSummaryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -253,6 +312,9 @@ export default function WorkoutSummaryScreen() {
   // Records de la séance, pour les porter sur la carte. `RecordsSection` fait le même appel — les
   // deux requêtes sont locales et identiques, donc PowerSync sert la même donnée.
   const { records } = useWorkoutRecords(id ?? '');
+  // Détail par exercice + écart depuis le passage précédent (US MUSCU-UX01, règle R5-1).
+  const { detail } = useWorkoutDetail(id ?? '');
+  const { deltas } = useExerciseDeltas(id ?? '');
 
   useEffect(() => {
     if (!id || !workout) {
@@ -315,27 +377,51 @@ export default function WorkoutSummaryScreen() {
     <FormScreen>
       <ScreenHeader title={t('workout.summary.title')} subtitle={t('workout.summary.subtitle')} />
       {id ? <WorkoutCelebrationBanner workoutId={id} /> : null}
+      {/* Les agrégats en **une bande**, pas cinq lignes de tableau : ils situent la séance, ils
+          ne la racontent pas. Ce qui la raconte vient juste après. */}
       {summary ? (
-        <Card>
-          <Row
-            label={t('workout.summary.duration')}
+        <View
+          style={[styles.statBand, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <Stat
             value={t('workout.summary.minutes', { count: summary.durationMin })}
+            label={t('workout.summary.duration')}
+            colors={colors}
           />
-          <Row label={t('workout.summary.exercises')} value={String(summary.exercises)} />
-          <Row
-            label={t('workout.summary.sets')}
+          <View style={[styles.statSep, { backgroundColor: colors.border }]} />
+          <Stat
             value={String(summary.doneSets)}
-            hint={summary.warmupSets > 0 ? t('workout.summary.warmupCount', { count: summary.warmupSets }) : undefined}
+            label={t('workout.summary.sets')}
+            colors={colors}
           />
-          <Row label={t('workout.summary.volume')} value={units.formatWeight(summary.volume)} />
-          <Row
-            label={t('workout.summary.density')}
+          <View style={[styles.statSep, { backgroundColor: colors.border }]} />
+          <Stat
+            value={units.formatWeight(summary.volume)}
+            label={t('workout.summary.volume')}
+            colors={colors}
+          />
+          <View style={[styles.statSep, { backgroundColor: colors.border }]} />
+          <Stat
             value={`${units.formatWeight(summary.density)}/min`}
+            label={t('workout.summary.density')}
+            colors={colors}
           />
-        </Card>
+        </View>
       ) : (
         <Text style={[styles.empty, { color: colors.textMuted }]}>{t('workout.none')}</Text>
       )}
+
+      {/* Les échauffements sortent du compte de séries et du volume (règle métier §8). Sans cette
+          mention, le total paraît simplement trop bas, et rien ne l'explique. */}
+      {summary && summary.warmupSets > 0 ? (
+        <Text style={[styles.warmupNote, { color: colors.textMuted }]}>
+          {t('workout.summary.warmupCount', { count: summary.warmupSets })}
+        </Text>
+      ) : null}
+
+      {/* Ce que l'utilisateur vient de faire, avec l'écart depuis la fois d'avant. Le résumé n'en
+          disait rien : il fallait rouvrir l'historique pour revoir ses propres charges. */}
+      {detail ? <SummaryExerciseList entries={detail.entries} deltas={deltas} /> : null}
       {canSaveAsTemplate ? (
         <View style={styles.saveAsTemplateSection}>
           {savingAsTemplate ? (
@@ -471,6 +557,47 @@ const styles = StyleSheet.create({
   recordMeta: { fontFamily: fontFamily.body, fontSize: 13 },
   // Feeling section (ressenti + note)
   feelingSection: { gap: 10 },
-  starsRow: { flexDirection: 'row', gap: 8 },
+  sectionEyebrow: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 11,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+  },
+  feelingRow: { flexDirection: 'row', gap: 7 },
+  feelingChip: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 2,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  feelingLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  noteTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    paddingVertical: 13,
+  },
+  noteTriggerLabel: { fontFamily: fontFamily.body, fontSize: 13.5 },
+  statBand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+  },
+  statCell: { alignItems: 'center', gap: 3 },
+  statValue: { fontFamily: fontFamily.monoBold, fontSize: 19 },
+  statLabel: { fontFamily: fontFamily.bodySemi, fontSize: 9.5, letterSpacing: 0.5 },
+  statSep: { width: 1, height: 30 },
+  warmupNote: { fontFamily: fontFamily.body, fontSize: 12.5, textAlign: 'center' },
+  pressed: { opacity: 0.8 },
   noteInput: { minHeight: 90, textAlignVertical: 'top', paddingTop: 14 },
 });

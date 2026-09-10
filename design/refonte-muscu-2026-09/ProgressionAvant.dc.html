@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    :root{
+      --bg:#f7eede; --surface:#fffaf2; --surfaceAlt:#f3ddd0; --border:#ece0cd;
+      --borderStrong:#90897d; --text:#33291f; --muted:#786a59; --accent:#b14f2b;
+      --accentText:#ffffff; --success:#66714b; --danger:#b23b2e; --track:#eadcc6;
+      --chartGreen:#7c8a5b; --amber:#b47f31; --warn:#f7ead6; --warnBorder:#e9cfa0;
+      --warnText:#8a6419; --panel:#33291f; --panelText:#f0e4d0; --panelMuted:#c9b79a;
+      --panelAccent:#d9a888;
+      --display:'Bricolage Grotesque', Georgia, serif;
+      --body:'Hanken Grotesk', system-ui, sans-serif;
+      --mono:'Space Mono', ui-monospace, monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--body);color:var(--text);-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none} a:hover{color:#8f3f22}
+    .scr{width:390px;background:var(--bg);position:relative;overflow:hidden}
+    .pad{padding:0 20px}
+    .eyebrow{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted)}
+    .h1{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.8px;line-height:1.1}
+    .h2{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.3px}
+    .h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.3px}
+    .body{font-size:14px;line-height:20px}
+    .small{font-size:13px;line-height:18px}
+    .tiny{font-size:12px;line-height:16px}
+    .mono{font-family:var(--mono)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px}
+    .tile{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;
+      display:flex;flex-direction:column}
+    .chip{border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:600;
+      background:var(--surfaceAlt);color:var(--muted)}
+    .chip.on{background:var(--accent);color:#fff}
+    .btn{min-height:52px;border-radius:16px;background:var(--accent);color:#fff;
+      font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .row{display:flex;align-items:center}
+    .fold{position:absolute;left:0;right:0;border-top:2px dashed var(--danger);
+      display:flex;justify-content:flex-end;pointer-events:none}
+    .foldtag{background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:2px 8px;border-radius:0 0 6px 6px;letter-spacing:.04em}
+    .flag{position:absolute;background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:3px 8px;border-radius:8px;letter-spacing:.02em;line-height:1.3}
+    .flag.ok{background:var(--success)}
+  </style>
+</helmet>
+<div class="scr" style="height:1340px">
+
+  <div class="pad" style="padding-top:16px;display:flex;flex-direction:column;gap:3px">
+    <div class="h1">Progression</div>
+    <div class="small" style="color:var(--muted)">Records personnels et courbes de progression.</div>
+  </div>
+
+  <div class="pad" style="margin-top:20px;display:flex;flex-direction:column;gap:12px">
+
+    <div class="h2">Volume hebdomadaire</div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row" style="justify-content:space-between">
+        <span class="small" style="color:var(--muted)">Total</span>
+        <span class="body" style="font-weight:700">8 420 kg</span>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:104px">
+        <div style="flex-grow:1;height:70%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+        <div style="flex-grow:1;height:46%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+        <div style="flex-grow:1;height:88%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+        <div style="flex-grow:1;height:34%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+        <div style="flex-grow:1;height:60%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+        <div style="flex-grow:1;height:24%;background:var(--chartGreen);border-radius:5px 5px 0 0"></div>
+      </div>
+    </div>
+
+    <div class="h2" style="margin-top:16px">Tonnage cumulé</div>
+    <div class="card" style="display:flex;gap:24px">
+      <div><div class="small" style="color:var(--muted)">Depuis toujours</div><div class="mono" style="font-size:22px;font-weight:700;margin-top:4px">214 t</div></div>
+      <div><div class="small" style="color:var(--muted)">Cette année</div><div class="mono" style="font-size:22px;font-weight:700;margin-top:4px">142 t</div></div>
+    </div>
+
+    <div class="h2" style="margin-top:16px">Régularité</div>
+    <div class="card" style="display:flex;flex-direction:column;gap:11px">
+      <div class="row" style="justify-content:space-between"><span class="small" style="color:var(--muted)">Séances / semaine</span><span class="body" style="font-weight:600">3,2</span></div>
+      <div class="row" style="justify-content:space-between"><span class="small" style="color:var(--muted)">Écart-type des intervalles</span><span class="body" style="font-weight:600">1,4 j</span></div>
+      <div class="row" style="justify-content:space-between"><span class="small" style="color:var(--muted)">Taux d’adhérence</span><span class="body" style="font-weight:600">78 %</span></div>
+    </div>
+
+    <div class="h2" style="margin-top:16px">Équilibre musculaire <span class="small" style="color:var(--muted);font-family:var(--body);font-weight:400">14 derniers jours</span></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:9px">
+      <div class="row" style="gap:10px"><span class="tiny" style="width:64px;color:var(--muted)">Pectoraux</span><div style="flex-grow:1;height:9px;background:var(--track);border-radius:5px"><div style="width:82%;height:9px;background:var(--chartGreen);border-radius:5px"></div></div></div>
+      <div class="row" style="gap:10px"><span class="tiny" style="width:64px;color:var(--muted)">Dos</span><div style="flex-grow:1;height:9px;background:var(--track);border-radius:5px"><div style="width:64%;height:9px;background:var(--chartGreen);border-radius:5px"></div></div></div>
+      <div class="row" style="gap:10px"><span class="tiny" style="width:64px;color:var(--muted)">Jambes</span><div style="flex-grow:1;height:9px;background:var(--track);border-radius:5px"><div style="width:71%;height:9px;background:var(--chartGreen);border-radius:5px"></div></div></div>
+      <div class="row" style="gap:10px"><span class="tiny" style="width:64px;color:var(--muted)">Épaules</span><div style="flex-grow:1;height:9px;background:var(--track);border-radius:5px"><div style="width:38%;height:9px;background:var(--chartGreen);border-radius:5px"></div></div></div>
+      <div class="row" style="gap:10px"><span class="tiny" style="width:64px;color:var(--muted)">Bras</span><div style="flex-grow:1;height:9px;background:var(--track);border-radius:5px"><div style="width:29%;height:9px;background:var(--chartGreen);border-radius:5px"></div></div></div>
+    </div>
+
+    <div class="row" style="margin-top:16px;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px 17px">
+      <span class="h3">Module force</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+
+    <div class="row" style="justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px 17px">
+      <span class="h3">Exécution du programme</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+
+    <div class="h2" style="margin-top:16px">Mensurations</div>
+    <div class="row" style="justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px 17px">
+      <div class="row" style="gap:10px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v6"/><path d="m8 21 4-8 4 8"/><path d="M7 10h10"/></svg>
+        <span class="body">Suivre mes mensurations</span>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+    </div>
+
+    <div class="h2" style="margin-top:16px">Par exercice</div>
+    <div class="row" style="justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px 17px">
+      <div class="row" style="gap:10px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3 9v6"/><path d="M21 9v6"/><path d="M6.5 12h11"/></svg>
+        <span class="body" style="color:var(--muted)">Choisir un exercice</span>
+      </div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="card" style="padding:16px">
+      <div class="body" style="color:var(--muted);text-align:center">Sélectionne un exercice pour voir sa courbe et ses records.</div>
+    </div>
+
+  </div>
+
+  <div class="fold" style="top:844px"><div class="foldtag">PLI DE L’ÉCRAN</div></div>
+
+</div>
+</x-dc>
+</body>
+</html>

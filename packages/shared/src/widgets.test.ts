@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   HOME_WIDGET_IDS,
   MAX_HOME_WIDGETS,
+  MAX_STRENGTH_WIDGETS,
   WIDGET_SCREENS,
   STRENGTH_WIDGET_IDS,
   RUNNING_WIDGET_IDS,
@@ -83,11 +84,13 @@ describe('WIDGET_REGISTRY', () => {
     expect(HOME_WIDGET_IDS).toHaveLength(8);
     // Les hubs **gagnent** ce que l accueil perd : INSIGHTS-02 y a cree les destinations de
     // `record-recent` et `training-time`, qui n en avaient aucune de valable.
-    expect(STRENGTH_WIDGET_IDS).toHaveLength(7);
+    // US MUSCU-UX01 : ramené de 7 à 3 le 10/09/2026. Les 4 retirés ont chacun une destination,
+    // documentée à côté du registre.
+    expect(STRENGTH_WIDGET_IDS).toHaveLength(3);
     expect(RUNNING_WIDGET_IDS).toHaveLength(4);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
     expect(WIDGET_REGISTRY.home.pillars['today-session']).toEqual(['strength']);
-    expect(WIDGET_REGISTRY.strength.pillars['strength-programs']).toEqual(['strength']);
+    expect(WIDGET_REGISTRY.strength.pillars['strength-planning']).toEqual(['strength']);
   });
 
   it('ne depasse pas le plafond Tier 0 d ADR-007 §2', () => {
@@ -95,6 +98,14 @@ describe('WIDGET_REGISTRY', () => {
     // casse la CI. Le depasser reste **possible** — il faut modifier cette ligne, donc en faire un
     // arbitrage conscient : c'est exactement ce que l'ADR demandait depuis le 16/07/2026.
     expect(HOME_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_HOME_WIDGETS);
+  });
+
+  it('ne depasse pas le plafond du hub muscu (US MUSCU-UX01)', () => {
+    // Meme cliquet que ci-dessus, pose le 10/09/2026 : le hub muscu n'en avait aucun, et c'est
+    // exactement pour ca qu'il est passe de 4 a 7 widgets sans qu'aucun arbitrage n'ait eu lieu.
+    // Le hub porte deja une zone Agir epinglee au-dessus de la grille : le budget vertical
+    // restant ne vaut pas celui de l'accueil, d'ou un plafond plus bas.
+    expect(STRENGTH_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_STRENGTH_WIDGETS);
   });
 
   it('declare une garde ET une taille pour chaque widget des TROIS hubs', () => {

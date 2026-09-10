@@ -2,20 +2,26 @@
  * US UX-05 — la carte « série en cours » affiche l'intensité dans l'échelle choisie.
  *
  * Ce qui est vérifié est le **contrat de l'US** :
- *  - en mode RIR, c'est « RIR » qui s'affiche, et la valeur est **inversée** (RPE 8 → RIR 2) ;
+ *  - en mode RIR, c'est « RIR » qui s'affiche, et les valeurs proposées sont celles de l'échelle ;
  *  - choisir une valeur RIR **stocke le RPE correspondant** — la donnée en base ne change jamais de
  *    nature, c'est tout le principe de l'US ;
  *  - une intensité **non saisie** reste non saisie : elle ne devient pas « RIR 10 ».
  *
+ * ── Adapté le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────────
+ * Le sélecteur d'intensité vit désormais dans le **repli des suppléments**, avec le type de série,
+ * la note et le superset : ils servent à quelques séries par séance, pas à toutes. Les tests
+ * ouvrent donc le repli avant de vérifier. Le contrat de l'US UX-05, lui, est inchangé.
+ *
  * `useSettings` est mocké pour piloter l'échelle sans passer par PowerSync.
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import '@/i18n';
 
 import { CurrentSetCard } from '../CurrentSetCard';
 import { palettes } from '@/theme/colors';
 import { useSettings } from '@/data/repositories/settings-repository';
+import fr from '@/i18n/locales/fr.json';
 
 jest.mock('@/data/repositories/settings-repository', () => ({
   useSettings: jest.fn(() => ({ settings: null, isLoading: false })),
@@ -31,29 +37,32 @@ const mockScale = (intensityScale: 'rpe' | 'rir' | undefined) =>
 
 const baseProps = {
   exerciseName: 'Développé couché',
-  currentIndex: 1,
-  totalSets: 3,
+  sets: [
+    { id: 's1', done: false, label: null },
+    { id: 's2', done: false, label: null },
+    { id: 's3', done: false, label: null },
+  ],
+  currentRang: 0,
+  restSeconds: 90,
   lastPerfLabel: null,
   setType: 'normal' as const,
   onSetType: jest.fn(),
-  repsValue: '10',
-  onChangeReps: jest.fn(),
-  weightValue: '60',
-  weightSymbol: 'kg',
-  weightPlaceholder: '0',
-  onChangeWeight: jest.fn(),
-  onStepWeight: jest.fn(),
-  plannedWeightKg: null,
-  durationValue: '0:00',
-  onChangeDuration: jest.fn(),
-  onStepDuration: jest.fn(),
-  restSeconds: 90,
-  onStepRest: jest.fn(),
-  onSetRest: jest.fn(),
-  onValidate: jest.fn(),
+  onAddSet: jest.fn(),
   level: 'detailed' as const,
   note: '',
   colors,
+};
+
+/** Rend la carte et ouvre le repli des suppléments, où vit le sélecteur d'intensité. */
+const renderOuvert = async (props: Partial<React.ComponentProps<typeof CurrentSetCard>> = {}) => {
+  const vue = await render(
+    <CurrentSetCard {...baseProps} rpe={null} onSetRpe={jest.fn()} {...props} />,
+  );
+  // `act` : sans lui, le `setState` du repli n'est pas appliqué avant l'assertion suivante.
+  await act(async () => {
+    fireEvent.press(vue.getByText(fr.workout.extras.title));
+  });
+  return vue;
 };
 
 describe('CurrentSetCard — échelle d’intensité (UX-05)', () => {
@@ -62,49 +71,69 @@ describe('CurrentSetCard — échelle d’intensité (UX-05)', () => {
     mockScale(undefined);
   });
 
-  it('affiche « RPE 8 » quand l’échelle est le RPE', async () => {
+  it('annonce l’échelle RPE quand c’est celle qui est choisie', async () => {
     mockScale('rpe');
-    const { getByText } = await render(
-      <CurrentSetCard {...baseProps} rpe={8} onSetRpe={jest.fn()} />,
-    );
-    expect(getByText('RPE 8')).toBeTruthy();
+    const { getByText } = await renderOuvert({ rpe: 8 });
+
+    expect(getByText('RPE série')).toBeTruthy();
   });
 
-  it('affiche « RIR 2 » pour le MÊME RPE 8 quand l’échelle est le RIR', async () => {
-    // La donnée en base est identique : seule sa lecture change.
+  it('annonce l’échelle RIR quand c’est celle qui est choisie', async () => {
     mockScale('rir');
-    const { getByText, queryByText } = await render(
-      <CurrentSetCard {...baseProps} rpe={8} onSetRpe={jest.fn()} />,
-    );
-    expect(getByText('RIR 2')).toBeTruthy();
-    expect(queryByText('RPE 8')).toBeNull();
+    const { getByText } = await renderOuvert({ rpe: 8 });
+
+    expect(getByText('RIR série')).toBeTruthy();
+  });
+
+  it('🔴 en RIR, sélectionner « 2 » stocke le RPE 8 — la base ne change pas de nature', async () => {
+    mockScale('rir');
+    const onSetRpe = jest.fn();
+    const { getByLabelText } = await renderOuvert({ rpe: null, onSetRpe });
+
+    fireEvent.press(getByLabelText('RIR 2'));
+
+    // C'est tout le principe de l'US : le RIR n'est jamais stocké, seulement affiché.
+    expect(onSetRpe).toHaveBeenCalledWith(8);
+  });
+
+  it('en RPE, sélectionner « 8 » stocke 8', async () => {
+    mockScale('rpe');
+    const onSetRpe = jest.fn();
+    const { getByLabelText } = await renderOuvert({ rpe: null, onSetRpe });
+
+    fireEvent.press(getByLabelText('RPE 8'));
+
+    expect(onSetRpe).toHaveBeenCalledWith(8);
   });
 
   it('retombe sur le RPE quand les réglages ne sont pas encore chargés', async () => {
     mockScale(undefined);
-    const { getByText } = await render(
-      <CurrentSetCard {...baseProps} rpe={8} onSetRpe={jest.fn()} />,
-    );
-    expect(getByText('RPE 8')).toBeTruthy();
+    const { getByText } = await renderOuvert({ rpe: 8 });
+
+    expect(getByText('RPE série')).toBeTruthy();
   });
 
-  it('n’affiche AUCUNE valeur quand l’intensité n’est pas saisie — pas de « RIR 10 »', async () => {
+  it('🔴 une intensité NON saisie n’est marquée nulle part — pas de « RIR 10 » fantôme', async () => {
     // Le piège de la conversion naïve `10 - (rpe ?? 0)` : une absence de donnée deviendrait la
-    // valeur maximale, donc une information inventée.
+    // valeur maximale de l'échelle.
     mockScale('rir');
-    const { queryByText } = await render(
-      <CurrentSetCard {...baseProps} rpe={null} onSetRpe={jest.fn()} />,
-    );
-    expect(queryByText('RIR 10')).toBeNull();
-    expect(queryByText('RIR 0')).toBeNull();
+    const { getByLabelText } = await renderOuvert({ rpe: null });
+
+    for (const value of [0, 2, 9]) {
+      expect(getByLabelText(`RIR ${value}`).props.accessibilityState?.selected).toBe(
+        false,
+      );
+    }
   });
 
-  it('propose l’ajout dans l’échelle choisie', async () => {
-    mockScale('rir');
-    const { queryByText } = await render(
-      <CurrentSetCard {...baseProps} rpe={null} onSetRpe={jest.fn()} />,
-    );
-    expect(queryByText(/RIR/)).toBeTruthy();
-    expect(queryByText(/RPE/)).toBeNull();
+  it('retaper la valeur déjà posée l’efface', async () => {
+    // Sans cela, il faudrait un bouton « effacer » de plus dans un repli déjà dense.
+    mockScale('rpe');
+    const onSetRpe = jest.fn();
+    const { getByLabelText } = await renderOuvert({ rpe: 8, onSetRpe });
+
+    fireEvent.press(getByLabelText('RPE 8'));
+
+    expect(onSetRpe).toHaveBeenCalledWith(null);
   });
 });

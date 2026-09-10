@@ -1,0 +1,112 @@
+<div style="width:840px;height:900px;background:var(--bg);padding:32px 34px;display:flex;flex-direction:column;gap:20px">
+
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <div style="font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:-.6px">Les quatre états de la zone Agir</div>
+    <div class="small" style="color:var(--muted)">Un seul emplacement, en haut du hub. Ce qu’il contient dépend de la situation — jamais l’inverse.</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+
+    <!-- A · séance en cours -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent)">A</span>
+        <span class="tiny" style="font-weight:700">Une séance est en cours</span>
+      </div>
+      <div style="background:var(--panel);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div class="row" style="justify-content:space-between;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div class="eyebrow" style="color:var(--panelAccent)">En cours depuis 12 min</div>
+            <div style="font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.5px;color:var(--panelText)">Push A</div>
+          </div>
+          <div style="flex-shrink:0;background:rgba(217,168,136,.16);border-radius:11px;padding:6px 9px;text-align:center">
+            <div class="mono" style="font-size:13px;font-weight:700;color:var(--panelAccent)">7/18</div>
+            <div style="font-size:8.5px;font-weight:600;color:var(--panelMuted)">SÉRIES</div>
+          </div>
+        </div>
+        <div style="height:5px;border-radius:3px;background:rgba(240,228,208,.16);overflow:hidden">
+          <div style="height:5px;width:39%;border-radius:3px;background:var(--panelAccent)"></div>
+        </div>
+        <div class="btn" style="min-height:48px;font-size:15px;background:var(--panelAccent);color:var(--panel)">Reprendre la séance</div>
+      </div>
+      <div class="tiny" style="color:var(--muted);line-height:16px">Prioritaire sur tout le reste. La reprise reste possible jusqu’à la clôture automatique à 3 h.</div>
+    </div>
+
+    <!-- B · séance planifiée aujourd’hui -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent)">B</span>
+        <span class="tiny" style="font-weight:700">Une séance est prévue aujourd’hui</span>
+      </div>
+      <div style="background:var(--panel);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div class="row" style="justify-content:space-between;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div class="eyebrow" style="color:var(--panelAccent)">Aujourd’hui · mardi 9</div>
+            <div style="font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.5px;color:var(--panelText);line-height:23px">Push A — Pecs &amp; épaules</div>
+          </div>
+          <div style="flex-shrink:0;background:rgba(217,168,136,.16);border-radius:11px;padding:6px 9px;text-align:center">
+            <div class="mono" style="font-size:13px;font-weight:700;color:var(--panelAccent)">55 min</div>
+            <div style="font-size:8.5px;font-weight:600;color:var(--panelMuted)">ESTIMÉ</div>
+          </div>
+        </div>
+        <div class="tiny" style="color:var(--panelMuted)">Développé couché · Incliné haltères · Élévations + 2</div>
+        <div class="btn" style="min-height:48px;font-size:15px;background:var(--panelAccent);color:var(--panel)">Démarrer la séance</div>
+      </div>
+      <div class="tiny" style="color:var(--muted);line-height:16px">L’état de référence. Le contenu de la séance est visible avant de la lancer.</div>
+    </div>
+
+    <!-- C · jour de repos -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent)">C</span>
+        <span class="tiny" style="font-weight:700">Jour de repos du programme</span>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div class="row" style="gap:11px">
+          <div style="width:38px;height:38px;border-radius:12px;background:var(--surfaceAlt);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </div>
+          <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+            <span class="h3">Repos aujourd’hui</span>
+            <span class="tiny" style="color:var(--muted)">Prochaine séance jeudi 11 · Pull A</span>
+          </div>
+        </div>
+        <div class="row" style="gap:9px">
+          <div class="btn ghost" style="flex-grow:1;min-height:44px;font-size:14px">Voir le planning</div>
+          <div class="btn ghost" style="flex-grow:1;min-height:44px;font-size:14px">Séance libre</div>
+        </div>
+      </div>
+      <div class="tiny" style="color:var(--muted);line-height:16px">Le repos est une information, pas un vide. Deux sorties de secours, aucune injonction.</div>
+    </div>
+
+    <!-- D · pas de programme -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="row" style="gap:8px">
+        <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent)">D</span>
+        <span class="tiny" style="font-weight:700">Aucun programme actif</span>
+      </div>
+      <div style="background:var(--panel);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:13px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div class="eyebrow" style="color:var(--panelAccent)">Pour commencer</div>
+          <div style="font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.5px;line-height:24px;color:var(--panelText)">Choisis un programme,<br>on planifie le reste</div>
+        </div>
+        <div class="btn" style="min-height:48px;font-size:15px;background:var(--panelAccent);color:var(--panel)">Voir les programmes</div>
+        <div class="row" style="gap:7px;justify-content:center">
+          <span class="tiny" style="color:var(--panelMuted)">Tu sais déjà quoi faire ?</span>
+          <span class="tiny" style="color:var(--panelText);font-weight:600;text-decoration:underline">Séance libre</span>
+        </div>
+      </div>
+      <div class="tiny" style="color:var(--muted);line-height:16px">Remplace le « Séance libre » actuel. C’est l’inversion de priorité qui manque aujourd’hui.</div>
+    </div>
+
+  </div>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px 18px;display:flex;flex-direction:column;gap:6px">
+    <span class="eyebrow">Règle de priorité</span>
+    <span class="small" style="line-height:19px">L’état A l’emporte sur tout · sinon B si une occurrence <code style="font-family:var(--mono);font-size:11px">planned</code> existe pour aujourd’hui · sinon C si un programme est actif · sinon D. Un seul état affiché à la fois, jamais deux cartes concurrentes.</span>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

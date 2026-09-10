@@ -66,6 +66,7 @@ jest.mock('@/data/repositories/notification-repository', () => ({
   maybePushRecords: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/data/repositories/profile-repository', () => ({
+  upsertProfile: jest.fn(),
   useProfile: jest.fn(() => ({ profile: null, isLoading: false })),
 }));
 jest.mock('@/data/repositories/planned-session-repository', () => ({
@@ -76,12 +77,34 @@ jest.mock('@/data/repositories/planned-session-repository', () => ({
  * Sonde de la carte de série : n'expose que le bouton de validation. C'est le seul geste que
  * l'écran orchestre lui-même (repos, bascule superset), le reste de la carte est testé chez elle.
  */
+// ── Sondes adaptées à la recomposition de l'US MUSCU-UX01 ────────────────────────────────────
+// La carte ne porte plus que le **contexte** ; la saisie et la validation sont passées dans
+// `SetActionBar`, fixée en bas de l'écran. Le bouton `valider` est donc sur la barre, et la carte
+// n'expose plus qu'un nom d'exercice.
 jest.mock('@/components/workout/CurrentSetCard', () => {
+  const { Text: T } = require('react-native');
+  return {
+    CurrentSetCard: (props: { exerciseName: string }) => <T>{props.exerciseName}</T>,
+  };
+});
+jest.mock('@/components/workout/SetActionBar', () => {
   const { Pressable: P, Text: T } = require('react-native');
   return {
-    CurrentSetCard: (props: { exerciseName: string; onValidate: () => void }) => (
+    SetActionBar: (props: { exerciseName: string; onValidate: () => void }) => (
       <P testID="valider" onPress={props.onValidate}>
-        <T>{props.exerciseName}</T>
+        <T>barre-{props.exerciseName}</T>
+      </P>
+    ),
+  };
+});
+// Sonde du menu : la clôture y vit désormais, puisque la barre du bas ne devient « Terminer »
+// qu'une fois **toutes** les séries validées. Écourter une séance passe donc par ici.
+jest.mock('@/components/workout/SessionMenuSheet', () => {
+  const { Pressable: P, Text: T } = require('react-native');
+  return {
+    SessionMenuSheet: (props: { onFinish: () => void }) => (
+      <P testID="menu-terminer" onPress={props.onFinish}>
+        <T>menu-terminer</T>
       </P>
     ),
   };
@@ -93,6 +116,12 @@ jest.mock('@/components/workout/RestOverlay', () => {
   const { Text: T } = require('react-native');
   return { RestOverlay: () => <T testID="repos">repos</T> };
 });
+
+jest.mock('@/lib/haptics', () => ({
+  hapticConfirm: jest.fn(),
+  hapticMilestone: jest.fn(),
+  hapticSelect: jest.fn(),
+}));
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 
@@ -280,7 +309,7 @@ describe('clôture de la séance', () => {
   it('clôture, évalue les records, puis navigue vers le résumé', async () => {
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
 
     expect(mockFinishWorkout).toHaveBeenCalledWith('w-1');
@@ -297,7 +326,7 @@ describe('clôture de la séance', () => {
     );
 
     await render(<WorkoutScreen />);
-    const bouton = screen.getByText('workout.finish');
+    const bouton = screen.getByTestId('menu-terminer');
     // « Terminer » est un `Pressable` nu : rien ne le désactive pendant l'await, et React n'a pas
     // re-rendu entre les deux appuis. Une garde par `useState` verrait `false` deux fois — c'est
     // exactement le défaut corrigé le 07/08/2026, et ce test est ce qui l'empêche de revenir.
@@ -322,7 +351,7 @@ describe('clôture de la séance', () => {
 
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
 
     // Les records sont un enrichissement best-effort : rester coincé sur l'écran de saisie parce
@@ -337,7 +366,7 @@ describe('clôture de la séance', () => {
 
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
 
     expect(replace).toHaveBeenCalled();
@@ -352,7 +381,7 @@ describe('clôture d’une séance vide', () => {
   it('🔴 demande confirmation plutôt que de clôturer une séance sans rien de validé', async () => {
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
 
     // Une séance ouverte par erreur et clôturée d'un geste polluerait l'historique et le streak.
@@ -363,7 +392,7 @@ describe('clôture d’une séance vide', () => {
   it('confirmer clôture quand même', async () => {
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
     await appuyerAlerte('workout.finishAnyway');
 
@@ -374,7 +403,7 @@ describe('clôture d’une séance vide', () => {
   it('annuler ne clôture rien et ne navigue pas', async () => {
     await render(<WorkoutScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('workout.finish'));
+      fireEvent.press(screen.getByTestId('menu-terminer'));
     });
     await appuyerAlerte('common.cancel');
 
@@ -388,52 +417,38 @@ describe('clôture d’une séance vide', () => {
 // ---------------------------------------------------------------------------
 
 describe('sortie de l’écran', () => {
-  const quitter = async () => {
+  // ── Réécrit le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────
+  // L'écran posait un dialogue à trois issues : « Continuer / Mettre en pause / Abandonner ».
+  // « Mettre en pause » nommait un état **qui n'existe pas** : MUSC-F6 pose que la séance reste
+  // `active` en base, sans état de pause distinct, et reprenable jusqu'à la clôture automatique à
+  // 3 h. Le dialogue faisait donc confirmer une sortie qui ne coûte rien, avec un mot faux.
+  //
+  // La croix quitte maintenant directement, et l'abandon — la seule action destructive — vit dans
+  // le menu, derrière sa propre confirmation.
+
+  it('🔴 la croix quitte sans rien demander, et sans toucher à la séance', async () => {
     await render(<WorkoutScreen />);
+
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('workout.leave.title'));
+      fireEvent.press(screen.getByLabelText('workout.leave.later'));
     });
-  };
 
-  it('propose trois issues : continuer, mettre en pause, abandonner', async () => {
-    await quitter();
-
-    expect(boutonsAlerte.map((b) => b.text)).toEqual([
-      'workout.leave.continue',
-      'workout.leave.pause',
-      'workout.leave.abandon',
-    ]);
-  });
-
-  it('🔴 « mettre en pause » quitte SANS toucher à la séance', async () => {
-    await quitter();
-    await appuyerAlerte('workout.leave.pause');
-
-    // C'est toute la différence avec l'abandon : la séance reste ouverte, on la reprend plus tard.
+    // Rien à perdre, donc rien à confirmer : la séance reste ouverte et reprenable.
+    expect(Alert.alert).not.toHaveBeenCalled();
     expect(mockCancelWorkout).not.toHaveBeenCalled();
     expect(mockFinishWorkout).not.toHaveBeenCalled();
-    expect(replace).toHaveBeenCalledWith('/(tabs)');
+    expect(replace).toHaveBeenCalledWith('/(tabs)/strength');
   });
 
-  it('🔴 « abandonner » redemande confirmation avant d’annuler', async () => {
-    await quitter();
-    await appuyerAlerte('workout.leave.abandon');
+  it('🔴 quitter ramène au hub muscu, pas à l’accueil', async () => {
+    // La séance reprenable s'y affiche en première carte : c'est là qu'on la retrouve.
+    await render(<WorkoutScreen />);
 
-    // Une seconde confirmation avant une action destructive et irréversible.
-    expect(mockCancelWorkout).not.toHaveBeenCalled();
-    expect(boutonsAlerte.map((b) => b.text)).toEqual([
-      'common.cancel',
-      'workout.leave.abandonConfirm',
-    ]);
-  });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('workout.leave.later'));
+    });
 
-  it('abandon confirmé → annule la séance puis quitte', async () => {
-    await quitter();
-    await appuyerAlerte('workout.leave.abandon');
-    await appuyerAlerte('workout.leave.abandonConfirm');
-
-    expect(mockCancelWorkout).toHaveBeenCalledWith('w-1');
-    expect(replace).toHaveBeenCalledWith('/(tabs)');
+    expect(replace).toHaveBeenCalledWith('/(tabs)/strength');
   });
 });
 

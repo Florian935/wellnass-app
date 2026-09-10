@@ -1,0 +1,50 @@
+<div class="scr" style="height:844px;background:var(--panel)">
+
+  <div class="row" style="justify-content:space-between;padding:14px 20px">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    <span class="tiny" style="color:var(--panelMuted);font-weight:600">RÉDUIRE</span>
+    <div style="width:26px"></div>
+  </div>
+
+  <div style="padding:64px 24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div class="eyebrow" style="color:var(--panelMuted)">Repos</div>
+    <div class="mono" style="font-size:78px;font-weight:700;color:var(--panelText);line-height:1;letter-spacing:-2px">1:12</div>
+
+    <!-- Ce qui vient après : le repos n’est plus un temps mort aveugle -->
+    <div style="margin-top:26px;background:rgba(217,168,136,.12);border-radius:18px;padding:16px 18px;width:100%;display:flex;flex-direction:column;gap:9px">
+      <div class="eyebrow" style="color:var(--panelAccent)">Ensuite</div>
+      <div class="row" style="justify-content:space-between;gap:12px">
+        <span class="small" style="color:var(--panelText);font-weight:600;flex-grow:1">Développé couché barre · série 3</span>
+        <span class="mono" style="font-size:14px;font-weight:700;color:var(--panelAccent)">82,5 × 8</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:34px 24px 0;display:flex;flex-direction:column;gap:12px">
+    <div class="row" style="gap:12px">
+      <div style="flex-grow:1;min-height:52px;border-radius:16px;border:1px solid rgba(240,228,208,.32);display:flex;align-items:center;justify-content:center">
+        <span style="font-size:15px;font-weight:700;color:var(--panelText)">− 15 s</span>
+      </div>
+      <div style="flex-grow:1;min-height:52px;border-radius:16px;border:1px solid rgba(240,228,208,.32);display:flex;align-items:center;justify-content:center">
+        <span style="font-size:15px;font-weight:700;color:var(--panelText)">+ 15 s</span>
+      </div>
+    </div>
+    <div class="btn" style="background:var(--panelAccent);color:var(--panel)">Passer le repos</div>
+  </div>
+
+  <!-- Le réglage migre ici : là où on constate que 90 s ne suffisent pas -->
+  <div style="position:absolute;left:24px;right:24px;bottom:28px">
+    <div class="row" style="gap:11px;border:1px dashed rgba(240,228,208,.3);border-radius:15px;padding:13px 15px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>
+      <span class="tiny" style="flex-grow:1;color:var(--panelMuted)">Toujours <span style="color:var(--panelText);font-weight:700">2:00</span> de repos sur cet exercice</span>
+      <div style="width:38px;height:22px;border-radius:11px;background:rgba(240,228,208,.22);padding:2px">
+        <div style="width:18px;height:18px;border-radius:9px;background:var(--panelMuted)"></div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+</x-dc>
+</body>
+</html>

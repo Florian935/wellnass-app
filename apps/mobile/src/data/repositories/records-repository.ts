@@ -60,6 +60,9 @@ import {
   type SetTypeShare,
   type NeglectedExercise,
   type FavoriteExercise,
+  compareExercisePerformance,
+  type ComparableSet,
+  type ExerciseDelta,
 } from '@wellness/shared';
 import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
@@ -1374,4 +1377,111 @@ export function useNeglectedFavorites(): {
   }, [data, todayKey]);
 
   return { neglected, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// Comparaison avec la séance précédente — US MUSCU-UX01 (règle R5-1)
+// ---------------------------------------------------------------------------
+
+/** Ligne brute des séries de référence (séance précédente contenant l'exercice). */
+type PreviousSetDbRow = {
+  exercise_id: string;
+  reps: number | null;
+  weight_kg: number | null;
+  duration_seconds: number | null;
+  set_type: string;
+  done: number;
+};
+
+/**
+ * Pour chaque exercice d'une séance, les séries de la **séance terminée précédente** qui
+ * contenait cet exercice.
+ *
+ * Sert au résumé de fin : « Développé couché ▲ +2,5 kg ». Le résumé n'affichait que cinq agrégats
+ * — durée, exercices, séries, volume, densité — et rien sur ce qui avait été soulevé, alors que
+ * l'écart depuis la fois d'avant est précisément ce qui donne le sentiment de progresser.
+ *
+ * La référence est cherchée **par exercice** et non par séance : deux exercices d'une même séance
+ * peuvent avoir été faits pour la dernière fois à des dates différentes (un programme qui alterne,
+ * un exercice ajouté en cours de route). Comparer tout à « la séance d'avant » produirait des
+ * écarts faux dès qu'un exercice change de place.
+ *
+ * Paramètres : `[workoutId, ownerId, workoutId]`.
+ */
+export const SELECT_PREVIOUS_SETS = `
+  WITH current_exercises AS (
+    SELECT DISTINCT ws.exercise_id
+    FROM workout_sets ws
+    WHERE ws.workout_id = ? AND ws.deleted_at IS NULL
+  ),
+  reference AS (
+    SELECT ce.exercise_id,
+           (SELECT w2.id
+            FROM workouts w2
+            JOIN workout_sets s2 ON s2.workout_id = w2.id
+                 AND s2.exercise_id = ce.exercise_id
+                 AND s2.deleted_at IS NULL AND s2.done = 1
+            WHERE w2.owner_id = ? AND w2.deleted_at IS NULL AND w2.status = 'completed'
+              AND w2.started_at < (SELECT started_at FROM workouts WHERE id = ?)
+            ORDER BY w2.started_at DESC
+            LIMIT 1) AS prev_workout_id
+    FROM current_exercises ce
+  )
+  SELECT r.exercise_id, s.reps, s.weight_kg, s.duration_seconds, s.set_type, s.done
+  FROM reference r
+  JOIN workout_sets s ON s.workout_id = r.prev_workout_id
+       AND s.exercise_id = r.exercise_id AND s.deleted_at IS NULL
+  WHERE r.prev_workout_id IS NOT NULL
+  ORDER BY r.exercise_id, s.order_index
+`;
+
+/**
+ * Écart de chaque exercice d'une séance par rapport à son passage précédent.
+ *
+ * Retourne une carte `exerciseId → ExerciseDelta`, sans entrée quand il n'y a pas de référence :
+ * un premier passage sur un exercice n'a pas « progressé de 0 », il n'a rien à comparer — et
+ * afficher « = » y serait un contresens.
+ */
+export function useExerciseDeltas(workoutId: string): {
+  deltas: Map<string, ExerciseDelta>;
+  isLoading: boolean;
+} {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { detail, isLoading: detailLoading } = useWorkoutDetail(workoutId);
+  const { data: previousRows, isLoading: previousLoading } = useQuery<PreviousSetDbRow>(
+    SELECT_PREVIOUS_SETS,
+    [workoutId, userId, workoutId],
+  );
+
+  const deltas = new Map<string, ExerciseDelta>();
+  if (detail) {
+    const byExercise = new Map<string, ComparableSet[]>();
+    for (const row of previousRows) {
+      const list = byExercise.get(row.exercise_id) ?? [];
+      list.push({
+        weightKg: row.weight_kg,
+        reps: row.reps,
+        durationSeconds: row.duration_seconds,
+        setType: row.set_type,
+        done: row.done === 1,
+      });
+      byExercise.set(row.exercise_id, list);
+    }
+
+    for (const entry of detail.entries) {
+      const delta = compareExercisePerformance(
+        entry.sets.map((set) => ({
+          weightKg: set.weightKg,
+          reps: set.reps,
+          durationSeconds: set.durationSeconds,
+          setType: set.setType,
+          done: set.done,
+        })),
+        byExercise.get(entry.exerciseId) ?? null,
+      );
+      if (delta) deltas.set(entry.exerciseId, delta);
+    }
+  }
+
+  return { deltas, isLoading: detailLoading || previousLoading };
 }

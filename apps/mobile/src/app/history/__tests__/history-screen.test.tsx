@@ -49,6 +49,21 @@ jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
+    i18n: { language: 'fr' },
+  }),
+  // Requis depuis que l'écran tire `useUnits` (US MUSCU-UX01, affichage du tonnage) : un module
+  // de la chaîne initialise i18next, et `i18n.use(undefined)` échoue au chargement du fichier,
+  // avant qu'aucun test ne démarre.
+  initReactI18next: { type: '3rdParty', init: () => {} },
+}));
+
+// `useUnits` : le formatage réel dépend des réglages (métrique/impérial) chargés par PowerSync.
+// Ici on veut vérifier **que** le tonnage est affiché, pas comment il est formaté — c'est déjà
+// couvert par les tests d'unités.
+jest.mock('@/hooks/useUnits', () => ({
+  useUnits: () => ({
+    formatWeight: (kg: number) => `${Math.round(kg)} kg`,
+    weightSymbol: 'kg',
   }),
 }));
 
@@ -93,11 +108,15 @@ const seance = (overrides: Record<string, unknown> = {}) => ({
   sessionId: null,
   programId: null,
   volumeKg: 0,
+  // US MUSCU-UX01 : ce qui permet de reconnaître une séance sans l'ouvrir.
+  sessionName: null,
+  exerciseCount: 0,
+  recordCount: 0,
   ...overrides,
 });
 
 /** Les lignes de séance, identifiées par leur libellé d'accessibilité (la date). */
-const lignes = () => screen.queryAllByRole('button').filter((n) => /\d{2}\/\d{2}\/\d{4}/.test(
+const lignes = () => screen.queryAllByRole('button').filter((n) => /\d/.test(
   String(n.props.accessibilityLabel ?? ''),
 ));
 
@@ -133,34 +152,80 @@ describe('états d’écran', () => {
     expect(screen.getByText('history.empty.message')).toBeTruthy();
   });
 
-  it('affiche la date de chaque séance', async () => {
+  // ── Adapté le 10/09/2026 (US MUSCU-UX01) ─────────────────────────────────────────────────
+  // La ligne portait « JJ/MM/AAAA · durée · RPE » et rien d'autre : impossible de reconnaître une
+  // séance sans l'ouvrir. Elle porte désormais le **nom** de la séance, son tonnage et ses
+  // exercices, et la date passe en pastille jour + mois — l'année se lit dans l'en-tête du mois.
+  it('affiche le jour de chaque séance', async () => {
     mockUseHistory.mockReturnValue({ workouts: [seance()], isLoading: false });
 
     await render(<HistoryScreen />);
 
-    expect(screen.getByText('07/08/2026')).toBeTruthy();
+    expect(screen.getByText('07')).toBeTruthy();
   });
 
-  it('affiche durée et RPE quand ils existent', async () => {
+  it('affiche la durée quand elle existe', async () => {
+    // Le **RPE a quitté la ligne** au profit du tonnage et du nombre d'exercices : sur une ligne
+    // qui porte déjà un nom, ce sont eux qui distinguent deux séances, pas une note d'effort.
+    // Le RPE reste sur la fiche de détail et dans le résumé de fin.
     mockUseHistory.mockReturnValue({ workouts: [seance()], isLoading: false });
 
     await render(<HistoryScreen />);
 
     expect(screen.getByText(/history\.row\.durationMin/)).toBeTruthy();
-    expect(screen.getByText(/history\.row\.rpe/)).toBeTruthy();
   });
 
-  it('🔴 une séance sans durée ni RPE n’affiche pas une ligne de méta vide', async () => {
+  it('🔴 une séance sans aucune métrique n’affiche pas une ligne de méta vide', async () => {
     mockUseHistory.mockReturnValue({
-      workouts: [seance({ durationSeconds: null, rpe: null })],
+      workouts: [seance({ durationSeconds: null, rpe: null, volumeKg: 0, exerciseCount: 0 })],
       isLoading: false,
     });
 
     await render(<HistoryScreen />);
 
-    // Un séparateur « · » orphelin sous la date se lit comme un défaut d'affichage.
+    // Un séparateur « · » orphelin sous le nom se lit comme un défaut d'affichage.
     expect(screen.queryByText(/history\.row\./)).toBeNull();
-    expect(screen.getByText('07/08/2026')).toBeTruthy();
+    expect(screen.getByText('07')).toBeTruthy();
+  });
+
+  it('🔴 affiche le tonnage, qui était chargé mais jamais montré', async () => {
+    // `volumeKg` faisait déjà partie de `WorkoutHistoryItem` et le widget du hub l'affichait :
+    // c'est ce qui distingue deux séances de même durée.
+    mockUseHistory.mockReturnValue({
+      workouts: [seance({ volumeKg: 7100, exerciseCount: 5 })],
+      isLoading: false,
+    });
+
+    await render(<HistoryScreen />);
+
+    // Plusieurs occurrences attendues : la ligne, le cumul du mois et le total de l'en-tête —
+    // avec une seule séance de 7 100 kg, les trois valent la même chose.
+    expect(screen.getAllByText(/7100 kg/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/history\.row\.exercises/)).toBeTruthy();
+  });
+
+  it('🔴 nomme la séance, et marque les séances libres', async () => {
+    mockUseHistory.mockReturnValue({
+      workouts: [
+        seance({ id: 'w-prog', sessionName: 'Push A' }),
+        seance({ id: 'w-libre', sessionName: null }),
+      ],
+      isLoading: false,
+    });
+
+    await render(<HistoryScreen />);
+
+    expect(screen.getByText('Push A')).toBeTruthy();
+    expect(screen.getByText('history.freeSession')).toBeTruthy();
+    expect(screen.getByText('history.freeBadge')).toBeTruthy();
+  });
+
+  it('signale un record par une pastille', async () => {
+    mockUseHistory.mockReturnValue({ workouts: [seance({ recordCount: 2 })], isLoading: false });
+
+    await render(<HistoryScreen />);
+
+    expect(screen.getByText('🏆')).toBeTruthy();
   });
 
   it('ouvre le détail au tap', async () => {
@@ -168,7 +233,7 @@ describe('états d’écran', () => {
 
     await render(<HistoryScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('07/08/2026'));
+      fireEvent.press(screen.getByText('history.freeSession'));
     });
 
     expect(push).toHaveBeenCalledWith('/history/w-42');
@@ -282,6 +347,9 @@ describe('filtre de période', () => {
     await render(<HistoryScreen />);
     await filtrer('history.filter7d');
 
-    expect(screen.getByText('history.empty.message')).toBeTruthy();
+    // US MUSCU-UX01 : message **spécifique au filtre**, et non celui du compte vide. « Démarre ta
+    // première séance » à quelqu'un qui en a trois cents, parce qu'il a cliqué « 7 j », est faux —
+    // ce qu'il faut lui proposer, c'est de retirer le filtre.
+    expect(screen.getByText('history.empty.filtered')).toBeTruthy();
   });
 });

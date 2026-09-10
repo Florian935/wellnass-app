@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    :root{
+      --bg:#f7eede; --surface:#fffaf2; --surfaceAlt:#f3ddd0; --border:#ece0cd;
+      --borderStrong:#90897d; --text:#33291f; --muted:#786a59; --accent:#b14f2b;
+      --accentText:#ffffff; --success:#66714b; --danger:#b23b2e; --track:#eadcc6;
+      --chartGreen:#7c8a5b; --amber:#b47f31; --warn:#f7ead6; --warnBorder:#e9cfa0;
+      --warnText:#8a6419; --panel:#33291f; --panelText:#f0e4d0; --panelMuted:#c9b79a;
+      --panelAccent:#d9a888;
+      --display:'Bricolage Grotesque', Georgia, serif;
+      --body:'Hanken Grotesk', system-ui, sans-serif;
+      --mono:'Space Mono', ui-monospace, monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--body);color:var(--text);-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none} a:hover{color:#8f3f22}
+    .scr{width:390px;background:var(--bg);position:relative;overflow:hidden}
+    .pad{padding:0 20px}
+    .eyebrow{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted)}
+    .h1{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.8px;line-height:1.1}
+    .h2{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.3px}
+    .h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.3px}
+    .body{font-size:14px;line-height:20px}
+    .small{font-size:13px;line-height:18px}
+    .tiny{font-size:12px;line-height:16px}
+    .mono{font-family:var(--mono)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px}
+    .tile{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;
+      display:flex;flex-direction:column}
+    .chip{border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:600;
+      background:var(--surfaceAlt);color:var(--muted)}
+    .chip.on{background:var(--accent);color:#fff}
+    .btn{min-height:52px;border-radius:16px;background:var(--accent);color:#fff;
+      font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .row{display:flex;align-items:center}
+    .fold{position:absolute;left:0;right:0;border-top:2px dashed var(--danger);
+      display:flex;justify-content:flex-end;pointer-events:none}
+    .foldtag{background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:2px 8px;border-radius:0 0 6px 6px;letter-spacing:.04em}
+    .flag{position:absolute;background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:3px 8px;border-radius:8px;letter-spacing:.02em;line-height:1.3}
+    .flag.ok{background:var(--success)}
+  </style>
+</helmet>
+<div style="width:1120px;height:620px;background:var(--bg);padding:36px 40px;display:flex;flex-direction:column;gap:26px">
+
+  <div style="display:flex;flex-direction:column;gap:5px">
+    <div style="font-family:var(--display);font-weight:800;font-size:27px;letter-spacing:-.7px">Prendre un programme, du premier lancement à la première série</div>
+    <div class="body" style="color:var(--muted)">Parcours d’un compte neuf qui installe l’app un mardi.</div>
+  </div>
+
+  <!-- RAIL AVANT -->
+  <div style="display:flex;flex-direction:column;gap:11px">
+    <div class="row" style="gap:10px">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:var(--danger);padding:3px 9px;border-radius:7px">AUJOURD’HUI</span>
+      <span class="small" style="color:var(--muted)">9 écrans · 4 décisions imposées · première séance dans 6 jours</span>
+    </div>
+
+    <div class="row" style="gap:4px;align-items:stretch">
+
+      <div style="width:118px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px">Hub muscu</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">« Séance libre » en gros, 7 tuiles vides</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:104px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px">Programmes</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">Bibliothèque + mes programmes</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:104px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px">Fiche</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">Pas de bouton « suivre »</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:110px;background:#fdeceb;border:1.5px solid var(--danger);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--danger)">Dupliquer</div>
+        <div class="tiny" style="font-weight:600;line-height:15px;color:var(--danger)">Contrainte de modèle exposée</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:104px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px">La copie</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">« Démarrer ce programme »</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:134px;background:#fdeceb;border:1.5px solid var(--danger);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--danger)">Assistant</div>
+        <div class="tiny" style="font-weight:600;line-height:15px;color:var(--danger)">Aucun jour proposé : 3 taps obligatoires. Début figé à lundi prochain</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:104px;background:#fdeceb;border:1.5px solid var(--danger);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--danger)">Planning</div>
+        <div class="tiny" style="font-weight:600;line-height:15px;color:var(--danger)">Atterrit sur le calendrier, pas sur l’action</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:96px;background:var(--panel);border-radius:14px;padding:11px 12px;display:flex;flex-direction:column;gap:4px;justify-content:center">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--danger)">+ 6 jours</div>
+        <div class="tiny" style="font-weight:700;line-height:15px;color:var(--panelText)">1ʳᵉ séance lundi</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="height:1px;background:var(--border)"></div>
+
+  <!-- RAIL APRÈS -->
+  <div style="display:flex;flex-direction:column;gap:11px">
+    <div class="row" style="gap:10px">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:var(--success);padding:3px 9px;border-radius:7px">PROPOSÉ</span>
+      <span class="small" style="color:var(--muted)">4 écrans · 0 décision obligatoire · première séance aujourd’hui</span>
+    </div>
+
+    <div class="row" style="gap:9px;align-items:stretch">
+
+      <div style="width:186px;background:var(--surface);border:1.5px solid var(--success);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:5px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--success)">Hub muscu</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">« Choisis un programme » en action principale, 3 suggestions filtrées sur le profil d’onboarding</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:186px;background:var(--surface);border:1.5px solid var(--success);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:5px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--success)">Fiche programme</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">Un seul geste : « Suivre ce programme ». La copie personnelle se fait en silence</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:186px;background:var(--surface);border:1.5px solid var(--success);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:5px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--success)">Assistant pré-rempli</div>
+        <div class="tiny" style="font-weight:600;line-height:15px">Début aujourd’hui, jours espacés automatiquement. Valider sans rien toucher</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="width:186px;background:var(--panel);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:5px">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--panelAccent)">Hub, séance prête</div>
+        <div class="tiny" style="font-weight:600;line-height:15px;color:var(--panelText)">Retour sur la carte du jour, bouton « Démarrer la séance »</div>
+      </div>
+      <div style="display:flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2.5" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></div>
+
+      <div style="flex-grow:1;background:rgba(102,113,75,.13);border-radius:14px;padding:13px 14px;display:flex;flex-direction:column;gap:4px;justify-content:center">
+        <div class="eyebrow" style="font-size:9.5px;color:var(--success)">Aujourd’hui</div>
+        <div class="tiny" style="font-weight:700;line-height:15px;color:var(--success)">1ʳᵉ série dans la minute</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -152,13 +152,11 @@
     "sessionDone": "Séance terminée ?",
     "sessionDoneHint": "Toutes tes séries sont validées.",
     "leave": {
-      "title": "Quitter la séance ?",
-      "continue": "Continuer la séance",
-      "pause": "Mettre en pause",
       "abandon": "Abandonner",
       "abandonConfirmTitle": "Abandonner la séance ?",
       "abandonConfirmMessage": "La séance et ses séries seront supprimées.",
-      "abandonConfirm": "Abandonner"
+      "abandonConfirm": "Abandonner",
+      "later": "Quitter et reprendre plus tard"
     },
     "finishNoSetsTitle": "Aucune série validée",
     "finishNoSetsMessage": "Terminer quand même ?",
@@ -184,11 +182,8 @@
     "durationLabel": "Durée",
     "addedWeightLabel": "Lest",
     "optional": "option.",
-    "plannedWeight": "Prévu : {{weight}}",
-    "rpeAdd": "＋ {{scale}} série",
     "rpeValue": "{{scale}} {{value}}",
     "rpeLabel": "{{scale}} série",
-    "rpeClear": "Effacer",
     "exerciseNote": {
       "placeholder": "Note (réglage machine, position…)"
     },
@@ -222,9 +217,13 @@
       "sets": "Séries validées",
       "volume": "Volume total",
       "density": "Densité",
-      "feeling": "Ressenti",
-      "starLabel_one": "{{count}} étoile",
-      "starLabel_other": "{{count}} étoiles",
+      "feeling": {
+        "easy": "Facile",
+        "fine": "Correct",
+        "solid": "Solide",
+        "hard": "Dur",
+        "max": "Max"
+      },
       "note": "Note de séance",
       "notePlaceholder": "Sensation, contexte, remarques…",
       "records": {
@@ -245,7 +244,16 @@
       "saveAsTemplateConfirm": "Valider",
       "saveAsTemplateDefaultName": "Séance du {{date}}",
       "templateNameLabel": "Nom du template",
-      "templateSaved": "Template enregistré"
+      "templateSaved": "Template enregistré",
+      "whatYouDid": "Ce que tu as fait",
+      "feelingQuestion": "Comment c’était ?",
+      "addNote": "Ajouter une note de séance",
+      "deltaRepsUp_one": "▲ +{{count}} rep",
+      "deltaRepsUp_other": "▲ +{{count}} reps",
+      "deltaRepsDown_one": "▼ −{{count}} rep",
+      "deltaRepsDown_other": "▼ −{{count}} reps",
+      "deltaTimeUp": "▲ +{{duration}}",
+      "deltaTimeDown": "▼ −{{duration}}"
     },
     "displayLevel": {
       "levels": {
@@ -262,6 +270,28 @@
           "description": "Tout : types de séries, RPE, notes, superset."
         }
       }
+    },
+    "extras": {
+      "title": "Type de série, intensité, note, superset"
+    },
+    "restSeconds_one": "{{count}} s",
+    "restSeconds_other": "{{count}} s",
+    "restPickerMessage": "Vaut pour cet exercice, jusqu’à la fin de la séance.",
+    "restNext": "Ensuite",
+    "restAlways": "Passer à {{count}} s de repos sur cet exercice",
+    "lastTimeShort": "Dernière fois",
+    "plannedShort": "Prévu",
+    "suggestionShort": "Suggestion",
+    "setsProgress": "{{done}}/{{total}} séries",
+    "finishSession": "Terminer la séance",
+    "validateAndChain": "Valider — puis enchaîner",
+    "stepUp": "Augmenter {{field}}",
+    "stepDown": "Diminuer {{field}}",
+    "expandSets": "Voir les séries de {{name}}",
+    "collapseSets": "Masquer les séries de {{name}}",
+    "menu": {
+      "title": "Options de la séance",
+      "rest": "Repos sur cet exercice"
     }
   },
   "tabs": {
@@ -1255,7 +1285,13 @@
       "deleteError": "Suppression impossible",
       "deleteErrorMessage": "La suppression du programme a échoué. Réessaie.",
       "notFoundTitle": "Programme introuvable",
-      "notFoundMessage": "Ce programme n'existe pas ou a été supprimé."
+      "notFoundMessage": "Ce programme n'existe pas ou a été supprimé.",
+      "followProgram": "Suivre ce programme",
+      "followHint": "Une copie personnelle sera créée pour que tu puisses l’adapter.",
+      "copyCreatedTitle": "Copie personnelle créée",
+      "copyCreated": "Tu la retrouveras dans « Mes programmes » et tu peux la modifier à ta guise.",
+      "followError": "Impossible de suivre ce programme",
+      "followErrorMessage": "Réessaie dans un instant."
     },
     "edit": {
       "createTitle": "Nouveau programme",
@@ -1333,7 +1369,9 @@
     "subtitle": "Tes séances terminées.",
     "empty": {
       "title": "Aucune séance enregistrée",
-      "message": "Termine ta première séance pour la retrouver ici."
+      "message": "Termine ta première séance pour la retrouver ici.",
+      "filtered": "Aucune séance sur cette période.",
+      "resetFilter": "Voir tout l’historique"
     },
     "filterAll": "Tout",
     "filter7d": "7 jours",
@@ -1341,7 +1379,9 @@
     "filter90d": "90 jours",
     "row": {
       "durationMin": "{{count}} min",
-      "rpe": "Ressenti {{value}} / 5"
+      "rpe": "Ressenti {{value}} / 5",
+      "exercises_one": "{{count}} exercice",
+      "exercises_other": "{{count}} exercices"
     },
     "detail": {
       "notFoundTitle": "Séance introuvable",
@@ -1373,6 +1413,18 @@
         "estimated_1rm": "1RM estimé",
         "best_volume": "Volume série"
       }
+    },
+    "freeSession": "Séance libre",
+    "freeBadge": "LIBRE",
+    "deleteHint": "Appui long pour supprimer",
+    "summary_one": "{{count}} séance · {{volume}} soulevés",
+    "summary_other": "{{count}} séances · {{volume}} soulevés",
+    "monthSummary_one": "{{count}} séance · {{volume}}",
+    "monthSummary_other": "{{count}} séances · {{volume}}",
+    "delete": {
+      "title": "Supprimer cette séance ?",
+      "message": "« {{name}} » sera retirée de ton historique, avec ses records. Si elle venait de ton planning, le jour redeviendra à faire.",
+      "confirm": "Supprimer"
     }
   },
   "progress": {
@@ -1480,6 +1532,11 @@
         "item": "{{name}}, {{count}} semaines",
         "scope": "parmi tes favoris"
       }
+    },
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "exercise": "Par exercice",
+      "body": "Mon corps"
     }
   },
   "settings": {
@@ -2213,7 +2270,10 @@
     "decreaseHour": "Heure précédente",
     "increaseHour": "Heure suivante",
     "decreaseMinute": "Cinq minutes de moins",
-    "increaseMinute": "Cinq minutes de plus"
+    "increaseMinute": "Cinq minutes de plus",
+    "startToday": "Aujourd’hui",
+    "startNextMonday": "Lundi prochain",
+    "startsOn": "Début le {{date}}"
   },
   "notifications": {
     "streakDanger": {
@@ -2973,6 +3033,44 @@
           "recuperation": "Récupération"
         }
       }
+    }
+  },
+  "strengthHub": {
+    "followSection": "Suivre",
+    "directory": "Exercices, programmes, templates",
+    "setsShort": "SÉRIES",
+    "estimated": "ESTIMÉ",
+    "minutesShort": "{{count}} min",
+    "resume": {
+      "eyebrow": "Séance en cours"
+    },
+    "today": {
+      "eyebrow": "Aujourd’hui",
+      "more_one": "+ {{count}} autre exercice",
+      "more_other": "+ {{count}} autres exercices"
+    },
+    "rest": {
+      "title": "Repos aujourd’hui",
+      "doneTitle": "Séance faite, repos mérité",
+      "noNext": "Aucune séance à venir dans ton programme.",
+      "seePlanning": "Voir le planning"
+    },
+    "onboarding": {
+      "eyebrow": "Pour commencer",
+      "title": "Choisis un programme, on planifie le reste",
+      "subtitle": "Trois questions, et ta première séance est calée pour aujourd’hui.",
+      "cta": "Voir les programmes",
+      "freeHint": "Tu sais déjà quoi faire ?"
+    },
+    "progress": {
+      "week": "{{name}} · semaine {{week}} sur {{totalWeeks}}",
+      "sessions": "{{done}}/{{total}} séances",
+      "a11y": "{{name}}, semaine {{week}} sur {{totalWeeks}}, {{done}} séances faites sur {{total}}"
+    },
+    "suggested": {
+      "title": "Suggérés pour toi · {{level}}",
+      "seeAll_one": "Voir le programme",
+      "seeAll_other": "Voir les {{count}} programmes"
     }
   }
 }

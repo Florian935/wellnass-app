@@ -1,13 +1,25 @@
 /**
- * Écran de progression musculaire (US3 — 3.21 / 3.39 / 3.40).
+ * Écran de progression musculaire — **trois onglets** (US MUSCU-UX01, 10/09/2026).
  *
- * Trois sections :
- *  1. Volume par groupe musculaire (semaine courante) — histogramme.
- *  2. Sélecteur d'exercice (modal, via ExercisePicker).
- *  3. Per exercice sélectionné :
- *     - Records personnels (charge max, 1RM estimé, meilleur volume de série).
- *     - Courbe de progression avec toggles métrique (charge max / volume)
- *       et période (30j / 90j / 1 an).
+ * ── Ce que l'écran était ────────────────────────────────────────────────────────────────────────
+ * **Huit sections empilées** en scroll continu : volume hebdomadaire, tonnage cumulé, régularité,
+ * équilibre musculaire, module force, exécution du programme, mensurations, par exercice. Le code
+ * l'admettait lui-même, en commentaire : « 5ᵉ section de cet écran — seuil de repli ADR-007
+ * atteint, accepté tel quel ». Il l'a été trois fois de plus depuis.
+ *
+ * Et les quatre états vides proposaient « Démarrer une séance » vers `/workout`, qui n'ouvre rien
+ * sans séance active : le bouton le plus présent de l'écran ne démarrait pas de séance.
+ *
+ * ── Ce qu'il est ────────────────────────────────────────────────────────────────────────────────
+ *   · **Vue d'ensemble** — la seule question qu'on se pose en ouvrant l'écran : est-ce que je
+ *     progresse ? Volume, régularité, équilibre musculaire, exécution du programme, tonnage
+ *     cumulé, records récents et temps d'entraînement.
+ *   · **Par exercice** — sélecteur, courbe, records.
+ *   · **Mon corps** — mensurations et module force (%1RM, DOTS, total SBD), qui rapportent la
+ *     performance au poids de corps.
+ *
+ * Les sections elles-mêmes n'ont pas changé : elles sont **réparties**, pas réécrites. C'est ce
+ * qui rend la refonte sûre — aucun calcul n'est touché.
  *
  * Conventions :
  *  - Aucune chaîne en dur — namespace i18n `progress.*`.
@@ -45,6 +57,10 @@ import { Segment } from '@/components/Segment';
 import { MuscleVolumeBarChart } from '@/components/charts/MuscleVolumeBarChart';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ExercisePicker } from '@/components/programs/ExercisePicker';
+// US MUSCU-UX01 : ces deux cartes viennent du hub muscu, où INSIGHTS-02 les avait placées faute
+// de meilleure destination. Réutilisées telles quelles — elles acceptent déjà `size`.
+import { RecordRecentCard } from '@/components/dashboard/RecordRecentCard';
+import { TrainingTimeCard } from '@/components/dashboard/TrainingTimeCard';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import {
   useExerciseRecords,
@@ -68,6 +84,10 @@ import { useUnits } from '@/hooks/useUnits';
 // ---------------------------------------------------------------------------
 // Constantes de toggles
 // ---------------------------------------------------------------------------
+
+/** Les trois onglets de l'écran (US MUSCU-UX01). */
+const PROGRESS_TABS = ['overview', 'exercise', 'body'] as const;
+type ProgressTab = (typeof PROGRESS_TABS)[number];
 
 const METRIC_OPTIONS: readonly ProgressionMetric[] = ['max_weight', 'volume', 'estimated_1rm'];
 const PERIOD_OPTIONS: readonly ProgressionPeriod[] = ['30d', '90d', '1y', 'all'];
@@ -93,6 +113,7 @@ export default function ProgressScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
+  const [tab, setTab] = useState<ProgressTab>('overview');
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickedExercise, setPickedExercise] = useState<ExerciseListItem | null>(null);
   const [metric, setMetric] = useState<ProgressionMetric>('max_weight');
@@ -115,6 +136,15 @@ export default function ProgressScreen() {
     setPickerVisible(false);
   };
 
+  /**
+   * Sortir d'un état vide demande une séance, et une séance se démarre depuis le **hub**.
+   *
+   * ⚠️ Ce CTA pointait vers `/workout`, qui n'ouvre pas de séance : sans séance active, cet écran
+   * affiche « Aucune séance en cours » et un bouton « Retour à l'accueil ». Le bouton le plus
+   * présent de la page se refermait donc sur lui-même — quatre fois.
+   */
+  const onStartWorkout = () => router.push('/(tabs)/strength');
+
   return (
     <Screen edges={['top']}>
       <ScreenHeader
@@ -122,105 +152,103 @@ export default function ProgressScreen() {
         subtitle={t('progress.subtitle')}
       />
 
+      {/* Les trois onglets, à la place de huit sections empilées. */}
+      <View style={styles.tabs}>
+        <Segment
+          options={PROGRESS_TABS}
+          value={tab}
+          onChange={setTab}
+          label={(option) => t(`progress.tabs.${option}`)}
+        />
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ---------------------------------------------------------------- */}
-        {/* Section 1 — Volume hebdomadaire par groupe musculaire             */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('progress.weeklyVolume.title')}
-        </Text>
-        <WeeklyVolumeSection onStartWorkout={() => router.push('/workout')} />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Section 1bis — Tonnage cumulé (lifetime/annuel, US MUSC-19)        */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('progress.lifetimeTonnage.title')}
-        </Text>
-        <LifetimeTonnageSection />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Section 1ter — Régularité & consistance (US MUSC-20)               */}
-        {/* ⚠️ 5ᵉ section de cet écran — seuil de repli ADR-007 (~4-5 sections) */}
-        {/* atteint (spec D4), accepté tel quel, pas traité ici.                */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('progress.regularity.title')}
-        </Text>
-        <RegularitySection onStartWorkout={() => router.push('/workout')} />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* Section 1quater — Équilibre musculaire (14 j)                     */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('progress.balance.title')}
-          <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
-            {'  '}
-            {t('progress.balance.subtitle')}
-          </Text>
-        </Text>
-        <MuscleBalanceSection onStartWorkout={() => router.push('/workout')} />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* US MUSCPWR-01 — module force (%1RM, DOTS, total SBD).             */}
-        {/* Tier 1 CONDITIONNEL et REPLIÉ par défaut (ADR-007, spec D4) :     */}
-        {/* cet écran compte déjà cinq sections, et ce module ne sert qu'aux  */}
-        {/* pratiquants de force — il rend `null` tant que rien n'est          */}
-        {/* désigné ni calculable, donc il ne coûte rien aux autres.          */}
-        {/* ---------------------------------------------------------------- */}
-        <StrengthSection />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* US EXEC-01 — exécution du programme (MUSC-33/26/13/21).           */}
-        {/* Même statut que StrengthSection ci-dessus, et pour la même        */}
-        {/* raison : cet écran est au seuil de repli d'ADR-007, donc la       */}
-        {/* section est CONDITIONNELLE et REPLIÉE par défaut. Elle rend       */}
-        {/* `null` tant qu'aucune de ses 4 analyses n'a assez de données —    */}
-        {/* un compte neuf ne voit donc rien de plus qu'avant.                */}
-        {/* Ce silence n'est pas une concession au plafond : la règle R3 de   */}
-        {/* la spec l'imposait déjà par JUSTESSE (une moyenne sur n=1 est un  */}
-        {/* mensonge). La même décision servait déjà deux fins.               */}
-        {/* ---------------------------------------------------------------- */}
-        <ExecutionSection />
-
-        {/* ---------------------------------------------------------------- */}
-        {/* US MESUR-01 — entrée vers les mensurations.                       */}
-        {/* Ici plutôt qu'en widget d'accueil (décision D5) : une mesure       */}
-        {/* mensuelle ne mérite pas une place permanente sur un écran         */}
-        {/* quotidien, et E8 est un epic muscu — c'est donc sur Progression   */}
-        {/* qu'un pratiquant suit l'évolution de son corps.                    */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('measurements.entryTitle')}
-        </Text>
-        <Pressable
-          onPress={() => router.push('/measurements')}
-          accessibilityRole="button"
-          accessibilityLabel={t('measurements.cta')}
-          style={[
-            styles.exerciseSelector,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
-          <View style={styles.exerciseSelectorInner}>
-            <Ionicons name="body-outline" size={20} color={colors.accent} />
-            <Text style={[styles.measurementsCta, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
-              {t('measurements.cta')}
+        {/* ═══ Vue d'ensemble — « est-ce que je progresse ? » ═══════════════════════════════ */}
+        {tab === 'overview' ? (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('progress.weeklyVolume.title')}
             </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-        </Pressable>
+            <WeeklyVolumeSection onStartWorkout={onStartWorkout} />
 
-        {/* ---------------------------------------------------------------- */}
-        {/* Section 2 — Par exercice                                          */}
-        {/* ---------------------------------------------------------------- */}
-        <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-          {t('progress.exercise.title')}
-        </Text>
+            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+              {t('progress.regularity.title')}
+            </Text>
+            <RegularitySection onStartWorkout={onStartWorkout} />
 
+            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+              {t('progress.balance.title')}
+              <Text style={[styles.sectionSubtitle, { color: colors.textMuted }]}>
+                {'  '}
+                {t('progress.balance.subtitle')}
+              </Text>
+            </Text>
+            <MuscleBalanceSection onStartWorkout={onStartWorkout} />
+
+            {/* US EXEC-01 — exécution du programme (MUSC-33/26/13/21). CONDITIONNELLE et repliée :
+                elle rend `null` tant qu'aucune de ses 4 analyses n'a assez de données. Ce silence
+                n'est pas une concession au plafond — la règle R3 de sa spec l'impose par JUSTESSE
+                (une moyenne sur n=1 est un mensonge). La même décision sert deux fins. */}
+            <ExecutionSection />
+
+            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+              {t('progress.lifetimeTonnage.title')}
+            </Text>
+            <LifetimeTonnageSection />
+
+            {/* ── Arrivées du hub muscu (US MUSCU-UX01) ──────────────────────────────────────
+                `strength-records` et `strength-training-time` y avaient été placées par
+                INSIGHTS-02 faute de meilleure destination. Cet onglet en est une vraie : on
+                vient y voir sa progression, pas démarrer une séance. */}
+            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
+              {t('progress.records.title')}
+            </Text>
+            <RecordRecentCard size="wide" />
+            <TrainingTimeCard size="wide" />
+          </>
+        ) : null}
+
+        {/* ═══ Mon corps — mensurations et force relative ═══════════════════════════════════ */}
+        {tab === 'body' ? (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('measurements.entryTitle')}
+            </Text>
+            <Pressable
+              onPress={() => router.push('/measurements')}
+              accessibilityRole="button"
+              accessibilityLabel={t('measurements.cta')}
+              style={[
+                styles.exerciseSelector,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+              ]}
+            >
+              <View style={styles.exerciseSelectorInner}>
+                <Ionicons name="body-outline" size={20} color={colors.accent} />
+                <Text
+                  style={[styles.measurementsCta, { color: colors.text }]}
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {t('measurements.cta')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+            </Pressable>
+
+            {/* US MUSCPWR-01 — module force (%1RM, DOTS, total SBD). Sa place est ici : DOTS et
+                %1RM rapportent la performance au **poids de corps**. Toujours conditionnel — il
+                rend `null` tant que rien n'est désigné ni calculable. */}
+            <View style={styles.sectionTitleSpaced} />
+            <StrengthSection />
+          </>
+        ) : null}
+
+        {/* ═══ Par exercice ════════════════════════════════════════════════════════════════ */}
+        {tab === 'exercise' ? (
+          <>
         {/* Sélecteur d'exercice */}
         <Pressable
           onPress={() => setPickerVisible(true)}
@@ -251,7 +279,7 @@ export default function ProgressScreen() {
             period={period}
             onMetricChange={setMetric}
             onPeriodChange={setPeriod}
-            onStartWorkout={() => router.push('/workout')}
+            onStartWorkout={onStartWorkout}
           />
         ) : (
           <Card style={styles.emptyCard}>
@@ -260,6 +288,8 @@ export default function ProgressScreen() {
             </Text>
           </Card>
         )}
+          </>
+        ) : null}
       </ScrollView>
 
       {/* Modal de sélection d'exercice */}
@@ -731,6 +761,7 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 32,
   },
+  tabs: { marginBottom: 16 },
   sectionTitle: {
     fontFamily: fontFamily.displaySemi,
     fontSize: 18,

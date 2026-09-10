@@ -85,18 +85,31 @@ function ProgramDetailView({ programId }: { programId: string }) {
     router.push(`/programs/edit?id=${programId}`);
   };
 
-  const onPlan = () => {
-    router.push(`/planning/plan?id=${programId}`);
-  };
-
-  const onDuplicate = () =>
+  /**
+   * « Suivre ce programme » — le geste unique de l'US MUSCU-UX01 (règle R2-2).
+   *
+   * Avant, la fiche d'un programme éditorial n'offrait **pas** de bouton pour le suivre : il
+   * fallait d'abord « Dupliquer », atterrir sur la copie, puis « Démarrer ce programme ». La
+   * duplication est pourtant une **contrainte de modèle** — on n'active pas un contenu éditorial,
+   * sinon local et cloud divergent — et non une décision qui appartient à l'utilisateur.
+   *
+   * Elle devient donc implicite : on duplique en silence, on planifie **la copie**, et on
+   * l'annonce **après** (`copyCreated`), parce que la copie a une conséquence visible — elle
+   * apparaît dans « Mes programmes » et devient modifiable.
+   */
+  const onFollow = () =>
     void lockDuplicate(async () => {
       setDuplicating(true);
       try {
-        const newId = await duplicateProgram(programId);
-        router.replace(`/programs/${newId}`);
+        const targetId = isOwned ? programId : await duplicateProgram(programId);
+        if (!isOwned) {
+          Alert.alert(t('programs.detail.copyCreatedTitle'), t('programs.detail.copyCreated'));
+        }
+        router.push(`/planning/plan?id=${targetId}`);
       } catch {
-        // Silencieux : la duplication atomique a échoué, on reste sur le détail.
+        // Écriture locale (offline-first) : un échec est très improbable. On reste sur la fiche
+        // plutôt que d'ouvrir un assistant qui planifierait un programme inexistant.
+        Alert.alert(t('programs.detail.followError'), t('programs.detail.followErrorMessage'));
       } finally {
         setDuplicating(false);
       }
@@ -209,16 +222,20 @@ function ProgramDetailView({ programId }: { programId: string }) {
           </View>
         )}
 
-        {/* Actions */}
+        {/* Actions — US MUSCU-UX01 : un seul geste principal, quel que soit le propriétaire.
+            La duplication d'un éditorial se fait dans `onFollow`, en silence puis annoncée. */}
         <View style={styles.actions}>
-          {/* Planifier/activer réservé aux programmes POSSÉDÉS : un éditorial doit d'abord
-              être dupliqué (sinon on activait l'éditorial → divergence local↔cloud). */}
-          {isOwned ? (
-            <Button
-              label={detail.isActive ? t('programs.detail.editPlanning') : t('programs.detail.startProgram')}
-              onPress={onPlan}
-            />
-          ) : null}
+          <Button
+            label={
+              detail.isActive
+                ? t('programs.detail.editPlanning')
+                : t('programs.detail.followProgram')
+            }
+            onPress={() => void onFollow()}
+            loading={duplicating}
+            // Un programme sans séance n'a rien à planifier : l'assistant serait vide.
+            disabled={duplicating || detail.sessions.length === 0}
+          />
 
           {isOwned ? (
             <Button
@@ -226,15 +243,7 @@ function ProgramDetailView({ programId }: { programId: string }) {
               variant="ghost"
               onPress={onEdit}
             />
-          ) : (
-            <Button
-              label={duplicating ? t('programs.detail.duplicating') : t('programs.detail.duplicate')}
-              variant="ghost"
-              onPress={() => void onDuplicate()}
-              loading={duplicating}
-              disabled={duplicating}
-            />
-          )}
+          ) : null}
 
           {isOwned ? (
             <Button
@@ -246,6 +255,13 @@ function ProgramDetailView({ programId }: { programId: string }) {
             />
           ) : null}
         </View>
+
+        {/* Dit ce qui va se passer, plutôt que d'en faire une décision (règle R2-2). */}
+        {!isOwned && detail.sessions.length > 0 ? (
+          <Text style={[styles.followHint, { color: colors.textMuted }]}>
+            {t('programs.detail.followHint')}
+          </Text>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -365,6 +381,13 @@ function PlanRow({ plan }: { plan: PlanItem }) {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  followHint: {
+    fontFamily: fontFamily.body,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: 10,
+  },
   scroll: { paddingBottom: 32 },
   meta: {
     fontFamily: fontFamily.body,

@@ -1,0 +1,347 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Hub & démarrage"
+    },
+    {
+      "id": "page-2",
+      "name": "La séance"
+    },
+    {
+      "id": "page-3",
+      "name": "Après la séance"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "HubAvant.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1720,
+      "title": "1 · Hub muscu — AUJOURD’HUI (compte neuf)"
+    },
+    {
+      "file": "Main.dc.html",
+      "page": "page-1",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 880,
+      "title": "2 · Hub muscu — PROPOSÉ (programme actif)"
+    },
+    {
+      "file": "HubDebutant.dc.html",
+      "page": "page-1",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Hub muscu — PROPOSÉ (compte neuf)"
+    },
+    {
+      "file": "FicheProgramme.dc.html",
+      "page": "page-1",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "4 · Fiche programme — PROPOSÉ"
+    },
+    {
+      "file": "Assistant.dc.html",
+      "page": "page-1",
+      "x": 2040,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "5 · Assistant de planification — PROPOSÉ"
+    },
+    {
+      "file": "ParcoursDemarrage.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 2010,
+      "w": 1120,
+      "h": 620,
+      "title": "6 · Le parcours de bout en bout"
+    },
+    {
+      "file": "HubEtats.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 2790,
+      "w": 840,
+      "h": 900,
+      "title": "7 · Les quatre états de la zone Agir"
+    },
+    {
+      "file": "SeanceAvant.dc.html",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1060,
+      "title": "1 · Séance en cours — AUJOURD’HUI (niveau détaillé)"
+    },
+    {
+      "file": "SeanceApres.dc.html",
+      "page": "page-2",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Séance en cours — PROPOSÉ"
+    },
+    {
+      "file": "SeanceFin.dc.html",
+      "page": "page-2",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Toutes les séries validées — PROPOSÉ"
+    },
+    {
+      "file": "SeanceRepos.dc.html",
+      "page": "page-2",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "4 · Repos — PROPOSÉ"
+    },
+    {
+      "file": "SeanceMenu.dc.html",
+      "page": "page-2",
+      "x": 2040,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "5 · Menu de séance — PROPOSÉ"
+    },
+    {
+      "file": "SeanceVariantes.dc.html",
+      "page": "page-2",
+      "x": 510,
+      "y": 1250,
+      "w": 840,
+      "h": 780,
+      "title": "6 · La barre d’action selon le type de série"
+    },
+    {
+      "file": "ResumeAvant.dc.html",
+      "page": "page-3",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 980,
+      "title": "1 · Résumé de séance — AUJOURD’HUI"
+    },
+    {
+      "file": "ResumeApres.dc.html",
+      "page": "page-3",
+      "x": 510,
+      "y": 0,
+      "w": 390,
+      "h": 900,
+      "title": "2 · Résumé de séance — PROPOSÉ"
+    },
+    {
+      "file": "HistoriqueAvant.dc.html",
+      "page": "page-3",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Historique — AUJOURD’HUI"
+    },
+    {
+      "file": "HistoriqueApres.dc.html",
+      "page": "page-3",
+      "x": 1530,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "4 · Historique — PROPOSÉ"
+    },
+    {
+      "file": "ProgressionAvant.dc.html",
+      "page": "page-3",
+      "x": 2040,
+      "y": 0,
+      "w": 390,
+      "h": 1340,
+      "title": "5 · Progression — AUJOURD’HUI (8 sections)"
+    },
+    {
+      "file": "ProgressionApres.dc.html",
+      "page": "page-3",
+      "x": 2550,
+      "y": 0,
+      "w": 390,
+      "h": 880,
+      "title": "6 · Progression — PROPOSÉ (3 onglets)"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "n-hub-avant",
+      "page": "page-1",
+      "x": 0,
+      "y": 1780,
+      "w": 390,
+      "text": "1 700 px de contenu pour 844 px d’écran, soit 2,4 écrans de scroll — dont 7 tuiles vides.\n\nLa grille du hub ne reçoit pas de prédicat isActive, contrairement à l’accueil : un widget sans donnée occupe quand même sa case.\n\nEt l’action mise en avant est « Séance libre » — la moins structurée."
+    },
+    {
+      "id": "n-hub-apres",
+      "page": "page-1",
+      "x": 510,
+      "y": 940,
+      "w": 390,
+      "text": "Deux zones : Agir, puis Suivre.\n\nLa carte du jour porte enfin le contenu de la séance (les 3 premiers exercices, la durée estimée) : on sait ce qu’on démarre.\n\nLa barre « semaine 3 sur 8 · 14/24 séances » affiche la progression que MUSC-F15 calcule déjà mais n’expose nulle part.\n\nWidgets ramenés de 7 à 3, tous porteurs de données. Records et temps d’entraînement retournent dans Progression, où on les cherche."
+    },
+    {
+      "id": "n-hub-deb",
+      "page": "page-1",
+      "x": 1020,
+      "y": 904,
+      "w": 390,
+      "text": "Le compte neuf voit une amorce, pas un hub vide.\n\nTrois programmes déjà filtrés sur le niveau et la fréquence déclarés à l’onboarding — ces réponses ne servent aujourd’hui à rien à cet endroit.\n\n« Séance libre » reste accessible, en second rang."
+    },
+    {
+      "id": "n-fiche",
+      "page": "page-1",
+      "x": 1530,
+      "y": 960,
+      "w": 390,
+      "text": "Un seul geste : « Suivre ce programme ».\n\nLa duplication du programme éditorial devient implicite — c’est une contrainte de modèle (on n’active pas un contenu éditorial), pas une décision d’utilisateur. La phrase « Tu pourras l’adapter à ta guise ensuite » dit ce qui se passe.\n\nLa semaine type, les groupes travaillés et l’engagement horaire sont visibles avant de s’engager."
+    },
+    {
+      "id": "n-assist",
+      "page": "page-1",
+      "x": 2040,
+      "y": 904,
+      "w": 390,
+      "text": "Deux corrections décisives.\n\nDébut par défaut : aujourd’hui. Le code initialise weekStart au lundi suivant, donc un programme ne peut jamais commencer le jour où on le choisit.\n\nJours pré-affectés avec un espacement automatique. Aujourd’hui dayAssignments démarre vide et canPlan reste faux tant que chaque séance n’a pas reçu son jour : 3 taps obligatoires pour un programme à 3 séances, sans aucune suggestion."
+    },
+    {
+      "id": "n-parcours",
+      "page": "page-1",
+      "x": 1180,
+      "y": 2010,
+      "w": 380,
+      "text": "9 écrans contre 4, et surtout 6 jours d’attente contre 0.\n\nLe délai n’est pas une conséquence du nombre d’écrans : il vient du seul défaut « début = lundi prochain ». C’est la correction la moins coûteuse du lot et la plus rentable sur l’activation."
+    },
+    {
+      "id": "n-hub-etats",
+      "page": "page-1",
+      "x": 890,
+      "y": 2790,
+      "w": 380,
+      "text": "La zone Agir n’est pas une carte, c’est un emplacement à quatre états exclusifs.\n\nL’état A (séance en cours) et l’état C (jour de repos) manquent aux maquettes d’écran complet : les voici, avec la règle de priorité.\n\nAujourd’hui, l’état D affiche « Séance libre » comme action principale — c’est l’inversion qui coûte le plus cher à l’activation."
+    },
+    {
+      "id": "n-seance-avant",
+      "page": "page-2",
+      "x": 0,
+      "y": 1120,
+      "w": 390,
+      "text": "11 blocs empilés, environ 560 px de carte.\n\n« Valider la série » — le geste répété 30 à 40 fois par séance — se retrouve en bas, sous le pli, et sous le clavier dès qu’on saisit les reps (adjustResize, pas de KeyboardAvoidingView).\n\nLe réglage du repos occupe une ligne permanente alors que c’est un réglage d’exercice, pas une donnée de série.\n\nEt la validation ne produit aucun retour : ni haptique, ni son, ni animation. Le planning et le running en ont, la muscu non — la spec navigation-ux §4.2 l’exige pourtant.\n\nDeux détails sont fidèles au rendu réel, pas des coquilles : « 82.5 » à point décimal (weightInputValue passe par String(Number(...))) et le « ＋ » pleine chasse du bouton RPE, qui vient de la clé i18n elle-même."
+    },
+    {
+      "id": "n-seance-apres",
+      "page": "page-2",
+      "x": 510,
+      "y": 904,
+      "w": 390,
+      "text": "La barre du bas est fixe : contexte, reps, charge, validation. Elle ne bouge jamais, quel que soit le niveau d’affichage — c’est ce qui rend le changement de niveau sans risque.\n\nLes steppers sur les reps évitent le clavier dans la plupart des séries.\n\nLa barre haute montre l’avancement réel (7/18 séries), absent aujourd’hui.\n\nLes suppléments passent derrière un repli unique. À ajouter côté code : un retour haptique à la validation."
+    },
+    {
+      "id": "n-seance-fin",
+      "page": "page-2",
+      "x": 1020,
+      "y": 904,
+      "w": 390,
+      "text": "Aujourd’hui, quand tout est validé, l’écran affiche « Séance terminée ? » — une question sans bouton. L’action « Terminer » est en petit, en haut à droite.\n\nIci la barre collante devient l’action de clôture, au même endroit que les 18 validations précédentes."
+    },
+    {
+      "id": "n-seance-repos",
+      "page": "page-2",
+      "x": 1530,
+      "y": 904,
+      "w": 390,
+      "text": "Le temps de repos cesse d’être un compte à rebours aveugle : il annonce la série suivante et sa charge.\n\nLe réglage « toujours 2:00 sur cet exercice » migre ici, là où le besoin se constate — et quitte la carte de série, où il consommait une ligne à chaque fois.\n\nÀ noter, sur le code actuel et non sur cette maquette : l’écran de repos y est peint en bordeaux #6b0028 codé en dur, alors que tout le pilier est en terracotta #b14f2b. À trancher."
+    },
+    {
+      "id": "n-seance-menu",
+      "page": "page-2",
+      "x": 2040,
+      "y": 904,
+      "w": 390,
+      "text": "Le niveau d’affichage remonte des Réglages (12e section d’un écran de 984 lignes) jusque dans la séance, là où on voit ce qu’il change.\n\n« Mettre en pause » devient « Quitter et reprendre plus tard » : il n’existe aucun état pause, la séance reste active jusqu’à la clôture automatique à 3 h (MUSC-F6)."
+    },
+    {
+      "id": "n-seance-var",
+      "page": "page-2",
+      "x": 510,
+      "y": 2090,
+      "w": 840,
+      "text": "Point de spec à trancher avant le lot B : la barre porte deux champs, mais setType en gouverne les unités — reps × kg, durée × lest, reps × lest, et le lest devient facultatif. C’est la seule vraie difficulté de la barre collante, et elle n’apparaît pas sur la maquette d’écran complet.\n\nBénéfice de côté : le nom de l’exercice vivant dans la barre, la bascule superset devient lisible sans rien déplacer — le libellé change et le bouton annonce ce qui suit."
+    },
+    {
+      "id": "n-res-avant",
+      "page": "page-3",
+      "x": 0,
+      "y": 1040,
+      "w": 390,
+      "text": "Cinq agrégats en tableau, et pas une ligne sur ce qui a été soulevé. Pour revoir sa séance il faut rouvrir l’historique.\n\nLe ressenti est demandé en 5 étoiles muettes, alors que la séance vient d’être notée en RPE 1-10 ou en RIR : deux échelles pour la même notion."
+    },
+    {
+      "id": "n-res-apres",
+      "page": "page-3",
+      "x": 510,
+      "y": 960,
+      "w": 390,
+      "text": "Le contenu de la séance passe devant les agrégats, avec l’écart par exercice depuis la dernière fois — c’est ce qui donne le sentiment de progresser.\n\nLes cinq stats tiennent en une bande.\n\nLe ressenti prend cinq niveaux nommés (Facile → Max) plutôt que des étoiles sans échelle."
+    },
+    {
+      "id": "n-hist-avant",
+      "page": "page-3",
+      "x": 1020,
+      "y": 904,
+      "w": 390,
+      "text": "Une ligne = date + durée + RPE. Impossible de retrouver « ma séance pecs du 2 ».\n\nLe tonnage est pourtant déjà chargé : volumeKg fait partie de WorkoutHistoryItem et le widget du hub l’affiche.\n\nManquent aussi le filtre par programme et par groupe musculaire, ainsi que l’édition et la suppression d’une séance passée — la spec §6.1 les demande, rien n’existe côté repository."
+    },
+    {
+      "id": "n-hist-apres",
+      "page": "page-3",
+      "x": 1530,
+      "y": 904,
+      "w": 390,
+      "text": "Nom de séance, tonnage, nombre d’exercices, pastille de record : la séance se reconnaît sans l’ouvrir.\n\nRegroupement par mois avec le cumul, filtres par programme et par muscle.\n\nLes séances libres sont marquées comme telles."
+    },
+    {
+      "id": "n-prog-avant",
+      "page": "page-3",
+      "x": 2040,
+      "y": 1400,
+      "w": 390,
+      "text": "Huit sections en scroll continu : volume, tonnage cumulé, régularité, équilibre musculaire, module force, exécution du programme, mensurations, par exercice. La maquette les montre compressées ; l’écran réel est plus haut, notamment une fois un exercice sélectionné.\n\nLe code admet lui-même le dépassement : « 5e section de cet écran — seuil de repli ADR-007 atteint, accepté tel quel ».\n\nLes quatre états vides proposent « Démarrer une séance », qui pousse vers /workout — un écran affichant « Aucune séance en cours » et « Retour à l’accueil ». Le CTA le plus présent de l’écran ne démarre rien."
+    },
+    {
+      "id": "n-prog-apres",
+      "page": "page-3",
+      "x": 2550,
+      "y": 940,
+      "w": 390,
+      "text": "Trois onglets : Vue d’ensemble, Par exercice, Mon corps.\n\nVue d’ensemble répond à la seule question posée en ouvrant l’écran — est-ce que je progresse ? Elle porte le volume, la régularité, l’adhérence, l’équilibre musculaire, l’exécution du programme et le tonnage cumulé. Le déséquilibre devient une alerte lisible plutôt qu’un graphe à décoder.\n\nMon corps rassemble mensurations, poids et module force — DOTS et %1RM s’y rattachent puisqu’ils rapportent la force au poids de corps.\n\nLes états vides pointent vers le hub, plus vers /workout."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

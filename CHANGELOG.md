@@ -10,6 +10,111 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 10/09/2026 — MUSCU-UX01 : refonte UX du pilier Musculation (5 écrans)
+
+Branche `feature/muscu-refonte-ux`, développée dans un **worktree isolé** pour ne pas entrer en
+collision avec `feature/accueil-refonte`, menée en parallèle par une autre session.
+
+Second audit du pilier, deux mois après celui de juillet. Les cinq problèmes de flux avaient été
+corrigés ; ce qui restait tenait à **l'accumulation** — deux mois de fonctionnalités ajoutées une
+à une sur des écrans jamais rehiérarchisés. 17 constats vérifiés dans le code, un mécanisme
+unique : *ce qui compte le plus a été poussé vers le bas par ce qui compte moins*.
+
+### Ajouté
+
+- **Barre d'action collante en séance** (`SetActionBar`). La saisie et « Valider la série » —
+  le geste répété 30 à 40 fois par séance — sont **fixées en bas de l'écran**. Les unités des
+  deux champs suivent `setType` : reps × kg, durée × lest, reps × lest, le second devenant
+  facultatif. Steppers − / + pour valider sans ouvrir le clavier.
+- **Retour haptique à la validation** (`lib/haptics.ts`). La spec navigation-ux §4.2 le demande
+  depuis le 04/07 ; le pilier n'en avait **aucun** (le planning et le running, si). La façade
+  choisit `performAndroidHapticsAsync` sur Android — la doc Expo SDK 57 déprécie `impactAsync`,
+  qui passe par l'API `Vibrator` et réclame la permission `VIBRATE`.
+- **Menu de séance** (`SessionMenuSheet`) : niveau d'affichage rapatrié des Réglages, repos par
+  exercice, ajout d'exercice, clôture, sortie, abandon.
+- **Zone Agir du hub** (`StrengthNowCard`) : quatre états exclusifs — séance en cours, séance du
+  jour, jour de repos, aucun programme — résolus par `resolveHubState` (testée). L'état « jour de
+  repos » **n'existait pas** : entre deux séances, le hub ne proposait que « Séance libre ».
+- **Barre de progression du programme** (`ProgramProgressBar`) : « semaine 3 sur 8 · 14/24 ».
+  MUSC-F15 calculait l'adhérence depuis le 01/08 **sans jamais l'afficher**.
+- **Trois programmes suggérés** au compte neuf (`SuggestedPrograms`).
+- **Détail par exercice au résumé** (`SummaryExerciseList`) avec l'écart depuis la fois d'avant.
+- **Suppression d'une séance passée** (`deleteWorkout`) : promesse de la spec §6.1 jamais
+  implémentée. Soft delete de la séance, de ses séries **et de ses records**, et l'occurrence de
+  planning liée **retourne en `planned`**.
+- **6 modules purs testés** dans `packages/shared` : `strength-planning` (répartition des jours),
+  `strength-hub` (priorité des états, avancement programme), `workout-comparison` (écart par
+  exercice), `workout-feeling` (ressenti ↔ RPE), `session-estimate` (durée estimée).
+- **`scripts/check-i18n-parity.mjs`** : la parité FR/EN était une règle du CLAUDE.md que **rien**
+  ne vérifiait. 2 245 clés contrôlées.
+
+### Modifié
+
+- **Hub muscu** : deux zones (Agir / Suivre). Registre ramené de **7 à 3 widgets**, avec un
+  plafond `MAX_STRENGTH_WIDGETS` **appliqué par un test** — le hub n'en avait aucun, et c'est
+  exactement pour ça qu'il est passé de 4 à 7 pendant que l'accueil se dégonflait de 21 à 7. Le
+  prédicat `isActive` est enfin passé à la grille : une tuile sans donnée ne réserve plus sa case.
+  ≈ 2,4 écrans de scroll de tuiles vides sur un compte neuf, avant.
+- **Entrée dans un programme** : bouton unique « Suivre ce programme », la duplication d'un
+  éditorial devenant **implicite** et annoncée après coup. Assistant pré-rempli — **début
+  aujourd'hui** (c'était le lundi suivant : un mardi, on attendait six jours) et jours espacés
+  automatiquement. Atterrissage sur le hub, plus sur le calendrier.
+- **`generatePlannedSessions`** ne génère plus les occurrences **antérieures à la date de début** :
+  la première semaine est partielle. Sans cela, démarrer un mercredi créait des séances déjà
+  « manquées ». Non-régression course vérifiée — `startDate` y reste un lundi, rien n'est filtré.
+- **`CurrentSetCard`** devient une carte de **contexte** : frise des séries faites, dernière fois,
+  consigne, suggestion. Les suppléments du niveau détaillé passent derrière un repli unique.
+- **`RestOverlay`** annonce la série suivante, propose d'allonger durablement le repos de
+  l'exercice, et prend les couleurs du thème — il était peint en bordeaux `#6b0028` en dur, seul
+  écran du pilier hors palette.
+- **`ExerciseList`** : tap dissocié. Le nom donne le focus, le chevron déplie. Retaper l'exercice
+  courant ne le replie plus.
+- **Résumé** : le contenu de la séance passe devant les agrégats, qui tiennent en une bande. Le
+  ressenti prend **cinq niveaux nommés** au lieu de cinq étoiles muettes — la séance venait
+  pourtant d'être notée en RPE ou en RIR. Le stockage ne change pas (`workouts.rpe`, 1-10).
+- **Historique** : nom de séance, tonnage (déjà chargé, jamais affiché), nombre d'exercices,
+  pastille de record, groupement par mois avec cumul, et suppression par appui long.
+- **Progression** : **3 onglets** au lieu de 8 sections empilées. Le code admettait lui-même
+  « seuil de repli ADR-007 atteint, accepté tel quel » — trois sections plus tôt. Les sections
+  sont **réparties, pas réécrites** : aucun calcul touché.
+- **Libellés** : « Mettre en pause » → « Quitter et reprendre plus tard ». Il nommait un état qui
+  n'existe pas — MUSC-F6 pose que la séance reste `active` jusqu'à la clôture auto à 3 h.
+
+### Corrigé
+
+- 🔴 **Les quatre états vides de Progression menaient dans un cul-de-sac.** « Démarrer une séance »
+  poussait vers `/workout`, qui n'ouvre rien sans séance active : l'écran affichait « Aucune
+  séance en cours » et « Retour à l'accueil ». Le CTA le plus présent de la page ne démarrait rien.
+- 🔴 **Le clavier recouvrait la validation** (`adjustResize`, aucun `KeyboardAvoidingView`).
+- 🔴 **Écourter une séance n'avait aucune issue** — trouvé en écrivant les tests. La barre ne
+  devient « Terminer » qu'une fois **toutes** les séries validées ; sans l'entrée ajoutée au menu,
+  la seule sortie aurait été d'abandonner, et de tout perdre.
+
+### Technique / Notes
+
+- ✅ **Aucune migration, aucune sync rule, aucune dépendance native** — `expo-haptics` était déjà
+  au projet. Recettable sur un build de la branche.
+- ⚠️ **Zones de contact au merge** avec `feature/accueil-refonte` : `packages/shared/src/widgets.ts`
+  (régions distinctes — `STRENGTH_*` contre `HOME_*`, conflit textuel possible, sémantique nulle).
+  `WidgetGrid` n'est **pas** touché : `isActive` y existait déjà, on ne fait que le passer.
+- ⚠️ **Un fichier d'EXEC-01 a été écrasé puis restauré** en cours de route : `session-duration.ts`
+  existait déjà (durée **réelle** des séances passées) et l'estimateur a été renommé
+  `session-estimate.ts` (durée **prévue**). Les deux coexistent, leurs en-têtes se renvoient l'un
+  à l'autre.
+- ⚠️ **Ressenti des séances antérieures** : elles stockaient un 1-5 dans `workouts.rpe`, que rien
+  ne distingue d'un RPE. Le découpage par paires limite les dégâts — un ancien « 5 étoiles » se
+  lit « Solide », pas « Facile ». Compromis assumé, documenté dans `workout-feeling.ts`.
+- **Tests d'écran réécrits, pas supprimés** : hub (19), fiche programme (56), assistant (67),
+  séance (18), résumé (44), historique (48), progression (32). Les gardes de double appui — dont
+  le **seizième site** du défaut du 08/08 — sont toutes conservées.
+- ⚠️ **Piège du `unmount()` en boucle** retrouvé en écrivant `CurrentSetCard.level.test.tsx` :
+  démonter au milieu d'un test fait tomber les **suivants** du fichier. Déjà rencontré le 09/08 sur
+  `strength-widgets.test.tsx` ; corrigé en `it.each`.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **2 708 tests verts**, parité i18n contrôlée.
+- Recette : **59 critères** → [RECETTES.md](RECETTES.md) §57. Roadmap : ligne **3.59**, compteurs
+  220 → 221 livrés sur 231.
+
+
 ## 09/09/2026 (quater) — RUN-F4 : traductions de séance, le lot est complet
 
 Branche `feature/runf4-traductions-seances`. Dernier point ouvert de la spec §4.

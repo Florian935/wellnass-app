@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    :root{
+      --bg:#f7eede; --surface:#fffaf2; --surfaceAlt:#f3ddd0; --border:#ece0cd;
+      --borderStrong:#90897d; --text:#33291f; --muted:#786a59; --accent:#b14f2b;
+      --accentText:#ffffff; --success:#66714b; --danger:#b23b2e; --track:#eadcc6;
+      --chartGreen:#7c8a5b; --amber:#b47f31; --warn:#f7ead6; --warnBorder:#e9cfa0;
+      --warnText:#8a6419; --panel:#33291f; --panelText:#f0e4d0; --panelMuted:#c9b79a;
+      --panelAccent:#d9a888;
+      --display:'Bricolage Grotesque', Georgia, serif;
+      --body:'Hanken Grotesk', system-ui, sans-serif;
+      --mono:'Space Mono', ui-monospace, monospace;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:var(--body);color:var(--text);-webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none} a:hover{color:#8f3f22}
+    .scr{width:390px;background:var(--bg);position:relative;overflow:hidden}
+    .pad{padding:0 20px}
+    .eyebrow{font-family:var(--body);font-weight:600;font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--muted)}
+    .h1{font-family:var(--display);font-weight:800;font-size:28px;letter-spacing:-.8px;line-height:1.1}
+    .h2{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.3px}
+    .h3{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.3px}
+    .body{font-size:14px;line-height:20px}
+    .small{font-size:13px;line-height:18px}
+    .tiny{font-size:12px;line-height:16px}
+    .mono{font-family:var(--mono)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px}
+    .tile{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:16px;
+      display:flex;flex-direction:column}
+    .chip{border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:600;
+      background:var(--surfaceAlt);color:var(--muted)}
+    .chip.on{background:var(--accent);color:#fff}
+    .btn{min-height:52px;border-radius:16px;background:var(--accent);color:#fff;
+      font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .row{display:flex;align-items:center}
+    .fold{position:absolute;left:0;right:0;border-top:2px dashed var(--danger);
+      display:flex;justify-content:flex-end;pointer-events:none}
+    .foldtag{background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:2px 8px;border-radius:0 0 6px 6px;letter-spacing:.04em}
+    .flag{position:absolute;background:var(--danger);color:#fff;font-size:10px;font-weight:700;
+      padding:3px 8px;border-radius:8px;letter-spacing:.02em;line-height:1.3}
+    .flag.ok{background:var(--success)}
+  </style>
+</helmet>
+<div class="scr" style="height:1060px">
+
+  <!-- Barre haute -->
+  <div class="row" style="justify-content:space-between;padding:12px 20px">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <span class="mono" style="font-size:20px;font-weight:700">12:34</span>
+    <span style="font-size:16px;font-weight:700;color:var(--accent)">Terminer</span>
+  </div>
+
+  <!-- Carte « série en cours », niveau détaillé : 11 blocs empilés -->
+  <div style="padding:0 20px">
+    <div style="background:var(--surface);border:2px solid var(--accent);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px">
+
+      <div style="font-family:var(--display);font-weight:600;font-size:22px;letter-spacing:-.4px">Développé couché barre</div>
+      <div class="small" style="font-weight:600;color:var(--muted)">Série 2/4</div>
+
+      <div class="row" style="gap:6px;background:var(--surfaceAlt);border-radius:10px;padding:7px 10px">
+        <span style="font-size:12px">📝</span>
+        <span class="tiny" style="color:var(--muted)">Note (réglage machine, position…)</span>
+      </div>
+
+      <div class="row" style="gap:6px">
+        <div style="flex-grow:1;display:flex;gap:6px;overflow:hidden;position:relative">
+          <div class="chip on">Normale</div>
+          <div class="chip">Dropset</div>
+          <div class="chip">Échec</div>
+          <div class="chip">Durée</div>
+          <div style="position:absolute;right:0;top:0;bottom:0;width:28px;background:linear-gradient(to right,rgba(255,250,242,0),#fffaf2);display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </div>
+        <div class="chip" style="flex-shrink:0">🔥 Échauffement</div>
+      </div>
+
+      <div style="align-self:flex-start;border:1px dashed var(--accent);border-radius:10px;padding:7px 10px">
+        <span style="font-size:12.5px;font-weight:600;color:var(--accent)">🔗 Lier en superset</span>
+      </div>
+
+      <div class="body" style="color:var(--muted)">La dernière fois : 80 kg × 8/8/7</div>
+      <div style="font-size:12px;font-weight:600;color:var(--success)">💡 Essaie 82,5 kg ou 9 reps</div>
+
+      <div class="row" style="gap:12px;margin-top:4px;align-items:flex-start">
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:6px">
+          <div class="small" style="font-weight:600;color:var(--muted)">Reps</div>
+          <div style="min-height:52px;border:1px solid var(--border);border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px">8</div>
+        </div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:6px">
+          <div class="small" style="font-weight:600;color:var(--muted)">Charge (kg)</div>
+          <div class="row" style="gap:6px">
+            <div style="width:40px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+            </div>
+            <div style="flex-grow:1;min-height:52px;border:1px solid var(--border);border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px">82.5</div>
+            <div style="width:40px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </div>
+          </div>
+          <div class="row" style="gap:6px;justify-content:center">
+            <span style="font-size:12px;color:var(--muted)">Prévu : 80 kg</span>
+            <span style="font-size:11px;font-weight:700;color:var(--success);background:var(--surfaceAlt);padding:1px 6px;border-radius:6px">▲ +2.5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="gap:10px;justify-content:center">
+        <span class="small" style="font-weight:600;color:var(--muted)">Repos</span>
+        <div style="width:40px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </div>
+        <div class="row" style="gap:4px">
+          <div class="mono" style="font-size:16px;font-weight:700;min-width:56px;border:1px solid var(--border);border-radius:10px;background:var(--bg);padding:8px 10px;text-align:center">90</div>
+          <span class="body" style="color:var(--muted)">s</span>
+        </div>
+        <div style="width:40px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </div>
+      </div>
+
+      <div style="align-self:flex-start;border:1px dashed var(--border);border-radius:9px;padding:6px 10px">
+        <span style="font-size:12px;font-weight:600;color:var(--muted)">＋ RPE série <span style="font-weight:400;opacity:.7">(option.)</span></span>
+      </div>
+
+      <div class="btn" style="margin-top:4px">Valider la série</div>
+    </div>
+  </div>
+
+  <!-- Liste des exercices, sous la carte -->
+  <div style="padding:16px 20px 0;display:flex;flex-direction:column;gap:10px">
+    <div style="background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px 16px">
+      <div class="row" style="justify-content:space-between">
+        <span class="small" style="font-weight:600">Développé couché barre</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">1/4</span>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px">
+      <div class="row" style="justify-content:space-between">
+        <span class="small" style="font-weight:600">Développé incliné haltères</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">0/4</span>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px">
+      <div class="row" style="justify-content:space-between">
+        <span class="small" style="font-weight:600">Élévations latérales</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">0/3</span>
+      </div>
+    </div>
+    <div class="btn ghost" style="min-height:48px;font-size:15px">+ Ajouter un exercice</div>
+  </div>
+
+  <!-- Repères -->
+  <div class="fold" style="top:564px"><div class="foldtag">CLAVIER OUVERT — le bouton Valider passe dessous</div></div>
+  <div class="fold" style="top:844px"><div class="foldtag">BAS DE L’ÉCRAN</div></div>
+
+</div>
+</x-dc>
+</body>
+</html>

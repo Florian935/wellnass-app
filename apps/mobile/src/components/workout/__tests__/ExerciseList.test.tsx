@@ -145,7 +145,12 @@ describe('dépli', () => {
     expect(entetes[1]?.props.accessibilityState).toMatchObject({ expanded: false });
   });
 
-  it('un tap sur l’en-tête bascule le dépli ET déplace le focus', async () => {
+  // ── Deux gestes dissociés depuis l'US MUSCU-UX01 (10/09/2026) ────────────────────────────────
+  // Un seul `Pressable` portait `onSelect` **et** `toggleExpanded`. Conséquence : taper l'exercice
+  // courant, déjà déplié, le repliait — alors que l'intention était d'y revenir. « Aller à cet
+  // exercice » et « voir ses séries » sont deux intentions distinctes ; chacune a sa cible.
+
+  it('🔴 taper le NOM déplace le focus, sans toucher au dépli', async () => {
     const h = await afficher(
       [exercice('squat', [serie()]), exercice('bench', [serie()])],
       { currentExerciseId: 'squat' },
@@ -153,20 +158,53 @@ describe('dépli', () => {
 
     await taper(screen.getByText('BENCH'));
 
-    // Les deux gestes sont volontairement liés : taper un exercice, c'est vouloir y travailler.
     expect(h.onSelect).toHaveBeenCalledWith('bench');
-    const entetes = screen.getAllByRole('button').filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean');
+    // « bench » n'est pas l'exercice courant côté parent (le mock ne rejoue pas), donc son dépli
+    // reste au défaut : replié. C'est bien la preuve que le tap sur le nom ne l'a pas basculé.
+    const entetes = screen
+      .getAllByRole('button')
+      .filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean');
+    expect(entetes[1]?.props.accessibilityState).toMatchObject({ expanded: false });
+  });
+
+  it('🔴 taper le CHEVRON déplie, sans déplacer le focus', async () => {
+    const h = await afficher(
+      [exercice('squat', [serie()]), exercice('bench', [serie()])],
+      { currentExerciseId: 'squat' },
+    );
+
+    await taper(screen.getByLabelText('workout.expandSets:{"name":"BENCH"}'));
+
+    expect(h.onSelect).not.toHaveBeenCalled();
+    const entetes = screen
+      .getAllByRole('button')
+      .filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean');
     expect(entetes[1]?.props.accessibilityState).toMatchObject({ expanded: true });
   });
 
-  it('🔴 replie l’exercice courant au second tap', async () => {
-    await afficher([exercice('squat', [serie()])], { currentExerciseId: 'squat' });
+  it('🔴 revenir sur l’exercice courant ne le replie plus', async () => {
+    // LE défaut corrigé : le geste le plus naturel — retaper l'exercice où l'on travaille —
+    // masquait ses séries.
+    const h = await afficher([exercice('squat', [serie()])], { currentExerciseId: 'squat' });
 
     await taper(screen.getByText('SQUAT'));
 
-    // La dérogation prime sur le défaut : sans elle, l'exercice courant serait impossible à
-    // replier, et sa liste de séries occuperait l'écran en permanence.
-    const entete = screen.getAllByRole('button').filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean')[0];
+    expect(h.onSelect).toHaveBeenCalledWith('squat');
+    const entete = screen
+      .getAllByRole('button')
+      .filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean')[0];
+    expect(entete?.props.accessibilityState).toMatchObject({ expanded: true });
+  });
+
+  it('le chevron reste capable de replier l’exercice courant', async () => {
+    // Il faut pouvoir masquer une longue liste de séries — mais par un geste qui le dit.
+    await afficher([exercice('squat', [serie()])], { currentExerciseId: 'squat' });
+
+    await taper(screen.getByLabelText('workout.collapseSets:{"name":"SQUAT"}'));
+
+    const entete = screen
+      .getAllByRole('button')
+      .filter((n) => typeof n.props.accessibilityState?.expanded === 'boolean')[0];
     expect(entete?.props.accessibilityState).toMatchObject({ expanded: false });
   });
 

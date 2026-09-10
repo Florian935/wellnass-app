@@ -31,6 +31,7 @@ import {
 import { useWorkoutRecords } from '@/data/repositories/records-repository';
 import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { WORKOUT_FEELINGS } from '@wellness/shared';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -43,6 +44,11 @@ jest.mock('@/data/repositories/workout-repository', () => ({
 }));
 jest.mock('@/data/repositories/records-repository', () => ({
   useWorkoutRecords: jest.fn(() => ({ records: [], isLoading: false })),
+  // US MUSCU-UX01 : le résumé montre désormais le détail par exercice et son écart depuis le
+  // passage précédent. Neutralisés ici — ils ont leur propre couverture côté `packages/shared`
+  // (`compareExercisePerformance`) et n'entrent dans aucune des règles vérifiées dans ce fichier.
+  useWorkoutDetail: jest.fn(() => ({ detail: null, isLoading: false })),
+  useExerciseDeltas: jest.fn(() => ({ deltas: new Map(), isLoading: false })),
 }));
 jest.mock('@/data/repositories/workout-template-repository', () => ({
   createTemplateFromWorkout: jest.fn(),
@@ -264,9 +270,10 @@ describe('résumé', () => {
     await afficher({ sets: [serie(), serie({ exerciseId: 'ex-2' })] });
 
     expect(screen.getByText('workout.summary.minutes:{"count":75}')).toBeTruthy();
-    // « 2 » apparaît deux fois — deux exercices ET deux séries faites : c'est justement ce que
-    // le résumé compte séparément.
-    expect(screen.getAllByText('2')).toHaveLength(2);
+    // US MUSCU-UX01 : la bande porte durée, séries, tonnage et densité. Le **nombre d'exercices**
+    // n'y figure plus — il se lit directement dans « Ce que tu as fait », une carte par exercice,
+    // ce qui est plus utile qu'un compte isolé.
+    expect(screen.getByText('2')).toBeTruthy();
     expect(screen.getByText('1600 kg')).toBeTruthy();
   });
 
@@ -401,38 +408,68 @@ describe('enregistrer comme modèle', () => {
 // ---------------------------------------------------------------------------
 
 describe('ressenti', () => {
-  it('cinq étoiles, aucune pleine par défaut', async () => {
+  // ── Réécrit le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────
+  // Le ressenti se notait en **cinq étoiles sans échelle nommée**, alors que la séance venait
+  // d'être notée série par série en RPE ou en RIR — deux formats pour la même question, et trois
+  // étoiles qui ne disaient pas ce qu'elles valaient.
+  //
+  // Il prend maintenant cinq niveaux nommés (Facile → Max). Le **stockage ne change pas** :
+  // `workouts.rpe` continue de recevoir un RPE 1-10, comme pour l'échelle par série. C'est le
+  // patron d'`intensity.ts` : la base ne change jamais de nature, seule la lecture change.
+
+  it('aucun niveau sélectionné par défaut', async () => {
     await afficher();
 
-    expect(screen.getAllByText('icone-star-outline')).toHaveLength(5);
-    expect(screen.queryByText('icone-star')).toBeNull();
+    for (const label of WORKOUT_FEELINGS.map((f) => `workout.summary.feeling.${f}`)) {
+      expect(screen.getByLabelText(label).props.accessibilityState?.selected).toBe(false);
+    }
   });
 
-  it('noter écrit immédiatement et remplit les étoiles', async () => {
+  it('🔴 choisir un niveau écrit le RPE correspondant, pas l’index du cran', async () => {
     await afficher();
 
-    await taper(screen.getByLabelText('workout.summary.starLabel:{"count":3}'));
+    await taper(screen.getByLabelText('workout.summary.feeling.solid'));
 
-    expect(mockFeedback).toHaveBeenCalledWith('w-1', { rpe: 3 });
-    expect(screen.getAllByText('icone-star')).toHaveLength(3);
+    // « Solide » = milieu de l'échelle = RPE 6. Écrire 3 (le rang du cran) rendrait la donnée
+    // incomparable avec les RPE saisis en séance.
+    expect(mockFeedback).toHaveBeenCalledWith('w-1', { rpe: 6 });
+    expect(screen.getByLabelText('workout.summary.feeling.solid').props.accessibilityState?.selected).toBe(true);
   });
 
-  it.each([
-    [9, 5],
-    [-2, 0],
-  ])('🔴 un RPE hors bornes (%i) est ramené à %i étoiles', async (rpe, attendu) => {
-    await afficher({ workouts: [seance({ rpe })] });
+  it('retaper le niveau déjà posé l’efface', async () => {
+    await afficher({ workouts: [seance({ rpe: 6 })] });
 
-    // Donnée héritée d'une autre échelle (RPE 1–10) ou corrompue : six étoiles casseraient la
-    // mise en page, et un nombre négatif en viderait cinq sans expliquer pourquoi.
-    const pleines = screen.queryAllByText('icone-star');
-    expect(pleines).toHaveLength(attendu);
+    await taper(screen.getByLabelText('workout.summary.feeling.solid'));
+
+    expect(mockFeedback).toHaveBeenCalledWith('w-1', { rpe: null });
   });
 
-  it('la note existante pré-remplit le champ', async () => {
+  it('🔴 relit une note ancienne sans la faire passer pour facile', async () => {
+    // Les séances d'avant cette US stockaient 1-5 dans le même champ : rien ne les distingue d'un
+    // RPE. Le découpage par paires limite les dégâts — un ancien « 5 étoiles » se lit « Solide ».
+    await afficher({ workouts: [seance({ rpe: 5 })] });
+
+    expect(screen.getByLabelText('workout.summary.feeling.solid').props.accessibilityState?.selected).toBe(true);
+  });
+
+  it('un RPE hors bornes est ramené dans l’échelle', async () => {
+    await afficher({ workouts: [seance({ rpe: 42 })] });
+
+    expect(screen.getByLabelText('workout.summary.feeling.max').props.accessibilityState?.selected).toBe(true);
+  });
+
+  it('la note existante pré-remplit le champ, déjà ouvert', async () => {
     await afficher({ workouts: [seance({ notes: 'Dos sensible' })] });
 
     expect(screen.getByLabelText('workout.summary.note').props.value).toBe('Dos sensible');
+  });
+
+  it('sans note, le champ est replié derrière un bouton', async () => {
+    // Un champ multiligne vide occupait un tiers de l'écran pour une saisie rare.
+    await afficher();
+
+    expect(screen.queryByLabelText('workout.summary.note')).toBeNull();
+    expect(screen.getByText('workout.summary.addNote')).toBeTruthy();
   });
 
   it('🔴 une note VIDÉE est effacée, pas enregistrée comme chaîne vide', async () => {
@@ -449,7 +486,7 @@ describe('ressenti', () => {
   });
 
   it('🔴 une note non vide est enregistrée telle quelle, espaces compris', async () => {
-    await afficher();
+    await afficher({ workouts: [seance({ notes: 'x' })] });
 
     await saisir('workout.summary.note', '  Bonne séance  ');
     await act(async () => {

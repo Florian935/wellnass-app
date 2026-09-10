@@ -1,27 +1,36 @@
 /**
  * Hub musculation (`app/(tabs)/strength.tsx`) — le **vrai** écran, monté.
  *
- * Écran à **0 %** avant ce fichier, et **il portait le seizième site du défaut de double appui** :
- * `onStartToday` gardait sur `if (starting) return`, un état React, qui ne garde rien. Deux appuis
- * du même cycle de rendu créaient **deux séances**, dont une orpheline que rien ne rouvrirait —
- * l'app n'en affiche qu'une. Corrigé le 14/08/2026 par `useActionLock`, test vu rouge avant.
+ * ── Ce que ce fichier protège ────────────────────────────────────────────────────────────────────
+ * Cet écran portait **le seizième site du défaut de double appui** : `onStartToday` gardait sur
+ * `if (starting) return`, un état React, qui ne garde rien. Deux appuis du même cycle de rendu
+ * créaient **deux séances**, dont une orpheline que rien ne rouvrirait — l'app n'en affiche qu'une.
+ * Corrigé le 14/08/2026 par `useActionLock`, test vu rouge avant. **Cette garde reste vérifiée
+ * ici** : c'est la raison d'être principale du fichier.
  *
- * L'autre chose que cet écran décide, et qui n'est visible nulle part ailleurs, c'est **quelle
- * carte d'action épinglée** afficher. Elles s'excluent, dans un ordre qui est une règle produit :
+ * ── Réécrit le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────────
+ * L'écran ne décide plus lui-même quelle carte afficher : la priorité des quatre états est portée
+ * par `resolveHubState` (`packages/shared`), testée à part et exhaustivement. Ce fichier vérifie
+ * donc ce qui reste **propre à l'écran** : qu'il rend l'état qu'on lui donne, qu'il câble les
+ * bonnes actions, et qu'il ne monte pas une tuile vide dans la grille.
  *
- *  1. **Une séance en cours passe avant tout.** La reprendre est la seule action sensée : proposer
- *     d'en démarrer une autre par-dessus produirait exactement le doublon que le verrou empêche.
- *  2. **Puis la séance planifiée du jour**, avec son programme — c'est ce qu'on est venu faire.
- *  3. **Sinon la séance libre**, avec deux repères discrets : ce qui a déjà été fait aujourd'hui,
- *     et la prochaine séance prévue. Un écran qui ne dirait rien ferait croire à un planning vide.
+ * La quatrième carte — **jour de repos** — n'existait pas avant cette US : rien ne s'affichait
+ * entre deux séances d'un programme actif, sinon l'invitation à improviser une séance libre.
  */
 import React from 'react';
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import type { HubState } from '@wellness/shared';
 
 import StrengthScreen from '../strength';
-import { startWorkout, startWorkoutFromSession, useActiveWorkout } from '@/data/repositories/workout-repository';
-import { useTodaySession } from '@/data/repositories/dashboard-repository';
+import {
+  startWorkout,
+  startWorkoutFromSession,
+  useWorkoutHistory,
+} from '@/data/repositories/workout-repository';
+import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
+import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
+import { useProfile } from '@/data/repositories/profile-repository';
 import { useRouter } from 'expo-router';
 
 // ---------------------------------------------------------------------------
@@ -29,21 +38,36 @@ import { useRouter } from 'expo-router';
 // ---------------------------------------------------------------------------
 
 jest.mock('@/data/repositories/workout-repository', () => ({
-  useActiveWorkout: jest.fn(() => ({ workout: null })),
   startWorkout: jest.fn(),
   startWorkoutFromSession: jest.fn(),
+  useWorkoutHistory: jest.fn(() => ({ workouts: [], isLoading: false })),
 }));
-jest.mock('@/data/repositories/dashboard-repository', () => ({
-  useTodaySession: jest.fn(() => ({ state: 'none', doneToday: null, nextUpcoming: null })),
+jest.mock('@/data/repositories/strength-hub-repository', () => ({
+  useStrengthHub: jest.fn(),
+}));
+jest.mock('@/data/repositories/workout-template-repository', () => ({
+  useWorkoutTemplates: jest.fn(() => ({ templates: [], isLoading: false })),
+}));
+jest.mock('@/data/repositories/profile-repository', () => ({
+  useProfile: jest.fn(() => ({ profile: null })),
+}));
+jest.mock('@/components/strength/SuggestedPrograms', () => ({
+  SuggestedPrograms: () => null,
 }));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
 /**
- * La grille de widgets a ses propres tests (55) : sonde muette ici, elle n'entre dans aucune des
- * règles vérifiées. Elle est aussi ce qui, sans mock, tire `widget-layout-repository` puis
- * l'initialisation d'i18next — d'où le `initReactI18next` dans le mock de `react-i18next`.
+ * La grille a ses propres tests : ici, une sonde qui **expose le prédicat `isActive`**. C'est le
+ * seul moyen de vérifier depuis l'écran qu'une tuile sans donnée est bien exclue — le défaut que
+ * l'US corrige, et qui ne se voit pas autrement qu'en comptant des cases vides à l'œil.
  */
-jest.mock('@/components/widgets/WidgetGrid', () => ({ WidgetGrid: () => null }));
+let isActiveSpy: ((id: string) => boolean) | undefined;
+jest.mock('@/components/widgets/WidgetGrid', () => ({
+  WidgetGrid: (props: { isActive?: (id: string) => boolean }) => {
+    isActiveSpy = props.isActive;
+    return null;
+  },
+}));
 jest.mock('@/components/widgets/CustomizeButton', () => ({ CustomizeButton: () => null }));
 jest.mock('@/components/widgets/strength-widgets', () => ({ STRENGTH_WIDGETS: {} }));
 
@@ -59,20 +83,6 @@ jest.mock('@/components/ScreenHeader', () => {
         <Text>{title}</Text>
         {action}
       </View>
-    ),
-  };
-});
-jest.mock('@/components/Card', () => {
-  const { View } = require('react-native');
-  return { Card: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
-});
-jest.mock('@/components/Button', () => {
-  const { Pressable, Text } = require('react-native');
-  return {
-    Button: ({ label, onPress }: { label: string; onPress: () => void }) => (
-      <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}>
-        <Text>{label}</Text>
-      </Pressable>
     ),
   };
 });
@@ -97,11 +107,18 @@ jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
     colors: {
       text: '#33291f',
-      textMuted: '#96856f',
+      textMuted: '#786a59',
       surface: '#fffaf2',
+      surfaceAlt: '#f3ddd0',
       border: '#ece0cd',
-      accent: '#c0562f',
-      success: '#7c8a5b',
+      track: '#eadcc6',
+      accent: '#b14f2b',
+      accentText: '#ffffff',
+      success: '#66714b',
+      panel: '#33291f',
+      panelText: '#f0e4d0',
+      panelMuted: '#c9b79a',
+      panelAccent: '#d9a888',
     },
   }),
 }));
@@ -110,30 +127,38 @@ jest.mock('@/theme/useTheme', () => ({
 // Utilitaires
 // ---------------------------------------------------------------------------
 
-const mockActive = useActiveWorkout as jest.Mock;
-const mockToday = useTodaySession as jest.Mock;
+const mockHub = useStrengthHub as jest.Mock;
+const mockHistory = useWorkoutHistory as jest.Mock;
+const mockTemplates = useWorkoutTemplates as jest.Mock;
+const mockProfile = useProfile as jest.Mock;
 const mockStartFree = startWorkout as jest.Mock;
 const mockStartFromSession = startWorkoutFromSession as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
 const push = jest.fn();
 
-const seanceDuJour = (overrides: Record<string, unknown> = {}) => ({
-  state: 'today-session' as const,
-  session: {
-    sessionId: 's-1',
-    plannedSessionId: 'ps-1',
-    name: 'Haut du corps',
-    orderIndex: 0,
-    exerciseCount: 5,
-    programName: 'Full body 3×',
-    ...(overrides.session as Record<string, unknown>),
-  },
-  ...overrides,
+const sessionDuJour = (over: Partial<Record<string, unknown>> = {}) => ({
+  sessionId: 's-1',
+  plannedSessionId: 'ps-1',
+  name: 'Haut du corps',
+  orderIndex: 0,
+  exerciseCount: 5,
+  programName: 'Full body 3×',
+  previewExercises: ['Développé couché', 'Rowing', 'Squat'],
+  estimatedMinutes: 55,
+  ...over,
 });
 
-const afficher = async (today: Record<string, unknown> = { state: 'none', doneToday: null, nextUpcoming: null }) => {
-  mockToday.mockReturnValue(today);
+const afficher = async (
+  state: HubState,
+  extra: { progress?: unknown; programName?: string | null } = {},
+) => {
+  mockHub.mockReturnValue({
+    state,
+    progress: extra.progress ?? null,
+    programName: extra.programName ?? null,
+    isLoading: false,
+  });
   await render(<StrengthScreen />);
 };
 
@@ -147,12 +172,15 @@ let boutonsAlerte: { text?: string; onPress?: () => void }[] = [];
 
 beforeEach(() => {
   jest.clearAllMocks();
+  isActiveSpy = undefined;
   boutonsAlerte = [];
   jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, boutons) => {
     boutonsAlerte = (boutons ?? []) as typeof boutonsAlerte;
   });
   mockUseRouter.mockReturnValue({ push });
-  mockActive.mockReturnValue({ workout: null });
+  mockHistory.mockReturnValue({ workouts: [], isLoading: false });
+  mockTemplates.mockReturnValue({ templates: [], isLoading: false });
+  mockProfile.mockReturnValue({ profile: null });
   mockStartFree.mockResolvedValue('w-neuf');
   mockStartFromSession.mockResolvedValue(undefined);
 });
@@ -162,110 +190,118 @@ afterEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// Carte épinglée : trois états qui s'excluent
+// La zone Agir rend l'état qu'on lui donne
 // ---------------------------------------------------------------------------
 
-describe('carte d’action épinglée', () => {
-  it('🔴 une séance EN COURS passe avant tout', async () => {
-    mockActive.mockReturnValue({ workout: { id: 'w-1', entries: [{}, {}] } });
-    await afficher(seanceDuJour());
+describe('zone Agir', () => {
+  it('reprend une séance en cours, et montre son avancement', async () => {
+    await afficher({
+      kind: 'resume',
+      workout: { exerciseCount: 3, doneSets: 7, totalSets: 18, name: null },
+    });
 
-    // Proposer d'en démarrer une autre par-dessus produirait exactement le doublon que le verrou
-    // empêche — et l'app n'affiche qu'une séance active.
     expect(screen.getByText('workout.resumeTitle')).toBeTruthy();
-    expect(screen.queryByText('home.today.title')).toBeNull();
-    expect(screen.queryByLabelText('workout.startFree')).toBeNull();
-  });
+    // L'avancement réel : sans lui, « reprendre » ne dit pas où on en est.
+    expect(screen.getByText('7/18')).toBeTruthy();
 
-  it('reprendre ouvre la séance en cours', async () => {
-    mockActive.mockReturnValue({ workout: { id: 'w-1', entries: [] } });
-    await afficher();
-
-    await taper(screen.getByLabelText('workout.resume'));
-
+    await taper(screen.getByText('workout.resume'));
     expect(push).toHaveBeenCalledWith('/workout');
   });
 
-  it('sans séance en cours, la séance PLANIFIÉE du jour est proposée', async () => {
-    await afficher(seanceDuJour());
+  it('annonce la séance du jour AVEC son contenu', async () => {
+    await afficher({ kind: 'today', session: sessionDuJour() });
 
-    expect(screen.getByText('home.today.title')).toBeTruthy();
-    expect(screen.getByText(/Haut du corps/)).toBeTruthy();
-    expect(screen.getByText('home.today.program:{"name":"Full body 3×"}')).toBeTruthy();
+    expect(screen.getByText('Haut du corps')).toBeTruthy();
+    // Le défaut corrigé : on savait « 5 exercices », jamais lesquels.
+    expect(screen.getByText('Développé couché')).toBeTruthy();
+    expect(screen.getByText('strengthHub.today.more:{"count":2}')).toBeTruthy();
+    expect(screen.getByText('strengthHub.minutesShort:{"count":55}')).toBeTruthy();
   });
 
   it('🔴 une séance du jour SANS nom retombe sur son rang, 1-indexé', async () => {
-    await afficher(seanceDuJour({ session: { sessionId: 's-1', plannedSessionId: 'ps-1', name: '  ', orderIndex: 2, exerciseCount: 4, programName: null } }));
+    await afficher({ kind: 'today', session: sessionDuJour({ name: null, orderIndex: 2 }) });
 
-    expect(screen.getByText(/programs\.detail\.sessionFallback:\{"index":3\}/)).toBeTruthy();
+    // `orderIndex` est 0-based en base : « Séance 0 » se lirait comme un bug.
+    expect(screen.getByText('programs.detail.sessionFallback:{"index":3}')).toBeTruthy();
   });
 
-  it('sans programme, la ligne de programme disparaît', async () => {
-    await afficher(seanceDuJour({ session: { sessionId: 's-1', plannedSessionId: 'ps-1', name: 'A', orderIndex: 0, exerciseCount: 4, programName: null } }));
-
-    expect(screen.queryByText(/home\.today\.program/)).toBeNull();
+  it('masque la durée estimée quand elle n’est pas calculable', async () => {
+    // Mieux vaut ne rien dire qu'annoncer un chiffre inventé.
+    await afficher({ kind: 'today', session: sessionDuJour({ estimatedMinutes: null }) });
+    expect(screen.queryByText('strengthHub.estimated')).toBeNull();
   });
 
-  it('rien de prévu : la séance libre', async () => {
-    await afficher();
+  it('🔴 un jour de repos est une information, pas un vide', async () => {
+    // Cette carte n'existait pas : entre deux séances d'un programme actif, l'écran ne proposait
+    // que « Séance libre », comme s'il n'y avait pas de plan.
+    await afficher({
+      kind: 'rest',
+      doneToday: null,
+      nextUpcoming: { scheduledDate: '2026-09-12', name: 'Pull A' },
+    });
 
-    expect(screen.getByText('workout.freeTitle')).toBeTruthy();
-    expect(screen.getByLabelText('workout.startFree')).toBeTruthy();
+    expect(screen.getByText('strengthHub.rest.title')).toBeTruthy();
+    expect(screen.getByText('home.today.next:{"date":"12/09","name":"Pull A"}')).toBeTruthy();
+  });
+
+  it('🔴 une séance DÉJÀ FAITE aujourd’hui est rappelée, sans reproposer de la démarrer', async () => {
+    await afficher({ kind: 'rest', doneToday: { name: 'Push A' }, nextUpcoming: null });
+
+    expect(screen.getByText('strengthHub.rest.doneTitle')).toBeTruthy();
+    expect(screen.getByText('home.today.doneToday:{"name":"Push A"}')).toBeTruthy();
+    expect(screen.queryByText('home.today.cta')).toBeNull();
+  });
+
+  it('🔴 sans programme, l’action principale est de CHOISIR un programme', async () => {
+    // Le défaut central du hub : « Séance libre » — la moins structurée — était l'action mise en
+    // avant pour quelqu'un qui n'avait encore rien fait.
+    await afficher({ kind: 'onboarding' });
+
+    await taper(screen.getByText('strengthHub.onboarding.cta'));
+    expect(push).toHaveBeenCalledWith('/programs');
   });
 });
 
 // ---------------------------------------------------------------------------
-// Démarrer la séance du jour
+// Démarrer la séance du jour — le verrou de double appui
 // ---------------------------------------------------------------------------
 
 describe('démarrer la séance du jour', () => {
   it('crée la séance en la RATTACHANT à la planification', async () => {
-    await afficher(seanceDuJour());
+    await afficher({ kind: 'today', session: sessionDuJour() });
 
-    await taper(screen.getByLabelText('home.today.cta'));
+    await taper(screen.getByText('home.today.cta'));
 
-    // Sans `plannedSessionId`, la case du planning resterait « planifiée » pour toujours.
+    // Sans `plannedSessionId`, l'occurrence resterait « planifiée » puis « manquée » alors que la
+    // séance a réellement eu lieu (US Refonte-A).
     expect(mockStartFromSession).toHaveBeenCalledWith('s-1', { plannedSessionId: 'ps-1' });
     expect(push).toHaveBeenCalledWith('/workout');
   });
 
   it('🔴 deux appuis dans le MÊME cycle ne créent qu’UNE séance', async () => {
-    let resoudre: (() => void) | undefined;
-    mockStartFromSession.mockReturnValue(new Promise<void>((r) => (resoudre = r)));
-    await afficher(seanceDuJour());
+    // Seizième site du défaut du 08/08/2026. Un état React ne voit pas le second appui du même
+    // cycle de rendu : seul `useActionLock` garde.
+    await afficher({ kind: 'today', session: sessionDuJour() });
+    const bouton = screen.getByText('home.today.cta');
 
-    const b = screen.getByLabelText('home.today.cta');
     await act(async () => {
-      fireEvent.press(b);
-      fireEvent.press(b);
+      fireEvent.press(bouton);
+      fireEvent.press(bouton);
     });
 
-    // Seizième site du défaut du 08/08/2026 : `if (starting) return` lit un état React, et deux
-    // appuis du même cycle le lisent tous deux à `false`. Deux séances créées, dont une orpheline
-    // que rien ne rouvrirait.
     expect(mockStartFromSession).toHaveBeenCalledTimes(1);
-    resoudre?.();
   });
 
   it('🔴 un échec ne navigue pas, et laisse réessayer', async () => {
-    mockStartFromSession.mockRejectedValueOnce(new Error('hors ligne'));
-    await afficher(seanceDuJour());
+    mockStartFromSession.mockRejectedValueOnce(new Error('boom'));
+    await afficher({ kind: 'today', session: sessionDuJour() });
 
-    await taper(screen.getByLabelText('home.today.cta'));
+    await taper(screen.getByText('home.today.cta'));
     expect(push).not.toHaveBeenCalled();
 
-    // `finally` : rester bloqué en « démarrage » priverait l'écran de son action principale.
-    await taper(screen.getByLabelText('home.today.cta'));
+    mockStartFromSession.mockResolvedValueOnce(undefined);
+    await taper(screen.getByText('home.today.cta'));
     expect(push).toHaveBeenCalledWith('/workout');
-  });
-
-  it('un raccourci vers les modèles reste offert', async () => {
-    await afficher(seanceDuJour());
-
-    await taper(screen.getByText('workout.freeStart.fromTemplate'));
-
-    // Avoir une séance prévue n'oblige pas à la faire : le modèle libre reste à un geste.
-    expect(push).toHaveBeenCalledWith('/templates');
   });
 });
 
@@ -274,25 +310,34 @@ describe('démarrer la séance du jour', () => {
 // ---------------------------------------------------------------------------
 
 describe('séance libre', () => {
-  it('🔴 le choix est posé AVANT de créer quoi que ce soit', async () => {
-    await afficher();
+  it('🔴 sans aucun modèle, démarre directement — pas de choix à une seule issue', async () => {
+    // Proposer « à blanc / depuis un modèle » quand aucun modèle n'existe fait choisir entre une
+    // option et une impasse.
+    mockTemplates.mockReturnValue({ templates: [], isLoading: false });
+    await afficher({ kind: 'onboarding' });
 
-    await taper(screen.getByLabelText('workout.startFree'));
+    await taper(screen.getByText('workout.freeTitle'));
 
-    // Créer une séance vierge puis proposer un modèle laisserait un enregistrement à nettoyer si
-    // l'utilisateur change d'avis.
-    expect(mockStartFree).not.toHaveBeenCalled();
-    expect(boutonsAlerte.map((b) => b.text)).toEqual([
-      'workout.freeStart.blank',
-      'workout.freeStart.fromTemplate',
-      'common.cancel',
-    ]);
+    expect(Alert.alert).not.toHaveBeenCalled();
+    expect(mockStartFree).toHaveBeenCalledTimes(1);
+    expect(push).toHaveBeenCalledWith('/workout');
   });
 
-  it('« vierge » crée la séance et ouvre la saisie', async () => {
-    await afficher();
+  it('avec des modèles, le choix est posé AVANT de créer quoi que ce soit', async () => {
+    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
+    await afficher({ kind: 'onboarding' });
 
-    await taper(screen.getByLabelText('workout.startFree'));
+    await taper(screen.getByText('workout.freeTitle'));
+
+    expect(Alert.alert).toHaveBeenCalled();
+    expect(mockStartFree).not.toHaveBeenCalled();
+  });
+
+  it('« à blanc » crée la séance et ouvre la saisie', async () => {
+    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
+    await afficher({ kind: 'onboarding' });
+    await taper(screen.getByText('workout.freeTitle'));
+
     await act(async () => {
       boutonsAlerte.find((b) => b.text === 'workout.freeStart.blank')?.onPress?.();
     });
@@ -302,9 +347,10 @@ describe('séance libre', () => {
   });
 
   it('« depuis un modèle » n’écrit rien et ouvre la liste', async () => {
-    await afficher();
+    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
+    await afficher({ kind: 'onboarding' });
+    await taper(screen.getByText('workout.freeTitle'));
 
-    await taper(screen.getByLabelText('workout.startFree'));
     await act(async () => {
       boutonsAlerte.find((b) => b.text === 'workout.freeStart.fromTemplate')?.onPress?.();
     });
@@ -312,63 +358,62 @@ describe('séance libre', () => {
     expect(mockStartFree).not.toHaveBeenCalled();
     expect(push).toHaveBeenCalledWith('/templates');
   });
+});
 
-  it('annuler ne crée rien', async () => {
-    await afficher();
+// ---------------------------------------------------------------------------
+// Zone Suivre : aucune tuile vide
+// ---------------------------------------------------------------------------
 
-    await taper(screen.getByLabelText('workout.startFree'));
-    await act(async () => {
-      boutonsAlerte.find((b) => b.text === 'common.cancel')?.onPress?.();
-    });
+describe('zone Suivre', () => {
+  it('🔴 exclut historique et progression tant qu’aucune séance n’existe', async () => {
+    // LE défaut du hub : la grille ne recevait pas de prédicat, donc une tuile sans donnée
+    // réservait quand même sa case — 2,4 écrans de scroll de carrés vides sur un compte neuf.
+    mockHistory.mockReturnValue({ workouts: [], isLoading: false });
+    await afficher({ kind: 'onboarding' });
 
-    expect(mockStartFree).not.toHaveBeenCalled();
+    expect(isActiveSpy).toBeDefined();
+    expect(isActiveSpy!('strength-history')).toBe(false);
+    expect(isActiveSpy!('strength-progress')).toBe(false);
+  });
+
+  it('les monte dès qu’une séance existe', async () => {
+    mockHistory.mockReturnValue({ workouts: [{ id: 'w1' }], isLoading: false });
+    await afficher({ kind: 'onboarding' });
+
+    expect(isActiveSpy!('strength-history')).toBe(true);
+    expect(isActiveSpy!('strength-progress')).toBe(true);
+  });
+
+  it('garde le planning même vide — il montre la semaine à venir', async () => {
+    mockHistory.mockReturnValue({ workouts: [], isLoading: false });
+    await afficher({ kind: 'onboarding' });
+
+    expect(isActiveSpy!('strength-planning')).toBe(true);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Repères du jour
+// Avancement du programme
 // ---------------------------------------------------------------------------
 
-describe('repères du jour', () => {
-  it('🔴 une séance DÉJÀ FAITE aujourd’hui est rappelée', async () => {
-    await afficher({
-      state: 'none',
-      doneToday: { name: 'Haut du corps' },
-      nextUpcoming: null,
-    });
+describe('avancement du programme', () => {
+  it('🔴 affiche la semaine en cours — le repère que MUSC-F15 calculait sans le montrer', async () => {
+    await afficher(
+      { kind: 'today', session: sessionDuJour() },
+      {
+        programName: 'PPL 6 jours',
+        progress: { week: 3, totalWeeks: 8, done: 14, total: 24, ratio: 14 / 24 },
+      },
+    );
 
-    // Sans ce repère, l'écran proposerait « séance libre » à quelqu'un qui vient de s'entraîner,
-    // comme si rien n'avait été fait.
-    expect(screen.getByText('home.today.doneToday:{"name":"Haut du corps"}')).toBeTruthy();
+    expect(
+      screen.getByText('strengthHub.progress.week:{"name":"PPL 6 jours","week":3,"totalWeeks":8}'),
+    ).toBeTruthy();
+    expect(screen.getByText('strengthHub.progress.sessions:{"done":14,"total":24}')).toBeTruthy();
   });
 
-  it('🔴 la prochaine séance prévue est annoncée en JJ/MM', async () => {
-    await afficher({
-      state: 'none',
-      doneToday: null,
-      nextUpcoming: { scheduledDate: '2026-08-19', name: 'Bas du corps' },
-    });
-
-    // Une date ISO affichée telle quelle serait illisible ; et sans elle, un planning à venir se
-    // lirait comme un planning vide.
-    expect(screen.getByText(/home\.today\.next.*"date":"19\/08"/)).toBeTruthy();
-  });
-
-  it('la prochaine séance mène au planning', async () => {
-    await afficher({
-      state: 'none',
-      doneToday: null,
-      nextUpcoming: { scheduledDate: '2026-08-19', name: 'Bas du corps' },
-    });
-
-    await taper(screen.getByText(/home\.today\.next/));
-
-    expect(push).toHaveBeenCalledWith('/planning');
-  });
-
-  it('sans repère, aucune ligne parasite', async () => {
-    await afficher();
-
-    expect(screen.queryByText(/doneToday|home\.today\.next/)).toBeNull();
+  it('ne montre rien sans programme actif', async () => {
+    await afficher({ kind: 'onboarding' });
+    expect(screen.queryByText(/strengthHub\.progress\.week/)).toBeNull();
   });
 });

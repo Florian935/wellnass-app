@@ -2338,3 +2338,157 @@ deux exclusions, toutes deux extérieures à cette US :
   source ne l'alimente. C'est voulu.
 - **FC, cadence, foulée** (mur M14) : tranché avant cette US (V2 wearables, RUN-23/RUN-24 du
   catalogue). Rien à chercher de ce côté.
+
+---
+
+## 57. MUSCU-UX01 — Refonte UX du pilier Musculation (`feature/muscu-refonte-ux`)
+
+> Spec : [muscu-ux01-refonte-pilier-musculation.md](docs/specs/functional/us/muscu-ux01-refonte-pilier-musculation.md) ·
+> Audit : [audit-ux-2026-09.md](docs/refonte-muscu/audit-ux-2026-09.md) ·
+> Maquettes : [design/refonte-muscu-2026-09/](design/refonte-muscu-2026-09/) (19 planches avant/après).
+> **Aucune migration, aucune sync rule à déployer.** Recettable dès qu'un build embarque la branche.
+>
+> ⚠️ **Cette US touche les cinq écrans du pilier.** Elle a été développée dans un worktree isolé,
+> en parallèle de `feature/accueil-refonte` : au merge, vérifier que l'accueil n'a pas bougé.
+
+### Le hub muscu — quatre états, un seul à la fois
+
+- [ ] 1. **Aucun programme actif** : le hub propose « Choisis un programme » en **action
+      principale**, avec trois programmes suggérés dessous. « Séance libre » reste accessible,
+      en second. ⚠️ C'est l'inverse d'avant — si « Séance libre » domine encore, c'est un défaut.
+- [ ] 2. **Compte neuf** : aucune tuile vide. Le hub tient en **un écran ou peu s'en faut**
+      (il en faisait 2,4 avant). Les widgets Historique et Progression n'apparaissent qu'une
+      fois une séance faite.
+- [ ] 3. **Séance prévue aujourd'hui** : la carte donne le **nom**, les **trois premiers
+      exercices**, le total (« + N autres ») et une **durée estimée**. Démarrer part bien sur
+      cette séance.
+- [ ] 4. **Séance en cours** : elle passe devant tout, avec son avancement (« 7/18 séries ») et
+      une barre de progression. « Reprendre » rouvre la bonne séance.
+- [ ] 5. **Jour de repos** (programme actif, rien aujourd'hui) : carte « Repos aujourd'hui » +
+      la prochaine séance datée + deux sorties (planning, séance libre). ⚠️ **Cet état n'existait
+      pas** : avant, on ne voyait que « Séance libre ».
+- [ ] 6. **Séance du jour déjà faite** : la carte le dit et **ne repropose pas** de la démarrer.
+- [ ] 7. **Barre de progression du programme** : « PPL 6 jours · semaine 3 sur 8 · 14/24 séances ».
+      Vérifier que la semaine est juste après une séance faite, et qu'elle ne dépasse jamais la
+      durée du programme.
+- [ ] 8. Un tap dessus ouvre les programmes.
+
+### Entrer dans un programme — le gain de six jours
+
+- [ ] 9. Sur un programme **de la bibliothèque** : un seul bouton, « **Suivre ce programme** ».
+      Ni « Dupliquer », ni « Démarrer » séparés.
+- [ ] 10. L'appuyer crée la copie **en silence**, l'annonce **après** (« Copie personnelle
+      créée »), et ouvre l'assistant sur **la copie** — pas sur l'original.
+- [ ] 11. Un programme **sans séance** ne peut pas être suivi (bouton grisé).
+- [ ] 12. **Assistant** : la date de début est **aujourd'hui** par défaut. « Lundi prochain » est
+      à un tap. ⚠️ C'était « lundi prochain » d'office : un mardi, on attendait six jours.
+- [ ] 13. **Les jours sont déjà proposés** et espacés (3 séances → L/M/V, 4 → L/M/J/V). Le bouton
+      est actionnable **sans rien toucher**.
+- [ ] 14. Déplacer une séance sur un autre jour : la suggestion cède, le choix est respecté.
+- [ ] 15. Démarrer **aujourd'hui un mercredi** : les séances du lundi et du mardi de cette semaine
+      **ne sont pas créées** (elles naîtraient « manquées »). La semaine suivante est complète.
+      Le bouton annonce le bon compte, première semaine partielle comprise.
+- [ ] 16. Après validation : on atterrit sur le **hub**, la carte du jour prête — plus sur le
+      calendrier.
+- [ ] 17. **Non-régression course** : planifier un programme de course fonctionne comme avant,
+      et atterrit sur le hub course.
+
+### La séance — la barre qui ne bouge pas
+
+- [ ] 18. La saisie et « Valider la série » sont **fixées en bas de l'écran**, toujours visibles.
+- [ ] 19. **Ouvrir le clavier ne les recouvre pas.** ⚠️ C'était le défaut principal : le bouton
+      passait sous le clavier à chaque saisie de reps.
+- [ ] 20. Les **steppers − / +** permettent de valider une série **sans ouvrir le clavier**.
+- [ ] 21. **Valider produit un retour haptique** — discret. ⚠️ Il n'y en avait aucun.
+- [ ] 22. La barre haute montre l'**avancement de la séance** (« 7/18 séries »), pas seulement le
+      rang dans l'exercice.
+- [ ] 23. **Changer de niveau d'affichage** (menu ⋮ → Épuré / Normal / Détaillé) : la zone du haut
+      change, **la barre du bas ne bouge pas d'un pixel**. C'est la règle qui rend le réglage sûr.
+- [ ] 24. Le **réglage du repos** n'est plus sur chaque série : il est dans le menu ⋮ et sur
+      l'écran de repos.
+- [ ] 25. **Série à la durée** (gainage) : les champs deviennent « durée » et « lest », le lest
+      est facultatif (bordure pointillée) et peut rester vide.
+- [ ] 26. **Poids de corps** (traction) : « reps » et « lest », lest facultatif.
+- [ ] 27. **Superset** : après validation, on bascule sur le partenaire **sans repos**, le nom
+      change dans la barre, et le bouton annonce « Valider — puis enchaîner ».
+- [ ] 28. **Liste d'exercices** : taper le **nom** va à l'exercice ; taper le **chevron** déplie.
+      ⚠️ Retaper l'exercice courant **ne le replie plus**.
+- [ ] 29. **Écran de repos** : il annonce la série suivante et son exercice, et propose de passer
+      durablement à un repos plus long sur cet exercice.
+- [ ] 30. L'écran de repos est aux **couleurs du thème** (brun sombre), plus en bordeaux.
+- [ ] 31. **Toutes les séries validées** : la barre du bas devient « **Terminer la séance** »,
+      avec durée et séries. ⚠️ Avant, c'était un texte « Séance terminée ? » sans bouton.
+- [ ] 32. **Écourter une séance** (il reste des séries à faire) : menu ⋮ → « Terminer la séance ».
+      🔴 **Cas important** : sans ce chemin, la seule sortie serait d'abandonner et tout perdre.
+- [ ] 33. La croix quitte **sans rien demander** et ramène au hub, où la séance est reprenable.
+      Le libellé « Mettre en pause » a disparu (il nommait un état inexistant).
+- [ ] 34. « Abandonner » (menu ⋮) demande toujours confirmation et supprime bien la séance.
+
+### Le résumé de fin
+
+- [ ] 35. Le résumé montre **ce que tu as fait**, exercice par exercice, avec les charges.
+      ⚠️ Il ne montrait que cinq agrégats.
+- [ ] 36. Chaque exercice porte son **écart depuis la dernière fois** (« ▲ +2,5 kg », « ▲ +1 rep »,
+      « = »). Un exercice fait pour la **première fois** n'affiche **aucun** écart — surtout pas « = ».
+- [ ] 37. Les statistiques tiennent en **une bande** (durée, séries, tonnage, kg/min).
+- [ ] 38. Si la séance comptait des échauffements, la mention « N séries d'échauffement » apparaît.
+- [ ] 39. Le **ressenti** propose cinq niveaux **nommés** (Facile → Max), plus des étoiles.
+      Retaper le niveau déjà choisi l'efface.
+- [ ] 40. Rouvrir le résumé plus tard : le ressenti choisi est **relu correctement**.
+- [ ] 41. 🟡 **Séance ancienne** (notée avant cette US, en 1-5 étoiles) : son ressenti se relit
+      dans les cinq niveaux **sans être aberrant** — un ancien « 5 étoiles » doit se lire « Solide »
+      et non « Facile ». C'est un compromis assumé, faute de migration.
+- [ ] 42. La note de séance est repliée derrière « Ajouter une note » quand il n'y en a pas.
+
+### L'historique
+
+- [ ] 43. Chaque ligne porte le **nom de la séance**, sa date, sa **durée**, son **tonnage** et son
+      **nombre d'exercices**. ⚠️ Il n'y avait que date + durée + RPE.
+- [ ] 44. Une séance libre est nommée « Séance libre » et porte le badge **LIBRE**.
+- [ ] 45. Une séance avec record porte une pastille **🏆**.
+- [ ] 46. Les séances sont **groupées par mois**, avec le cumul du mois en en-tête.
+- [ ] 47. L'en-tête de l'écran annonce le total (« 32 séances · 214 t soulevées »).
+- [ ] 48. **Filtre 7 j / 30 j / 90 j** : une séance faite il y a exactement 7 jours reste visible
+      toute la journée (borne à minuit, pas 7×24 h glissantes).
+- [ ] 49. Un filtre **sans résultat** affiche un message spécifique et un bouton pour le retirer —
+      pas « Démarre ta première séance ».
+- [ ] 50. 🔴 **Suppression** : appui long sur une séance → confirmation → elle disparaît de
+      l'historique. Vérifier ensuite que **son tonnage n'est plus compté** et que ses **records
+      ont disparu**.
+- [ ] 51. 🔴 **Suppression d'une séance issue du planning** : le jour correspondant **redevient
+      « à faire »** dans le calendrier. C'est l'effet le plus facile à casser.
+
+### La progression
+
+- [ ] 52. L'écran s'ouvre sur **trois onglets** : Vue d'ensemble · Par exercice · Mon corps.
+      ⚠️ Il empilait huit sections en scroll continu.
+- [ ] 53. **Vue d'ensemble** : volume, régularité, équilibre musculaire, exécution du programme,
+      tonnage cumulé, records récents et temps d'entraînement.
+- [ ] 54. **Par exercice** : le sélecteur, la courbe et les records fonctionnent comme avant, y
+      compris l'arrivée depuis une fiche exercice (l'exercice est pré-sélectionné).
+- [ ] 55. **Mon corps** : mensurations et module force (%1RM, DOTS, total SBD).
+- [ ] 56. 🔴 **Les états vides** proposent « Démarrer une séance » et mènent au **hub muscu**.
+      ⚠️ Ils menaient vers un écran « Aucune séance en cours » — un cul-de-sac, quatre fois.
+
+### Transverse
+
+- [ ] 57. **En anglais** : basculer la langue et reparcourir hub, séance, résumé, historique,
+      progression. Aucune clé brute (`strengthHub.…`) ne doit apparaître.
+- [ ] 58. **Accessibilité** : au lecteur d'écran, la barre d'action de séance annonce l'exercice,
+      le rang de série et l'action. La barre de progression du programme est annoncée avec ses
+      valeurs.
+- [ ] 59. **Hors ligne** : couper le réseau, faire une séance complète, la terminer, la supprimer.
+      Tout doit fonctionner ; la synchro rattrape au retour du réseau.
+
+### 🟡 Ce qui n'est PAS dans cette US — et pourquoi
+
+- **L'édition d'une séance passée.** Seule la **suppression** est livrée. Modifier une série après
+  coup demande de rejouer records, volume et streak : c'est un cadrage à part.
+- **Le recalcul du record précédent** après suppression. Le record disparaît, le second meilleur
+  n'est pas rétabli — il faudrait rejouer tout l'historique de l'exercice. Le prochain dépassement
+  recrée le record normalement.
+- **Les filtres par programme et par groupe musculaire** de l'historique : la spec §6.1 les
+  demande, ils ne sont **pas** livrés ici. Seul le filtre de période l'est.
+- **La fréquence hebdomadaire à l'onboarding.** Les trois programmes suggérés se trient sur le
+  niveau d'affichage, seul signal d'expérience disponible — le profil ne stocke ni niveau de
+  pratique ni disponibilité. Le vrai tri demanderait une US d'onboarding.

@@ -12,6 +12,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   addDays,
+  assignSessionDays,
+  countPlannedSessions,
   localDayKey,
   startOfWeek,
   type Pillar,
@@ -68,12 +70,24 @@ function PlanView({ programId }: { programId: string }) {
 
   // Durée en semaines (saisie libre, pré-remplie depuis le programme).
   const [duration, setDuration] = useState<string | null>(null);
-  // Lundi de la semaine de début, gardé en clé AAAA-MM-JJ. Défaut : lundi prochain.
-  const [weekStart, setWeekStart] = useState<string>(() =>
-    localDayKey(startOfWeek(addDays(new Date(), 7))),
-  );
-  // Affectation d'un jour de semaine (0..6) par séance.
-  const [dayAssignments, setDayAssignments] = useState<Record<string, number>>({});
+  /**
+   * Date de début, en clé AAAA-MM-JJ. **Défaut : aujourd'hui** (US MUSCU-UX01).
+   *
+   * C'était le lundi *suivant* — donc un programme ne pouvait jamais commencer le jour où on le
+   * choisissait, et un utilisateur qui installait l'app un mardi attendait six jours avant sa
+   * première séance. C'est le défaut le moins coûteux à corriger et le plus rentable sur
+   * l'activation. La première semaine est simplement **partielle** (voir
+   * `generatePlannedSessions`).
+   */
+  const [startDate, setStartDate] = useState<string>(() => localDayKey(new Date()));
+  /**
+   * Affectation d'un jour de semaine (0..6) par séance — **pré-remplie**, pas vide.
+   *
+   * `null` tant que les séances ne sont pas chargées ; ensuite, la valeur locale prime sur la
+   * suggestion. Pas d'effet de synchronisation : la suggestion se recalcule à partir des séances
+   * et n'est consultée que si l'utilisateur n'a rien touché.
+   */
+  const [dayOverrides, setDayOverrides] = useState<Record<string, number>>({});
   const [planning, setPlanning] = useState(false);
 
   const currentDuration =
@@ -85,16 +99,25 @@ function PlanView({ programId }: { programId: string }) {
     parsedDuration > 0;
 
   const sessions = detail?.sessions ?? [];
-  const allAssigned =
-    sessions.length > 0 && sessions.every((s) => dayAssignments[s.id] !== undefined);
 
-  const canPlan = durationValid && allAssigned && !planning;
+  /**
+   * Jours effectifs : la suggestion d'espacement, surchargée par ce que l'utilisateur a touché.
+   *
+   * C'est ce qui rend le formulaire **validable dès l'ouverture** — le défaut corrigé par l'US :
+   * `dayAssignments` démarrait vide, et `canPlan` restait faux tant que chaque séance n'avait pas
+   * reçu son jour, sans qu'aucune répartition ne soit proposée.
+   */
+  const suggestedDays = assignSessionDays(sessions.map((s) => s.id));
+  const dayAssignments: Record<string, number> = { ...suggestedDays, ...dayOverrides };
 
-  const onPrevWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), -7)));
-  const onNextWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), 7)));
+  const canPlan = durationValid && sessions.length > 0 && !planning;
+
+  /** Lundi de la semaine courante et de la suivante — les deux départs proposés d'un tap. */
+  const todayKey = localDayKey(new Date());
+  const nextMondayKey = localDayKey(startOfWeek(addDays(new Date(), 7)));
 
   const assignDay = (sessionId: string, day: number) => {
-    setDayAssignments((prev) => ({ ...prev, [sessionId]: day }));
+    setDayOverrides((prev) => ({ ...prev, [sessionId]: day }));
   };
 
   const doPlan = async (removePreviousFuture: boolean) => {
@@ -102,10 +125,12 @@ function PlanView({ programId }: { programId: string }) {
     try {
       await planProgram(
         programId,
-        { startDate: weekStart, durationWeeks: parsedDuration, dayAssignments },
+        { startDate, durationWeeks: parsedDuration, dayAssignments },
         { removePreviousFuture },
       );
-      router.replace('/planning');
+      // US MUSCU-UX01 : on rend la main sur le **hub du pilier**, où la carte du jour est déjà
+      // prête, plutôt que sur le calendrier — qui n'est pas une action.
+      router.replace(detail?.pillar === 'running' ? '/(tabs)/running' : '/(tabs)/strength');
     } catch {
       Alert.alert(t('planning.planErrorTitle'), t('planning.planErrorMessage'));
       setPlanning(false);
@@ -149,7 +174,17 @@ function PlanView({ programId }: { programId: string }) {
     );
   }
 
-  const plannedCount = durationValid ? sessions.length * parsedDuration : 0;
+  // Compte réel : la première semaine peut être partielle quand on démarre en milieu de semaine.
+  const plannedCount = durationValid
+    ? countPlannedSessions({
+        templateSessions: sessions.map((s) => ({
+          sessionId: s.id,
+          dayOfWeek: dayAssignments[s.id] ?? 0,
+        })),
+        startDate,
+        durationWeeks: parsedDuration,
+      })
+    : 0;
 
   return (
     <Screen edges={['top']}>
@@ -169,28 +204,76 @@ function PlanView({ programId }: { programId: string }) {
           maxLength={3}
         />
 
-        {/* Semaine de début */}
+        {/* Date de début — US MUSCU-UX01 : deux départs à un tap, « aujourd'hui » par défaut.
+            Les flèches ◀ ▶ imposaient de reculer d'une semaine pour commencer maintenant. */}
         <View style={styles.field}>
           <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
             {t('planning.startDate')}
           </Text>
+          <View style={styles.startChoices}>
+            {(
+              [
+                { key: todayKey, label: t('planning.startToday'), sub: formatDayKey(todayKey) },
+                {
+                  key: nextMondayKey,
+                  label: t('planning.startNextMonday'),
+                  sub: formatDayKey(nextMondayKey),
+                },
+              ] as const
+            ).map((choice) => {
+              const selected = startDate === choice.key;
+              return (
+                <Pressable
+                  key={choice.key}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  onPress={() => setStartDate(choice.key)}
+                  style={[
+                    styles.startChoice,
+                    {
+                      backgroundColor: selected ? colors.accent : colors.surface,
+                      borderColor: selected ? colors.accent : colors.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.startChoiceLabel,
+                      { color: selected ? colors.accentText : colors.text },
+                    ]}
+                  >
+                    {choice.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.startChoiceSub,
+                      { color: selected ? colors.accentText : colors.textMuted },
+                    ]}
+                  >
+                    {choice.sub}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {/* Recul / avance d'une semaine, pour les départs hors des deux choix rapides. */}
           <View style={styles.weekSelector}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('planning.prevWeek')}
-              onPress={onPrevWeek}
+              onPress={() => setStartDate(localDayKey(addDays(dateFromKey(startDate), -7)))}
               hitSlop={8}
               style={[styles.weekArrow, { borderColor: colors.border }]}
             >
               <Text style={[styles.weekArrowText, { color: colors.text }]}>◀</Text>
             </Pressable>
-            <Text style={[styles.weekLabel, { color: colors.text }]}>
-              {t('planning.weekOf', { date: formatDayKey(weekStart) })}
+            <Text style={[styles.weekLabel, { color: colors.textMuted }]}>
+              {t('planning.startsOn', { date: formatDayKey(startDate) })}
             </Text>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('planning.nextWeek')}
-              onPress={onNextWeek}
+              onPress={() => setStartDate(localDayKey(addDays(dateFromKey(startDate), 7)))}
               hitSlop={8}
               style={[styles.weekArrow, { borderColor: colors.border }]}
             >
@@ -414,6 +497,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   weekArrowText: { fontFamily: fontFamily.bodyBold, fontSize: 16 },
+  startChoices: { flexDirection: 'row', gap: 9, marginBottom: 10 },
+  startChoice: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  startChoiceLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  startChoiceSub: { fontFamily: fontFamily.body, fontSize: 12 },
   weekLabel: { flex: 1, textAlign: 'center', fontFamily: fontFamily.bodySemi, fontSize: 15 },
   sectionTitle: {
     fontFamily: fontFamily.displaySemi,

@@ -1,616 +1,456 @@
+/**
+ * Carte de **contexte** de la série en cours — US MUSCU-UX01 (10/09/2026).
+ *
+ * ── Ce que cette carte était, et pourquoi elle a changé de rôle ──────────────────────────────────
+ * Elle portait tout : le contexte **et** la saisie **et** la validation. Onze blocs empilés, ~560 px
+ * au niveau détaillé, sur un écran utile de 700 à 760. Conséquence : « Valider la série » — le geste
+ * répété 30 à 40 fois par séance — se retrouvait en bas, sous le pli, et sous le clavier dès qu'on
+ * saisissait les reps.
+ *
+ * La saisie et la validation sont parties dans `SetActionBar`, **fixée en bas de l'écran**. Cette
+ * carte ne garde que ce qui informe : ce qu'on a déjà fait sur cet exercice, ce qu'on avait fait la
+ * dernière fois, ce que l'app suggère, et les réglages fins de la série.
+ *
+ * ── Règle R4-1 : c'est ICI que le niveau d'affichage agit, et nulle part ailleurs ────────────────
+ * `simplified` / `normal` / `detailed` pilotent cette carte. La barre du bas est identique aux trois
+ * niveaux — c'est ce qui rend le changement de niveau sans risque, et donc ce qui permet de le
+ * proposer depuis la séance elle-même (`SessionMenuSheet`).
+ *
+ * Les suppléments du niveau `detailed` (type de série, RPE, note, superset) sont regroupés derrière
+ * **un seul repli** plutôt qu'empilés : ils servent à quelques séries par séance, pas à toutes.
+ */
+
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { SetType, WorkoutDisplayLevel } from '@wellness/shared';
 import { workoutFieldVisibility } from '@wellness/shared';
-import { fontFamily } from '@/theme/fonts';
-import { useUnits } from '@/hooks/useUnits';
 import { useIntensity } from '@/hooks/useIntensity';
+import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
 /**
- * Types de série exposés dans le sélecteur (C2). `warmup` est traité à part
- * (raccourci 🔥) et `superset` n'est plus un choix de ce sélecteur depuis la
- * recette C3 (20/07/2026, retour Florian « pas intuitif ») : la liaison
- * superset passe désormais par une action dédiée nommant le partenaire
- * (voir bloc « Superset » plus bas), pas par un type abstrait à toggler
- * séparément des deux côtés.
+ * Types de série proposés. `warmup` a son propre raccourci (visible dès `normal`) et `superset`
+ * n'est plus un type à basculer depuis la recette du 20/07/2026 : la liaison passe par une action
+ * qui nomme le partenaire.
  */
 const TYPE_CHIPS: SetType[] = ['normal', 'dropset', 'failure', 'duration', 'bodyweight'];
 
-/**
- * État de la liaison superset de la série courante, dérivé par le parent.
- * `'linkable'` : l'exercice n'est lié à aucun partenaire pour l'instant, mais
- * d'autres exercices sont disponibles dans la séance (choix libre via
- * dialogue — révision 20/07/2026, remplace l'ancienne contrainte d'adjacence).
- */
+/** État de la liaison superset de la série courante, dérivé par le parent. */
 export type SupersetLinkState =
   | { status: 'linkable' }
   | { status: 'linked'; partnerName: string }
   | { status: 'orphaned' }
   | null;
 
-/** Valeurs de RPE proposées (échelle 1-10). */
-type CurrentSetCardProps = {
+/** Une série de l'exercice courant, telle que la frise la représente. */
+export type SetChip = {
+  id: string;
+  done: boolean;
+  /** Résumé court d'une série faite (« 80×8 »), `null` si pas encore validée. */
+  label: string | null;
+};
+
+type Props = {
   exerciseName: string;
-  /** Rang de la série dans l'exercice (1-based). */
-  currentIndex: number;
-  totalSets: number;
-  /** Ligne « dernière fois » déjà formatée, ou `null` pour la masquer. */
+  /** Séries de l'exercice courant, dans l'ordre — la frise en haut de carte. */
+  sets: SetChip[];
+  /** Rang (0-based) de la série en cours dans `sets`. */
+  currentRang: number;
+  /** Repos de l'exercice, en secondes — affiché en lecture ; le réglage vit ailleurs. */
+  restSeconds: number;
   lastPerfLabel: string | null;
-  /**
-   * Ligne de suggestion de progression (C3), déjà entièrement formatée par le
-   * parent (le parent choisit le texte i18n selon `ProgressionSuggestion.kind`
-   * et formate l'unité — cette carte reste une simple présentation). `null`/
-   * absente = aucune suggestion à afficher. Optionnelle : tant que `workout.tsx`
-   * (Task 11, hors périmètre C3-Task9) ne la calcule pas encore, elle reste
-   * masquée sans casser l'appelant existant.
-   */
   suggestionLabel?: string | null;
-  /**
-   * Note de l'exercice (C3, persistée par exercice — hors périmètre de la
-   * série). `undefined` = non câblée par le parent (champ masqué, cf. Task 11) ;
-   * `null`/`''` = câblée mais vide (champ visible, contrairement au RPE qui est
-   * masqué par défaut).
-   */
+  /** Consigne du plan (charge prévue, déjà formatée) ; visible à tous les niveaux. */
+  plannedLabel?: string | null;
+  /** Écart réalisé / prévu, déjà formaté et signé ; `null` si non calculable. */
+  deltaLabel?: string | null;
+  deltaPositive?: boolean;
+  setType: SetType;
+  onSetType: (type: SetType) => void;
+  rpe: number | null;
+  onSetRpe: (rpe: number | null) => void;
   note?: string | null;
   onChangeNote?: (value: string) => void;
   onBlurNote?: () => void;
-  /**
-   * État de la liaison superset de la série courante (C3, revu 20/07/2026) :
-   * `'linkable'` = un exercice adjacent a une série au même rang, pas encore
-   * liée → propose l'action « Lier » ; `'linked'` = déjà liée à un partenaire
-   * nommé → propose « Délier » ; `'orphaned'` = marquée superset mais plus de
-   * partenaire adjacent (ex. après une réorganisation) → repos redevenu
-   * normal, affiché explicitement plutôt que silencieusement. `null`/absente
-   * = rien à afficher (pas de voisin éligible, type non-superset).
-   */
   supersetLink?: SupersetLinkState;
-  /** Ouvre le dialogue de choix du partenaire (n'importe quel exercice de la séance). */
   onRequestLinkSuperset?: () => void;
   onUnlinkSuperset?: () => void;
-  /** Type de la série courante ; pilote la saisie adaptée et le sélecteur. */
-  setType: SetType;
-  onSetType: (t: SetType) => void;
-  repsValue: string;
-  onChangeReps: (value: string) => void;
-  weightValue: string;
-  weightSymbol: string;
-  weightPlaceholder: string;
-  onChangeWeight: (value: string) => void;
-  /** Incrément (kg) appliqué à la charge sous-jacente via les steppers. */
-  onStepWeight: (deltaKg: number) => void;
-  /** Charge planifiée (snapshot du plan, kg) ou `null` si séance libre. */
-  plannedWeightKg: number | null;
-  /** Durée affichée « m:ss » (série de type `duration`). */
-  durationValue: string;
-  onChangeDuration: (value: string) => void;
-  /** Incrément (s) appliqué à la durée via les steppers. */
-  onStepDuration: (deltaSeconds: number) => void;
-  /** RPE de la série (1-10) ou `null`. Persisté immédiatement par le parent. */
-  rpe: number | null;
-  onSetRpe: (rpe: number | null) => void;
-  restSeconds: number;
-  /** Incrément (s) appliqué au repos de l'exercice via le mini stepper. */
-  onStepRest: (deltaSeconds: number) => void;
-  /** Fixe la durée de repos de l'exercice (saisie manuelle en secondes). */
-  onSetRest: (seconds: number) => void;
-  onValidate: () => void;
-  colors: Palette;
-  /** Niveau d'affichage de l'utilisateur (MUSC-F13) : pilote la densité des suppléments. */
+  onAddSet: () => void;
   level: WorkoutDisplayLevel;
+  colors: Palette;
 };
 
-/** Petit bouton rond « − / + » réutilisé par les steppers. */
-function StepButton({
-  icon,
-  onPress,
-  colors,
-  label,
-}: {
-  icon: 'add' | 'remove';
-  onPress: () => void;
-  colors: Palette;
-  label: string;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      hitSlop={6}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.stepBtn,
-        { borderColor: colors.border, backgroundColor: colors.surface },
-        pressed && styles.pressed,
-      ]}
-    >
-      <Ionicons name={icon} size={20} color={colors.text} />
-    </Pressable>
-  );
-}
-
-/**
- * Carte « série en cours » du flux guidé (C1 + enrichissements C2). Composant
- * présentational : l'état d'édition et les mutations (updateSet, repos) sont
- * gérés par le parent. Seul l'état d'ouverture du sélecteur RPE est local.
- */
 export function CurrentSetCard({
   exerciseName,
-  currentIndex,
-  totalSets,
+  sets,
+  currentRang,
+  restSeconds,
   lastPerfLabel,
   suggestionLabel,
+  plannedLabel,
+  deltaLabel,
+  deltaPositive = true,
+  setType,
+  onSetType,
+  rpe,
+  onSetRpe,
   note,
   onChangeNote,
   onBlurNote,
   supersetLink,
   onRequestLinkSuperset,
   onUnlinkSuperset,
-  setType,
-  onSetType,
-  repsValue,
-  onChangeReps,
-  weightValue,
-  weightSymbol,
-  weightPlaceholder,
-  onChangeWeight,
-  onStepWeight,
-  plannedWeightKg,
-  durationValue,
-  onChangeDuration,
-  onStepDuration,
-  rpe,
-  onSetRpe,
-  restSeconds,
-  onStepRest,
-  onSetRest,
-  onValidate,
-  colors,
+  onAddSet,
   level,
-}: CurrentSetCardProps) {
+  colors,
+}: Props) {
   const { t } = useTranslation();
-  const units = useUnits();
-  // US UX-05 : échelle d'intensité choisie (RPE ou RIR) + conversions. La valeur STOCKÉE reste le RPE.
   const intensity = useIntensity();
   const vis = workoutFieldVisibility(level);
 
-  // Sélecteur RPE : masqué par défaut (peu utilisé), déplié au tap sur « ＋ RPE ».
-  const [rpeOpen, setRpeOpen] = useState(false);
-
-  // Indicateur « ça défile » sur la rangée de types (recette Florian, 20/07/2026) :
-  // fondu + chevron tant qu'il reste du contenu à droite, masqué en fin de scroll.
-  const [typeContainerWidth, setTypeContainerWidth] = useState(0);
-  const [typeContentWidth, setTypeContentWidth] = useState(0);
-  const [typeScrollX, setTypeScrollX] = useState(0);
-  const canScrollTypesRight =
-    typeContentWidth > typeContainerWidth + 4 &&
-    typeScrollX < typeContentWidth - typeContainerWidth - 4;
-
-  // Types « au poids de corps » / « à la durée » → le champ charge devient un
-  // lest optionnel (placeholder vide autorisé) ; sinon charge classique.
-  const isLest = setType === 'duration' || setType === 'bodyweight';
-  const isDuration = setType === 'duration';
+  // Un seul repli pour tous les suppléments, fermé par défaut : ils servent à quelques séries.
+  const [extrasOpen, setExtrasOpen] = useState(false);
+  const hasExtras = vis.typeSelector || vis.rpe || vis.note || vis.superset;
   const warmupActive = setType === 'warmup';
 
-  // Écart charge réalisée vs planifiée, calculé en unité d'affichage.
-  const plannedDisplay = plannedWeightKg == null ? null : units.weightInputValue(plannedWeightKg);
-  const realized = weightValue.trim() === '' ? null : Number(weightValue);
-  const deltaRounded =
-    plannedDisplay != null && realized != null && !Number.isNaN(realized)
-      ? Math.round((realized - Number(plannedDisplay)) * 10) / 10
-      : null;
-
-  const renderChip = (type: SetType) => {
-    const active = setType === type;
-    return (
-      <Pressable
-        key={type}
-        accessibilityRole="button"
-        accessibilityState={{ selected: active }}
-        onPress={() => onSetType(type)}
-        style={({ pressed }) => [
-          styles.chip,
-          { backgroundColor: active ? colors.accent : colors.surfaceAlt },
-          pressed && styles.pressed,
-        ]}
-      >
-        <Text style={[styles.chipText, { color: active ? colors.accentText : colors.textMuted }]}>
-          {t(`workout.setType.${type}`)}
-        </Text>
-      </Pressable>
-    );
-  };
-
   return (
-    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.accent }]}>
-      <Text style={[styles.exName, { color: colors.text }]}>{exerciseName}</Text>
-      <Text style={[styles.progress, { color: colors.textMuted }]}>
-        {t('workout.setProgress', { current: currentIndex, total: totalSets })}
-      </Text>
-
-      {/* Note d'exercice (C3) : visible dès que câblée par le parent, mais
-          gatée par le niveau d'affichage (MUSC-F13 — réservée au niveau
-          « detailed »). */}
-      {vis.note && note !== undefined ? (
-        <View style={[styles.noteRow, { backgroundColor: colors.surfaceAlt }]}>
-          <Text style={styles.noteIcon}>📝</Text>
-          <TextInput
-            value={note ?? ''}
-            onChangeText={onChangeNote}
-            onBlur={onBlurNote}
-            placeholder={t('workout.exerciseNote.placeholder')}
-            placeholderTextColor={colors.textMuted}
-            style={[styles.noteInput, { color: colors.text }]}
-          />
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      {/* En-tête : l'exercice, et son repos en lecture seule */}
+      <View style={styles.headRow}>
+        <Text style={[styles.exName, { color: colors.text }]} numberOfLines={2}>
+          {exerciseName}
+        </Text>
+        <View style={[styles.restChip, { backgroundColor: colors.surfaceAlt }]}>
+          <Ionicons name="timer-outline" size={13} color={colors.textMuted} />
+          <Text style={[styles.restValue, { color: colors.textMuted }]}>
+            {t('workout.restSeconds', { count: restSeconds })}
+          </Text>
         </View>
-      ) : null}
+      </View>
 
-      {/* Sélecteur de type : chips scrollables (fondu + chevron tant qu'il reste du
-          contenu à droite) + raccourci 🔥 fixé à droite. Niveaux différents
-          (MUSC-F13) : le conteneur n'est rendu que si au moins un des deux est
-          visible ; chaque partie est ensuite gatée individuellement. */}
-      {vis.typeSelector || vis.warmupShortcut ? (
-        <View style={styles.typeRow}>
-          {vis.typeSelector ? (
-            <View style={styles.typeScrollWrap} onLayout={(e) => setTypeContainerWidth(e.nativeEvent.layout.width)}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-                scrollEventThrottle={16}
-                onContentSizeChange={(w) => setTypeContentWidth(w)}
-                onScroll={(e) => setTypeScrollX(e.nativeEvent.contentOffset.x)}
-                style={styles.typeScroll}
-                contentContainerStyle={styles.typeScrollContent}
+      {/* Frise des séries : ce qui est fait, où on en est, ce qui reste. Remplace le « Série 2/4 »
+          qui disait le rang sans jamais montrer les charges déjà posées. */}
+      <View style={styles.chips}>
+        {sets.map((set, index) => {
+          const isCurrent = index === currentRang;
+          if (set.done) {
+            return (
+              <View
+                key={set.id}
+                style={[styles.chipDone, { backgroundColor: `${colors.success}24` }]}
               >
-                {TYPE_CHIPS.map(renderChip)}
-              </ScrollView>
-              {canScrollTypesRight ? (
-                <LinearGradient
-                  pointerEvents="none"
-                  colors={['transparent', colors.surface]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.typeFade}
-                >
-                  <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
-                </LinearGradient>
-              ) : null}
-            </View>
-          ) : null}
-          {vis.warmupShortcut ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected: warmupActive }}
-              onPress={() => onSetType(warmupActive ? 'normal' : 'warmup')}
-              style={({ pressed }) => [
-                styles.chip,
-                styles.warmupChip,
-                { backgroundColor: warmupActive ? colors.accent : colors.surfaceAlt },
-                pressed && styles.pressed,
+                <Ionicons name="checkmark" size={12} color={colors.success} />
+                <Text style={[styles.chipDoneText, { color: colors.success }]}>
+                  {set.label ?? '—'}
+                </Text>
+              </View>
+            );
+          }
+          return (
+            <View
+              key={set.id}
+              style={[
+                isCurrent ? styles.chipCurrent : styles.chipTodo,
+                isCurrent
+                  ? { borderColor: colors.accent }
+                  : { backgroundColor: colors.surfaceAlt },
               ]}
             >
-              <Text style={[styles.chipText, { color: warmupActive ? colors.accentText : colors.textMuted }]}>
-                {`🔥 ${t('workout.warmupToggle')}`}
+              <Text
+                style={[
+                  styles.chipText,
+                  { color: isCurrent ? colors.accent : colors.textMuted },
+                ]}
+              >
+                {isCurrent
+                  ? t('workout.setProgress', { current: index + 1, total: sets.length })
+                  : String(index + 1)}
               </Text>
-            </Pressable>
-          ) : null}
-        </View>
+            </View>
+          );
+        })}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('workout.addSet')}
+          onPress={onAddSet}
+          hitSlop={8}
+          style={({ pressed }) => [styles.chipAdd, pressed && styles.pressed]}
+        >
+          <Ionicons name="add" size={15} color={colors.textMuted} />
+        </Pressable>
+      </View>
+
+      {/* Repères : dernière fois, consigne du plan, suggestion */}
+      {lastPerfLabel || plannedLabel || (vis.suggestion && suggestionLabel) ? (
+        <>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.refs}>
+            {lastPerfLabel ? (
+              <View style={styles.refRow}>
+                <Text style={[styles.refLabel, { color: colors.textMuted }]}>
+                  {t('workout.lastTimeShort')}
+                </Text>
+                <Text style={[styles.refValue, { color: colors.text }]}>{lastPerfLabel}</Text>
+              </View>
+            ) : null}
+            {plannedLabel ? (
+              <View style={styles.refRow}>
+                <Text style={[styles.refLabel, { color: colors.textMuted }]}>
+                  {t('workout.plannedShort')}
+                </Text>
+                <Text style={[styles.refValue, { color: colors.text }]}>{plannedLabel}</Text>
+                {vis.delta && deltaLabel ? (
+                  <Text
+                    style={[
+                      styles.delta,
+                      {
+                        color: deltaPositive ? colors.success : colors.accent,
+                        backgroundColor: colors.surfaceAlt,
+                      },
+                    ]}
+                  >
+                    {deltaLabel}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+            {vis.suggestion && suggestionLabel ? (
+              <View style={styles.refRow}>
+                <Text style={[styles.refLabel, { color: colors.textMuted }]}>
+                  {t('workout.suggestionShort')}
+                </Text>
+                <Text style={[styles.refSuggestion, { color: colors.success }]}>
+                  {suggestionLabel}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </>
       ) : null}
 
-      {/* Liaison superset (C3, revue 20/07/2026) : une action nommée plutôt qu'un
-          type abstrait à toggler des deux côtés séparément. Réservée au niveau
-          « detailed » (MUSC-F13). */}
-      {vis.superset ? (
-        supersetLink?.status === 'linkable' ? (
+      {/* Raccourci échauffement : visible dès `normal`, hors du repli — c'est le seul supplément
+          qu'on active en cours de série, avant même de saisir. */}
+      {vis.warmupShortcut ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: warmupActive }}
+          onPress={() => onSetType(warmupActive ? 'normal' : 'warmup')}
+          style={({ pressed }) => [
+            styles.warmupChip,
+            {
+              backgroundColor: warmupActive ? colors.accent : colors.surfaceAlt,
+            },
+            pressed && styles.pressed,
+          ]}
+        >
+          <Ionicons
+            name="flame-outline"
+            size={14}
+            color={warmupActive ? colors.accentText : colors.textMuted}
+          />
+          <Text
+            style={[
+              styles.warmupLabel,
+              { color: warmupActive ? colors.accentText : colors.textMuted },
+            ]}
+          >
+            {t('workout.warmupToggle')}
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {/* Suppléments du niveau détaillé, derrière un repli unique */}
+      {hasExtras ? (
+        <>
           <Pressable
             accessibilityRole="button"
-            onPress={onRequestLinkSuperset}
+            accessibilityState={{ expanded: extrasOpen }}
+            onPress={() => setExtrasOpen((v) => !v)}
             style={({ pressed }) => [
-              styles.supersetBtn,
-              { borderColor: colors.accent },
+              styles.extrasToggle,
+              { borderColor: colors.border },
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.supersetLinkText, { color: colors.accent }]}>
-              {`🔗 ${t('workout.superset.link')}`}
+            <Ionicons name="options-outline" size={16} color={colors.textMuted} />
+            <Text style={[styles.extrasLabel, { color: colors.textMuted }]} numberOfLines={1}>
+              {t('workout.extras.title')}
             </Text>
+            <Ionicons
+              name={extrasOpen ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color={colors.textMuted}
+            />
           </Pressable>
-        ) : supersetLink?.status === 'linked' ? (
-          <View style={styles.supersetRow}>
-            <Text style={[styles.supersetLinkedText, { color: colors.accent }]}>
-              {`🔗 ${t('workout.superset.linked', { name: supersetLink.partnerName })}`}
-            </Text>
-            <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
-              <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
-                {t('workout.superset.remove')}
-              </Text>
-            </Pressable>
-          </View>
-        ) : supersetLink?.status === 'orphaned' ? (
-          <View style={styles.supersetRow}>
-            <Text style={[styles.supersetOrphanText, { color: colors.accent }]}>
-              {`⚠️ ${t('workout.superset.orphaned')}`}
-            </Text>
-            <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
-              <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
-                {t('workout.superset.remove')}
-              </Text>
-            </Pressable>
-          </View>
-        ) : null
-      ) : null}
 
-      {lastPerfLabel ? (
-        <Text style={[styles.lastPerf, { color: colors.textMuted }]}>
-          {t('workout.lastTime', { perf: lastPerfLabel })}
-        </Text>
-      ) : null}
+          {extrasOpen ? (
+            <View style={styles.extras}>
+              {vis.typeSelector ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={styles.typeRow}
+                >
+                  {TYPE_CHIPS.map((type) => {
+                    const active = setType === type;
+                    return (
+                      <Pressable
+                        key={type}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                        onPress={() => onSetType(type)}
+                        style={({ pressed }) => [
+                          styles.typeChip,
+                          { backgroundColor: active ? colors.accent : colors.surfaceAlt },
+                          pressed && styles.pressed,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.typeChipText,
+                            { color: active ? colors.accentText : colors.textMuted },
+                          ]}
+                        >
+                          {t(`workout.setType.${type}`)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              ) : null}
 
-      {/* Suggestion de progression (C3) : purement informative, jamais tappable
-          (pas de Pressable) — le texte est déjà entièrement formaté par le parent.
-          Visible à partir du niveau « normal » (MUSC-F13). */}
-      {vis.suggestion && suggestionLabel ? (
-        <Text style={[styles.suggestion, { color: colors.success }]}>{`💡 ${suggestionLabel}`}</Text>
-      ) : null}
-
-      <View style={styles.fields}>
-        {isDuration ? (
-          <View style={styles.field}>
-            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{t('workout.durationLabel')}</Text>
-            <View style={styles.weightRow}>
-              <StepButton icon="remove" label="-5s" colors={colors} onPress={() => onStepDuration(-5)} />
-              <TextInput
-                value={durationValue}
-                onChangeText={onChangeDuration}
-                accessibilityLabel={t('workout.durationLabel')}
-                placeholderTextColor={colors.textMuted}
-                style={[
-                  styles.input,
-                  styles.weightInput,
-                  { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
-                ]}
-              />
-              <StepButton icon="add" label="+5s" colors={colors} onPress={() => onStepDuration(5)} />
-            </View>
-          </View>
-        ) : (
-          <View style={styles.field}>
-            <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>{t('workout.reps')}</Text>
-            <TextInput
-              value={repsValue}
-              onChangeText={onChangeReps}
-              keyboardType="number-pad"
-              placeholderTextColor={colors.textMuted}
-              style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
-            />
-          </View>
-        )}
-
-        <View style={styles.field}>
-          <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
-            {isLest ? `${t('workout.addedWeightLabel')} (${t('workout.optional')})` : `${t('workout.weight')} (${weightSymbol})`}
-          </Text>
-          <View style={styles.weightRow}>
-            <StepButton icon="remove" label="-2.5" colors={colors} onPress={() => onStepWeight(-2.5)} />
-            <TextInput
-              value={weightValue}
-              onChangeText={onChangeWeight}
-              placeholder={isLest ? '' : weightPlaceholder}
-              keyboardType="decimal-pad"
-              placeholderTextColor={colors.textMuted}
-              style={[
-                styles.input,
-                styles.weightInput,
-                { backgroundColor: colors.background, borderColor: colors.border, color: colors.text },
-              ]}
-            />
-            <StepButton icon="add" label="+2.5" colors={colors} onPress={() => onStepWeight(2.5)} />
-          </View>
-
-          {plannedDisplay != null ? (
-            <View style={styles.plannedRow}>
-              <Text style={[styles.planned, { color: colors.textMuted }]}>
-                {t('workout.plannedWeight', { weight: `${plannedDisplay} ${weightSymbol}` })}
-              </Text>
-              {vis.delta && deltaRounded != null ? (
-                deltaRounded === 0 ? (
-                  <Text style={[styles.delta, { color: colors.textMuted, backgroundColor: colors.surfaceAlt }]}>=</Text>
-                ) : deltaRounded > 0 ? (
-                  <Text style={[styles.delta, { color: colors.success, backgroundColor: colors.surfaceAlt }]}>
-                    {`▲ +${Math.abs(deltaRounded)}`}
+              {vis.rpe ? (
+                <View style={styles.rpeBlock}>
+                  <Text style={[styles.extrasFieldLabel, { color: colors.textMuted }]}>
+                    {t('workout.rpeLabel', { scale: intensity.label })}
                   </Text>
-                ) : (
-                  <Text style={[styles.delta, { color: colors.accent, backgroundColor: colors.surfaceAlt }]}>
-                    {`▼ −${Math.abs(deltaRounded)}`}
-                  </Text>
-                )
+                  <View style={styles.rpePills}>
+                    {intensity.choices.map((n) => {
+                      const active = intensity.toDisplay(rpe) === n;
+                      return (
+                        <Pressable
+                          key={n}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: active }}
+                          accessibilityLabel={t('intensity.a11yChoice', {
+                            scale: intensity.label,
+                            value: n,
+                          })}
+                          // Retaper la valeur déjà posée l'efface : c'est la seule façon de
+                          // revenir en arrière sans un bouton « effacer » de plus.
+                          onPress={() => onSetRpe(active ? null : intensity.toStored(n))}
+                          style={({ pressed }) => [
+                            styles.rpePill,
+                            {
+                              backgroundColor: active ? colors.accent : colors.surface,
+                              borderColor: active ? colors.accent : colors.border,
+                            },
+                            pressed && styles.pressed,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.rpePillText,
+                              { color: active ? colors.accentText : colors.textMuted },
+                            ]}
+                          >
+                            {n}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : null}
+
+              {vis.note && note !== undefined ? (
+                <View style={[styles.noteRow, { backgroundColor: colors.surfaceAlt }]}>
+                  <Ionicons name="create-outline" size={14} color={colors.textMuted} />
+                  <TextInput
+                    value={note ?? ''}
+                    onChangeText={onChangeNote}
+                    onBlur={onBlurNote}
+                    placeholder={t('workout.exerciseNote.placeholder')}
+                    placeholderTextColor={colors.textMuted}
+                    style={[styles.noteInput, { color: colors.text }]}
+                  />
+                </View>
+              ) : null}
+
+              {vis.superset && supersetLink ? (
+                <View style={styles.supersetRow}>
+                  {supersetLink.status === 'linkable' ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={onRequestLinkSuperset}
+                      style={({ pressed }) => [
+                        styles.supersetBtn,
+                        { borderColor: colors.accent },
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      <Ionicons name="link-outline" size={14} color={colors.accent} />
+                      <Text style={[styles.supersetText, { color: colors.accent }]}>
+                        {t('workout.superset.link')}
+                      </Text>
+                    </Pressable>
+                  ) : (
+                    <>
+                      <Ionicons
+                        name={supersetLink.status === 'linked' ? 'link-outline' : 'warning-outline'}
+                        size={14}
+                        color={colors.accent}
+                      />
+                      <Text style={[styles.supersetText, { color: colors.accent, flex: 1 }]}>
+                        {supersetLink.status === 'linked'
+                          ? t('workout.superset.linked', { name: supersetLink.partnerName })
+                          : t('workout.superset.orphaned')}
+                      </Text>
+                      <Pressable accessibilityRole="button" hitSlop={6} onPress={onUnlinkSuperset}>
+                        <Text style={[styles.supersetUnlink, { color: colors.textMuted }]}>
+                          {t('workout.superset.remove')}
+                        </Text>
+                      </Pressable>
+                    </>
+                  )}
+                </View>
               ) : null}
             </View>
           ) : null}
-        </View>
-      </View>
-
-      <View style={styles.restControl}>
-        <Text style={[styles.restCaption, { color: colors.textMuted }]}>{t('workout.restTitle')}</Text>
-        <StepButton icon="remove" label="-15s" colors={colors} onPress={() => onStepRest(-15)} />
-        <View style={styles.restInputWrap}>
-          <TextInput
-            value={String(restSeconds)}
-            onChangeText={(v) => {
-              const n = parseInt(v.replace(/[^0-9]/g, ''), 10);
-              onSetRest(Number.isNaN(n) ? 0 : n);
-            }}
-            keyboardType="number-pad"
-            accessibilityLabel={t('workout.restTitle')}
-            style={[styles.restInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.background }]}
-          />
-          <Text style={[styles.restUnit, { color: colors.textMuted }]}>s</Text>
-        </View>
-        <StepButton icon="add" label="+15s" colors={colors} onPress={() => onStepRest(15)} />
-      </View>
-
-      {/* RPE par série (C2) : masqué derrière « ＋ RPE » ; déplié = sélection 1-10.
-          Réservé au niveau « detailed » (MUSC-F13). */}
-      {vis.rpe ? (
-      <View style={styles.rpeBlock}>
-        {rpeOpen ? (
-          <View style={[styles.rpeOpen, { backgroundColor: colors.surfaceAlt }]}>
-            <Text style={[styles.rpeOpenLabel, { color: colors.textMuted }]}>
-              {t('workout.rpeLabel', { scale: intensity.label })}
-            </Text>
-            <View style={styles.rpePills}>
-              {/* US UX-05 : les valeurs sont celles de l'ÉCHELLE CHOISIE (RPE 1→10 ou RIR 0→9),
-                  et la sélection est reconvertie en RPE avant d'être stockée. La donnée en base ne
-                  change jamais de nature. */}
-              {intensity.choices.map((n) => {
-                const active = intensity.toDisplay(rpe) === n;
-                return (
-                  <Pressable
-                    key={n}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    accessibilityLabel={t('intensity.a11yChoice', {
-                      scale: intensity.label,
-                      value: n,
-                    })}
-                    onPress={() => {
-                      onSetRpe(intensity.toStored(n));
-                      setRpeOpen(false);
-                    }}
-                    style={({ pressed }) => [
-                      styles.rpePill,
-                      {
-                        backgroundColor: active ? colors.accent : colors.surface,
-                        borderColor: active ? colors.accent : colors.border,
-                      },
-                      pressed && styles.pressed,
-                    ]}
-                  >
-                    <Text style={[styles.rpePillText, { color: active ? colors.accentText : colors.textMuted }]}>{n}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        ) : rpe != null ? (
-          <View style={styles.rpeSetRow}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setRpeOpen(true)}
-              style={({ pressed }) => [styles.rpeChip, { backgroundColor: colors.surfaceAlt }, pressed && styles.pressed]}
-            >
-              <Text style={[styles.rpeChipText, { color: colors.accent }]}>
-                {intensity.format(rpe)}
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              hitSlop={6}
-              onPress={() => onSetRpe(null)}
-              style={({ pressed }) => [pressed && styles.pressed]}
-            >
-              <Text style={[styles.rpeClear, { color: colors.textMuted }]}>{t('workout.rpeClear')}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setRpeOpen(true)}
-            style={({ pressed }) => [styles.rpeAddBtn, { borderColor: colors.border }, pressed && styles.pressed]}
-          >
-            <Text style={[styles.rpeAddText, { color: colors.textMuted }]}>
-              {t('workout.rpeAdd', { scale: intensity.label })}{' '}
-              <Text style={styles.rpeAddOptional}>{`(${t('workout.optional')})`}</Text>
-            </Text>
-          </Pressable>
-        )}
-      </View>
+        </>
       ) : null}
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={onValidate}
-        style={({ pressed }) => [styles.validate, { backgroundColor: colors.accent }, pressed && styles.pressed]}
-      >
-        <Text style={[styles.validateLabel, { color: colors.accentText }]}>{t('workout.validateSet')}</Text>
-      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 18, borderWidth: 2, padding: 20, gap: 12 },
-  exName: { fontFamily: fontFamily.displaySemi, fontSize: 22, letterSpacing: -0.4 },
-  progress: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
-  typeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  typeScrollWrap: { flex: 1, position: 'relative' },
-  typeScroll: { flex: 1 },
-  typeScrollContent: { gap: 6, alignItems: 'center', paddingRight: 4 },
-  // Fondu + chevron indiquant que la rangée défile encore vers la droite.
-  typeFade: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chip: {
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    borderRadius: 10,
-  },
-  chipText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
-  warmupChip: { flexShrink: 0 },
-  lastPerf: { fontFamily: fontFamily.body, fontSize: 14 },
-  suggestion: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
-  supersetBtn: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    marginBottom: 4,
-  },
-  supersetLinkText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
-  supersetRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 4 },
-  supersetLinkedText: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
-  supersetOrphanText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5, flexShrink: 1 },
-  supersetUnlink: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
-  noteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-  },
-  noteIcon: { fontSize: 12 },
-  noteInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 12, padding: 0 },
-  fields: { flexDirection: 'row', gap: 12, marginTop: 4 },
-  field: { flex: 1, gap: 6 },
-  fieldLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  input: {
-    fontFamily: fontFamily.body,
+  card: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
+  headRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
+  exName: {
+    flex: 1,
+    fontFamily: fontFamily.displaySemi,
     fontSize: 18,
-    minHeight: 52,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    textAlign: 'center',
+    letterSpacing: -0.3,
+    lineHeight: 22,
   },
-  weightRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  // Padding horizontal réduit : les charges à virgule (ex. « 52.5 ») ne doivent pas
-  // être tronquées dans un input étroit encadré par les deux steppers.
-  weightInput: { flex: 1, paddingHorizontal: 4, minWidth: 0 },
-  plannedRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' },
-  planned: { fontFamily: fontFamily.body, fontSize: 12 },
+  restChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 5 },
+  restValue: { fontFamily: fontFamily.monoBold, fontSize: 12 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 7 },
+  chipDone: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 6 },
+  chipDoneText: { fontFamily: fontFamily.monoBold, fontSize: 12 },
+  chipCurrent: { borderWidth: 1.5, borderRadius: 9, paddingHorizontal: 10, paddingVertical: 5 },
+  chipTodo: { borderRadius: 9, paddingHorizontal: 10, paddingVertical: 6 },
+  chipText: { fontFamily: fontFamily.monoBold, fontSize: 12 },
+  chipAdd: { paddingHorizontal: 6, paddingVertical: 6 },
+  divider: { height: 1 },
+  refs: { gap: 6 },
+  refRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  refLabel: { width: 82, flexShrink: 0, fontFamily: fontFamily.body, fontSize: 12 },
+  refValue: { fontFamily: fontFamily.mono, fontSize: 13 },
+  refSuggestion: { fontFamily: fontFamily.bodySemi, fontSize: 13, flexShrink: 1 },
   delta: {
     fontFamily: fontFamily.bodyBold,
     fontSize: 11,
@@ -619,61 +459,57 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: 'hidden',
   },
-  stepBtn: {
-    width: 40,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: 1,
+  warmupChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  restControl: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  restCaption: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  restInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  restInput: {
-    fontFamily: fontFamily.monoBold,
-    fontSize: 16,
-    minWidth: 56,
-    borderWidth: 1,
+    alignSelf: 'flex-start',
+    gap: 6,
     borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    textAlign: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 7,
   },
-  restUnit: { fontFamily: fontFamily.body, fontSize: 14 },
-  rpeBlock: { alignItems: 'flex-start' },
-  rpeAddBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 9,
+  warmupLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  extrasToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     borderWidth: 1,
-    borderStyle: 'dashed',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  rpeAddText: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
-  rpeAddOptional: { fontFamily: fontFamily.body, fontSize: 12, opacity: 0.7 },
-  rpeSetRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rpeChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9 },
-  rpeChipText: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
-  rpeClear: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
-  rpeOpen: { alignSelf: 'stretch', padding: 10, borderRadius: 12, gap: 8 },
-  rpeOpenLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+  extrasLabel: { flex: 1, fontFamily: fontFamily.body, fontSize: 13 },
+  extras: { gap: 12 },
+  typeRow: { gap: 6, paddingRight: 4 },
+  typeChip: { borderRadius: 10, paddingHorizontal: 11, paddingVertical: 7 },
+  typeChipText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  rpeBlock: { gap: 7 },
+  extrasFieldLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   rpePills: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   rpePill: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 9,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   rpePillText: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
-  validate: {
-    minHeight: 56,
-    borderRadius: 16,
+  noteRow: { flexDirection: 'row', alignItems: 'center', gap: 7, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 },
+  noteInput: { flex: 1, fontFamily: fontFamily.body, fontSize: 13, padding: 0 },
+  supersetRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  supersetBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
+    gap: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
-  validateLabel: { fontFamily: fontFamily.bodyBold, fontSize: 17 },
+  supersetText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  supersetUnlink: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   pressed: { opacity: 0.8 },
 });

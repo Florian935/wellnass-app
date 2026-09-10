@@ -152,13 +152,11 @@
     "sessionDone": "Workout done?",
     "sessionDoneHint": "All your sets are logged.",
     "leave": {
-      "title": "Leave the workout?",
-      "continue": "Continue workout",
-      "pause": "Pause",
       "abandon": "Discard",
       "abandonConfirmTitle": "Discard the workout?",
       "abandonConfirmMessage": "The workout and its sets will be deleted.",
-      "abandonConfirm": "Discard"
+      "abandonConfirm": "Discard",
+      "later": "Leave and resume later"
     },
     "finishNoSetsTitle": "No set logged",
     "finishNoSetsMessage": "Finish anyway?",
@@ -184,11 +182,8 @@
     "durationLabel": "Duration",
     "addedWeightLabel": "Added",
     "optional": "opt.",
-    "plannedWeight": "Planned: {{weight}}",
-    "rpeAdd": "＋ Set {{scale}}",
     "rpeValue": "{{scale}} {{value}}",
     "rpeLabel": "Set {{scale}}",
-    "rpeClear": "Clear",
     "exerciseNote": {
       "placeholder": "Note (machine setting, position…)"
     },
@@ -222,9 +217,13 @@
       "sets": "Sets completed",
       "volume": "Total volume",
       "density": "Density",
-      "feeling": "How it felt",
-      "starLabel_one": "{{count}} star",
-      "starLabel_other": "{{count}} stars",
+      "feeling": {
+        "easy": "Easy",
+        "fine": "Fine",
+        "solid": "Solid",
+        "hard": "Hard",
+        "max": "Max"
+      },
       "note": "Workout note",
       "notePlaceholder": "Feel, context, remarks…",
       "records": {
@@ -245,7 +244,16 @@
       "saveAsTemplateConfirm": "Confirm",
       "saveAsTemplateDefaultName": "Workout from {{date}}",
       "templateNameLabel": "Template name",
-      "templateSaved": "Template saved"
+      "templateSaved": "Template saved",
+      "whatYouDid": "What you did",
+      "feelingQuestion": "How did it feel?",
+      "addNote": "Add a session note",
+      "deltaRepsUp_one": "▲ +{{count}} rep",
+      "deltaRepsUp_other": "▲ +{{count}} reps",
+      "deltaRepsDown_one": "▼ −{{count}} rep",
+      "deltaRepsDown_other": "▼ −{{count}} reps",
+      "deltaTimeUp": "▲ +{{duration}}",
+      "deltaTimeDown": "▼ −{{duration}}"
     },
     "displayLevel": {
       "levels": {
@@ -262,6 +270,28 @@
           "description": "Everything: set types, RPE, notes, supersets."
         }
       }
+    },
+    "extras": {
+      "title": "Set type, intensity, note, superset"
+    },
+    "restSeconds_one": "{{count}}s",
+    "restSeconds_other": "{{count}}s",
+    "restPickerMessage": "Applies to this exercise, for the rest of the session.",
+    "restNext": "Up next",
+    "restAlways": "Switch to {{count}}s rest on this exercise",
+    "lastTimeShort": "Last time",
+    "plannedShort": "Planned",
+    "suggestionShort": "Suggestion",
+    "setsProgress": "{{done}}/{{total}} sets",
+    "finishSession": "Finish session",
+    "validateAndChain": "Log — then superset",
+    "stepUp": "Increase {{field}}",
+    "stepDown": "Decrease {{field}}",
+    "expandSets": "Show sets for {{name}}",
+    "collapseSets": "Hide sets for {{name}}",
+    "menu": {
+      "title": "Session options",
+      "rest": "Rest on this exercise"
     }
   },
   "tabs": {
@@ -1255,7 +1285,13 @@
       "deleteError": "Unable to delete",
       "deleteErrorMessage": "Deleting the program failed. Please try again.",
       "notFoundTitle": "Program not found",
-      "notFoundMessage": "This program does not exist or has been deleted."
+      "notFoundMessage": "This program does not exist or has been deleted.",
+      "followProgram": "Follow this program",
+      "followHint": "A personal copy will be created so you can adapt it.",
+      "copyCreatedTitle": "Personal copy created",
+      "copyCreated": "You’ll find it in “My programs” and can edit it however you like.",
+      "followError": "Couldn’t follow this program",
+      "followErrorMessage": "Try again in a moment."
     },
     "edit": {
       "createTitle": "New program",
@@ -1333,7 +1369,9 @@
     "subtitle": "Your completed workouts.",
     "empty": {
       "title": "No workouts yet",
-      "message": "Finish your first workout to see it here."
+      "message": "Finish your first workout to see it here.",
+      "filtered": "No sessions in this period.",
+      "resetFilter": "See full history"
     },
     "filterAll": "All",
     "filter7d": "7 days",
@@ -1341,7 +1379,9 @@
     "filter90d": "90 days",
     "row": {
       "durationMin": "{{count}} min",
-      "rpe": "Feeling {{value}} / 5"
+      "rpe": "Feeling {{value}} / 5",
+      "exercises_one": "{{count}} exercise",
+      "exercises_other": "{{count}} exercises"
     },
     "detail": {
       "notFoundTitle": "Workout not found",
@@ -1373,6 +1413,18 @@
         "estimated_1rm": "Est. 1RM",
         "best_volume": "Set volume"
       }
+    },
+    "freeSession": "Free session",
+    "freeBadge": "FREE",
+    "deleteHint": "Long press to delete",
+    "summary_one": "{{count}} session · {{volume}} lifted",
+    "summary_other": "{{count}} sessions · {{volume}} lifted",
+    "monthSummary_one": "{{count}} session · {{volume}}",
+    "monthSummary_other": "{{count}} sessions · {{volume}}",
+    "delete": {
+      "title": "Delete this session?",
+      "message": "“{{name}}” will be removed from your history, along with its records. If it came from your plan, that day goes back to pending.",
+      "confirm": "Delete"
     }
   },
   "progress": {
@@ -1480,6 +1532,11 @@
         "item": "{{name}}, {{count}} weeks",
         "scope": "among your favourites"
       }
+    },
+    "tabs": {
+      "overview": "Overview",
+      "exercise": "By exercise",
+      "body": "My body"
     }
   },
   "settings": {
@@ -2213,7 +2270,10 @@
     "decreaseHour": "Previous hour",
     "increaseHour": "Next hour",
     "decreaseMinute": "Five minutes earlier",
-    "increaseMinute": "Five minutes later"
+    "increaseMinute": "Five minutes later",
+    "startToday": "Today",
+    "startNextMonday": "Next Monday",
+    "startsOn": "Starts {{date}}"
   },
   "notifications": {
     "streakDanger": {
@@ -2973,6 +3033,44 @@
           "recuperation": "Recovery"
         }
       }
+    }
+  },
+  "strengthHub": {
+    "followSection": "Track",
+    "directory": "Exercises, programs, templates",
+    "setsShort": "SETS",
+    "estimated": "ESTIMATED",
+    "minutesShort": "{{count}} min",
+    "resume": {
+      "eyebrow": "Workout in progress"
+    },
+    "today": {
+      "eyebrow": "Today",
+      "more_one": "+ {{count}} more exercise",
+      "more_other": "+ {{count}} more exercises"
+    },
+    "rest": {
+      "title": "Rest day",
+      "doneTitle": "Session done, rest earned",
+      "noNext": "No upcoming session in your program.",
+      "seePlanning": "See planning"
+    },
+    "onboarding": {
+      "eyebrow": "Getting started",
+      "title": "Pick a program, we handle the schedule",
+      "subtitle": "Three questions, and your first session is set for today.",
+      "cta": "Browse programs",
+      "freeHint": "Already know what to do?"
+    },
+    "progress": {
+      "week": "{{name}} · week {{week}} of {{totalWeeks}}",
+      "sessions": "{{done}}/{{total}} sessions",
+      "a11y": "{{name}}, week {{week}} of {{totalWeeks}}, {{done}} of {{total}} sessions done"
+    },
+    "suggested": {
+      "title": "Suggested for you · {{level}}",
+      "seeAll_one": "See the program",
+      "seeAll_other": "See all {{count}} programs"
     }
   }
 }

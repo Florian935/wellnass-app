@@ -1,4 +1,4 @@
-# État du projet — 09/09/2026
+# État du projet — 10/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 220 livré · 2 partiel · 2 à faire (sur 230)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 221 livré · 2 partiel · 2 à faire (sur 231)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -71,6 +71,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **MUSCU-UX01** — Refonte UX du pilier Musculation — hub, séance, après-séance, entrée programme | `code` | `feature/muscu-refonte-ux` | [3.59] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -97,9 +98,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/recettes-chemins-corrompus` (modifications non commitées) |
-| Commits | 1192 · `main` a **1189** commits de retard sur `dev` |
-| Specs d'US | 135 au total — 79 clôturées, 56 en cours |
+| Branche courante | `feature/muscu-refonte-ux` (modifications non commitées) |
+| Commits | 1193 · `main` a **1190** commits de retard sur `dev` |
+| Specs d'US | 136 au total — 79 clôturées, 57 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -109,11 +110,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8db76eb` fix(recettes): repare les chemins corrompus de l'etape 0c
 - `ee2fe99` docs(recettes): l'APK doit venir de 421e948 ou plus recent
 - `421e948` feat(runf4): ecriture des traductions de seance — le lot est complet
 - `8bb406b` feat(runf4): pose les surfaces manquantes et ferme le mur M8
 - `a1bb024` fix(runf4): la consigne saisie s'affiche enfin en lecture seule
-- `2550751` fix(runf4): corrige la regression de test du resume, coche les 7 migrations
 
 ---
 

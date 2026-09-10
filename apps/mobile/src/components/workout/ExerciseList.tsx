@@ -127,28 +127,44 @@ export function ExerciseList({
               allDone && !isCurrent && styles.cardDone,
             ]}
           >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: isExpanded }}
-              onPress={() => {
-                onSelect(entry.exerciseId);
-                toggleExpanded(entry.exerciseId);
-              }}
-              style={({ pressed }) => [styles.header, pressed && styles.pressed]}
-            >
-              <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>
-                {entry.exerciseName}
-              </Text>
+            {/* ── Deux gestes, deux zones (US MUSCU-UX01) ──────────────────────────────────
+                Un seul `Pressable` appelait `onSelect` **et** `toggleExpanded` : taper
+                l'exercice courant, déjà déplié, le repliait — alors que l'intention était
+                d'y revenir. « Aller à cet exercice » et « voir ses séries » sont deux
+                intentions distinctes ; elles ont maintenant chacune leur cible. */}
+            <View style={styles.header}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={entry.exerciseName}
+                accessibilityState={{ selected: isCurrent }}
+                onPress={() => onSelect(entry.exerciseId)}
+                style={({ pressed }) => [styles.headerMain, pressed && styles.pressed]}
+              >
+                <Text numberOfLines={1} style={[styles.name, { color: colors.text }]}>
+                  {entry.exerciseName}
+                </Text>
+              </Pressable>
               <View style={styles.trailing}>
                 <Text style={[styles.count, { color: colors.textMuted }]}>{`${doneCount}/${total}`}</Text>
                 {allDone ? <Ionicons name="checkmark-circle" size={20} color={colors.success} /> : null}
-                <Ionicons
-                  name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                  size={18}
-                  color={colors.textMuted}
-                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: isExpanded }}
+                  accessibilityLabel={t(isExpanded ? 'workout.collapseSets' : 'workout.expandSets', {
+                    name: entry.exerciseName,
+                  })}
+                  hitSlop={10}
+                  onPress={() => toggleExpanded(entry.exerciseId)}
+                  style={({ pressed }) => [styles.chevronBtn, pressed && styles.pressed]}
+                >
+                  <Ionicons
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    color={colors.textMuted}
+                  />
+                </Pressable>
               </View>
-            </Pressable>
+            </View>
 
             {/* Note d'exercice (C3) : lecture seule, visible même replié. */}
             {exerciseNote ? (
@@ -296,6 +312,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 12,
   },
+  // Le nom prend toute la place libre : c'est la cible du saut de focus, elle doit être large.
+  headerMain: { flex: 1, paddingVertical: 2 },
+  chevronBtn: { paddingHorizontal: 2, paddingVertical: 2 },
   name: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 15 },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   count: { fontFamily: fontFamily.monoBold, fontSize: 14 },

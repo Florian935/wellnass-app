@@ -263,22 +263,31 @@ describe('états d’écran', () => {
 // ---------------------------------------------------------------------------
 
 describe('éditorial contre possédé', () => {
-  it('🔴 un programme ÉDITORIAL ne propose ni planification ni suppression', async () => {
+  // ── Réécrit le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────
+  // La règle de fond n'a pas changé : on n'active jamais un programme éditorial, sinon le local
+  // et le cloud divergent. Ce qui change, c'est **qui porte cette contrainte**. Avant, elle était
+  // remontée à l'utilisateur, qui devait « Dupliquer », atterrir sur la copie, puis « Démarrer » —
+  // une contrainte d'implémentation transformée en décision. Elle est désormais implicite.
+
+  it('🔴 un programme ÉDITORIAL se suit d’un seul geste, et ne propose pas de suppression', async () => {
     await afficher(programme(), false);
 
-    // Activer un programme de la bibliothèque ferait diverger le local et le cloud : il
-    // n'appartient à personne. Il faut d'abord le dupliquer.
-    expect(screen.queryByText('programs.detail.startProgram')).toBeNull();
+    expect(screen.getByText('programs.detail.followProgram')).toBeTruthy();
+    // Supprimer un contenu éditorial n'a toujours aucun sens : il n'appartient pas à l'utilisateur.
     expect(screen.queryByText('programs.detail.delete')).toBeNull();
-    expect(screen.getByText('programs.detail.duplicate')).toBeTruthy();
+    // Et l'édition non plus, tant que la copie n'existe pas.
+    expect(screen.queryByText('programs.detail.edit')).toBeNull();
+    // La conséquence est annoncée, plutôt que posée en question.
+    expect(screen.getByText('programs.detail.followHint')).toBeTruthy();
   });
 
-  it('🔴 un programme POSSÉDÉ propose la planification et l’édition, pas la duplication', async () => {
+  it('🔴 un programme POSSÉDÉ porte le même geste principal, plus l’édition', async () => {
     await afficher(programme(), true);
 
-    expect(screen.getByText('programs.detail.startProgram')).toBeTruthy();
+    expect(screen.getByText('programs.detail.followProgram')).toBeTruthy();
     expect(screen.getByText('programs.detail.edit')).toBeTruthy();
-    expect(screen.queryByText('programs.detail.duplicate')).toBeNull();
+    // Rien à annoncer : aucune copie ne sera créée.
+    expect(screen.queryByText('programs.detail.followHint')).toBeNull();
   });
 
   it('un programme déjà actif propose de modifier son planning', async () => {
@@ -288,11 +297,16 @@ describe('éditorial contre possédé', () => {
     expect(screen.getByText('programs.detail.editPlanning')).toBeTruthy();
   });
 
-  it('la planification et l’édition ouvrent les bons écrans', async () => {
-    await afficher();
+  it('🔴 un programme SANS séance ne peut pas être suivi', async () => {
+    // L'assistant de planification serait vide, et `planProgram` lève de toute façon.
+    await afficher(programme({ sessions: [] }), true);
 
-    await taper(screen.getByText('programs.detail.startProgram'));
-    expect(push).toHaveBeenCalledWith('/planning/plan?id=prog-1');
+    const bouton = screen.getByLabelText('programs.detail.followProgram');
+    expect(bouton.props.accessibilityState?.disabled).toBe(true);
+  });
+
+  it('l’édition ouvre le bon écran', async () => {
+    await afficher();
 
     await taper(screen.getByText('programs.detail.edit'));
     expect(push).toHaveBeenCalledWith('/programs/edit?id=prog-1');
@@ -371,15 +385,40 @@ describe('démarrer une séance', () => {
 // Duplication
 // ---------------------------------------------------------------------------
 
-describe('duplication', () => {
-  it('🔴 ouvre la COPIE, pas l’original', async () => {
+describe('duplication implicite', () => {
+  // US MUSCU-UX01 : la duplication n'est plus un geste de l'utilisateur, c'est ce que fait
+  // « Suivre ce programme » sur un contenu éditorial. Les gardes restent les mêmes.
+
+  it('🔴 planifie la COPIE, pas l’original', async () => {
     await afficher(programme(), false);
 
-    await taper(screen.getByText('programs.detail.duplicate'));
+    await taper(screen.getByText('programs.detail.followProgram'));
 
-    // Ouvrir l'original laisserait croire que la duplication a échoué.
+    // Planifier l'original activerait un contenu éditorial : local et cloud divergeraient.
     expect(mockDuplicate).toHaveBeenCalledWith('prog-1');
-    expect(replace).toHaveBeenCalledWith('/programs/prog-copie');
+    expect(push).toHaveBeenCalledWith('/planning/plan?id=prog-copie');
+  });
+
+  it('🔴 ne duplique PAS un programme déjà possédé', async () => {
+    await afficher(programme(), true);
+
+    await taper(screen.getByText('programs.detail.followProgram'));
+
+    expect(mockDuplicate).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith('/planning/plan?id=prog-1');
+  });
+
+  it('annonce la copie APRÈS coup, sans la faire décider', async () => {
+    await afficher(programme(), false);
+
+    await taper(screen.getByText('programs.detail.followProgram'));
+
+    // La copie a une conséquence visible — elle apparaît dans « Mes programmes » — donc on le dit.
+    // Mais après : c'est une conséquence, pas un choix.
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'programs.detail.copyCreatedTitle',
+      'programs.detail.copyCreated',
+    );
   });
 
   it('🔴 deux appuis dans le MÊME cycle ne créent qu’une copie', async () => {
@@ -387,7 +426,7 @@ describe('duplication', () => {
     mockDuplicate.mockReturnValue(new Promise<string>((r) => (resoudre = r)));
     await afficher(programme(), false);
 
-    const bouton = screen.getByText('programs.detail.duplicate');
+    const bouton = screen.getByText('programs.detail.followProgram');
     await act(async () => {
       fireEvent.press(bouton);
       fireEvent.press(bouton);
@@ -401,12 +440,13 @@ describe('duplication', () => {
     mockDuplicate.mockRejectedValueOnce(new Error('transaction annulée'));
     await afficher(programme(), false);
 
-    await taper(screen.getByText('programs.detail.duplicate'));
-    expect(replace).not.toHaveBeenCalled();
+    await taper(screen.getByText('programs.detail.followProgram'));
+    // Ouvrir l'assistant après un échec planifierait un programme qui n'existe pas.
+    expect(push).not.toHaveBeenCalled();
 
     // Le verrou doit être relâché : sinon le bouton reste mort jusqu'au prochain affichage.
-    await taper(screen.getByText('programs.detail.duplicate'));
-    expect(replace).toHaveBeenCalledWith('/programs/prog-copie');
+    await taper(screen.getByText('programs.detail.followProgram'));
+    expect(push).toHaveBeenCalledWith('/planning/plan?id=prog-copie');
   });
 });
 

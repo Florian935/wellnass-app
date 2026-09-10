@@ -71,22 +71,32 @@ export const HOME_WIDGET_IDS = [
 ] as const;
 
 /**
- * Muscu : les 4 modules-aperçu du hub (maquette validée), **plus** `strength-templates`
- * (US Refonte-D, 22/07/2026) — point d'entrée permanent vers « Mes templates »,
- * indépendant du flux « Séance libre », ajouté en fin de registre.
+ * Muscu : la **zone Suivre** du hub — 3 widgets, tous porteurs de données.
+ *
+ * ── Registre ramené de 7 à 3 le 10/09/2026 (US MUSCU-UX01) ───────────────────────────────────────
+ * L'accueil avait un plafond opposable depuis INSIGHTS-02 ; le hub muscu n'en avait **aucun**, et
+ * c'est exactement pour ça qu'il a dérivé pendant que l'accueil se dégonflait. Avec la carte
+ * d'action et la ligne d'annuaire, il affichait 9 blocs sans hiérarchie — et, faute de prédicat
+ * `isActive`, ses 7 tuiles se rendaient **même vides** : environ 2,4 écrans de scroll sur un
+ * compte neuf.
+ *
+ * Chacun des 4 retirés a une destination, et aucune n'est une régression :
+ *  - `strength-programs`   → la **barre de progression du programme** (zone Agir) mène au même
+ *    endroit en disant enfin quelque chose d'utile : « semaine 3 sur 8 · 14/24 séances ».
+ *  - `strength-templates`  → la ligne d'annuaire « Exercices, programmes, templates » en pied de
+ *    hub. ⚠️ Ce point d'entrée avait été créé par **US Refonte-D** (22/07/2026) précisément pour
+ *    être permanent : le déplacer est un arbitrage assumé, validé par Florian le 10/09/2026, pas
+ *    un oubli.
+ *  - `strength-records`    → `/progress` › Vue d'ensemble, section « Records récents ».
+ *  - `strength-training-time` → `/progress` › Vue d'ensemble.
+ *
+ * Les deux derniers étaient d'ailleurs arrivés ici par INSIGHTS-02 faute de meilleure destination ;
+ * l'onglet « Vue d'ensemble » de Progression, créé par cette US, en est une vraie.
  */
 export const STRENGTH_WIDGET_IDS = [
-  'strength-programs',
-  'strength-history',
   'strength-planning',
   'strength-progress',
-  'strength-templates',
-  // US INSIGHTS-02 — destinations **créées** pour deux widgets retirés de l'accueil :
-  //  - `strength-records` : `/progress` › Records est par **exercice sélectionné**, donc ni le
-  //    même contenu ni le même coût (4 gestes) — ce n'était pas une destination valable ;
-  //  - `strength-training-time` : n'en avait aucune.
-  'strength-records',
-  'strength-training-time',
+  'strength-history',
 ] as const;
 
 /** Course : les 3 modules-aperçu du hub, widgetisés. Ordre = disposition par défaut (maquette validée). */
@@ -129,6 +139,20 @@ export const RUNNING_WIDGET_IDS = [
  * cherche au moment où la vie déborde.
  */
 export const MAX_HOME_WIDGETS = 8;
+
+/**
+ * Plafond de la zone Suivre du hub muscu (US MUSCU-UX01), **appliqué par un test**.
+ *
+ * Même cliquet que `MAX_HOME_WIDGETS`, et pour la même raison : sans lui, le registre muscu est
+ * passé de 4 à 7 sans qu'aucun arbitrage n'ait eu lieu. Ce n'est pas une limite technique, c'est
+ * le moyen de rendre un `+1` **conscient** — le dépasser reste possible, mais impose de modifier
+ * le test, donc d'en discuter.
+ *
+ * Pourquoi 3, et pas 4-6 comme l'accueil : le hub muscu porte déjà une **zone Agir épinglée** au-
+ * dessus de la grille (la carte du jour, qui occupe presque un demi-écran) et une ligne d'annuaire
+ * en pied. Le budget vertical restant ne vaut pas celui de l'accueil.
+ */
+export const MAX_STRENGTH_WIDGETS = 3;
 
 export type HomeWidgetId = (typeof HOME_WIDGET_IDS)[number];
 export type StrengthWidgetId = (typeof STRENGTH_WIDGET_IDS)[number];
@@ -207,17 +231,13 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
   strength: {
     ids: STRENGTH_WIDGET_IDS,
     pillars: uniformPillar(STRENGTH_WIDGET_IDS, 'strength'),
+    // US MUSCU-UX01 : deux `small` sur la première ligne (planning + volume de la semaine), puis
+    // la dernière séance en bande. La zone Suivre tient ainsi sous la zone Agir sans repousser
+    // l'action hors de l'écran — c'était tout l'objet du dégonflage.
     defaultSize: {
-      'strength-programs': 'small',
-      'strength-history': 'small',
-      'strength-planning': 'wide',
-      'strength-progress': 'large',
-      'strength-templates': 'small',
-      // US INSIGHTS-02 : `wide`, comme sur l'accueil d'où elles viennent — ces deux cartes rendent
-      // une ligne d'information, pas une tuile. Déclaré explicitement : `defaultSizeOf` retombe sur
-      // `'wide'` en l'absence d'entrée, ce qui aurait donné le bon rendu **par accident**.
-      'strength-records': 'wide',
-      'strength-training-time': 'wide',
+      'strength-planning': 'small',
+      'strength-progress': 'small',
+      'strength-history': 'wide',
     },
   },
   running: {

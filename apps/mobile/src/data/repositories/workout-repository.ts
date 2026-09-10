@@ -90,6 +90,12 @@ export type WorkoutHistoryItem = {
   programId: string | null;
   /** Tonnage total (Σ reps × poids, séries validées non-échauffement), en kg. 0 si aucune. */
   volumeKg: number;
+  /** Nom de la séance de programme d'origine ; `null` pour une séance libre (US MUSCU-UX01). */
+  sessionName: string | null;
+  /** Nombre d'exercices réellement travaillés (échauffements exclus). */
+  exerciseCount: number;
+  /** Records battus pendant cette séance — sert la pastille 🏆 de la liste. */
+  recordCount: number;
 };
 
 /** Champs modifiables d'une série via `updateSet`. */
@@ -122,6 +128,12 @@ type WorkoutDbRow = {
   week_index?: number | null;
   /** Tonnage total de la séance (correlated subquery de `SELECT_HISTORY`) ; absent des autres requêtes. */
   volume_kg?: number | null;
+  /** US MUSCU-UX01, `SELECT_HISTORY` seulement : nom de la séance de programme d'origine. */
+  session_name?: string | null;
+  /** US MUSCU-UX01, `SELECT_HISTORY` seulement : exercices travaillés, échauffements exclus. */
+  exercise_count?: number | null;
+  /** US MUSCU-UX01, `SELECT_HISTORY` seulement : records battus pendant la séance. */
+  record_count?: number | null;
 };
 
 /**
@@ -185,16 +197,38 @@ const SELECT_SETS_FOR_WORKOUT = `
   ORDER BY s.order_index
 `;
 
-/** Historique des séances terminées, plus récentes d'abord. */
+/**
+ * Historique des séances terminées, plus récentes d'abord.
+ *
+ * ── Enrichie par l'US MUSCU-UX01 (10/09/2026) ────────────────────────────────────────────────
+ * La liste affichait date + durée + RPE : impossible de retrouver « ma séance pecs du 2 » sans
+ * ouvrir les fiches une par une. La requête ramène désormais de quoi **reconnaître** une séance
+ * sans l'ouvrir — son nom, ses exercices, ses records — en plus du tonnage, qui était déjà là
+ * mais que l'écran n'affichait pas.
+ *
+ * Les trois sous-requêtes sont corrélées sur `workouts.id` : sur un historique de quelques
+ * centaines de lignes en SQLite local, c'est sans effet mesurable, et cela évite trois jointures
+ * avec agrégation qui rendraient la requête bien plus difficile à relire.
+ */
 const SELECT_HISTORY = `
-  SELECT id, started_at, finished_at, duration_seconds, rpe, notes, session_id, program_id,
+  SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe, w.notes,
+         w.session_id, w.program_id,
+         s.name AS session_name,
          (SELECT COALESCE(SUM(ws.reps * ws.weight_kg), 0)
             FROM workout_sets ws
-           WHERE ws.workout_id = workouts.id AND ws.deleted_at IS NULL
-             AND ws.done = 1 AND ws.set_type <> 'warmup') AS volume_kg
-  FROM workouts
-  WHERE status = 'completed' AND deleted_at IS NULL
-  ORDER BY finished_at DESC
+           WHERE ws.workout_id = w.id AND ws.deleted_at IS NULL
+             AND ws.done = 1 AND ws.set_type <> 'warmup') AS volume_kg,
+         (SELECT COUNT(DISTINCT ws.exercise_id)
+            FROM workout_sets ws
+           WHERE ws.workout_id = w.id AND ws.deleted_at IS NULL
+             AND ws.done = 1 AND ws.set_type <> 'warmup') AS exercise_count,
+         (SELECT COUNT(*)
+            FROM personal_records pr
+           WHERE pr.workout_id = w.id AND pr.deleted_at IS NULL) AS record_count
+  FROM workouts w
+  LEFT JOIN sessions s ON s.id = w.session_id AND s.deleted_at IS NULL
+  WHERE w.status = 'completed' AND w.deleted_at IS NULL
+  ORDER BY w.finished_at DESC
 `;
 
 // ---------------------------------------------------------------------------
@@ -229,6 +263,9 @@ function rowToHistoryItem(row: WorkoutDbRow): WorkoutHistoryItem {
     sessionId: row.session_id,
     programId: row.program_id,
     volumeKg: row.volume_kg ?? 0,
+    sessionName: row.session_name ?? null,
+    exerciseCount: row.exercise_count ?? 0,
+    recordCount: row.record_count ?? 0,
   };
 }
 
@@ -673,6 +710,56 @@ export async function cancelWorkout(id: string): Promise<void> {
   }
 
   await softDelete('workouts', id);
+}
+
+/**
+ * Supprime une séance **terminée** (soft delete) — US MUSCU-UX01, règle R6-1.
+ *
+ * La spec `musculation.md` §6.1 promet « édition / suppression d'une séance passée » depuis le
+ * 04/07/2026 ; aucune fonction ne l'implémentait. Une série validée par erreur, ou une séance
+ * fantôme laissée ouverte puis clôturée automatiquement, restait donc dans l'historique — et dans
+ * le volume, les records et le streak — sans aucun moyen de la retirer.
+ *
+ * Trois effets, dans une seule transaction, parce qu'ils sont indissociables :
+ *  1. la séance et ses séries passent en `deleted_at` ;
+ *  2. **ses records disparaissent** — un record adossé à une séance supprimée serait invérifiable,
+ *     et continuerait de plafonner les suivants ;
+ *  3. l'occurrence de planning liée **retourne en `planned`** : la séance n'a plus eu lieu, donc
+ *     le calendrier ne doit plus la compter faite. Sans cela, le jour resterait marqué à vide.
+ *
+ * ⚠️ **Ce qui n'est pas fait** : le record *précédent* n'est pas rétabli. Retrouver le second
+ * meilleur demanderait de rejouer tout l'historique de l'exercice ; c'est un cadrage à part, noté
+ * hors périmètre dans la spec (§7). Le prochain dépassement recréera le record normalement.
+ */
+export async function deleteWorkout(id: string): Promise<void> {
+  const now = nowUtc();
+  await powerSync.writeTransaction(async (tx) => {
+    // 1. Les séries, puis la séance.
+    await tx.execute(
+      `UPDATE workout_sets SET deleted_at = ?, updated_at = ?
+       WHERE workout_id = ? AND deleted_at IS NULL`,
+      [now, now, id],
+    );
+    await tx.execute(
+      `UPDATE workouts SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL`,
+      [now, now, id],
+    );
+
+    // 2. Les records nés de cette séance.
+    await tx.execute(
+      `UPDATE personal_records SET deleted_at = ?, updated_at = ?
+       WHERE workout_id = ? AND deleted_at IS NULL`,
+      [now, now, id],
+    );
+
+    // 3. L'occurrence de planning liée redevient à faire.
+    await tx.execute(
+      `UPDATE planned_sessions SET status = 'planned', completed_at = NULL, updated_at = ?
+       WHERE id = (SELECT planned_session_id FROM workouts WHERE id = ?)
+         AND deleted_at IS NULL`,
+      [now, id],
+    );
+  });
 }
 
 /**
